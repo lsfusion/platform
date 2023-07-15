@@ -267,6 +267,7 @@ public interface ClientMessages extends Messages {
     String clear();
 
     String noResults();
+    String needMoreSymbols();
 
     String doYouReallyWantToCloseForm();
 

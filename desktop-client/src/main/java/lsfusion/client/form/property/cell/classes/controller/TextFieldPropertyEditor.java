@@ -10,6 +10,7 @@ import lsfusion.client.base.view.ClientColorUtils;
 import lsfusion.client.base.view.ClientImages;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.controller.MainController;
+import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.async.ClientInputList;
 import lsfusion.client.form.property.async.ClientInputListAction;
@@ -132,8 +133,8 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
         final String query = currentRequest;
         currentRequest = null;
 
-//        if(prevSucceededEmptyQuery != null && query.startsWith(prevSucceededEmptyQuery))
-//            return;
+        if(prevSucceededEmptyQuery != null && query.startsWith(prevSucceededEmptyQuery))
+            return;
 
 
         //disable selection while loading
@@ -154,19 +155,19 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
         int row = isEditing ? table.getEditingRow() : 0;
         int column = isEditing ? table.getEditingColumn() : 0;
         asyncChange.getForm().getAsyncValues(property, asyncChange.getColumnKey(Math.max(row, 0), Math.max(column, 0)), query, actionSID,
-                new AsyncCallback<Pair<List<ClientAsync>, Boolean>>() {
+                new AsyncCallback<ClientFormController.ClientAsyncResult>() {
                     @Override
-                    public void done(Pair<List<ClientAsync>, Boolean> result) {
+                    public void done(ClientFormController.ClientAsyncResult result) {
                         if (isThisCellEditor()) { // && suggestBox.comboBox.isPopupVisible() it can become visible after callback is completed
                             boolean succeededEmpty = false;
-                            if(result.first != null) {
-                                suggestBox.updateItems(result.first, (completionType.isStrict() || (completionType.isSemiStrict() && !query.contains(MainController.matchSearchSeparator))) && !query.isEmpty());
-                                succeededEmpty = result.first.isEmpty();
+                            if(result.asyncs != null) {
+                                suggestBox.updateItems(result.asyncs, (completionType.isStrict() || (completionType.isSemiStrict() && !query.contains(MainController.matchSearchSeparator))) && !query.isEmpty());
+                                succeededEmpty = result.asyncs.isEmpty();
                             }
 
-                            suggestBox.updateLoading(result.second);
+                            suggestBox.updateLoading(result.moreRequests);
 
-                            if (!result.second) {
+                            if (!result.moreRequests && !result.needMoreSymbols) {
                                 if (succeededEmpty)
                                     prevSucceededEmptyQuery = query;
                                 else
@@ -205,9 +206,9 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
         // this assertion is incorrect in desktop client (unlike in web-client)
 //        assert isThisCellEditor();
         if (isThisCellEditor() && suggestBox.isLoading)
-            asyncChange.getForm().getAsyncValues(property, asyncChange.getColumnKey(0, 0), null, actionSID, new AsyncCallback<Pair<List<ClientAsync>, Boolean>>() {
+            asyncChange.getForm().getAsyncValues(property, asyncChange.getColumnKey(0, 0), null, actionSID, new AsyncCallback<ClientFormController.ClientAsyncResult>() {
                 @Override
-                public void done(Pair<List<ClientAsync>, Boolean> result) {
+                public void done(ClientFormController.ClientAsyncResult result) {
                     // assert that CANCELED
                 }
                 @Override

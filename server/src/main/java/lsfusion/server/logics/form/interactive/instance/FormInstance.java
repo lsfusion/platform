@@ -1159,9 +1159,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     public static <P extends PropertyInterface> PropertyAsync<P>[] getAsyncValues(InputValueList<P> list, DataSession session, Modifier modifier, String value, AsyncMode asyncMode) throws SQLException, SQLHandledException {
         Settings settings = Settings.get();
-        if(value.length() <= settings.getAsyncValuesCancelThreshold() && !list.getInterfaceStat().less(new Stat(settings.getAsyncValuesMaxReadDataCompletionCount())))
-            return new PropertyAsync[0];
-
         int neededCount = settings.getAsyncValuesNeededCount();
         double extraReadCoeff = settings.getAsyncValuesExtraReadCoeff();
         double statDegree = settings.getStatDegree();
@@ -1313,6 +1310,10 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         }
         return result;
     }
+    private static <P extends PropertyInterface> boolean checkAsyncLength(InputValueList<P> list, String value, AsyncMode mode) {
+        Settings settings = Settings.get();
+        return value.length() <= settings.getAsyncValuesCancelThreshold() && !mode.isObjects() && !list.getInterfaceStat().less(new Stat(settings.getAsyncValuesMaxReadDataCompletionCount()));
+    }
     public <P extends PropertyInterface, X extends PropertyInterface> Async[] getAsyncValues(PropertyDrawInstance<P> propertyDraw, ImMap<ObjectInstance, ? extends ObjectValue> keys, String actionSID, String value, Boolean optimistic, Supplier<Boolean> optimisticRun) throws SQLException, SQLHandledException {
         InputValueList<X> listProperty;
         ImRevMap<X, ObjectInstance> mapObjects;
@@ -1328,6 +1329,10 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 listProperty = inputContext.list;
                 mapObjects = null;
                 asyncMode = inputContext.strict ? AsyncMode.OBJECTVALUES : AsyncMode.VALUES;
+
+                if(checkAsyncLength(listProperty, value, asyncMode))
+                    return new Async[] {Async.NEEDMORE};
+
                 for(Property<X> changeProp : listProperty.getChangeProps())
                     if (!inputContext.newSession && changeProp.hasChanges(inputContext.modifier))
                         return convertPropertyAsyncs(mapObjects, getAsyncValues(listProperty, inputContext.session, inputContext.modifier, value, asyncMode));
@@ -1342,6 +1347,10 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             listProperty = valueList.list;
             mapObjects = valueList.mapObjects;
             asyncMode = valueList.asyncMode;
+
+            if(checkAsyncLength(listProperty, value, asyncMode))
+                return new Async[] {Async.NEEDMORE};
+
             if(!valueList.newSession) { // ! new session
                 for(Property<X> changeProp : listProperty.getChangeProps())
                     if (optimistic) {

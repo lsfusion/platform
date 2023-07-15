@@ -1310,8 +1310,8 @@ public class ClientFormController implements AsyncListener {
     private int editAsyncIndex;
     private int editLastReceivedAsyncIndex;
     // we don't want to proceed results if "later" request results where proceeded
-    private AsyncCallback<Pair<List<ClientAsync>, Boolean>> checkLast(int editAsyncIndex, AsyncCallback<Pair<List<ClientAsync>, Boolean>> callback) {
-        return new AsyncCallback<Pair<List<ClientAsync>, Boolean>>() {
+    private AsyncCallback<ClientAsyncResult> checkLast(int editAsyncIndex, AsyncCallback<ClientAsyncResult> callback) {
+        return new AsyncCallback<ClientAsyncResult>() {
             @Override
             public void failure(Throwable t) {
                 if(editAsyncIndex >= editLastReceivedAsyncIndex) {
@@ -1321,11 +1321,11 @@ public class ClientFormController implements AsyncListener {
             }
 
             @Override
-            public void done(Pair<List<ClientAsync>, Boolean> result) {
+            public void done(ClientAsyncResult result) {
                 if(editAsyncIndex >= editLastReceivedAsyncIndex) {
                     editLastReceivedAsyncIndex = editAsyncIndex;
-                    if(!result.second && editAsyncIndex < editAsyncIndex - 1)
-                        result = new Pair<>(result.first, true);
+                    if(!result.moreRequests && editAsyncIndex < editAsyncIndex - 1)
+                        result = new ClientAsyncResult(result.asyncs, result.needMoreSymbols, true);
                     callback.done(result);
                 }
             }
@@ -1333,7 +1333,7 @@ public class ClientFormController implements AsyncListener {
     }
 
     // synchronous call (with request indices, etc.)
-    private void getPessimisticValues(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String value, String actionSID, AsyncCallback<Pair<List<ClientAsync>, Boolean>> callback) {
+    private void getPessimisticValues(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String value, String actionSID, AsyncCallback<ClientAsyncResult> callback) {
         rmiQueue.asyncRequest(new RmiCheckNullFormRequest<ClientAsync[]>("getAsyncValues - " + property.getLogName()) {
             @Override
             protected ClientAsync[] doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
@@ -1343,7 +1343,7 @@ public class ClientFormController implements AsyncListener {
             @Override
             protected void onResponse(long requestIndex, ClientAsync[] result) throws Exception {
                 super.onResponse(requestIndex, result);
-                callback.done(new Pair(result != null ? Arrays.asList(result) : null, false));
+                callback.done(new ClientAsyncResult(result != null ? Arrays.asList(result) : null, false, false));
             }
 
             @Override
@@ -1354,11 +1354,23 @@ public class ClientFormController implements AsyncListener {
         }, true);
     }
 
-    public void getAsyncValues(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String value, String actionSID, AsyncCallback<Pair<List<ClientAsync>, Boolean>> callback) {
-        AsyncCallback<Pair<List<ClientAsync>, Boolean>> fCallback = checkLast(editAsyncIndex++, callback);
+    public static class ClientAsyncResult {
+        public final List<ClientAsync> asyncs;
+        public final boolean needMoreSymbols;
+        public final boolean moreRequests;
+
+        public ClientAsyncResult(List<ClientAsync> asyncs, boolean needMoreSymbols, boolean moreRequests) {
+            this.asyncs = asyncs;
+            this.needMoreSymbols = needMoreSymbols;
+            this.moreRequests = moreRequests;
+        }
+    }
+    public void getAsyncValues(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String value, String actionSID, AsyncCallback<ClientAsyncResult> callback) {
+        AsyncCallback<ClientAsyncResult> fCallback = checkLast(editAsyncIndex++, callback);
 
         new SwingWorker<List<ClientAsync>, Void>() {
             boolean runPessimistic = false;
+            boolean needMoreSymbols = false;
 
             @Override
             protected List<ClientAsync> doInBackground() {
@@ -1375,8 +1387,10 @@ public class ClientFormController implements AsyncListener {
                                 if (lastResult.equals(ClientAsync.RECHECK)) {
                                     runPessimistic = true;
                                     values = values.subList(0, values.size() - 1);
-                                } else if (values.size() == 1 && lastResult.equals(ClientAsync.CANCELED)) // ignoring CANCELED results
-                                    values = Collections.emptyList();
+                                } else if (values.size() == 1 && (lastResult.equals(ClientAsync.CANCELED) || lastResult.equals(ClientAsync.NEEDMORE))) {// ignoring CANCELED results
+                                    needMoreSymbols = lastResult.equals(ClientAsync.NEEDMORE);
+                                    values = needMoreSymbols ? Collections.emptyList() : null;
+                                }
                             }
                             return values;
                         }
@@ -1401,7 +1415,7 @@ public class ClientFormController implements AsyncListener {
                     return;
                 }
 
-                fCallback.done(Pair.create(result, runPessimistic));
+                fCallback.done(new ClientAsyncResult(result, needMoreSymbols, runPessimistic));
                 if(runPessimistic)
                     getPessimisticValues(property, columnKey, value, actionSID, fCallback);
             }

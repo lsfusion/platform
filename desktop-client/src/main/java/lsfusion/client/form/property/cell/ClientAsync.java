@@ -18,6 +18,7 @@ public class ClientAsync implements Serializable {
 
     public static final ClientAsync RECHECK = new ClientAsync("RECHECK", "RECHECK", null);
     public static final ClientAsync CANCELED = new ClientAsync("CANCELED", "CANCELED", null);
+    public static final ClientAsync NEEDMORE = new ClientAsync("NEEDMORE", "NEEDMORE", null);
 
     private ClientAsync(String displayValue, String rawValue, ClientGroupObjectValue key) {
         this.displayValue = displayValue;

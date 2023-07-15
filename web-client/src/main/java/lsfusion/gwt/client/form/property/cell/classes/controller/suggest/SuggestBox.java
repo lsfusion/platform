@@ -52,7 +52,7 @@ public abstract class SuggestBox {
     
     private final Callback callback = new Callback() {
         public void onSuggestionsReady(Request request, Response response) {
-            showSuggestions(inputElement, response.initial, response.suggestions, selectsFirstItem, bottomPanels, itemValue -> onItemSelected(itemValue, CommitReason.FORCED));
+            showSuggestions(inputElement, response.initial, response.suggestions, response.needMoreSymbols, selectsFirstItem, bottomPanels, itemValue -> onItemSelected(itemValue, CommitReason.FORCED));
         }
     };
 
@@ -117,10 +117,12 @@ public abstract class SuggestBox {
         suggestionPopup.clearSelectedItem();
     }
 
-    protected void showSuggestions(final Element suggestElement, boolean initial, Collection<? extends PopupMenuItemValue> suggestions, boolean isAutoSelectEnabled, ArrayList<Widget> bottomPanels, final PopupMenuCallback callback) {
+    protected void showSuggestions(final Element suggestElement, boolean initial, Collection<? extends PopupMenuItemValue> suggestions, boolean needMoreSymbols, boolean isAutoSelectEnabled, ArrayList<Widget> bottomPanels, final PopupMenuCallback callback) {
         suggestionPopup.clearItems();
 
-        if (suggestions.isEmpty()) {
+        if (needMoreSymbols) {
+            suggestionPopup.addTextItem(messages.needMoreSymbols());
+        } else if (suggestions.isEmpty()) {
             //show empty item for initial loading
             suggestionPopup.addTextItem(initial ? "" : messages.noResults());
         }
@@ -280,11 +282,13 @@ public abstract class SuggestBox {
     }
 
     public static class Response {
-        ArrayList<PopupMenuItemValue> suggestions;
-        boolean initial;
+        public final ArrayList<PopupMenuItemValue> suggestions;
+        public final boolean needMoreSymbols;
+        public final boolean initial;
 
-        public Response(ArrayList<PopupMenuItemValue> suggestions, boolean initial) {
+        public Response(ArrayList<PopupMenuItemValue> suggestions, boolean needMoreSymbols, boolean initial) {
             this.suggestions = suggestions;
+            this.needMoreSymbols = needMoreSymbols;
             this.initial = initial;
         }
     }
