@@ -20,6 +20,7 @@ import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.base.view.CopyPasteUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.classes.data.GFormatType;
+import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.filter.user.GCompare;
@@ -324,7 +325,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
                     //disable selection while loading
                     suggestBox.clearSelectedItem();
 
-                    suggestBox.updateDecoration(false, true, true);
+                    suggestBox.updateDecoration(false, false, true, true);
 
                     if (emptyQuery) { // to show empty popup immediately
                         // add timer to avoid blinking when empty popup is followed by non-empty one
@@ -351,7 +352,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
                     execTimer.schedule(1000);
                     delayTimer = execTimer;
 
-                    editManager.getAsyncValues(query, new AsyncCallback<Pair<ArrayList<GAsync>, Boolean>>() {
+                    editManager.getAsyncValues(query, new AsyncCallback<GFormController.GAsyncResult>() {
                         @Override
                         public void onFailure(Throwable caught) {
                             if (isThisCellEditor()) //  && suggestBox.isSuggestionListShowing()
@@ -359,15 +360,15 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
                         }
 
                         @Override
-                        public void onSuccess(Pair<ArrayList<GAsync>, Boolean> result) {
+                        public void onSuccess(GFormController.GAsyncResult result) {
                             if (isThisCellEditor()) { //  && suggestBox.isSuggestionListShowing() in desktop this check leads to "losing" result, since suggest box can be not shown yet (!), however maybe in web-client it's needed for some reason (but there can be the risk of losing result)
                                 suggestBox.setAutoSelectEnabled((completionType.isStrict() || (completionType.isSemiStrict() && !query.contains(MainFrame.matchSearchSeparator))) && !emptyQuery);
 
                                 boolean succeededEmpty = false;
-                                if(result.first != null) {
+                                if(result.asyncs != null) {
                                     List<String> rawSuggestions = new ArrayList<>();
                                     List<Suggestion> suggestionList = new ArrayList<>();
-                                    for (GAsync suggestion : result.first) {
+                                    for (GAsync suggestion : result.asyncs) {
                                         rawSuggestions.add(suggestion.rawString);
                                         suggestionList.add(new Suggestion() {
                                             @Override
@@ -388,9 +389,9 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
                                     succeededEmpty = suggestionList.isEmpty();
                                 }
 
-                                suggestBox.updateDecoration(succeededEmpty, false, result.second);
+                                suggestBox.updateDecoration(succeededEmpty, result.needMoreSymbols, false, result.moreRequests);
 
-                                if(!result.second) {
+                                if(!result.moreRequests && !result.needMoreSymbols) {
                                     if (succeededEmpty)
                                         prevSucceededEmptyQuery = query;
                                     else
@@ -439,13 +440,13 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
                     // canceling query
 //                    assert isThisCellEditor(); // can be broken when for example tab is changed, it sets display to none before blur occurs
                     if (isLoading())
-                        editManager.getAsyncValues(null, new AsyncCallback<Pair<ArrayList<GAsync>, Boolean>>() {
+                        editManager.getAsyncValues(null, new AsyncCallback<GFormController.GAsyncResult>() {
                             @Override
                             public void onFailure(Throwable caught) {
                             }
 
                             @Override
-                            public void onSuccess(Pair<ArrayList<GAsync>, Boolean> result) {
+                            public void onSuccess(GFormController.GAsyncResult result) {
                                 // assert CANCELED returned
                             }
                         });
@@ -533,8 +534,8 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
         protected boolean isLoading() {
             return display.isLoading;
         }
-        public void updateDecoration(boolean showNoResult, boolean showEmptyLabel, boolean isLoading) {
-            display.updateDecoration(showNoResult, showEmptyLabel, isLoading);
+        public void updateDecoration(boolean showNoResult, boolean showNeedMoreSymbols, boolean showEmptyLabel, boolean isLoading) {
+            display.updateDecoration(showNoResult, showNeedMoreSymbols, showEmptyLabel, isLoading);
         }
 
         public Element getPopupElement() {
@@ -548,6 +549,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
 
     private class DefaultSuggestionDisplayString extends SuggestBox.DefaultSuggestionDisplay {
         private Label noResultsLabel;
+        private Label needMoreSymbolsLabel;
         private Label emptyLabel; //for loading
         private GToolbarButton refreshButton;
         private boolean refreshButtonPressed;
@@ -571,6 +573,11 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
             noResultsLabel.getElement().addClassName("item"); //to be like suggestion item
             noResultsLabel.getElement().addClassName("noResultsLabel");
             panel.add(noResultsLabel);
+
+            needMoreSymbolsLabel = new Label(messages.needMoreSymbols());
+            needMoreSymbolsLabel.getElement().addClassName("item"); //to be like suggestion item
+            needMoreSymbolsLabel.getElement().addClassName("noResultsLabel");
+            panel.add(needMoreSymbolsLabel);
 
             emptyLabel = new Label();
             emptyLabel.getElement().addClassName("item"); //to be like suggestion item
@@ -649,8 +656,9 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
         }
 
         public boolean isLoading;
-        public void updateDecoration(boolean showNoResult, boolean showEmptyLabel, boolean isLoading) {
-            noResultsLabel.setVisible(showNoResult);
+        public void updateDecoration(boolean showNoResult, boolean showNeedMoreSymbols, boolean showEmptyLabel, boolean isLoading) {
+            noResultsLabel.setVisible(showNoResult && !showNeedMoreSymbols);
+            needMoreSymbolsLabel.setVisible(showNeedMoreSymbols);
             emptyLabel.setVisible(showEmptyLabel);
             if (this.isLoading != isLoading) {
                 refreshButton.setModuleImagePath(isLoading ? LOADING_IMAGE_PATH : REFRESH_IMAGE_PATH);

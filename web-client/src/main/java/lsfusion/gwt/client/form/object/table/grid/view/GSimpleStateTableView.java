@@ -429,7 +429,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
     protected void getAsyncValues(String property, String value, JavaScriptObject successCallBack, JavaScriptObject failureCallBack) {
         Column column = columnMap.get(property);
-        form.getAsyncValues(value, column.property, column.columnKey, ServerResponse.OBJECTS, new AsyncCallback<Pair<ArrayList<GAsync>, Boolean>>() {
+        form.getAsyncValues(value, column.property, column.columnKey, ServerResponse.OBJECTS, new AsyncCallback<GFormController.GAsyncResult>() {
             @Override
             public void onFailure(Throwable caught) {
                 if(failureCallBack != null)
@@ -437,17 +437,19 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             }
 
             @Override
-            public void onSuccess(Pair<ArrayList<GAsync>, Boolean> result) {
-                if(result.first == null) {
-                    if(!result.second && failureCallBack != null)
+            public void onSuccess(GFormController.GAsyncResult result) {
+                assert !result.needMoreSymbols;
+                ArrayList<GAsync> asyncs = result.asyncs;
+                if(asyncs == null) {
+                    if(!result.moreRequests && failureCallBack != null)
                         GwtClientUtils.call(failureCallBack);
                     return;
                 }
 
-                JavaScriptObject[] results = new JavaScriptObject[result.first.size()];
-                for (int i = 0; i < result.first.size(); i++) {
+                JavaScriptObject[] results = new JavaScriptObject[asyncs.size()];
+                for (int i = 0; i < asyncs.size(); i++) {
                     JavaScriptObject object = GwtClientUtils.newObject();
-                    GAsync suggestion = result.first.get(i);
+                    GAsync suggestion = asyncs.get(i);
                     GwtClientUtils.setField(object, "displayString", fromString(suggestion.displayString));
                     GwtClientUtils.setField(object, "rawString", fromString(suggestion.rawString));
                     GwtClientUtils.setField(object, "key", fromObject(suggestion.key));
@@ -455,7 +457,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                 }
                 JavaScriptObject data = GwtClientUtils.newObject();
                 GwtClientUtils.setField(data, "data", fromObject(results));
-                GwtClientUtils.setField(data, "more", fromBoolean(result.second));
+                GwtClientUtils.setField(data, "more", fromBoolean(result.moreRequests));
                 GwtClientUtils.call(successCallBack, data);
          }});
     }
