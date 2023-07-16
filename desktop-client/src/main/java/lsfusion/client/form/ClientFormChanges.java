@@ -175,6 +175,12 @@ public class ClientFormChanges {
                 return clientForm.findComponentByID(inStream.readInt()).elementClassReader;
             case PropertyReadType.CUSTOM_OPTIONS:
                 return clientForm.getGroupObject(inStream.readInt()).customOptionsReader;
+            case PropertyReadType.COMMENT:
+                return clientForm.getProperty(inStream.readInt()).commentReader;
+            case PropertyReadType.COMMENTELEMENTCLASS:
+                return clientForm.getProperty(inStream.readInt()).commentElementClassReader;
+            case PropertyReadType.PLACEHOLDER:
+                return clientForm.getProperty(inStream.readInt()).placeholderReader;
             default:
                 throw new IOException();
         }

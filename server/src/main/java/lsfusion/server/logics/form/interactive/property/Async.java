@@ -19,6 +19,7 @@ public class Async {
 
     public static final Async RECHECK = new Async("RECHECK", "RECHECK", null);
     public static final Async CANCELED = new Async("CANCELED", "CANCELED", null);
+    public static final Async NEEDMORE = new Async("NEEDMORE", "NEEDMORE", null);
 
     public Async(String displayString, String rawString, Object key) {
         this.displayString = displayString;

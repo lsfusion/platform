@@ -1316,6 +1316,10 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         }
         return result;
     }
+    private static <P extends PropertyInterface> boolean checkAsyncLength(InputValueList<P> list, String value, AsyncMode mode) {
+        Settings settings = Settings.get();
+        return value.length() <= settings.getAsyncValuesCancelThreshold() && !mode.isObjects() && !list.getInterfaceStat().less(new Stat(settings.getAsyncValuesMaxReadDataCompletionCount()));
+    }
     public <P extends PropertyInterface, X extends PropertyInterface> Async[] getAsyncValues(PropertyDrawInstance<P> propertyDraw, ImMap<ObjectInstance, ? extends ObjectValue> keys, String actionSID, String value, int neededCount, Boolean optimistic, Supplier<Boolean> optimisticRun, FormInstanceContext context) throws SQLException, SQLHandledException {
         InputValueList<X> listProperty;
         AsyncDataConverter<X> converter;
@@ -1331,6 +1335,10 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 listProperty = inputContext.list;
                 converter = null;
                 asyncMode = inputContext.strict ? AsyncMode.OBJECTVALUES : AsyncMode.VALUES;
+
+                if(checkAsyncLength(listProperty, value, asyncMode))
+                    return new Async[] {Async.NEEDMORE};
+
                 for(Property<X> changeProp : listProperty.getChangeProps())
                     if (!inputContext.newSession && changeProp.hasChanges(inputContext.modifier))
                         return convertPropertyAsyncs(converter, getAsyncValues(listProperty, inputContext.session, inputContext.modifier, value, neededCount, asyncMode));
@@ -1347,6 +1355,10 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             listProperty = valueList.list;
             converter = valueList.converter;
             asyncMode = valueList.asyncMode;
+
+            if(checkAsyncLength(listProperty, value, asyncMode))
+                return new Async[] {Async.NEEDMORE};
+
             if(!valueList.newSession) { // ! new session
                 for(Property<X> changeProp : listProperty.getChangeProps())
                     if (optimistic) {
@@ -2455,6 +2467,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 fillChangedReader(drawProperty.backgroundReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
                 fillChangedReader(drawProperty.foregroundReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
                 fillChangedReader(drawProperty.imageReader, toDraw, result, drawProperty.isProperty(context) ? propRowColumnGrids : propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
+                fillChangedReader(drawProperty.commentReader, toDraw, result, propRowColumnGrids, hidden, updateCaption, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
+                fillChangedReader(drawProperty.commentElementClassReader, toDraw, result, propRowColumnGrids, hidden, updateCaption, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
+                fillChangedReader(drawProperty.placeholderReader, toDraw, result, propRowColumnGrids, hidden, updateCaption, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
                 for(PropertyDrawInstance<?>.LastReaderInstance aggrLastReader : drawProperty.aggrLastReaders)
                     fillChangedReader(aggrLastReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
             } else if (oldPropIsShown) {

@@ -152,11 +152,12 @@ public class LogicsSessionObject {
         String matchSearchSeparator = json.optString("matchSearchSeparator");
         boolean useTextAsFilterSeparator = json.optBoolean("useTextAsFilterSeparator");
         boolean userFiltersManualApplyMode = json.optBoolean("userFiltersManualApplyMode");
+        int maxRequestQueueSize = json.optInt("maxRequestQueueSize");
 
         return new ClientSettings(localePreferences, currentUserName, fontSize, useBusyDialog, busyDialogTimeout, useRequestTimeout, devMode,
                 projectLSFDir, showDetailedInfo, forbidDuplicateForms, showNotDefinedStrings, pivotOnlySelectedColumn, matchSearchSeparator,
                 colorTheme, useBootstrap, colorPreferences, preDefinedDateRangesNames.toArray(new String[0]), useTextAsFilterSeparator, 
-                mainResourcesBeforeSystem, mainResourcesAfterSystem, verticalNavbar, userFiltersManualApplyMode);
+                mainResourcesBeforeSystem, mainResourcesAfterSystem, verticalNavbar, userFiltersManualApplyMode, maxRequestQueueSize);
     }
 
     private static void fillRanges(JSONArray rangesJson, List<String> ranges) {

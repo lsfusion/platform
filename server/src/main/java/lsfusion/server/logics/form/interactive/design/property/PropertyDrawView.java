@@ -114,6 +114,14 @@ public class PropertyDrawView extends BaseComponentView {
 
     public FlexAlignment valueAlignment;
 
+    public LocalizedString comment;
+    public String commentElementClass;
+    public boolean panelCommentVertical;
+    public boolean panelCommentFirst;
+    public FlexAlignment panelCommentAlignment;
+
+    public LocalizedString placeholder;
+
     public LocalizedString caption;
     public Supplier<AppServerImage> image;
     public boolean clearText;
@@ -451,6 +459,14 @@ public class PropertyDrawView extends BaseComponentView {
         outStream.writeBoolean(panelColumnVertical);
         
         pool.writeObject(outStream, getValueAlignment(pool.context));
+
+        pool.writeString(outStream, ThreadLocalContext.localize(comment));
+        pool.writeString(outStream, commentElementClass);
+        outStream.writeBoolean(panelCommentVertical);
+        outStream.writeBoolean(panelCommentFirst);
+        pool.writeObject(outStream, panelCommentAlignment);
+
+        pool.writeString(outStream, ThreadLocalContext.localize(placeholder));
 
         pool.writeObject(outStream, getChangeOnSingleClick(pool.context));
         outStream.writeBoolean(hide);
@@ -837,8 +853,8 @@ public class PropertyDrawView extends BaseComponentView {
         Type changeType = getChangeType(context, false);
         if (isProperty(context)) {
             Type type = getType(context);
-            if(type != null && changeType != null && type.getCompatible(changeType) != null &&
-                    type.useInputTag(!entity.isList(context), context.useBootstrap))
+            if((type != null && changeType != null && type.getCompatible(changeType) != null &&
+                    type.useInputTag(!entity.isList(context), context.useBootstrap)) || comment != null)
                 return "input";
 
             if(isLink(context) && !hasFlow(context, ChangeFlowType.INPUT))

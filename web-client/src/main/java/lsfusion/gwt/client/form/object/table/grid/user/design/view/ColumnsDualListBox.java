@@ -76,7 +76,7 @@ public abstract class ColumnsDualListBox extends AbsolutePanel {
         buttonsAndRightPanel.add(new CaptionPanel(messages.formGridPreferencesHiddenColumns(), rightFocusPanel));
 
         DockLayoutPanel dockContainer = new DockLayoutPanel(Style.Unit.PCT);
-        dockContainer.setSize("100%", "100%");
+        dockContainer.setStyleName("dualListColumnsDockContainer");
         dockContainer.addWest(new CaptionPanel(messages.formGridPreferencesDisplayedColumns(), leftFocusPanel), 43);
         dockContainer.add(buttonsAndRightPanel);
 

@@ -39,6 +39,18 @@ public class ActionPanelRenderer extends PanelRenderer {
 //        BaseImage.updateClasses(value.getRenderElement());
     }
 
+    @Override
+    protected void setCommentText(String text) {
+    }
+
+    @Override
+    protected void setCommentClasses(String classes) {
+    }
+
+    @Override
+    protected void setPlaceholderText(String text) {
+    }
+
     // interface for refresh button
     public void setForceLoading(boolean set) {
         value.setForceLoading(set);

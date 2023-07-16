@@ -48,6 +48,10 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
 
     private NativeHashMap<GGroupObjectValue, PValue> images;
 
+    private NativeHashMap<GGroupObjectValue, PValue> comments;
+    private NativeHashMap<GGroupObjectValue, PValue> cellCommentElementClasses;
+    private NativeHashMap<GGroupObjectValue, PValue> placeholders;
+
     public GPropertyPanelController(GPropertyDraw property, GFormController form) {
         this.property = property;
         this.form = form;
@@ -174,6 +178,13 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
             renderer.setCaption(GGridPropertyTable.getDynamicCaption(captions.get(columnKey)));
         if (cellCaptionElementClasses != null)
             renderer.setCaptionElementClass(PValue.getClassStringValue(cellCaptionElementClasses.get(columnKey)));
+
+        if (comments != null)
+            renderer.setComment(GGridPropertyTable.getDynamicComment(comments.get(columnKey)));
+        if (cellCommentElementClasses != null)
+            renderer.setCommentElementClass(PValue.getClassStringValue(cellCommentElementClasses.get(columnKey)));
+        if (placeholders != null)
+            renderer.setPlaceholder(GGridPropertyTable.getDynamicPlaceholder(placeholders.get(columnKey)));
     }
 
     public boolean focus(FocusUtils.Reason reason) {
@@ -267,5 +278,17 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
         if(panelRenderer == null)
             return null;
         return new Pair<>(propertyColumnKey, panelRenderer.setLoadingValue(value));
+    }
+
+    public void setPropertyComments(NativeHashMap<GGroupObjectValue, PValue> comments) {
+        this.comments = comments;
+    }
+
+    public void setCellCommentElementClasses(NativeHashMap<GGroupObjectValue, PValue> cellCommentElementClasses) {
+        this.cellCommentElementClasses = cellCommentElementClasses;
+    }
+
+    public void setPropertyPlaceholders(NativeHashMap<GGroupObjectValue, PValue> placeholders) {
+        this.placeholders = placeholders;
     }
 }

@@ -11,7 +11,7 @@ import java.util.ArrayList;
 
 public interface UpdateContext {
     
-    default void getAsyncValues(String value, String actionSID, AsyncCallback<Pair<ArrayList<GAsync>, Boolean>> callback) {}
+    default void getAsyncValues(String value, String actionSID, AsyncCallback<GFormController.GAsyncResult> callback) {}
     default void changeProperty(PValue result, GFormController.ChangedRenderValueSupplier renderValueSupplier) {}
     default void executeContextAction(int action) {}
 

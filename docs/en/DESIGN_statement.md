@@ -137,6 +137,7 @@ To access design components, you can use their names or address property compone
 |Property name|Description|Value type|Default value|Examples|
 |---|---|---|---|---|
 |`caption`|Caption of a property or action|String literal|caption of a property or action|`'Caption'`|
+|`captionClass`|Class of caption of a property or action|String literal|class of caption of a property or action|`'caption-class'`|
 |`askConfirm`|Specifies that an attempt to change the property (execute an action) will show a confirmation request|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`askConfirmMessage`|Text of the confirmation request shown when an attempt to change the property (execute the action) is made|String literal|default message|`'Are you sure you want to modify this property?'`|
 |`autoSize`|Automatic component size option. Applies to text components only|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
@@ -159,11 +160,18 @@ To access design components, you can use their names or address property compone
 |`maxValue`|The maximum numerical value that the property component can have|Integer literal|`NULL`|`1000000`<br/>`5000000000L`|
 |`notNull`|Specifies that in case of a `NULL` property value, the component of this property should be highlighted|Extended Boolean literal|depends on the property|`TRUE`<br/>`FALSE`|
 |`panelCaptionVertical`|Indicates that the captions of property or action components should be drawn above the value on the panel|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
-|`panelCaptionAfter`|Indicates that the value should be drawn on the panel prior to thee property caption|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
+|`panelCaptionLast`|Indicates that the value should be drawn on the panel prior to thee property caption|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
+|`panelCaptionAlignment`|Caption component alignment inside the container. Acceptable values: `START` (at the beginning), `CENTER` (in the center), `END` (at the end), `STRETCH` (stretched).|Alignment type|`START`|`STRETCH`|
 |`regexp`|The regular expression that the property value must match during input|String literal|`NULL`|`'^((8\|\\+7)[\\- ]?)?(\\(?\\d\{3\}\\)?[\\- ]?)?[\\d\\- ]\{7,10\}$'`|
 |`regexpMessage`|The message to be shown to the user if they enter a value that does not match the regular expression|String literal|default message|`'Incorrect phone number format'`|
 |`toolTip`|The tip to be shown when the cursor hovers over the caption of a property or action|String literal|Default toolTip|`'Tip'`|
 |`pattern`|Property value formatting template. The syntax of template definition is similar to the [DecimalFormat](https://docs.oracle.com/javase/8/docs/api/java/text/DecimalFormat.html) or [SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html) syntax, depending on the value type|String literal|`NULL`|`#,##0.00`|
+|`comment`|Comment of a property or action|String literal|comment of a property or action|`'Comment'`|
+|`commentClass`|Class of comment of a property or action|String literal|class of comment of a property or action|`'comment-class'`|
+|`panelCommentVertical`|Indicates that the comment of property or action should be drawn above or below the value on the panel|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
+|`panelCommentFirst` |Indicates that the comment should be drawn on the panel after property value|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
+|`panelCommentAlignment`|Comment component alignment inside the container. Acceptable values: `START` (at the beginning), `CENTER` (in the center), `END` (at the end), `STRETCH` (stretched).|Alignment type|`START`|`STRETCH`|
+|`placeholder`|Placeholder of a property or action|String literal|placeholder of a property or action|`'Placeholder'`|
 
 ### Toolbar properties
 

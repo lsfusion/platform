@@ -108,6 +108,16 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return property.appImage;
     }
 
+    public static String getDynamicComment(PValue commentObject) {
+        String comment = PValue.getStringValue(commentObject);
+        return comment != null ? comment.trim() : null;
+    }
+
+    public static String getDynamicPlaceholder(PValue placeholderObject) {
+        String placeholder = PValue.getStringValue(placeholderObject);
+        return placeholder != null ? placeholder.trim() : null;
+    }
+
     protected GGridPropertyTableHeader getGridHeader(int i) {
         return (GGridPropertyTableHeader) getHeader(i);
     }
@@ -790,7 +800,7 @@ protected Double getUserFlex(int i) {
     public UpdateContext getUpdateContext(Cell cell, Element renderElement, GPropertyDraw property, GridPropertyColumn column) {
         return new UpdateContext() {
             @Override
-            public void getAsyncValues(String value, String actionSID, AsyncCallback<Pair<ArrayList<GAsync>, Boolean>> callback) {
+            public void getAsyncValues(String value, String actionSID, AsyncCallback<GFormController.GAsyncResult> callback) {
                 form.getAsyncValues(value, getEditContext(cell, renderElement), actionSID, callback);
             }
 

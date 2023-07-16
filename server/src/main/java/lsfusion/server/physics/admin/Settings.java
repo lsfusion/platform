@@ -2828,6 +2828,16 @@ public class Settings implements Cloneable {
     private int asyncValuesMaxReadOrderCount = 1000;
     private int asyncValuesMaxReadDataCompletionCount = 100000;
 
+    private int asyncValuesCancelThreshold = -1;
+
+    public int getAsyncValuesCancelThreshold() {
+        return asyncValuesCancelThreshold;
+    }
+
+    public void setAsyncValuesCancelThreshold(int asyncValuesCancelThreshold) {
+        this.asyncValuesCancelThreshold = asyncValuesCancelThreshold;
+    }
+
     public int getAsyncValuesLongCacheThreshold() {
         return asyncValuesLongCacheThreshold;
     }
@@ -3173,5 +3183,15 @@ public class Settings implements Cloneable {
 
     public void setDefaultPropertyImage(boolean defaultPropertyImage) {
         this.defaultPropertyImage = defaultPropertyImage;
+    }
+
+    private int maxRequestQueueSize = 0;
+
+    public int getMaxRequestQueueSize() {
+        return maxRequestQueueSize;
+    }
+
+    public void setMaxRequestQueueSize(int maxRequestQueueSize) {
+        this.maxRequestQueueSize = maxRequestQueueSize;
     }
 }

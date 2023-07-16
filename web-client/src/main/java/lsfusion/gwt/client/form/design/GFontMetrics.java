@@ -4,13 +4,11 @@ import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.RootPanel;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.Pair;
-import lsfusion.gwt.client.base.size.GFixedSize;
-import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.GwtSharedUtils;
+import lsfusion.gwt.client.base.Pair;
+import lsfusion.gwt.client.base.size.GSize;
 
 import java.util.HashMap;
-import java.util.Objects;
 import java.util.function.Function;
 
 public class GFontMetrics {
@@ -170,9 +168,11 @@ public class GFontMetrics {
 
 //        style.setProperty("lineHeight", "normal");
 
-        // we're setting convertSize to get relevant pixelSize
-        if(GFixedSize.VALUE_TYPE != GFixedSize.Type.PX)
-            style.setFontSize(GFixedSize.convertFontSize, Style.Unit.PX);
+        // commented as it's not clear what it is for
+        // but leads to replacing every defined font size with 12px
+//        // we're setting convertSize to get relevant pixelSize
+//        if(GFixedSize.VALUE_TYPE != GFixedSize.Type.PX)
+//            style.setFontSize(GFixedSize.convertFontSize, Style.Unit.PX);
 
         String string = fontWidth.sampleString;
         element.setInnerText(string);

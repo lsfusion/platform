@@ -105,6 +105,9 @@ public class TooltipManager {
                             tooltipHtml = fillTooltipText(tooltipHelper, tooltipText);
                             panel.add(new FocusPanel(tooltipHtml));
 
+                            //need to be not lower than in modal-form
+                            tooltip.getElement().getStyle().setZIndex(1000);
+
                             //to prevent the cursor hovering over the top left of the tooltip
                             //set the style of the popup to the internal element(panel) and make the popup transparent
                             // so that when you hover over it, the focus does not go to other components

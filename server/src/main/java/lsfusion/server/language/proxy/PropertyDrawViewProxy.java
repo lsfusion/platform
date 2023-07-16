@@ -168,6 +168,42 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
             target.entity.setPropertyExtra((PropertyObjectEntity<?>) image, PropertyDrawExtraType.IMAGE, getVersion());
     }
 
+    public void setComment(Object comment) {
+        if(comment instanceof LocalizedString)
+            target.comment = (LocalizedString) comment;
+        else {
+            if (target.comment == null)
+                target.comment = LocalizedString.NONAME;
+            target.entity.setPropertyExtra((PropertyObjectEntity<?>) comment, PropertyDrawExtraType.COMMENT, getVersion());
+        }
+    }
+
+    public void setCommentClass(Object valueClass) {
+        if(valueClass instanceof LocalizedString)
+            target.commentElementClass = ((LocalizedString) valueClass).getSourceString();
+        else
+            target.entity.setPropertyExtra((PropertyObjectEntity<?>) valueClass, PropertyDrawExtraType.COMMENTELEMENTCLASS, getVersion());
+    }
+
+    public void setPanelCommentVertical(boolean panelCommentVertical) {
+        target.panelCommentVertical = panelCommentVertical;
+    }
+
+    public void setPanelCommentFirst(boolean panelCommentFirst) {
+        target.panelCommentFirst = panelCommentFirst;
+    }
+
+    public void setPanelCommentAlignment(FlexAlignment panelCommentAlignment) {
+        target.panelCommentAlignment = panelCommentAlignment;
+    }
+
+    public void setPlaceholder(Object placeholder) {
+        if(placeholder instanceof LocalizedString)
+            target.placeholder = (LocalizedString) placeholder;
+        else
+            target.entity.setPropertyExtra((PropertyObjectEntity<?>) placeholder, PropertyDrawExtraType.PLACEHOLDER, getVersion());
+    }
+
     public void setValueAlignment(FlexAlignment valueAlignment) {
         target.valueAlignment = valueAlignment;
     }

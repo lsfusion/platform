@@ -30,9 +30,10 @@ public class ClientSettings implements Serializable {
     public boolean useTextAsFilterSeparator;
     public List<Pair<String, RawFileData>> mainResourcesBeforeSystem;
     public List<Pair<String, RawFileData>> mainResourcesAfterSystem;
-    
+
     public boolean verticalNavbar;
     public boolean userFiltersManualApplyMode;
+    public int maxRequestQueueSize;
 
 
     public ClientSettings(LocalePreferences localePreferences, String currentUserName, Integer fontSize, boolean busyDialog,
@@ -40,8 +41,9 @@ public class ClientSettings implements Serializable {
                           boolean showDetailedInfo, boolean forbidDuplicateForms, boolean showNotDefinedStrings,
                           boolean pivotOnlySelectedColumn, String matchSearchSeparator,
                           ColorTheme colorTheme, boolean useBootstrap, ColorPreferences colorPreferences, String[] preDefinedDateRangesNames,
-                          boolean useTextAsFilterSeparator, List<Pair<String, RawFileData>> mainResourcesBeforeSystem, 
-                          List<Pair<String, RawFileData>> mainResourcesAfterSystem, boolean verticalNavbar, boolean userFiltersManualApplyMode) {
+                          boolean useTextAsFilterSeparator, List<Pair<String, RawFileData>> mainResourcesBeforeSystem,
+                          List<Pair<String, RawFileData>> mainResourcesAfterSystem, boolean verticalNavbar, boolean userFiltersManualApplyMode,
+                          int maxRequestQueueSize) {
         this.localePreferences = localePreferences;
         this.currentUserName = currentUserName;
         this.fontSize = fontSize;
@@ -64,5 +66,6 @@ public class ClientSettings implements Serializable {
         this.mainResourcesAfterSystem = mainResourcesAfterSystem;
         this.verticalNavbar = verticalNavbar;
         this.userFiltersManualApplyMode = userFiltersManualApplyMode;
+        this.maxRequestQueueSize = maxRequestQueueSize;
     }
 }

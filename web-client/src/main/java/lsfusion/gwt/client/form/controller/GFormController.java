@@ -2013,8 +2013,8 @@ public class GFormController implements EditManager {
     private int editAsyncIndex;
     private int editLastReceivedAsyncIndex;
     // we don't want to proceed results if "later" request results where proceeded
-    private AsyncCallback<Pair<ArrayList<GAsync>, Boolean>> checkLast(int index, AsyncCallback<Pair<ArrayList<GAsync>, Boolean>> callback) {
-        return new AsyncCallback<Pair<ArrayList<GAsync>, Boolean>>() {
+    private AsyncCallback<GAsyncResult> checkLast(int index, AsyncCallback<GAsyncResult> callback) {
+        return new AsyncCallback<GAsyncResult>() {
             @Override
             public void onFailure(Throwable caught) {
                 if(index >= editLastReceivedAsyncIndex) {
@@ -2024,11 +2024,11 @@ public class GFormController implements EditManager {
             }
 
             @Override
-            public void onSuccess(Pair<ArrayList<GAsync>, Boolean> result) {
+            public void onSuccess(GAsyncResult result) {
                 if(index >= editLastReceivedAsyncIndex) {
                     editLastReceivedAsyncIndex = index;
-                    if(!result.second && index < editAsyncIndex - 1)
-                        result = new Pair<>(result.first, true);
+                    if(!result.moreRequests && index < editAsyncIndex - 1)
+                        result = new GAsyncResult(result.asyncs, result.needMoreSymbols, true);
                     callback.onSuccess(result);
                 }
             }
@@ -2036,7 +2036,7 @@ public class GFormController implements EditManager {
     }
 
     // synchronous call (with request indices, etc.)
-    private void getPessimisticValues(int propertyID, GGroupObjectValue columnKey, String actionSID, String value, int index, AsyncCallback<Pair<ArrayList<GAsync>, Boolean>> callback) {
+    private void getPessimisticValues(int propertyID, GGroupObjectValue columnKey, String actionSID, String value, int index, AsyncCallback<GAsyncResult> callback) {
         asyncDispatch(new GetAsyncValues(propertyID, columnKey, actionSID, value, index), new CustomCallback<ListResult>() {
             @Override
             public void onFailure(Throwable caught) {
@@ -2045,23 +2045,34 @@ public class GFormController implements EditManager {
 
             @Override
             public void onSuccess(ListResult result) {
-                callback.onSuccess(new Pair<>(result.value, false));
+                callback.onSuccess(new GAsyncResult(result.value, false, false));
             }
         });
     }
 
-    public void getAsyncValues(String value, AsyncCallback<Pair<ArrayList<GAsync>, Boolean>> callback) {
+    public void getAsyncValues(String value, AsyncCallback<GAsyncResult> callback) {
         if(editContext != null) // just in case
             getAsyncValues(value, editContext, editAsyncValuesSID, callback);
     }
 
-    public void getAsyncValues(String value, EditContext editContext, String actionSID, AsyncCallback<Pair<ArrayList<GAsync>, Boolean>> callback) {
+    public void getAsyncValues(String value, EditContext editContext, String actionSID, AsyncCallback<GAsyncResult> callback) {
         getAsyncValues(value, editContext.getProperty(), editContext.getColumnKey(), actionSID, callback);
     }
 
-    public void getAsyncValues(String value, GPropertyDraw property, GGroupObjectValue columnKey, String actionSID, AsyncCallback<Pair<ArrayList<GAsync>, Boolean>> callback) {
+    public static class GAsyncResult {
+        public final ArrayList<GAsync> asyncs;
+        public final boolean needMoreSymbols;
+        public final boolean moreRequests;
+
+        public GAsyncResult(ArrayList<GAsync> asyncs, boolean needMoreSymbols, boolean moreRequests) {
+            this.asyncs = asyncs;
+            this.needMoreSymbols = needMoreSymbols;
+            this.moreRequests = moreRequests;
+        }
+    }
+    public void getAsyncValues(String value, GPropertyDraw property, GGroupObjectValue columnKey, String actionSID, AsyncCallback<GAsyncResult> callback) {
         int editIndex = editAsyncIndex++;
-        AsyncCallback<Pair<ArrayList<GAsync>, Boolean>> fCallback = checkLast(editIndex, callback);
+        AsyncCallback<GAsyncResult> fCallback = checkLast(editIndex, callback);
 
         GGroupObjectValue currentKey = getFullCurrentKey(property, columnKey);
 
@@ -2078,6 +2089,7 @@ public class GFormController implements EditManager {
                         editAsyncUsePessimistic = true;
                         getPessimisticValues(property.ID, currentKey, actionSID, value, editIndex, fCallback);
                     } else {
+                        boolean needMoreSymbols = false;
                         boolean moreResults = false;
                         ArrayList<GAsync> values = result.value;
                         if(values.size() > 0) {
@@ -2087,10 +2099,12 @@ public class GFormController implements EditManager {
 
                                 moreResults = true;
                                 getPessimisticValues(property.ID, currentKey, actionSID, value, editIndex, fCallback);
-                            } else if(values.size() == 1 && lastResult.equals(GAsync.CANCELED)) // ignoring CANCELED results
-                                values = null;
+                            } else if(values.size() == 1 && (lastResult.equals(GAsync.CANCELED) || lastResult.equals(GAsync.NEEDMORE))) { // ignoring CANCELED results
+                                needMoreSymbols = lastResult.equals(GAsync.NEEDMORE);
+                                values = needMoreSymbols ? new ArrayList<>() : null;
+                            }
                         }
-                        fCallback.onSuccess(new Pair<>(values, moreResults));
+                        fCallback.onSuccess(new GAsyncResult(values, needMoreSymbols, moreResults));
                     }
                 }
             });
