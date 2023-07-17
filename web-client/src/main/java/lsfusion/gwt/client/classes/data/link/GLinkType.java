@@ -1,13 +1,15 @@
 package lsfusion.gwt.client.classes.data.link;
 
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.classes.data.GDataType;
+import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.cell.classes.controller.LinkCellEditor;
+import lsfusion.gwt.client.form.property.cell.classes.controller.RequestValueCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.view.LinkCellRenderer;
-import lsfusion.gwt.client.form.property.cell.controller.CellEditor;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
@@ -48,8 +50,7 @@ public abstract class GLinkType extends GDataType {
     }
 
     @Override
-    public int getDefaultCharWidth() {
-        return 50;
+    public GSize getDefaultWidth(GFont font, GPropertyDraw propertyDraw, boolean needNotNull, boolean globalCaptionIsDrawn) {
+        return GSize.CONST(50);
     }
-
 }
