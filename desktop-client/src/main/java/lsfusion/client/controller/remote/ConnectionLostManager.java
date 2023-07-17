@@ -51,8 +51,9 @@ public class ConnectionLostManager {
     private static PingThread pingThread;
 
     private static boolean devMode;
+    private static boolean autoReconnectOnConnectionLost;
 
-    public static void start(MainFrame frame, ClientCallBackInterface clientCallBack, boolean devMode) {
+    public static void start(MainFrame frame, ClientCallBackInterface clientCallBack, boolean devMode, boolean autoReconnectOnConnectionLost) {
         SwingUtils.assertDispatchThread();
 
         assert frame != null;
@@ -100,6 +101,7 @@ public class ConnectionLostManager {
         });
 
         ConnectionLostManager.devMode = devMode;
+        ConnectionLostManager.autoReconnectOnConnectionLost = autoReconnectOnConnectionLost;
     }
 
     public static void connectionLost() {
@@ -371,7 +373,7 @@ public class ConnectionLostManager {
 
         public void setFatal(boolean fatal) {
             if (this.fatal != fatal) {
-                if(fatal && devMode) {
+                if(fatal && (devMode || autoReconnectOnConnectionLost)) {
                     MainController.reconnect();
                 } else {
                     String messageText =
