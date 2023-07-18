@@ -15,7 +15,7 @@ public class LinkCellRenderer extends StringBasedCellRenderer {
     public boolean updateContent(Element element, PValue value, Object extraValue, UpdateContext updateContext) {
         String url = PValue.getStringValue(value);
         if(url != null) {
-            element.setInnerHTML("<a href=" + url + ">" + url + "</a>");
+            element.setInnerHTML("<a href=\"" + url + "\">" + url + "</a>");
         }
         return true;
     }
