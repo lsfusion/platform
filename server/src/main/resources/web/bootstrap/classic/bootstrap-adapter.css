@@ -274,32 +274,33 @@
 
 .pvtRenderer.form-select,
 .pvtAggregator.form-select {
+    /*override height set in js*/
     height: auto !important;
 }
 
 table.pvtTable thead tr th {
+    /*bold column captions*/
     font-weight: bold;
 }
 
-.table.pvtTable>:not(caption)>*>* {
-    border-bottom: 1px solid var(--bs-border-color);
-    padding: .5rem .5rem;
+.headertable.table {
+    /*disable margin-bottom from .table,
+    because here we have separate headertable and bodytable*/
+    margin-bottom: 0;
 }
 
-.pvtAxisContainer li div.pvtAttr.form-select {
+.pvtAxisContainer li div.pvtAttr.form-select,
+.pvtUiContainer > li div.pvtAttr.form-select /* dragged */ {
     /*hide background image to show it in pvtTriangle*/
     background-image: none;
 
-    /*paddings from form-select*/
-    padding-top: 0.25rem;
-    padding-bottom: 0.25rem;
-    padding-left: 0.5rem;
-    font-size: .875rem;
-    border-radius: var(--bs-border-radius-sm);
+    /*default padding right in bootstrap is 2.25rem, we don't want so big padding,
+    because it will be right to the arrow*/
+    padding-right: 0.75rem;
 }
 
 .form-select .pvtTriangle {
-    /*hide ▾*/
+    /* hide symbol ▾ */
     text-indent: 100%;
     white-space: nowrap;
     overflow: hidden;
