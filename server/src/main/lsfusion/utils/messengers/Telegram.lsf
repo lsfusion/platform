@@ -120,8 +120,7 @@ sendFileTelegram(Chat chat, NAMEDFILE attachment) {
 
 sendMessageTelegram(Chat chat, STRING message) {
     LOCAL result = JSONFILE();
-    urlEncode(message);
-    EXTERNAL HTTP GET 'https://api.telegram.org/bot' + token(account(chat)) + '/sendMessage?chat_id=' + id(chat) + '&text=' + urlEncoded() TO result;
+    EXTERNAL HTTP GET 'https://api.telegram.org/bot' + token(account(chat)) + '/sendMessage?chat_id=' + id(chat) + '&text=' + message TO result;
     
     processResult(chat, result(), message, NULL);
     APPLY;
