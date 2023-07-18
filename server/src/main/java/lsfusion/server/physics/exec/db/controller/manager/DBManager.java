@@ -72,6 +72,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.ByteArrayClass;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.StringClass;
+import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.ObjectValueClassSet;
@@ -2698,7 +2699,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 }
 
                 for (int i = inputDB.readInt(); i > 0; i--) {
-                    SerializedTable prevTable = new SerializedTable(inputDB, LM.baseClass);
+                    SerializedTable prevTable;
+                    if (oldDBStructureVersion >= 38) {
+                        prevTable = deserializeTable38(inputDB, LM.baseClass);
+                    } else {
+                        prevTable = new SerializedTable(inputDB.readUTF(), inputDB, LM.baseClass);
+                    }
                     Map<List<String>, IndexOptions> indices = new HashMap<>();
                     for (int j = inputDB.readInt(); j > 0; j--) {
                         List<String> index = new ArrayList<>();
@@ -2737,7 +2743,15 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     concreteClasses.add(new DBConcreteClass(inputDB.readUTF(), inputDB.readUTF(), inputDB.readLong()));
             }
         }
-        
+    
+        private SerializedTable deserializeTable38(DataInputStream inStream, BaseClass baseClass) throws IOException {
+            String dbName = inStream.readUTF();
+            if (inStream.readBoolean()) {
+                String canonicalName = inStream.readUTF();
+            }
+            return new SerializedTable(dbName, inStream, baseClass);
+        }
+    
         boolean isEmpty() {
             return version < 0;
         }
