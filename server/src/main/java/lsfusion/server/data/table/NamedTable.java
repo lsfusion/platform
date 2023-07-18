@@ -55,6 +55,10 @@ public abstract class NamedTable extends Table {
 
     public void serialize(DataOutputStream outStream) throws IOException {
         outStream.writeUTF(name);
+        outStream.writeBoolean(canonicalName != null);
+        if (canonicalName != null) {
+            outStream.writeUTF(canonicalName);
+        }
         outStream.writeInt(keys.size());
         for(KeyField key : keys)
             key.serialize(outStream);

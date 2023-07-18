@@ -74,7 +74,6 @@ import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.TSVectorClass;
 import lsfusion.server.logics.classes.user.BaseClass;
-import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.ObjectValueClassSet;
@@ -2225,7 +2224,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
         if (!migrationScriptWasRead) {
             try {
-                migrationManager = new MigrationManager(namingPolicy);
+                migrationManager = new MigrationManager();
                 InputStream scriptStream = getClass().getResourceAsStream("/migration.script");
                 if (scriptStream != null) {
                     ANTLRInputStream stream = new ANTLRInputStream(scriptStream);
@@ -2282,23 +2281,61 @@ public class DBManager extends LogicsManager implements InitializingBean {
         return properties.stream().collect(Collectors.toMap(DBStoredProperty::getCanonicalName, property -> property));
     }
 
-    private void renameMigratingTables(SQLSession sql, OldDBStructure oldData) throws SQLException {
-        Map<String, String> tableChanges = migrationManager.getTableSIDChangesAfter(oldData.migrationVersion);
+    private void renameMigratingTables(SQLSession sql, OldDBStructure oldData, NewDBStructure newData) throws SQLException {
+        Map<String, String> tableRenames = getTableRenames(oldData, newData);
         for (DBStoredProperty oldProperty : oldData.storedProperties) {
-            if (tableChanges.containsKey(oldProperty.tableName)) {
-                oldProperty.tableName = tableChanges.get(oldProperty.tableName);
+            if (tableRenames.containsKey(oldProperty.tableName)) {
+                oldProperty.tableName = tableRenames.get(oldProperty.tableName);
             }
         }
 
         for (NamedTable table : oldData.tables.keySet()) {
             String tableDBName = table.getName();
-            if (tableChanges.containsKey(tableDBName)) {
-                String newDBName = tableChanges.get(tableDBName);
+            if (tableRenames.containsKey(tableDBName)) {
+                String newDBName = tableRenames.get(tableDBName);
                 startLogger.info("Renaming table from " + tableDBName + " to " + newDBName);
                 sql.renameTable(table, newDBName);
                 table.setName(newDBName);
             }
         }
+    }
+    
+    private Map<String, String> getTableRenames(OldDBStructure oldData, NewDBStructure newData) {
+        Map<String, String> tableCNChanges = migrationManager.getTableCNChangesAfter(oldData.migrationVersion);
+        if (oldData.version < 38) {
+            return getTableSIDChanges(tableCNChanges);
+        }
+        
+        Map<String, String> tableRenames = new HashMap<>();
+        Map<String, NamedTable> newTablesMap = createNewTablesMap(newData);
+        for (NamedTable table : oldData.tables.keySet()) {
+            String oldCN = table.getCanonicalName();
+            if (oldCN != null) {
+                String newCN = tableCNChanges.getOrDefault(oldCN, oldCN);
+                if (newTablesMap.containsKey(newCN)) {
+                    String oldDBName = table.getName();
+                    String newDBName = newTablesMap.get(newCN).getName();
+                    if (!oldDBName.equals(newDBName)) {
+                        tableRenames.put(oldDBName, newDBName);
+                    }
+                }
+            }
+        }
+        return tableRenames;
+    }
+    
+    private Map<String, NamedTable> createNewTablesMap(NewDBStructure newData) {
+        return newData.tables.keySet().stream()
+                .filter(table -> table.getCanonicalName() != null)
+                .collect(Collectors.toMap(NamedTable::getCanonicalName, table -> table));
+    }
+    
+    private Map<String, String> getTableSIDChanges(Map<String, String> tableCNChanges) {
+        return tableCNChanges.entrySet().stream()
+                    .collect(Collectors.toMap(
+                        entry -> getNamingPolicy().transformTableCNToDBName(entry.getKey()),
+                        entry -> getNamingPolicy().transformTableCNToDBName(entry.getValue()))
+                    );
     }
     
     private void renameMigratingClasses(OldDBStructure oldData) {
@@ -2399,7 +2436,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         renameMigratingProperties(sql, oldData, newData);
         
         // Переименовываем таблицы из скрипта миграции, переустанавливаем ссылки на таблицы в свойствах
-        renameMigratingTables(sql, oldData);
+        renameMigratingTables(sql, oldData, newData);
 
         // Переустановим имена классовым свойствам, если это необходимо. Также при необходимости переименуем поля в таблицах   
         // Имена полей могут измениться при переименовании таблиц (так как в именах классовых свойств есть имя таблицы) либо при изменении dbNamePolicy
@@ -2825,7 +2862,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     public static int oldDBStructureVersion = 0;
-    public static int newDBStructureVersion = 37;
+    public static int newDBStructureVersion = 38;
 
     private class OldDBStructure extends DBStructure<String> {
 
@@ -2846,10 +2883,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
                 for (int i = inputDB.readInt(); i > 0; i--) {
                     SerializedTable prevTable;
-                    if (oldDBStructureVersion >= 38) {
-                        prevTable = deserializeTable38(inputDB, LM.baseClass);
+                    if (version < 38) {
+                        prevTable = new SerializedTable(inputDB.readUTF(), null, inputDB, LM.baseClass);
                     } else {
-                        prevTable = new SerializedTable(inputDB.readUTF(), inputDB, LM.baseClass);
+                        prevTable = deserializeTable(inputDB, LM.baseClass);
                     }
                     List<IndexData<String>> indexes = new ArrayList<>();
                     for (int j = inputDB.readInt(); j > 0; j--) {
@@ -2890,12 +2927,13 @@ public class DBManager extends LogicsManager implements InitializingBean {
             }
         }
     
-        private SerializedTable deserializeTable38(DataInputStream inStream, BaseClass baseClass) throws IOException {
+        private SerializedTable deserializeTable(DataInputStream inStream, BaseClass baseClass) throws IOException {
             String dbName = inStream.readUTF();
+            String canonicalName = null;
             if (inStream.readBoolean()) {
-                String canonicalName = inStream.readUTF();
+                canonicalName = inStream.readUTF();
             }
-            return new SerializedTable(dbName, inStream, baseClass);
+            return new SerializedTable(dbName, canonicalName, inStream, baseClass);
         }
     
         boolean isEmpty() {

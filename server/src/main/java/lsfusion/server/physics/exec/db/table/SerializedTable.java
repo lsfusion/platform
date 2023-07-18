@@ -17,13 +17,9 @@ import java.io.IOException;
 // предыдущая таблица в базе
 public class SerializedTable extends NamedTable {
 
-    public SerializedTable(String name, DataInputStream inStream, BaseClass baseClass) throws IOException {
-        super(inStream, name, baseClass);
-    }
-
-    public SerializedTable(String name, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, BaseClass baseClass) {
-        super(name, keys, properties, null, null);
-        initBaseClasses(baseClass);
+    public SerializedTable(String dbName, String canonicalName, DataInputStream inStream, BaseClass baseClass) throws IOException {
+        super(inStream, dbName, baseClass);
+        this.canonicalName = canonicalName;
     }
 
     private final static int prevStats = 100000;
