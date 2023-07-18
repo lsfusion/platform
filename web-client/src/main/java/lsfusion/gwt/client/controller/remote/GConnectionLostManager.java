@@ -211,7 +211,7 @@ public class GConnectionLostManager {
 
         public void setFatal(boolean fatal, boolean authException) {
             if (this.fatal != fatal) {
-                if(MainFrame.devMode && fatal) {
+                if((MainFrame.devMode || MainFrame.autoReconnectOnConnectionLost) && fatal) {
                     GwtClientUtils.reconnect();
                 } else {
                     message.setHTML(authException ? messages.rmiConnectionLostAuth() : (fatal ? messages.rmiConnectionLostFatal() : messages.rmiConnectionLostNonfatal()));

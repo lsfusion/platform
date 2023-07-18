@@ -231,6 +231,8 @@ forbidDuplicateForms '{security.forbid.duplicate.forms}' = DATA BOOLEAN (UserRol
 dataForbidDuplicateForms '{security.forbid.duplicate.forms}' = DATA BOOLEAN (CustomUser) CHARWIDTH 10;
 abstractForbidDuplicateForms(CustomUser u) = ABSTRACT BOOLEAN (CustomUser);
 
+autoReconnectOnConnectionLost '{security.auto.reconnect.on.connection.lost}' = DATA BOOLEAN (UserRole) CHARWIDTH 10;
+
 showDetailedInfo '{security.user.role.show.detailed.info}' = DATA BOOLEAN (UserRole) CHARWIDTH 10;
 
 // Default forms
@@ -413,7 +415,7 @@ FORM securityPolicy '{security.form.policy}'
     PROPERTIES(ur) name, sid
     PROPERTIES(ur) NEW, DELETE
     
-    PROPERTIES(ur) showDetailedInfo, forbidDuplicateForms, defaultForms, maximizeDefaultForms, disableRole
+    PROPERTIES(ur) showDetailedInfo, forbidDuplicateForms, autoReconnectOnConnectionLost, defaultForms, maximizeDefaultForms, disableRole
 
     // Navigator elements
     TREE navigatorElements te = NavigatorElement PARENT parent(te)

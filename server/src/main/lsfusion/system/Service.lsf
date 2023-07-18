@@ -778,6 +778,7 @@ getClientSettings(User user) + WHEN TRUE AND user IS User THEN {
         useBusyDialog = (valueSettingBoolean('busyDialog') OR inTestMode() OR useBusyDialogCustom(user)),
         useRequestTimeout = (valueSettingBoolean('useRequestTimeout') OR useRequestTimeout(user)),
         forbidDuplicateForms = (OVERRIDE dataForbidDuplicateForms(user), abstractForbidDuplicateForms(user), GROUP MAX forbidDuplicateForms(UserRole ur) IF has(user, ur)),
+        autoReconnectOnConnectionLost = (GROUP MAX autoReconnectOnConnectionLost(UserRole ur) IF has(user, ur)),
         showDetailedInfo = (GROUP MAX showDetailedInfo(UserRole ur) IF has(user, ur)),
         devMode = inDevMode() OR (devMode(user)),
         projectLSFDir = projectLSFDir(),
