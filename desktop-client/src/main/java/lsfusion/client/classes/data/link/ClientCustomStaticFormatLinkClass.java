@@ -3,7 +3,7 @@ package lsfusion.client.classes.data.link;
 import lsfusion.base.BaseUtils;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.client.form.property.cell.classes.view.link.CustomStaticFormatLinkRenderer;
+import lsfusion.client.form.property.cell.classes.view.link.LinkPropertyRenderer;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.interop.classes.DataType;
 
@@ -14,7 +14,7 @@ import java.io.IOException;
 public class ClientCustomStaticFormatLinkClass extends ClientStaticFormatLinkClass {
 
     public final String filterDescription;
-    public final String filterExtensions[];
+    public final String[] filterExtensions;
 
     public ClientCustomStaticFormatLinkClass(String filterDescription, String[] filterExtensions, boolean multiple) {
         super(multiple);
@@ -31,7 +31,7 @@ public class ClientCustomStaticFormatLinkClass extends ClientStaticFormatLinkCla
     }
 
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
-        return new CustomStaticFormatLinkRenderer(property, filterExtensions[0]);
+        return new LinkPropertyRenderer(property);
     }
 
     @Override

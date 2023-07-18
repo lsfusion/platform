@@ -28,8 +28,8 @@ public abstract class ClientLinkClass extends ClientDataClass implements ClientT
     }
 
     @Override
-    public int getDefaultWidth(FontMetrics fontMetrics, ClientPropertyDraw property) {
-        return 18;
+    protected int getDefaultCharWidth() {
+        return 50;
     }
 
     public Object parseString(String s) throws ParseException {
