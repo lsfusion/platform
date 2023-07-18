@@ -18,7 +18,7 @@ public class MySQLSQLSyntax extends DefaultSQLSyntax {
     }
 
     public String getClassName() {
-        return "com.mysql.jdbc.Driver";
+        return "com.mysql.cj.jdbc.Driver";
     }
 
     public String isNULL(String exprs, boolean notSafe) {
@@ -31,5 +31,20 @@ public class MySQLSQLSyntax extends DefaultSQLSyntax {
 
     public String getUnionOrder(String union, String orderBy, String top) {
         return union + BaseUtils.clause("ORDER BY", orderBy) + BaseUtils.clause("LIMIT", top);
+    }
+
+    @Override
+    public String getAnalyze(String table) {
+        return "ANALYZE TABLE " + table;
+    }
+
+    @Override
+    public String getVarStringType(int length) {
+        return "char(" + length + ")";
+    }
+
+    @Override
+    public String getBPTextType() {
+        return "char";
     }
 }
