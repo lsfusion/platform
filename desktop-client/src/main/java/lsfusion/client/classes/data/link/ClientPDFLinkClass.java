@@ -15,7 +15,7 @@ public class ClientPDFLinkClass extends ClientStaticFormatLinkClass {
     }
 
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
-        return new LinkPropertyRenderer(property, "pdf");
+        return new LinkPropertyRenderer(property);
     }
 
     public byte getTypeId() {

@@ -15,7 +15,7 @@ public class ClientDBFLinkClass extends ClientStaticFormatLinkClass {
     }
 
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
-        return new LinkPropertyRenderer(property, "dbf");
+        return new LinkPropertyRenderer(property);
     }
 
     public byte getTypeId() {

@@ -15,7 +15,7 @@ public class ClientCSVLinkClass extends ClientStaticFormatLinkClass {
     }
 
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
-        return new LinkPropertyRenderer(property, "csv");
+        return new LinkPropertyRenderer(property);
     }
 
     public byte getTypeId() {

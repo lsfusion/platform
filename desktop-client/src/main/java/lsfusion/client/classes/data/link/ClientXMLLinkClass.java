@@ -15,7 +15,7 @@ public class ClientXMLLinkClass extends ClientStaticFormatLinkClass {
     }
 
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
-        return new LinkPropertyRenderer(property, "xml");
+        return new LinkPropertyRenderer(property);
     }
 
     public byte getTypeId() {

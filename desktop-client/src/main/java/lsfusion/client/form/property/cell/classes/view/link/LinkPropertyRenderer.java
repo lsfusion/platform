@@ -8,7 +8,6 @@ import javax.swing.*;
 
 public class LinkPropertyRenderer extends LabelPropertyRenderer {
     private String extension;
-
     public LinkPropertyRenderer(ClientPropertyDraw property) {
         this(property, null);
     }
@@ -21,16 +20,16 @@ public class LinkPropertyRenderer extends LabelPropertyRenderer {
     }
 
     public void setValue(Object value) {
-        if (value != null) {
-            getComponent().setText(null);
+        ImageIcon imageIcon = getImageIcon();
+        if(imageIcon != null) {
+            super.setValue(imageIcon);
             getComponent().setIcon(extension != null ? SwingUtils.getSystemIcon(extension) : null);
         } else {
-            getComponent().setIcon(null);
+            getComponent().setText(value != null ? "<html><a href=" + value + ">" + value + "</a>" : null);
         }
-        super.setValue(getImageIcon()); // передаём суперу иконку, а не ссылку. из наличия ссылки не следует наличие иконки
     }
-    
+
     protected ImageIcon getImageIcon() {
-        return (ImageIcon) getComponent().getIcon();
+        return null;
     }
 }

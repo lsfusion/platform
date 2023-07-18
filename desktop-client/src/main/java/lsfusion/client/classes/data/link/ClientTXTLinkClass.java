@@ -15,7 +15,7 @@ public class ClientTXTLinkClass extends ClientStaticFormatLinkClass {
     }
 
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
-        return new LinkPropertyRenderer(property, "txt");
+        return new LinkPropertyRenderer(property);
     }
 
     public byte getTypeId() {
