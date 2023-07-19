@@ -15,7 +15,6 @@ import lsfusion.server.logics.action.implement.ActionImplement;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapExec;
-import lsfusion.server.logics.form.interactive.action.input.InputValueList;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
@@ -149,10 +148,10 @@ public class JoinAction<T extends PropertyInterface> extends KeepContextAction {
     }
 
     @Override
-    public boolean endsWithApplyAndNoChangesAfterBreaksBefore() {
+    public boolean endsWithApplyAndNoChangesAfterBreaksBefore(FormChangeFlowType type) {
         if(isRecursive) // recursion guard
             return false;
         
-        return action.action.endsWithApplyAndNoChangesAfterBreaksBefore();
+        return action.action.endsWithApplyAndNoChangesAfterBreaksBefore(type);
     }
 }

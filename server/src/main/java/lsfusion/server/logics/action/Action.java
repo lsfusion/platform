@@ -30,6 +30,7 @@ import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.FlowResult;
+import lsfusion.server.logics.action.flow.FormChangeFlowType;
 import lsfusion.server.logics.action.flow.ListCaseAction;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.changed.ChangedProperty;
@@ -243,7 +244,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
 
     // пока просто ищем в конце APPLY и CHANGE'ы после APPLY
     // потом по хорошему надо будет в if then apply else cancel
-    public boolean endsWithApplyAndNoChangesAfterBreaksBefore() {
+    public boolean endsWithApplyAndNoChangesAfterBreaksBefore(FormChangeFlowType type) {
         return false;
     }
 

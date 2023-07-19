@@ -14,6 +14,7 @@ import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.FlowResult;
+import lsfusion.server.logics.action.flow.FormChangeFlowType;
 import lsfusion.server.logics.action.flow.KeepContextAction;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.property.Property;
@@ -26,7 +27,6 @@ import lsfusion.server.physics.dev.debug.ActionDelegationType;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.function.Function;
 
@@ -105,7 +105,7 @@ public class ApplyAction extends KeepContextAction {
     }
 
     @Override
-    public boolean endsWithApplyAndNoChangesAfterBreaksBefore() {
+    public boolean endsWithApplyAndNoChangesAfterBreaksBefore(FormChangeFlowType type) {
         return true;
     }
 
