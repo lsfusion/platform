@@ -1177,7 +1177,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             try {
                 privateConnection.temporary.fillData(this, fill, count, actual, table, opOwner);
             } catch (Throwable t) {
-                returnTemporaryTable(table, owner, opOwner, t instanceof lsfusion.server.data.sql.exception.SQLTimeoutException || fill.canBeNotEmptyIfFailed(), null); // вернем таблицу, если не смогли ее заполнить, truncate при timeoutе потому как в остальных случаях и так должна быть пустая (строго говоря с timeout'ом это тоже перестраховка)
+                returnTemporaryTable(table, owner, opOwner, true, null); // вернем таблицу, если не смогли ее заполнить, truncate при timeoutе потому как в остальных случаях и так должна быть пустая (строго говоря с timeout'ом это тоже перестраховка)
+                // "truncate" changed from "t instanceof lsfusion.server.data.sql.exception.SQLTimeoutException || fill.canBeNotEmptyIfFailed()" to "true",
+                // because if you run out of disk space for temporary tables, there is a large file lying on the disk, which blocks further work with temporary tables
                 try { ServerLoggers.assertLog(problemInTransaction != null || (!Settings.get().isCheckSessionCount() || getSessionCount(table, opOwner) == 0), "TEMPORARY TABLE AFTER FILL NOT EMPTY"); } catch (Throwable i) { ServerLoggers.sqlSuppLog(i); }
                 throw ExceptionUtils.propagate(t, SQLException.class, SQLHandledException.class);
             }
@@ -1253,7 +1255,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                     runSuppressed(() -> dropTemporaryTableFromDB(table), firstException);
                 }
             }
-    
+
             runSuppressed(() -> {
                 assert sessionTablesMap.containsKey(table);
                 WeakReference<TableOwner> removed = sessionTablesMap.remove(table);
