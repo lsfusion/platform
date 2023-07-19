@@ -110,8 +110,15 @@ function reload() {
     document.location.reload();
 }
 
-function replaceObjectFieldInArray(array, test, propertyName, newValue) {
-    return array.map(oldObj => test(oldObj) ? replaceField(oldObj, propertyName, newValue) : oldObj);
+function replaceOrAddObjectFieldInArray(array, test, propertyName, newValue, object) {
+    //assume that only one object can be found
+    let found = array.find(obj => test(obj));
+    if (found)
+        array[array.indexOf(found)] = replaceField(found, propertyName, newValue);
+    else
+        array.push(object);
+
+    return array;
 }
 
 function replaceField(obj, propertyName, newValue) {

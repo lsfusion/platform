@@ -10,8 +10,12 @@ import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.controller.CustomReplaceCellEditor;
 import lsfusion.interop.action.ServerResponse;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class CustomCellRenderer extends CellRenderer {
     private final JavaScriptObject customRenderer;
+    private final List<Element> renderedElements = new ArrayList<>();
 
     public CustomCellRenderer(GPropertyDraw property, String customRenderFunction) {
         super(property);
@@ -20,6 +24,7 @@ public class CustomCellRenderer extends CellRenderer {
 
     @Override
     public boolean renderContent(Element element, RenderContext renderContext) {
+        renderedElements.add(element);
         render(customRenderer, element);
 
         return false;
@@ -43,7 +48,15 @@ public class CustomCellRenderer extends CellRenderer {
 
     @Override
     public boolean clearRenderContent(Element element, RenderContext renderContext) {
-        clear(customRenderer, element);
+
+        if (element == null) {
+            for (Element renderedElement : renderedElements) {
+                renderedElements.remove(renderedElement);
+                clear(customRenderer, renderedElement);
+            }
+        } else {
+            clear(customRenderer, element);
+        }
 
         return false;
     }
@@ -107,7 +120,7 @@ public class CustomCellRenderer extends CellRenderer {
                     if(oldValue == null)
                         return oldValue;
                     var objectsString = controller.getObjectsString(object);
-                    return $wnd.replaceObjectFieldInArray(oldValue, function (oldObject) { return controller.getObjectsString(oldObject) === objectsString; }, propertyName, newValue);
+                    return $wnd.replaceOrAddObjectFieldInArray(oldValue, function (oldObject) { return controller.getObjectsString(oldObject) === objectsString; }, propertyName, newValue, object);
                 });
             },
             getValues: function(value, successCallback, failureCallback) {

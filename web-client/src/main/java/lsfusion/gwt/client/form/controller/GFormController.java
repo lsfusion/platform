@@ -1584,6 +1584,12 @@ public class GFormController implements EditManager {
     // need this because hideForm can be called twice, which will lead to several continueDispatching (and nullpointer, because currentResponse == null)
     private boolean formHidden;
     public void hideForm(GAsyncFormController asyncFormController, int closeDelay, EndReason editFormCloseReason) {
+        getPropertyDraws().forEach(property -> {
+            CellRenderer cellRenderer = property.getCellRenderer();
+            if (cellRenderer.isCustomRenderer())
+                cellRenderer.clearRenderContent(null, null);
+        });
+
         if(!formHidden) {
             onFormHidden(asyncFormController, closeDelay, editFormCloseReason);
             formHidden = true;
