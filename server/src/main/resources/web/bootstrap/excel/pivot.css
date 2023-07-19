@@ -63,7 +63,7 @@ table.pvtTable thead tr th {
 
 .pvtRenderer {
     margin: 5px 0 5px 5px;
-    max-width: 150px;
+    /*max-width: 150px;*/
 }
 
 .pvtAggregator {

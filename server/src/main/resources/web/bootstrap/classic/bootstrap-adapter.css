@@ -289,6 +289,10 @@ table.pvtTable thead tr th {
     margin-bottom: 0;
 }
 
-select.pvtAttr {
+.pvtAttr {
+    width: auto;
+}
+
+.pvtRenderer {
     width: auto;
 }

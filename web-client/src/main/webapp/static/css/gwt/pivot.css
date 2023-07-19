@@ -406,10 +406,10 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
     overflow: auto;
 }
 
-/*.pvtRenderer {
-    margin: 5px 0 5px 5px;
+.pvtRenderer {
+    /*margin: 5px 0 5px 5px;*/
     max-width: 150px;
-}*/
+}
 
 /*.pvtAggregator {
     margin: 4px 0 4px 4px;
