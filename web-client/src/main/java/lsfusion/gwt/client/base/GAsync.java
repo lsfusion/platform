@@ -13,7 +13,7 @@ public class GAsync implements IsSerializable, Serializable {
 
     public static final GAsync RECHECK = new GAsync("RECHECK", "RECHECK", null);
     public static final GAsync CANCELED = new GAsync("CANCELED", "CANCELED", null);
-    public static final GAsync NEEDMORE = new GAsync("CANCELED", "CANCELED", null);
+    public static final GAsync NEEDMORE = new GAsync("NEEDMORE", "NEEDMORE", null);
 
     public GAsync() {
     }
