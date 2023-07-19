@@ -282,13 +282,6 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
     height: 100%;
 }
 
-.pvtTriangle {
-    cursor: pointer;
-    color: var(--text-color);
-    align-self: center;
-    padding-left: 3px;
-}
-
 .pvtHorizList {
     white-space: nowrap; /*to prevent list from going vertical*/ 
 }
@@ -309,12 +302,6 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
 
 .pvtAxisContainer li.pvtPlaceholder { /*should be after .pvtUnused.pvtVertList li*/
     max-width: 50px;
-}
-
-.pvtAttrText {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 125px;
 }
 
 .pvtVertList > li.pvtPlaceholder {

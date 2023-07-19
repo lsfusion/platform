@@ -289,25 +289,6 @@ table.pvtTable thead tr th {
     margin-bottom: 0;
 }
 
-.pvtAxisContainer li div.pvtAttr.form-select,
-.pvtUiContainer > li div.pvtAttr.form-select /* dragged */ {
-    /*hide background image to show it in pvtTriangle*/
-    background-image: none;
-
-    /*default padding right in bootstrap is 2.25rem, we don't want so big padding,
-    because it will be right to the arrow*/
-    padding-right: 0.75rem;
-}
-
-.form-select .pvtTriangle {
-    /* hide symbol ▾ */
-    text-indent: 100%;
-    white-space: nowrap;
-    overflow: hidden;
-
-    /*show background image*/
-    background-image: var(--bs-form-select-bg-img), var(--bs-form-select-bg-icon, none);
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: 16px 12px;
+select.pvtAttr {
+    width: auto;
 }

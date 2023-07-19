@@ -1364,7 +1364,7 @@
           unused.addClass('pvtHorizList');
         }
         fn1 = function(attr) {
-          var attrElem, attrElemText, checkContainer, closeFilterBox, controls, filterItem, filterItemExcluded, finalButtons, hasExcludedItem, len2, listItem, n, placeholder, ref1, sorter, triangleLink, v, value, valueCount, valueList, values;
+          var attrElem, checkContainer, closeFilterBox, controls, filterItem, filterItemExcluded, finalButtons, hasExcludedItem, len2, listItem, n, optionElem, placeholder, ref1, sorter, v, value, valueCount, valueList, values;
           values = (function() {
             var results;
             results = [];
@@ -1491,18 +1491,6 @@
             valueList.find(".changed:not(:checked)").removeClass("changed").prop("checked", true);
             return closeFilterBox();
           });
-          triangleLink = $("<span>").addClass('pvtTriangle').html(" &#x25BE;").bind("click", function(e) {
-            var left, listHeight, ref2, top;
-            ref2 = $(e.currentTarget).position(), left = ref2.left, top = ref2.top;
-            listHeight = Math.min(valueList.outerHeight(), uiTable.height());
-            top = Math.min(uiTable.height() - listHeight, top + 10);
-            left = Math.min(uiTable.width() - valueList.outerWidth(), left + 10);
-            return valueList.css({
-              left: left,
-              top: top,
-              maxHeight: (listHeight - 1) + "px"
-            }).show();
-          });
           listItem = $("<li>").addClass("axis_" + i);
           listItem.css({
             lineHeight: opts.valueHeight + "px"
@@ -1517,11 +1505,22 @@
             }
             return refresh();
           });
-          attrElem = $("<div>").addClass('pvtAttr form-select form-select-sm').data("attrName", attr).appendTo(listItem);
-          attrElemText = $("<span>").addClass('pvtAttrText').text(attr).prop("title", attr).appendTo(attrElem);
-          attrElem.append(triangleLink);
+          attrElem = $("<select>").addClass('pvtAttr form-select form-select-sm').data("attrName", attr).appendTo(listItem);
+          optionElem = $("<option>").text(attr).appendTo(attrElem);
+          attrElem.bind("click", function(e) {
+            var left, listHeight, ref2, top;
+            ref2 = $(e.currentTarget).position(), left = ref2.left, top = ref2.top;
+            listHeight = Math.min(valueList.outerHeight(), uiTable.height());
+            top = Math.min(uiTable.height() - listHeight, top + 10);
+            left = Math.min(uiTable.width() - valueList.outerWidth(), left + 10);
+            return valueList.css({
+              left: left,
+              top: top,
+              maxHeight: (listHeight - 1) + "px"
+            }).show();
+          });
           if (hasExcludedItem) {
-            attrElemText.addClass('pvtFilteredAttribute');
+            attrElem.addClass('pvtFilteredAttribute');
           }
           unusedDiv.append(listItem);
           return pvtUiContainer.append(valueList);
@@ -1727,10 +1726,10 @@
             subopts.rendererOptions.hideColAxisHeadersColumn = opts.splitCols.length === 1;
             numInputsToProcess = (ref2 = opts.aggregators[aggregator.val()]([])().numInputs) != null ? ref2 : 0;
             vals = [];
-            _this.find(".pvtRows li div.pvtAttr").each(function() {
+            _this.find(".pvtRows li select.pvtAttr").each(function() {
               return subopts.rows.push($(this).data("attrName"));
             });
-            _this.find(".pvtCols li div.pvtAttr").each(function() {
+            _this.find(".pvtCols li select.pvtAttr").each(function() {
               return subopts.cols.push($(this).data("attrName"));
             });
             _this.find(".pvtVals select.pvtAttrDropdown").each(function() {

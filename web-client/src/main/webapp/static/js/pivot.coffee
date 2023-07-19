@@ -887,14 +887,6 @@ callWithJQuery ($) ->
                                 .removeClass("changed").prop("checked", true)
                             closeFilterBox()
 
-                    triangleLink = $("<span>").addClass('pvtTriangle')
-                        .html(" &#x25BE;").bind "click", (e) ->
-                            {left, top} = $(e.currentTarget).position()
-                            listHeight = Math.min(valueList.outerHeight(), uiTable.height())
-                            top = Math.min(uiTable.height() - listHeight, top + 10)
-                            left = Math.min(uiTable.width() - valueList.outerWidth(), left + 10)
-                            valueList.css(left: left, top: top, maxHeight: "#{listHeight - 1}px").show()
-
                     listItem = $("<li>").addClass("axis_#{i}")
                     listItem.css(lineHeight: opts.valueHeight + "px")
 
@@ -907,11 +899,17 @@ callWithJQuery ($) ->
 
                         refresh()
 
-                    attrElem = $("<div>").addClass('pvtAttr form-select form-select-sm').data("attrName", attr).appendTo(listItem)
-                    attrElemText = $("<span>").addClass('pvtAttrText').text(attr).prop("title", attr).appendTo(attrElem)
-                    attrElem.append(triangleLink)
+                    attrElem = $("<select>").addClass('pvtAttr form-select form-select-sm').data("attrName", attr).appendTo(listItem)
+                    optionElem = $("<option>").text(attr).appendTo(attrElem);
 
-                    attrElemText.addClass('pvtFilteredAttribute') if hasExcludedItem
+                    attrElem.bind "click", (e) ->
+                        {left, top} = $(e.currentTarget).position()
+                        listHeight = Math.min(valueList.outerHeight(), uiTable.height())
+                        top = Math.min(uiTable.height() - listHeight, top + 10)
+                        left = Math.min(uiTable.width() - valueList.outerWidth(), left + 10)
+                        valueList.css(left: left, top: top, maxHeight: "#{listHeight - 1}px").show()
+
+                    attrElem.addClass('pvtFilteredAttribute') if hasExcludedItem
                     unusedDiv.append(listItem)
                     pvtUiContainer.append(valueList)
 
@@ -1126,8 +1124,8 @@ callWithJQuery ($) ->
 
                 numInputsToProcess = opts.aggregators[aggregator.val()]([])().numInputs ? 0
                 vals = []
-                @find(".pvtRows li div.pvtAttr").each -> subopts.rows.push $(this).data("attrName")
-                @find(".pvtCols li div.pvtAttr").each -> subopts.cols.push $(this).data("attrName")
+                @find(".pvtRows li select.pvtAttr").each -> subopts.rows.push $(this).data("attrName")
+                @find(".pvtCols li select.pvtAttr").each -> subopts.cols.push $(this).data("attrName")
                 @find(".pvtVals select.pvtAttrDropdown").each ->
                     if numInputsToProcess == 0
                         $(this).remove()
