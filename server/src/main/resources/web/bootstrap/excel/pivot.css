@@ -54,3 +54,18 @@ table.pvtTable thead tr th {
     padding: 0 3px;
     /*font-weight: normal;*/
 }
+
+.pvtAxisContainer li,
+.pvtAxisContainer li.pvtPlaceholder,
+.pvtAxisContainer > li.pvtPlaceholder:only-child {
+    margin: 4px;
+}
+
+.pvtRenderer {
+    margin: 5px 0 5px 5px;
+    max-width: 150px;
+}
+
+.pvtAggregator {
+    margin: 4px 0 4px 4px;
+}

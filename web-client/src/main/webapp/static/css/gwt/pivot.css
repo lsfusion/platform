@@ -233,11 +233,11 @@ table.pvtTable tbody tr td {
     outline-offset: -1px;
 }
 
-.pvtAxisContainer li,
+/*.pvtAxisContainer li,
 .pvtAxisContainer li.pvtPlaceholder,
 .pvtAxisContainer > li.pvtPlaceholder:only-child {
     margin: 4px;
-}
+}*/
 
 .pvtAxisContainer li div.pvtAttr, 
 .pvtUiContainer > li div.pvtAttr /* dragged */ {
@@ -406,11 +406,11 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
     overflow: auto;
 }
 
-.pvtRenderer {
+/*.pvtRenderer {
     margin: 5px 0 5px 5px;
     max-width: 150px;
-}
+}*/
 
-.pvtAggregator {
+/*.pvtAggregator {
     margin: 4px 0 4px 4px;
-}
+}*/
