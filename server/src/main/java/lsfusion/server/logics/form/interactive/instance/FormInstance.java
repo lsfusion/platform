@@ -66,6 +66,7 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.controller.stack.SameThreadExecutionStack;
+import lsfusion.server.logics.action.flow.FormChangeFlowType;
 import lsfusion.server.logics.action.implement.ActionValueImplement;
 import lsfusion.server.logics.action.interactive.UserInteraction;
 import lsfusion.server.logics.action.session.DataSession;
@@ -473,7 +474,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     private boolean heuristicManageSession(FormEntity entity, boolean showReadOnly, int prevOwners, boolean isNested) {
-        return prevOwners <= 0 && !showReadOnly && (!entity.hasNoChange() || isNested);
+        return prevOwners <= 0 && !showReadOnly && (!entity.hasNoChange(FormChangeFlowType.INSTANCE) || isNested);
     }
 
     private boolean heuristicNoCancel(ImMap<ObjectEntity, ? extends ObjectValue> mapObjects) {

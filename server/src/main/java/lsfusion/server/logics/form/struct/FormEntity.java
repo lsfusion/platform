@@ -29,6 +29,7 @@ import lsfusion.server.language.property.LP;
 import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
+import lsfusion.server.logics.action.flow.FormChangeFlowType;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.ValueClass;
@@ -740,10 +741,10 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     @IdentityLazy
-    public boolean hasNoChange() {
+    public boolean hasNoChange(FormChangeFlowType type) {
         for (PropertyDrawEntity property : getPropertyDrawsIt()) {
             ActionObjectEntity<?> eventAction = property.getEventAction(CHANGE, this, new SecurityPolicy()); // in theory it is possible to support securityPolicy, but in this case we have to drag it through hasFlow + do some complex caching
-            if (eventAction != null && eventAction.property.hasFlow(ChangeFlowType.FORMCHANGE) && !eventAction.property.endsWithApplyAndNoChangesAfterBreaksBefore())
+            if (eventAction != null && eventAction.property.hasFlow(type) && !eventAction.property.endsWithApplyAndNoChangesAfterBreaksBefore(type))
                 return false;
         }
 
