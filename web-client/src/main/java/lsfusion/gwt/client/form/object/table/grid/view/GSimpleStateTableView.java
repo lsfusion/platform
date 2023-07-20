@@ -8,7 +8,6 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GAsync;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
@@ -38,6 +37,7 @@ import lsfusion.interop.action.ServerResponse;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -533,13 +533,13 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
     // wagner - fischer algorithm
     // diff from s2 make s1
-    private static <V extends JavaScriptObject> ArrayList<Change<V>> buildDiff(JsArray<V> s1, JsArray<V> s2, int insertCost, int deleteCost, BiFunction<V, V, Integer> fnReplaceCost) {
+    private static <V extends JavaScriptObject> ArrayList<Change<V>> buildDiff(JsArray<V> s1, JsArray<V> s2, int insertCost, int deleteCost, BiFunction<V, V, Integer> fnReplaceCost, boolean removeFirst) {
         ArrayList<Change<V>> diff = new ArrayList<>();
 
         int c1 = s1.length();
         int c2 = s2.length();
 
-        int[] D[] = new int[c2+1][];
+        int[][] D = new int[c2+1][];
         for(int i1 = 0; i1 <= c2; i1++)
             D[i1] = new int[c1+1];
 
@@ -574,9 +574,29 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                     diff.add(new Change<>("update", i1, s1.get(i1)));
             }
         }
-        return diff;
+        
+        Collections.reverse(diff);
+        return removeFirst ? removeFirstOrder(diff) : diff;
     }
-
+    
+    private static <V extends JavaScriptObject> ArrayList<Change<V>> removeFirstOrder(ArrayList<Change<V>> diff) {
+        ArrayList<Change<V>> removeFirstDiff = new ArrayList<>();
+        int addCount = 0;
+        for (Change<V> ch : diff) {
+            if (ch.type.equals("remove")) {
+                removeFirstDiff.add(new Change<>(ch.type, ch.index - addCount, ch.object));
+            } else if (ch.type.equals("add")) {
+                ++addCount;
+            }
+        }
+        for (Change<V> ch : diff) {
+            if (!ch.type.equals("remove")) {
+                removeFirstDiff.add(ch);
+            }
+        }
+        return removeFirstDiff;
+    }
+    
     // fnc - method with params:
     //  type - remove, add, update
     //  index - current location
@@ -597,9 +617,10 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                                                     if(!GSimpleStateTableView.toString(GwtClientUtils.call(getObjectString, to)).equals(GSimpleStateTableView.toString(GwtClientUtils.call(getObjectString, from))))
                                                         return noDiffObjects ? 100000 : 1;
                                                     return GwtClientUtils.plainEquals(to, from, objectsField) ? 0 : 1;
-                                                });
-        for (int i = diff.size() - 1; i >= 0; i--)
-            diff.get(i).apply(proceed);
+                                                }, false);
+        for (Change<V> vChange : diff) {
+            vChange.apply(proceed);
+        }
 
         GwtClientUtils.setField(element, "prevList", list);
     }
