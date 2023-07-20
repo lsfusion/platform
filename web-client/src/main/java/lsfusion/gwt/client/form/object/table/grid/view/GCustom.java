@@ -31,12 +31,6 @@ public class GCustom extends GTippySimpleStateTableView {
     }
 
     @Override
-    public void onTableContainerUnload() {
-        onClear();
-        super.onTableContainerUnload();
-    }
-
-    @Override
     public void onRender(Event editEvent) {
         if (renderFunctionWithoutArguments)
             render(renderFunction, getDrawElement(), controller, editEvent);

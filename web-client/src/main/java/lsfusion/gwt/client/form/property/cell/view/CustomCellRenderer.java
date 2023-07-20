@@ -10,12 +10,8 @@ import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.controller.CustomReplaceCellEditor;
 import lsfusion.interop.action.ServerResponse;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class CustomCellRenderer extends CellRenderer {
     private final JavaScriptObject customRenderer;
-    private final List<Element> renderedElements = new ArrayList<>();
 
     public CustomCellRenderer(GPropertyDraw property, String customRenderFunction) {
         super(property);
@@ -24,7 +20,6 @@ public class CustomCellRenderer extends CellRenderer {
 
     @Override
     public boolean renderContent(Element element, RenderContext renderContext) {
-        renderedElements.add(element);
         render(customRenderer, element);
 
         return false;
@@ -48,15 +43,7 @@ public class CustomCellRenderer extends CellRenderer {
 
     @Override
     public boolean clearRenderContent(Element element, RenderContext renderContext) {
-
-        if (element == null) {
-            for (Element renderedElement : renderedElements) {
-                renderedElements.remove(renderedElement);
-                clear(customRenderer, renderedElement);
-            }
-        } else {
-            clear(customRenderer, element);
-        }
+        clear(customRenderer, element);
 
         return false;
     }
@@ -141,9 +128,9 @@ public class CustomCellRenderer extends CellRenderer {
             getColorThemeName: function () {
                 return @lsfusion.gwt.client.view.MainFrame::colorTheme.@java.lang.Enum::name()();
             },
-            diff: function (newList, element, fnc, noDiffObjects) {
+            diff: function (newList, element, fnc, noDiffObjects, removeFirst) {
                 var controller = this;
-                @GSimpleStateTableView::diff(*)(newList, element, fnc, function(object) {return controller.getObjectsString(object);}, this.getObjectsField(), noDiffObjects);
+                @GSimpleStateTableView::diff(*)(newList, element, fnc, function(object) {return controller.getObjectsString(object);}, this.getObjectsField(), noDiffObjects, removeFirst);
             },
             isList: function () {
                 return false;

@@ -608,7 +608,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     // 100000 if key are not equals
     // 1 - otherwise
 
-    public static <K, V extends JavaScriptObject> void diff(JsArray<V> list, Element element, JavaScriptObject proceed, JavaScriptObject getObjectString, String objectsField, boolean noDiffObjects) {
+    public static <K, V extends JavaScriptObject> void diff(JsArray<V> list, Element element, JavaScriptObject proceed, JavaScriptObject getObjectString, String objectsField, boolean noDiffObjects, boolean removeFirst) {
         JsArray<V> prevList = (JsArray<V>) GwtClientUtils.getField(element, "prevList");
         if(prevList == null)
             prevList = GwtClientUtils.emptyArray();
@@ -617,7 +617,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                                                     if(!GSimpleStateTableView.toString(GwtClientUtils.call(getObjectString, to)).equals(GSimpleStateTableView.toString(GwtClientUtils.call(getObjectString, from))))
                                                         return noDiffObjects ? 100000 : 1;
                                                     return GwtClientUtils.plainEquals(to, from, objectsField) ? 0 : 1;
-                                                }, false);
+                                                }, removeFirst);
         for (Change<V> vChange : diff) {
             vChange.apply(proceed);
         }
@@ -720,9 +720,9 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             createObject: function (object, objects) {
                 return thisObj.@GSimpleStateTableView::createWithObjects(*)(object, objects);
             },
-            diff: function (newList, element, fnc, noDiffObjects) {
+            diff: function (newList, element, fnc, noDiffObjects, removeFirst) {
                 var controller = this;
-                @GSimpleStateTableView::diff(*)(newList, element, fnc, function(object) {return controller.getObjectsString(object);}, this.getObjectsField(), noDiffObjects);
+                @GSimpleStateTableView::diff(*)(newList, element, fnc, function(object) {return controller.getObjectsString(object);}, this.getObjectsField(), noDiffObjects, removeFirst);
             },
             getColorThemeName: function () {
                 return @lsfusion.gwt.client.view.MainFrame::colorTheme.@java.lang.Enum::name()();
