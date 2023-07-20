@@ -97,7 +97,7 @@ public class CustomCellRenderer extends CellRenderer {
             changeValue: function (value) { // deprecated
                 return this.change(value);
             },
-            changeProperty: function (propertyName, object, newValue) {
+            changeProperty: function (propertyName, object, newValue) { // important that implementation should guarantee that the position of the object should be relevant (match the list)
                 var controller = this;
                 return this.change({
                     property : propertyName,
@@ -105,9 +105,11 @@ public class CustomCellRenderer extends CellRenderer {
                     value : newValue
                 }, function(oldValue) {
                     if(oldValue == null)
-                        return oldValue;
+                        oldValue = [];
                     var objectsString = controller.getObjectsString(object);
-                    return $wnd.replaceOrAddObjectFieldInArray(oldValue, function (oldObject) { return controller.getObjectsString(oldObject) === objectsString; }, propertyName, newValue, object);
+                    var newArray = $wnd.replaceOrAddObjectFieldInArray(oldValue, function (oldObject) { return controller.getObjectsString(oldObject) === objectsString; }, propertyName, newValue, object);
+                    @GSimpleStateTableView::setDiffPrev(*)(newArray, element);
+                    return newArray;
                 });
             },
             getValues: function(value, successCallback, failureCallback) {

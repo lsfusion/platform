@@ -622,6 +622,10 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             vChange.apply(proceed);
         }
 
+        setDiffPrev(list, element);
+    }
+
+    public static <V extends JavaScriptObject> void setDiffPrev(JsArray<V> list, Element element) {
         GwtClientUtils.setField(element, "prevList", list);
     }
 
