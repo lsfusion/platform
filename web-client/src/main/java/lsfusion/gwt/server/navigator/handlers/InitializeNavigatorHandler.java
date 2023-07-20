@@ -92,7 +92,7 @@ public class InitializeNavigatorHandler extends NavigatorActionHandler<Initializ
         );
 
         return new GClientSettings(clientSettings.busyDialogTimeout, clientSettings.devMode, clientSettings.projectLSFDir, clientSettings.showDetailedInfo,
-                clientSettings.forbidDuplicateForms, clientSettings.pivotOnlySelectedColumn, clientSettings.matchSearchSeparator,
+                clientSettings.autoReconnectOnConnectionLost, clientSettings.forbidDuplicateForms, clientSettings.pivotOnlySelectedColumn, clientSettings.matchSearchSeparator,
                 colorTheme, clientSettings.useBootstrap, getVersionedColorThemesCss(servlet), colorPreferences, clientSettings.localePreferences.dateFormat, clientSettings.localePreferences.timeFormat,
                 servlet.staticImagesURL, clientSettings.preDefinedDateRangesNames, clientSettings.useTextAsFilterSeparator, 
                 clientSettings.verticalNavbar, clientSettings.userFiltersManualApplyMode);

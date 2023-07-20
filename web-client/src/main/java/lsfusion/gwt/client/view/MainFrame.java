@@ -64,6 +64,7 @@ public class MainFrame implements EntryPoint {
     public static boolean devMode;
     public static String projectLSFDir;
     public static boolean showDetailedInfo;
+    public static boolean autoReconnectOnConnectionLost;
     public static boolean forbidDuplicateForms;
     public static boolean useBootstrap;
     public static long busyDialogTimeout;
@@ -574,6 +575,7 @@ public class MainFrame implements EntryPoint {
                 devMode = gClientSettings.devMode;
                 projectLSFDir = gClientSettings.projectLSFDir;
                 showDetailedInfo = gClientSettings.showDetailedInfo;
+                autoReconnectOnConnectionLost = gClientSettings.autoReconnectOnConnectionLost;
                 forbidDuplicateForms = gClientSettings.forbidDuplicateForms;
                 pivotOnlySelectedColumn = gClientSettings.pivotOnlySelectedColumn;
                 matchSearchSeparator = gClientSettings.matchSearchSeparator;

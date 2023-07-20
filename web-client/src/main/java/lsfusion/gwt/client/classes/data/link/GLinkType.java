@@ -9,7 +9,7 @@ import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.cell.classes.controller.LinkCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.controller.RequestValueCellEditor;
-import lsfusion.gwt.client.form.property.cell.classes.view.FileCellRenderer;
+import lsfusion.gwt.client.form.property.cell.classes.view.LinkCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
@@ -46,15 +46,11 @@ public abstract class GLinkType extends GDataType {
 
     @Override
     public CellRenderer createCellRenderer(GPropertyDraw property) {
-        return new FileCellRenderer(property);
+        return new LinkCellRenderer(property);
     }
 
     @Override
     public GSize getDefaultWidth(GFont font, GPropertyDraw propertyDraw, boolean needNotNull, boolean globalCaptionIsDrawn) {
-        if(needNotNull)
-            return GSize.CONST(18);
-
-        return null;
+        return GSize.CONST(50);
     }
-
 }

@@ -13,6 +13,7 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.AroundAspectAction;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.FlowResult;
+import lsfusion.server.logics.action.flow.FormChangeFlowType;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
@@ -123,7 +124,7 @@ public class NewSessionAction extends AroundAspectAction {
             return false;
         if (type == ChangeFlowType.CANCEL)
             return false;
-        if ((type == ChangeFlowType.FORMCHANGE || type == ChangeFlowType.HASSESSIONUSAGES || type == ChangeFlowType.NEEDMORESESSIONUSAGES) && !isNested)
+        if ((type instanceof FormChangeFlowType || type == ChangeFlowType.HASSESSIONUSAGES || type == ChangeFlowType.NEEDMORESESSIONUSAGES) && !isNested)
             return false;
         return super.hasFlow(type);
     }

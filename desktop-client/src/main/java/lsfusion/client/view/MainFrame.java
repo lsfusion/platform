@@ -102,7 +102,6 @@ public abstract class MainFrame extends JFrame {
             MainController.busyDialogTimeout = Math.max(clientSettings.busyDialogTimeout, 1000); //минимальный таймаут 1000мс
             MainController.useRequestTimeout = clientSettings.useRequestTimeout;
             MainController.projectLSFDir = clientSettings.projectLSFDir;
-            MainController.inDevMode = clientSettings.devMode;
             MainController.showDetailedInfo = clientSettings.showDetailedInfo;
             MainController.forbidDuplicateForms = clientSettings.forbidDuplicateForms;
             MainController.showNotDefinedStrings = clientSettings.showNotDefinedStrings;
@@ -149,7 +148,7 @@ public abstract class MainFrame extends JFrame {
             frame.setExtendedState(MAXIMIZED_BOTH);
             logger.info("After setExtendedState");
 
-            ConnectionLostManager.start(frame, remoteNavigator.getClientCallBack(), clientSettings.devMode);
+            ConnectionLostManager.start(frame, remoteNavigator.getClientCallBack(), clientSettings.devMode, clientSettings.autoReconnectOnConnectionLost);
 
             frame.setVisible(true);
 

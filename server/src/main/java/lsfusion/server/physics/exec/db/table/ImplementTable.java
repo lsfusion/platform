@@ -94,8 +94,6 @@ public class ImplementTable extends DBTable { // последний интерф
     public boolean markedFull;
     public boolean markedExplicit; // if true assert !markedFull
 
-    private String canonicalName;
-    
     private IsClassField fullField = null; // поле которое всегда не null, и свойство которого обеспечивает , возможно временно потом совместиться с логикой classExpr
     @Override
     public boolean isFull() {
@@ -311,14 +309,6 @@ public class ImplementTable extends DBTable { // последний интерф
                 return false;
         }
         return true;
-    }
-
-    public String getCanonicalName() {
-        return canonicalName;
-    }
-
-    public void setCanonicalName(String canonicalName) {
-        this.canonicalName = canonicalName;
     }
 
     public boolean isNamed() {

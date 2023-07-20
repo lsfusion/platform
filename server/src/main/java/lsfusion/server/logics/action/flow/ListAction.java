@@ -150,7 +150,7 @@ public class ListAction extends ListCaseAction {
 
     @Override
     @IdentityStartLazy
-    public boolean endsWithApplyAndNoChangesAfterBreaksBefore() {
+    public boolean endsWithApplyAndNoChangesAfterBreaksBefore(FormChangeFlowType type) {
         boolean lookingForChangeFlow = false;
         boolean lookingForChange = true;
         ImList<ActionMapImplement<?, PropertyInterface>> actions = getActions();
@@ -160,13 +160,13 @@ public class ListAction extends ListCaseAction {
             if(lookingForChangeFlow && (listAction.hasFlow(ChangeFlowType.BREAK) || listAction.hasFlow(ChangeFlowType.RETURN)))
                 return false;
 
-            boolean endsWithApply = listAction.endsWithApplyAndNoChangesAfterBreaksBefore();
+            boolean endsWithApply = listAction.endsWithApplyAndNoChangesAfterBreaksBefore(type);
             if(endsWithApply) {
                 lookingForChange = false; // change'и уже не важны, только возможность уйти за пределы APPLY
                 lookingForChangeFlow = true;
             }
             
-            if(lookingForChange && listAction.hasFlow(ChangeFlowType.FORMCHANGE))
+            if(lookingForChange && listAction.hasFlow(type))
                 return false;
         }
         

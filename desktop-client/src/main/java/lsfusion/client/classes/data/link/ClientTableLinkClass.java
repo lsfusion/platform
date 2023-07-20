@@ -15,7 +15,7 @@ public class ClientTableLinkClass extends ClientStaticFormatLinkClass {
     }
 
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
-        return new LinkPropertyRenderer(property, "table");
+        return new LinkPropertyRenderer(property);
     }
 
     public byte getTypeId() {
