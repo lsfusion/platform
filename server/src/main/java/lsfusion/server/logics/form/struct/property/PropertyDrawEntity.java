@@ -708,7 +708,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
                         if(container != null && container.isHorizontal())
                             selectCustom = !select.multi && select.notNull ? "radioButtonGroup" : "checkButtonGroup"; // we will temporarily use select
                         else
-                            selectCustom = !select.multi && select.notNull ? "radio" : "check";
+                            selectCustom = !select.multi && select.notNull ? "select" : "selectMulti";
                     } else if(select.count <= Settings.get().getMaxInterfaceStatForValueCombo()) {
                         if(select.multi)
                             selectCustom = null; // "checkCombo"
@@ -716,7 +716,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
                             selectCustom = null; // "radioCombo"
                     } else {
                         assert select.multi;
-                        selectCustom = "select";
+                        selectCustom = "selectMultiInput";
                     }
                 }
 
