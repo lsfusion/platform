@@ -1657,7 +1657,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
         return property.isValueUnique(MapFact.EMPTY(), true); // optimistic because otherwise all properties will become readonly
     }
-    
+
     @IdentityStrongLazy // STRONG for using in security policy
     public ActionMapImplement<?, T> getDefaultEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction) {
 
@@ -2300,10 +2300,18 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return getInterfaceStat(fixedExprs, false);
     }
 
+    private Cost getInterfaceCost(ImMap<T, StaticParamNullableExpr> fixedExprs) {
+        return getInterfaceCostStat(fixedExprs, false).second;
+    }
+
+    private Stat getInterfaceStat(ImMap<T, StaticParamNullableExpr> fixedExprs, boolean alotHeur) {
+        return getInterfaceCostStat(fixedExprs, alotHeur).first;
+    }
+
     @IdentityStartLazy
     @StackMessage("{message.core.property.get.interface.class.stats}")
     @ThisMessage
-    private Stat getInterfaceStat(ImMap<T, StaticParamNullableExpr> fixedExprs, boolean alotHeur) {
+    private Pair<Stat, Cost> getInterfaceCostStat(ImMap<T, StaticParamNullableExpr> fixedExprs, boolean alotHeur) {
         ImRevMap<T, KeyExpr> innerKeys = KeyExpr.getMapKeys(interfaces.removeIncl(fixedExprs.keys()));
         ImMap<T, Expr> innerExprs = MapFact.addExcl(innerKeys, fixedExprs); // we need some virtual values
 
@@ -2312,13 +2320,12 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         // PS: actually it is still needed to avoid inconsistent caches (since ImplementTable.statProps are used and they are filled in the synchronizeDB)
         Expr expr = alotHeur ? aspectCalculateExpr(innerExprs, CalcType.STAT_ALOT, PropertyChanges.EMPTY, null) : getExpr(innerExprs); // check if is called after stats if filled
 //        Expr expr = calculateStatExpr(mapKeys, alotHeur);
-
         return ImplementTable.ignoreStatProps(alotHeur, () -> {
             Where where = expr.getWhere();
 
-            ImRevMap<T, KeyExpr> fInnerKeys = innerKeys.filterInclValuesRev(BaseUtils.immutableCast(where.getOuterKeys())); // ignoring "free" keys (having free keys breaks a lot of assertions in statistic calculations)
-
-            return getStatRows(fInnerKeys, where).getRows();
+        ImRevMap<T, KeyExpr> fInnerKeys = innerKeys.filterInclValuesRev(BaseUtils.immutableCast(where.getOuterKeys())); // ignoring "free" keys (having free keys breaks a lot of assertions in statistic calculations)
+        StatKeys<KeyExpr> statRows = getStatRows(fInnerKeys, where);
+        return new Pair<>(statRows.getRows(), statRows.getCost());
         });
     }
 
@@ -2354,6 +2361,10 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
     public Stat getInterfaceStat(ImSet<T> interfaces) {
         return getInterfaceStat(getInterfaceParamExprs(interfaces));
+    }
+
+    public Cost getInterfaceCost(ImSet<T> interfaces) {
+        return getInterfaceCost(getInterfaceParamExprs(interfaces));
     }
 
     public Stat getSelectStat(ImSet<T> fixedInterfaces) {

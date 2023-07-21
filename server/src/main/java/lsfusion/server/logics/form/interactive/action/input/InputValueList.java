@@ -13,6 +13,7 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.query.compile.CompiledQuery;
 import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.data.stat.Cost;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.type.parse.ValueParseInterface;
 import lsfusion.server.data.value.DataObject;
@@ -66,6 +67,10 @@ public class InputValueList<P extends PropertyInterface> {
 
     public Stat getInterfaceStat() {
         return property.getInterfaceStat(mapValues.keys());
+    }
+
+    public Cost getInterfaceCost() {
+        return property.getInterfaceCost(mapValues.keys());
     }
 
     public ImSet<Property> getChangeProps() {
