@@ -110,11 +110,6 @@ function reload() {
     document.location.reload();
 }
 
-function removeObjectFromArray(array, test) {
-    array.splice(array.indexOf(array.find(obj => test(obj))), 1);
-    return array;
-}
-
 function replaceOrAddObjectFieldInArray(array, test, propertyName, newValue, object) {
     //assume that only one object can be found
     let found = array.find(obj => test(obj));

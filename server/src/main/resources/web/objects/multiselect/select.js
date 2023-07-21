@@ -25,6 +25,16 @@ function selectMultiInput() {
 
     return {
         render: function (element, controller) {
+            Selectize.define('append_item', function() {
+                var self = this.addItem;
+                this.addItem = function (value, silent) {
+                    if (!element.silent)
+                        this.setCaret(this.items.length);
+
+                    self.apply(this, arguments);
+                }
+            });
+
             let isList = controller != null;
             let selectizeElement = element;
             if(!isList) { //if is a CustomCellRenderer, there is no controller in the render()
@@ -41,13 +51,21 @@ function selectMultiInput() {
                     if(!element.silent) {
                         element.controller.changeProperty('selected', this.options[value].originalObject, true);
 
+                        this.options[value].loaded = false;
+
+                        //Since we have to keep the order of items, and when selecting an item by mouseclick, the order will be set only after update from server,
+                        // we use a hack: when selecting an item, mark it for deletion, and in update delete it and put in the right place.
+                        this.valueToRemoveInUpdate = value;
+
                         //When option selected by mouseclick no possibility to continue the search from the keyboard
                         this.$control_input[0].focus();
                     }
                 },
                 onItemRemove: function (value) {
-                    if(!element.silent)
+                    if(!element.silent) {
                         element.controller.changeProperty('selected', this.options[value].originalObject, null, true);
+                        this.removeOption(value, true);
+                    }
                 },
                 onDropdownOpen: function (dropdown) {
                     // setting autoHidePartner to avoid fake blurs
@@ -67,7 +85,7 @@ function selectMultiInput() {
                         callback(options);
                     }, null);
                 },
-                plugins: ['remove_button', 'auto_position']
+                plugins: ['remove_button', 'auto_position', 'append_item']
             });
 
             let selectizeInstance = element.selectizeInstance[0].selectize;
@@ -86,7 +104,6 @@ function selectMultiInput() {
         update: function (element, controller, list) {
             element.silent = true; // onItemAdd / Remove somewhy is not silenced
 
-            let selectizeInstance = element.selectizeInstance[0].selectize;
             let isList = controller.isList();
             if (isList) {
                 if (!controller.booleanFilterSet && list.length > 0) {
@@ -94,17 +111,20 @@ function selectMultiInput() {
                     controller.booleanFilterSet = true;
                     return;
                 }
-
-                for (let [key, value] of Object.entries(selectizeInstance.options)) {
-                    if (selectizeInstance.getItem(key).length === 0)
-                        selectizeInstance.removeOption(key, true);
-                }
-
             } else { // controller is needed in render() to add onItemAdd and onItemRemove listeners. In CustomCellRenderer we cannot pass the controller to render()
                 if(list == null)
                     list = [];
             }
             element.controller = controller;
+            list = list.filter((item) => item.selected);
+
+            let selectizeInstance = element.selectizeInstance[0].selectize;
+
+            let valueToRemove = selectizeInstance.valueToRemoveInUpdate;
+            if (valueToRemove) {
+                selectizeInstance.removeItem(valueToRemove, true);
+                delete selectizeInstance.valueToRemoveInUpdate;
+            }
 
             controller.diff(list, element, (type, index, object) => {
                 let selectizeOption = toOption(object, controller, false);
