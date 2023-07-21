@@ -1313,7 +1313,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
     private static <P extends PropertyInterface> boolean checkAsyncLength(InputValueList<P> list, String value, AsyncMode mode) {
         Settings settings = Settings.get();
-        return value.length() <= settings.getAsyncValuesCancelThreshold() && !mode.isObjects() && !list.getInterfaceStat().less(new Stat(settings.getAsyncValuesMaxReadDataCompletionCount()));
+        return value.length() <= settings.getAsyncValuesTooShortThreshold() && !mode.isObjects() && !list.getInterfaceCost().rows.less(new Stat(settings.getAsyncValuesTooShortDataCompletionCount()));
     }
     public <P extends PropertyInterface, X extends PropertyInterface> Async[] getAsyncValues(PropertyDrawInstance<P> propertyDraw, ImMap<ObjectInstance, ? extends ObjectValue> keys, String actionSID, String value, Boolean optimistic, Supplier<Boolean> optimisticRun) throws SQLException, SQLHandledException {
         InputValueList<X> listProperty;
