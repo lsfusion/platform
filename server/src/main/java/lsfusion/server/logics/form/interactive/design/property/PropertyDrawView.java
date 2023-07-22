@@ -78,7 +78,7 @@ public class PropertyDrawView extends BaseComponentView {
     public boolean noSort;
     public Compare defaultCompare;
 
-    private int charWidth;
+    public int charWidth;
     private int charHeight;
 
     public Dimension valueSize;
@@ -163,14 +163,9 @@ public class PropertyDrawView extends BaseComponentView {
         return entity.isProperty(context);
     }
 
-    public int getValueWidth(FormEntity entity) {
+    public int getValueWidth(FormInstanceContext context) {
         if(valueWidth != null)
             return valueWidth;
-
-//        if(isAutoSize(entity)) {
-//            if(!isProperty())
-//                return -1;
-//        }
 
         return -1;
     }
@@ -368,7 +363,7 @@ public class PropertyDrawView extends BaseComponentView {
             reportField.minimumWidth = type.getReportMinimumWidth() * scale;
             reportField.preferredWidth = type.getReportPreferredWidth() * scale;
         }
-        int reportCharWidth = getCharWidth();
+        int reportCharWidth = charWidth;
         if (reportCharWidth != 0) {
             reportField.fixedCharWidth = reportCharWidth * scale;
         }
@@ -429,9 +424,9 @@ public class PropertyDrawView extends BaseComponentView {
             outStream.writeByte(-1);
 
         outStream.writeInt(getCharHeight());
-        outStream.writeInt(getCharWidth());
+        outStream.writeInt(getCharWidth(pool.context));
 
-        outStream.writeInt(getValueWidth(pool.context.entity));
+        outStream.writeInt(getValueWidth(pool.context));
         outStream.writeInt(getValueHeight(pool.context));
 
         outStream.writeInt(getCaptionWidth(pool.context.entity));
@@ -703,7 +698,17 @@ public class PropertyDrawView extends BaseComponentView {
         this.charHeight = charHeight;
     }
 
-    public int getCharWidth() {
+    public int getCharWidth(FormInstanceContext context) {
+        PropertyDrawEntity.Select select = entity.getSelectProperty(context);
+        if(select != null) {
+            boolean isList = entity.isList(context);
+            if(select.elementType.equals("Input")) {
+                return (charWidth != 0 ? charWidth : select.length / select.count) * 4;
+            } else if(select.elementType.startsWith("Button") && (isList || !isAutoSize(context))) {
+                return (charWidth != 0 && !select.actual ? charWidth * select.count : select.length) + select.count * 4; // couple of symbols for padding
+            }
+        }
+
         return charWidth;
     }
 

@@ -85,29 +85,38 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrP
 
         public final int length;
         public final int count;
+        public final boolean actual;
 
-        public final boolean multi;
-        public final boolean notNull;
+        public enum Type {
+            MULTI,
+            NOTNULL,
+            NULL
+        }
 
-        public Select(PropertyObjectEntity<?> property, int length, int count, boolean multi, boolean notNull) {
+        public final Type type;
+
+        public Select(PropertyObjectEntity<?> property, int length, int count, boolean actual, Type type) {
             this.property = property;
             this.length = length;
             this.count = count;
-            this.multi = multi;
-            this.notNull = notNull;
+            this.actual = actual;
+            this.type = type;
         }
     }
     public Select getSelectProperty(FormInstanceContext context) {
         Property.Select<P> select = property.getSelectProperty(ListFact.EMPTY());
         if(select != null) {
             Pair<Integer, Integer> stats = select.stat;
-            if(select.values != null && context.dbManager != null)
+            boolean actualStats = false;
+            if(select.values != null && context.dbManager != null) {
                 stats = getActualSelectStats(context, select);
+                actualStats = true;
+            }
             PropertyMapImplement<?, P> selectProperty = select.property.get(stats.second > Settings.get().getMaxInterfaceStatForValueCombo());
             if(selectProperty == null)
                 return null;
             boolean multi = select.multi;
-            return new Select(selectProperty.mapEntityObjects(mapping), stats.first, stats.second, multi, !multi && property.isNotNull());
+            return new Select(selectProperty.mapEntityObjects(mapping), stats.first, stats.second, actualStats, multi ? Select.Type.MULTI : (property.isNotNull() ? Select.Type.NOTNULL : Select.Type.NULL));
         }
         return null;
     }

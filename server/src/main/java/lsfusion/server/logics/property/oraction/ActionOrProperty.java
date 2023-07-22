@@ -613,7 +613,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         }
 
         public void proceedDefaultDesign(PropertyDrawView propertyView) {
-            if(propertyView.getCharWidth() == 0)
+            if(propertyView.charWidth == 0)
                 propertyView.setCharWidth(charWidth);
             if(propertyView.getValueFlex() == null)
                 propertyView.setValueFlex(valueFlex);

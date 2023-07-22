@@ -152,11 +152,6 @@ function selectMultiInput() {
     }
 }
 
-// todo --- backward compatibility. option() should be removed in future releases ---
-function option() {
-    return checkButton();
-}
-
 function selectMulti() {
     return _defaultRadioCheckBox('checkbox');
 }
@@ -165,19 +160,32 @@ function select() {
     return _defaultRadioCheckBox('radio', true);
 }
 
-function checkButton() {
+function selectMultiButton() {
     return _checkBoxRadioButtonToggle('checkbox');
 }
 
-function radioButton() {
+function selectButton() {
     return _checkBoxRadioButtonToggle('radio', true);
 }
 
-function checkButtonGroup() {
+function selectMultiButtonGroup() {
     return _checkBoxRadioButtonGroup('checkbox');
 }
 
-function radioButtonGroup() {
+// temporary, later radio with drop on selected click should be done
+function selectNull() {
+    return selectMulti();
+}
+
+function selectNullButton() {
+    return selectMultiButton();
+}
+
+function selectNullButtonGroup() {
+    return selectMultiButtonGroup();
+}
+
+function selectButtonGroup() {
     return _checkBoxRadioButtonGroup('radio', true);
 }
 
@@ -343,4 +351,9 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, hasName)
             }
         }
     }
+}
+
+// todo --- backward compatibility. option() should be removed in future releases ---
+function option() {
+    return checkButton();
 }

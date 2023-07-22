@@ -774,10 +774,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         if (valueWidth >= 0)
             return GSize.getValueSize(valueWidth);
 
-        if(!needNotNull && autoSize && valueWidth == -1)
+        if(!needNotNull && autoSize && valueWidth == -1 && charWidth == 0)
             return null;
 
-        return baseType.getDefaultWidth(getFont(parentFont), this, needNotNull, globalCaptionIsDrawn);
+        return baseType.getValueWidth(getFont(parentFont), this, needNotNull, globalCaptionIsDrawn);
     }
 
     // not null
@@ -785,10 +785,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         if (valueHeight >= 0)
             return GSize.getValueSize(valueHeight);
 
-        if(!needNotNull && autoSize && valueHeight == -1)
+        if(!needNotNull && autoSize && valueHeight == -1 && charHeight == 0)
             return null;
 
-        return baseType.getDefaultHeight(getFont(parentFont), this, needNotNull, globalCaptionIsDrawn);
+        return baseType.getValueHeight(getFont(parentFont), this, needNotNull, globalCaptionIsDrawn);
     }
 
     private GFont getFont(GFont parentFont) {

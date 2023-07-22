@@ -693,36 +693,65 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return actionOrProperty;
     }
 
+    public static class Select {
+
+        public final PropertyObjectEntity property;
+
+        public final String type;
+        public final String elementType;
+
+        public final int length;
+        public final int count;
+        public final boolean actual;
+
+        public Select(PropertyObjectEntity property, String type, String elementType, int length, int count, boolean actual) {
+            this.property = property;
+            this.type = type;
+            this.elementType = elementType;
+            this.length = length;
+            this.count = count;
+            this.actual = actual;
+        }
+    }
     @ParamLazy
-    private Pair<PropertyObjectEntity, String> getSelectProperty(FormInstanceContext context) {
+    public PropertyDrawEntity.Select getSelectProperty(FormInstanceContext context) {
         if(actionOrProperty instanceof PropertyObjectEntity) {
             PropertyObjectEntity.Select select = ((PropertyObjectEntity<P>) actionOrProperty).getSelectProperty(context);
 
-            String selectCustom = null;
             if(select != null) {
-                if(!isReadOnly() && !hasNoGridReadOnly(context.entity) && (select.multi || select.count > (select.notNull ? 1 : 0))) { // we don't have to check hasChangeAction, since canBeChanged is checked in getSelectProperty
-                    if(select.length <= Settings.get().getMaxLengthForValueRadioButtonGroup()) {
-                        selectCustom = !select.multi && select.notNull ? "radioButtonGroup" : "checkButtonGroup"; // we will temporarily use select
-                    } else if(select.count <= Settings.get().getMaxInterfaceStatForValueRadio() && !isList(context)) {
-                        ContainerView container = context.view.get(this).getLayoutParamContainer();
-                        if(container != null && container.isHorizontal())
-                            selectCustom = !select.multi && select.notNull ? "radioButtonGroup" : "checkButtonGroup"; // we will temporarily use select
-                        else
-                            selectCustom = !select.multi && select.notNull ? "select" : "selectMulti";
-                    } else if(select.count <= Settings.get().getMaxInterfaceStatForValueCombo()) {
-                        if(select.multi)
-                            selectCustom = null; // "checkCombo"
-                        else
-                            selectCustom = null; // "radioCombo"
-                    } else {
-                        assert select.multi;
-                        selectCustom = "selectMultiInput";
-                    }
+                String selectType = null;
+                if(select.type == PropertyObjectEntity.Select.Type.MULTI) {
+                    selectType = "Multi";
+                } else if(select.type == PropertyObjectEntity.Select.Type.NOTNULL) {
+                    if(select.count > 1)
+                        selectType = "";
+                } else {
+                    if(select.count > 0)
+                        selectType = "Null";
                 }
 
-//            assert stat.less(new Stat(Settings.get().getMinInterfaceStatForValueCombo()));
-                if(selectCustom != null)
-                    return new Pair<>(select.property, selectCustom);
+                if(selectType != null) {
+                    String elementType = null;
+                    if (!isReadOnly() && !hasNoGridReadOnly(context.entity)) { // we don't have to check hasChangeAction, since canBeChanged is checked in getSelectProperty
+                        if (select.length <= Settings.get().getMaxLengthForValueRadioButtonGroup()) {
+                            elementType = "ButtonGroup";
+                        } else if (select.count <= Settings.get().getMaxInterfaceStatForValueRadio() && !isList(context)) {
+                            ContainerView container = context.view.get(this).getLayoutParamContainer();
+                            if (container != null && container.isHorizontal())
+                                elementType = "ButtonGroup";
+                            else
+                                elementType = "";
+                        } else if (select.count <= Settings.get().getMaxInterfaceStatForValueCombo()) {
+                            elementType = null;
+                        } else {
+                            assert select.type == PropertyObjectEntity.Select.Type.MULTI;
+                            elementType = "Input";
+                        }
+                    }
+
+                    if (elementType != null)
+                        return new Select(select.property, selectType, elementType, select.length, select.count, select.actual);
+                }
             }
         }
         return null;
@@ -732,18 +761,18 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         if(customRenderFunction != null)
             return customRenderFunction;
 
-        Pair<PropertyObjectEntity, String> select = getSelectProperty(context);
+        Select select = getSelectProperty(context);
         if(select != null)
-            return select.second;
+            return "select" + select.type + select.elementType;
 
         return null;
     }
 
     // INTERACTIVE (NON-STATIC) USAGES
     public ActionOrPropertyObjectEntity<?, ?> getActionOrProperty(FormInstanceContext context) {
-        Pair<PropertyObjectEntity, String> select = getSelectProperty(context);
+        Select select = getSelectProperty(context);
         if(select != null)
-            return select.first;
+            return select.property;
 
         return actionOrProperty;
     }
