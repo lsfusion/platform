@@ -97,20 +97,14 @@ public class CustomCellRenderer extends CellRenderer {
             changeValue: function (value) { // deprecated
                 return this.change(value);
             },
-            changeProperty: function (propertyName, object, newValue, remove) { // important that implementation should guarantee that the position of the object should be relevant (match the list)
+            changeProperty: function (propertyName, object, newValue, type, index) { // important that implementation should guarantee that the position of the object should be relevant (match the list)
                 var controller = this;
                 return this.change({
                     property : propertyName,
                     objects : this.getObjects(object),
                     value : newValue
                 }, function(oldValue) {
-                    if(oldValue == null)
-                        oldValue = [];
-                    var objectsString = controller.getObjectsString(object);
-                    var testFunction = function (oldObject) { return controller.getObjectsString(oldObject) === objectsString; };
-                    var newArray = remove ? $wnd.removeObjectFromArray(oldValue, testFunction) : $wnd.replaceOrAddObjectFieldInArray(oldValue, testFunction, propertyName, newValue, object);
-                    @GSimpleStateTableView::setDiffPrev(*)(newArray, element);
-                    return newArray;
+                    return @GSimpleStateTableView::changeJSDiff(*)(element, oldValue != null ? oldValue : [], object, controller, property, newValue, type, index);
                 });
             },
             getValues: function(value, successCallback, failureCallback) {
@@ -131,7 +125,7 @@ public class CustomCellRenderer extends CellRenderer {
             getColorThemeName: function () {
                 return @lsfusion.gwt.client.view.MainFrame::colorTheme.@java.lang.Enum::name()();
             },
-            diff: function (newList, element, fnc, noDiffObjects, removeFirst) {
+            diff: function (newList, fnc, noDiffObjects, removeFirst) {
                 var controller = this;
                 @GSimpleStateTableView::diff(*)(newList, element, fnc, function(object) {return controller.getObjectsString(object);}, this.getObjectsField(), noDiffObjects, removeFirst);
             },

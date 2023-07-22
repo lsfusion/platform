@@ -18,7 +18,7 @@ function selectMultiInput() {
 
         //clear the all unselected options to fully clear the cache
         for (let [key, value] of Object.entries(selectize.options)) {
-            if (value.loaded && selectize.getItem(key).length === 0)
+            if (value.loaded)
                 selectize.removeOption(key, true);
         }
     }
@@ -49,13 +49,12 @@ function selectMultiInput() {
 
                 onItemAdd: function (value) {
                     if(!element.silent) {
-                        element.controller.changeProperty('selected', this.options[value].originalObject, true);
+                        let option = this.options[value];
 
-                        this.options[value].loaded = false;
+                        // assert option.loaded;
+                        option.loaded = false; // ??? or should be called updateOption
 
-                        //Since we have to keep the order of items, and when selecting an item by mouseclick, the order will be set only after update from server,
-                        // we use a hack: when selecting an item, mark it for deletion, and in update delete it and put in the right place.
-                        this.valueToRemoveInUpdate = value;
+                        element.controller.changeProperty('selected', option.originalObject, true, "add"); // ?? maybe it is possible to get caret pos and in that case we won't need add_item plugin
 
                         //When option selected by mouseclick no possibility to continue the search from the keyboard
                         this.$control_input[0].focus();
@@ -63,8 +62,11 @@ function selectMultiInput() {
                 },
                 onItemRemove: function (value) {
                     if(!element.silent) {
-                        element.controller.changeProperty('selected', this.options[value].originalObject, null, true);
+                        let originalObject = this.options[value].originalObject;
+
                         this.removeOption(value, true);
+
+                        element.controller.changeProperty('selected', originalObject, null, "remove");
                     }
                 },
                 onDropdownOpen: function (dropdown) {
@@ -116,17 +118,13 @@ function selectMultiInput() {
                     list = [];
             }
             element.controller = controller;
-            list = list.filter((item) => item.selected);
+
+            // assert that all items are selected
+//            list = list.filter((item) => item.selected);
 
             let selectizeInstance = element.selectizeInstance[0].selectize;
 
-            let valueToRemove = selectizeInstance.valueToRemoveInUpdate;
-            if (valueToRemove) {
-                selectizeInstance.removeItem(valueToRemove, true);
-                delete selectizeInstance.valueToRemoveInUpdate;
-            }
-
-            controller.diff(list, element, (type, index, object) => {
+            controller.diff(list, (type, index, object) => {
                 let selectizeOption = toOption(object, controller, false);
                 let optionValue = selectizeOption.value;
 
@@ -138,8 +136,8 @@ function selectMultiInput() {
                     case 'update':
                         if(type === 'add')
                             selectizeInstance.addOption(selectizeOption);
-
-                        selectizeInstance.updateOption(optionValue, selectizeOption); //update in any way to update including the options added from "load"
+                        else
+                            selectizeInstance.updateOption(optionValue, selectizeOption);
 
                         selectizeInstance.setCaret(index);
                         selectizeInstance.addItem(optionValue, true);
@@ -245,7 +243,7 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, hasName)
 
             let changed = { dropAndNotSetChecked : false}
             let options = element.options;
-            controller.diff(list, element, (changeType, index, object) => {
+            controller.diff(list, (changeType, index, object) => {
                 switch(changeType) {
                     case 'remove': // clear
                         if (isButton) {

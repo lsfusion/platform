@@ -54,9 +54,10 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     public GSimpleStateTableView(GFormController form, GGridController grid, TableContainer tableContainer) {
         super(form, grid);
 
-        this.controller = getController();
+        Element drawElement = getDrawElement();
+        this.controller = getController(drawElement);
         this.tableContainer = tableContainer;
-        GwtClientUtils.setZeroZIndex(getDrawElement());
+        GwtClientUtils.setZeroZIndex(drawElement);
 
         initSinkEvents(this);
     }
@@ -622,22 +623,52 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             vChange.apply(proceed);
         }
 
-        setDiffPrev(list, element);
-    }
-
-    public static <V extends JavaScriptObject> void setDiffPrev(JsArray<V> list, Element element) {
         GwtClientUtils.setField(element, "prevList", list);
     }
 
-    protected native JavaScriptObject getController()/*-{
+    public static <V extends JavaScriptObject> JsArray<V> changeJSDiff(Element element, JsArray<V> list, V object, JavaScriptObject controller, String propertyName, JavaScriptObject newValue, String type, int index) {
+        JsArray<V> prevList = (JsArray<V>) GwtClientUtils.getField(element, "prevList");
+        if(list == null) {
+            if (prevList == null)
+                return null;
+            list = prevList;
+        } else {
+            // assert prevList == null || list.equals(prevList)
+        }
+
+        list = changeDiff(list, object, controller, propertyName, newValue, type, index);
+
+        if(prevList != null)
+            GwtClientUtils.setField(element, "prevList", list);
+
+        return list;
+    }
+
+    public static native <V extends JavaScriptObject> JsArray<V> changeDiff(JsArray<V> list, V object, JavaScriptObject controller, String propertyName, JavaScriptObject newValue, String type, int index)/*-{
+        if(type === "add")
+            return $wnd.addObjectToArray(list, $wnd.replaceField(object, propertyName, newValue), index == null ? list.length : index);
+
+        var objectsString = controller.getObjectsString(object);
+        var testFunction = function (oldObject) { return controller.getObjectsString(oldObject) === objectsString; };
+
+        if(type === "remove")
+            return $wnd.removeObjectFromArray(list, testFunction);
+
+        return $wnd.replaceObjectFieldInArray(list, testFunction, propertyName, newValue);
+    }-*/;
+
+    protected native JavaScriptObject getController(Element element)/*-{
         var thisObj = this;
         return {
-            changeProperty: function (property, object, newValue) {
+            changeProperty: function (property, object, newValue, type, index) {
                 if(object === undefined)
                     object = null;
                 if(newValue === undefined) // not passed
                     newValue = @GSimpleStateTableView::UNDEFINED;
-                return thisObj.@GSimpleStateTableView::changeJSProperty(*)(property, object, newValue);
+
+                @GSimpleStateTableView::changeJSDiff(*)(element, null, object, this, property, newValue, type, index);
+
+                thisObj.@GSimpleStateTableView::changeJSProperty(*)(property, object, newValue);
             },
             changeDateTimeProperty: function (property, object, year, month, day, hour, minute, second) {
                 return thisObj.@GSimpleStateTableView::changeDateTimeProperty(*)(property, object, year, month, day, hour, minute, second);
@@ -724,7 +755,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             createObject: function (object, objects) {
                 return thisObj.@GSimpleStateTableView::createWithObjects(*)(object, objects);
             },
-            diff: function (newList, element, fnc, noDiffObjects, removeFirst) {
+            diff: function (newList, fnc, noDiffObjects, removeFirst) {
                 var controller = this;
                 @GSimpleStateTableView::diff(*)(newList, element, fnc, function(object) {return controller.getObjectsString(object);}, this.getObjectsField(), noDiffObjects, removeFirst);
             },

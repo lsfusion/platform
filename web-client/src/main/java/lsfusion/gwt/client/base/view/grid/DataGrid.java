@@ -1864,6 +1864,8 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
             if(rowCount == 0) // not sure if it's needed
                 return;
             int columnCount = display.getColumnCount();
+            if(columnCount == 0)
+                return;
 
             int rowIndex = display.getSelectedRow();
             int columnIndex = display.getSelectedColumn();
