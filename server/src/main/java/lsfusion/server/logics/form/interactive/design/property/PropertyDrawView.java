@@ -920,7 +920,7 @@ public class PropertyDrawView extends BaseComponentView {
         if(toolbar != null)
             return toolbar;
 
-        if(isCustom(context))
+        if(isCustom(context) && entity.getSelectProperty(context) == null) // we want loading for select props, (entity.isReadOnly(context) || !hasChangeAction(context)) the problem of using hasChangeAction is that for JSON property it is always generated but it's impossible to understand if it is used
             return false;
 
         if(!isProperty(context))

@@ -762,7 +762,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
                 if(selectType != null) {
                     if(elementType == null) {
-                        if (!isReadOnly() && !hasNoGridReadOnly(context.entity)) { // we don't have to check hasChangeAction, since canBeChanged is checked in getSelectProperty
+                        if (!isReadOnly(context)) { // we don't have to check hasChangeAction, since canBeChanged is checked in getSelectProperty
                             if (select.length <= Settings.get().getMaxLengthForValueRadioButtonGroup()) {
                                 elementType = "ButtonGroup";
                             } else if (select.count <= Settings.get().getMaxInterfaceStatForValueRadio() && !isList(context)) {
@@ -786,6 +786,10 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             }
         }
         return null;
+    }
+
+    public boolean isReadOnly(FormInstanceContext context) {
+        return isReadOnly() || hasNoGridReadOnly(context.entity);
     }
 
     public String getCustomRenderFunction(FormInstanceContext context) {
