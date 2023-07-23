@@ -296,8 +296,9 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public <X extends PropertyInterface> ActionObjectEntity<?> getEventAction(String actionId, FormInstanceContext context) {
-        ActionObjectEntity<?> explicitEventAction = getExplicitEventAction(actionId, context);
-        if (explicitEventAction != null)
+        ActionObjectSelector explicitEventSelector = getExplicitEventAction(actionId);
+        ActionObjectEntity<?> explicitEventAction;
+        if (explicitEventSelector != null && (explicitEventAction = explicitEventSelector.getAction(context.entity, isProperty(context) ? getAssertProperty(context) : null)) != null)
             return explicitEventAction;
 
         ActionOrPropertyObjectEntity<X, ?> eventPropertyObject = (ActionOrPropertyObjectEntity<X, ?>) getActionOrProperty(context);
@@ -323,13 +324,9 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return null;
     }
 
-    private ActionObjectEntity<?> getExplicitEventAction(String actionId, FormInstanceContext context) {
-        if (eventActions != null) {
-            ActionObjectSelector eventSelector = eventActions.get(actionId);
-            ActionObjectEntity<?> eventAction;
-            if (eventSelector != null && (eventAction = eventSelector.getAction(context.entity, isProperty(context) ? getAssertProperty(context) : null)) != null)
-                return eventAction;
-        }
+    private ActionObjectSelector getExplicitEventAction(String actionId) {
+        if (eventActions != null)
+            return eventActions.get(actionId);
         return null;
     }
 
@@ -748,6 +745,9 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             PropertyObjectEntity.Select select = ((PropertyObjectEntity<P>) actionOrProperty).getSelectProperty(context, forceSelect);
 
             if(select != null) {
+                if(getExplicitEventAction(CHANGE) != null)
+                    return null;
+
                 if(selectType == null) {
                     if (select.type == PropertyObjectEntity.Select.Type.MULTI) {
                         selectType = "Multi";
