@@ -26,14 +26,16 @@ public class FormInstanceContext {
     // dynamic part
     public final SecurityPolicy securityPolicy;
     public final boolean useBootstrap;
+    public final boolean isNative;
     public final DBManager dbManager;
 
-    public FormInstanceContext(FormEntity entity, FormView view, SecurityPolicy securityPolicy, boolean useBootstrap, DBManager dbManager) {
+    public FormInstanceContext(FormEntity entity, FormView view, SecurityPolicy securityPolicy, boolean useBootstrap, boolean isNative, DBManager dbManager) {
         this.entity = entity;
         this.view = view;
 
         this.securityPolicy = securityPolicy;
         this.useBootstrap = useBootstrap;
+        this.isNative = isNative;
         this.dbManager = dbManager;
     }
 

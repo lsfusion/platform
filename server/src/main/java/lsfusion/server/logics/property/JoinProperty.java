@@ -359,8 +359,8 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     }
 
     @Override
-    public <I extends PropertyInterface, V extends PropertyInterface, W extends PropertyInterface> Select<Interface> getSelectProperty(ImList<Property> viewProperties) {
-        Select<Interface> result = super.getSelectProperty(viewProperties);
+    public <I extends PropertyInterface, V extends PropertyInterface, W extends PropertyInterface> Select<Interface> getSelectProperty(ImList<Property> viewProperties, boolean forceSelect) {
+        Select<Interface> result = super.getSelectProperty(viewProperties, forceSelect);
         if(result != null)
             return result;
 
@@ -368,7 +368,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         ImMap<T, PropertyInterfaceImplement<Interface>> implementMapping = implement.mapping;
 
         if (implementMapping.size() == 1)
-            return implementMapping.singleValue().mapSelect(viewProperties.addList(implementProperty));
+            return implementMapping.singleValue().mapSelect(viewProperties.addList(implementProperty), forceSelect);
 
         return null;
     }

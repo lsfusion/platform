@@ -1710,8 +1710,8 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     @IdentityStrongLazy
-    public <I extends PropertyInterface, V extends PropertyInterface, W extends PropertyInterface> Select<T> getSelectProperty(ImList<Property> viewProperties) {
-        if(!canBeChanged(false)) // optimization
+    public <I extends PropertyInterface, V extends PropertyInterface, W extends PropertyInterface> Select<T> getSelectProperty(ImList<Property> viewProperties, boolean forceSelect) {
+        if(!forceSelect && !canBeChanged(false)) // optimization
             return null; // ? because sometimes can be used to display one of the option
 
         BaseLogicsModule baseLM = getBaseLM();
@@ -1720,7 +1720,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
         Property<V> viewProperty;
         if(valueClass instanceof CustomClass && !viewProperties.isEmpty() &&
-                (viewProperty = (Property<V>) PropertyFact.createViewProperty(viewProperties).property).isValueUnique(MapFact.EMPTY(), true)) {
+                ((viewProperty = (Property<V>) PropertyFact.createViewProperty(viewProperties).property).isValueUnique(MapFact.EMPTY(), true) || forceSelect)) {
 
             // generation this interfaces + object
             ImRevMap<T, I> mapPropertyInterfaces = interfaces.mapRevValues(() -> (I)new PropertyInterface());
@@ -1743,16 +1743,16 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             PropertyMapImplement<W, I> where = (PropertyMapImplement<W, I>) filtersAndOrders.first.getWhereProperty(objectInterface);
             ImOrderMap<PropertyMapImplement<?, I>, Boolean> orders = filtersAndOrders.second.mapOrderKeys(order -> order.getOrderProperty(objectInterface));
 
-            return getSelectProperty(baseLM, false, mapPropertyInterfaces, innerInterfaces, name, selected, customClass, where, orders);
+            return getSelectProperty(baseLM, false, forceSelect, mapPropertyInterfaces, innerInterfaces, name, selected, customClass, where, orders);
         }
 
         return null;
     }
 
     public static <I extends PropertyInterface, T extends PropertyInterface, W extends PropertyInterface>
-            Select<T> getSelectProperty(BaseLogicsModule baseLM, boolean multi, ImRevMap<T, I> mapPropertyInterfaces, ImSet<I> innerInterfaces, PropertyMapImplement<?, I> name, PropertyInterfaceImplement<I> selected, CustomClass customClass, PropertyMapImplement<W, I> where, ImOrderMap<? extends PropertyInterfaceImplement<I>, Boolean> orders) {
+            Select<T> getSelectProperty(BaseLogicsModule baseLM, boolean multi, boolean forceSelect, ImRevMap<T, I> mapPropertyInterfaces, ImSet<I> innerInterfaces, PropertyMapImplement<?, I> name, PropertyInterfaceImplement<I> selected, CustomClass customClass, PropertyMapImplement<W, I> where, ImOrderMap<? extends PropertyInterfaceImplement<I>, Boolean> orders) {
 
-        boolean fallbackToFilterSelected = multi;
+        boolean fallbackToFilterSelected = multi || forceSelect;
 
         ImSet<I> innerMapInterfaces = mapPropertyInterfaces.valuesSet();
         ImSet<W> mapWhereInterfaces = where.mapping.filterValuesRev(innerMapInterfaces).keys();

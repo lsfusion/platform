@@ -51,6 +51,11 @@ public class ClientHTMLStringClass extends ClientStringClass implements ClientTy
     }
 
     @Override
+    public String toString() {
+        return "HTML";
+    }
+
+    @Override
     public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property, AsyncChangeInterface asyncChange) {
         return  new TextPropertyEditor(value, property.design);
     }

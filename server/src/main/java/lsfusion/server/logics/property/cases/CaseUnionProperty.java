@@ -8,7 +8,6 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.caches.IdentityStartLazy;
 import lsfusion.server.base.caches.IdentityStrongLazy;
@@ -19,7 +18,6 @@ import lsfusion.server.base.version.interfaces.NFList;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.where.CaseExprInterface;
-import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
@@ -31,7 +29,6 @@ import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
-import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputValueList;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.cases.graph.Graph;
@@ -300,7 +297,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
 
     @Override
     @IdentityStrongLazy
-    public <I extends PropertyInterface, V extends PropertyInterface, W extends PropertyInterface> Select<Interface> getSelectProperty(ImList<Property> viewProperties) {
+    public <I extends PropertyInterface, V extends PropertyInterface, W extends PropertyInterface> Select<Interface> getSelectProperty(ImList<Property> viewProperties, boolean forceSelect) {
         Pair<Integer, Integer> resultStat = new Pair<>(0, 0);
         boolean multi = false;
         MList<InputValueList> mResultValues = ListFact.mList();
@@ -308,7 +305,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         MList<PropertyMapImplement<?, Interface>> mJsonWheres = ListFact.mList();
         MList<SelectProperty<Interface>> mJsonProps = ListFact.mList();
         for(CalcCase<Interface> propCase : cases) {
-            Select<Interface> joinProperty = propCase.implement.mapSelect(viewProperties);
+            Select<Interface> joinProperty = propCase.implement.mapSelect(viewProperties, forceSelect);
             if(joinProperty == null)
                 return null;
 

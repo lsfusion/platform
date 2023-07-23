@@ -59,7 +59,7 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
             groupObject = new GroupObjectEntity(genID(), innerInterfaces.subOrder(valueInterfaces.size(), innerInterfaces.size()).mapOrder(mapObjects)); // we don't know parameter classes
             groupObject.setSID("value"); // for JSON and XML
             groupObject.setListViewType(ListViewType.CUSTOM);
-            groupObject.setCustomRenderFunction("select");
+            groupObject.setCustomRenderFunction("selectMultiInput");
             addGroupObject(groupObject, version);
         } else
             groupObject = null;

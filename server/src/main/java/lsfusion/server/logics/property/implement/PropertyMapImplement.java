@@ -222,8 +222,8 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
     }
 
     @Override
-    public Property.Select<T> mapSelect(ImList<Property> viewProperties) {
-        Property.Select<P> select = property.getSelectProperty(viewProperties);
+    public Property.Select<T> mapSelect(ImList<Property> viewProperties, boolean forceSelect) {
+        Property.Select<P> select = property.getSelectProperty(viewProperties, forceSelect);
         return select == null ? null : new Property.Select<>(filterSelected -> {
             PropertyMapImplement<?, P> selectProperty = select.property.get(filterSelected);
             if(selectProperty == null)

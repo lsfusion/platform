@@ -664,11 +664,20 @@ propertyClassViewType returns [ClassViewType type]
 	;
 
 propertyCustomView returns [String customRenderFunction, String customEditorFunction]
-	:	'CUSTOM' ((renderFun=stringLiteral { $customRenderFunction = $renderFun.val;})
-	    | ((renderFun=stringLiteral { $customRenderFunction = $renderFun.val;})?
-        // EDIT TEXT is a temporary fix for backward compatibility
-		(('CHANGE' | ('EDIT' primitiveType)) { $customEditorFunction = "DEFAULT"; } (editFun=stringLiteral {$customEditorFunction = $editFun.val; })?))) // "DEFAULT" is hardcoded and used in GFormController.edit
+	:	('CUSTOM'
+	            ((renderFun=stringLiteral { $customRenderFunction = $renderFun.val;})
+	        |   ((renderFun=stringLiteral { $customRenderFunction = $renderFun.val;})?
+	            pedt = propertyEditCustomView { $customEditorFunction = $pedt.customEditorFunction; })))
+	    |
+	    'NOCUSTOM' { $customRenderFunction = PropertyDrawEntity.NOCUSTOM; }
+	    (pedt = propertyEditCustomView { $customEditorFunction = $pedt.customEditorFunction; })?
 	;
+
+propertyEditCustomView returns [String customEditorFunction]
+    :
+        // EDIT TEXT is a temporary fix for backward compatibility
+        ('CHANGE' | ('EDIT' primitiveType)) { $customEditorFunction = "DEFAULT"; } (editFun=stringLiteral {$customEditorFunction = $editFun.val; })? // "DEFAULT" is hardcoded and used in GFormController.edit
+    ;
 
 listViewType returns [ListViewType type, PivotOptions options, String customRenderFunction, FormLPUsage customOptions, String mapTileProvider]
 	:   'PIVOT' {$type = ListViewType.PIVOT;} ('DEFAULT' | 'NODEFAULT' {$type = null;})? opt = pivotOptions {$options = $opt.options; }

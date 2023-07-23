@@ -21,10 +21,8 @@ import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.property.CalcType;
-import lsfusion.server.logics.property.JoinProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
-import lsfusion.server.logics.property.classes.data.AndFormulaProperty;
 import lsfusion.server.logics.property.classes.infer.CalcClassType;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
@@ -101,12 +99,12 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
     }
     @Override
     @IdentityStrongLazy
-    public <X extends PropertyInterface, V extends PropertyInterface, W extends PropertyInterface> Select<Interface<I>> getSelectProperty(ImList<Property> viewProperties) {
+    public <X extends PropertyInterface, V extends PropertyInterface, W extends PropertyInterface> Select<Interface<I>> getSelectProperty(ImList<Property> viewProperties, boolean forceSelect) {
         ImRevMap<Interface<I>, I> groupMap = getConcatMap();
         if(groupMap != null)
-            return Property.getSelectProperty(getBaseLM(), true, groupMap, innerInterfaces, (PropertyMapImplement<?, I>) nameProp, whereProp, null, (PropertyMapImplement<?, I>) nameProp, orders);
+            return Property.getSelectProperty(getBaseLM(), true, forceSelect, groupMap, innerInterfaces, (PropertyMapImplement<?, I>) nameProp, whereProp, null, (PropertyMapImplement<?, I>) nameProp, orders);
 
-        return super.getSelectProperty(viewProperties);
+        return super.getSelectProperty(viewProperties, forceSelect);
     }
 
     @Override
