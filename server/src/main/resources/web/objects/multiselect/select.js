@@ -152,56 +152,55 @@ function selectMultiInput() {
     }
 }
 
-function selectMulti() {
-    return _defaultRadioCheckBox('checkbox');
-}
-
 function select() {
-    return _defaultRadioCheckBox('radio', true);
-}
-
-function selectMultiButton() {
-    return _checkBoxRadioButtonToggle('checkbox');
+    return _defaultRadioCheckBox('radio', true, true);
 }
 
 function selectButton() {
-    return _checkBoxRadioButtonToggle('radio', true);
-}
-
-function selectMultiButtonGroup() {
-    return _checkBoxRadioButtonGroup('checkbox');
-}
-
-// temporary, later radio with drop on selected click should be done
-function selectNull() {
-    return selectMulti();
-}
-
-function selectNullButton() {
-    return selectMultiButton();
-}
-
-function selectNullButtonGroup() {
-    return selectMultiButtonGroup();
+    return _checkBoxRadioButtonToggle('radio', true, true);
 }
 
 function selectButtonGroup() {
-    return _checkBoxRadioButtonGroup('radio', true);
+    return _checkBoxRadioButtonGroup('radio', true, true);
 }
 
-function _defaultRadioCheckBox(type, hasName) {
-    return _option(type, false, ['form-check'], ['form-check-input'], ['form-check-label', 'option-item'], hasName);
+function selectMulti() {
+    return _defaultRadioCheckBox('checkbox', false);
 }
 
-function _checkBoxRadioButtonToggle(type, hasName) {
-    return _option(type, false, null, ['btn-check'], ['btn', 'btn-outline-secondary', 'option-item'], hasName);
+function selectMultiButton() {
+    return _checkBoxRadioButtonToggle('checkbox', false);
 }
 
-function _checkBoxRadioButtonGroup(type, hasName) {
-    return _option(type, true, ['btn-group'], ['btn-check'], ['btn', 'btn-outline-secondary', 'option-item'], hasName);
+function selectMultiButtonGroup() {
+    return _checkBoxRadioButtonGroup('checkbox', false);
 }
 
-function _option(type, isGroup, divClasses, inputClasses, labelClasses, hasName) {
+function selectNull() {
+    return _defaultRadioCheckBox('radio', false, true);
+}
+
+function selectNullButton() {
+    return _checkBoxRadioButtonToggle('radio', false, true);
+}
+
+function selectNullButtonGroup() {
+    return _checkBoxRadioButtonGroup('radio', false, true);
+}
+
+function _defaultRadioCheckBox(type, shouldBeSelected, hasName) {
+    return _option(type, false, ['form-check'], ['form-check-input'], ['form-check-label', 'option-item'], shouldBeSelected, hasName);
+}
+
+function _checkBoxRadioButtonToggle(type, shouldBeSelected, hasName) {
+    return _option(type, false, null, ['btn-check'], ['btn', 'btn-outline-secondary', 'option-item'], shouldBeSelected, hasName);
+}
+
+function _checkBoxRadioButtonGroup(type, shouldBeSelected, hasName) {
+    return _option(type, true, ['btn-group'], ['btn-check'], ['btn', 'btn-outline-secondary', 'option-item'], shouldBeSelected, hasName);
+}
+
+function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBeSelected, hasName) {
     let isButton = isGroup || divClasses == null;
 
     function _getRandomId() {
@@ -311,6 +310,8 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, hasName)
 
                         input.object = object;
                         label.innerText = object.name;
+                        // we can't use required for styling, because we want "live validation" and not on submit
+                        // input.required = shouldBeSelected;
 
                         let checked = object.selected != null && object.selected;
                         if(checked)
@@ -324,12 +325,17 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, hasName)
             });
 
             // if we dropped (and not set) checked and there are other selected elements - select them
-            if(changed.dropAndNotSetChecked) {
+            let hasSelected = false;
+            if(changed.dropAndNotSetChecked || shouldBeSelected) {
                 for (let i = 0; i < list.length; i++) {
                     let object = list[i];
                     if(object.selected != null && object.selected) {
-                        let input = _getOptionElement(options, i, true, true);
-                        input.checked = true;
+                        if(changed.dropAndNotSetChecked) {
+                            let input = _getOptionElement(options, i, true, true);
+                            input.checked = true;
+                        }
+                        if(shouldBeSelected)
+                            hasSelected = true;
                         break;
                     }
                 }
@@ -339,7 +345,10 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, hasName)
                 let input = _getOptionElement(options, i, true, true);
                 let readonly;
                 if (isList) {
-                    input.classList[controller.isCurrent(input.object) ? 'add' : 'remove']('option-item-current');
+                    if(controller.isCurrent(input.object))
+                        input.classList.add('option-item-current');
+                    else
+                        input.classList.remove('option-item-current');
                     readonly = controller.isPropertyReadOnly('selected', input.object);
                 } else {
                     readonly = controller.isReadOnly();
@@ -348,6 +357,23 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, hasName)
                     input.setAttribute('onclick', 'return false');
                 else
                     input.removeAttribute('onclick')
+                if(shouldBeSelected) {
+                    if(isButton) { // bootstrap doesn't support is-invalid for buttons
+                        let label = _getOptionElement(options, i, false, true);
+                        if (!hasSelected) {
+                            label.classList.add("btn-outline-danger");
+                            label.classList.remove("btn-outline-secondary");
+                        } else {
+                            label.classList.add("btn-outline-secondary");
+                            label.classList.remove("btn-outline-danger");
+                        }
+                    } else {
+                        if (!hasSelected)
+                            input.classList.add("is-invalid");
+                        else
+                            input.classList.remove("is-invalid");
+                    }
+                }
             }
         }
     }
