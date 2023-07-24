@@ -289,10 +289,6 @@ table.pvtTable thead tr th {
     margin-bottom: 0;
 }
 
-.pvtAttr {
-    width: auto;
-}
-
-.pvtRenderer {
+.pvtRenderer, .pvtAggregator, .pvtAttr {
     width: auto;
 }
