@@ -1299,7 +1299,7 @@
         }).attr("cellpadding", 5).appendTo(pvtUiContainer);
         rendererControl = $("<td>").addClass("pvtUiCell");
         rendererControlDiv = $("<div>").appendTo(rendererControl);
-        renderer = $("<select>").addClass('pvtRenderer form-select form-select-sm').appendTo(rendererControlDiv).css({
+        renderer = $("<select>").addClass('pvtRenderer form-select form-select-sm panelRendererValue').appendTo(rendererControlDiv).css({
           height: opts.componentHeightString
         }).bind("change", function() {
           return refresh();
@@ -1505,7 +1505,7 @@
             }
             return refresh();
           });
-          attrElem = $("<select>").addClass('pvtAttr form-select form-select-sm').data("attrName", attr).appendTo(listItem);
+          attrElem = $("<select>").addClass('pvtAttr form-select form-select-sm panelRendererValue').data("attrName", attr).appendTo(listItem);
           optionElem = $("<option>").text(attr).appendTo(attrElem);
           attrElem.bind("click", function(e) {
             var left, listHeight, ref2, top;
@@ -1531,7 +1531,7 @@
           fn1(attr);
         }
         tr1 = $("<tr>").addClass('uiTableRow').appendTo(uiTable);
-        aggregator = $("<select>").addClass('pvtAggregator form-select form-select-sm').css({
+        aggregator = $("<select>").addClass('pvtAggregator form-select form-select-sm panelRendererValue').css({
           height: opts.componentHeightString
         }).bind("change", function() {
           return refresh();

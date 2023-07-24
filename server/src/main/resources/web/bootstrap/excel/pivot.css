@@ -23,25 +23,6 @@
     -moz-border-radius: var(--table-border-radius);
 }
 
-.pvtRows li div.pvtAttr, .pvtCols li div.pvtAttr {
-    background: var(--selection-color);
-}
-
-.pvtAxisContainer li div.pvtAttr,
-.pvtUiContainer > li div.pvtAttr /* dragged */ {
-    /*-webkit-text-size-adjust: 100%;*/
-    border: 1px solid var(--component-border-color);
-    border-radius: var(--combobox-border-radius);
-    color: var(--text-color);
-    background-color: var(--component-background-color);
-    padding: 0 5px;
-    /*white-space: nowrap;*/
-    /*display: flex;*/
-    /*align-self: start;*/
-    /*-webkit-border-radius: var(--combobox-border-radius);*/
-    /*-moz-border-radius: var(--combobox-border-radius);*/
-}
-
 table.pvtTable tbody tr td,
 table.pvtTable tbody tr th,
 table.pvtTable thead tr th {
@@ -51,21 +32,5 @@ table.pvtTable thead tr th {
 
     /*overflow: hidden;*/
     /*white-space: nowrap;*/
-    padding: 0 3px;
     /*font-weight: normal;*/
-}
-
-.pvtAxisContainer li,
-.pvtAxisContainer li.pvtPlaceholder,
-.pvtAxisContainer > li.pvtPlaceholder:only-child {
-    margin: 4px;
-}
-
-.pvtRenderer {
-    margin: 5px 0 5px 5px;
-    /*max-width: 150px;*/
-}
-
-.pvtAggregator {
-    margin: 4px 0 4px 4px;
 }
