@@ -365,6 +365,7 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
     text-overflow: ellipsis;
 }
 
-.pvtRowsTable .pvtAttr {
+.pvtRowsTable .pvtAttr,
+.pvtAggregator {
     max-width: 125px;
 }

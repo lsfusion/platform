@@ -298,3 +298,8 @@ table.pvtTable thead tr th {
 .pvtRenderer, .pvtAggregator, .pvtAttr {
     width: auto;
 }
+
+.pvtRowsTable li,
+.pvtAggregator {
+    width: 100%;
+}
