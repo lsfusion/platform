@@ -273,6 +273,12 @@
 }
 
 .pvtRenderer.form-select,
+.pvtAggregator.form-select,
+.pvtAttr.form-select {
+    margin: var(--border-comp-vert-padding) var(--border-comp-horz-padding);
+}
+
+.pvtRenderer.form-select,
 .pvtAggregator.form-select {
     /*override height set in js*/
     height: auto !important;
