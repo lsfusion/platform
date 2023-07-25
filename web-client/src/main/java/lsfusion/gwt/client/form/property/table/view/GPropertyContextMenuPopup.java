@@ -34,7 +34,18 @@ public class GPropertyContextMenuPopup {
             MenuItem menuItem = new MenuItem(ensureMenuItemCaption(item.getValue()), () -> {
                 popup.hide();
                 selectionListener.onMenuItemSelected(actionSID);
-            });
+            }) {
+                @Override
+                protected void setSelectionStyle(boolean selected) {
+                    super.setSelectionStyle(selected);
+                    if(selected) {
+                        addStyleName("context-menu-item-selected");
+                    } else {
+                        removeStyleName("context-menu-item-selected");
+                    }
+                }
+            };
+            menuItem.setStyleName("context-menu-item");
 
             menuBar.addItem(menuItem);
         }
