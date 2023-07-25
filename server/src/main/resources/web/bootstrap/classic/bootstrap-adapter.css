@@ -272,18 +272,6 @@
     padding-left: unset;
 }
 
-.pvtRenderer.form-select,
-.pvtAggregator.form-select,
-.pvtAttr.form-select {
-    margin: var(--border-comp-vert-padding) var(--border-comp-horz-padding);
-}
-
-.pvtRenderer.form-select,
-.pvtAggregator.form-select {
-    /*override height set in js*/
-    height: auto !important;
-}
-
 table.pvtTable thead tr th {
     /*bold column captions*/
     font-weight: bold;
@@ -295,11 +283,7 @@ table.pvtTable thead tr th {
     margin-bottom: 0;
 }
 
-.pvtRenderer, .pvtAggregator, .pvtAttr {
-    width: auto;
-}
-
-.pvtRowsTable li,
-.pvtAggregator {
-    width: 100%;
+.pvtRenderer, .pvtAggregator, .pvtAttr, .pvtRowsTable li {
+    width: -webkit-fill-available;
+    width: -moz-available;
 }

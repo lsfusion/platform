@@ -1235,7 +1235,6 @@
         },
         sorters: {},
         valueHeight: null,
-        componentHeightString: null,
         cellHorizontalPadding: null,
         attach: null,
         getDisplayColor: null
@@ -1299,9 +1298,7 @@
         }).attr("cellpadding", 5).appendTo(pvtUiContainer);
         rendererControl = $("<td>").addClass("pvtUiCell");
         rendererControlDiv = $("<div>").appendTo(rendererControl);
-        renderer = $("<select>").addClass('pvtRenderer form-select form-select-sm').appendTo(rendererControlDiv).css({
-          height: opts.componentHeightString
-        }).bind("change", function() {
+        renderer = $("<select>").addClass('pvtRenderer form-select form-select-sm').appendTo(rendererControlDiv).bind("change", function() {
           return refresh();
         });
         ref = opts.renderers;
@@ -1423,17 +1420,13 @@
               controls.append($("<br>"));
               $("<button>", {
                 type: "button"
-              }).addClass('btn btn-primary').appendTo(controls).html(opts.localeStrings.selectAll).css({
-                height: opts.componentHeightString
-              }).bind("click", function() {
+              }).addClass('btn btn-sm btn-primary').appendTo(controls).html(opts.localeStrings.selectAll).bind("click", function() {
                 valueList.find("input:visible:not(:checked)").prop("checked", true).toggleClass("changed");
                 return false;
               });
               $("<button>", {
                 type: "button"
-              }).addClass('btn btn-primary').appendTo(controls).html(opts.localeStrings.selectNone).css({
-                height: opts.componentHeightString
-              }).bind("click", function() {
+              }).addClass('btn btn-sm btn-primary').appendTo(controls).html(opts.localeStrings.selectNone).bind("click", function() {
                 valueList.find("input:visible:checked").prop("checked", false).toggleClass("changed");
                 return false;
               });
@@ -1473,9 +1466,7 @@
           if (values.length <= opts.menuLimit) {
             $("<button>", {
               type: "button"
-            }).text(opts.localeStrings.apply).addClass('btn btn-primary').appendTo(finalButtons).css({
-              height: opts.componentHeightString
-            }).bind("click", function() {
+            }).text(opts.localeStrings.apply).addClass('btn btn-sm btn-primary').appendTo(finalButtons).bind("click", function() {
               if (valueList.find(".changed").removeClass("changed").length) {
                 refresh();
               }
@@ -1484,9 +1475,7 @@
           }
           $("<button>", {
             type: "button"
-          }).text(opts.localeStrings.cancel).addClass('btn btn-primary').appendTo(finalButtons).css({
-            height: opts.componentHeightString
-          }).bind("click", function() {
+          }).text(opts.localeStrings.cancel).addClass('btn btn-sm btn-primary').appendTo(finalButtons).bind("click", function() {
             valueList.find(".changed:checked").removeClass("changed").prop("checked", false);
             valueList.find(".changed:not(:checked)").removeClass("changed").prop("checked", true);
             return closeFilterBox();
@@ -1531,9 +1520,7 @@
           fn1(attr);
         }
         tr1 = $("<tr>").addClass('uiTableRow').appendTo(uiTable);
-        aggregator = $("<select>").addClass('pvtAggregator form-select form-select-sm').css({
-          height: opts.componentHeightString
-        }).bind("change", function() {
+        aggregator = $("<select>").addClass('pvtAggregator form-select form-select-sm').bind("change", function() {
           return refresh();
         });
         ref1 = opts.aggregators;

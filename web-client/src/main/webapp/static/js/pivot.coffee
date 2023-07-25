@@ -683,7 +683,6 @@ callWithJQuery ($) ->
             filter: -> true
             sorters: {}
             valueHeight: null
-            componentHeightString: null
             cellHorizontalPadding: null
             attach : null
             getDisplayColor: null
@@ -738,7 +737,6 @@ callWithJQuery ($) ->
             renderer = $("<select>")
                 .addClass('pvtRenderer form-select form-select-sm')
                 .appendTo(rendererControlDiv)
-                .css(height: opts.componentHeightString)
                 .bind "change", -> refresh() #capture reference
             for own x of opts.renderers
                 $("<option>").val(x).html(x).appendTo(renderer)
@@ -815,19 +813,17 @@ callWithJQuery ($) ->
                                             $(this).parent().parent().hide()
                             controls.append $("<br>")
                             $("<button>", {type:"button"})
-                                .addClass('btn btn-primary')
+                                .addClass('btn btn-sm btn-primary')
                                 .appendTo(controls)
                                 .html(opts.localeStrings.selectAll)
-                                .css(height: opts.componentHeightString)
                                 .bind "click", ->
                                     valueList.find("input:visible:not(:checked)")
                                         .prop("checked", true).toggleClass("changed")
                                     return false
                             $("<button>", {type:"button"})
-                                .addClass('btn btn-primary')
+                                .addClass('btn btn-sm btn-primary')
                                 .appendTo(controls)
                                 .html(opts.localeStrings.selectNone)
-                                .css(height: opts.componentHeightString)
                                 .bind "click", ->
                                     valueList.find("input:visible:checked")
                                         .prop("checked", false).toggleClass("changed")
@@ -868,18 +864,16 @@ callWithJQuery ($) ->
 
                     if values.length <= opts.menuLimit
                         $("<button>", {type: "button"}).text(opts.localeStrings.apply)
-                            .addClass('btn btn-primary')
+                            .addClass('btn btn-sm btn-primary')
                             .appendTo(finalButtons)
-                            .css(height: opts.componentHeightString)
                             .bind "click", ->
                                 if valueList.find(".changed").removeClass("changed").length
                                     refresh()
                                 closeFilterBox()
 
                     $("<button>", {type: "button"}).text(opts.localeStrings.cancel)
-                        .addClass('btn btn-primary')
+                        .addClass('btn btn-sm btn-primary')
                         .appendTo(finalButtons)
-                        .css(height: opts.componentHeightString)
                         .bind "click", ->
                             valueList.find(".changed:checked")
                                 .removeClass("changed").prop("checked", false)
@@ -918,7 +912,6 @@ callWithJQuery ($) ->
             #aggregator menu and value area
 
             aggregator = $("<select>").addClass('pvtAggregator form-select form-select-sm')
-                .css(height: opts.componentHeightString)
                 .bind "change", -> refresh() #capture reference
             for own x of opts.aggregators
                 aggregator.append $("<option>").val(x).html(x)

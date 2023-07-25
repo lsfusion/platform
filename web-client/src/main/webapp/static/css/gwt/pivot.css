@@ -369,3 +369,9 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
 .pvtAggregator {
     max-width: 125px;
 }
+
+.pvtRenderer.form-select,
+.pvtAggregator.form-select,
+.pvtAttr.form-select {
+    margin: var(--border-comp-vert-padding) var(--border-comp-horz-padding);
+}
