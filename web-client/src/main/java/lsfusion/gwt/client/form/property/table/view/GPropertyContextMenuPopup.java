@@ -37,7 +37,6 @@ public class GPropertyContextMenuPopup {
             }) {
                 @Override
                 protected void setSelectionStyle(boolean selected) {
-                    super.setSelectionStyle(selected);
                     if(selected) {
                         addStyleName("context-menu-item-selected");
                     } else {
