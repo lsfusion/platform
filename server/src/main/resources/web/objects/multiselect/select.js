@@ -25,13 +25,18 @@ function selectMultiInput() {
 
     return {
         render: function (element, controller) {
-            Selectize.define('append_item', function() {
-                var self = this.addItem;
-                this.addItem = function (value, silent) {
-                    if (!element.silent)
-                        this.setCaret(this.items.length);
-
-                    self.apply(this, arguments);
+            Selectize.define('on_key_down', function() {
+                var self = this.onKeyDown;
+                this.onKeyDown = function (e) {
+                    //End editing by pressing shift+enter
+                    if (e.shiftKey === true && e.key === 'Enter') {
+                        this.close();
+                        this.blur();
+                    } else if (e.key === 'Escape') { //Esc pressed try to close form. Prevent it and only blur element
+                        e.stopPropagation();
+                        this.blur();
+                    } else
+                        self.apply(this, arguments);
                 }
             });
 
@@ -54,7 +59,9 @@ function selectMultiInput() {
                         // assert option.loaded;
                         option.loaded = false; // ??? or should be called updateOption
 
-                        element.controller.changeProperty('selected', option.originalObject, true, "add"); // ?? maybe it is possible to get caret pos and in that case we won't need add_item plugin
+                        //onItemAdd is triggered after the item has been rendered and caret position has moved one ahead,
+                        // for changeProperty we need the previous position of caret. for this reason -1
+                        element.controller.changeProperty('selected', option.originalObject, true, "add", this.caretPos - 1);
 
                         //When option selected by mouseclick no possibility to continue the search from the keyboard
                         this.$control_input[0].focus();
@@ -72,6 +79,7 @@ function selectMultiInput() {
                 onDropdownOpen: function (dropdown) {
                     // setting autoHidePartner to avoid fake blurs
                     dropdown[0].autoHidePartner = element;
+                    this.setCaret(this.items.length);
                 },
                 respect_word_boundaries: false, // undocumented feature. But for some reason it includes support for searching by Cyrillic characters
                 preload: 'focus',
@@ -87,20 +95,7 @@ function selectMultiInput() {
                         callback(options);
                     }, null);
                 },
-                plugins: ['remove_button', 'auto_position', 'append_item']
-            });
-
-            let selectizeInstance = element.selectizeInstance[0].selectize;
-            selectizeInstance.$control_input[0].addEventListener('keydown', function (e) {
-                //End editing by pressing shift+enter
-                if (e.shiftKey === true && e.key === 'Enter') {
-                    selectizeInstance.close();
-                    selectizeInstance.blur();
-                }
-
-                if (e.key === 'Escape') {
-                    selectizeInstance.blur();
-                }
+                plugins: ['remove_button', 'auto_position', 'on_key_down']
             });
         },
         update: function (element, controller, list) {
@@ -119,9 +114,6 @@ function selectMultiInput() {
             }
             element.controller = controller;
 
-            // assert that all items are selected
-//            list = list.filter((item) => item.selected);
-
             let selectizeInstance = element.selectizeInstance[0].selectize;
 
             controller.diff(list, (type, index, object) => {
@@ -134,13 +126,14 @@ function selectMultiInput() {
                         break;
                     case 'add':
                     case 'update':
-                        if(type === 'add')
-                            selectizeInstance.addOption(selectizeOption);
-                        else
-                            selectizeInstance.updateOption(optionValue, selectizeOption);
+                        //inside selectizeInstance.updateOption if option with value does not exist - do nothing.
+                        //we need to update option to set loaded = false for clearSearchCaches
+                        selectizeInstance.updateOption(optionValue, selectizeOption);
+                        selectizeInstance.addOption(selectizeOption);
 
                         selectizeInstance.setCaret(index);
                         selectizeInstance.addItem(optionValue, true);
+                        selectizeInstance.setCaret(selectizeInstance.items.length);
                 }
             }, true, true);
 
