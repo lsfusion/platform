@@ -143,6 +143,12 @@ Classpath сервера по умолчанию устанавливается 
 | RHEL 7 / CentOS 7                | `yum update lsfusion5-client` |
 | Ubuntu 18+ / Debian 9+           | `apt update lsfusion5-client` |
 <!--- comment to prevent multiple error messages in IDEA --->
+
+#### Нестабильные версии
+Обновление на конкретную SNAPSHOT-версию платформы : `source <(curl -s https://download.lsfusion.org/apt/update-lsfusion5) <platform version>`.
+
+Например, `source <(curl -s https://download.lsfusion.org/apt/update-lsfusion5) 6.0-SNAPSHOT`.
+
 </TabItem>
 </Tabs>
 
