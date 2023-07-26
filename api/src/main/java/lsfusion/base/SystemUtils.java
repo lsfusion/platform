@@ -40,6 +40,7 @@ public class SystemUtils {
      *
      * @since Java 1.1
      */
+    @Deprecated
     public static final String LINE_SEPARATOR = getSystemProperty("line.separator");
 
     /**
@@ -56,6 +57,7 @@ public class SystemUtils {
      *
      * @since Java 1.1
      */
+    @Deprecated
     public static final String OS_ARCH = getSystemProperty("os.arch");
 
     /**
@@ -105,6 +107,7 @@ public class SystemUtils {
      *
      * @since Java 1.1
      */
+    @Deprecated
     public static final String PATH_SEPARATOR = getSystemProperty("path.separator");
 
     /**
@@ -115,6 +118,7 @@ public class SystemUtils {
      *
      * @since 2.0
      */
+    @Deprecated
     public static final boolean IS_OS_AIX = getOSMatches("AIX");
 
     /**
@@ -125,6 +129,7 @@ public class SystemUtils {
      *
      * @since 2.0
      */
+    @Deprecated
     public static final boolean IS_OS_HP_UX = getOSMatches("HP-UX");
 
     /**
@@ -135,6 +140,7 @@ public class SystemUtils {
      *
      * @since 2.0
      */
+    @Deprecated
     public static final boolean IS_OS_IRIX = getOSMatches("Irix");
 
     /**
@@ -145,6 +151,7 @@ public class SystemUtils {
      *
      * @since 2.0
      */
+    @Deprecated
     public static final boolean IS_OS_LINUX = getOSMatches("Linux") || getOSMatches("LINUX");
 
     /**
@@ -155,6 +162,7 @@ public class SystemUtils {
      *
      * @since 2.0
      */
+    @Deprecated
     public static final boolean IS_OS_MAC = getOSMatches("Mac");
 
     /**
@@ -165,6 +173,7 @@ public class SystemUtils {
      *
      * @since 2.0
      */
+    @Deprecated
     public static final boolean IS_OS_MAC_OSX = getOSMatches("Mac OS X");
 
     /**
@@ -175,6 +184,7 @@ public class SystemUtils {
      *
      * @since 2.0
      */
+    @Deprecated
     public static final boolean IS_OS_OS2 = getOSMatches("OS/2");
 
     /**
@@ -185,6 +195,7 @@ public class SystemUtils {
      *
      * @since 2.0
      */
+    @Deprecated
     public static final boolean IS_OS_SOLARIS = getOSMatches("Solaris");
 
     /**
@@ -195,6 +206,7 @@ public class SystemUtils {
      *
      * @since 2.0
      */
+    @Deprecated
     public static final boolean IS_OS_SUN_OS = getOSMatches("SunOS");
 
     /**
@@ -206,6 +218,7 @@ public class SystemUtils {
      *
      * @since 2.1
      */
+    @Deprecated
     public static final boolean IS_OS_UNIX =
             IS_OS_AIX || IS_OS_HP_UX || IS_OS_IRIX || IS_OS_LINUX ||
             IS_OS_MAC_OSX || IS_OS_SOLARIS || IS_OS_SUN_OS;
@@ -228,6 +241,7 @@ public class SystemUtils {
      *
      * @since 2.0
      */
+    @Deprecated
     public static final boolean IS_OS_WINDOWS_2000 = getOSMatches(OS_NAME_WINDOWS_PREFIX, "5.0");
 
     /**
@@ -238,6 +252,7 @@ public class SystemUtils {
      *
      * @since 2.0
      */
+    @Deprecated
     public static final boolean IS_OS_WINDOWS_95 = getOSMatches(OS_NAME_WINDOWS_PREFIX + " 9", "4.0");
     // JDK 1.2 running on Windows98 returns 'Windows 95', hence the above
 
@@ -249,6 +264,7 @@ public class SystemUtils {
      *
      * @since 2.0
      */
+    @Deprecated
     public static final boolean IS_OS_WINDOWS_98 = getOSMatches(OS_NAME_WINDOWS_PREFIX + " 9", "4.1");
     // JDK 1.2 running on Windows98 returns 'Windows 95', hence the above
 
@@ -260,6 +276,7 @@ public class SystemUtils {
      *
      * @since 2.0
      */
+    @Deprecated
     public static final boolean IS_OS_WINDOWS_ME = getOSMatches(OS_NAME_WINDOWS_PREFIX, "4.9");
     // JDK 1.2 running on WindowsME may return 'Windows 95', hence the above
 
@@ -271,6 +288,7 @@ public class SystemUtils {
      *
      * @since 2.0
      */
+    @Deprecated
     public static final boolean IS_OS_WINDOWS_NT = getOSMatches(OS_NAME_WINDOWS_PREFIX + " NT");
     // Windows 2000 returns 'Windows 2000' but may suffer from same JDK1.2 problem
 
@@ -282,6 +300,7 @@ public class SystemUtils {
      *
      * @since 2.0
      */
+    @Deprecated
     public static final boolean IS_OS_WINDOWS_XP = getOSMatches(OS_NAME_WINDOWS_PREFIX, "5.1");
 
     //-----------------------------------------------------------------------
@@ -293,6 +312,7 @@ public class SystemUtils {
      *
      * @since 2.4
      */
+    @Deprecated
     public static final boolean IS_OS_WINDOWS_VISTA = getOSMatches(OS_NAME_WINDOWS_PREFIX, "6.0");
 
     /**
@@ -303,6 +323,7 @@ public class SystemUtils {
      *
      * @since 2.5
      */
+    @Deprecated
     public static final boolean IS_OS_WINDOWS_7 = getOSMatches(OS_NAME_WINDOWS_PREFIX, "6.1");
 
     /**
@@ -392,6 +413,7 @@ public class SystemUtils {
         return getResourcePath(libName + libExtension, path + libPath + '/', cls, false, false); // будем считать, что в library зашифрована вер
     }
 
+    @Deprecated
     public static String getExePath(String exeName, String path, Class<?> cls) throws IOException {
         assert IS_OS_WINDOWS;
         return getResourcePath(exeName + ".exe", path, cls, true, false); // будем считать, что в library зашифрована вер
@@ -418,10 +440,12 @@ public class SystemUtils {
         return osArch != null && osArch.contains("64");
     }
 
+    @Deprecated
     public static File getLocalClassesDir() {
         return getUserDir();
     }
 
+    @Deprecated
     public static void loadClass(String className, String path, Class<?> cls) throws IOException {
         getResourcePath(className + ".class", path, cls, true, true); // для класса обновляем, поскольку иначе изменения не будут обновляться
     }
@@ -484,6 +508,7 @@ public class SystemUtils {
         return null;
     }
 
+    @Deprecated
     public static String convertPath(String path, Boolean convertFirst) {
         if (path.startsWith("\\") && convertFirst)
             return "\\" + path.substring(2, path.length()).replace("\\", "/");
@@ -491,6 +516,7 @@ public class SystemUtils {
             return path.replace("\\", "/");
     }
 
+    @Deprecated
     public static TimeZone getCurrentTimeZone() {
         return Calendar.getInstance().getTimeZone();
     }
@@ -550,6 +576,7 @@ public class SystemUtils {
                 "Max Memory: " + maxMemory + " MB";
     }
 
+    @Deprecated
     public static boolean isPortAvailable(int port) {
         Socket socket = null;
         try {

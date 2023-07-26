@@ -28,6 +28,7 @@ public class ReflectionUtils {
         }
     }
 
+    @Deprecated
     public static Class getFirstTypeParameterOfSuperclass(Class clazz) {
         if (clazz == null) {
             throw new IllegalArgumentException("clazz must not be null");
@@ -140,6 +141,7 @@ public class ReflectionUtils {
         }
     }
 
+    @Deprecated
     public static <T> T getMethodValue2(Class clazz, Object target, String methodName, Class[] paramsClasses, Object[] params) {
         try {
             return getMethodValueWithException2(clazz, target, methodName, paramsClasses, params);
@@ -148,6 +150,7 @@ public class ReflectionUtils {
         }
     }
 
+    @Deprecated
     public static <T> T getMethodValueWithException2(Class clazz, Object target, String methodName, Class[] paramsClasses, Object[] params) throws ClassNotFoundException {
         try {
             Method method = clazz.getMethod(methodName, paramsClasses);
@@ -164,6 +167,7 @@ public class ReflectionUtils {
         }
     }
 
+    @Deprecated
     public static Method getDeclaredMethodOrNull(Class<?> clazz, String methodName, Class<?>... args) {
         if (clazz == null || methodName == null) {
             return null;
@@ -176,6 +180,7 @@ public class ReflectionUtils {
         }
     }
 
+    @Deprecated
     public static <T> T makeSynchronized(Class<T> ifaceClass, T object) {
         return (T) Proxy.newProxyInstance(ifaceClass.getClassLoader(), new Class<?>[]{ifaceClass}, new Handler(object));
     }
@@ -187,10 +192,12 @@ public class ReflectionUtils {
         throw new RuntimeException("no single method");
     }
 
+    @Deprecated
     public static Method getSingleMethod(Object object, String method) {
         return getSingleMethod(object, method, -1);
     }
 
+    @Deprecated
     public static void invokeCheckSetter(Object object, String field, Object set) {
         if (!BaseUtils.nullEquals(invokeGetter(object, field), set))
             invokeSetter(object, field, set);
@@ -258,6 +265,7 @@ public class ReflectionUtils {
         }
     }
 
+    @Deprecated
     public static <T> T createByPrivateConstructor(Class<T> clazz, Class<?>[] parameterTypes, Object... parameters) {
         try {
             Constructor<T> ctor = clazz.getDeclaredConstructor(parameterTypes);

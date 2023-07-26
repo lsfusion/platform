@@ -53,6 +53,7 @@ public class BaseUtils {
 
     //Длина строки может быть маскимум 65535, каждый символ может занимать от 1 до 3х байт
     //используем пессимистичный вариант, чтобы не заниматься реальным рассчётом длины, т.к. это долго
+    @Deprecated
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
@@ -106,6 +107,7 @@ public class BaseUtils {
 //    }
 //
     // mapList - zero-based, reverseable, size of list
+    @Deprecated
     public static <K> List<K> mapList(Integer[] mapList, List<K> list) {
         List<K> result = new ArrayList<>(list.size());
         for(int i=0,size=list.size();i<size;i++)
@@ -115,6 +117,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <K, V, F> Map<K, F> filterValues(Map<K, V> map, Collection<F> values) {
         Map<K, F> result = new HashMap<>();
         for (Map.Entry<K, V> entry : map.entrySet())
@@ -1122,6 +1125,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <K> List<K> reverse(Iterable<K> col) {
         return reverse(toList(col));
     }
@@ -1274,6 +1278,7 @@ public class BaseUtils {
             this.hash = hash;
         }
 
+        @Deprecated
         public HashClass(C valueClass) {
             this(valueClass, 0);
         }
@@ -1420,10 +1425,12 @@ public class BaseUtils {
         return formatRussian(date, false, false);
     }
 
+    @SuppressWarnings({"UnusedDeclaration"})
     public static String formatRussian(Date date, TimeZone timeZone) {
         return formatRussian(date, false, false, timeZone, false);
     }
 
+    @SuppressWarnings({"UnusedDeclaration"})
     public static String formatRussian(Date date, TimeZone timeZone, boolean noYear) {
         return formatRussian(date, false, false, timeZone, noYear);
     }
@@ -1432,10 +1439,12 @@ public class BaseUtils {
         return formatRussian(date, quotes, leadZero, null, false);
     }
 
+    @SuppressWarnings({"UnusedDeclaration"})
     public static String formatRussian(Date date, boolean quotes, boolean leadZero, boolean noYear) {
         return formatRussian(date, quotes, leadZero, null, noYear);
     }
 
+    @SuppressWarnings({"UnusedDeclaration"})
     public static String formatRussian(Date date, boolean quotes, boolean leadZero, TimeZone timeZone) {
         return formatRussian(date, quotes, leadZero, timeZone, false);
     }
@@ -1459,6 +1468,7 @@ public class BaseUtils {
         return formatRussian(date, false, false);
     }
 
+    @SuppressWarnings({"UnusedDeclaration"})
     public static String formatRussian(LocalDate date, boolean noYear) {
         return formatRussian(date, false, false, noYear);
     }
@@ -1571,6 +1581,7 @@ public class BaseUtils {
         return FilenameUtils.getName(filename);
     }
 
+    @Deprecated
     public static String getFilePath(String filename) {
         return FilenameUtils.getFullPath(filename);
     }
@@ -1730,6 +1741,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static List<Integer> consecutiveList(int i) {
         return consecutiveList(i, 1);
     }
@@ -1844,6 +1856,7 @@ public class BaseUtils {
         return new SimpleDateFormat(format).format(d);
     }
 
+    @Deprecated
     public static String dateToString(LocalDate d) {
         return dateToString("dd/MM/yyyy", d);
     }
@@ -1852,6 +1865,7 @@ public class BaseUtils {
         return d != null ? d.format(DateTimeFormatter.ofPattern(format)) : "";
     }
 
+    @Deprecated
     public static int indexOf(String string, int ch, int count) {
         int start = 0;
         for(int i=0;i<count;i++) {
