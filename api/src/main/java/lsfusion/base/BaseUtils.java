@@ -53,7 +53,6 @@ public class BaseUtils {
 
     //Длина строки может быть маскимум 65535, каждый символ может занимать от 1 до 3х байт
     //используем пессимистичный вариант, чтобы не заниматься реальным рассчётом длины, т.к. это долго
-    @Deprecated
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
@@ -95,35 +94,6 @@ public class BaseUtils {
 
     public static int nullHash(Object obj) {
         return obj == null ? 0 : obj.hashCode();
-    }
-
-//
-//    // mapList - zero-based, reverseable, size of list
-//    public static <K> List<K> mapList(Integer[] mapList, List<K> list) {
-//        List<K> result = new ArrayList<>();
-//        for(int i=0,size=list.size();i<size;i++)
-//            result.add(list.get(mapList[i]));
-//        return result;
-//    }
-//
-    // mapList - zero-based, reverseable, size of list
-    @Deprecated
-    public static <K> List<K> mapList(Integer[] mapList, List<K> list) {
-        List<K> result = new ArrayList<>(list.size());
-        for(int i=0,size=list.size();i<size;i++)
-            result.add(null);
-        for(int i=0,size=list.size();i<size;i++)
-            result.set(mapList[i], list.get(i));
-        return result;
-    }
-
-    @Deprecated
-    public static <K, V, F> Map<K, F> filterValues(Map<K, V> map, Collection<F> values) {
-        Map<K, F> result = new HashMap<>();
-        for (Map.Entry<K, V> entry : map.entrySet())
-            if (values.contains(entry.getValue()))
-                result.put(entry.getKey(), (F) entry.getValue());
-        return result;
     }
 
     public static <BK, K extends BK, V> Map<K, V> filterInclKeys(Map<BK, V> map, Set<? extends K> keys) {
@@ -1125,11 +1095,6 @@ public class BaseUtils {
         return result;
     }
 
-    @Deprecated
-    public static <K> List<K> reverse(Iterable<K> col) {
-        return reverse(toList(col));
-    }
-
     public static <K> List<K> reverseThis(List<K> col) {
         Collections.reverse(col);
         return col;
@@ -1276,11 +1241,6 @@ public class BaseUtils {
         public HashClass(C valueClass, int hash) {
             this.valueClass = valueClass;
             this.hash = hash;
-        }
-
-        @Deprecated
-        public HashClass(C valueClass) {
-            this(valueClass, 0);
         }
 
         public boolean calcTwins(TwinImmutableObject o) {
@@ -1581,11 +1541,6 @@ public class BaseUtils {
         return FilenameUtils.getName(filename);
     }
 
-    @Deprecated
-    public static String getFilePath(String filename) {
-        return FilenameUtils.getFullPath(filename);
-    }
-
     public static String getFileExtension(File file) {
         return getFileExtension(file.getName());
     }
@@ -1741,11 +1696,6 @@ public class BaseUtils {
         return result;
     }
 
-    @Deprecated
-    public static List<Integer> consecutiveList(int i) {
-        return consecutiveList(i, 1);
-    }
-
     public static <K> FunctionSet<K> merge(FunctionSet<K>... sets) {
         FunctionSet<K> result = sets[0];
         for (int i = 1; i < sets.length; i++)
@@ -1856,23 +1806,8 @@ public class BaseUtils {
         return new SimpleDateFormat(format).format(d);
     }
 
-    @Deprecated
-    public static String dateToString(LocalDate d) {
-        return dateToString("dd/MM/yyyy", d);
-    }
-
     public static String dateToString(String format, LocalDate d) {
         return d != null ? d.format(DateTimeFormatter.ofPattern(format)) : "";
-    }
-
-    @Deprecated
-    public static int indexOf(String string, int ch, int count) {
-        int start = 0;
-        for(int i=0;i<count;i++) {
-            start = string.indexOf(ch, start);
-            if(start < 0) break;
-        }
-        return start;
     }
 
     public static String packWords(String string, int reqLength) {
