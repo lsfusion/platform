@@ -54,6 +54,7 @@ public class BaseUtils {
     public static final Logger systemLogger = Logger.getLogger("SystemLogger");
     public static final Logger serviceLogger = Logger.getLogger("ServiceLogger");
 
+    @Deprecated
     public static final String lineSeparator = System.getProperty("line.separator");
 
     //Длина строки может быть маскимум 65535, каждый символ может занимать от 1 до 3х байт
@@ -101,12 +102,14 @@ public class BaseUtils {
         return obj == null ? 0 : obj.hashCode();
     }
 
+    @Deprecated
     public static <T> boolean findByReference(Collection<T> col, Object obj) {
         for (T objCol : col)
             if (objCol == obj) return true;
         return false;
     }
 
+    @Deprecated
     public static boolean[] convertArray(Boolean[] array) {
         boolean[] result = new boolean[array.length];
         for (int i = 0; i < array.length; i++)
@@ -114,6 +117,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <KA, VA, KB, VB> boolean mapEquals(Map<KA, VA> mapA, Map<KB, VB> mapB, Map<KA, KB> mapAB) {
         for (Map.Entry<KA, VA> A : mapA.entrySet())
             if (!mapB.get(mapAB.get(A.getKey())).equals(A.getValue()))
@@ -121,10 +125,12 @@ public class BaseUtils {
         return true;
     }
 
+    @Deprecated
     public static <K, E, V> Map<K, V> nullJoin(Map<K, ? extends E> map, Map<E, V> joinMap) {
         return joinMap == null ? null : join(map, joinMap);
     }
 
+    @Deprecated
     public static <K, E, V> Map<K, V> join(Map<K, ? extends E> map, Map<E, V> joinMap) {
         Map<K, V> result = new HashMap<>();
         for (Map.Entry<K, ? extends E> entry : map.entrySet())
@@ -133,6 +139,7 @@ public class BaseUtils {
     }
 
     // есть баг
+    @Deprecated
     public static <K, E> Map<K, E> joinKeep(Map<K, ? extends E> map, Map<E, E> joinMap) {
         Map<K, E> result = new HashMap<>();
         for (Map.Entry<K, ? extends E> entry : map.entrySet()) {
@@ -143,18 +150,22 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <K, E, V, R extends E> Map<K, V> rightJoin(Map<K, E> map, Map<R, V> joinMap) {
         return BaseUtils.join(BaseUtils.filterValues(map, joinMap.keySet()), joinMap);
     }
 
+    @Deprecated
     public static <K, VA, VB> Map<VA, VB> rightCrossJoin(Map<K, VA> map, Map<K, VB> joinMap) {
         return BaseUtils.rightJoin(BaseUtils.reverse(map), joinMap);
     }
 
+    @Deprecated
     public static <K, VA, VB> Map<VA, VB> rightNullCrossJoin(Map<K, VA> map, Map<K, VB> joinMap) {
         return joinMap==null? null : BaseUtils.rightJoin(BaseUtils.reverse(map), joinMap);
     }
 
+    @Deprecated
     public static <K, E, V> List<Map<K, V>> joinCol(Map<K, ? extends E> map, Collection<Map<E, V>> list) {
         List<Map<K, V>> result = new ArrayList<>();
         for (Map<E, V> joinMap : list)
@@ -162,6 +173,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <K, V> List<V> mapList(List<? extends K> list, ImMap<K, ? extends V> map) {
         List<V> result = new ArrayList<>();
         for (K element : list)
@@ -178,6 +190,7 @@ public class BaseUtils {
 //    }
 //
     // mapList - zero-based, reverseable, size of list
+    @Deprecated
     public static <K> List<K> mapList(Integer[] mapList, List<K> list) {
         List<K> result = new ArrayList<>(list.size());
         for(int i=0,size=list.size();i<size;i++)
@@ -187,6 +200,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <K, V> OrderedMap<K, V> mapOrder(List<? extends K> list, Map<K, ? extends V> map) {
         OrderedMap<K, V> result = new OrderedMap<>();
         for (K element : list)
@@ -194,6 +208,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <K, E, V> OrderedMap<V, E> mapOrder(OrderedMap<K, E> list, Map<K, ? extends V> map) { // map предполагается reversed
         OrderedMap<V, E> result = new OrderedMap<>();
         for (Map.Entry<K, E> entry : list.entrySet())
@@ -201,6 +216,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <K, V> Set<V> mapSet(Set<K> set, Map<K, ? extends V> map) { // map предполагается reversed
         Set<V> result = new HashSet<>();
         for (K element : set)
@@ -208,6 +224,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <K, E, V> Map<K, V> innerJoin(Map<K, ? extends E> map, Map<? extends E, V> joinMap) {
         Map<K, V> result = new HashMap<>();
         for (Map.Entry<K, ? extends E> entry : map.entrySet()) {
@@ -217,10 +234,12 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <K, E, V> Map<K, V> nullInnerJoin(Map<K, ? extends E> map, Map<? extends E, V> joinMap) {
         return joinMap == null ? null : innerJoin(map, joinMap);
     }
 
+    @Deprecated
     public static <K, E, V> OrderedMap<K, V> innerJoin(OrderedMap<K, E> map, Map<E, V> joinMap) {
         OrderedMap<K, V> result = new OrderedMap<>();
         for (Map.Entry<K, E> entry : map.entrySet()) {
@@ -230,6 +249,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <K, V, F> Map<K, F> filterValues(Map<K, V> map, Collection<F> values) {
         Map<K, F> result = new HashMap<>();
         for (Map.Entry<K, V> entry : map.entrySet())
@@ -239,6 +259,7 @@ public class BaseUtils {
     }
 
     // необходимо чтобы пересоздавал объект !!! потому как на вход идут mutable'ы
+    @Deprecated
     public static <K, V> Collection<K> filterValues(Map<K, V> map, V value) {
         Collection<K> result = new ArrayList<>();
         for (Map.Entry<K, V> entry : map.entrySet())
@@ -284,6 +305,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <BK, K extends BK, V> Map<K, V> filterKeys(Iterable<BK> keys, Map<K, V> map) {
         Map<K, V> result = new HashMap<>();
         for (BK key : keys) {
@@ -293,6 +315,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <BK, K extends BK, V> Map<K, V> filterInclKeys(Map<BK, V> map, Iterable<? extends K> keys) {
         Map<K, V> result = new HashMap<>();
         for (K key : keys) {
@@ -346,6 +369,7 @@ public class BaseUtils {
         };
     }
 
+    @Deprecated
     public static <K, V, CV extends V> Map<K, CV> filterClass(Map<K, V> map, Class<CV> cvClass) {
         for (Map.Entry<K, V> entry : map.entrySet())
             if (!cvClass.isInstance(entry.getValue()))
@@ -353,6 +377,7 @@ public class BaseUtils {
         return (Map<K, CV>) map;
     }
 
+    @Deprecated
     public static <K, V> Map<K, V> filterNotKeys(Map<K, V> map, Collection<? extends K> keys) {
         Map<K, V> result = new HashMap<>();
         for (Map.Entry<K, V> entry : map.entrySet()) {
@@ -371,6 +396,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <K, V> Map<K, V> filterNotValues(Map<K, V> map, Collection<? extends V> values) {
         Map<K, V> result = new HashMap<>();
         for (Map.Entry<K, V> entry : map.entrySet()) {
@@ -380,6 +406,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <BK, K extends BK> Collection<K> filter(Collection<K> col, Collection<BK> filter) {
         List<K> result = new ArrayList<>();
         for (K element : col)
@@ -388,6 +415,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <K> List<K> filterList(List<K> list, ImSet<K> filter) {
         List<K> result = new ArrayList<>();
         for (K element : list)
@@ -396,6 +424,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <K> List<K> filterList(List<K> list, Collection<K> filter) {
         List<K> result = new ArrayList<>();
         for (K element : list)
@@ -404,6 +433,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <K> List<K> filterNotList(List<K> list, Collection<K> filter) {
         List<K> result = new ArrayList<>();
         for (K element : list)
@@ -412,6 +442,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <K> Set<K> filterSet(Set<K> set, Collection<K> filter) {
         Set<K> result = new HashSet<>();
         for (K element : filter)
@@ -420,6 +451,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <K> Set<K> filterNotSet(Set<K> set, Collection<K> filter) {
         Set<K> result = new HashSet<>();
         for (K element : set)
@@ -428,6 +460,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <BK, K extends BK> Collection<K> filterNot(Collection<K> col, Collection<BK> filter) {
         List<K> result = new ArrayList<>();
         for (K element : col)
@@ -436,6 +469,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <BK, K extends BK, V> Map<K, V> splitKeys(Map<BK, V> map, HSet<K> keys, Map<BK, V> rest) {
         Map<K, V> result = new HashMap<>();
         for (Map.Entry<BK, V> entry : map.entrySet())
@@ -446,6 +480,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <BV, V extends BV, K> Map<K, V> splitValues(Map<K, BV> map, Collection<V> keys, Map<K, BV> rest) {
         Map<K, V> result = new HashMap<>();
         for (Map.Entry<K, BV> entry : map.entrySet())
@@ -456,6 +491,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <K, V> Map<K, V> mergeEquals(Map<K, V> full, Map<K, V> part) {
         assert full.keySet().containsAll(part.keySet());
 
@@ -479,30 +515,37 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <K, VA, VB> Map<VA, VB> crossJoin(Map<K, VA> map, Map<K, VB> mapTo) {
         return join(reverse(map), mapTo);
     }
 
+    @Deprecated
     public static <KA, VA, KB, VB> Map<VA, VB> crossJoin(Map<KA, VA> map, Map<KB, VB> mapTo, Map<KA, KB> mapJoin) {
         return join(crossJoin(map, mapJoin), mapTo);
     }
 
+    @Deprecated
     public static <KA, KB, V> Map<KA, KB> crossValues(Map<KA, V> map, Map<KB, V> mapTo) {
         return crossValues(map, mapTo, false);
     }
 
+    @Deprecated
     public static <KA, KB, V> Map<KA, KB> rightCrossValues(Map<KA, V> map, Map<KB, V> mapTo) {
         return rightJoin(map, reverse(mapTo));
     }
 
+    @Deprecated
     public static <KA, KB, V> Map<KA, KB> crossInnerValues(Map<KA, V> map, Map<KB, V> mapTo) {
         return innerJoin(map, reverse(mapTo));
     }
 
+    @Deprecated
     public static <KA, KB, V> Map<KA, KB> crossValues(Map<KA, V> map, Map<KB, V> mapTo, boolean ignoreUnique) {
         return join(map, reverse(mapTo, ignoreUnique));
     }
 
+    @Deprecated
     public static <K, T, VA, VB> Map<T, VA> splitInnerJoin(Map<T, K> mapTo, Map<K, VA> map1, Map<K, VB> map2, Map<T, VB> res2) {
         Map<T, VA> res1 = new HashMap<>();
         for (Map.Entry<T, K> map : mapTo.entrySet()) {
@@ -515,18 +558,21 @@ public class BaseUtils {
         return res1;
     }
 
+    @Deprecated
     public static <K> Collection<K> join(Collection<K> col1, Collection<K> col2) {
         Set<K> result = new HashSet<>(col1);
         result.addAll(col2);
         return result;
     }
 
+    @Deprecated
     public static <K, V> boolean identity(Map<K, V> map) {
         for (Map.Entry<K, V> entry : map.entrySet())
             if (!entry.getKey().equals(entry.getValue())) return false;
         return true;
     }
 
+    @Deprecated
     public static <K> Map<K, K> toMap(Set<K> collection) {
         Map<K, K> result = new HashMap<>();
         for (K object : collection)
@@ -534,6 +580,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <K> Map<K, K> toMap(Collection<K> collection) {
         Map<K, K> result = new HashMap<>();
         for (K object : collection)
@@ -541,6 +588,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <K, V> Map<K, V> toMap(List<K> from, List<V> to) {
         assert from.size() == to.size();
         Map<K, V> result = new HashMap<>();
@@ -549,6 +597,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <K> Map<Object, K> toObjectMap(Set<K> collection) {
         Map<Object, K> result = new HashMap<>();
         for (K object : collection)
@@ -563,6 +612,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <K> Map<Integer, K> toMap(List<K> list) {
         Map<Integer, K> result = new HashMap<>();
         for (int i = 0; i < list.size(); i++)
@@ -570,6 +620,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <K, V> OrderedMap<K, V> toOrderedMap(List<? extends K> list, V value) {
         OrderedMap<K, V> result = new OrderedMap<>();
         for (K element : list)
@@ -577,6 +628,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <K> Map<Integer, K> toMap(K[] list) {
         Map<Integer, K> result = new HashMap<>();
         for (int i = 0; i < list.length; i++)
@@ -584,6 +636,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <K> List<K> toList(Map<Integer, K> map) {
         List<K> result = new ArrayList<>();
         for (int i = 0; i < map.size(); i++)
@@ -931,6 +984,7 @@ public class BaseUtils {
         return removeMap;
     }
 
+    @Deprecated
     public static <K, V> Map<K, V> removeKey(Map<K, V> map, K remove) {
         Map<K, V> removeMap = new HashMap<>();
         for (Map.Entry<K, V> property : map.entrySet())
@@ -988,6 +1042,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <K> Set<K> removeSet(Set<? extends K> set, Collection<? extends K> remove) {
         Set<K> result = new HashSet<>(set);
         result.removeAll(remove);
@@ -1006,6 +1061,7 @@ public class BaseUtils {
         return removeList(list, Collections.singleton(remove));
     }
 
+    @Deprecated
     public static <K> List<K> removeList(List<K> list, int index) {
         return removeList(list, Collections.singleton(list.get(index)));
     }
@@ -1018,6 +1074,7 @@ public class BaseUtils {
         return key;
     }
 
+    @Deprecated
     public static <K> void moveElement(List<K> list, K elemFrom, K elemTo) {
 
         int indFrom = list.indexOf(elemFrom);
@@ -1031,6 +1088,7 @@ public class BaseUtils {
         list.add(list.indexOf(elemTo) + (up ? 0 : 1), elemFrom);
     }
 
+    @Deprecated
     public static <K> void moveElement(List<K> list, K elemFrom, int index) {
 
         if (index == -1) {
@@ -1073,6 +1131,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <B, K1 extends B, K2 extends B, V> Map<K1, V> replace(Map<K1, ? extends V> map1, Map<K2, ? extends V> map2) {
         Map<K1, V> result = new HashMap<>(map1);
         for (Map.Entry<K1, V> entry : result.entrySet()) {
@@ -1083,6 +1142,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <B, K1 extends B, V> Map<K1, V> replaceValues(Map<K1, ? extends V> map1, Map<? extends V, ? extends V> map2) {
         Map<K1, V> result = new HashMap<>(map1);
         for (Map.Entry<K1, V> entry : result.entrySet()) {
@@ -1093,12 +1153,14 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <K, V> Map<K, V> replace(Map<K, ? extends V> map, K key, V value) {
         Map<K, V> result = new HashMap<>(map);
         result.put(key, value);
         return result;
     }
 
+    @Deprecated
     public static <K, V> boolean isSubMap(Map<? extends K, ? extends V> map1, Map<K, ? extends V> map2) {
         for (Map.Entry<? extends K, ? extends V> entry : map1.entrySet()) {
             V value2 = map2.get(entry.getKey());
@@ -1114,18 +1176,21 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <B, K1 extends B, K2 extends B> Set<B> mergeSet(Set<K1> set1, Set<K2> set2) {
         Set<B> result = new HashSet<>(set1);
         result.addAll(set2);
         return result;
     }
 
+    @Deprecated
     public static <B, K1 extends B, K2 extends B> Set<B> mergeColSet(Collection<K1> set1, Collection<K2> set2) {
         Set<B> result = new HashSet<>(set1);
         result.addAll(set2);
         return result;
     }
 
+    @Deprecated
     public static <B, K1 extends B, K2 extends B> Set<B> mergeItem(Set<K1> set, K2 item) {
         Set<B> result = new HashSet<>(set);
         result.add(item);
@@ -1154,6 +1219,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <V, MV, EV> Map<Object, EV> mergeMaps(Map<V, EV> map, Map<MV, EV> toMerge, Map<MV, Object> mergedMap) {
         Map<Object, EV> merged = new HashMap<>(map);
         Map<EV, Object> reversed = BaseUtils.reverse(merged);
@@ -1169,6 +1235,7 @@ public class BaseUtils {
     }
 
     // строит декартово произведение нескольких упорядоченных множеств
+    @Deprecated
     public static <T> List<List<T>> cartesianProduct(List<List<T>> data) {
         LinkedList<List<T>> queue = new LinkedList<>();
         queue.add(new ArrayList<>());
@@ -1189,6 +1256,7 @@ public class BaseUtils {
     }
 
     // ищет в Map рекурсивно тупик
+    @Deprecated
     public static <K> K findDeadEnd(Map<K, K> map, K end) {
         K next = map.get(end);
         if (next == null)
@@ -1235,6 +1303,7 @@ public class BaseUtils {
         return (primary.length() == 0 ? secondary : primary);
     }
 
+    @Deprecated
     public static String nevl(String primary, String secondary) {
         return primary == null ? secondary : evl(primary, secondary);
     }
@@ -1243,10 +1312,12 @@ public class BaseUtils {
         return obj1 == obj2 || (obj1.hashCode() == obj2.hashCode() && obj1.equals(obj2));
     }
 
+    @Deprecated
     public static <T> boolean contains(T[] array, T element) {
         return contains(array, element, array.length);
     }
 
+    @Deprecated
     public static <T> boolean contains(T[] array, T element, int num) {
         for (int i = 0; i < num; i++)
             if (array[i].equals(element))
@@ -1254,10 +1325,12 @@ public class BaseUtils {
         return false;
     }
 
+    @Deprecated
     public static <T> Set<T> toSet(T... array) {
         return new HashSet<>(Arrays.asList(array));
     }
 
+    @Deprecated
     public static <T> T getRandom(List<T> list, Random randomizer) {
         return list.get(randomizer.nextInt(list.size()));
     }
@@ -1266,10 +1339,12 @@ public class BaseUtils {
         return (data.length() == 0 ? "" : " " + clause + " " + data);
     }
 
+    @Deprecated
     static String clause(String clause, int data) {
         return (data == 0 ? "" : " " + clause + " " + data);
     }
 
+    @Deprecated
     public static <T, K> OrderedMap<T, K> orderMap(Map<T, K> map, Iterable<T> list) {
         OrderedMap<T, K> result = new OrderedMap<>();
         for (T element : list) {
@@ -1280,6 +1355,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <BT, T extends BT> List<T> orderList(Set<T> map, Iterable<BT> list) {
         List<T> result = new ArrayList<>();
         for (BT element : list)
@@ -1288,12 +1364,14 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <K, V> OrderedMap<K, V> mergeOrders(OrderedMap<K, V> map1, OrderedMap<K, V> map2) {
         OrderedMap<K, V> result = new OrderedMap<>(map1);
         result.putAll(map2);
         return result;
     }
 
+    @Deprecated
     public static <V> Map<V, V> mergeMaps(Map<V, V>[] maps) {
         Map<V, V> result = new HashMap<>();
         for (Map<V, V> map : maps)
@@ -1301,6 +1379,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <T> void replaceListElements(List<T> list, T from, T to) {
         for (int i = 0; i < list.size(); i++) {
             if (list.get(i) == from)
@@ -1324,10 +1403,12 @@ public class BaseUtils {
         return value == null ? 0 : value;
     }
 
+    @Deprecated
     public static Object nullZero(String str) {
         return nullBoolean((Integer.parseInt(BaseUtils.nevl(str, "0")) == 1));
     }
 
+    @Deprecated
     public static Object nullString(String str) {
         if ("".equals(str)) return null;
         else return str;
@@ -1343,6 +1424,7 @@ public class BaseUtils {
         else return null;
     }
 
+    @Deprecated
     public static Integer nullParseInt(String s) {
         if (s == null) return null;
         else return Integer.parseInt(s);
@@ -1462,6 +1544,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <G, K> Map<G, Set<K>> groupSet(final Map<K, G> getter, Set<K> keys) {
         return groupSet(new Group<G, K>() {
             public G group(K key) {
@@ -1474,10 +1557,12 @@ public class BaseUtils {
         return groupList(key -> getter.get(key), keys);
     }
 
+    @Deprecated
     public static <G, K> Map<G, Set<K>> groupSet(final Map<K, G> getter) {
         return groupSet(getter, getter.keySet());
     }
 
+    @Deprecated
     public static <G, K> Map<G, Set<K>> groupSet(final HMap<K, G> getter, Collection<K> keys) {
         return groupSet(new Group<G, K>() {
             public G group(K key) {
@@ -1490,6 +1575,7 @@ public class BaseUtils {
         return groupList(getter, getter.keyList());
     }
 
+    @Deprecated
     public static <G, K> SortedMap<G, Set<K>> groupSortedSet(Group<G, K> getter, Collection<K> keys, Comparator<? super G> comparator) { // вообще assert что set
         SortedMap<G, Set<K>> result = new TreeMap<>(comparator);
         for (K key : keys) {
@@ -1506,6 +1592,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <G, K> SortedMap<G, Set<K>> groupSortedSet(final Map<K, G> getter, Comparator<? super G> comparator) {
         return groupSortedSet(new Group<G, K>() {
             public G group(K key) {
@@ -1514,10 +1601,12 @@ public class BaseUtils {
         }, getter.keySet(), comparator);
     }
 
+    @Deprecated
     public static <G extends GlobalObject, K> SortedMap<G, Set<K>> groupSortedSet(final Map<K, G> getter) {
         return groupSortedSet(getter, GlobalObject.comparator);
     }
 
+    @Deprecated
     public static <K> Map<K, Integer> multiSet(Collection<K> col) {
         Map<K, Integer> result = new HashMap<>();
         for (K element : col) {
@@ -1527,6 +1616,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <V> V addValue(Map<V, V> values, V value) {
         V addValue = values.get(value); // смотрим может уже есть
         if (addValue == null) { // если нету, находим рекурсивно первое свободное значение
@@ -1536,6 +1626,7 @@ public class BaseUtils {
         return addValue;
     }
 
+    @Deprecated
     public static <K, V> void putNotNull(K key, Map<K, V> from, Map<K, V> to) {
         V value = from.get(key);
         if (value != null) to.put(key, value);
@@ -1609,6 +1700,7 @@ public class BaseUtils {
         }
     }
 
+    @Deprecated
     public static <K, V> boolean hashContainsValue(Map<K, V> map, V value) {
         for (Map.Entry<K, V> entry : map.entrySet())
             if (hashEquals(entry.getValue(), value))
@@ -1630,6 +1722,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <K, V> boolean containsAll(Map<K, V> map, Map<K, V> contains) {
         for (Map.Entry<K, V> entry : contains.entrySet())
             if (!entry.getValue().equals(map.get(entry.getKey())))
@@ -1637,6 +1730,7 @@ public class BaseUtils {
         return true;
     }
 
+    @Deprecated
     public static <K> Map<K, String> mapString(Collection<K> col) {
         Map<K, String> result = new HashMap<>();
         for (K element : col)
@@ -1644,6 +1738,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static Integer[] toObjectArray(int[] a) {
         Integer[] result = new Integer[a.length];
         for (int i = 0; i < a.length; i++)
@@ -1651,6 +1746,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static Integer[] toOneBasedArray(int[] a) {
         Integer[] result = new Integer[a.length];
         for (int i = 0; i < a.length; i++)
@@ -1684,6 +1780,7 @@ public class BaseUtils {
 
     public final static ArrayInstancer<Object> objectInstancer = Object[]::new;
 
+    @Deprecated
     public final static ArrayInstancer<String> stringInstancer = String[]::new;
 
     public static <T> T[] add(T[] array1, T[] array2, ArrayInstancer<T> instancer) {
@@ -1713,6 +1810,7 @@ public class BaseUtils {
         }
     }
 
+    @Deprecated
     public static <T> T[] addElement(T[] array, T element, Class<T> elementClass) {
         return addElement(array, element, new GenericTypeInstancer<>(elementClass));
     }
@@ -1739,6 +1837,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static int[] addInt(int[] array, int element) {
         int newArr[] = new int[array.length + 1];
 
@@ -1748,6 +1847,7 @@ public class BaseUtils {
         return newArr;
     }
 
+    @Deprecated
     public static <T> T[] removeElement(T[] array, T element, ArrayInstancer<T> instancer) {
         if (array == null || array.length == 0) {
             return array;
@@ -1779,10 +1879,12 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static String[] genArray(String element, int length) {
         return genArray(element, length, stringInstancer);
     }
 
+    @Deprecated
     public static int[] genArray(int element, int length) {
         int[] ints = new int[length];
         for (int i = 0; i < length; i++)
@@ -1852,6 +1954,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static <K> List<K> reverse(Iterable<K> col) {
         return reverse(toList(col));
     }
@@ -1861,6 +1964,7 @@ public class BaseUtils {
         return col;
     }
 
+    @Deprecated
     public static int objectToInt(Integer value) {
         if (value == null)
             return -1;
@@ -1868,6 +1972,7 @@ public class BaseUtils {
             return value;
     }
 
+    @Deprecated
     public static Integer intToObject(int value) {
         if (value == -1)
             return null;
@@ -1902,6 +2007,7 @@ public class BaseUtils {
             return name.toString().trim();
     }
 
+    @Deprecated
     public static <K, V> Map<K, V> buildMap(Collection<K> col1, Collection<V> col2) {
         assert col1.size() == col2.size();
 
@@ -1920,6 +2026,7 @@ public class BaseUtils {
         return list;
     }
 
+    @Deprecated
     public static <K> List<K> toListNoNull(K... elements) {
         List<K> list = new ArrayList<>();
         for (K element : elements)
@@ -1982,6 +2089,7 @@ public class BaseUtils {
             return string.substring(string.length() - length, string.length());
     }
 
+    @Deprecated
     public static String padl(String string, int length, char character) {
         if (length > string.length())
             return replicate(character, length - string.length()) + string;
@@ -2027,6 +2135,7 @@ public class BaseUtils {
         return ins;
     }
 
+    @Deprecated
     public static <T> int[] relativeIndexes(List<T> all, List<T> list) {
         int result[] = new int[list.size()];
         for (int i = 0; i < list.size(); i++) {
@@ -2054,6 +2163,7 @@ public class BaseUtils {
             this.hash = hash;
         }
 
+        @Deprecated
         public HashClass(C valueClass) {
             this(valueClass, 0);
         }
@@ -2187,6 +2297,7 @@ public class BaseUtils {
             return string;
     }
 
+    @Deprecated
     public static String encode(int... values) {
 
         try {
@@ -2200,6 +2311,7 @@ public class BaseUtils {
         }
     }
 
+    @Deprecated
     public static Integer[] decode(int number, String string) {
 
         try {
@@ -2223,10 +2335,12 @@ public class BaseUtils {
         return formatRussian(date, false, false);
     }
 
+    @SuppressWarnings({"UnusedDeclaration"})
     public static String formatRussian(Date date, TimeZone timeZone) {
         return formatRussian(date, false, false, timeZone, false);
     }
 
+    @SuppressWarnings({"UnusedDeclaration"})
     public static String formatRussian(Date date, TimeZone timeZone, boolean noYear) {
         return formatRussian(date, false, false, timeZone, noYear);
     }
@@ -2235,10 +2349,12 @@ public class BaseUtils {
         return formatRussian(date, quotes, leadZero, null, false);
     }
 
+    @SuppressWarnings({"UnusedDeclaration"})
     public static String formatRussian(Date date, boolean quotes, boolean leadZero, boolean noYear) {
         return formatRussian(date, quotes, leadZero, null, noYear);
     }
 
+    @SuppressWarnings({"UnusedDeclaration"})
     public static String formatRussian(Date date, boolean quotes, boolean leadZero, TimeZone timeZone) {
         return formatRussian(date, quotes, leadZero, timeZone, false);
     }
@@ -2262,6 +2378,7 @@ public class BaseUtils {
         return formatRussian(date, false, false);
     }
 
+    @SuppressWarnings({"UnusedDeclaration"})
     public static String formatRussian(LocalDate date, boolean noYear) {
         return formatRussian(date, false, false, noYear);
     }
@@ -2325,6 +2442,7 @@ public class BaseUtils {
         return "" + monthsEnglish[date.getMonthValue() - 1] + " " + dayOfMonth + ", " + date.getYear();
     }
 
+    @SuppressWarnings({"UnusedDeclaration"})
     public static String justInitials(String fullName, boolean lastNameFirst, boolean revert) {
         String[] names = fullName.split(" ");
         String initials = "", lastName = "";
@@ -2358,16 +2476,19 @@ public class BaseUtils {
 
     public static String[] feminineNumbers = new String[]{"ноль", "одна", "две", "три", "четыре", "пять", "шесть", "семь", "восемь", "девять", "десять"};
 
+    @SuppressWarnings({"UnusedDeclaration"})
     public static String intToFeminine(int number) {
         if ((number >= 0) && (number <= 10))
             return feminineNumbers[number];
         else return String.valueOf(number);
     }
 
+    @Deprecated
     public static Date getFirstDateInMonth(int year, int month) {
         return new GregorianCalendar(year, month - 1, 1, 0, 0, 0).getTime();
     }
 
+    @Deprecated
     public static Date getLastDateInMonth(int year, int month) {
         Calendar calendar = new GregorianCalendar(year, month - 1, 1, 0, 0, 0);
         calendar.roll(Calendar.DAY_OF_MONTH, -1);
@@ -2423,6 +2544,7 @@ public class BaseUtils {
         return FilenameUtils.getName(filename);
     }
 
+    @Deprecated
     public static String getFilePath(String filename) {
         return FilenameUtils.getFullPath(filename);
     }
@@ -2527,6 +2649,7 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static int[] toPrimitive(List<Integer> array) {
         if (array == null) {
             return null;
@@ -2588,10 +2711,12 @@ public class BaseUtils {
         return result;
     }
 
+    @Deprecated
     public static List<Integer> consecutiveList(int i) {
         return consecutiveList(i, 1);
     }
 
+    @Deprecated
     public static <K> List<K> sort(Collection<K> col, Comparator<K> comparator) {
         List<K> list = new ArrayList<>(col);
         list.sort(comparator);
@@ -2632,6 +2757,7 @@ public class BaseUtils {
         return new RemoveFunctionSet<>(set1, set2);
     }
 
+    @Deprecated
     public static <K> boolean containsAll(FunctionSet<K> set1, ImSet<K> set2) {
         for (K element : set2) {
             if (!set1.contains(element))
@@ -2640,6 +2766,7 @@ public class BaseUtils {
         return true;
     }
 
+    @Deprecated
     public static <T> FunctionSet<T> universal(boolean empty) {
         if (empty)
             return SetFact.EMPTY();
@@ -2707,6 +2834,7 @@ public class BaseUtils {
         return Integer.compare(a, b);
     }
 
+    @Deprecated
     public static void runLater(final int delay, final Runnable runnable) {
 
 //        ExecutorService executorService = Executors.newScheduledThreadPool()CachedThreadPool(threadFactory);
@@ -2732,6 +2860,7 @@ public class BaseUtils {
 //        thread.start();
     }
 
+    @Deprecated
     public static <T> void addToOrderedList(List<T> orderedList, T element, int after, Comparator<T> compare) {
         assert after <= orderedList.size();
         while (true) {
@@ -2759,6 +2888,7 @@ public class BaseUtils {
         return new SimpleDateFormat(format).format(d);
     }
 
+    @Deprecated
     public static String dateToString(LocalDate d) {
         return dateToString("dd/MM/yyyy", d);
     }
@@ -2767,6 +2897,7 @@ public class BaseUtils {
         return d != null ? d.format(DateTimeFormatter.ofPattern(format)) : "";
     }
 
+    @Deprecated
     public static int indexOf(String string, int ch, int count) {
         int start = 0;
         for(int i=0;i<count;i++) {
@@ -2836,6 +2967,7 @@ public class BaseUtils {
         };
     }
 
+    @Deprecated
     public static <T> Iterable<T> sort(Iterable<T> it, Comparator<T> comparator) {
         List<T> list = new ArrayList<>();
         for (T element : it) {
@@ -2857,6 +2989,7 @@ public class BaseUtils {
         ImSet<T> getAllChildren(T element); // оптимизация, чтобы кэширование включать
     }
 
+    @Deprecated
     public static abstract class SChildrenInterface<T> implements ExChildrenInterface<T> {
         public ImSet<T> getAllChildren(T element) {
             return BaseUtils.getAllChildren(element, this);
@@ -2982,6 +3115,7 @@ public class BaseUtils {
         return o.getClass().getName() + "@" + Integer.toHexString(o.hashCode());
     }
 
+    @Deprecated
     public static String removeTrailingSlash(String s) {
         assert s.isEmpty() || s.endsWith("/");
         if(!s.isEmpty())
