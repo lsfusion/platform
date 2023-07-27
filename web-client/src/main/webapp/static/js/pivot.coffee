@@ -787,9 +787,6 @@ callWithJQuery ($) ->
                             placeholder = opts.localeStrings.filterResults
                             $("<input>", {type: "text"}).appendTo(controls)
                                 .attr({placeholder: placeholder, class: "pvtSearch"})
-                                .css
-                                    height: opts.valueHeight + "px"
-                                    padding: "0 " + opts.cellHorizontalPadding + "px" 
                                 .bind "keyup", ->
                                     filter = $(this).val().toLowerCase().trim()
                                     accept_gen = (prefix, accepted) -> (v) ->

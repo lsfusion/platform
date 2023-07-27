@@ -1385,9 +1385,6 @@
               }).appendTo(controls).attr({
                 placeholder: placeholder,
                 "class": "pvtSearch"
-              }).css({
-                height: opts.valueHeight + "px",
-                padding: "0 " + opts.cellHorizontalPadding + "px"
               }).bind("keyup", function() {
                 var accept, accept_gen, filter;
                 filter = $(this).val().toLowerCase().trim();
