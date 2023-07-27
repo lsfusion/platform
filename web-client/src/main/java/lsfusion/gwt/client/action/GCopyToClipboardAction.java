@@ -12,7 +12,27 @@ public class GCopyToClipboardAction implements GAction {
 
     @Override
     public Object dispatch(GActionDispatcher dispatcher) throws Throwable {
-        //копирование в буфер обмена реализовано только в desktop, web пока не удалось
+        copyToClipboard(value);
         return false;
     }
+
+    private native void copyToClipboard(String value)/*-{
+        //writeText work in Firefox
+        //execCommand work in Chrome
+        navigator.clipboard.writeText(value).then(
+            function () {
+            }, function () {
+                if (document.queryCommandSupported && document.queryCommandSupported("copy")) {
+                    var textarea = document.createElement("textarea");
+                    textarea.textContent = value;
+                    document.body.appendChild(textarea);
+                    textarea.focus();
+                    textarea.select();
+                    document.execCommand("copy");
+                    document.body.removeChild(textarea);
+                }
+            }
+        );
+
+    }-*/;
 }
