@@ -50,7 +50,6 @@ public abstract class WindowsController {
     public GAbstractWindow findWindowByCanonicalName(String canonicalName) {
         Result<GAbstractWindow> rWindow = new Result<>();
         windowElementsMapping.foreachKey(window -> {
-            GWT.log("FIND WINDOW : " + window.canonicalName + " SEARCH " + canonicalName + " " + window.canonicalName.equals(canonicalName) + " " + (window != null));
             if (window.canonicalName.equals(canonicalName))
                 rWindow.set(window);
         });
@@ -449,7 +448,6 @@ public abstract class WindowsController {
         registerWindow(window, null);
     }
     public void registerWindow(GAbstractWindow window, WindowElement windowElement) {
-        GWT.log("REGISTER WINDOW : " + window.canonicalName);
         windowElementsMapping.put(window, windowElement);
     }
 
