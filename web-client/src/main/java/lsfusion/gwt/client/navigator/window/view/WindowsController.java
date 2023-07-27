@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.navigator.window.view;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -49,6 +50,7 @@ public abstract class WindowsController {
     public GAbstractWindow findWindowByCanonicalName(String canonicalName) {
         Result<GAbstractWindow> rWindow = new Result<>();
         windowElementsMapping.foreachKey(window -> {
+            GWT.log("FIND WINDOW : " + window.canonicalName + " SEARCH " + canonicalName + " " + window.canonicalName.equals(canonicalName) + " " + (window != null));
             if (window.canonicalName.equals(canonicalName))
                 rWindow.set(window);
         });
@@ -447,6 +449,7 @@ public abstract class WindowsController {
         registerWindow(window, null);
     }
     public void registerWindow(GAbstractWindow window, WindowElement windowElement) {
+        GWT.log("REGISTER WINDOW : " + window.canonicalName);
         windowElementsMapping.put(window, windowElement);
     }
 
