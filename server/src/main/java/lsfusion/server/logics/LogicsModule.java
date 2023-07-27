@@ -2287,7 +2287,10 @@ public abstract class LogicsModule {
     public boolean addAutoFormEntity(AutoFormEntity form) {
         assert !form.isNamed();
         assert !mainLogicsInitialized || this instanceof BaseLogicsModule;
-        return unnamedForms.add(form);
+        boolean added = unnamedForms.add(form);
+        if(formsFinalized && added) // last check is recursion guard
+            form.finalizeAndPreread();
+        return added;
     }
     public void addAutoFormEntityNotFinalized(AutoFormEntity form) {
         assert !formsFinalized;
