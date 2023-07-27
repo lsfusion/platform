@@ -104,9 +104,9 @@ public class StyleDefaults {
             float darkenStep = 0.8f;
 
             pivotGroupLevelDarkenStepRGB = new int[]{
-                    (int) ((panelRGB[0] - componentRGB[0]) * darkenStep),
-                    (int) ((panelRGB[1] - componentRGB[1]) * darkenStep),
-                    (int) ((panelRGB[2] - componentRGB[2]) * darkenStep)
+                    Math.min((int) ((panelRGB[0] - componentRGB[0]) * darkenStep), -10),
+                    Math.min((int) ((panelRGB[1] - componentRGB[1]) * darkenStep), -10),
+                    Math.min((int) ((panelRGB[2] - componentRGB[2]) * darkenStep), -10),
             };
         }
         return pivotGroupLevelDarkenStepRGB;

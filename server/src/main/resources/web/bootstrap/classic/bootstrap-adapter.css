@@ -271,3 +271,19 @@
 .panel-container.form-switch {
     padding-left: unset;
 }
+
+table.pvtTable thead tr th {
+    /*bold column captions*/
+    font-weight: bold;
+}
+
+.headertable.table {
+    /*disable margin-bottom from .table,
+    because here we have separate headertable and bodytable*/
+    margin-bottom: 0;
+}
+
+.pvtRenderer, .pvtAggregator, .pvtAttr, .pvtRowsTable li {
+    width: -webkit-fill-available;
+    width: -moz-available;
+}
