@@ -2,7 +2,6 @@ package lsfusion.gwt.client.form.filter.user.view;
 
 import com.google.gwt.user.client.ui.CheckBox;
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.FormCheckBox;
 import lsfusion.gwt.client.base.view.popup.PopupMenuItemValue;
@@ -58,6 +57,7 @@ public abstract class GFilterCompareSelector extends GFilterOptionSelector<GComp
         for (GCompare value : values) {
             addMenuItem(value, value.toString(), value.getFullString());
         }
+        popup.addBottomPanelItem(bottomPanel);
     }
 
     @Override
