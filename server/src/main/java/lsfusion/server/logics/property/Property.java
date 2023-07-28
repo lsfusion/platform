@@ -1041,7 +1041,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     protected Expr aspectCalculateExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        ImplementTable.checkStatProps(null);
+        assert (AlgType.useCalcForStored && calcType == CalcClassType.prevBase()) || ImplementTable.checkStatProps(null);
         return calculateExpr(joinImplement, calcType, propChanges, changedWhere);
     }
 
@@ -2456,7 +2456,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
                 return false;
             return aspectDebugHasAlotKeys();
         }
-        return hasAlotKeys(getInterfaceStat(false));
+       return hasAlotKeys(getInterfaceStat(false));
     }
 
     protected boolean aspectDebugHasAlotKeys() {
