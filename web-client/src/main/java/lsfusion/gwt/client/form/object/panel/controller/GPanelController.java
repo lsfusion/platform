@@ -33,7 +33,8 @@ public class GPanelController extends GPropertyController {
     }
 
     public static native Element getNextFocusElement(Element formController, boolean forward) /*-{
-        var elements = Array.prototype.filter.call(formController.querySelectorAll('tableContainer,button,input'), function (item) {
+        var elements = Array.prototype.filter.call(
+            formController.querySelectorAll('.tableContainer,button,input,.panelRendererValue'), function (item) {
             return item.tabIndex >= "0"
         });
         if(elements.length === 0)
