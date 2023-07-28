@@ -493,11 +493,13 @@ public class ImplementTable extends DBTable { // последний интерф
     // it is achieved by using specific calc types (STAT_ALOT, PREVSAMEKEEP_IS)
     public static <T> T ignoreStatProps(boolean ignore, Supplier<T> supplier) {
         Boolean prevIgnoreStatProps = ImplementTable.ignoreStatProps.get();
-        ImplementTable.ignoreStatProps.set(ignore ? true : null);
+        if(ignore)
+            ImplementTable.ignoreStatProps.set(true);
         try {
             return supplier.get();
         } finally {
-            ImplementTable.ignoreStatProps.set(prevIgnoreStatProps);
+            if(ignore)
+                ImplementTable.ignoreStatProps.set(prevIgnoreStatProps);
         }
     }
     private static final ThreadLocal<Boolean> reflectionStatProps = new ThreadLocal<>();

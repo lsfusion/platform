@@ -1041,7 +1041,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
     protected Expr aspectCalculateExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
         // usePrevHeur and noUsePrevHeur
-        return ImplementTable.ignoreStatProps(calcType == CalcType.STAT_ALOT || calcType == CalcClassType.prevSameKeepIS(), () -> calculateExpr(joinImplement, calcType, propChanges, changedWhere));
+        return ImplementTable.ignoreStatProps((AlgType.useCalcForStored && calcType == CalcClassType.prevBase()) || calcType == CalcType.STAT_ALOT || calcType == CalcClassType.prevSameKeepIS(), () -> calculateExpr(joinImplement, calcType, propChanges, changedWhere));
     }
 
     protected abstract Expr calculateExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere);
@@ -2432,7 +2432,12 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
                 return false;
             return aspectDebugHasAlotKeys();
         }
-        return hasAlotKeys(getInterfaceStat(false));
+//        temporary fix - in the 6 version the initialization order is changed to avoid that problem
+        try {
+            return ImplementTable.ignoreStatProps(() -> hasAlotKeys(getInterfaceStat(false)));
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     protected boolean aspectDebugHasAlotKeys() {
