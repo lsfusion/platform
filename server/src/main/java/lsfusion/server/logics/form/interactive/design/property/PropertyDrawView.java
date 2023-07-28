@@ -814,7 +814,8 @@ public class PropertyDrawView extends BaseComponentView {
         if (isProperty()) {
             Type type = getType();
             if((type != null && changeType != null && type.getCompatible(changeType) != null &&
-                    type.useInputTag(!entity.isList(context.entity), context.useBootstrap)) || comment != null)
+                    type.useInputTag(!entity.isList(context.entity), context.useBootstrap))
+                    || comment != null || placeholder != null)
                 return "input";
 
             if(isLink(context) && !hasFlow(context, ChangeFlowType.INPUT))
