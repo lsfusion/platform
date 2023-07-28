@@ -202,6 +202,18 @@
     z-index: 1;
     box-shadow: 0 -0.1rem 0.5rem 0 rgba(var(--bs-body-color-rgb),.15);
 }
+.flex-dir-horz > .navbar.navbar-popup-over-selected-hover:not(:last-child) > .navbar-nav {
+    box-shadow: 0.2rem 0 0.5rem 0 rgba(var(--bs-body-color-rgb),.15);
+}
+.flex-dir-vert > .navbar.navbar-popup-over-selected-hover:not(:last-child) > .navbar-nav {
+    box-shadow: 0 0.1rem 0.5rem 0 rgba(var(--bs-body-color-rgb),.15);
+}
+.flex-dir-horz > .navbar.navbar-popup-over-selected-hover:last-child > .navbar-nav {
+    box-shadow: -0.2rem 0 0.5rem 0 rgba(var(--bs-body-color-rgb),.15);
+}
+.flex-dir-vert > .navbar.navbar-popup-over-selected-hover:last-child > .navbar-nav {
+    box-shadow: 0 -0.1rem 0.5rem 0 rgba(var(--bs-body-color-rgb),.15);
+}
 
 /* The end tab bar location support - just inverting borders */
 

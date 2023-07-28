@@ -7,22 +7,14 @@ import lsfusion.gwt.client.navigator.window.GToolbarNavigatorWindow;
 import lsfusion.gwt.client.navigator.window.view.WindowsController;
 import lsfusion.gwt.client.view.MainFrame;
 
-public class ToolbarPanel extends ResizableComplexPanel {
-
-    public final ResizableComplexPanel panel;
+public class ToolbarPanel extends NavigatorPanel {
 
     public ToolbarPanel(boolean vertical, GToolbarNavigatorWindow window) {
-        addStyleName("navbar navbar-expand p-0"); // navbar-expand to set horizontal paddings (vertical are set in navbar-text)
+        super(vertical);
 
-        addStyleName("navbar-" + (vertical ? "vert" : "horz"));
-
-        panel = new ResizableComplexPanel();
-        panel.addStyleName("navbar-nav");
-        panel.addStyleName(vertical ? "navbar-nav-vert" : "navbar-nav-horz");
+        addStyleName("navbar-expand"); // navbar-expand to set horizontal paddings (vertical are set in navbar-text)
 
         setAlignment(vertical, panel, window);
-
-        add(panel);
     }
 
     private static void setAlignment(boolean vertical, ResizableComplexPanel panel, GToolbarNavigatorWindow toolbarWindow) {
@@ -49,5 +41,9 @@ public class ToolbarPanel extends ResizableComplexPanel {
 
     public static boolean hasBorder(Widget widget) {
         return MainFrame.useBootstrap ? GwtClientUtils.hasClassNamePrefix(widget.getElement().getClassName(), WindowsController.BACKGROUND_PREFIX) : false;
+    }
+
+    public static boolean isPopupOver(Widget widget) {
+        return widget.getElement().hasClassName(WindowsController.NAVBAR_POPUP_OVER_SELECTED_HOVER);
     }
 }
