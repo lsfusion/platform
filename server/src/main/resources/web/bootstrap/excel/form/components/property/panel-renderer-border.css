@@ -1,6 +1,6 @@
 
 .panelRendererValueBoxed, .panelRendererValueBoxed .background-inherit {
-    background: var(--component-background-color);
+    background: var(--bs-body-bg, var(--component-background-color));
 }
 
 .panelRendererValueBoxed {
