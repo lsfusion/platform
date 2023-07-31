@@ -44,3 +44,8 @@ input[type=checkbox].panelRendererValueBoxed:hover:not(.panelRendererValueFocuse
 .panelRendererValueBinding, .panelRendererValueBinding .background-inherit {
     background-color: var(--button-active-background-color);
 }
+
+/*prevents all click for 3-state boolean 'disabled' value, click will be catched by upper element*/
+.logicalRendererCheckBox:disabled {
+    pointer-events: none;
+}
