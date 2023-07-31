@@ -50,7 +50,7 @@ public class UpdateProcessMonitorAction extends ProcessDumpAction {
         try {
             boolean readAllocatedBytes = Settings.get().isReadAllocatedBytes();
             String processType = trimToEmpty((String) findProperty("nameProcessType[]").read(context));
-            context.getSession().cancel(context.stack, SetFact.singleton((SessionDataProperty) findProperty("processType[]").property));
+            context.cancel(SetFact.singleton((SessionDataProperty) findProperty("processType[]").property));
 
             updateProcessMonitor(context, processType, readAllocatedBytes);
 
