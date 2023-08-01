@@ -128,7 +128,7 @@ public class TableContainer extends ResizableSimplePanel implements HasMaxPrefer
 
     @Override
     public void onBrowserEvent(Event event) {
-        Element target = DataGrid.getTargetAndCheck(getElement(), event);
+        Element target = DataGrid.getBrowserTargetAndCheck(getElement(), event);
         if(target == null)
             return;
         if(!form.previewEvent(target, event))

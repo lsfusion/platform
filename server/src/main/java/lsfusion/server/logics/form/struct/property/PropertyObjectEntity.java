@@ -103,8 +103,8 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrP
             this.type = type;
         }
     }
-    public Select getSelectProperty(FormInstanceContext context, Boolean forceSelect) { // false - filter selected,
-        Property.Select<P> select = property.getSelectProperty(ListFact.EMPTY(), forceSelect != null);
+    public Select getSelectProperty(FormInstanceContext context, boolean forceSelect, Boolean forceFilterSelected) { // false - filter selected,
+        Property.Select<P> select = property.getSelectProperty(ListFact.EMPTY(), forceSelect);
         if(select != null) {
             Pair<Integer, Integer> stats = select.stat;
             boolean actualStats = false;
@@ -112,7 +112,7 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrP
                 stats = getActualSelectStats(context, select);
                 actualStats = true;
             }
-            PropertyMapImplement<?, P> selectProperty = select.property.get((forceSelect != null && !forceSelect) || stats.second > Settings.get().getMaxInterfaceStatForValueCombo());
+            PropertyMapImplement<?, P> selectProperty = select.property.get(forceFilterSelected != null ? forceFilterSelected : stats.second > Settings.get().getMaxInterfaceStatForValueCombo());
             if(selectProperty == null)
                 return null;
             boolean multi = select.multi;

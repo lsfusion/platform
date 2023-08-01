@@ -62,6 +62,7 @@ import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
+import org.apache.commons.lang.StringUtils;
 
 import javax.swing.*;
 import java.sql.SQLException;
@@ -97,7 +98,9 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     public ClassViewType viewType; // assert not null, after initialization
     public String customRenderFunction;
-    public static final String NOCUSTOM = "null";
+    public static final String SELECT = "<<select>>";
+    public static final String NOSELECT = "<<no>>";
+    public static final String AUTOSELECT = "<<auto>>";
     public String customChangeFunction;
     public String eventID;
 
@@ -717,52 +720,49 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             return null;
 
         if(actionOrProperty instanceof PropertyObjectEntity) {
-            String selectType = null;
+            if(customChangeFunction != null)
+                return null;
+
             String elementType = null;
 
-            Boolean forceSelect = null;
+            boolean forceSelect = false;
+            Boolean forceFilter = null;
+
             String custom = customRenderFunction;
             if(custom != null) {
-                if(custom.equals(NOCUSTOM))
-                    return null;
-                if(custom.startsWith("select")) {
-                    selectType = "";
-                    forceSelect = true;
-                    custom = custom.substring("select".length());
-                    if(custom.startsWith("Multi"))
-                        selectType = "Multi";
-                    else if(custom.startsWith("Null"))
-                        selectType = "Null";
-                    custom = custom.substring(selectType.length());
-                    elementType = custom;
+                if(custom.startsWith(SELECT)) {
+                    custom = custom.substring(SELECT.length());
 
-                    if(elementType.equals("Input"))
-                        forceSelect = false;
+                    forceSelect = true;
+                    if(!custom.equals(AUTOSELECT)) {
+                        elementType = StringUtils.capitalise(custom);
+
+                        forceFilter = elementType.equals("Input");
+                    }
                 } else
                     return null;
             }
 
-            PropertyObjectEntity.Select select = ((PropertyObjectEntity<P>) actionOrProperty).getSelectProperty(context, forceSelect);
+            PropertyObjectEntity.Select select = ((PropertyObjectEntity<P>) actionOrProperty).getSelectProperty(context, forceSelect, forceFilter);
 
             if(select != null) {
-                if(getExplicitEventAction(CHANGE) != null)
+                if(getExplicitEventAction(CHANGE) != null && !forceSelect)
                     return null;
 
-                if(selectType == null) {
-                    if (select.type == PropertyObjectEntity.Select.Type.MULTI) {
-                        selectType = "Multi";
-                    } else if (select.type == PropertyObjectEntity.Select.Type.NOTNULL) {
-                        if (select.count > 1)
-                            selectType = "";
-                    } else {
-                        if (select.count > 0)
-                            selectType = "Null";
-                    }
+                String selectType = null;
+                if (select.type == PropertyObjectEntity.Select.Type.MULTI) {
+                    selectType = "Multi";
+                } else if (select.type == PropertyObjectEntity.Select.Type.NOTNULL) {
+                    if (select.count > 1 || forceSelect)
+                        selectType = "";
+                } else {
+                    if (select.count > 0 || forceSelect)
+                        selectType = "Null";
                 }
 
                 if(selectType != null) {
                     if(elementType == null) {
-                        if (!isReadOnly(context)) { // we don't have to check hasChangeAction, since canBeChanged is checked in getSelectProperty
+                        if (!isReadOnly(context) || forceSelect) { // we don't have to check hasChangeAction, since canBeChanged is checked in getSelectProperty
                             if (select.length <= Settings.get().getMaxLengthForValueRadioButtonGroup()) {
                                 elementType = "ButtonGroup";
                             } else if (select.count <= Settings.get().getMaxInterfaceStatForValueRadio() && !isList(context)) {
@@ -770,9 +770,9 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
                                 if (container != null && container.isHorizontal())
                                     elementType = "ButtonGroup";
                                 else
-                                    elementType = "";
-                            } else if (select.count <= Settings.get().getMaxInterfaceStatForValueCombo()) {
-                                elementType = null;
+                                    elementType = "List";
+                            } else if (select.count <= Settings.get().getMaxInterfaceStatForValueCombo() || (forceSelect && select.type != PropertyObjectEntity.Select.Type.MULTI)) {
+                                elementType = forceSelect ? "" : null; // temporary should be combo
                             } else {
                                 assert select.type == PropertyObjectEntity.Select.Type.MULTI;
                                 elementType = "Input";
@@ -793,16 +793,16 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public String getCustomRenderFunction(FormInstanceContext context) {
-        String custom = customRenderFunction;
-        if(custom != null) {
-            if(custom.equals(NOCUSTOM))
-                return null;
-            return customRenderFunction;
-        }
-
         Select select = getSelectProperty(context);
         if(select != null)
             return "select" + select.type + select.elementType;
+
+        String custom = customRenderFunction;
+        if(custom != null) {
+            if(custom.equals(NOSELECT))
+                return null;
+            return customRenderFunction;
+        }
 
         return null;
     }

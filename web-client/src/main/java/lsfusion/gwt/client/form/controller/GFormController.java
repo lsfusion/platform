@@ -1553,8 +1553,9 @@ public class GFormController implements EditManager {
 
     public GFormController contextEditForm;
     public void propagateFocusEvent(Event event) {
-        if(BrowserEvents.BLUR.equals(event.getType()) && contextEditForm != null)
-            contextEditForm.getRequestCellEditor().onBrowserEvent(contextEditForm.getEditElement(), new EventHandler(event));
+//        it seems that now we don't need it, because now we have getBrowserTargetAndCheck fix
+//        if(BrowserEvents.BLUR.equals(event.getType()) && contextEditForm != null)
+//            contextEditForm.getRequestCellEditor().onBrowserEvent(contextEditForm.getEditElement(), new EventHandler(event));
     }
 
     private boolean previewLoadingManagerSinkEvents(Event event) {

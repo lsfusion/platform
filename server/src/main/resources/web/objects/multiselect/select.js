@@ -100,6 +100,7 @@ function selectMultiInput() {
         },
         update: function (element, controller, list) {
             element.silent = true; // onItemAdd / Remove somewhy is not silenced
+            element.controller = controller;
 
             let isList = controller.isList();
             if (isList) {
@@ -112,7 +113,6 @@ function selectMultiInput() {
                 if(list == null)
                     list = [];
             }
-            element.controller = controller;
 
             let selectizeInstance = element.selectizeInstance[0].selectize;
 
@@ -145,7 +145,7 @@ function selectMultiInput() {
     }
 }
 
-function select() {
+function selectList() {
     return _defaultRadioCheckBox('radio', true, true);
 }
 
@@ -157,7 +157,7 @@ function selectButtonGroup() {
     return _checkBoxRadioButtonGroup('radio', true, true);
 }
 
-function selectMulti() {
+function selectMultiList() {
     return _defaultRadioCheckBox('checkbox', false);
 }
 
@@ -169,7 +169,7 @@ function selectMultiButtonGroup() {
     return _checkBoxRadioButtonGroup('checkbox', false);
 }
 
-function selectNull() {
+function selectNullList() {
     return _defaultRadioCheckBox('radio', false, true);
 }
 

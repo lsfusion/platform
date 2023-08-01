@@ -23,6 +23,7 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.MouseWheelHandler;
 import com.google.gwt.event.dom.client.ScrollHandler;
 import com.google.gwt.event.dom.client.TouchMoveHandler;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.AbstractNativeScrollbar;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -349,6 +350,23 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         return false;
     }
 
+    public static Element getBrowserTargetAndCheck(Element element, Event event) {
+        // there is a problem with non-bubbling events (there are not many such events, see CellBasedWidgetImplStandard.nonBubblingEvents, so basically focus events):
+        // handleNonBubblingEvent just looks for the first event listener
+        // but if there are 2 widgets listening to the focus events (for example when in ActionOrPropertyValue there is an embedded form and TableContainer inside)
+        // then the lower widget gets both blur events and the upper widget gets none of them (which leads to the very undesirable behaviour with the "double" finishEditing, etc.)
+        if(DataGrid.checkSinkFocusEvents(event)) { // there is a bubble field, but it does
+            EventTarget currentEventTarget = event.getCurrentEventTarget();
+            if(Element.is(currentEventTarget)) {
+                Element currentTarget = currentEventTarget.cast();
+                // maybe sinked focus events should be checked for the currentTarget
+                if(!currentTarget.equals(element) && DOM.dispatchEvent(event, currentTarget))
+                    return null;
+            }
+        }
+
+        return getTargetAndCheck(element, event);
+    }
     public static Element getTargetAndCheck(Element element, Event event) {
         EventTarget eventTarget = event.getEventTarget();
         //it seems that now all this is not needed

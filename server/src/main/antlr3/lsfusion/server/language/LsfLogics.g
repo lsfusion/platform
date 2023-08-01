@@ -663,14 +663,15 @@ propertyClassViewType returns [ClassViewType type]
 	|   'TOOLBAR' {$type = ClassViewType.TOOLBAR;}
 	;
 
-propertyCustomView returns [String customRenderFunction, String customEditorFunction]
+propertyCustomView returns [String customRenderFunction, String customEditorFunction, String selectFunction]
 	:	('CUSTOM'
 	            ((renderFun=stringLiteral { $customRenderFunction = $renderFun.val;})
 	        |   ((renderFun=stringLiteral { $customRenderFunction = $renderFun.val;})?
 	            pedt = propertyEditCustomView { $customEditorFunction = $pedt.customEditorFunction; })))
 	    |
-	    'NOCUSTOM' { $customRenderFunction = PropertyDrawEntity.NOCUSTOM; }
-	    (pedt = propertyEditCustomView { $customEditorFunction = $pedt.customEditorFunction; })?
+	    'SELECT' { $customRenderFunction = PropertyDrawEntity.SELECT + PropertyDrawEntity.AUTOSELECT; } ({ input.LA(1)!=ID }? ('AUTO' | renderFun=stringLiteral { $customRenderFunction = PropertyDrawEntity.SELECT + $renderFun.val;}))?
+	    |
+	    'NOSELECT' { $customRenderFunction = PropertyDrawEntity.NOSELECT; }
 	;
 
 propertyEditCustomView returns [String customEditorFunction]
@@ -862,7 +863,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'CLASS' propObj=formPropertyObject { $options.setValueElementClass($propObj.property); }
 		|	'BACKGROUND' propObj=formPropertyObject { $options.setBackground($propObj.property); }
 		|	'FOREGROUND' propObj=formPropertyObject { $options.setForeground($propObj.property); }
-		|	('IMAGE' (propObj=formPropertyObject)? { $options.setImage($propObj.literal, $propObj.property); } | 'NOIMAGE' { $options.setImage(AppServerImage.NULL, null); } )
+		|	('IMAGE' ('AUTO' | propObj=formPropertyObject)? { $options.setImage($propObj.literal, $propObj.property); } | 'NOIMAGE' { $options.setImage(AppServerImage.NULL, null); } )
 		|	'HEADER' propObj=formPropertyObject { $options.setHeader($propObj.property); }
 		|	'FOOTER' propObj=formPropertyObject { $options.setFooter($propObj.property); }
 		|	viewType=propertyClassViewType { $options.setViewType($viewType.type); }
