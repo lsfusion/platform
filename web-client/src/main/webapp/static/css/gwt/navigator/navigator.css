@@ -162,8 +162,8 @@
     overflow: hidden; /* we need to set overflow: hidden, since we're using width / height */
 }
 
-.forms-container-not-empty .navbar-text-on-hover:not(:hover):not(.was-selected-recently) .wrap-text-div,
-.navbar-always-hide-unpinned.navbar-text-on-hover:not(:hover):not(.was-selected-recently) .wrap-text-div {
+.forms-container-not-empty .navbar-text-on-hover:not(:hover:not(.was-selected-recently)) .wrap-text-div,
+.navbar-always-hide-unpinned.navbar-text-on-hover:not(:hover:not(.was-selected-recently)) .wrap-text-div {
     max-height: 0;
     max-width: 0;
 
@@ -197,6 +197,19 @@
 /* popup selected hover */
 /* actually all this popup should refer more to parent window direction */
 
+.navbar.navbar-popup-selected-hover,
+.navbar.navbar-popup-over-selected-hover > .navbar-nav {
+    --popup-hover-duration: 400ms;
+    --popup-hover-curve: ease-out;
+}
+.navbar.navbar-popup-over-selected-hover > .navbar-nav {
+    --popup-hover-show-delay: 500ms;
+}
+.navbar.navbar-popup-selected-hover,
+.navbar.navbar-popup-over-selected-hover.parent-was-selected-recently > .navbar-nav {
+    --popup-hover-show-delay: 0s;
+}
+
 .forms-container-not-empty .flex-dir-horz > .navbar.navbar-popup-selected-hover:not(:hover):not(.parent-was-selected-recently),
 .flex-dir-horz > .navbar-always-hide-unpinned.navbar.navbar-popup-selected-hover:not(:hover):not(.parent-was-selected-recently),
 .forms-container-not-empty .flex-dir-horz > .navbar.navbar-popup-over-selected-hover:not(:hover):not(.parent-was-selected-recently) > .navbar-nav,
@@ -220,12 +233,9 @@
 
 .flex-dir-horz > .navbar.navbar-popup-selected-hover,
 .flex-dir-horz > .navbar.navbar-popup-over-selected-hover > .navbar-nav {
-    --popup-hover-duration: 400ms;
-    --popup-hover-curve: ease-out;
-
     max-width: 30em;
 
-    transition: max-width var(--popup-hover-duration) var(--popup-hover-curve),
+    transition: max-width var(--popup-hover-duration) var(--popup-hover-curve) var(--popup-hover-show-delay),
                 padding-left 0s,
                 padding-right 0s,
                 border-left-width 0s,
@@ -261,7 +271,7 @@
 
     max-height: 30em;
 
-    transition: max-height var(--popup-hover-duration) var(--popup-hover-curve),
+    transition: max-height var(--popup-hover-duration) var(--popup-hover-curve) var(--popup-hover-show-delay),
                 padding-top 0s,
                 padding-bottom 0s,
                 border-top-width 0s,
@@ -329,14 +339,16 @@
     position: relative;
 }
 
+/* the problem is that such approach intercepts all mouse events - cursors, clicks, etc. */
+/* so "paddings" should be not more than container + component paddings */
 .flex-dir-horz > .navbar.navbar-popup-over-selected-hover::before {
     content: '';
     position: absolute;
     top: 0;
     bottom: 0;
-    left: -10px;
-    right: 10px;
-    width: 20px;
+    left: calc(-1 * (var(--border-cont-horz-padding) + var(--border-comp-horz-padding)));
+    right: calc(var(--border-cont-horz-padding) + var(--border-comp-horz-padding));
+    width: calc(2 * (var(--border-cont-horz-padding) + var(--border-comp-horz-padding)));
 }
 
 .flex-dir-vert > .navbar.navbar-popup-over-selected-hover::before {
@@ -344,9 +356,9 @@
     position: absolute;
     left: 0;
     right: 0;
-    top: -10px;
-    bottom: 10px;
-    height: 20px;
+    top: calc(-1 * (var(--border-cont-vert-padding) + var(--border-comp-vert-padding)));
+    bottom: calc(var(--border-cont-vert-padding) + var(--border-comp-vert-padding));
+    height: calc(2 * (var(--border-cont-vert-padding) + var(--border-comp-vert-padding)));
 }
 
 .navbar.navbar-popup-over-selected-hover {
