@@ -8,7 +8,8 @@
 /*common scheme*/
 .dataGridCell.background-inherit,
 /*hack to increase selectivity (assuming that dataGridCell is always in tableContainerBoxed)*/
-.tableContainerBoxed .dataGridCell.background-inherit{
+.tableContainerBoxed .dataGridCell.background-inherit,
+.tableContainerBoxed .dataGridCell .background-inherit {
     background-color: var(--bs-table-bg);
 }
 
