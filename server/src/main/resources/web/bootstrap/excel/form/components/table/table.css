@@ -4,12 +4,11 @@
     font-weight: normal;
 }
 
-.dataGridCell,
+.property-with-background,
 /*common scheme*/
-.dataGridCell.background-inherit,
-/*hack to increase selectivity (assuming that dataGridCell is always in tableContainerBoxed)*/
-.tableContainerBoxed .dataGridCell.background-inherit,
-.tableContainerBoxed .dataGridCell .background-inherit {
+.property-with-background .background-inherit,
+/*hack to increase selectivity (assuming that property-with-background is always in tableContainerBoxed)*/
+.tableContainerBoxed .property-with-background .background-inherit {
     background-color: var(--bs-table-bg);
 }
 

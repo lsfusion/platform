@@ -1,6 +1,15 @@
 
 .panelRendererValueBoxed, .panelRendererValueBoxed .background-inherit {
-    background: var(--bs-body-bg, var(--component-background-color));
+    background: var(--component-background-color);
+}
+
+
+.property-with-background,
+/*common scheme*/
+.property-with-background .background-inherit,
+/*hack to increase selectivity (assuming that property-with-background is always panelRendererValueBoxed)*/
+.panelRendererValueBoxed.property-with-background .background-inherit {
+    background-color: var(--bs-table-bg);
 }
 
 .panelRendererValueBoxed {
