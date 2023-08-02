@@ -4,12 +4,12 @@
     font-weight: normal;
 }
 
-.property-with-background,
+.cell-with-background,
 /*common scheme*/
-.property-with-background .background-inherit,
-/*hack to increase selectivity (assuming that property-with-background is always in tableContainerBoxed)*/
-.tableContainerBoxed .property-with-background.background-inherit,
-.tableContainerBoxed .property-with-background .background-inherit {
+.cell-with-background .background-inherit,
+/*hack to increase selectivity (assuming that cell-with-background is always in tableContainerBoxed)*/
+.tableContainerBoxed .cell-with-background.background-inherit,
+.tableContainerBoxed .cell-with-background .background-inherit {
     background-color: var(--bs-table-bg);
 }
 

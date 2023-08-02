@@ -299,3 +299,7 @@ table.pvtTable thead tr th {
     width: -webkit-fill-available;
     width: -moz-available;
 }
+
+.cell-with-background {
+    background-color: var(--bs-table-bg);
+}
