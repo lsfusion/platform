@@ -55,6 +55,7 @@ import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -649,6 +650,10 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     public Type getImportType() {
         return getStaticType();
+    }
+
+    public boolean isPredefinedSwitch() {
+        return ((Property<?>)getInheritedProperty()).isPredefinedSwitch();
     }
 
     public LocalizedString getCaption() {

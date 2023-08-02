@@ -892,6 +892,17 @@ public class PropertyDrawView extends BaseComponentView {
         return null;
     }
 
+    @Override
+    protected String getDefaultElementClass(FormInstanceContext context) {
+        if(isProperty(context)) {
+            Type type = getType(context);
+            if (type instanceof LogicalClass && entity.isPredefinedSwitch())
+                return "form-switch";
+        }
+
+        return null;
+    }
+
     public String getValueElementClass(FormInstanceContext context) {
         if(valueElementClass != null)
             return valueElementClass;

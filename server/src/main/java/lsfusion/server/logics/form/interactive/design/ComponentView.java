@@ -79,6 +79,17 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         return -1;
     }
 
+    public String getElementClass(FormInstanceContext context) {
+        if(elementClass != null)
+            return elementClass;
+
+        return getDefaultElementClass(context);
+    }
+
+    protected String getDefaultElementClass(FormInstanceContext context) {
+        return null;
+    }
+
     public double getFlex(FormInstanceContext context) {
         ContainerView container = getLayoutParamContainer();
         if (container != null) {
@@ -382,7 +393,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         pool.writeObject(outStream, design);
         pool.serializeObject(outStream, getContainer());
 
-        pool.writeString(outStream, elementClass);
+        pool.writeString(outStream, getElementClass(pool.context));
 
         outStream.writeInt(getWidth(pool.context));
         outStream.writeInt(getHeight(pool.context));

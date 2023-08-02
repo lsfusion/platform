@@ -2558,10 +2558,20 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return new StaticParamNullableExpr(getValueClass(ClassType.forPolicy));
     }
 
+
+    // it's heuristics anyway, so why not to try to guess uniqueness by name
+    private static ImSet<String> predefinedSwitchNames = SetFact.toSet("enable", "disable", "on", "off");
+
+    public boolean isPredefinedSwitch() {
+        String name = getName();
+//        return name != null && predefinedValueUniqueNames.contains(name);
+        return name != null && BaseUtils.findInCamelCase(name, predefinedSwitchNames::contains);
+    }
+
     // it's heuristics anyway, so why not to try to guess uniqueness by name
     private static ImSet<String> predefinedValueUniqueNames = SetFact.toSet("name", "id", "number", "caption");
 
-    private boolean isPredefineValueUnique() {
+    private boolean isPredefinedValueUnique() {
         String name = getName();
 //        return name != null && predefinedValueUniqueNames.contains(name);
         return name != null && BaseUtils.findInCamelCase(name, predefinedValueUniqueNames::contains);
@@ -2572,7 +2582,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         if(!isValueFull(fixedExprs))
             return false;
 
-        if(isPredefineValueUnique())
+        if(isPredefinedValueUnique())
             return true;
 
         if(!optimistic) {
