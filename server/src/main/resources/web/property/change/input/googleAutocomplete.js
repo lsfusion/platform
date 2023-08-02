@@ -1,4 +1,4 @@
-let mapApiKeyGoogle = lsfParams.mapApiKey_Google;
+let mapApiKeyGoogle = lsfParams.mapApiKey_google;
 
 //load Google-api if it was not loaded earlier
 //https://issuetracker.google.com/issues/35820648
