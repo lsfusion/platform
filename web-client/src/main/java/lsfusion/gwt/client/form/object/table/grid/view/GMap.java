@@ -219,11 +219,12 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
     protected native JavaScriptObject createMap(com.google.gwt.dom.client.Element element, JavaScriptObject markerClusters, String tileProvider)/*-{
         var L = $wnd.L;
         var map = L.map(element);
+        var lsfParams = $wnd.lsfParams;
 
         if (tileProvider === 'google') {
             //load Google-api if it was not loaded earlier
             if (typeof $wnd.google !== 'object' || typeof $wnd.google.maps !== 'object')
-                $wnd.$.getScript('https://maps.googleapis.com/maps/api/js?key=' + $wnd.lsfParams.mapApiKey_Google);
+                $wnd.$.getScript('https://maps.googleapis.com/maps/api/js?key=' + lsfParams.mapApiKey_google);
             L.gridLayer
                 .googleMutant({
                     type: "roadmap" // valid values are 'roadmap', 'satellite', 'terrain' and 'hybrid'
@@ -231,7 +232,8 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
         } else if (tileProvider === 'yandex') {
             L.yandex()
                 .loadApi({
-                    apiParams: $wnd.lsfParams.mapApiKey_Yandex
+                    apiParams: lsfParams.mapApiKey_yandex,
+                    apiUrl: lsfParams.commercialAPI_yandex != null ? 'https://enterprise.api-maps.yandex.ru/{version}/' : 'https://api-maps.yandex.ru/{version}/'
                 }).addTo(map);
         } else {
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
