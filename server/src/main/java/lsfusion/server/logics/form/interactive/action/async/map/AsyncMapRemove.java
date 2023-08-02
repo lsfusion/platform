@@ -5,7 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.logics.form.interactive.action.async.AsyncAddRemove;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
-import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
@@ -49,7 +49,7 @@ public class AsyncMapRemove<T extends PropertyInterface> extends AsyncMapFormExe
     }
 
     @Override
-    public AsyncEventExec map(ImRevMap<T, ObjectEntity> mapObjects, FormInstanceContext context, ActionOrProperty securityProperty, PropertyObjectEntity<?> drawProperty, GroupObjectEntity toDraw) {
+    public AsyncEventExec map(ImRevMap<T, ObjectEntity> mapObjects, ConnectionContext context, ActionOrProperty securityProperty, PropertyObjectEntity<?> drawProperty, GroupObjectEntity toDraw) {
         ObjectEntity object;
         if((object = mapObjects.get(propertyInterface)) != null && object.groupTo.isSimpleList())
             return new AsyncAddRemove(object, false);

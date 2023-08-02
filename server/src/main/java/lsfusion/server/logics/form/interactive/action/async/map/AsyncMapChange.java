@@ -7,6 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.logics.form.interactive.action.async.AsyncChange;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
@@ -39,11 +40,11 @@ public class AsyncMapChange<X extends PropertyInterface, T extends PropertyInter
     }
 
     @Override
-    public AsyncEventExec map(ImRevMap<T, ObjectEntity> mapObjects, FormInstanceContext context, ActionOrProperty securityProperty, PropertyObjectEntity<?> drawProperty, GroupObjectEntity toDraw) {
+    public AsyncEventExec map(ImRevMap<T, ObjectEntity> mapObjects, ConnectionContext context, ActionOrProperty securityProperty, PropertyObjectEntity<?> drawProperty, GroupObjectEntity toDraw) {
         if(valueInterface != null)
             return null;
 
-        ImList<PropertyDrawEntity> changedProps = context.entity.findChangedProperties(object != null ? object : property.mapEntityObjects(mapObjects), value == null);
+        ImList<PropertyDrawEntity> changedProps = ((FormInstanceContext)context).entity.findChangedProperties(object != null ? object : property.mapEntityObjects(mapObjects), value == null);
         if(changedProps != null)
             return new AsyncChange(changedProps, value instanceof LocalizedString ? ThreadLocalContext.localize((LocalizedString) value) : (Serializable) value);
 

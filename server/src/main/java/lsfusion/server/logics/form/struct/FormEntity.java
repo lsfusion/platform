@@ -44,6 +44,7 @@ import lsfusion.server.logics.form.interactive.action.async.AsyncNoWaitExec;
 import lsfusion.server.logics.form.interactive.action.input.InputFilterEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputOrderEntity;
 import lsfusion.server.logics.form.interactive.action.lifecycle.FormToolbarAction;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.FormView;
@@ -1241,8 +1242,8 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         }
     }
 
-    public void prereadAutoIcons() {
-        getRichDesign().prereadAutoIcons();
+    public void prereadAutoIcons(FormInstanceContext context) {
+        getRichDesign().prereadAutoIcons(context);
     }
 
     private void checkInternalClientAction() {
@@ -1450,9 +1451,9 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return getRichDesign().getCaption();
     }
 
-    public AppServerImage getImage() {
+    public AppServerImage getImage(ConnectionContext context) {
         FormView formView = getRichDesign();
-        return formView.mainContainer.getImage(formView);
+        return formView.mainContainer.getImage(formView, context);
     }
 
     public String getLocalizedCaption() {

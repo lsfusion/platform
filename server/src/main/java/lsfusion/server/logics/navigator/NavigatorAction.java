@@ -2,6 +2,7 @@ package lsfusion.server.logics.navigator;
 
 import lsfusion.server.base.AppServerImage;
 import lsfusion.server.logics.action.Action;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.interactive.action.async.AsyncExec;
 
@@ -35,8 +36,8 @@ public class NavigatorAction extends NavigatorElement {
     }
 
     @Override
-    public AsyncExec getAsyncExec() {
-        return Action.getAsyncExec(action.getAsyncEventExec(false));
+    public AsyncExec getAsyncExec(ConnectionContext context) {
+        return Action.getAsyncExec(action.getAsyncEventExec(false), context);
     }
 
     public FormEntity getForm() {

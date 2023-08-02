@@ -659,7 +659,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public LocalizedString getCaption() {
         return getInheritedProperty().caption;
     }
-    public Supplier<AppServerImage> getImage() {
+    public AppServerImage.Reader getImage() {
         return getInheritedProperty().image;
     }
 

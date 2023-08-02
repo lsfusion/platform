@@ -29,7 +29,7 @@ import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapValue;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputResult;
-import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.property.AsyncDataConverter;
 import lsfusion.server.logics.form.open.FormAction;
 import lsfusion.server.logics.form.open.FormSelector;
@@ -229,7 +229,7 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
             }
 
             @Override
-            public AsyncEventExec map(ImRevMap<C, ObjectEntity> mapObjects, FormInstanceContext context, ActionOrProperty securityProperty, PropertyObjectEntity<?> drawProperty, GroupObjectEntity toDraw) {
+            public AsyncEventExec map(ImRevMap<C, ObjectEntity> mapObjects, ConnectionContext context, ActionOrProperty securityProperty, PropertyObjectEntity<?> drawProperty, GroupObjectEntity toDraw) {
                 return new AsyncInput(type, null, null);
             }
 

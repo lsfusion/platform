@@ -5038,12 +5038,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         String canonicalName = elementCanonicalName(name);
 
         Supplier<LocalizedString> defaultCaption;
-        Supplier<AppServerImage> defaultImage;
+        AppServerImage.Reader defaultImage;
         NavigatorElement newElement;
         if (form != null) {
             newElement = createNavigatorForm(form, canonicalName);
             defaultCaption = form::getCaption;
-            defaultImage = form::getImage;
+            defaultImage = context -> form.getImage(context);
         } else if (action != null) {
             newElement = createNavigatorAction(action, canonicalName);
             defaultCaption = () -> action.action.caption;
@@ -5051,7 +5051,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         } else {
             newElement = createNavigatorFolder(canonicalName);
             defaultCaption = () -> LocalizedString.create(name); // CanonicalNameUtils.getName(newElement.getCanonicalName()));
-            defaultImage = () -> null;
+            defaultImage = context -> null;
         }
 
         if(caption != null)

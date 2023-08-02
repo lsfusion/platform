@@ -6,6 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.action.async.AsyncAddRemove;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.dialogedit.ClassFormSelector;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
@@ -43,12 +44,12 @@ public class AsyncMapAdd<T extends PropertyInterface> extends AsyncMapFormExec<T
     }
 
     @Override
-    public AsyncEventExec map(ImRevMap<T, ObjectEntity> mapObjects, FormInstanceContext context, ActionOrProperty securityProperty, PropertyObjectEntity<?> drawProperty, GroupObjectEntity toDraw) {
+    public AsyncEventExec map(ImRevMap<T, ObjectEntity> mapObjects, ConnectionContext context, ActionOrProperty securityProperty, PropertyObjectEntity<?> drawProperty, GroupObjectEntity toDraw) {
         AsyncAddRemove object = map(toDraw);
         if (object != null)
             return object;
 
-        for(GroupObjectEntity group : context.entity.getGroups())
+        for(GroupObjectEntity group : ((FormInstanceContext)context).entity.getGroups())
             if(!BaseUtils.hashEquals(group, toDraw)) {
                 object = map(group);
                 if (object != null)

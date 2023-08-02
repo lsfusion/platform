@@ -20,6 +20,7 @@ import lsfusion.server.logics.form.interactive.action.async.InputList;
 import lsfusion.server.logics.form.interactive.action.input.InputContext;
 import lsfusion.server.logics.form.interactive.action.input.InputResult;
 import lsfusion.server.logics.form.interactive.controller.remote.RemoteForm;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.interactive.listener.FocusListener;
@@ -43,7 +44,11 @@ public class RemoteNavigatorContext extends RemoteConnectionContext {
     private final RemoteNavigator navigator;
     
     private final RemoteUIContext uiContext; // multiple inheritance
-    
+
+    public ConnectionContext getRemoteContext() {
+        return navigator.getRemoteContext();
+    }
+
     public RemoteNavigatorContext(RemoteNavigator remoteNavigator) {
         navigator = remoteNavigator;
         
@@ -101,6 +106,11 @@ public class RemoteNavigatorContext extends RemoteConnectionContext {
             @Override
             public Long getCurrentUser() {
                 return RemoteNavigatorContext.this.getCurrentUser();
+            }
+
+            @Override
+            protected ConnectionContext getConnectionContext() {
+                return RemoteNavigatorContext.this.getRemoteContext();
             }
 
             @Override

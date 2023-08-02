@@ -58,7 +58,6 @@ import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 
 import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.interop.action.ServerResponse.CHANGE;
@@ -123,7 +122,7 @@ public class PropertyDrawView extends BaseComponentView {
     public LocalizedString placeholder;
 
     public LocalizedString caption;
-    public Supplier<AppServerImage> image;
+    public AppServerImage.Reader image;
     public boolean clearText;
     public boolean notSelectAll;
     public String toolTip;
@@ -275,20 +274,20 @@ public class PropertyDrawView extends BaseComponentView {
         this.image = AppServerImage.createPropertyImage(image, this);
     }
 
-    public AppServerImage getImage() {
+    public AppServerImage getImage(FormInstanceContext context) {
         AppServerImage image;
-        if(this.image != null && (image = this.image.get()) != null)
+        if(this.image != null && (image = this.image.get(context)) != null)
             return image;
 
-        Supplier<AppServerImage> entityImage = entity.getImage();
-        if(entityImage != null && (image = entityImage.get()) != null)
+        AppServerImage.Reader entityImage = entity.getImage();
+        if(entityImage != null && (image = entityImage.get(context)) != null)
             return image;
 
-        return getDefaultImage();
+        return getDefaultImage(context);
     }
 
-    private AppServerImage getDefaultImage() {
-        return ActionOrProperty.getDefaultImage(AppServerImage.AUTO, getAutoName(), Settings.get().getDefaultPropertyImageRankingThreshold(), Settings.get().isDefaultPropertyImage());
+    private AppServerImage getDefaultImage(FormInstanceContext context) {
+        return ActionOrProperty.getDefaultImage(AppServerImage.AUTO, getAutoName(), Settings.get().getDefaultPropertyImageRankingThreshold(), Settings.get().isDefaultPropertyImage(), context);
     }
 
     // we return to the client null, if we're sure that caption is always empty (so we don't need to draw label)
@@ -410,7 +409,7 @@ public class PropertyDrawView extends BaseComponentView {
         outStream.writeBoolean(isBoxed(pool.context.entity));
 
         pool.writeString(outStream, getDrawCaption());
-        AppServerImage.serialize(getImage(), outStream, pool);
+        AppServerImage.serialize(getImage(pool.context), outStream, pool);
         pool.writeString(outStream, regexp);
         pool.writeString(outStream, regexpMessage);
         pool.writeLong(outStream, maxValue);
@@ -493,7 +492,7 @@ public class PropertyDrawView extends BaseComponentView {
         outStream.writeInt(asyncExecMap.size());
         for (Map.Entry<String, AsyncEventExec> entry : asyncExecMap.entrySet()) {
             pool.writeString(outStream, entry.getKey());
-            AsyncSerializer.serializeEventExec(entry.getValue(), outStream);
+            AsyncSerializer.serializeEventExec(entry.getValue(), pool.context, outStream);
         }
 
         outStream.writeBoolean(entity.askConfirm);

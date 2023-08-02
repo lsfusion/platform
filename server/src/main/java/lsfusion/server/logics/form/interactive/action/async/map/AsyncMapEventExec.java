@@ -3,7 +3,7 @@ package lsfusion.server.logics.form.interactive.action.async.map;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
-import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
@@ -30,5 +30,5 @@ public abstract class AsyncMapEventExec<T extends PropertyInterface> {
         return 0;
     }
     
-    public abstract AsyncEventExec map(ImRevMap<T, ObjectEntity> mapObjects, FormInstanceContext context, ActionOrProperty securityProperty, PropertyObjectEntity<?> drawProperty, GroupObjectEntity toDraw);
+    public abstract AsyncEventExec map(ImRevMap<T, ObjectEntity> mapObjects, ConnectionContext context, ActionOrProperty securityProperty, PropertyObjectEntity<?> drawProperty, GroupObjectEntity toDraw);
 }

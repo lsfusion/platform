@@ -10,6 +10,7 @@ import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncNoWaitExec;
 import lsfusion.server.logics.form.interactive.action.async.InputListAction;
 import lsfusion.server.logics.form.interactive.action.async.QuickAccess;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
@@ -23,7 +24,7 @@ import java.util.Map;
 
 public class AsyncMapInputListAction<T extends PropertyInterface> {
 
-    public AppServerImage action;
+    public AppServerImage.Reader action;
     public String id;
     public AsyncMapEventExec<T> asyncExec; // it's an asyncexec and not asynceventexec, since in continueDispatching there is no push infrastructure so far (and it's not clear if it's needed at all)
     public String keyStroke;
@@ -32,7 +33,7 @@ public class AsyncMapInputListAction<T extends PropertyInterface> {
     public ImList<QuickAccess> quickAccessList;
     public int index;
 
-    public AsyncMapInputListAction(AppServerImage action, String id, AsyncMapEventExec<T> asyncExec, String keyStroke, Map<String, BindingMode> bindingModesMap, Integer priority, ImList<QuickAccess> quickAccessList, int index) {
+    public AsyncMapInputListAction(AppServerImage.Reader action, String id, AsyncMapEventExec<T> asyncExec, String keyStroke, Map<String, BindingMode> bindingModesMap, Integer priority, ImList<QuickAccess> quickAccessList, int index) {
         this.action = action;
         this.id = id;
         this.asyncExec = asyncExec;
@@ -44,8 +45,8 @@ public class AsyncMapInputListAction<T extends PropertyInterface> {
     }
 
     // for input, actually it seems that async events are not used in that case
-    public InputListAction map() {
-        return new InputListAction(action, id, Action.getAsyncExec(asyncExec), keyStroke, bindingModesMap, priority, quickAccessList, index);
+    public InputListAction map(ConnectionContext context) {
+        return new InputListAction(action, id, Action.getAsyncExec(asyncExec, context), keyStroke, bindingModesMap, priority, quickAccessList, index);
     }
 
     public InputListAction map(ImRevMap<T, ObjectEntity> mapObjects, FormInstanceContext context, ActionOrProperty securityProperty, PropertyObjectEntity<?> drawProperty, GroupObjectEntity toDraw) {

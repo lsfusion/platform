@@ -18,23 +18,23 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class FormInstanceContext {
+public class FormInstanceContext extends ConnectionContext {
     // static part
     public final FormEntity entity;
     public final FormView view;
 
     // dynamic part
     public final SecurityPolicy securityPolicy;
-    public final boolean useBootstrap;
     public final boolean isNative;
     public final DBManager dbManager;
 
     public FormInstanceContext(FormEntity entity, FormView view, SecurityPolicy securityPolicy, boolean useBootstrap, boolean isNative, DBManager dbManager) {
+        super(useBootstrap);
+
         this.entity = entity;
         this.view = view;
 
         this.securityPolicy = securityPolicy;
-        this.useBootstrap = useBootstrap;
         this.isNative = isNative;
         this.dbManager = dbManager;
     }

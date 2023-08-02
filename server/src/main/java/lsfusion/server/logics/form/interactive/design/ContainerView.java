@@ -12,6 +12,7 @@ import lsfusion.server.base.version.NeighbourComplexLocation;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFComplexOrderSet;
 import lsfusion.server.language.ScriptParsingException;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.object.GridView;
@@ -24,7 +25,6 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.function.Supplier;
 
 import static lsfusion.interop.form.design.ContainerType.*;
 
@@ -34,33 +34,33 @@ public class ContainerView extends ComponentView {
 
     public LocalizedString caption;
     public String name; // actually used only for icons
-    public Supplier<AppServerImage> image;
+    public AppServerImage.Reader image;
 
     public void setImage(String imagePath, FormView formView) {
         image = AppServerImage.createContainerImage(imagePath, this, formView);
     }
 
-    public AppServerImage getImage(FormView formView) {
+    public AppServerImage getImage(FormView formView, ConnectionContext context) {
         AppServerImage image;
-        if(this.image != null && (image = this.image.get()) != null)
+        if(this.image != null && (image = this.image.get(context)) != null)
             return image;
 
-        return getDefaultImage(main ? formView : null);
+        return getDefaultImage(main ? formView : null, context);
     }
 
-    public AppServerImage getDefaultImage(String name, float rankingThreshold, boolean useDefaultIcon, FormView formView) {
+    public AppServerImage getDefaultImage(String name, float rankingThreshold, boolean useDefaultIcon, FormView formView, ConnectionContext context) {
         return AppServerImage.createDefaultImage(rankingThreshold,
                 name, main ? AppServerImage.Style.FORM : AppServerImage.Style.CONTAINER, getAutoName(formView),
-                () -> useDefaultIcon ? AppServerImage.createContainerImage(AppServerImage.FORM, ContainerView.this, formView).get() : null);
+                defaultContext -> useDefaultIcon ? AppServerImage.createContainerImage(AppServerImage.FORM, ContainerView.this, formView).get(defaultContext) : null, context);
     }
 
     private AppServerImage.AutoName getAutoName(FormView formView) {
         return AppServerImage.getAutoName(main ? formView::getCaption : () -> caption, main ? formView.entity::getName : () -> name);
     }
 
-    private AppServerImage getDefaultImage(FormView formView) {
+    private AppServerImage getDefaultImage(FormView formView, ConnectionContext context) {
         return getDefaultImage(AppServerImage.AUTO, main ? Settings.get().getDefaultNavigatorImageRankingThreshold() : Settings.get().getDefaultContainerImageRankingThreshold(),
-                 main ? Settings.get().isDefaultNavigatorImage() : Settings.get().isDefaultContainerImage(), formView);
+                 main ? Settings.get().isDefaultNavigatorImage() : Settings.get().isDefaultContainerImage(), formView, context);
     }
 
     private Boolean collapsible;
@@ -467,7 +467,7 @@ public class ContainerView extends ComponentView {
 
         pool.writeString(outStream, hasCaption() ? ThreadLocalContext.localize(caption) : null); // optimization
         pool.writeString(outStream, name); // optimization
-        AppServerImage.serialize(getImage(pool.context.view), outStream, pool);
+        AppServerImage.serialize(getImage(pool.context.view, pool.context), outStream, pool);
 
         outStream.writeBoolean(isCollapsible());
 
@@ -556,10 +556,10 @@ public class ContainerView extends ComponentView {
     }
 
     @Override
-    public void prereadAutoIcons(FormView formView) {
-        getImage(formView);
+    public void prereadAutoIcons(FormView formView, FormInstanceContext context) {
+        getImage(formView, context);
         for(ComponentView child : getChildrenIt())
-            child.prereadAutoIcons(formView);
+            child.prereadAutoIcons(formView, context);
     }
 
     @Override

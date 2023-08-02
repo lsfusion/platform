@@ -1,9 +1,9 @@
 package lsfusion.server.logics.form.interactive.action.async;
 
 import lsfusion.server.base.AppServerImage;
-import lsfusion.base.file.IOUtils;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.form.remote.serialization.SerializationUtil;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -31,8 +31,8 @@ public class AsyncOpenForm extends AsyncExec {
     }
 
     @Override
-    public void serialize(DataOutputStream outStream) throws IOException {
-        super.serialize(outStream);
+    public void serialize(ConnectionContext context, DataOutputStream outStream) throws IOException {
+        super.serialize(context, outStream);
 
         SerializationUtil.writeString(outStream, canonicalName);
         SerializationUtil.writeString(outStream, caption);

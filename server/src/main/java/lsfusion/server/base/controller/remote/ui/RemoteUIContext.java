@@ -24,6 +24,7 @@ import lsfusion.server.logics.form.interactive.action.async.AsyncSerializer;
 import lsfusion.server.logics.form.interactive.action.input.InputContext;
 import lsfusion.server.logics.form.interactive.action.input.InputResult;
 import lsfusion.server.logics.form.interactive.controller.remote.RemoteForm;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.listener.FocusListener;
 import lsfusion.server.logics.form.interactive.listener.RemoteFormListener;
@@ -75,11 +76,13 @@ public abstract class RemoteUIContext extends AbstractContext {
         inputContextLock.unlock();
     }
 
+    protected abstract ConnectionContext getConnectionContext();
+
     public InputResult inputUserData(ActionOrProperty securityProperty, DataClass dataClass, Object oldValue, boolean hasOldValue, InputContext inputContext, String customChangeFunction, InputList inputList) {
         this.inputContext = inputContext; // we don't have to lock here since thread-safety will be ok anyway
         try {
             UserInputResult result = (UserInputResult) requestUserInteraction(new RequestUserInputClientAction(serializeType(dataClass), serializeObject(oldValue), hasOldValue,
-                    customChangeFunction, inputContext != null ? AsyncSerializer.serializeInputList(inputList.filter(getSecurityPolicy(), securityProperty)) : null));
+                    customChangeFunction, inputContext != null ? AsyncSerializer.serializeInputList(inputList.filter(getSecurityPolicy(), securityProperty), getConnectionContext()) : null));
             if (result.isCanceled()) {
                 return null;
             }

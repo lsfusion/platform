@@ -44,6 +44,7 @@ import lsfusion.server.logics.classes.data.time.DateTimeClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.controller.remote.RemoteForm;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.interactive.listener.FocusListener;
@@ -118,6 +119,8 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         ServerLoggers.remoteLifeLog("NAVIGATOR OPEN : " + this);
 
         this.classCache = new ClassCache();
+
+        remoteContext = new ConnectionContext(isUseBootstrap());
 
         this.client = new ClientCallBackController(port, toString(), this::updateLastUsedTime);
         ClientType clientType = navigatorInfo.clientType;
@@ -443,7 +446,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             
             dataStream.writeInt(elementsCount);
             for (NavigatorElement element : elements.keyIt()) {
-                element.serialize(dataStream);
+                element.serialize(getRemoteContext(), dataStream);
             }
             
             for (List<String> children : elements.valueIt()) {
@@ -531,7 +534,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     public byte[] getNavigatorChangesByteArray(boolean refresh) {
         try {
             NavigatorChanges navigatorChanges = getChanges(refresh);
-            return navigatorChanges.serialize();
+            return navigatorChanges.serialize(getRemoteContext());
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
@@ -599,6 +602,10 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         return new NavigatorChanges(changes);
     }
 
+    private final ConnectionContext remoteContext;
+    public ConnectionContext getRemoteContext() {
+        return remoteContext;
+    }
 
     @Override
     public Pair<RemoteFormInterface, String> createFormExternal(String json) {

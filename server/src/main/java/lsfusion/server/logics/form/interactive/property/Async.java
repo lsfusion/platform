@@ -2,9 +2,9 @@ package lsfusion.server.logics.form.interactive.property;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.form.interactive.changed.FormChanges;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 
 import java.io.DataOutputStream;
@@ -39,9 +39,9 @@ public class Async {
 //        return displayString.hashCode() * 31 + rawString.hashCode();
     }
 
-    public void serialize(DataOutputStream dataStream) throws IOException {
-        BaseUtils.serializeObject(dataStream, FormChanges.convertFileValue(null, displayString));
-        BaseUtils.serializeObject(dataStream, FormChanges.convertFileValue(null, rawString));
+    public void serialize(FormInstanceContext context, DataOutputStream dataStream) throws IOException {
+        BaseUtils.serializeObject(dataStream, FormChanges.convertFileValue(null, displayString, context));
+        BaseUtils.serializeObject(dataStream, FormChanges.convertFileValue(null, rawString, context));
         serializeKey(dataStream, key);
     }
 

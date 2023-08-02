@@ -2,6 +2,7 @@ package lsfusion.server.logics.form.interactive.action.async;
 
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.logics.classes.user.CustomClass;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 
 import java.io.DataInputStream;
@@ -23,8 +24,8 @@ public class AsyncAddRemove extends AsyncFormExec {
     }
 
     @Override
-    public void serialize(DataOutputStream dataOutputStream) throws IOException {
-        super.serialize(dataOutputStream);
+    public void serialize(ConnectionContext context, DataOutputStream dataOutputStream) throws IOException {
+        super.serialize(context, dataOutputStream);
 
         dataOutputStream.writeInt(object.getID());
         dataOutputStream.writeBoolean(add);

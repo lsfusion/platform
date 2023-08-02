@@ -5,6 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.logics.form.interactive.action.async.InputList;
 import lsfusion.server.logics.form.interactive.action.async.InputListAction;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
@@ -25,8 +26,8 @@ public class AsyncMapInputList<T extends PropertyInterface> {
         this.strict = strict;
     }
 
-    public InputList map() {
-        return new InputList(actions.mapListValues((Function<AsyncMapInputListAction<T>, InputListAction>) AsyncMapInputListAction::map).toArray(new InputListAction[actions.size()]), strict);
+    public InputList map(ConnectionContext context) {
+        return new InputList(actions.mapListValues(action -> action.map(context)).toArray(new InputListAction[actions.size()]), strict);
     }
 
     public InputList map(ImRevMap<T, ObjectEntity> mapObjects, FormInstanceContext context, ActionOrProperty securityProperty, PropertyObjectEntity<?> drawProperty, GroupObjectEntity toDraw) {
