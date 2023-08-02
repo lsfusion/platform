@@ -115,7 +115,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
 
     @Override
     public int getCount() {
-        ImplementTable.checkStatProps(null);
+        assert ImplementTable.checkStatProps(null);
         return BaseUtils.max(stat != null ? stat : 0, 1);
     }
     

@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.navigator.window.view;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -23,6 +24,7 @@ public abstract class WindowsController {
 
     public static final String NAVBAR_TEXT_ON_HOVER = "navbar-text-on-hover";
     public static final String NAVBAR_POPUP_SELECTED_HOVER = "navbar-popup-selected-hover";
+    public static final String NAVBAR_POPUP_OVER_SELECTED_HOVER = "navbar-popup-over-selected-hover";
     public static final String BACKGROUND_PREFIX = "bg-";
 
     public void updateElementClass(GAbstractWindow window) {
@@ -33,7 +35,7 @@ public abstract class WindowsController {
 //        we still need bg_ to HAS (however here we should use paddings ???) be converted to respect margins ???
 
         BaseImage.updateClasses(windowView, elementClass, (widget, parent, className) -> {
-            if(className.equals(NAVBAR_TEXT_ON_HOVER) || className.equals(NAVBAR_POPUP_SELECTED_HOVER)) {
+            if(className.equals(NAVBAR_TEXT_ON_HOVER) || className.equals(NAVBAR_POPUP_SELECTED_HOVER) || className.equals(NAVBAR_POPUP_OVER_SELECTED_HOVER)) {
                 boolean isWindow = widget.equals(windowView);
                 if((isWindow || widget instanceof FlexPanel) && parent instanceof FlexPanel) {
                     boolean thisVertical = isWindow ? window instanceof GToolbarNavigatorWindow && ((GToolbarNavigatorWindow) window).isVertical() : ((FlexPanel) widget).isVertical();

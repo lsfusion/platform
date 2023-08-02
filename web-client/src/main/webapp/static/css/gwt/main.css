@@ -23,8 +23,14 @@
 }
 
 /* ------------ Other components  ------------ */
-.logPanel {
+.nav-log-panel {
     white-space: nowrap;
+    overflow: auto;
+    flex: 1 1 auto;
+    align-self: stretch;
+    text-align: left;
+
+    padding: var(--border-comp-vert-padding) var(--border-comp-horz-padding);
 }
 
 .errorLogMessage {

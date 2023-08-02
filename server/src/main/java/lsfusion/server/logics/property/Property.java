@@ -1047,7 +1047,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     protected Expr aspectCalculateExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        ImplementTable.checkStatProps(null);
+        assert (AlgType.useCalcForStored && calcType == CalcClassType.prevBase()) || ImplementTable.checkStatProps(null);
         return calculateExpr(joinImplement, calcType, propChanges, changedWhere);
     }
 
@@ -1666,7 +1666,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     public static boolean isDefaultWYSInput(ValueClass valueClass) {
         return valueClass instanceof StringClass;
     }
-    
+
     private boolean checkViewObjectEvent(ValueClass valueClass, Supplier<Property<?>> viewProperty) {
         if(!(valueClass instanceof CustomClass))
             return true;
@@ -1841,7 +1841,6 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             orderClasses = orderInterfaces.mapList(innerClasses);
         return baseLM.addFinalIntegrationForm(orderInterfaces, orderClasses, orderMapInterfaces, properties, propUsages, propOrders, where);
     }
-
     @IdentityStrongLazy // STRONG for using in security policy
     public ActionMapImplement<?, T> getDefaultEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction) {
 
@@ -2484,10 +2483,18 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return getInterfaceStat(fixedExprs, false);
     }
 
+    private Cost getInterfaceCost(ImMap<T, StaticParamNullableExpr> fixedExprs) {
+        return getInterfaceCostStat(fixedExprs, false).second;
+    }
+
+    private Stat getInterfaceStat(ImMap<T, StaticParamNullableExpr> fixedExprs, boolean alotHeur) {
+        return getInterfaceCostStat(fixedExprs, alotHeur).first;
+    }
+
     @IdentityStartLazy
     @StackMessage("{message.core.property.get.interface.class.stats}")
     @ThisMessage
-    private Stat getInterfaceStat(ImMap<T, StaticParamNullableExpr> fixedExprs, boolean alotHeur) {
+    private Pair<Stat, Cost> getInterfaceCostStat(ImMap<T, StaticParamNullableExpr> fixedExprs, boolean alotHeur) {
         ImRevMap<T, KeyExpr> innerKeys = KeyExpr.getMapKeys(interfaces.removeIncl(fixedExprs.keys()));
         ImMap<T, Expr> innerExprs = MapFact.addExcl(innerKeys, fixedExprs); // we need some virtual values
 
@@ -2501,7 +2508,8 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
         ImRevMap<T, KeyExpr> fInnerKeys = innerKeys.filterInclValuesRev(BaseUtils.immutableCast(where.getOuterKeys())); // ignoring "free" keys (having free keys breaks a lot of assertions in statistic calculations)
 
-        return getStatRows(fInnerKeys, where).getRows();
+        StatKeys<KeyExpr> statRows = getStatRows(fInnerKeys, where);
+        return new Pair<>(statRows.getRows(), statRows.getCost());
     }
 
     private Stat getSelectStat(ImMap<T, StaticParamNullableExpr> fixedExprs) {
@@ -2536,6 +2544,10 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
     public Stat getInterfaceStat(ImSet<T> interfaces) {
         return getInterfaceStat(getInterfaceParamExprs(interfaces));
+    }
+
+    public Cost getInterfaceCost(ImSet<T> interfaces) {
+        return getInterfaceCost(getInterfaceParamExprs(interfaces));
     }
 
     public Stat getSelectStat(ImSet<T> fixedInterfaces) {
@@ -2613,7 +2625,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
                 return false;
             return aspectDebugHasAlotKeys();
         }
-        return hasAlotKeys(getInterfaceStat(false));
+       return hasAlotKeys(getInterfaceStat(false));
     }
 
     protected boolean aspectDebugHasAlotKeys() {

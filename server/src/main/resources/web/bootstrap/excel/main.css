@@ -11,6 +11,7 @@
     --text-color: var(--excel-text-color);
     --background-color: var(--excel-background-color);
     --component-background-color: var(--excel-component-background-color);
+    --bs-table-bg: var(--component-background-color);
     --grid-separator-border-color: var(--excel-grid-separator-border-color);
     --component-border-color: var(--excel-component-border-color);
 

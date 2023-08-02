@@ -44,7 +44,7 @@ public abstract class LinkClass extends DataClass<String> {
 
     @Override
     public DBType getDBType() {
-        return TextClass.instance;
+        return StringClass.instance;
     }
     public String getDotNetType(SQLSyntax syntax, TypeEnvironment typeEnv) {
         return "SqlString";

@@ -20,3 +20,10 @@
 .lsf-dropdown .dropdown-item .wrap-text-not-empty {
     cursor: pointer;
 }
+
+.context-menu-item {
+    cursor: default;
+}
+.context-menu-item-selected {
+    background: var(--selection-color);
+}

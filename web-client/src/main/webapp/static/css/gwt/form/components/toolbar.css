@@ -4,6 +4,7 @@
     margin-right: var(--border-comp-horz-padding);
 }
 
-.btn-toolbar .btn:hover {
+.btn-toolbar .btn:hover,
+.btn-toolbar .btn:hover.background-inherit {
     background-color: var(--component-hover-background-color);
 }

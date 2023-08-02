@@ -3,6 +3,15 @@
     background: var(--component-background-color);
 }
 
+
+.property-with-background,
+/*common scheme*/
+.property-with-background .background-inherit,
+/*hack to increase selectivity (assuming that property-with-background is always panelRendererValueBoxed)*/
+.panelRendererValueBoxed.property-with-background .background-inherit {
+    background-color: var(--bs-table-bg);
+}
+
 .panelRendererValueBoxed {
     border: 1px solid var(--component-border-color); /* should correspond to the result in ActionOrPropertyValue.setBaseSize */
 }
@@ -43,4 +52,9 @@ input[type=checkbox].panelRendererValueBoxed:hover:not(.panelRendererValueFocuse
 
 .panelRendererValueBinding, .panelRendererValueBinding .background-inherit {
     background-color: var(--button-active-background-color);
+}
+
+/*prevents all click for 3-state boolean 'disabled' value, click will be catched by upper element*/
+.logicalRendererCheckBox:disabled {
+    pointer-events: none;
 }

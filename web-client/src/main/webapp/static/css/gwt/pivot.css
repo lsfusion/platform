@@ -87,13 +87,8 @@ table.pvtTable {
 table.pvtTable tbody tr td,
 table.pvtTable tbody tr th,
 table.pvtTable thead tr th {
-    /* the same as dataGridCell, dataGridHeaderCell, table.pvtTable thead tr th/td */
-    border-right: 1px solid var(--grid-separator-border-color);
-    border-bottom: 1px solid var(--grid-separator-border-color);
-
     overflow: hidden;
     white-space: nowrap;
-    padding: 0 3px;
     font-weight: normal;
 }
 
@@ -150,7 +145,6 @@ table.pvtTable tbody tr td {
 
 .pvtCols {
     width: 100%;
-    padding: 0;
 }
 
 .pvtRows, .pvtCols {
@@ -158,10 +152,6 @@ table.pvtTable tbody tr td {
     border-radius: var(--panel-border-radius);
     -webkit-border-radius: var(--panel-border-radius);
     -moz-border-radius: var(--panel-border-radius);
-}
-
-.pvtRows li div.pvtAttr, .pvtCols li div.pvtAttr {
-    background: var(--selection-color);
 }
 
 .pvtColumnsTable {
@@ -173,10 +163,6 @@ table.pvtTable tbody tr td {
 .pvtColumnsTable .paxis.stretch {
     /*to stretch last empty paxis*/
     width:100%;
-}
-
-.pvtColumnsTable .paxis li {
-    margin: 4px 0;
 }
 
 .pvtColumnsTable .paxis:empty {
@@ -201,7 +187,6 @@ table.pvtTable tbody tr td {
 .pvtVals {
     border: 1px solid var(--panel-border-color);
     border-radius: var(--panel-border-radius);
-    padding: 0;
     user-select: none;
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -209,14 +194,6 @@ table.pvtTable tbody tr td {
     -ms-user-select: none;
     -webkit-border-radius: var(--panel-border-radius);
     -moz-border-radius: var(--panel-border-radius);
-}
-
-.pvtUiCell {
-    padding: 0;
-}
-
-.pvtUiCell > div:not(.pvtUnusedCellDivWrapper), .pvtUnusedCellDivWrapper > div {
-    padding: 4px 7px 4px 4px;
 }
 
 .pvtAxisContainer li, 
@@ -231,27 +208,6 @@ table.pvtTable tbody tr td {
     vertical-align: bottom;
     outline: 1px dashed var(--component-border-color);
     outline-offset: -1px;
-}
-
-.pvtAxisContainer li,
-.pvtAxisContainer li.pvtPlaceholder,
-.pvtAxisContainer > li.pvtPlaceholder:only-child {
-    margin: 4px;
-}
-
-.pvtAxisContainer li div.pvtAttr, 
-.pvtUiContainer > li div.pvtAttr /* dragged */ {
-    -webkit-text-size-adjust: 100%;
-    border: 1px solid var(--component-border-color);
-    border-radius: var(--combobox-border-radius);
-    color: var(--text-color);
-    background-color: var(--component-background-color);
-    padding: 0 5px;
-    white-space: nowrap;
-    display: flex;
-    align-self: start;
-    -webkit-border-radius: var(--combobox-border-radius);
-    -moz-border-radius: var(--combobox-border-radius);
 }
 
 /*.paxis.pvtHorizList: there is a bug with incorrect width when drag'n'drop middle of 3 elements.
@@ -282,24 +238,12 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
     height: 100%;
 }
 
-.pvtTriangle {
-    cursor: pointer;
-    color: var(--text-color);
-    align-self: center;
-    padding-left: 3px;
-}
-
 .pvtHorizList {
     white-space: nowrap; /*to prevent list from going vertical*/ 
 }
 
 .pvtHorizList > li {
     display: inline-flex;
-}
-
-.pvtHorizList > li,
-.pvtHorizList > li.pvtPlaceholder {
-    margin: 0 0 0 4px;
 }
 
 .pvtUnused.pvtHorizList li {
@@ -309,16 +253,6 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
 
 .pvtAxisContainer li.pvtPlaceholder { /*should be after .pvtUnused.pvtVertList li*/
     max-width: 50px;
-}
-
-.pvtAttrText {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 125px;
-}
-
-.pvtVertList > li.pvtPlaceholder {
-    margin: 4px 0 0 0;
 }
 
 .pvtVertList {
@@ -420,10 +354,20 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
 }
 
 .pvtRenderer {
-    margin: 5px 0 5px 5px;
     max-width: 150px;
 }
 
+.pvtAttr {
+    text-overflow: ellipsis;
+}
+
+.pvtRowsTable .pvtAttr,
 .pvtAggregator {
-    margin: 4px 0 4px 4px;
+    max-width: 125px;
+}
+
+.pvtRenderer.form-select,
+.pvtAggregator.form-select,
+.pvtAttr.form-select {
+    margin: var(--border-comp-vert-padding) var(--border-comp-horz-padding);
 }

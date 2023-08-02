@@ -263,6 +263,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             img.addClassName("leaf-image");
         } else if(StaticImage.TREE_BRANCH.equals(indentIcon)) {
             img.addClassName("branch-image");
+        } else if (StaticImage.LOADING_ASYNC.equals(indentIcon)) {
+            img.addClassName("loading-async-image");
         }
 
         (StaticImage.TREE_PASSBY.equals(indentIcon) ? StaticImage.TREE_EMPTY : indentIcon).updateImageSrc(img);

@@ -1,11 +1,11 @@
 CREATE OR REPLACE FUNCTION tonumber(anyelement) RETURNS NUMERIC AS
 $$
-    SELECT to_number($1,'9999999999999999999999999999999D9999999999999999999999999999999');
+    SELECT to_number(REPLACE(trim($1),',','.'),'9999999999999999999999999999999.9999999999999999999999999999999');
 $$ LANGUAGE 'sql' IMMUTABLE;
 
 CREATE OR REPLACE FUNCTION ${function.name}(anyelement) RETURNS ${param.type} AS
 $$
-    SELECT CASE WHEN $1 ~ '^(\+|\-)?[0-9]+((\.|,)[0-9]+)?$' AND
+    SELECT CASE WHEN $1 ~ '^(\+|\-)?[0-9]+((\.|,)[0-9]+)?\s*$' AND
         tonumber($1) BETWEEN ${param.minvalue} AND ${param.maxvalue}
         THEN CAST(tonumber($1) AS ${param.type}) ELSE NULL END;
 $$ LANGUAGE 'sql' IMMUTABLE;

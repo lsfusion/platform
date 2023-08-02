@@ -144,6 +144,12 @@ Platform components are also updated separately from each other. To do this, you
 | RHEL 7 / CentOS 7                | `yum update lsfusion5-client` |
 | Ubuntu 18+ / Debian 9+           | `apt update lsfusion5-client` |
 <!--- comment to prevent multiple error messages in IDEA --->
+
+#### Unstable versions
+Upgrade platform to a SNAPSHOT version : `source <(curl -s https://download.lsfusion.org/apt/update-lsfusion5) <platform version>`.
+
+For example, `source <(curl -s https://download.lsfusion.org/apt/update-lsfusion5) 6.0-SNAPSHOT`.
+
 </TabItem>
 </Tabs>
 

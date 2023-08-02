@@ -11,6 +11,12 @@ public class ColorUtils {
     public static int toRGB(String color) {
         if (color != null) {
             try {
+                //transform short form to full form: #00f -> #0000ff
+                if(color.startsWith("#") && color.length() == 4) {
+                    color = "#" + color.charAt(1) + color.charAt(1)
+                            + color.charAt(2) + color.charAt(2)
+                            + color.charAt(3) + color.charAt(3);
+                }
                 return Integer.decode(color);
             } catch (NumberFormatException e) {
                 return -1;

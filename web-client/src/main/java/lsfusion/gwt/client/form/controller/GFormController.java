@@ -2347,11 +2347,13 @@ public class GFormController implements EditManager {
     }
 
     public static void setBackgroundColor(Element element, String color) {
+        element.addClassName("property-with-background");
         setCellBackgroundColor(element, color);
     }
 
     private static native void setCellBackgroundColor(Element element, String background) /*-{
         element.style.setProperty("--bs-table-bg", background);
+        element.style.setProperty("--bs-body-bg", background);
     }-*/;
 
     public static void setForegroundColor(Element element, String color) {

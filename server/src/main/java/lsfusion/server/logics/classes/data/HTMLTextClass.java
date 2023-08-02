@@ -26,7 +26,7 @@ public class HTMLTextClass extends TextClass{
     }
 
     @Override
-    public boolean useInputTag(boolean isPanel, boolean useBootstrap) {
+    public boolean useInputTag(boolean isPanel, boolean useBootstrap, boolean hasBackground) {
         return false;
     }
 
