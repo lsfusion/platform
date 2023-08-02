@@ -47,3 +47,9 @@
 .btn-toolbar .btn {
     background: transparent;
 }
+
+/*loading_async.gif is too large icon, it should be the same size as other tree icons*/
+.loading-async-image {
+    width: 16px;
+    height: 16px;
+}
