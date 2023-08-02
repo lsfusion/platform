@@ -8,6 +8,7 @@
 /*common scheme*/
 .property-with-background .background-inherit,
 /*hack to increase selectivity (assuming that property-with-background is always in tableContainerBoxed)*/
+.tableContainerBoxed .property-with-background.background-inherit,
 .tableContainerBoxed .property-with-background .background-inherit {
     background-color: var(--bs-table-bg);
 }
