@@ -5034,7 +5034,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (form != null) {
             newElement = createNavigatorForm(form, canonicalName);
             defaultCaption = form::getCaption;
-            defaultImage = form::getImage;
+            defaultImage = form.getNFRichDesign(getVersion()).mainContainer.image;
         } else if (action != null) {
             newElement = createNavigatorAction(action, canonicalName);
             defaultCaption = () -> action.action.caption;
@@ -5042,14 +5042,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         } else {
             newElement = createNavigatorFolder(canonicalName);
             defaultCaption = () -> LocalizedString.create(name); // CanonicalNameUtils.getName(newElement.getCanonicalName()));
-            defaultImage = () -> null;
+            defaultImage = null;
         }
 
         if(caption != null)
             defaultCaption = () -> caption;
 
         newElement.caption = defaultCaption;
-        newElement.image = defaultImage;
+        newElement.defaultImage = defaultImage;
 
         newElement.setDebugPoint(point);
         addNavigatorElement(newElement);

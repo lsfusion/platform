@@ -53,6 +53,7 @@ public abstract class NavigatorElement {
 
     public Property propertyImage;
     public Supplier<AppServerImage> image;
+    public Supplier<AppServerImage> defaultImage;
 
     public Property propertyElementClass;
     public String elementClass;
@@ -80,9 +81,11 @@ public abstract class NavigatorElement {
     }
 
     public AppServerImage getImage() {
-        AppServerImage image;
-        if(this.image != null && (image = this.image.get()) != null)
-            return image;
+        if(this.image != null)
+            return this.image.get();
+
+        if(defaultImage != null)
+            return defaultImage.get();
 
         return getDefaultImage();
     }
