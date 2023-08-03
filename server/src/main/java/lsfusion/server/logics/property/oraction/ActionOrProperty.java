@@ -363,7 +363,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             if(valueClass instanceof CustomClass)
                 classCount += ((CustomClass) valueClass).getAllChildren().size();
         }
-        return isInInterface(mapping.mapOrderValues((i, value) -> orderClasses.get(i).valueClass.getUpSet()), classCount < 100);
+        boolean isAny = false; //previously there was optimization isAny = classCount < 100;
+        return isInInterface(mapping.mapOrderValues((i, value) -> orderClasses.get(i).valueClass.getUpSet()), isAny);
     }
 
     protected abstract ActionOrPropertyClassImplement<T, ?> createClassImplement(ImOrderSet<ValueClassWrapper> classes, ImOrderSet<T> mapping);
