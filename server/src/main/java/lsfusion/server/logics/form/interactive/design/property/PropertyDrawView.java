@@ -275,13 +275,12 @@ public class PropertyDrawView extends BaseComponentView {
     }
 
     public AppServerImage getImage(FormInstanceContext context) {
-        AppServerImage image;
-        if(this.image != null && (image = this.image.get(context)) != null)
-            return image;
+        if(this.image != null)
+            return this.image.get(context);
 
         AppServerImage.Reader entityImage = entity.getImage();
-        if(entityImage != null && (image = entityImage.get(context)) != null)
-            return image;
+        if(entityImage != null)
+            return entityImage.get(context);
 
         return getDefaultImage(context);
     }

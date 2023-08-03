@@ -46,17 +46,6 @@ appendToFile(STRING[1000] path, TEXT text) { appendToFile(path, text, 'UTF-8'); 
 setExtension = FORMULA FILE 'cast_static_file_to_dynamic_file(($1),$2)'; // for RAWFILE, PDFFILE... //backward compatibility
 changeExtension(FILE file, TEXT extension) = setExtension(RAWFILE(file), extension); // for FILE //backward compatibility
 
-// --------------------------------- Logging --------------------------------- //
-
-printToLog '{utils.print.to.log}'  INTERNAL  'lsfusion.server.physics.admin.log.action.PrintToLogAction' (TEXT);
-logToFile (STRING[1000] file, TEXT message) {
-    appendToFile('logs/' + file + '.log', (CONCAT ' - ', currentDateTime(), message, '\n')); 
-}
-logToFile (STRING[1000] file, FILE message) {
-    fileToString(message, 'UTF-8');
-    logToFile(file, resultString());
-}
-
 // ----------------------------------- File system ----------------------------------- //
 //path, isClient
 mkdir '{utils.mkdir}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.MkdirAction' (ISTRING[500], BOOLEAN);
@@ -301,6 +290,16 @@ htmlFile = DATA LOCAL HTMLFILE();
 jsonFile = DATA LOCAL JSONFILE();
 xmlFile = DATA LOCAL XMLFILE();
 tableFile = DATA LOCAL TABLEFILE();
+
+// --------------------------------- Logging --------------------------------- //
+printToLog '{utils.print.to.log}'  INTERNAL  'lsfusion.server.physics.admin.log.action.PrintToLogAction' (TEXT);
+logToFile (STRING[1000] file, TEXT message) {
+    appendToFile('logs/' + file + '.log', (CONCAT ' - ', toChar(currentDateTimeMillis(), 'YYYY-MM-DD HH24:MI:SS.MS'), message, '\n'));
+}
+logToFile (STRING[1000] file, FILE message) {
+    fileToString(message, 'UTF-8');
+    logToFile(file, resultString());
+}
 
 // --------------------------------------------- Yes/No --------------------------------- //
 CLASS YesNo '{utils.yes.no}' {

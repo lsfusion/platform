@@ -54,6 +54,7 @@ public abstract class NavigatorElement {
 
     public Property propertyImage;
     public AppServerImage.Reader image;
+    public AppServerImage.Reader defaultImage;
 
     public Property propertyElementClass;
     public String elementClass;
@@ -81,9 +82,11 @@ public abstract class NavigatorElement {
     }
 
     public AppServerImage getImage(ConnectionContext context) {
-        AppServerImage image;
-        if(this.image != null && (image = this.image.get(context)) != null)
-            return image;
+        if(this.image != null)
+            return this.image.get(context);
+
+        if(defaultImage != null)
+            return defaultImage.get(context);
 
         return getDefaultImage(context);
     }

@@ -134,6 +134,14 @@ public abstract class FormsController {
                 public ClickHandler getClickHandler() {
                     return event -> MainFrame.openNavigatorMenu();
                 }
+
+                @Override
+                protected boolean ignoreFocusLastBlurredElement() {
+                    //there is some bug with focusLastBlurredElement in bootstrap theme
+                    //after showing menu resize event is called, this event causes hiding menu
+                    //so we disable focusLastBlurredElement for bootstrap mobile menu button
+                    return MainFrame.useBootstrap;
+                }
             };
             mobileMenuButton.getElement().setAttribute("data-bs-toggle", "offcanvas");
             mobileMenuButton.getElement().setAttribute("data-bs-target", "#" + BSMobileNavigatorView.OFFCANVAS_ID);

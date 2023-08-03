@@ -41,9 +41,8 @@ public class ContainerView extends ComponentView {
     }
 
     public AppServerImage getImage(FormView formView, ConnectionContext context) {
-        AppServerImage image;
-        if(this.image != null && (image = this.image.get(context)) != null)
-            return image;
+        if(this.image != null)
+            return this.image.get(context);
 
         return getDefaultImage(main ? formView : null, context);
     }
@@ -55,7 +54,7 @@ public class ContainerView extends ComponentView {
     }
 
     private AppServerImage.AutoName getAutoName(FormView formView) {
-        return AppServerImage.getAutoName(main ? formView::getCaption : () -> caption, main ? formView.entity::getName : () -> name);
+        return AppServerImage.getAutoName(main ? () -> formView.getCaption() : () -> caption, main ? () -> formView.entity.getName() : () -> name); // can't be converted to lambda because formView can be null
     }
 
     private AppServerImage getDefaultImage(FormView formView, ConnectionContext context) {

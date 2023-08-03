@@ -180,7 +180,10 @@ public class FormPropertyOptions {
     public void setImage(Object literal, PropertyObjectEntity property) {
         if(literal instanceof LocalizedString)
             setAppImage((((LocalizedString) literal).getSourceString()));
-        else if(property != null)
+        else if(literal instanceof String) {
+            assert literal.equals(AppServerImage.NULL);
+            setAppImage((String) literal);
+        } else if(property != null)
             setImage(property);
         else
             setAppImage(AppServerImage.AUTO);
