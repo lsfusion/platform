@@ -4,10 +4,11 @@
 }
 
 
-.cell-with-background,
 /*common scheme*/
+.cell-with-background,
 .cell-with-background .background-inherit,
 /*hack to increase selectivity (assuming that cell-with-background is always panelRendererValueBoxed)*/
+.panelRendererValueBoxed.cell-with-background,
 .panelRendererValueBoxed.cell-with-background .background-inherit {
     background-color: var(--bs-table-bg);
 }
