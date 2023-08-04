@@ -114,6 +114,7 @@
 
 .navbar-text-on-hover {
     --text-hover-duration: 300ms;
+    --text-hover-show-delay: 250ms;
     --text-hover-curve-horz: ease-out;
     --text-hover-curve-vert: linear;
 }
@@ -180,9 +181,9 @@
 
     max-height: 3em;
     max-width: 10em;
-    transition: max-height var(--text-hover-duration) var(--text-hover-curve-vert),
-                max-width var(--text-hover-duration) var(--text-hover-curve-horz),
-                color 0s; /* color hack */
+    transition: max-height var(--text-hover-duration) var(--text-hover-curve-vert) var(--text-hover-show-delay),
+                max-width var(--text-hover-duration) var(--text-hover-curve-horz) var(--text-hover-show-delay),
+                color 0s; /* color hack, in theory var(--text-hover-show-delay) should be used but there is some bug with it (when the text of the current element blinks)  */
 
     /* we can't use overflow: clip for the text main direction the text will be cut but parent's padding (so the text is cut by nothing) */
     /* also the problem is that overflow can not be transitioned */
@@ -203,7 +204,7 @@
     --popup-hover-curve: ease-out;
 }
 .navbar.navbar-popup-over-selected-hover > .navbar-nav {
-    --popup-hover-show-delay: 500ms;
+    --popup-hover-show-delay: 250ms;
 }
 .navbar.navbar-popup-selected-hover,
 .navbar.navbar-popup-over-selected-hover.parent-was-selected-recently > .navbar-nav {
@@ -236,11 +237,11 @@
     max-width: 30em;
 
     transition: max-width var(--popup-hover-duration) var(--popup-hover-curve) var(--popup-hover-show-delay),
-                padding-left 0s,
-                padding-right 0s,
-                border-left-width 0s,
-                border-right-width 0s;
-                /*background-color 0s;*/
+                padding-left 0s var(--popup-hover-show-delay),
+                padding-right 0s var(--popup-hover-show-delay),
+                border-left-width 0s var(--popup-hover-show-delay),
+                border-right-width 0s var(--popup-hover-show-delay);
+                /*background-color 0s var(--popup-hover-show-delay);*/
 }
 
 .forms-container-not-empty .flex-dir-vert > .navbar.navbar-popup-selected-hover:not(:hover):not(.parent-was-selected-recently),
@@ -272,10 +273,10 @@
     max-height: 30em;
 
     transition: max-height var(--popup-hover-duration) var(--popup-hover-curve) var(--popup-hover-show-delay),
-                padding-top 0s,
-                padding-bottom 0s,
-                border-top-width 0s,
-                border-bottom-width 0s;
+                padding-top 0s var(--popup-hover-show-delay),
+                padding-bottom 0s var(--popup-hover-show-delay),
+                border-top-width 0s var(--popup-hover-show-delay),
+                border-bottom-width 0s var(--popup-hover-show-delay);
                 /*background-color 0s;*/
 }
 
@@ -341,24 +342,50 @@
 
 /* the problem is that such approach intercepts all mouse events - cursors, clicks, etc. */
 /* so "paddings" should be not more than container + component paddings */
-.flex-dir-horz > .navbar.navbar-popup-over-selected-hover::before {
+.navbar.navbar-popup-over-selected-hover::before {
     content: '';
     position: absolute;
+
+    --hover-horz-padding: calc(var(--border-cont-horz-padding) / 2 + var(--border-comp-horz-padding));
+    --hover-vert-padding: calc(var(--border-cont-vert-padding) / 2 + var(--border-comp-vert-padding));
+    /*--hover-horz-padding: var(--border-comp-horz-padding);*/
+    /*--hover-vert-padding: var(--border-comp-vert-padding);*/
+}
+.navbar.navbar-popup-over-selected-hover:hover::before {
+    background-color: black;
+    opacity: 0.1;
+    z-index: -1;
+}
+.flex-dir-horz > .navbar.navbar-popup-over-selected-hover::before {
     top: 0;
     bottom: 0;
-    left: calc(-1 * (var(--border-cont-horz-padding) + var(--border-comp-horz-padding)));
-    right: calc(var(--border-cont-horz-padding) + var(--border-comp-horz-padding));
-    width: calc(2 * (var(--border-cont-horz-padding) + var(--border-comp-horz-padding)));
+    width: var(--hover-horz-padding);
+
+    left: calc(-1 * var(--hover-horz-padding));
+    right: var(--hover-horz-padding);
+}
+
+.flex-dir-horz > .navbar.navbar-popup-over-selected-hover:not(:last-child)::before {
+    left: 0;
+    right: var(--hover-horz-padding);
+}
+.flex-dir-horz > .navbar.navbar-popup-over-selected-hover:last-child::before {
+    left: calc(-1 * var(--hover-horz-padding));
+    right: 0;
 }
 
 .flex-dir-vert > .navbar.navbar-popup-over-selected-hover::before {
-    content: '';
-    position: absolute;
     left: 0;
     right: 0;
-    top: calc(-1 * (var(--border-cont-vert-padding) + var(--border-comp-vert-padding)));
-    bottom: calc(var(--border-cont-vert-padding) + var(--border-comp-vert-padding));
-    height: calc(2 * (var(--border-cont-vert-padding) + var(--border-comp-vert-padding)));
+    height: calc(2 * var(--hover-vert-padding));
+}
+.flex-dir-vert > .navbar.navbar-popup-over-selected-hover:not(:last-child)::before {
+    top: 0;
+    bottom: var(--hover-vert-padding);
+}
+.flex-dir-vert > .navbar.navbar-popup-over-selected-hover:not(:last-child)::before {
+    top: calc(-1 * var(--hover-vert-padding));
+    bottom: 0;
 }
 
 .navbar.navbar-popup-over-selected-hover {
