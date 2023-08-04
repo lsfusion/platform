@@ -71,12 +71,26 @@
 
 .navbar-icon-large .nav-link > i,
 .navbar-icon-large.nav-link > i {
-    font-size: 1.5rem;
+    font-size: 1.5em;
 }
 
 .navbar-icon-xlarge .nav-link > i,
 .navbar-icon-xlarge.nav-link > i {
-    font-size: 2.5rem
+    font-size: 2.5em
+}
+
+.navbar-icon-large .nav-link > img,
+.navbar-icon-large.nav-link > img {
+    font-size: 1.5em;
+    height: 1.5em;
+    object-fit: scale-down;
+}
+
+.navbar-icon-xlarge .nav-link > img,
+.navbar-icon-xlarge.nav-link > img {
+    font-size: 2.5em;
+    height: 2.5em;
+    object-fit: scale-down;
 }
 
 .navbar-hidden .nav-link,
@@ -84,8 +98,8 @@
     display: none;
 }
 
-.navbar-text-hidden .nav-link,
-.navbar-text-hidden.nav-link {
+.navbar-text-hidden .nav-link > .wrap-text-div,
+.navbar-text-hidden.nav-link > .wrap-text-div {
     font-size: 0;
 }
 /* removing margins, since text is actually hidden */

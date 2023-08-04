@@ -3,7 +3,6 @@ package lsfusion.gwt.client.navigator.window;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
 import lsfusion.gwt.client.navigator.view.GNavigatorView;
-import lsfusion.gwt.client.navigator.window.view.WindowsController;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +37,4 @@ public abstract class GNavigatorWindow extends GAbstractWindow {
         return false;
     }
 
-    public boolean forceDiv() {
-        return elementClass != null && elementClass.contains(WindowsController.NAVBAR_TEXT_ON_HOVER);
-    }
 }

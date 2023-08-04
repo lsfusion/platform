@@ -15,6 +15,11 @@
     padding-left: 0.25rem;
 }
 
+.navbar-expand .navbar-nav .nav-link {
+    padding-right: 0.5rem;
+    padding-left: 0.5rem;
+}
+
 .navbar-nav .nav-link.active {
     border: solid 1px var(--component-border-color);
     border-radius: var(--button-border-radius);
