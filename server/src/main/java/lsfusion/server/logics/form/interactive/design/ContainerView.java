@@ -173,6 +173,9 @@ public class ContainerView extends ComponentView {
     }
     
     public boolean isCollapsible() {
+        if(Settings.get().isDisableCollapsibleContainers())
+            return false;
+
         if(collapsible != null)
             return collapsible;
 

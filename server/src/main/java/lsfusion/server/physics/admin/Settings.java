@@ -3176,4 +3176,14 @@ public class Settings implements Cloneable {
     public void setMaxRequestQueueSize(int maxRequestQueueSize) {
         this.maxRequestQueueSize = maxRequestQueueSize;
     }
+
+    private boolean disableCollapsibleContainers = false;
+
+    public boolean isDisableCollapsibleContainers() {
+        return disableCollapsibleContainers;
+    }
+
+    public void setDisableCollapsibleContainers(boolean disableCollapsibleContainers) {
+        this.disableCollapsibleContainers = disableCollapsibleContainers;
+    }
 }
