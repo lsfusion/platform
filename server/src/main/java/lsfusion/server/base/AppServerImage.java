@@ -223,13 +223,13 @@ public class AppServerImage {
             return null;
         else if(name.equals(AppServerImage.AUTO)) {
             name = autoName.get();
-            if(name == null)
-                return null;
         }
 
-        AppServerImage autoImage = createDefaultImage(name, style, false, rankingThreshold);
-        if(autoImage != null)
-            return autoImage;
+        if(name != null) {
+            AppServerImage autoImage = createDefaultImage(name, style, false, rankingThreshold);
+            if (autoImage != null)
+                return autoImage;
+        }
 
         return defaultImage.get();
     }
