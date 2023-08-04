@@ -17,6 +17,7 @@ import lsfusion.server.logics.form.interactive.design.object.GridView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.io.DataInputStream;
@@ -131,6 +132,9 @@ public class ContainerView extends ComponentView {
     }
     
     public boolean isCollapsible() {
+        if(Settings.get().isDisableCollapsibleContainers())
+            return false;
+
         if(collapsible != null)
             return collapsible;
 
