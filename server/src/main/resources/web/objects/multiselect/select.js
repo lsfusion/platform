@@ -228,18 +228,7 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
             element.options = options;
         }, update: function (element, controller, list) {
             let isList = controller.isList();
-
-            if(!isList) {
-                if (typeof list === 'string') {
-                    let strings = list.split(",");
-                    list = [];
-                    for (let i = 0; i < strings.length; i++) {
-                        list.push({name: strings[i], selected: false});
-                    }
-                } else if (list == null) {
-                    list = [];
-                }
-            }
+            list = _convertList(isList, list);
 
             let changed = { dropAndNotSetChecked : false}
             let options = element.options;
@@ -374,66 +363,57 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
 
 // todo --- backward compatibility. option() should be removed in future releases ---
 function option() {
-    return checkButton();
+    return selectButton();
 }
 
 function selectNullDropdown() {
-    return _selectDropdown((element) => {
-        if (element.defaultValue == null) {
-            let option = document.createElement('option');
-            option.value = null;
-            element.select.appendChild(option);
-            element.defaultValue = option;
-        }
-    });
+    return _selectDropdown(true);
 }
 
 function selectDropdown() {
-    return _selectDropdown(() => {});
+    return _selectDropdown(false);
 }
 
 function selectMultiDropdown() {
     return _dropDown(['multi-select'],
         {'data-container': 'body', 'multiple': ''},
         (element) => {
-            $(element.select).selectpicker();
-            $(element.select).on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
-            if (clickedIndex != null && isSelected != null) { //documentation:  If the select's value has been changed either via the .selectpicker('val'), .selectpicker('selectAll'), or .selectpicker('deselectAll') methods, clickedIndex and isSelected will be null.
+            let selectElement = $(element.select);
+            selectElement.selectpicker();
+            selectElement.on('changed.bs.select', function (e, clickedIndex, isSelected) {
+            if (clickedIndex != null && isSelected != null) //documentation:  If the select's value has been changed either via the .selectpicker('val'), .selectpicker('selectAll'), or .selectpicker('deselectAll') methods, clickedIndex and isSelected will be null.
                 element.controller.changeProperty('selected', this.children[clickedIndex].originalObject, isSelected ? true : null);
-            }
         })},
-        () => {},
-        (select) => $(select).selectpicker('val', Array.from(select.children).filter(c => c.selected).map(c => c.value)),
-        (select) => $(select).selectpicker('refresh'));
+        (select) => {
+            let selectElement = $(select);
+            selectElement.selectpicker('refresh')
+            selectElement.selectpicker('val', Array.from(select.children).filter(c => c.selected).map(c => c.value))
+        });
 }
 
-function _selectDropdown(emptyDefaultValue) {
+function _selectDropdown(nullDropDown) {
     return _dropDown(['form-select'],
         {},
         (element) => {
             element.select.addEventListener('change', function () {
                 element.changeEvent = true;
-                let prevSelected = element.prevList.find(child => child.selected);
-                if (prevSelected)
-                    element.controller.changeProperty('selected', prevSelected, null);
-
                 let currentSelected = this.selectedOptions[0].originalObject;
-                if (currentSelected)
-                    element.controller.changeProperty('selected', currentSelected, true);
+                let usePrevSelected = nullDropDown && !currentSelected;
+                element.controller.changeProperty('selected', usePrevSelected ? element.prevSelected.originalObject : currentSelected, usePrevSelected ? null : true);
             })
         },
-        emptyDefaultValue,
         (select, element) => {
+            element.prevSelected = select.selectedOptions[0];
             if (!element.changeEvent) {
                 let find = Array.from(select.children).find(child => child.originalObject && child.originalObject.selected);
                 select.value = find ? find.value : null;
             } else {
                 element.changeEvent = false;
             }},
-        () => {});
+        nullDropDown);
 }
 
-function _dropDown(cssClasses, selectAttributes, onChange, emptyDefaultValue, selectOption, refresh) {
+function _dropDown(cssClasses, selectAttributes, onChange, refresh, nullDropDown) {
     return {
         render: function (element, controller) {
             let select = document.createElement('select');
@@ -444,29 +424,19 @@ function _dropDown(cssClasses, selectAttributes, onChange, emptyDefaultValue, se
             element.appendChild(select);
             element.select = select;
 
+            if (nullDropDown) {
+                let option = document.createElement('option');
+                option.value = null;
+                element.select.appendChild(option);
+            }
+
             onChange(element);
         },
         update: function (element, controller, list) {
             element.controller = controller;
-
-            let isList = controller.isList();
-
-            if(!isList) {
-                if (typeof list === 'string') {
-                    let strings = list.split(",");
-                    list = [];
-                    for (let i = 0; i < strings.length; i++) {
-                        list.push({name: strings[i], selected: false});
-                    }
-                } else if (list == null) {
-                    list = [];
-                }
-            }
-
-            let select = element.select;
-            emptyDefaultValue(element);
-
+            list = _convertList(controller.isList(), list);
             controller.diff(list, (changeType, index, object) => {
+                let select = element.select;
                 switch(changeType) {
                     case 'remove':
                         select.removeChild(select.children[index]);
@@ -494,12 +464,26 @@ function _dropDown(cssClasses, selectAttributes, onChange, emptyDefaultValue, se
 
                         break;
                 }
-                refresh(select);
-                selectOption(select, element);
+                refresh(select, element);
             });
         },
         clear: function (element) {
 
         }
     }
+}
+
+function _convertList(isList, list) {
+    if(!isList) {
+        if (typeof list === 'string') {
+            let strings = list.split(",");
+            list = [];
+            for (let i = 0; i < strings.length; i++) {
+                list.push({name: strings[i], selected: false});
+            }
+        } else if (list == null) {
+            list = [];
+        }
+    }
+    return list;
 }
