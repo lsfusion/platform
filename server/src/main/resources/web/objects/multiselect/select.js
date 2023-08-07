@@ -367,11 +367,11 @@ function option() {
 }
 
 function selectNullDropdown() {
-    return _selectDropdown(true);
+    return _selectDropdown();
 }
 
 function selectDropdown() {
-    return _selectDropdown(false);
+    return _selectDropdown();
 }
 
 function selectMultiDropdown() {
@@ -384,36 +384,22 @@ function selectMultiDropdown() {
             if (clickedIndex != null && isSelected != null) //documentation:  If the select's value has been changed either via the .selectpicker('val'), .selectpicker('selectAll'), or .selectpicker('deselectAll') methods, clickedIndex and isSelected will be null.
                 element.controller.changeProperty('selected', this.children[clickedIndex].originalObject, isSelected ? true : null);
         })},
-        (select) => {
-            let selectElement = $(select);
-            selectElement.selectpicker('refresh')
-            selectElement.selectpicker('val', Array.from(select.children).filter(c => c.selected).map(c => c.value))
-        });
+        true);
 }
 
-function _selectDropdown(nullDropDown) {
+function _selectDropdown() {
     return _dropDown(['form-select'],
         {},
         (element) => {
             element.select.addEventListener('change', function () {
-                element.changeEvent = true;
                 let currentSelected = this.selectedOptions[0].originalObject;
-                let usePrevSelected = nullDropDown && !currentSelected;
-                element.controller.changeProperty('selected', usePrevSelected ? element.prevSelected.originalObject : currentSelected, usePrevSelected ? null : true);
+                element.controller.changeProperty('selected', !currentSelected ? element.prevSelected.originalObject : currentSelected, !currentSelected ? null : true);
             })
         },
-        (select, element) => {
-            element.prevSelected = select.selectedOptions[0];
-            if (!element.changeEvent) {
-                let find = Array.from(select.children).find(child => child.originalObject && child.originalObject.selected);
-                select.value = find ? find.value : null;
-            } else {
-                element.changeEvent = false;
-            }},
-        nullDropDown);
+        false);
 }
 
-function _dropDown(cssClasses, selectAttributes, onChange, refresh, nullDropDown) {
+function _dropDown(cssClasses, selectAttributes, eventListener, multiDropdown) {
     return {
         render: function (element, controller) {
             let select = document.createElement('select');
@@ -424,13 +410,13 @@ function _dropDown(cssClasses, selectAttributes, onChange, refresh, nullDropDown
             element.appendChild(select);
             element.select = select;
 
-            if (nullDropDown) {
+            if (!multiDropdown) {
                 let option = document.createElement('option');
                 option.value = null;
                 element.select.appendChild(option);
             }
 
-            onChange(element);
+            eventListener(element);
         },
         update: function (element, controller, list) {
             element.controller = controller;
@@ -444,18 +430,19 @@ function _dropDown(cssClasses, selectAttributes, onChange, refresh, nullDropDown
                     case 'add':
                     case 'update':
                         let option;
+                        let offset = multiDropdown ? 0 : 1;
                         if(changeType === 'add') {
                             option = document.createElement('option');
                             option.value = controller.getObjectsString(object);
 
                             let currentOptions = select.children;
-                            if (index === currentOptions.length)
+                            if (index === currentOptions.length + offset)
                                 select.appendChild(option);
                             else
-                                select.insertBefore(option, currentOptions[index]);
+                                select.insertBefore(option, currentOptions[index + offset]);
 
                         } else {
-                            option = select.children[index];
+                            option = select.children[index + offset];
                         }
 
                         option.originalObject = object;
@@ -464,7 +451,12 @@ function _dropDown(cssClasses, selectAttributes, onChange, refresh, nullDropDown
 
                         break;
                 }
-                refresh(select, element);
+                element.prevSelected = select.selectedOptions[0];
+                if (multiDropdown) {
+                    let selectElement = $(select);
+                    selectElement.selectpicker('refresh')
+                    selectElement.selectpicker('val', Array.from(select.children).filter(c => c.selected).map(c => c.value))
+                }
             });
         },
         clear: function (element) {
