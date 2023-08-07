@@ -376,3 +376,130 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
 function option() {
     return checkButton();
 }
+
+function selectNullDropdown() {
+    return _selectDropdown((element) => {
+        if (element.defaultValue == null) {
+            let option = document.createElement('option');
+            option.value = null;
+            element.select.appendChild(option);
+            element.defaultValue = option;
+        }
+    });
+}
+
+function selectDropdown() {
+    return _selectDropdown(() => {});
+}
+
+function selectMultiDropdown() {
+    return _dropDown(['multi-select'],
+        {'data-container': 'body', 'multiple': ''},
+        (element) => {
+            $(element.select).selectpicker();
+            $(element.select).on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
+            if (clickedIndex != null && isSelected != null) { //documentation:  If the select's value has been changed either via the .selectpicker('val'), .selectpicker('selectAll'), or .selectpicker('deselectAll') methods, clickedIndex and isSelected will be null.
+                element.controller.changeProperty('selected', this.children[clickedIndex].originalObject, isSelected ? true : null);
+            }
+        })},
+        () => {},
+        (select) => $(select).selectpicker('val', Array.from(select.children).filter(c => c.selected).map(c => c.value)),
+        (select) => $(select).selectpicker('refresh'));
+}
+
+function _selectDropdown(emptyDefaultValue) {
+    return _dropDown(['form-select'],
+        {},
+        (element) => {
+            element.select.addEventListener('change', function () {
+                element.changeEvent = true;
+                let prevSelected = element.prevList.find(child => child.selected);
+                if (prevSelected)
+                    element.controller.changeProperty('selected', prevSelected, null);
+
+                let currentSelected = this.selectedOptions[0].originalObject;
+                if (currentSelected)
+                    element.controller.changeProperty('selected', currentSelected, true);
+            })
+        },
+        emptyDefaultValue,
+        (select, element) => {
+            if (!element.changeEvent) {
+                let find = Array.from(select.children).find(child => child.originalObject && child.originalObject.selected);
+                select.value = find ? find.value : null;
+            } else {
+                element.changeEvent = false;
+            }},
+        () => {});
+}
+
+function _dropDown(cssClasses, selectAttributes, onChange, emptyDefaultValue, selectOption, refresh) {
+    return {
+        render: function (element, controller) {
+            let select = document.createElement('select');
+            cssClasses.forEach(cssClass => select.classList.add(cssClass));
+
+            Object.keys(selectAttributes).forEach(key => select.setAttribute(key, selectAttributes[key]));
+
+            element.appendChild(select);
+            element.select = select;
+
+            onChange(element);
+        },
+        update: function (element, controller, list) {
+            element.controller = controller;
+
+            let isList = controller.isList();
+
+            if(!isList) {
+                if (typeof list === 'string') {
+                    let strings = list.split(",");
+                    list = [];
+                    for (let i = 0; i < strings.length; i++) {
+                        list.push({name: strings[i], selected: false});
+                    }
+                } else if (list == null) {
+                    list = [];
+                }
+            }
+
+            let select = element.select;
+            emptyDefaultValue(element);
+
+            controller.diff(list, (changeType, index, object) => {
+                switch(changeType) {
+                    case 'remove':
+                        select.removeChild(select.children[index]);
+                        break;
+                    case 'add':
+                    case 'update':
+                        let option;
+                        if(changeType === 'add') {
+                            option = document.createElement('option');
+                            option.value = controller.getObjectsString(object);
+
+                            let currentOptions = select.children;
+                            if (index === currentOptions.length)
+                                select.appendChild(option);
+                            else
+                                select.insertBefore(option, currentOptions[index]);
+
+                        } else {
+                            option = select.children[index];
+                        }
+
+                        option.originalObject = object;
+                        option.selected = object.selected;
+                        option.innerText = object.name;
+
+                        break;
+                }
+                refresh(select);
+                selectOption(select, element);
+            });
+        },
+        clear: function (element) {
+
+        }
+    }
+}
