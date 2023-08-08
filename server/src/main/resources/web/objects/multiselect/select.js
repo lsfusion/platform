@@ -229,7 +229,7 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
         }, update: function (element, controller, list) {
             let isList = controller.isList();
             list = _convertList(isList, list);
-
+//todo prevSelected!
             let changed = { dropAndNotSetChecked : false}
             let options = element.options;
             controller.diff(list, (changeType, index, object) => {
@@ -294,8 +294,8 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
                         label.innerText = object.name;
                         // we can't use required for styling, because we want "live validation" and not on submit
                         // input.required = shouldBeSelected;
-
-                        let checked = object.selected != null && object.selected;
+//todo only !multi
+                        let checked = object.selected;
                         if(checked)
                             changed.dropAndNotSetChecked = false;
                         else
@@ -367,11 +367,11 @@ function option() {
 }
 
 function selectNullDropdown() {
-    return _selectDropdown();
+    return _selectDropdown(false);
 }
 
 function selectDropdown() {
-    return _selectDropdown();
+    return _selectDropdown(true);
 }
 
 function selectMultiDropdown() {
@@ -382,24 +382,24 @@ function selectMultiDropdown() {
             selectElement.selectpicker();
             selectElement.on('changed.bs.select', function (e, clickedIndex, isSelected) {
             if (clickedIndex != null && isSelected != null) //documentation:  If the select's value has been changed either via the .selectpicker('val'), .selectpicker('selectAll'), or .selectpicker('deselectAll') methods, clickedIndex and isSelected will be null.
-                element.controller.changeProperty('selected', this.children[clickedIndex].originalObject, isSelected ? true : null);
+                element.controller.changeProperty('selected', this.children[clickedIndex].object, isSelected ? true : null);
         })},
-        true);
+        true, false);
 }
 
-function _selectDropdown() {
+function _selectDropdown(shouldBeSelected) {
     return _dropDown(['form-select'],
         {},
         (element) => {
             element.select.addEventListener('change', function () {
-                let currentSelected = this.selectedOptions[0].originalObject;
-                element.controller.changeProperty('selected', !currentSelected ? element.prevSelected.originalObject : currentSelected, !currentSelected ? null : true);
+                let currentSelected = this.selectedOptions[0].object;
+                element.controller.changeProperty('selected', !currentSelected ? element.prevSelected : currentSelected, !currentSelected ? null : true);
             })
         },
-        false);
+        false, shouldBeSelected);
 }
 
-function _dropDown(cssClasses, selectAttributes, eventListener, multiDropdown) {
+function _dropDown(cssClasses, selectAttributes, eventListener, multiDropdown, shouldBeSelected) {
     return {
         render: function (element, controller) {
             let select = document.createElement('select');
@@ -412,7 +412,7 @@ function _dropDown(cssClasses, selectAttributes, eventListener, multiDropdown) {
 
             if (!multiDropdown) {
                 let option = document.createElement('option');
-                option.value = null;
+                option.hidden = shouldBeSelected;
                 element.select.appendChild(option);
             }
 
@@ -420,21 +420,21 @@ function _dropDown(cssClasses, selectAttributes, eventListener, multiDropdown) {
         },
         update: function (element, controller, list) {
             element.controller = controller;
-            list = _convertList(controller.isList(), list);
+            let isList = controller.isList();
+            list = _convertList(isList, list);
+            let changed = { dropAndNotSetChecked : false}
+            let select = element.select;
+            let offset = multiDropdown ? 0 : 1;
             controller.diff(list, (changeType, index, object) => {
-                let select = element.select;
                 switch(changeType) {
                     case 'remove':
-                        select.removeChild(select.children[index]);
+                        select.removeChild(select.children[index + offset]);
                         break;
                     case 'add':
                     case 'update':
                         let option;
-                        let offset = multiDropdown ? 0 : 1;
                         if(changeType === 'add') {
                             option = document.createElement('option');
-                            option.value = controller.getObjectsString(object);
-
                             let currentOptions = select.children;
                             if (index === currentOptions.length + offset)
                                 select.appendChild(option);
@@ -445,19 +445,58 @@ function _dropDown(cssClasses, selectAttributes, eventListener, multiDropdown) {
                             option = select.children[index + offset];
                         }
 
-                        option.originalObject = object;
-                        option.selected = object.selected;
+                        option.object = object;
                         option.innerText = object.name;
+
+                        let selected = object.selected;
+                        if (!multiDropdown) {
+                            if (selected)
+                                changed.dropAndNotSetChecked = false;
+                            else if (option.selected)
+                                changed.dropAndNotSetChecked = true;
+                        }
+                        option.selected = selected;
 
                         break;
                 }
-                element.prevSelected = select.selectedOptions[0];
+
                 if (multiDropdown) {
                     let selectElement = $(select);
                     selectElement.selectpicker('refresh')
                     selectElement.selectpicker('val', Array.from(select.children).filter(c => c.selected).map(c => c.value))
                 }
             });
+
+            if (!multiDropdown) {
+                element.prevSelected = list.find(element => element.selected);
+                let hasSelected = false;
+                if (changed.dropAndNotSetChecked || shouldBeSelected) {
+                    let changeSelected = false;
+                    for (let i = 0; i < list.length; i++) {
+                        let object = list[i];
+                        if (object.selected != null && object.selected) {
+                            if (changed.dropAndNotSetChecked) {
+                                let option = select.options[i + offset];
+                                option.selected = true;
+                            }
+                            if (shouldBeSelected)
+                                hasSelected = true;
+
+                            changeSelected = true;
+                            break;
+                        }
+                    }
+                    if (!changeSelected)
+                        select.options[0].selected = true;
+                }
+
+                for (let i = 0; i < list.length; i++) {
+                    let option = select.options[i + offset];
+                    option.disabled = isList ? controller.isPropertyReadOnly('selected', option.object) : controller.isReadOnly();
+                }
+                if (shouldBeSelected)
+                    select.classList[hasSelected ? 'remove' : 'add']("is-invalid");
+            }
         },
         clear: function (element) {
 
