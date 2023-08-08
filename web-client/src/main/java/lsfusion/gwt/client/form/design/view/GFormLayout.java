@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.design.view;
 
+import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
@@ -15,6 +16,7 @@ import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.flex.LinearContainerView;
 import lsfusion.gwt.client.form.object.table.grid.GGrid;
+import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -124,7 +126,7 @@ public class GFormLayout extends ResizableComplexPanel {
             return createTabCaptionWidget();
         } else {
             if (hasBorder)
-                return new CaptionPanelHeader();
+                return MainFrame.useBootstrap ? new SimpleWidget("h6") : new LabelWidget();
         }
         return null;
     }
@@ -156,7 +158,7 @@ public class GFormLayout extends ResizableComplexPanel {
             alreadyInitialized = formCaptionWidgetAsync.second;
         } else
             captionWidget = createContainerCaptionWidget(container.container,
-                    container.caption != null || container.hasBorder() || container.collapsible);
+                    container.caption != null || container.collapsible);
 
         if (captionWidget != null) {
             addTooltip(captionWidget, container);

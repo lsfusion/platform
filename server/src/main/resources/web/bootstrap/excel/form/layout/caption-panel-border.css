@@ -2,67 +2,67 @@
 }
 
 .caption-panel-header {
-    border: none;
-    background: var(--background-color);
-    text-align: left;
-    border-radius: 0;
-    display: flex;
-    align-items: center;
-    padding: var(--border-cont-vert-padding) var(--border-cont-horz-padding);
+    /*border: none;*/
+    /*background: var(--background-color);*/
+    /*text-align: left;*/
+    /*border-radius: 0;*/
+    /*display: flex;*/
+    /*align-items: center;*/
     color: var(--caption-panel-header-color);
+}
+
+.caption-panel-header-line {
+    /* we want some extra padding because in bootstrap h6 is used and it's not needed */
+    padding: var(--border-cont-vert-padding) var(--border-cont-horz-padding);
+
+    align-items: center;
 }
 
 .caption-panel-header:hover, .caption-panel-header:focus {
-    background-color: transparent;
+    /*background-color: transparent;*/
 }
 
 .caption-panel-header[disabled] {
-    color: var(--caption-panel-header-color);
+    /*color: var(--caption-panel-header-color);*/
 }
 
 .caption-panel-header[disabled]:hover {
-    border: none;
-    color: var(--caption-panel-header-color);
+    /*border: none;*/
+    /*color: var(--caption-panel-header-color);*/
 }
 
-.caption-panel-header::before {
+/* drawing lines */
+
+.caption-panel-header-line::before {
     content: "";
-    width: 1rem;
+
+    width: var(--border-comp-horz-padding);
+
     border-bottom: 1px solid var(--panel-border-color);
     margin-bottom: var(--border-width);
 }
+
+.caption-panel-header-line::after {
+    content: "";
+
+    flex-grow: 1;
+
+    border-bottom: 1px solid var(--panel-border-color);
+    margin-bottom: var(--border-width);
+}
+
+/* drawing collapsible */
 
 .caption-panel-header.collapsible::before {
-    border-bottom: none;
+    content: "";
+
+    width: 1rem;
+
     height: 1rem;
     background-image: var(--caption-panel-header-expand-icon-url);
-    margin-bottom: 0;
 }
-
-.caption-panel-header.wrap-text-not-empty::before {
-    margin-right: var(--border-label-horz-padding);
-}
-
 .caption-panel-header.collapsible:not(.collapsed)::before {
     background-image: var(--caption-panel-header-collapse-icon-url);
-}
-
-.caption-panel-header::after {
-    content: "";
-    flex-grow: 1;
-    width: 1.25rem;
-    border-bottom: 1px solid var(--panel-border-color);
-    margin-bottom: var(--border-width);
-}
-
-.caption-panel-header.wrap-text-not-empty::after {
-    margin-left: var(--border-label-horz-padding);
-}
-
-.caption-panel-header.collapsed {
-}
-
-.caption-panel-body {
 }
 
 /* just like in the clobal tab panel we want the top padding to come from the "header" */

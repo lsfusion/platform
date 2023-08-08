@@ -7,6 +7,9 @@ import lsfusion.gwt.client.form.design.GContainer;
 import java.util.function.Consumer;
 
 public class CollapsiblePanel extends CaptionPanel {
+
+    protected Widget header;
+
     public boolean collapsed = false;
 
     private final Consumer<Boolean> onCollapseHandler;
@@ -20,6 +23,8 @@ public class CollapsiblePanel extends CaptionPanel {
         header.addStyleName("collapsible");
 
         header.addDomHandler(event -> toggleCollapsed(), ClickEvent.getType());
+
+        this.header = header;
     }
 
     public void setCollapsed(boolean collapsed) {
