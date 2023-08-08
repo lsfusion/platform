@@ -96,30 +96,34 @@ public class TreeGroupContainerSet {
         set.boxContainer.add(set.filterBoxContainer, version);
         set.boxContainer.add(treeGroup, version);
         set.boxContainer.add(set.toolbarBoxContainer, version);
+        set.toolbarBoxContainer.setAlignment(FlexAlignment.STRETCH);
         set.boxContainer.add(set.panelContainer, version);
-        
+
+        // we're stretching the intermediate containers, and centering the leaf components
         set.filterBoxContainer.setType(ContainerType.CONTAINERH);
         set.filterBoxContainer.add(treeGroup.filtersContainer, version);
+        treeGroup.filtersContainer.setAlignment(FlexAlignment.STRETCH);
         set.filterBoxContainer.add(treeGroup.filterControls, version);
+        treeGroup.filterControls.setAlignment(FlexAlignment.END);
 
         set.toolbarBoxContainer.setType(ContainerType.CONTAINERH);
-        set.toolbarBoxContainer.setAlignment(FlexAlignment.STRETCH);
         set.toolbarBoxContainer.add(set.toolbarLeftContainer, version);
+        set.toolbarLeftContainer.setAlignment(FlexAlignment.STRETCH);
         set.toolbarBoxContainer.add(set.toolbarRightContainer, version);
+        set.toolbarRightContainer.setAlignment(FlexAlignment.STRETCH);
+        set.toolbarRightContainer.setFlex(1);
 
         set.toolbarLeftContainer.setType(ContainerType.CONTAINERH);
-        set.toolbarLeftContainer.setAlignment(FlexAlignment.STRETCH);
-        set.toolbarLeftContainer.add(treeGroup.getToolbarSystem(), version);
+        set.toolbarLeftContainer.add(treeGroup.toolbarSystem, version);
+        treeGroup.toolbarSystem.setAlignment(FlexAlignment.CENTER);
 
         set.toolbarRightContainer.setType(ContainerType.CONTAINERH);
-        set.toolbarRightContainer.setAlignment(FlexAlignment.STRETCH);
         set.toolbarRightContainer.setChildrenAlignment(FlexAlignment.END);
-        set.toolbarRightContainer.setFlex(1);
         set.toolbarRightContainer.add(set.filterGroupsContainer, version);
         set.toolbarRightContainer.add(set.toolbarContainer, version);
 
         set.filterGroupsContainer.setType(ContainerType.CONTAINERH);
-        set.filterGroupsContainer.setAlignment(FlexAlignment.CENTER);
+        set.filterGroupsContainer.setAlignment(FlexAlignment.STRETCH);
         set.filterGroupsContainer.setChildrenAlignment(FlexAlignment.END);
 
         set.toolbarContainer.setType(ContainerType.CONTAINERH);
