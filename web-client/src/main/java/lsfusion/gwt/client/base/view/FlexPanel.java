@@ -13,6 +13,7 @@ import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabBar;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 import lsfusion.gwt.client.form.object.table.TableContainer;
+import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyValue;
 import lsfusion.gwt.client.navigator.view.NavigatorPanel;
 import lsfusion.gwt.client.navigator.view.ToolbarPanel;
 import lsfusion.gwt.client.navigator.window.view.FlexWindowElement;
@@ -577,6 +578,13 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
             return widget.getElement();
         }
 
+        public boolean supportsBorder() {
+            for(Widget widget : widgets)
+                if(!FlexPanel.supportsBorder(widget))
+                    return false;
+            return true;
+        }
+
         public void drawBorder(Border border, boolean start, boolean vertical) {
             for(Widget widget : widgets)
                 FlexPanel.drawBorder(widget, border, start, vertical);
@@ -639,6 +647,10 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
                                 result = new PanelParams(result.top, result.bottom, result.left, result.right, result.hasBorders, vertical ? innerAlignment : result.horzAlignment, vertical ? result.vertAlignment : innerAlignment, result.vertCollapsed, result.empty);
                             }
                             return result;
+                        }
+
+                        public boolean supportsBorder() {
+                            return FlexPanel.supportsBorder(widget);
                         }
 
                         @Override
@@ -1170,10 +1182,17 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
         PanelParams updatePanels();
 
+        boolean supportsBorder();
         void drawBorder(Border border, boolean start, boolean vertical);
         void clearBorder(boolean start, boolean vertical);
         void drawWrapBorder(Border border);
         void clearWrapBorder();
+    }
+
+    public static boolean supportsBorder(Widget widget) {
+        // some leaf components don't like margin / padding / borders, because they have their own and doesn't like setting padding for example (in particular ActionOrPropertyValue toolbar is stretched above the input to the border)
+        // so we use the following hack: we are just not drawing the border for such components
+        return !(widget instanceof ActionOrPropertyValue);
     }
 
     public static PanelParams updatePanels(Widget widget) {
@@ -1378,10 +1397,12 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
                         left = childParams.left;
                 }
 
-                childLine.clearBorder(false, vertical); // clear all
-                childLine.clearBorder(true, vertical); // clear all
-                childLine.drawBorder(drawBorder, true, vertical);
-                if(prevLine != null)
+                if(childLine.supportsBorder()) {
+                    childLine.clearBorder(false, vertical); // clear all
+                    childLine.clearBorder(true, vertical); // clear all
+                    childLine.drawBorder(drawBorder, true, vertical);
+                }
+                if(prevLine != null && prevLine.supportsBorder())
                     prevLine.drawBorder(drawBorder, false, vertical);
 
                 prevLine = childLine;
@@ -1403,8 +1424,10 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
             for (int i = 1, linesSize = lines.size(); i < linesSize; i++) {
                 FlexStretchLine line = lines.get(i);
-                line.clearWrapBorder();
-                line.drawWrapBorder(drawWrapHorzBorder);
+                if(line.supportsBorder()) {
+                    line.clearWrapBorder();
+                    line.drawWrapBorder(drawWrapHorzBorder);
+                }
             }
             // maybe something should be done for vertical direction (bottom, top), but there is no obvious heuristics for that
         } else {
