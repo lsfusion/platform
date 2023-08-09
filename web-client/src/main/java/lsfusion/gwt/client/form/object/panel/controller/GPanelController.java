@@ -35,7 +35,8 @@ public class GPanelController extends GPropertyController {
     public static native Element getNextFocusElement(Element formController, boolean forward) /*-{
         var elements = Array.prototype.filter.call(
             formController.querySelectorAll('.tableContainer,button,input,.panelRendererValue'), function (item) {
-            return item.tabIndex >= "0"
+                //if element or one of its ancestors has display:none, offsetParent is null
+                return item.tabIndex >= "0" && item.offsetParent !== null
         });
         if(elements.length === 0)
             return null;
