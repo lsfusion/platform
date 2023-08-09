@@ -102,6 +102,7 @@ public abstract class MainFrame extends JFrame {
             MainController.useRequestTimeout = clientSettings.useRequestTimeout;
             MainController.projectLSFDir = clientSettings.projectLSFDir;
             MainController.showDetailedInfo = clientSettings.showDetailedInfo;
+            MainController.showDetailedInfoDelay = clientSettings.showDetailedInfoDelay;
             MainController.forbidDuplicateForms = clientSettings.forbidDuplicateForms;
             MainController.showNotDefinedStrings = clientSettings.showNotDefinedStrings;
             MainController.matchSearchSeparator = clientSettings.matchSearchSeparator;

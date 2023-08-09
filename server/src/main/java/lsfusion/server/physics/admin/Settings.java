@@ -3186,4 +3186,14 @@ public class Settings implements Cloneable {
     public void setDisableCollapsibleContainers(boolean disableCollapsibleContainers) {
         this.disableCollapsibleContainers = disableCollapsibleContainers;
     }
+
+    private int tooltipDelay = 1500;
+
+    public int getTooltipDelay() {
+        return tooltipDelay;
+    }
+
+    public void setTooltipDelay(int tooltipDelay) {
+        this.tooltipDelay = tooltipDelay;
+    }
 }

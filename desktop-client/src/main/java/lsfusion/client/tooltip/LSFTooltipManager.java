@@ -43,97 +43,101 @@ public class LSFTooltipManager {
     };
 
     public static void initTooltip(JComponent component, String tooltipText, String path, String creationPath) {
-        if(!isEmpty(tooltipText)) {
+        int tooltipDelay = MainController.showDetailedInfoDelay;
+        if(!isEmpty(tooltipText) && tooltipDelay > 0) {
             setComponentMouseListeners(component, new Timer(1500, evt -> balloonTip = new BalloonTip(component, createTooltipPanel(tooltipText, path, creationPath),
                     new LSFTooltipStyle(), false)));
         }
     }
 
     public static void initTooltip(JComponent component, Object model, JTable gridTable) {
-        Timer tooltipTimer = new Timer(1500, evt -> {
-            int currentIndex = index;
-            JPanel tooltipPanel;
-            if (gridTable instanceof GridTable) {
-                TableColumnModel columnModel = gridTable.getColumnModel();
-                if (currentIndex < 0 || currentIndex >= columnModel.getColumnCount())
-                    return;
+        int tooltipDelay = MainController.showDetailedInfoDelay;
+        if (tooltipDelay > 0) {
+            Timer tooltipTimer = new Timer(tooltipDelay, evt -> {
+                int currentIndex = index;
+                JPanel tooltipPanel;
+                if (gridTable instanceof GridTable) {
+                    TableColumnModel columnModel = gridTable.getColumnModel();
+                    if (currentIndex < 0 || currentIndex >= columnModel.getColumnCount())
+                        return;
 
-                int modelIndex = columnModel.getColumn(currentIndex).getModelIndex();
-                GridTable table = (GridTable) gridTable;
-                tooltipPanel = createTooltipPanel(table.getModel().getColumnProperty(modelIndex).getTooltipText(table.getColumnCaption(index)),
-                        table.getModel().getColumnProperty(modelIndex).path, table.getModel().getColumnProperty(modelIndex).creationPath);
-            } else {
-                GroupTreeTableModel treeTableModel = (GroupTreeTableModel) model;
-                if (currentIndex < 0 || currentIndex >= treeTableModel.getColumnCount())
-                    return;
+                    int modelIndex = columnModel.getColumn(currentIndex).getModelIndex();
+                    GridTable table = (GridTable) gridTable;
+                    tooltipPanel = createTooltipPanel(table.getModel().getColumnProperty(modelIndex).getTooltipText(table.getColumnCaption(index)),
+                            table.getModel().getColumnProperty(modelIndex).path, table.getModel().getColumnProperty(modelIndex).creationPath);
+                } else {
+                    GroupTreeTableModel treeTableModel = (GroupTreeTableModel) model;
+                    if (currentIndex < 0 || currentIndex >= treeTableModel.getColumnCount())
+                        return;
 
-                ClientPropertyDraw property = treeTableModel.getColumnProperty(currentIndex);
+                    ClientPropertyDraw property = treeTableModel.getColumnProperty(currentIndex);
 
-                /*if first column*/
-                if (property == null)
-                    return;
+                    /*if first column*/
+                    if (property == null)
+                        return;
 
-                tooltipPanel = createTooltipPanel(property.getTooltipText(treeTableModel.getColumnName(currentIndex)),
-                        property.path, property.creationPath);
-            }
-
-            BasicBalloonTipPositioner positioner = new BasicBalloonTipPositioner(15, 15) {
-
-                @Override
-                protected void determineLocation(Rectangle attached) {
-                    GraphicsEnvironment localGraphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
-
-                    int balloonWidth = balloonTip.getPreferredSize().width;
-                    PointerInfo pointerInfo = MouseInfo.getPointerInfo();
-                    if (pointerInfo != null) {
-                        Point mouseLocation = pointerInfo.getLocation();
-                        int calculatedX = mouseLocation.x - (balloonWidth / 2);
-                        Rectangle bounds = localGraphicsEnvironment.getDefaultScreenDevice().getDefaultConfiguration().getBounds();
-
-                        if (x + balloonWidth > balloonTip.getTopLevelContainer().getWidth())
-                            x = balloonTip.getTopLevelContainer().getWidth() - balloonWidth;
-                        else if (mouseLocation.x < bounds.width && calculatedX > 0)
-                            x = calculatedX;
-                        else if (mouseLocation.x - (balloonWidth / 2) > bounds.width)
-                            x = calculatedX - bounds.width;
-                        else
-                            x = 0;
-
-                        int calculatedY = attached.y - balloonTip.getPreferredSize().height;
-                        y = calculatedY < 0 ? attached.y + attached.height : calculatedY;
-                    }
+                    tooltipPanel = createTooltipPanel(property.getTooltipText(treeTableModel.getColumnName(currentIndex)),
+                            property.path, property.creationPath);
                 }
-            };
 
-            closeBalloon(); //helps close tooltips on dialog opening
-            balloonTip = new BalloonTip(component, tooltipPanel, new LSFTooltipStyle(), positioner, null);
+                BasicBalloonTipPositioner positioner = new BasicBalloonTipPositioner(15, 15) {
 
-            //Tooltips in tables are not displayed on elements located close to the borders
-            if (!balloonTip.isVisible())
-                balloonTip.show();
-        });
+                    @Override
+                    protected void determineLocation(Rectangle attached) {
+                        GraphicsEnvironment localGraphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
 
-        component.addMouseMotionListener(new MouseMotionAdapter() {
-            @Override
-            public void mouseMoved(MouseEvent e) {
-                tooltipTimer.stop();
+                        int balloonWidth = balloonTip.getPreferredSize().width;
+                        PointerInfo pointerInfo = MouseInfo.getPointerInfo();
+                        if (pointerInfo != null) {
+                            Point mouseLocation = pointerInfo.getLocation();
+                            int calculatedX = mouseLocation.x - (balloonWidth / 2);
+                            Rectangle bounds = localGraphicsEnvironment.getDefaultScreenDevice().getDefaultConfiguration().getBounds();
 
-                int newIndex = 0;
-                if (model instanceof TableColumnModel)
-                    newIndex = ((TableColumnModel) model).getColumnIndexAtX(e.getPoint().x);
-                else if (model instanceof GroupTreeTableModel)
-                    newIndex = ((GroupTreeTableModel) model).getColumnIndexAtX(e.getPoint().x, (TreeGroupTable) gridTable);
+                            if (x + balloonWidth > balloonTip.getTopLevelContainer().getWidth())
+                                x = balloonTip.getTopLevelContainer().getWidth() - balloonWidth;
+                            else if (mouseLocation.x < bounds.width && calculatedX > 0)
+                                x = calculatedX;
+                            else if (mouseLocation.x - (balloonWidth / 2) > bounds.width)
+                                x = calculatedX - bounds.width;
+                            else
+                                x = 0;
 
-                if (!tooltipTimer.isRunning() && balloonTip != null && !balloonTip.isShowing() && newIndex != -1)
-                    tooltipTimer.start();
-                else if (index != newIndex)
-                    closeBalloon();
+                            int calculatedY = attached.y - balloonTip.getPreferredSize().height;
+                            y = calculatedY < 0 ? attached.y + attached.height : calculatedY;
+                        }
+                    }
+                };
 
-                index = newIndex;
-            }
-        });
+                closeBalloon(); //helps close tooltips on dialog opening
+                balloonTip = new BalloonTip(component, tooltipPanel, new LSFTooltipStyle(), positioner, null);
 
-        setComponentMouseListeners(component, tooltipTimer);
+                //Tooltips in tables are not displayed on elements located close to the borders
+                if (!balloonTip.isVisible())
+                    balloonTip.show();
+            });
+
+            component.addMouseMotionListener(new MouseMotionAdapter() {
+                @Override
+                public void mouseMoved(MouseEvent e) {
+                    tooltipTimer.stop();
+
+                    int newIndex = 0;
+                    if (model instanceof TableColumnModel)
+                        newIndex = ((TableColumnModel) model).getColumnIndexAtX(e.getPoint().x);
+                    else if (model instanceof GroupTreeTableModel)
+                        newIndex = ((GroupTreeTableModel) model).getColumnIndexAtX(e.getPoint().x, (TreeGroupTable) gridTable);
+
+                    if (!tooltipTimer.isRunning() && balloonTip != null && !balloonTip.isShowing() && newIndex != -1)
+                        tooltipTimer.start();
+                    else if (index != newIndex)
+                        closeBalloon();
+
+                    index = newIndex;
+                }
+            });
+
+            setComponentMouseListeners(component, tooltipTimer);
+        }
     }
 
     private static class LSFTooltipStyle extends ToolTipBalloonStyle {

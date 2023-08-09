@@ -109,6 +109,7 @@ public class LogicsSessionObject {
         boolean forbidDuplicateForms = json.optBoolean("forbidDuplicateForms");
         boolean autoReconnectOnConnectionLost = json.optBoolean("autoReconnectOnConnectionLost");
         boolean showDetailedInfo = json.optBoolean("showDetailedInfo");
+        int showDetailedInfoDelay = json.optInt("showDetailedInfoDelay");
         boolean devMode = json.optBoolean("devMode");
         String projectLSFDir = json.optString("projectLSFDir");
 
@@ -156,7 +157,7 @@ public class LogicsSessionObject {
         int maxRequestQueueSize = json.optInt("maxRequestQueueSize");
 
         return new ClientSettings(localePreferences, currentUserName, fontSize, useBusyDialog, busyDialogTimeout, useRequestTimeout, devMode,
-                projectLSFDir, showDetailedInfo, autoReconnectOnConnectionLost, forbidDuplicateForms, showNotDefinedStrings, pivotOnlySelectedColumn, matchSearchSeparator,
+                projectLSFDir, showDetailedInfo, showDetailedInfoDelay, autoReconnectOnConnectionLost, forbidDuplicateForms, showNotDefinedStrings, pivotOnlySelectedColumn, matchSearchSeparator,
                 colorTheme, useBootstrap, colorPreferences, preDefinedDateRangesNames.toArray(new String[0]), useTextAsFilterSeparator, 
                 mainResourcesBeforeSystem, mainResourcesAfterSystem, verticalNavbar, userFiltersManualApplyMode, maxRequestQueueSize);
     }

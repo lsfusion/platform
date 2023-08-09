@@ -12,6 +12,7 @@ public class GClientSettings implements Serializable {
     public String projectLSFDir;
     public boolean showDetailedInfo;
     public boolean autoReconnectOnConnectionLost;
+    public int showDetailedInfoDelay;
     public boolean forbidDuplicateForms;
     public boolean pivotOnlySelectedColumn;
     public String matchSearchSeparator;
@@ -25,14 +26,14 @@ public class GClientSettings implements Serializable {
     public String[] preDefinedDateRangesNames;
     public boolean useTextAsFilterSeparator;
     public boolean verticalNavbar;
-    
+
     public boolean userFiltersManualApplyMode;
 
     @SuppressWarnings("unused")
     public GClientSettings() {
     }
 
-    public GClientSettings(long busyDialogTimeout, boolean devMode, String projectLSFDir, boolean showDetailedInfo, boolean autoReconnectOnConnectionLost, boolean forbidDuplicateForms,
+    public GClientSettings(long busyDialogTimeout, boolean devMode, String projectLSFDir, boolean showDetailedInfo, int showDetailedInfoDelay, boolean autoReconnectOnConnectionLost, boolean forbidDuplicateForms,
                            boolean pivotOnlySelectedColumn, String matchSearchSeparator, GColorTheme colorTheme, boolean useBootstrap, Map<String, String> versionedColorThemesCss,
                            GColorPreferences colorPreferences, String dateFormat, String timeFormat, String staticImagesURL, String[] preDefinedDateRangesNames,
                            boolean useTextAsFilterSeparator, boolean verticalNavbar, boolean userFiltersManualApplyMode) {
@@ -41,6 +42,7 @@ public class GClientSettings implements Serializable {
         this.projectLSFDir = projectLSFDir;
         this.showDetailedInfo = showDetailedInfo;
         this.autoReconnectOnConnectionLost = autoReconnectOnConnectionLost;
+        this.showDetailedInfoDelay = showDetailedInfoDelay;
         this.forbidDuplicateForms = forbidDuplicateForms;
         this.pivotOnlySelectedColumn = pivotOnlySelectedColumn;
         this.matchSearchSeparator = matchSearchSeparator;
