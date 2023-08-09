@@ -11,6 +11,7 @@ public class GetClientSettingsResult implements Result {
     public boolean devMode;
     public String projectLSFDir;
     public boolean showDetailedInfo;
+    public int showDetailedInfoDelay;
     public boolean forbidDuplicateForms;
     public boolean showNotDefinedStrings;
     public boolean pivotOnlySelectedColumn;
@@ -28,7 +29,7 @@ public class GetClientSettingsResult implements Result {
     public GetClientSettingsResult() {
     }
 
-    public GetClientSettingsResult(long busyDialogTimeout, boolean devMode, String projectLSFDir, boolean showDetailedInfo, boolean forbidDuplicateForms, boolean showNotDefinedStrings,
+    public GetClientSettingsResult(long busyDialogTimeout, boolean devMode, String projectLSFDir, boolean showDetailedInfo, int showDetailedInfoDelay, boolean forbidDuplicateForms, boolean showNotDefinedStrings,
                                    boolean pivotOnlySelectedColumn, String matchSearchSeparator, GColorTheme colorTheme, Map<String, String> versionedColorThemesCss,
                                    GColorPreferences colorPreferences, String dateFormat, String timeFormat, String staticImagesURL, String[] preDefinedDateRangesNames,
                                    boolean useTextAsFilterSeparator, boolean userFiltersManualApplyMode) {
@@ -36,6 +37,7 @@ public class GetClientSettingsResult implements Result {
         this.devMode = devMode;
         this.projectLSFDir = projectLSFDir;
         this.showDetailedInfo = showDetailedInfo;
+        this.showDetailedInfoDelay = showDetailedInfoDelay;
         this.forbidDuplicateForms = forbidDuplicateForms;
         this.showNotDefinedStrings = showNotDefinedStrings;
         this.pivotOnlySelectedColumn = pivotOnlySelectedColumn;

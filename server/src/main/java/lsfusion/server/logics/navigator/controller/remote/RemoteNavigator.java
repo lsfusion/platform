@@ -263,6 +263,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         boolean useRequestTimeout;
         boolean forbidDuplicateForms;
         boolean showDetailedInfo;
+        int showDetailedInfoDelay;
         boolean devMode;
         String projectLSFDir;
         ColorTheme colorTheme;
@@ -278,6 +279,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             useRequestTimeout = Settings.get().isUseRequestTimeout() || businessLogics.serviceLM.useRequestTimeout.read(session) != null;
             forbidDuplicateForms = businessLogics.securityLM.forbidDuplicateFormsCustomUser.read(session, user) != null;
             showDetailedInfo = businessLogics.securityLM.showDetailedInfoCustomUser.read(session, user) != null;
+            showDetailedInfoDelay = Settings.get().getTooltipDelay();
 
             devMode = SystemProperties.inDevMode || businessLogics.serviceLM.devMode.read(session) != null;
             projectLSFDir = SystemProperties.projectLSFDir;
@@ -308,7 +310,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             throw Throwables.propagate(e);
         }
         return new ClientSettings(localePreferences, currentUserName, fontSize, useBusyDialog, Settings.get().getBusyDialogTimeout(),
-                useRequestTimeout, devMode, projectLSFDir, showDetailedInfo, forbidDuplicateForms, Settings.get().isShowNotDefinedStrings(),
+                useRequestTimeout, devMode, projectLSFDir, showDetailedInfo, showDetailedInfoDelay, forbidDuplicateForms, Settings.get().isShowNotDefinedStrings(),
                 Settings.get().isPivotOnlySelectedColumn(), Settings.get().getMatchSearchSeparator(),
                 colorTheme, colorPreferences, preDefinedDateRangesNames.toArray(new String[0]), Settings.get().isUseTextAsFilterSeparator(), userFiltersManualApplyMode, maxRequestQueueSize);
     }

@@ -23,8 +23,6 @@ public class TooltipManager {
     private static final TooltipManager instance = new TooltipManager();
     private static final ClientMessages messages = ClientMessages.Instance.get();
 
-    private static final int DELAY_SHOW = 1500;
-
     private int mouseX;
     private int mouseY;
 
@@ -71,7 +69,8 @@ public class TooltipManager {
         currentText = tooltipText;
         this.closeOnClick = closeOnClick;
 
-        if (tooltipText != null) {
+        int showDetailedInfoDelay = MainFrame.showDetailedInfoDelay;
+        if (tooltipText != null && showDetailedInfoDelay > 0) {
             mouseIn = true;
 
             Scheduler.get().scheduleFixedDelay(() -> {
@@ -120,7 +119,7 @@ public class TooltipManager {
                     }
                 }
                 return false;
-            }, closeOnClick ? 0 : DELAY_SHOW);
+            }, closeOnClick ? 0 : showDetailedInfoDelay);
         }
     }
 

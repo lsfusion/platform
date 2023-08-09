@@ -66,6 +66,7 @@ public class MainController {
     public static boolean showNotDefinedStrings;
     public static String matchSearchSeparator;
     public static boolean showDetailedInfo;
+    public static int showDetailedInfoDelay;
     public static String projectLSFDir;
     public static boolean inDevMode;
     public static boolean forbidDuplicateForms;

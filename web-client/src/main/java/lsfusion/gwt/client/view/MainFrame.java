@@ -63,6 +63,7 @@ public class MainFrame implements EntryPoint {
     public static boolean devMode;
     public static String projectLSFDir;
     public static boolean showDetailedInfo;
+    public static int showDetailedInfoDelay;
     public static boolean forbidDuplicateForms;
     public static long busyDialogTimeout;
     public static long updateRendererStateSetTimeout = 100;
@@ -278,6 +279,7 @@ public class MainFrame implements EntryPoint {
                 devMode = result.devMode;
                 projectLSFDir = result.projectLSFDir;
                 showDetailedInfo = result.showDetailedInfo;
+                showDetailedInfoDelay = result.showDetailedInfoDelay;
                 forbidDuplicateForms = result.forbidDuplicateForms;
                 showNotDefinedStrings = result.showNotDefinedStrings;
                 pivotOnlySelectedColumn = result.pivotOnlySelectedColumn;
