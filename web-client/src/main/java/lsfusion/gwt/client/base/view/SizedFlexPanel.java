@@ -50,7 +50,7 @@ public class SizedFlexPanel extends FlexPanel {
                 isStretch && alignSize != null) { // incorrect opposite size, if size is defined, alignment stretch is ignored
             boolean fixed = true;
             if(alignShrink && (vertical || supportsIntrinisticHeight)) {
-                setIntrinisticSize(element, !vertical, isStretch, alignSize);
+                setIntrinisticSize(element, !vertical, isStretch && !wrap, alignSize);
             } else {
                 if(vertical) {
                     assert isStretch;

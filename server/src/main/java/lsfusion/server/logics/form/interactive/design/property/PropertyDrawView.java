@@ -289,14 +289,14 @@ public class PropertyDrawView extends BaseComponentView {
     // we return to the client null, if we're sure that caption is always empty (so we don't need to draw label)
     public String getDrawCaption() {
         LocalizedString caption = getCaption();
-        if(hasNoCaption(caption.isEmpty() ? null : caption, entity.getPropertyExtra(CAPTION)))
+        if(hasNoCaption(caption, entity.getPropertyExtra(CAPTION)))
             return null;
 
         return ThreadLocalContext.localize(caption);
     }
 
     public static boolean hasNoCaption(LocalizedString caption, PropertyObjectEntity<?> propertyCaption) {
-        return (caption == null && propertyCaption == null) || (propertyCaption != null && propertyCaption.property.isExplicitNull()); // isEmpty can be better, but we just want to emulate NULL to be like NULL caption
+        return ((caption == null || caption.isEmpty()) && propertyCaption == null) || (propertyCaption != null && propertyCaption.property.isExplicitNull()); // isEmpty can be better, but we just want to emulate NULL to be like NULL caption
     }
 
     public boolean isNotNull() {
