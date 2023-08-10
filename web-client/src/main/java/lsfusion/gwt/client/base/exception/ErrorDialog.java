@@ -1,7 +1,8 @@
 package lsfusion.gwt.client.base.exception;
 
 import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.Widget;
@@ -13,6 +14,7 @@ import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 
 public class ErrorDialog extends DialogModalWindow {
+    private HandlerRegistration nativePreviewHandlerRegistration;
     private static final ClientMessages messages = ClientMessages.Instance.get();
 
     private final FormButton closeButton;
@@ -56,13 +58,15 @@ public class ErrorDialog extends DialogModalWindow {
             FormButton moreButton = new FormButton(messages.more(), FormButton.ButtonStyle.SECONDARY, event -> stacks.setVisible(!stacks.isVisible()));
             addFooterWidget(moreButton);
         }
-        
-        body.addDomHandler(event -> {
-            if (event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
-                GwtClientUtils.stopPropagation(event);
-                hide();
+
+        nativePreviewHandlerRegistration = Event.addNativePreviewHandler(event -> {
+            if (Event.ONKEYDOWN == event.getTypeInt()) {
+                if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ESCAPE) {
+                    GwtClientUtils.stopPropagation(event.getNativeEvent());
+                    hide();
+                }
             }
-        }, KeyDownEvent.getType());
+        });
     }
 
     @Override
@@ -74,5 +78,13 @@ public class ErrorDialog extends DialogModalWindow {
 
     public static void show(String caption, String message, String javaStack, String lsfStack) {
         new ErrorDialog(caption, message, javaStack, lsfStack).show();
+    }
+
+    @Override
+    public void hide() {
+        super.hide();
+        if (nativePreviewHandlerRegistration != null) {
+            nativePreviewHandlerRegistration.removeHandler();
+        }
     }
 }

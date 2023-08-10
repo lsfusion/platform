@@ -55,7 +55,6 @@ idSQLProcess '{process.monitor.id.sql.process}' = DATA LOCAL INTEGER (STRING[10]
 querySQLProcess '{process.monitor.query.sql.process}' = DATA LOCAL TEXT (STRING[10]);
 fullQuerySQLProcess '{process.monitor.full.query.sql.process}' = DATA LOCAL TEXT (STRING[10]);
 copyFullQuerySQLProcess '{process.monitor.copy.full.query.sql.process}' (STRING[10] i)  INTERNAL  'lsfusion.server.physics.admin.monitor.action.CopyFullQuerySQLProcessAction' (STRING[10]);
-copiedFullQuerySQLProcess '{process.monitor.copied.full.query.sql.process}' = DATA LOCAL TEXT (STRING[10]);
 addressUserSQLProcess '{process.monitor.address.user.sql.process}' = DATA LOCAL STRING[100] (STRING[10]);
 debugInfoSQLProcess '{process.monitor.debug.info.sql.process}' = DATA LOCAL TEXT (STRING[10]);
 dateTimeSQLProcess '{process.monitor.date.time.sql.process}' = DATA LOCAL DATETIME (STRING[10]);
@@ -166,8 +165,6 @@ FORM processMonitor '{process.monitor.form.process.monitor}'
                            lockNameJavaProcess, stackTraceJavaProcess, threadStackTraceSQLProcess, lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess,
                            queryTimeoutProcess, idSQLProcess, copyFullQuerySQLProcess CHANGEABLE GRID
     PROPERTIES(i) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF showExtraButtons(i), killJavaProcess SHOWIF showExtraButtons(i)                       
-    PROPERTIES(i) copiedFullQuerySQLProcess SHOWIF copiedFullQuerySQLProcess(i) PANEL
-    FILTERS idThreadProcess(i)
     FILTERS idThreadProcess(i)
     FILTERGROUP idleInTransaction FILTER '{process.monitor.form.process.monitor.filter.idle}' statusSQLProcess(i) == 'idle in transaction'
     EVENTS ON INIT setDefaultProcessType()
@@ -219,10 +216,6 @@ DESIGN processMonitor {
             MOVE BOX(i) {
                 fill = 3;
                 caption = '{process.monitor.caption.processes}';
-            }
-            MOVE PROPERTY(copiedFullQuerySQLProcess(i)) {
-                panelCaptionVertical = TRUE;
-                fill = 1;
             }
         }
         NEW blockingProcesses {

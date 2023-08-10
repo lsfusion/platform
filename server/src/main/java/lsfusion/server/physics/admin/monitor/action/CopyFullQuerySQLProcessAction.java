@@ -27,9 +27,8 @@ public class CopyFullQuerySQLProcessAction extends InternalAction {
         try {
             DataObject currentObject = context.getDataKeyValue(integerInterface);
             String fullQuery = (String) findProperty("fullQuerySQLProcess[STRING[10]]").read(context, currentObject);
-            if(fullQuery != null && !fullQuery.isEmpty()) {
-                if (!(boolean) context.requestUserInteraction(new CopyToClipboardClientAction(fullQuery)))
-                    findProperty("copiedFullQuerySQLProcess[STRING[10]]").change(fullQuery, context, currentObject);
+            if (fullQuery != null && !fullQuery.isEmpty()) {
+                context.requestUserInteraction(new CopyToClipboardClientAction(fullQuery));
             }
         } catch (Exception e) {
             throw Throwables.propagate(e);

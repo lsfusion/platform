@@ -173,6 +173,9 @@ public class ContainerView extends ComponentView {
     }
     
     public boolean isCollapsible() {
+        if(Settings.get().isDisableCollapsibleContainers())
+            return false;
+
         if(collapsible != null)
             return collapsible;
 
@@ -235,6 +238,13 @@ public class ContainerView extends ComponentView {
             return wrap;
 
         return lines > 1 || isHorizontal();
+    }
+
+    public Boolean getAlignCaptions() {
+        if(alignCaptions != null)
+            return alignCaptions;
+        
+        return isTabbed() ? true : null;
     }
 
     @Override
@@ -485,7 +495,7 @@ public class ContainerView extends ComponentView {
         
         outStream.writeBoolean(isGrid());
         outStream.writeBoolean(isWrap());
-        pool.writeObject(outStream, alignCaptions);
+        pool.writeObject(outStream, getAlignCaptions());
 
         outStream.writeBoolean(resizeOverflow != null);
         if(resizeOverflow != null)

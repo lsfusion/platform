@@ -51,13 +51,6 @@
     column-gap: var(--border-cont-horz-padding);
 }
 
-/* we want header to also have at least double cont vert padding, to be consistent with bottom / left / right borders */
-.caption-panel-header {
-    min-height: calc(var(--border-cont-vert-padding) + var(--border-cont-vert-padding));
-    display: flex;
-    align-items: center;
-}
-
 /* form main shrinked (needs scrolling / padding) container */
 .form-shrink-padded-container {
     overflow: auto;
@@ -66,9 +59,35 @@
     padding: var(--border-cont-vert-padding) var(--border-cont-horz-padding);
 }
 
+/* we want header to also have at least double cont vert padding, to be consistent with bottom / left / right borders */
+
+.caption-panel-header-line {
+    display: flex;
+}
+
+.caption-panel-header {
+    min-height: calc(var(--border-cont-vert-padding) + var(--border-cont-vert-padding));
+    display: flex;
+    align-items: center;
+}
+
+/* drawing margins around text  */
+
+.caption-panel-header.wrap-text-not-empty,
+.caption-panel-header.wrap-img-start,
+.caption-panel-header.collapsible {
+    margin: var(--border-label-vert-padding) var(--border-label-horz-padding);
+}
+
+.caption-panel-header.collapsible.wrap-text-not-empty::before,
+.caption-panel-header.collapsible.wrap-img-start::before {
+    margin-right: var(--border-label-horz-padding);
+}
+
 .caption-panel-header.collapsible,
-.caption-panel-header.collapsible.wrap-text-not-empty,
-.card-header.collapsible,
-.card-header.collapsible.wrap-text-not-empty {
+.caption-panel-header.collapsible.wrap-text-not-empty {
     cursor: pointer;
+}
+
+.caption-panel-body {
 }

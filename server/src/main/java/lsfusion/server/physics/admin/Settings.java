@@ -3203,4 +3203,24 @@ public class Settings implements Cloneable {
     public void setMaxRequestQueueSize(int maxRequestQueueSize) {
         this.maxRequestQueueSize = maxRequestQueueSize;
     }
+
+    private boolean disableCollapsibleContainers = false;
+
+    public boolean isDisableCollapsibleContainers() {
+        return disableCollapsibleContainers;
+    }
+
+    public void setDisableCollapsibleContainers(boolean disableCollapsibleContainers) {
+        this.disableCollapsibleContainers = disableCollapsibleContainers;
+    }
+
+    private int tooltipDelay = 1500;
+
+    public int getTooltipDelay() {
+        return tooltipDelay;
+    }
+
+    public void setTooltipDelay(int tooltipDelay) {
+        this.tooltipDelay = tooltipDelay;
+    }
 }

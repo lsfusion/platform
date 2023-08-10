@@ -26,10 +26,6 @@
     --link-color: var(--bs-link-color);
 }
 
-.caption-panel-header {
-    margin: var(--border-label-vert-padding) var(--border-label-horz-padding);
-}
-
 /* there is a really odd style in bootstrap.min.css */
 /*.table > :not(:first-child) {*/
 /*    border-top: 2px solid currentColor*/
@@ -50,26 +46,19 @@
 
 /* we want to have the same width for expanded and collapsed folders*/
 .caption-panel-header.collapsible::before,
-.card-header.collapsible::before,
 .nav-bs-mobile-folder::before {
     /*font-family: "Font Awesome 6 Free";*/
     margin-right: var(--border-label-horz-padding);
     width: 0.75em;
 }
 
-/*.nav-bs-mobile-folder::before {*/
-/*    align-self: center;*/
-/*}*/
-
 .caption-panel-header.collapsible.collapsed::before,
-.card-header.collapsible.collapsed::before,
 .nav-bs-mobile-folder.collapsed::before {
     content: "\f105";
     font: var(--fa-font-solid);
 }
 
 .caption-panel-header.collapsible:not(.collapsed)::before,
-.card-header.collapsible:not(.collapsed)::before,
 .nav-bs-mobile-folder:not(.collapsed)::before {
     content: "\f107";
     font: var(--fa-font-solid);

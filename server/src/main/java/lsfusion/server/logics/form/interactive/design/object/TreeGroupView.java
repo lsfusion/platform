@@ -85,13 +85,11 @@ public class TreeGroupView extends GridPropertyView implements ServerIdentitySer
         } else {
             filtersContainer.setType(ContainerType.CONTAINERH);
         }
-        filtersContainer.setAlignment(FlexAlignment.STRETCH);
 //        filtersContainer.setAlignCaptions(true);
 //        filtersContainer.setLineSize(0);
 //        filtersContainer.setCaption(LocalizedString.create(ThreadLocalContext.localize("{form.view.filters.container}")));
 
         filterControls = new FilterControlsView(idGenerator.idShift());
-        filterControls.setAlignment(FlexAlignment.END);
 
         filters = NFFact.orderSet();
     }

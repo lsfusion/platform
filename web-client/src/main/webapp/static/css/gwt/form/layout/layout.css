@@ -2,13 +2,21 @@
 .oppositeSizeCssFixPanel {
 }
 
-.shrink-width {
+.intr-shrink-width {
     max-width: -webkit-fill-available;
     max-width: -moz-available;
 }
-.stretch-width {
+.intr-stretch-width {
     min-width: -webkit-fill-available;
     min-width: -moz-available;
+}
+.intr-shrink-height {
+    max-height: -webkit-fill-available;
+    max-height: -moz-available;
+}
+.intr-stretch-height {
+    min-height: -webkit-fill-available;
+    min-height: -moz-available;
 }
 
 .remove-all-pmb, .remove-all-pmb.form-control, .remove-all-pmb.form-control:focus {
@@ -33,6 +41,14 @@
 
 .comp-shrink-vert {
     overflow-y : auto
+}
+
+.fill-parent-absolute {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
 }
 
 .fill-parent-position {

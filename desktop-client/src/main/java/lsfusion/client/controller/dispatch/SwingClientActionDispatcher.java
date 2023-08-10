@@ -55,6 +55,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static javax.swing.BorderFactory.createEmptyBorder;
 import static lsfusion.client.ClientResourceBundle.getString;
 
 public abstract class SwingClientActionDispatcher implements ClientActionDispatcher, DispatcherInterface {
@@ -458,7 +459,19 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         try {
             if (!action.extended) {
                 JTextPane textPane = SwingUtils.getMessageTextPane(action.message);
-                JOptionPane.showMessageDialog(getDialogParentContainer(), textPane, action.caption, JOptionPane.INFORMATION_MESSAGE);
+                textPane.setCaretPosition(0); //scroll to top
+                JScrollPane scrollPane = new JScrollPane(textPane);
+                scrollPane.setBorder(createEmptyBorder());
+
+                Container parentContainer = getDialogParentContainer();
+
+                int prefWidth = (int) scrollPane.getPreferredSize().getWidth();
+                int prefHeight = (int) scrollPane.getPreferredSize().getHeight();
+                int width = (int) (parentContainer.getWidth() * 0.75);
+                int height = (int) (parentContainer.getHeight() * 0.75);
+                scrollPane.setPreferredSize(new Dimension(Math.min(prefWidth, width), Math.min(prefHeight, height)));
+
+                JOptionPane.showMessageDialog(parentContainer, scrollPane, action.caption, JOptionPane.INFORMATION_MESSAGE);
             } else {
                 new ExtendedMessageDialog(getDialogParentContainer(), action.caption, action.message).setVisible(true);
             }

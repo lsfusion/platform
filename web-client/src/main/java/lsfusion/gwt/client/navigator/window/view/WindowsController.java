@@ -22,6 +22,7 @@ public abstract class WindowsController {
     public FlexWindowElement rootElement;
     public GAbstractWindow formsWindow;
 
+    public static final String NAVBAR_TEXT_HIDDEN = "navbar-text-hidden";
     public static final String NAVBAR_TEXT_ON_HOVER = "navbar-text-on-hover";
     public static final String NAVBAR_POPUP_SELECTED_HOVER = "navbar-popup-selected-hover";
     public static final String NAVBAR_POPUP_OVER_SELECTED_HOVER = "navbar-popup-over-selected-hover";

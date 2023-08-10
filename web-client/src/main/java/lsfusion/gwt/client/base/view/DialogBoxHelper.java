@@ -1,6 +1,9 @@
 package lsfusion.gwt.client.base.view;
 
 import com.google.gwt.dom.client.Style;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HTML;
@@ -8,6 +11,7 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.FocusUtils;
+import lsfusion.gwt.client.base.GwtClientUtils;
 
 public class DialogBoxHelper {
     private static final ClientMessages messages = ClientMessages.Instance.get();
@@ -89,6 +93,7 @@ public class DialogBoxHelper {
 
     @SuppressWarnings("GWTStyleCheck")
     public static final class MessageBox extends DialogModalWindow {
+        private HandlerRegistration nativePreviewHandlerRegistration;
         private final CloseCallback closeCallback;
         private FormButton activeButton;
 
@@ -119,6 +124,15 @@ public class DialogBoxHelper {
                 };
                 timer.schedule(timeout);
             }
+
+            nativePreviewHandlerRegistration = Event.addNativePreviewHandler(event -> {
+                if (Event.ONKEYDOWN == event.getTypeInt()) {
+                    if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ESCAPE) {
+                        GwtClientUtils.stopPropagation(event.getNativeEvent());
+                        hide(OptionType.CLOSE);
+                    }
+                }
+            });
         }
 
         private void createButtonsPanel(OptionType activeOption, OptionType[] options) {
@@ -142,6 +156,13 @@ public class DialogBoxHelper {
             hide();
             if (closeCallback != null) {
                 closeCallback.closed(option);
+            }
+        }
+
+        public void hide() {
+            super.hide();
+            if (nativePreviewHandlerRegistration != null) {
+                nativePreviewHandlerRegistration.removeHandler();
             }
         }
 

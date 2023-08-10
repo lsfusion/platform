@@ -406,13 +406,7 @@ public class GwtClientUtils {
     // using absolute positioning, but because in that case it is positioned relative to first not static element, will have to set position to relative (if it's static)
     public static void setupFillParent(Element child) {
         setupFillParentElement(child.getParentElement());
-
-        Style childStyle = child.getStyle();
-        childStyle.setPosition(Style.Position.ABSOLUTE);
-        childStyle.setTop(0, Style.Unit.PX);
-        childStyle.setLeft(0, Style.Unit.PX);
-        childStyle.setBottom(0, Style.Unit.PX);
-        childStyle.setRight(0, Style.Unit.PX);
+        child.addClassName("fill-parent-absolute");
     }
 
     private static void setupFillParentElement(Element parentElement) {
