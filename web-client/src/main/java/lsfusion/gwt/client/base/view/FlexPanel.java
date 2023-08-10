@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 import static lsfusion.gwt.client.base.resize.ResizeHandler.ANCHOR_WIDTH;
 
@@ -1492,22 +1491,13 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
                     impl.setPreferredSize(set, widget.getElement(), flex, vertical, isGrid());
 
                 // opposite direction (dropping size / shrink)
-                SizedFlexPanel.setIntrinisticPreferredWidth(set, widget);
+                SizedFlexPanel.setIntrinisticPreferredSize(set, true, widget);
+                SizedFlexPanel.setIntrinisticPreferredSize(set, false, widget);
 
                 if (widget instanceof HasMaxPreferredSize)
                     ((HasMaxPreferredSize) widget).setPreferredSize(set, grids);
             }
         }
-    }
-
-    public void setChildPreferredSize(boolean set, Widget widget) {
-        // main direction (dropping size / shrink)
-        FlexLayoutData flex = ((WidgetLayoutData) widget.getLayoutData()).flex;
-        if (flex.baseFlexBasis != null || flex.shrink)
-            impl.setPreferredSize(set, widget.getElement(), flex, vertical, isGrid());
-
-        // opposite direction (dropping size / shrink)
-        SizedFlexPanel.setIntrinisticPreferredWidth(set, widget);
     }
 
     @Override

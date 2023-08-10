@@ -60,6 +60,8 @@ public class MainFrame implements EntryPoint {
     public static MobileNavigatorView mobileNavigatorView = null;
     public static int mobileAdjustment;
 
+    public static boolean firefox;
+
     // settings    
     public static boolean devMode;
     public static String projectLSFDir;
@@ -123,6 +125,8 @@ public class MainFrame implements EntryPoint {
     }
 
     public void onModuleLoad() {
+        firefox = GwtClientUtils.isFirefoxUserAgent();
+
         hackForGwtDnd();
 
         GwtClientUtils.setZeroZIndex(RootLayoutPanel.get().getElement());
