@@ -158,15 +158,15 @@ function selectButtonGroup() {
 }
 
 function selectMultiList() {
-    return _defaultRadioCheckBox('checkbox', false);
+    return _defaultRadioCheckBox('checkbox', false, false, true);
 }
 
 function selectMultiButton() {
-    return _checkBoxRadioButtonToggle('checkbox', false);
+    return _checkBoxRadioButtonToggle('checkbox', false, false, true);
 }
 
 function selectMultiButtonGroup() {
-    return _checkBoxRadioButtonGroup('checkbox', false);
+    return _checkBoxRadioButtonGroup('checkbox', false, false, true);
 }
 
 function selectNullList() {
@@ -181,19 +181,19 @@ function selectNullButtonGroup() {
     return _checkBoxRadioButtonGroup('radio', false, true);
 }
 
-function _defaultRadioCheckBox(type, shouldBeSelected, hasName) {
-    return _option(type, false, ['form-check'], ['form-check-input'], ['form-check-label', 'option-item'], shouldBeSelected, hasName);
+function _defaultRadioCheckBox(type, shouldBeSelected, hasName, multi) {
+    return _option(type, false, ['form-check'], ['form-check-input'], ['form-check-label', 'option-item'], shouldBeSelected, hasName, multi);
 }
 
-function _checkBoxRadioButtonToggle(type, shouldBeSelected, hasName) {
-    return _option(type, false, null, ['btn-check'], ['btn', 'btn-outline-secondary', 'option-item'], shouldBeSelected, hasName);
+function _checkBoxRadioButtonToggle(type, shouldBeSelected, hasName, multi) {
+    return _option(type, false, null, ['btn-check'], ['btn', 'btn-outline-secondary', 'option-item'], shouldBeSelected, hasName, multi);
 }
 
-function _checkBoxRadioButtonGroup(type, shouldBeSelected, hasName) {
-    return _option(type, true, ['btn-group'], ['btn-check'], ['btn', 'btn-outline-secondary', 'option-item'], shouldBeSelected, hasName);
+function _checkBoxRadioButtonGroup(type, shouldBeSelected, hasName, multi) {
+    return _option(type, true, ['btn-group'], ['btn-check'], ['btn', 'btn-outline-secondary', 'option-item'], shouldBeSelected, hasName, multi);
 }
 
-function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBeSelected, hasName) {
+function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBeSelected, hasName, multi) {
     let isButton = isGroup || divClasses == null;
 
     function _getRandomId() {
@@ -229,8 +229,6 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
         }, update: function (element, controller, list) {
             let isList = controller.isList();
             list = _convertList(isList, list);
-//todo prevSelected!
-            let changed = { dropAndNotSetChecked : false}
             let options = element.options;
             controller.diff(list, (changeType, index, object) => {
                 switch(changeType) {
@@ -258,10 +256,11 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
                             labelClasses.forEach(labelClass => label.classList.add(labelClass));
                             label.setAttribute('for', input.id);
 
-                            input.addEventListener('change', function () {
-                                controller.changeProperty('selected', this.object, this.checked ? true : null);
-                                if (isList)
-                                    controller.changeObject(this.object);
+                            input.addEventListener('click', function () {
+                                if (!multi && !shouldBeSelected)
+                                    controller.changeProperty('selected', this.object, element.prevSelected !== this ? true : null);
+                                else
+                                    controller.changeProperty('selected', this.object, this.checked ? true : null);
                             });
 
                             let currentOptions = options.children;
@@ -294,53 +293,47 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
                         label.innerText = object.name;
                         // we can't use required for styling, because we want "live validation" and not on submit
                         // input.required = shouldBeSelected;
-//todo only !multi
-                        let checked = object.selected;
-                        if(checked)
-                            changed.dropAndNotSetChecked = false;
-                        else
-                        if(input.checked)
-                            changed.dropAndNotSetChecked = true;
-                        input.checked = checked;
+
+                        input.checked = object.selected;
                         break;
                 }
             });
 
             // if we dropped (and not set) checked and there are other selected elements - select them
             let hasSelected = false;
-            if(changed.dropAndNotSetChecked || shouldBeSelected) {
+            if (!multi) {
+                let selected;
                 for (let i = 0; i < list.length; i++) {
                     let object = list[i];
-                    if(object.selected != null && object.selected) {
-                        if(changed.dropAndNotSetChecked) {
-                            let input = _getOptionElement(options, i, true, true);
-                            input.checked = true;
-                        }
-                        if(shouldBeSelected)
+                    if (object.selected != null && object.selected) {
+                        let input = _getOptionElement(options, i, true, true);
+                        input.checked = true;
+                        selected = input;
+
+                        if (shouldBeSelected)
                             hasSelected = true;
                         break;
                     }
                 }
+
+                element.prevSelected = selected;
             }
 
-            for (let i = 0; i < list.length; i++){
+            for (let i = 0; i < list.length; i++) {
                 let input = _getOptionElement(options, i, true, true);
-                let readonly;
                 if (isList) {
-                    if(controller.isCurrent(input.object))
+                    if (controller.isCurrent(input.object))
                         input.classList.add('option-item-current');
                     else
                         input.classList.remove('option-item-current');
-                    readonly = controller.isPropertyReadOnly('selected', input.object);
+
+                    input.disabled = controller.isPropertyReadOnly('selected', input.object);
                 } else {
-                    readonly = controller.isReadOnly();
+                    input.disabled = controller.isReadOnly();
                 }
-                if(readonly)
-                    input.setAttribute('onclick', 'return false');
-                else
-                    input.removeAttribute('onclick')
-                if(shouldBeSelected) {
-                    if(isButton) { // bootstrap doesn't support is-invalid for buttons
+
+                if (!multi && shouldBeSelected) {
+                    if (isButton) { // bootstrap doesn't support is-invalid for buttons
                         let label = _getOptionElement(options, i, false, true);
                         if (!hasSelected) {
                             label.classList.add("btn-outline-danger");
@@ -399,7 +392,7 @@ function _selectDropdown(shouldBeSelected) {
         false, shouldBeSelected);
 }
 
-function _dropDown(cssClasses, selectAttributes, eventListener, multiDropdown, shouldBeSelected) {
+function _dropDown(cssClasses, selectAttributes, eventListener, multi, shouldBeSelected) {
     return {
         render: function (element, controller) {
             let select = document.createElement('select');
@@ -410,7 +403,10 @@ function _dropDown(cssClasses, selectAttributes, eventListener, multiDropdown, s
             element.appendChild(select);
             element.select = select;
 
-            if (!multiDropdown) {
+            // Because there is no default way to reset the value of the drop-down list to null, we must create a null-option
+            // if there are no selected options, the selected option becomes a null-option.
+            // It is also necessary to make offset when searching by index
+            if (!multi) {
                 let option = document.createElement('option');
                 option.hidden = shouldBeSelected;
                 element.select.appendChild(option);
@@ -422,9 +418,8 @@ function _dropDown(cssClasses, selectAttributes, eventListener, multiDropdown, s
             element.controller = controller;
             let isList = controller.isList();
             list = _convertList(isList, list);
-            let changed = { dropAndNotSetChecked : false}
             let select = element.select;
-            let offset = multiDropdown ? 0 : 1;
+            let offset = multi ? 0 : 1;
             controller.diff(list, (changeType, index, object) => {
                 switch(changeType) {
                     case 'remove':
@@ -447,56 +442,45 @@ function _dropDown(cssClasses, selectAttributes, eventListener, multiDropdown, s
 
                         option.object = object;
                         option.innerText = object.name;
-
-                        let selected = object.selected;
-                        if (!multiDropdown) {
-                            if (selected)
-                                changed.dropAndNotSetChecked = false;
-                            else if (option.selected)
-                                changed.dropAndNotSetChecked = true;
-                        }
-                        option.selected = selected;
+                        option.selected = object.selected;
 
                         break;
                 }
-
-                if (multiDropdown) {
-                    let selectElement = $(select);
-                    selectElement.selectpicker('refresh')
-                    selectElement.selectpicker('val', Array.from(select.children).filter(c => c.selected).map(c => c.value))
-                }
             });
 
-            if (!multiDropdown) {
-                element.prevSelected = list.find(element => element.selected);
-                let hasSelected = false;
-                if (changed.dropAndNotSetChecked || shouldBeSelected) {
-                    let changeSelected = false;
-                    for (let i = 0; i < list.length; i++) {
-                        let object = list[i];
-                        if (object.selected != null && object.selected) {
-                            if (changed.dropAndNotSetChecked) {
-                                let option = select.options[i + offset];
-                                option.selected = true;
-                            }
-                            if (shouldBeSelected)
-                                hasSelected = true;
-
-                            changeSelected = true;
-                            break;
-                        }
+            if (!multi) {
+                let selected;
+                for (let i = 0; i < list.length; i++) {
+                    let object = list[i];
+                    if (object.selected) {
+                        select.options[i + offset].selected = true;
+                        selected = object;
+                        break;
                     }
-                    if (!changeSelected)
-                        select.options[0].selected = true;
                 }
+                if (!selected)
+                    select.options[0].selected = true; //select the null option
 
+                if (shouldBeSelected) {
+                    if (selected)
+                        select.classList.remove("is-invalid");
+                    else
+                        select.classList.add("is-invalid");
+                }
+                element.prevSelected = selected;
+            }
+
+            if (isList) {
                 for (let i = 0; i < list.length; i++) {
                     let option = select.options[i + offset];
-                    option.disabled = isList ? controller.isPropertyReadOnly('selected', option.object) : controller.isReadOnly();
+                    option.disabled = controller.isPropertyReadOnly('selected', option.object);
                 }
-                if (shouldBeSelected)
-                    select.classList[hasSelected ? 'remove' : 'add']("is-invalid");
+            } else {
+                select.disabled = controller.isReadOnly();
             }
+
+            if (multi)
+                $(select).selectpicker('refresh');
         },
         clear: function (element) {
 
