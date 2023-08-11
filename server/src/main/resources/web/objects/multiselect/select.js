@@ -257,10 +257,11 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
                             label.setAttribute('for', input.id);
 
                             input.addEventListener('click', function () {
+                                let object = this.object;
                                 if (!multi && !shouldBeSelected)
-                                    controller.changeProperty('selected', this.object, element.prevSelected !== this ? true : null);
+                                    controller.changeProperty('selected', object, element.prevSelected !== object ? true : null);
                                 else
-                                    controller.changeProperty('selected', this.object, this.checked ? true : null);
+                                    controller.changeProperty('selected', object, this.checked ? true : null);
                             });
 
                             let currentOptions = options.children;
@@ -302,13 +303,12 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
             // if we dropped (and not set) checked and there are other selected elements - select them
             let hasSelected = false;
             if (!multi) {
-                let selected;
+                let input;
                 for (let i = 0; i < list.length; i++) {
                     let object = list[i];
                     if (object.selected != null && object.selected) {
-                        let input = _getOptionElement(options, i, true, true);
+                        input = _getOptionElement(options, i, true, true);
                         input.checked = true;
-                        selected = input;
 
                         if (shouldBeSelected)
                             hasSelected = true;
@@ -316,7 +316,7 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
                     }
                 }
 
-                element.prevSelected = selected;
+                element.prevSelected = input ? input.object : null;
             }
 
             for (let i = 0; i < list.length; i++) {
@@ -327,9 +327,9 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
                     else
                         input.classList.remove('option-item-current');
 
-                    input.disabled = controller.isPropertyReadOnly('selected', input.object);
+                    _setReadonly(input, controller.isPropertyReadOnly('selected', input.object));
                 } else {
-                    input.disabled = controller.isReadOnly();
+                    _setReadonly(input, controller.isReadOnly());
                 }
 
                 if (!multi && shouldBeSelected) {
@@ -473,10 +473,11 @@ function _dropDown(cssClasses, selectAttributes, eventListener, multi, shouldBeS
             if (isList) {
                 for (let i = 0; i < list.length; i++) {
                     let option = select.options[i + offset];
-                    option.disabled = controller.isPropertyReadOnly('selected', option.object);
+                    option.setAttribute("readonly", "");
+                    _setReadonly(option, controller.isPropertyReadOnly('selected', option.object));
                 }
             } else {
-                select.disabled = controller.isReadOnly();
+                _setReadonly(select, controller.isReadOnly());
             }
 
             if (multi)
@@ -486,6 +487,13 @@ function _dropDown(cssClasses, selectAttributes, eventListener, multi, shouldBeS
 
         }
     }
+}
+
+function _setReadonly(element, readonly) {
+    if(readonly)
+        element.setAttribute('onclick', 'return false');
+    else
+        element.removeAttribute('onclick')
 }
 
 function _convertList(isList, list) {

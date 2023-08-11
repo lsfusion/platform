@@ -777,7 +777,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
                                 else
                                     elementType = "List";
                             } else if (select.count <= Settings.get().getMaxInterfaceStatForValueCombo() || (forceSelect && select.type != PropertyObjectEntity.Select.Type.MULTI)) {
-                                elementType = forceSelect ? "DropDown" : null;
+                                elementType = "DropDown";
                             } else {
                                 assert select.type == PropertyObjectEntity.Select.Type.MULTI;
                                 elementType = "Input";
