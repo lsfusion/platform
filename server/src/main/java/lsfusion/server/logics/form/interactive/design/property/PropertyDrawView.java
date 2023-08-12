@@ -706,7 +706,7 @@ public class PropertyDrawView extends BaseComponentView {
                 return 0;
 
             if (select.elementType.startsWith("Button"))
-                return (charWidth != 0 && !select.actual ? charWidth * select.count : select.length) + select.count * 4; // couple of symbols for padding
+                return (charWidth != 0 && !select.actual ? charWidth * select.count : select.length) + select.count * (select.elementType.startsWith("ButtonGroup") ? 4 : 6); // couple of symbols for padding
         }
 
         return charWidth;
@@ -886,6 +886,10 @@ public class PropertyDrawView extends BaseComponentView {
             // shortcut for the toggle button checkbox
             if(valueElementClass != null && valueElementClass.contains("btn-check"))
                 return "btn btn-outline-primary";
+
+            // if we're in panel and there is no decoration, nor other styling, nor custom view, making label gray to distinguish it from the value
+            if (!entity.isList(context) && valueElementClass == null && getTag(context) == null && !isCustom(context))
+                return "text-secondary";
         }
 
         return null;
