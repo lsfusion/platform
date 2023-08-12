@@ -35,11 +35,13 @@
     padding: 0;
 }
 
-.comp-shrink-horz {
+/* comp-shrinked - should be set when the component is shrinked automatically inside and can not overflow (it's needed for shadows, because sometimes they overflow, but should not be clipped) */
+/* however sometimes it's not possible to shrink component to zero (input, select, etc.), but we'll ignore this */
+.comp-shrink-horz:not(.comp-shrinked) {
     overflow-x : auto
 }
 
-.comp-shrink-vert {
+.comp-shrink-vert:not(.comp-shrinked) {
     overflow-y : auto
 }
 

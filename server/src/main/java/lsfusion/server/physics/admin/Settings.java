@@ -2967,7 +2967,7 @@ public class Settings implements Cloneable {
 
     public int minInterfaceStatForValueUnique = 100;
     public int maxInterfaceStatForValueRadio = 5;
-    public int maxInterfaceStatForValueCombo = 5;
+    public int maxInterfaceStatForValueCombo = 20;
     public int maxLengthForValueRadioButtonGroup = 40;
 
     public int getMinInterfaceStatForValueUnique() {

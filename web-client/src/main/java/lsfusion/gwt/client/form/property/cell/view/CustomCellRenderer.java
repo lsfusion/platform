@@ -104,7 +104,7 @@ public class CustomCellRenderer extends CellRenderer {
                     objects : this.getObjects(object),
                     value : newValue
                 }, function(oldValue) {
-                    return @GSimpleStateTableView::changeJSDiff(*)(element, oldValue != null ? oldValue : [], object, controller, property, newValue, type, index);
+                    return @GSimpleStateTableView::changeJSDiff(*)(element, oldValue != null ? oldValue : [], object, controller, propertyName, newValue, type, index);
                 });
             },
             getValues: function(value, successCallback, failureCallback) {

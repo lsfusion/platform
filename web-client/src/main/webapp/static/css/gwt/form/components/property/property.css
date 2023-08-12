@@ -3,12 +3,16 @@
     box-sizing: content-box; /* it's important to have content-box sizing, since we're setting explicit heights for the renderer element (and we don't want paddings to be included, since we're calculating elements heights based on contents) */
 }
 
-.prop-value, .prop-value.comp-shrink-horz {
-    overflow-x: hidden;
+/*.prop-value, */
+.prop-value.comp-shrink-horz:not(.comp-shrinked),
+.prop-value.dataGridCell,
+.prop-value.cell-div {
+    overflow-x: clip;
 }
 
-.prop-value, .prop-value.comp-shrink-vert {
-    overflow-y: hidden;
+/*.prop-value, */
+.prop-value.comp-shrink-vert:not(.comp-shrinked) {
+    overflow-y: clip;
 }
 
 .prop-input {

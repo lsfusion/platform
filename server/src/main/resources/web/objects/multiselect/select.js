@@ -215,6 +215,8 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
         render: function (element) {
             element.name = hasName ? _getRandomId() : null; // radiobutton must have a name attribute
 
+            element.classList.add("comp-shrinked");
+
             let options = document.createElement('div');
             options.classList.add(isButton ? "option-btn-container" : "option-container");
             options.classList.add("fill-parent-perc")
@@ -229,6 +231,8 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
         }, update: function (element, controller, list) {
             let isList = controller.isList();
             list = _convertList(isList, list);
+            // need this dropAndNotSetChecked to properly handle situations when there are 2 selected in non-multi select
+            let changed = { dropAndNotSetChecked : false}
             let options = element.options;
             controller.diff(list, (changeType, index, object) => {
                 switch(changeType) {
@@ -258,10 +262,18 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
 
                             input.addEventListener('click', function () {
                                 let object = this.object;
-                                if (!multi && !shouldBeSelected)
-                                    controller.changeProperty('selected', object, element.prevSelected !== object ? true : null);
+                                let set;
+                                if (!multi && !shouldBeSelected && element.prevSelected === object)
+                                    set = false;
                                 else
-                                    controller.changeProperty('selected', object, this.checked ? true : null);
+                                    set = this.checked;
+
+                                if(!multi) {
+                                    element.prevSelected = set ? object : null;
+                                    if(!set) // radio button won't uncheck itself
+                                        this.checked = false;
+                                }
+                                controller.changeProperty('selected', object, set ? true : null);
                             });
 
                             let currentOptions = options.children;
@@ -295,28 +307,36 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
                         // we can't use required for styling, because we want "live validation" and not on submit
                         // input.required = shouldBeSelected;
 
-                        input.checked = object.selected;
+                        let checked = object.selected;
+                        if(!multi) {
+                            if (checked) {
+                                changed.dropAndNotSetChecked = false;
+                                element.prevSelected = object;
+                            } else if (input.checked)
+                                changed.dropAndNotSetChecked = true;
+                        }
+                        input.checked = checked;
                         break;
                 }
             });
 
             // if we dropped (and not set) checked and there are other selected elements - select them
             let hasSelected = false;
-            if (!multi) {
-                let input;
+            if (!multi && (changed.dropAndNotSetChecked || shouldBeSelected)) {
                 for (let i = 0; i < list.length; i++) {
                     let object = list[i];
                     if (object.selected != null && object.selected) {
-                        input = _getOptionElement(options, i, true, true);
-                        input.checked = true;
-
-                        if (shouldBeSelected)
-                            hasSelected = true;
+                        if(changed.dropAndNotSetChecked) {
+                            let input = _getOptionElement(options, i, true, true);
+                            input.checked = true;
+                            element.prevSelected = object;
+                        }
+                        hasSelected = true;
                         break;
                     }
                 }
-
-                element.prevSelected = input ? input.object : null;
+                if(changed.dropAndNotSetChecked && !hasSelected)
+                    element.prevSelected = null;
             }
 
             for (let i = 0; i < list.length; i++) {
@@ -385,8 +405,21 @@ function _selectDropdown(shouldBeSelected) {
         {},
         (element) => {
             element.select.addEventListener('change', function () {
-                let currentSelected = this.selectedOptions[0].object;
-                element.controller.changeProperty('selected', !currentSelected ? element.prevSelected : currentSelected, !currentSelected ? null : true);
+                let object = this.selectedOptions[0].object;
+                let set;
+                if(!object) {
+                    object = element.prevSelected;
+                    if(!object) { /* was null and remained null */
+                        // assert false;
+                        return;
+                    }
+
+                    set = false;
+                } else
+                    set = true;
+
+                element.prevSelected = set ? object : null;
+                element.controller.changeProperty('selected', object, set ? true : null);
             })
         },
         false, shouldBeSelected);
@@ -397,6 +430,8 @@ function _dropDown(cssClasses, selectAttributes, eventListener, multi, shouldBeS
         render: function (element, controller) {
             let select = document.createElement('select');
             cssClasses.forEach(cssClass => select.classList.add(cssClass));
+
+            element.classList.add("comp-shrinked");
 
             Object.keys(selectAttributes).forEach(key => select.setAttribute(key, selectAttributes[key]));
 
@@ -419,6 +454,8 @@ function _dropDown(cssClasses, selectAttributes, eventListener, multi, shouldBeS
             let isList = controller.isList();
             list = _convertList(isList, list);
             let select = element.select;
+            // need this dropAndNotSetChecked to properly handle situations when there are 2 selected in non-multi select
+            let changed = { dropAndNotSetChecked : false}
             let offset = multi ? 0 : 1;
             controller.diff(list, (changeType, index, object) => {
                 switch(changeType) {
@@ -442,32 +479,45 @@ function _dropDown(cssClasses, selectAttributes, eventListener, multi, shouldBeS
 
                         option.object = object;
                         option.innerText = object.name;
-                        option.selected = object.selected;
+
+                        let checked = object.selected;
+                        if(!multi) {
+                            if (checked) {
+                                changed.dropAndNotSetChecked = false;
+                                element.prevSelected = object;
+                            } else if (option.selected)
+                                changed.dropAndNotSetChecked = true;
+                        }
+                        option.selected = checked;
 
                         break;
                 }
             });
 
             if (!multi) {
-                let selected;
+                let hasSelected = false;
                 for (let i = 0; i < list.length; i++) {
                     let object = list[i];
                     if (object.selected) {
-                        select.options[i + offset].selected = true;
-                        selected = object;
+                        if(changed.dropAndNotSetChecked) {
+                            select.options[i + offset].selected = true;
+                            element.prevSelected = object;
+                        }
+                        hasSelected = true;
                         break;
                     }
                 }
-                if (!selected)
+                if(changed.dropAndNotSetChecked && !hasSelected) {
                     select.options[0].selected = true; //select the null option
+                    element.prevSelected = null;
+                }
 
                 if (shouldBeSelected) {
-                    if (selected)
+                    if (hasSelected)
                         select.classList.remove("is-invalid");
                     else
                         select.classList.add("is-invalid");
                 }
-                element.prevSelected = selected;
             }
 
             if (isList) {
