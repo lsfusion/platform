@@ -90,8 +90,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public String valueElementClass;
     public boolean toolbar;
 
-    public boolean boxed = true;
-
     public GType externalChangeType;
     public Map<String, GAsyncEventExec> asyncExecMap;
 

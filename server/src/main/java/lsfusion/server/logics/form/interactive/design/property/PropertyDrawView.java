@@ -405,7 +405,6 @@ public class PropertyDrawView extends BaseComponentView {
         super.customSerialize(pool, outStream);
 
         outStream.writeBoolean(isAutoSize(pool.context));
-        outStream.writeBoolean(isBoxed(pool.context.entity));
 
         pool.writeString(outStream, getDrawCaption());
         AppServerImage.serialize(getImage(pool.context), outStream, pool);
@@ -887,8 +886,7 @@ public class PropertyDrawView extends BaseComponentView {
             if(valueElementClass != null && valueElementClass.contains("btn-check"))
                 return "btn btn-outline-primary";
 
-            // if we're in panel and there is no decoration, nor other styling, nor custom view, making label gray to distinguish it from the value
-            if (!entity.isList(context) && valueElementClass == null && getTag(context) == null && !isCustom(context))
+            if (valueElementClass != null && valueElementClass.equals("panel-prop-value-boxed"))
                 return "text-secondary";
         }
 
@@ -912,11 +910,14 @@ public class PropertyDrawView extends BaseComponentView {
 
         if (isProperty(context)) {
             String tag = getTag(context);
-            if(tag == null && !entity.isList(context)) {
+            if(tag == null && !entity.isList(context) && !isCustom(context)) {
+                // if we're in panel and there is no decoration, nor other styling, nor custom view, making label gray to distinguish it from the value
+                String defaultClass = "panel-prop-value-boxed";
                 if (hasFlow(context, ChangeFlowType.INPUT))
-                    return "form-control";
-                else if (hasChangeAction(context) && !isCustom(context))
-                    return "btn btn-light";
+                    return "form-control " + defaultClass;
+                else if (hasChangeAction(context))
+                    return "btn btn-light " + defaultClass;
+                return defaultClass;
             }
         } else {
             if(hasFlow(context, ChangeFlowType.PRIMARY))
@@ -952,13 +953,6 @@ public class PropertyDrawView extends BaseComponentView {
     }
 
     public Boolean boxed;
-
-    public boolean isBoxed(FormEntity entity) {
-        if(boxed != null)
-            return boxed;
-
-        return true;
-    }
 
     public Boolean autoSize;
 

@@ -1,5 +1,5 @@
 
-.panelRendererValueBoxed, .panelRendererValueBoxed .background-inherit {
+.panel-prop-value-boxed, .panel-prop-value-boxed .background-inherit {
     background: var(--component-background-color);
 }
 
@@ -7,47 +7,47 @@
 /*common scheme*/
 .cell-with-background,
 .cell-with-background .background-inherit,
-/*hack to increase selectivity (assuming that cell-with-background is always panelRendererValueBoxed)*/
-.panelRendererValueBoxed.cell-with-background,
-.panelRendererValueBoxed.cell-with-background .background-inherit {
+/*hack to increase selectivity (assuming that cell-with-background is always panel-prop-value-boxed)*/
+.panel-prop-value-boxed.cell-with-background,
+.panel-prop-value-boxed.cell-with-background .background-inherit {
     background-color: var(--bs-table-bg);
 }
 
-.panelRendererValueBoxed {
+.panel-prop-value-boxed {
     border: 1px solid var(--component-border-color); /* should correspond to the result in ActionOrPropertyValue.setBaseSize */
 }
 
-.propertyPanelRendererValue.panelRendererValueBoxed {
+.propertyPanelRendererValue.panel-prop-value-boxed {
     border-radius: var(--textfield-border-radius);
     overflow: hidden; /* to hide inner corners */
 }
 
-.actionPanelRendererValue.panelRendererValueBoxed {
+.actionPanelRendererValue.panel-prop-value-boxed {
     border-radius: var(--button-border-radius);
 }
 
-.panelRendererValueFocused.panelRendererValueBoxed:not(.panelRendererValueEdited),
-.panelRendererValueFocused.panelRendererValueBoxed:not(.panelRendererValueEdited) .background-inherit, button:focus {
+.panelRendererValueFocused.panel-prop-value-boxed:not(.panelRendererValueEdited),
+.panelRendererValueFocused.panel-prop-value-boxed:not(.panelRendererValueEdited) .background-inherit, button:focus {
     background-color: var(--selection-color);
 }
 
-.panelRendererValueFocused.panelRendererValueBoxed, .actionPanelRendererValue:focus {
+.panelRendererValueFocused.panel-prop-value-boxed, .actionPanelRendererValue:focus {
     border: 1px solid var(--focus-color);
 }
 
-.panelRendererValueBoxed:hover:not(.panelRendererValueFocused), .actionPanelRendererValue:hover:not(focus) { /* we want focus to have higher priority than hover*/
+.panel-prop-value-boxed:hover:not(.panelRendererValueFocused), .actionPanelRendererValue:hover:not(focus) { /* we want focus to have higher priority than hover*/
     border: 1px solid var(--component-hover-border-color);
 }
 
 /* border doesn't work for input checkbox */
-input[type=checkbox].panelRendererValueFocused.panelRendererValueBoxed {
+input[type=checkbox].panelRendererValueFocused.panel-prop-value-boxed {
     outline: 1px solid var(--focus-color);
 
     /* this is needed because Chrome has the default outline-offset set to 2 for :focus-visible input checkbox  */
     /* https://stackoverflow.com/questions/73049600/should-input-checkbox-outline-include-margins-or-not */
     outline-offset: 0;
 }
-input[type=checkbox].panelRendererValueBoxed:hover:not(.panelRendererValueFocused), .actionPanelRendererValue:hover:not(focus) { /* we want focus to have higher priority than hover*/
+input[type=checkbox].panel-prop-value-boxed:hover:not(.panelRendererValueFocused), .actionPanelRendererValue:hover:not(focus) { /* we want focus to have higher priority than hover*/
     outline: 1px solid var(--component-hover-border-color);
 }
 

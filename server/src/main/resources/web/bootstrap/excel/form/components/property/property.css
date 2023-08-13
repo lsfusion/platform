@@ -10,10 +10,16 @@
 
 /* ------------ Colored corner triangles  ------------ */
 
-.property-not-null, .property-has-change {
+.property-not-null.dataGridHeaderCell,
+.property-not-null.panel-prop-value-boxed,
+.property-has-change.dataGridHeaderCell,
+.property-has-change.panel-prop-value-boxed {
     position: relative;
 }
-.property-not-null::after, .property-has-change::after {
+.property-not-null.dataGridHeaderCell::after,
+.property-not-null.panel-prop-value-boxed::after,
+.property-has-change.dataGridHeaderCell::after,
+.property-has-change.panel-prop-value-boxed::after {
     content: "";
     width: 0;
     height: 0;
@@ -24,11 +30,13 @@
     bottom: 0;
 }
 
-.property-has-change::after {
+.property-has-change.dataGridHeaderCell::after,
+.property-has-change.panel-prop-value-boxed::after {
     border-color: transparent transparent var(--focus-color) transparent;
 }
 
-.property-not-null::after {
+.property-not-null.dataGridHeaderCell::after,
+.property-not-null.panel-prop-value-boxed::after {
     border-color: transparent transparent var(--not-null-corner-triangle-color) transparent;
 }
 

@@ -40,6 +40,8 @@ function selectMultiInput() {
                 }
             });
 
+            element.classList.add("comp-shrinked");
+
             let isList = controller != null;
             let selectizeElement = element;
             if(!isList) { //if is a CustomCellRenderer, there is no controller in the render()

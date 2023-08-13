@@ -513,7 +513,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         super.customSerialize(pool, outStream);
 
         outStream.writeBoolean(autoSize);
-        outStream.writeBoolean(boxed);
 
         pool.writeString(outStream, caption);
         pool.writeString(outStream, regexp);
@@ -566,7 +565,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         super.customDeserialize(pool, inStream);
 
         autoSize = inStream.readBoolean();
-        boxed = inStream.readBoolean();
 
         caption = pool.readString(inStream);
         image = pool.readImageIcon(inStream);
