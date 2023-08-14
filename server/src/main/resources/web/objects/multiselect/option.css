@@ -27,12 +27,17 @@
     display:none;
 }
 
-.option-btn-container.btn-group .btn.btn-outline-primary.option-item {
+.option-btn-container.btn-group .btn.option-item {
     margin: 0;
+    flex: 1 1 auto;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .option-btn-container.btn-group {
-    padding: 0.5em;
+    /*padding: 0.5em;*/
 }
 
 .option-btn-container.btn-group label:not(:first-of-type) {

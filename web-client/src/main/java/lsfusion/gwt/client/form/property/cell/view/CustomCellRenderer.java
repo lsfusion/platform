@@ -22,7 +22,7 @@ public class CustomCellRenderer extends CellRenderer {
     public boolean renderContent(Element element, RenderContext renderContext) {
         render(customRenderer, element);
 
-        return false;
+        return true;
     }
 
     protected native void render(JavaScriptObject customRenderer, Element element)/*-{

@@ -11,7 +11,9 @@
 }
 
 /*.prop-value, */
-.prop-value.comp-shrink-vert:not(.comp-shrinked) {
+.prop-value.comp-shrink-vert:not(.comp-shrinked),
+.prop-value.dataGridCell,
+.prop-value.cell-div {
     overflow-y: clip;
 }
 

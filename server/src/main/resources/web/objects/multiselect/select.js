@@ -25,6 +25,8 @@ function selectMultiInput() {
 
     return {
         render: function (element, controller) {
+            let selectizeElement = _wrapElement(element, 'div', controller == null); // it seems that selectize uses parent (because it creates sibling) so for custom cell renderer we need extra div
+
             Selectize.define('on_key_down', function() {
                 var self = this.onKeyDown;
                 this.onKeyDown = function (e) {
@@ -39,17 +41,6 @@ function selectMultiInput() {
                         self.apply(this, arguments);
                 }
             });
-
-            element.classList.add("comp-shrinked");
-
-            let isList = controller != null;
-            let selectizeElement = element;
-            if(!isList) { //if is a CustomCellRenderer, there is no controller in the render()
-                // it seems that selectize uses parent (because it creates sibling) so for custom cell renderer we need extra div
-                selectizeElement = document.createElement('div');
-                selectizeElement.classList.add("fill-parent-perc")
-                element.appendChild(selectizeElement);
-            }
 
             element.selectizeInstance = $(selectizeElement).selectize({
                 dropdownParent: 'body',
@@ -195,6 +186,18 @@ function _checkBoxRadioButtonGroup(type, shouldBeSelected, hasName, multi) {
     return _option(type, true, ['btn-group'], ['btn-check'], ['btn', 'btn-outline-secondary', 'option-item'], shouldBeSelected, hasName, multi);
 }
 
+function _wrapElement(element, tag, wrap) {
+    element.classList.add("comp-shrinked");
+
+    let wrapElement = element;
+    if(wrap) {
+        wrapElement = document.createElement(tag);
+        wrapElement.classList.add("fill-parent-perc")
+        element.appendChild(wrapElement);
+    }
+    return wrapElement;
+}
+
 function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBeSelected, hasName, multi) {
     let isButton = isGroup || divClasses == null;
 
@@ -215,21 +218,18 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
 
     return {
         render: function (element) {
+            let options = _wrapElement(element, 'div', false);
+
+            element.options = options;
+
             element.name = hasName ? _getRandomId() : null; // radiobutton must have a name attribute
 
-            element.classList.add("comp-shrinked");
-
-            let options = document.createElement('div');
             options.classList.add(isButton ? "option-btn-container" : "option-container");
-            options.classList.add("fill-parent-perc")
             if (isGroup) {
                 options.setAttribute("role", "group");
                 if (divClasses != null)
                     divClasses.forEach(divClass => options.classList.add(divClass));
             }
-
-            element.appendChild(options);
-            element.options = options;
         }, update: function (element, controller, list) {
             let isList = controller.isList();
             list = _convertList(isList, list);
@@ -430,15 +430,13 @@ function _selectDropdown(shouldBeSelected) {
 function _dropDown(cssClasses, selectAttributes, eventListener, multi, shouldBeSelected) {
     return {
         render: function (element, controller) {
-            let select = document.createElement('select');
+            let select = _wrapElement(element, 'select', element.tagName.toLowerCase() !== 'select');
+
+            element.select = select;
+
             cssClasses.forEach(cssClass => select.classList.add(cssClass));
 
-            element.classList.add("comp-shrinked");
-
             Object.keys(selectAttributes).forEach(key => select.setAttribute(key, selectAttributes[key]));
-
-            element.appendChild(select);
-            element.select = select;
 
             // Because there is no default way to reset the value of the drop-down list to null, we must create a null-option
             // if there are no selected options, the selected option becomes a null-option.
@@ -446,7 +444,7 @@ function _dropDown(cssClasses, selectAttributes, eventListener, multi, shouldBeS
             if (!multi) {
                 let option = document.createElement('option');
                 option.hidden = shouldBeSelected;
-                element.select.appendChild(option);
+                select.appendChild(option);
             }
 
             eventListener(element);

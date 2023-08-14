@@ -237,6 +237,12 @@
     border-bottom: 1px solid var(--bs-border-color);
 }
 
+/* form-select, form-control sets width to 100%, but the platform sizing components itself (with content-box box-sizing), so width : 100% breaks that */
+.form-select.prop-size-value,
+.form-control.prop-size-value {
+    width: unset;
+}
+
 /*Bootstrap uses a fixed z-index for the some elements, and z-index of the modal-windows(1055) is higher than z-index of dropdown-menu(1000).
     We manually set z-index in lsf-dropdown to 1070*/
 .dropdown-menu.lsf-dropdown {

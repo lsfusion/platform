@@ -1,7 +1,7 @@
 
 /* text */
 
-.text-based-prop-sized, .text-based-prop-sized.dataGridCell {
+.text-based-prop-sized, .text-based-prop-sized.dataGridCell, .form-select {
     padding: 2px 3px;
 }
 

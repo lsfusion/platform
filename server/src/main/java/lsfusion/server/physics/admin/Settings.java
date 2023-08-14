@@ -2766,6 +2766,7 @@ public class Settings implements Cloneable {
     private int useInputTagForTextBasedInPanel = 1;
     private boolean useInputTagForBoolean = true;
     private boolean noToolbarForInputTagInPanel = false;
+    private boolean noToolbarForSelectDropdownInPanel = false;
     private boolean noToolbarForBoolean = true;
 
     public int getUseInputTagForTextBasedInPanel() {
@@ -2790,6 +2791,14 @@ public class Settings implements Cloneable {
 
     public void setNoToolbarForInputTagInPanel(boolean noToolbarForInputTagInPanel) {
         this.noToolbarForInputTagInPanel = noToolbarForInputTagInPanel;
+    }
+
+    public boolean isNoToolbarForSelectDropdownInPanel() {
+        return noToolbarForSelectDropdownInPanel;
+    }
+
+    public void setNoToolbarForSelectDropdownInPanel(boolean noToolbarForSelectDropdownInPanel) {
+        this.noToolbarForSelectDropdownInPanel = noToolbarForSelectDropdownInPanel;
     }
 
     public boolean isNoToolbarForBoolean() {

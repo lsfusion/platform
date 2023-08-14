@@ -851,8 +851,12 @@ public class PropertyDrawView extends BaseComponentView {
         if(tag != null)
             return tag;
 
-        if(isCustom(context))
+        if(isCustom(context)) {
+            PropertyDrawEntity.Select select = entity.getSelectProperty(context);
+            if (select != null && select.elementType.equals("Dropdown") && Settings.get().isNoToolbarForSelectDropdownInPanel())
+                return "select";
             return null;
+        }
 
         Type changeType = getChangeType(context, false);
         if (isProperty(context)) {
