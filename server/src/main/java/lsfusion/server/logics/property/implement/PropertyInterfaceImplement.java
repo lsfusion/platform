@@ -58,7 +58,7 @@ public interface PropertyInterfaceImplement<P extends PropertyInterface> extends
 
     ActionMapImplement<?, P> mapEventAction(String eventSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction);
 
-    Property.Select<P> mapSelect(ImList<Property> viewProperties, boolean forceSelect, boolean html);
+    Property.Select<P> mapSelect(ImList<Property> viewProperties, boolean forceSelect);
 
     boolean mapIsNotNull();
     boolean mapHasAlotKeys();

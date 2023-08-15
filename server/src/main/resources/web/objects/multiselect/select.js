@@ -418,7 +418,7 @@ function selectMultiHTMLDropdown() {
 }
 
 function _selectMultiDropdown(multi, html, shouldBeSelected) {
-    return _dropDown(['multi-select'],
+    return _dropDown(['multi-select','form-control'],
         multi ? {'data-container': 'body', 'multiple': ''} : {'data-container': 'body'},
         (element) => {
             let selectElement = $(element.select);

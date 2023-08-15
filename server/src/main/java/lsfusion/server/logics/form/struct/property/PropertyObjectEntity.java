@@ -13,8 +13,6 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
-import lsfusion.server.logics.classes.data.HTMLStringClass;
-import lsfusion.server.logics.classes.data.HTMLTextClass;
 import lsfusion.server.logics.form.interactive.action.input.InputOrderEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputValueList;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
@@ -109,7 +107,7 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrP
     }
     public Select getSelectProperty(FormInstanceContext context, boolean forceSelect, Boolean forceFilterSelected) { // false - filter selected,
         Type type = property.getType();
-        Property.Select<P> select = property.getSelectProperty(ListFact.EMPTY(), forceSelect, type instanceof HTMLStringClass || type instanceof HTMLTextClass);
+        Property.Select<P> select = property.getSelectProperty(ListFact.EMPTY(), forceSelect);
         if(select != null) {
             Pair<Integer, Integer> stats = select.stat;
             boolean actualStats = false;

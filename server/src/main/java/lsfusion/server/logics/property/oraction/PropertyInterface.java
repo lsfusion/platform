@@ -138,7 +138,7 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         return null;
     }
 
-    public Property.Select<P> mapSelect(ImList<Property> viewProperties, boolean forceSelect, boolean html) {
+    public Property.Select<P> mapSelect(ImList<Property> viewProperties, boolean forceSelect) {
         return null;
     }
 

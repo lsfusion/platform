@@ -297,15 +297,16 @@ public class CaseUnionProperty extends IncrementUnionProperty {
 
     @Override
     @IdentityStrongLazy
-    public <I extends PropertyInterface, V extends PropertyInterface, W extends PropertyInterface> Select<Interface> getSelectProperty(ImList<Property> viewProperties, boolean forceSelect, boolean html) {
+    public <I extends PropertyInterface, V extends PropertyInterface, W extends PropertyInterface> Select<Interface> getSelectProperty(ImList<Property> viewProperties, boolean forceSelect) {
         Pair<Integer, Integer> resultStat = new Pair<>(0, 0);
         boolean multi = false;
+        boolean html = false;
         MList<InputValueList> mResultValues = ListFact.mList();
         ImList<CalcCase<Interface>> cases = getCases();
         MList<PropertyMapImplement<?, Interface>> mJsonWheres = ListFact.mList();
         MList<SelectProperty<Interface>> mJsonProps = ListFact.mList();
         for(CalcCase<Interface> propCase : cases) {
-            Select<Interface> joinProperty = propCase.implement.mapSelect(viewProperties, forceSelect, html);
+            Select<Interface> joinProperty = propCase.implement.mapSelect(viewProperties, forceSelect);
             if(joinProperty == null)
                 return null;
 

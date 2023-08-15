@@ -74,10 +74,7 @@ import lsfusion.server.logics.action.session.table.PropertyChangeTableUsage;
 import lsfusion.server.logics.classes.ConcreteClass;
 import lsfusion.server.logics.classes.StaticClass;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.classes.data.DataClass;
-import lsfusion.server.logics.classes.data.OrderClass;
-import lsfusion.server.logics.classes.data.StringClass;
-import lsfusion.server.logics.classes.data.TextClass;
+import lsfusion.server.logics.classes.data.*;
 import lsfusion.server.logics.classes.data.file.JSONClass;
 import lsfusion.server.logics.classes.struct.ConcatenateValueClass;
 import lsfusion.server.logics.classes.user.BaseClass;
@@ -1712,7 +1709,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     @IdentityStrongLazy
-    public <I extends PropertyInterface, V extends PropertyInterface, W extends PropertyInterface> Select<T> getSelectProperty(ImList<Property> viewProperties, boolean forceSelect, boolean html) {
+    public <I extends PropertyInterface, V extends PropertyInterface, W extends PropertyInterface> Select<T> getSelectProperty(ImList<Property> viewProperties, boolean forceSelect) {
         if(!forceSelect && !canBeChanged(false)) // optimization
             return null; // ? because sometimes can be used to display one of the option
 
@@ -1745,14 +1742,14 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             PropertyMapImplement<W, I> where = (PropertyMapImplement<W, I>) filtersAndOrders.first.getWhereProperty(objectInterface);
             ImOrderMap<PropertyMapImplement<?, I>, Boolean> orders = filtersAndOrders.second.mapOrderKeys(order -> order.getOrderProperty(objectInterface));
 
-            return getSelectProperty(baseLM, false, forceSelect, mapPropertyInterfaces, innerInterfaces, name, selected, customClass, where, orders, html);
+            return getSelectProperty(baseLM, false, forceSelect, mapPropertyInterfaces, innerInterfaces, name, selected, customClass, where, orders);
         }
 
         return null;
     }
 
     public static <I extends PropertyInterface, T extends PropertyInterface, W extends PropertyInterface>
-            Select<T> getSelectProperty(BaseLogicsModule baseLM, boolean multi, boolean forceSelect, ImRevMap<T, I> mapPropertyInterfaces, ImSet<I> innerInterfaces, PropertyMapImplement<?, I> name, PropertyInterfaceImplement<I> selected, CustomClass customClass, PropertyMapImplement<W, I> where, ImOrderMap<? extends PropertyInterfaceImplement<I>, Boolean> orders, boolean html) {
+            Select<T> getSelectProperty(BaseLogicsModule baseLM, boolean multi, boolean forceSelect, ImRevMap<T, I> mapPropertyInterfaces, ImSet<I> innerInterfaces, PropertyMapImplement<?, I> name, PropertyInterfaceImplement<I> selected, CustomClass customClass, PropertyMapImplement<W, I> where, ImOrderMap<? extends PropertyInterfaceImplement<I>, Boolean> orders) {
 
         boolean fallbackToFilterSelected = multi || forceSelect;
 
@@ -1781,12 +1778,13 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
                 readValues = new InputListEntity(name.property, MapFact.EMPTYREV()).merge(new Pair<>(new InputFilterEntity<>(readValuesProperty, MapFact.EMPTYREV()), MapFact.EMPTYORDER())).map(MapFact.EMPTY());
         }
 
+        Type nameType = name.property.getType();
         return new Select<>(filterSelected -> {
             if(filterSelected && !fallbackToFilterSelected)
                 return null;
 
             return getSelectProperty(baseLM, mapPropertyInterfaces, innerInterfaces, name, selected, filterSelected, where, orders);
-        }, new Pair<>(name.property.getType().getAverageCharLength() * whereCount, whereCount), readValues != null ? ListFact.singleton(readValues) : null, multi, html);
+        }, new Pair<>(nameType.getAverageCharLength() * whereCount, whereCount), readValues != null ? ListFact.singleton(readValues) : null, multi, nameType instanceof HTMLStringClass || nameType instanceof HTMLTextClass);
     }
 
     private static <I extends PropertyInterface, T extends PropertyInterface, W extends PropertyInterface> PropertyMapImplement<?, T> getSelectProperty(BaseLogicsModule baseLM, ImRevMap<T, I> mapPropertyInterfaces, ImSet<I> innerInterfaces, PropertyMapImplement<?, I> name, PropertyInterfaceImplement<I> selected, boolean filterSelected, PropertyMapImplement<W, I> where, ImOrderMap<? extends PropertyInterfaceImplement<I>, Boolean> orders) {
