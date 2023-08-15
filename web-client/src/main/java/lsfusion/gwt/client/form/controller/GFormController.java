@@ -2046,7 +2046,7 @@ public class GFormController implements EditManager {
 
             @Override
             public void onSuccess(ListResult result) {
-                callback.onSuccess(new GAsyncResult(result.value, false, false));
+                callback.onSuccess(convertAsyncResult(result));
             }
         });
     }
@@ -2077,6 +2077,7 @@ public class GFormController implements EditManager {
 
         GGroupObjectValue currentKey = getFullCurrentKey(property, columnKey);
 
+        Runnable runPessimistic = () -> getPessimisticValues(property.ID, currentKey, actionSID, value, editIndex, fCallback);
         if (!editAsyncUsePessimistic)
             dispatcher.executePriority(new GetPriorityAsyncValues(property.ID, currentKey, actionSID, value, editIndex), new PriorityAsyncCallback<ListResult>() {
                 @Override
@@ -2088,29 +2089,35 @@ public class GFormController implements EditManager {
                 public void onSuccess(ListResult result) {
                     if (result.value == null) { // optimistic request failed, running pessimistic one, with request indices, etc.
                         editAsyncUsePessimistic = true;
-                        getPessimisticValues(property.ID, currentKey, actionSID, value, editIndex, fCallback);
+                        runPessimistic.run();
                     } else {
-                        boolean needMoreSymbols = false;
-                        boolean moreResults = false;
-                        ArrayList<GAsync> values = result.value;
-                        if(values.size() > 0) {
-                            GAsync lastResult = values.get(values.size() - 1);
-                            if(lastResult.equals(GAsync.RECHECK)) {
-                                values = removeLast(values);
-
-                                moreResults = true;
-                                getPessimisticValues(property.ID, currentKey, actionSID, value, editIndex, fCallback);
-                            } else if(values.size() == 1 && (lastResult.equals(GAsync.CANCELED) || lastResult.equals(GAsync.NEEDMORE))) { // ignoring CANCELED results
-                                needMoreSymbols = lastResult.equals(GAsync.NEEDMORE);
-                                values = needMoreSymbols ? new ArrayList<>() : null;
-                            }
-                        }
-                        fCallback.onSuccess(new GAsyncResult(values, needMoreSymbols, moreResults));
+                        GAsyncResult asyncResult = convertAsyncResult(result);
+                        if(asyncResult.moreRequests)
+                            runPessimistic.run();
+                        fCallback.onSuccess(asyncResult);
                     }
                 }
             });
         else
-            getPessimisticValues(property.ID, currentKey, actionSID, value, editIndex, fCallback);
+            runPessimistic.run();
+    }
+
+    private static GAsyncResult convertAsyncResult(ListResult result) {
+        boolean needMoreSymbols = false;
+        boolean moreResults = false;
+        ArrayList<GAsync> values = result.value;
+        if(values.size() > 0) {
+            GAsync lastResult = values.get(values.size() - 1);
+            if(lastResult.equals(GAsync.RECHECK)) {
+                values = removeLast(values);
+
+                moreResults = true;
+            } else if(values.size() == 1 && (lastResult.equals(GAsync.CANCELED) || lastResult.equals(GAsync.NEEDMORE))) { // ignoring CANCELED results
+                needMoreSymbols = lastResult.equals(GAsync.NEEDMORE);
+                values = needMoreSymbols ? new ArrayList<>() : null;
+            }
+        }
+        return new GAsyncResult(values, needMoreSymbols, moreResults);
     }
 
     public void edit(GType type, EventHandler handler, boolean hasOldValue, PValue setOldValue, GInputList inputList, BiConsumer<GUserInputResult, Consumer<Long>> afterCommit, Consumer<CancelReason> cancel, EditContext editContext, String actionSID, String customChangeFunction) {

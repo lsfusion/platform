@@ -1345,7 +1345,7 @@ public class ClientFormController implements AsyncListener {
             @Override
             protected void onResponse(long requestIndex, ClientAsync[] result) throws Exception {
                 super.onResponse(requestIndex, result);
-                callback.done(new ClientAsyncResult(result != null ? Arrays.asList(result) : null, false, false));
+                callback.done(convertAsyncResult(result));
             }
 
             @Override
@@ -1370,12 +1370,11 @@ public class ClientFormController implements AsyncListener {
     public void getAsyncValues(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String value, String actionSID, AsyncCallback<ClientAsyncResult> callback) {
         AsyncCallback<ClientAsyncResult> fCallback = checkLast(editAsyncIndex++, callback);
 
-        new SwingWorker<List<ClientAsync>, Void>() {
-            boolean runPessimistic = false;
-            boolean needMoreSymbols = false;
-
+        new SwingWorker<ClientAsyncResult, Void>() {
             @Override
-            protected List<ClientAsync> doInBackground() {
+            protected ClientAsyncResult doInBackground() {
+                boolean runPessimistic;
+
                 if (!editAsyncUsePessimistic) {
                     try {
                         ClientAsync[] result = getAsyncValuesProvider.getAsyncValues(property.getID(), getFullCurrentKey(columnKey), actionSID, value, editAsyncIndex);
@@ -1383,18 +1382,7 @@ public class ClientFormController implements AsyncListener {
                             editAsyncUsePessimistic = true;
                             runPessimistic = true;
                         } else {
-                            List<ClientAsync> values = Arrays.asList(result);
-                            if (values.size() > 0) {
-                                ClientAsync lastResult = values.get(values.size() - 1);
-                                if (lastResult.equals(ClientAsync.RECHECK)) {
-                                    runPessimistic = true;
-                                    values = values.subList(0, values.size() - 1);
-                                } else if (values.size() == 1 && (lastResult.equals(ClientAsync.CANCELED) || lastResult.equals(ClientAsync.NEEDMORE))) {// ignoring CANCELED results
-                                    needMoreSymbols = lastResult.equals(ClientAsync.NEEDMORE);
-                                    values = needMoreSymbols ? Collections.emptyList() : null;
-                                }
-                            }
-                            return values;
+                            return convertAsyncResult(result);
                         }
 
                     } catch (RemoteException e) {
@@ -1404,12 +1392,12 @@ public class ClientFormController implements AsyncListener {
                     runPessimistic = true;
                 }
 
-                return Collections.emptyList();
+                return new ClientAsyncResult(Collections.emptyList(), false, runPessimistic);
             }
 
             @Override
             protected void done() {
-                List<ClientAsync> result;
+                ClientAsyncResult result;
                 try {
                     result = get();
                 } catch (Throwable t) {
@@ -1417,11 +1405,29 @@ public class ClientFormController implements AsyncListener {
                     return;
                 }
 
-                fCallback.done(new ClientAsyncResult(result, needMoreSymbols, runPessimistic));
-                if(runPessimistic)
+                fCallback.done(result);
+                if(result.moreRequests)
                     getPessimisticValues(property, columnKey, value, actionSID, fCallback);
             }
         }.execute();
+    }
+
+    private static ClientAsyncResult convertAsyncResult(ClientAsync[] result) {
+        boolean needMoreSymbols = false;
+        boolean moreResults = false;
+        List<ClientAsync> values = Arrays.asList(result);
+        if (values.size() > 0) {
+            ClientAsync lastResult = values.get(values.size() - 1);
+            if (lastResult.equals(ClientAsync.RECHECK)) {
+                values = values.subList(0, values.size() - 1);
+
+                moreResults = true;
+            } else if (values.size() == 1 && (lastResult.equals(ClientAsync.CANCELED) || lastResult.equals(ClientAsync.NEEDMORE))) {// ignoring CANCELED results
+                needMoreSymbols = lastResult.equals(ClientAsync.NEEDMORE);
+                values = needMoreSymbols ? Collections.emptyList() : null;
+            }
+        }
+        return new ClientAsyncResult(values, needMoreSymbols, moreResults);
     }
 
     public void changePropertyOrder(final ClientPropertyDraw property, final Order modiType, final ClientGroupObjectValue columnKey) {

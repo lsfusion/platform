@@ -831,7 +831,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     private int asyncLastIndex = 0;
     private final Object asyncLock = new Object();
 
-    public Async[] getAsyncValues(int propertyID, byte[] fullKey, String actionSID, String value, Boolean optimistic, Supplier<Boolean> optimisticRun) throws SQLException, SQLHandledException, IOException {
+    public Async[] getAsyncValues(int propertyID, byte[] fullKey, String actionSID, String value, boolean optimistic, Supplier<Boolean> optimisticRun) throws SQLException, SQLHandledException, IOException {
         if(value == null)
             return new Async[] {Async.CANCELED};
 
