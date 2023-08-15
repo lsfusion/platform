@@ -1840,6 +1840,10 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
             tableElement = Document.get().createTableElement();
 
             tableElement.addClassName(DATA_GRID_CLASS);
+
+            if(useWillChangeInDataGrid()) {
+                tableElement.getStyle().setProperty("willChange", "transform");
+            }
             if(extraClass != null)
                 tableElement.addClassName(extraClass);
 
@@ -1884,6 +1888,10 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
             return sectionElement;
         }
     }
+
+    protected static native boolean useWillChangeInDataGrid()/*-{
+        return $wnd.lsfParams.useWillChangeInDataGrid != null;
+    }-*/;
 
     private class HeaderWidget extends TableWrapperWidget {
         public HeaderWidget() {

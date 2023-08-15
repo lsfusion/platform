@@ -547,3 +547,17 @@ DESIGN options {
         }
     }
 }
+
+//hack only for v5 web
+//https://developer.mozilla.org/en-US/docs/Web/CSS/will-change
+useWillChangeInDataGrid 'Use will-change in DataGrid' = DATA BOOLEAN ();
+
+lsfParams(STRING s) += 'true' IF s = 'useWillChangeInDataGrid' AND useWillChangeInDataGrid();
+
+EXTEND FORM options
+    PROPERTIES() useWillChangeInDataGrid;
+DESIGN options {
+    commons {
+        MOVE PROPERTY(useWillChangeInDataGrid());
+    }
+}
