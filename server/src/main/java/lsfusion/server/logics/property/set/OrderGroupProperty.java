@@ -99,12 +99,12 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
     }
     @Override
     @IdentityStrongLazy
-    public <X extends PropertyInterface, V extends PropertyInterface, W extends PropertyInterface> Select<Interface<I>> getSelectProperty(ImList<Property> viewProperties, boolean forceSelect) {
+    public <X extends PropertyInterface, V extends PropertyInterface, W extends PropertyInterface> Select<Interface<I>> getSelectProperty(ImList<Property> viewProperties, boolean forceSelect, boolean html) {
         ImRevMap<Interface<I>, I> groupMap = getConcatMap();
         if(groupMap != null)
-            return Property.getSelectProperty(getBaseLM(), true, forceSelect, groupMap, innerInterfaces, (PropertyMapImplement<?, I>) nameProp, whereProp, null, (PropertyMapImplement<?, I>) nameProp, orders);
+            return Property.getSelectProperty(getBaseLM(), true, forceSelect, groupMap, innerInterfaces, (PropertyMapImplement<?, I>) nameProp, whereProp, null, (PropertyMapImplement<?, I>) nameProp, orders, html);
 
-        return super.getSelectProperty(viewProperties, forceSelect);
+        return super.getSelectProperty(viewProperties, forceSelect, html);
     }
 
     @Override

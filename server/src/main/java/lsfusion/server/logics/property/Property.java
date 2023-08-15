@@ -1700,17 +1700,19 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
         public final Pair<Integer, Integer> stat; // estimate stat
         public final boolean multi;
+        public final boolean html;
 
-        public Select(SelectProperty<T> property, Pair<Integer, Integer> stat, ImList<InputValueList> values, boolean multi) {
+        public Select(SelectProperty<T> property, Pair<Integer, Integer> stat, ImList<InputValueList> values, boolean multi, boolean html) {
             this.property = property;
             this.stat = stat;
             this.values = values;
             this.multi = multi;
+            this.html = html;
         }
     }
 
     @IdentityStrongLazy
-    public <I extends PropertyInterface, V extends PropertyInterface, W extends PropertyInterface> Select<T> getSelectProperty(ImList<Property> viewProperties, boolean forceSelect) {
+    public <I extends PropertyInterface, V extends PropertyInterface, W extends PropertyInterface> Select<T> getSelectProperty(ImList<Property> viewProperties, boolean forceSelect, boolean html) {
         if(!forceSelect && !canBeChanged(false)) // optimization
             return null; // ? because sometimes can be used to display one of the option
 
@@ -1743,14 +1745,14 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             PropertyMapImplement<W, I> where = (PropertyMapImplement<W, I>) filtersAndOrders.first.getWhereProperty(objectInterface);
             ImOrderMap<PropertyMapImplement<?, I>, Boolean> orders = filtersAndOrders.second.mapOrderKeys(order -> order.getOrderProperty(objectInterface));
 
-            return getSelectProperty(baseLM, false, forceSelect, mapPropertyInterfaces, innerInterfaces, name, selected, customClass, where, orders);
+            return getSelectProperty(baseLM, false, forceSelect, mapPropertyInterfaces, innerInterfaces, name, selected, customClass, where, orders, html);
         }
 
         return null;
     }
 
     public static <I extends PropertyInterface, T extends PropertyInterface, W extends PropertyInterface>
-            Select<T> getSelectProperty(BaseLogicsModule baseLM, boolean multi, boolean forceSelect, ImRevMap<T, I> mapPropertyInterfaces, ImSet<I> innerInterfaces, PropertyMapImplement<?, I> name, PropertyInterfaceImplement<I> selected, CustomClass customClass, PropertyMapImplement<W, I> where, ImOrderMap<? extends PropertyInterfaceImplement<I>, Boolean> orders) {
+            Select<T> getSelectProperty(BaseLogicsModule baseLM, boolean multi, boolean forceSelect, ImRevMap<T, I> mapPropertyInterfaces, ImSet<I> innerInterfaces, PropertyMapImplement<?, I> name, PropertyInterfaceImplement<I> selected, CustomClass customClass, PropertyMapImplement<W, I> where, ImOrderMap<? extends PropertyInterfaceImplement<I>, Boolean> orders, boolean html) {
 
         boolean fallbackToFilterSelected = multi || forceSelect;
 
@@ -1784,7 +1786,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
                 return null;
 
             return getSelectProperty(baseLM, mapPropertyInterfaces, innerInterfaces, name, selected, filterSelected, where, orders);
-        }, new Pair<>(name.property.getType().getAverageCharLength() * whereCount, whereCount), readValues != null ? ListFact.singleton(readValues) : null, multi);
+        }, new Pair<>(name.property.getType().getAverageCharLength() * whereCount, whereCount), readValues != null ? ListFact.singleton(readValues) : null, multi, html);
     }
 
     private static <I extends PropertyInterface, T extends PropertyInterface, W extends PropertyInterface> PropertyMapImplement<?, T> getSelectProperty(BaseLogicsModule baseLM, ImRevMap<T, I> mapPropertyInterfaces, ImSet<I> innerInterfaces, PropertyMapImplement<?, I> name, PropertyInterfaceImplement<I> selected, boolean filterSelected, PropertyMapImplement<W, I> where, ImOrderMap<? extends PropertyInterfaceImplement<I>, Boolean> orders) {

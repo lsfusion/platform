@@ -13,6 +13,8 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
+import lsfusion.server.logics.classes.data.HTMLStringClass;
+import lsfusion.server.logics.classes.data.HTMLTextClass;
 import lsfusion.server.logics.form.interactive.action.input.InputOrderEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputValueList;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
@@ -94,17 +96,20 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrP
         }
 
         public final Type type;
+        public final boolean html;
 
-        public Select(PropertyObjectEntity<?> property, int length, int count, boolean actual, Type type) {
+        public Select(PropertyObjectEntity<?> property, int length, int count, boolean actual, Type type, boolean html) {
             this.property = property;
             this.length = length;
             this.count = count;
             this.actual = actual;
             this.type = type;
+            this.html = html;
         }
     }
     public Select getSelectProperty(FormInstanceContext context, boolean forceSelect, Boolean forceFilterSelected) { // false - filter selected,
-        Property.Select<P> select = property.getSelectProperty(ListFact.EMPTY(), forceSelect);
+        Type type = property.getType();
+        Property.Select<P> select = property.getSelectProperty(ListFact.EMPTY(), forceSelect, type instanceof HTMLStringClass || type instanceof HTMLTextClass);
         if(select != null) {
             Pair<Integer, Integer> stats = select.stat;
             boolean actualStats = false;
@@ -116,7 +121,7 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrP
             if(selectProperty == null)
                 return null;
             boolean multi = select.multi;
-            return new Select(selectProperty.mapEntityObjects(mapping), stats.first, stats.second, actualStats, multi ? Select.Type.MULTI : (property.isNotNull() ? Select.Type.NOTNULL : Select.Type.NULL));
+            return new Select(selectProperty.mapEntityObjects(mapping), stats.first, stats.second, actualStats, multi ? Select.Type.MULTI : (property.isNotNull() ? Select.Type.NOTNULL : Select.Type.NULL), select.html);
         }
         return null;
     }

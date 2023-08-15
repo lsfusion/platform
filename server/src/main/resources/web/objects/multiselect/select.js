@@ -88,7 +88,15 @@ function selectMultiInput() {
                         callback(options);
                     }, null);
                 },
-                plugins: ['remove_button', 'auto_position', 'on_key_down']
+                plugins: ['remove_button', 'auto_position', 'on_key_down'],
+                render: {
+                    item: function (item, escape) {
+                        return "<div class = 'item'>" + item.text + "</div>";
+                    },
+                    option: function (item, escape) {
+                        return '<div> <span class = "label">' + item.text + '</span></div>'
+                    },
+                }
             });
         },
         update: function (element, controller, list) {
@@ -305,7 +313,11 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
                         }
 
                         input.object = object;
-                        label.innerText = object.name;
+                        let name = object.name;
+                        if (controller.isContainHtmlTag(name))
+                            label.innerHTML = name;
+                        else
+                            label.innerText = name;
                         // we can't use required for styling, because we want "live validation" and not on submit
                         // input.required = shouldBeSelected;
 
@@ -390,16 +402,37 @@ function selectDropdown() {
 }
 
 function selectMultiDropdown() {
+    return _selectMultiDropdown(true, false, false);
+}
+
+function selectNullHTMLDropdown() {
+    return _selectMultiDropdown(false, true, false);
+}
+
+function selectHTMLDropdown() {
+    return _selectMultiDropdown(false, true, true);
+}
+
+function selectMultiHTMLDropdown() {
+    return _selectMultiDropdown(true, true, false);
+}
+
+function _selectMultiDropdown(multi, html, shouldBeSelected) {
     return _dropDown(['multi-select'],
-        {'data-container': 'body', 'multiple': ''},
+        multi ? {'data-container': 'body', 'multiple': ''} : {'data-container': 'body'},
         (element) => {
             let selectElement = $(element.select);
             selectElement.selectpicker();
             selectElement.on('changed.bs.select', function (e, clickedIndex, isSelected) {
-            if (clickedIndex != null && isSelected != null) //documentation:  If the select's value has been changed either via the .selectpicker('val'), .selectpicker('selectAll'), or .selectpicker('deselectAll') methods, clickedIndex and isSelected will be null.
-                element.controller.changeProperty('selected', this.children[clickedIndex].object, isSelected ? true : null);
-        })},
-        true, false);
+                if (clickedIndex != null && isSelected != null) { //documentation:  If the select's value has been changed either via the .selectpicker('val'), .selectpicker('selectAll'), or .selectpicker('deselectAll') methods, clickedIndex and isSelected will be null.
+                    let object = this.children[clickedIndex].object;
+                    if (multi)
+                        element.controller.changeProperty('selected', object, isSelected ? true : null);
+                    else
+                        _changeSingleDropdownProperty(object, element)
+                }
+            })},
+        multi, shouldBeSelected, html);
 }
 
 function _selectDropdown(shouldBeSelected) {
@@ -407,27 +440,13 @@ function _selectDropdown(shouldBeSelected) {
         {},
         (element) => {
             element.select.addEventListener('change', function () {
-                let object = this.selectedOptions[0].object;
-                let set;
-                if(!object) {
-                    object = element.prevSelected;
-                    if(!object) { /* was null and remained null */
-                        // assert false;
-                        return;
-                    }
-
-                    set = false;
-                } else
-                    set = true;
-
-                element.prevSelected = set ? object : null;
-                element.controller.changeProperty('selected', object, set ? true : null);
+                _changeSingleDropdownProperty(this.selectedOptions[0].object, element);
             })
         },
         false, shouldBeSelected);
 }
 
-function _dropDown(cssClasses, selectAttributes, eventListener, multi, shouldBeSelected) {
+function _dropDown(cssClasses, selectAttributes, eventListener, multi, shouldBeSelected, html) {
     return {
         render: function (element, controller) {
             let select = _wrapElement(element, 'select', element.tagName.toLowerCase() !== 'select');
@@ -478,7 +497,12 @@ function _dropDown(cssClasses, selectAttributes, eventListener, multi, shouldBeS
                         }
 
                         option.object = object;
-                        option.innerText = object.name;
+                        let name = object.name;
+                        if (html) {
+                            option.setAttribute("data-content", name);
+                        } else {
+                            option.innerText = name;
+                        }
 
                         let checked = object.selected;
                         if(!multi) {
@@ -513,10 +537,13 @@ function _dropDown(cssClasses, selectAttributes, eventListener, multi, shouldBeS
                 }
 
                 if (shouldBeSelected) {
-                    if (hasSelected)
-                        select.classList.remove("is-invalid");
-                    else
-                        select.classList.add("is-invalid");
+                    if (hasSelected){
+                        $(select).removeClass("is-invalid");
+                        if (html)
+                            $(select).parent().removeClass("is-invalid"); //for unknown reasons when adding class to $(select) the same class is added to the parent of this element(parent is not an element from render()), but when deleting this class is not deleted
+                    } else {
+                        $(select).addClass("is-invalid");
+                    }
                 }
             }
 
@@ -530,7 +557,7 @@ function _dropDown(cssClasses, selectAttributes, eventListener, multi, shouldBeS
                 _setReadonly(select, controller.isReadOnly());
             }
 
-            if (multi)
+            if (multi || html)
                 $(select).selectpicker('refresh');
         },
         clear: function (element) {
@@ -559,4 +586,21 @@ function _convertList(isList, list) {
         }
     }
     return list;
+}
+
+function _changeSingleDropdownProperty(object, element) {
+    let set;
+    if (!object) {
+        object = element.prevSelected;
+        if (!object) { /* was null and remained null */
+            // assert false;
+            return;
+        }
+
+        set = false;
+    } else
+        set = true;
+
+    element.prevSelected = set ? object : null;
+    element.controller.changeProperty('selected', object, set ? true : null);
 }

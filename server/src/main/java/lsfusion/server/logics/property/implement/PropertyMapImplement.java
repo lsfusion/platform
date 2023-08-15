@@ -222,14 +222,14 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
     }
 
     @Override
-    public Property.Select<T> mapSelect(ImList<Property> viewProperties, boolean forceSelect) {
-        Property.Select<P> select = property.getSelectProperty(viewProperties, forceSelect);
+    public Property.Select<T> mapSelect(ImList<Property> viewProperties, boolean forceSelect, boolean html) {
+        Property.Select<P> select = property.getSelectProperty(viewProperties, forceSelect, html);
         return select == null ? null : new Property.Select<>(filterSelected -> {
             PropertyMapImplement<?, P> selectProperty = select.property.get(filterSelected);
             if(selectProperty == null)
                 return null;
             return selectProperty.map(mapping);
-        }, select.stat, select.values, select.multi);
+        }, select.stat, select.values, select.multi, select.html);
     }
 
     public Inferred<T> mapInferInterfaceClasses(ExClassSet commonValue, InferType inferType) {

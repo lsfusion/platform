@@ -297,7 +297,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
 
     @Override
     @IdentityStrongLazy
-    public <I extends PropertyInterface, V extends PropertyInterface, W extends PropertyInterface> Select<Interface> getSelectProperty(ImList<Property> viewProperties, boolean forceSelect) {
+    public <I extends PropertyInterface, V extends PropertyInterface, W extends PropertyInterface> Select<Interface> getSelectProperty(ImList<Property> viewProperties, boolean forceSelect, boolean html) {
         Pair<Integer, Integer> resultStat = new Pair<>(0, 0);
         boolean multi = false;
         MList<InputValueList> mResultValues = ListFact.mList();
@@ -305,7 +305,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         MList<PropertyMapImplement<?, Interface>> mJsonWheres = ListFact.mList();
         MList<SelectProperty<Interface>> mJsonProps = ListFact.mList();
         for(CalcCase<Interface> propCase : cases) {
-            Select<Interface> joinProperty = propCase.implement.mapSelect(viewProperties, forceSelect);
+            Select<Interface> joinProperty = propCase.implement.mapSelect(viewProperties, forceSelect, html);
             if(joinProperty == null)
                 return null;
 
@@ -325,6 +325,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
             if(resultStat.second < joinStat.second)
                 resultStat = joinStat;
             multi = multi || joinProperty.multi;
+            html = html || joinProperty.html;
         }
         ImList<PropertyMapImplement<?, Interface>> jsonWheres = mJsonWheres.immutableList();
         ImList<SelectProperty<Interface>> jsonProps = mJsonProps.immutableList();
@@ -337,7 +338,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
                 mJsonCases.add(new CalcCase<>(jsonWheres.get(i), jsonProp));
             }
             return PropertyFact.createUnion(interfaces, isExclusive, mJsonCases.immutableList());
-        }, resultStat, mResultValues != null ? mResultValues.immutableList() : null, multi);
+        }, resultStat, mResultValues != null ? mResultValues.immutableList() : null, multi, html);
     }
 
     @Override

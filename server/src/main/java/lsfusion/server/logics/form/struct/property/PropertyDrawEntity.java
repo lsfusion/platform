@@ -709,14 +709,16 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         public final int length;
         public final int count;
         public final boolean actual;
+        public final boolean html;
 
-        public Select(PropertyObjectEntity property, String type, String elementType, int length, int count, boolean actual) {
+        public Select(PropertyObjectEntity property, String type, String elementType, int length, int count, boolean actual, boolean html) {
             this.property = property;
             this.type = type;
             this.elementType = elementType;
             this.length = length;
             this.count = count;
             this.actual = actual;
+            this.html = html;
         }
     }
     @ParamLazy
@@ -786,8 +788,10 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
                         }
                     }
 
+                    boolean html = elementType != null && elementType.equals("Dropdown") && select.html;
+
                     if (elementType != null)
-                        return new Select(select.property, selectType, elementType, select.length, select.count, select.actual);
+                        return new Select(select.property, selectType, elementType, select.length, select.count, select.actual, html);
                 }
             }
         }
@@ -801,7 +805,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public String getCustomRenderFunction(FormInstanceContext context) {
         Select select = getSelectProperty(context);
         if(select != null)
-            return "select" + select.type + select.elementType;
+            return "select" + select.type + (select.html ? "HTML" : "") + select.elementType;
 
         String custom = customRenderFunction;
         if(custom != null) {

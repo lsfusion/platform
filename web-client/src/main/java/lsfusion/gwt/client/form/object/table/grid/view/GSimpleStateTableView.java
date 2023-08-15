@@ -764,6 +764,9 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             },
             isList: function () {
                 return true;
+            },
+            isContainHtmlTag: function (value) {
+                return @lsfusion.gwt.client.base.EscapeUtils::isContainHtmlTag(*)(value);
             }
         };
     }-*/;
