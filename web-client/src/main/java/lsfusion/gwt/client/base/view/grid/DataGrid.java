@@ -1841,9 +1841,10 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
 
             tableElement.addClassName(DATA_GRID_CLASS);
 
-            if(useWillChangeInDataGrid()) {
-                tableElement.getStyle().setProperty("willChange", "transform");
-            }
+            //hack only for v5 web
+            //https://developer.mozilla.org/en-US/docs/Web/CSS/will-change
+            tableElement.getStyle().setProperty("willChange", "transform");
+
             if(extraClass != null)
                 tableElement.addClassName(extraClass);
 
@@ -1888,10 +1889,6 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
             return sectionElement;
         }
     }
-
-    protected static native boolean useWillChangeInDataGrid()/*-{
-        return $wnd.lsfParams.useWillChangeInDataGrid != null;
-    }-*/;
 
     private class HeaderWidget extends TableWrapperWidget {
         public HeaderWidget() {
