@@ -1262,4 +1262,8 @@ public class GwtClientUtils {
     public static final native NodeList<Element> getElementsByClassName(String className) /*-{
         return $doc.getElementsByClassName(className);
     }-*/;
+
+    public static native boolean isContainHtmlTag(String value) /*-{
+        return $wnd.isContainHtmlTag(value);
+    }-*/;
 }

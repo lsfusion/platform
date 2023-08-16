@@ -148,3 +148,6 @@ function plainEquals(object1, object2, ignoreField) {
     return !(object1Keys.length !== object2Keys.length || (object1Keys.find(function (object1Key) { return object1Key !== ignoreField && object1[object1Key] !== object2[object1Key]}) !== undefined));
 }
 
+function isContainHtmlTag(value) {
+    return value.match(".*\\<[^>]+\\>(.|\n|\r)*");
+}

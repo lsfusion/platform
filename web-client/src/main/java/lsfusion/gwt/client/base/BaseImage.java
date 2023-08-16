@@ -194,7 +194,7 @@ public interface BaseImage extends Serializable {
         Element htmlElement = (Element) element.getPropertyObject(DIV);
 
         text = text == null ? "" : text;
-        if ((forceDiv && !text.isEmpty()) || EscapeUtils.isContainHtmlTag(text)) {
+        if ((forceDiv && !text.isEmpty()) || GwtClientUtils.isContainHtmlTag(text)) {
             if(htmlElement == null) {
                 htmlElement = Document.get().createDivElement();
                 htmlElement.addClassName("wrap-text-div");

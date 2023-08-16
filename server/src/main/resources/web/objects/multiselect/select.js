@@ -94,8 +94,8 @@ function selectMultiInput() {
                         return "<div class = 'item'>" + item.text + "</div>";
                     },
                     option: function (item, escape) {
-                        return '<div> <span class = "label">' + item.text + '</span></div>'
-                    },
+                        return '<div>' + item.text + '</div>'
+                    }
                 }
             });
         },
@@ -314,7 +314,7 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
 
                         input.object = object;
                         let name = object.name;
-                        if (controller.isContainHtmlTag(name))
+                        if (isContainHtmlTag(name))
                             label.innerHTML = name;
                         else
                             label.innerText = name;
@@ -402,24 +402,23 @@ function selectDropdown() {
 }
 
 function selectMultiDropdown() {
-    return _selectMultiDropdown(true, false, false);
+    return _selectPicker(true, false, false);
 }
 
 function selectNullHTMLDropdown() {
-    return _selectMultiDropdown(false, true, false);
+    return _selectPicker(false, true, false);
 }
 
 function selectHTMLDropdown() {
-    return _selectMultiDropdown(false, true, true);
+    return _selectPicker(false, true, true);
 }
 
 function selectMultiHTMLDropdown() {
-    return _selectMultiDropdown(true, true, false);
+    return _selectPicker(true, true, false);
 }
 
-function _selectMultiDropdown(multi, html, shouldBeSelected) {
-    return _dropDown(['multi-select','form-control'],
-        multi ? {'data-container': 'body', 'multiple': ''} : {'data-container': 'body'},
+function _selectPicker(multi, html, shouldBeSelected) {
+    return _dropDown(multi ? {'data-container': 'body', 'multiple': ''} : {'data-container': 'body'},
         (element) => {
             let selectElement = $(element.select);
             selectElement.selectpicker();
@@ -436,8 +435,7 @@ function _selectMultiDropdown(multi, html, shouldBeSelected) {
 }
 
 function _selectDropdown(shouldBeSelected) {
-    return _dropDown(['form-select'],
-        {},
+    return _dropDown({},
         (element) => {
             element.select.addEventListener('change', function () {
                 _changeSingleDropdownProperty(this.selectedOptions[0].object, element);
@@ -446,14 +444,14 @@ function _selectDropdown(shouldBeSelected) {
         false, shouldBeSelected);
 }
 
-function _dropDown(cssClasses, selectAttributes, eventListener, multi, shouldBeSelected, html) {
+function _dropDown(selectAttributes, eventListener, multi, shouldBeSelected, html) {
+    let picker = multi || html;
     return {
         render: function (element, controller) {
             let select = _wrapElement(element, 'select', element.tagName.toLowerCase() !== 'select');
 
             element.select = select;
-
-            cssClasses.forEach(cssClass => select.classList.add(cssClass));
+            select.classList.add(picker ? "form-control" : "form-select");
 
             Object.keys(selectAttributes).forEach(key => select.setAttribute(key, selectAttributes[key]));
 
@@ -514,6 +512,10 @@ function _dropDown(cssClasses, selectAttributes, eventListener, multi, shouldBeS
                         }
                         option.selected = checked;
 
+                        //bootstrap-select in "singleselect" mode requires that the value field in <option> to be set
+                        if (!multi && html)
+                            option.value = object.name;
+
                         break;
                 }
             });
@@ -537,12 +539,18 @@ function _dropDown(cssClasses, selectAttributes, eventListener, multi, shouldBeS
                 }
 
                 if (shouldBeSelected) {
-                    if (hasSelected){
-                        $(select).removeClass("is-invalid");
-                        if (html)
+                    if (hasSelected) {
+                        if (picker) {
+                            $(select).removeClass("is-invalid");
                             $(select).parent().removeClass("is-invalid"); //for unknown reasons when adding class to $(select) the same class is added to the parent of this element(parent is not an element from render()), but when deleting this class is not deleted
+                        } else {
+                            select.classList.remove("is-invalid");
+                        }
                     } else {
-                        $(select).addClass("is-invalid");
+                        if (picker)
+                            $(select).addClass("is-invalid");
+                        else
+                            select.classList.add("is-invalid");
                     }
                 }
             }
@@ -557,7 +565,7 @@ function _dropDown(cssClasses, selectAttributes, eventListener, multi, shouldBeS
                 _setReadonly(select, controller.isReadOnly());
             }
 
-            if (multi || html)
+            if (picker)
                 $(select).selectpicker('refresh');
         },
         clear: function (element) {

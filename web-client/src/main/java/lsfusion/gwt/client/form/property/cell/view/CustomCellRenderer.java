@@ -146,9 +146,6 @@ public class CustomCellRenderer extends CellRenderer {
             },
             createObject: function (object, objects) {
                 return $wnd.replaceField(object, "objects", objects);
-            },
-            isContainHtmlTag: function (value) {
-                return @lsfusion.gwt.client.base.EscapeUtils::isContainHtmlTag(*)(value);
             }
         }
     }-*/;
