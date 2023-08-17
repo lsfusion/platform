@@ -26,7 +26,7 @@ public class RichTextCellEditor extends ARequestValueCellEditor implements Reque
         if(value == null) {
             value = PValue.getStringValue(oldValue);
             if (value != null)
-                value = value.replaceAll("<div>", "<p>").replaceAll("</div>", "</p>");
+                value = value.replaceAll("<div", "<p").replaceAll("</div>", "</p>");
         }
 
         enableEditing(parent, false);
