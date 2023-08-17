@@ -39,7 +39,8 @@ public class RichTextCellEditor implements RequestEmbeddedCellEditor {
             if (value === "")
                 quill.deleteText(0, quill.getLength());
 
-            this.@RichTextCellEditor::selectContent(*)(quill, 0, value.length);
+            if (value != null)
+                this.@RichTextCellEditor::selectContent(*)(quill, 0, value.length);
         } else {
             this.@RichTextCellEditor::selectContent(*)(quill, quill.getLength(), 0); //set the cursor to the end
         }
