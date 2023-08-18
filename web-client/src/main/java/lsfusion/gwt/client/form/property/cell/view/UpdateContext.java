@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.property.cell.view;
 
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import lsfusion.gwt.client.base.AppBaseImage;
 import lsfusion.gwt.client.base.GAsync;

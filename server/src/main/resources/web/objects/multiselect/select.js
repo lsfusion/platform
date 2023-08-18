@@ -1,4 +1,36 @@
+
+var lsf_events_defined = false;
+
 function selectMultiInput() {
+
+    if(!lsf_events_defined) {
+        Selectize.define('lsf_events', function () {
+            let selfKeyDown = this.onKeyDown;
+            this.onKeyDown = function (e) {
+                // we want navigation keys to work after dropdown is closed
+                if (!this.isOpen && lsfUtils.isCharNavigateKeyEvent(e))
+                    return;
+                // we're copying suggest + multi line text event handling
+                if (e.shiftKey === true && e.key === 'Enter')
+                    this.close();
+                else
+                    selfKeyDown.apply(this, arguments);
+
+                if (lsfUtils.isInputKeyEvent(e, this.isOpen) || e.key === 'Enter' || e.key === 'Escape')
+                    e.stopPropagation();
+            }
+            let selfKeyPress = this.onKeyPress;
+            this.onKeyPress = function (e) {
+                selfKeyPress.apply(this, arguments);
+
+                if (lsfUtils.isInputKeyEvent(e, this.isOpen))
+                    e.stopPropagation();
+            }
+            this.onItemSelect = function (e) {
+            }
+        });
+        lsf_events_defined = true;
+    }
 
     function toOption(object, controller, loaded) {
         return {
@@ -26,21 +58,6 @@ function selectMultiInput() {
     return {
         render: function (element, controller) {
             let selectizeElement = _wrapElement(element, 'div', controller == null); // it seems that selectize uses parent (because it creates sibling) so for custom cell renderer we need extra div
-
-            Selectize.define('on_key_down', function() {
-                var self = this.onKeyDown;
-                this.onKeyDown = function (e) {
-                    //End editing by pressing shift+enter
-                    if (e.shiftKey === true && e.key === 'Enter') {
-                        this.close();
-                        this.blur();
-                    } else if (e.key === 'Escape') { //Esc pressed try to close form. Prevent it and only blur element
-                        e.stopPropagation();
-                        this.blur();
-                    } else
-                        self.apply(this, arguments);
-                }
-            });
 
             element.selectizeInstance = $(selectizeElement).selectize({
                 dropdownParent: 'body',
@@ -78,17 +95,18 @@ function selectMultiInput() {
                 preload: 'focus',
                 loadThrottle: 0,
                 load: function (query, callback) {
-                    clearSearchCaches(this);
+                    let self = this;
 
                     let controller = element.controller;
                     controller.getPropertyValues('name', query, (data) => {
+                        clearSearchCaches(self);
                         let options = [];
                         for (let dataElement of data.data)
                             options.push(toOption(controller.createObject({selected : false, name : dataElement.rawString}, dataElement.objects), controller, true));
                         callback(options);
                     }, null);
                 },
-                plugins: ['remove_button', 'auto_position', 'on_key_down'],
+                plugins: ['remove_button', 'auto_position', 'lsf_events'],
                 render: {
                     item: function (item, escape) {
                         return "<div class = 'item'>" + item.text + "</div>";
@@ -98,6 +116,10 @@ function selectMultiInput() {
                     }
                 }
             });
+
+            // we need to do it here, not in update to have relevant focusElement
+            let selectizeInstance = element.selectizeInstance[0].selectize;
+            lsfUtils.setInputElement(element, selectizeInstance.$control_input[0])
         },
         update: function (element, controller, list) {
             element.silent = true; // onItemAdd / Remove somewhy is not silenced
@@ -116,7 +138,6 @@ function selectMultiInput() {
             }
 
             let selectizeInstance = element.selectizeInstance[0].selectize;
-
             controller.diff(list, (type, index, object) => {
                 let selectizeOption = toOption(object, controller, false);
                 let optionValue = selectizeOption.value;

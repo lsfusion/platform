@@ -125,6 +125,8 @@ public class MainFrame implements EntryPoint {
     }
 
     public void onModuleLoad() {
+        GwtClientUtils.init();
+
         firefox = GwtClientUtils.isFirefoxUserAgent();
 
         hackForGwtDnd();

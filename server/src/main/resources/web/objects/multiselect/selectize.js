@@ -1349,7 +1349,8 @@ $.extend(Selectize.prototype, {
 
 		$dropdown.on('mouseenter mousedown mouseup click', '[data-disabled]>[data-selectable]', function(e) { e.stopImmediatePropagation(); });
 		$dropdown.on('mouseenter', '[data-selectable]', function() { return self.onOptionHover.apply(self, arguments); });
-		$dropdown.on('mouseup click', '[data-selectable]', function() { return self.onOptionSelect.apply(self, arguments); });
+        // PATCHED: removed mouseup (it works really odd when after mousedown and some control size change, some option gets "under the mouse" and thus gets selected)
+		$dropdown.on('click', '[data-selectable]', function() { return self.onOptionSelect.apply(self, arguments); });
 		watchChildEvent($control, 'mouseup', '*:not(input)', function() { return self.onItemSelect.apply(self, arguments); });
 		autoGrow($control_input);
 
@@ -1393,7 +1394,8 @@ $.extend(Selectize.prototype, {
 				}
 				// blur on click outside
 				// do not blur if the dropdown is clicked
-				if (!self.$dropdown.has(e.target).length && e.target !== self.$control[0]) {
+                // PATCHED !!! != changed to has, because remove_button plugin adds its own inner elements, and clicking on them will lead to blur
+				if (!self.$dropdown.has(e.target).length && !self.$control.has(e.target).length) {
 					self.blur(e.target);
 				}
 			}
@@ -1601,7 +1603,8 @@ $.extend(Selectize.prototype, {
 					}
 				}
 			}
-			return false;
+          // PATCHED: returning false suppresses event propagation (and we want to propagate mouse down to be handled by the grid / panel (to move focused cell for example)
+			// return false;
 		}
 	},
 
@@ -1814,7 +1817,8 @@ $.extend(Selectize.prototype, {
 
 		if (self.ignoreFocus) return;
 		self.isFocused = true;
-		if (self.settings.preload === 'focus') self.onSearchChange('');
+        // PATCHED !!! - added !wasFocused check, there is some bug, that this library asserts that all options are cached (and in particular with empty search), but if you remove values in load, there can be bugs calling with empty input (because it will clear the results and there will be empty dropdown. ps: it can be fixed buy not clearing results when the query is empty, but this way looks better)
+		if (!wasFocused && self.settings.preload === 'focus') self.onSearchChange('');
 
 		if (!wasFocused) self.trigger('focus');
 
@@ -4347,17 +4351,25 @@ Selectize.define('remove_button', function (options) {
 
 					original.apply(thisRef, arguments);
 
-					// add event listener
-					thisRef.$control.on('click', '.' + options.className, function(e) {
+					// add event listener !!!! PATCHED !!!! click -> mousedown, because when mousedown is propagated somewhy click is not triggered
+					thisRef.$control.on('mousedown', '.' + options.className, function(e) {
 						e.preventDefault();
 						if (self.isLocked) return;
 
 						var $item = $(e.currentTarget).parent();
-						self.setActiveItem($item);
-						if (self.deleteSelection()) {
-							self.setCaret(self.items.length);
-						}
-						return false;
+                        // PATCHED: the problem with the removing immediately is that during propagation the element won't have the parent, and thus blur will happen, row won't be moved, etc.
+                        setTimeout(function() {
+                          self.setActiveItem($item);
+                          if (self.deleteSelection()) {
+                            self.setCaret(self.items.length);
+
+                            // PATCHED: after removing element we loose focus, so we want to restore it
+                            self.focus();
+                          }
+                        }, 0);
+
+                        // PATCHED: we don't want to stop the propagation for the same reason why want to propagate control mousedown
+//                        return false;
 					});
 
 				};

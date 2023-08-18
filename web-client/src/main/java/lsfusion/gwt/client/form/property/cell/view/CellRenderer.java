@@ -337,7 +337,7 @@ public abstract class CellRenderer {
 
         InputElement inputElement = SimpleTextBasedCellRenderer.getInputElement(element);
         if(inputElement != null) {
-            assert isTagInput();
+            assert isTagInput() || this instanceof CustomCellRenderer;
 
             boolean readonly = updateContext.isPropertyReadOnly();
             if(isNew || !equalsReadonlyState(renderedState, readonly)) {

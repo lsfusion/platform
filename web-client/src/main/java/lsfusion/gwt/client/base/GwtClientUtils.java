@@ -13,7 +13,9 @@ import lsfusion.gwt.client.base.lambda.EFunction;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.form.filter.user.GCompare;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.*;
@@ -51,6 +53,21 @@ public class GwtClientUtils {
         MainFrame.disableConfirmDialog = true;
         Window.Location.reload();
     }
+
+    // GWT utility methods
+    public native static void init() /*-{
+        $wnd.lsfUtils = {
+            isInputKeyEvent: function (event, multiLine) {
+                return @lsfusion.gwt.client.form.event.GKeyStroke::isInputKeyEventBoolean(*)(event, multiLine);
+            },
+            isCharNavigateKeyEvent: function (event) {
+                return @lsfusion.gwt.client.form.event.GKeyStroke::isCharNavigateKeyEvent(*)(event);
+            },
+            setInputElement: function (element, inputElement) {
+                return @lsfusion.gwt.client.form.property.cell.classes.view.SimpleTextBasedCellRenderer::setInputElement(*)(element, inputElement);
+            }
+        }
+    }-*/;
 
     public static void logout() {
         logout(false);
