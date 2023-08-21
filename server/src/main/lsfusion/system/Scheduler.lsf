@@ -264,7 +264,7 @@ FORM scheduledTask '{scheduler.form.scheduled.tasks}'
 DESIGN scheduledTask {
     NEW specContainer {
         fill = 1; 
-        lines = TRUE;
+        lines = 1;
         MOVE BOX(t);
         NEW south {
             fill = 2;
