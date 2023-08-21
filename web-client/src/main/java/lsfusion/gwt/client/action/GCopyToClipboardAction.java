@@ -17,22 +17,31 @@ public class GCopyToClipboardAction implements GAction {
     }
 
     private native void copyToClipboard(String value)/*-{
-        //writeText work in Firefox
-        //execCommand work in Chrome
-        navigator.clipboard.writeText(value).then(
-            function () {
-            }, function () {
-                if (document.queryCommandSupported && document.queryCommandSupported("copy")) {
-                    var textarea = document.createElement("textarea");
-                    textarea.textContent = value;
-                    document.body.appendChild(textarea);
-                    textarea.focus();
-                    textarea.select();
-                    document.execCommand("copy");
-                    document.body.removeChild(textarea);
+        // navigator clipboard api needs a secure context (https)
+        if (navigator.clipboard && window.isSecureContext) {
+            //writeText work in Firefox
+            navigator.clipboard.writeText(value).then(
+                function () {
+                }, function () { //Fallback for Chrome
+                    @lsfusion.gwt.client.action.GCopyToClipboardAction::copyToClipboardTextArea(*)(value);
                 }
-            }
-        );
+            );
+        } else {
+            //execCommand for http
+            @lsfusion.gwt.client.action.GCopyToClipboardAction::copyToClipboardTextArea(*)(value);
+        }
 
+    }-*/;
+
+    private static native void copyToClipboardTextArea(String value)/*-{
+        if (document.queryCommandSupported && document.queryCommandSupported("copy")) {
+            var textarea = document.createElement("textarea");
+            textarea.textContent = value;
+            document.body.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
+            document.execCommand("copy");
+            document.body.removeChild(textarea);
+        }
     }-*/;
 }
