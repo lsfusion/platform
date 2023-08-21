@@ -1,7 +1,6 @@
 package lsfusion.server.logics.action.change;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
@@ -41,8 +40,8 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 
+import static lsfusion.server.logics.ServerResourceBundle.getString;
 import static lsfusion.server.logics.property.PropertyFact.createChangeClassAction;
 
 // с открытым 2-м интерфейсом класса уже есть в SystemActionProperty
@@ -134,22 +133,23 @@ public class ChangeClassAction<T extends PropertyInterface, I extends PropertyIn
         ConcreteObjectClass readClass;
 
         if (needDialog()) {
-            CustomClass baseClass; CustomClass currentClass;
-            CustomObjectInstance object = (CustomObjectInstance) context.getSingleObjectInstance();
-            if(object == null) {
-                baseClass = this.baseClass;
-                currentClass = baseClass;
-            } else {
-                baseClass = object.baseClass;
-                currentClass = object.currentClass;
-            }
-            
-            ObjectValue objectValue = context.requestUserClass(baseClass, currentClass, true);
-            if (!(objectValue instanceof DataObject)) { // cancel
-                return FlowResult.FINISH;
-            }
+            throw new UnsupportedOperationException(getString("logics.error.unable.create.object.of.abstract.class"));
+            //CustomClass baseClass; CustomClass currentClass;
+            //CustomObjectInstance object = (CustomObjectInstance) context.getSingleObjectInstance();
+            //if(object == null) {
+            //    baseClass = this.baseClass;
+            //    currentClass = baseClass;
+            //} else {
+            //    baseClass = object.baseClass;
+            //    currentClass = object.currentClass;
+            //}
 
-            readClass = baseClass.getBaseClass().findConcreteClassID((Long) ((DataObject) objectValue).object);
+            //ObjectValue objectValue = context.requestUserClass(baseClass, currentClass, true);
+            //if (!(objectValue instanceof DataObject)) { // cancel
+            //    return FlowResult.FINISH;
+            //}
+
+            //readClass = baseClass.getBaseClass().findConcreteClassID((Long) ((DataObject) objectValue).object);
         } else
             readClass = (ConcreteObjectClass) valueClass;
 
