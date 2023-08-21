@@ -38,6 +38,8 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
 
+import static lsfusion.server.logics.ServerResourceBundle.getString;
+
 public class AddObjectAction<T extends PropertyInterface, I extends PropertyInterface> extends ExtendContextAction<I> {
 
     protected final CustomClass valueClass; // обозначает класс объекта, который нужно добавить
@@ -133,11 +135,13 @@ public class AddObjectAction<T extends PropertyInterface, I extends PropertyInte
     private ObjectClass getConcreteClass(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         ObjectClass readClass;
         if (needDialog()) {
-            ObjectValue objectValue = context.requestUserClass(valueClass, valueClass, true);
-            if (!(objectValue instanceof DataObject)) // cancel
-                readClass = null;
-            else
-                readClass = valueClass.getBaseClass().findClassID((Long) ((DataObject) objectValue).object);
+            throw new UnsupportedOperationException(getString("logics.error.unable.create.object.of.abstract.class"));
+            //disabled class dialog, throw error as in ForAction
+            //ObjectValue objectValue = context.requestUserClass(valueClass, valueClass, true);
+            //if (!(objectValue instanceof DataObject)) // cancel
+            //    readClass = null;
+            //else
+            //    readClass = valueClass.getBaseClass().findClassID((Long) ((DataObject) objectValue).object);
         } else
             readClass = valueClass;
         return readClass;

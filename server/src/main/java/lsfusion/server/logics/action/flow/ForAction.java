@@ -49,6 +49,7 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Iterator;
 
+import static lsfusion.server.logics.ServerResourceBundle.getString;
 import static lsfusion.server.logics.property.PropertyFact.*;
 
 public class ForAction<I extends PropertyInterface> extends ExtendContextAction<I> {
@@ -171,8 +172,13 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
                 for (int i = 0; i < size; i++) {
                     ImMap<I, DataObject> row = rowUpdate.rows.get(i);
                     ImMap<I, ObjectValue> newValues = MapFact.addExcl(innerValues, row);
-                    if(addObject!=null)
-                        newValues = MapFact.addExcl(newValues, addObject, context.addObject((ConcreteCustomClass) addClass, autoSet));
+                    if (addObject != null) {
+                        if (addClass instanceof ConcreteCustomClass) {
+                            newValues = MapFact.addExcl(newValues, addObject, context.addObject((ConcreteCustomClass) addClass, autoSet));
+                        } else {
+                            throw new UnsupportedOperationException(getString("logics.error.unable.create.object.of.abstract.class"));
+                        }
+                    }
 
                     ExecutionStackAspect.popProgressStackItem(stackItem);
                     stackItem = ExecutionStackAspect.pushProgressStackItem(progressCaption, i + 1, rowUpdate.rows.size());
