@@ -2,7 +2,7 @@ package lsfusion.interop.action;
 
 import java.io.IOException;
 
-public class CopyToClipboardClientAction implements ClientAction {
+public class CopyToClipboardClientAction extends ExecuteClientAction {
 
     public String value;
 
@@ -16,7 +16,7 @@ public class CopyToClipboardClientAction implements ClientAction {
     }
 
     @Override
-    public Object dispatch(ClientActionDispatcher dispatcher) {
-        return dispatcher.execute(this);
+    public void execute(ClientActionDispatcher dispatcher) throws IOException {
+        dispatcher.execute(this);
     }
 }

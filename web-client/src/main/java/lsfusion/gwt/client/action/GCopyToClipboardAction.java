@@ -1,6 +1,6 @@
 package lsfusion.gwt.client.action;
 
-public class GCopyToClipboardAction implements GAction {
+public class GCopyToClipboardAction extends GExecuteAction {
     public String value;
 
     @SuppressWarnings("UnusedDeclaration")
@@ -11,9 +11,8 @@ public class GCopyToClipboardAction implements GAction {
     }
 
     @Override
-    public Object dispatch(GActionDispatcher dispatcher) throws Throwable {
+    public void execute(GActionDispatcher dispatcher) throws Throwable {
         copyToClipboard(value);
-        return false;
     }
 
     private native void copyToClipboard(String value)/*-{
