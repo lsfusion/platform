@@ -277,8 +277,7 @@ quantityRemovedClasses '{system.events.quantity.removed.classes.session}' = DATA
 quantityChangedClasses '{system.events.quantity.changed.classes.session}' = DATA INTEGER (Session);
 changes '{system.events.changes.session}' = DATA TEXT (Session);
 
-dateTime '{system.events.date.time.session}' = DATA DATETIME (Session) IN id;
-date '{system.events.date.session}' (Session s) = DATE(dateTime(s));
+dateTime '{system.events.date.time.session}' = DATA DATETIME (Session) INDEXED IN id;
 dateTime(Session session) <- currentDateTime() WHEN SET (session IS Session);
 
 form '{system.events.form.session}' = DATA Form (Session);
@@ -288,14 +287,23 @@ connection '{system.events.connection.session}' = DATA Connection(Session) INDEX
 hostnameComputerConnection '{system.events.hostname.computer.connection.session}' = hostnameComputer(connection(Session session))IN id;
 userLoginConnection '{system.events.user.login.connection.session}' = userLogin(connection(Session session)) IN id;
 
-@defineLog (Session, '{system.events.define.log.of.changes}', log, date);
+@defineLog (Session, '{system.events.define.log.of.changes}', log);
+clearApplicationLog () + {
+    IF countDaysClearSession() THEN {
+        NEWSESSION {
+            APPLY {
+                DELETE Session d WHERE dateTime(d) <= sumDay(currentDateTime(), -countDaysClearSession());
+            }
+        }
+    }
+}       
 
 @defineLog (SessionDetail, '{system.events.define.log.of.changes.detail}', log);
-clearApplicationLog () + { 
-	NEWSESSION {
-        APPLY {
-            IF countDaysClearSessionDetail() THEN {
-                changes(Session d) <- NULL WHERE date(d) <= subtract(currentDate(), countDaysClearSessionDetail());
+clearApplicationLog () + {
+    IF countDaysClearSessionDetail() THEN {
+        NEWSESSION {
+            APPLY {
+                changes(Session d) <- NULL WHERE dateTime(d) <= sumDay(currentDateTime(), -countDaysClearSessionDetail());
             }
         }
     }
@@ -439,19 +447,28 @@ FORM launches '{system.events.form.launches}'
 ;
 
 FORM changes '{system.events.form.changes}'
+    OBJECTS dates = (from = DATETIME, to = DATETIME ) PANEL 
+    PROPERTIES valFrom = VALUE (from), valTo = VALUE (to)
 
     OBJECTS s=Session
     PROPERTIES (s) READONLY captionForm, hostnameComputerConnection,
                             userLoginConnection, quantityAddedClasses, quantityRemovedClasses,
                             quantityChangedClasses, gChanges = changes, dateTime, pChanges = changes PANEL
+    FILTERS dateTime(s) >= from AND dateTime(s) <= to
     FILTERGROUP filtersChange
                     FILTER '{system.events.form.changes.filter.user.login.connections}' userLoginConnection(s) 'F8'
+    EVENTS 
+        ON INIT {
+            SEEK changes.dates OBJECTS from = dateTimeToDateTime(currentDate(), 00:00), to = currentDateTime();
+        }
+        
 ;
 
 DESIGN changes {
     BOX {
         NEW specContainer {
             fill = 1;
+            MOVE BOX (dates);
             MOVE BOX(s);
             NEW textContainer {
                 type = CONTAINERV;
