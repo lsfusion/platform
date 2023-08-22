@@ -8,14 +8,15 @@ On this page you can download installers that install everything needed for deve
 
 ### Windows
 
-**lsFusion 5.0** (OpenJDK **11.0.16**, PostgreSQL **15.1**, Tomcat **9.0.67**, IntelliJ IDEA Community Edition **2022.3.1**)
+**lsFusion 5.1** (OpenJDK **11.0.16**, PostgreSQL **15.1**, Tomcat **9.0.67**, IntelliJ IDEA Community Edition **2022.3.1**)
 
-- [x64](https://download.lsfusion.org/exe/lsfusion-dev-5.0-x64.exe)
+- [x64](https://download.lsfusion.org/exe/lsfusion-dev-5.1-x64.exe)
 
 <details><summary><strong>Older versions</strong></summary>
 <br/>
 
-- lsFusion 4.0 ([x32](https://download.lsfusion.org/exe/lsfusion-dev-4.1.exe) / [x64](https://download.lsfusion.org/exe/lsfusion-dev-4.1-x64.exe))
+- lsFusion 5.0 ([x64](https://download.lsfusion.org/exe/lsfusion-dev-5.0-x64.exe))
+- lsFusion 4.1 ([x32](https://download.lsfusion.org/exe/lsfusion-dev-4.1.exe) / [x64](https://download.lsfusion.org/exe/lsfusion-dev-4.1-x64.exe))
 - lsFusion 3.1 ([x32](https://download.lsfusion.org/exe/lsfusion-dev-3.1.exe) / [x64](https://download.lsfusion.org/exe/lsfusion-dev-3.1-x64.exe))
 - lsFusion 2.4 ([x32](https://download.lsfusion.org/exe/lsfusion-dev-2.4.exe) / [x64](https://download.lsfusion.org/exe/lsfusion-dev-2.4-x64.exe))
 
