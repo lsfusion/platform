@@ -5,7 +5,7 @@
     <parent>
         <groupId>lsfusion.platform.build</groupId>
         <artifactId>base</artifactId>
-        <version>5.1-SNAPSHOT</version>
+        <version>5.1</version>
         <relativePath>build/base/pom.xml</relativePath>
     </parent>
 
@@ -29,7 +29,7 @@
 
     <scm>
         <developerConnection>scm:git:ssh://git@github.com/lsfusion/platform.git</developerConnection>
-      <tag>v5</tag>
+      <tag>5.1</tag>
     </scm>
 
     <build>
