@@ -1,3 +1,31 @@
+## 5.1 (2023-08-22)
+##### Implemented enhancements:
+ - Redirect to wrong address when authenticating by url with wrong username/password [#936](git@github.com:lsfusion/platform.git/issues/936)
+##### Fixed bugs:
+ - Bug in lsfParams passing from server to web-client [#970](git@github.com:lsfusion/platform.git/issues/970)
+ - Stack overflow exception when form is "recursively" opened [#967](git@github.com:lsfusion/platform.git/issues/967)
+ - Start editing with a capital letter causes a dialog to be displayed (dialogMode is enabled) [#966](git@github.com:lsfusion/platform.git/issues/966)
+ - LINK should be rendered like STRING, not like FILE [#963](git@github.com:lsfusion/platform.git/issues/963)
+ - Moving the group to the same container in two different modules leads to container duplication [#958](git@github.com:lsfusion/platform.git/issues/958)
+ - Support object editing (open link) for the objects themselves (not only object references) [#946](git@github.com:lsfusion/platform.git/issues/946)
+ - Race condition on addition of new properties/actions at server startup [#935](git@github.com:lsfusion/platform.git/issues/935)
+ - Incorrect synchronization in the forms finalization mechanism [#934](git@github.com:lsfusion/platform.git/issues/934)
+ - MapFact.colHash too often generates close hash values for close numbers. [#926](git@github.com:lsfusion/platform.git/issues/926)
+ - Wrong day chooser buttons set and placement on date editor opening in desktop client [#924](git@github.com:lsfusion/platform.git/issues/924)
+ - Unexpected FILTERCONTROLS component appearance in containers initially hidden via showIf/tabs [#923](git@github.com:lsfusion/platform.git/issues/923)
+ - Bug when an external parameter is used only in ORDER clause of the FOR operator and the FOR is inlined [#922](git@github.com:lsfusion/platform.git/issues/922)
+ - EXTERNAL HTTP POST without body should not automatically add Content-Type to the headers [#921](git@github.com:lsfusion/platform.git/issues/921)
+ - PREREAD does not always work during the calculation of another PREREAD  [#920](git@github.com:lsfusion/platform.git/issues/920)
+ - Incorrect deadlock priority support when postgres is used as a RDBMS [#919](git@github.com:lsfusion/platform.git/issues/919)
+ - ELSE block does not work when using an INPUT action and cancelling an input [#918](git@github.com:lsfusion/platform.git/issues/918)
+ - The use of <- operator causes an error if used inside INPUT ... ACTIONS  [#914](git@github.com:lsfusion/platform.git/issues/914)
+ - The grid header is not hidden if all grid properties have empty captions [#909](git@github.com:lsfusion/platform.git/issues/909)
+ - A DATA property declaration with RAWFILE as the parameter type leads to an PSQLException during "creating tables" step [#905](git@github.com:lsfusion/platform.git/issues/905)
+ - Async filter completion respects the current user filter and sometimes disrespect all the filters [#908](git@github.com:lsfusion/platform.git/issues/908)
+ - NPE in INPUT ACTIONS clause when there is no KEYPRESS clause specified [#907](git@github.com:lsfusion/platform.git/issues/907)
+ - If set multiple ScheduledTaskDetail with equal order, only the last one will run [#903](git@github.com:lsfusion/platform.git/issues/903)
+ - Incorrect filter behaviour with COLUMNS [#900](git@github.com:lsfusion/platform.git/issues/900)
+## ----- PREVIOUS RELEASES --------
 ## 5.0 (2023-01-17)
 ##### Implemented major enhancements:
  - Support drop-down list when inputting data [#134](git@github.com:lsfusion/platform.git/issues/134)
@@ -139,7 +167,6 @@
  - Bug in parsing literal expression in property object [#524](git@github.com:lsfusion/platform.git/issues/524)
  - Enormous year in calendar control leads to a fatal error in web-client [#521](git@github.com:lsfusion/platform.git/issues/521)
  - Incorrect paste from excel to filter [#520](git@github.com:lsfusion/platform.git/issues/520)
-## ----- PREVIOUS RELEASES --------
 ## 4.0 (2020-12-23)
 ##### Implemented major enhancements:
  - Extended list view support (i.e. pivot, map, diagram) [#70](git@github.com:lsfusion/platform.git/issues/70)
