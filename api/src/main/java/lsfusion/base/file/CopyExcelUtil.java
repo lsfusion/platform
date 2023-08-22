@@ -1,6 +1,7 @@
 package lsfusion.base.file;
 
 import org.apache.poi.hssf.usermodel.*;
+import org.apache.poi.openxml4j.util.ZipSecureFile;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.PaneInformation;
@@ -125,13 +126,19 @@ public final class CopyExcelUtil {
     }
 
     public static void copyXSSFSheets(XSSFWorkbook sourceWB, XSSFWorkbook destinationWB) {
-        for (Iterator<Sheet> it = sourceWB.sheetIterator(); it.hasNext(); ) {
-            XSSFSheet sheet = (XSSFSheet) it.next();
-            String sheetName = getSheetName(sheet, destinationWB);
-            XSSFSheet newSheet = destinationWB.createSheet(sheetName);
-            copySheetSettings(newSheet, sheet);
-            copyXSSFSheet(newSheet, sheet);
-            copyPictures(newSheet, sheet);
+        double minInflateRatio = ZipSecureFile.getMinInflateRatio();
+        try {
+            ZipSecureFile.setMinInflateRatio(0);
+            for (Iterator<Sheet> it = sourceWB.sheetIterator(); it.hasNext(); ) {
+                XSSFSheet sheet = (XSSFSheet) it.next();
+                String sheetName = getSheetName(sheet, destinationWB);
+                XSSFSheet newSheet = destinationWB.createSheet(sheetName);
+                copySheetSettings(newSheet, sheet);
+                copyXSSFSheet(newSheet, sheet);
+                copyPictures(newSheet, sheet);
+            }
+        } finally {
+            ZipSecureFile.setMinInflateRatio(minInflateRatio);
         }
     }
 
