@@ -335,7 +335,7 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
 
                         input.object = object;
                         let name = object.name;
-                        if (isContainHtmlTag(name))
+                        if (name != null && isContainHtmlTag(name))
                             label.innerHTML = name;
                         else
                             label.innerText = name;
@@ -439,20 +439,47 @@ function selectMultiHTMLDropdown() {
 }
 
 function _selectPicker(multi, html, shouldBeSelected) {
-    return _dropDown(multi ? {'data-container': 'body', 'multiple': ''} : {'data-container': 'body'},
-        (element) => {
-            let selectElement = $(element.select);
-            selectElement.selectpicker();
-            selectElement.on('changed.bs.select', function (e, clickedIndex, isSelected) {
-                if (clickedIndex != null && isSelected != null) { //documentation:  If the select's value has been changed either via the .selectpicker('val'), .selectpicker('selectAll'), or .selectpicker('deselectAll') methods, clickedIndex and isSelected will be null.
-                    let object = this.children[clickedIndex].object;
-                    if (multi)
-                        element.controller.changeProperty('selected', object, isSelected ? true : null);
-                    else
-                        _changeSingleDropdownProperty(object, element)
-                }
-            })},
-        multi, shouldBeSelected, html);
+    if (window.Dropdown !== undefined || (window.bootstrap !== undefined && window.bootstrap.Dropdown !== undefined)) { //check if bootstrap loaded
+        return _dropDown(multi ? {'data-container': 'body', 'multiple': ''} : {'data-container': 'body'},
+            (element) => {
+                let selectElement = $(element.select);
+                selectElement.selectpicker();
+                selectElement.on('changed.bs.select', function (e, clickedIndex, isSelected) {
+                    if (clickedIndex != null && isSelected != null) { //documentation:  If the select's value has been changed either via the .selectpicker('val'), .selectpicker('selectAll'), or .selectpicker('deselectAll') methods, clickedIndex and isSelected will be null.
+                        let object = this.children[clickedIndex].object;
+                        if (multi)
+                            element.controller.changeProperty('selected', object, isSelected ? true : null);
+                        else
+                            _changeSingleDropdownProperty(object, element)
+                    }
+                })
+            },
+            multi, shouldBeSelected, html, true);
+    } else {
+        return _dropDown(multi ? {'multiple': ''} : {},
+            (element) => {
+                let select = element.select;
+                $(select).multipleSelect({
+                    container: 'body',
+                    selectAll: false,
+                    position: 'bottom', // todo. bottom is default, but at the bottom of the screen dropdown is hidden and need to be 'top'
+                    onClick: function (view) {
+                        let selectedOption = Array.from(select.options).find(option => option.value === view.value);
+                        let object = selectedOption.object;
+                        if (multi)
+                            element.controller.changeProperty('selected', object, view.selected ? true : null);
+                        else
+                            _changeSingleDropdownProperty(object, element)
+                    },
+                    onOpen: function () {
+                        element.silent = true; // Because "refresh" is called after every update, which removes the dropdown
+                    },
+                    onClose: function () {
+                        element.silent = false;// Because "refresh" is called after every update, which removes the dropdown
+                    }
+                });
+            }, multi, shouldBeSelected, html, false);
+    }
 }
 
 function _selectDropdown(shouldBeSelected) {
@@ -465,8 +492,8 @@ function _selectDropdown(shouldBeSelected) {
         false, shouldBeSelected);
 }
 
-function _dropDown(selectAttributes, eventListener, multi, shouldBeSelected, html) {
-    let picker = multi || html;
+function _dropDown(selectAttributes, eventListener, multi, shouldBeSelected, html, isBootstrap) {
+    let picker = isBootstrap && (multi || html);
     return {
         render: function (element, controller) {
             let select = _wrapElement(element, 'select', element.tagName.toLowerCase() !== 'select');
@@ -518,7 +545,10 @@ function _dropDown(selectAttributes, eventListener, multi, shouldBeSelected, htm
                         option.object = object;
                         let name = object.name;
                         if (html) {
-                            option.setAttribute("data-content", name);
+                            if (isBootstrap)
+                                option.setAttribute("data-content", name);
+                            else
+                                option.innerHTML = name; //todo check functionality in future releases
                         } else {
                             option.innerText = name;
                         }
@@ -534,7 +564,9 @@ function _dropDown(selectAttributes, eventListener, multi, shouldBeSelected, htm
                         option.selected = checked;
 
                         //bootstrap-select in "singleselect" mode requires that the value field in <option> to be set
-                        if (!multi && html)
+                        if (!isBootstrap)
+                            option.value = controller.getObjectsString(object);
+                        else if (!multi && html)
                             option.value = object.name;
 
                         break;
@@ -588,6 +620,8 @@ function _dropDown(selectAttributes, eventListener, multi, shouldBeSelected, htm
 
             if (picker)
                 $(select).selectpicker('refresh');
+            else if (!isBootstrap && !element.silent) //Because "refresh" is called after every update, which removes the dropdown
+                $(select).multipleSelect('refresh');
         },
         clear: function (element) {
 

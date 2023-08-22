@@ -154,8 +154,10 @@ onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'selectize.bootstrap5.c
 onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'selectize.css' THEN 28; //for bootstrap and excell themes
 onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'select.css' THEN 29; //for bootstrap and excell themes
 //todo use v1.14.0-beta2 there is a bug in beta-3 https://github.com/snapappointments/bootstrap-select/issues/2738
-onWebClientLoad(STRING s) += WHEN s = 'bootstrap-select.js' THEN 30;
-onWebClientLoad(STRING s) += WHEN s = 'bootstrap-select.css' THEN 31;
+onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap-select.js' THEN 30;
+onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap-select.css' THEN 31;
+onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'multiple-select.js' THEN 32;
+onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'multiple-select.css' THEN 33;
 
 onWebClientStarted () +{ 
     onWebClientLoad();
