@@ -13,14 +13,16 @@ import TabItem from '@theme/TabItem';
 <TabItem value="win">
 
 Executable exe files:
-**lsFusion 5.0** (OpenJDK **11.0.16**, PostgreSQL **15.1**, Tomcat **9.0.67**, IntelliJ IDEA Community Edition **2022.3.1**)
+**lsFusion 5.1** (OpenJDK **11.0.16**, PostgreSQL **15.1**, Tomcat **9.0.67**, IntelliJ IDEA Community Edition **2022.3.1**)
 
-- [x64](https://download.lsfusion.org/exe/lsfusion-5.0-x64.exe)
+- [x64](https://download.lsfusion.org/exe/lsfusion-5.1-x64.exe)
 - <details><summary>Older versions</summary>
 
-    - lsFusion 4.0 Server & Client
-        - [x32](https://download.lsfusion.org/exe/lsfusion-4.0.exe)
-        - [x64](https://download.lsfusion.org/exe/lsfusion-4.0-x64.exe)
+    - lsFusion 5.0 Server & Client
+        - [x64](https://download.lsfusion.org/exe/lsfusion-5.0-x64.exe)
+    - lsFusion 4.1 Server & Client
+        - [x32](https://download.lsfusion.org/exe/lsfusion-4.1.exe)
+        - [x64](https://download.lsfusion.org/exe/lsfusion-4.1-x64.exe)
     - lsFusion 3.1 Server & Client
         - [x32](https://download.lsfusion.org/exe/lsfusion-3.1.exe)
         - [x64](https://download.lsfusion.org/exe/lsfusion-3.1-x64.exe)
