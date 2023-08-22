@@ -57,6 +57,8 @@ public final class CopyExcelUtil {
 
     public static void copyHSSFRow(HSSFSheet destSheet, HSSFRow srcRow, HSSFRow destRow, Map<Integer, HSSFCellStyle> styleMap, List<CellRangeAddress> sheetMergedRegions, Set<String> mergedRegions) {
         destRow.setHeight(srcRow.getHeight());
+        //here should be copy of outlineLevel as in xssf, but it's more complicated.
+        //if need, use reflection to get RowRecord from destRow and setOutlineLevel for it
         // pour chaque row
         for (int j = srcRow.getFirstCellNum(); j <= srcRow.getLastCellNum(); j++) {
             HSSFCell oldCell = srcRow.getCell(j);   // ancienne cell
@@ -247,6 +249,7 @@ public final class CopyExcelUtil {
 
     public static void copyXSSFRow(XSSFSheet destSheet, XSSFRow srcRow, XSSFRow destRow, Map<Integer, XSSFCellStyle> styleMap, List<CellRangeAddress> sheetMergedRegions, Set<String> mergedRegions) {
         destRow.setHeight(srcRow.getHeight());
+        destRow.getCTRow().setOutlineLevel(srcRow.getCTRow().getOutlineLevel());
         // pour chaque row
         for (int j = srcRow.getFirstCellNum(); j <= srcRow.getLastCellNum(); j++) {
             XSSFCell oldCell = srcRow.getCell(j);   // ancienne cell
