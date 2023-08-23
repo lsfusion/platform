@@ -74,6 +74,8 @@ lsfStackTraceCaughtException = DATA LOCAL TEXT();
 upper = FORMULA STRING 'upper($1)';    
 lower = FORMULA STRING 'lower($1)';   
 
+reload INTERNAL CLIENT 'reload';
+
 formApply '{action.form.save}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.FormApplyAction' () CHANGEKEY 'alt ENTER' IMAGE 'apply.png';
 formCancel '{action.form.cancel}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.FormCancelAction' () CHANGEKEY 'shift ESCAPE' IMAGE 'cancel.png';
 formEditReport '{action.form.edit}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.EditReportAction' () CHANGEKEY 'ctrl E' IMAGE 'editReport.png';

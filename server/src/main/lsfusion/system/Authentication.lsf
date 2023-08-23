@@ -400,22 +400,35 @@ getCurrentUserLocale() {
 
 fontSize '{authentication.font.size.user}' = DATA INTEGER (CustomUser); 
 
+storeNavigatorSettingsForComputer '{system.events.navigator.store.settings.for.computer}' = DATA BOOLEAN ();
+WHEN CHANGED(storeNavigatorSettingsForComputer()) DO {
+    reload();
+}
+
 CLASS ColorTheme '{authentication.color.theme}' {
     light '{authentication.color.theme.light}',
     dark '{authentication.color.theme.dark}'
 }
 TABLE colorTheme(ColorTheme);
 userColorTheme '{authentication.color.theme.user}' (CustomUser user) = DATA ColorTheme (CustomUser);
+computerColorTheme '{authentication.color.theme.user}' (Computer computer) = DATA ColorTheme (Computer);
+colorTheme = IF storeNavigatorSettingsForComputer() THEN computerColorTheme(currentComputer()) ELSE userColorTheme(currentUser());
 clientColorTheme '{authentication.color.theme.user}' = DATA ColorTheme (CustomUser);
+clientColorTheme '{authentication.color.theme.user}' = DATA ColorTheme (Computer);
 colorTheme '{authentication.color.theme.user}' (CustomUser user) = OVERRIDE userColorTheme(user), clientColorTheme(user);  
+colorTheme '{authentication.color.theme.user}' (Computer computer) = OVERRIDE computerColorTheme(computer), clientColorTheme(computer);
 name '{authentication.color.theme}' (ColorTheme theme) = staticCaption(theme) IF theme IS ColorTheme;
 colorThemeName '{authentication.color.theme.user}' (CustomUser user) = name(userColorTheme(user));
+colorThemeName '{authentication.color.theme.user}' (Computer computer) = name(computerColorTheme(computer));
 
-isDarkTheme() = colorTheme(currentUser()) == ColorTheme.dark;
+isDarkTheme() = (IF storeNavigatorSettingsForComputer() THEN colorTheme(currentComputer()) ELSE colorTheme(currentUser())) == ColorTheme.dark;
 
 changeColorThemeAction INTERNAL 'lsfusion.server.logics.navigator.ChangeColorThemeAction'(ColorTheme) NULL;
-WHEN CHANGED(userColorTheme(CustomUser user)) DO {
+WHEN CHANGED(userColorTheme(CustomUser user)) AND NOT storeNavigatorSettingsForComputer() DO {
     changeColorThemeAction(colorTheme(user));    
+}
+WHEN CHANGED(computerColorTheme(Computer computer)) AND storeNavigatorSettingsForComputer() DO {
+    changeColorThemeAction(colorTheme(computer));
 }
 
 FORM dialogColorThemes '{authentication.color.themes}'
