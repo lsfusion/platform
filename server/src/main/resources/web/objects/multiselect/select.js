@@ -489,8 +489,7 @@ function _selectDropdown(shouldBeSelected) {
             element.select.addEventListener('change', function () {
                 _changeSingleDropdownProperty(this.selectedOptions[0].object, element);
             })
-        },
-        false, shouldBeSelected, _isBootstrap());
+        }, false, shouldBeSelected);
 }
 
 function _dropDown(selectAttributes, eventListener, multi, shouldBeSelected, html, isBootstrap) {
