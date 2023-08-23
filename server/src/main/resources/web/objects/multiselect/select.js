@@ -439,7 +439,7 @@ function selectMultiHTMLDropdown() {
 }
 
 function _selectPicker(multi, html, shouldBeSelected) {
-    if (window.Dropdown !== undefined || (window.bootstrap !== undefined && window.bootstrap.Dropdown !== undefined)) { //check if bootstrap loaded
+    if (_isBootstrap()) { //check if bootstrap loaded
         return _dropDown(multi ? {'data-container': 'body', 'multiple': ''} : {'data-container': 'body'},
             (element) => {
                 let selectElement = $(element.select);
@@ -463,6 +463,7 @@ function _selectPicker(multi, html, shouldBeSelected) {
                     container: 'body',
                     selectAll: false,
                     position: 'bottom', // todo. bottom is default, but at the bottom of the screen dropdown is hidden and need to be 'top'
+                    // position: 'top',
                     onClick: function (view) {
                         let selectedOption = Array.from(select.options).find(option => option.value === view.value);
                         let object = selectedOption.object;
@@ -489,11 +490,11 @@ function _selectDropdown(shouldBeSelected) {
                 _changeSingleDropdownProperty(this.selectedOptions[0].object, element);
             })
         },
-        false, shouldBeSelected);
+        false, shouldBeSelected, _isBootstrap());
 }
 
 function _dropDown(selectAttributes, eventListener, multi, shouldBeSelected, html, isBootstrap) {
-    let picker = isBootstrap && (multi || html);
+    let picker = multi || html;
     return {
         render: function (element, controller) {
             let select = _wrapElement(element, 'select', element.tagName.toLowerCase() !== 'select');
@@ -563,11 +564,10 @@ function _dropDown(selectAttributes, eventListener, multi, shouldBeSelected, htm
                         }
                         option.selected = checked;
 
-                        //bootstrap-select in "singleselect" mode requires that the value field in <option> to be set
                         if (!isBootstrap)
                             option.value = controller.getObjectsString(object);
                         else if (!multi && html)
-                            option.value = object.name;
+                            option.value = object.name; //bootstrap-select in "singleselect" mode requires that the value field in <option> to be set
 
                         break;
                 }
@@ -618,10 +618,14 @@ function _dropDown(selectAttributes, eventListener, multi, shouldBeSelected, htm
                 _setReadonly(select, controller.isReadOnly());
             }
 
-            if (picker)
-                $(select).selectpicker('refresh');
-            else if (!isBootstrap && !element.silent) //Because "refresh" is called after every update, which removes the dropdown
-                $(select).multipleSelect('refresh');
+            if (picker) {
+                if (!isBootstrap) {
+                    if (!element.silent)
+                        $(select).multipleSelect('refresh'); //Because "refresh" is called after every update, which removes the dropdown
+                } else {
+                    $(select).selectpicker('refresh');
+                }
+            }
         },
         clear: function (element) {
 
@@ -666,4 +670,8 @@ function _changeSingleDropdownProperty(object, element) {
 
     element.prevSelected = set ? object : null;
     element.controller.changeProperty('selected', object, set ? true : null);
+}
+
+function _isBootstrap() {
+    return window.Dropdown !== undefined || (window.bootstrap !== undefined && window.bootstrap.Dropdown !== undefined);
 }
