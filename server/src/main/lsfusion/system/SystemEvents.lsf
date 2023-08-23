@@ -100,8 +100,8 @@ navigatorPinModeCaption = (IF navigatorPinMode()
     ELSE '{system.events.navigator.pin.navbar}') IF NOT noSystemToolbarCaptions();
 navigatorPinModeImage = IF navigatorPinMode() 
     THEN (IF navigatorPinMode() == TFALSE 
-        THEN iconIfAvailable('navigatorPinAll.png','fa-solid fa-thumbtack') 
-        ELSE iconIfAvailable('navigatorPinNone.png','fa-solid fa-thumbtack fa-rotate-90')) 
+        THEN iconIfAvailable('navigatorPinAll.png','fa-solid fa-thumbtack fa-rotate-90') 
+        ELSE iconIfAvailable('navigatorPinNone.png','fa-solid fa-thumbtack')) 
     ELSE iconIfAvailable('navigatorPinNavbar.png','fa-solid fa-thumbtack fa-rotate-45');
 toggleNavigatorPinMode () {
     userNavigatorPinMode(currentUser()) <- IF navigatorPinMode() THEN (IF navigatorPinMode() == TFALSE THEN TTRUE ELSE NULL) ELSE TFALSE;
