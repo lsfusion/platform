@@ -42,3 +42,52 @@
         we will use the z-index used for .dropdown-menu.lsf-dropdown in the bootstrap theme - 1070*/
     z-index: 1070;
 }
+
+/* .fill-parent-perc gives 100% height to element, and in EXCEL-design dropdown stretches to the full height of screen. selectize.bootstrap.css contain this rule and does not have this problem */
+.selectize-dropdown,.selectize-dropdown.form-control {
+    height: auto;
+}
+
+.ms-parent .ms-choice, .ms-drop.bottom, .ms-drop.top {
+    background: var(--component-background-color);
+    color: var(--text-color);
+    border-color: var(--component-border-color);
+}
+
+.ms-drop.bottom ul > li.hide-radio:focus, .ms-drop.bottom ul > li.hide-radio:hover,
+.ms-drop.top ul > li.hide-radio:focus, .ms-drop.top ul > li.hide-radio:hover {
+    background: var(--selection-color);
+}
+
+.ms-drop.bottom ul > li.hide-radio.selected,
+.ms-drop.top ul > li.hide-radio.selected {
+    box-shadow: inset 0 0 0 9999px var(--selected-row-background-color);
+    color: var(--text-color);
+    background: var(--component-background-color);
+}
+
+/* make the empty <li> element the same size as the non-empty*/
+.ms-drop.bottom ul > li span,
+.ms-drop.top ul > li span{
+    display: inline-block;
+}
+
+/* for unknown reasons, the dropdown that opens up is not displayed without set  min-height */
+div.ms-drop.top {
+    min-height: fit-content;
+}
+
+/* to prevent parent container from scrolling, set minimum height equal to the height set in multiple-select.css */
+select.ms-offscreen[multiple] + .ms-parent {
+    min-height: 26px;
+}
+
+select.ms-offscreen[multiple] + .ms-parent button.ms-choice {
+    height: 100%;
+}
+
+/* vertical centering */
+select.ms-offscreen[multiple] + .ms-parent button.ms-choice span {
+    top: 50%;
+    transform: translateY(-50%);
+}

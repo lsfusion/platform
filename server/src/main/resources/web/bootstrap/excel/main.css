@@ -136,31 +136,3 @@ svg {
     margin-left: auto !important;
     margin-right: auto !important;
 }
-
-.ms-parent .ms-choice, .ms-drop.bottom, .ms-drop.top {
-    background: var(--component-background-color);
-    color: var(--text-color);
-    border-color: var(--component-border-color);
-}
-
-.ms-drop.bottom ul > li.hide-radio:focus, .ms-drop.bottom ul > li.hide-radio:hover,
-.ms-drop.top ul > li.hide-radio:focus, .ms-drop.top ul > li.hide-radio:hover {
-    background: var(--selection-color);
-}
-
-.ms-drop.bottom ul > li.hide-radio.selected,
-.ms-drop.top ul > li.hide-radio.selected {
-    box-shadow: inset 0 0 0 9999px var(--selected-row-background-color);
-    color: var(--text-color);
-    background: var(--component-background-color);
-}
-
-/* make the empty <li> element the same size as the non-empty*/
-.ms-drop.bottom ul > li span,
-.ms-drop.top ul > li span{
-    display: inline-block;
-}
-
-div.ms-drop.top {
-    min-height: fit-content;
-}
