@@ -762,6 +762,10 @@ public class PropertyDrawView extends BaseComponentView {
         return isProperty(context) && (type = getType(context)) != null && type.isFlex();
     }
 
+    public boolean isDefaultShrinkOverflowVisible(FormInstanceContext context) {
+        return !entity.isList(context) && (isTagInput(context) || entity.getSelectProperty(context) != null); // inputs (incl. multi) + radio + select use shadows
+    }
+
     public String getAskConfirmMessage(FormInstanceContext context) {
         assert entity.askConfirm;
         if (entity.askConfirmMessage != null)
@@ -948,12 +952,15 @@ public class PropertyDrawView extends BaseComponentView {
             return true;
 
         Type type = getType(context);
-        if(type != null) {
-            String tag = getTag(context);
-            return type.hasToolbar(tag != null && tag.equals("input") && !entity.isList(context));
-        }
+        if(type != null)
+            return type.hasToolbar(!entity.isList(context) && isTagInput(context));
 
         return true;
+    }
+
+    private boolean isTagInput(FormInstanceContext context) {
+        String tag = getTag(context);
+        return tag != null && tag.equals("input");
     }
 
     public Boolean boxed;

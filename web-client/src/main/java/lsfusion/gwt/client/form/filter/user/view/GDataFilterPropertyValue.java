@@ -94,7 +94,7 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
 
     protected void onEditEvent(EventHandler handler, boolean forceEdit) {
         Result<Boolean> contextAction = new Result<>();
-        if((property.isFilterChange(handler.event, contextAction) || forceEdit) && property.hasUserChangeAction()) {
+        if((property.isFilterChange(handler.event, contextAction) || forceEdit) && !property.isCustom()) {
             if(contextAction.result != null) // assert that reset is called
                 updateAndCommit(null);
             else

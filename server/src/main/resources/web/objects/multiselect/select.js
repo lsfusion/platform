@@ -216,8 +216,6 @@ function _checkBoxRadioButtonGroup(type, shouldBeSelected, hasName, multi) {
 }
 
 function _wrapElement(element, tag, wrap) {
-    element.classList.add("comp-shrinked");
-
     let wrapElement = element;
     if(wrap) {
         wrapElement = document.createElement(tag);
@@ -439,7 +437,7 @@ function selectMultiHTMLDropdown() {
 }
 
 function _selectPicker(multi, html, shouldBeSelected) {
-    if (_isBootstrap()) { //check if bootstrap loaded
+    if (lsfUtils.useBootstrap()) { //check if bootstrap loaded
         return _dropDown(multi ? {'data-container': 'body', 'multiple': ''} : {'data-container': 'body'},
             (element) => {
                 let selectElement = $(element.select);
@@ -671,6 +669,3 @@ function _changeSingleDropdownProperty(object, element) {
     element.controller.changeProperty('selected', object, set ? true : null);
 }
 
-function _isBootstrap() {
-    return window.Dropdown !== undefined || (window.bootstrap !== undefined && window.bootstrap.Dropdown !== undefined);
-}

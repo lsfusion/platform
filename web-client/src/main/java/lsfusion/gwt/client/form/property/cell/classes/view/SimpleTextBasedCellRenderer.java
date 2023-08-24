@@ -63,7 +63,6 @@ public abstract class SimpleTextBasedCellRenderer extends CellRenderer {
             if(needToRenderToolbarContent()) { // for an input with a toolbar we have to wrap it in a div to draw a toolbar
                 DivElement toolbarContainer = Document.get().createDivElement();
                 toolbarContainer.addClassName("prop-input-w-toolbar");
-                toolbarContainer.addClassName("comp-shrinked");
                 setToolbarContainer(toolbarContainer);
                 return toolbarContainer;
             } else

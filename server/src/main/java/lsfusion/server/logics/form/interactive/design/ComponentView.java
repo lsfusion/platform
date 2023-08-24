@@ -90,6 +90,16 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         return null;
     }
 
+    /* should be set when the component is shrinked automatically inside and can not overflow (it's needed for shadows, because sometimes they overflow, but should not be clipped) */
+    /* however sometimes it's not possible to shrink component to zero (input, select, etc.), but we'll ignore this */
+    public boolean isShrinkOverflowVisible(FormInstanceContext context) {
+        return isDefaultShrinkOverflowVisible(context);
+    }
+
+    public boolean isDefaultShrinkOverflowVisible(FormInstanceContext context) {
+        return false;
+    }
+
     public double getFlex(FormInstanceContext context) {
         ContainerView container = getLayoutParamContainer();
         if (container != null) {
@@ -404,6 +414,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         pool.writeObject(outStream, getAlignment(pool.context));
         outStream.writeBoolean(isShrink(pool.context));
         outStream.writeBoolean(isAlignShrink(pool.context));
+        outStream.writeBoolean(isShrinkOverflowVisible(pool.context));
         pool.writeObject(outStream, alignCaption);
 
         outStream.writeInt(marginTop);

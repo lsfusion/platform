@@ -106,10 +106,11 @@ public abstract class GAbstractContainerView {
         GComponent child = children.get(index);
         boolean shrink = child.isShrink();
         boolean alignShrink = child.isAlignShrink();
+        boolean shrinkOverflowVisible = child.isShrinkOverflowVisible();
 
-        if(child.getWidth() != null || (!vertical ? shrink : alignShrink) || fixFlexBasis)
+        if((child.getWidth() != null || (!vertical ? shrink : alignShrink) || fixFlexBasis) && !shrinkOverflowVisible)
             view.getElement().addClassName("comp-shrink-horz");
-        if(child.getHeight() != null || (vertical ? shrink : alignShrink) || fixFlexBasis)
+        if((child.getHeight() != null || (vertical ? shrink : alignShrink) || fixFlexBasis) && !shrinkOverflowVisible)
             view.getElement().addClassName("comp-shrink-vert");
 
         // we need to do "caption wrapping" before auto size wrap since we want border to wrap all auto sized container

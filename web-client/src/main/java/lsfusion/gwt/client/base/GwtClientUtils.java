@@ -65,6 +65,9 @@ public class GwtClientUtils {
             },
             setInputElement: function (element, inputElement) {
                 return @lsfusion.gwt.client.form.property.cell.classes.view.SimpleTextBasedCellRenderer::setInputElement(*)(element, inputElement);
+            },
+            useBootstrap: function() {
+                return @lsfusion.gwt.client.view.MainFrame::useBootstrap;
             }
         }
     }-*/;

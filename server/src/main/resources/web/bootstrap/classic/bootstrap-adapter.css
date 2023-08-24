@@ -243,6 +243,11 @@
     width: unset;
 }
 
+/* bootstrap doesn't wrap button group by default, which is not what we want in the most cases */
+.option-btn-container.btn-group {
+    flex-wrap: wrap;
+}
+
 /*Bootstrap uses a fixed z-index for the some elements, and z-index of the modal-windows(1055) is higher than z-index of dropdown-menu(1000).
     We manually set z-index in lsf-dropdown to 1070*/
 .dropdown-menu.lsf-dropdown {

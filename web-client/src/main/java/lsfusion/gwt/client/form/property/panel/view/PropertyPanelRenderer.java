@@ -104,7 +104,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
                 if (commentFirst)
                     commentWidget.add(valueCommentPanel, panelCommentAlignment);
 
-                valuePanel.add(valueCommentPanel, panelValueAlignment);
+                valuePanel.addFill(valueCommentPanel);
 
                 if (!commentFirst)
                     commentWidget.add(valueCommentPanel, panelCommentAlignment);
@@ -140,6 +140,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
             sizedLabel.add(panel, panelCaptionAlignment);
 
         // mostly it is needed to handle margins / paddings / layouting but we do it ourselves
+//
 //        cellRenderer.renderPanelContainer(panel);
 
         return new SizedWidget(panel);
