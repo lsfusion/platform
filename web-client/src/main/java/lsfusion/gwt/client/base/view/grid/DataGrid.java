@@ -152,13 +152,19 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
     private final RecentlyEventClassHandler recentlyScrolledClassHandler;
 
+    private static boolean skipScrollEvent;
+
     @Override
     public ScrollHandler getScrollHandler() {
         return event -> {
-            calcLeftNeighbourRightBorder(true);
-            checkSelectedRowVisible();
+            if(skipScrollEvent) {
+                skipScrollEvent = false;
+            } else {
+                calcLeftNeighbourRightBorder(true);
+                checkSelectedRowVisible();
 
-            updateScrolledState();
+                updateScrolledState();
+            }
         };
     }
 
@@ -1287,6 +1293,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
     private void afterUpdateDOMScrollVertical(SetPendingScrollState pendingState) {
         if (pendingState.top != null) {
+            skipScrollEvent = true;
             tableContainer.setVerticalScrollPosition(pendingState.top);
 
             updateScrolledState();
