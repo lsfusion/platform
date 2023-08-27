@@ -2975,9 +2975,9 @@ public class Settings implements Cloneable {
     }
 
     public int minInterfaceStatForValueUnique = 100;
-    public int maxInterfaceStatForValueRadio = 5;
-    public int maxInterfaceStatForValueCombo = 20;
-    public int maxLengthForValueRadioButtonGroup = 40;
+    public int maxInterfaceStatForValueList = 5;
+    public int maxInterfaceStatForValueDropdown = 20;
+    public int maxLengthForValueButton = 40;
 
     public int getMinInterfaceStatForValueUnique() {
         return minInterfaceStatForValueUnique;
@@ -2987,28 +2987,28 @@ public class Settings implements Cloneable {
         this.minInterfaceStatForValueUnique = minInterfaceStatForValueUnique;
     }
 
-    public int getMaxInterfaceStatForValueRadio() {
-        return maxInterfaceStatForValueRadio;
+    public int getMaxInterfaceStatForValueList() {
+        return maxInterfaceStatForValueList;
     }
 
-    public void setMaxInterfaceStatForValueRadio(int maxInterfaceStatForValueRadio) {
-        this.maxInterfaceStatForValueRadio = maxInterfaceStatForValueRadio;
+    public void setMaxInterfaceStatForValueList(int maxInterfaceStatForValueList) {
+        this.maxInterfaceStatForValueList = maxInterfaceStatForValueList;
     }
 
-    public int getMaxInterfaceStatForValueCombo() {
-        return maxInterfaceStatForValueCombo;
+    public int getMaxInterfaceStatForValueDropdown() {
+        return maxInterfaceStatForValueDropdown;
     }
 
-    public void setMaxInterfaceStatForValueCombo(int maxInterfaceStatForValueCombo) {
-        this.maxInterfaceStatForValueCombo = maxInterfaceStatForValueCombo;
+    public void setMaxInterfaceStatForValueDropdown(int maxInterfaceStatForValueDropdown) {
+        this.maxInterfaceStatForValueDropdown = maxInterfaceStatForValueDropdown;
     }
 
-    public int getMaxLengthForValueRadioButtonGroup() {
-        return maxLengthForValueRadioButtonGroup;
+    public int getMaxLengthForValueButton() {
+        return maxLengthForValueButton;
     }
 
-    public void setMaxLengthForValueRadioButtonGroup(int maxLengthForValueRadioButtonGroup) {
-        this.maxLengthForValueRadioButtonGroup = maxLengthForValueRadioButtonGroup;
+    public void setMaxLengthForValueButton(int maxLengthForValueButton) {
+        this.maxLengthForValueButton = maxLengthForValueButton;
     }
 
     private boolean disableCombineFilters = false;

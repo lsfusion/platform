@@ -1758,7 +1758,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         Stat whereStat = where.property.getInterfaceStat(mapWhereInterfaces);
         int whereCount = whereStat.getCount();
 
-        boolean hasAlotValues = whereCount > Settings.get().getMaxInterfaceStatForValueCombo();
+        boolean hasAlotValues = whereCount > Settings.get().getMaxInterfaceStatForValueDropdown();
         if(!fallbackToFilterSelected && hasAlotValues) // optimization
             return null;
 

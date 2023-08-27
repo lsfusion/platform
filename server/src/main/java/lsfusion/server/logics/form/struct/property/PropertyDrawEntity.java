@@ -771,15 +771,15 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
                     if(elementType == null) {
                         if (!isReadOnly(context) || forceSelect) { // we don't have to check hasChangeAction, since canBeChanged is checked in getSelectProperty
                             boolean isMulti = select.type == PropertyObjectEntity.Select.Type.MULTI;
-                            if (select.length <= Settings.get().getMaxLengthForValueRadioButtonGroup()) {
+                            if (select.length <= Settings.get().getMaxLengthForValueButton()) {
                                 elementType = isMulti ? "Button" : "ButtonGroup";
-                            } else if (select.count <= Settings.get().getMaxInterfaceStatForValueRadio() && !isList(context)) {
+                            } else if (select.count <= Settings.get().getMaxInterfaceStatForValueList() && !isList(context)) {
                                 ContainerView container = context.view.get(this).getLayoutParamContainer();
                                 if (container != null && container.isHorizontal())
                                     elementType = isMulti ? "Button" : "ButtonGroup";
                                 else
                                     elementType = "List";
-                            } else if (select.count <= Settings.get().getMaxInterfaceStatForValueCombo() || (forceSelect && !isMulti)) {
+                            } else if (select.count <= Settings.get().getMaxInterfaceStatForValueDropdown() || (forceSelect && !isMulti)) {
                                 elementType = "Dropdown";
                             } else {
                                 assert isMulti;

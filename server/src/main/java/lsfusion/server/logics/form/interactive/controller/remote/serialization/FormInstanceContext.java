@@ -64,7 +64,7 @@ public class FormInstanceContext extends ConnectionContext {
     // assert that it is called during form instancing
     @AssertSynchronized
     private Pair<Integer, Integer> readValues(InputValueList values) {
-        int maxValuesNeeded = Settings.get().getMaxInterfaceStatForValueCombo();
+        int maxValuesNeeded = Settings.get().getMaxInterfaceStatForValueDropdown();
         PropertyAsync[] asyncValues;
         try {
             asyncValues = dbManager.getAsyncValues(values, "", maxValuesNeeded + 1, AsyncMode.OBJECTS);

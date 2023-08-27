@@ -115,7 +115,7 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrP
                 stats = getActualSelectStats(context, select);
                 actualStats = true;
             }
-            PropertyMapImplement<?, P> selectProperty = select.property.get(forceFilterSelected != null ? forceFilterSelected : stats.second > Settings.get().getMaxInterfaceStatForValueCombo());
+            PropertyMapImplement<?, P> selectProperty = select.property.get(forceFilterSelected != null ? forceFilterSelected : stats.second > Settings.get().getMaxInterfaceStatForValueDropdown());
             if(selectProperty == null)
                 return null;
             boolean multi = select.multi;
