@@ -52,11 +52,11 @@ public class BaseUtils {
     public static final Logger serviceLogger = Logger.getLogger("ServiceLogger");
 
     //Длина строки может быть маскимум 65535, каждый символ может занимать от 1 до 3х байт
-    //используем пессимистичный вариант, чтобы не заниматься реальным рассчётом длины, т.к. это долго
+    //используем пессимистичный вариант, чтобы не заниматься реальным рассчётом длины, т.к. это долго 
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 248;
+        return 249;
     }
 
     public static String getPlatformVersion() {
