@@ -3,8 +3,8 @@
     --input-border-width: var(--border-width);
 }
 
-/* in excel theme the border is drawn for the boxed container so we're removing user-agent borders */
-.prop-input-w-toolbar > .prop-input {
-    border: none;
-    margin: 0; /* just in case, if the user-agent sets it for an input */
-}
+/*!* in excel theme the border is drawn for the boxed container so we're removing user-agent borders *!*/
+/*.prop-input-w-toolbar > .prop-input {*/
+/*    border: none;*/
+/*    margin: 0; !* just in case, if the user-agent sets it for an input *!*/
+/*}*/

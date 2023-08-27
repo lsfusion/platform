@@ -138,10 +138,6 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
         getFocusElement().setTabIndex(isFocusable() ? 0 : -1);
 
         addStyleName("panelRendererValue");
-        if(property.isAction())
-            addStyleName("actionPanelRendererValue");
-        else
-            addStyleName("propertyPanelRendererValue");
     }
 
     public void focus(FocusUtils.Reason reason) {

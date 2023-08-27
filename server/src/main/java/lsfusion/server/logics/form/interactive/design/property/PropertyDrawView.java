@@ -894,7 +894,7 @@ public class PropertyDrawView extends BaseComponentView {
             if(valueElementClass != null && valueElementClass.contains("btn-check"))
                 return "btn btn-outline-primary";
 
-            if (valueElementClass != null && valueElementClass.equals("panel-prop-value-boxed"))
+            if (valueElementClass == null && isSimpleText(context))
                 return "text-secondary";
         }
 
@@ -917,15 +917,16 @@ public class PropertyDrawView extends BaseComponentView {
             return valueElementClass;
 
         if (isProperty(context)) {
-            String tag = getTag(context);
-            if(tag == null && !entity.isList(context) && !isCustom(context)) {
+            if(isSimpleText(context)) {
                 // if we're in panel and there is no decoration, nor other styling, nor custom view, making label gray to distinguish it from the value
-                String defaultClass = "panel-prop-value-boxed";
+                if(!context.useBootstrap)
+                    return "form-control";
+
                 if (hasFlow(context, ChangeFlowType.INPUT))
-                    return "form-control " + defaultClass;
-                else if (hasChangeAction(context))
-                    return "btn btn-light " + defaultClass;
-                return defaultClass;
+                    return "form-control";
+
+                if (hasChangeAction(context))
+                    return "btn btn-light";
             }
         } else {
             if(hasFlow(context, ChangeFlowType.PRIMARY))
@@ -939,6 +940,10 @@ public class PropertyDrawView extends BaseComponentView {
         }
 
         return null;
+    }
+
+    private boolean isSimpleText(FormInstanceContext context) {
+        return getTag(context) == null && !entity.isList(context) && !isCustom(context);
     }
 
     public boolean hasToolbar(FormInstanceContext context) {

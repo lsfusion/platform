@@ -383,7 +383,7 @@ public class GGridController extends GAbstractTableController {
                 };
             }
         };
-        forceUpdateTableButton.addStyleName("actionPanelRendererValue");
+//        forceUpdateTableButton.addStyleName("actionPanelRendererValue");
         updateButtonGroup.add(forceUpdateTableButton);
 
         addToToolbar(updateButtonGroup);

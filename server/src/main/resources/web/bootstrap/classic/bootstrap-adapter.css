@@ -114,6 +114,11 @@
     background-color: var(--component-hover-background-color);
 }
 
+/* need this because toolbar is shown over form-control, but it is its sibling and not its child, assert that there is form-control inside */
+.prop-input-w-toolbar .background-inherit {
+    background-color: var(--bs-body-bg); /* should correspond form-control background-color */
+}
+
 /* --- workaround for disappearing sticky cell borders when scrolling --- */
 .scrolled-down:not(.table-borderless) .dataGridHeaderRow,
 /*.scrolled-up:not(.table-borderless) .dataGridFooterRow,*/ /* switched to permanent bottom border in tableContainer */
