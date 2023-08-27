@@ -52,7 +52,7 @@ public class GridView extends GridPropertyView {
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {
         super.customSerialize(pool, outStream);
 
-        outStream.writeBoolean(isAutoSize(pool.context.entity));
+        outStream.writeBoolean(isAutoSize(pool.context));
         outStream.writeBoolean(boxed != null);
         if(boxed != null)
             outStream.writeBoolean(boxed);

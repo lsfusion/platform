@@ -27,6 +27,8 @@ GROUP NATIVE id '{system.group.id}' : base;
 GROUP drillDown '{system.group.drill.down}' : root;
 GROUP propertyPolicy '{system.group.property.policy}' : root;
 
+GROUP objects : root; // usually for using in the interactive JSONs
+
 canceled = DATA LOCAL BOOLEAN ();
 applyMessage = DATA LOCAL TEXT ();
 empty()  { };

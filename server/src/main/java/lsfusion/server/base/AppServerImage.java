@@ -25,6 +25,7 @@ import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.data.StringClass;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
@@ -41,6 +42,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
@@ -81,15 +83,20 @@ public class AppServerImage {
             return NAME_OR_AUTO;
         }
     }
+
+    public interface Reader {
+        AppServerImage get(ConnectionContext context);
+    }
+
     // should be cached, because it is used in data images, default images, and can be used several times
-    public static Supplier<AppServerImage> createImage(String imageString, Style style, Function<String, AppServerImage> autoImage) {
+    public static Reader createImage(String imageString, Style style, BiFunction<String, ConnectionContext, AppServerImage> autoImage) {
         assert imageString != null;
         StringType type = StringType.get(imageString);
         switch (type) { // should not be cached because is cached inside
             case NAME_OR_AUTO:
-                return () -> autoImage.apply(imageString);
+                return context -> autoImage.apply(imageString, context);
             case PATH:
-                return () -> createDefaultImage(imageString, style, true, Settings.get().getDefaultImagePathRankingThreshold());
+                return context -> createDefaultImage(imageString, style, true, Settings.get().getDefaultImagePathRankingThreshold(), context);
         }
 
         AppServerImage result = cachedImages.get(imageString);
@@ -110,7 +117,7 @@ public class AppServerImage {
         }
 
         AppServerImage fResult = result;
-        return () -> fResult;
+        return context -> fResult;
     }
 
     public final static ThreadLocal<MSet<String>> prereadBestIcons = new ThreadLocal<>();
@@ -177,24 +184,24 @@ public class AppServerImage {
     }
 
     public enum Style {
-        REGULAR, SOLID;
+        PROPERTY, CONTAINER, FORM, NAVIGATORELEMENT;
 
-        public static final Style PROPERTY = REGULAR;
-        public static final Style CONTAINER = REGULAR;
-        public static final Style FORM = SOLID;
-        public static final Style NAVIGATORELEMENT = SOLID;
+        public String getSearchName(ConnectionContext context) { // should correspond Icon.searchStyles / Icon.iconClass properties
+            if(this == PROPERTY || this == CONTAINER || !context.useBootstrap)
+                return "regular";
 
-        public String getSearchName() { // should correspond Icon.searchStyles / Icon.iconClass properties
-            return this == REGULAR ? "regular" : "solid";
+            // FORM / NAVIGATORELEMENT
+            return "solid";
         }
     }
 
     // should be cached because it is used in default images
-    private static AppServerImage createDefaultImage(String name, Style style, boolean path, float rankingThreshold) {
-        Pair<String, Float> cacheKey = new Pair<>(name + "," + style, rankingThreshold);
+    private static AppServerImage createDefaultImage(String name, Style style, boolean path, float rankingThreshold, ConnectionContext context) {
+        String searchName = style.getSearchName(context);
+        Pair<String, Float> cacheKey = new Pair<>(name + "," + searchName, rankingThreshold);
         AppServerImage result = cachedDefaultImages.get(cacheKey);
         if(result == null) {
-            Pair<String, Double> bestIcon = getBestIcon((path ? BaseUtils.getFileName(name) : name) + "," + style.getSearchName());
+            Pair<String, Double> bestIcon = getBestIcon((path ? BaseUtils.getFileName(name) : name) + "," + searchName);
             if(bestIcon == null)
                 return null;
 
@@ -218,7 +225,7 @@ public class AppServerImage {
         return words;
     }
 
-    public static AppServerImage createDefaultImage(float rankingThreshold, String name, Style style, AutoName autoName, Supplier<AppServerImage> defaultImage) {
+    public static AppServerImage createDefaultImage(float rankingThreshold, String name, Style style, AutoName autoName, Reader defaultImage, ConnectionContext context) {
         if(name.equals(AppServerImage.NULL))
             return null;
         else if(name.equals(AppServerImage.AUTO)) {
@@ -226,12 +233,12 @@ public class AppServerImage {
         }
 
         if(name != null) {
-            AppServerImage autoImage = createDefaultImage(name, style, false, rankingThreshold);
+            AppServerImage autoImage = createDefaultImage(name, style, false, rankingThreshold, context);
             if (autoImage != null)
                 return autoImage;
         }
 
-        return defaultImage.get();
+        return defaultImage.get(context);
     }
     
     public static final String AUTO = "auto";
@@ -355,16 +362,16 @@ public class AppServerImage {
         };
     }
 
-    public static Supplier<AppServerImage> createPropertyImage(String imagePath, AutoName autoName) {
-        return createImage(imagePath, Style.PROPERTY, name -> ActionOrProperty.getDefaultImage(name, autoName, Settings.get().getDefaultAutoImageRankingThreshold(), AUTO_ICON));
+    public static Reader createPropertyImage(String imagePath, AutoName autoName) {
+        return createImage(imagePath, Style.PROPERTY, (name, context) -> ActionOrProperty.getDefaultImage(name, autoName, Settings.get().getDefaultAutoImageRankingThreshold(), AUTO_ICON, context));
     }
 
-    public static Supplier<AppServerImage> createPropertyImage(String imagePath, PropertyDrawView property) {
+    public static Reader createPropertyImage(String imagePath, PropertyDrawView property) {
         return createPropertyImage(imagePath, property.getAutoName());
     }
 
-    public static Supplier<AppServerImage> createContainerImage(String imagePath, ContainerView container, FormView formView) {
-        return createImage(imagePath, container.main ? Style.FORM : Style.CONTAINER, name -> container.getDefaultImage(name, Settings.get().getDefaultAutoImageRankingThreshold(), AUTO_ICON, formView));
+    public static Reader createContainerImage(String imagePath, ContainerView container, FormView formView) {
+        return createImage(imagePath, container.main ? Style.FORM : Style.CONTAINER, (name, context) -> container.getDefaultImage(name, Settings.get().getDefaultAutoImageRankingThreshold(), AUTO_ICON, formView, context));
     }
 
     public static final String FORMTOP = "formTop.png";
@@ -374,15 +381,15 @@ public class AppServerImage {
     public static final String OPENTOP = "openTop.png";
     public static final String OPEN = "open.png";
 
-    public static Supplier<AppServerImage> createNavigatorImage(String imagePath, NavigatorElement navigator) {
-        return createImage(imagePath, Style.NAVIGATORELEMENT, name -> navigator.getDefaultImage(name, Settings.get().getDefaultAutoImageRankingThreshold(), AUTO_ICON));
+    public static Reader createNavigatorImage(String imagePath, NavigatorElement navigator) {
+        return createImage(imagePath, Style.NAVIGATORELEMENT, (name, context) -> navigator.getDefaultImage(name, Settings.get().getDefaultAutoImageRankingThreshold(), AUTO_ICON, context));
     }
 
     public static final String DIALOG = "dialog.png";
     public static final String RESET = "reset.png";
 
-    public static Supplier<AppServerImage> createActionImage(String imagePath) {
-        return createImage(imagePath, Style.PROPERTY, name -> AppServerImage.createDefaultImage(Settings.get().getDefaultAutoImageRankingThreshold(), name, Style.PROPERTY, AppServerImage.getAutoName(() -> null, () -> name), () -> AUTO_ICON ? createActionImage(ACTION).get() : null));
+    public static Reader createActionImage(String imagePath) {
+        return createImage(imagePath, Style.PROPERTY, (name, context) -> AppServerImage.createDefaultImage(Settings.get().getDefaultAutoImageRankingThreshold(), name, Style.PROPERTY, AppServerImage.getAutoName(() -> null, () -> name), defaultContext -> AUTO_ICON ? createActionImage(ACTION).get(defaultContext) : null, context));
     }
 
     @ManualLazy

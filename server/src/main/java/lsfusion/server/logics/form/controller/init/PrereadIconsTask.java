@@ -1,14 +1,14 @@
 package lsfusion.server.logics.form.controller.init;
 
-import lsfusion.base.Pair;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.base.AppServerImage;
 import lsfusion.server.base.task.GroupSplitTask;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
@@ -43,10 +43,11 @@ public class PrereadIconsTask extends GroupSplitTask<String> {
         AppServerImage.prereadBestIcons.set(mImages);
         try {
             for (FormEntity form : BL.getAllForms())
-                form.prereadAutoIcons();
+                form.prereadAutoIcons(FormInstanceContext.CACHE(form));
 
-            for (NavigatorElement element : BL.getNavigatorElements())
-                element.getImage();
+            for(ConnectionContext context : new ConnectionContext[]{new ConnectionContext(true), new ConnectionContext(false)})
+                for (NavigatorElement element : BL.getNavigatorElements())
+                    element.getImage(context);
 
             for (ConcreteCustomClass customClass : BL.getConcreteCustomClasses())
                 customClass.fillIcons(AppServerImage.prereadBestIcons.get());

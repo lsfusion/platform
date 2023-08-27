@@ -54,12 +54,16 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
         render();
     }
 
+    private void updateValue(PValue value, boolean loading) {
+        update(value, loading, null, property.valueElementClass, property.getBackground(), property.getForeground(), false);
+    }
+
     public void updateValue(PValue value) {
-        update(value, loading, null, null, null, null, false);
+        updateValue(value, loading);
     }
 
     public void updateLoading(boolean loading) {
-        update(value, loading, null, null, null, null, false);
+        updateValue(value, loading);
     }
 
     @Override
@@ -89,8 +93,12 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
 
     @Override
     protected void onEditEvent(EventHandler handler) {
+        onEditEvent(handler, false);
+    }
+
+    protected void onEditEvent(EventHandler handler, boolean forceEdit) {
         Result<Boolean> contextAction = new Result<>();
-        if(property.isFilterChange(handler.event, contextAction)) {
+        if((property.isFilterChange(handler.event, contextAction) || forceEdit) && !property.isCustom()) {
             if(contextAction.result != null) // assert that reset is called
                 updateAndCommit(null);
             else
@@ -132,7 +140,9 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     }
 
     @Override
-    public void changeProperty(PValue result) {
+    public void changeProperty(PValue result, GFormController.ChangedRenderValueSupplier renderValueSupplier) {
+        if(renderValueSupplier != null)
+            result = renderValueSupplier.getValue(getValue(), result);
         updateAndCommit(result);
     }
 

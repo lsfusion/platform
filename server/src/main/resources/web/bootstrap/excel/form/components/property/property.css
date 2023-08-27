@@ -1,7 +1,7 @@
 
 /* text */
 
-.text-based-prop-sized, .text-based-prop-sized.dataGridCell {
+.text-based-prop-sized, .text-based-prop-sized.dataGridCell, .form-select, .form-control {
     padding: 2px 3px;
 }
 
@@ -10,10 +10,21 @@
 
 /* ------------ Colored corner triangles  ------------ */
 
-.property-not-null, .property-has-change {
+.property-not-null.dataGridHeaderCell,
+.property-not-null.panelRendererValue.form-control,
+.property-not-null.prop-input-w-toolbar,
+.property-has-change.dataGridHeaderCell,
+.property-has-change.panelRendererValue.form-control,
+.property-has-change.prop-input-w-toolbar {
     position: relative;
+    overflow: hidden; /* to hide inner corners */
 }
-.property-not-null::after, .property-has-change::after {
+.property-not-null.dataGridHeaderCell::after,
+.property-not-null.panelRendererValue.form-control::after,
+.property-not-null.prop-input-w-toolbar::after,
+.property-has-change.dataGridHeaderCell::after,
+.property-has-change.panelRendererValue.form-control::after,
+.property-has-change.prop-input-w-toolbar::after {
     content: "";
     width: 0;
     height: 0;
@@ -24,11 +35,15 @@
     bottom: 0;
 }
 
-.property-has-change::after {
+.property-has-change.dataGridHeaderCell::after,
+.property-has-change.panelRendererValue.form-control::after,
+.property-has-change.prop-input-w-toolbar::after {
     border-color: transparent transparent var(--focus-color) transparent;
 }
 
-.property-not-null::after {
+.property-not-null.dataGridHeaderCell::after,
+.property-not-null.panelRendererValue.form-control::after,
+.property-not-null.prop-input-w-toolbar::after {
     border-color: transparent transparent var(--not-null-corner-triangle-color) transparent;
 }
 

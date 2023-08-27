@@ -213,7 +213,8 @@ public abstract class SuggestBox {
 
         if (handler.consumed) return;
 
-        if (GKeyStroke.isCharModifyKeyEvent(handler.event, null)) updateSuggestionList();
+        if (GKeyStroke.isCharModifyKeyEvent(handler.event, null))
+            updateSuggestionList();
 
         if (!handler.consumed && BLUR.equals(handler.event.getType())) {
             //restore focus and ignore blur if refresh button pressed

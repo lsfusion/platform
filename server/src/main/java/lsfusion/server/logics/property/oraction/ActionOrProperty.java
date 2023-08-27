@@ -30,7 +30,6 @@ import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.action.session.changed.SessionProperty;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
@@ -38,6 +37,7 @@ import lsfusion.server.logics.event.ApplyGlobalEvent;
 import lsfusion.server.logics.event.Link;
 import lsfusion.server.logics.event.LinkType;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.ValueClassWrapper;
@@ -48,7 +48,6 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.infer.AlgType;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
-import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -60,7 +59,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.function.IntFunction;
-import java.util.function.Supplier;
 
 import static lsfusion.interop.action.ServerResponse.*;
 
@@ -76,7 +74,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     // вот отсюда идут свойства, которые отвечают за логику представлений и подставляются автоматически для PropertyDrawEntity и PropertyDrawView
     public LocalizedString caption; // assert not null
 
-    public Supplier<AppServerImage> image;
+    public AppServerImage.Reader image;
 
     public void setImage(String imagePath) {
         this.image = AppServerImage.createPropertyImage(imagePath, AppServerImage.getAutoName(() -> caption, this::getName));
@@ -201,9 +199,9 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         return null;
     }
 
-    public static AppServerImage getDefaultImage(String name, AppServerImage.AutoName autoName, float rankingThreshold, boolean useDefaultIcon) {
+    public static AppServerImage getDefaultImage(String name, AppServerImage.AutoName autoName, float rankingThreshold, boolean useDefaultIcon, ConnectionContext context) {
         return AppServerImage.createDefaultImage(rankingThreshold, name, AppServerImage.Style.PROPERTY, autoName,
-                () -> useDefaultIcon ? AppServerImage.createPropertyImage(AppServerImage.ACTION, autoName).get() : null);
+                defaultContext -> useDefaultIcon ? AppServerImage.createPropertyImage(AppServerImage.ACTION, autoName).get(defaultContext) : null, context);
     }
 
     public String getNamespace() {
@@ -614,13 +612,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         }
 
         public void proceedDefaultDesign(PropertyDrawView propertyView) {
-            if(propertyView.isProperty()) {
-                if (propertyView.getType() instanceof LogicalClass) 
-                    propertyView.changeOnSingleClick = Settings.get().getChangeBooleanOnSingleClick();
-            } else
-                propertyView.changeOnSingleClick = Settings.get().getChangeActionOnSingleClick();
-
-            if(propertyView.getCharWidth() == 0)
+            if(propertyView.charWidth == 0)
                 propertyView.setCharWidth(charWidth);
             if(propertyView.getValueFlex() == null)
                 propertyView.setValueFlex(valueFlex);

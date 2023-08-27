@@ -1,12 +1,12 @@
 package lsfusion.server.logics.property;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.caches.IdentityStartLazy;
 import lsfusion.server.base.caches.IdentityStrongLazy;
@@ -53,6 +53,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         return SetFact.toOrderExclSet(intNum, genInterface);
     }
 
+    // similar to getIdentityMap
     public static <T extends PropertyInterface> boolean isIdentity(ImSet<Interface> interfaces, PropertyImplement<T, PropertyInterfaceImplement<Interface>> implement) {
         Set<Interface> rest = SetFact.mAddRemoveSet(interfaces);
         for(PropertyInterfaceImplement<Interface> impl : implement.mapping.values())
@@ -238,6 +239,19 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     }
 
     @Override
+    public Pair<PropertyInterfaceImplement<Interface>, PropertyInterfaceImplement<Interface>> getIfProp() {
+        if(implement.property instanceof AndFormulaProperty) {
+            ImSet<AndFormulaProperty.AndInterface> andInterfaces = ((AndFormulaProperty) implement.property).andInterfaces;
+            if(andInterfaces.size() == 1) {
+                AndFormulaProperty.ObjectInterface objectInterface = ((AndFormulaProperty) implement.property).objectInterface;
+                return new Pair<>(implement.mapping.get((T) objectInterface), implement.mapping.get((T)andInterfaces.single()));
+            }
+        }
+
+        return super.getIfProp();
+    }
+
+    @Override
     public boolean canBeHeurChanged(boolean global) {
         if(implement.property instanceof CompareFormulaProperty && ((CompareFormulaProperty)implement.property).compare == Compare.EQUALS) { // если =
             assert implement.mapping.size()==2;
@@ -340,6 +354,21 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
 
         if (implementMapping.size() == 1)
             return implementMapping.singleValue().mapEventAction(eventActionSID, defaultChangeEventScope, viewProperties.addList(implementProperty), customChangeFunction);
+
+        return null;
+    }
+
+    @Override
+    public <I extends PropertyInterface, V extends PropertyInterface, W extends PropertyInterface> Select<Interface> getSelectProperty(ImList<Property> viewProperties, boolean forceSelect) {
+        Select<Interface> result = super.getSelectProperty(viewProperties, forceSelect);
+        if(result != null)
+            return result;
+
+        Property<T> implementProperty = implement.property;
+        ImMap<T, PropertyInterfaceImplement<Interface>> implementMapping = implement.mapping;
+
+        if (implementMapping.size() == 1)
+            return implementMapping.singleValue().mapSelect(viewProperties.addList(implementProperty), forceSelect);
 
         return null;
     }

@@ -825,7 +825,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         ScriptingFormEntity form = new ScriptingFormEntity(this, formEntity);
 
         if(autoRefresh > 0) {
-            formEntity.addActionsOnEvent(new FormScheduler(autoRefresh, false), false, getVersion(), (ActionObjectEntity) form.getForm().refreshActionPropertyDraw.getValueActionOrProperty());
+            formEntity.addActionsOnEvent(new FormScheduler(autoRefresh, false), false, getVersion(), new ActionObjectEntity<>(baseLM.getFormRefresh()));
         }
 
         form.setLocalAsync(localAsync);
@@ -2973,7 +2973,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         checks.checkGPropSumConstraints(type, mainProps.get(0));
 
         List<LPWithParams> whereProps = new ArrayList<>();
-        if (type == GroupingType.AGGR || type == GroupingType.NAGGR) {
+        if (type == GroupingType.AGGR || type == GroupingType.NAGGR || (type == GroupingType.CONCAT && whereProp != null)) {
             if (whereProp != null) {
                 whereProps.add(whereProp);
             } else {
@@ -3000,13 +3000,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         } else if (type == GroupingType.MAX || type == GroupingType.MIN) {
             resultProp = addMGProp(null, emptyCaption, type == GroupingType.MIN, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
         } else if (type == GroupingType.CONCAT) {
-            resultProp = addOGProp(null, false, emptyCaption, GroupType.CONCAT, orderProps.size(), ordersNotNull, !ascending, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
+            resultProp = addOGProp(null, false, emptyCaption, GroupType.CONCAT, whereProp != null, orderProps.size(), ordersNotNull, !ascending, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
         } else if (type == GroupingType.AGGR || type == GroupingType.NAGGR) {
             resultProp = addAGProp(null, false, false, emptyCaption, type == GroupingType.NAGGR, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
         } else if (type == GroupingType.EQUAL) {
             resultProp = addCGProp(null, false, false, emptyCaption, null, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
         } else if (type == GroupingType.LAST) {
-            resultProp = addOGProp(null, false, emptyCaption, GroupType.LAST, orderProps.size(), ordersNotNull, !ascending, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
+            resultProp = addOGProp(null, false, emptyCaption, GroupType.LAST, false, orderProps.size(), ordersNotNull, !ascending, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
         }
         return resultProp;
     }
@@ -4174,14 +4174,23 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         public final Pair<ActionOrProperty, List<String>> inherited;
 
+        public final Group group;
+
         public IntegrationPropUsage(String alias, Boolean literal, LPWithParams lp, Pair<ActionOrProperty, List<String>> inherited) {
             this(alias, literal, lp.getLP(), inherited);
         }
         public IntegrationPropUsage(String alias, Boolean literal, LP lp, Pair<ActionOrProperty, List<String>> inherited) {
+            this(alias, literal, lp, inherited, Group.NOGROUP);
+        }
+        public IntegrationPropUsage(String alias, Boolean literal, LP lp, Pair<ActionOrProperty, List<String>> inherited, Group group) {
+            this(alias, literal, lp != null ? (ImOrderSet<P>) lp.listInterfaces : null, inherited, group);
+        }
+        public IntegrationPropUsage(String alias, Boolean literal, ImOrderSet<P> listInterfaces, Pair<ActionOrProperty, List<String>> inherited, Group group) {
             this.alias = alias;
             this.literal = literal != null && literal;
-            this.listInterfaces = lp != null ? (ImOrderSet<P>) lp.listInterfaces : null;
+            this.listInterfaces = listInterfaces;
             this.inherited = inherited;
+            this.group = group;
         }
     }
 
@@ -4190,7 +4199,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                                                 List<LPWithParams> orderProperties, List<Boolean> orderDirections) throws ScriptingErrorLog.SemanticErrorException {
 
         List<LPWithParams> exExprs = new ArrayList<>(exprs);
-        List<IntegrationPropUsage> exPropUsages = new ArrayList<>();
+        MList<IntegrationPropUsage> mExPropUsages = ListFact.mList();
         for (int i = 0, size = exprs.size(); i < size; i++) {
             Pair<ActionOrProperty, List<String>> exPropUsage = null;
             LPTrivialLA propUsage = propUsages.get(i);
@@ -4199,18 +4208,19 @@ public class ScriptingLogicsModule extends LogicsModule {
                 LAP usageProperty = findLPByPropertyUsage(pDrawUsage.usage.property, propUsage.mapParams);
                 exPropUsage = new Pair<>(usageProperty.getActionOrProperty(), pDrawUsage.mapping);
             }
-            exPropUsages.add(new IntegrationPropUsage(ids.get(i), literals.get(i), exprs.get(i), exPropUsage));
+            mExPropUsages.add(new IntegrationPropUsage(ids.get(i), literals.get(i), exprs.get(i), exPropUsage));
         }
 
         MOrderExclMap<String, Boolean> mOrders = MapFact.mOrderExclMap(orderProperties.size());
-        for (int i = 0; i < orderProperties.size(); i++) {
+        for (int i = 0, size = orderProperties.size(); i < size; i++) {
             LPWithParams orderProperty = orderProperties.get(i);
             exExprs.add(orderProperty);
-            String orderId = "order" + exPropUsages.size();
-            exPropUsages.add(new IntegrationPropUsage(orderId, false, orderProperty, null));
+            String orderId = "order" + mExPropUsages.size();
+            mExPropUsages.add(new IntegrationPropUsage(orderId, false, orderProperty, null));
             mOrders.exclAdd(orderId, orderDirections.get(i));
         }
         ImOrderMap<String, Boolean> orders = mOrders.immutableOrder();
+        ImList<IntegrationPropUsage> exPropUsages = mExPropUsages.immutableList();
 
         // technically it's a mixed operator with exec technics (root, tag like SHOW / DIALOG) and operator technics (exprs, where like CHANGE)
         List<LPWithParams> props = exExprs;
@@ -4257,7 +4267,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         List<LPWithParams> exExprs = new ArrayList<>(exprs);
 
-        List<IntegrationPropUsage> exPropUsages = new ArrayList<>();
+        MList<IntegrationPropUsage> mExPropUsages = ListFact.mList();
         for (int i = 0, size = exprs.size(); i < size; i++) {
             Pair<ActionOrProperty, List<String>> exPropUsage = null;
             LPTrivialLA propUsage = propUsages.get(i);
@@ -4266,18 +4276,19 @@ public class ScriptingLogicsModule extends LogicsModule {
                 LAP usageProperty = findLPByPropertyUsage(pDrawUsage.usage.property, propUsage.mapParams);
                 exPropUsage = new Pair<>(usageProperty.getActionOrProperty(), pDrawUsage.mapping);
             }
-            exPropUsages.add(new IntegrationPropUsage(ids.get(i), literals.get(i), exprs.get(i), exPropUsage));
+            mExPropUsages.add(new IntegrationPropUsage(ids.get(i), literals.get(i), exprs.get(i), exPropUsage));
         }
 
         MOrderExclMap<String, Boolean> mOrders = MapFact.mOrderExclMap(orderProperties.size());
         for (int i = 0; i < orderProperties.size(); i++) {
             LPWithParams orderProperty = orderProperties.get(i);
             exExprs.add(orderProperty);
-            String orderId = "order" + exPropUsages.size();
-            exPropUsages.add(new IntegrationPropUsage(orderId, false, orderProperty, null));
+            String orderId = "order" + mExPropUsages.size();
+            mExPropUsages.add(new IntegrationPropUsage(orderId, false, orderProperty, null));
             mOrders.exclAdd(orderId, orderDirections.get(i));
         }
         ImOrderMap<String, Boolean> orders = mOrders.immutableOrder();
+        ImList<IntegrationPropUsage> exPropUsages = mExPropUsages.immutableList();
 
         if(type == null)
             type = FormIntegrationType.JSON;
@@ -4494,9 +4505,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             props = findLPsForImport(propUsages, paramClasses);
         }
 
-        List<IntegrationPropUsage> exPropUsages = new ArrayList<>();
-        for(int i = 0, size = props.size(); i < size; i++)
-            exPropUsages.add(new IntegrationPropUsage(ids.get(i), literals.get(i), props.get(i), null));
+        ImList<IntegrationPropUsage> exPropUsages = ListFact.toList(props.size(), i -> new IntegrationPropUsage(ids.get(i), literals.get(i), props.get(i), null));
 
         boolean noParams = paramClasses.isEmpty();
 
@@ -5029,7 +5038,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         String canonicalName = elementCanonicalName(name);
 
         Supplier<LocalizedString> defaultCaption;
-        Supplier<AppServerImage> defaultImage;
+        AppServerImage.Reader defaultImage;
         NavigatorElement newElement;
         if (form != null) {
             newElement = createNavigatorForm(form, canonicalName);

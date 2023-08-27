@@ -32,35 +32,40 @@
     /*z-index: 1;*/
 }
 
-.dataGridStickyCell,
-.dataGridStickyCell.property-not-null,
-.dataGridStickyCell.property-has-change,
-.dataGridStickyCell.fill-parent-position {
+.dataGridStickyCell:not(.dataGridStickyOverflow),
+/*.dataGridStickyCell.property-not-null,*/
+/*.dataGridStickyCell.property-has-change,*/
+.dataGridStickyCell.fill-parent-position:not(.dataGridStickyOverflow) {
     position: sticky;
 
     z-index: 1;
 }
 
-.dataGridStickyHeader,
-.dataGridStickyHeader.property-not-null,
-.dataGridStickyHeader.property-has-change,
-.dataGridStickyHeader.fill-parent-position {
+.dataGridStickyHeader:not(.dataGridStickyOverflow),
+.dataGridStickyHeader.dataGridHeaderCell.property-not-null:not(.dataGridStickyOverflow),
+.dataGridStickyHeader.dataGridHeaderCell.property-has-change:not(.dataGridStickyOverflow),
+.dataGridStickyHeader.fill-parent-position:not(.dataGridStickyOverflow) {
     position: sticky;
 
     z-index: 1001;
 }
 
-.dataGridStickyFooter,
-.dataGridStickyFooter.property-not-null,
-.dataGridStickyFooter.property-has-change,
-.dataGridStickyFooter.fill-parent-position {
+.dataGridStickyFooter:not(.dataGridStickyOverflow),
+/*.dataGridStickyFooter.property-not-null,*/
+/*.dataGridStickyFooter.property-has-change,*/
+.dataGridStickyFooter.fill-parent-position:not(.dataGridStickyOverflow) {
     position: sticky;
 
     z-index: 1001;
 }
 
-.dataGridStickyCell.dataGridStickyOverflow,
-.dataGridStickyHeader.dataGridStickyOverflow,
-.dataGridStickyFooter.dataGridStickyOverflow {
-    z-index: 0;
-}
+/*.dataGridStickyCell.dataGridStickyOverflow,*/
+/*.dataGridStickyCell.fill-parent-position.dataGridStickyOverflow,*/
+/*.dataGridStickyHeader.dataGridStickyOverflow,*/
+/*.dataGridStickyHeader.dataGridHeaderCell.property-not-null.dataGridStickyOverflow,*/
+/*.dataGridStickyHeader.dataGridHeaderCell.property-has-change.dataGridStickyOverflow,*/
+/*.dataGridStickyHeader.fill-parent-position.dataGridStickyOverflow,*/
+/*.dataGridStickyFooter.dataGridStickyOverflow,*/
+/*.dataGridStickyFooter.fill-parent-position.dataGridStickyOverflow {*/
+/*    z-index: 0;*/
+/*}*/

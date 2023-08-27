@@ -20,6 +20,7 @@ import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInput;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInputList;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInputListAction;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
@@ -101,7 +102,7 @@ public class InputAction extends SystemExplicitAction {
 
     private AsyncMapInputList<ClassPropertyInterface> getMapInputList() {
         return new AsyncMapInputList<>(
-                contextActions.mapListValues((i, value) -> new AsyncMapInputListAction<>(value.image.get(), value.id, value.getAsyncEventExec(), value.keyStroke, value.bindingModesMap, value.priority, value.quickAccessList, i)),
+                contextActions.mapListValues((i, value) -> new AsyncMapInputListAction<>(value.image, value.id, value.getAsyncEventExec(), value.keyStroke, value.bindingModesMap, value.priority, value.quickAccessList, i)),
                 !(valueClass instanceof DataClass));
     }
 
@@ -130,7 +131,7 @@ public class InputAction extends SystemExplicitAction {
 
     @IdentityInstanceLazy
     private InputList getInputList() {
-        return getMapInputList().map();
+        return getMapInputList().map(new ConnectionContext(true));
     }
 
     @Override

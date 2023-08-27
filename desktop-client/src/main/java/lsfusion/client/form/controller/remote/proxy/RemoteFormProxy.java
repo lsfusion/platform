@@ -29,65 +29,12 @@ public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterfac
         super(target, realHostName);
     }
 
-    public FormUserPreferences getUserPreferences() throws RemoteException {
-        try {
-            return callImmutableMethod("getUserPreferences", new Callable<FormUserPreferences>() {
-                @Override
-                public FormUserPreferences call() throws Exception {
-                    return target.getUserPreferences();
-                }
-            });
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
     @Override
     public Pair<Long, String> changeExternal(long requestIndex, long lastReceivedRequestIndex, String json) throws RemoteException {
         logRemoteMethodStartVoidCall("changeExternal");
         Pair<Long, String> result = target.changeExternal(requestIndex, lastReceivedRequestIndex, json);
         logRemoteMethodEndVoidCall("changeExternal");
         return result;
-    }
-
-    public byte[] getRichDesignByteArray() throws RemoteException {
-        try {
-            return callImmutableMethod("getRichDesignByteArray", new Callable<byte[]>() {
-                @Override
-                public byte[] call() throws Exception {
-                    logRemoteMethodStartCall("getRichDesignByteArray");
-                    byte[] result = target.getRichDesignByteArray();
-                    logRemoteMethodEndCall("getRichDesignByteArray", result);
-                    return result;
-                }
-            });
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
-    public Integer getInitFilterPropertyDraw() throws RemoteException {
-        try {
-            return callImmutableMethod("getInitFilterPropertyDraw", new Callable<Integer>() {
-                @Override
-                public Integer call() throws Exception {
-                    logRemoteMethodStartCall("getInitFilterPropertyDraw");
-                    Integer result = target.getInitFilterPropertyDraw();
-                    logRemoteMethodEndCall("getInitFilterPropertyDraw", result);
-                    return result;
-                }
-            });
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
-    public Set<Integer> getInputGroupObjects() {
-        try {
-            return callImmutableMethod("getInputGroupObjects", target::getInputGroupObjects);
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
     }
 
     public Object getGroupReportData(long requestIndex, long lastReceivedRequestIndex, Integer groupId, FormPrintType printType, FormUserPreferences userPreferences) throws RemoteException {

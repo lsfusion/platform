@@ -88,7 +88,7 @@ public class GroupMode {
     // object is ObjectInstance or GroupColumn
     public <K extends PropertyInterface> Expr transformExpr(final SQLFunction<PropertyObjectInstance<?>, Expr> getExpr, AggrReaderInstance aggrReader, Where groupModeWhere, ImMap<Object, Expr> groupModeExprs) throws SQLException, SQLHandledException {
 
-        PropertyDrawInstance<K> property = aggrReader.getProperty();
+        PropertyDrawInstance<K> property = aggrReader.getAggrProperty();
         ImMap<ImMap<ObjectInstance, DataObject>, PropertyGroupType> groupColumnKeys = getGroupByProps().get(property);
         if(groupColumnKeys != null) {
             MExprCaseList mCases = new MExprCaseList(true);
@@ -101,19 +101,19 @@ public class GroupMode {
                     GroupType groupType = GroupType.valueOf(propertyGroupType.name());
 
                     // first find last values
-                    ImMap<PropertyDrawInstance<K>.LastReaderInstance, Expr> lastAggrExprs = property.aggrLastReaders.<Expr, SQLException, SQLHandledException>mapOrderValuesEx(lastReaderInstance -> getExpr.apply(lastReaderInstance.getPropertyObjectInstance()));
+                    ImMap<PropertyDrawInstance<K>.LastReaderInstance, Expr> lastAggrExprs = property.aggrLastReaders.<Expr, SQLException, SQLHandledException>mapOrderValuesEx(lastReaderInstance -> getExpr.apply(lastReaderInstance.getReaderProperty()));
                     ImOrderMap<Expr, Boolean> orders = property.aggrLastReaders.mapOrderKeyValues(lastAggrExprs::get, lastReaderInstance -> property.entity.lastAggrDesc);
                     ImMap<PropertyDrawInstance<K>.LastReaderInstance, Expr> lastValues = property.aggrLastReaders.getSet().mapValues((PropertyDrawInstance<K>.LastReaderInstance aggrLastReader) ->
                             GroupExpr.create(groupModeExprs, ListFact.toList(ValueExpr.get(groupModeWhere), lastAggrExprs.get(aggrLastReader)), orders, false, GroupType.LAST, groupModeExprs, false));
 
                     if(aggrReader instanceof PropertyDrawInstance) { // calculate value
-                        groupExpr = getExpr.apply(property.getDrawInstance());
+                        groupExpr = getExpr.apply(property.getReaderProperty());
                         groupExpr = FormulaExpr.create(new CastFormulaImpl(NumericClass.get(100, 20)), ListFact.singleton(groupExpr));
                         groupExpr = GroupExpr.create(groupModeExprs, groupExpr, groupModeWhere.and(CompareWhere.equalsNull(lastAggrExprs, lastValues)), groupType, groupModeExprs);
                     } else // select last value
                         groupExpr = lastValues.get((PropertyDrawInstance<K>.LastReaderInstance)aggrReader);
                 } else
-                    groupExpr = getExpr.apply(aggrReader.getPropertyObjectInstance());
+                    groupExpr = getExpr.apply(aggrReader.getReaderProperty());
 
                 mCases.add(columnsWhere, groupExpr);
             }

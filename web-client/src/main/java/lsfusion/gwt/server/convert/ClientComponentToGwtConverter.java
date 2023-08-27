@@ -90,6 +90,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         component.setAlignment(convertFlexAlignment(clientComponent.alignment));
         component.shrink = clientComponent.shrink;
         component.alignShrink = clientComponent.alignShrink;
+        component.shrinkOverflowVisible = clientComponent.shrinkOverflowVisible;
         component.alignCaption = clientComponent.alignCaption;
 
         if (clientComponent.design.getBackground() != null) {
@@ -258,7 +259,6 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.integrationSID = clientPropertyDraw.getIntegrationSID();
 
         propertyDraw.autoSize = clientPropertyDraw.autoSize;
-        propertyDraw.boxed = clientPropertyDraw.boxed;
 
         propertyDraw.customRenderFunction = clientPropertyDraw.customRenderFunction;
 

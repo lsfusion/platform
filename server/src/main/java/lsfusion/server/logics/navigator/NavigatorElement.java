@@ -15,6 +15,7 @@ import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.form.interactive.action.async.AsyncExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncSerializer;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.navigator.window.NavigatorWindow;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.physics.admin.Settings;
@@ -52,8 +53,8 @@ public abstract class NavigatorElement {
     public Supplier<LocalizedString> caption;
 
     public Property propertyImage;
-    public Supplier<AppServerImage> image;
-    public Supplier<AppServerImage> defaultImage;
+    public AppServerImage.Reader image;
+    public AppServerImage.Reader defaultImage;
 
     public Property propertyElementClass;
     public String elementClass;
@@ -80,22 +81,22 @@ public abstract class NavigatorElement {
 //        return LocalizedString.create(CanonicalNameUtils.getName(getCanonicalName()));
     }
 
-    public AppServerImage getImage() {
+    public AppServerImage getImage(ConnectionContext context) {
         if(this.image != null)
-            return this.image.get();
+            return this.image.get(context);
 
         if(defaultImage != null)
-            return defaultImage.get();
+            return defaultImage.get(context);
 
-        return getDefaultImage();
+        return getDefaultImage(context);
     }
 
-    public AppServerImage getDefaultImage(String name, float rankingThreshold, boolean useDefaultIcon) {
-        return AppServerImage.createDefaultImage(rankingThreshold, name, AppServerImage.Style.NAVIGATORELEMENT, AppServerImage.getAutoName(() -> caption.get(), this::getName), () -> useDefaultIcon ? AppServerImage.createNavigatorImage(getDefaultIcon(), NavigatorElement.this).get() : null);
+    public AppServerImage getDefaultImage(String name, float rankingThreshold, boolean useDefaultIcon, ConnectionContext context) {
+        return AppServerImage.createDefaultImage(rankingThreshold, name, AppServerImage.Style.NAVIGATORELEMENT, AppServerImage.getAutoName(() -> caption.get(), this::getName), defaultContext -> useDefaultIcon ? AppServerImage.createNavigatorImage(getDefaultIcon(), NavigatorElement.this).get(defaultContext) : null, context);
     }
 
-    private AppServerImage getDefaultImage() {
-        return getDefaultImage(AppServerImage.AUTO, Settings.get().getDefaultNavigatorImageRankingThreshold(), Settings.get().isDefaultNavigatorImage());
+    private AppServerImage getDefaultImage(ConnectionContext context) {
+        return getDefaultImage(AppServerImage.AUTO, Settings.get().getDefaultNavigatorImageRankingThreshold(), Settings.get().isDefaultNavigatorImage(), context);
     }
 
     public int getID() {
@@ -225,7 +226,7 @@ public abstract class NavigatorElement {
 
     public abstract byte getTypeID();
 
-    public abstract AsyncExec getAsyncExec();
+    public abstract AsyncExec getAsyncExec(ConnectionContext context);
 
     public void setPropertyImage(Property imageProperty) {
         this.propertyImage = imageProperty;
@@ -273,7 +274,7 @@ public abstract class NavigatorElement {
         return debugPoint != null ? debugPoint.path : "";
     }
     
-    public void serialize(DataOutputStream outStream) throws IOException {
+    public void serialize(ConnectionContext context, DataOutputStream outStream) throws IOException {
         outStream.writeByte(getTypeID());
 
         SerializationUtil.writeString(outStream, canonicalName);
@@ -290,9 +291,9 @@ public abstract class NavigatorElement {
             outStream.writeBoolean(parentWindow);
         }
 
-        AppServerImage.serialize(getImage(), outStream);
+        AppServerImage.serialize(getImage(context), outStream);
 
-        AsyncSerializer.serializeEventExec(getAsyncExec(), outStream);
+        AsyncSerializer.serializeEventExec(getAsyncExec(context), context, outStream);
     }
 
     public void setDebugPoint(DebugInfo.DebugPoint debugPoint) {

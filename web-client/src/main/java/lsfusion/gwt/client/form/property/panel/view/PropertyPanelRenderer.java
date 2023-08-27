@@ -64,9 +64,6 @@ public class PropertyPanelRenderer extends PanelRenderer {
         label = GFormLayout.createLabelCaptionWidget();
         BaseImage.initImageText(label, null, property.appImage, property.panelCaptionVertical);
         label.addStyleName("panel-label");
-        if(!(property.isTagInput() || property.valueElementClass != null))
-            label.addStyleName("text-secondary");
-//        label.addStyleName("fw-semibold");
 
         // id and for we need to support editing when clicking on the label
         // however only CLICK and CHANGE (for boolean props) are propagated to the input, and not MOUSEDOWN
@@ -107,7 +104,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
                 if (commentFirst)
                     commentWidget.add(valueCommentPanel, panelCommentAlignment);
 
-                valuePanel.add(valueCommentPanel, panelValueAlignment);
+                valuePanel.addFill(valueCommentPanel);
 
                 if (!commentFirst)
                     commentWidget.add(valueCommentPanel, panelCommentAlignment);
@@ -143,6 +140,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
             sizedLabel.add(panel, panelCaptionAlignment);
 
         // mostly it is needed to handle margins / paddings / layouting but we do it ourselves
+//
 //        cellRenderer.renderPanelContainer(panel);
 
         return new SizedWidget(panel);
@@ -168,9 +166,10 @@ public class PropertyPanelRenderer extends PanelRenderer {
     }
 
     protected void setLabelClasses(String classes) {
-//        if(label == null) {
-//            return;
-//        }
+        // there can be no caption
+        if(label == null) {
+            return;
+        }
 
         BaseImage.updateClasses(label, classes);
     }

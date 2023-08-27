@@ -5,6 +5,8 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
+import lsfusion.server.logics.classes.data.integral.IntegerClass;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.ContainerViewExtraType;
@@ -36,7 +38,10 @@ import java.util.function.Function;
 
 public class InstanceFactory {
 
-    public InstanceFactory() {
+    private final FormInstanceContext context;
+
+    public InstanceFactory(FormInstanceContext context) {
+        this.context = context;
     }
 
     private final MAddExclMap<ObjectEntity, ObjectInstance> objectInstances = MapFact.mSmallStrongMap();
@@ -147,12 +152,12 @@ public class InstanceFactory {
 
             propertyDrawInstance = new PropertyDrawInstance<>(
                     entity,
-                    getInstance(entity.getValueActionOrProperty()),
-                    getInstance(entity.getDrawProperty()),
+                    getInstance(entity.getActionOrProperty(context)),
+                    getInstance(entity.getProperty(context)),
                     getInstance(entity.toDraw),
                     columnGroupObjects,
                     PropertyDrawExtraType.extras.mapValues((PropertyDrawExtraType type) -> entity.hasPropertyExtra(type) ? getInstance(entity.getPropertyExtra(type)) : null),
-                    entity.lastAggrColumns.mapListValues((Function<PropertyObjectEntity, PropertyObjectInstance<?>>) this::getInstance)
+                    entity.lastAggrColumns.mapListValues(this::getInstance)
             );
             propertyDrawInstances.exclAdd(entity, propertyDrawInstance);
         }

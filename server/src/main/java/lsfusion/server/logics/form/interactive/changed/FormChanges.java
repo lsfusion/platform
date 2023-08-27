@@ -27,10 +27,11 @@ import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.ConcreteObjectClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.controller.remote.RemoteForm;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.ContainerViewExtraType;
-import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.design.ContainerViewInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
@@ -45,6 +46,7 @@ import org.json.JSONObject;
 
 import java.io.*;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static lsfusion.base.BaseUtils.*;
 
@@ -148,7 +150,7 @@ public class FormChanges {
             System.out.println(container);
     }
 
-    public void serialize(DataOutputStream outStream, FormView formView) throws IOException {
+    public void serialize(DataOutputStream outStream, FormInstanceContext context) throws IOException {
 
         outStream.writeInt(objects.size());
         for (int i=0,size=objects.size();i<size;i++) {
@@ -182,7 +184,7 @@ public class FormChanges {
             if(propertyReadInstance instanceof PropertyDrawInstance.LastReaderInstance)
                 outStream.writeInt(((PropertyDrawInstance.LastReaderInstance) propertyReadInstance).index);
 
-            NeedImage needImage = getNeedImage(propertyReadInstance, formView);
+            NeedImage needImage = getNeedImage(propertyReadInstance, context);
 
             outStream.writeInt(rows.size());
             for (int j=0,sizeJ=rows.size();j<sizeJ;j++) {
@@ -192,7 +194,7 @@ public class FormChanges {
 
                 Object value = rows.getValue(j).getValue();
 
-                serializeObject(outStream, convertFileValue(needImage, value));
+                serializeObject(outStream, convertFileValue(needImage, value, context));
             }
         }
 
@@ -232,14 +234,14 @@ public class FormChanges {
 
     public static class NeedImage {
         public final Type type;
-        public final Function<String, AppServerImage> imageSupplier;
+        public final Function<String, AppServerImage.Reader> imageSupplier;
 
-        public NeedImage(Type type, Function<String, AppServerImage> imageSupplier) {
+        public NeedImage(Type type, Function<String, AppServerImage.Reader> imageSupplier) {
             this.type = type;
             this.imageSupplier = imageSupplier;
         }
     }
-    public static Object convertFileValue(NeedImage needImage, Object value) throws IOException {
+    public static Object convertFileValue(NeedImage needImage, Object value, ConnectionContext context) throws IOException {
         if(value instanceof FileData && needImage != null && ((FileData)value).getExtension().equals("resourceImage"))
             value = new String(((FileData) value).getRawFile().getBytes());
 
@@ -254,7 +256,7 @@ public class FormChanges {
         }
 
         if(value instanceof String && needImage != null) {
-            return AppServerImage.getAppImage(needImage.imageSupplier.apply((String)value));
+            return AppServerImage.getAppImage(needImage.imageSupplier.apply((String)value).get(context));
         }
 
         if (value instanceof String && ((String) value).contains(inlineFileSeparator)) {
@@ -269,7 +271,7 @@ public class FormChanges {
                 if (k * 2 + 1 < parts.length) {
                     String name = parts[k * 2 + 1];
                     if(name.startsWith(inlineImageSeparator)) {
-                        files[k] = AppServerImage.getAppImage(AppServerImage.createActionImage(name.substring(inlineImageSeparator.length())).get());
+                        files[k] = AppServerImage.getAppImage(AppServerImage.createActionImage(name.substring(inlineImageSeparator.length())).get(context));
                     } else {
                         Result<String> fullPath = new Result<>();
                         files[k] = new StringWithFiles.File(ResourceUtils.findResourceAsFileData(name, false, true, fullPath, null), fullPath.result);
@@ -283,22 +285,23 @@ public class FormChanges {
         return value;
     }
 
-    private static NeedImage getNeedImage(PropertyReaderInstance reader, FormView formView) {
+    private static NeedImage getNeedImage(PropertyReaderInstance reader, FormInstanceContext context) {
+        Supplier<Type> readType = () -> reader.getReaderProperty().getType();
         Type readerType;
-        if ((reader instanceof PropertyDrawInstance && ((PropertyDrawInstance<?>) reader).isProperty() && (readerType = ((PropertyDrawInstance) reader).getType()) instanceof ImageClass)) {
+        if ((reader instanceof PropertyDrawInstance && ((PropertyDrawInstance<?>) reader).isProperty(context) && (readerType = readType.get()) instanceof ImageClass)) {
             PropertyDrawEntity<?> propertyDraw = ((PropertyDrawInstance<?>) reader).entity;
-            return getNeedImage(readerType, propertyDraw, formView);
+            return getNeedImage(readerType, propertyDraw, context);
         } else if (reader instanceof PropertyDrawInstance.ExtraReaderInstance && reader.getTypeID() == PropertyDrawExtraType.IMAGE.getPropertyReadType()) {
-            return getNeedImage(reader.getPropertyObjectInstance().getType(), ((PropertyDrawInstance<?>.ExtraReaderInstance) reader).getPropertyDraw().entity, formView);
+            return getNeedImage(readType.get(), ((PropertyDrawInstance<?>.ExtraReaderInstance) reader).getPropertyDraw().entity, context);
         } else if (reader instanceof ContainerViewInstance.ExtraReaderInstance && reader.getTypeID() == ContainerViewExtraType.IMAGE.getContainerReadType()) {
             ContainerView containerView = ((ContainerViewInstance.ExtraReaderInstance) reader).getContainerView();
-            return new NeedImage(reader.getPropertyObjectInstance().getType(), imagePath -> AppServerImage.createContainerImage(imagePath, containerView, formView).get());
+            return new NeedImage(readType.get(), imagePath -> AppServerImage.createContainerImage(imagePath, containerView, context.view));
         }
         return null;
     }
 
-    private static NeedImage getNeedImage(Type type, PropertyDrawEntity<?> propertyDraw, FormView formView) {
-        return new NeedImage(type, imagePath -> AppServerImage.createPropertyImage(imagePath, formView.get(propertyDraw)).get());
+    private static NeedImage getNeedImage(Type type, PropertyDrawEntity<?> propertyDraw, FormInstanceContext context) {
+        return new NeedImage(type, imagePath -> AppServerImage.createPropertyImage(imagePath, context.view.get(propertyDraw)));
     }
 
     public static void serializeGroupObjectValue(DataOutputStream outStream, ImMap<ObjectInstance,? extends ObjectValue> values) throws IOException {
@@ -360,10 +363,10 @@ public class FormChanges {
         }
     }
 
-    public byte[] serialize(FormView formView) {
+    public byte[] serialize(FormInstanceContext context) {
         try {
             ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-            serialize(new DataOutputStream(outStream), formView);
+            serialize(new DataOutputStream(outStream), context);
             return outStream.toByteArray();
         } catch (Exception e) {
             throw Throwables.propagate(e);
@@ -371,16 +374,16 @@ public class FormChanges {
     }
 
     // assert that it was filtered by filterPropertiesExternal
-    private void serializePropertiesExternal(JSONObject jsonObject, ImSet<PropertyDrawInstance> serializeProps, ImMap<ObjectInstance, DataObject> gridObjectRow) {
+    private void serializePropertiesExternal(FormInstanceContext context, JSONObject jsonObject, ImSet<PropertyDrawInstance> serializeProps, ImMap<ObjectInstance, DataObject> gridObjectRow) {
         for(PropertyDrawInstance property : serializeProps)
-            jsonObject.put(property.getIntegrationSID(), RemoteForm.formatJSONNull(property.getType(), properties.get(property).get(gridObjectRow).getValue()));
+            jsonObject.put(property.getIntegrationSID(), RemoteForm.formatJSONNull(property.getType(context), properties.get(property).get(gridObjectRow).getValue()));
     } 
 
-    private ImSet<PropertyDrawInstance> filterPropertiesExternal(ImSet<PropertyDrawInstance> serializeProps, final boolean panel) {
-        return serializeProps.filterFn(property -> !property.isList() == panel && property.isProperty() && property.getIntegrationSID() != null);
+    private ImSet<PropertyDrawInstance> filterPropertiesExternal(FormInstanceContext context, ImSet<PropertyDrawInstance> serializeProps, final boolean panel) {
+        return serializeProps.filterFn(property -> !property.isList() == panel && property.isProperty(context) && property.getIntegrationSID() != null);
     } 
 
-    public JSONObject serializeExternal() {
+    public JSONObject serializeExternal(FormInstanceContext context) {
 
         // modify
         JSONObject modifyJSON = new JSONObject();
@@ -402,13 +405,13 @@ public class FormChanges {
                     updateGridObjects = false;
                     rows = groupObject.keys.keyOrderSet();
                 }
-                ImSet<PropertyDrawInstance> gridProperties = filterPropertiesExternal(properties, false);
+                ImSet<PropertyDrawInstance> gridProperties = filterPropertiesExternal(context, properties, false);
                 if(rows != null && (updateGridObjects || !gridProperties.isEmpty())) { // has grid and props or keys
                     JSONArray rowsJSON = new JSONArray();
                     for (ImMap<ObjectInstance, DataObject> gridObjectRow : rows) {
                         JSONObject rowJSON = new JSONObject();
                         // grid props
-                        serializePropertiesExternal(rowJSON, gridProperties, gridObjectRow);
+                        serializePropertiesExternal(context, rowJSON, gridProperties, gridObjectRow);
                         // grid keys (we'll need it anyway, for async deletes)
                         rowJSON.put("value", RemoteForm.formatJSON(groupObject, gridObjectRow));
                         rowsJSON.put(rowJSON);
@@ -425,8 +428,8 @@ public class FormChanges {
             }
 
             // panel props 
-            ImSet<PropertyDrawInstance> panelProperties = filterPropertiesExternal(properties, true);
-            serializePropertiesExternal(groupObjectJSON, panelProperties, MapFact.EMPTY());
+            ImSet<PropertyDrawInstance> panelProperties = filterPropertiesExternal(context, properties, true);
+            serializePropertiesExternal(context, groupObjectJSON, panelProperties, MapFact.EMPTY());
         }
 
         // drop props

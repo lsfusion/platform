@@ -2,6 +2,7 @@ package lsfusion.server.logics.form.interactive.action.async;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 
 import java.io.DataOutputStream;
@@ -19,7 +20,7 @@ public class AsyncChange extends AsyncFormExec {
     }
 
     @Override
-    public void serialize(DataOutputStream outStream) throws IOException {
+    public void serialize(ConnectionContext context, DataOutputStream outStream) throws IOException {
         outStream.writeInt(properties.size());
         for(PropertyDrawEntity property : properties)
             outStream.writeInt(property.getID());

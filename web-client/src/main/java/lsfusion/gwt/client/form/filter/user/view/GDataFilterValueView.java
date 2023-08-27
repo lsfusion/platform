@@ -13,6 +13,7 @@ import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
+import lsfusion.gwt.client.form.property.cell.view.CustomCellRenderer;
 
 import static lsfusion.gwt.client.form.event.GKeyStroke.isAddUserFilterKeyEvent;
 import static lsfusion.gwt.client.form.event.GKeyStroke.isReplaceUserFilterKeyEvent;
@@ -71,12 +72,13 @@ public class GDataFilterValueView extends SizedFlexPanel {
     public void startEditing(Event keyEvent) {
         if (GwtClientUtils.isShowing(cell) && !logicsSupplier.getForm().isEditing()) { // suggest box may appear in (0,0) if filter is already gone (as it's called in scheduleDeferred)
             if (!cell.getProperty().isBoolean()) {
-                EventHandler handler = new EventHandler(keyEvent);
-                if (isAddUserFilterKeyEvent(keyEvent) || isReplaceUserFilterKeyEvent(keyEvent)) {
-                    cell.startEditing(handler);
-                } else {
-                    cell.onEditEvent(handler);
-                }
+                cell.onEditEvent(new EventHandler(keyEvent), isAddUserFilterKeyEvent(keyEvent) || isReplaceUserFilterKeyEvent(keyEvent));
+//                EventHandler handler = new EventHandler(keyEvent);
+//                if (isAddUserFilterKeyEvent(keyEvent) || isReplaceUserFilterKeyEvent(keyEvent)) {
+//                    cell.startEditing(handler);
+//                } else {
+//                    cell.onEditEvent(handler);
+//                }
             } else {
                 // to be able to apply on Enter
                 filterValue.value = cell.getValue();

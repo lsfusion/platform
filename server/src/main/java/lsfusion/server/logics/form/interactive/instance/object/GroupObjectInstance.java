@@ -273,7 +273,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         return new DynamicFilters() {
             @Override
             public ImList<FilterInstance> filterUserFilters(ImList<FilterInstance> userFilters) {
-                return userFilters.filterList(element -> !(element instanceof CompareFilterInstance && ((CompareFilterInstance<?>) element).hasProperty(userProperty.getValueProperty())));
+                return userFilters.filterList(element -> !(element instanceof CompareFilterInstance && ((CompareFilterInstance<?>) element).hasProperty(userProperty.getFilterProperty())));
             }
 
             @Override
@@ -832,7 +832,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     public ImMap<GroupColumn, Expr> getGroupExprs(ImMap<ObjectInstance, KeyExpr> mapKeys, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
         return groupMode.groupProps.<Expr, SQLException, SQLHandledException>mapValuesEx(value -> {
             ImMap<ObjectInstance, Expr> mapObjects = MapFact.addExcl(mapKeys, value.columnKeys.mapValues((Function<DataObject, ValueExpr>) DataObject::getExpr));
-            Expr expr = value.property.getDrawInstance().getExpr(mapObjects, modifier, reallyChanged);
+            Expr expr = value.property.getReaderProperty().getExpr(mapObjects, modifier, reallyChanged);
             return FormulaUnionExpr.create(StringOverrideFormulaImpl.instance, ListFact.toList(expr, ValueExpr.IMPOSSIBLESTRING)); // override to support NULLs
         });
     }
@@ -1442,7 +1442,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     private DataObject createObject(FormInstance form, ObjectInstance objectInstance, DataSession session, ExecutionStack stack) throws SQLException, SQLHandledException {
         PropertyDrawInstance newActionProperty = getNewPropertyDrawInstance(form, objectInstance.getSID());
         if(newActionProperty != null) {
-            ((ActionObjectInstance) newActionProperty.getValueProperty()).getValueImplement(form).execute(session, stack);
+            ((ActionObjectInstance) newActionProperty.getActionOrProperty()).getValueImplement(form).execute(session, stack);
         } else {
             LA addObjectAction = form.BL.LM.getAddObjectAction(form.entity, objectInstance.entity, (ConcreteCustomClass) objectInstance.getBaseClass());
             addObjectAction.execute(form, stack, new FormEnvironment<>(null, null, form));
@@ -1644,7 +1644,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     private final static Type.Getter<ObjectInstance> typeGetter = ObjectInstance::getType;
 
     public class RowBackgroundReaderInstance implements PropertyReaderInstance {
-        public PropertyObjectInstance getPropertyObjectInstance() {
+        public PropertyObjectInstance getReaderProperty() {
             return propertyBackground;
         }
 
@@ -1668,7 +1668,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
 
     public class RowForegroundReaderInstance implements PropertyReaderInstance {
-        public PropertyObjectInstance getPropertyObjectInstance() {
+        public PropertyObjectInstance getReaderProperty() {
             return propertyForeground;
         }
 
@@ -1692,7 +1692,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
 
     public class CustomOptionsReaderInstance implements PropertyReaderInstance {
-        public PropertyObjectInstance getPropertyObjectInstance() {
+        public PropertyObjectInstance getReaderProperty() {
             return propertyCustomOptions;
         }
 

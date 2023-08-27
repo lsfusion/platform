@@ -166,7 +166,7 @@ FORM interpreter '{eval.script.form.interpreter}'
     OBJECTS s = Script PANEL
     PROPERTIES name(s), json(s) CUSTOM 'interpreter' SHOWIF isWeb() ON CHANGE changeScript(s), text(s) SHOWIF NOT isWeb()
 
-    OBJECTS st = ScriptType CUSTOM 'radioButtonGroup'
+    OBJECTS st = ScriptType CUSTOM 'selectButtonGroup'
     PROPERTIES SHOWIF isWeb() name=executionScriptTypeCaption(st), selected=selectedExecutionScriptType(st, s), executionScriptTypeName(st)
     ORDERS executionScriptTypeName(st)
 

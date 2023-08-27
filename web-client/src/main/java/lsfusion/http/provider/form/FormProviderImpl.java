@@ -4,7 +4,7 @@ import lsfusion.base.Pair;
 import lsfusion.base.file.RawFileData;
 import lsfusion.client.form.ClientForm;
 import lsfusion.client.form.ClientFormChanges;
-import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
+import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.object.GGroupObject;
@@ -17,6 +17,7 @@ import lsfusion.gwt.server.convert.ClientComponentToGwtConverter;
 import lsfusion.gwt.server.convert.ClientFormChangesToGwtConverter;
 import lsfusion.http.provider.SessionInvalidatedException;
 import lsfusion.http.provider.navigator.NavigatorProvider;
+import lsfusion.interop.form.FormClientData;
 import lsfusion.interop.form.object.table.grid.user.design.ColumnUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
@@ -26,8 +27,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.ServletContext;
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -49,26 +48,24 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
 
     public FormProviderImpl() {}
 
-    public GForm createForm(MainDispatchServlet servlet, String canonicalName, String formSID, RemoteFormInterface remoteForm, Object[] immutableMethods, byte[] firstChanges, String sessionID) throws IOException {
+    public GForm createForm(MainDispatchServlet servlet, RemoteFormInterface remoteForm, FormClientData clientData, String sessionID) throws IOException {
         // 0, 1, 3 are indices from FormClientAction.methodNames array
-        byte[] formDesign = immutableMethods != null ? (byte[]) immutableMethods[1] : remoteForm.getRichDesignByteArray();
-        FormUserPreferences formUP = immutableMethods != null ? (FormUserPreferences)immutableMethods[0] : remoteForm.getUserPreferences();
-
-        ClientForm clientForm = new ClientSerializationPool().deserializeObject(new DataInputStream(new ByteArrayInputStream(formDesign)));
+        ClientForm clientForm = ClientFormController.deserializeClientForm(remoteForm, clientData);
 
         GForm gForm = new ClientComponentToGwtConverter(servlet, sessionID).convertOrCast(clientForm);
 
-        Set<Integer> inputObjects = remoteForm.getInputGroupObjects();
+        Set<Integer> inputObjects = clientData.inputGroupObjects;
         gForm.inputGroupObjects = new HashSet<>();
         for(Integer inputObject : inputObjects) {
             gForm.inputGroupObjects.add(gForm.getGroupObject(inputObject));
         }
 
-        gForm.sID = formSID;
-        gForm.canonicalName = canonicalName;
+        gForm.sID = clientData.formSID;
+        gForm.canonicalName = clientData.formSID;
 
         FormSessionObject formSessionObject = new FormSessionObject(clientForm, remoteForm, sessionID);
 
+        byte[] firstChanges = clientData.firstChanges;
         if (firstChanges != null)
             gForm.initialFormChanges = ClientFormChangesToGwtConverter.getInstance().convertOrCast(
                     new ClientFormChanges(firstChanges, clientForm),
@@ -76,6 +73,7 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
                     formSessionObject, servlet
             );
 
+        FormUserPreferences formUP = clientData.userPreferences;
         if (formUP != null)
             gForm.userPreferences = new GFormUserPreferences(convertUserPreferences(gForm, formUP.getGroupObjectGeneralPreferencesList()),
                                                             convertUserPreferences(gForm, formUP.getGroupObjectUserPreferencesList()));

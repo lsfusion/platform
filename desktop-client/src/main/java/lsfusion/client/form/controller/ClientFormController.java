@@ -63,6 +63,7 @@ import lsfusion.interop.action.ExceptionClientAction;
 import lsfusion.interop.action.LogMessageClientAction;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.base.remote.RemoteRequestInterface;
+import lsfusion.interop.form.FormClientData;
 import lsfusion.interop.form.UpdateMode;
 import lsfusion.interop.form.event.InputEvent;
 import lsfusion.interop.form.event.*;
@@ -188,9 +189,13 @@ public class ClientFormController implements AsyncListener {
     private List<ClientComponent> firstTabsToActivate;
     private List<ClientPropertyDraw> firstPropsToActivate;
 
-    public ClientFormController(String icanonicalName, String iformSID, RemoteFormInterface iremoteForm, FormsController iformsController, ClientForm iform, byte[] firstChanges, ClientNavigator iclientNavigator, boolean iisModal, boolean iisDialog) {
-        formSID = iformSID + (iisModal ? "(modal)" : "") + "(" + System.identityHashCode(this) + ")";
-        canonicalName = icanonicalName;
+    private Set<Integer> inputGroupObjects;
+
+    public ClientFormController(RemoteFormInterface iremoteForm, FormsController iformsController, ClientForm iform, FormClientData clientData, ClientNavigator iclientNavigator, boolean iisModal, boolean iisDialog) {
+        formSID = clientData.formSID + (iisModal ? "(modal)" : "") + "(" + System.identityHashCode(this) + ")";
+        canonicalName = clientData.canonicalName;
+        inputGroupObjects = clientData.inputGroupObjects;
+
         isDialog = iisDialog;
         isWindow = iisModal;
 
@@ -223,18 +228,14 @@ public class ClientFormController implements AsyncListener {
 
             updateFormCaption();
 
-            initializeForm(firstChanges);
+            initializeForm(clientData);
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
     }
 
-    public static ClientForm deserializeClientForm(RemoteFormInterface remoteForm) {
-        try {
-            return new ClientSerializationPool().deserializeObject(new DataInputStream(new ByteArrayInputStream(remoteForm.getRichDesignByteArray())));
-        } catch (IOException e) {
-            throw Throwables.propagate(e);
-        }
+    public static ClientForm deserializeClientForm(RemoteFormInterface remoteForm, FormClientData clientData) throws IOException {
+        return new ClientSerializationPool().deserializeObject(new DataInputStream(new ByteArrayInputStream(clientData.richDesign)));
     }
 
     public void checkMouseEvent(MouseEvent e, boolean preview, ClientPropertyDraw property, Supplier<ClientGroupObject> groupObjectSupplier, boolean panel) {
@@ -302,14 +303,15 @@ public class ClientFormController implements AsyncListener {
     // ------------------------------------------------------------------------------------ //
     // ----------------------------------- Инициализация ---------------------------------- //
     // ------------------------------------------------------------------------------------ //
-    private void initializeForm(byte[] firstChanges) throws Exception {
+    private void initializeForm(FormClientData clientData) throws Exception {
 
         initializeParams(); // has to be done before initializeControllers (since adding component uses getSize)
 
-        initializeControllers();
+        initializeControllers(clientData);
 
         initializeDefaultOrders(); // now it doesn't matter, because NavigatorForm will be removed, and first changes will always be not null, but still
 
+        byte[] firstChanges = clientData.firstChanges;
         if(firstChanges != null) {
             applyFormChanges(-1, firstChanges, true);
         } else {
@@ -344,8 +346,8 @@ public class ClientFormController implements AsyncListener {
         }
     }
 
-    private void initializeControllers() throws IOException {
-        FormUserPreferences preferences = remoteForm.getUserPreferences();
+    private void initializeControllers(FormClientData clientData) throws IOException {
+        FormUserPreferences preferences = clientData.userPreferences;
         
         for (ClientTreeGroup treeGroup : form.treeGroups) {
             initializeTreeController(treeGroup);
@@ -1343,7 +1345,7 @@ public class ClientFormController implements AsyncListener {
             @Override
             protected void onResponse(long requestIndex, ClientAsync[] result) throws Exception {
                 super.onResponse(requestIndex, result);
-                callback.done(new ClientAsyncResult(result != null ? Arrays.asList(result) : null, false, false));
+                callback.done(convertAsyncResult(result));
             }
 
             @Override
@@ -1368,12 +1370,11 @@ public class ClientFormController implements AsyncListener {
     public void getAsyncValues(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String value, String actionSID, AsyncCallback<ClientAsyncResult> callback) {
         AsyncCallback<ClientAsyncResult> fCallback = checkLast(editAsyncIndex++, callback);
 
-        new SwingWorker<List<ClientAsync>, Void>() {
-            boolean runPessimistic = false;
-            boolean needMoreSymbols = false;
-
+        new SwingWorker<ClientAsyncResult, Void>() {
             @Override
-            protected List<ClientAsync> doInBackground() {
+            protected ClientAsyncResult doInBackground() {
+                boolean runPessimistic;
+
                 if (!editAsyncUsePessimistic) {
                     try {
                         ClientAsync[] result = getAsyncValuesProvider.getAsyncValues(property.getID(), getFullCurrentKey(columnKey), actionSID, value, editAsyncIndex);
@@ -1381,18 +1382,7 @@ public class ClientFormController implements AsyncListener {
                             editAsyncUsePessimistic = true;
                             runPessimistic = true;
                         } else {
-                            List<ClientAsync> values = Arrays.asList(result);
-                            if (values.size() > 0) {
-                                ClientAsync lastResult = values.get(values.size() - 1);
-                                if (lastResult.equals(ClientAsync.RECHECK)) {
-                                    runPessimistic = true;
-                                    values = values.subList(0, values.size() - 1);
-                                } else if (values.size() == 1 && (lastResult.equals(ClientAsync.CANCELED) || lastResult.equals(ClientAsync.NEEDMORE))) {// ignoring CANCELED results
-                                    needMoreSymbols = lastResult.equals(ClientAsync.NEEDMORE);
-                                    values = needMoreSymbols ? Collections.emptyList() : null;
-                                }
-                            }
-                            return values;
+                            return convertAsyncResult(result);
                         }
 
                     } catch (RemoteException e) {
@@ -1402,12 +1392,12 @@ public class ClientFormController implements AsyncListener {
                     runPessimistic = true;
                 }
 
-                return Collections.emptyList();
+                return new ClientAsyncResult(Collections.emptyList(), false, runPessimistic);
             }
 
             @Override
             protected void done() {
-                List<ClientAsync> result;
+                ClientAsyncResult result;
                 try {
                     result = get();
                 } catch (Throwable t) {
@@ -1415,11 +1405,29 @@ public class ClientFormController implements AsyncListener {
                     return;
                 }
 
-                fCallback.done(new ClientAsyncResult(result, needMoreSymbols, runPessimistic));
-                if(runPessimistic)
+                fCallback.done(result);
+                if(result.moreRequests)
                     getPessimisticValues(property, columnKey, value, actionSID, fCallback);
             }
         }.execute();
+    }
+
+    private static ClientAsyncResult convertAsyncResult(ClientAsync[] result) {
+        boolean needMoreSymbols = false;
+        boolean moreResults = false;
+        List<ClientAsync> values = Arrays.asList(result);
+        if (values.size() > 0) {
+            ClientAsync lastResult = values.get(values.size() - 1);
+            if (lastResult.equals(ClientAsync.RECHECK)) {
+                values = values.subList(0, values.size() - 1);
+
+                moreResults = true;
+            } else if (values.size() == 1 && (lastResult.equals(ClientAsync.CANCELED) || lastResult.equals(ClientAsync.NEEDMORE))) {// ignoring CANCELED results
+                needMoreSymbols = lastResult.equals(ClientAsync.NEEDMORE);
+                values = needMoreSymbols ? Collections.emptyList() : null;
+            }
+        }
+        return new ClientAsyncResult(values, needMoreSymbols, moreResults);
     }
 
     public void changePropertyOrder(final ClientPropertyDraw property, final Order modiType, final ClientGroupObjectValue columnKey) {
@@ -2018,15 +2026,10 @@ public class ClientFormController implements AsyncListener {
     }
 
     private Set<ClientGroupObject> getInputGroupObjects() {
-        try {
-            Set<ClientGroupObject> inputGroupObjects = new HashSet<>();
-            for(Integer inputGroupObject : remoteForm.getInputGroupObjects()) {
-                inputGroupObjects.add(form.getGroupObject(inputGroupObject));
-            }
-            return inputGroupObjects;
-        } catch (IOException e) {
-            throw Throwables.propagate(e);
-        }
+        Set<ClientGroupObject> inputGroupObjects = new HashSet<>();
+        for(Integer inputGroupObject : this.inputGroupObjects)
+            inputGroupObjects.add(form.getGroupObject(inputGroupObject));
+        return inputGroupObjects;
     }
 
     private boolean equalGroup(ClientGroupObject groupObject, Binding binding) {

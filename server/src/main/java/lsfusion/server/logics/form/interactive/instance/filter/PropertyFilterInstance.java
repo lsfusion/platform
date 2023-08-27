@@ -50,8 +50,8 @@ public abstract class PropertyFilterInstance<P extends PropertyInterface> extend
 
     public PropertyFilterInstance(DataInputStream inStream, FormInstance form) throws IOException, SQLException, SQLHandledException {
         super(inStream,form);
-        PropertyDrawInstance<P> propertyDraw = form.getPropertyDraw(inStream.readInt());
-        PropertyObjectInstance<P> propertyObject = (PropertyObjectInstance<P>) propertyDraw.getValueProperty();
+        PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(inStream.readInt());
+        PropertyObjectInstance<P> propertyObject = (PropertyObjectInstance<P>) propertyDraw.getFilterProperty();
         if(inStream.readBoolean())
             propertyObject = propertyObject.getRemappedPropertyObject(RemoteForm.deserializeKeysValues(inStream, form), false);
         property = propertyObject;

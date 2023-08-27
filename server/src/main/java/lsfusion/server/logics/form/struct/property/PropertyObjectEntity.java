@@ -1,5 +1,7 @@
 package lsfusion.server.logics.form.struct.property;
 
+import lsfusion.base.Pair;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -12,7 +14,9 @@ import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.form.interactive.action.input.InputOrderEntity;
+import lsfusion.server.logics.form.interactive.action.input.InputValueList;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
@@ -22,6 +26,7 @@ import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObje
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.admin.Settings;
 
 import java.sql.SQLException;
 
@@ -66,12 +71,67 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrP
     }
 
     @Override
-    public <X extends PropertyInterface> PropertyObjectEntity<?> getDrawProperty(PropertyObjectEntity<X> readOnly) {
+    public <X extends PropertyInterface> PropertyObjectEntity<?> getProperty(PropertyObjectEntity<X> readOnly) {
         return this;
     }
 
     public <T extends PropertyInterface> PropertyMapImplement<?, T> getImplement(ImRevMap<ObjectEntity, T> mapObjects) {
         return new PropertyMapImplement<>(property, mapping.join(mapObjects));
+    }
+
+    public static class Select {
+
+        public final PropertyObjectEntity<?> property;
+
+        public final int length;
+        public final int count;
+        public final boolean actual;
+
+        public enum Type {
+            MULTI,
+            NOTNULL,
+            NULL
+        }
+
+        public final Type type;
+        public final boolean html;
+
+        public Select(PropertyObjectEntity<?> property, int length, int count, boolean actual, Type type, boolean html) {
+            this.property = property;
+            this.length = length;
+            this.count = count;
+            this.actual = actual;
+            this.type = type;
+            this.html = html;
+        }
+    }
+    public Select getSelectProperty(FormInstanceContext context, boolean forceSelect, Boolean forceFilterSelected) { // false - filter selected,
+        Type type = property.getType();
+        Property.Select<P> select = property.getSelectProperty(ListFact.EMPTY(), forceSelect);
+        if(select != null) {
+            Pair<Integer, Integer> stats = select.stat;
+            boolean actualStats = false;
+            if(select.values != null && context.dbManager != null) {
+                stats = getActualSelectStats(context, select);
+                actualStats = true;
+            }
+            PropertyMapImplement<?, P> selectProperty = select.property.get(forceFilterSelected != null ? forceFilterSelected : stats.second > Settings.get().getMaxInterfaceStatForValueCombo());
+            if(selectProperty == null)
+                return null;
+            boolean multi = select.multi;
+            return new Select(selectProperty.mapEntityObjects(mapping), stats.first, stats.second, actualStats, multi ? Select.Type.MULTI : (property.isNotNull() ? Select.Type.NOTNULL : Select.Type.NULL), select.html);
+        }
+        return null;
+    }
+
+    private static <P extends PropertyInterface> Pair<Integer, Integer> getActualSelectStats(FormInstanceContext context, Property.Select<P> select) {
+        Pair<Integer, Integer> actualStats = new Pair<>(0, 0);
+        for(InputValueList value : select.values) {
+            Pair<Integer, Integer> readValues = context.getValues(value);
+            if(actualStats.second < readValues.second)
+                actualStats = readValues;
+        }
+        return actualStats;
     }
 
     public boolean isValueUnique(GroupObjectEntity grid) {

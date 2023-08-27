@@ -2766,6 +2766,7 @@ public class Settings implements Cloneable {
     private int useInputTagForTextBasedInPanel = 1;
     private boolean useInputTagForBoolean = true;
     private boolean noToolbarForInputTagInPanel = false;
+    private boolean noToolbarForSelectDropdownInPanel = false;
     private boolean noToolbarForBoolean = true;
 
     public int getUseInputTagForTextBasedInPanel() {
@@ -2790,6 +2791,14 @@ public class Settings implements Cloneable {
 
     public void setNoToolbarForInputTagInPanel(boolean noToolbarForInputTagInPanel) {
         this.noToolbarForInputTagInPanel = noToolbarForInputTagInPanel;
+    }
+
+    public boolean isNoToolbarForSelectDropdownInPanel() {
+        return noToolbarForSelectDropdownInPanel;
+    }
+
+    public void setNoToolbarForSelectDropdownInPanel(boolean noToolbarForSelectDropdownInPanel) {
+        this.noToolbarForSelectDropdownInPanel = noToolbarForSelectDropdownInPanel;
     }
 
     public boolean isNoToolbarForBoolean() {
@@ -2966,6 +2975,9 @@ public class Settings implements Cloneable {
     }
 
     public int minInterfaceStatForValueUnique = 100;
+    public int maxInterfaceStatForValueRadio = 5;
+    public int maxInterfaceStatForValueCombo = 20;
+    public int maxLengthForValueRadioButtonGroup = 40;
 
     public int getMinInterfaceStatForValueUnique() {
         return minInterfaceStatForValueUnique;
@@ -2973,6 +2985,30 @@ public class Settings implements Cloneable {
 
     public void setMinInterfaceStatForValueUnique(int minInterfaceStatForValueUnique) {
         this.minInterfaceStatForValueUnique = minInterfaceStatForValueUnique;
+    }
+
+    public int getMaxInterfaceStatForValueRadio() {
+        return maxInterfaceStatForValueRadio;
+    }
+
+    public void setMaxInterfaceStatForValueRadio(int maxInterfaceStatForValueRadio) {
+        this.maxInterfaceStatForValueRadio = maxInterfaceStatForValueRadio;
+    }
+
+    public int getMaxInterfaceStatForValueCombo() {
+        return maxInterfaceStatForValueCombo;
+    }
+
+    public void setMaxInterfaceStatForValueCombo(int maxInterfaceStatForValueCombo) {
+        this.maxInterfaceStatForValueCombo = maxInterfaceStatForValueCombo;
+    }
+
+    public int getMaxLengthForValueRadioButtonGroup() {
+        return maxLengthForValueRadioButtonGroup;
+    }
+
+    public void setMaxLengthForValueRadioButtonGroup(int maxLengthForValueRadioButtonGroup) {
+        this.maxLengthForValueRadioButtonGroup = maxLengthForValueRadioButtonGroup;
     }
 
     private boolean disableCombineFilters = false;

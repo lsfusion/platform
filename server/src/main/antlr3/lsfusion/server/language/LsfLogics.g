@@ -663,12 +663,22 @@ propertyClassViewType returns [ClassViewType type]
 	|   'TOOLBAR' {$type = ClassViewType.TOOLBAR;}
 	;
 
-propertyCustomView returns [String customRenderFunction, String customEditorFunction]
-	:	'CUSTOM' ((renderFun=stringLiteral { $customRenderFunction = $renderFun.val;})
-	    | ((renderFun=stringLiteral { $customRenderFunction = $renderFun.val;})?
-        // EDIT TEXT is a temporary fix for backward compatibility
-		(('CHANGE' | ('EDIT' primitiveType)) { $customEditorFunction = "DEFAULT"; } (editFun=stringLiteral {$customEditorFunction = $editFun.val; })?))) // "DEFAULT" is hardcoded and used in GFormController.edit
+propertyCustomView returns [String customRenderFunction, String customEditorFunction, String selectFunction]
+	:	('CUSTOM'
+	            ((renderFun=stringLiteral { $customRenderFunction = $renderFun.val;})
+	        |   ((renderFun=stringLiteral { $customRenderFunction = $renderFun.val;})?
+	            pedt = propertyEditCustomView { $customEditorFunction = $pedt.customEditorFunction; })))
+	    |
+	    'SELECT' { $customRenderFunction = PropertyDrawEntity.SELECT + PropertyDrawEntity.AUTOSELECT; } ({ input.LA(1)!=ID }? ('AUTO' | renderFun=stringLiteral { $customRenderFunction = PropertyDrawEntity.SELECT + $renderFun.val;}))?
+	    |
+	    'NOSELECT' { $customRenderFunction = PropertyDrawEntity.NOSELECT; }
 	;
+
+propertyEditCustomView returns [String customEditorFunction]
+    :
+        // EDIT TEXT is a temporary fix for backward compatibility
+        ('CHANGE' | ('EDIT' primitiveType)) { $customEditorFunction = "DEFAULT"; } (editFun=stringLiteral {$customEditorFunction = $editFun.val; })? // "DEFAULT" is hardcoded and used in GFormController.edit
+    ;
 
 listViewType returns [ListViewType type, PivotOptions options, String customRenderFunction, FormLPUsage customOptions, String mapTileProvider]
 	:   'PIVOT' {$type = ListViewType.PIVOT;} ('DEFAULT' | 'NODEFAULT' {$type = null;})? opt = pivotOptions {$options = $opt.options; }
@@ -853,7 +863,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'CLASS' propObj=formPropertyObject { $options.setValueElementClass($propObj.property); }
 		|	'BACKGROUND' propObj=formPropertyObject { $options.setBackground($propObj.property); }
 		|	'FOREGROUND' propObj=formPropertyObject { $options.setForeground($propObj.property); }
-		|	('IMAGE' (propObj=formPropertyObject)? { $options.setImage($propObj.literal, $propObj.property); } | 'NOIMAGE' { $options.setImage(AppServerImage.NULL, null); } )
+		|	('IMAGE' ('AUTO' | propObj=formPropertyObject)? { $options.setImage($propObj.literal, $propObj.property); } | 'NOIMAGE' { $options.setImage(AppServerImage.NULL, null); } )
 		|	'HEADER' propObj=formPropertyObject { $options.setHeader($propObj.property); }
 		|	'FOOTER' propObj=formPropertyObject { $options.setFooter($propObj.property); }
 		|	viewType=propertyClassViewType { $options.setViewType($viewType.type); }

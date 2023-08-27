@@ -90,8 +90,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public String valueElementClass;
     public boolean toolbar;
 
-    public boolean boxed = true;
-
     public GType externalChangeType;
     public Map<String, GAsyncEventExec> asyncExecMap;
 
@@ -259,6 +257,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
         // if custom render change is the input of some type, then probably it is a programmatic change (i.e. custom renderer uses changeValue to set this value, and should not be replaced with the input)
         return customRenderFunction == null || externalChangeType == null;
+    }
+
+    public boolean isCustom() {
+        return customRenderFunction != null;
     }
 
     public boolean disableInputList;
@@ -770,10 +772,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         if (valueWidth >= 0)
             return GSize.getValueSize(valueWidth);
 
-        if(!needNotNull && autoSize && valueWidth == -1)
+        if(!needNotNull && autoSize && valueWidth == -1 && charWidth == 0)
             return null;
 
-        return baseType.getDefaultWidth(getFont(parentFont), this, needNotNull, globalCaptionIsDrawn);
+        return baseType.getValueWidth(getFont(parentFont), this, needNotNull, globalCaptionIsDrawn);
     }
 
     // not null
@@ -781,10 +783,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         if (valueHeight >= 0)
             return GSize.getValueSize(valueHeight);
 
-        if(!needNotNull && autoSize && valueHeight == -1)
+        if(!needNotNull && autoSize && valueHeight == -1 && charHeight == 0)
             return null;
 
-        return baseType.getDefaultHeight(getFont(parentFont), this, needNotNull, globalCaptionIsDrawn);
+        return baseType.getValueHeight(getFont(parentFont), this, needNotNull, globalCaptionIsDrawn);
     }
 
     private GFont getFont(GFont parentFont) {

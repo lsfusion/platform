@@ -16,14 +16,12 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.open.stat.ExportAction;
 import lsfusion.server.logics.form.open.stat.FormStaticAction;
 import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
 import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyReaderEntity;
-import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
@@ -138,17 +136,10 @@ public abstract class FormAction<O extends ObjectSelector> extends SystemExplici
         MMap<Property, Boolean> mProps = MapFact.mMap(addValue);
 //       getForm().getPropertyDrawsList() // we can't use actions, since there might be recursions + some hasFlow rely on that + for clean solution we need to use getEventAction instead of action itself
         // so we'll just add extra checks ChangeFlowType.HASINTERACTIVEFORM
-        for (PropertyDrawEntity<?> propertyDraw : this instanceof FormStaticAction ? getForm().getStaticPropertyDrawsList() : SetFact.<PropertyDrawEntity<?>>EMPTY()) {
-            if (this instanceof ExportAction)
-                mProps.add(propertyDraw.getValueProperty().property, false);
-            else {
-                for (PropertyReaderEntity reader : propertyDraw.getQueryProps()) {
-                    ActionOrPropertyObjectEntity<?, ?> entity;
-                    if(reader instanceof PropertyDrawEntity && (entity = ((PropertyDrawEntity<?>) reader).getValueActionOrProperty()) instanceof ActionObjectEntity)
-                        mProps.addAll(((ActionObjectEntity<?>)entity).property.getUsedExtProps());
-                    else
-                        mProps.add((Property) reader.getPropertyObjectEntity().property, false);
-                }
+        if(this instanceof FormStaticAction) {
+            for (PropertyDrawEntity<?> propertyDraw : getForm().getStaticPropertyDrawsList()) {
+                for (PropertyReaderEntity reader : this instanceof ExportAction ? SetFact.singleton(propertyDraw) : propertyDraw.getQueryProps())
+                    mProps.add((Property) reader.getReaderProperty().property, false); // assert propertyDraw.isProperty
             }
         }
         return mProps.immutable();

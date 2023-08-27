@@ -2,6 +2,7 @@ package lsfusion.server.logics.form.interactive.action.change;
 
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
+import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 
 // needed when action has to be created after the logics is initialized
 // actually needed for SELECTOR logics, pretty similar to FormSelector class
@@ -9,5 +10,5 @@ import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 // but since default event actions are created also on demand it's not that obvious that we should do that
 public interface ActionObjectSelector {
 
-    ActionObjectEntity<?> getAction(FormEntity formEntity);
+    ActionObjectEntity<?> getAction(FormEntity form, PropertyObjectEntity property);
 }

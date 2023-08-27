@@ -906,7 +906,7 @@ public class GFormController implements EditManager {
         GPropertyDraw property = editContext.getProperty();
         GType externalType = property.getExternalChangeType();
         if(externalType != null) {
-            changeProperty(editContext, property.parsePaste(sValue, externalType));
+            changeProperty(editContext, property.parsePaste(sValue, externalType), null);
         } else {
             ArrayList<GPropertyDraw> propertyList = new ArrayList<>();
             propertyList.add(property);
@@ -1206,10 +1206,10 @@ public class GFormController implements EditManager {
     }
 
     // for custom renderer, paste
-    public void changeProperty(ExecuteEditContext editContext, PValue value) {
-        lsfusion.gwt.client.base.Result<PValue> oldValue = value != PValue.UNDEFINED ? setLocalValue(editContext, editContext.getProperty().getExternalChangeType(), value) : null;
-        executePropertyEventAction(null, editContext, value == PValue.UNDEFINED ? null : new GUserInputResult(value), requestIndex -> {
-            setRemoteValue(editContext, oldValue, value, requestIndex);
+    public void changeProperty(ExecuteEditContext editContext, PValue changeValue, ChangedRenderValueSupplier renderValueSupplier) {
+        ChangedRenderValue changedRenderValue = changeValue != PValue.UNDEFINED ? setLocalValue(editContext, editContext.getProperty().getExternalChangeType(), changeValue, renderValueSupplier) : null;
+        executePropertyEventAction(null, editContext, changeValue == PValue.UNDEFINED ? null : new GUserInputResult(changeValue), requestIndex -> {
+            setRemoteValue(editContext, changedRenderValue, requestIndex);
         });
     }
 
@@ -1231,20 +1231,34 @@ public class GFormController implements EditManager {
         });
     }
 
-    public lsfusion.gwt.client.base.Result<PValue> setLocalValue(EditContext editContext, GType type, PValue result) {
-        if(editContext.canUseChangeValueForRendering(type)) {
+    public interface ChangedRenderValueSupplier {
+        PValue getValue(PValue oldValue, PValue changeValue);
+    }
+    private static class ChangedRenderValue {
+        public final PValue oldValue;
+        public final PValue newValue;
+
+        public ChangedRenderValue(PValue oldValue, PValue newValue) {
+            this.oldValue = oldValue;
+            this.newValue = newValue;
+        }
+    }
+
+    public ChangedRenderValue setLocalValue(EditContext editContext, GType changeType, PValue changeValue, ChangedRenderValueSupplier renderValueSupplier) {
+        if(renderValueSupplier != null || editContext.canUseChangeValueForRendering(changeType)) {
             PValue oldValue = editContext.getValue();
 
-            editContext.setValue(result);
+            PValue newValue = renderValueSupplier != null ? renderValueSupplier.getValue(oldValue, changeValue) : changeValue;
+            editContext.setValue(newValue);
 
-            return new lsfusion.gwt.client.base.Result<>(oldValue);
+            return new ChangedRenderValue(oldValue, newValue);
         }
         return null;
     }
 
-    public void setRemoteValue(EditContext editContext, lsfusion.gwt.client.base.Result<PValue> oldValue, PValue result, long requestIndex) {
-        if(oldValue != null)
-            pendingChangeProperty(editContext.getProperty(), editContext.getFullKey(), result, oldValue.result, requestIndex);
+    public void setRemoteValue(EditContext editContext, ChangedRenderValue changedRenderValue, long requestIndex) {
+        if(changedRenderValue != null)
+            pendingChangeProperty(editContext.getProperty(), editContext.getFullKey(), changedRenderValue.newValue, changedRenderValue.oldValue, requestIndex);
     }
 
     public void pendingChangeProperty(GPropertyDraw property, GGroupObjectValue fullKey, PValue value, PValue oldValue, long changeRequestIndex) {
@@ -1369,10 +1383,6 @@ public class GFormController implements EditManager {
             focusProperty(propertyDraw);
             controllers.get(propertyDraw.groupObject).quickEditFilter(event, propertyDraw, GGroupObjectValue.EMPTY);
         }
-    }
-
-    public void getInitialFilterProperty(PriorityErrorHandlingCallback<NumberResult> callback) {
-        dispatcher.executePriority(new GetInitialFilterProperty(), callback);
     }
 
     public void focusProperty(GPropertyDraw propertyDraw) {
@@ -1543,8 +1553,9 @@ public class GFormController implements EditManager {
 
     public GFormController contextEditForm;
     public void propagateFocusEvent(Event event) {
-        if(BrowserEvents.BLUR.equals(event.getType()) && contextEditForm != null)
-            contextEditForm.getRequestCellEditor().onBrowserEvent(contextEditForm.getEditElement(), new EventHandler(event));
+//        it seems that now we don't need it, because now we have getBrowserTargetAndCheck fix
+//        if(BrowserEvents.BLUR.equals(event.getType()) && contextEditForm != null)
+//            contextEditForm.getRequestCellEditor().onBrowserEvent(contextEditForm.getEditElement(), new EventHandler(event));
     }
 
     private boolean previewLoadingManagerSinkEvents(Event event) {
@@ -2035,14 +2046,18 @@ public class GFormController implements EditManager {
 
             @Override
             public void onSuccess(ListResult result) {
-                callback.onSuccess(new GAsyncResult(result.value, false, false));
+                callback.onSuccess(convertAsyncResult(result));
             }
         });
     }
 
     public void getAsyncValues(String value, AsyncCallback<GAsyncResult> callback) {
         if(editContext != null) // just in case
-            getAsyncValues(value, editContext.getProperty(), editContext.getColumnKey(), editAsyncValuesSID, callback);
+            getAsyncValues(value, editContext, editAsyncValuesSID, callback);
+    }
+
+    public void getAsyncValues(String value, EditContext editContext, String actionSID, AsyncCallback<GAsyncResult> callback) {
+        getAsyncValues(value, editContext.getProperty(), editContext.getColumnKey(), actionSID, callback);
     }
 
     public static class GAsyncResult {
@@ -2062,6 +2077,7 @@ public class GFormController implements EditManager {
 
         GGroupObjectValue currentKey = getFullCurrentKey(property, columnKey);
 
+        Runnable runPessimistic = () -> getPessimisticValues(property.ID, currentKey, actionSID, value, editIndex, fCallback);
         if (!editAsyncUsePessimistic)
             dispatcher.executePriority(new GetPriorityAsyncValues(property.ID, currentKey, actionSID, value, editIndex), new PriorityAsyncCallback<ListResult>() {
                 @Override
@@ -2073,37 +2089,43 @@ public class GFormController implements EditManager {
                 public void onSuccess(ListResult result) {
                     if (result.value == null) { // optimistic request failed, running pessimistic one, with request indices, etc.
                         editAsyncUsePessimistic = true;
-                        getPessimisticValues(property.ID, currentKey, actionSID, value, editIndex, fCallback);
+                        runPessimistic.run();
                     } else {
-                        boolean needMoreSymbols = false;
-                        boolean moreResults = false;
-                        ArrayList<GAsync> values = result.value;
-                        if(values.size() > 0) {
-                            GAsync lastResult = values.get(values.size() - 1);
-                            if(lastResult.equals(GAsync.RECHECK)) {
-                                values = removeLast(values);
-
-                                moreResults = true;
-                                getPessimisticValues(property.ID, currentKey, actionSID, value, editIndex, fCallback);
-                            } else if(values.size() == 1 && (lastResult.equals(GAsync.CANCELED) || lastResult.equals(GAsync.NEEDMORE))) { // ignoring CANCELED results
-                                needMoreSymbols = lastResult.equals(GAsync.NEEDMORE);
-                                values = needMoreSymbols ? new ArrayList<>() : null;
-                            }
-                        }
-                        fCallback.onSuccess(new GAsyncResult(values, needMoreSymbols, moreResults));
+                        GAsyncResult asyncResult = convertAsyncResult(result);
+                        if(asyncResult.moreRequests)
+                            runPessimistic.run();
+                        fCallback.onSuccess(asyncResult);
                     }
                 }
             });
         else
-            getPessimisticValues(property.ID, currentKey, actionSID, value, editIndex, fCallback);
+            runPessimistic.run();
+    }
+
+    private static GAsyncResult convertAsyncResult(ListResult result) {
+        boolean needMoreSymbols = false;
+        boolean moreResults = false;
+        ArrayList<GAsync> values = result.value;
+        if(values.size() > 0) {
+            GAsync lastResult = values.get(values.size() - 1);
+            if(lastResult.equals(GAsync.RECHECK)) {
+                values = removeLast(values);
+
+                moreResults = true;
+            } else if(values.size() == 1 && (lastResult.equals(GAsync.CANCELED) || lastResult.equals(GAsync.NEEDMORE))) { // ignoring CANCELED results
+                needMoreSymbols = lastResult.equals(GAsync.NEEDMORE);
+                values = needMoreSymbols ? new ArrayList<>() : null;
+            }
+        }
+        return new GAsyncResult(values, needMoreSymbols, moreResults);
     }
 
     public void edit(GType type, EventHandler handler, boolean hasOldValue, PValue setOldValue, GInputList inputList, BiConsumer<GUserInputResult, Consumer<Long>> afterCommit, Consumer<CancelReason> cancel, EditContext editContext, String actionSID, String customChangeFunction) {
         assert type != null;
-        lsfusion.gwt.client.base.Result<lsfusion.gwt.client.base.Result<PValue>> oldValue = new lsfusion.gwt.client.base.Result<>();
+        lsfusion.gwt.client.base.Result<ChangedRenderValue> changedRenderValue = new lsfusion.gwt.client.base.Result<>();
         edit(type, handler, hasOldValue, setOldValue, inputList, // actually it's assumed that actionAsyncs is used only here, in all subsequent calls it should not be referenced
-                (inputResult, commitReason) -> oldValue.set(setLocalValue(editContext, type, inputResult.getPValue())),
-                (inputResult, commitReason) -> afterCommit.accept(inputResult, requestIndex -> setRemoteValue(editContext, oldValue.result, inputResult.getPValue(), requestIndex)),
+                (inputResult, commitReason) -> changedRenderValue.set(setLocalValue(editContext, type, inputResult.getPValue(), null)),
+                (inputResult, commitReason) -> afterCommit.accept(inputResult, requestIndex -> setRemoteValue(editContext, changedRenderValue.result, requestIndex)),
                 cancel, editContext, actionSID, customChangeFunction);
     }
 
@@ -2123,14 +2145,15 @@ public class GFormController implements EditManager {
         }
 
         if (cellEditor != null) {
-            if(editContext.canUseChangeValueForRendering(type))
+            boolean canUseChangeValueForRendering = editContext.canUseChangeValueForRendering(type);
+            if(canUseChangeValueForRendering)
                 cellEditor.setCancelTheSameValueOnBlur(editContext.getValue());
 
             if(!hasOldValue) { // property.baseType.equals(type) actually there should be something like compatible, but there is no such method for now, so we'll do this check in editors
                 oldValue = editContext.getValue();
                 if(oldValue == null)
                     oldValue = cellEditor.getDefaultNullValue();
-                else if(!editContext.canUseChangeValueForRendering(type) && !hasCustomEditor) {
+                else if(!canUseChangeValueForRendering && !hasCustomEditor) {
                     try {
                         oldValue = type.parseString(PValue.getStringValue(oldValue), property.pattern);
                     } catch (ParseException e) {

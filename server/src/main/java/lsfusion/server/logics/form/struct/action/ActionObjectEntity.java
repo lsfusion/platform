@@ -3,11 +3,13 @@ package lsfusion.server.logics.form.struct.action;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
+import lsfusion.server.language.action.LA;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelector;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.controller.init.Instantiable;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.instance.property.ActionObjectInstance;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
@@ -18,7 +20,6 @@ import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObje
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 
 public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPropertyObjectEntity<P, Action<P>> implements Instantiable<ActionObjectInstance<P>>, ActionObjectSelector {
 
@@ -26,6 +27,9 @@ public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPro
         //нужен для десериализации
     }
 
+    public ActionObjectEntity(LA<P> property) {
+        this(property.action, MapFact.EMPTYREV());
+    }
     public ActionObjectEntity(Action<P> property, ImRevMap<P, ObjectEntity> mapping) {
         this(property, mapping, null, null, null);
     }
@@ -45,10 +49,10 @@ public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPro
         return this.property.getGroupChange(entity, mapping);
     }
 
-    public AsyncEventExec getAsyncEventExec(FormEntity form, SecurityPolicy policy, ActionOrProperty securityProperty, PropertyObjectEntity drawProperty, GroupObjectEntity toDraw, boolean optimistic) {
+    public AsyncEventExec getAsyncEventExec(FormInstanceContext context, ActionOrProperty securityProperty, PropertyObjectEntity drawProperty, GroupObjectEntity toDraw, boolean optimistic) {
         AsyncMapEventExec<P> asyncExec = property.getAsyncEventExec(optimistic);
         if(asyncExec != null)
-            return asyncExec.map(mapping, form, policy, securityProperty, drawProperty, toDraw);
+            return asyncExec.map(mapping, context, securityProperty, drawProperty, toDraw);
         return null;
     }
 
@@ -65,7 +69,7 @@ public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPro
 //
 
     @IdentityInstanceLazy
-    public <X extends PropertyInterface> PropertyObjectEntity<?> getDrawProperty(PropertyObjectEntity<X> readOnly) {
+    public <X extends PropertyInterface> PropertyObjectEntity<?> getProperty(PropertyObjectEntity<X> readOnly) {
         //        return PropertyFact.createTrue().mapObjects(MapFact.<PropertyInterface, PropertyObjectInterfaceInstance>EMPTY());
         if(readOnly == null) // optimization
             return PropertyFact.createTrue().mapEntityObjects(MapFact.EMPTYREV());
@@ -73,7 +77,7 @@ public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPro
     }
 
     @Override
-    public ActionObjectEntity<P> getAction(FormEntity formEntity) {
+    public ActionObjectEntity<P> getAction(FormEntity form, PropertyObjectEntity property) {
         return this;
     }
 }

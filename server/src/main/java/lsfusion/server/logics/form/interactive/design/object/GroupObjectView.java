@@ -170,13 +170,13 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         pool.serializeObject(outStream, calculations);
 
         outStream.writeBoolean(entity.isParent != null);
-        outStream.writeBoolean(pool.context.view.entity.isMap(entity));
-        outStream.writeBoolean(pool.context.view.entity.isCalendarDate(entity));
-        outStream.writeBoolean(pool.context.view.entity.isCalendarDateTime(entity));
-        outStream.writeBoolean(pool.context.view.entity.isCalendarPeriod(entity));
+        outStream.writeBoolean(pool.context.entity.isMap(entity));
+        outStream.writeBoolean(pool.context.entity.isCalendarDate(entity));
+        outStream.writeBoolean(pool.context.entity.isCalendarDateTime(entity));
+        outStream.writeBoolean(pool.context.entity.isCalendarPeriod(entity));
 
         outStream.writeBoolean(pool.context.view.hasHeaders(entity));
-        outStream.writeBoolean(pool.context.view.entity.hasFooters(entity));
+        outStream.writeBoolean(pool.context.entity.hasFooters(entity));
 
         boolean needVScroll;
         if (needVerticalScroll == null) {

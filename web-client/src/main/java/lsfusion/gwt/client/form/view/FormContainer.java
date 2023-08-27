@@ -131,10 +131,8 @@ public abstract class FormContainer {
 
         if(isAsyncHidden())
             form.closePressed(asyncHiddenReason);
-        else {
+        else
             setContent(form.getWidget());
-            Scheduler.get().scheduleDeferred(this::initQuickFilter);
-        }
 
         async = false;
 
@@ -145,24 +143,6 @@ public abstract class FormContainer {
 
     public GFormController getForm() {
         return form;
-    }
-
-    protected void initQuickFilter() {
-        if (editEvent != null) {
-            Event event = editEvent;
-            if (GKeyStroke.isPossibleStartFilteringEvent(event) && !GKeyStroke.isSpaceKeyEvent(event)) {
-                form.getInitialFilterProperty(new PriorityErrorHandlingCallback<NumberResult>() {
-                    @Override
-                    public void onSuccess(NumberResult result) {
-                        Integer initialFilterPropertyID = (Integer) result.value;
-
-                        if (initialFilterPropertyID != null) {
-                            form.quickFilter(editEvent, initialFilterPropertyID);
-                        }
-                    }
-                });
-            }
-        }
     }
 
     public void setContentLoading() {

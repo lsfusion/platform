@@ -33,7 +33,6 @@ import lsfusion.server.data.query.build.QueryBuilder;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
-import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsInstance;
@@ -45,6 +44,7 @@ import lsfusion.server.logics.classes.data.time.DateTimeClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.controller.remote.RemoteForm;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.interactive.listener.FocusListener;
@@ -95,6 +95,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     private String currentForm;
 
     private boolean useBootstrap;
+    private boolean isNative;
 
     private DataObject connection;
 
@@ -119,7 +120,11 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
         this.classCache = new ClassCache();
 
+        remoteContext = new ConnectionContext(isUseBootstrap());
+
         this.client = new ClientCallBackController(port, toString(), this::updateLastUsedTime);
+        ClientType clientType = navigatorInfo.clientType;
+        this.isNative = clientType == ClientType.NATIVE_DESKTOP || clientType == ClientType.NATIVE_MOBILE;
 
         createPausablesExecutor();
 
@@ -196,6 +201,10 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
     public boolean isUseBootstrap() {
         return useBootstrap;
+    }
+
+    public boolean isNative() {
+        return isNative;
     }
 
     public long getLastUsedTime() {
@@ -437,7 +446,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             
             dataStream.writeInt(elementsCount);
             for (NavigatorElement element : elements.keyIt()) {
-                element.serialize(dataStream);
+                element.serialize(getRemoteContext(), dataStream);
             }
             
             for (List<String> children : elements.valueIt()) {
@@ -525,7 +534,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     public byte[] getNavigatorChangesByteArray(boolean refresh) {
         try {
             NavigatorChanges navigatorChanges = getChanges(refresh);
-            return navigatorChanges.serialize();
+            return navigatorChanges.serialize(getRemoteContext());
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
@@ -593,6 +602,10 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         return new NavigatorChanges(changes);
     }
 
+    private final ConnectionContext remoteContext;
+    public ConnectionContext getRemoteContext() {
+        return remoteContext;
+    }
 
     @Override
     public Pair<RemoteFormInterface, String> createFormExternal(String json) {
@@ -606,7 +619,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         }
         script += "run() { SHOW " + name + "; }";
 
-        RemoteForm remoteForm;
+        RemoteForm<?> remoteForm;
 
         RemoteNavigatorContext navigatorContext = (RemoteNavigatorContext) this.context;
         navigatorContext.pushGetForm();
@@ -619,10 +632,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             remoteForm = navigatorContext.popGetForm();
         }
 
-        JSONObject result = new JSONObject();
-        result.put("initial", remoteForm.getFormChangesExternal(getStack()).get("modify"));
-        result.put("meta", remoteForm.getMetaExternal().serialize());
-        return new Pair<>(remoteForm, result.toString());
+        return remoteForm.getFormExternal(getStack());
     }
 
     private void runNotification(ExecutionEnvironment env, ExecutionStack stack, String actionSID) {

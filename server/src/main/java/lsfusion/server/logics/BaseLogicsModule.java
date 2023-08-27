@@ -6,6 +6,8 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.col.interfaces.immutable.ImOrderMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
@@ -63,6 +65,7 @@ import lsfusion.server.logics.navigator.window.AbstractWindow;
 import lsfusion.server.logics.navigator.window.NavigatorWindow;
 import lsfusion.server.logics.navigator.window.ToolBarNavigatorWindow;
 import lsfusion.server.logics.property.JoinProperty;
+import lsfusion.server.logics.property.LazyProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
@@ -72,6 +75,7 @@ import lsfusion.server.logics.property.classes.data.NotFormulaProperty;
 import lsfusion.server.logics.property.classes.infer.AlgType;
 import lsfusion.server.logics.property.classes.user.ClassDataProperty;
 import lsfusion.server.logics.property.data.SessionDataProperty;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -110,6 +114,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     // groups
     public Group drillDownGroup; // для того чтобы в reflection'е можно было для всех drillDown одну политику безопасности проставлять
     public Group propertyPolicyGroup; // для того чтобы в reflection'е можно было для всех propertyPolicy одну политику безопасности проставлять
+
+    public Group objectsGroup; // for usage in the interactive JSONs
 
     public Group rootGroup;
     public Group publicGroup;
@@ -293,7 +299,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @IdentityLazy
-    public LA getFormRefresh() {
+    public LA<?> getFormRefresh() {
         try {
             return findAction("formRefresh[]");
         } catch (ScriptingErrorLog.SemanticErrorException e) {
@@ -660,6 +666,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         propertyPolicyGroup = findGroup("propertyPolicy");
         propertyPolicyGroup.changeChildrenToSimple(version);
         propertyPolicyGroup.system = true;
+
+        objectsGroup = findGroup("objects");
     }
 
     @Override
@@ -676,6 +684,23 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     public static int generateStaticNewID() {
         return idGenerator.idShift();
+    }
+
+    public <I extends PropertyInterface> IntegrationForm<I> addFinalIntegrationForm(ImOrderSet<I> innerInterfaces, ImList<ValueClass> innerClasses, ImOrderSet<I> mapInterfaces, ImList<PropertyInterfaceImplement<I>> properties, ImList<IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders, PropertyInterfaceImplement<I> where) {
+        try {
+            IntegrationForm<I> integrationForm = addIntegrationForm(innerInterfaces, innerClasses, mapInterfaces, properties, propUsages, orders, where);
+            addAutoFormEntityFinalized(integrationForm.form);
+            return integrationForm;
+        } catch (FormEntity.AlreadyDefined e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    public LP addFinalJSONFormProp(LocalizedString caption, IntegrationForm integrationForm) {
+        LP jsonFormProp = addJSONFormProp(caption, integrationForm);
+//        jsonFormProp.property.finalizeInit();
+        ((LazyProperty)jsonFormProp.property).finalizeLazyInit();
+        return jsonFormProp;
     }
 
     // Окна

@@ -17,7 +17,6 @@ import lsfusion.server.base.version.impl.NFListImpl;
 import lsfusion.server.base.version.interfaces.NFList;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.GroupType;
-import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.expr.where.CaseExprInterface;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
@@ -30,6 +29,7 @@ import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
+import lsfusion.server.logics.form.interactive.action.input.InputValueList;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.cases.graph.Graph;
 import lsfusion.server.logics.property.classes.infer.*;
@@ -293,6 +293,53 @@ public class CaseUnionProperty extends IncrementUnionProperty {
             return null;
 
         return PropertyFact.createCaseAction(interfaces, isExclusive, actionCases);
+    }
+
+    @Override
+    @IdentityStrongLazy
+    public <I extends PropertyInterface, V extends PropertyInterface, W extends PropertyInterface> Select<Interface> getSelectProperty(ImList<Property> viewProperties, boolean forceSelect) {
+        Pair<Integer, Integer> resultStat = new Pair<>(0, 0);
+        boolean multi = false;
+        boolean html = false;
+        MList<InputValueList> mResultValues = ListFact.mList();
+        ImList<CalcCase<Interface>> cases = getCases();
+        MList<PropertyMapImplement<?, Interface>> mJsonWheres = ListFact.mList();
+        MList<SelectProperty<Interface>> mJsonProps = ListFact.mList();
+        for(CalcCase<Interface> propCase : cases) {
+            Select<Interface> joinProperty = propCase.implement.mapSelect(viewProperties, forceSelect);
+            if(joinProperty == null)
+                return null;
+
+            PropertyMapImplement<?, Interface> where;
+            if(propCase.isSimple())
+                where = ((PropertyMapImplement<?, Interface>) propCase.implement).mapClassProperty();
+            else
+                where = (PropertyMapImplement<?, Interface>) propCase.where;
+            mJsonWheres.add(where);
+            mJsonProps.add(joinProperty.property);
+
+            if(joinProperty.values == null) // unknown wheres
+                mResultValues = null;
+            else if(mResultValues != null)
+                mResultValues.addAll(joinProperty.values);
+            Pair<Integer, Integer> joinStat = joinProperty.stat;
+            if(resultStat.second < joinStat.second)
+                resultStat = joinStat;
+            multi = multi || joinProperty.multi;
+            html = html || joinProperty.html;
+        }
+        ImList<PropertyMapImplement<?, Interface>> jsonWheres = mJsonWheres.immutableList();
+        ImList<SelectProperty<Interface>> jsonProps = mJsonProps.immutableList();
+        return new Select<>(filterSelected -> {
+            MList<CalcCase<Interface>> mJsonCases = ListFact.mList();
+            for(int i = 0, size = jsonProps.size(); i < size; i++) {
+                PropertyMapImplement<?, Interface> jsonProp = jsonProps.get(i).get(filterSelected);
+                if(jsonProp == null)
+                    return null;
+                mJsonCases.add(new CalcCase<>(jsonWheres.get(i), jsonProp));
+            }
+            return PropertyFact.createUnion(interfaces, isExclusive, mJsonCases.immutableList());
+        }, resultStat, mResultValues != null ? mResultValues.immutableList() : null, multi, html);
     }
 
     @Override

@@ -62,6 +62,10 @@ public class InputFilterEntity<P extends PropertyInterface, V extends PropertyIn
         return new ContextFilterEntity<>(property, mapValues, MapFact.singletonRev(singleInterface(), object));
     }
 
+    public PropertyMapImplement<P, V> getWhereProperty(V objectInterface) {
+        return new PropertyMapImplement<>(property, mapValues.addRevExcl(singleInterface(), objectInterface));
+    }
+
     public ImSet<V> getUsedInterfaces() {
         return mapValues.valuesSet();
     }

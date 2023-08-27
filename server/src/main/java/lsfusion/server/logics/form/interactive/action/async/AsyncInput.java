@@ -4,6 +4,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.server.data.type.TypeSerializer;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.form.interactive.action.input.InputResult;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 
 import java.io.*;
 
@@ -26,13 +27,13 @@ public class AsyncInput extends AsyncFormExec {
     }
 
     @Override
-    public void serialize(DataOutputStream dataOutputStream) throws IOException {
-        super.serialize(dataOutputStream);
+    public void serialize(ConnectionContext context, DataOutputStream dataOutputStream) throws IOException {
+        super.serialize(context, dataOutputStream);
 
         TypeSerializer.serializeType(dataOutputStream, changeType);
         dataOutputStream.writeBoolean(inputList != null);
         if(inputList != null)
-            AsyncSerializer.serializeInputList(inputList, dataOutputStream);
+            AsyncSerializer.serializeInputList(inputList, context, dataOutputStream);
 
         dataOutputStream.writeBoolean(customEditorFunction != null);
         if (customEditorFunction != null)

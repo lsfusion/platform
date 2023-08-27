@@ -17,6 +17,7 @@ import lsfusion.interop.form.event.FormScheduler;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.caches.IdentityLazy;
+import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.NFFact;
@@ -43,6 +44,8 @@ import lsfusion.server.logics.form.interactive.action.async.AsyncNoWaitExec;
 import lsfusion.server.logics.form.interactive.action.input.InputFilterEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputOrderEntity;
 import lsfusion.server.logics.form.interactive.action.lifecycle.FormToolbarAction;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
@@ -68,7 +71,6 @@ import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
@@ -294,9 +296,9 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         logMessagePropertyDraw = addPropertyDraw(baseLM.getLogMessage(), version);
         logMessagePropertyDraw.setPropertyExtra(addPropertyObject(externalShowIf), PropertyDrawExtraType.SHOWIF, version);
 
-        addActionsOnEvent(FormEventType.AFTERAPPLY, false, version, new ActionObjectEntity<>(formApplied.action, MapFact.EMPTYREV()));
-        addActionsOnEvent(FormEventType.QUERYOK, true, version, new ActionObjectEntity<>(formOk.action, MapFact.EMPTYREV()));
-        addActionsOnEvent(FormEventType.QUERYCLOSE, true, version, new ActionObjectEntity<>(formClose.action, MapFact.EMPTYREV()));
+        addActionsOnEvent(FormEventType.AFTERAPPLY, false, version, new ActionObjectEntity<>(formApplied));
+        addActionsOnEvent(FormEventType.QUERYOK, true, version, new ActionObjectEntity<>(formOk));
+        addActionsOnEvent(FormEventType.QUERYCLOSE, true, version, new ActionObjectEntity<>(formClose));
     }
 
     public Iterable<FormEvent> getAllFormEventActions() {
@@ -311,12 +313,12 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return formEvent instanceof FormEventClose ? (((FormEventClose) formEvent).ok ? FormEventType.QUERYOK : FormEventType.QUERYCLOSE) : formEvent;
     }
 
-    public Map<FormEvent, AsyncEventExec> getAsyncExecMap() {
+    public Map<FormEvent, AsyncEventExec> getAsyncExecMap(FormInstanceContext context) {
         Map<FormEvent, AsyncEventExec> asyncExecMap = new HashMap<>();
 
         Iterable<FormEvent> allFormEventActions = getAllFormEventActions();
         for(FormEvent formEvent : allFormEventActions) {
-            AsyncEventExec asyncEventExec = getAsyncEventExec(formEvent);
+            AsyncEventExec asyncEventExec = getAsyncEventExec(formEvent, context);
             if(asyncEventExec != null) {
                 asyncExecMap.put(formEvent, asyncEventExec);
             }
@@ -324,8 +326,8 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return asyncExecMap;
     }
 
-    public AsyncEventExec getAsyncEventExec(FormEvent formEvent) {
-        AsyncEventExec asyncEventExec = getEventAction(formEvent).getAsyncEventExec(this, null, null, null, null, true);
+    public AsyncEventExec getAsyncEventExec(FormEvent formEvent, FormInstanceContext context) {
+        AsyncEventExec asyncEventExec = getEventAction(formEvent).getAsyncEventExec(context, null, null, null,  true);
         if (asyncEventExec == null && formEvent instanceof FormScheduler) {
             asyncEventExec = AsyncNoWaitExec.instance;
         }
@@ -625,17 +627,19 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     public ImOrderSet<PropertyDrawEntity> getStaticPropertyDrawsList() {
-        return ((ImOrderSet<PropertyDrawEntity>)getPropertyDrawsList()).filterOrder(element -> element.isProperty() && element.getIntegrationSID() != null && element != logMessagePropertyDraw);
+        return ((ImOrderSet<PropertyDrawEntity>)getPropertyDrawsList()).filterOrder(element -> element.isStaticProperty() && element.getIntegrationSID() != null && element != logMessagePropertyDraw);
     }
 
     // assumes that there is an equals check for a PropertyObjectEntity
+    // here may be some context scoped cache should
     @IdentityLazy
     public <X extends PropertyInterface, T extends PropertyInterface> ImList<PropertyDrawEntity> findChangedProperties(OrderEntity<?> changeProp, boolean toNull) {
         MList<PropertyDrawEntity> mProps = null;
+        FormInstanceContext context = FormInstanceContext.CACHE(this);
         for(PropertyDrawEntity property : getPropertyDrawsList()) {
             PropertyObjectEntity<T> valueProperty;
-            if(property.isProperty() &&
-                (valueProperty = property.getValueProperty()).mapping.valuesSet().containsAll(changeProp.getObjects()) &&
+            if(property.isProperty(context) &&
+                (valueProperty = property.getAssertProperty(context)).mapping.valuesSet().containsAll(changeProp.getObjects()) &&
                 (!(changeProp instanceof PropertyMapImplement) || Property.depends(valueProperty.property, ((PropertyMapImplement<?, ?>) changeProp).property)) && // optimization
                 valueProperty.property.isChangedWhen(toNull, changeProp.getImplement(valueProperty.mapping.reverse()))) {
                 if(mProps == null)
@@ -702,7 +706,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         }
     }
 
-    public MetaExternal getMetaExternal(final SecurityPolicy policy) {
+    public MetaExternal getMetaExternal(FormInstanceContext context) {
         final ImMap<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> groupProperties = getAllGroupProperties(SetFact.EMPTY(), false);
 
         return new MetaExternal(getGroups().mapValues((GroupObjectEntity group) -> {
@@ -711,9 +715,9 @@ public class FormEntity implements FormSelector<ObjectEntity> {
                 properties = SetFact.EMPTYORDER();
 
             return new GroupMetaExternal(properties.getSet().mapValues((PropertyDrawEntity property) ->  {
-                    AsyncEventExec asyncEventExec = ((PropertyDrawEntity<?>) property).getAsyncEventExec(FormEntity.this, policy, CHANGE, true);
+                    AsyncEventExec asyncEventExec = ((PropertyDrawEntity<?>) property).getAsyncEventExec(context, CHANGE, true);
                     Boolean newDelete = asyncEventExec instanceof AsyncAddRemove ? ((AsyncAddRemove) asyncEventExec).add : null;
-                    return new PropMetaExternal(ThreadLocalContext.localize(property.getCaption()), property.isProperty() ? property.getType().getJSONType() : "action", newDelete);
+                    return new PropMetaExternal(ThreadLocalContext.localize(property.getCaption()), property.isProperty(context) ? property.getType(context).getJSONType() : "action", newDelete);
                 }));
         }));
     }
@@ -743,7 +747,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     @IdentityLazy
     public boolean hasNoChange(FormChangeFlowType type) {
         for (PropertyDrawEntity property : getPropertyDrawsIt()) {
-            ActionObjectEntity<?> eventAction = property.getEventAction(CHANGE, this, new SecurityPolicy()); // in theory it is possible to support securityPolicy, but in this case we have to drag it through hasFlow + do some complex caching
+            ActionObjectEntity<?> eventAction = property.getEventAction(CHANGE, FormInstanceContext.CACHE(this)); // in theory it is possible to support securityPolicy, but in this case we have to drag it through hasFlow + do some complex caching
             if (eventAction != null && eventAction.property.hasFlow(type) && !eventAction.property.endsWithApplyAndNoChangesAfterBreaksBefore(type))
                 return false;
         }
@@ -859,21 +863,13 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public <P extends PropertyInterface, I extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(ActionOrPropertyObjectEntity<P, ?> propertyImplement, String formPath,
                                                                                Pair<ActionOrProperty, List<String>> inherited, ImOrderSet<P> interfaces, ComplexLocation<PropertyDrawEntity> location, Version version) {
 
-        ActionOrProperty inheritedProperty;
-        List<String> inheritedInterfaces;
-        if(inherited != null) {
-            inheritedProperty = inherited.first;
-            inheritedInterfaces = inherited.second;
-        } else {
-            inheritedProperty = propertyImplement.property;
-            inheritedInterfaces = PropertyDrawEntity.getMapping(propertyImplement, interfaces);
-        }
+        ActionOrProperty inheritedProperty = inherited != null ? inherited.first : propertyImplement.property;
 
         String propertySID;
         String integrationSID;
 
-        if (inheritedProperty.isNamed()) {
-            propertySID = PropertyDrawEntity.createSID(inheritedProperty.getName(), inheritedInterfaces);
+        if (inheritedProperty.isNamed() && interfaces != null) {
+            propertySID = PropertyDrawEntity.createSID(inheritedProperty.getName(), inherited != null ? inherited.second : PropertyDrawEntity.getMapping(propertyImplement, interfaces));
 
             integrationSID = inheritedProperty.getName();
         } else {
@@ -1190,6 +1186,10 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     private boolean finalizedChanges;
 
+    public void finalizeAndPreread() { // need to preread to fill FILTER + ORDER
+        finalizeAroundInit();
+        prereadEventActions();
+    }
     public void finalizeAroundInit() {
         // we need this synchronization since forms finalization first marks modules, and only then reads all unnamed forms (so form can be finalized twice)
         // unlike properties finalization it seems that here we can solve finalization problem another way (by adding synchronized to the addAutoFormEntity, getAllModuleForms methods)
@@ -1242,8 +1242,8 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         }
     }
 
-    public void prereadAutoIcons() {
-        getRichDesign().prereadAutoIcons();
+    public void prereadAutoIcons(FormInstanceContext context) {
+        getRichDesign().prereadAutoIcons(context);
     }
 
     private void checkInternalClientAction() {
@@ -1451,9 +1451,9 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return getRichDesign().getCaption();
     }
 
-    public AppServerImage getImage() {
+    public AppServerImage getImage(ConnectionContext context) {
         FormView formView = getRichDesign();
-        return formView.mainContainer.getImage(formView);
+        return formView.mainContainer.getImage(formView, context);
     }
 
     public String getLocalizedCaption() {
@@ -1622,9 +1622,10 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     private void prereadEventActions(BiConsumer<ActionObjectEntity<?>, PropertyDrawEntity<?>> consumer) {
+        FormInstanceContext context = getGlobalContext();
         for(PropertyDrawEntity<?> propertyDraw : getPropertyDrawsIt()) {
-            for(String changeEvent : propertyDraw.getAllPropertyEventActions()) {
-                ActionObjectEntity<?> editAction = propertyDraw.getEventAction(changeEvent, this);
+            for(String changeEvent : propertyDraw.getAllPropertyEventActions(context)) {
+                ActionObjectEntity<?> editAction = propertyDraw.getEventAction(changeEvent, context);
                 if (editAction != null)
                     consumer.accept(editAction, propertyDraw);
             }
@@ -1633,6 +1634,14 @@ public class FormEntity implements FormSelector<ObjectEntity> {
             for(ActionObjectEntity<?> eventAction : eventActions)
                 consumer.accept(eventAction, null);
         }
+    }
+
+    private FormInstanceContext context;
+    @ManualLazy
+    public FormInstanceContext getGlobalContext() {
+        if(context == null)
+            context = new FormInstanceContext(this, getRichDesign(), null, false, false, null);
+        return context;
     }
 
     @Override

@@ -12,7 +12,7 @@ public class FinalizeLazyTask extends GroupPropertiesTask {
 
     protected void runTask(ActionOrProperty property) {
         if (property instanceof LazyProperty) {
-            property.finalizeInit();
+            ((LazyProperty) property).finalizeLazyInit();
         }
     }
 }

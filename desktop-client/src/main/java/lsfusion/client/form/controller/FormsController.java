@@ -23,6 +23,7 @@ import lsfusion.client.navigator.ClientNavigator;
 import lsfusion.client.navigator.controller.AsyncFormController;
 import lsfusion.client.view.DockableMainFrame;
 import lsfusion.client.view.MainFrame;
+import lsfusion.interop.form.FormClientData;
 import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 
@@ -135,14 +136,14 @@ public class FormsController implements ColorThemeChangeListener {
         ((DockableMainFrame) MainFrame.instance).setLogsDockableVisible(false);
     }
 
-    public ClientFormDockable openForm(AsyncFormController asyncFormController, ClientNavigator navigator, String canonicalName, String formSID, boolean forbidDuplicate,
-                                       RemoteFormInterface remoteForm, byte[] firstChanges, MainFrame.FormCloseListener closeListener, String formId) {
-        ClientForm clientForm = ClientFormController.deserializeClientForm(remoteForm);
+    public ClientFormDockable openForm(AsyncFormController asyncFormController, ClientNavigator navigator, boolean forbidDuplicate,
+                                       RemoteFormInterface remoteForm, FormClientData clientData, MainFrame.FormCloseListener closeListener, String formId) throws IOException {
+        ClientForm clientForm = ClientFormController.deserializeClientForm(remoteForm, clientData);
         ClientFormDockable page = asyncFormController.removeAsyncForm();
         boolean asyncOpened = page != null;
 
         if (!asyncOpened) {
-            ClientFormDockable duplicateForm = getDuplicateForm(canonicalName, forbidDuplicate);
+            ClientFormDockable duplicateForm = getDuplicateForm(clientData.canonicalName, forbidDuplicate);
             if (duplicateForm != null) {
                 duplicateForm.toFront();
                 duplicateForm.requestFocusInWindow();
@@ -159,7 +160,7 @@ public class FormsController implements ColorThemeChangeListener {
         } else {
             page.getContentPane().removeAll(); //remove loading
         }
-        page.init(navigator, canonicalName, formSID, remoteForm, clientForm, closeListener, firstChanges, formId);
+        page.init(navigator, remoteForm, clientForm, closeListener, clientData, formId);
         if (!asyncOpened) {
             openForm(page);
         }

@@ -183,25 +183,29 @@ public class GGroupObjectValue implements Serializable {
         return hash;
     }
 
+    private String toString;
     @Override
     public String toString() {
-        if (size == 0) {
-            return "[]";
-        } else if (size == 1) {
-            return "[" + singleKey + " = "  + singleValue + "]";
-        } else {
-            String caption = "[";
-            for (int i = 0; i < size; ++i) {
-                if (caption.length() > 1) {
-                    caption += ",";
+        if(toString == null) {
+            if (size == 0) {
+                toString = "[]";
+            } else if (size == 1) {
+                toString = "[" + singleKey + " = " + singleValue + "]";
+            } else {
+                StringBuilder caption = new StringBuilder("[");
+                for (int i = 0; i < size; ++i) {
+                    if (caption.length() > 1) {
+                        caption.append(",");
+                    }
+
+                    caption.append(keys[i]).append("=").append(values[i]);
                 }
 
-                caption += keys[i] + "=" + values[i];
+                caption.append("]");
+                toString = caption.toString();
             }
-
-            caption += "]";
-            return caption;
         }
+        return toString;
     }
 
     // returns null, if there is an object that does not have value

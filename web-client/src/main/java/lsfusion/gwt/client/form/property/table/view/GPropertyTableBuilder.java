@@ -47,7 +47,8 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         GSize valueHeight = property.getValueHeight(font, false, true);
         if(valueHeight != null) // this way we can avoid prop-size-value cell-div conflict (see the css file) in most cases
             element.addClassName("prop-size-value");
-        element.addClassName("prop-value");
+        if(!property.isShrinkOverflowVisible())
+            element.addClassName("prop-value-shrink");
 
         FlexPanel.setGridHeight(element, valueHeight);
 
@@ -69,7 +70,7 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         }
 
         element.removeClassName("prop-class-value");
-        element.removeClassName("prop-value");
+        element.removeClassName("prop-value-shrink");
         FlexPanel.setGridHeight(element, (GSize)null);
 
         return false;

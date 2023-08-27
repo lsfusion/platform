@@ -65,7 +65,7 @@ public abstract class CellRenderer {
 
 //        BaseImage.setClasses(element, getValueElementClass());
 
-//        SimpleTextBasedCellRenderer.getSizeElement(element).addClassName("prop-value");
+//        SimpleTextBasedCellRenderer.getSizeElement(element).addClassName("prop-value-shrink");
 
         if(!renderedAlignment) {
             assert !GwtClientUtils.isTDorTH(element) && !SimpleTextBasedCellRenderer.isToolbarContainer(element);
@@ -180,7 +180,7 @@ public abstract class CellRenderer {
 
         boolean renderedAlignment = clearRenderContent(element, renderContext);
 
-//        SimpleTextBasedCellRenderer.getSizeElement(element).removeClassName("prop-value");
+//        SimpleTextBasedCellRenderer.getSizeElement(element).removeClassName("prop-value-shrink");
 
         if (!renderedAlignment)
             clearRenderFlexAlignment(property, element);
@@ -337,7 +337,7 @@ public abstract class CellRenderer {
 
         InputElement inputElement = SimpleTextBasedCellRenderer.getInputElement(element);
         if(inputElement != null) {
-            assert isTagInput();
+            assert isTagInput() || this instanceof CustomCellRenderer;
 
             boolean readonly = updateContext.isPropertyReadOnly();
             if(isNew || !equalsReadonlyState(renderedState, readonly)) {

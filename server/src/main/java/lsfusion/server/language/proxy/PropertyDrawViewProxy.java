@@ -3,12 +3,7 @@ package lsfusion.server.language.proxy;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
-import lsfusion.server.data.type.Type;
 import lsfusion.server.language.ScriptingLogicsModule;
-import lsfusion.server.logics.classes.data.integral.IntegralClass;
-import lsfusion.server.logics.classes.data.time.DateClass;
-import lsfusion.server.logics.classes.data.time.DateTimeClass;
-import lsfusion.server.logics.classes.data.time.TimeClass;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.struct.property.PropertyDrawExtraType;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
@@ -17,8 +12,6 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import javax.swing.*;
 import java.awt.*;
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 
 public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> {
 
@@ -68,15 +61,7 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
     }
 
     public void setPattern(LocalizedString lPattern) {
-        String pattern = lPattern.getSourceString();
-        if(target.isProperty()) {
-            Type type = target.getType();
-            if (type instanceof IntegralClass) {
-                target.format = new DecimalFormat(pattern);
-            } else if (type instanceof DateClass || type instanceof TimeClass || type instanceof DateTimeClass) {
-                target.format = new SimpleDateFormat(pattern);
-            }
-        }
+        target.pattern = lPattern.getSourceString();
     }
 
     public void setMaxValue(long maxValue) {

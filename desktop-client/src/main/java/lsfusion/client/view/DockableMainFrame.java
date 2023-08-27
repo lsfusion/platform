@@ -52,6 +52,7 @@ import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ExceptionClientAction;
 import lsfusion.interop.action.FormClientAction;
 import lsfusion.interop.action.ServerResponse;
+import lsfusion.interop.form.FormClientData;
 import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
@@ -547,9 +548,9 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
     }
 
     @Override
-    public ClientFormDockable runForm(AsyncFormController asyncFormController, String canonicalName, String formSID, boolean forbidDuplicate, RemoteFormInterface remoteForm, byte[] firstChanges, FormCloseListener closeListener, String formId) {
+    public ClientFormDockable runForm(AsyncFormController asyncFormController, boolean forbidDuplicate, RemoteFormInterface remoteForm, FormClientData clientData, FormCloseListener closeListener, String formId) {
         try {
-            return formsController.openForm(asyncFormController, mainNavigator, canonicalName, formSID, forbidDuplicate, remoteForm, firstChanges, closeListener, formId);
+            return formsController.openForm(asyncFormController, mainNavigator, forbidDuplicate, remoteForm, clientData, closeListener, formId);
         } catch (Exception e) {
             if(closeListener != null)
                 closeListener.formClosed(true);

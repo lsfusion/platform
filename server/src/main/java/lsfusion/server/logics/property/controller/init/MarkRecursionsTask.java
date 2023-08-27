@@ -14,10 +14,9 @@ import java.util.Set;
 public class MarkRecursionsTask extends GroupPropertiesTask {
 
     private Set<Action> actionMarks = new ConcurrentIdentityWeakHashSet<>();
-    private Set<Property> propertyMarks = new ConcurrentIdentityWeakHashSet<>();
 
     public String getCaption() {
-        return "Looking for recursions in abstract actions / properties";
+        return "Looking for recursions in abstract actions";
     }
 
     protected void runTask(ActionOrProperty property) {
@@ -26,12 +25,5 @@ public class MarkRecursionsTask extends GroupPropertiesTask {
                 ((ListCaseAction) property).markRecursions(actionMarks);
             }
         }
-
-        if (property instanceof Property) {
-            if (property instanceof CaseUnionProperty && ((CaseUnionProperty) property).isAbstract()) {
-                ((CaseUnionProperty) property).checkRecursions(propertyMarks);
-            }
-        }
     }
-
 }

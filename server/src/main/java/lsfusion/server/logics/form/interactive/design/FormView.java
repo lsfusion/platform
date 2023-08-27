@@ -27,6 +27,7 @@ import lsfusion.server.base.version.interfaces.NFOrderSet;
 import lsfusion.server.base.version.interfaces.NFSet;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncSerializer;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerCustomSerializable;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.filter.FilterView;
@@ -720,7 +721,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         pool.writeString(outStream, path);
         pool.writeInt(outStream, overridePageWidth);
         serializeFormSchedulers(outStream, formSchedulers.getOrderSet());
-        serializeAsyncExecMap(outStream, entity.getAsyncExecMap());
+        serializeAsyncExecMap(outStream, entity.getAsyncExecMap(pool.context), pool.context);
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -764,11 +765,11 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         }
     }
 
-    private void serializeAsyncExecMap(DataOutputStream outStream, Map<FormEvent, AsyncEventExec> asyncExecMap) throws IOException {
+    private void serializeAsyncExecMap(DataOutputStream outStream, Map<FormEvent, AsyncEventExec> asyncExecMap, FormInstanceContext context) throws IOException {
         outStream.writeInt(asyncExecMap.size());
         for(Map.Entry<FormEvent, AsyncEventExec> entry : asyncExecMap.entrySet()) {
             entry.getKey().serialize(outStream);
-            AsyncSerializer.serializeEventExec(entry.getValue(), outStream);
+            AsyncSerializer.serializeEventExec(entry.getValue(), context, outStream);
         }
     }
 
@@ -803,11 +804,11 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     }
 
 
-    public void prereadAutoIcons() {
+    public void prereadAutoIcons(FormInstanceContext context) {
         for(PropertyDrawView property : getPropertiesIt())
-            property.getImage();
+            property.getImage(context);
 
-        mainContainer.prereadAutoIcons(this);
+        mainContainer.prereadAutoIcons(this, context);
     }
 
     protected transient Set<ComponentView> removedComponents = new ConcurrentIdentityWeakHashSet<>();

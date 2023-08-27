@@ -54,7 +54,8 @@
 /* form main shrinked (needs scrolling / padding) container */
 .form-shrink-padded-container {
     overflow: auto;
-
+}
+:not(.form-embedded) > .form-shrink-padded-container { /* we don't want paddings in the embedded form*/
     padding: var(--border-cont-vert-padding) var(--border-cont-horz-padding);
 }
 

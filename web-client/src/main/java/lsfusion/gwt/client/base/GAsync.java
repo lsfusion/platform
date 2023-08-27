@@ -10,7 +10,7 @@ public class GAsync implements IsSerializable, Serializable {
     public Serializable displayValue; // String or GStringWithFiles
     public Serializable rawValue;
 
-    public GGroupObjectValue key;
+    public Serializable key; // GGroupObjectValue or String
 
     public static final GAsync RECHECK = new GAsync("RECHECK", "RECHECK", null);
     public static final GAsync CANCELED = new GAsync("CANCELED", "CANCELED", null);
@@ -19,7 +19,7 @@ public class GAsync implements IsSerializable, Serializable {
     public GAsync() {
     }
 
-    public GAsync(Serializable displayValue, Serializable rawValue, GGroupObjectValue key) {
+    public GAsync(Serializable displayValue, Serializable rawValue, Serializable key) {
         this.displayValue = displayValue;
         this.rawValue = rawValue;
 

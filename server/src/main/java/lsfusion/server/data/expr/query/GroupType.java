@@ -216,13 +216,6 @@ public enum GroupType implements AggrType {
         return exprSource;
     }
 
-    public int numExprs() {
-        if(this==CONCAT || this==LAST)
-            return 2;
-        else
-            return 1;
-    }
-
     public Type getType(Type exprType) {
         if(this==CONCAT)
             return StringClass.getv(((StringClass)exprType).caseInsensitive, ExtInt.UNLIMITED);

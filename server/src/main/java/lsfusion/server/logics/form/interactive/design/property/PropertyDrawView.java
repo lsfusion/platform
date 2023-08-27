@@ -11,18 +11,23 @@ import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.print.ReportFieldExtraType;
 import lsfusion.interop.form.property.Compare;
+import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeSerializer;
-import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
+import lsfusion.server.logics.classes.data.integral.IntegralClass;
+import lsfusion.server.logics.classes.data.time.DateClass;
+import lsfusion.server.logics.classes.data.time.DateTimeClass;
+import lsfusion.server.logics.classes.data.time.TimeClass;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncInput;
 import lsfusion.server.logics.form.interactive.action.async.AsyncNoWaitExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncSerializer;
-import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerContext;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.BaseComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
@@ -53,7 +58,6 @@ import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 
 import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.interop.action.ServerResponse.CHANGE;
@@ -73,7 +77,7 @@ public class PropertyDrawView extends BaseComponentView {
     public boolean noSort;
     public Compare defaultCompare;
 
-    private int charWidth;
+    public int charWidth;
     private int charHeight;
 
     public Dimension valueSize;
@@ -97,7 +101,7 @@ public class PropertyDrawView extends BaseComponentView {
 
     public boolean drawAsync = false;
 
-    public Format format;
+    public String pattern;
 
     public Boolean focusable;
 
@@ -118,7 +122,7 @@ public class PropertyDrawView extends BaseComponentView {
     public LocalizedString placeholder;
 
     public LocalizedString caption;
-    public Supplier<AppServerImage> image;
+    public AppServerImage.Reader image;
     public boolean clearText;
     public boolean notSelectAll;
     public String toolTip;
@@ -150,32 +154,27 @@ public class PropertyDrawView extends BaseComponentView {
         return entity.getIntegrationSID();
     }
 
-    public Type getType() {
-        return entity.getType();
+    public Type getType(FormInstanceContext context) {
+        return entity.getType(context);
     }
 
-    public boolean isProperty() {
-        return entity.isProperty();
+    public boolean isProperty(FormInstanceContext context) {
+        return entity.isProperty(context);
     }
 
-    public int getValueWidth(FormEntity entity) {
+    public int getValueWidth(FormInstanceContext context) {
         if(valueWidth != null)
             return valueWidth;
-
-//        if(isAutoSize(entity)) {
-//            if(!isProperty())
-//                return -1;
-//        }
 
         return -1;
     }
 
-    public int getValueHeight(FormEntity form) {
+    public int getValueHeight(FormInstanceContext context) {
         if(valueHeight != null)
             return valueHeight;
 
-        if(isAutoSize(form)) {
-            if(!isProperty() && !entity.hasDynamicImage()) // we want vertical size for action to be equal to text fields
+        if(isAutoSize(context)) {
+            if(!isProperty(context) && !entity.hasDynamicImage()) // we want vertical size for action to be equal to text fields
                 return -2;
         }
 
@@ -198,56 +197,60 @@ public class PropertyDrawView extends BaseComponentView {
 
     // we force optimistic async event scheme for external calls (since this calls assume that async push should exist)
     // for that purpose we have to send to client that type to do parsing, rendering, etc.
-    public Type getExternalChangeType(ServerContext context) {
+    public Type getExternalChangeType(FormInstanceContext context) {
         return getChangeType(context, true);
     }
 
-    public Type getChangeType(ServerContext context, boolean externalChange) {
-        AsyncEventExec asyncEventExec = entity.getAsyncEventExec(context.entity, context.securityPolicy, CHANGE, externalChange);
+    public Type getChangeType(FormInstanceContext context, boolean externalChange) {
+        AsyncEventExec asyncEventExec = entity.getAsyncEventExec(context, CHANGE, externalChange);
         return asyncEventExec instanceof AsyncInput ? ((AsyncInput) asyncEventExec).changeType : null;
     }
 
     @Override
-    public double getDefaultFlex(FormEntity formEntity) {
+    public double getDefaultFlex(FormInstanceContext context) {
         ContainerView container = getLayoutParamContainer();
-        if(((container != null && container.isHorizontal()) || entity.isList(formEntity)) && isHorizontalValueFlex())
+        if(((container != null && container.isHorizontal()) || entity.isList(context)) && isHorizontalValueFlex(context))
             return -2; // flex = width
-        return super.getDefaultFlex(formEntity);
+        return super.getDefaultFlex(context);
     }
 
     @Override
-    protected boolean isDefaultShrink(FormEntity formEntity, boolean explicit) {
+    protected boolean isDefaultShrink(FormInstanceContext context, boolean explicit) {
         ContainerView container = getLayoutParamContainer();
-        if(container != null && container.isHorizontal() && container.isWrap() && isHorizontalValueShrink())
+        if(container != null && container.isHorizontal() && container.isWrap() && isHorizontalValueShrink(context))
             return true;
-        return super.isDefaultShrink(formEntity, explicit);
+        return super.isDefaultShrink(context, explicit);
     }
 
     @Override
-    public FlexAlignment getDefaultAlignment(FormEntity formEntity) {
+    public FlexAlignment getDefaultAlignment(FormInstanceContext context) {
         ContainerView container = getLayoutParamContainer();
-        if (container != null && !container.isHorizontal() && isHorizontalValueFlex())
+        if (container != null && !container.isHorizontal() && isHorizontalValueFlex(context))
             return FlexAlignment.STRETCH;
-        return super.getDefaultAlignment(formEntity);
+        return super.getDefaultAlignment(context);
     }
 
     @Override
-    protected boolean isDefaultAlignShrink(FormEntity formEntity, boolean explicit) {
+    protected boolean isDefaultAlignShrink(FormInstanceContext context, boolean explicit) {
         // actually not needed mostly since for STRETCH align shrink is set, but just in case
         ContainerView container = getLayoutParamContainer();
-        if (container != null && !container.isHorizontal() && isHorizontalValueShrink())
+        if (container != null && !container.isHorizontal() && isHorizontalValueShrink(context))
             return true;
-        return super.isDefaultAlignShrink(formEntity, explicit);
+        return super.isDefaultAlignShrink(context, explicit);
+    }
+
+    private String getCustomRenderFunction(FormInstanceContext context) {
+        return entity.getCustomRenderFunction(context);
     }
 
     public static final boolean defaultSync = true;
 
-    public Map<String, AsyncEventExec> getAsyncEventExec(ServerContext context) {
+    public Map<String, AsyncEventExec> getAsyncEventExec(FormInstanceContext context) {
         Map<String, AsyncEventExec> asyncExecMap = new HashMap<>();
         Boolean sync = getSync();
         if(sync == null || !sync) { // if WAIT we don't want any asyncs
-            for (String actionId : entity.getAllPropertyEventActions()) {
-                AsyncEventExec asyncEventExec = entity.getAsyncEventExec(context.entity, context.securityPolicy, actionId, false);
+            for (String actionId : entity.getAllPropertyEventActions(context)) {
+                AsyncEventExec asyncEventExec = entity.getAsyncEventExec(context, actionId, false);
                 if (asyncEventExec == null && (sync != null || !defaultSync)) // explicit NOWAIT or not default sync
                     asyncEventExec = AsyncNoWaitExec.instance;
                 if (asyncEventExec != null)
@@ -271,19 +274,19 @@ public class PropertyDrawView extends BaseComponentView {
         this.image = AppServerImage.createPropertyImage(image, this);
     }
 
-    public AppServerImage getImage() {
+    public AppServerImage getImage(FormInstanceContext context) {
         if(this.image != null)
-            return this.image.get();
+            return this.image.get(context);
 
-        Supplier<AppServerImage> entityImage = entity.getImage();
+        AppServerImage.Reader entityImage = entity.getImage();
         if(entityImage != null)
-            return entityImage.get();
+            return entityImage.get(context);
 
-        return getDefaultImage();
+        return getDefaultImage(context);
     }
 
-    private AppServerImage getDefaultImage() {
-        return ActionOrProperty.getDefaultImage(AppServerImage.AUTO, getAutoName(), Settings.get().getDefaultPropertyImageRankingThreshold(), Settings.get().isDefaultPropertyImage());
+    private AppServerImage getDefaultImage(FormInstanceContext context) {
+        return ActionOrProperty.getDefaultImage(AppServerImage.AUTO, getAutoName(), Settings.get().getDefaultPropertyImageRankingThreshold(), Settings.get().isDefaultPropertyImage(), context);
     }
 
     // we return to the client null, if we're sure that caption is always empty (so we don't need to draw label)
@@ -303,22 +306,20 @@ public class PropertyDrawView extends BaseComponentView {
         return notNull || entity.isNotNull();
     }
 
-    public boolean isSticky(FormEntity formEntity, BaseLogicsModule LM) {
+    public boolean isSticky(FormInstanceContext context) {
         if (entity.sticky != null)
             return entity.sticky;
 
         if (sticky != null)
             return sticky;
 
-        if(!isProperty())
+        if(!isProperty(context))
             return false;
 
-        PropertyObjectEntity<?> property = entity.getPropertyObjectEntity();
-
-        if(property.isValueUnique(entity.getToDraw(formEntity)))
+        if(entity.getAssertProperty(context).isValueUnique(entity.getToDraw(context.entity)))
             return true;
 
-        if(LM.isRecognize(property.property))
+        if(ThreadLocalContext.getBaseLM().isRecognize(entity.getInheritedProperty()))
             return true;
 
         return false;
@@ -346,19 +347,21 @@ public class PropertyDrawView extends BaseComponentView {
         }
         setupShowIf(reportField);
         
-        reportField.pattern = getFormatPattern();
+        reportField.pattern = getPattern();
 
         type.fillReportDrawField(reportField);
         return reportField;
     }
 
     private void setupGeometry(ReportDrawField reportField, int scale) {
-        Type type = getType();
-
         reportField.scale = scale;
-        reportField.minimumWidth = type.getReportMinimumWidth() * scale;
-        reportField.preferredWidth = type.getReportPreferredWidth() * scale;
-        int reportCharWidth = getCharWidth();
+
+        if(entity.isStaticProperty()) {
+            Type type = entity.getStaticType();
+            reportField.minimumWidth = type.getReportMinimumWidth() * scale;
+            reportField.preferredWidth = type.getReportPreferredWidth() * scale;
+        }
+        int reportCharWidth = charWidth;
         if (reportCharWidth != 0) {
             reportField.fixedCharWidth = reportCharWidth * scale;
         }
@@ -401,28 +404,27 @@ public class PropertyDrawView extends BaseComponentView {
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {
         super.customSerialize(pool, outStream);
 
-        outStream.writeBoolean(isAutoSize(pool.context.entity));
-        outStream.writeBoolean(isBoxed(pool.context.entity));
+        outStream.writeBoolean(isAutoSize(pool.context));
 
         pool.writeString(outStream, getDrawCaption());
-        AppServerImage.serialize(getImage(), outStream, pool);
+        AppServerImage.serialize(getImage(pool.context), outStream, pool);
         pool.writeString(outStream, regexp);
         pool.writeString(outStream, regexpMessage);
         pool.writeLong(outStream, maxValue);
         outStream.writeBoolean(echoSymbols);
         outStream.writeBoolean(noSort);
 
-        Compare defaultCompare = getDefaultCompare();
+        Compare defaultCompare = getDefaultCompare(pool.context);
         if(defaultCompare != null)
             defaultCompare.serialize(outStream);
         else
             outStream.writeByte(-1);
 
         outStream.writeInt(getCharHeight());
-        outStream.writeInt(getCharWidth());
+        outStream.writeInt(getCharWidth(pool.context));
 
-        outStream.writeInt(getValueWidth(pool.context.entity));
-        outStream.writeInt(getValueHeight(pool.context.entity));
+        outStream.writeInt(getValueWidth(pool.context));
+        outStream.writeInt(getValueHeight(pool.context));
 
         outStream.writeInt(getCaptionWidth(pool.context.entity));
         outStream.writeInt(getCaptionHeight(pool.context.entity));
@@ -435,9 +437,9 @@ public class PropertyDrawView extends BaseComponentView {
 
         outStream.writeBoolean(drawAsync);
 
-        pool.writeObject(outStream, format);
+        pool.writeObject(outStream, getFormat(pool.context));
 
-        outStream.writeBoolean(entity.isList(pool.context.view.entity));
+        outStream.writeBoolean(entity.isList(pool.context));
 
         pool.writeObject(outStream, focusable);
         outStream.writeByte(entity.getEditType().serialize());
@@ -448,7 +450,7 @@ public class PropertyDrawView extends BaseComponentView {
 
         outStream.writeBoolean(panelColumnVertical);
         
-        pool.writeObject(outStream, getValueAlignment());
+        pool.writeObject(outStream, getValueAlignment(pool.context));
 
         pool.writeString(outStream, ThreadLocalContext.localize(comment));
         pool.writeString(outStream, commentElementClass);
@@ -458,12 +460,12 @@ public class PropertyDrawView extends BaseComponentView {
 
         pool.writeString(outStream, ThreadLocalContext.localize(placeholder));
 
-        pool.writeObject(outStream, changeOnSingleClick);
+        pool.writeObject(outStream, getChangeOnSingleClick(pool.context));
         outStream.writeBoolean(hide);
 
         //entity часть
-        if(isProperty()) {
-            Type type = getType();
+        if(isProperty(pool.context)) {
+            Type type = getType(pool.context);
             // however this hack helps only in some rare cases, since baseType is used in a lot of places
             if(type == null) // temporary hack, will not be needed when expression will be automatically patched with "IS Class"
                 type = IntegerClass.instance;
@@ -488,19 +490,20 @@ public class PropertyDrawView extends BaseComponentView {
         outStream.writeInt(asyncExecMap.size());
         for (Map.Entry<String, AsyncEventExec> entry : asyncExecMap.entrySet()) {
             pool.writeString(outStream, entry.getKey());
-            AsyncSerializer.serializeEventExec(entry.getValue(), outStream);
+            AsyncSerializer.serializeEventExec(entry.getValue(), pool.context, outStream);
         }
 
         outStream.writeBoolean(entity.askConfirm);
         if(entity.askConfirm)
-            pool.writeString(outStream, getAskConfirmMessage());
+            pool.writeString(outStream, getAskConfirmMessage(pool.context));
         outStream.writeBoolean(hasEditObjectAction(pool.context));
         outStream.writeBoolean(hasChangeAction(pool.context));
         outStream.writeBoolean(entity.hasDynamicImage());
 
-        outStream.writeBoolean(entity.getDrawProperty().property.disableInputList);
+        ActionOrProperty inheritedProperty = entity.getInheritedProperty();
+        outStream.writeBoolean(inheritedProperty instanceof Property && ((Property<?>) inheritedProperty).disableInputList);
 
-        ActionOrPropertyObjectEntity<?, ?> debug = entity.getDebugProperty(); // only for tooltip
+        ActionOrPropertyObjectEntity<?, ?> debug = entity.getDebugActionOrProperty(pool.context); // only for tooltip
         ActionOrProperty<?> debugBinding = entity.getDebugBindingProperty(); // only for tooltip
 
         pool.writeString(outStream, debugBinding.getNamespace());
@@ -509,7 +512,7 @@ public class PropertyDrawView extends BaseComponentView {
         pool.writeString(outStream, getPropertyFormName());
         pool.writeString(outStream, getIntegrationSID());
         pool.writeString(outStream, toolTip);
-        pool.serializeObject(outStream, pool.context.view.getGroupObject(entity.getToDraw(pool.context.view.entity)));
+        pool.serializeObject(outStream, pool.context.view.getGroupObject(entity.getToDraw(pool.context.entity)));
 
         pool.writeString(outStream, entity.columnsName);
         ImOrderSet<GroupObjectEntity> columnGroupObjects = entity.getColumnGroupObjects();
@@ -518,7 +521,7 @@ public class PropertyDrawView extends BaseComponentView {
             pool.serializeObject(outStream, pool.context.view.getGroupObject(groupEntity));
         }
 
-        outStream.writeBoolean(isProperty());
+        outStream.writeBoolean(isProperty(pool.context));
         outStream.writeBoolean(clearText);
         outStream.writeBoolean(notSelectAll);
 
@@ -537,7 +540,7 @@ public class PropertyDrawView extends BaseComponentView {
 
         pool.serializeObject(outStream, pool.context.view.get(entity.quickFilterProperty));
 
-        MapKeysTable<? extends PropertyInterface> mapTable = isProperty() ?
+        MapKeysTable<? extends PropertyInterface> mapTable = isProperty(pool.context) ?
                         ((Property<?>)debugBinding).mapTable : null;
         pool.writeString(outStream, mapTable != null ? mapTable.table.getName() : null);
 
@@ -564,7 +567,7 @@ public class PropertyDrawView extends BaseComponentView {
             outStream.writeByte(DataType.ACTION);
         }
         
-        pool.writeString(outStream, entity.customRenderFunction);
+        pool.writeString(outStream, getCustomRenderFunction(pool.context));
 
         pool.writeString(outStream, entity.eventID);
 
@@ -573,9 +576,9 @@ public class PropertyDrawView extends BaseComponentView {
         pool.writeString(outStream, debug.getPath());
         pool.writeString(outStream, entity.getFormPath());
 
-        pool.writeString(outStream, entity.getMouseBinding());
+        pool.writeString(outStream, entity.getMouseBinding(pool.context));
 
-        ImMap<KeyStroke, String> keyBindings = entity.getKeyBindings();
+        ImMap<KeyStroke, String> keyBindings = entity.getKeyBindings(pool.context);
         outStream.writeInt(keyBindings == null ? 0 : keyBindings.size());
         if (keyBindings != null) {
             for (int i=0,size=keyBindings.size();i<size;i++) {
@@ -584,7 +587,7 @@ public class PropertyDrawView extends BaseComponentView {
             }
         }
 
-        OrderedMap<String, LocalizedString> contextMenuBindings = filterContextMenuItems(entity.getContextMenuBindings(), pool.context);
+        OrderedMap<String, LocalizedString> contextMenuBindings = filterContextMenuItems(entity.getContextMenuBindings(pool.context), pool.context);
         outStream.writeInt(contextMenuBindings == null ? 0 : contextMenuBindings.size());
         if (contextMenuBindings != null) {
             for (int i = 0; i < contextMenuBindings.size(); ++i) {
@@ -594,11 +597,11 @@ public class PropertyDrawView extends BaseComponentView {
         }
 
         outStream.writeBoolean(isNotNull());
-        outStream.writeBoolean(isSticky(pool.context.view.entity, pool.context.BL.LM));
+        outStream.writeBoolean(isSticky(pool.context));
         outStream.writeBoolean(entity.getPropertyExtra(PropertyDrawExtraType.FOOTER) != null);
     }
 
-    private OrderedMap<String, LocalizedString> filterContextMenuItems(OrderedMap<String, LocalizedString> contextMenuBindings, ServerContext context) {
+    private OrderedMap<String, LocalizedString> filterContextMenuItems(OrderedMap<String, LocalizedString> contextMenuBindings, FormInstanceContext context) {
         if (contextMenuBindings == null || contextMenuBindings.size() == 0) {
             return null;
         }
@@ -607,7 +610,7 @@ public class PropertyDrawView extends BaseComponentView {
         for (int i = 0; i < contextMenuBindings.size(); ++i) {
             String actionSID = contextMenuBindings.getKey(i);
             LocalizedString caption = contextMenuBindings.getValue(i);
-            ActionObjectEntity<?> eventAction = entity.getEventAction(actionSID, context.entity, context.securityPolicy);
+            ActionObjectEntity<?> eventAction = entity.getCheckedEventAction(actionSID, context);
             if (eventAction != null && context.securityPolicy.checkPropertyViewPermission(eventAction.property)) {
                 contextMenuItems.put(actionSID, caption);
             }
@@ -615,14 +618,8 @@ public class PropertyDrawView extends BaseComponentView {
         return contextMenuItems;
     }
 
-    public String getFormatPattern() {
-        if (format != null) {
-            if (format instanceof DecimalFormat)
-                return ((DecimalFormat) format).toPattern();
-            else if (format instanceof SimpleDateFormat)
-                return ((SimpleDateFormat) format).toPattern();
-        }
-        return null;
+    public String getPattern() {
+        return pattern;
     }
 
     @Override
@@ -653,7 +650,7 @@ public class PropertyDrawView extends BaseComponentView {
         changeMouse = pool.readObject(inStream);
         changeMousePriority = pool.readInt(inStream);
 
-        format = pool.readObject(inStream);
+        pattern = pool.readObject(inStream);
 
         focusable = pool.readObject(inStream);
 
@@ -676,12 +673,12 @@ public class PropertyDrawView extends BaseComponentView {
         return ThreadLocalContext.localize(getCaption()) + " " + super.toString();
     }
 
-    public Compare getDefaultCompare() {
+    public Compare getDefaultCompare(FormInstanceContext context) {
         if(defaultCompare != null)
             return defaultCompare;
 
-        if(isProperty()) {
-            Type type = getType();
+        if(isProperty(context)) {
+            Type type = getType(context);
             if (type != null) {
                 return type.getDefaultCompare();
             }
@@ -698,7 +695,19 @@ public class PropertyDrawView extends BaseComponentView {
         this.charHeight = charHeight;
     }
 
-    public int getCharWidth() {
+    public int getCharWidth(FormInstanceContext context) {
+        PropertyDrawEntity.Select select = entity.getSelectProperty(context);
+        if(select != null) {
+            if(select.elementType.equals("Input"))
+                return (charWidth != 0 ? charWidth : select.length / select.count) * 4;
+
+            if (!entity.isList(context) && isAutoSize(context))
+                return 0;
+
+            if (select.elementType.startsWith("Button"))
+                return (charWidth != 0 && !select.actual ? charWidth * select.count : select.length) + select.count * (select.elementType.startsWith("ButtonGroup") ? 4 : 6); // couple of symbols for padding
+        }
+
         return charWidth;
     }
 
@@ -739,27 +748,31 @@ public class PropertyDrawView extends BaseComponentView {
         this.valueFlex = valueFlex;
     }
 
-    public boolean isHorizontalValueFlex() {
+    public boolean isHorizontalValueFlex(FormInstanceContext context) {
         if(valueFlex != null)
             return valueFlex;
         Type type;
-        return isProperty() && (type = getType()) != null && type.isFlex();
+        return isProperty(context) && (type = getType(context)) != null && type.isFlex();
     }
 
-    public boolean isHorizontalValueShrink() {
+    public boolean isHorizontalValueShrink(FormInstanceContext context) {
 //        if(valueFlex != null)
 //            return valueFlex;
         Type type;
-        return isProperty() && (type = getType()) != null && type.isFlex();
+        return isProperty(context) && (type = getType(context)) != null && type.isFlex();
     }
 
-    public String getAskConfirmMessage() {
+    public boolean isDefaultShrinkOverflowVisible(FormInstanceContext context) {
+        return !entity.isList(context) && (isTagInput(context) || entity.getSelectProperty(context) != null); // inputs (incl. multi) + radio + select use shadows
+    }
+
+    public String getAskConfirmMessage(FormInstanceContext context) {
         assert entity.askConfirm;
         if (entity.askConfirmMessage != null)
             return entity.askConfirmMessage;
         
         LocalizedString msg;
-        if (isProperty()) {
+        if (isProperty(context)) {
             msg = LocalizedString.create("{form.instance.do.you.really.want.to.edit.property}");
         } else {
             msg = LocalizedString.create("{form.instance.do.you.really.want.to.take.action}");
@@ -772,29 +785,65 @@ public class PropertyDrawView extends BaseComponentView {
         return ThreadLocalContext.localize(msg);
     }
     
-    public boolean hasChangeAction(ServerContext context) {
+    public boolean hasChangeAction(FormInstanceContext context) {
         return hasAction(context, CHANGE);
     }
-    public boolean hasEditObjectAction(ServerContext context) {
+    public boolean hasEditObjectAction(FormInstanceContext context) {
         return hasAction(context, EDIT_OBJECT);
     }
 
-    public boolean hasAction(ServerContext context, String actionID) {
-        ActionObjectEntity<?> eventAction = entity.getEventAction(actionID, context.entity, context.securityPolicy);
+    public boolean hasAction(FormInstanceContext context, String actionID) {
+        ActionObjectEntity<?> eventAction = entity.getCheckedEventAction(actionID, context);
         if(eventAction != null)
             return eventAction.property.hasFlow(ChangeFlowType.ANYEFFECT);
         return false;
     }
-    public boolean hasFlow(ServerContext context, ChangeFlowType type) {
-        ActionObjectEntity<?> eventAction = entity.getEventAction(CHANGE, context.entity, context.securityPolicy);
+    public boolean hasFlow(FormInstanceContext context, ChangeFlowType type) {
+        ActionObjectEntity<?> eventAction = entity.getCheckedEventAction(CHANGE, context);
         if(eventAction != null)
             return eventAction.property.hasFlow(type);
         return false;
     }
 
-    public FlexAlignment getValueAlignment() {
-        if (valueAlignment == null && isProperty()) {
-            Type type = getType();
+
+    private Format format;
+    private boolean formatCalculated;
+    @ManualLazy
+    public Format getFormat(FormInstanceContext context) {
+        if(pattern != null) {
+            if(!formatCalculated) {
+                if(isProperty(context)) {
+                    Type type = getType(context);
+                    if (type instanceof IntegralClass) {
+                        format = new DecimalFormat(pattern);
+                    } else if (type instanceof DateClass || type instanceof TimeClass || type instanceof DateTimeClass) {
+                        format = new SimpleDateFormat(pattern);
+                    }
+                }
+                formatCalculated = true;
+            }
+            return format;
+        }
+
+        return null;
+    }
+
+    public Boolean getChangeOnSingleClick(FormInstanceContext context) {
+        if(changeOnSingleClick != null)
+            return changeOnSingleClick;
+
+        if(isProperty(context)) {
+            if (getType(context) instanceof LogicalClass)
+                return Settings.get().getChangeBooleanOnSingleClick();
+        } else
+            return Settings.get().getChangeActionOnSingleClick();
+
+        return null;
+    }
+
+    public FlexAlignment getValueAlignment(FormInstanceContext context) {
+        if (valueAlignment == null && isProperty(context)) {
+            Type type = getType(context);
             if(type != null)
                 return type.getValueAlignment();
             return FlexAlignment.START;
@@ -802,18 +851,22 @@ public class PropertyDrawView extends BaseComponentView {
         return valueAlignment;
     }
 
-    public String getTag(ServerContext context) {
+    public String getTag(FormInstanceContext context) {
         if(tag != null)
             return tag;
 
-        if(isCustom())
+        if(isCustom(context)) {
+            PropertyDrawEntity.Select select = entity.getSelectProperty(context);
+            if (select != null && select.elementType.equals("Dropdown") && Settings.get().isNoToolbarForSelectDropdownInPanel())
+                return "select";
             return null;
+        }
 
         Type changeType = getChangeType(context, false);
-        if (isProperty()) {
-            Type type = getType();
+        if (isProperty(context)) {
+            Type type = getType(context);
             if((type != null && changeType != null && type.getCompatible(changeType) != null &&
-                    type.useInputTag(!entity.isList(context.entity), context.useBootstrap,
+                    type.useInputTag(!entity.isList(context), context.useBootstrap,
                             entity.getPropertyExtra(BACKGROUND) != null || design.background != null))
                     || placeholder != null)
                 return "input";
@@ -828,34 +881,52 @@ public class PropertyDrawView extends BaseComponentView {
         return null;
     }
 
-    private boolean isLink(ServerContext context) {
+    private boolean isLink(FormInstanceContext context) {
         return hasFlow(context, ChangeFlowType.INTERACTIVEFORM) && !hasFlow(context, ChangeFlowType.READONLYCHANGE);
     }
 
-    public String getCaptionElementClass(ServerContext context) {
+    public String getCaptionElementClass(FormInstanceContext context) {
         if (captionElementClass != null)
             return captionElementClass;
 
-        if(isProperty()) {
+        if(isProperty(context)) {
             String valueElementClass = getValueElementClass(context);
             // shortcut for the toggle button checkbox
             if(valueElementClass != null && valueElementClass.contains("btn-check"))
                 return "btn btn-outline-primary";
+
+            if (valueElementClass == null && isSimpleText(context))
+                return "text-secondary";
         }
 
         return null;
     }
 
-    public String getValueElementClass(ServerContext context) {
+    @Override
+    protected String getDefaultElementClass(FormInstanceContext context) {
+        if(isProperty(context)) {
+            Type type = getType(context);
+            if (type instanceof LogicalClass && entity.isPredefinedSwitch())
+                return "form-switch";
+        }
+
+        return null;
+    }
+
+    public String getValueElementClass(FormInstanceContext context) {
         if(valueElementClass != null)
             return valueElementClass;
 
-        if (isProperty()) {
-            String tag = getTag(context);
-            if(tag == null && !entity.isList(context.entity)) {
+        if (isProperty(context)) {
+            if(isSimpleText(context)) {
+                // if we're in panel and there is no decoration, nor other styling, nor custom view, making label gray to distinguish it from the value
+                if(!context.useBootstrap)
+                    return "form-control";
+
                 if (hasFlow(context, ChangeFlowType.INPUT))
                     return "form-control";
-                else if (hasChangeAction(context) && !isCustom())
+
+                if (hasChangeAction(context))
                     return "btn btn-light";
             }
         } else {
@@ -872,44 +943,44 @@ public class PropertyDrawView extends BaseComponentView {
         return null;
     }
 
-    public boolean hasToolbar(ServerContext context) {
+    private boolean isSimpleText(FormInstanceContext context) {
+        return getTag(context) == null && !entity.isList(context) && !isCustom(context);
+    }
+
+    public boolean hasToolbar(FormInstanceContext context) {
         if(toolbar != null)
             return toolbar;
 
-        if(isCustom())
+        if(isCustom(context) && entity.getSelectProperty(context) == null) // we want loading for select props, (entity.isReadOnly(context) || !hasChangeAction(context)) the problem of using hasChangeAction is that for JSON property it is always generated but it's impossible to understand if it is used
             return false;
 
-        if(!isProperty())
+        if(!isProperty(context))
             return true;
 
-        Type type = getType();
-        if(type != null) {
-            String tag = getTag(context);
-            return type.hasToolbar(tag != null && tag.equals("input") && !entity.isList(context.entity));
-        }
+        Type type = getType(context);
+        if(type != null)
+            return type.hasToolbar(!entity.isList(context) && isTagInput(context));
 
         return true;
+    }
+
+    private boolean isTagInput(FormInstanceContext context) {
+        String tag = getTag(context);
+        return tag != null && tag.equals("input");
     }
 
     public Boolean boxed;
 
-    public boolean isBoxed(FormEntity entity) {
-        if(boxed != null)
-            return boxed;
-
-        return true;
-    }
-
     public Boolean autoSize;
 
-    public boolean isAutoSize(FormEntity entity) {
+    public boolean isAutoSize(FormInstanceContext context) {
         if(autoSize != null)
             return autoSize;
 
-        return isCustom() || !isProperty();
+        return isCustom(context) || !isProperty(context);
     }
 
-    protected boolean isCustom() {
-        return entity.customRenderFunction != null;
+    protected boolean isCustom(FormInstanceContext context) {
+        return getCustomRenderFunction(context) != null;
     }
 }

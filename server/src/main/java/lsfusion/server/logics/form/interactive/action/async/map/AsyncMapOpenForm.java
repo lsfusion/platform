@@ -9,6 +9,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncOpenForm;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.dialogedit.ClassFormSelector;
 import lsfusion.server.logics.form.open.FormSelector;
 import lsfusion.server.logics.form.struct.FormEntity;
@@ -20,7 +21,6 @@ import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 
 public class AsyncMapOpenForm<T extends PropertyInterface> extends AsyncMapExec<T> {
     
@@ -84,7 +84,7 @@ public class AsyncMapOpenForm<T extends PropertyInterface> extends AsyncMapExec<
     }
 
     @Override
-    public AsyncEventExec map(ImRevMap<T, ObjectEntity> mapObjects, FormEntity form, SecurityPolicy policy, ActionOrProperty securityProperty, PropertyObjectEntity<?> drawProperty, GroupObjectEntity toDraw) {
+    public AsyncEventExec map(ImRevMap<T, ObjectEntity> mapObjects, ConnectionContext context, ActionOrProperty securityProperty, PropertyObjectEntity<?> drawProperty, GroupObjectEntity toDraw) {
         
         CustomClass objectClass = propertyClass;
         if(propertyInterface != null) {
@@ -100,7 +100,7 @@ public class AsyncMapOpenForm<T extends PropertyInterface> extends AsyncMapExec<
 
         return new AsyncOpenForm(staticForm != null ? staticForm.getCanonicalName() : null, 
                                  staticForm != null ? staticForm.getLocalizedCaption() : null,
-                                 staticForm != null ? staticForm.getImage() : null,
+                                 staticForm != null ? staticForm.getImage(context) : null,
                                  forbidDuplicate, modal, type);
     }
 

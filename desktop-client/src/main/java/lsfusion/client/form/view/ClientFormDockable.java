@@ -10,6 +10,7 @@ import lsfusion.client.form.controller.FormsController;
 import lsfusion.client.navigator.ClientNavigator;
 import lsfusion.client.navigator.controller.AsyncFormController;
 import lsfusion.client.view.MainFrame;
+import lsfusion.interop.form.FormClientData;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 
 import javax.swing.*;
@@ -35,8 +36,8 @@ public class ClientFormDockable extends ClientDockable {
         setContent(new JLabel(new ImageIcon(ClientImages.get("loading_async.gif").getImage().getScaledInstance(32, 32, Image.SCALE_DEFAULT))));
     }
 
-    public void init(ClientNavigator navigator, String canonicalName, String formSID, RemoteFormInterface remoteForm, ClientForm clientForm, final MainFrame.FormCloseListener closeListener, byte[] firstChanges, String formId) {
-        this.form = new ClientFormController(canonicalName, formSID, remoteForm, formsController, clientForm, firstChanges, navigator, false, false) {
+    public void init(ClientNavigator navigator, RemoteFormInterface remoteForm, ClientForm clientForm, final MainFrame.FormCloseListener closeListener, FormClientData clientData, String formId) {
+        this.form = new ClientFormController(remoteForm, formsController, clientForm, clientData, navigator, false, false) {
             @Override
             public void onFormHidden() {
                 if (control() != null) {

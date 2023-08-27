@@ -2,6 +2,7 @@ package lsfusion.server.logics.navigator;
 
 import lsfusion.server.base.AppServerImage;
 import lsfusion.server.logics.form.interactive.action.async.AsyncExec;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 
 public class NavigatorFolder extends NavigatorElement {
     public NavigatorFolder(String canonicalName) {
@@ -24,7 +25,7 @@ public class NavigatorFolder extends NavigatorElement {
     }
 
     @Override
-    public AsyncExec getAsyncExec() {
+    public AsyncExec getAsyncExec(ConnectionContext context) {
         return null;
     }
 }

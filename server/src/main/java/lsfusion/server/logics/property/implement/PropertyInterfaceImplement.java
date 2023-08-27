@@ -1,10 +1,10 @@
 package lsfusion.server.logics.property.implement;
 
+import lsfusion.base.Pair;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.GroupType;
-import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.where.Where;
@@ -58,10 +58,14 @@ public interface PropertyInterfaceImplement<P extends PropertyInterface> extends
 
     ActionMapImplement<?, P> mapEventAction(String eventSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction);
 
+    Property.Select<P> mapSelect(ImList<Property> viewProperties, boolean forceSelect);
+
     boolean mapIsNotNull();
     boolean mapHasAlotKeys();
     int mapEstComplexity();
-    
+
+    Pair<PropertyInterfaceImplement<P>, PropertyInterfaceImplement<P>> getIfProp();
+
     ImSet<DataProperty> mapChangeProps();
     boolean mapHasPreread(PropertyChanges propertyChanges);
     boolean mapHasPreread(Modifier modifier) throws SQLException, SQLHandledException;

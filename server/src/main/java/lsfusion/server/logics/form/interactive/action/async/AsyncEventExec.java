@@ -1,6 +1,7 @@
 package lsfusion.server.logics.form.interactive.action.async;
 
 import com.google.common.base.Throwables;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -11,7 +12,7 @@ public abstract class AsyncEventExec {
 
     public abstract byte getTypeId();
 
-    public void serialize(DataOutputStream dataOutputStream) throws IOException {
+    public void serialize(ConnectionContext context, DataOutputStream dataOutputStream) throws IOException {
     }
 
     public PushAsyncResult deserializePush(byte[] value) {
