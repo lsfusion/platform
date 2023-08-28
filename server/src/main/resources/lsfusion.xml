@@ -507,6 +507,8 @@
     <bean id="prereadApplyLinksTask" class="lsfusion.server.logics.event.init.PrereadApplyLinksTask">
     <property name="dependencies">
             <set>
+                <!-- getDepends is used which needs lazy props to be finalized  -->
+                <ref bean="finalizeLazyTask"/>
                 <!-- we don't need this dependencies since we're moving all getList to the DBManager   -->
 <!--                <ref bean="initReflectionEventsTask"/> &lt;!&ndash; так как в этом задании добавляются события &ndash;&gt;-->
 <!--                <ref bean="initIndicesTask"/> &lt;!&ndash; hideOlds -> STAT calculation -> getIndices cache  &ndash;&gt;-->
