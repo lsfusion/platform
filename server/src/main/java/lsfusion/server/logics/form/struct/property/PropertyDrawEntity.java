@@ -341,7 +341,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         ObjectEntity object;
         ValueClass valueClass;
         if(groupObject != null && (objects = groupObject.getObjects()).size() == 1 &&
-                (object = objects.single()).groupTo.viewType.isPanel() && (valueClass = object.baseClass) instanceof CustomClass) {
+                (object = objects.single()).groupTo.viewType.isPanel() && (valueClass = object.baseClass) instanceof CustomClass &&
+                listProperty != null) {  //listProperty can be null when SELECTOR is set for an action
             CustomClass customClass = (CustomClass)valueClass;
 
             ImRevMap<ObjectEntity, PropertyInterface> mapObjects = entity.getObjects().mapRevValues((Supplier<PropertyInterface>) PropertyInterface::new);
