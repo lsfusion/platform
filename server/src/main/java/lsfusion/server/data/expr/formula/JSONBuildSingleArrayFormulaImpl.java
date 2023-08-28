@@ -7,7 +7,8 @@ import lsfusion.server.logics.classes.data.file.JSONClass;
 
 public class JSONBuildSingleArrayFormulaImpl implements FormulaJoinImpl {
 
-    public boolean hasNotNull() {
+    @Override
+    public boolean hasNotNull(ImList<BaseExpr> exprs) {
         return false;
     }
 
