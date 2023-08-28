@@ -6,6 +6,8 @@ import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.formula.FormulaExpr;
+import lsfusion.server.data.expr.formula.JSONBuildSingleArrayFormulaImpl;
 import lsfusion.server.data.query.compile.CompileOrder;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.ConcatenateType;
@@ -128,6 +130,8 @@ public enum GroupType implements AggrType {
         Expr result = exprs.get(0);
         if(this == LAST)
             result = exprs.get(1).and(result.getWhere());
+        else if(this == JSON_CONCAT)
+            result = FormulaExpr.create(JSONBuildSingleArrayFormulaImpl.instance, ListFact.singleton(result));
         return result.and(orderWhere);
     }
 
