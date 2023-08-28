@@ -65,8 +65,3 @@ input[type=checkbox].form-control.panelRendererValue:not(.panelRendererValueFocu
 .panelRendererValue:not(.panelRendererValueFocused) input[type=checkbox].form-control:hover {
     outline: 1px solid var(--component-hover-border-color);
 }
-
-/*prevents all click for 3-state boolean 'disabled' value, click will be catched by upper element*/
-.logicalRendererCheckBox:disabled {
-    pointer-events: none;
-}

@@ -109,7 +109,7 @@ public class LogicalCellRenderer extends CellRenderer {
         if(threeState) {
             Boolean value3s = get3sBooleanValue(value);
             newValue = value3s != null && value3s;
-            input.setDisabled(value3s == null);
+            setIndeterminate(input, value3s == null);
         } else
             newValue = getBooleanValue(value);
 
@@ -117,6 +117,10 @@ public class LogicalCellRenderer extends CellRenderer {
 
         return false;
     }
+
+    private native void setIndeterminate(InputElement element, boolean indeterminate) /*-{
+        element.indeterminate = indeterminate;
+    }-*/;
 
     public static void setChecked(InputElement input, boolean newValue) {
         input.setChecked(newValue);
