@@ -66,8 +66,8 @@ colorThemeImage = CASE
     ELSE 'lightMode.png';
 toggleColorTheme() {
     designEnvColorTheme(currentDesignEnv()) <- CASE
-        WHEN designEnvColorTheme(currentDesignEnv()) == ColorTheme.light THEN ColorTheme.dark
-        WHEN designEnvColorTheme(currentDesignEnv()) == ColorTheme.dark THEN NULL
+        WHEN currentColorTheme() == ColorTheme.light THEN ColorTheme.dark
+        WHEN currentColorTheme() == ColorTheme.dark THEN NULL
         ELSE ColorTheme.light;
     apply();
     formRefresh();

@@ -675,13 +675,10 @@ EXTEND FORM settings
     PROPERTIES() storeNavigatorSettingsForComputer
     PROPERTIES() READONLY serverUseBootstrap, serverVerticalNavbar, serverNavigatorPinMode 
 
-    OBJECTS nu = CustomUser
-    PROPERTIES(nu) READONLY name, login
-    PROPERTIES(nu) designEnvUseBootstrap, designEnvVerticalNavbar, useClientNavigatorPinMode, navigatorPinMode, colorThemeName
-
-    OBJECTS nc = Computer
-    PROPERTIES(nc) READONLY hostname
-    PROPERTIES(nc) designEnvUseBootstrap, designEnvVerticalNavbar, useClientNavigatorPinMode, navigatorPinMode, colorThemeName
+    OBJECTS de = DesignEnv
+    PROPERTIES(de) name READONLY,
+        designEnvUseBootstrap, designEnvVerticalNavbar, useClientNavigatorPinMode, navigatorPinMode, colorThemeName
+    FILTERS IF storeNavigatorSettingsForComputer() THEN de IS Computer ELSE de IS CustomUser
 
     PROPERTIES() selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor,
         tableGridColor
@@ -703,8 +700,9 @@ DESIGN settings {
                 MOVE PROPERTY (serverUseBootstrap());
                 MOVE PROPERTY (serverVerticalNavbar());
                 MOVE PROPERTY (serverNavigatorPinMode());
-                MOVE BOX(nu);
-                MOVE BOX(nc);
+                MOVE BOX(de) {
+                    caption = IF storeNavigatorSettingsForComputer() THEN '{authentication.computers}' ELSE '{authentication.users}';
+                }
             }
             NEW colors {
                 caption = '{service.form.settings.caption.colors}';
@@ -791,7 +789,7 @@ getClientSettings(User user) + WHEN TRUE AND user IS User THEN {
     }
     
     LOCAL colorThemeStaticName = STRING();
-    colorThemeStaticName() <- staticName(IF storeNavigatorSettingsForComputer() THEN colorTheme(currentComputer()) ELSE colorTheme(user));
+    colorThemeStaticName() <- staticName(colorTheme(currentDesignEnv()));
     
     EXPORT JSON FROM
         currentUserName = (OVERRIDE currentUserName(), '(без имени)'),

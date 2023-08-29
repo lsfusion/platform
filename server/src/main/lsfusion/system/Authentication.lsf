@@ -3,6 +3,7 @@ MODULE Authentication;
 REQUIRE Time, Utils;
 
 CLASS DesignEnv;
+name '{authentication.name}'= ABSTRACT ISTRING(DesignEnv);
 
 // ------------------------- Computers ---------------------- //
 
@@ -10,6 +11,7 @@ CLASS Computer '{authentication.computer}' : DesignEnv;
 TABLE computer (Computer);
 
 hostname '{authentication.host.name.computer}' = DATA ISTRING[100] (Computer) CHARWIDTH 10 IN id;
+name(Computer c) += hostname(c);
 computer = GROUP LAST Computer computer ORDER computer BY hostname(computer);
 
 FORM computer '{authentication.computer}'
@@ -75,6 +77,7 @@ name '{authentication.name.user}' (CustomUser user) = name[User](user AS CustomU
 
 // login
 login '{authentication.login}' = DATA ISTRING[100] (CustomUser) CHARWIDTH 15;
+name(CustomUser c) += login(c);
 customUserLower (login) = GROUP AGGR CustomUser customUser WHERE customUser IS CustomUser BY ISTRING[100](lower(login(customUser)));
 customUserNormalized (ISTRING[100] login) = customUserLower(ISTRING[100](lower(login)));
 logName (CustomUser user) = OVERRIDE name(user), login(user);
