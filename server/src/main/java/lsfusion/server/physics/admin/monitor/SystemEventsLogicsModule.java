@@ -51,11 +51,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
 
     public LP useBootstrap;
     public LP serverUseBootstrap;
-    
-    public LP verticalNavbar;
     public LP serverVerticalNavbar;
-
-    public LP navigatorPinMode;
     public LP serverNavigatorPinMode;
 
     public LP computerConnection;
@@ -150,13 +146,9 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
 
         onStarted = findAction("onStartedApply[]");
 
-        useBootstrap = findProperty("useBootstrap[CustomUser]");
+        useBootstrap = findProperty("useBootstrap[DesignEnv]");
         serverUseBootstrap = findProperty("serverUseBootstrap[]");
-        
-        verticalNavbar = findProperty("verticalNavbar[CustomUser]");
         serverVerticalNavbar = findProperty("serverVerticalNavbar[]");
-
-        navigatorPinMode = findProperty("navigatorPinMode[CustomUser]");
         serverNavigatorPinMode = findProperty("serverNavigatorPinMode[]");
 
         // Подключения к серверу

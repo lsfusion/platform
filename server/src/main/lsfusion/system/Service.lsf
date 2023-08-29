@@ -677,11 +677,11 @@ EXTEND FORM settings
 
     OBJECTS nu = CustomUser
     PROPERTIES(nu) READONLY name, login
-    PROPERTIES(nu) userUseBootstrap, userVerticalNavbar, useClientNavigatorPinMode, navigatorPinMode, colorThemeName
+    PROPERTIES(nu) designEnvUseBootstrap, designEnvVerticalNavbar, useClientNavigatorPinMode, navigatorPinMode, colorThemeName
 
     OBJECTS nc = Computer
     PROPERTIES(nc) READONLY hostname
-    PROPERTIES(nc) computerUseBootstrap, computerVerticalNavbar, useClientNavigatorPinMode, navigatorPinMode, colorThemeName
+    PROPERTIES(nc) designEnvUseBootstrap, designEnvVerticalNavbar, useClientNavigatorPinMode, navigatorPinMode, colorThemeName
 
     PROPERTIES() selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor,
         tableGridColor

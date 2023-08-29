@@ -131,11 +131,11 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     protected void initUserContext(String hostName, String remoteAddress, String clientLanguage, String clientCountry, TimeZone clientTimeZone, String clientDateFormat, String clientTimeFormat,
                                    String clientColorTheme, ExecutionStack stack, DataSession session) throws SQLException, SQLHandledException {
         super.initUserContext(hostName, remoteAddress, clientLanguage, clientCountry, clientTimeZone, clientDateFormat, clientTimeFormat, clientColorTheme, stack, session);
-
-        useBootstrap = businessLogics.systemEventsLM.useBootstrap.read(session, user) != null;
+        DataObject designEnv = businessLogics.authenticationLM.storeNavigatorSettingsForComputer.read(session) != null ? computer : user;
+        useBootstrap = businessLogics.systemEventsLM.useBootstrap.read(session, designEnv) != null;
         localePreferences = readLocalePreferences(session, user, businessLogics, clientTimeZone, clientDateFormat, clientTimeFormat, stack);
         securityPolicy = logicsInstance.getSecurityManager().getSecurityPolicy(session, user);
-        saveClientColorTheme(session, user, businessLogics, clientColorTheme, stack);
+        saveClientColorTheme(session, designEnv, businessLogics, clientColorTheme, stack);
     }
 
     private static void saveClientTimeZone(DataSession session, DataObject user, BusinessLogics businessLogics, TimeZone clientTimeZone, String clientDateFormat, String clientTimeFormat, ExecutionStack stack) throws SQLException, SQLHandledException {
@@ -147,9 +147,9 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         }
     }
 
-    private static void saveClientColorTheme(DataSession session, DataObject user, BusinessLogics businessLogics, String clientColorTheme, ExecutionStack stack) throws SQLException, SQLHandledException {
+    private static void saveClientColorTheme(DataSession session, DataObject designEnv, BusinessLogics businessLogics, String clientColorTheme, ExecutionStack stack) throws SQLException, SQLHandledException {
         if(clientColorTheme != null) {
-            businessLogics.authenticationLM.clientColorTheme.change(businessLogics.authenticationLM.colorTheme.getDataObject(clientColorTheme), session, user);
+            businessLogics.authenticationLM.clientColorTheme.change(businessLogics.authenticationLM.colorTheme.getDataObject(clientColorTheme), session, designEnv);
             session.applyException(businessLogics, stack);
         }
     }

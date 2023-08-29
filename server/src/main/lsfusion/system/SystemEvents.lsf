@@ -43,77 +43,55 @@ NAVIGATOR {
     NEW logoAction WINDOW logo PARENT HEADER logoHeader() IMAGE logo() CLASS logoActionClass();
 }
 
-userUseBootstrap '{system.events.use.bootstrap}' = DATA TBOOLEAN (CustomUser);
-computerUseBootstrap '{system.events.use.bootstrap}' = DATA TBOOLEAN (Computer);
+designEnvUseBootstrap '{system.events.use.bootstrap}' = DATA TBOOLEAN (DesignEnv);
 serverUseBootstrap '{system.events.use.bootstrap}' = DATA BOOLEAN ();
-useBootstrap '{system.events.use.bootstrap}' (CustomUser u) = IF userUseBootstrap(u) THEN userUseBootstrap(u) == TTRUE ELSE serverUseBootstrap();
-useBootstrap '{system.events.use.bootstrap}' (Computer c) = IF computerUseBootstrap(c) THEN computerUseBootstrap(c) == TTRUE ELSE serverUseBootstrap();
-useBootstrap = IF storeNavigatorSettingsForComputer() THEN useBootstrap(currentComputer()) ELSE useBootstrap(currentUser());
+useBootstrap '{system.events.use.bootstrap}' (DesignEnv d) = IF designEnvUseBootstrap(d) THEN designEnvUseBootstrap(d) == TTRUE ELSE serverUseBootstrap();
+useBootstrap = useBootstrap(currentDesignEnv());
 
 bootstrapCaption = (IF useBootstrap() THEN '{system.events.excel.design}' ELSE '{system.events.bootstrap.design}') IF NOT noSystemToolbarCaptions();
 bootstrapImage = IF useBootstrap() THEN 'excel.png' ELSE 'bootstrap.png';
 toggleBootstrap () {
-    IF storeNavigatorSettingsForComputer() THEN {
-        computerUseBootstrap(currentComputer()) <- IF useBootstrap() THEN TFALSE ELSE TTRUE;
-    } ELSE {
-        userUseBootstrap(currentUser()) <- IF useBootstrap() THEN TFALSE ELSE TTRUE;
-    }
+    designEnvUseBootstrap(currentDesignEnv()) <- IF useBootstrap() THEN TFALSE ELSE TTRUE;
     APPLY;
     reload();
 }
 
 colorThemeCaption = (CASE
-    WHEN colorTheme() == ColorTheme.light THEN '{system.events.dark.mode}'
-    WHEN colorTheme() == ColorTheme.dark THEN '{system.events.auto.mode}'
+    WHEN currentColorTheme() == ColorTheme.light THEN '{system.events.dark.mode}'
+    WHEN currentColorTheme() == ColorTheme.dark THEN '{system.events.auto.mode}'
     ELSE '{system.events.light.mode}') IF NOT noSystemToolbarCaptions();
 colorThemeImage = CASE 
-    WHEN colorTheme() == ColorTheme.light THEN 'darkMode.png' 
-    WHEN colorTheme() == ColorTheme.dark THEN 'autoMode.png' 
+    WHEN currentColorTheme() == ColorTheme.light THEN 'darkMode.png' 
+    WHEN currentColorTheme() == ColorTheme.dark THEN 'autoMode.png' 
     ELSE 'lightMode.png';
 toggleColorTheme() {
-    IF storeNavigatorSettingsForComputer() THEN {
-        computerColorTheme(currentComputer()) <- CASE
-            WHEN computerColorTheme(currentComputer()) == ColorTheme.light THEN ColorTheme.dark
-            WHEN computerColorTheme(currentComputer()) == ColorTheme.dark THEN NULL
-            ELSE ColorTheme.light; 
-    } ELSE {
-        userColorTheme(currentUser()) <- CASE
-            WHEN userColorTheme(currentUser()) == ColorTheme.light THEN ColorTheme.dark
-            WHEN userColorTheme(currentUser()) == ColorTheme.dark THEN NULL
-            ELSE ColorTheme.light;
-    }
+    designEnvColorTheme(currentDesignEnv()) <- CASE
+        WHEN designEnvColorTheme(currentDesignEnv()) == ColorTheme.light THEN ColorTheme.dark
+        WHEN designEnvColorTheme(currentDesignEnv()) == ColorTheme.dark THEN NULL
+        ELSE ColorTheme.light;
     apply();
     formRefresh();
 }
 
-userVerticalNavbar '{navigator.navbar.vertical}' = DATA TBOOLEAN (CustomUser);
-computerVerticalNavbar '{navigator.navbar.vertical}' = DATA TBOOLEAN (Computer);
+designEnvVerticalNavbar '{navigator.navbar.vertical}' = DATA TBOOLEAN (DesignEnv);
 serverVerticalNavbar '{navigator.navbar.vertical}' = DATA BOOLEAN ();
-verticalNavbar '{navigator.navbar.vertical}' (CustomUser u) = IF userVerticalNavbar(u) THEN userVerticalNavbar(u) == TTRUE ELSE serverVerticalNavbar();
-verticalNavbar '{navigator.navbar.vertical}' (Computer c) = IF computerVerticalNavbar(c) THEN computerVerticalNavbar(c) == TTRUE ELSE serverVerticalNavbar();
-verticalNavbar = IF storeNavigatorSettingsForComputer() THEN verticalNavbar(currentComputer()) ELSE verticalNavbar(currentUser());
+verticalNavbar '{navigator.navbar.vertical}' (DesignEnv d) = IF designEnvVerticalNavbar(d) THEN designEnvVerticalNavbar(d) == TTRUE ELSE serverVerticalNavbar();
+verticalNavbar = verticalNavbar(currentDesignEnv());
 
 verticalNavbarCaption = (IF verticalNavbar() THEN '{system.events.navbar.horizontal}' ELSE '{system.events.navbar.vertical}') IF NOT noSystemToolbarCaptions();
 verticalNavbarImage = IF verticalNavbar() THEN iconIfAvailable('navbarHorz.png', 'fa-solid fa-window-maximize') ELSE iconIfAvailable('navbarVert.png', 'fa-solid fa-window-maximize fa-rotate-270');
 toggleVerticalNavbar () {
-    IF storeNavigatorSettingsForComputer() THEN {
-        computerVerticalNavbar(currentComputer()) <- IF verticalNavbar() THEN TFALSE ELSE TTRUE;
-    } ELSE {
-        userVerticalNavbar(currentUser()) <- IF verticalNavbar() THEN TFALSE ELSE TTRUE;
-    }
+    designEnvVerticalNavbar(currentDesignEnv()) <- IF verticalNavbar() THEN TFALSE ELSE TTRUE;
     APPLY;
     reload();
 }
 verticalNavbarClass = ABSTRACT STRING();
 
-useClientNavigatorPinMode '{system.events.navigator.pin.use.client}' = DATA BOOLEAN (CustomUser);
-useClientNavigatorPinMode '{system.events.navigator.pin.use.client}' = DATA BOOLEAN (Computer);
-userNavigatorPinMode '{navigator.pin.mode}' = DATA TBOOLEAN (CustomUser);
-computerNavigatorPinMode '{navigator.pin.mode}' = DATA TBOOLEAN (Computer);
+useClientNavigatorPinMode '{system.events.navigator.pin.use.client}' = DATA BOOLEAN (DesignEnv);
+designEnvNavigatorPinMode '{navigator.pin.mode}' = DATA TBOOLEAN (DesignEnv);
 serverNavigatorPinMode '{navigator.pin.mode}' = DATA TBOOLEAN ();
-navigatorPinMode '{navigator.pin.mode}' (CustomUser u) = IF useClientNavigatorPinMode(u) THEN userNavigatorPinMode(u) ELSE serverNavigatorPinMode();
-navigatorPinMode '{navigator.pin.mode}' (Computer c) = IF useClientNavigatorPinMode(c) THEN computerNavigatorPinMode(c) ELSE serverNavigatorPinMode();
-navigatorPinMode() = IF storeNavigatorSettingsForComputer() THEN navigatorPinMode(currentComputer()) ELSE navigatorPinMode(currentUser());
+navigatorPinMode '{navigator.pin.mode}' (DesignEnv d) = IF useClientNavigatorPinMode(d) THEN designEnvNavigatorPinMode(d) ELSE serverNavigatorPinMode();
+navigatorPinMode() = navigatorPinMode(currentDesignEnv());
 
 navigatorPinModeCaption = (IF navigatorPinMode()
     THEN (IF navigatorPinMode() == TFALSE
@@ -126,13 +104,8 @@ navigatorPinModeImage = IF navigatorPinMode()
         ELSE iconIfAvailable('navigatorPinNone.png','fa-solid fa-thumbtack')) 
     ELSE iconIfAvailable('navigatorPinNavbar.png','fa-solid fa-thumbtack fa-rotate-45');
 toggleNavigatorPinMode () {
-    IF storeNavigatorSettingsForComputer() THEN {
-        computerNavigatorPinMode(currentComputer()) <- IF navigatorPinMode() THEN (IF navigatorPinMode() == TFALSE THEN TTRUE ELSE NULL) ELSE TFALSE;
-        useClientNavigatorPinMode(currentComputer()) <- TRUE;        
-    } ELSE {
-        userNavigatorPinMode(currentUser()) <- IF navigatorPinMode() THEN (IF navigatorPinMode() == TFALSE THEN TTRUE ELSE NULL) ELSE TFALSE;
-        useClientNavigatorPinMode(currentUser()) <- TRUE;
-    }
+    designEnvNavigatorPinMode(currentDesignEnv()) <- IF navigatorPinMode() THEN (IF navigatorPinMode() == TFALSE THEN TTRUE ELSE NULL) ELSE TFALSE;
+    useClientNavigatorPinMode(currentDesignEnv()) <- TRUE;
     apply();
 }
 navigatorPinModeClass = ABSTRACT STRING();

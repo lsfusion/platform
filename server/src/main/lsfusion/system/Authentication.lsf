@@ -2,9 +2,11 @@ MODULE Authentication;
 
 REQUIRE Time, Utils;
 
+CLASS DesignEnv;
+
 // ------------------------- Computers ---------------------- //
 
-CLASS Computer '{authentication.computer}';
+CLASS Computer '{authentication.computer}' : DesignEnv;
 TABLE computer (Computer);
 
 hostname '{authentication.host.name.computer}' = DATA ISTRING[100] (Computer) CHARWIDTH 10 IN id;
@@ -58,7 +60,7 @@ contact (email) = GROUP MAX Contact contact BY email(contact);
 
 // User
 
-CLASS ABSTRACT User '{authentication.user}';
+CLASS ABSTRACT User '{authentication.user}' : DesignEnv;
 TABLE user (User);
 
 CLASS SystemUser '{authentication.system.user}' : User;
@@ -405,30 +407,25 @@ WHEN CHANGED(storeNavigatorSettingsForComputer()) DO {
     reload();
 }
 
+currentDesignEnv = IF storeNavigatorSettingsForComputer() THEN currentComputer() ELSE currentUser();
+
 CLASS ColorTheme '{authentication.color.theme}' {
     light '{authentication.color.theme.light}',
     dark '{authentication.color.theme.dark}'
 }
 TABLE colorTheme(ColorTheme);
-userColorTheme '{authentication.color.theme.user}' (CustomUser user) = DATA ColorTheme (CustomUser);
-computerColorTheme '{authentication.color.theme.user}' (Computer computer) = DATA ColorTheme (Computer);
-colorTheme = IF storeNavigatorSettingsForComputer() THEN computerColorTheme(currentComputer()) ELSE userColorTheme(currentUser());
-clientColorTheme '{authentication.color.theme.user}' = DATA ColorTheme (CustomUser);
-clientColorTheme '{authentication.color.theme.user}' = DATA ColorTheme (Computer);
-colorTheme '{authentication.color.theme.user}' (CustomUser user) = OVERRIDE userColorTheme(user), clientColorTheme(user);  
-colorTheme '{authentication.color.theme.user}' (Computer computer) = OVERRIDE computerColorTheme(computer), clientColorTheme(computer);
+designEnvColorTheme '{authentication.color.theme}' (DesignEnv) = DATA ColorTheme (DesignEnv);
+currentColorTheme = designEnvColorTheme(currentDesignEnv());
+clientColorTheme '{authentication.color.theme}' = DATA ColorTheme (DesignEnv);
+colorTheme '{authentication.color.theme}' (DesignEnv designEnv) = OVERRIDE designEnvColorTheme(designEnv), clientColorTheme(designEnv);
 name '{authentication.color.theme}' (ColorTheme theme) = staticCaption(theme) IF theme IS ColorTheme;
-colorThemeName '{authentication.color.theme.user}' (CustomUser user) = name(userColorTheme(user));
-colorThemeName '{authentication.color.theme.user}' (Computer computer) = name(computerColorTheme(computer));
+colorThemeName '{authentication.color.theme}' (DesignEnv designEnv) = name(designEnvColorTheme(designEnv));
 
-isDarkTheme() = (IF storeNavigatorSettingsForComputer() THEN colorTheme(currentComputer()) ELSE colorTheme(currentUser())) == ColorTheme.dark;
+isDarkTheme() = colorTheme(currentDesignEnv()) == ColorTheme.dark;
 
 changeColorThemeAction INTERNAL 'lsfusion.server.logics.navigator.ChangeColorThemeAction'(ColorTheme) NULL;
-WHEN CHANGED(userColorTheme(CustomUser user)) AND NOT storeNavigatorSettingsForComputer() DO {
-    changeColorThemeAction(colorTheme(user));    
-}
-WHEN CHANGED(computerColorTheme(Computer computer)) AND storeNavigatorSettingsForComputer() DO {
-    changeColorThemeAction(colorTheme(computer));
+WHEN CHANGED(designEnvColorTheme(DesignEnv designEnv)) DO {
+    changeColorThemeAction(colorTheme(designEnv));    
 }
 
 FORM dialogColorThemes '{authentication.color.themes}'
