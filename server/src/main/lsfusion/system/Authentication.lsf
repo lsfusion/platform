@@ -265,24 +265,29 @@ registerUser(JSONFILE user) {
     }
 } @@api @@noauth;
 
+body(STRING href, STRING text, STRING login) = HTML('$I{resetPasswordBody.html}');
+subject(STRING text) = HTML('$I{resetPasswordSubject.html}');
+
 resetPassword(JSONFILE input) {
     IMPORT FROM input FIELDS STRING userNameOrEmail DO {
         LOCAL token = STRING();
         LOCAL NESTED success = BOOLEAN();
-        LOCAL NESTED href = STRING();
+        LOCAL NESTED subject = STRING();
+        LOCAL NESTED body = STRING();
         LOCAL NESTED email = STRING();
         TRY {
             FOR email(CustomUser cu) == userNameOrEmail OR login(cu) == userNameOrEmail DO {
                 token() <- randomUUID();
                 passwordResetToken(cu) <- token();
                 expiryPasswordResetTokenDate(cu) <- currentDateTime();
-                href() <- CONCAT '', '<a href="', webPath(), '/change-password', '?token=', token(), IF query() != '' THEN (CONCAT '', '&', query()), '"> {password.reset} - ', login(cu), '</a>';
+                subject() <- subject('{password.reset.email.subject}');
+                body() <- body((CONCAT '', webPath(), '/change-password', '?token=', token(), IF query() != '' THEN (CONCAT '', '&', query())), '{password.reset}', login(cu));
                 APPLY;
                 IF NOT canceled() THEN {
                     EMAIL 
-                        SUBJECT '{password.reset.email.subject} '
+                        SUBJECT subject()
                         TO email(cu)
-                        BODY href();
+                        BODY body();
                     success() <- TRUE;
                 }
                 email() <- email(cu);
