@@ -35,7 +35,7 @@ function selectMultiInput() {
     function toOption(object, controller, loaded) {
         return {
             value: controller.getObjectsString(object),
-            text: object.name,
+            text: getName(object),
             originalObject: object, // should be parsed by getChangeObjects
             loaded: loaded //for cache clearing
         }
@@ -332,8 +332,8 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
                         }
 
                         input.object = object;
-                        let name = object.name;
-                        if (name != null && isContainHtmlTag(name))
+                        let name = getName(object);
+                        if (isContainHtmlTag(name))
                             label.innerHTML = name;
                         else
                             label.innerText = name;
@@ -541,7 +541,7 @@ function _dropDown(selectAttributes, eventListener, multi, shouldBeSelected, htm
                         }
 
                         option.object = object;
-                        let name = object.name;
+                        let name = getName(object);
                         if (html) {
                             if (isBootstrap)
                                 option.setAttribute("data-content", name);
@@ -669,3 +669,6 @@ function _changeSingleDropdownProperty(object, element) {
     element.controller.changeProperty('selected', object, set ? true : null);
 }
 
+function getName(object) {
+    return object.name == null ? '' : object.name;
+}
