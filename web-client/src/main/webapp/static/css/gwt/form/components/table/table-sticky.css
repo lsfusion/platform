@@ -32,11 +32,8 @@
     /*z-index: 1;*/
 }
 
-.dataGridStickyCell:not(.dataGridStickyOverflow),
-/*.dataGridStickyCell.property-not-null,*/
-/*.dataGridStickyCell.property-has-change,*/
-.dataGridStickyCell.fill-parent-position:not(.dataGridStickyOverflow) {
-    position: sticky;
+.dataGridStickyCell:not(.dataGridStickyOverflow) {
+    position: sticky !important;
 
     z-index: 1;
 }
