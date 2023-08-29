@@ -672,40 +672,59 @@ overrideTableGridColor '{service.table.grid.color}' = OVERRIDE tableGridColor(cu
 resetWindowsLayout '{service.reset.windows.layout}' INTERNAL 'lsfusion.server.logics.navigator.ResetWindowsLayoutAction';
 
 EXTEND FORM settings
-    PROPERTIES() selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor, 
-                 tableGridColor, serverUseBootstrap READONLY, serverVerticalNavbar READONLY 
+    PROPERTIES() storeNavigatorSettingsForComputer
+    PROPERTIES() READONLY serverUseBootstrap, serverVerticalNavbar, serverNavigatorPinMode 
 
+    OBJECTS de = DesignEnv
+    PROPERTIES(de) name READONLY,
+        designEnvUseBootstrap, designEnvVerticalNavbar, useClientNavigatorPinMode, navigatorPinMode, colorThemeName
+    FILTERS IF storeNavigatorSettingsForComputer() THEN de IS Computer ELSE de IS CustomUser
+
+    PROPERTIES() selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor,
+        tableGridColor
+    
     OBJECTS uc = CustomUser
     PROPERTIES(uc) READONLY name, login, userRoles
-    PROPERTIES(uc) fontSize, userUseBootstrap, userVerticalNavbar, useClientNavigatorPinMode, navigatorPinMode, colorThemeName,
-                   selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor, tableGridColor
+    PROPERTIES(uc) fontSize, selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor,
+        focusedCellBorderColor, tableGridColor
 ;
 
 DESIGN settings {
     tabs {
-        NEW colorsPane {
+        NEW designPane {
             caption = '{service.form.settings.caption.design}';
-            MOVE PROPERTY (serverUseBootstrap());
-            MOVE PROPERTY (serverVerticalNavbar());
-            NEW colorsHeaderPane {
-                type = CONTAINERH;
-                NEW defaultColors {
-                    type = COLUMNS;
-                    columns = 2;
-                    caption = '{service.form.settings.caption.default.colors}';
-                    MOVE PROPERTY(selectedRowBackgroundColor());
-                    MOVE PROPERTY(selectedCellBackgroundColor());
-                    MOVE PROPERTY(focusedCellBackgroundColor());
-                    MOVE PROPERTY(focusedCellBorderColor());
-                    MOVE PROPERTY(tableGridColor());
-               } 
-               NEW generalColors {
-                    caption = '{service.form.settings.caption.general.colors}';
-                    MOVE PROPERTY(defaultBackgroundColor());
-                    MOVE PROPERTY(defaultForegroundColor());
-               }
+            tabbed = TRUE;
+            NEW navigator {
+                caption = '{service.form.settings.caption.navigator}';
+                MOVE PROPERTY(storeNavigatorSettingsForComputer());
+                MOVE PROPERTY (serverUseBootstrap());
+                MOVE PROPERTY (serverVerticalNavbar());
+                MOVE PROPERTY (serverNavigatorPinMode());
+                MOVE BOX(de) {
+                    caption = IF storeNavigatorSettingsForComputer() THEN '{authentication.computers}' ELSE '{authentication.users}';
+                }
             }
-            MOVE BOX(uc);
+            NEW colors {
+                caption = '{service.form.settings.caption.colors}';
+                NEW colorsHeaderPane {
+                    horizontal = TRUE;
+                    NEW defaultColors {
+                        lines = 2;
+                        caption = '{service.form.settings.caption.default.colors}';
+                        MOVE PROPERTY(selectedRowBackgroundColor());
+                        MOVE PROPERTY(selectedCellBackgroundColor());
+                        MOVE PROPERTY(focusedCellBackgroundColor());
+                        MOVE PROPERTY(focusedCellBorderColor());
+                        MOVE PROPERTY(tableGridColor());
+                    }
+                    NEW generalColors {
+                        caption = '{service.form.settings.caption.general.colors}';
+                        MOVE PROPERTY(defaultBackgroundColor());
+                        MOVE PROPERTY(defaultForegroundColor());
+                    }
+                }
+                MOVE BOX(uc);
+            }
         }
     }
 }
@@ -770,7 +789,7 @@ getClientSettings(User user) + WHEN TRUE AND user IS User THEN {
     }
     
     LOCAL colorThemeStaticName = STRING();
-    colorThemeStaticName() <- staticName(colorTheme(user));
+    colorThemeStaticName() <- staticName(colorTheme(currentDesignEnv()));
     
     EXPORT JSON FROM
         currentUserName = (OVERRIDE currentUserName(), '(без имени)'),
