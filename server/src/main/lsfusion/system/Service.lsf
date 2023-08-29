@@ -677,7 +677,8 @@ EXTEND FORM settings
 
     OBJECTS de = DesignEnv
     PROPERTIES(de) name READONLY,
-        designEnvUseBootstrap, designEnvVerticalNavbar, useClientNavigatorPinMode, navigatorPinMode, colorThemeName
+        designEnvUseBootstrap, designEnvVerticalNavbar, useClientNavigatorPinMode, 
+        navigatorPinMode READONLYIF NOT useClientNavigatorPinMode(de), colorThemeName
     FILTERS IF storeNavigatorSettingsForComputer() THEN de IS Computer ELSE de IS CustomUser
 
     PROPERTIES() selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor,
