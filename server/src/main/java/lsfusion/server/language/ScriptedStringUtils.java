@@ -388,34 +388,45 @@ public class ScriptedStringUtils {
     }
 
     // heuristic procedure
-    // allows ${, $I{, $R{ special syntax, but not localization or escaping
-    // adds escaping to all our special characters except for ${, $I{, $R{
+    // allows ${, $I{, $R{, $M{ special syntax, but not localization or escaping
+    // adds escaping to all our special characters except for ${, $I{, $R{, $M{
     // and corresponding closing braces.
     // This can lead to an error if content contains, for example, javascript code
     // with ${ inside
     public static String escapeInlineContent(String content) {
         StringBuilder builder = new StringBuilder();
-        Stack<Boolean> stack = new Stack<>();
+        int nestingDepth = 0;
+        boolean insideSpecialState = false;
         for (int i = 0; i < content.length(); ++i) {
             StringInterpolateState state = prefixState(content, i);
-            if (state != StringInterpolateState.PLAIN) {
-                stack.push(true);
+            if (!insideSpecialState && state != StringInterpolateState.PLAIN) {
+                insideSpecialState = true;
+                nestingDepth = 1;
                 int end = i + (state == StringInterpolateState.INTERPOLATION ? 1 : 2);
                 builder.append(content, i, end+1);
                 i = end;
             } else {
                 char ch = content.charAt(i);
                 if (ch == OPEN_CH) {
-                    stack.push(false);
-                    builder.append('\\');
-                } else if (ch == CLOSE_CH) {
-                    if (stack.empty() || !stack.peek()) {
+                    if (insideSpecialState) {
+                        ++nestingDepth;
+                    } else {
                         builder.append('\\');
                     }
-                    if (!stack.empty()) {
-                        stack.pop();
+                } else if (ch == CLOSE_CH) {
+                    if (insideSpecialState) {
+                        --nestingDepth;
+                        if (nestingDepth == 0) {
+                            insideSpecialState = false;
+                        }
+                    } else {
+                        builder.append('\\');
                     }
-                } else if (("\n\r\t\\" + QUOTE + INTERP_CH).indexOf(ch) != -1) {
+                } else if (("\\" + QUOTE + INTERP_CH).indexOf(ch) != -1) {
+                    if (!insideSpecialState) {
+                        builder.append('\\');
+                    }
+                } else if ("\n\r\t".indexOf(ch) != -1) {
                     builder.append('\\');
                     ch = fromSpecialChar(ch);
                 }
