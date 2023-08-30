@@ -361,7 +361,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                     // ставим на объекты из cache'а
                     if (object.getBaseClass() instanceof CustomClass && classListener != null) {
                         CustomClass cacheClass = (CustomClass) object.getBaseClass();
-                        Long objectID = classListener.getObject(cacheClass);
+                        Long objectID = classListener.getObject(groupObject.entity, cacheClass);
                         mSeekCachedObjects.exclAdd(object.entity, session.getObjectValue(cacheClass, objectID));
                     }
                 }

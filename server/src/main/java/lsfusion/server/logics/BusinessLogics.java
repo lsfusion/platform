@@ -621,7 +621,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             ValueClass valueClass = property.getValueClass(ClassType.autoSetPolicy);
             if (valueClass instanceof CustomClass && interfaceClass instanceof CustomClass &&
                     customClass.isChild((CustomClass) interfaceClass)) { // в общем то для оптимизации
-                Long obj = classListener.getObject((CustomClass) valueClass);
+                Long obj = classListener.getObject(null, (CustomClass) valueClass);
                 if (obj != null)
                     property.change(MapFact.singleton(property.interfaces.single(), dataObject), session, obj);
             }
