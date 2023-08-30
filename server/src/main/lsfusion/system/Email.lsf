@@ -224,7 +224,7 @@ DESIGN mail {
         NEW content {
             fill = 1;
             height = 300;
-            type = TABBED;
+            tabbed = TRUE;
             NEW message {
                 height = 200;
                 caption = '{email.form.mail.caption.message}';

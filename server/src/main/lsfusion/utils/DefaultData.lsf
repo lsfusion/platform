@@ -23,7 +23,7 @@ DESIGN defaultData {
         MOVE PROPERTY(fillDefaultData());
         NEW pane {
             fill = 1;
-            type = TABBED;
+            tabbed = TRUE;
             NEW commons {
                 type = COLUMNS;
                 columns = 3;

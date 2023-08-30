@@ -208,7 +208,7 @@ FORM processMonitor '{process.monitor.form.process.monitor}'
 
 DESIGN processMonitor {
     NEW top {
-        type = TABBED;
+        tabbed = TRUE;
         fill = 1;
         NEW allProcesses {
             fill = 1;

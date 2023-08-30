@@ -349,7 +349,7 @@ DESIGN profiler {
     }
     
     NEW tab {
-        type = TABBED;
+        tabbed = TRUE;
         fill = 1;
         NEW sql {
             caption = 'SQL';
@@ -397,7 +397,7 @@ DESIGN profiler {
                     fill = 1;
                     MOVE BOX(TREE pT){fill = 2;};
                     NEW tabDownUsers{
-                        type = TABBED;
+                        tabbed = TRUE;
                         fill = 1;
                         MOVE BOX(upToDown) {caption = '{profiler.form.profiler.caption.up.to.down}';};
                         MOVE BOX(downWithUsers) {caption = '{profiler.form.profiler.caption.down.with.users}';};

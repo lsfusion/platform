@@ -419,7 +419,7 @@ META applicationForm(sid, name)
             NEW pane {
                 fill = 1;
                 width = 0;
-                type = TABBED;
+                tabbed = TRUE;
                 NEW commons {
                     caption = '{system.form.sid.name.caption.commons}';
                 }

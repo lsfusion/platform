@@ -463,17 +463,17 @@ DESIGN securityPolicy {
 
             NEW rolePolicyContainer {
                 fill = 1;
-                type = TABBED;
+                tabbed = TRUE;
 
                 NEW elementsContainer {
-                    type = TABBED;
+                    tabbed = TRUE;
                     caption = '{security.form.navigator}';
                     MOVE BOX(TREE navigatorElements) { caption = '{security.form.tree}'; }
                     MOVE BOX(f) { caption = '{security.form.table}'; }
                 }
 
                 NEW propertiesContainer {
-                    type = TABBED;
+                    tabbed = TRUE;
                     caption = '{security.form.properties}';
                     MOVE BOX(TREE properties) { caption = '{security.form.tree}'; }
                     MOVE BOX(pr) { caption = '{security.form.table}'; }

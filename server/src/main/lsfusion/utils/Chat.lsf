@@ -399,7 +399,7 @@ DESIGN fullChat {
             fill = 1;
             NEW left {
                 fill = 0.3;
-                type = TABBED;
+                tabbed = TRUE;
                 NEW contacts {
                     caption = '{chat.contacts}';
                     MOVE BOX(u) { caption = '{chat.contacts}'; }

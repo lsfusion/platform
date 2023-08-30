@@ -703,7 +703,7 @@ DESIGN pings {
         }
         NEW options {
             fill = 1;
-            type = TABBED;
+            tabbed = TRUE;
             NEW data {
                 caption = '{system.events.form.pings.caption.data}';
                 MOVE BOX(dates);

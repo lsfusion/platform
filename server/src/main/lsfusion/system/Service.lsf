@@ -278,7 +278,7 @@ FORM settings '{service.form.settings}'
 DESIGN settings {
     OBJECTS {
         NEW tabs {
-            type = TABBED;
+            tabbed = TRUE;
             fill = 1;
             NEW pane {
                 caption = '{service.form.settings.caption.general}';

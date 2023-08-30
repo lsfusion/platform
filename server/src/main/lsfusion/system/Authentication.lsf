@@ -506,7 +506,7 @@ DESIGN customUser {
                 MOVE BOX(u);
             }
             NEW details {
-                type = TABBED;
+                tabbed = TRUE;
                 fill = 3;
             }
         }
@@ -567,7 +567,7 @@ FORM customUsers '{authentication.users}'
 DESIGN customUsers {
     OBJECTS {
         NEW pane {
-            type = TABBED;
+            tabbed = TRUE;
             fill = 1;
             NEW users {
                 caption = '{authentication.users}';

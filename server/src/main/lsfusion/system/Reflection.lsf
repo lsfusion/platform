@@ -390,7 +390,7 @@ DESIGN physicalModel {
     BOX {
         NEW container BEFORE TOOLBARBOX{
             fill = 1;
-            type = TABBED;
+            tabbed = TRUE;
             NEW modelContainer {
                 fill = 1;
                 caption = '{reflection.form.physical.model.caption.tables}';
@@ -481,7 +481,7 @@ DESIGN forms {
             }
             NEW rightPane {
                 fill = 2;
-                type = TABBED;
+                tabbed = TRUE;
                 NEW global {
                     caption = '{reflection.property.draw}';
                     MOVE BOX(p);
@@ -526,7 +526,7 @@ DESIGN properties {
     BOX {
         NEW container BEFORE TOOLBARBOX {
             fill = 1;
-            type = TABBED;
+            tabbed = TRUE;
 
             NEW treeContainer {
                 fill = 1;
@@ -562,7 +562,7 @@ DESIGN actions {
     BOX {
         NEW container BEFORE TOOLBARBOX {
             fill = 1;
-            type = TABBED;
+            tabbed = TRUE;
 
             NEW treeContainer {
                 fill = 1;
