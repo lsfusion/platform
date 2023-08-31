@@ -910,10 +910,10 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         ImSet<ObjectInstance> upGroups = GroupObjectInstance.getObjects(getUpTreeGroups());
         assert value.isEmpty() || value.keys().equals(upGroups);
         for (ObjectInstance object : upGroups)
-            object.changeValue(session, value.isEmpty()? NullValue.instance:value.get(object));
+            object.changeValue(session, eventForm, value.isEmpty()? NullValue.instance:value.get(object));
         ImSet<ObjectInstance> downGroups = GroupObjectInstance.getObjects(getDownTreeGroups());
         for(ObjectInstance object : downGroups)
-            object.changeValue(session, NullValue.instance);
+            object.changeValue(session, eventForm, NullValue.instance);
 
         eventForm.changeGroupObject(upGroups.addExcl(downGroups), stack);
     }

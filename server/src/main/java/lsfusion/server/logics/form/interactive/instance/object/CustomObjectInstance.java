@@ -15,6 +15,7 @@ import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.UnknownClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.form.interactive.changed.ChangedData;
+import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.classes.IsClassProperty;
@@ -69,23 +70,23 @@ public class CustomObjectInstance extends ObjectInstance {
 
     private ObjectValue value = NullValue.instance;
 
-    public void changeValue(SessionChanges session, ObjectValue changeValue) throws SQLException, SQLHandledException {
+    public void changeValue(SessionChanges session, FormInstance form, ObjectValue changeValue) throws SQLException, SQLHandledException {
         if(changeValue.equals(value)) return;
 
         value = changeValue;
 
-        updateCurrentClass(session);
+        updateCurrentClass(session, form);
 
         updated = updated | ObjectInstance.UPDATED_OBJECT;
         groupTo.updated = groupTo.updated | GroupObjectInstance.UPDATED_OBJECT;
     }
 
-    public void refreshValueClass(SessionChanges session) throws SQLException, SQLHandledException {
+    public void refreshValueClass(SessionChanges session, FormInstance form) throws SQLException, SQLHandledException {
         value = value.refresh(session, getBaseClass());
-        updateCurrentClass(session);
+        updateCurrentClass(session, form);
     }
 
-    public void updateCurrentClass(SessionChanges session) throws SQLException, SQLHandledException {
+    public void updateCurrentClass(SessionChanges session, FormInstance form) throws SQLException, SQLHandledException {
         // запишем класс объекта
         ConcreteCustomClass changeClass;
         if(value instanceof NullValue)
@@ -99,7 +100,7 @@ public class CustomObjectInstance extends ObjectInstance {
             changeClass = (ConcreteCustomClass) sessionClass;
             CustomClassListener classListener = getClassListener();
             if (classListener != null) // если вообще кто-то следит за изменением классов объектов
-                classListener.objectChanged(groupTo.entity, changeClass, (Long) getDataObject().object);
+                classListener.objectChanged(changeClass, form.entity, groupTo.entity, (Long) getDataObject().object);
         }
 
         if(changeClass != currentClass) {
@@ -129,7 +130,7 @@ public class CustomObjectInstance extends ObjectInstance {
         return value;
     }
 
-    public void changeClass(SessionChanges session, DataObject change, ConcreteObjectClass cls) throws SQLException, SQLHandledException {
+    public void changeClass(SessionChanges session, FormInstance form, DataObject change, ConcreteObjectClass cls) throws SQLException, SQLHandledException {
 
         // запишем объекты, которые надо будет сохранять
         session.changeClass(change,cls);
@@ -137,7 +138,7 @@ public class CustomObjectInstance extends ObjectInstance {
         if(cls instanceof UnknownClass)
             groupTo.dropSeek(this);
         else
-            updateCurrentClass(session);
+            updateCurrentClass(session, form);
     }
 
     public Type getType() {

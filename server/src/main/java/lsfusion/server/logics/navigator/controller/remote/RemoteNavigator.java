@@ -49,6 +49,7 @@ import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.interactive.listener.FocusListener;
 import lsfusion.server.logics.form.interactive.listener.RemoteFormListener;
+import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.navigator.*;
 import lsfusion.server.logics.navigator.changed.NavigatorChanges;
@@ -116,7 +117,6 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         
         ServerLoggers.remoteLifeLog("NAVIGATOR OPEN : " + this);
 
-        this.groupObjectCache = new GroupObjectCache();
         this.classCache = new ClassCache();
 
         remoteContext = new ConnectionContext(isUseBootstrap());
@@ -387,27 +387,22 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     }
 
     @Override
-    public Long getObject(GroupObjectEntity groupObject, CustomClass cls) {
-        return getCacheObject(groupObject, cls);
+    public Long getObject(CustomClass cls, FormEntity form, GroupObjectEntity groupObject) {
+        return getCacheObject(cls, form, groupObject);
     }
 
-    public void objectChanged(GroupObjectEntity groupObject, ConcreteCustomClass cls, long objectID) {
-        addCacheObject(groupObject, cls, objectID);
+    public void objectChanged(ConcreteCustomClass cls, FormEntity form, GroupObjectEntity groupObject, long objectID) {
+        addCacheObject(cls, form, groupObject, objectID);
     }
 
-    private GroupObjectCache groupObjectCache;
     private ClassCache classCache;
 
-    private Long getCacheObject(GroupObjectEntity groupObject, CustomClass cls) {
-        Long object = groupObject != null ? groupObjectCache.getObject(groupObject) : null;
-        return object != null ? object : classCache.getObject(cls);
+    private Long getCacheObject(CustomClass cls, FormEntity form, GroupObjectEntity groupObject) {
+        return classCache.getObject(cls, form, groupObject);
     }
 
-    public void addCacheObject(GroupObjectEntity groupObject, ConcreteCustomClass cls, long value) {
-        if(groupObject != null) {
-            groupObjectCache.put(groupObject, value);
-        }
-        classCache.put(cls, value);
+    public void addCacheObject(ConcreteCustomClass cls, FormEntity form, GroupObjectEntity groupObject, long value) {
+        classCache.put(cls, form, groupObject, value);
     }
 
     public DataObject getUser() {
