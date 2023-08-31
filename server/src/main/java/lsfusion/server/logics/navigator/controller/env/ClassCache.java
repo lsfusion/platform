@@ -1,5 +1,6 @@
 package lsfusion.server.logics.navigator.controller.env;
 
+import lsfusion.base.Pair;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.CustomClass;
@@ -7,10 +8,9 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
-public class ClassCache extends OrderedMap<ConcreteCustomClass, List<ClassCache.ClassCacheEntry>> {
+public class ClassCache extends OrderedMap<ConcreteCustomClass, Pair<FormEntity, OrderedMap<GroupObjectEntity, Long>>> { //list -> map ці два лісты
 
     public ClassCache() {
     }
@@ -19,49 +19,37 @@ public class ClassCache extends OrderedMap<ConcreteCustomClass, List<ClassCache.
         super(classCache);
     }
 
-    public List<ClassCacheEntry> put(ConcreteCustomClass cls, FormEntity form, GroupObjectEntity groupObject, Long value) {
+    public Pair<FormEntity, OrderedMap<GroupObjectEntity, Long>> put(ConcreteCustomClass cls, FormEntity form, GroupObjectEntity groupObject, Long value) {
 
         if (cls == null) {
             throw new RuntimeException("Unable to put null key to cache");
         }
 
-        List<ClassCacheEntry> classCacheEntryList = getOrDefault(cls, new ArrayList<>());
-        classCacheEntryList.removeIf(e -> e.form == form && e.groupObject == groupObject);
-
-        if (value != null) {
-            classCacheEntryList.add(new ClassCacheEntry(form, groupObject, value));
-            return super.put(cls, classCacheEntryList);
-        } else
-            return null;
+        Pair<FormEntity, OrderedMap<GroupObjectEntity, Long>> pair = get(cls);
+        if (pair == null || !pair.first.equals(form)) {
+            pair = Pair.create(form, new OrderedMap<>());
+        }
+        pair.second.put(groupObject, value);
+        return super.put(cls, pair);
     }
 
     public Long getObject(CustomClass cls, FormEntity form, GroupObjectEntity groupObject) {
 
         Long objectID = null;
-        for (Map.Entry<ConcreteCustomClass, List<ClassCacheEntry>> entry : entrySet()) {
-            List<ClassCacheEntry> classCacheEntryList = entry.getValue();
-            ClassCacheEntry result = classCacheEntryList.stream().filter(e -> e.form == form && e.groupObject == groupObject).findFirst().orElse(null);
-            if(result != null) {
-                return result.value;
-            } else {
-                if (entry.getKey().isChild(cls)) {
-                    objectID = classCacheEntryList.get(classCacheEntryList.size() - 1).value;
+        for (Map.Entry<ConcreteCustomClass, Pair<FormEntity, OrderedMap<GroupObjectEntity, Long>>> entry : entrySet()) {
+            Pair<FormEntity, OrderedMap<GroupObjectEntity, Long>> pair = entry.getValue();
+            OrderedMap<GroupObjectEntity, Long> groupObjectValueMap = pair.second;
+            if (pair.first.equals(form)) {
+                Long result = groupObjectValueMap.get(groupObject);
+                if (result != null) {
+                    return result;
                 }
+            }
+            if (entry.getKey().isChild(cls)) {
+                objectID = new ArrayList<>(groupObjectValueMap.entrySet()).get(groupObjectValueMap.size() - 1).getValue();
             }
         }
 
         return objectID;
-    }
-
-    public class ClassCacheEntry {
-        private FormEntity form;
-        private GroupObjectEntity groupObject;
-        private Long value;
-
-        public ClassCacheEntry(FormEntity form, GroupObjectEntity groupObject, Long value) {
-            this.form = form;
-            this.groupObject = groupObject;
-            this.value = value;
-        }
     }
 }
