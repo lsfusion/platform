@@ -225,6 +225,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
                         startLogger.info("Disabling input list");
                         setDisableInputListProperties(sql);
                     }
+
+                    if (getOldDBStructure(sql).version >= 39) {
+                        startLogger.info("Setting user select for properties");
+                        setSelectProperties(sql);
+                    }
                 }
                 return null;
             });
@@ -347,6 +352,22 @@ public class DBManager extends LogicsManager implements InitializingBean {
             LP<?> prop = businessLogics.findProperty(values.get("CNProperty").toString().trim());
             if(prop != null)
                 LM.disableInputList(prop);
+        }
+    }
+
+    private void setSelectProperties(SQLSession sql) throws SQLException, SQLHandledException {
+        ImRevMap<Object, KeyExpr> keys = LM.is(reflectionLM.property).getMapKeys();
+        KeyExpr key = keys.singleValue();
+        QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
+        query.addProperty("CNProperty", reflectionLM.canonicalNameProperty.getExpr(key));
+        query.addProperty("select", reflectionLM.selectProperty.getExpr(key));
+        query.and(reflectionLM.selectProperty.getExpr(key).getWhere());
+
+        for (ImMap<Object, Object> values : query.execute(sql, OperationOwner.unknown).valueIt()) {
+            LP<?> prop = businessLogics.findProperty(values.get("CNProperty").toString().trim());
+            String select = (String) values.get("select");
+            if(prop != null && select != null)
+                prop.property.select = select;
         }
     }
 
@@ -2864,7 +2885,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     public static int oldDBStructureVersion = 0;
-    public static int newDBStructureVersion = 38;
+    public static int newDBStructureVersion = 39;
 
     private class OldDBStructure extends DBStructure<String> {
 
