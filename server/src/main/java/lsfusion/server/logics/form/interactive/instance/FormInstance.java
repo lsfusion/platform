@@ -361,7 +361,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                     // ставим на объекты из cache'а
                     if (object.getBaseClass() instanceof CustomClass && classListener != null) {
                         CustomClass cacheClass = (CustomClass) object.getBaseClass();
-                        Long objectID = classListener.getObject(cacheClass);
+                        Long objectID = classListener.getObject(cacheClass, entity, groupObject.entity);
                         mSeekCachedObjects.exclAdd(object.entity, session.getObjectValue(cacheClass, objectID));
                     }
                 }
@@ -987,7 +987,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         if (objectInstance instanceof CustomObjectInstance) {
             CustomObjectInstance object = (CustomObjectInstance) objectInstance;
 
-            object.changeClass(session, dataObject, cls);
+            object.changeClass(session, this, dataObject, cls);
             dataChanged = true;
         } else
             session.changeClass(objectInstance, dataObject, cls);
@@ -1598,7 +1598,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         for (ObjectInstance object : getObjects())
             if (object instanceof CustomObjectInstance)
-                ((CustomObjectInstance) object).refreshValueClass(session);
+                ((CustomObjectInstance) object).refreshValueClass(session, this);
         refresh = true;
         dataChanged = session.hasChanges();
     }
@@ -1656,7 +1656,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             // пробежим по всем объектам
             for (ObjectInstance object : getObjects())
                 if (object instanceof CustomObjectInstance)
-                    ((CustomObjectInstance) object).updateCurrentClass(session);
+                    ((CustomObjectInstance) object).updateCurrentClass(session, this);
             fireOnCancel(stack);
 
             dataChanged = true;
@@ -1740,7 +1740,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 //        if (object instanceof DataObjectInstance && !(value instanceof DataObject))
 //            object.changeValue(session, ((DataObjectInstance) object).getBaseClass().getDefaultObjectValue());
 //        else
-        object.changeValue(session, value);
+        object.changeValue(session, this, value);
     }
 
     private boolean hasEventActions() {
