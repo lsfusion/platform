@@ -31,7 +31,6 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public ConcreteCustomClass dropColumn;
     public ConcreteCustomClass property;
     public ConcreteCustomClass action;
-    public ConcreteCustomClass selectType;
     public ConcreteCustomClass groupObject;
     
     public LP captionPropertyGroup;
@@ -55,9 +54,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LP storedProperty;
     public LP isSetNotNullProperty;
     public LP disableInputListProperty;
-    public LP selectProperty;
     public LP nameSelectProperty;
-    public LP staticCaptionSelectProperty;
     public LP returnProperty;
     public LP classProperty;
     public LP complexityProperty;
@@ -226,7 +223,6 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         dropColumn = (ConcreteCustomClass) findClass("DropColumn");
         property = (ConcreteCustomClass) findClass("Property");
         action = (ConcreteCustomClass) findClass("Action");
-        selectType = (ConcreteCustomClass) findClass("SelectType");
         groupObject = (ConcreteCustomClass) findClass("GroupObject");
     }
 
@@ -263,9 +259,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         storedProperty = findProperty("stored[Property]");
         isSetNotNullProperty = findProperty("isSetNotNull[Property]");
         disableInputListProperty = findProperty("disableInputList[Property]");
-        selectProperty = findProperty("select[Property]");
         nameSelectProperty = findProperty("nameSelect[Property]");
-        staticCaptionSelectProperty = findProperty("staticCaptionSelect[Property]");
         returnProperty = findProperty("return[Property]");
         classProperty = findProperty("class[Property]");
         complexityProperty = findProperty("complexity[Property]");

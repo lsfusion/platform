@@ -405,8 +405,6 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form, Version version) {
                 if(entity.viewType == null)
                     entity.viewType = ClassViewType.LIST;
-                if(customRenderFunction != null)
-                    entity.customRenderFunction = customRenderFunction;
             }
 
             @Override

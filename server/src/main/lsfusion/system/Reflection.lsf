@@ -83,11 +83,11 @@ isSetNotNull '{reflection.is.set.not.null.property}' = DATA BOOLEAN (Property);
 disableInputList '{reflection.disable.input.list}' = DATA BOOLEAN (Property);
 
 CLASS SelectType '{reflection.select}' {
-    Button 'Button',
-    ButtonGroup 'ButtonGroup',
-    Dropdown 'Dropdown',
-    List 'List',
-    No 'No'
+    Button '{reflection.select.type.button}',
+    ButtonGroup '{reflection.select.type.button.group}',
+    Dropdown '{reflection.select.type.dropdown}',
+    List '{reflection.select.type.list}',
+    No '{reflection.select.type.no}'
 }
 select '{reflection.select}' = DATA SelectType (Property);
 nameSelect '{reflection.select}' (Property property) = getWord(staticName(select(property)),'.',2);
