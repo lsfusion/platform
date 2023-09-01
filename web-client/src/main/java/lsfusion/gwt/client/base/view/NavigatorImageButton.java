@@ -44,13 +44,8 @@ public class NavigatorImageButton extends ImageButton {
             public String getCreationPath() {
                 return element.creationPath;
             }
-
-            @Override
-            public boolean stillShowTooltip() {
-                return isAttached() && isVisible();
-            }
         };
-        TooltipManager.registerWidget(this, tooltipHelper);
+        TooltipManager.initTooltip(this.getElement(), tooltipHelper);
     }
 
     public void updateElementClass() {

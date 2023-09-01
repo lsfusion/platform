@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.design.view;
 
-import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
@@ -60,7 +59,7 @@ public class GFormLayout extends ResizableComplexPanel {
 
     public void addTooltip(Widget header, GContainer container) {
         boolean isMain = container.main;
-        TooltipManager.registerWidget(header, new TooltipManager.TooltipHelper() {
+        TooltipManager.initTooltip(header.getElement(), new TooltipManager.TooltipHelper() {
             @Override
             public String getTooltip() {
                 return isMain ? form.form.getTooltip() : container.getTooltip();
@@ -74,11 +73,6 @@ public class GFormLayout extends ResizableComplexPanel {
             @Override
             public String getCreationPath() {
                 return isMain ? form.form.getCreationPath() : container.getCreationPath();
-            }
-
-            @Override
-            public boolean stillShowTooltip() {
-                return true;
             }
         });
     }

@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.property.panel.view;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.AppBaseImage;
@@ -40,16 +41,12 @@ public abstract class PanelRenderer {
         setCommentElementClass(property.commentElementClass);
         setPlaceholder(property.placeholder);
 
-        Widget label = getTooltipWidget();
-        TooltipManager.registerWidget(label, new TooltipManager.TooltipHelper() {
+        Element label = getTooltipWidget().getElement();
+        TooltipManager.initTooltip(label, new TooltipManager.TooltipHelper() {
             public String getTooltip() {
                 if(value.isEditing)
                     return null;
                 return property.getTooltip(caption);
-            }
-
-            public boolean stillShowTooltip() {
-                return label.isAttached() && label.isVisible();
             }
 
             public String getPath() {
@@ -66,7 +63,7 @@ public abstract class PanelRenderer {
             }
         });
         if (this.property.captionFont != null) {
-            this.property.captionFont.apply(label.getElement().getStyle());
+            this.property.captionFont.apply(label.getStyle());
         }
     }
 

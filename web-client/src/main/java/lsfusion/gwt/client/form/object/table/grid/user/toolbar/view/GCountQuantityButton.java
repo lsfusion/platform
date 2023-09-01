@@ -12,18 +12,15 @@ public abstract class GCountQuantityButton extends GToolbarButton {
     public GCountQuantityButton() {
         super(StaticImage.QUANTITY, messages.formQueriesNumberOfEntries());
         format = NumberFormat.getDecimalFormat();
+
+        TooltipManager.initTooltip(getElement(), null);
     }
 
-    public void showPopup(int result, int clientX, int clientY) {
+    public void showPopup(int result) {
         TooltipManager.TooltipHelper tooltipHelper = new TooltipManager.TooltipHelper() {
             @Override
             public String getTooltip() {
                 return messages.formQueriesNumberOfEntries() + ": " + format.format(result);
-            }
-
-            @Override
-            public boolean stillShowTooltip() {
-                return isAttached() && isVisible();
             }
 
             @Override
@@ -32,7 +29,6 @@ public abstract class GCountQuantityButton extends GToolbarButton {
             }
         };
 
-        TooltipManager tooltipManager = TooltipManager.get();
-        tooltipManager.showTooltip(clientX, clientY, tooltipHelper, true);
+        TooltipManager.show(getElement(), tooltipHelper);
     }
 }

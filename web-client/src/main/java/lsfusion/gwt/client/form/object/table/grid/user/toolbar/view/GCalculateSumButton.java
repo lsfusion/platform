@@ -13,9 +13,11 @@ public abstract class GCalculateSumButton extends GToolbarButton {
 
     public GCalculateSumButton() {
         super(StaticImage.SUM, messages.formQueriesCalculateSum());
+
+        TooltipManager.initTooltip(getElement(), null);
     }
 
-    public void showPopup(Number result, GPropertyDraw property, int clientX, int clientY) {
+    public void showPopup(Number result, GPropertyDraw property) {
         TooltipManager.TooltipHelper tooltipHelper = new TooltipManager.TooltipHelper() {
             @Override
             public String getTooltip() {
@@ -34,17 +36,11 @@ public abstract class GCalculateSumButton extends GToolbarButton {
             }
 
             @Override
-            public boolean stillShowTooltip() {
-                return isAttached() && isVisible();
-            }
-
-            @Override
             public boolean stillShowSettingsButton() {
                 return false;
             }
         };
 
-        TooltipManager tooltipManager = TooltipManager.get();
-        tooltipManager.showTooltip(clientX, clientY, tooltipHelper, true);
+        TooltipManager.show(getElement(), tooltipHelper);
     }
 }
