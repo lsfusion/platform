@@ -803,7 +803,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     public String getCustomRenderFunction(FormInstanceContext context, String select) {
         if(select != null) {
-            if(select.isEmpty()) {
+            if(select.equals("No")) {
                 return null; //NOSELECT
             } else {
                 return "select" + StringUtils.capitalise(select);

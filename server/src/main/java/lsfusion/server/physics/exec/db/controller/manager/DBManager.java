@@ -360,8 +360,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
         KeyExpr key = keys.singleValue();
         QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
         query.addProperty("CNProperty", reflectionLM.canonicalNameProperty.getExpr(key));
-        query.addProperty("select", reflectionLM.selectProperty.getExpr(key));
-        query.and(reflectionLM.selectProperty.getExpr(key).getWhere());
+        query.addProperty("select", reflectionLM.nameSelectProperty.getExpr(key));
+        query.and(reflectionLM.nameSelectProperty.getExpr(key).getWhere());
 
         for (ImMap<Object, Object> values : query.execute(sql, OperationOwner.unknown).valueIt()) {
             LP<?> prop = businessLogics.findProperty(values.get("CNProperty").toString().trim());
