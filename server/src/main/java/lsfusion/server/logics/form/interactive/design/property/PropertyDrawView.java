@@ -134,8 +134,6 @@ public class PropertyDrawView extends BaseComponentView {
     public Boolean sticky;
     public Boolean sync;
 
-    public String select;
-
     @SuppressWarnings({"UnusedDeclaration"})
     public PropertyDrawView() {
 
@@ -242,7 +240,7 @@ public class PropertyDrawView extends BaseComponentView {
     }
 
     private String getCustomRenderFunction(FormInstanceContext context) {
-        return entity.getCustomRenderFunction(context, nvl(entity.getAssertProperty(context).property.select, select));
+        return entity.getCustomRenderFunction(context);
     }
 
     public static final boolean defaultSync = true;

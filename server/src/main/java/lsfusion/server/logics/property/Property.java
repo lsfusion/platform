@@ -405,6 +405,8 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form, Version version) {
                 if(entity.viewType == null)
                     entity.viewType = ClassViewType.LIST;
+                if(customRenderFunction != null)
+                    entity.customRenderFunction = customRenderFunction;
             }
 
             @Override
@@ -1943,7 +1945,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
     public boolean disableInputList;
 
-    public String select;
+    public String customRenderFunction;
 
     protected ActionOrPropertyClassImplement<T, ?> createClassImplement(ImOrderSet<ValueClassWrapper> classes, ImOrderSet<T> mapping) {
         return new PropertyClassImplement<>(this, classes, mapping);

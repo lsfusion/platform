@@ -22,7 +22,6 @@ import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
-import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.integral.LongClass;
 import lsfusion.server.logics.classes.data.utils.time.TimeLogicsModule;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
@@ -587,7 +586,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                             actionOrProperty instanceof Property && ((Property) actionOrProperty).isStored() ? true : null,
                             actionOrProperty instanceof Property && ((Property) actionOrProperty).userNotNull ? true : null,
                             actionOrProperty instanceof Property && ((Property) actionOrProperty).disableInputList ? true : null,
-                            actionOrProperty instanceof Property ? reflectionLM.selectType.getDataObject(((Property) actionOrProperty).select) : null,
+                            actionOrProperty instanceof Property ? reflectionLM.selectType.getDataObject(((Property) actionOrProperty).customRenderFunction) : null,
                             returnClass, classProperty, complexityProperty, tableSID, actionOrProperty.annotation,
                             (Settings.get().isDisableSyncStatProps() || !(actionOrProperty instanceof Property) ? (Integer)Stat.DEFAULT.getCount() : DBManager.getPropertyInterfaceStat((Property)actionOrProperty))));
                 }

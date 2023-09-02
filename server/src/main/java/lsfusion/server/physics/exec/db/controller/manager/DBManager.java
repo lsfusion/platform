@@ -83,6 +83,7 @@ import lsfusion.server.logics.form.interactive.action.input.InputValueList;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.property.AsyncMode;
 import lsfusion.server.logics.form.interactive.property.PropertyAsync;
+import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.navigator.controller.env.*;
 import lsfusion.server.logics.property.AggregateProperty;
 import lsfusion.server.logics.property.CurrentEnvironmentProperty;
@@ -367,7 +368,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             LP<?> prop = businessLogics.findProperty(values.get("CNProperty").toString().trim());
             String select = (String) values.get("select");
             if(prop != null && select != null)
-                prop.property.select = select;
+                prop.property.customRenderFunction = PropertyDrawEntity.SELECT + select;
         }
     }
 

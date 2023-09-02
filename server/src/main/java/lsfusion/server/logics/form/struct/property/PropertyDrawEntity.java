@@ -801,15 +801,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return isReadOnly() || hasNoGridReadOnly(context.entity);
     }
 
-    public String getCustomRenderFunction(FormInstanceContext context, String select) {
-        if(select != null) {
-            if(select.equals("No")) {
-                return null; //NOSELECT
-            } else {
-                return "select" + StringUtils.capitalise(select);
-            }
-        }
-
+    public String getCustomRenderFunction(FormInstanceContext context) {
         Select selectProperty = getSelectProperty(context);
         if(selectProperty != null)
             return "select" + selectProperty.type + (selectProperty.html ? "HTML" : "") + selectProperty.elementType;
