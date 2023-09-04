@@ -145,7 +145,7 @@ public enum GroupType implements AggrType {
 
     // если не комутативен и не инвариантен к появляению в выборке null'а
     public boolean nullsNotAllowed() {
-        return this == LAST;
+        return this == LAST || this == JSON_CONCAT;
     }
     
     public boolean isLastOpt(boolean needValue, ImList<Expr> exprs) {
