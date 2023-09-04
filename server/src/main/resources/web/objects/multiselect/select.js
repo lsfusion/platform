@@ -670,5 +670,5 @@ function _changeSingleDropdownProperty(object, element) {
 }
 
 function getName(object) {
-    return object.name == null ? '' : object.name;
+    return object.name == null ? '' : String(object.name);
 }
