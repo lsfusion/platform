@@ -106,7 +106,6 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrP
         }
     }
     public Select getSelectProperty(FormInstanceContext context, boolean forceSelect, Boolean forceFilterSelected) { // false - filter selected,
-        Type type = property.getType();
         Property.Select<P> select = property.getSelectProperty(ListFact.EMPTY(), forceSelect);
         if(select != null) {
             Pair<Integer, Integer> stats = select.stat;
@@ -119,7 +118,7 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrP
             if(selectProperty == null)
                 return null;
             boolean multi = select.multi;
-            return new Select(selectProperty.mapEntityObjects(mapping), stats.first, stats.second, actualStats, multi ? Select.Type.MULTI : (property.isNotNull() ? Select.Type.NOTNULL : Select.Type.NULL), select.html);
+            return new Select(selectProperty.mapEntityObjects(mapping), stats.first, stats.second, actualStats, multi ? Select.Type.MULTI : (select.notNull ? Select.Type.NOTNULL : Select.Type.NULL), select.html);
         }
         return null;
     }
@@ -134,10 +133,10 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrP
         return actualStats;
     }
 
-    public boolean isValueUnique(GroupObjectEntity grid) {
+    public boolean isValueUnique(GroupObjectEntity grid, Property.ValueUniqueType uniqueType) {
         // remapping all objects except ones in the grid
         ImMap<P, StaticParamNullableExpr> fixedExprs = mapping.filterFnValuesRev(value -> grid != null && !grid.getObjects().contains(value)).mapRevValues(ObjectEntity::getParamExpr);
-        return property.isValueUnique(fixedExprs, false); // false because all sticky columns look bad
+        return property.isValueUnique(fixedExprs, uniqueType); // false because all sticky columns look bad
     }
 
     @Override

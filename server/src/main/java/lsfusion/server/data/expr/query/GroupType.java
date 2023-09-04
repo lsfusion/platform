@@ -89,7 +89,7 @@ public enum GroupType implements AggrType {
     }
 
     public boolean isSelectNotInWhere() { // в общем то оптимизационная вещь потом можно убрать
-//        assert isSelect();
+        assert isSelect();
         return this == LAST;
     }
     public Where getWhere(ImList<Expr> exprs) {

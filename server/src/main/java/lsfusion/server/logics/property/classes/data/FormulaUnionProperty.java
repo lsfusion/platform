@@ -23,7 +23,7 @@ import lsfusion.server.physics.dev.integration.internal.to.StringFormulaProperty
 
 public class FormulaUnionProperty extends UnionProperty {
 
-    private final FormulaUnionImpl formula;
+    public final FormulaUnionImpl formula;
     private final ImList<PropertyInterfaceImplement<Interface>> operands;
 
     // not pretty but otherwise we need more complicated class structure

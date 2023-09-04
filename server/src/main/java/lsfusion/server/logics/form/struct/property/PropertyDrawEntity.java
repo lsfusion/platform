@@ -305,23 +305,27 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         if (explicitEventSelector != null && (explicitEventAction = explicitEventSelector.getAction(context.entity, isProperty(context) ? getAssertProperty(context) : null)) != null)
             return explicitEventAction;
 
-        ActionOrPropertyObjectEntity<X, ?> eventPropertyObject = (ActionOrPropertyObjectEntity<X, ?>) getActionOrProperty(context);
+        return getDefaultEventAction(actionId, context);
+    }
 
+    private <X extends PropertyInterface> ActionObjectEntity<? extends PropertyInterface> getDefaultEventAction(String actionId, FormInstanceContext context) {
+        ActionOrPropertyObjectEntity<X, ?> eventPropertyObject = (ActionOrPropertyObjectEntity<X, ?>) getActionOrProperty(context);
         ActionOrProperty<X> eventProperty = eventPropertyObject.property;
         ImRevMap<X, ObjectEntity> eventMapping = eventPropertyObject.mapping;
 
-        ActionMapImplement<?, X> eventActionImplement = eventProperty.getExplicitEventAction(actionId);
-        if(eventActionImplement != null)
-            return eventActionImplement.mapObjects(eventMapping);
-
-        // default implementations for group change and change wys
+        // default implementations for group change
         if (GROUP_CHANGE.equals(actionId)) {
+            // checking explicit property handler
+            ActionMapImplement<?, X> eventActionImplement = eventProperty.getExplicitEventAction(actionId);
+            if(eventActionImplement != null)
+                return eventActionImplement.mapObjects(eventMapping);
+
             // if there is no explicit default handler, then generate one
             ActionObjectEntity<?> eventAction = getEventAction(CHANGE, context);
             if (eventAction != null)
                 return eventAction.getGroupChange(getToDraw(context.entity));
         } else { // default handler
-            eventActionImplement = eventProperty.getDefaultEventAction(actionId, actionId.equals(CHANGE) ? defaultChangeEventScope : null, ListFact.EMPTY(), actionId.equals(CHANGE) ? customChangeFunction : null);
+            ActionMapImplement<?, X> eventActionImplement = eventProperty.getEventAction(actionId, actionId.equals(CHANGE) ? defaultChangeEventScope : null, ListFact.EMPTY(), actionId.equals(CHANGE) ? customChangeFunction : null);
             if (eventActionImplement != null)
                 return eventActionImplement.mapObjects(eventMapping);
         }
@@ -665,7 +669,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public boolean isNotNull() {
-        return getInheritedProperty().isNotNull();
+        return getInheritedProperty().isDrawNotNull();
     }
 
     public String integrationSID; // hack - can be null for EXPORT FROM orders

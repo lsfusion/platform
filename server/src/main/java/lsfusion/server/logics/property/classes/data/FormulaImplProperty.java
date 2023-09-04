@@ -30,7 +30,7 @@ public class FormulaImplProperty extends FormulaProperty<FormulaImplProperty.Int
         return SetFact.toOrderExclSet(intNum, Interface::new);
     }
 
-    private final FormulaJoinImpl formula;
+    public final FormulaJoinImpl formula;
 
     public FormulaImplProperty(LocalizedString caption, int intCount, FormulaJoinImpl formula) {
         super(caption, getInterfaces(intCount));

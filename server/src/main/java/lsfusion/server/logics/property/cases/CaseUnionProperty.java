@@ -17,6 +17,7 @@ import lsfusion.server.base.version.impl.NFListImpl;
 import lsfusion.server.base.version.interfaces.NFList;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.GroupType;
+import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.expr.where.CaseExprInterface;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
@@ -303,6 +304,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         boolean html = false;
         MList<InputValueList> mResultValues = ListFact.mList();
         ImList<CalcCase<Interface>> cases = getCases();
+        boolean notNull = !cases.isEmpty();
         MList<PropertyMapImplement<?, Interface>> mJsonWheres = ListFact.mList();
         MList<SelectProperty<Interface>> mJsonProps = ListFact.mList();
         for(CalcCase<Interface> propCase : cases) {
@@ -327,6 +329,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
                 resultStat = joinStat;
             multi = multi || joinProperty.multi;
             html = html || joinProperty.html;
+            notNull = notNull && joinProperty.notNull;
         }
         ImList<PropertyMapImplement<?, Interface>> jsonWheres = mJsonWheres.immutableList();
         ImList<SelectProperty<Interface>> jsonProps = mJsonProps.immutableList();
@@ -339,13 +342,26 @@ public class CaseUnionProperty extends IncrementUnionProperty {
                 mJsonCases.add(new CalcCase<>(jsonWheres.get(i), jsonProp));
             }
             return PropertyFact.createUnion(interfaces, isExclusive, mJsonCases.immutableList());
-        }, resultStat, mResultValues != null ? mResultValues.immutableList() : null, multi, html);
+        }, resultStat, mResultValues != null ? mResultValues.immutableList() : null, multi, html, notNull);
+    }
+
+    @Override
+    public boolean isValueUnique(ImMap<Interface, StaticParamNullableExpr> fixedExprs, boolean optimistic) {
+        ImList<CalcCase<Interface>> cases = getCases();
+        if(cases.isEmpty())
+            return false;
+
+        for(CalcCase<Interface> propCase : cases)
+            if(!propCase.implement.mapValueUnique(fixedExprs, optimistic))
+                return false;
+
+        return true;
     }
 
     @Override
     @IdentityLazy
-    public boolean isNotNull() {
-        if(super.isNotNull())
+    public boolean isDrawNotNull() {
+        if(super.isDrawNotNull())
             return true;
 
         ImList<CalcCase<Interface>> cases = getCases();
@@ -353,7 +369,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
             return false;
 
         for(CalcCase<Interface> propCase : cases)
-            if(!propCase.implement.mapIsNotNull())
+            if(!propCase.implement.mapIsDrawNotNull())
                 return false;
 
         return true;

@@ -715,7 +715,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     }
 
     @Override
-    public boolean isNotNull() {
+    public boolean isDrawNotNull() {
         return false;
     }
 

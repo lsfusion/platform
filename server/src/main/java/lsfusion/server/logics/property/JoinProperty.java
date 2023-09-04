@@ -11,6 +11,9 @@ import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.caches.IdentityStartLazy;
 import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.formula.FormulaImpl;
+import lsfusion.server.data.expr.formula.StringConcatenateFormulaImpl;
+import lsfusion.server.data.expr.formula.SumFormulaImpl;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.where.Where;
@@ -19,11 +22,10 @@ import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.change.*;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
-import lsfusion.server.logics.property.classes.data.AndFormulaProperty;
-import lsfusion.server.logics.property.classes.data.CompareFormulaProperty;
-import lsfusion.server.logics.property.classes.data.NotFormulaProperty;
+import lsfusion.server.logics.property.classes.data.*;
 import lsfusion.server.logics.property.classes.infer.*;
 import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.implement.PropertyImplement;
@@ -202,7 +204,15 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         }
         return null;
     }
-    
+
+    private static <T extends PropertyInterface> FormulaImpl getFormula(Property<T> property) {
+        if(property instanceof FormulaImplProperty)
+            return ((FormulaImplProperty)property).formula;
+        if(property instanceof FormulaUnionProperty)
+            return ((FormulaUnionProperty)property).formula;
+        return null;
+    }
+
     private static <T extends PropertyInterface> Where getAndWhere(Property<T> property, final ImMap<T, ? extends Expr> mapExprs, final PropertyChanges propChanges) {
         if(property instanceof AndFormulaProperty) {
             AndFormulaProperty andProperty = (AndFormulaProperty)property;
@@ -472,14 +482,48 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     }
 
     @Override
-    public boolean isNotNull() {
-        if (super.isNotNull()) {
+    public boolean isDrawNotNull() {
+        if (super.isDrawNotNull()) {
             return true;
         }
         if ((implement.mapping.size() == 1 && implement.mapping.singleValue() instanceof PropertyMapImplement &&
-                (implement.property.isValueUnique(MapFact.EMPTY(), true) || implement.property.isNotNull())))
-            return ((PropertyMapImplement) implement.mapping.singleValue()).property.isNotNull();
+                (implement.property.isValueUnique(MapFact.EMPTY(), ValueUniqueType.NOTNULL) || implement.property.isDrawNotNull())))
+            return ((PropertyMapImplement) implement.mapping.singleValue()).property.isDrawNotNull();
         return false;
+    }
+
+    @Override
+    public boolean isValueUnique(ImMap<Interface, StaticParamNullableExpr> fixedExprs, boolean optimistic) {
+        T andInterface = getObjectAndInterface(implement.property);
+        if(andInterface!=null)
+            return implement.mapping.get(andInterface).mapValueUnique(fixedExprs, optimistic);
+
+        if(isIdentity) {
+            ImRevMap<T, Interface> joinMapping = BaseUtils.immutableCast(implement.mapping.toRevExclMap());
+            return implement.property.isValueUnique(joinMapping.rightJoin(fixedExprs), optimistic);
+        }
+
+        FormulaImpl formula = getFormula(implement.property);
+        if ((formula instanceof SumFormulaImpl && getValueClass(ClassType.typePolicy) instanceof StringClass) ||
+                formula instanceof StringConcatenateFormulaImpl) {
+            for(PropertyInterfaceImplement<Interface> impl : implement.mapping.valueIt())
+                if(impl.mapValueUnique(fixedExprs, optimistic))
+                    return true;
+
+            // concatenating several not unique properties might produce unique property, so we check this
+            return isStatValueUnique(fixedExprs, optimistic);
+        }
+
+        // ? if optimistic
+        ImMap<T, StaticParamNullableExpr> implementFixedExprs = implement.mapping.innerJoin(fixedExprs);
+        if(implement.property.isValueUnique(implementFixedExprs, optimistic))
+            return false;
+
+        for(PropertyInterfaceImplement<Interface> impl : implement.mapping.valueIt())
+            if(!impl.mapValueUnique(fixedExprs, optimistic))
+                return false;
+
+        return true;
     }
 
     // filter or custom view completion

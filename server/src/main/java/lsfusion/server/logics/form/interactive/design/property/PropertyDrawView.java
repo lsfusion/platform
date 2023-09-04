@@ -316,7 +316,7 @@ public class PropertyDrawView extends BaseComponentView {
         if(!isProperty(context))
             return false;
 
-        if(entity.getAssertProperty(context).isValueUnique(entity.getToDraw(context.entity)))
+        if(entity.getAssertProperty(context).isValueUnique(entity.getToDraw(context.entity), Property.ValueUniqueType.STICKY))
             return true;
 
         if(ThreadLocalContext.getBaseLM().isRecognize(entity.getInheritedProperty()))

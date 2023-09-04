@@ -11,6 +11,7 @@ import lsfusion.server.base.caches.LazyInit;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.PullExpr;
 import lsfusion.server.data.expr.query.GroupType;
+import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
@@ -141,6 +142,9 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
     public Property.Select<P> mapSelect(ImList<Property> viewProperties, boolean forceSelect) {
         return null;
     }
+    public boolean mapValueUnique(ImMap<P, StaticParamNullableExpr> fixedExprs, boolean optimistic) {
+        return true;
+    }
 
     public Property<?> mapViewProperty(CustomClass customClass, ImList<Property> viewProperties) {
         return null;
@@ -165,7 +169,7 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
     }
 
     @Override
-    public boolean mapIsNotNull() {
+    public boolean mapIsDrawNotNull() {
         return true;
     }
 

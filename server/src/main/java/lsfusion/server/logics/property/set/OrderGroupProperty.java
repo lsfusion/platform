@@ -102,7 +102,7 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
     public <X extends PropertyInterface, V extends PropertyInterface, W extends PropertyInterface> Select<Interface<I>> getSelectProperty(ImList<Property> viewProperties, boolean forceSelect) {
         ImRevMap<Interface<I>, I> groupMap = getConcatMap();
         if(groupMap != null)
-            return Property.getSelectProperty(getBaseLM(), true, forceSelect, groupMap, innerInterfaces, (PropertyMapImplement<?, I>) nameProp, whereProp, null, (PropertyMapImplement<?, I>) nameProp, orders);
+            return Property.getSelectProperty(getBaseLM(), true, false, forceSelect, groupMap, innerInterfaces, (PropertyMapImplement<?, I>) nameProp, whereProp, null, (PropertyMapImplement<?, I>) nameProp, orders);
 
         return super.getSelectProperty(viewProperties, forceSelect);
     }

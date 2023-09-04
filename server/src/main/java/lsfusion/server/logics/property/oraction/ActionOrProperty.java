@@ -190,7 +190,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         return valueClass != null ? valueClass.getType() : null;
     }
 
-    public abstract boolean isNotNull();
+    public abstract boolean isDrawNotNull();
     
     public String getName() {
         if (isNamed()) {
