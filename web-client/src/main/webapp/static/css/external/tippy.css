@@ -55,12 +55,16 @@
     border-right-color: var(--dialog-outer-border-color);
 }
 
-/*remove all decorations from button*/
-.tippy-box .tippy-content .btn, .tippy-box .tippy-content .btn:hover, .tippy-box .tippy-content .btn:active,
-.tippy-box .tippy-content .btn:focus-visible, .tippy-box .tippy-content .btn:active:focus-visible {
+/*remove all decorations from preferences button*/
+.tippy-box .tippy-content .tooltip-path-preferences-button, .tippy-box .tippy-content .tooltip-path-preferences-button:hover, .tippy-box .tippy-content .tooltip-path-preferences-button:active,
+.tippy-box .tippy-content .tooltip-path-preferences-button:focus-visible, .tippy-box .tippy-content .tooltip-path-preferences-button:active:focus-visible {
     border: none;
     background: transparent;
     color: var(--bs-btn-color);
     box-shadow: none;
 }
 
+.tippy-box .tippy-content a.lsf-tooltip-path, .tippy-box .tippy-content a.lsf-tooltip-help,
+.tippy-box .tippy-content a.lsf-form-property-declaration, .tippy-box .tippy-content a.lsf-tooltip-form-decl-help {
+    text-decoration: none;
+}

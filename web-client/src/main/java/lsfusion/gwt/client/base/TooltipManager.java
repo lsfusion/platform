@@ -26,7 +26,6 @@ public class TooltipManager {
     private static native void initTippy(Element element, Element content, int delay)/*-{
         $wnd.tippy(element, {
             content: content,
-            trigger: content == null && delay === 0 ? 'click' : 'mouseenter focus', //'mouseenter focus' by default
             appendTo: $wnd.document.body,
             placement: 'auto',
             maxWidth: 'none', // default maxWidth is 350px and content does not fit in tooltip
@@ -34,19 +33,6 @@ public class TooltipManager {
             allowHTML: true,
             delay: [delay, null]
         });
-    }-*/;
-
-    public static void show(Element element, final TooltipHelper tooltipHelper) {
-        setContent(element, getTooltipContent(tooltipHelper, element));
-        show(element);
-    }
-
-    private static native void setContent(Element element, Element content)/*-{
-        element._tippy.setContent(content);
-    }-*/;
-
-    private static native void show(Element element)/*-{
-        element._tippy.show();
     }-*/;
 
     private static native void hide(Element element)/*-{
@@ -103,6 +89,7 @@ public class TooltipManager {
                     if (DOM.eventGetType(event) == Event.ONCLICK)
                         verticalPanel.setVisible(!verticalPanel.isVisible());
                 });
+                preferencesButton.addStyleName("tooltip-path-preferences-button");
 
                 String debugPath = Cookies.getCookie("debugPath");
                 setLinks(tooltipHelper, debugPath == null ? "use_default_path" : debugPath, tooltipHtml);
@@ -128,7 +115,7 @@ public class TooltipManager {
                     setLink(childElement, projectLSFDir, tooltipHelper.getFormDeclaration(), tooltipHelper.getFormRelativePath());
                 else if ((elementClass.equals("lsf-tooltip-help") && tooltipHelper.getCreationPath() != null ) ||
                         (elementClass.equals("lsf-tooltip-form-decl-help") && tooltipHelper.getFormPath() != null))
-                    childElement.setInnerHTML("(<a href=\"https://github.com/lsfusion/platform/issues/649\" target=\"_blank\"> ? </a>)&ensp;");
+                    fillLinkElement(childElement, "https://github.com/lsfusion/platform/issues/649", "_blank", " ? ");
             }
         }
     }
@@ -136,16 +123,21 @@ public class TooltipManager {
     private static void setLink(Element element, String projectLSFDir, String declaration, String relativePath) {
         element.getPreviousSibling().setNodeValue(" ");
 
-        String path = "";
         if (declaration != null) {
             //use "**" instead "="
             String command = "--line**" + Integer.parseInt(declaration.substring(declaration.lastIndexOf("(") + 1, declaration.lastIndexOf(":"))) +
                     "&path**" + projectLSFDir + relativePath;
+
             //replace spaces and slashes because this command going through url
-            path = "<a href=\"lsfusion-protocol://" + command.replaceAll(" ", "++").replaceAll("\\\\", "/") +
-                    "\" target=\"_blank\">" + declaration + "</a>";
+            fillLinkElement(element, "lsfusion-protocol://" + command.replaceAll(" ", "++").replaceAll("\\\\", "/"),
+                    "_blank", declaration);
         }
-        element.setInnerHTML(path);
+    }
+
+    private static void fillLinkElement(Element element, String href, String target, String innerText) {
+        element.setAttribute("href", href);
+        element.setAttribute("target", target);
+        element.setInnerText(innerText);
     }
 
     public static abstract class TooltipHelper {
