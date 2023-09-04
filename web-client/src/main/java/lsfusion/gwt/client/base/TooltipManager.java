@@ -19,9 +19,7 @@ public class TooltipManager {
     private static final ClientMessages messages = ClientMessages.Instance.get();
 
     public static void initTooltip(Element element, final TooltipHelper tooltipHelper) {
-        if (tooltipHelper == null) //CalculateSum and CountQuantity Buttons
-            initTippy(element, null, 0);
-        else if (tooltipHelper.getTooltip() != null && MainFrame.showDetailedInfoDelay > 0)
+        if (tooltipHelper.getTooltip() != null && MainFrame.showDetailedInfoDelay > 0)
             initTippy(element, getTooltipContent(tooltipHelper, element), MainFrame.showDetailedInfoDelay);
     }
 
@@ -34,12 +32,7 @@ public class TooltipManager {
             maxWidth: 'none', // default maxWidth is 350px and content does not fit in tooltip
             interactive: true,
             allowHTML: true,
-            delay: [delay, null],
-            onHidden: function (instance) {
-                var verticalPanel = instance.reference.verticalPanel;
-                if (verticalPanel != null && @VerticalPanel::isVisible(Lcom/google/gwt/dom/client/Element;)(verticalPanel))
-                    @VerticalPanel::setVisible(Lcom/google/gwt/dom/client/Element;Z)(verticalPanel, false);
-            }
+            delay: [delay, null]
         });
     }-*/;
 
@@ -68,7 +61,7 @@ public class TooltipManager {
 
             if (!projectLSFDir.isEmpty()) {
                 setLinks(tooltipHelper, projectLSFDir, tooltipHtml);
-            } else if (tooltipHelper.stillShowSettingsButton()){
+            } else {
                 VerticalPanel verticalPanel = new VerticalPanel();
                 verticalPanel.setVisible(false);
 
@@ -116,8 +109,6 @@ public class TooltipManager {
 
                 tooltipHtml.getElement().appendChild(preferencesButton.getElement());
                 tooltipHtml.getElement().appendChild(verticalPanel.getElement());
-
-                GwtClientUtils.setField(element, "verticalPanel", verticalPanel.getElement());
             }
         }
 
@@ -180,10 +171,6 @@ public class TooltipManager {
         public String getFormRelativePath() {
             String formPath = getFormPath();
             return formPath != null ? formPath.substring(0, formPath.indexOf(".lsf") + 4) : null;
-        }
-
-        public boolean stillShowSettingsButton() {
-            return true;
         }
     }
 }
