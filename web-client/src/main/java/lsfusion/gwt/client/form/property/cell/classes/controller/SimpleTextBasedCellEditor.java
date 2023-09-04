@@ -552,13 +552,9 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
 
                     String tooltip = property.getQuickActionTooltipText(action.keyStroke);
                     if (tooltip != null) {
-                        TooltipManager.registerWidget(actionButton, new TooltipManager.TooltipHelper() {
+                        TooltipManager.initTooltip(actionButton.getElement(), new TooltipManager.TooltipHelper() {
                             public String getTooltip() {
                                 return tooltip;
-                            }
-
-                            public boolean stillShowTooltip() {
-                                return actionButton.isAttached() && actionButton.isVisible();
                             }
                         });
                     }

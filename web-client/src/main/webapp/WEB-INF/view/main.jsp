@@ -121,8 +121,9 @@
                 "static/css/gCalendar.css",
                 "static/js/external/fullcalendar-locales-all.js", //https://cdn.jsdelivr.net/npm/fullcalendar@5.7.2/locales-all.js
                 "static/js/fullcalendar-locale-be.js",
-                "static/js/external/popper.min.js", //https://unpkg.com/@popperjs/core@2.5.3/dist/umd/popper.min.js
-                "static/js/external/tippy-bundle.umd.min.js", //https://unpkg.com/tippy.js@6.2.7/dist/tippy-bundle.umd.min.js
+                "static/js/external/popper.min.js", //https://unpkg.com/@popperjs/core@2.11.8/dist/umd/popper.min.js
+                "static/js/external/tippy-bundle.umd.min.js", //https://unpkg.com/tippy.js@6.3.7/dist/tippy-bundle.umd.min.js
+                "static/css/external/tippy.css",
 
                 //dateRangePicker
                 "static/js/external/moment-with-locales.min.js", //https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment-with-locales.min.js // also used to define user date / time formats
