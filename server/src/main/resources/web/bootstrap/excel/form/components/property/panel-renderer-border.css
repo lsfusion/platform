@@ -65,3 +65,7 @@ input[type=checkbox].form-control.panelRendererValue:not(.panelRendererValueFocu
 .panelRendererValue:not(.panelRendererValueFocused) input[type=checkbox].form-control:hover {
     outline: 1px solid var(--component-hover-border-color);
 }
+
+a.panelRendererValue {
+    text-decoration: underline;
+}
