@@ -63,6 +63,7 @@ public class BaseUtils {
         try {
             return org.apache.commons.io.IOUtils.toString(BaseUtils.class.getResourceAsStream("/lsfusion.version"));
         } catch (IOException e) {
+            systemLogger.error("Error reading platform version", e);
             return null;
         }
     }
