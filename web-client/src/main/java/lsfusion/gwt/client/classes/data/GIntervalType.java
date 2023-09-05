@@ -49,7 +49,7 @@ public abstract class GIntervalType extends GFormatType {
 
     @Override
     protected PValue getDefaultWidthValue() {
-        return PValue.getPValue(1636629071L, 1636629071L);
+        return PValue.getPValue(25220229000L, 25220229000L);
     }
 
     protected Long parse(String date, String pattern) throws ParseException {
