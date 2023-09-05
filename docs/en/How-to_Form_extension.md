@@ -21,8 +21,8 @@ FORM sku 'Sku' // creating the Item form
 DESIGN sku {
     // creating a new container in a standard container right after i.box
     // this container will be the tab panel, where tabs with product properties can be added
-    NEW skuDetails AFTER BOX(s) { 
-        type = TABBED;
+    NEW skuDetails AFTER BOX(s) {
+        tabbed = TRUE;
         fill = 1; // let it expand to the whole form
     }
 }

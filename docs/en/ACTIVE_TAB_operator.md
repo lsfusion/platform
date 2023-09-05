@@ -36,7 +36,7 @@ FORM tabbedForm 'Tabbed form'
 
 DESIGN tabbedForm {
     NEW tabPane FIRST {
-        type = TABBED;
+        tabbed = TRUE;
         NEW contacts {
             caption = 'Contacts';
             MOVE BOX(u);

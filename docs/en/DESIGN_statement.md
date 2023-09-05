@@ -281,7 +281,7 @@ DESIGN order { // customizing the design of the form, starting with the default 
         // creating a container that will store various specifications for the order
         NEW detailPane { 
             // marking that this container should be a tab panel, where its descendats are tabs
-            type = TABBED; 
+            tabbed = TRUE;
             MOVE BOX(d) { // adding a container with order lines as one of the tabs in the top panel
                 caption = 'Lines'; // setting the caption of the tab panel
                 // making the row number column never have focus
