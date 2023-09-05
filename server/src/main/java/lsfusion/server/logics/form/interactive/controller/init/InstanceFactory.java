@@ -152,7 +152,7 @@ public class InstanceFactory {
 
             propertyDrawInstance = new PropertyDrawInstance<>(
                     entity,
-                    getInstance(entity.getActionOrProperty(context)),
+                    getInstance(entity.actionOrProperty),
                     getInstance(entity.getProperty(context)),
                     getInstance(entity.toDraw),
                     columnGroupObjects,

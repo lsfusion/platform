@@ -81,7 +81,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     private PropertyEditType editType = PropertyEditType.EDITABLE;
     
-    private final ActionOrPropertyObjectEntity<P, ?> actionOrProperty;
+    public final ActionOrPropertyObjectEntity<P, ?> actionOrProperty;
     
     public GroupObjectEntity toDraw;
 
