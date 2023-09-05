@@ -1640,7 +1640,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     @ManualLazy
     public FormInstanceContext getGlobalContext() {
         if(context == null)
-            context = new FormInstanceContext(this, getRichDesign(), null, false, false, null);
+            context = new FormInstanceContext(this, getRichDesign(), null, false, false, null, null);
         return context;
     }
 

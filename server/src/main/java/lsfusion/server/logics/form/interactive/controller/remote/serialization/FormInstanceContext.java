@@ -3,6 +3,7 @@ package lsfusion.server.logics.form.interactive.controller.remote.serialization;
 import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
 import lsfusion.server.base.controller.thread.AssertSynchronized;
+import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.form.interactive.action.input.InputValueList;
 import lsfusion.server.logics.form.interactive.design.FormView;
@@ -27,8 +28,9 @@ public class FormInstanceContext extends ConnectionContext {
     public final SecurityPolicy securityPolicy;
     public final boolean isNative;
     public final DBManager dbManager;
+    public final QueryEnvironment env;
 
-    public FormInstanceContext(FormEntity entity, FormView view, SecurityPolicy securityPolicy, boolean useBootstrap, boolean isNative, DBManager dbManager) {
+    public FormInstanceContext(FormEntity entity, FormView view, SecurityPolicy securityPolicy, boolean useBootstrap, boolean isNative, DBManager dbManager, QueryEnvironment env) {
         super(useBootstrap);
 
         this.entity = entity;
@@ -37,6 +39,7 @@ public class FormInstanceContext extends ConnectionContext {
         this.securityPolicy = securityPolicy;
         this.isNative = isNative;
         this.dbManager = dbManager;
+        this.env = env;
     }
 
     // when we have real context, but want to cache the result so we'll use GLOBAL context
@@ -49,13 +52,14 @@ public class FormInstanceContext extends ConnectionContext {
     @AssertSynchronized
 //    @ManualParamStrongLazy
     public Pair<Integer, Integer> getValues(InputValueList propValues) {
+        QueryEnvironment env = this.env;
         Pair<Property, DBManager.Param> cacheKey = new Pair<>(propValues.getCacheKey(),
-                propValues.getCacheParam("", 0, AsyncMode.OBJECTS, null));
+                propValues.getCacheParam("", 0, AsyncMode.OBJECTS, env));
                 // we need static neededCount to guarantee that getValues will be the same during the form lifecycle
                 // env can be null, because getEnvDepends should be empty (see getSelectProperty)
         Pair<Integer, Integer> result = values.get(cacheKey);
         if(result == null) {
-            result = readValues(propValues);
+            result = readValues(propValues, env);
             values.put(cacheKey, result);
         }
         return result;
@@ -63,11 +67,11 @@ public class FormInstanceContext extends ConnectionContext {
 
     // assert that it is called during form instancing
     @AssertSynchronized
-    private Pair<Integer, Integer> readValues(InputValueList values) {
+    private Pair<Integer, Integer> readValues(InputValueList values, QueryEnvironment env) {
         int maxValuesNeeded = Settings.get().getMaxInterfaceStatForValueDropdown();
         PropertyAsync[] asyncValues;
         try {
-            asyncValues = dbManager.getAsyncValues(values, "", maxValuesNeeded + 1, AsyncMode.OBJECTS);
+            asyncValues = dbManager.getAsyncValues(values, env, "", maxValuesNeeded + 1, AsyncMode.OBJECTS);
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }

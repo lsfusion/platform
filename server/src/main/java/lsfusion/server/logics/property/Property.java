@@ -1770,9 +1770,9 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             return null;
 
         InputValueList readValues = null;
-        if(name.property.getEnvDepends().isEmpty() && !hasAlotValues) {
+        if(!hasAlotValues) {
             Property readValuesProperty = null;
-            if (mapWhereInterfaces.isEmpty() && (multi || where.property.getEnvDepends().isEmpty()))
+            if (mapWhereInterfaces.isEmpty())
                 readValuesProperty = where.property;
             else if(customClass != null) {
                 IsClassProperty classProperty = customClass.getProperty();

@@ -32,6 +32,7 @@ import lsfusion.server.base.task.PublicTask;
 import lsfusion.server.base.task.TaskRunner;
 import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.data.OperationOwner;
+import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.expr.key.KeyExpr;
@@ -841,21 +842,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     };
 
-    public final ContextQueryEnvironment env = new ContextQueryEnvironment(contextProvider, null,
-            () -> restartManager.isPendingRestart(),
-            () -> 0,
-            new FormController() {
-                @Override
-                public void changeCurrentForm(String form) {
-                    throw new RuntimeException("not supported");
-                }
-
-                @Override
-                public String getCurrentForm() {
-                    return null;
-                }
-            },
-            Locale::getDefault);
+    public IsServerRestartingController getIsServerRestartingController() {
+        return () -> restartManager.isPendingRestart();
+    }
 
     public SQLSession createSQL() throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         return createSQL(contextProvider);
@@ -929,13 +918,23 @@ public class DBManager extends LogicsManager implements InitializingBean {
                         return null;
                     }
                 },
-                env.form,
-                env.timeout,
+                new FormController() {
+                    @Override
+                    public void changeCurrentForm(String form) {
+                        throw new RuntimeException("not supported");
+                    }
+
+                    @Override
+                    public String getCurrentForm() {
+                        return null;
+                    }
+                },
+                () -> 0,
                 new ChangesController() {
                     public DBManager getDbManager() {
                         return DBManager.this;
                     }
-                }, env.locale, env.isServerRestarting, upOwner
+                }, Locale::getDefault, getIsServerRestartingController(), upOwner
         );
     }
 
@@ -1069,9 +1068,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private final LRUWWEVSMap<Property<?>, Param, ValueRef> asyncValuesValueCache1 = new LRUWWEVSMap<>(LRUUtil.G1);
     private final LRUWWEVSMap<Property<?>, Param, ValueRef> asyncValuesValueCache2 = new LRUWWEVSMap<>(LRUUtil.G2);
 
-    public <P extends PropertyInterface> PropertyAsync<P>[] getAsyncValues(InputValueList<P> list, String value, int neededCount, AsyncMode mode) throws SQLException, SQLHandledException {
+    public <P extends PropertyInterface> PropertyAsync<P>[] getAsyncValues(InputValueList<P> list, QueryEnvironment env, String value, int neededCount, AsyncMode mode) throws SQLException, SQLHandledException {
         if(Settings.get().isIsClustered()) // we don't want to use caches since they can be inconsistent
-            return readAsyncValues(list, value, neededCount, mode);
+            return readAsyncValues(list, env, value, neededCount, mode);
 
         LRUWVSMap<Property<?>, ConcurrentIdentityWeakHashSet<ParamRef>> asyncValuesPropCache;
         LRUWWEVSMap<Property<?>, Param, ValueRef> asyncValuesValueCache;
@@ -1099,18 +1098,14 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
         paramRefs.add(ref);
 
-        PropertyAsync<P>[] values = readAsyncValues(list, value, neededCount, mode);
+        PropertyAsync<P>[] values = readAsyncValues(list, env, value, neededCount, mode);
         asyncValuesValueCache.put(key, param, new ValueRef<>(ref, values));
 
         return values;
     }
 
-    private <P extends PropertyInterface> PropertyAsync<P>[] readAsyncValues(InputValueList<P> list, String value, int neededCount, AsyncMode asyncMode) throws SQLException, SQLHandledException {
-        PropertyAsync<P>[] values;
-        try(DataSession session = createSession()) {
-            values = FormInstance.getAsyncValues(list, session, Property.defaultModifier, value, neededCount, asyncMode);
-        }
-        return values;
+    private <P extends PropertyInterface> PropertyAsync<P>[] readAsyncValues(InputValueList<P> list, QueryEnvironment env, String value, int neededCount, AsyncMode asyncMode) throws SQLException, SQLHandledException {
+        return FormInstance.getAsyncValues(list, getThreadLocalSql(), env, LM.baseClass, Property.defaultModifier, value, neededCount, asyncMode);
     }
 
     public void flushChanges() {

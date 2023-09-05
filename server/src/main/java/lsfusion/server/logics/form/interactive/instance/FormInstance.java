@@ -48,6 +48,7 @@ import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.expr.where.classes.data.MatchWhere;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.build.QueryBuilder;
+import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.lambda.SQLCallable;
 import lsfusion.server.data.sql.lambda.SQLFunction;
@@ -79,6 +80,7 @@ import lsfusion.server.logics.action.session.classes.change.UpdateCurrentClasses
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.integral.DoubleClass;
+import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.ConcreteObjectClass;
 import lsfusion.server.logics.classes.user.CustomClass;
@@ -254,7 +256,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         this.weakFocusListener = new WeakReference<>(focusListener);
         this.weakClassListener = new WeakReference<>(classListener);
 
-        FormInstanceContext context = new FormInstanceContext(entity, entity.getRichDesign(), securityPolicy, isUseBootstrap(), isNative(), logicsInstance.getDbManager());
+        FormInstanceContext context = new FormInstanceContext(entity, entity.getRichDesign(), securityPolicy, isUseBootstrap(), isNative(), logicsInstance.getDbManager(), getQueryEnv());
         this.context = context;
         instanceFactory = new InstanceFactory(context);
 
@@ -1164,6 +1166,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     public static <P extends PropertyInterface> PropertyAsync<P>[] getAsyncValues(InputValueList<P> list, DataSession session, Modifier modifier, String value, int neededCount, AsyncMode asyncMode) throws SQLException, SQLHandledException {
+        return getAsyncValues(list, session.sql, session.env, session.baseClass, modifier, value, neededCount, asyncMode);
+    }
+    public static <P extends PropertyInterface> PropertyAsync<P>[] getAsyncValues(InputValueList<P> list, SQLSession sql, QueryEnvironment env, BaseClass baseClass, Modifier modifier, String value, int neededCount, AsyncMode asyncMode) throws SQLException, SQLHandledException {
         Settings settings = Settings.get();
 
         boolean highlight = list.isHighlight();
@@ -1190,7 +1195,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             while (estNeededRead <= maxLimitRead) {
                 // t(o) = LIMIT estX BY t(o)
                 int ceilEstNeedRead = new Stat((long) estNeededRead, true).getCount(); // we use "degreed" value instead of actual value, to have more granular caches
-                Pair<PropertyAsync<P>[], Integer> result = getAsyncValues(session, SubQueryExpr.create(listExpr, false, ceilEstNeedRead), MapFact.EMPTYORDER(), listExprKeys.mapKeys, asyncMode, neededCount, value, highlight);
+                Pair<PropertyAsync<P>[], Integer> result = getAsyncValues(sql, env, baseClass, SubQueryExpr.create(listExpr, false, ceilEstNeedRead), MapFact.EMPTYORDER(), listExprKeys.mapKeys, asyncMode, neededCount, value, highlight);
                 PropertyAsync<P>[] resultValues = result.first;
                 int count = result.second;
 
@@ -1201,7 +1206,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                     if (asyncMode.isStrict()) {
                         int valueIndex = getValueIndex(resultValues, value);
                         if (foundNeeded && valueIndex < 0) {
-                            ImMap<P, DataObject> asyncKey = getAsyncKey(listExprKeys, session, new DataObject(value));
+                            ImMap<P, DataObject> asyncKey = getAsyncKey(listExprKeys, sql, env, baseClass, new DataObject(value));
                             if (asyncKey != null)
                                 resultValues = BaseUtils.addElement(new PropertyAsync<>("<b>" + value + "</b>", value, asyncMode.isObjects() ? asyncKey : null), resultValues, PropertyAsync[]::new);
                         } else if(valueIndex > 0) {
@@ -1219,7 +1224,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             }
         }
 
-        return getAsyncValues(session, listExpr, listExprKeys.orders, listExprKeys.mapKeys, asyncMode, neededCount, value, highlight).first;
+        return getAsyncValues(sql, env, baseClass, listExpr, listExprKeys.orders, listExprKeys.mapKeys, asyncMode, neededCount, value, highlight).first;
     }
 
     private static <P extends PropertyInterface> int getValueIndex(PropertyAsync<P>[] resultValues, String value) {
@@ -1231,7 +1236,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return -1;
     }
 
-    private static <P extends PropertyInterface, Q> Pair<PropertyAsync<P>[], Integer> getAsyncValues(DataSession session, Expr listBaseExpr, ImOrderMap<Expr, Boolean> orderExprs, ImRevMap<P, KeyExpr> baseKeys, AsyncMode asyncMode, int neededCount, String value, boolean highlight) throws SQLException, SQLHandledException {
+    private static <P extends PropertyInterface, Q> Pair<PropertyAsync<P>[], Integer> getAsyncValues(SQLSession sql, QueryEnvironment env, BaseClass baseClass, Expr listBaseExpr, ImOrderMap<Expr, Boolean> orderExprs, ImRevMap<P, KeyExpr> baseKeys, AsyncMode asyncMode, int neededCount, String value, boolean highlight) throws SQLException, SQLHandledException {
         // z = GROUP SUM 1 BY t(o)
         Expr countExpr;
         Expr listExpr;
@@ -1255,7 +1260,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         // SELECT t, highl(t) WHERE z(t) ORDER BY rank(t) LIMIR act
         String language = Settings.get().getFilterMatchLanguage();
-        SQLSyntax syntax = session.sql.syntax;
+        SQLSyntax syntax = sql.syntax;
         String match = "'" + value + "'";
 
         MExclMap<String, Expr> mProps = MapFact.mExclMap();
@@ -1276,7 +1281,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             mProps.exclAdd("raw", listExpr);
 
         ImOrderMap<ImMap<Q, DataObject>, ImMap<String, ObjectValue>> result = new Query<>(groupListKeys, mProps.immutable(), listWhere).
-                executeClasses(session, mOrders.immutableOrder(), neededCount);
+                executeClasses(sql, mOrders.immutableOrder(), neededCount, baseClass, env);
 
         PropertyAsync<P>[] resultValues = new PropertyAsync[result.size()];
         int count = 0;
@@ -1293,16 +1298,16 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     public static <P extends PropertyInterface> ObjectValue getAsyncKey(InputValueList<P> list, DataSession session, Modifier modifier, ObjectValue value) throws SQLException, SQLHandledException {
         InputListExpr<P> listExprKeys = list.getListExpr(modifier);
-        ImMap<P, DataObject> row = getAsyncKey(listExprKeys, session, value);
+        ImMap<P, DataObject> row = getAsyncKey(listExprKeys, session.sql, session.env, session.baseClass, value);
         if(row == null)
             return NullValue.instance;
         return row.get(list.singleInterface());
     }
 
-    public static <P extends PropertyInterface> ImMap<P, DataObject> getAsyncKey(InputListExpr<P> listExprKeys, DataSession session, ObjectValue value) throws SQLException, SQLHandledException {
+    public static <P extends PropertyInterface> ImMap<P, DataObject> getAsyncKey(InputListExpr<P> listExprKeys, SQLSession sql, QueryEnvironment env, BaseClass baseClass, ObjectValue value) throws SQLException, SQLHandledException {
         ImSet<ImMap<P, DataObject>> keys =
                 new Query<>(listExprKeys.mapKeys, listExprKeys.expr, "value", listExprKeys.expr.compare(value.getExpr(), Compare.EQUALS))
-                .executeClasses(session, 1)
+                .executeClasses(sql, env, baseClass, 1)
                 .keys();
         if(keys.isEmpty())
             return null;
@@ -1380,7 +1385,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         if(!optimisticRun.get())
             return new Async[] {Async.CANCELED};
 
-        Async[] result = convertPropertyAsyncs(converter, logicsInstance.getDbManager().getAsyncValues(listProperty, value, neededCount, asyncMode));
+        Async[] result = convertPropertyAsyncs(converter, logicsInstance.getDbManager().getAsyncValues(listProperty, getQueryEnv(), value, neededCount, asyncMode));
         if(needRecheck) // not sure yet, resending RECHECK
             result = BaseUtils.addElement(result, Async.RECHECK, Async[]::new);
         return result;
