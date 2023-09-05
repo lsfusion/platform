@@ -1742,6 +1742,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             PropertyMapImplement<W, I> where = (PropertyMapImplement<W, I>) filtersAndOrders.first.getWhereProperty(objectInterface);
             ImOrderMap<PropertyMapImplement<?, I>, Boolean> orders = filtersAndOrders.second.mapOrderKeys(order -> order.getOrderProperty(objectInterface));
 
+            // isFull is checked in the isValueUnique
             return getSelectProperty(baseLM, false, isNotNull(), forceSelect, mapPropertyInterfaces, innerInterfaces, name, selected, customClass, where, orders);
         }
 
@@ -1755,6 +1756,12 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
         ImSet<I> innerMapInterfaces = mapPropertyInterfaces.valuesSet();
         ImSet<W> mapWhereInterfaces = where.mapping.filterValuesRev(innerMapInterfaces).keys();
+
+        if(multi) {
+            if(!where.property.isValueFull(mapWhereInterfaces)) // otherwise we'll get "incorrect operation" when reading values
+                return null;
+        } else
+            assert where.property.isValueFull(mapWhereInterfaces); // isValueUnique checks this
         Stat whereStat = where.property.getInterfaceStat(mapWhereInterfaces);
         int whereCount = whereStat.getCount();
 
@@ -1765,7 +1772,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         InputValueList readValues = null;
         if(name.property.getEnvDepends().isEmpty() && !hasAlotValues) {
             Property readValuesProperty = null;
-            if (mapWhereInterfaces.isEmpty() && where.property.getEnvDepends().isEmpty())
+            if (mapWhereInterfaces.isEmpty() && (multi || where.property.getEnvDepends().isEmpty()))
                 readValuesProperty = where.property;
             else if(customClass != null) {
                 IsClassProperty classProperty = customClass.getProperty();
@@ -1774,8 +1781,14 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
                     readValuesProperty = classProperty;
             }
 
-            if(readValuesProperty != null)
-                readValues = new InputListEntity(name.property, MapFact.EMPTYREV()).merge(new Pair<>(new InputFilterEntity<>(readValuesProperty, MapFact.EMPTYREV()), MapFact.EMPTYORDER())).map(MapFact.EMPTY());
+            if(readValuesProperty != null) {
+                InputListEntity readEntity = new InputListEntity(name.property, MapFact.EMPTYREV());
+                if(!multi)
+                    readEntity = readEntity.merge(new Pair<>(new InputFilterEntity<>(readValuesProperty, MapFact.EMPTYREV()), MapFact.EMPTYORDER()));
+                else
+                    assert readValuesProperty == name.property;
+                readValues = readEntity.map(MapFact.EMPTY());
+            }
         }
 
         Type nameType = name.property.getType();
@@ -2633,6 +2646,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             return true;
         }
     }
+    // assert that returns isValueFull property
     public boolean isValueUnique(ImMap<T, StaticParamNullableExpr> fixedExprs, ValueUniqueType type) {
         return isValueUnique(fixedExprs, type.isOptimistic());
     }
@@ -2643,7 +2657,10 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     public boolean isValueFull(ImMap<T, StaticParamNullableExpr> fixedExprs) {
-        return isFull(interfaces.removeIncl(fixedExprs.keys()), AlgType.statAlotType);
+        return isValueFull(fixedExprs.keys());
+    }
+    public boolean isValueFull(ImSet<T> fixedExprs) {
+        return isFull(interfaces.removeIncl(fixedExprs), AlgType.statAlotType);
     }
 
     // filter or custom view completion
