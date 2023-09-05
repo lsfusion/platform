@@ -55,6 +55,7 @@ import lsfusion.server.logics.navigator.*;
 import lsfusion.server.logics.navigator.changed.NavigatorChanges;
 import lsfusion.server.logics.navigator.controller.context.RemoteNavigatorContext;
 import lsfusion.server.logics.navigator.controller.env.*;
+import lsfusion.server.logics.navigator.controller.env.*;
 import lsfusion.server.logics.navigator.controller.manager.NavigatorsManager;
 import lsfusion.server.logics.navigator.window.AbstractWindow;
 import lsfusion.server.logics.property.Property;
