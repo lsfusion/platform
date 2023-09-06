@@ -589,7 +589,6 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
         // для всех
         private ClassViewType viewType;
-        private String customRenderFunction;
         private String customEditorFunction;
         private PivotOptions pivotOptions;
 
