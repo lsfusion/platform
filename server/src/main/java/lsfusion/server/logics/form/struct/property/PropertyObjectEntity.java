@@ -159,4 +159,8 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrP
     public boolean equalsMap(PropertyObjectEntity<?> mapProp) {
         return property.equals(mapProp.property) && mapping.equals(mapProp.mapping);
     }
+
+    public boolean hasNoGridReadOnly(ImSet<ObjectEntity> gridObjects) {
+        return property.hasNoGridReadOnly(mapping.filterValuesRev(gridObjects).keys());
+    }
 }

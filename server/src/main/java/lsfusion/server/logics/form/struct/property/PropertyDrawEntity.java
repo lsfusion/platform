@@ -697,7 +697,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     private boolean hasNoGridReadOnly(FormEntity form) {
         PropertyObjectEntity<?> readOnly = getReadOnly();
-        return readOnly != null && isList(form) && !readOnly.getObjectInstances().intersect(getToDraw(form).getObjects());
+        return readOnly != null && isList(form) && readOnly.hasNoGridReadOnly(getToDraw(form).getObjects());
     }
 
     public ActionOrPropertyObjectEntity<?, ?> getStaticActionOrProperty() {

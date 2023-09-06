@@ -140,6 +140,11 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
         return checkInterfaces.size() >= interfaces.size() && property.isFull(checkInterfaces, AlgType.actionType);
     }
 
+    @Override
+    public boolean mapHasNoGridReadOnly(ImSet<T> gridInterfaces) {
+        return property.hasNoGridReadOnly(mapping.filterValues(gridInterfaces).keys());
+    }
+
     public Expr mapExpr(ImMap<T, ? extends Expr> joinImplement, Modifier modifier) throws SQLException, SQLHandledException {
         return property.getExpr(mapping.join(joinImplement), modifier);
     }

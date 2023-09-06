@@ -84,6 +84,7 @@ public interface PropertyInterfaceImplement<P extends PropertyInterface> extends
     ExClassSet mapInferValueClass(ImMap<P, ExClassSet> inferred, InferType inferType);
 
     boolean mapIsFull(ImSet<P> interfaces);
+    boolean mapHasNoGridReadOnly(ImSet<P> gridInterfaces);
 
     AndClassSet mapValueClassSet(ClassWhere<P> interfaceClasses);
 

@@ -213,6 +213,11 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
     }
 
     @Override
+    public boolean mapHasNoGridReadOnly(ImSet<P> gridInterfaces) {
+        return !gridInterfaces.contains((P)this);
+    }
+
+    @Override
     public boolean mapChangedWhen(boolean toNull, PropertyInterfaceImplement<P> changeProperty) {
         return BaseUtils.hashEquals(this, changeProperty);
     }

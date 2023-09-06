@@ -573,6 +573,16 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     }
 
     @Override
+    public boolean hasNoGridReadOnly(ImSet<Interface> gridInterfaces) {
+        ImList<CalcCase<Interface>> cases = getCases();
+        for(CalcCase<Interface> propCase : cases)
+            if(propCase.implement.mapHasNoGridReadOnly(gridInterfaces))
+                return true;
+
+        return false;
+    }
+
+    @Override
     public boolean aspectDebugHasAlotKeys() { // оптимизация, так как hasAlotKeys единственный кто в debug вызывает getExpr и на очень сложных свойствах это сжирает время (процентов 10 от времени старта)
         ImList<CalcCase<Interface>> simpleCases = getSimpleCases();
         for (CalcCase<Interface> aCase : simpleCases.getCol().sort(Comparator.comparingLong(o -> o.implement.mapEstComplexity()))) {

@@ -573,6 +573,11 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return null;
     }
 
+    public boolean hasNoGridReadOnly(ImSet<T> gridInterfaces) {
+        assert interfaces.containsAll(gridInterfaces);
+        return gridInterfaces.isEmpty();
+    }
+
     public static class VirtualTable<P extends PropertyInterface> extends NamedTable {
 
         public final ImRevMap<KeyField, P> mapFields;
