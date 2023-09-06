@@ -817,13 +817,9 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     private String getCustomRenderFunction() {
-        if(customRenderFunction == null) {
-            ActionOrProperty inheritProperty = getInheritedProperty();
-            if(inheritProperty instanceof Property) {
-                return ((Property<?>) inheritProperty).customRenderFunction;
-            }
-        }
-        return customRenderFunction;
+        if(customRenderFunction != null)
+            return customRenderFunction;
+        return getInheritedProperty().getCustomRenderFunction();
     }
 
     // INTERACTIVE (NON-STATIC) USAGES

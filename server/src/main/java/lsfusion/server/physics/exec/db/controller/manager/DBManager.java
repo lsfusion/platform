@@ -367,8 +367,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
         for (ImMap<Object, Object> values : query.execute(sql, OperationOwner.unknown).valueIt()) {
             LP<?> prop = businessLogics.findProperty(values.get("CNProperty").toString().trim());
             String select = (String) values.get("select");
-            if(prop != null && select != null)
-                prop.property.customRenderFunction = "select"/*PropertyDrawEntity.SELECT*/ + select;
+            if(prop != null)
+                prop.property.setSelect(select);
         }
     }
 

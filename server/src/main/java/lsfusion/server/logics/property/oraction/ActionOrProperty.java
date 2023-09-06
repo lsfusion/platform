@@ -80,6 +80,20 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         this.image = AppServerImage.createPropertyImage(imagePath, AppServerImage.getAutoName(() -> caption, this::getName));
     }
 
+    private String customRenderFunction;
+
+    public String getCustomRenderFunction() {
+        return customRenderFunction;
+    }
+
+    public void setCustomRenderFunction(String customRenderFunction) {
+        this.customRenderFunction = customRenderFunction;
+    }
+
+    public void setSelect(String select) {
+        setCustomRenderFunction(select == null || select.equals("No") ? null : ("select" + select));
+    }
+
     public LocalizedString localizedToString() {
         LocalizedString result = LocalizedString.create(getSID());
         if (caption != null) {
