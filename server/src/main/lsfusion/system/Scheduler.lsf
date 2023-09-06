@@ -207,8 +207,8 @@ FORM scheduledTask '{scheduler.form.scheduled.tasks}'
          
     OBJECTS td=ScheduledTaskDetail
     PROPERTIES (td) active, ignoreExceptions, order, captionAction, 
-                    codeAction READONLY, parameter, 
-                    timeout, script PANEL
+                    codeAction ON CHANGE { INPUT s = codeAction(td) DO action(td) <- actionCanonicalName(s); }, 
+                    parameter, timeout, script PANEL
     PROPERTIES (td) NEW[UserScheduledTaskDetail], DELETE GRID
     PROPERTIES (td) READONLY SHOWIF allTasks() nameScheduledTask, startTime, period
     ORDERS order(td)
