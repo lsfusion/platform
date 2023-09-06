@@ -601,7 +601,6 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         
         public void proceedDefaultDraw(PropertyDrawEntity<?> entity, FormEntity form, Version version) {
             entity.viewType = viewType;
-            entity.customRenderFunction = customRenderFunction;
             entity.customChangeFunction = customEditorFunction;
             entity.askConfirm = BaseUtils.nvl(askConfirm, false);
             entity.askConfirmMessage = askConfirmMessage;
@@ -689,8 +688,6 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
             if(viewType == null)
                 setViewType(options.viewType);
-            if (customRenderFunction == null)
-                setCustomRenderFunction(options.customRenderFunction);
             if(pivotOptions == null)
                 setPivotOptions(options.pivotOptions);
             if(sticky == null)
@@ -788,10 +785,6 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
         public void setViewType(ClassViewType viewType) {
             this.viewType = viewType;
-        }
-        
-        public void setCustomRenderFunction(String customRenderFunction) {
-            this.customRenderFunction = customRenderFunction;
         }
 
         public void setCustomEditorFunction(String customEditorFunction) {

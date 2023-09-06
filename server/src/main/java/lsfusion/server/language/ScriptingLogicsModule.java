@@ -1364,7 +1364,10 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
     
     public void setCustomRenderFunction(LAP property, String customRenderFunction) {
-        property.setCustomRenderFunction(customRenderFunction);
+        ActionOrProperty actionOrProperty = property.getActionOrProperty();
+        if(actionOrProperty instanceof Property) {
+            ((Property<?>) actionOrProperty).customRenderFunction = customRenderFunction;
+        }
     }
 
     public void setCustomEditorFunction(LAP property, String customEditorFunction) {

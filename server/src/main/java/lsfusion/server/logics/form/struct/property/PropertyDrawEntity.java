@@ -736,7 +736,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             boolean forceSelect = false;
             Boolean forceFilter = null;
 
-            String custom = customRenderFunction;
+            String custom = getCustomRenderFunction();
             if(custom != null) {
                 if(custom.startsWith(SELECT)) {
                     custom = custom.substring(SELECT.length());
@@ -806,14 +806,24 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         if(selectProperty != null)
             return "select" + selectProperty.type + (selectProperty.html ? "HTML" : "") + selectProperty.elementType;
 
-        String custom = customRenderFunction;
+        String custom = getCustomRenderFunction();
         if(custom != null) {
             if(custom.equals(NOSELECT))
                 return null;
-            return customRenderFunction;
+            return custom;
         }
 
         return null;
+    }
+
+    private String getCustomRenderFunction() {
+        if(customRenderFunction == null) {
+            ActionOrProperty inheritProperty = getInheritedProperty();
+            if(inheritProperty instanceof Property) {
+                return ((Property<?>) inheritProperty).customRenderFunction;
+            }
+        }
+        return customRenderFunction;
     }
 
     // INTERACTIVE (NON-STATIC) USAGES
