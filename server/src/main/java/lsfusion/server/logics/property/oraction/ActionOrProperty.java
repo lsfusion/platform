@@ -80,6 +80,20 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         this.image = AppServerImage.createPropertyImage(imagePath, AppServerImage.getAutoName(() -> caption, this::getName));
     }
 
+    private String customRenderFunction;
+
+    public String getCustomRenderFunction() {
+        return customRenderFunction;
+    }
+
+    public void setCustomRenderFunction(String customRenderFunction) {
+        this.customRenderFunction = customRenderFunction;
+    }
+
+    public void setSelect(String select) {
+        setCustomRenderFunction(select == null || select.equals("No") ? null : ("select" + select));
+    }
+
     public LocalizedString localizedToString() {
         LocalizedString result = LocalizedString.create(getSID());
         if (caption != null) {
@@ -589,7 +603,6 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
         // для всех
         private ClassViewType viewType;
-        private String customRenderFunction;
         private String customEditorFunction;
         private PivotOptions pivotOptions;
 
@@ -601,7 +614,6 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         
         public void proceedDefaultDraw(PropertyDrawEntity<?> entity, FormEntity form, Version version) {
             entity.viewType = viewType;
-            entity.customRenderFunction = customRenderFunction;
             entity.customChangeFunction = customEditorFunction;
             entity.askConfirm = BaseUtils.nvl(askConfirm, false);
             entity.askConfirmMessage = askConfirmMessage;
@@ -689,8 +701,6 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
             if(viewType == null)
                 setViewType(options.viewType);
-            if (customRenderFunction == null)
-                setCustomRenderFunction(options.customRenderFunction);
             if(pivotOptions == null)
                 setPivotOptions(options.pivotOptions);
             if(sticky == null)
@@ -788,10 +798,6 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
         public void setViewType(ClassViewType viewType) {
             this.viewType = viewType;
-        }
-        
-        public void setCustomRenderFunction(String customRenderFunction) {
-            this.customRenderFunction = customRenderFunction;
         }
 
         public void setCustomEditorFunction(String customEditorFunction) {

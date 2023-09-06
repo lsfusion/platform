@@ -5,6 +5,7 @@ import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
+import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawExtraType;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.property.oraction.ActionOrPropertyUtils;
@@ -234,5 +235,9 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
 
     public void setNotNull(boolean notNull) {
         target.notNull = notNull;
+    }
+
+    public void setSelect(String select) {
+        target.entity.customRenderFunction = PropertyDrawEntity.SELECT + select;
     }
 }
