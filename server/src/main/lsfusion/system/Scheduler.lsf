@@ -218,8 +218,8 @@ FORM scheduledTask '{scheduler.form.scheduled.tasks}'
          
     OBJECTS td=ScheduledTaskDetail
     PROPERTIES (td) active, ignoreExceptions, order, captionAction, 
-                    codeAction READONLY, parameter, 
-                    timeout, script PANEL SHOWIF NOT isWeb()
+                    codeAction ON CHANGE { INPUT s = codeAction(td) DO action(td) <- actionCanonicalName(s); }, 
+                    parameter, timeout, script PANEL SHOWIF NOT isWeb()
     
     OBJECTS std = ScheduledTaskDetail
     PROPERTIES json(std) PANEL CUSTOM 'interpreter' SHOWIF isWeb() ON CHANGE changeScript(std)
