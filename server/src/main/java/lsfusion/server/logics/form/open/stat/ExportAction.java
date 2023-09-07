@@ -28,7 +28,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 public abstract class ExportAction<O extends ObjectSelector> extends FormStaticAction<O, FormIntegrationType> {
-    protected final String charset;
+    protected String charset;
     
     public ExportAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, ImOrderSet<PropertyInterface> orderContextInterfaces,
                         ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters, FormIntegrationType staticType, SelectTop selectTop, String charset, ValueClass... extraParams) {

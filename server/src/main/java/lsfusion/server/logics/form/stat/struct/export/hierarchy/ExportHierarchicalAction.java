@@ -1,7 +1,6 @@
 package lsfusion.server.logics.form.stat.struct.export.hierarchy;
 
 import lsfusion.base.col.MapFact;
-import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
@@ -22,7 +21,6 @@ import lsfusion.server.logics.form.stat.struct.export.StaticExportData;
 import lsfusion.server.logics.form.stat.struct.hierarchy.Node;
 import lsfusion.server.logics.form.stat.struct.hierarchy.ParseNode;
 import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
-import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -78,6 +76,15 @@ public abstract class ExportHierarchicalAction<T extends Node<T>, O extends Obje
         parseNode.exportNode(rootNode, MapFact.EMPTY(), exportData);
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+        //pseudo charset utf-8-bom to write BOM bytes
+        if (charset.equals("UTF-8-BOM")) {
+            outputStream.write(239);
+            outputStream.write(187);
+            outputStream.write(191);
+            charset = "UTF-8";
+        }
+
         try (PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(outputStream, charset)))) {
             writeRootNode(out, rootNode);
         }
