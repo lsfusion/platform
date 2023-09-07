@@ -25,6 +25,7 @@ public class TooltipManager {
 
     private static native void initTippy(Element element, Element content, int delay)/*-{
         $wnd.tippy(element, {
+            trigger: 'mouseenter',
             content: content,
             appendTo: $wnd.document.body,
             placement: 'auto',
