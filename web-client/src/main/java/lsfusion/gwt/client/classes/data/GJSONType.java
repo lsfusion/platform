@@ -34,11 +34,6 @@ public class GJSONType extends GDataType {
     }
 
     @Override
-    public int getDefaultCharHeight() {
-        return 4;
-    }
-
-    @Override
     public PValue parseString(String s, String pattern) throws ParseException {
         return PValue.getPValue(s);
     }
