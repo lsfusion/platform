@@ -726,6 +726,11 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             this.html = html;
         }
     }
+
+    private boolean hasFooter(FormEntity entity) {
+        return isList(entity) && getPropertyExtra(FOOTER) != null;
+    }
+
     @ParamLazy
     public PropertyDrawEntity.Select getSelectProperty(FormInstanceContext context) {
         if(context.isNative)
@@ -774,7 +779,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
                 if(selectType != null) {
                     if(elementType == null) {
-                        if (!isReadOnly(context) || forceSelect) { // we don't have to check hasChangeAction, since canBeChanged is checked in getSelectProperty
+                        //hasFooter() check is needed to avoid automatically using custom components in the FOOTER
+                        if (!isReadOnly(context) && !hasFooter(context.entity) || forceSelect) { // we don't have to check hasChangeAction, since canBeChanged is checked in getSelectProperty
                             boolean isMulti = select.type == PropertyObjectEntity.Select.Type.MULTI;
                             if (select.length <= Settings.get().getMaxLengthForValueButton()) {
                                 elementType = isMulti ? "Button" : "ButtonGroup";
