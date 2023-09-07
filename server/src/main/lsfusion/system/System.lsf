@@ -202,7 +202,7 @@ PROPERTIES() READONLY htmlLinkInTab;
 DESIGN htmlLinkInTab {
     NEW panel {
         fill = 1;
-        type = CONTAINERH;
+        horizontal = TRUE;
         MOVE PROPERTY(htmlLinkInTab()) {
             fill = 1;
         }

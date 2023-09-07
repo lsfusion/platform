@@ -543,14 +543,14 @@ FORM propertyPolicy '{security.form.policy}'
 DESIGN propertyPolicy {
     OBJECTS {
         NEW property {
-            type = CONTAINERH;
+            horizontal = TRUE;
             alignment = STRETCH;
             caption = '{security.form.property}';
             MOVE PROPERTY(caption(p));
             MOVE PROPERTY(canonicalName(p));
         }
         NEW permission {
-            type = CONTAINERH;
+            horizontal = TRUE;
             alignment = STRETCH;
             caption = '{security.form.parameters}';
             MOVE PROPERTY(userLoggable(p));
@@ -577,14 +577,14 @@ FORM actionPolicy '{security.form.policy}'
 DESIGN actionPolicy {
     OBJECTS {
         NEW property {
-            type = CONTAINERH;
+            horizontal = TRUE;
             alignment = STRETCH;
             caption = '{security.form.action}';
             MOVE PROPERTY(caption(p));
             MOVE PROPERTY(canonicalName(p));
         }
         NEW permission {
-            type = CONTAINERH;
+            horizontal = TRUE;
             alignment = STRETCH;
             caption = '{security.form.access}';
         }

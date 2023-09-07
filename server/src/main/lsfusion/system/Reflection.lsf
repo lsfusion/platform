@@ -484,7 +484,7 @@ DESIGN forms {
     OBJECTS {
         NEW pane FIRST {
             fill = 1;
-            type = CONTAINERH;
+            horizontal = TRUE;
             NEW leftPane {
                 align = STRETCH;
                 MOVE PROPERTY(canonicalName(f)) { align = STRETCH; }
@@ -505,7 +505,7 @@ DESIGN forms {
                     MOVE BOX(up);
                 }
                 NEW grouping {
-                    type = CONTAINERH;
+                    horizontal = TRUE;
                     caption = '{reflection.form.grouping}';
                     MOVE BOX(fg);
                     MOVE BOX(pfg) { fill = 3; }

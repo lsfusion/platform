@@ -566,7 +566,7 @@ FORM connections '{system.events.form.connections}'
 DESIGN connections{
     NEW boxes BEFORE TOOLBARBOX {
         fill = 1;
-        type = CONTAINERH;
+        horizontal = TRUE;
 
         MOVE BOX(n);
         MOVE BOX(s);
@@ -586,7 +586,7 @@ DESIGN exceptions {
             fill = 1;
             MOVE BOX(e);
             NEW textContainer {
-                type = CONTAINERH;
+                horizontal = TRUE;
                 fill = 1;
 
                 MOVE PROPERTY(javaStackTrace(e)) {

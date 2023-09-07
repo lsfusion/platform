@@ -512,7 +512,7 @@ DESIGN customUser {
         }
     }
     NEW container BEFORE TOOLBARBOX {
-        type = CONTAINERH;
+        horizontal = TRUE;
         fill = 1;
         MOVE BOX(u) {
             flex = 0.3;
@@ -576,7 +576,7 @@ DESIGN customUsers {
             NEW locale {
                 caption = '{authentication.locale}';
                 NEW headerLocale {
-                    type = CONTAINERH;
+                    horizontal = TRUE;
                     MOVE PROPERTY(defaultUserLanguage());
                     MOVE PROPERTY(defaultUserCountry());
                     MOVE PROPERTY(defaultUserTimezone());
@@ -834,7 +834,7 @@ DESIGN changePasswordUser {
                 fontSize = 14;
             }
             NEW newPass1 {
-                type = CONTAINERH;
+                horizontal = TRUE;
                 fill = 1;
                 MOVE PROPERTY(valueNew1){
                     caption = '{authentication.change.password.new}';
@@ -848,7 +848,7 @@ DESIGN changePasswordUser {
                 }
             }
             NEW newPass2 {
-                type = CONTAINERH;
+                horizontal = TRUE;
                 fill = 1;
                 MOVE PROPERTY(valueNew2){
                     caption = '{authentication.change.password.repeat}';

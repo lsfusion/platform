@@ -92,14 +92,14 @@ FORM translation '{i18n.translation}'
 DESIGN translation {
     NEW languages {
         caption = '{i18n.languages}';
-        type = CONTAINERH;
+        horizontal = TRUE;
         MOVE PROPERTY(translateApiKey());
         MOVE PROPERTY(nameLanguageFromTranslation());
         MOVE PROPERTY(nameLanguageToTranslation());
     }
     NEW translation {
         fill = 1;
-        type = CONTAINERH;
+        horizontal = TRUE;
         MOVE PROPERTY(translationInput()) {
             fill = 1;
             panelCaptionVertical = TRUE;
@@ -145,7 +145,7 @@ DESIGN dictionary {
         MOVE BOX(d);
         MOVE BOX(e);
         NEW test {
-            type = CONTAINERH;
+            horizontal = TRUE;
             MOVE PROPERTY(translationInput()) {
                 fill = 1;
                 caption = '{i18n.form.dictionary.caption.phrase}';

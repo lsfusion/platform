@@ -237,7 +237,7 @@ DESIGN processMonitor {
         }
     } 
     NEW bottom {
-        type = CONTAINERH;
+        horizontal = TRUE;
         align = END;
         MOVE PROPERTY(captionProcessType());
         MOVE PROPERTY(updateProcessMonitorAction());

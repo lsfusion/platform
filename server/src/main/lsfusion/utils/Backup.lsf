@@ -91,7 +91,7 @@ DESIGN backup {
         tabbed = TRUE;
         NEW pane1 {
             caption = '{backup.backups}';
-            type = CONTAINERH;
+            horizontal = TRUE;
             NEW leftPane {
                 fill = 1;
                 MOVE BOX(b);

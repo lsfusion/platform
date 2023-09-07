@@ -395,7 +395,7 @@ FORM fullChat '{chat.chat}'
 DESIGN fullChat {
     OBJECTS {
         NEW pane {
-            type = CONTAINERH;
+            horizontal = TRUE;
             fill = 1;
             NEW left {
                 fill = 0.3;
@@ -420,7 +420,7 @@ DESIGN fullChat {
                 
                 NEW chatMessage {
                     fill = 0.2;
-                    type = CONTAINERH;
+                    horizontal = TRUE;
                     alignment = STRETCH;
                     NEW inputMessage {
                         showIf = NOT isWeb();
@@ -431,7 +431,7 @@ DESIGN fullChat {
                         }   
                         NEW inputAttachments {
                             align = STRETCH;
-                            type = CONTAINERH;
+                            horizontal = TRUE;
                             MOVE PROPERTY(loadAttachment()) {
                                 fill = 1;
                                 fontSize = 24;
@@ -533,7 +533,7 @@ DESIGN shortChat {
             }
             NEW buttons {
                 align = STRETCH;
-                type = CONTAINERH;
+                horizontal = TRUE;
                 MOVE PROPERTY(replyChat(m));
                 MOVE PROPERTY(openChat(m));
                 MOVE PROPERTY(formClose()) { caption = '{chat.close.chat}'; }
@@ -704,7 +704,7 @@ DESIGN shortChat {
     chat {
         NEW chatMessage BEFORE buttons {
             fill = 0.3;
-            type = CONTAINERH;
+            horizontal = TRUE;
             alignment = STRETCH; 
             MOVE PROPERTY(jsonInputMessage()) {
                 alignment = STRETCH; 
