@@ -54,7 +54,7 @@ public abstract class SimpleTextBasedCellRenderer extends CellRenderer {
 
         // input we have to render in td, since input is a void element, and it can not have children (and they are needed for the toolbar)
         // so the hack is to render it
-        return getTag() == null || isTagInput();
+        return getTag() == null;
     }
 
     @Override
