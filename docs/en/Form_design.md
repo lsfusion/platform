@@ -198,7 +198,7 @@ DESIGN order { // customizing the design of the form, starting with the default 
             PANEL(o) { // configuring how properties are displayed in the object o panel
                 type = CONTAINERV; // making all descendants go from top to bottom
                 NEW headerRow1 { // creating a container - the first row
-                    type = CONTAINERH;
+                    horizontal = TRUE;
                     MOVE PROPERTY(date(o)) { // moving the order date property
                         // "override" the property caption in the form design (instead of the standard one)
                         caption = 'Date of the edited order'; 

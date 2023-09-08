@@ -499,7 +499,7 @@ Change the design of the form, so that the field for entering a message and the 
 DESIGN chat {
     chat {
         NEW chatMessage {
-            type = CONTAINERH;
+            horizontal = TRUE;
             alignment = STRETCH;
             MOVE PROPERTY(jsonInputMessage()) {
                 fill = 1;

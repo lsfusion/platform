@@ -497,7 +497,7 @@ EXTEND FORM chat
 DESIGN chat {
     chat {
         NEW chatMessage {
-            type = CONTAINERH;
+            horizontal = TRUE;
             alignment = STRETCH;
             MOVE PROPERTY(jsonInputMessage()) {
                 fill = 1;

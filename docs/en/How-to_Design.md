@@ -125,7 +125,7 @@ DESIGN orders {
             NEW filters { 
                 caption = 'Filters';
                 // making it horizontal so that all components go from left to right
-                type = CONTAINERH; 
+                horizontal = TRUE; 
                 MOVE PROPERTY(df) {
                     caption = 'Date from';
                 }
