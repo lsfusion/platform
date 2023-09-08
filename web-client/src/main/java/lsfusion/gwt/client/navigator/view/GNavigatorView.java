@@ -33,7 +33,7 @@ public abstract class GNavigatorView<T extends GNavigatorWindow> {
 
         // we want to propagate this classes, since window hover classes are also propagated
         parentRecentlySelected = new RecentlyEventClassHandler(component, true, "parent-was-selected-recently", 2000);
-        recentlySelected = new RecentlyEventClassHandler(component, true, "was-selected-recently", 2000);
+        recentlySelected = new RecentlyEventClassHandler(component, true, "was-selected-recently", 1000);
     }
 
     private RecentlyEventClassHandler parentRecentlySelected;

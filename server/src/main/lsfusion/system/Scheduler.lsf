@@ -194,7 +194,17 @@ WHEN DROPPED(ScheduledTaskDetail td IS ScheduledTaskDetail) AND PREV(active(td))
     setupScheduledTask(PREV(scheduledTask(td)));
 
 allTasks '{scheduler.form.scheduled.task.filter.all}' = DATA LOCAL NESTED BOOLEAN () TOOLBAR; 
-           
+
+json '{scheduler.script.scheduled.task.detail}' (ScheduledTaskDetail td) = JSON FROM text = (OVERRIDE script(td), ''), type = 'action';
+changeScript(ScheduledTaskDetail std) {
+    INPUT s = TEXT DO {
+        stringToFile(s);
+        LOCAL text = TEXT();
+        IMPORT JSON FROM resultFile() TO() text;
+        script(std) <- text();
+    }
+}
+
 FORM scheduledTask '{scheduler.form.scheduled.tasks}'
 
     PROPERTIES() threadCountScheduler
@@ -208,8 +218,13 @@ FORM scheduledTask '{scheduler.form.scheduled.tasks}'
          
     OBJECTS td=ScheduledTaskDetail
     PROPERTIES (td) active, ignoreExceptions, order, captionAction, 
-                    codeAction READONLY, parameter, 
-                    timeout, script PANEL
+                    codeAction ON CHANGE { INPUT s = codeAction(td) DO action(td) <- actionCanonicalName(s); }, 
+                    parameter, timeout, script PANEL SHOWIF NOT isWeb()
+    
+    OBJECTS std = ScheduledTaskDetail
+    PROPERTIES json(std) PANEL CUSTOM 'interpreter' SHOWIF isWeb() ON CHANGE changeScript(std)
+    EVENTS ON CHANGE td { SEEK scheduledTask.std = td; }
+    
     PROPERTIES (td) NEW[UserScheduledTaskDetail], DELETE GRID
     PROPERTIES (td) READONLY SHOWIF allTasks() nameScheduledTask, startTime, period
     ORDERS order(td)
@@ -249,14 +264,14 @@ FORM scheduledTask '{scheduler.form.scheduled.tasks}'
 DESIGN scheduledTask {
     NEW specContainer {
         fill = 1; 
-        type = SPLITV;
+        lines = 1;
         MOVE BOX(t);
         NEW south {
             fill = 2;
-            type = TABBED;
+            tabbed = TRUE;
             NEW property {
                 caption = '{scheduler.form.scheduled.task.caption.properties}';
-                type = SPLITH;
+                horizontal = TRUE;
                 MOVE BOX(td) {
                     PROPERTY(parameter(td)) {
                         valueSize = (-1, 18);
@@ -269,10 +284,14 @@ DESIGN scheduledTask {
                     panelCaptionVertical = TRUE;
                     fill = 0.5;
                 }
+                MOVE PROPERTY(json(std)) {
+                    panelCaptionVertical = TRUE;
+                    fill = 1;
+                }
             }
             NEW logContainer {
                 caption = '{scheduler.form.scheduled.task.caption.log}';
-                type = SPLITH;
+                horizontal = TRUE;
                 MOVE BOX(tl) {
                     TOOLBARLEFT(tl) {
                         MOVE PROPERTY(allTasksTl);
@@ -299,7 +318,7 @@ DESIGN scheduledTask {
         }
     }
     NEW bottom {
-        type = CONTAINERH;
+        horizontal = TRUE;
         align = END;
         MOVE PROPERTY(onlySystemTasks());
         MOVE PROPERTY(runSetupSchedulerApply());

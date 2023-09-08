@@ -157,7 +157,7 @@ public class ReportDesignGenerator {
 
     private ImList<ReportDrawField> getReportDrawFields(GroupObjectEntity group, StaticDataGenerator.Hierarchy hierarchy, final MAddExclMap<PropertyReaderEntity, Type> types) {
         return formInterface.getUserOrder(group, hierarchy.getProperties(group)).mapListValues((PropertyDrawEntity prop) -> {
-            ReportDrawField reportField = formView.get(prop).getReportDrawField(charWidth, getPropGroupColumnsCount(prop), types != null ? types.get(prop) : prop.getType());
+            ReportDrawField reportField = formView.get(prop).getReportDrawField(charWidth, getPropGroupColumnsCount(prop), types != null ? types.get(prop) : prop.getReaderType());
 
             Integer widthUser = formInterface.getUserWidth(prop);
             if (widthUser != null)

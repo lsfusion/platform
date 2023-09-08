@@ -54,7 +54,7 @@ public abstract class SimpleTextBasedCellRenderer extends CellRenderer {
 
         // input we have to render in td, since input is a void element, and it can not have children (and they are needed for the toolbar)
         // so the hack is to render it
-        return getTag() == null || isTagInput();
+        return getTag() == null;
     }
 
     @Override
@@ -62,7 +62,7 @@ public abstract class SimpleTextBasedCellRenderer extends CellRenderer {
         if(isTagInput()) {
             if(needToRenderToolbarContent()) { // for an input with a toolbar we have to wrap it in a div to draw a toolbar
                 DivElement toolbarContainer = Document.get().createDivElement();
-                toolbarContainer.addClassName("prop-w-toolbar");
+                toolbarContainer.addClassName("prop-input-w-toolbar");
                 setToolbarContainer(toolbarContainer);
                 return toolbarContainer;
             } else

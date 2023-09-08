@@ -12,10 +12,11 @@ import lsfusion.server.base.version.NeighbourComplexLocation;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFComplexOrderSet;
 import lsfusion.server.language.ScriptParsingException;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.object.GridView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
-import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.debug.DebugInfo;
@@ -24,7 +25,6 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.function.Supplier;
 
 import static lsfusion.interop.form.design.ContainerType.*;
 
@@ -34,33 +34,32 @@ public class ContainerView extends ComponentView {
 
     public LocalizedString caption;
     public String name; // actually used only for icons
-    public Supplier<AppServerImage> image;
+    public AppServerImage.Reader image;
 
     public void setImage(String imagePath, FormView formView) {
         image = AppServerImage.createContainerImage(imagePath, this, formView);
     }
 
-    public AppServerImage getImage(FormView formView) {
-        AppServerImage image;
-        if(this.image != null && (image = this.image.get()) != null)
-            return image;
+    public AppServerImage getImage(FormView formView, ConnectionContext context) {
+        if(this.image != null)
+            return this.image.get(context);
 
-        return getDefaultImage(main ? formView : null);
+        return getDefaultImage(main ? formView : null, context);
     }
 
-    public AppServerImage getDefaultImage(String name, float rankingThreshold, boolean useDefaultIcon, FormView formView) {
+    public AppServerImage getDefaultImage(String name, float rankingThreshold, boolean useDefaultIcon, FormView formView, ConnectionContext context) {
         return AppServerImage.createDefaultImage(rankingThreshold,
                 name, main ? AppServerImage.Style.FORM : AppServerImage.Style.CONTAINER, getAutoName(formView),
-                () -> useDefaultIcon ? AppServerImage.createContainerImage(AppServerImage.FORM, ContainerView.this, formView).get() : null);
+                defaultContext -> useDefaultIcon ? AppServerImage.createContainerImage(AppServerImage.FORM, ContainerView.this, formView).get(defaultContext) : null, context);
     }
 
     private AppServerImage.AutoName getAutoName(FormView formView) {
-        return AppServerImage.getAutoName(main ? formView::getCaption : () -> caption, main ? formView.entity::getName : () -> name);
+        return AppServerImage.getAutoName(main ? () -> formView.getCaption() : () -> caption, main ? () -> formView.entity.getName() : () -> name); // can't be converted to lambda because formView can be null
     }
 
-    private AppServerImage getDefaultImage(FormView formView) {
+    private AppServerImage getDefaultImage(FormView formView, ConnectionContext context) {
         return getDefaultImage(AppServerImage.AUTO, main ? Settings.get().getDefaultNavigatorImageRankingThreshold() : Settings.get().getDefaultContainerImageRankingThreshold(),
-                 main ? Settings.get().isDefaultNavigatorImage() : Settings.get().isDefaultContainerImage(), formView);
+                 main ? Settings.get().isDefaultNavigatorImage() : Settings.get().isDefaultContainerImage(), formView, context);
     }
 
     private Boolean collapsible;
@@ -174,6 +173,9 @@ public class ContainerView extends ComponentView {
     }
     
     public boolean isCollapsible() {
+        if(Settings.get().isDisableCollapsibleContainers())
+            return false;
+
         if(collapsible != null)
             return collapsible;
 
@@ -238,33 +240,40 @@ public class ContainerView extends ComponentView {
         return lines > 1 || isHorizontal();
     }
 
+    public Boolean getAlignCaptions() {
+        if(alignCaptions != null)
+            return alignCaptions;
+        
+        return isTabbed() ? true : null;
+    }
+
     @Override
-    public boolean isDefaultShrink(FormEntity formEntity, boolean explicit) {
+    public boolean isDefaultShrink(FormInstanceContext context, boolean explicit) {
         ContainerView container = getLayoutParamContainer();
         boolean horizontal = container != null && container.isHorizontal();
 
-        if(isShrinkedAutoSizedWrap(formEntity, horizontal))
+        if(isShrinkedAutoSizedWrap(context, horizontal))
             return true;
 
-        if(!explicit && container != null && container.isWrap() && isShrinkDominant(formEntity, container, horizontal, false))
+        if(!explicit && container != null && container.isWrap() && isShrinkDominant(context, container, horizontal, false))
             return true;
 
-        return super.isDefaultShrink(formEntity, explicit);
+        return super.isDefaultShrink(context, explicit);
     }
 
-    public boolean isDefaultAlignShrink(FormEntity formEntity, boolean explicit) {
+    public boolean isDefaultAlignShrink(FormInstanceContext context, boolean explicit) {
         ContainerView container = getLayoutParamContainer();
         boolean horizontal = container != null && container.isHorizontal();
-        if(isShrinkedAutoSizedWrap(formEntity, !horizontal))
+        if(isShrinkedAutoSizedWrap(context, !horizontal))
             return true;
 
-        if(!explicit && container != null && isShrinkDominant(formEntity, container, !horizontal, true))
+        if(!explicit && container != null && isShrinkDominant(context, container, !horizontal, true))
             return true;
 
-        return super.isDefaultAlignShrink(formEntity, explicit);
+        return super.isDefaultAlignShrink(context, explicit);
     }
 
-    public boolean isLineShrink(FormEntity formEntity) {
+    public boolean isLineShrink(FormInstanceContext context) {
         if(lineShrink != null)
             return lineShrink;
 
@@ -273,18 +282,18 @@ public class ContainerView extends ComponentView {
         boolean horizontal = container != null && container.isHorizontal();
         boolean linesHorizontal = !isHorizontal(); // lines direction
         boolean sameDirection = horizontal == linesHorizontal;
-        return sameDirection ? isShrink(formEntity) : isAlignShrink(formEntity);
+        return sameDirection ? isShrink(context) : isAlignShrink(context);
     }
 
-    private boolean isShrinkDominant(FormEntity formEntity, ContainerView container, boolean horizontal, boolean align) {
+    private boolean isShrinkDominant(FormInstanceContext context, ContainerView container, boolean horizontal, boolean align) {
         ContainerView upperContainer = container.getLayoutParamContainer();
         boolean upperHorizontal = upperContainer != null && upperContainer.isHorizontal();
-        if((horizontal == upperHorizontal ? container.isShrink(formEntity) : container.isAlignShrink(formEntity))) {
+        if((horizontal == upperHorizontal ? container.isShrink(context) : container.isAlignShrink(context))) {
             // checking siblings if there are more
             int shrinked = 0;
             int notShrinked = 0;
             for(ComponentView child : container.getChildrenIt())
-                if(align ? child.isAlignShrink(formEntity, true) : child.isShrink(formEntity, true))
+                if(align ? child.isAlignShrink(context, true) : child.isShrink(context, true))
                     shrinked++;
                 else
                     notShrinked++;
@@ -297,8 +306,8 @@ public class ContainerView extends ComponentView {
     // if we have cascade shrinking (with auto size) and some wrap at some point, consider that we want shrink
     // otherwise shrinking will lead to more scrolls in lower containers
     // however we can use simple shrink check
-    protected boolean isShrinkedAutoSizedWrap(FormEntity formEntity, boolean horizontal) {
-        if ((horizontal ? getWidth(formEntity) : getHeight(formEntity)) != -1) // if we have fixed size than there is no wrap problem
+    protected boolean isShrinkedAutoSizedWrap(FormInstanceContext context, boolean horizontal) {
+        if ((horizontal ? getWidth(context) : getHeight(context)) != -1) // if we have fixed size than there is no wrap problem
             return false;
 
         boolean thisHorizontal = isHorizontal();
@@ -314,7 +323,7 @@ public class ContainerView extends ComponentView {
         for (ComponentView child : getChildrenList())
             if(child instanceof ContainerView) {
                 ContainerView containerChild = (ContainerView) child;
-                if ((sameDirection ? containerChild.isShrink(formEntity, true) : child.isAlignShrink(formEntity, true)) && containerChild.isShrinkedAutoSizedWrap(formEntity, horizontal))
+                if ((sameDirection ? containerChild.isShrink(context, true) : child.isAlignShrink(context, true)) && containerChild.isShrinkedAutoSizedWrap(context, horizontal))
                     return true;
             }
 
@@ -467,7 +476,7 @@ public class ContainerView extends ComponentView {
 
         pool.writeString(outStream, hasCaption() ? ThreadLocalContext.localize(caption) : null); // optimization
         pool.writeString(outStream, name); // optimization
-        AppServerImage.serialize(getImage(pool.context.view), outStream, pool);
+        AppServerImage.serialize(getImage(pool.context.view, pool.context), outStream, pool);
 
         outStream.writeBoolean(isCollapsible());
 
@@ -486,7 +495,7 @@ public class ContainerView extends ComponentView {
         
         outStream.writeBoolean(isGrid());
         outStream.writeBoolean(isWrap());
-        pool.writeObject(outStream, alignCaptions);
+        pool.writeObject(outStream, getAlignCaptions());
 
         outStream.writeBoolean(resizeOverflow != null);
         if(resizeOverflow != null)
@@ -495,7 +504,7 @@ public class ContainerView extends ComponentView {
         outStream.writeInt(lines);
         pool.writeInt(outStream, lineSize);
         pool.writeInt(outStream, captionLineSize);
-        outStream.writeBoolean(isLineShrink(pool.context.entity));
+        outStream.writeBoolean(isLineShrink(pool.context));
 
         outStream.writeBoolean(isCustomDesign());
         if (isCustomDesign())
@@ -556,10 +565,10 @@ public class ContainerView extends ComponentView {
     }
 
     @Override
-    public void prereadAutoIcons(FormView formView) {
-        getImage(formView);
+    public void prereadAutoIcons(FormView formView, FormInstanceContext context) {
+        getImage(formView, context);
         for(ComponentView child : getChildrenIt())
-            child.prereadAutoIcons(formView);
+            child.prereadAutoIcons(formView, context);
     }
 
     @Override

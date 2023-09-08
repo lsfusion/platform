@@ -36,7 +36,7 @@ FORM tabbedForm 'Форма с табами'
 
 DESIGN tabbedForm {
     NEW tabPane FIRST {
-        type = TABBED;
+        tabbed = TRUE;
         NEW contacts {
             caption = 'Контакты';
             MOVE BOX(u);

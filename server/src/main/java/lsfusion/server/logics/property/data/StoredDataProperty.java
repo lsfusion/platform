@@ -1,8 +1,14 @@
 package lsfusion.server.logics.property.data;
 
+import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.lambda.set.SFunctionSet;
+import lsfusion.server.data.expr.value.StaticParamNullableExpr;
+import lsfusion.server.data.stat.Stat;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
+import lsfusion.server.logics.property.classes.infer.ClassType;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public class StoredDataProperty extends DataProperty {
@@ -20,4 +26,8 @@ public class StoredDataProperty extends DataProperty {
     // нет
     public static SFunctionSet<Property> set = element -> element instanceof StoredDataProperty;
 
+    @Override
+    public boolean isValueUnique(ImMap<ClassPropertyInterface, StaticParamNullableExpr> fixedExprs, boolean optimistic) {
+        return isStatValueUnique(fixedExprs, optimistic);
+    }
 }

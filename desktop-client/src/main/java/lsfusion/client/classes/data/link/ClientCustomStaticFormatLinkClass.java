@@ -14,7 +14,7 @@ import java.io.IOException;
 public class ClientCustomStaticFormatLinkClass extends ClientStaticFormatLinkClass {
 
     public final String filterDescription;
-    public final String filterExtensions[];
+    public final String[] filterExtensions;
 
     public ClientCustomStaticFormatLinkClass(String filterDescription, String[] filterExtensions, boolean multiple) {
         super(multiple);
@@ -31,7 +31,7 @@ public class ClientCustomStaticFormatLinkClass extends ClientStaticFormatLinkCla
     }
 
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
-        return new LinkPropertyRenderer(property, filterExtensions[0]);
+        return new LinkPropertyRenderer(property);
     }
 
     @Override

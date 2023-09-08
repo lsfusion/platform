@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.property.panel.view;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.AppBaseImage;
@@ -36,17 +37,16 @@ public abstract class PanelRenderer {
     protected void finalizeInit() {
         setCaption(property.caption);
         setCaptionElementClass(property.captionElementClass);
+        setComment(property.comment);
+        setCommentElementClass(property.commentElementClass);
+        setPlaceholder(property.placeholder);
 
-        Widget label = getTooltipWidget();
-        TooltipManager.registerWidget(label, new TooltipManager.TooltipHelper() {
+        Element label = getTooltipWidget().getElement();
+        TooltipManager.initTooltip(label, new TooltipManager.TooltipHelper() {
             public String getTooltip() {
                 if(value.isEditing)
                     return null;
                 return property.getTooltip(caption);
-            }
-
-            public boolean stillShowTooltip() {
-                return label.isAttached() && label.isVisible();
             }
 
             public String getPath() {
@@ -63,7 +63,7 @@ public abstract class PanelRenderer {
             }
         });
         if (this.property.captionFont != null) {
-            this.property.captionFont.apply(label.getElement().getStyle());
+            this.property.captionFont.apply(label.getStyle());
         }
     }
 
@@ -90,6 +90,27 @@ public abstract class PanelRenderer {
             setLabelClasses(classes);
         }
     }
+    private String comment;
+    public void setComment(String comment) {
+        if (!GwtSharedUtils.nullEquals(this.comment, comment)) {
+            this.comment = comment;
+            setCommentText(comment);
+        }
+    }
+    private String commentElementClass;
+    public void setCommentElementClass(String classes) {
+        if (!GwtSharedUtils.nullEquals(this.commentElementClass, classes)) {
+            this.commentElementClass = classes;
+            setCommentClasses(classes);
+        }
+    }
+    private String placeholder;
+    public void setPlaceholder(String placeholder) {
+        if (!GwtSharedUtils.nullEquals(this.placeholder, placeholder)) {
+            this.placeholder = placeholder;
+            setPlaceholderText(placeholder);
+        }
+    }
 
     protected Widget getTooltipWidget() {
         return getComponent();
@@ -97,6 +118,9 @@ public abstract class PanelRenderer {
 
     protected abstract void setLabelText(String text);
     protected abstract void setLabelClasses(String classes);
+    protected abstract void setCommentText(String text);
+    protected abstract void setCommentClasses(String classes);
+    protected abstract void setPlaceholderText(String text);
 
     public void onBinding(Event event) {
         value.onBinding(event);

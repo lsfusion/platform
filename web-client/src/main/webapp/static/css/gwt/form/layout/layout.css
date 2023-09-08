@@ -2,29 +2,38 @@
 .oppositeSizeCssFixPanel {
 }
 
-.shrink-width {
+.intr-shrink-width {
     max-width: -webkit-fill-available;
     max-width: -moz-available;
 }
-.stretch-width {
+.intr-stretch-width {
     min-width: -webkit-fill-available;
     min-width: -moz-available;
 }
+.intr-shrink-height {
+    max-height: -webkit-fill-available;
+    max-height: -moz-available;
+}
+.intr-stretch-height {
+    min-height: -webkit-fill-available;
+    min-height: -moz-available;
+}
 
-.remove-all-pmb, .remove-all-pmb.form-control, .remove-all-pmb.form-control:focus {
-    padding: 0;
-    margin: 0;
-    border: none;
-    box-shadow: none;
+/*, .remove-all-pmb.form-control, .remove-all-pmb.form-control:focus, .remove-all-pmb.form-control:hover */
+.remove-all-pmb {
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
 
     /* for example text-area.form-control sets the minimum height */
     /* and when there is minimum height the content overflow it's parent, which leads to unpredictable scrolls (for example if textarea is removed, and new text is set, there can be some scroll left after that. It's not crucial but nevertheless not that pretty)*/
-    min-height: 0;
-    min-width: 0;
+    min-height: 0 !important;
+    min-width: 0 !important;
 }
 
 .remove-all-p, .remove-all-p.modal-body {
-    padding: 0;
+    padding: 0 !important;
 }
 
 .comp-shrink-horz {
@@ -33,6 +42,14 @@
 
 .comp-shrink-vert {
     overflow-y : auto
+}
+
+.fill-parent-absolute {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
 }
 
 .fill-parent-position {

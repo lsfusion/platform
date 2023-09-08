@@ -10,6 +10,14 @@
     /*white-space: nowrap;*/
 }
 
+.btn:focus {
+    border: 1px solid var(--focus-color);
+}
+
+.btn:hover:not(:focus) { /* we want focus to have higher priority than hover*/
+    border: 1px solid var(--component-hover-border-color);
+}
+
 /*Fix buttons paddings and margins in FF*/
 .btn::-moz-focus-inner {
     border: 0;
@@ -46,6 +54,10 @@
     /*border: 1px solid var(--component-border-color);*/
 }
 
+button:focus {
+    background-color: var(--selection-color);
+}
+
 .btn-image {
 }
 
@@ -60,7 +72,7 @@
     width: 0.625rem;
     height: 0.625rem;
     background: transparent var(--close-tab-button-x-url) center/0.5em auto no-repeat;
-    border: 0;
+    border: 1px solid transparent;
     opacity: 0.5;
 
     padding: var(--border-comp-horz-padding);

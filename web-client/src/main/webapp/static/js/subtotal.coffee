@@ -1083,7 +1083,7 @@ callWithJQuery ($) ->
             outerDiv = createElement "div", "subtotalouterdiv"
 
             headerDiv = createElement "div", "headerdiv" 
-            headerTable = createElement "table", "headertable pvtTable"
+            headerTable = createElement "table", "headertable pvtTable table"
 
             thead = createElement "thead"
 
@@ -1115,7 +1115,7 @@ callWithJQuery ($) ->
             scrollDiv.onscroll = () ->
                 sLeft = scrollDiv.scrollLeft
                 headerDiv.scrollLeft = sLeft
-            bodyTable = createElement "table", "bodytable pvtTable"
+            bodyTable = createElement "table", "bodytable pvtTable table"
             tbody = createElement "tbody"
 
             outerDiv.appendChild bodyDiv

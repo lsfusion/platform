@@ -28,7 +28,7 @@ public class GObjectType extends GType {
 
     @Override
     protected int getDefaultCharWidth() {
-        return 7;
+        return 13;
     }
 
     public RequestValueCellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, EditContext editContext) {

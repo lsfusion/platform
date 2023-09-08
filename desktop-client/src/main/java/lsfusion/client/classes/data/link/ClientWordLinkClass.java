@@ -15,7 +15,7 @@ public class ClientWordLinkClass extends ClientStaticFormatLinkClass {
     }
 
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
-        return new LinkPropertyRenderer(property, "doc");
+        return new LinkPropertyRenderer(property);
     }
 
     public byte getTypeId() {

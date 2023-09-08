@@ -41,6 +41,16 @@ public enum IndexType {
         }
         throw new RuntimeException("Serialize IndexType");
     }
+    
+    public String suffix() {
+        switch (this) {
+            case DEFAULT: return "_default";
+            case LIKE: return "_like";
+            case MATCH: return "_match";
+        }
+        assert(false);
+        return "";
+    }
 
     private static final AddValue<Object, IndexType> addValue = new SymmAddValue<Object, IndexType>() {
         @Override

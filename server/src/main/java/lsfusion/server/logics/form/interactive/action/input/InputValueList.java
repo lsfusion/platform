@@ -13,6 +13,7 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.query.compile.CompiledQuery;
 import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.data.stat.Cost;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.parse.ValueParseInterface;
@@ -66,6 +67,14 @@ public class InputValueList<P extends PropertyInterface> {
         return property.getSelectStat(mapValues.keys());
     }
 
+    public Stat getInterfaceStat() {
+        return property.getInterfaceStat(mapValues.keys());
+    }
+
+    public Cost getInterfaceCost() {
+        return property.getInterfaceCost(mapValues.keys());
+    }
+
     public boolean isHighlight() {
         Type type = property.getType();
         return !(type instanceof DataClass && ((DataClass<?>) type).markupHtml()); // ts_headline breaks html : https://stackoverflow.com/questions/40263956/why-is-postgresql-stripping-html-entities-in-ts-headline
@@ -85,7 +94,7 @@ public class InputValueList<P extends PropertyInterface> {
     public Property<?> getCacheKey() {
         return property;
     }
-    public DBManager.Param<?> getCacheParam(String value, AsyncMode mode, QueryEnvironment env) {
+    public DBManager.Param<?> getCacheParam(String value, int neededCount, AsyncMode mode, QueryEnvironment env) {
         ImMap<CurrentEnvironmentProperty, Object> envValues = MapFact.EMPTY();
         ImSet<CurrentEnvironmentProperty> envDepends = property.getEnvDepends();
         if(!envDepends.isEmpty()) { // optimization
@@ -93,6 +102,6 @@ public class InputValueList<P extends PropertyInterface> {
             envValues = envDepends.mapValues((CurrentEnvironmentProperty prop) -> queryPropParams.get(prop.paramString).getValue());
         }
 
-        return new DBManager.Param<P>(mapValues, envValues, orders, value, mode.getCacheMode());
+        return new DBManager.Param<P>(mapValues, envValues, orders, value, neededCount, mode.getCacheMode());
     }
 }

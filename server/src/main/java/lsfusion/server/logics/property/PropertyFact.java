@@ -413,7 +413,7 @@ public class PropertyFact {
     }
 
     public static <T extends PropertyInterface> PropertyMapImplement<?, T> createGProp(GroupType type, ImSet<T> innerInterfaces, ImSet<T> groupInterfaces, ImList<PropertyInterfaceImplement<T>> props, ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
-        OrderGroupProperty<T> groupProperty = new OrderGroupProperty<>(LocalizedString.NONAME, innerInterfaces, BaseUtils.<ImCol<PropertyInterfaceImplement<T>>>immutableCast(groupInterfaces), props, type, orders, ordersNotNull);
+        OrderGroupProperty<T> groupProperty = new OrderGroupProperty<>(LocalizedString.NONAME, innerInterfaces, BaseUtils.<ImCol<PropertyInterfaceImplement<T>>>immutableCast(groupInterfaces), props, null, null, type, orders, ordersNotNull);
         return new PropertyMapImplement<>(groupProperty, BaseUtils.<ImMap<GroupProperty.Interface<T>, T>>immutableCast(groupProperty.getMapInterfaces()).toRevExclMap());
     }
 

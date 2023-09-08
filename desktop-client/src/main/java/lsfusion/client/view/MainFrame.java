@@ -22,6 +22,7 @@ import lsfusion.interop.base.exception.RemoteMessageException;
 import lsfusion.interop.connection.ClientType;
 import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.connection.TFormats;
+import lsfusion.interop.form.FormClientData;
 import lsfusion.interop.form.event.EventBus;
 import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.remote.RemoteFormInterface;
@@ -101,14 +102,15 @@ public abstract class MainFrame extends JFrame {
             MainController.busyDialogTimeout = Math.max(clientSettings.busyDialogTimeout, 1000); //минимальный таймаут 1000мс
             MainController.useRequestTimeout = clientSettings.useRequestTimeout;
             MainController.projectLSFDir = clientSettings.projectLSFDir;
-            MainController.inDevMode = clientSettings.devMode;
             MainController.showDetailedInfo = clientSettings.showDetailedInfo;
+            MainController.showDetailedInfoDelay = clientSettings.showDetailedInfoDelay;
             MainController.forbidDuplicateForms = clientSettings.forbidDuplicateForms;
             MainController.showNotDefinedStrings = clientSettings.showNotDefinedStrings;
             MainController.matchSearchSeparator = clientSettings.matchSearchSeparator;
             MainController.colorPreferences = clientSettings.colorPreferences;
             MainController.useTextAsFilterSeparator = clientSettings.useTextAsFilterSeparator;
             MainController.userFiltersManualApplyMode = clientSettings.userFiltersManualApplyMode;
+            MainController.maxRequestQueueSize = clientSettings.maxRequestQueueSize;
             SwingDefaults.resetClientSettingsProperties();
             MainController.setClientSettingsDependentUIDefaults();
 
@@ -147,7 +149,7 @@ public abstract class MainFrame extends JFrame {
             frame.setExtendedState(MAXIMIZED_BOTH);
             logger.info("After setExtendedState");
 
-            ConnectionLostManager.start(frame, remoteNavigator.getClientCallBack(), clientSettings.devMode);
+            ConnectionLostManager.start(frame, remoteNavigator.getClientCallBack(), clientSettings.devMode, clientSettings.autoReconnectOnConnectionLost);
 
             frame.setVisible(true);
 
@@ -438,7 +440,7 @@ public abstract class MainFrame extends JFrame {
 
     public abstract Integer runReport(boolean isModal, String formCaption, ReportGenerationData generationData, String printerName, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException;
 
-    public abstract ClientFormDockable runForm(AsyncFormController asyncFormController, String canonicalName, String formSID, boolean forbidDuplicate, RemoteFormInterface remoteForm, byte[] firstChanges, FormCloseListener closeListener, String formId);
+    public abstract ClientFormDockable runForm(AsyncFormController asyncFormController, boolean forbidDuplicate, RemoteFormInterface remoteForm, FormClientData clientData, FormCloseListener closeListener, String formId);
 
     public static ClientSettings getClientSettings(RemoteNavigatorInterface remoteNavigator) throws RemoteException {
         return LogicsSessionObject.getClientSettings(MainController.getSessionInfo(), remoteNavigator);

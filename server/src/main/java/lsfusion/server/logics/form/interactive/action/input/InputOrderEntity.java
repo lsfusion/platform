@@ -2,6 +2,7 @@ package lsfusion.server.logics.form.interactive.action.input;
 
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public class InputOrderEntity<P extends PropertyInterface, V extends PropertyInterface> {
@@ -22,4 +23,7 @@ public class InputOrderEntity<P extends PropertyInterface, V extends PropertyInt
         return property.interfaces.removeIncl(mapValues.keys()).single();
     }
 
+    public PropertyMapImplement<P, V> getOrderProperty(V objectInterface) {
+        return new PropertyMapImplement<>(property, mapValues.addRevExcl(singleInterface(), objectInterface));
+    }
 }

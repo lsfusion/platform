@@ -38,7 +38,7 @@ public class GContainer extends GComponent implements HasNativeSID {
     public boolean border;
 
     public boolean hasBorder() {
-        if(!MainFrame.useBootstrap)
+        if(!MainFrame.useBootstrap || MainFrame.mobile)
             return false;
         return border;
     }

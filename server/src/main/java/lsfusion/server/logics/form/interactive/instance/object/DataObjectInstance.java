@@ -12,9 +12,8 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.form.interactive.changed.ChangedData;
+import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-
-import java.sql.SQLException;
 
 // ObjectInstance table'ы
 public class DataObjectInstance extends ObjectInstance {
@@ -39,7 +38,7 @@ public class DataObjectInstance extends ObjectInstance {
         return dataClass;
     }
 
-    public void changeValue(SessionChanges session, ObjectValue objectValue) {
+    public void changeValue(SessionChanges session, FormInstance form, ObjectValue objectValue) {
         if(BaseUtils.nullEquals(value, objectValue)) return;
         assert objectValue instanceof NullValue || dataClass.getCompatible(((DataObject) objectValue).getType()) != null;
         value = objectValue;

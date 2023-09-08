@@ -1,6 +1,7 @@
 package lsfusion.server.logics.form.interactive.instance.property;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Pair;
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -15,15 +16,17 @@ import lsfusion.server.data.sql.lambda.SQLCallable;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInput;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapValue;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputValueList;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.instance.CellInstance;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
-import lsfusion.server.logics.form.interactive.instance.order.OrderInstance;
+import lsfusion.server.logics.form.interactive.property.AsyncDataConverter;
 import lsfusion.server.logics.form.interactive.property.AsyncMode;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
@@ -31,7 +34,6 @@ import lsfusion.server.logics.form.struct.property.PropertyDrawExtraType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.value.NullValueProperty;
 import lsfusion.server.physics.admin.Settings;
-import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 
 import java.sql.SQLException;
 import java.util.function.Function;
@@ -39,8 +41,8 @@ import java.util.function.Function;
 // представление св-ва
 public class PropertyDrawInstance<P extends PropertyInterface> extends CellInstance<PropertyDrawEntity<P>> implements AggrReaderInstance {
 
-    public ActionObjectInstance getEventAction(String actionId, FormInstance formInstance, SQLCallable<Boolean> checkReadOnly, SecurityPolicy securityPolicy) throws SQLException, SQLHandledException {
-        ActionObjectEntity<?> eventAction = entity.getEventAction(actionId, formInstance.entity, checkReadOnly, securityPolicy);
+    public ActionObjectInstance getEventAction(String actionId, FormInstanceContext context, FormInstance formInstance, SQLCallable<Boolean> checkReadOnly) throws SQLException, SQLHandledException {
+        ActionObjectEntity<?> eventAction = entity.getCheckedEventAction(actionId, context, checkReadOnly);
         if(eventAction != null)
             return formInstance.instanceFactory.getInstance(eventAction);
         return null;
@@ -48,19 +50,19 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
 
     public static class AsyncValueList<P extends PropertyInterface> {
         public final InputValueList<P> list;
-        public final ImRevMap<P, ObjectInstance> mapObjects;
+        public final AsyncDataConverter<P> converter;
         public final boolean newSession;
         public final AsyncMode asyncMode;
 
-        public AsyncValueList(InputValueList<P> list, ImRevMap<P, ObjectInstance> mapObjects, boolean newSession, AsyncMode asyncMode) {
+        public AsyncValueList(InputValueList<P> list, AsyncDataConverter<P> converter, boolean newSession, AsyncMode asyncMode) {
             this.list = list;
-            this.mapObjects = mapObjects;
+            this.converter = converter;
             this.newSession = newSession;
             this.asyncMode = asyncMode;
         }
     }
 
-    public <P extends PropertyInterface, X extends PropertyInterface> AsyncValueList<?> getAsyncValueList(String actionSID, FormInstance formInstance, ImMap<ObjectInstance, ? extends ObjectValue> keys) {
+    public <P extends PropertyInterface, X extends PropertyInterface> AsyncValueList<?> getAsyncValueList(String actionSID, Result<String> value, FormInstanceContext context, FormInstance formInstance, ImMap<ObjectInstance, ? extends ObjectValue> keys) {
 
         Function<PropertyObjectInterfaceInstance, ObjectValue> valuesGetter = (PropertyObjectInterfaceInstance po) -> {
             if(po instanceof ObjectInstance) {
@@ -72,7 +74,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         };
 
         InputValueList<X> list;
-        ImRevMap<X, ObjectInstance> mapObjects;
+        AsyncDataConverter<X> converter;
         boolean newSession;
         AsyncMode asyncMode;
 
@@ -87,24 +89,30 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
             if(list == null)
                 return null;
             newSession = BaseUtils.nvl(this.entity.defaultChangeEventScope, needObjects ? PropertyDrawEntity.DEFAULT_OBJECTS_EVENTSCOPE : PropertyDrawEntity.DEFAULT_VALUES_EVENTSCOPE) == FormSessionScope.NEWSESSION;
-            mapObjects = needObjects ? rMapObjects.result : null;
-            asyncMode = needObjects ? AsyncMode.OBJECTS : (strictValues ? AsyncMode.STRICTVALUES : AsyncMode.VALUES);
+            converter = needObjects ? values -> rMapObjects.result.crossJoin(values) : null;
         } else {
-            ActionObjectEntity<P> eventAction = (ActionObjectEntity<P>) this.entity.getEventAction(actionSID, formInstance.entity);
-            AsyncMapInput<P> asyncExec = (AsyncMapInput<P>) eventAction.property.getAsyncEventExec(this.entity.optimisticAsync);
-            InputListEntity<X, P> listEntity = (InputListEntity<X, P>) asyncExec.list;
-            list = listEntity.map(formInstance.instanceFactory.getInstanceMap(eventAction.mapping).mapValues(BaseUtils.<Function<ObjectInstance, ObjectValue>>immutableCast(valuesGetter)));
-            mapObjects = null;
+            ActionObjectEntity<P> eventAction = (ActionObjectEntity<P>) this.entity.getEventAction(actionSID, context);
+            ImMap<P, ObjectValue> mapValues = formInstance.instanceFactory.getInstanceMap(eventAction.mapping).mapValues(BaseUtils.<Function<ObjectInstance, ObjectValue>>immutableCast(valuesGetter));
+
+            AsyncMapValue<P> asyncExec = (AsyncMapValue<P>) eventAction.property.getAsyncEventExec(this.entity.optimisticAsync);
+            Pair<InputListEntity<X, P>, AsyncDataConverter<X>> asyncValueList = asyncExec.getAsyncValueList(value);
+            InputListEntity<X, P> listEntity = asyncValueList.first;
+            converter = asyncValueList.second;
+
+            list = listEntity.map(mapValues);
             newSession = listEntity.newSession;
-            asyncMode = asyncExec.inputList.strict ? AsyncMode.OBJECTVALUES : AsyncMode.VALUES;
+            if(asyncExec instanceof AsyncMapInput)
+                strictValues = ((AsyncMapInput<P>) asyncExec).inputList.strict;
         }
 
-        return new AsyncValueList<>(list, mapObjects, newSession, asyncMode);
+        asyncMode = converter != null ? AsyncMode.OBJECTS : (strictValues ? AsyncMode.STRICTVALUES : AsyncMode.VALUES);
+        return new AsyncValueList<>(list, converter, newSession, asyncMode);
     }
 
+    // filter / custom view
     private <X extends PropertyInterface> InputValueList<X> getInputValueList(Function<PropertyObjectInterfaceInstance, ObjectValue> valuesGetter, Result<ImRevMap<X, ObjectInstance>> rMapObjects, int useFilters) {
         // actually that all X can be different
-        PropertyObjectInstance<X> valueProperty = (PropertyObjectInstance<X>) this.drawProperty;
+        PropertyObjectInstance<X> valueProperty = (PropertyObjectInstance<X>) getProperty();
 
         InputValueList<X> list;
         if(useFilters > 0)
@@ -117,22 +125,14 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         return list;
     }
 
-    private ActionOrPropertyObjectInstance<?, ?> propertyObject;
+    private ActionOrPropertyObjectInstance<?, ?> actionOrProperty;
 
-    public ActionOrPropertyObjectInstance<?, ?> getValueProperty() {
-        return propertyObject;
+    public ActionOrPropertyObjectInstance<?, ?> getActionOrProperty() {
+        return actionOrProperty;
     }
 
     public boolean isInInterface(final ImSet<GroupObjectInstance> classGroups, boolean any) {
-        return getValueProperty().isInInterface(classGroups, any);
-    }
-
-    public OrderInstance getOrder() {
-        return (PropertyObjectInstance) getValueProperty();
-    }
-
-    public boolean isProperty() {
-        return getValueProperty() instanceof PropertyObjectInstance;
+        return getActionOrProperty().isInInterface(classGroups, any);
     }
 
     // в какой "класс" рисоваться, ессно один из Object.GroupTo должен быть ToDraw
@@ -157,8 +157,12 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         return result;
     }
 
-    public Type getType() {
-        return entity.getType();
+    public boolean isProperty(FormInstanceContext context) {
+        return entity.isProperty(context);
+    }
+
+    public Type getType(FormInstanceContext context) {
+        return entity.getType(context);
     }
 
     public HiddenReaderInstance hiddenReader = new HiddenReaderInstance();
@@ -173,6 +177,9 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public final PropertyObjectInstance<?> propertyBackground;
     public final PropertyObjectInstance<?> propertyForeground;
     public final PropertyObjectInstance<?> propertyImage;
+    public final PropertyObjectInstance<?> propertyComment;
+    public final PropertyObjectInstance<?> propertyCommentElementClass;
+    public final PropertyObjectInstance<?> propertyPlaceholder;
     public final ImList<PropertyObjectInstance<?>> propertiesAggrLast;
 
     public ExtraReaderInstance captionReader;
@@ -184,18 +191,21 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public ExtraReaderInstance backgroundReader;
     public ExtraReaderInstance foregroundReader;
     public ExtraReaderInstance imageReader;
+    public ExtraReaderInstance commentReader;
+    public ExtraReaderInstance commentElementClassReader;
+    public ExtraReaderInstance placeholderReader;
     public final ImOrderSet<LastReaderInstance> aggrLastReaders;
 
     public PropertyDrawInstance(PropertyDrawEntity<P> entity,
-                                ActionOrPropertyObjectInstance<?, ?> propertyObject,
-                                PropertyObjectInstance<?> drawProperty,
+                                ActionOrPropertyObjectInstance<?, ?> actionOrProperty,
+                                PropertyObjectInstance<?> property,
                                 GroupObjectInstance toDraw,
                                 ImOrderSet<GroupObjectInstance> columnGroupObjects,
                                 ImMap<PropertyDrawExtraType, PropertyObjectInstance<?>> propertyExtras,
                                 ImList<PropertyObjectInstance<?>> propertiesAggrLast) {
         super(entity);
-        this.propertyObject = propertyObject;
-        this.drawProperty = drawProperty;
+        this.actionOrProperty = actionOrProperty;
+        this.property = property;
         this.toDraw = toDraw;
         this.columnGroupObjects = columnGroupObjects;
 
@@ -208,6 +218,9 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         propertyBackground = propertyExtras.get(PropertyDrawExtraType.BACKGROUND);
         propertyForeground = propertyExtras.get(PropertyDrawExtraType.FOREGROUND);
         propertyImage = propertyExtras.get(PropertyDrawExtraType.IMAGE);
+        propertyComment = propertyExtras.get(PropertyDrawExtraType.COMMENT);
+        propertyCommentElementClass = propertyExtras.get(PropertyDrawExtraType.COMMENTELEMENTCLASS);
+        propertyPlaceholder = propertyExtras.get(PropertyDrawExtraType.PLACEHOLDER);
         this.propertiesAggrLast = propertiesAggrLast;
 
         captionReader = new ExtraReaderInstance(PropertyDrawExtraType.CAPTION, propertyCaption);
@@ -219,18 +232,39 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         backgroundReader = new ExtraReaderInstance(PropertyDrawExtraType.BACKGROUND, propertyBackground);
         foregroundReader = new ExtraReaderInstance(PropertyDrawExtraType.FOREGROUND, propertyForeground);
         imageReader = new ExtraReaderInstance(PropertyDrawExtraType.IMAGE, propertyImage);
+        commentReader = new ExtraReaderInstance(PropertyDrawExtraType.COMMENT, propertyComment);
+        commentElementClassReader = new ExtraReaderInstance(PropertyDrawExtraType.COMMENTELEMENTCLASS, propertyCommentElementClass);
+        placeholderReader = new ExtraReaderInstance(PropertyDrawExtraType.PLACEHOLDER, propertyPlaceholder);
         aggrLastReaders = SetFact.toOrderExclSet(propertiesAggrLast.size(), LastReaderInstance::new);
     }
 
-    public PropertyObjectInstance getPropertyObjectInstance() {
-        return getDrawInstance();
+    // PIVOT / GRID
+    public PropertyObjectInstance getReaderProperty() {
+        return getProperty();
     }
 
-    public PropertyObjectInstance<?> getDrawInstance() {
-        return drawProperty;
+    public PropertyObjectInstance<?> getProperty() {
+        return property;
     }
 
-    private final PropertyObjectInstance<?> drawProperty;
+    // DEPRECATED
+    public PropertyObjectInstance<?> getValueProperty() {
+        return getProperty();
+    }
+    // SUM / GROUP / DEPRECATED
+    public PropertyObjectInstance<?> getGroupProperty() {
+        return getProperty();
+    }
+
+    public PropertyObjectInstance<?> getFilterProperty() {
+        return getProperty();
+    }
+
+    public PropertyObjectInstance<?> getOrderProperty() {
+        return getProperty();
+    }
+
+    private final PropertyObjectInstance<?> property;
 
     public byte getTypeID() {
         return PropertyReadType.DRAW;
@@ -241,7 +275,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     }
 
     public String toString() {
-        return propertyObject.toString();
+        return actionOrProperty.toString();
     }
 
     public PropertyDrawEntity getEntity() {
@@ -260,7 +294,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     // заглушка чтобы на сервере ничего не читать
     public class HiddenReaderInstance implements PropertyReaderInstance {
 
-        public PropertyObjectInstance getPropertyObjectInstance() {
+        public PropertyObjectInstance getReaderProperty() {
             return new PropertyObjectInstance<>(NullValueProperty.instance, MapFact.<PropertyInterface, ObjectInstance>EMPTY());
         }
 
@@ -288,7 +322,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         }
 
         @Override
-        public PropertyObjectInstance getPropertyObjectInstance() {
+        public PropertyObjectInstance getReaderProperty() {
             return property;
         }
 
@@ -327,7 +361,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     }
 
     @Override
-    public PropertyDrawInstance getProperty() {
+    public PropertyDrawInstance getAggrProperty() {
         return this;
     }
 
@@ -339,12 +373,12 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         }
 
         @Override
-        public PropertyObjectInstance getPropertyObjectInstance() {
+        public PropertyObjectInstance getReaderProperty() {
             return propertiesAggrLast.get(index);
         }
 
         @Override
-        public PropertyDrawInstance getProperty() {
+        public PropertyDrawInstance getAggrProperty() {
             return PropertyDrawInstance.this;
         }
 

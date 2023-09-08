@@ -31,8 +31,8 @@ public abstract class NamedTable extends Table {
         this.name = name;
     }
 
-    protected NamedTable(DataInputStream inStream, BaseClass baseClass) throws IOException {
-        this(inStream.readUTF(), deserializeKeys(inStream), deserializeProperties(inStream), ClassWhere.FALSE(), MapFact.EMPTY());
+    protected NamedTable(DataInputStream inStream, String name, BaseClass baseClass) throws IOException {
+        this(name, deserializeKeys(inStream), deserializeProperties(inStream), ClassWhere.FALSE(), MapFact.EMPTY());
 
         initBaseClasses(baseClass);
     }
@@ -55,6 +55,10 @@ public abstract class NamedTable extends Table {
 
     public void serialize(DataOutputStream outStream) throws IOException {
         outStream.writeUTF(name);
+        outStream.writeBoolean(canonicalName != null);
+        if (canonicalName != null) {
+            outStream.writeUTF(canonicalName);
+        }
         outStream.writeInt(keys.size());
         for(KeyField key : keys)
             key.serialize(outStream);
@@ -75,7 +79,17 @@ public abstract class NamedTable extends Table {
     public String getName() {
         return name;
     }
-
+    
+    protected String canonicalName;
+    
+    public String getCanonicalName() {
+        return canonicalName;
+    }
+    
+    public void setCanonicalName(String canonicalName) {
+        this.canonicalName = canonicalName;
+    }
+    
     public String outputKeys() {
         return ThreadLocalContext.localize("{data.table} : ") + name + ThreadLocalContext.localize(", {data.keys} : ") + classes.getCommonParent(getTableKeys()).toString();
     }

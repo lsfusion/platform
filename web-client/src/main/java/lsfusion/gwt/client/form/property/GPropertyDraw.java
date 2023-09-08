@@ -12,11 +12,7 @@ import lsfusion.gwt.client.classes.GActionType;
 import lsfusion.gwt.client.classes.GClass;
 import lsfusion.gwt.client.classes.GObjectType;
 import lsfusion.gwt.client.classes.GType;
-import lsfusion.gwt.client.classes.data.GFormatType;
-import lsfusion.gwt.client.classes.data.GHTMLTextType;
-import lsfusion.gwt.client.classes.data.GJSONType;
-import lsfusion.gwt.client.classes.data.GLogicalType;
-import lsfusion.gwt.client.classes.data.GLongType;
+import lsfusion.gwt.client.classes.data.*;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
@@ -93,8 +89,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public String tag;
     public String valueElementClass;
     public boolean toolbar;
-
-    public boolean boxed = true;
 
     public GType externalChangeType;
     public Map<String, GAsyncEventExec> asyncExecMap;
@@ -265,6 +259,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return customRenderFunction == null || externalChangeType == null;
     }
 
+    public boolean isCustom() {
+        return customRenderFunction != null;
+    }
+
     public boolean disableInputList;
 
     public GEditBindingMap editBindingMap;
@@ -327,6 +325,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GForegroundReader foregroundReader;
     public GImageReader imageReader;
 
+    public GCommentReader commentReader;
+    public GCommentElementClassReader commentElementClassReader;
+    public GPlaceholderReader placeholderReader;
+
     // for pivoting
     public String formula;
     public ArrayList<GPropertyDraw> formulaOperands;
@@ -355,6 +357,14 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public boolean panelColumnVertical;
     
     public GFlexAlignment valueAlignment;
+
+    public String comment;
+    public String commentElementClass;
+    public boolean panelCommentVertical;
+    public Boolean panelCommentFirst;
+    public GFlexAlignment panelCommentAlignment;
+
+    public String placeholder;
 
     public Boolean changeOnSingleClick;
 
@@ -551,7 +561,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     public boolean canUseChangeValueForRendering(GType type) {
-        return type != null && baseType.getClass() == type.getClass() && !(baseType instanceof GJSONType);
+        return type != null && baseType.getClass() == type.getClass() && !(baseType instanceof GJSONType) && !(baseType instanceof GFileType);
     }
 
     public String getPanelCaption(String caption) {
@@ -684,12 +694,20 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return panelCaptionLast != null ? panelCaptionLast : (isBoolean() && !panelCaptionVertical);
     }
 
+    public boolean isPanelCommentFirst() {
+        return panelCommentFirst != null ? panelCommentFirst : (isBoolean() && !panelCommentVertical);
+    }
+
     public GFlexAlignment getPanelCaptionAlignment() {
         return (panelCaptionAlignment != null && panelCaptionAlignment != GFlexAlignment.STRETCH) ? panelCaptionAlignment : GFlexAlignment.CENTER;
     }
 
     public GFlexAlignment getPanelValueAlignment() {
         return baseType instanceof GLogicalType && isTagInput() ? GFlexAlignment.CENTER : GFlexAlignment.STRETCH; // we don't want to stretch input, since it's usually has fixed size
+    }
+
+    public GFlexAlignment getPanelCommentAlignment() {
+        return (panelCommentAlignment != null && panelCommentAlignment != GFlexAlignment.STRETCH) ? panelCommentAlignment : GFlexAlignment.CENTER;
     }
 
     public GFlexAlignment getAlignment() {
@@ -754,10 +772,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         if (valueWidth >= 0)
             return GSize.getValueSize(valueWidth);
 
-        if(!needNotNull && autoSize && valueWidth == -1)
+        if(!needNotNull && autoSize && valueWidth == -1 && charWidth == 0)
             return null;
 
-        return baseType.getDefaultWidth(getFont(parentFont), this, needNotNull, globalCaptionIsDrawn);
+        return baseType.getValueWidth(getFont(parentFont), this, needNotNull, globalCaptionIsDrawn);
     }
 
     // not null
@@ -765,10 +783,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         if (valueHeight >= 0)
             return GSize.getValueSize(valueHeight);
 
-        if(!needNotNull && autoSize && valueHeight == -1)
+        if(!needNotNull && autoSize && valueHeight == -1 && charHeight == 0)
             return null;
 
-        return baseType.getDefaultHeight(getFont(parentFont), this, needNotNull, globalCaptionIsDrawn);
+        return baseType.getValueHeight(getFont(parentFont), this, needNotNull, globalCaptionIsDrawn);
     }
 
     private GFont getFont(GFont parentFont) {

@@ -31,6 +31,9 @@ import java.nio.charset.Charset;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import static java.lang.Math.pow;
+import static java.lang.Math.round;
+
 public interface Type<T> extends ClassReader<T>, FunctionType {
 
     interface Getter<K> {
@@ -102,8 +105,16 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
 
     Stat getTypeStat(boolean forJoin);
 
+    default int getAverageCharLength() {
+        ExtInt length = getCharLength();
+        if(length.isUnlimited())
+            return 15;
+
+        int lengthValue = length.getValue();
+        return lengthValue <= 12 ? Math.max(lengthValue, 1) : (int) round(12 + pow(lengthValue - 12, 0.7));
+    }
     ExtInt getCharLength();
-    
+
     FlexAlignment getValueAlignment();
 
     T parseDBF(CustomDbfRecord dbfRecord, String fieldName, String charset) throws ParseException, java.text.ParseException, IOException;
@@ -146,7 +157,7 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
 
     T read(Object value);
 
-    default boolean useInputTag(boolean isPanel, boolean useBootstrap) {
+    default boolean useInputTag(boolean isPanel, boolean useBootstrap, boolean hasBackground) {
         return false;
     }
     default boolean hasToolbar(boolean isInputPanel) {

@@ -1,7 +1,5 @@
 package lsfusion.gwt.client.base;
 
-import com.google.gwt.dom.client.Element;
-
 import static lsfusion.gwt.client.view.MainFrame.useBootstrap;
 
 public abstract class BaseStaticImage implements BaseImage {

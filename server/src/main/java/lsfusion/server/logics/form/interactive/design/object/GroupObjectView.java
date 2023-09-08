@@ -79,7 +79,6 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         } else {
             filtersContainer.setType(ContainerType.CONTAINERH);
         }
-        filtersContainer.setAlignment(FlexAlignment.STRETCH);
 
         // behaves weirdly if unset as alignCaptions property sometimes depends on children count, which changes in runtime for filters container
         filtersContainer.setAlignCaptions(false); 
@@ -88,8 +87,7 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
 //        filtersContainer.setCaption(LocalizedString.create(ThreadLocalContext.localize("{form.view.filters.container}")));
 
         filterControls = new FilterControlsView(idGen.idShift());
-        filterControls.setAlignment(FlexAlignment.END);
-        
+
         filters = NFFact.orderSet();
         calculations = new CalculationsView(idGen.idShift());
     }
@@ -172,13 +170,13 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         pool.serializeObject(outStream, calculations);
 
         outStream.writeBoolean(entity.isParent != null);
-        outStream.writeBoolean(pool.context.view.entity.isMap(entity));
-        outStream.writeBoolean(pool.context.view.entity.isCalendarDate(entity));
-        outStream.writeBoolean(pool.context.view.entity.isCalendarDateTime(entity));
-        outStream.writeBoolean(pool.context.view.entity.isCalendarPeriod(entity));
+        outStream.writeBoolean(pool.context.entity.isMap(entity));
+        outStream.writeBoolean(pool.context.entity.isCalendarDate(entity));
+        outStream.writeBoolean(pool.context.entity.isCalendarDateTime(entity));
+        outStream.writeBoolean(pool.context.entity.isCalendarPeriod(entity));
 
         outStream.writeBoolean(pool.context.view.hasHeaders(entity));
-        outStream.writeBoolean(pool.context.view.entity.hasFooters(entity));
+        outStream.writeBoolean(pool.context.entity.hasFooters(entity));
 
         boolean needVScroll;
         if (needVerticalScroll == null) {

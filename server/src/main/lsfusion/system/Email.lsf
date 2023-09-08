@@ -89,13 +89,13 @@ DESIGN account {
     OBJECTS {
         NEW header {
             caption = '{email.form.account}';
-            type = CONTAINERH;
+            horizontal = TRUE;
             MOVE PROPERTY(name(a));
             MOVE PROPERTY(password(a));
             MOVE PROPERTY(disable(a));
         }
         NEW email {
-            type = CONTAINERH;
+            horizontal = TRUE;
             NEW sending {
                 caption = '{email.form.account.sending}';
                 MOVE PROPERTY(smtpHost(a));
@@ -224,7 +224,7 @@ DESIGN mail {
         NEW content {
             fill = 1;
             height = 300;
-            type = TABBED;
+            tabbed = TRUE;
             NEW message {
                 height = 200;
                 caption = '{email.form.mail.caption.message}';
@@ -235,7 +235,7 @@ DESIGN mail {
             NEW attachments {
                 fill = 1;
                 caption = '{email.form.mail.caption.attachments}';
-                type = CONTAINERH;
+                horizontal = TRUE;
                 MOVE BOX(ae) {
                     PROPERTY(filename(ae)) { autoSize = TRUE; }
                     GRID(ae) {

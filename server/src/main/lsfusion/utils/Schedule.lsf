@@ -149,7 +149,7 @@ DESIGN schedule {
             caption = '{schedule.preview}';
             NEW dateCotainer{
                 caption = '{schedule.period}';
-                type = CONTAINERH;
+                horizontal = TRUE;
                 MOVE PROPERTY(dateFrom);
                 MOVE PROPERTY(dateTo);
             }
@@ -206,7 +206,7 @@ DESIGN schedules{
         fill = 1;
         MOVE BOX(s);
         NEW tabbedContainer{
-            type = TABBED;
+            tabbed = TRUE;
             fill=2;
             MOVE BOX(d);
             NEW previewContainer{
@@ -214,7 +214,7 @@ DESIGN schedules{
                 caption = '{schedule.preview}';
                 NEW dateCotainer{
                     caption = '{schedule.period}';
-                    type = CONTAINERH;
+                    horizontal = TRUE;
                     MOVE PROPERTY(dateFrom);
                     MOVE PROPERTY(dateTo);
                 }

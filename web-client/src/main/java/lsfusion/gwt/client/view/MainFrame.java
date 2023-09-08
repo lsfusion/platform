@@ -60,10 +60,14 @@ public class MainFrame implements EntryPoint {
     public static MobileNavigatorView mobileNavigatorView = null;
     public static int mobileAdjustment;
 
+    public static boolean firefox;
+
     // settings    
     public static boolean devMode;
     public static String projectLSFDir;
     public static boolean showDetailedInfo;
+    public static boolean autoReconnectOnConnectionLost;
+    public static int showDetailedInfoDelay;
     public static boolean forbidDuplicateForms;
     public static boolean useBootstrap;
     public static long busyDialogTimeout;
@@ -86,9 +90,9 @@ public class MainFrame implements EntryPoint {
     public static String[] preDefinedDateRangesNames;
 
     public static boolean useTextAsFilterSeparator;
-    
+
     public static boolean verticalNavbar;
-    
+
     public static boolean userFiltersManualApplyMode;
 
     // async dispatch
@@ -121,6 +125,10 @@ public class MainFrame implements EntryPoint {
     }
 
     public void onModuleLoad() {
+        GwtClientUtils.init();
+
+        firefox = GwtClientUtils.isFirefoxUserAgent();
+
         hackForGwtDnd();
 
         GwtClientUtils.setZeroZIndex(RootLayoutPanel.get().getElement());
@@ -505,7 +513,7 @@ public class MainFrame implements EntryPoint {
                     }
                 }
             }
-            
+
             navigatorController.initializeNavigatorViews(navigatorWindows);
 
             List<GAbstractWindow> allWindows = new ArrayList<>();
@@ -574,6 +582,8 @@ public class MainFrame implements EntryPoint {
                 devMode = gClientSettings.devMode;
                 projectLSFDir = gClientSettings.projectLSFDir;
                 showDetailedInfo = gClientSettings.showDetailedInfo;
+                showDetailedInfoDelay = gClientSettings.showDetailedInfoDelay;
+                autoReconnectOnConnectionLost = gClientSettings.autoReconnectOnConnectionLost;
                 forbidDuplicateForms = gClientSettings.forbidDuplicateForms;
                 pivotOnlySelectedColumn = gClientSettings.pivotOnlySelectedColumn;
                 matchSearchSeparator = gClientSettings.matchSearchSeparator;
@@ -586,7 +596,7 @@ public class MainFrame implements EntryPoint {
                 preDefinedDateRangesNames = gClientSettings.preDefinedDateRangesNames;
                 useTextAsFilterSeparator = gClientSettings.useTextAsFilterSeparator;
                 userFiltersManualApplyMode = gClientSettings.userFiltersManualApplyMode;
-                
+
                 verticalNavbar = gClientSettings.verticalNavbar;
 
                 initializeFrame(result.navigatorInfo);

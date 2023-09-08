@@ -52,17 +52,18 @@ public class BaseUtils {
     public static final Logger serviceLogger = Logger.getLogger("ServiceLogger");
 
     //Длина строки может быть маскимум 65535, каждый символ может занимать от 1 до 3х байт
-    //используем пессимистичный вариант, чтобы не заниматься реальным рассчётом длины, т.к. это долго
+    //используем пессимистичный вариант, чтобы не заниматься реальным рассчётом длины, т.к. это долго 
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 241;
+        return 249;
     }
 
     public static String getPlatformVersion() {
         try {
             return org.apache.commons.io.IOUtils.toString(BaseUtils.class.getResourceAsStream("/lsfusion.version"));
         } catch (IOException e) {
+            systemLogger.error("Error reading platform version", e);
             return null;
         }
     }
@@ -94,33 +95,6 @@ public class BaseUtils {
 
     public static int nullHash(Object obj) {
         return obj == null ? 0 : obj.hashCode();
-    }
-
-//
-//    // mapList - zero-based, reverseable, size of list
-//    public static <K> List<K> mapList(Integer[] mapList, List<K> list) {
-//        List<K> result = new ArrayList<>();
-//        for(int i=0,size=list.size();i<size;i++)
-//            result.add(list.get(mapList[i]));
-//        return result;
-//    }
-//
-    // mapList - zero-based, reverseable, size of list
-    public static <K> List<K> mapList(Integer[] mapList, List<K> list) {
-        List<K> result = new ArrayList<>(list.size());
-        for(int i=0,size=list.size();i<size;i++)
-            result.add(null);
-        for(int i=0,size=list.size();i<size;i++)
-            result.set(mapList[i], list.get(i));
-        return result;
-    }
-
-    public static <K, V, F> Map<K, F> filterValues(Map<K, V> map, Collection<F> values) {
-        Map<K, F> result = new HashMap<>();
-        for (Map.Entry<K, V> entry : map.entrySet())
-            if (values.contains(entry.getValue()))
-                result.put(entry.getKey(), (F) entry.getValue());
-        return result;
     }
 
     public static <BK, K extends BK, V> Map<K, V> filterInclKeys(Map<BK, V> map, Set<? extends K> keys) {
@@ -1122,10 +1096,6 @@ public class BaseUtils {
         return result;
     }
 
-    public static <K> List<K> reverse(Iterable<K> col) {
-        return reverse(toList(col));
-    }
-
     public static <K> List<K> reverseThis(List<K> col) {
         Collections.reverse(col);
         return col;
@@ -1274,10 +1244,6 @@ public class BaseUtils {
             this.hash = hash;
         }
 
-        public HashClass(C valueClass) {
-            this(valueClass, 0);
-        }
-
         public boolean calcTwins(TwinImmutableObject o) {
             return hash == ((HashClass) o).hash && valueClass.equals(((HashClass) o).valueClass);
         }
@@ -1420,10 +1386,12 @@ public class BaseUtils {
         return formatRussian(date, false, false);
     }
 
+    @SuppressWarnings({"UnusedDeclaration"})
     public static String formatRussian(Date date, TimeZone timeZone) {
         return formatRussian(date, false, false, timeZone, false);
     }
 
+    @SuppressWarnings({"UnusedDeclaration"})
     public static String formatRussian(Date date, TimeZone timeZone, boolean noYear) {
         return formatRussian(date, false, false, timeZone, noYear);
     }
@@ -1432,10 +1400,12 @@ public class BaseUtils {
         return formatRussian(date, quotes, leadZero, null, false);
     }
 
+    @SuppressWarnings({"UnusedDeclaration"})
     public static String formatRussian(Date date, boolean quotes, boolean leadZero, boolean noYear) {
         return formatRussian(date, quotes, leadZero, null, noYear);
     }
 
+    @SuppressWarnings({"UnusedDeclaration"})
     public static String formatRussian(Date date, boolean quotes, boolean leadZero, TimeZone timeZone) {
         return formatRussian(date, quotes, leadZero, timeZone, false);
     }
@@ -1459,6 +1429,7 @@ public class BaseUtils {
         return formatRussian(date, false, false);
     }
 
+    @SuppressWarnings({"UnusedDeclaration"})
     public static String formatRussian(LocalDate date, boolean noYear) {
         return formatRussian(date, false, false, noYear);
     }
@@ -1569,10 +1540,6 @@ public class BaseUtils {
 
     public static String getFileNameAndExtension(String filename) {
         return FilenameUtils.getName(filename);
-    }
-
-    public static String getFilePath(String filename) {
-        return FilenameUtils.getFullPath(filename);
     }
 
     public static String getFileExtension(File file) {
@@ -1730,10 +1697,6 @@ public class BaseUtils {
         return result;
     }
 
-    public static List<Integer> consecutiveList(int i) {
-        return consecutiveList(i, 1);
-    }
-
     public static <K> FunctionSet<K> merge(FunctionSet<K>... sets) {
         FunctionSet<K> result = sets[0];
         for (int i = 1; i < sets.length; i++)
@@ -1844,21 +1807,8 @@ public class BaseUtils {
         return new SimpleDateFormat(format).format(d);
     }
 
-    public static String dateToString(LocalDate d) {
-        return dateToString("dd/MM/yyyy", d);
-    }
-
     public static String dateToString(String format, LocalDate d) {
         return d != null ? d.format(DateTimeFormatter.ofPattern(format)) : "";
-    }
-
-    public static int indexOf(String string, int ch, int count) {
-        int start = 0;
-        for(int i=0;i<count;i++) {
-            start = string.indexOf(ch, start);
-            if(start < 0) break;
-        }
-        return start;
     }
 
     public static String packWords(String string, int reqLength) {

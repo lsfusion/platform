@@ -55,6 +55,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static javax.swing.BorderFactory.createEmptyBorder;
 import static lsfusion.client.ClientResourceBundle.getString;
 
 public abstract class SwingClientActionDispatcher implements ClientActionDispatcher, DispatcherInterface {
@@ -242,13 +243,8 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         return showFormType;
     }
 
-    public void execute(FormClientAction action) {
+    public void execute(FormClientAction action) throws IOException {
         RemoteFormProxy remoteForm = new RemoteFormProxy(action.remoteForm, RemoteObjectProxy.getRealHostName(getRemote()));
-        if(action.immutableMethods != null) {
-            for (int i = 0; i < FormClientAction.methodNames.length; i++) {
-                remoteForm.setProperty(FormClientAction.methodNames[i], action.immutableMethods[i]);
-            }
-        }
 
         AsyncFormController asyncFormController = getAsyncFormController(getDispatchingIndex());
 
@@ -256,7 +252,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         if (showFormType.isWindow()) {
             beforeModalActionInSameEDT(false);
             Component owner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
-            ClientForm clientForm = ClientFormController.deserializeClientForm(remoteForm);
+            ClientForm clientForm = ClientFormController.deserializeClientForm(remoteForm, action.clientData);
             ClientModalForm form = new ClientModalForm(owner, clientForm.getCaption(), false) {
                 @Override
                 public void hideDialog() {
@@ -264,12 +260,12 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
                     afterModalActionInSameEDT(false);
                 }
             };
-            form.init(action.canonicalName, action.formSID, remoteForm, clientForm, action.firstChanges, showFormType.isDialog(), editEvent);
+            form.init(remoteForm, clientForm, action.clientData, showFormType.isDialog(), editEvent);
             form.showDialog(false);
         } else if (showFormType.isDockedModal()) {
             pauseDispatching();
             beforeModalActionInSameEDT(true);
-            ClientFormDockable blockingForm = MainFrame.instance.runForm(asyncFormController, action.canonicalName, action.formSID, false, remoteForm, action.firstChanges, openFailed -> {
+            ClientFormDockable blockingForm = MainFrame.instance.runForm(asyncFormController, false, remoteForm, action.clientData, openFailed -> {
                 afterModalActionInSameEDT(true);
                 if (!openFailed) {
                     continueDispatching();
@@ -277,7 +273,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
             }, action.formId);
             setBlockingForm(blockingForm);
         } else {
-            MainFrame.instance.runForm(asyncFormController, action.canonicalName, action.formSID, action.forbidDuplicate, remoteForm, action.firstChanges, null, action.formId);
+            MainFrame.instance.runForm(asyncFormController, action.forbidDuplicate, remoteForm, action.clientData, null, action.formId);
         }
     }
 
@@ -463,7 +459,19 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         try {
             if (!action.extended) {
                 JTextPane textPane = SwingUtils.getMessageTextPane(action.message);
-                JOptionPane.showMessageDialog(getDialogParentContainer(), textPane, action.caption, JOptionPane.INFORMATION_MESSAGE);
+                textPane.setCaretPosition(0); //scroll to top
+                JScrollPane scrollPane = new JScrollPane(textPane);
+                scrollPane.setBorder(createEmptyBorder());
+
+                Container parentContainer = getDialogParentContainer();
+
+                int prefWidth = (int) scrollPane.getPreferredSize().getWidth();
+                int prefHeight = (int) scrollPane.getPreferredSize().getHeight();
+                int width = (int) (parentContainer.getWidth() * 0.75);
+                int height = (int) (parentContainer.getHeight() * 0.75);
+                scrollPane.setPreferredSize(new Dimension(Math.min(prefWidth, width), Math.min(prefHeight, height)));
+
+                JOptionPane.showMessageDialog(parentContainer, scrollPane, action.caption, JOptionPane.INFORMATION_MESSAGE);
             } else {
                 new ExtendedMessageDialog(getDialogParentContainer(), action.caption, action.message).setVisible(true);
             }
@@ -595,10 +603,9 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     }
 
     @Override
-    public boolean execute(CopyToClipboardClientAction action) {
+    public void execute(CopyToClipboardClientAction action) {
         if(action.value != null)
             Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(action.value), null);
-        return true;
     }
 
     @Override

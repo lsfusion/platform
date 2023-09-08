@@ -66,7 +66,7 @@ classRename
 	;
 	
 tableRename
-	:	'TABLE' r=sidRename { self.addTableSIDChange($script::version, $r.from, $r.to); }
+	:	'TABLE' r=sidRename { self.addTableCNChange($script::version, $r.from, $r.to); }
 	;
 
 navigatorElementRename

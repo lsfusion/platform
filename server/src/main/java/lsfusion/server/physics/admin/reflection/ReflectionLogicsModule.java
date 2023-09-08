@@ -6,7 +6,6 @@ import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.form.interactive.property.focus.CurrentFormProperty;
@@ -55,6 +54,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LP storedProperty;
     public LP isSetNotNullProperty;
     public LP disableInputListProperty;
+    public LP nameSelectProperty;
     public LP returnProperty;
     public LP classProperty;
     public LP complexityProperty;
@@ -259,6 +259,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         storedProperty = findProperty("stored[Property]");
         isSetNotNullProperty = findProperty("isSetNotNull[Property]");
         disableInputListProperty = findProperty("disableInputList[Property]");
+        nameSelectProperty = findProperty("nameSelect[Property]");
         returnProperty = findProperty("return[Property]");
         classProperty = findProperty("class[Property]");
         complexityProperty = findProperty("complexity[Property]");

@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.object.table.view;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
@@ -105,6 +106,16 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             return PValue.getImageValue(propImages.get(columnKey)); // was converted in convertFileValue
 
         return property.appImage;
+    }
+
+    public static String getDynamicComment(PValue commentObject) {
+        String comment = PValue.getStringValue(commentObject);
+        return comment != null ? comment.trim() : null;
+    }
+
+    public static String getDynamicPlaceholder(PValue placeholderObject) {
+        String placeholder = PValue.getStringValue(placeholderObject);
+        return placeholder != null ? placeholder.trim() : null;
     }
 
     protected GGridPropertyTableHeader getGridHeader(int i) {
@@ -271,7 +282,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     @Override
     protected boolean previewEvent(Element target, Event event) {
-        SmartScheduler.getInstance().flush();
+        if(!DataGrid.checkSinkFocusEvents(event))
+            SmartScheduler.getInstance().flush();
         return form.previewEvent(target, event);
     }
 
@@ -788,8 +800,13 @@ protected Double getUserFlex(int i) {
     public UpdateContext getUpdateContext(Cell cell, Element renderElement, GPropertyDraw property, GridPropertyColumn column) {
         return new UpdateContext() {
             @Override
-            public void changeProperty(PValue result) {
-                form.changeProperty(getEditContext(cell, renderElement), result);
+            public void getAsyncValues(String value, String actionSID, AsyncCallback<GFormController.GAsyncResult> callback) {
+                form.getAsyncValues(value, getEditContext(cell, renderElement), actionSID, callback);
+            }
+
+            @Override
+            public void changeProperty(PValue changeValue, GFormController.ChangedRenderValueSupplier renderValueSupplier) {
+                form.changeProperty(getEditContext(cell, renderElement), changeValue, renderValueSupplier);
             }
 
             @Override

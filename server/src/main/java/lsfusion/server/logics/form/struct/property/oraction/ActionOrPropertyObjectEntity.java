@@ -72,5 +72,5 @@ public abstract class ActionOrPropertyObjectEntity<P extends PropertyInterface, 
             return new ActionObjectEntity<>((Action<I>) property, map, creationScript, creationPath, path);
     }
 
-    public abstract <X extends PropertyInterface> PropertyObjectEntity<?> getDrawProperty(PropertyObjectEntity<X> readOnly);
+    public abstract <X extends PropertyInterface> PropertyObjectEntity<?> getProperty(PropertyObjectEntity<X> readOnly);
 }

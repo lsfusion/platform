@@ -32,16 +32,7 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends Re
     }
 
     public byte[] getNavigatorTree() throws RemoteException {
-        try {
-            return callImmutableMethod("getNavigatorTree", new Callable<byte[]>() {
-                @Override
-                public byte[] call() throws Exception {
-                    return target.getNavigatorTree();
-                }
-            });
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
+        return target.getNavigatorTree();
     }
 
     @Override

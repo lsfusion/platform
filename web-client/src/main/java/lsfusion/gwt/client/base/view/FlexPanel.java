@@ -13,6 +13,8 @@ import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabBar;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 import lsfusion.gwt.client.form.object.table.TableContainer;
+import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyValue;
+import lsfusion.gwt.client.navigator.view.NavigatorPanel;
 import lsfusion.gwt.client.navigator.view.ToolbarPanel;
 import lsfusion.gwt.client.navigator.window.view.FlexWindowElement;
 import lsfusion.gwt.client.navigator.window.view.TabbedWindowElement;
@@ -20,6 +22,7 @@ import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static lsfusion.gwt.client.base.resize.ResizeHandler.ANCHOR_WIDTH;
@@ -574,6 +577,13 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
             return widget.getElement();
         }
 
+        public boolean supportsBorder() {
+            for(Widget widget : widgets)
+                if(!FlexPanel.supportsBorder(widget))
+                    return false;
+            return true;
+        }
+
         public void drawBorder(Border border, boolean start, boolean vertical) {
             for(Widget widget : widgets)
                 FlexPanel.drawBorder(widget, border, start, vertical);
@@ -636,6 +646,10 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
                                 result = new PanelParams(result.top, result.bottom, result.left, result.right, result.hasBorders, vertical ? innerAlignment : result.horzAlignment, vertical ? result.vertAlignment : innerAlignment, result.vertCollapsed, result.empty);
                             }
                             return result;
+                        }
+
+                        public boolean supportsBorder() {
+                            return FlexPanel.supportsBorder(widget);
                         }
 
                         @Override
@@ -761,6 +775,9 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
     // filter visible (!)
     private List<FlexLine> getLines(Integer oppositePosition) {
+        return getLines(oppositePosition, null);
+    }
+    private List<FlexLine> getLines(Integer oppositePosition, Consumer<Widget> popupOverProcessor) {
         int lines = gridLines != null ? gridLines.getCount() : 1;
 
         List<FlexLine> result = new ArrayList<>();
@@ -771,15 +788,20 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
                     (!wrap || oppositePosition == null ||
                             ResizeHandler.getAbsolutePosition(widget.getElement(), !vertical, true) <= oppositePosition &&
                             ResizeHandler.getAbsolutePosition(widget.getElement(), !vertical, false) >= oppositePosition)) {
-                int widgetSpan = ((WidgetLayoutData) widget.getLayoutData()).span;
-                if (currentLineSpan > 0 && currentLineSpan + widgetSpan > lines) { // we need a new line
-                    result.add(new FlexLine(currentLine));
+                if(ToolbarPanel.isPopupOver(widget)) {
+                    if(popupOverProcessor != null)
+                        popupOverProcessor.accept(widget);
+                } else {
+                    int widgetSpan = ((WidgetLayoutData) widget.getLayoutData()).span;
+                    if (currentLineSpan > 0 && currentLineSpan + widgetSpan > lines) { // we need a new line
+                        result.add(new FlexLine(currentLine));
 
-                    currentLine = new ArrayList<>();
-                    currentLineSpan = 0;
+                        currentLine = new ArrayList<>();
+                        currentLineSpan = 0;
+                    }
+                    currentLine.add(widget);
+                    currentLineSpan += widgetSpan;
                 }
-                currentLine.add(widget);
-                currentLineSpan += widgetSpan;
             }
         if(currentLineSpan > 0)
             result.add(new FlexLine(currentLine));
@@ -1159,17 +1181,24 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
         PanelParams updatePanels();
 
+        boolean supportsBorder();
         void drawBorder(Border border, boolean start, boolean vertical);
         void clearBorder(boolean start, boolean vertical);
         void drawWrapBorder(Border border);
         void clearWrapBorder();
     }
 
+    public static boolean supportsBorder(Widget widget) {
+        // some leaf components don't like margin / padding / borders, because they have their own and doesn't like setting padding for example (in particular ActionOrPropertyValue toolbar is stretched above the input to the border)
+        // so we use the following hack: we are just not drawing the border for such components
+        return !(widget instanceof ActionOrPropertyValue);
+    }
+
     public static PanelParams updatePanels(Widget widget) {
         // in a way similar to getParentSameFlexPanel (in web we assume that all intermediate panels are FlexPanel, in desktop we should do a recursion)
         if (widget instanceof FlexPanel && !(widget instanceof FormsController.Panel)) {
             FlexPanel flexPanel = (FlexPanel) widget;
-            List<FlexLine> lines = flexPanel.getLines(null);
+            List<FlexLine> lines = flexPanel.getLines(null, FlexPanel::updatePanels);
             boolean vertical = flexPanel.vertical;
             boolean grid = flexPanel.isGrid();
             boolean wrap = flexPanel.wrap;
@@ -1183,10 +1212,16 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
             boolean collapsed = flexPanel instanceof CollapsiblePanel && ((CollapsiblePanel) flexPanel).collapsed;
             Border top = null;
             Border rest = null;
-            if ((widget instanceof FlexWindowElement.Panel || widget instanceof TabbedWindowElement.Panel) && ToolbarPanel.hasBorder(widget)) {
-                top = Border.HAS_MARGIN;
-                rest = Border.HAS_MARGIN;
-            } else if (flexPanel instanceof CaptionPanel) {
+            if ((widget instanceof FlexWindowElement.Panel || widget instanceof TabbedWindowElement.Panel)) {
+                if(ToolbarPanel.hasBorder(widget)) {
+                    top = Border.HAS_MARGIN;
+                    rest = Border.HAS_MARGIN;
+
+                    widget.addStyleName("nav-has-bg");
+                } else
+                    widget.removeStyleName("nav-has-bg");
+            }
+            if(top == null && flexPanel instanceof CaptionPanel) {
                 if (((CaptionPanel) flexPanel).border) {
                     top = Border.HAS;
                     rest = Border.HAS;
@@ -1194,7 +1229,8 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
                     top = Border.HAS_MARGIN; // captioned not bordered container already "margined" (with min-height, label paddings)
                     rest = Border.NEED;
                 }
-            } else if (flexPanel instanceof FlexTabbedPanel) {
+            }
+            if (top == null && flexPanel instanceof FlexTabbedPanel) {
                 top = Border.HAS_MARGIN; // .nav-tabs-vert has top padding
                 rest = Border.NEED;
             }
@@ -1216,11 +1252,23 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
                     top = Border.HAS;
                 else
                     bottom = Border.HAS;
-            } else if (widget instanceof ToolbarPanel || widget instanceof FormsController.Panel) {
+            } else if (widget instanceof NavigatorPanel || widget instanceof FormsController.Panel) {
                 // toolbarPanel has paddings / margins with the nav-expand (however they are inner paddings, so we might want to have more paddings, but considering that toolbars has no innerborders and scrollable it would be better to have no more paddings)
                 // Forms.Panel has paddings / margins (with form-shrink-padded-container and the same rule for the tabs bar)
-                top = bottom = left = right = ToolbarPanel.hasBorder(widget) ? Border.HAS_MARGIN :
-                        Border.NEED; // actually we need something like NEED_MARGIN here. Moreover hasBackgroundClasses should be used for all the widgets and convert NEED to NEED_MARGIN when there is a background (however it will require some refactoring so we'll do it later)
+                if(ToolbarPanel.hasBorder(widget)) {
+                    top = bottom = left = right = Border.HAS_MARGIN;
+                    widget.addStyleName("nav-has-bg");
+                } else {
+                    top = bottom = left = right = Border.NEED; // actually we need something like NEED_MARGIN here. Moreover hasBackgroundClasses should be used for all the widgets and convert NEED to NEED_MARGIN when there is a background (however it will require some refactoring so we'll do it later)
+                    widget.removeStyleName("nav-has-bg");
+                }
+                if(widget instanceof NavigatorPanel) {
+                    ResizableComplexPanel panel = ((NavigatorPanel) widget).panel;
+                    if(ToolbarPanel.isPopupOver(widget))
+                        panel.addStyleName("background-inherit");
+                    else
+                        panel.removeStyleName("background-inherit");
+                }
             }
 
             if(widget instanceof CaptionPanelHeader) { // need this to auto stretch this headers
@@ -1348,10 +1396,12 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
                         left = childParams.left;
                 }
 
-                childLine.clearBorder(false, vertical); // clear all
-                childLine.clearBorder(true, vertical); // clear all
-                childLine.drawBorder(drawBorder, true, vertical);
-                if(prevLine != null)
+                if(childLine.supportsBorder()) {
+                    childLine.clearBorder(false, vertical); // clear all
+                    childLine.clearBorder(true, vertical); // clear all
+                    childLine.drawBorder(drawBorder, true, vertical);
+                }
+                if(prevLine != null && prevLine.supportsBorder())
                     prevLine.drawBorder(drawBorder, false, vertical);
 
                 prevLine = childLine;
@@ -1373,8 +1423,10 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
             for (int i = 1, linesSize = lines.size(); i < linesSize; i++) {
                 FlexStretchLine line = lines.get(i);
-                line.clearWrapBorder();
-                line.drawWrapBorder(drawWrapHorzBorder);
+                if(line.supportsBorder()) {
+                    line.clearWrapBorder();
+                    line.drawWrapBorder(drawWrapHorzBorder);
+                }
             }
             // maybe something should be done for vertical direction (bottom, top), but there is no obvious heuristics for that
         } else {
@@ -1439,22 +1491,13 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
                     impl.setPreferredSize(set, widget.getElement(), flex, vertical, isGrid());
 
                 // opposite direction (dropping size / shrink)
-                SizedFlexPanel.setIntrinisticPreferredWidth(set, widget);
+                SizedFlexPanel.setIntrinisticPreferredSize(set, true, widget);
+                SizedFlexPanel.setIntrinisticPreferredSize(set, false, widget);
 
                 if (widget instanceof HasMaxPreferredSize)
                     ((HasMaxPreferredSize) widget).setPreferredSize(set, grids);
             }
         }
-    }
-
-    public void setChildPreferredSize(boolean set, Widget widget) {
-        // main direction (dropping size / shrink)
-        FlexLayoutData flex = ((WidgetLayoutData) widget.getLayoutData()).flex;
-        if (flex.baseFlexBasis != null || flex.shrink)
-            impl.setPreferredSize(set, widget.getElement(), flex, vertical, isGrid());
-
-        // opposite direction (dropping size / shrink)
-        SizedFlexPanel.setIntrinisticPreferredWidth(set, widget);
     }
 
     @Override

@@ -33,7 +33,6 @@ import lsfusion.server.data.query.build.QueryBuilder;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
-import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsInstance;
@@ -45,17 +44,18 @@ import lsfusion.server.logics.classes.data.time.DateTimeClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.controller.remote.RemoteForm;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.interactive.listener.FocusListener;
 import lsfusion.server.logics.form.interactive.listener.RemoteFormListener;
+import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.navigator.*;
 import lsfusion.server.logics.navigator.changed.NavigatorChanges;
 import lsfusion.server.logics.navigator.controller.context.RemoteNavigatorContext;
-import lsfusion.server.logics.navigator.controller.env.ChangesController;
-import lsfusion.server.logics.navigator.controller.env.ChangesObject;
-import lsfusion.server.logics.navigator.controller.env.ClassCache;
-import lsfusion.server.logics.navigator.controller.env.FormController;
+import lsfusion.server.logics.navigator.controller.env.*;
+import lsfusion.server.logics.navigator.controller.env.*;
 import lsfusion.server.logics.navigator.controller.manager.NavigatorsManager;
 import lsfusion.server.logics.navigator.window.AbstractWindow;
 import lsfusion.server.logics.property.Property;
@@ -95,6 +95,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     private String currentForm;
 
     private boolean useBootstrap;
+    private boolean isNative;
 
     private DataObject connection;
 
@@ -119,7 +120,11 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
         this.classCache = new ClassCache();
 
+        remoteContext = new ConnectionContext(isUseBootstrap());
+
         this.client = new ClientCallBackController(port, toString(), this::updateLastUsedTime);
+        ClientType clientType = navigatorInfo.clientType;
+        this.isNative = clientType == ClientType.NATIVE_DESKTOP || clientType == ClientType.NATIVE_MOBILE;
 
         createPausablesExecutor();
 
@@ -131,11 +136,11 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     protected void initUserContext(String hostName, String remoteAddress, String clientLanguage, String clientCountry, TimeZone clientTimeZone, String clientDateFormat, String clientTimeFormat,
                                    String clientColorTheme, ExecutionStack stack, DataSession session) throws SQLException, SQLHandledException {
         super.initUserContext(hostName, remoteAddress, clientLanguage, clientCountry, clientTimeZone, clientDateFormat, clientTimeFormat, clientColorTheme, stack, session);
-
-        useBootstrap = businessLogics.systemEventsLM.useBootstrap.read(session, user) != null;
+        DataObject designEnv = businessLogics.authenticationLM.storeNavigatorSettingsForComputer.read(session) != null ? computer : user;
+        useBootstrap = businessLogics.systemEventsLM.useBootstrap.read(session, designEnv) != null;
         localePreferences = readLocalePreferences(session, user, businessLogics, clientTimeZone, clientDateFormat, clientTimeFormat, stack);
         securityPolicy = logicsInstance.getSecurityManager().getSecurityPolicy(session, user);
-        saveClientColorTheme(session, user, businessLogics, clientColorTheme, stack);
+        saveClientColorTheme(session, designEnv, businessLogics, clientColorTheme, stack);
     }
 
     private static void saveClientTimeZone(DataSession session, DataObject user, BusinessLogics businessLogics, TimeZone clientTimeZone, String clientDateFormat, String clientTimeFormat, ExecutionStack stack) throws SQLException, SQLHandledException {
@@ -147,9 +152,9 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         }
     }
 
-    private static void saveClientColorTheme(DataSession session, DataObject user, BusinessLogics businessLogics, String clientColorTheme, ExecutionStack stack) throws SQLException, SQLHandledException {
+    private static void saveClientColorTheme(DataSession session, DataObject designEnv, BusinessLogics businessLogics, String clientColorTheme, ExecutionStack stack) throws SQLException, SQLHandledException {
         if(clientColorTheme != null) {
-            businessLogics.authenticationLM.clientColorTheme.change(businessLogics.authenticationLM.colorTheme.getDataObject(clientColorTheme), session, user);
+            businessLogics.authenticationLM.clientColorTheme.change(businessLogics.authenticationLM.colorTheme.getDataObject(clientColorTheme), session, designEnv);
             session.applyException(businessLogics, stack);
         }
     }
@@ -196,6 +201,10 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
     public boolean isUseBootstrap() {
         return useBootstrap;
+    }
+
+    public boolean isNative() {
+        return isNative;
     }
 
     public long getLastUsedTime() {
@@ -379,22 +388,22 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     }
 
     @Override
-    public Long getObject(CustomClass cls) {
-        return getCacheObject(cls);
+    public Long getObject(CustomClass cls, FormEntity form, GroupObjectEntity groupObject) {
+        return getCacheObject(cls, form, groupObject);
     }
 
-    public void objectChanged(ConcreteCustomClass cls, long objectID) {
-        addCacheObject(cls, objectID);
+    public void objectChanged(ConcreteCustomClass cls, FormEntity form, GroupObjectEntity groupObject, long objectID) {
+        addCacheObject(cls, form, groupObject, objectID);
     }
 
     private ClassCache classCache;
 
-    private Long getCacheObject(CustomClass cls) {
-        return classCache.getObject(cls);
+    private Long getCacheObject(CustomClass cls, FormEntity form, GroupObjectEntity groupObject) {
+        return classCache.getObject(cls, form, groupObject);
     }
 
-    public void addCacheObject(ConcreteCustomClass cls, long value) {
-        classCache.put(cls, value);
+    public void addCacheObject(ConcreteCustomClass cls, FormEntity form, GroupObjectEntity groupObject, long value) {
+        classCache.put(cls, form, groupObject, value);
     }
 
     public DataObject getUser() {
@@ -437,7 +446,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             
             dataStream.writeInt(elementsCount);
             for (NavigatorElement element : elements.keyIt()) {
-                element.serialize(dataStream);
+                element.serialize(getRemoteContext(), dataStream);
             }
             
             for (List<String> children : elements.valueIt()) {
@@ -525,7 +534,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     public byte[] getNavigatorChangesByteArray(boolean refresh) {
         try {
             NavigatorChanges navigatorChanges = getChanges(refresh);
-            return navigatorChanges.serialize();
+            return navigatorChanges.serialize(getRemoteContext());
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
@@ -593,6 +602,10 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         return new NavigatorChanges(changes);
     }
 
+    private final ConnectionContext remoteContext;
+    public ConnectionContext getRemoteContext() {
+        return remoteContext;
+    }
 
     @Override
     public Pair<RemoteFormInterface, String> createFormExternal(String json) {
@@ -606,7 +619,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         }
         script += "run() { SHOW " + name + "; }";
 
-        RemoteForm remoteForm;
+        RemoteForm<?> remoteForm;
 
         RemoteNavigatorContext navigatorContext = (RemoteNavigatorContext) this.context;
         navigatorContext.pushGetForm();
@@ -619,10 +632,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             remoteForm = navigatorContext.popGetForm();
         }
 
-        JSONObject result = new JSONObject();
-        result.put("initial", remoteForm.getFormChangesExternal(getStack()).get("modify"));
-        result.put("meta", remoteForm.getMetaExternal().serialize());
-        return new Pair<>(remoteForm, result.toString());
+        return remoteForm.getFormExternal(getStack());
     }
 
     private void runNotification(ExecutionEnvironment env, ExecutionStack stack, String actionSID) {

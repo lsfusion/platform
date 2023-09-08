@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property.implement;
 
+import lsfusion.base.Pair;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.data.expr.Expr;
@@ -58,10 +59,15 @@ public interface PropertyInterfaceImplement<P extends PropertyInterface> extends
 
     ActionMapImplement<?, P> mapEventAction(String eventSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction);
 
-    boolean mapIsNotNull();
+    Property.Select<P> mapSelect(ImList<Property> viewProperties, boolean forceSelect);
+    boolean mapValueUnique(ImMap<P, StaticParamNullableExpr> fixedExprs, boolean optimistic);
+
+    boolean mapIsDrawNotNull();
     boolean mapHasAlotKeys();
     int mapEstComplexity();
-    
+
+    Pair<PropertyInterfaceImplement<P>, PropertyInterfaceImplement<P>> getIfProp();
+
     ImSet<DataProperty> mapChangeProps();
     boolean mapHasPreread(PropertyChanges propertyChanges);
     boolean mapHasPreread(Modifier modifier) throws SQLException, SQLHandledException;
@@ -78,6 +84,7 @@ public interface PropertyInterfaceImplement<P extends PropertyInterface> extends
     ExClassSet mapInferValueClass(ImMap<P, ExClassSet> inferred, InferType inferType);
 
     boolean mapIsFull(ImSet<P> interfaces);
+    boolean mapHasNoGridReadOnly(ImSet<P> gridInterfaces);
 
     AndClassSet mapValueClassSet(ClassWhere<P> interfaceClasses);
 

@@ -2,12 +2,16 @@ MODULE Authentication;
 
 REQUIRE Time, Utils;
 
+CLASS DesignEnv;
+name '{authentication.name}'= ABSTRACT ISTRING(DesignEnv);
+
 // ------------------------- Computers ---------------------- //
 
-CLASS Computer '{authentication.computer}';
+CLASS Computer '{authentication.computer}' : DesignEnv;
 TABLE computer (Computer);
 
 hostname '{authentication.host.name.computer}' = DATA ISTRING[100] (Computer) CHARWIDTH 10 IN id;
+name(Computer c) += hostname(c);
 computer = GROUP LAST Computer computer ORDER computer BY hostname(computer);
 
 FORM computer '{authentication.computer}'
@@ -58,7 +62,7 @@ contact (email) = GROUP MAX Contact contact BY email(contact);
 
 // User
 
-CLASS ABSTRACT User '{authentication.user}';
+CLASS ABSTRACT User '{authentication.user}' : DesignEnv;
 TABLE user (User);
 
 CLASS SystemUser '{authentication.system.user}' : User;
@@ -73,6 +77,7 @@ name '{authentication.name.user}' (CustomUser user) = name[User](user AS CustomU
 
 // login
 login '{authentication.login}' = DATA ISTRING[100] (CustomUser) CHARWIDTH 15;
+name(CustomUser c) += login(c);
 customUserLower (login) = GROUP AGGR CustomUser customUser WHERE customUser IS CustomUser BY ISTRING[100](lower(login(customUser)));
 customUserNormalized (ISTRING[100] login) = customUserLower(ISTRING[100](lower(login)));
 logName (CustomUser user) = OVERRIDE name(user), login(user);
@@ -264,20 +269,24 @@ resetPassword(JSONFILE input) {
     IMPORT FROM input FIELDS STRING userNameOrEmail DO {
         LOCAL token = STRING();
         LOCAL NESTED success = BOOLEAN();
-        LOCAL NESTED href = STRING();
+        LOCAL NESTED subject = STRING();
+        LOCAL NESTED body = STRING();
         LOCAL NESTED email = STRING();
         TRY {
             FOR email(CustomUser cu) == userNameOrEmail OR login(cu) == userNameOrEmail DO {
                 token() <- randomUUID();
                 passwordResetToken(cu) <- token();
                 expiryPasswordResetTokenDate(cu) <- currentDateTime();
-                href() <- CONCAT '', '<a href="', webPath(), '/change-password', '?token=', token(), IF query() != '' THEN (CONCAT '', '&', query()), '"> {password.reset} - ', login(cu), '</a>';
+                FOR STRING href = CONCAT '', webPath(), '/change-password', '?token=', token(), IF query() != '' THEN (CONCAT '', '&', query()) DO {
+                    subject() <- '$I{resetPasswordSubject.html}';
+                    body() <- '$I{resetPasswordBody.html}';    
+                }
                 APPLY;
                 IF NOT canceled() THEN {
                     EMAIL 
-                        SUBJECT '{password.reset.email.subject} '
+                        SUBJECT subject()
                         TO email(cu)
-                        BODY href();
+                        BODY body();
                     success() <- TRUE;
                 }
                 email() <- email(cu);
@@ -380,8 +389,8 @@ country '{authentication.country.user}' (CustomUser user) = IF useClientLocale(u
                                                                 THEN clientCountry(user)
                                                                 ELSE IF userLanguage(user) THEN userCountry(user) ELSE IF defaultUserLanguage() THEN defaultUserCountry() ELSE serverCountry();
 
-dateFormat '{authentication.date.format.user}' (CustomUser user) = OVERRIDE (clientDateFormat(user) IF useClientDateTimeFormat(user)), userDateFormat(user), defaultUserDateFormat(), serverDateFormat();
-timeFormat '{authentication.time.format.user}' (CustomUser user) = OVERRIDE (clientTimeFormat(user) IF useClientDateTimeFormat(user)), userTimeFormat(user), defaultUserTimeFormat(), serverTimeFormat();
+dateFormat (CustomUser user) = OVERRIDE (clientDateFormat(user) IF useClientDateTimeFormat(user)), userDateFormat(user), defaultUserDateFormat(), serverDateFormat();
+timeFormat (CustomUser user) = OVERRIDE (clientTimeFormat(user) IF useClientDateTimeFormat(user)), userTimeFormat(user), defaultUserTimeFormat(), serverTimeFormat();
 
 lsfParams(STRING s) += country(currentUser()) IF s = 'googleMapAutocompleteCountry';
 lsfParams(STRING s) += language(currentUser()) IF s = 'googleGeocodingLanguage';
@@ -400,22 +409,30 @@ getCurrentUserLocale() {
 
 fontSize '{authentication.font.size.user}' = DATA INTEGER (CustomUser); 
 
+storeNavigatorSettingsForComputer '{system.events.navigator.store.settings.for.computer}' = DATA BOOLEAN ();
+WHEN CHANGED(storeNavigatorSettingsForComputer()) DO {
+    reload();
+}
+
+currentDesignEnv = IF storeNavigatorSettingsForComputer() THEN currentComputer() ELSE currentUser();
+
 CLASS ColorTheme '{authentication.color.theme}' {
     light '{authentication.color.theme.light}',
     dark '{authentication.color.theme.dark}'
 }
 TABLE colorTheme(ColorTheme);
-userColorTheme '{authentication.color.theme.user}' (CustomUser user) = DATA ColorTheme (CustomUser);
-clientColorTheme '{authentication.color.theme.user}' = DATA ColorTheme (CustomUser);
-colorTheme '{authentication.color.theme.user}' (CustomUser user) = OVERRIDE userColorTheme(user), clientColorTheme(user);  
+designEnvColorTheme '{authentication.color.theme}' (DesignEnv) = DATA ColorTheme (DesignEnv);
+currentColorTheme = designEnvColorTheme(currentDesignEnv());
+clientColorTheme '{authentication.color.theme}' = DATA ColorTheme (DesignEnv);
+colorTheme '{authentication.color.theme}' (DesignEnv designEnv) = OVERRIDE designEnvColorTheme(designEnv), clientColorTheme(designEnv);
 name '{authentication.color.theme}' (ColorTheme theme) = staticCaption(theme) IF theme IS ColorTheme;
-colorThemeName '{authentication.color.theme.user}' (CustomUser user) = name(userColorTheme(user));
+colorThemeName '{authentication.color.theme}' (DesignEnv designEnv) = name(designEnvColorTheme(designEnv));
 
-isDarkTheme() = colorTheme(currentUser()) == ColorTheme.dark;
+isDarkTheme() = colorTheme(currentDesignEnv()) == ColorTheme.dark;
 
 changeColorThemeAction INTERNAL 'lsfusion.server.logics.navigator.ChangeColorThemeAction'(ColorTheme) NULL;
-WHEN CHANGED(userColorTheme(CustomUser user)) DO {
-    changeColorThemeAction(colorTheme(user));    
+WHEN CHANGED(designEnvColorTheme(DesignEnv designEnv)) DO {
+    changeColorThemeAction(colorTheme(designEnv));    
 }
 
 FORM dialogColorThemes '{authentication.color.themes}'
@@ -489,13 +506,13 @@ DESIGN customUser {
                 MOVE BOX(u);
             }
             NEW details {
-                type = TABBED;
+                tabbed = TRUE;
                 fill = 3;
             }
         }
     }
     NEW container BEFORE TOOLBARBOX {
-        type = CONTAINERH;
+        horizontal = TRUE;
         fill = 1;
         MOVE BOX(u) {
             flex = 0.3;
@@ -550,7 +567,7 @@ FORM customUsers '{authentication.users}'
 DESIGN customUsers {
     OBJECTS {
         NEW pane {
-            type = TABBED;
+            tabbed = TRUE;
             fill = 1;
             NEW users {
                 caption = '{authentication.users}';
@@ -559,7 +576,7 @@ DESIGN customUsers {
             NEW locale {
                 caption = '{authentication.locale}';
                 NEW headerLocale {
-                    type = CONTAINERH;
+                    horizontal = TRUE;
                     MOVE PROPERTY(defaultUserLanguage());
                     MOVE PROPERTY(defaultUserCountry());
                     MOVE PROPERTY(defaultUserTimezone());
@@ -817,7 +834,7 @@ DESIGN changePasswordUser {
                 fontSize = 14;
             }
             NEW newPass1 {
-                type = CONTAINERH;
+                horizontal = TRUE;
                 fill = 1;
                 MOVE PROPERTY(valueNew1){
                     caption = '{authentication.change.password.new}';
@@ -831,7 +848,7 @@ DESIGN changePasswordUser {
                 }
             }
             NEW newPass2 {
-                type = CONTAINERH;
+                horizontal = TRUE;
                 fill = 1;
                 MOVE PROPERTY(valueNew2){
                     caption = '{authentication.change.password.repeat}';

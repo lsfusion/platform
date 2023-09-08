@@ -19,6 +19,8 @@ public class ClientSettings implements Serializable {
     public boolean devMode;
     public String projectLSFDir;
     public boolean showDetailedInfo;
+    public boolean autoReconnectOnConnectionLost;
+    public int showDetailedInfoDelay;
     public boolean forbidDuplicateForms;
     public boolean showNotDefinedStrings;
     public boolean pivotOnlySelectedColumn;
@@ -30,18 +32,20 @@ public class ClientSettings implements Serializable {
     public boolean useTextAsFilterSeparator;
     public List<Pair<String, RawFileData>> mainResourcesBeforeSystem;
     public List<Pair<String, RawFileData>> mainResourcesAfterSystem;
-    
+
     public boolean verticalNavbar;
     public boolean userFiltersManualApplyMode;
+    public int maxRequestQueueSize;
 
 
     public ClientSettings(LocalePreferences localePreferences, String currentUserName, Integer fontSize, boolean busyDialog,
                           long busyDialogTimeout, boolean useRequestTimeout, boolean devMode, String projectLSFDir,
-                          boolean showDetailedInfo, boolean forbidDuplicateForms, boolean showNotDefinedStrings,
+                          boolean showDetailedInfo, int showDetailedInfoDelay, boolean autoReconnectOnConnectionLost, boolean forbidDuplicateForms, boolean showNotDefinedStrings,
                           boolean pivotOnlySelectedColumn, String matchSearchSeparator,
                           ColorTheme colorTheme, boolean useBootstrap, ColorPreferences colorPreferences, String[] preDefinedDateRangesNames,
-                          boolean useTextAsFilterSeparator, List<Pair<String, RawFileData>> mainResourcesBeforeSystem, 
-                          List<Pair<String, RawFileData>> mainResourcesAfterSystem, boolean verticalNavbar, boolean userFiltersManualApplyMode) {
+                          boolean useTextAsFilterSeparator, List<Pair<String, RawFileData>> mainResourcesBeforeSystem,
+                          List<Pair<String, RawFileData>> mainResourcesAfterSystem, boolean verticalNavbar, boolean userFiltersManualApplyMode,
+                          int maxRequestQueueSize) {
         this.localePreferences = localePreferences;
         this.currentUserName = currentUserName;
         this.fontSize = fontSize;
@@ -51,6 +55,8 @@ public class ClientSettings implements Serializable {
         this.devMode = devMode;
         this.projectLSFDir = projectLSFDir;
         this.showDetailedInfo = showDetailedInfo;
+        this.autoReconnectOnConnectionLost = autoReconnectOnConnectionLost;
+        this.showDetailedInfoDelay = showDetailedInfoDelay;
         this.forbidDuplicateForms = forbidDuplicateForms;
         this.showNotDefinedStrings = showNotDefinedStrings;
         this.pivotOnlySelectedColumn = pivotOnlySelectedColumn;
@@ -64,5 +70,6 @@ public class ClientSettings implements Serializable {
         this.mainResourcesAfterSystem = mainResourcesAfterSystem;
         this.verticalNavbar = verticalNavbar;
         this.userFiltersManualApplyMode = userFiltersManualApplyMode;
+        this.maxRequestQueueSize = maxRequestQueueSize;
     }
 }

@@ -1,46 +1,71 @@
 
-.panelRendererValueBoxed, .panelRendererValueBoxed .background-inherit {
+/*common scheme*/
+.cell-with-background,
+.cell-with-background .background-inherit,
+/*hack to increase selectivity*/
+.cell-with-background.form-control,
+.cell-with-background.form-control .background-inherit,
+.cell-with-background > .form-control,
+.cell-with-background > .form-control .background-inherit,
+.cell-with-background.prop-input-w-toolbar .background-inherit {
+    background-color: var(--bs-table-bg);
+}
+
+.form-control,
+.form-control .background-inherit,
+.prop-input-w-toolbar .background-inherit { /* need this because toolbar is shown over form-control, but it is its sibling and not its child, assert that there is form-control inside */
     background: var(--component-background-color);
 }
 
-.panelRendererValueBoxed {
+.form-control {
     border: 1px solid var(--component-border-color); /* should correspond to the result in ActionOrPropertyValue.setBaseSize */
-}
-
-.propertyPanelRendererValue.panelRendererValueBoxed {
     border-radius: var(--textfield-border-radius);
-    overflow: hidden; /* to hide inner corners */
 }
 
-.actionPanelRendererValue.panelRendererValueBoxed {
-    border-radius: var(--button-border-radius);
-}
-
-.panelRendererValueFocused.panelRendererValueBoxed:not(.panelRendererValueEdited),
-.panelRendererValueFocused.panelRendererValueBoxed:not(.panelRendererValueEdited) .background-inherit, button:focus {
+.panelRendererValueFocused:not(.panelRendererValueEdited).form-control,
+.panelRendererValueFocused:not(.panelRendererValueEdited).form-control .background-inherit,
+.panelRendererValueFocused:not(.panelRendererValueEdited) > .form-control,
+.panelRendererValueFocused:not(.panelRendererValueEdited) > .form-control .background-inherit,
+.panelRendererValueFocused:not(.panelRendererValueEdited).prop-input-w-toolbar .background-inherit {
     background-color: var(--selection-color);
 }
 
-.panelRendererValueFocused.panelRendererValueBoxed, .actionPanelRendererValue:focus {
+.panelRendererValueBinding,
+.panelRendererValueBinding .background-inherit,
+.panelRendererValueBinding.btn,
+.panelRendererValueBinding.btn .background-inherit,
+.panelRendererValueBinding.form-control,
+.panelRendererValueBinding.form-control .background-inherit,
+.panelRendererValueBinding > .form-control,
+.panelRendererValueBinding > .form-control .background-inherit,
+.panelRendererValueBinding.prop-input-w-toolbar .background-inherit {
+    background-color: var(--button-active-background-color);
+}
+
+.panelRendererValueFocused.form-control,
+.panelRendererValueFocused > .form-control {
     border: 1px solid var(--focus-color);
 }
 
-.panelRendererValueBoxed:hover:not(.panelRendererValueFocused), .actionPanelRendererValue:hover:not(focus) { /* we want focus to have higher priority than hover*/
+.panelRendererValue:not(.panelRendererValueFocused).form-control:hover, /* we want focus to have higher priority than hover*/
+.panelRendererValue:not(.panelRendererValueFocused) > .form-control:hover {
     border: 1px solid var(--component-hover-border-color);
 }
 
 /* border doesn't work for input checkbox */
-input[type=checkbox].panelRendererValueFocused.panelRendererValueBoxed {
+input[type=checkbox].form-control.panelRendererValueFocused,
+.panelRendererValueFocused input[type=checkbox].form-control {
     outline: 1px solid var(--focus-color);
 
     /* this is needed because Chrome has the default outline-offset set to 2 for :focus-visible input checkbox  */
     /* https://stackoverflow.com/questions/73049600/should-input-checkbox-outline-include-margins-or-not */
     outline-offset: 0;
 }
-input[type=checkbox].panelRendererValueBoxed:hover:not(.panelRendererValueFocused), .actionPanelRendererValue:hover:not(focus) { /* we want focus to have higher priority than hover*/
+input[type=checkbox].form-control.panelRendererValue:not(.panelRendererValueFocused):hover, /* we want focus to have higher priority than hover*/
+.panelRendererValue:not(.panelRendererValueFocused) input[type=checkbox].form-control:hover {
     outline: 1px solid var(--component-hover-border-color);
 }
 
-.panelRendererValueBinding, .panelRendererValueBinding .background-inherit {
-    background-color: var(--button-active-background-color);
+a.panelRendererValue {
+    text-decoration: underline;
 }

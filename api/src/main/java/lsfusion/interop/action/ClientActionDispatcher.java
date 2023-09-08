@@ -8,7 +8,7 @@ import java.util.Map;
 
 public interface ClientActionDispatcher {
 
-    void execute(FormClientAction action);
+    void execute(FormClientAction action) throws IOException;
 
     Integer execute(ReportClientAction action);
 
@@ -56,7 +56,7 @@ public interface ClientActionDispatcher {
 
     String execute(LoadLinkClientAction action);
 
-    boolean execute(CopyToClipboardClientAction action);
+    void execute(CopyToClipboardClientAction action);
 
     Map<String, RawFileData> execute(UserLogsClientAction action);
 

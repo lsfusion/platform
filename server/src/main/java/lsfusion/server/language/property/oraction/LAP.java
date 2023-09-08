@@ -104,10 +104,6 @@ public abstract class LAP<T extends PropertyInterface, P extends ActionOrPropert
         getActionOrProperty().drawOptions.setEchoSymbols(echoSymbols);
     }
 
-    public void setCustomRenderFunction(String customRenderFunction) {
-        getActionOrProperty().drawOptions.setCustomRenderFunction(customRenderFunction);
-    }
-
     public void setCustomEditorFunction(String customEditorFunction) {
         getActionOrProperty().drawOptions.setCustomEditorFunction(customEditorFunction);
     }

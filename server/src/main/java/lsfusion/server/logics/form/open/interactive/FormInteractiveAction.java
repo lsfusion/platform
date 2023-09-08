@@ -10,6 +10,7 @@ import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
+import lsfusion.server.logics.action.flow.FormChangeFlowType;
 import lsfusion.server.logics.form.interactive.FormCloseType;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
@@ -180,11 +181,16 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
 
     @Override
     public boolean hasFlow(ChangeFlowType type) {
-        if(type == ChangeFlowType.FORMCHANGE) {
-            if (!readOnly && !getForm().hasNoChange()) 
+        if(type instanceof FormChangeFlowType && !readOnly) {
+            FormEntity form = getForm();
+
+            ImSet<FormEntity> recursionGuard = ((FormChangeFlowType) type).recursionGuard;
+            ImSet<FormEntity> newRecursionGuard = recursionGuard.merge(form);
+            if (newRecursionGuard.size() > recursionGuard.size() &&
+                !form.hasNoChange(new FormChangeFlowType(newRecursionGuard)))
                 return true;
         }
-        if(type == ChangeFlowType.INTERACTIVEFORM)
+        if(type == ChangeFlowType.INTERACTIVEFORM && !(windowType != null && windowType.isEditing()))
             return true;
         if(type == ChangeFlowType.NEEDMORESESSIONUSAGES && syncType == null)
             return true;

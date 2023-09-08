@@ -1700,7 +1700,7 @@
         }
         outerDiv = createElement("div", "subtotalouterdiv");
         headerDiv = createElement("div", "headerdiv");
-        headerTable = createElement("table", "headertable pvtTable");
+        headerTable = createElement("table", "headertable pvtTable table");
         thead = createElement("thead");
         outerDiv.appendChild(headerDiv);
         headerDiv.appendChild(headerTable);
@@ -1740,7 +1740,7 @@
           sLeft = scrollDiv.scrollLeft;
           return headerDiv.scrollLeft = sLeft;
         };
-        bodyTable = createElement("table", "bodytable pvtTable");
+        bodyTable = createElement("table", "bodytable pvtTable table");
         tbody = createElement("tbody");
         outerDiv.appendChild(bodyDiv);
         bodyDiv.appendChild(scrollDiv);

@@ -6,7 +6,6 @@ import com.google.gwt.dom.client.ImageElement;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
-import lsfusion.gwt.client.base.view.CaptionPanelHeader;
 import lsfusion.gwt.client.base.view.FlexPanel;
 
 import java.io.Serializable;
@@ -186,9 +185,6 @@ public interface BaseImage extends Serializable {
     }
     static void updateText(Widget widget, String text, boolean vertical, boolean forceDiv) {
         updateText(widget.getElement(), text, vertical, forceDiv);
-
-        if(widget instanceof CaptionPanelHeader)
-            widget.setVisible(text != null && !text.isEmpty());
     }
     static void updateText(Element element, String text, boolean vertical) {
         updateText(element, text, vertical, false);
@@ -198,7 +194,7 @@ public interface BaseImage extends Serializable {
         Element htmlElement = (Element) element.getPropertyObject(DIV);
 
         text = text == null ? "" : text;
-        if ((forceDiv && !text.isEmpty()) || EscapeUtils.isContainHtmlTag(text)) {
+        if ((forceDiv && !text.isEmpty()) || GwtClientUtils.isContainHtmlTag(text)) {
             if(htmlElement == null) {
                 htmlElement = Document.get().createDivElement();
                 htmlElement.addClassName("wrap-text-div");

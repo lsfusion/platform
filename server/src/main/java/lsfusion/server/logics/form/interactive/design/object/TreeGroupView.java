@@ -85,13 +85,11 @@ public class TreeGroupView extends GridPropertyView implements ServerIdentitySer
         } else {
             filtersContainer.setType(ContainerType.CONTAINERH);
         }
-        filtersContainer.setAlignment(FlexAlignment.STRETCH);
 //        filtersContainer.setAlignCaptions(true);
 //        filtersContainer.setLineSize(0);
 //        filtersContainer.setCaption(LocalizedString.create(ThreadLocalContext.localize("{form.view.filters.container}")));
 
         filterControls = new FilterControlsView(idGenerator.idShift());
-        filterControls.setAlignment(FlexAlignment.END);
 
         filters = NFFact.orderSet();
     }
@@ -125,7 +123,7 @@ public class TreeGroupView extends GridPropertyView implements ServerIdentitySer
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {
         super.customSerialize(pool, outStream);
 
-        outStream.writeBoolean(isAutoSize(pool.context.entity));
+        outStream.writeBoolean(isAutoSize(pool.context));
         outStream.writeBoolean(boxed != null);
         if(boxed != null)
             outStream.writeBoolean(boxed);

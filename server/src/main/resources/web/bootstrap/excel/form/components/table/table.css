@@ -4,7 +4,12 @@
     font-weight: normal;
 }
 
-.dataGridCell {
+.cell-with-background,
+/*common scheme*/
+.cell-with-background .background-inherit,
+/*hack to increase selectivity (assuming that cell-with-background is always in tableContainerBoxed)*/
+.tableContainerBoxed .cell-with-background.background-inherit,
+.tableContainerBoxed .cell-with-background .background-inherit {
     background-color: var(--bs-table-bg);
 }
 
@@ -42,4 +47,10 @@
 
 .btn-toolbar .btn {
     background: transparent;
+}
+
+/*loading_async.gif is too large icon, it should be the same size as other tree icons*/
+.loading-async-image {
+    width: 16px;
+    height: 16px;
 }

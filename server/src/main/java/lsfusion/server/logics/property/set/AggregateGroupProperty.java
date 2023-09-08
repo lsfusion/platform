@@ -27,7 +27,6 @@ public class AggregateGroupProperty<T extends PropertyInterface> extends CycleGr
     private final T aggrInterface;
     private final ImSet<PropertyInterfaceImplement<T>> groupProps;
 
-    // чисто из-за ограничения конструктора
     public static <T extends PropertyInterface<T>> AggregateGroupProperty<T> create(LocalizedString caption, ImSet<T> innerInterfaces, PropertyInterfaceImplement<T> property, T aggrInterface, ImSet<PropertyInterfaceImplement<T>> groupProps) {
         PropertyMapImplement<?, T> and = PropertyFact.createAnd(innerInterfaces, aggrInterface, property);
         if(caption.isEmpty()) {
@@ -37,16 +36,14 @@ public class AggregateGroupProperty<T extends PropertyInterface> extends CycleGr
             if(groupMapProps.size() > 1)
                 caption = LocalizedString.concatList("(", caption, ")"); 
         } else
-            caption = LocalizedString.concat(caption, "(агр.)");
+            caption = LocalizedString.concat(caption, "(aggr.)");
         and.property.caption = caption;
         assert groupProps.toSet().containsAll(innerInterfaces.removeIncl(aggrInterface));
-        return create(caption, and, groupProps, innerInterfaces, property, aggrInterface, groupProps);
+
+        return new AggregateGroupProperty<>(caption, and, groupProps, innerInterfaces, property, aggrInterface, groupProps);
     }
 
     // чисто для generics
-    private static <T extends PropertyInterface<T>> AggregateGroupProperty<T> create(LocalizedString caption, PropertyInterfaceImplement<T> and, ImCol<PropertyInterfaceImplement<T>> groupInterfaces, ImSet<T> innerInterfaces, PropertyInterfaceImplement<T> whereProp, T aggrInterface, ImSet<PropertyInterfaceImplement<T>> groupProps) {
-        return new AggregateGroupProperty<>(caption, and, groupInterfaces, innerInterfaces, whereProp, aggrInterface, groupProps);
-    }
 
     private AggregateGroupProperty(LocalizedString caption, PropertyInterfaceImplement<T> and, ImCol<PropertyInterfaceImplement<T>> groupInterfaces, ImSet<T> innerInterfaces, PropertyInterfaceImplement<T> whereProp, T aggrInterface, ImSet<PropertyInterfaceImplement<T>> groupProps) {
         super(caption, innerInterfaces, groupInterfaces, and, null);

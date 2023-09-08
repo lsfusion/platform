@@ -15,6 +15,7 @@ import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.flex.LinearContainerView;
 import lsfusion.gwt.client.form.object.table.grid.GGrid;
+import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,7 +59,7 @@ public class GFormLayout extends ResizableComplexPanel {
 
     public void addTooltip(Widget header, GContainer container) {
         boolean isMain = container.main;
-        TooltipManager.registerWidget(header, new TooltipManager.TooltipHelper() {
+        TooltipManager.initTooltip(header.getElement(), new TooltipManager.TooltipHelper() {
             @Override
             public String getTooltip() {
                 return isMain ? form.form.getTooltip() : container.getTooltip();
@@ -72,11 +73,6 @@ public class GFormLayout extends ResizableComplexPanel {
             @Override
             public String getCreationPath() {
                 return isMain ? form.form.getCreationPath() : container.getCreationPath();
-            }
-
-            @Override
-            public boolean stillShowTooltip() {
-                return true;
             }
         });
     }
@@ -100,7 +96,7 @@ public class GFormLayout extends ResizableComplexPanel {
 
     @Override
     public void onBrowserEvent(Event event) {
-        Element target = DataGrid.getTargetAndCheck(getElement(), event);
+        Element target = DataGrid.getBrowserTargetAndCheck(getElement(), event);
         if(target == null)
             return;
         if(!form.previewEvent(target, event))
@@ -124,7 +120,7 @@ public class GFormLayout extends ResizableComplexPanel {
             return createTabCaptionWidget();
         } else {
             if (hasBorder)
-                return new CaptionPanelHeader();
+                return MainFrame.useBootstrap ? new SimpleWidget("h6") : new LabelWidget();
         }
         return null;
     }
@@ -156,7 +152,7 @@ public class GFormLayout extends ResizableComplexPanel {
             alreadyInitialized = formCaptionWidgetAsync.second;
         } else
             captionWidget = createContainerCaptionWidget(container.container,
-                    container.caption != null || container.hasBorder() || container.collapsible);
+                    container.caption != null || container.collapsible);
 
         if (captionWidget != null) {
             addTooltip(captionWidget, container);

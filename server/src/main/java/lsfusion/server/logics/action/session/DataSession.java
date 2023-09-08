@@ -884,9 +884,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     }
                 }
 
-                for (FormInstance form : getAllActiveFormInstances()) {
-                    form.dataChanged = true;
-                }
+                updateAllDataChanged();
             } //else
               //  assert isInTransaction(); or update external
             
@@ -2623,7 +2621,15 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             cleanIsDataChangedProperty();
         }
 
+        updateAllDataChanged();
+
         return true;
+    }
+
+    private void updateAllDataChanged() {
+        for (FormInstance form : getAllActiveFormInstances()) {
+            form.dataChanged = true;
+        }
     }
 
     private void rollbackApply() throws SQLException, SQLHandledException {

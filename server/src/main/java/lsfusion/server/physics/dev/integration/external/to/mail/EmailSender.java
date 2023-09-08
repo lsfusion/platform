@@ -34,17 +34,19 @@ public class EmailSender {
 
     public static void sendMail(ExecutionContext context, String fromAddress, Map<String, Message.RecipientType> recipients, final String subject, List<String> inlineFiles, List<AttachmentFile> attachments, String smtpHost, String smtpPort, String encryptedConnectionType, String user, String password, boolean syncType) throws MessagingException, IOException {
 
+        String protocol = "SSL".equals(encryptedConnectionType) ? "smtps" : "smtp";
+
         Properties mailProps = new Properties();
-        mailProps.setProperty("mail.smtp.host", smtpHost);
+        mailProps.setProperty("mail.host", smtpHost);
         mailProps.setProperty("mail.from", fromAddress);
 
-        mailProps.setProperty("mail.smtp.timeout", "120000");
-        mailProps.setProperty("mail.smtp.connectiontimeout", "60000");
+        mailProps.setProperty("mail." + protocol + ".timeout", "120000");
+        mailProps.setProperty("mail." + protocol + ".connectiontimeout", "60000");
 
         System.setProperty("mail.mime.multipart.allowempty", "true");
 
         if (!smtpPort.isEmpty()) {
-            mailProps.put("mail.smtp.port", smtpPort);
+            mailProps.setProperty("mail." + protocol + ".port", smtpPort);
         }
         if ("TLS".equals(encryptedConnectionType))
             mailProps.setProperty("mail.smtp.starttls.enable", "true");
@@ -54,7 +56,7 @@ public class EmailSender {
         }
 
         if (!user.isEmpty() && !password.isEmpty()) {
-            mailProps.setProperty("mail.smtp.auth", "true");
+            mailProps.setProperty("mail." + protocol + ".auth", "true");
         }
 
         SMTPMessage message = new SMTPMessage(Session.getInstance(mailProps, null));
@@ -76,10 +78,10 @@ public class EmailSender {
         message.setContent(mp);
 
         if (syncType) {
-            processEmail(subject, true, smtpHost, smtpPort, user, password, fromAddress, message);
+            processEmail(subject, true, smtpHost, smtpPort, protocol, user, password, fromAddress, message);
         } else {
             ScheduledExecutorService executor = ExecutorFactory.createNewThreadService(context);
-            executor.submit(() -> processEmail(subject, false, smtpHost, smtpPort, user, password, fromAddress, message));
+            executor.submit(() -> processEmail(subject, false, smtpHost, smtpPort, protocol, user, password, fromAddress, message));
             executor.shutdown();
         }
     }
@@ -120,7 +122,8 @@ public class EmailSender {
         }
     }
 
-    private static void processEmail(String subject, boolean syncType, String smtpHost, String smtpPort, String user, String password, String fromAddress, SMTPMessage message) {
+    private static void processEmail(String subject, boolean syncType, String smtpHost, String smtpPort, String protocol,
+                                     String user, String password, String fromAddress, SMTPMessage message) {
         String messageInfo = trimToEmpty(subject);
         try {
             Address[] addressesTo = message.getRecipients(MimeMessage.RecipientType.TO);
@@ -138,7 +141,7 @@ public class EmailSender {
             send = true;
             count++;
             try {
-                 sendMessage(message, smtpHost, smtpPort, user, password);
+                sendMessage(message, smtpHost, smtpPort, protocol, user, password);
                 logger.info(localize("{mail.successful.mail.sending}") + " : " + messageInfo);
             } catch (MessagingException e) {
                 if (!syncType) {
@@ -161,10 +164,11 @@ public class EmailSender {
         }
     }
 
-    private static void sendMessage(SMTPMessage message, String smtpHost, String smtpPort, String user, String password) throws MessagingException {
+    private static void sendMessage(SMTPMessage message, String smtpHost, String smtpPort, String protocol,
+                                    String user, String password) throws MessagingException {
         trustAllCerts();
         Integer port = parsePort(smtpPort);
-        Transport transport = message.getSession().getTransport(port != null && port.equals(25) ? "smtp" : "smtps");
+        Transport transport = message.getSession().getTransport(protocol);
         if(port == null)
             transport.connect(smtpHost, user, password);
         else

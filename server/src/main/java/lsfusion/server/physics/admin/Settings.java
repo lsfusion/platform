@@ -2766,6 +2766,7 @@ public class Settings implements Cloneable {
     private int useInputTagForTextBasedInPanel = 1;
     private boolean useInputTagForBoolean = true;
     private boolean noToolbarForInputTagInPanel = false;
+    private boolean noToolbarForSelectDropdownInPanel = false;
     private boolean noToolbarForBoolean = true;
 
     public int getUseInputTagForTextBasedInPanel() {
@@ -2790,6 +2791,14 @@ public class Settings implements Cloneable {
 
     public void setNoToolbarForInputTagInPanel(boolean noToolbarForInputTagInPanel) {
         this.noToolbarForInputTagInPanel = noToolbarForInputTagInPanel;
+    }
+
+    public boolean isNoToolbarForSelectDropdownInPanel() {
+        return noToolbarForSelectDropdownInPanel;
+    }
+
+    public void setNoToolbarForSelectDropdownInPanel(boolean noToolbarForSelectDropdownInPanel) {
+        this.noToolbarForSelectDropdownInPanel = noToolbarForSelectDropdownInPanel;
     }
 
     public boolean isNoToolbarForBoolean() {
@@ -2827,6 +2836,25 @@ public class Settings implements Cloneable {
     private int asyncValuesMaxReadCount = 1000;
     private int asyncValuesMaxReadOrderCount = 1000;
     private int asyncValuesMaxReadDataCompletionCount = 100000;
+    private int asyncValuesTooShortDataCompletionCount = 100000;
+
+    private int asyncValuesTooShortThreshold = -1;
+
+    public int getAsyncValuesTooShortThreshold() {
+        return asyncValuesTooShortThreshold;
+    }
+
+    public void setAsyncValuesTooShortThreshold(int asyncValuesTooShortThreshold) {
+        this.asyncValuesTooShortThreshold = asyncValuesTooShortThreshold;
+    }
+
+    public int getAsyncValuesTooShortDataCompletionCount() {
+        return asyncValuesTooShortDataCompletionCount;
+    }
+
+    public void setAsyncValuesTooShortDataCompletionCount(int asyncValuesTooShortDataCompletionCount) {
+        this.asyncValuesTooShortDataCompletionCount = asyncValuesTooShortDataCompletionCount;
+    }
 
     public int getAsyncValuesLongCacheThreshold() {
         return asyncValuesLongCacheThreshold;
@@ -2947,6 +2975,9 @@ public class Settings implements Cloneable {
     }
 
     public int minInterfaceStatForValueUnique = 100;
+    public int maxInterfaceStatForValueList = 5;
+    public int maxInterfaceStatForValueDropdown = 20;
+    public int maxLengthForValueButton = 40;
 
     public int getMinInterfaceStatForValueUnique() {
         return minInterfaceStatForValueUnique;
@@ -2954,6 +2985,30 @@ public class Settings implements Cloneable {
 
     public void setMinInterfaceStatForValueUnique(int minInterfaceStatForValueUnique) {
         this.minInterfaceStatForValueUnique = minInterfaceStatForValueUnique;
+    }
+
+    public int getMaxInterfaceStatForValueList() {
+        return maxInterfaceStatForValueList;
+    }
+
+    public void setMaxInterfaceStatForValueList(int maxInterfaceStatForValueList) {
+        this.maxInterfaceStatForValueList = maxInterfaceStatForValueList;
+    }
+
+    public int getMaxInterfaceStatForValueDropdown() {
+        return maxInterfaceStatForValueDropdown;
+    }
+
+    public void setMaxInterfaceStatForValueDropdown(int maxInterfaceStatForValueDropdown) {
+        this.maxInterfaceStatForValueDropdown = maxInterfaceStatForValueDropdown;
+    }
+
+    public int getMaxLengthForValueButton() {
+        return maxLengthForValueButton;
+    }
+
+    public void setMaxLengthForValueButton(int maxLengthForValueButton) {
+        this.maxLengthForValueButton = maxLengthForValueButton;
     }
 
     private boolean disableCombineFilters = false;
@@ -3146,5 +3201,35 @@ public class Settings implements Cloneable {
 
     public void setDefaultPropertyImage(boolean defaultPropertyImage) {
         this.defaultPropertyImage = defaultPropertyImage;
+    }
+
+    private int maxRequestQueueSize = 0;
+
+    public int getMaxRequestQueueSize() {
+        return maxRequestQueueSize;
+    }
+
+    public void setMaxRequestQueueSize(int maxRequestQueueSize) {
+        this.maxRequestQueueSize = maxRequestQueueSize;
+    }
+
+    private boolean disableCollapsibleContainers = false;
+
+    public boolean isDisableCollapsibleContainers() {
+        return disableCollapsibleContainers;
+    }
+
+    public void setDisableCollapsibleContainers(boolean disableCollapsibleContainers) {
+        this.disableCollapsibleContainers = disableCollapsibleContainers;
+    }
+
+    private int tooltipDelay = 1500;
+
+    public int getTooltipDelay() {
+        return tooltipDelay;
+    }
+
+    public void setTooltipDelay(int tooltipDelay) {
+        this.tooltipDelay = tooltipDelay;
     }
 }

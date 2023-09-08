@@ -22,3 +22,11 @@
     -webkit-border-radius: var(--table-border-radius);
     -moz-border-radius: var(--table-border-radius);
 }
+
+table.pvtTable tbody tr td,
+table.pvtTable tbody tr th,
+table.pvtTable thead tr th {
+    /* the same as dataGridCell, dataGridHeaderCell, table.pvtTable thead tr th/td */
+    border-right: 1px solid var(--grid-separator-border-color);
+    border-bottom: 1px solid var(--grid-separator-border-color);
+}

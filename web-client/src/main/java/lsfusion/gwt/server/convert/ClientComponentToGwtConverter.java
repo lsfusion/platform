@@ -90,6 +90,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         component.setAlignment(convertFlexAlignment(clientComponent.alignment));
         component.shrink = clientComponent.shrink;
         component.alignShrink = clientComponent.alignShrink;
+        component.shrinkOverflowVisible = clientComponent.shrinkOverflowVisible;
         component.alignCaption = clientComponent.alignCaption;
 
         if (clientComponent.design.getBackground() != null) {
@@ -258,7 +259,6 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.integrationSID = clientPropertyDraw.getIntegrationSID();
 
         propertyDraw.autoSize = clientPropertyDraw.autoSize;
-        propertyDraw.boxed = clientPropertyDraw.boxed;
 
         propertyDraw.customRenderFunction = clientPropertyDraw.customRenderFunction;
 
@@ -347,6 +347,9 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.foregroundReader = convertForegroundReader(clientPropertyDraw.foregroundReader);
         propertyDraw.imageReader = convertImageReader(clientPropertyDraw.imageReader);
         propertyDraw.hasDynamicImage = clientPropertyDraw.hasDynamicImage;
+        propertyDraw.commentReader = convertCommentReader(clientPropertyDraw.commentReader);
+        propertyDraw.commentElementClassReader = convertCommentElementClassReader(clientPropertyDraw.commentElementClassReader);
+        propertyDraw.placeholderReader = convertPlaceholderReader(clientPropertyDraw.placeholderReader);
 
         propertyDraw.formula = clientPropertyDraw.formula;
         if(clientPropertyDraw.formula != null) {
@@ -380,6 +383,14 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.panelColumnVertical = clientPropertyDraw.panelColumnVertical;
         
         propertyDraw.valueAlignment = convertFlexAlignment(clientPropertyDraw.valueAlignment);
+
+        propertyDraw.comment = clientPropertyDraw.comment;
+        propertyDraw.commentElementClass = clientPropertyDraw.commentElementClass;
+        propertyDraw.panelCommentVertical = clientPropertyDraw.panelCommentVertical;
+        propertyDraw.panelCommentFirst = clientPropertyDraw.panelCommentFirst;
+        propertyDraw.panelCommentAlignment = convertFlexAlignment(clientPropertyDraw.panelCommentAlignment);
+
+        propertyDraw.placeholder = clientPropertyDraw.placeholder;
 
         propertyDraw.changeOnSingleClick = clientPropertyDraw.changeOnSingleClick;
         
@@ -519,6 +530,18 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
     public GCustomOptionsReader convertCustomOptionsReader(ClientGroupObject.CustomOptionsReader reader) {
         return reader == null ? null : new GCustomOptionsReader(reader.getID());
+    }
+
+    public GCommentReader convertCommentReader(ClientPropertyDraw.CommentReader reader) {
+        return reader == null ? null : new GCommentReader(reader.getID(), reader.getGroupObject() != null ? reader.getGroupObject().ID : -1);
+    }
+
+    public GCommentElementClassReader convertCommentElementClassReader(ClientPropertyDraw.CommentElementClassReader reader) {
+        return reader == null ? null : new GCommentElementClassReader(reader.getID(), reader.getGroupObject() != null ? reader.getGroupObject().ID : -1);
+    }
+
+    public GPlaceholderReader convertPlaceholderReader(ClientPropertyDraw.PlaceholderReader reader) {
+        return reader == null ? null : new GPlaceholderReader(reader.getID(), reader.getGroupObject() != null ? reader.getGroupObject().ID : -1);
     }
 
     @Cached

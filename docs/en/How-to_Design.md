@@ -63,8 +63,8 @@ DESIGN orders {
         NEW orderDetails {
             // Specifying that the specification will take up 2 times more space than the o.box container 
             // (for all such containers fill, by default, is 1)
-            fill = 2; 
-            type = TABBED; // the container will be a tabbed panel
+            fill = 2;
+            tabbed = TRUE; // the container will be a tabbed panel
             MOVE BOX(d) { // the first tab will be a list of rows with books
                 caption = 'Order content';
             }

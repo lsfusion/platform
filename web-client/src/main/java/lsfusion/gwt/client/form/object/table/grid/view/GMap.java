@@ -14,7 +14,6 @@ import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.view.StyleDefaults;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -120,11 +119,11 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
 
         for(int i=0,size=listObjects.length();i<size;i++) {
             JavaScriptObject object = listObjects.get(i);
-            GGroupObjectValue key = getKey(object);
+            GGroupObjectValue key = getObjects(object);
 
             GroupMarker groupMarker = new GroupMarker(object);
             if (groupMarker.color == null) {
-                String rowBackgroundColor = getRowBackgroundColor(getKey(object));
+                String rowBackgroundColor = getRowBackgroundColor(getObjects(object));
                 if (rowBackgroundColor != null) {
                     groupMarker.color = rowBackgroundColor;
                 }
@@ -210,11 +209,12 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
     protected native JavaScriptObject createMap(com.google.gwt.dom.client.Element element, JavaScriptObject markerClusters, String tileProvider)/*-{
         var L = $wnd.L;
         var map = L.map(element);
+        var lsfParams = $wnd.lsfParams;
 
         if (tileProvider === 'google') {
             //load Google-api if it was not loaded earlier
             if (typeof $wnd.google !== 'object' || typeof $wnd.google.maps !== 'object')
-                $wnd.$.getScript('https://maps.googleapis.com/maps/api/js?key=' + $wnd.lsfParams.mapApiKey_Google);
+                $wnd.$.getScript('https://maps.googleapis.com/maps/api/js?key=' + lsfParams.mapApiKey_google);
             L.gridLayer
                 .googleMutant({
                     type: "roadmap" // valid values are 'roadmap', 'satellite', 'terrain' and 'hybrid'
@@ -222,7 +222,8 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
         } else if (tileProvider === 'yandex') {
             L.yandex()
                 .loadApi({
-                    apiParams: $wnd.lsfParams.mapApiKey_Yandex
+                    apiParams: lsfParams.mapApiKey_yandex,
+                    apiUrl: lsfParams.commercialAPI_yandex != null ? 'https://enterprise.api-maps.yandex.ru/{version}/' : 'https://api-maps.yandex.ru/{version}/'
                 }).addTo(map);
         } else {
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {

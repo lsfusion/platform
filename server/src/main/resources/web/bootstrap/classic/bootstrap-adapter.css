@@ -26,10 +26,6 @@
     --link-color: var(--bs-link-color);
 }
 
-.caption-panel-header {
-    margin: var(--border-label-vert-padding) var(--border-label-horz-padding);
-}
-
 /* there is a really odd style in bootstrap.min.css */
 /*.table > :not(:first-child) {*/
 /*    border-top: 2px solid currentColor*/
@@ -50,26 +46,19 @@
 
 /* we want to have the same width for expanded and collapsed folders*/
 .caption-panel-header.collapsible::before,
-.card-header.collapsible::before,
 .nav-bs-mobile-folder::before {
     /*font-family: "Font Awesome 6 Free";*/
     margin-right: var(--border-label-horz-padding);
     width: 0.75em;
 }
 
-/*.nav-bs-mobile-folder::before {*/
-/*    align-self: center;*/
-/*}*/
-
 .caption-panel-header.collapsible.collapsed::before,
-.card-header.collapsible.collapsed::before,
 .nav-bs-mobile-folder.collapsed::before {
     content: "\f105";
     font: var(--fa-font-solid);
 }
 
 .caption-panel-header.collapsible:not(.collapsed)::before,
-.card-header.collapsible:not(.collapsed)::before,
 .nav-bs-mobile-folder:not(.collapsed)::before {
     content: "\f107";
     font: var(--fa-font-solid);
@@ -77,7 +66,7 @@
 
 /*focused cell, same as table-active (which is used for the table-active), but opacity 0.3 instead of 0.1*/
 .focused-cell {
-    --bs-table-accent-bg: rgba(0, 0, 0, 0.3);
+    --bs-table-bg-state: rgba(0, 0, 0, 0.3);
 }
 
 /* it's odd, but modal-body has flex-shrink (flex: 1 1 auto), but min-height is not set to zero (as well as overflow:auto), what doesn't make sense */
@@ -123,6 +112,11 @@
 .property-toolbar-item:hover,
 .property-toolbar-item.background-inherit:hover {
     background-color: var(--component-hover-background-color);
+}
+
+/* need this because toolbar is shown over form-control, but it is its sibling and not its child, assert that there is form-control inside */
+.prop-input-w-toolbar .background-inherit {
+    background-color: var(--bs-body-bg); /* should correspond form-control background-color */
 }
 
 /* --- workaround for disappearing sticky cell borders when scrolling --- */
@@ -202,6 +196,18 @@
     z-index: 1;
     box-shadow: 0 -0.1rem 0.5rem 0 rgba(var(--bs-body-color-rgb),.15);
 }
+.flex-dir-horz > .navbar.navbar-popup-over-selected-hover:not(:last-child) > .navbar-nav {
+    box-shadow: 0.2rem 0 0.5rem 0 rgba(var(--bs-body-color-rgb),.15);
+}
+.flex-dir-vert > .navbar.navbar-popup-over-selected-hover:not(:last-child) > .navbar-nav {
+    box-shadow: 0 0.1rem 0.5rem 0 rgba(var(--bs-body-color-rgb),.15);
+}
+.flex-dir-horz > .navbar.navbar-popup-over-selected-hover:last-child > .navbar-nav {
+    box-shadow: -0.2rem 0 0.5rem 0 rgba(var(--bs-body-color-rgb),.15);
+}
+.flex-dir-vert > .navbar.navbar-popup-over-selected-hover:last-child > .navbar-nav {
+    box-shadow: 0 -0.1rem 0.5rem 0 rgba(var(--bs-body-color-rgb),.15);
+}
 
 /* The end tab bar location support - just inverting borders */
 
@@ -236,10 +242,28 @@
     border-bottom: 1px solid var(--bs-border-color);
 }
 
+/* form-select, form-control sets width to 100%, but the platform sizing components itself (with content-box box-sizing), so width : 100% breaks that */
+.form-select.prop-size-value,
+.form-control.prop-size-value {
+    width: unset;
+}
+
+/* bootstrap doesn't wrap button group by default, which is not what we want in the most cases */
+.option-btn-container.btn-group {
+    flex-wrap: wrap;
+}
+
 /*Bootstrap uses a fixed z-index for the some elements, and z-index of the modal-windows(1055) is higher than z-index of dropdown-menu(1000).
     We manually set z-index in lsf-dropdown to 1070*/
 .dropdown-menu.lsf-dropdown {
     --bs-dropdown-zindex: 1070;
+}
+
+.selectize-dropdown.selectize-dropdown {
+    /*in excel theme resizable-window.css .modal-form sets z-index to 1000, in bootstrap theme by default z-index of the modal-windows is 1055
+        as the selectize uses its own css-classes which do not overlap with excel and bootstrap css-classes,
+        we will use the z-index used for .dropdown-menu.lsf-dropdown in the bootstrap theme - 1070*/
+    z-index: 1070;
 }
 
 /* wrapping is not desirable behaviour for the toolbar, at least in property toolbar (when toolbar is too large and more than a half of the property width) */
@@ -263,4 +287,24 @@
 
 .panel-container.form-switch {
     padding-left: unset;
+}
+
+table.pvtTable thead tr th {
+    /*bold column captions*/
+    font-weight: bold;
+}
+
+.headertable.table {
+    /*disable margin-bottom from .table,
+    because here we have separate headertable and bodytable*/
+    margin-bottom: 0;
+}
+
+.pvtRenderer, .pvtAggregator, .pvtAttr, .pvtRowsTable li {
+    width: -webkit-fill-available;
+    width: -moz-available;
+}
+
+.cell-with-background {
+    background-color: var(--bs-table-bg);
 }

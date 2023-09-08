@@ -81,6 +81,18 @@ userLoggable '{reflection.user.loggable.property}' = DATA BOOLEAN (Property);
 stored '{reflection.stored.property}' = DATA BOOLEAN (Property);
 isSetNotNull '{reflection.is.set.not.null.property}' = DATA BOOLEAN (Property);
 disableInputList '{reflection.disable.input.list}' = DATA BOOLEAN (Property);
+
+CLASS SelectType '{reflection.select}' {
+    Button '{reflection.select.type.button}',
+    ButtonGroup '{reflection.select.type.button.group}',
+    Dropdown '{reflection.select.type.dropdown}',
+    List '{reflection.select.type.list}',
+    No '{reflection.select.type.no}'
+}
+select '{reflection.select}' = DATA SelectType (Property);
+nameSelect '{reflection.select}' (Property property) = getWord(staticName(select(property)),'.',2);
+staticCaptionSelect '{reflection.select}' (Property property) = staticCaption(select(property));
+
 return '{reflection.return.property}' = DATA STRING[100] (Property);
 complexity '{reflection.complexity.property}' = DATA LONG (Property);
 tableSID '{reflection.table.sid.property}' = DATA STRING[100] (Property);
@@ -390,7 +402,7 @@ DESIGN physicalModel {
     BOX {
         NEW container BEFORE TOOLBARBOX{
             fill = 1;
-            type = TABBED;
+            tabbed = TRUE;
             NEW modelContainer {
                 fill = 1;
                 caption = '{reflection.form.physical.model.caption.tables}';
@@ -472,7 +484,7 @@ DESIGN forms {
     OBJECTS {
         NEW pane FIRST {
             fill = 1;
-            type = CONTAINERH;
+            horizontal = TRUE;
             NEW leftPane {
                 align = STRETCH;
                 MOVE PROPERTY(canonicalName(f)) { align = STRETCH; }
@@ -481,7 +493,7 @@ DESIGN forms {
             }
             NEW rightPane {
                 fill = 2;
-                type = TABBED;
+                tabbed = TRUE;
                 NEW global {
                     caption = '{reflection.property.draw}';
                     MOVE BOX(p);
@@ -493,7 +505,7 @@ DESIGN forms {
                     MOVE BOX(up);
                 }
                 NEW grouping {
-                    type = CONTAINERH;
+                    horizontal = TRUE;
                     caption = '{reflection.form.grouping}';
                     MOVE BOX(fg);
                     MOVE BOX(pfg) { fill = 3; }
@@ -509,7 +521,7 @@ FORM properties '{reflection.form.properties}'
     OBJECTS p=Property
     PROPERTIES(p) READONLY caption, canonicalName, dbName, annotation, tableSID, return, class, complexity, parent, number,
         quantity, notNullQuantity, userLoggable CHANGEABLE, loggable, stored CHANGEABLE, isSetNotNull CHANGEABLE, 
-        disableInputList CHANGEABLE, lastRecalculate
+        disableInputList CHANGEABLE, staticCaptionSelect CHANGEABLE, lastRecalculate
 
     TREE treePropertiesObject tps=PropertyGroup PARENT parent(tps), ps=Property
     PROPERTIES(tps) READONLY caption, SID, d1=dumb, d2=dumb, d3=dumb, d4=dumb, d5=dumb, parent, number, d6=dumb, d7=dumb, d8=dumb, d9=dumb
@@ -526,7 +538,7 @@ DESIGN properties {
     BOX {
         NEW container BEFORE TOOLBARBOX {
             fill = 1;
-            type = TABBED;
+            tabbed = TRUE;
 
             NEW treeContainer {
                 fill = 1;
@@ -562,7 +574,7 @@ DESIGN actions {
     BOX {
         NEW container BEFORE TOOLBARBOX {
             fill = 1;
-            type = TABBED;
+            tabbed = TRUE;
 
             NEW treeContainer {
                 fill = 1;

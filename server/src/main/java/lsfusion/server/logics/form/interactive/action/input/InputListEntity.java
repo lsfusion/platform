@@ -207,7 +207,7 @@ public class InputListEntity<P extends PropertyInterface, V extends PropertyInte
             return false;
 
         ImMap<P, StaticParamNullableExpr> fixedExprs = mapValues.join(listParamExprs);
-        return property.isValueUnique(fixedExprs, true);
+        return property.isValueUnique(fixedExprs, Property.ValueUniqueType.INPUT);
     }
     
     @Override

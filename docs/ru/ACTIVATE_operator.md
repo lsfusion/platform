@@ -42,7 +42,7 @@ FORM myForm 'Моя форма'
 
 DESIGN myForm {
     NEW tabbedPane FIRST {
-        type = TABBED;
+        tabbed = TRUE;
         NEW contacts {
             caption = 'Контакты';
             MOVE BOX(u);

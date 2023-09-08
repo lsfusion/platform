@@ -1,6 +1,11 @@
 .logicalRendererCheckBox {
 }
 
+/*disable removing indeterminate state by clicking on readonly field */
+.logicalRendererCheckBox:indeterminate {
+    pointer-events: none;
+}
+
 /* ------------ Link Mode ------------ */
 /* we want to turn cell to hyper link*/
 .linkMode .selectedCellHasEdit {

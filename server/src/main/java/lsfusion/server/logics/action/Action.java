@@ -31,6 +31,7 @@ import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.FlowResult;
+import lsfusion.server.logics.action.flow.FormChangeFlowType;
 import lsfusion.server.logics.action.flow.ListCaseAction;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.changed.ChangedProperty;
@@ -45,6 +46,7 @@ import lsfusion.server.logics.form.interactive.action.async.PushAsyncResult;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapExec;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
@@ -244,7 +246,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
 
     // пока просто ищем в конце APPLY и CHANGE'ы после APPLY
     // потом по хорошему надо будет в if then apply else cancel
-    public boolean endsWithApplyAndNoChangesAfterBreaksBefore() {
+    public boolean endsWithApplyAndNoChangesAfterBreaksBefore(FormChangeFlowType type) {
         return false;
     }
 
@@ -586,9 +588,9 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         return asyncExec;
     }
 
-    public static <P extends PropertyInterface> AsyncExec getAsyncExec(AsyncMapEventExec<P> asyncExec) {
+    public static <P extends PropertyInterface> AsyncExec getAsyncExec(AsyncMapEventExec<P> asyncExec, ConnectionContext context) {
         if(asyncExec instanceof AsyncMapExec)
-            return ((AsyncMapExec<P>) asyncExec).map();
+            return ((AsyncMapExec<P>) asyncExec).map(context);
         return null;
     }
 
@@ -713,7 +715,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     }
 
     @Override
-    public boolean isNotNull() {
+    public boolean isDrawNotNull() {
         return false;
     }
 

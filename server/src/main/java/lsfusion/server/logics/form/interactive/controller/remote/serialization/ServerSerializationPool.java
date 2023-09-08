@@ -12,12 +12,12 @@ import lsfusion.server.logics.form.interactive.design.object.*;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 
 
-public class ServerSerializationPool extends SerializationPool<ServerContext> {
+public class ServerSerializationPool extends SerializationPool<FormInstanceContext> {
     public ServerSerializationPool() {
         this(null);
     }
 
-    public ServerSerializationPool(ServerContext context) {
+    public ServerSerializationPool(FormInstanceContext context) {
         super(context);
         //порядок добавления должен соответствовать порядку в ClientSerializationPool
 

@@ -79,10 +79,7 @@ public abstract class ImportPlainAction<I extends ImportPlainIterator> extends I
 
             ImRevMap<PropertyDrawEntity, String> propertyNames = childProperties.getSet().mapRevValues((Function<PropertyDrawEntity, String>) PropertyDrawEntity::getIntegrationSID);
 
-            fieldTypes = fieldTypes.addOrderExcl(propertyNames.reverse().mapOrder(childProperties).mapOrderValues(new Function<PropertyDrawEntity, Type>() {
-                public Type apply(PropertyDrawEntity object) {
-                    return object.getType();
-                }}));
+            fieldTypes = fieldTypes.addOrderExcl(propertyNames.reverse().mapOrder(childProperties).mapOrderValues((Function<PropertyDrawEntity, Type>) PropertyDrawEntity::getImportType));
 
             MOrderSet<ImMap<ObjectEntity, Object>> mAllRows = SetFact.mOrderSet(isIndex);
 

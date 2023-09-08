@@ -63,7 +63,7 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
             case 1:
                 return form.getObjectInstance(inStream.readInt());
             case 2:
-                return (PropertyObjectInstance)((PropertyDrawInstance<?>)form.getPropertyDraw(inStream.readInt())).getValueProperty();
+                return ((PropertyDrawInstance<?>)form.getPropertyDraw(inStream.readInt())).getFilterProperty();
         }
 
         throw new IOException();

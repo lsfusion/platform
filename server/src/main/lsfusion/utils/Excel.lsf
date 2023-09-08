@@ -55,13 +55,13 @@ DESIGN template {
         size = (1024, 768);
         type = CONTAINERV;
         MOVE BOX(t) {
-            type = CONTAINERH;
+            horizontal = TRUE;
             NEW row1 {
                 MOVE PROPERTY(name(t));
                 MOVE PROPERTY(id(t));
             };
             NEW row2 {
-                type = CONTAINERH;
+                horizontal = TRUE;
                 MOVE PROPERTY(loadFile(t));
                 MOVE PROPERTY(openFile(t));
             };

@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property.oraction;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Pair;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
@@ -10,6 +11,7 @@ import lsfusion.server.base.caches.LazyInit;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.PullExpr;
 import lsfusion.server.data.expr.query.GroupType;
+import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
@@ -48,6 +50,7 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         super(ID, "PropInt" + ID);
     }
 
+    // similar to isIdentity
     public static <T, P extends PropertyInterface> ImRevMap<T, P> getIdentityMap(ImMap<T, PropertyInterfaceImplement<P>> mapping) {
         MAddSet<PropertyInterface> checked = SetFact.mAddSet();
         for(PropertyInterfaceImplement<P> propImplement : mapping.valueIt())
@@ -136,6 +139,13 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         return null;
     }
 
+    public Property.Select<P> mapSelect(ImList<Property> viewProperties, boolean forceSelect) {
+        return null;
+    }
+    public boolean mapValueUnique(ImMap<P, StaticParamNullableExpr> fixedExprs, boolean optimistic) {
+        return true;
+    }
+
     public Property<?> mapViewProperty(CustomClass customClass, ImList<Property> viewProperties) {
         return null;
     }
@@ -159,7 +169,7 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
     }
 
     @Override
-    public boolean mapIsNotNull() {
+    public boolean mapIsDrawNotNull() {
         return true;
     }
 
@@ -203,6 +213,11 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
     }
 
     @Override
+    public boolean mapHasNoGridReadOnly(ImSet<P> gridInterfaces) {
+        return !gridInterfaces.contains((P)this);
+    }
+
+    @Override
     public boolean mapChangedWhen(boolean toNull, PropertyInterfaceImplement<P> changeProperty) {
         return BaseUtils.hashEquals(this, changeProperty);
     }
@@ -226,6 +241,12 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
 //            return mappedInterface;
 //        return null;
 //    }
+
+
+    @Override
+    public Pair<PropertyInterfaceImplement<P>, PropertyInterfaceImplement<P>> getIfProp() {
+        return null;
+    }
 
     @Override
     public <X extends PropertyInterface> AsyncMapChange<X, P> mapAsyncChange(PropertyMapImplement<X, P> writeTo, ObjectEntity object) {

@@ -38,14 +38,35 @@ public abstract class GType implements Serializable {
         return null;
     }
 
-    // not null
+    public GSize getValueWidth(GFont font, GPropertyDraw propertyDraw, boolean needNotNull, boolean globalCaptionIsDrawn) {
+        if(propertyDraw.charWidth != 0)
+            return getDefaultCharWidth(font, propertyDraw);
+
+        return getDefaultWidth(font, propertyDraw, needNotNull, globalCaptionIsDrawn);
+    }
+
     public GSize getDefaultWidth(GFont font, GPropertyDraw propertyDraw, boolean needNotNull, boolean globalCaptionIsDrawn) {
+        return getDefaultCharWidth(font, propertyDraw);
+    }
+
+    private GSize getDefaultCharWidth(GFont font, GPropertyDraw propertyDraw) {
         String widthString = getDefaultWidthString(propertyDraw);
 
         return GFontMetrics.getStringWidth(font, widthString);
     }
 
+    public GSize getValueHeight(GFont font, GPropertyDraw propertyDraw, boolean needNotNull, boolean globalCaptionIsDrawn) {
+        if(propertyDraw.charWidth != 0)
+            return getDefaultCharHeight(font, propertyDraw, needNotNull);
+
+        return getDefaultHeight(font, propertyDraw, needNotNull, globalCaptionIsDrawn);
+    }
+
     public GSize getDefaultHeight(GFont font, GPropertyDraw propertyDraw, boolean needNotNull, boolean globalCaptionIsDrawn) {
+        return getDefaultCharHeight(font, propertyDraw, needNotNull);
+    }
+
+    private GSize getDefaultCharHeight(GFont font, GPropertyDraw propertyDraw, boolean needNotNull) {
         String heightString = getDefaultHeightString(propertyDraw);
 
         if(!needNotNull && !heightString.contains("\n"))

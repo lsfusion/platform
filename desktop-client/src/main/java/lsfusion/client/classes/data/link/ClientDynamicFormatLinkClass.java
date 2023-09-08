@@ -18,7 +18,7 @@ public class ClientDynamicFormatLinkClass extends ClientLinkClass {
     }
 
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
-        return new LinkPropertyRenderer(property, "file");
+        return new LinkPropertyRenderer(property);
     }
 
     public byte getTypeId() {

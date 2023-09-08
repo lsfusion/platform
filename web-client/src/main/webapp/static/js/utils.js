@@ -109,3 +109,45 @@ function lsfController(callerElement) {
 function reload() {
     document.location.reload();
 }
+
+function removeObjectFromArray(array, test) {
+    let index = array.indexOf(array.find(obj => test(obj)));
+    return array.slice(0, index).concat(array.slice(index + 1));
+}
+
+function replaceObjectFieldInArray(array, test, propertyName, newValue) {
+    return array.map(oldObj => test(oldObj) ? replaceField(oldObj, propertyName, newValue) : oldObj);
+}
+
+function addObjectToArray(array, object, index) {
+    return array.slice(0, index).concat(object).concat(array.slice(index));
+}
+
+function replaceOrAddObjectFieldInArray(array, test, propertyName, newValue, object) {
+    //assume that only one object can be found
+    let found = array.find(obj => test(obj));
+    if (found)
+        array[array.indexOf(found)] = replaceField(found, propertyName, newValue);
+    else
+        array.push(object);
+
+    return array;
+}
+
+function replaceField(obj, propertyName, newValue) {
+    return { ...obj, [propertyName] : newValue };
+}
+
+function plainEquals(object1, object2, ignoreField) {
+    if(object1 === object2)
+        return true;
+
+    var object1Keys = Object.keys(object1);
+    var object2Keys = Object.keys(object2);
+
+    return !(object1Keys.length !== object2Keys.length || (object1Keys.find(function (object1Key) { return object1Key !== ignoreField && object1[object1Key] !== object2[object1Key]}) !== undefined));
+}
+
+function isContainHtmlTag(value) {
+    return value.match(".*\\<[^>]+\\>(.|\n|\r)*");
+}

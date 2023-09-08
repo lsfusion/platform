@@ -26,7 +26,7 @@ FORM myForm 'My form'
 
 DESIGN myForm {
     NEW tabbedPane FIRST {
-        type = TABBED;
+        tabbed = TRUE;
         NEW contacts {
             caption = 'Contacts';
             MOVE BOX(u);

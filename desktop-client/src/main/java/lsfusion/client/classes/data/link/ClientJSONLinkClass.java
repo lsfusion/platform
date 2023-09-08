@@ -15,7 +15,7 @@ public class ClientJSONLinkClass extends ClientStaticFormatLinkClass {
     }
 
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
-        return new LinkPropertyRenderer(property, "json");
+        return new LinkPropertyRenderer(property);
     }
 
     public byte getTypeId() {

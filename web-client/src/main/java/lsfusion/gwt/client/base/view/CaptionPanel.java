@@ -10,8 +10,6 @@ import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.view.MainFrame;
 
 public class CaptionPanel extends FlexPanel {
-    protected Widget header;
-
     public final boolean border;
 
     private boolean waitingForElement;
@@ -21,22 +19,31 @@ public class CaptionPanel extends FlexPanel {
 
         this.border = border;
 
-        header.addStyleName("text-secondary");
+        if(header != null) {
+            header.addStyleName("text-secondary");
 //        header.addStyleName("fw-semibold");
-        header.addStyleName("fw-normal");
+            header.addStyleName("fw-normal");
 
-        add(header, GFlexAlignment.STRETCH);
+            header.addStyleName("caption-panel-header");
+
+//        if(!MainFrame.useBootstrap || border) { // ???
+            CaptionPanelHeader headerLine = new CaptionPanelHeader();
+            headerLine.setWidget(header);
+            headerLine.addStyleName("caption-panel-header-line");
+
+            add(headerLine, GFlexAlignment.STRETCH);
+//        }
+
+            if(border)
+                headerLine.addStyleName("card-header");
+        }
+
+        addStyleName("caption-panel");
 
         if(border) {
             addStyleName("card");
-            header.addStyleName("card-header");
-//          headerButton.addStyleName("accordion-button");
-        } else {
-            addStyleName("caption-panel");
-            header.addStyleName("caption-panel-header");
+            addStyleName("shadow");
         }
-
-        this.header = header;
 
         waitingForElement = true;
     }
@@ -61,13 +68,12 @@ public class CaptionPanel extends FlexPanel {
         super.add(widget, beforeIndex, alignment, flex, shrink, flexBasis);
 
         if(waitingForElement) {
-            if (border) {
+            widget.addStyleName("caption-panel-body");
+
+            if (border)
                 widget.addStyleName("card-body");
-//        widget.addStyleName("accordion-body");
-//        widget.addStyleName("accordion-collapse");
-            } else {
-                widget.addStyleName("caption-panel-body");
-            }
+
+            waitingForElement = false;
         }
     }
 }

@@ -18,6 +18,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.interactive.changed.ChangedData;
 import lsfusion.server.logics.form.interactive.changed.ReallyChanged;
 import lsfusion.server.logics.form.interactive.instance.CellInstance;
+import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.Property;
@@ -71,7 +72,7 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
 
     public abstract ValueClass getGridClass();
 
-    public abstract void changeValue(SessionChanges session, ObjectValue changeValue) throws SQLException, SQLHandledException;
+    public abstract void changeValue(SessionChanges session, FormInstance form, ObjectValue changeValue) throws SQLException, SQLHandledException;
 
     public abstract boolean classChanged(ChangedData changedProps);
 

@@ -3,13 +3,9 @@ package lsfusion.server.language.proxy;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
-import lsfusion.server.data.type.Type;
 import lsfusion.server.language.ScriptingLogicsModule;
-import lsfusion.server.logics.classes.data.integral.IntegralClass;
-import lsfusion.server.logics.classes.data.time.DateClass;
-import lsfusion.server.logics.classes.data.time.DateTimeClass;
-import lsfusion.server.logics.classes.data.time.TimeClass;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
+import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawExtraType;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.property.oraction.ActionOrPropertyUtils;
@@ -17,8 +13,6 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import javax.swing.*;
 import java.awt.*;
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 
 public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> {
 
@@ -68,15 +62,7 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
     }
 
     public void setPattern(LocalizedString lPattern) {
-        String pattern = lPattern.getSourceString();
-        if(target.isProperty()) {
-            Type type = target.getType();
-            if (type instanceof IntegralClass) {
-                target.format = new DecimalFormat(pattern);
-            } else if (type instanceof DateClass || type instanceof TimeClass || type instanceof DateTimeClass) {
-                target.format = new SimpleDateFormat(pattern);
-            }
-        }
+        target.pattern = lPattern.getSourceString();
     }
 
     public void setMaxValue(long maxValue) {
@@ -183,6 +169,42 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
             target.entity.setPropertyExtra((PropertyObjectEntity<?>) image, PropertyDrawExtraType.IMAGE, getVersion());
     }
 
+    public void setComment(Object comment) {
+        if(comment instanceof LocalizedString)
+            target.comment = (LocalizedString) comment;
+        else {
+            if (target.comment == null)
+                target.comment = LocalizedString.NONAME;
+            target.entity.setPropertyExtra((PropertyObjectEntity<?>) comment, PropertyDrawExtraType.COMMENT, getVersion());
+        }
+    }
+
+    public void setCommentClass(Object valueClass) {
+        if(valueClass instanceof LocalizedString)
+            target.commentElementClass = ((LocalizedString) valueClass).getSourceString();
+        else
+            target.entity.setPropertyExtra((PropertyObjectEntity<?>) valueClass, PropertyDrawExtraType.COMMENTELEMENTCLASS, getVersion());
+    }
+
+    public void setPanelCommentVertical(boolean panelCommentVertical) {
+        target.panelCommentVertical = panelCommentVertical;
+    }
+
+    public void setPanelCommentFirst(boolean panelCommentFirst) {
+        target.panelCommentFirst = panelCommentFirst;
+    }
+
+    public void setPanelCommentAlignment(FlexAlignment panelCommentAlignment) {
+        target.panelCommentAlignment = panelCommentAlignment;
+    }
+
+    public void setPlaceholder(Object placeholder) {
+        if(placeholder instanceof LocalizedString)
+            target.placeholder = (LocalizedString) placeholder;
+        else
+            target.entity.setPropertyExtra((PropertyObjectEntity<?>) placeholder, PropertyDrawExtraType.PLACEHOLDER, getVersion());
+    }
+
     public void setValueAlignment(FlexAlignment valueAlignment) {
         target.valueAlignment = valueAlignment;
     }
@@ -213,5 +235,9 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
 
     public void setNotNull(boolean notNull) {
         target.notNull = notNull;
+    }
+
+    public void setSelect(String select) {
+        target.entity.customRenderFunction = PropertyDrawEntity.SELECT + select;
     }
 }

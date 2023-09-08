@@ -105,6 +105,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
 
     public LP userFontSize;
 
+    public LP storeNavigatorSettingsForComputer;
     public LP clientColorTheme;
     
     public LA deliveredNotificationAction;
@@ -215,7 +216,8 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
 
         userFontSize = findProperty("fontSize[CustomUser]");
 
-        clientColorTheme = findProperty("clientColorTheme[CustomUser]");
+        storeNavigatorSettingsForComputer = findProperty("storeNavigatorSettingsForComputer[]");
+        clientColorTheme = findProperty("clientColorTheme[DesignEnv]");
 
         deliveredNotificationAction = findAction("deliveredNotificationAction[CustomUser]");
         

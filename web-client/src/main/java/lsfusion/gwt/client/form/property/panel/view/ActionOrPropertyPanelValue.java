@@ -2,7 +2,10 @@ package lsfusion.gwt.client.form.property.panel.view;
 
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import lsfusion.gwt.client.base.FocusUtils;
+import lsfusion.gwt.client.base.GAsync;
+import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -11,6 +14,8 @@ import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.ExecuteEditContext;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.view.MainFrame;
+
+import java.util.ArrayList;
 
 public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements ExecuteEditContext {
 
@@ -133,8 +138,13 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
     }
 
     @Override
-    public void changeProperty(PValue result) {
-        form.changeProperty(this, result);
+    public void getAsyncValues(String value, String actionSID, AsyncCallback<GFormController.GAsyncResult> callback) {
+        form.getAsyncValues(value, this, actionSID, callback);
+    }
+
+    @Override
+    public void changeProperty(PValue result, GFormController.ChangedRenderValueSupplier renderValueSupplier) {
+        form.changeProperty(this, result, renderValueSupplier);
     }
 
     @Override

@@ -107,7 +107,9 @@ public class LogicsSessionObject {
         boolean useBusyDialog = json.optBoolean("useBusyDialog");
         boolean useRequestTimeout = json.optBoolean("useRequestTimeout");
         boolean forbidDuplicateForms = json.optBoolean("forbidDuplicateForms");
+        boolean autoReconnectOnConnectionLost = json.optBoolean("autoReconnectOnConnectionLost");
         boolean showDetailedInfo = json.optBoolean("showDetailedInfo");
+        int showDetailedInfoDelay = json.optInt("showDetailedInfoDelay");
         boolean devMode = json.optBoolean("devMode");
         String projectLSFDir = json.optString("projectLSFDir");
 
@@ -152,11 +154,12 @@ public class LogicsSessionObject {
         String matchSearchSeparator = json.optString("matchSearchSeparator");
         boolean useTextAsFilterSeparator = json.optBoolean("useTextAsFilterSeparator");
         boolean userFiltersManualApplyMode = json.optBoolean("userFiltersManualApplyMode");
+        int maxRequestQueueSize = json.optInt("maxRequestQueueSize");
 
         return new ClientSettings(localePreferences, currentUserName, fontSize, useBusyDialog, busyDialogTimeout, useRequestTimeout, devMode,
-                projectLSFDir, showDetailedInfo, forbidDuplicateForms, showNotDefinedStrings, pivotOnlySelectedColumn, matchSearchSeparator,
+                projectLSFDir, showDetailedInfo, showDetailedInfoDelay, autoReconnectOnConnectionLost, forbidDuplicateForms, showNotDefinedStrings, pivotOnlySelectedColumn, matchSearchSeparator,
                 colorTheme, useBootstrap, colorPreferences, preDefinedDateRangesNames.toArray(new String[0]), useTextAsFilterSeparator, 
-                mainResourcesBeforeSystem, mainResourcesAfterSystem, verticalNavbar, userFiltersManualApplyMode);
+                mainResourcesBeforeSystem, mainResourcesAfterSystem, verticalNavbar, userFiltersManualApplyMode, maxRequestQueueSize);
     }
 
     private static void fillRanges(JSONArray rangesJson, List<String> ranges) {

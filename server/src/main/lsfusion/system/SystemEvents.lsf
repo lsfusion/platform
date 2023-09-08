@@ -43,55 +43,55 @@ NAVIGATOR {
     NEW logoAction WINDOW logo PARENT HEADER logoHeader() IMAGE logo() CLASS logoActionClass();
 }
 
-userUseBootstrap = DATA TBOOLEAN (CustomUser);
+designEnvUseBootstrap '{system.events.use.bootstrap}' = DATA TBOOLEAN (DesignEnv);
 serverUseBootstrap '{system.events.use.bootstrap}' = DATA BOOLEAN ();
-useBootstrap '{system.events.use.bootstrap}' (CustomUser u) = IF userUseBootstrap(u) THEN userUseBootstrap(u) == TTRUE ELSE serverUseBootstrap();
-useBootstrap = useBootstrap(currentUser());
+useBootstrap '{system.events.use.bootstrap}' (DesignEnv d) = IF designEnvUseBootstrap(d) THEN designEnvUseBootstrap(d) == TTRUE ELSE serverUseBootstrap();
+useBootstrap = useBootstrap(currentDesignEnv());
 
 bootstrapCaption = (IF useBootstrap() THEN '{system.events.excel.design}' ELSE '{system.events.bootstrap.design}') IF NOT noSystemToolbarCaptions();
 bootstrapImage = IF useBootstrap() THEN 'excel.png' ELSE 'bootstrap.png';
 toggleBootstrap () {
-    userUseBootstrap(currentUser()) <- IF useBootstrap() THEN TFALSE ELSE TTRUE;
+    designEnvUseBootstrap(currentDesignEnv()) <- IF useBootstrap() THEN TFALSE ELSE TTRUE;
     APPLY;
-    INTERNAL CLIENT 'reload';
+    reload();
 }
 
 colorThemeCaption = (CASE
-    WHEN userColorTheme(currentUser()) == ColorTheme.light THEN '{system.events.dark.mode}'
-    WHEN userColorTheme(currentUser()) == ColorTheme.dark THEN '{system.events.auto.mode}'
+    WHEN currentColorTheme() == ColorTheme.light THEN '{system.events.dark.mode}'
+    WHEN currentColorTheme() == ColorTheme.dark THEN '{system.events.auto.mode}'
     ELSE '{system.events.light.mode}') IF NOT noSystemToolbarCaptions();
 colorThemeImage = CASE 
-    WHEN userColorTheme(currentUser()) == ColorTheme.light THEN 'darkMode.png' 
-    WHEN userColorTheme(currentUser()) == ColorTheme.dark THEN 'autoMode.png' 
+    WHEN currentColorTheme() == ColorTheme.light THEN 'darkMode.png' 
+    WHEN currentColorTheme() == ColorTheme.dark THEN 'autoMode.png' 
     ELSE 'lightMode.png';
 toggleColorTheme() {
-    userColorTheme(currentUser()) <- CASE
-        WHEN userColorTheme(currentUser()) == ColorTheme.light THEN ColorTheme.dark
-        WHEN userColorTheme(currentUser()) == ColorTheme.dark THEN NULL
+    designEnvColorTheme(currentDesignEnv()) <- CASE
+        WHEN currentColorTheme() == ColorTheme.light THEN ColorTheme.dark
+        WHEN currentColorTheme() == ColorTheme.dark THEN NULL
         ELSE ColorTheme.light;
     apply();
     formRefresh();
 }
 
-userVerticalNavbar '{navigator.navbar.vertical}' = DATA TBOOLEAN (CustomUser);
+designEnvVerticalNavbar '{navigator.navbar.vertical}' = DATA TBOOLEAN (DesignEnv);
 serverVerticalNavbar '{navigator.navbar.vertical}' = DATA BOOLEAN ();
-verticalNavbar '{navigator.navbar.vertical}' (CustomUser u) = IF userVerticalNavbar(u) THEN userVerticalNavbar(u) == TTRUE ELSE serverVerticalNavbar();
-verticalNavbar = verticalNavbar(currentUser());
+verticalNavbar '{navigator.navbar.vertical}' (DesignEnv d) = IF designEnvVerticalNavbar(d) THEN designEnvVerticalNavbar(d) == TTRUE ELSE serverVerticalNavbar();
+verticalNavbar = verticalNavbar(currentDesignEnv());
 
 verticalNavbarCaption = (IF verticalNavbar() THEN '{system.events.navbar.horizontal}' ELSE '{system.events.navbar.vertical}') IF NOT noSystemToolbarCaptions();
 verticalNavbarImage = IF verticalNavbar() THEN iconIfAvailable('navbarHorz.png', 'fa-solid fa-window-maximize') ELSE iconIfAvailable('navbarVert.png', 'fa-solid fa-window-maximize fa-rotate-270');
 toggleVerticalNavbar () {
-    userVerticalNavbar(currentUser()) <- IF verticalNavbar() THEN TFALSE ELSE TTRUE;
+    designEnvVerticalNavbar(currentDesignEnv()) <- IF verticalNavbar() THEN TFALSE ELSE TTRUE;
     APPLY;
-    INTERNAL CLIENT 'reload';
+    reload();
 }
 verticalNavbarClass = ABSTRACT STRING();
 
-useClientNavigatorPinMode '{system.events.navigator.pin.use.client}' = DATA BOOLEAN (CustomUser);
-userNavigatorPinMode '{navigator.pin.mode}' = DATA TBOOLEAN (CustomUser);
+useClientNavigatorPinMode '{system.events.navigator.pin.use.client}' = DATA BOOLEAN (DesignEnv);
+designEnvNavigatorPinMode '{navigator.pin.mode}' = DATA TBOOLEAN (DesignEnv);
 serverNavigatorPinMode '{navigator.pin.mode}' = DATA TBOOLEAN ();
-navigatorPinMode '{navigator.pin.mode}' (CustomUser u) = IF useClientNavigatorPinMode(u) THEN userNavigatorPinMode(u) ELSE serverNavigatorPinMode();
-navigatorPinMode() = navigatorPinMode(currentUser());
+navigatorPinMode '{navigator.pin.mode}' (DesignEnv d) = IF useClientNavigatorPinMode(d) THEN designEnvNavigatorPinMode(d) ELSE serverNavigatorPinMode();
+navigatorPinMode() = navigatorPinMode(currentDesignEnv());
 
 navigatorPinModeCaption = (IF navigatorPinMode()
     THEN (IF navigatorPinMode() == TFALSE
@@ -100,12 +100,12 @@ navigatorPinModeCaption = (IF navigatorPinMode()
     ELSE '{system.events.navigator.pin.navbar}') IF NOT noSystemToolbarCaptions();
 navigatorPinModeImage = IF navigatorPinMode() 
     THEN (IF navigatorPinMode() == TFALSE 
-        THEN iconIfAvailable('navigatorPinAll.png','fa-solid fa-thumbtack') 
-        ELSE iconIfAvailable('navigatorPinNone.png','fa-solid fa-thumbtack fa-rotate-90')) 
+        THEN iconIfAvailable('navigatorPinAll.png','fa-solid fa-thumbtack fa-rotate-90') 
+        ELSE iconIfAvailable('navigatorPinNone.png','fa-solid fa-thumbtack')) 
     ELSE iconIfAvailable('navigatorPinNavbar.png','fa-solid fa-thumbtack fa-rotate-45');
 toggleNavigatorPinMode () {
-    userNavigatorPinMode(currentUser()) <- IF navigatorPinMode() THEN (IF navigatorPinMode() == TFALSE THEN TTRUE ELSE NULL) ELSE TFALSE;
-    useClientNavigatorPinMode(currentUser()) <- TRUE;
+    designEnvNavigatorPinMode(currentDesignEnv()) <- IF navigatorPinMode() THEN (IF navigatorPinMode() == TFALSE THEN TTRUE ELSE NULL) ELSE TFALSE;
+    useClientNavigatorPinMode(currentDesignEnv()) <- TRUE;
     apply();
 }
 navigatorPinModeClass = ABSTRACT STRING();
@@ -147,8 +147,17 @@ onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'pivot.css' THEN 20
 onWebClientLoad(STRING s) += WHEN s = 'scrollbar.css' THEN 21; //for bootstrap and excell themes
 onWebClientLoad(STRING s) += WHEN s = 'input-quill.js' THEN 22; //for bootstrap and excell themes
 onWebClientLoad(STRING s) += WHEN s = 'input-quill.css' THEN 23; //for bootstrap and excell themes
-onWebClientLoad(STRING s) += WHEN s = 'option.js' THEN 24; //for bootstrap and excell themes
+onWebClientLoad(STRING s) += WHEN s = 'select.js' THEN 24; //for bootstrap and excell themes
 onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'option.css' THEN 25;
+onWebClientLoad(STRING s) += WHEN s = 'selectize.js' THEN 26;
+onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'selectize.bootstrap5.css' THEN 27;
+onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'selectize.css' THEN 28;
+onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'select.css' THEN 29;
+//todo use v1.14.0-beta2 there is a bug in beta-3 https://github.com/snapappointments/bootstrap-select/issues/2738
+onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap-select.js' THEN 30;
+onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap-select.css' THEN 31;
+onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'multiple-select.js' THEN 32;
+onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'multiple-select.css' THEN 33;
 
 onWebClientStarted () +{ 
     onWebClientLoad();
@@ -408,8 +417,8 @@ systemWindowClass() += 'bg-dark-subtle' + (IF isWebDesktop() THEN ' navbar-icon-
     (IF isWebDesktop() AND NOT verticalNavbar() THEN ' navbar-text-hidden' ELSE '') +
     (IF isWebDesktop() AND verticalNavbar() THEN ' navbar-force-align-start' ELSE '');
 formsWindowClass() += 'bg-body-tertiary' + (IF isWebMobile() OR dontShowCloseButtonOnInactiveTab() THEN ' dont-show-close-button' ELSE '');
-toolbarWindowClass() += 'bg-body-secondary' + (IF isWebDesktop() AND NOT navigatorPinMode() == TTRUE THEN ' navbar-popup-selected-hover' ELSE '');
-logsWindowClass() += 'bg-body-secondary' + (IF isWebDesktop() AND NOT navigatorPinMode() == TTRUE THEN ' navbar-horz navbar-popup-selected-hover' ELSE '');
+toolbarWindowClass() += 'bg-body-secondary' + (IF isWebDesktop() AND NOT navigatorPinMode() == TTRUE THEN ' navbar-popup-over-selected-hover' ELSE '');
+logsWindowClass() += 'bg-body-secondary' + (IF isWebDesktop() AND NOT navigatorPinMode() == TTRUE THEN ' navbar-popup-over-selected-hover navbar-always-hide-unpinned' ELSE '');
 
 user '{system.events.user.session}' = DATA User (Session);
 nameUser '{system.events.user.session}' (Session session) = name(user(session));
@@ -433,8 +442,7 @@ quantityRemovedClasses '{system.events.quantity.removed.classes.session}' = DATA
 quantityChangedClasses '{system.events.quantity.changed.classes.session}' = DATA INTEGER (Session);
 changes '{system.events.changes.session}' = DATA TEXT (Session);
 
-dateTime '{system.events.date.time.session}' = DATA DATETIME (Session) IN id;
-date '{system.events.date.session}' (Session s) = DATE(dateTime(s));
+dateTime '{system.events.date.time.session}' = DATA DATETIME (Session) INDEXED IN id;
 dateTime(Session session) <- currentDateTime() WHEN SET (session IS Session);
 
 form '{system.events.form.session}' = DATA Form (Session);
@@ -444,7 +452,27 @@ connection '{system.events.connection.session}' = DATA Connection(Session) INDEX
 hostnameComputerConnection '{system.events.hostname.computer.connection.session}' = hostnameComputer(connection(Session session))IN id;
 userLoginConnection '{system.events.user.login.connection.session}' = userLogin(connection(Session session)) IN id;
 
-@defineLog (Session, '{system.events.define.log.of.changes}', log, date);
+@defineLog (Session, '{system.events.define.log.of.changes}', log);
+clearApplicationLog () + {
+    IF countDaysClearSession() THEN {
+        NEWSESSION {
+            APPLY {
+                DELETE Session d WHERE dateTime(d) <= sumDay(currentDateTime(), -countDaysClearSession());
+            }
+        }
+    }
+}       
+
+@defineLog (SessionDetail, '{system.events.define.log.of.changes.detail}', log);
+clearApplicationLog () + { 
+    IF countDaysClearSessionDetail() THEN {
+        NEWSESSION {
+            APPLY {
+                changes(Session d) <- NULL WHERE dateTime(d) <= sumDay(currentDateTime(), -countDaysClearSessionDetail());
+            }
+        }
+    }
+}       
 
 TABLE pingTable(Computer, DATETIME, DATETIME);
 pingFromTo '{system.events.ping.from.to}' = DATA INTEGER (Computer, DATETIME, DATETIME);
@@ -538,7 +566,7 @@ FORM connections '{system.events.form.connections}'
 DESIGN connections{
     NEW boxes BEFORE TOOLBARBOX {
         fill = 1;
-        type = CONTAINERH;
+        horizontal = TRUE;
 
         MOVE BOX(n);
         MOVE BOX(s);
@@ -558,7 +586,7 @@ DESIGN exceptions {
             fill = 1;
             MOVE BOX(e);
             NEW textContainer {
-                type = CONTAINERH;
+                horizontal = TRUE;
                 fill = 1;
 
                 MOVE PROPERTY(javaStackTrace(e)) {
@@ -584,19 +612,28 @@ FORM launches '{system.events.form.launches}'
 ;
 
 FORM changes '{system.events.form.changes}'
+    OBJECTS dates = (from = DATETIME, to = DATETIME ) PANEL 
+    PROPERTIES valFrom = VALUE (from), valTo = VALUE (to)
 
     OBJECTS s=Session
     PROPERTIES (s) READONLY captionForm, hostnameComputerConnection,
                             userLoginConnection, quantityAddedClasses, quantityRemovedClasses,
                             quantityChangedClasses, gChanges = changes, dateTime, pChanges = changes PANEL
+    FILTERS dateTime(s) >= from AND dateTime(s) <= to
     FILTERGROUP filtersChange
                     FILTER '{system.events.form.changes.filter.user.login.connections}' userLoginConnection(s) 'F8'
+    EVENTS 
+        ON INIT {
+            SEEK changes.dates OBJECTS from = dateTimeToDateTime(currentDate(), 00:00), to = currentDateTime();
+        }
+        
 ;
 
 DESIGN changes {
     BOX {
         NEW specContainer {
             fill = 1;
+            MOVE BOX (dates);
             MOVE BOX(s);
             NEW textContainer {
                 type = CONTAINERV;
@@ -666,7 +703,7 @@ DESIGN pings {
         }
         NEW options {
             fill = 1;
-            type = TABBED;
+            tabbed = TRUE;
             NEW data {
                 caption = '{system.events.form.pings.caption.data}';
                 MOVE BOX(dates);

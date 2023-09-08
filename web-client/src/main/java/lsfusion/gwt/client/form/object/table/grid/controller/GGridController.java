@@ -384,7 +384,7 @@ public class GGridController extends GAbstractTableController {
                 };
             }
         };
-        forceUpdateTableButton.addStyleName("actionPanelRendererValue");
+//        forceUpdateTableButton.addStyleName("actionPanelRendererValue");
         updateButtonGroup.add(forceUpdateTableButton);
 
         addToToolbar(updateButtonGroup);
@@ -467,6 +467,18 @@ public class GGridController extends GAbstractTableController {
     @Override
     public void updateReadOnlyValues(GReadOnlyReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         table.updateReadOnlyValues(formController.getProperty(reader.propertyID), values);
+    }
+
+    @Override
+    public void updatePropertyComments(GCommentReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+    }
+
+    @Override
+    public void updateCellCommentElementClasses(GCommentElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+    }
+
+    @Override
+    public void updatePropertyPlaceholders(GPlaceholderReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
     }
 
     @Override

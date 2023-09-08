@@ -186,6 +186,12 @@ public class GKeyStroke implements Serializable {
         return ((isCharAddKeyEvent(event) && (editEventFilter == null || editEventFilter.accept(event))) || isCharDeleteKeyEvent(event));
     }
 
+    public static boolean isInputKeyEventBoolean(Event event, boolean isMultiLine) {
+        return isInputKeyEvent(event, () -> isMultiLine);
+    }
+    public static boolean isCharNavigateKeyEvent(Event event) {
+        return isCharNavigateHorzKeyEvent(event) || isCharNavigateVertKeyEvent(event);
+    }
     public static boolean isInputKeyEvent(Event event, BooleanSupplier isMultiLine) {
         return isCharModifyKeyEvent(event, null) ||
                 isCharNavigateHorzKeyEvent(event) || (isCharNavigateVertKeyEvent(event) && isMultiLine.getAsBoolean()) || isPasteFromClipboardEvent(event);

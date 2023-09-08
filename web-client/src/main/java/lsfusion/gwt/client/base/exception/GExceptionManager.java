@@ -196,9 +196,14 @@ public class GExceptionManager {
     }
 
     public static String getStackTrace(Throwable t) {
-        StringBuilder sb = new StringBuilder();
-        t.printStackTrace(new PrintStream(new StackTracePrintStream(sb)));
-        return sb.toString();
+        try {
+            StringBuilder sb = new StringBuilder();
+            t.printStackTrace(new PrintStream(new StackTracePrintStream(sb)));
+            return sb.toString();
+        } catch (JavaScriptException caught) {
+            Log.error("Error logging stackTrace", caught);
+            return null;
+        }
     }
 
     // the same as in ExceptionUtils

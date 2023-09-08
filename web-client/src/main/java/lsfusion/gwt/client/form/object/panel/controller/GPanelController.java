@@ -33,8 +33,10 @@ public class GPanelController extends GPropertyController {
     }
 
     public static native Element getNextFocusElement(Element formController, boolean forward) /*-{
-        var elements = Array.prototype.filter.call(formController.querySelectorAll('tableContainer,button,input'), function (item) {
-            return item.tabIndex >= "0"
+        var elements = Array.prototype.filter.call(
+            formController.querySelectorAll('.tableContainer,button,input,.panelRendererValue'), function (item) {
+                //if element or one of its ancestors has display:none, offsetParent is null
+                return item.tabIndex >= "0" && item.offsetParent !== null
         });
         if(elements.length === 0)
             return null;
@@ -153,6 +155,30 @@ public class GPanelController extends GPropertyController {
     public void updateReadOnlyValues(GReadOnlyReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         GPropertyDraw property = formController.getProperty(reader.propertyID);
         propertyControllers.get(property).setReadOnlyValues(values);
+
+        updatedProperties.put(property, TRUE);
+    }
+
+    @Override
+    public void updatePropertyComments(GCommentReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+        GPropertyDraw property = formController.getProperty(reader.propertyID);
+        propertyControllers.get(property).setPropertyComments(values);
+
+        updatedProperties.put(property, TRUE);
+    }
+
+    @Override
+    public void updateCellCommentElementClasses(GCommentElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+        GPropertyDraw property = formController.getProperty(reader.propertyID);
+        propertyControllers.get(property).setCellCommentElementClasses(values);
+
+        updatedProperties.put(property, TRUE);
+    }
+
+    @Override
+    public void updatePropertyPlaceholders(GPlaceholderReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+        GPropertyDraw property = formController.getProperty(reader.propertyID);
+        propertyControllers.get(property).setPropertyPlaceholders(values);
 
         updatedProperties.put(property, TRUE);
     }

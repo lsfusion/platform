@@ -1,0 +1,70 @@
+.tippy-box,
+.tippy-box .background-inherit { /* here it would be better to add background-inherit style to the tippy-box elements, but it is in an external library */
+    background-color: var(--background-color);
+}
+.tippy-box {
+    border: 1px solid var(--dialog-outer-border-color);
+    border-radius: var(--panel-border-radius);
+    color: var(--text-color);
+    font-size: inherit;
+}
+
+/* By default arrow has no border. Add border manually */
+
+.tippy-box[data-placement^=top]>.tippy-arrow:before {
+    bottom: -8px;
+}
+
+.tippy-arrow {
+    color: var(--background-color);
+}
+
+.tippy-box > .tippy-arrow:after {
+    border-color: transparent;
+    border-style: solid;
+    content: "";
+    position: absolute;
+    z-index: -1
+}
+
+.tippy-box[data-placement^=top] > .tippy-arrow:after {
+    border-top-color: var(--dialog-outer-border-color);
+    border-width: 8px 7px 0px;
+    top: 17px;
+    left: 1px
+}
+
+.tippy-box[data-placement^=bottom] > .tippy-arrow:after {
+    border-bottom-color: var(--dialog-outer-border-color);
+    border-width: 0 7px 7px;
+    bottom: 17px;
+    left: 1px
+}
+
+.tippy-box[data-placement^=left] > .tippy-arrow:after {
+    border-left-color: var(--dialog-outer-border-color);
+    border-width: 7px 0 7px 7px;
+    left: 17px;
+    top: 1px
+}
+
+.tippy-box[data-placement^=right] > .tippy-arrow:after {
+    border-width: 7px 7px 7px 0;
+    right: 17px;
+    top: 1px;
+    border-right-color: var(--dialog-outer-border-color);
+}
+
+/*remove all decorations from preferences button*/
+.tippy-box .tippy-content .tooltip-path-preferences-button, .tippy-box .tippy-content .tooltip-path-preferences-button:hover, .tippy-box .tippy-content .tooltip-path-preferences-button:active,
+.tippy-box .tippy-content .tooltip-path-preferences-button:focus-visible, .tippy-box .tippy-content .tooltip-path-preferences-button:active:focus-visible {
+    border: none;
+    background: transparent;
+    color: var(--bs-btn-color);
+    box-shadow: none;
+}
+
+.tippy-box .tippy-content a.lsf-tooltip-path, .tippy-box .tippy-content a.lsf-tooltip-help,
+.tippy-box .tippy-content a.lsf-form-property-declaration, .tippy-box .tippy-content a.lsf-tooltip-form-decl-help {
+    text-decoration: none;
+}

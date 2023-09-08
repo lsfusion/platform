@@ -27,6 +27,8 @@ GROUP NATIVE id '{system.group.id}' : base;
 GROUP drillDown '{system.group.drill.down}' : root;
 GROUP propertyPolicy '{system.group.property.policy}' : root;
 
+GROUP objects : root; // usually for using in the interactive JSONs
+
 canceled = DATA LOCAL BOOLEAN ();
 applyMessage = DATA LOCAL TEXT ();
 empty()  { };
@@ -73,6 +75,8 @@ lsfStackTraceCaughtException = DATA LOCAL TEXT();
 
 upper = FORMULA STRING 'upper($1)';    
 lower = FORMULA STRING 'lower($1)';   
+
+reload INTERNAL CLIENT 'reload';
 
 formApply '{action.form.save}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.FormApplyAction' () CHANGEKEY 'alt ENTER' IMAGE 'apply.png';
 formCancel '{action.form.cancel}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.FormCancelAction' () CHANGEKEY 'shift ESCAPE' IMAGE 'cancel.png';
@@ -198,7 +202,7 @@ PROPERTIES() READONLY htmlLinkInTab;
 DESIGN htmlLinkInTab {
     NEW panel {
         fill = 1;
-        type = CONTAINERH;
+        horizontal = TRUE;
         MOVE PROPERTY(htmlLinkInTab()) {
             fill = 1;
         }
@@ -417,7 +421,7 @@ META applicationForm(sid, name)
             NEW pane {
                 fill = 1;
                 width = 0;
-                type = TABBED;
+                tabbed = TRUE;
                 NEW commons {
                     caption = '{system.form.sid.name.caption.commons}';
                 }
@@ -468,8 +472,8 @@ WINDOW system TOOLBAR HORIZONTAL POSITION(80, 0, 20, 6) VALIGN (CENTER) HALIGN (
 WINDOW toolbar TOOLBAR VERTICAL POSITION(0, 6, 20, 94) HIDETITLE CLASS toolbarWindowClass();
 WINDOW tree TOOLBAR POSITION(0, 6, 20, 94) HIDETITLE CLASS 'bg-body-secondary';
 
-WINDOW forms NATIVE POSITION(20, 6, 80, 89) CLASS formsWindowClass();
-WINDOW log NATIVE POSITION(20, 95, 80, 5) HIDETITLE CLASS logsWindowClass();
+WINDOW forms NATIVE POSITION(20, 6, 80, 94) CLASS formsWindowClass();
+WINDOW log NATIVE POSITION(80, 6, 20, 93) HIDETITLE CLASS logsWindowClass();
 
 noSystemToolbarCaptions = ABSTRACT BOOLEAN();
 
@@ -551,9 +555,9 @@ META defineLog (object, caption, container)
 END
 META defineLog (object, dateProp)
     clearApplicationLog () + { 
-    	NEWSESSION {
-            APPLY {
-                IF countDaysClear##object() THEN {
+        IF countDaysClear##object() THEN {
+            NEWSESSION {
+                APPLY {
                     DELETE object d WHERE d IS object AND dateProp(d) <= subtract(currentDate(), countDaysClear##object());
                 }
             }

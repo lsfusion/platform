@@ -231,6 +231,8 @@ forbidDuplicateForms '{security.forbid.duplicate.forms}' = DATA BOOLEAN (UserRol
 dataForbidDuplicateForms '{security.forbid.duplicate.forms}' = DATA BOOLEAN (CustomUser) CHARWIDTH 10;
 abstractForbidDuplicateForms(CustomUser u) = ABSTRACT BOOLEAN (CustomUser);
 
+autoReconnectOnConnectionLost '{security.auto.reconnect.on.connection.lost}' = DATA BOOLEAN (UserRole) CHARWIDTH 10;
+
 showDetailedInfo '{security.user.role.show.detailed.info}' = DATA BOOLEAN (UserRole) CHARWIDTH 10;
 
 // Default forms
@@ -413,7 +415,7 @@ FORM securityPolicy '{security.form.policy}'
     PROPERTIES(ur) name, sid
     PROPERTIES(ur) NEW, DELETE
     
-    PROPERTIES(ur) showDetailedInfo, forbidDuplicateForms, defaultForms, maximizeDefaultForms, disableRole
+    PROPERTIES(ur) showDetailedInfo, forbidDuplicateForms, autoReconnectOnConnectionLost, defaultForms, maximizeDefaultForms, disableRole
 
     // Navigator elements
     TREE navigatorElements te = NavigatorElement PARENT parent(te)
@@ -461,17 +463,17 @@ DESIGN securityPolicy {
 
             NEW rolePolicyContainer {
                 fill = 1;
-                type = TABBED;
+                tabbed = TRUE;
 
                 NEW elementsContainer {
-                    type = TABBED;
+                    tabbed = TRUE;
                     caption = '{security.form.navigator}';
                     MOVE BOX(TREE navigatorElements) { caption = '{security.form.tree}'; }
                     MOVE BOX(f) { caption = '{security.form.table}'; }
                 }
 
                 NEW propertiesContainer {
-                    type = TABBED;
+                    tabbed = TRUE;
                     caption = '{security.form.properties}';
                     MOVE BOX(TREE properties) { caption = '{security.form.tree}'; }
                     MOVE BOX(pr) { caption = '{security.form.table}'; }
@@ -532,7 +534,7 @@ NAVIGATOR {
 FORM propertyPolicy '{security.form.policy}'
     OBJECTS p = Property PANEL
     PROPERTIES(p) READONLY caption, canonicalName
-    PROPERTIES(p) userLoggable, isSetNotNull, disableInputList
+    PROPERTIES(p) userLoggable, isSetNotNull, disableInputList, staticCaptionSelect
     
     OBJECTS ur = UserRole
     PROPERTIES(ur) READONLY name, sid
@@ -541,19 +543,20 @@ FORM propertyPolicy '{security.form.policy}'
 DESIGN propertyPolicy {
     OBJECTS {
         NEW property {
-            type = CONTAINERH;
+            horizontal = TRUE;
             alignment = STRETCH;
             caption = '{security.form.property}';
             MOVE PROPERTY(caption(p));
             MOVE PROPERTY(canonicalName(p));
         }
         NEW permission {
-            type = CONTAINERH;
+            horizontal = TRUE;
             alignment = STRETCH;
             caption = '{security.form.parameters}';
             MOVE PROPERTY(userLoggable(p));
             MOVE PROPERTY(isSetNotNull(p));
             MOVE PROPERTY(disableInputList(p));
+            MOVE PROPERTY(staticCaptionSelect(p));
         }
         MOVE BOX(ur);
     }
@@ -574,14 +577,14 @@ FORM actionPolicy '{security.form.policy}'
 DESIGN actionPolicy {
     OBJECTS {
         NEW property {
-            type = CONTAINERH;
+            horizontal = TRUE;
             alignment = STRETCH;
             caption = '{security.form.action}';
             MOVE PROPERTY(caption(p));
             MOVE PROPERTY(canonicalName(p));
         }
         NEW permission {
-            type = CONTAINERH;
+            horizontal = TRUE;
             alignment = STRETCH;
             caption = '{security.form.access}';
         }

@@ -15,7 +15,7 @@ public class ClientExcelLinkClass extends ClientStaticFormatLinkClass {
     }
 
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
-        return new LinkPropertyRenderer(property, "xls");
+        return new LinkPropertyRenderer(property);
     }
 
     public byte getTypeId() {

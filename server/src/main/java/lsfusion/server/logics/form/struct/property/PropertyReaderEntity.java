@@ -7,14 +7,14 @@ import lsfusion.server.physics.admin.profiler.ProfiledObject;
 
 public interface PropertyReaderEntity extends ProfiledObject {
 
-    Type getType();
+    Type getReaderType();
+
+    PropertyObjectEntity getReaderProperty();
 
     int getID(); // ID в рамках Type
     
     String getSID(); // ID в рамках Type
     
-    PropertyObjectEntity getPropertyObjectEntity();
-
     String getReportSID();
     
     ImOrderSet<GroupObjectEntity> getColumnGroupObjects();

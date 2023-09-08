@@ -1,5 +1,6 @@
 package lsfusion.client.classes;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.data.ClientLongClass;
@@ -41,7 +42,7 @@ public class ClientObjectType implements ClientType, ClientTypeClass {
 
     @Override
     public int getDefaultWidth(FontMetrics fontMetrics, ClientPropertyDraw property) {
-        return getFullWidthString("0000000", fontMetrics, property);
+        return getFullWidthString(BaseUtils.replicate('0', 13), fontMetrics, property);
     }
 
     @Override

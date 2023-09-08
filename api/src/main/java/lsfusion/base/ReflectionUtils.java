@@ -28,34 +28,6 @@ public class ReflectionUtils {
         }
     }
 
-    public static Class getFirstTypeParameterOfSuperclass(Class clazz) {
-        if (clazz == null) {
-            throw new IllegalArgumentException("clazz must not be null");
-        }
-
-        Type superclassType = clazz.getGenericSuperclass();
-
-        if (superclassType instanceof ParameterizedType) {
-            Type[] params = ((ParameterizedType) superclassType).getActualTypeArguments();
-
-            if (params != null && params.length > 0) {
-                return (Class) params[0];
-            }
-        }
-
-        for (Type ifaceType : clazz.getGenericInterfaces()) {
-            if (ifaceType instanceof ParameterizedType) {
-                Type[] params = ((ParameterizedType) ifaceType).getActualTypeArguments();
-
-                if (params != null && params.length > 0) {
-                    return (Class) params[0];
-                }
-            }
-        }
-
-        throw new IllegalArgumentException("Not generic type: " + clazz.getSimpleName());
-    }
-
     public static Object getPrivateStaticFieldValue(Class clazz, String fieldName) {
         return getPrivateFieldValue(clazz, null, fieldName);
     }
@@ -140,60 +112,11 @@ public class ReflectionUtils {
         }
     }
 
-    public static <T> T getMethodValue2(Class clazz, Object target, String methodName, Class[] paramsClasses, Object[] params) {
-        try {
-            return getMethodValueWithException2(clazz, target, methodName, paramsClasses, params);
-        } catch (ClassNotFoundException e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
-    public static <T> T getMethodValueWithException2(Class clazz, Object target, String methodName, Class[] paramsClasses, Object[] params) throws ClassNotFoundException {
-        try {
-            Method method = clazz.getMethod(methodName, paramsClasses);
-            //method.setAccessible(true);
-            return (T) method.invoke(target, params);
-        } catch (InvocationTargetException e) {
-            if(e.getCause() instanceof ClassNotFoundException) {
-                throw (ClassNotFoundException) e.getCause();
-            } else {
-                throw Throwables.propagate(e);
-            }
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
-    public static Method getDeclaredMethodOrNull(Class<?> clazz, String methodName, Class<?>... args) {
-        if (clazz == null || methodName == null) {
-            return null;
-        }
-
-        try {
-            return clazz.getDeclaredMethod(methodName, args);
-        } catch (NoSuchMethodException e) {
-            return null;
-        }
-    }
-
-    public static <T> T makeSynchronized(Class<T> ifaceClass, T object) {
-        return (T) Proxy.newProxyInstance(ifaceClass.getClassLoader(), new Class<?>[]{ifaceClass}, new Handler(object));
-    }
-
     public static Method getSingleMethod(Object object, String method, int paramCount) {
         for (Method methodObject : object.getClass().getMethods())
             if (methodObject.getName().equals(method) && (paramCount == -1 || methodObject.getParameterTypes().length == paramCount))
                 return methodObject;
         throw new RuntimeException("no single method");
-    }
-
-    public static Method getSingleMethod(Object object, String method) {
-        return getSingleMethod(object, method, -1);
-    }
-
-    public static void invokeCheckSetter(Object object, String field, Object set) {
-        if (!BaseUtils.nullEquals(invokeGetter(object, field), set))
-            invokeSetter(object, field, set);
     }
 
     public static void invokeSetter(Object object, String field, Object set) {
@@ -255,16 +178,6 @@ public class ReflectionUtils {
             return method.invoke(object, args);
         } catch (InvocationTargetException e) {
             throw e.getTargetException();
-        }
-    }
-
-    public static <T> T createByPrivateConstructor(Class<T> clazz, Class<?>[] parameterTypes, Object... parameters) {
-        try {
-            Constructor<T> ctor = clazz.getDeclaredConstructor(parameterTypes);
-            ctor.setAccessible(true);
-            return ctor.newInstance(parameters);
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
         }
     }
 

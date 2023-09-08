@@ -3,6 +3,7 @@ package lsfusion.gwt.client.base.view;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.size.GSize;
+import lsfusion.gwt.client.view.MainFrame;
 
 // extended flex panel with alignShrink, and preferred size support
 public class SizedFlexPanel extends FlexPanel {
@@ -24,36 +25,52 @@ public class SizedFlexPanel extends FlexPanel {
 //         addSized(widget, getWidgetCount(), 1, false, null, GFlexAlignment.STRETCH, false, null);
     }
 
+// test for the intrinistic height
+//    <div style="display:flex;height:100px;background-color:blue">
+//  <div style="">
+//  A
+//  </div>
+//  <div style="align-self:flex-start;overflow:auto;max-height:-webkit-fill-available">
+//  <div style="height:200px;width:200px;background-color:red;align-self:stretch">
+//  B
+//  </div>
+//  </div>
+//  </div>
+
     public void addSized(Widget widget, int beforeIndex, double flex, boolean shrink, GSize size, GFlexAlignment alignment, boolean alignShrink, GSize alignSize) {
         boolean vertical = isVertical();
         Element element = widget.getElement();
 
+        boolean supportsIntrinisticHeight = !MainFrame.firefox;
+
         boolean isStretch = alignment == GFlexAlignment.STRETCH;
 
-        boolean incorrectOppositeShrink = isStretch != alignShrink; // if size is 0 we don't care about the shrink
-        boolean incorrectOppositeSize = isStretch && alignSize != null; // if size is definite, alignment stretch is ignored
-
         // we could save one more container (by not creating wrap, but changing widget if is already flexpanel with a simple structure, collapsablepanel, tab wrapper)
-        if(incorrectOppositeShrink || incorrectOppositeSize) {
-            boolean fixed;
-            if(vertical) {
-                fixed = true;
-                if(alignShrink)
-                    setIntrinisticWidths(element, isStretch, alignSize);
-                else {
+        if((isStretch && !wrap) != alignShrink || // incorrect opposite shrink, stretch with nowrap automatically shrinks, in other cases nothing shrinks
+                isStretch && alignSize != null) { // incorrect opposite size, if size is defined, alignment stretch is ignored
+            boolean fixed = true;
+            if(alignShrink && (vertical || supportsIntrinisticHeight)) {
+                setIntrinisticSize(element, !vertical, isStretch && !wrap, alignSize);
+            } else {
+                if(vertical) {
                     assert isStretch;
                     if(alignSize == null) {
                         setMinPanelWidth(element, "fit-content");
                     } else {
                         // in theory max(fill-available, alignSize) should be, but fill-available cannot be used in calcs, so
-                        if(size == null) // we're using an extra div
+                        if(size == null || supportsIntrinisticHeight) // we're using an extra div
                             fixed = false;
                         else // we're fucked so will use 100% (it ignores margins, but what you gonna do)
                             setMinPanelWidth(element, "calc(max(100%," + alignSize.getString() + "))");
                     }
-                }
-            } else // for height nothing of the above works (even fill-content)
-                fixed = false;
+               } else { // for height fit-content doesn't work
+                    if(isStretch && wrap && alignShrink && alignSize == null) {
+                        // actually opposite flex panel won't help in this case (because opposite flex panel won't be shrinked with STRETCH either)
+                        assert !supportsIntrinisticHeight;
+                    } else
+                        fixed = false;
+               }
+            }
 
             if(!fixed) {
                 FlexPanel wrapPanel = new FlexPanel(!vertical, isStretch ? GFlexAlignment.START : alignment);
@@ -61,9 +78,9 @@ public class SizedFlexPanel extends FlexPanel {
                 wrapPanel.addStyleName("oppositeSizeCssFixPanel"); // just to identify this div in dom
                 wrapPanel.add(widget, GFlexAlignment.STRETCH, isStretch ? 1 : 0, alignShrink, alignSize);
                 if (size != null) { // we want to use intristic widths, because otherwise (when setting the size to the wrap panel) margin/border/padding will be ignored
-                    assert !vertical;
-                    setIntrinisticWidths(element, true, size);
-                    setPanelWidth(element, size);
+                    assert !vertical || supportsIntrinisticHeight;
+                    setIntrinisticSize(element, vertical, true, size);
+                    setPanelSize(element, vertical, size);
                     size = null;
                 }
 
@@ -79,25 +96,39 @@ public class SizedFlexPanel extends FlexPanel {
         add(widget, beforeIndex, alignment, flex, shrink, size);
     }
 
-    private static void setIntrinisticWidths(Element element, boolean isStretch, GSize size) {
-//        setMaxWidth(element, "fill-available");
-        element.setPropertyObject("intrinisticShrinkWidth", size);
-        element.addClassName("shrink-width");
+    private static void setIntrinisticSize(Element element, boolean vertical, boolean isStretch, GSize size) {
+        element.setPropertyObject(vertical ? "intrinisticShrinkHeight" : "intrinisticShrinkWidth", size);
 
-        if(isStretch)
-            element.addClassName("stretch-width");
+        if(vertical)
+            element.addClassName("intr-shrink-height");
+        else
+            element.addClassName("intr-shrink-width");
+
+        if (isStretch) {
+            if(vertical)
+                element.addClassName("intr-stretch-height");
+            else
+                element.addClassName("intr-stretch-width");
+        }
     }
 
-    protected static void setIntrinisticPreferredWidth(boolean set, Widget widget) {
+    protected static void setIntrinisticPreferredSize(boolean set, boolean vertical, Widget widget) {
         Element element = widget.getElement();
-        GSize intrinisticShrinkSize = (GSize) element.getPropertyObject("intrinisticShrinkWidth");
+        GSize intrinisticShrinkSize = (GSize) element.getPropertyObject(vertical ? "intrinisticShrinkHeight" : "intrinisticShrinkWidth");
         if(intrinisticShrinkSize != null) {
-            if(set)
-                element.removeClassName("shrink-width");
-            else
-                element.addClassName("shrink-width");
-            FlexPanel.setPanelWidth(element, set ? null : intrinisticShrinkSize);
-            FlexPanel.setMinPanelWidth(element, set ? intrinisticShrinkSize : null);
+            if (set) {
+                if(vertical)
+                    element.removeClassName("intr-shrink-height");
+                else
+                    element.removeClassName("intr-shrink-width");
+            } else {
+                if(vertical)
+                    element.addClassName("intr-shrink-height");
+                else
+                    element.addClassName("intr-shrink-width");
+            }
+            FlexPanel.setPanelSize(element, vertical, set ? null : intrinisticShrinkSize);
+            FlexPanel.setMinPanelSize(element, vertical, set ? intrinisticShrinkSize : null);
         }
     }
 

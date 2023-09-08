@@ -123,7 +123,7 @@ DESIGN order {
     OBJECTS {
         NEW pane { // creating a container after the order header
             fill = 1;
-            type = TABBED;
+            tabbed = TRUE;
             MOVE BOX(d);
             MOVE BOX(b) {
                 caption = 'Selection';

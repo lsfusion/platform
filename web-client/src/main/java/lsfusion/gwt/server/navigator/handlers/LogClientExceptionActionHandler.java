@@ -6,9 +6,7 @@ import com.google.gwt.user.client.rpc.RpcRequestBuilder;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.heavy.concurrent.weak.ConcurrentIdentityWeakHashMap;
-import lsfusion.gwt.client.base.exception.NonFatalHandledException;
-import lsfusion.gwt.client.base.exception.RemoteInternalDispatchException;
-import lsfusion.gwt.client.base.exception.StackedException;
+import lsfusion.gwt.client.base.exception.*;
 import lsfusion.gwt.client.base.result.VoidResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.LogClientExceptionAction;
 import lsfusion.gwt.server.MainDispatchServlet;
@@ -80,7 +78,8 @@ public class LogClientExceptionActionHandler extends NavigatorActionHandler<LogC
             throwable = fromWebServerToAppServer(throwable);
 
             try {
-                logger.error(throwable.getMessage(), throwable);
+                if (!(action.throwable instanceof RemoteRetryException))
+                    logger.error(throwable.getMessage(), throwable);
                 navigator.logClientException(null, throwable);
             } finally {
                 invocationLogger.info("After logging exception, count : " + newCount + ", navigator " + navigator);

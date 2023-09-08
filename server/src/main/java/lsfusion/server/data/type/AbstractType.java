@@ -10,6 +10,7 @@ import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.data.type.reader.AbstractReader;
 import lsfusion.server.logics.classes.data.ParseException;
+import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.classes.data.time.DateClass;
 import lsfusion.server.logics.form.stat.struct.export.plain.dbf.OverJDBField;

@@ -112,8 +112,8 @@ public abstract class WidgetForm extends FormContainer {
             addStyleName("tab-close-button");
 
             addClickHandler(event -> {
-                event.stopPropagation();
-                event.preventDefault();
+//                event.stopPropagation();
+//                event.preventDefault();
                 closePressed();
             });
         }

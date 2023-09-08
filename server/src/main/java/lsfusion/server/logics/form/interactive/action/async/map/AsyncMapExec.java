@@ -5,19 +5,18 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncExec;
-import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 
 public abstract class AsyncMapExec<T extends PropertyInterface> extends AsyncMapEventExec<T> {
 
-    public AsyncExec map() {
-        return (AsyncExec) map(MapFact.EMPTYREV(), null, null, null, null, null);
+    public AsyncExec map(ConnectionContext context) {
+        return (AsyncExec) map(MapFact.EMPTYREV(), context, null, null, null);
     }
 
     private final static AsyncMapExec RECURSIVE = new AsyncMapExec<PropertyInterface>() {
@@ -43,7 +42,7 @@ public abstract class AsyncMapExec<T extends PropertyInterface> extends AsyncMap
         }
 
         @Override
-        public AsyncEventExec map(ImRevMap<PropertyInterface, ObjectEntity> mapObjects, FormEntity form, SecurityPolicy policy, ActionOrProperty securityProperty, PropertyObjectEntity<?> drawProperty, GroupObjectEntity toDraw) {
+        public AsyncEventExec map(ImRevMap<PropertyInterface, ObjectEntity> mapObjects, ConnectionContext context, ActionOrProperty securityProperty, PropertyObjectEntity<?> drawProperty, GroupObjectEntity toDraw) {
             return null;
         }
 

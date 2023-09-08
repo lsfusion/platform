@@ -88,10 +88,10 @@ FORM backup '{backup.backup}'
 DESIGN backup {
     NEW pane {
         fill = 1;
-        type = TABBED;
+        tabbed = TRUE;
         NEW pane1 {
             caption = '{backup.backups}';
-            type = CONTAINERH;
+            horizontal = TRUE;
             NEW leftPane {
                 fill = 1;
                 MOVE BOX(b);

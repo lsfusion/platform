@@ -176,7 +176,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
             startFieldName = calendarDateType;
             endFieldName = endEventFieldName;
             this.index = index;
-            this.key = getKey(object);
+            this.key = getObjects(object);
             this.object = object;
             backgroundColor = getBackgroundColor(object, controller);
             foregroundColor = getForegroundColor(object, controller);
@@ -199,7 +199,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
                 break;
 
             JavaScriptObject object = list.get(i);
-            GGroupObjectValue key = getKey(object);
+            GGroupObjectValue key = getObjects(object);
 
             Event event = new Event(object, i);
             events.put(key, event);
@@ -221,7 +221,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
             events.clear();
             for (int i = 0; i < list.length(); i++) {
                 JavaScriptObject object = list.get(i);
-                events.put(getKey(object), new Event(object, i));
+                events.put(getObjects(object), new Event(object, i));
             }
             setCalendarEvents(calendar, createCalendarEventsObject(events));
         } else {

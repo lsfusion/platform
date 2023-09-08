@@ -20,6 +20,7 @@ import lsfusion.interop.form.property.PropertyGroupType;
 import lsfusion.interop.form.property.PropertyReadType;
 import lsfusion.server.base.caches.IdentityStartLazy;
 import lsfusion.server.base.caches.IdentityStrongLazy;
+import lsfusion.server.base.caches.ParamLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
@@ -42,6 +43,8 @@ import lsfusion.server.logics.form.interactive.action.input.InputFilterEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.controller.init.Instantiable;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
+import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
@@ -52,12 +55,15 @@ import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
+import org.apache.commons.lang.StringUtils;
 
 import javax.swing.*;
 import java.sql.SQLException;
@@ -75,7 +81,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     private PropertyEditType editType = PropertyEditType.EDITABLE;
     
-    private final ActionOrPropertyObjectEntity<P, ?> propertyObject;
+    public final ActionOrPropertyObjectEntity<P, ?> actionOrProperty;
     
     public GroupObjectEntity toDraw;
 
@@ -93,6 +99,9 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     public ClassViewType viewType; // assert not null, after initialization
     public String customRenderFunction;
+    public static final String SELECT = "<<select>>";
+    public static final String NOSELECT = "<<no>>";
+    public static final String AUTOSELECT = "<<auto>>";
     public String customChangeFunction;
     public String eventID;
 
@@ -170,10 +179,10 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         public PropertyDrawReader(PropertyDrawExtraType type) {
             this.type = type;    
         }
-        
+
         @Override
-        public Type getType() {
-            return getPropertyObjectEntity().getType();
+        public Type getReaderType() {
+            return getReaderProperty().getType();
         }
 
         @Override
@@ -182,7 +191,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         }
 
         @Override
-        public PropertyObjectEntity getPropertyObjectEntity() {
+        public PropertyObjectEntity getReaderProperty() {
             return getPropertyExtra(type);
         }
 
@@ -198,7 +207,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
         @Override
         public Object getProfiledObject() {
-            return getPropertyObjectEntity();
+            return getReaderProperty();
         }
 
         @Override
@@ -218,44 +227,49 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     private ActionOrProperty inheritedProperty;
 
-    public PropertyDrawEntity(int ID, String sID, String integrationSID, ActionOrPropertyObjectEntity<P, ?> propertyObject, ActionOrProperty inheritedProperty) {
+    public PropertyDrawEntity(int ID, String sID, String integrationSID, ActionOrPropertyObjectEntity<P, ?> actionOrProperty, ActionOrProperty inheritedProperty) {
         super(ID);
         setSID(sID);
         setIntegrationSID(integrationSID);
-        this.propertyObject = propertyObject;
+        this.actionOrProperty = actionOrProperty;
         this.inheritedProperty = inheritedProperty;
     }
 
-    public boolean isProperty() {
-        return getValueActionOrProperty() instanceof PropertyObjectEntity;
+    public boolean isStaticProperty() {
+        return getStaticActionOrProperty() instanceof PropertyObjectEntity;
+    }
+
+    public boolean isProperty(FormInstanceContext context) {
+        return getActionOrProperty(context) instanceof PropertyObjectEntity; // in theory we can also use FormContext if needed
     }
 
     public PropertyObjectEntity<?> getOrder() {
-        return getValueProperty();
+        return getReaderProperty();
     }
 
     // for all external calls will set optimistic to true
-    public AsyncEventExec getAsyncEventExec(FormEntity form, SecurityPolicy policy, String actionSID, boolean externalChange) {
-        ActionObjectEntity<?> changeAction = getEventAction(actionSID, form, policy);
+    public AsyncEventExec getAsyncEventExec(FormInstanceContext context, String actionSID, boolean externalChange) {
+        ActionObjectEntity<?> changeAction = getEventAction(actionSID, context);
         if (changeAction != null) {
-            return changeAction.getAsyncEventExec(form, policy, getSecurityProperty(), getDrawProperty(), getToDraw(form), optimisticAsync || externalChange);
+            return changeAction.getAsyncEventExec(context, getSecurityProperty(), isProperty(context) ? getAssertProperty(context) : null, getToDraw(context.entity), optimisticAsync || externalChange);
         }
         return null;
     }
 
-    private boolean isChange(String eventActionSID) {
+    private boolean isChange(String eventActionSID, FormInstanceContext context) {
         // GROUP_CHANGE can also be in context menu binding (see Property constructor)
         boolean isEdit = CHANGE.equals(eventActionSID) || GROUP_CHANGE.equals(eventActionSID);
-        assert isEdit || hasContextMenuBinding(eventActionSID) || hasKeyBinding(eventActionSID);
+        assert isEdit || hasContextMenuBinding(eventActionSID, context) || hasKeyBinding(eventActionSID, context);
         return isEdit;
     }
     
-    private boolean checkPermission(Action eventAction, String eventActionSID, SQLCallable<Boolean> checkReadOnly, SecurityPolicy securityPolicy) throws SQLException, SQLHandledException {
+    private boolean checkPermission(Action eventAction, String eventActionSID, FormInstanceContext context, SQLCallable<Boolean> checkReadOnly) throws SQLException, SQLHandledException {
+        SecurityPolicy securityPolicy = context.securityPolicy;
         if(EDIT_OBJECT.equals(eventActionSID))
             return securityPolicy.checkPropertyEditObjectsPermission(getSecurityProperty());
 
         ActionOrProperty securityProperty;
-        if (isChange(eventActionSID)) {
+        if (isChange(eventActionSID, context)) {
             if (isReadOnly() || (checkReadOnly != null && checkReadOnly.call())) 
                 return false;
 
@@ -267,61 +281,72 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return securityPolicy.checkPropertyChangePermission(securityProperty, eventAction);
     }
 
-    public ActionObjectEntity<?> getEventAction(String actionId, FormEntity form, SecurityPolicy securityPolicy) {
+    public ActionObjectEntity<?> getCheckedEventAction(String actionId, FormInstanceContext context) {
         try {
-            return getEventAction(actionId, form, null, securityPolicy);
+            return getCheckedEventAction(actionId, context, null);
         } catch (SQLException | SQLHandledException e) {
             assert false;
             throw Throwables.propagate(e);
         }
     }
     
-    public ActionObjectEntity<?> getEventAction(String actionId, FormEntity form, SQLCallable<Boolean> checkReadOnly, SecurityPolicy securityPolicy) throws SQLException, SQLHandledException {
-        ActionObjectEntity<?> eventAction = getEventAction(actionId, form);
+    public ActionObjectEntity<?> getCheckedEventAction(String actionId, FormInstanceContext context, SQLCallable<Boolean> checkReadOnly) throws SQLException, SQLHandledException {
+        ActionObjectEntity<?> eventAction = getEventAction(actionId, context);
 
-        if (eventAction != null && !checkPermission(eventAction.property, actionId, checkReadOnly, securityPolicy))
+        if (eventAction != null && !checkPermission(eventAction.property, actionId, context, checkReadOnly))
             return null;
         
         return eventAction;
     }
 
-    public ActionObjectEntity<?> getEventAction(String actionId, FormEntity form) {
-        if (eventActions != null) {
-            ActionObjectSelector eventSelector = eventActions.get(actionId);
-            ActionObjectEntity<?> eventAction;
-            if (eventSelector != null && (eventAction = eventSelector.getAction(form)) != null)
-                return eventAction;
-        }
+    public <X extends PropertyInterface> ActionObjectEntity<?> getEventAction(String actionId, FormInstanceContext context) {
+        ActionObjectSelector explicitEventSelector = getExplicitEventAction(actionId);
+        ActionObjectEntity<?> explicitEventAction;
+        if (explicitEventSelector != null && (explicitEventAction = explicitEventSelector.getAction(context.entity, isProperty(context) ? getAssertProperty(context) : null)) != null)
+            return explicitEventAction;
 
-        ActionOrProperty<P> eventProperty = getEditProperty();
-        ImRevMap<P, ObjectEntity> eventMapping = getEditMapping();
+        return getDefaultEventAction(actionId, context);
+    }
 
-        ActionMapImplement<?, P> eventActionImplement = eventProperty.getExplicitEventAction(actionId);
-        if(eventActionImplement != null)
-            return eventActionImplement.mapObjects(eventMapping);
+    private <X extends PropertyInterface> ActionObjectEntity<? extends PropertyInterface> getDefaultEventAction(String actionId, FormInstanceContext context) {
+        ActionOrPropertyObjectEntity<X, ?> eventPropertyObject = (ActionOrPropertyObjectEntity<X, ?>) getActionOrProperty(context);
+        ActionOrProperty<X> eventProperty = eventPropertyObject.property;
+        ImRevMap<X, ObjectEntity> eventMapping = eventPropertyObject.mapping;
 
-        // default implementations for group change and change wys
+        // default implementations for group change
         if (GROUP_CHANGE.equals(actionId)) {
+            // checking explicit property handler
+            ActionMapImplement<?, X> eventActionImplement = eventProperty.getExplicitEventAction(actionId);
+            if(eventActionImplement != null)
+                return eventActionImplement.mapObjects(eventMapping);
+
             // if there is no explicit default handler, then generate one
-            ActionObjectEntity<?> eventAction = getEventAction(CHANGE, form);
+            ActionObjectEntity<?> eventAction = getEventAction(CHANGE, context);
             if (eventAction != null)
-                return eventAction.getGroupChange(getToDraw(form));
+                return eventAction.getGroupChange(getToDraw(context.entity));
         } else { // default handler
-            eventActionImplement = eventProperty.getDefaultEventAction(actionId, actionId.equals(CHANGE) ? defaultChangeEventScope : null, ListFact.EMPTY(), actionId.equals(CHANGE) ? customChangeFunction : null);
+            ActionMapImplement<?, X> eventActionImplement = eventProperty.getEventAction(actionId, actionId.equals(CHANGE) ? defaultChangeEventScope : null, ListFact.EMPTY(), actionId.equals(CHANGE) ? customChangeFunction : null);
             if (eventActionImplement != null)
                 return eventActionImplement.mapObjects(eventMapping);
         }
         return null;
     }
 
+    private ActionObjectSelector getExplicitEventAction(String actionId) {
+        if (eventActions != null)
+            return eventActions.get(actionId);
+        return null;
+    }
+
     @IdentityStrongLazy
-    public <X extends PropertyInterface> ActionObjectEntity<?> getSelectorAction(FormEntity entity) {
+    public <X extends PropertyInterface> ActionObjectEntity<?> getSelectorAction(FormEntity entity, PropertyObjectEntity<X> listProperty) {
         GroupObjectEntity groupObject = getToDraw(entity);
         ImSet<ObjectEntity> objects;
         ObjectEntity object;
         ValueClass valueClass;
         if(groupObject != null && (objects = groupObject.getObjects()).size() == 1 &&
-                (object = objects.single()).groupTo.viewType.isPanel() && (valueClass = object.baseClass) instanceof CustomClass) {
+                (object = objects.single()).groupTo.viewType.isPanel() && (valueClass = object.baseClass) instanceof CustomClass &&
+                listProperty != null) {  //listProperty can be null when SELECTOR is set for an action
             CustomClass customClass = (CustomClass)valueClass;
 
             ImRevMap<ObjectEntity, PropertyInterface> mapObjects = entity.getObjects().mapRevValues((Supplier<PropertyInterface>) PropertyInterface::new);
@@ -335,7 +360,6 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             InputFilterEntity<?, PropertyInterface> filter = entity.getInputFilterAndOrderEntities(object, SetFact.EMPTY(), mapObjects).first;
             assert !filter.mapValues.valuesSet().contains(objectInterface);
 
-            PropertyObjectEntity<X> listProperty = (PropertyObjectEntity<X>) getDrawProperty();
             ImRevMap<ObjectEntity, PropertyInterface> listMapObjects = mapObjects.removeRev(object);
 
             // filter orderInterfaces to only used in view and filter
@@ -407,18 +431,17 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public static FormSessionScope DEFAULT_OBJECTS_EVENTSCOPE = FormSessionScope.OLDSESSION;
     public static FormSessionScope DEFAULT_DATACHANGE_EVENTSCOPE = FormSessionScope.NEWSESSION; // since when data changed in the same session, it immediately leads to pessimistic async values which gives a big overhead in most cases
 
-    public ActionOrProperty<P> getEditProperty() {
-        return propertyObject.property;
-    }     
-    public ImRevMap<P, ObjectEntity> getEditMapping() {
-        return propertyObject.mapping;
-    }     
-
-    public Iterable<String> getAllPropertyEventActions() {
-        return BaseUtils.mergeIterables(BaseUtils.mergeIterables(ServerResponse.events, getContextMenuBindings().keySet()), getKeyBindings().valueIt());
+    // should be the same property that is used in getEventAction (because eventActions should be synchronized with the contextMenuBindings)
+    public ActionOrProperty<?> getBindingProperty(FormInstanceContext context) {
+//        return getInheritedProperty();
+        return getActionOrProperty(context).property;
     }
-    public OrderedMap<String, LocalizedString> getContextMenuBindings() {
-        ImOrderMap<String, LocalizedString> propertyContextMenuBindings = getEditProperty().getContextMenuBindings();
+
+    public Iterable<String> getAllPropertyEventActions(FormInstanceContext context) {
+        return BaseUtils.mergeIterables(BaseUtils.mergeIterables(ServerResponse.events, getContextMenuBindings(context).keySet()), getKeyBindings(context).valueIt());
+    }
+    public OrderedMap<String, LocalizedString> getContextMenuBindings(FormInstanceContext context) {
+        ImOrderMap<String, LocalizedString> propertyContextMenuBindings = getBindingProperty(context).getContextMenuBindings();
         if (propertyContextMenuBindings.isEmpty()) {
             return contextMenuBindings;
         }
@@ -435,25 +458,25 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return result;
     }
 
-    public boolean hasContextMenuBinding(String actionSid) {
-        OrderedMap contextMenuBindings = getContextMenuBindings();
+    public boolean hasContextMenuBinding(String actionSid, FormInstanceContext context) {
+        OrderedMap contextMenuBindings = getContextMenuBindings(context);
         return contextMenuBindings != null && contextMenuBindings.containsKey(actionSid);
     }
     
-    public boolean hasKeyBinding(String actionId) {
-        ImMap<KeyStroke, String> keyBindings = getKeyBindings();
+    public boolean hasKeyBinding(String actionId, FormInstanceContext context) {
+        ImMap<KeyStroke, String> keyBindings = getKeyBindings(context);
         return keyBindings != null && keyBindings.containsValue(actionId);
     }
 
-    public ImMap<KeyStroke, String> getKeyBindings() {
-        ImMap<KeyStroke, String> propertyKeyBindings = getEditProperty().getKeyBindings();
+    public ImMap<KeyStroke, String> getKeyBindings(FormInstanceContext context) {
+        ImMap<KeyStroke, String> propertyKeyBindings = getBindingProperty(context).getKeyBindings();
         if(keyBindings != null)
             propertyKeyBindings = propertyKeyBindings.merge(MapFact.fromJavaMap(keyBindings), MapFact.override());
         return propertyKeyBindings;
     }
 
-    public String getMouseBinding() {
-        return mouseBinding != null ? mouseBinding : getEditProperty().getMouseBinding();
+    public String getMouseBinding(FormInstanceContext context) {
+        return mouseBinding != null ? mouseBinding : getBindingProperty(context).getMouseBinding();
     }
 
     public ImOrderSet<GroupObjectEntity> getColumnGroupObjects() {
@@ -498,7 +521,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     @Override
     public String toString() {
-        return (formPath == null ? "" : formPath) + " property:" + propertyObject.toString();
+        return (formPath == null ? "" : formPath) + " property:" + actionOrProperty.toString();
     }
 
     // interactive
@@ -521,7 +544,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public ImSet<ObjectEntity> getObjectInstances(Function<PropertyDrawExtraType, PropertyObjectEntity<?>> getProperty) {
         MAddSet<ActionOrPropertyObjectEntity<?, ?>> propertyObjects = SetFact.mAddSet();
 
-        PropertyDrawExtraType[] neededTypes = {CAPTION, FOOTER, SHOWIF, VALUEELEMENTCLASS, CAPTIONELEMENTCLASS, BACKGROUND, FOREGROUND, IMAGE, READONLYIF};
+        PropertyDrawExtraType[] neededTypes = {CAPTION, FOOTER, SHOWIF, VALUEELEMENTCLASS, CAPTIONELEMENTCLASS, BACKGROUND, FOREGROUND, IMAGE, READONLYIF, COMMENT, COMMENTELEMENTCLASS, PLACEHOLDER};
         for (PropertyDrawExtraType type : neededTypes) {
             PropertyObjectEntity<?> prop = getProperty.apply(type);
             if (prop != null) {
@@ -532,7 +555,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         MSet<ObjectEntity> mObjects = SetFact.mSet();
         for(int i=0,size=propertyObjects.size();i<size;i++)
             mObjects.addAll(propertyObjects.get(i).getObjectInstances());
-        mObjects.addAll(getValueActionOrProperty().getObjectInstances());
+        mObjects.addAll(actionOrProperty.getObjectInstances());
         if(toDraw != null)
             mObjects.addAll(toDraw.getObjects());
         return mObjects.immutable();
@@ -558,6 +581,9 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return toDraw != null && toDraw.viewType.isToolbar();
     }
 
+    public boolean isList(FormInstanceContext context) {
+        return isList(context.entity);
+    }
     public boolean isList(FormEntity formEntity) {
         GroupObjectEntity toDraw = getToDraw(formEntity);
         return toDraw != null && toDraw.viewType.isList() && (viewType == null || viewType.isList());
@@ -614,19 +640,36 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return PropertyReadType.DRAW;
     }
 
-    public Type getType() {
-        return getValueProperty().property.getType();
+    public Type getType(FormInstanceContext context) {
+        return getAssertProperty(context).property.getType();
+    }
+
+    public Type getStaticType() {
+        return getAssertStaticProperty().property.getType();
+    }
+
+    @Override
+    public Type getReaderType() {
+        return getStaticType();
+    }
+
+    public Type getImportType() {
+        return getStaticType();
+    }
+
+    public boolean isPredefinedSwitch() {
+        return ((Property<?>)getInheritedProperty()).isPredefinedSwitch();
     }
 
     public LocalizedString getCaption() {
         return getInheritedProperty().caption;
     }
-    public Supplier<AppServerImage> getImage() {
+    public AppServerImage.Reader getImage() {
         return getInheritedProperty().image;
     }
 
     public boolean isNotNull() {
-        return getInheritedProperty().isNotNull();
+        return getInheritedProperty().isDrawNotNull();
     }
 
     public String integrationSID; // hack - can be null for EXPORT FROM orders
@@ -638,27 +681,181 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public String getIntegrationSID() {
         return integrationSID;
     }
-    
+
+    // IMPORT
     public PropertyObjectEntity getImportProperty() {
-        return (PropertyObjectEntity) propertyObject;
+        return getAssertStaticProperty();
     }
 
-    public PropertyObjectEntity<?> getDrawProperty() {
-        return propertyObject.getDrawProperty(getPropertyExtras().get(READONLYIF));
+    public PropertyObjectEntity<?> getProperty(FormInstanceContext context) {
+        return getActionOrProperty(context).getProperty(getReadOnly());
     }
 
-    // for getExpr, getType purposes
-    public ActionOrPropertyObjectEntity<?, ?> getValueActionOrProperty() {
-        return propertyObject;
+    private PropertyObjectEntity<?> getReadOnly() {
+        return getPropertyExtras().get(READONLYIF);
     }
 
-    public PropertyObjectEntity<?> getValueProperty() {
-        return (PropertyObjectEntity) getValueActionOrProperty();
+    private boolean hasNoGridReadOnly(FormEntity form) {
+        PropertyObjectEntity<?> readOnly = getReadOnly();
+        return readOnly != null && isList(form) && readOnly.hasNoGridReadOnly(getToDraw(form).getObjects());
     }
 
+    public ActionOrPropertyObjectEntity<?, ?> getStaticActionOrProperty() {
+        return actionOrProperty;
+    }
+
+    public static class Select {
+
+        public final PropertyObjectEntity property;
+
+        public final String type;
+        public final String elementType;
+
+        public final int length;
+        public final int count;
+        public final boolean actual;
+        public final boolean html;
+
+        public Select(PropertyObjectEntity property, String type, String elementType, int length, int count, boolean actual, boolean html) {
+            this.property = property;
+            this.type = type;
+            this.elementType = elementType;
+            this.length = length;
+            this.count = count;
+            this.actual = actual;
+            this.html = html;
+        }
+    }
+
+    private boolean hasFooter(FormEntity entity) {
+        return isList(entity) && getPropertyExtra(FOOTER) != null;
+    }
+
+    @ParamLazy
+    public PropertyDrawEntity.Select getSelectProperty(FormInstanceContext context) {
+        if(context.isNative)
+            return null;
+
+        if(actionOrProperty instanceof PropertyObjectEntity) {
+            if(customChangeFunction != null)
+                return null;
+
+            String elementType = null;
+
+            boolean forceSelect = false;
+            Boolean forceFilter = null;
+
+            String custom = getCustomRenderFunction();
+            if(custom != null) {
+                if(custom.startsWith(SELECT)) {
+                    custom = custom.substring(SELECT.length());
+
+                    forceSelect = true;
+                    if(!custom.equals(AUTOSELECT)) {
+                        elementType = StringUtils.capitalise(custom);
+
+                        forceFilter = elementType.equals("Input");
+                    }
+                } else
+                    return null;
+            }
+
+            PropertyObjectEntity.Select select = ((PropertyObjectEntity<P>) actionOrProperty).getSelectProperty(context, forceSelect, forceFilter);
+
+            if(select != null) {
+                if(getExplicitEventAction(CHANGE) != null && !forceSelect)
+                    return null;
+
+                String selectType = null;
+                if (select.type == PropertyObjectEntity.Select.Type.MULTI) {
+                    selectType = "Multi";
+                } else if (select.type == PropertyObjectEntity.Select.Type.NOTNULL) {
+                    if (select.count > 1 || forceSelect)
+                        selectType = "";
+                } else {
+                    if (select.count > 0 || forceSelect)
+                        selectType = "Null";
+                }
+
+                if(selectType != null) {
+                    if(elementType == null) {
+                        //hasFooter() check is needed to avoid automatically using custom components in the FOOTER
+                        if (!isReadOnly(context) && !hasFooter(context.entity) || forceSelect) { // we don't have to check hasChangeAction, since canBeChanged is checked in getSelectProperty
+                            boolean isMulti = select.type == PropertyObjectEntity.Select.Type.MULTI;
+                            if (select.length <= Settings.get().getMaxLengthForValueButton()) {
+                                elementType = isMulti ? "Button" : "ButtonGroup";
+                            } else if (select.count <= Settings.get().getMaxInterfaceStatForValueList() && !isList(context)) {
+                                ContainerView container = context.view.get(this).getLayoutParamContainer();
+                                if (container != null && container.isHorizontal())
+                                    elementType = isMulti ? "Button" : "ButtonGroup";
+                                else
+                                    elementType = "List";
+                            } else if (select.count <= Settings.get().getMaxInterfaceStatForValueDropdown() || (forceSelect && !isMulti)) {
+                                elementType = "Dropdown";
+                            } else {
+                                assert isMulti;
+                                elementType = "Input";
+                            }
+                        }
+                    }
+
+                    if (elementType != null)
+                        return new Select(select.property, selectType, elementType, select.length, select.count, select.actual, select.html && elementType.equals("Dropdown"));
+                }
+            }
+        }
+        return null;
+    }
+
+    public boolean isReadOnly(FormInstanceContext context) {
+        return isReadOnly() || hasNoGridReadOnly(context.entity);
+    }
+
+    public String getCustomRenderFunction(FormInstanceContext context) {
+        Select selectProperty = getSelectProperty(context);
+        if(selectProperty != null)
+            return "select" + selectProperty.type + (selectProperty.html ? "HTML" : "") + selectProperty.elementType;
+
+        String custom = getCustomRenderFunction();
+        if(custom != null) {
+            if(custom.equals(NOSELECT))
+                return null;
+            return custom;
+        }
+
+        return null;
+    }
+
+    private String getCustomRenderFunction() {
+        if(customRenderFunction != null)
+            return customRenderFunction;
+        return getInheritedProperty().getCustomRenderFunction();
+    }
+
+    // INTERACTIVE (NON-STATIC) USAGES
+    public ActionOrPropertyObjectEntity<?, ?> getActionOrProperty(FormInstanceContext context) {
+        Select select = getSelectProperty(context);
+        if(select != null)
+            return select.property;
+
+        return actionOrProperty;
+    }
+
+    public PropertyObjectEntity<?> getAssertProperty(FormInstanceContext context) {
+        assert isProperty(context);
+        return getProperty(context);
+    }
+
+    // EXPORT / JSON + ORDERS IN INPUT / SELECTOR
     @Override
-    public PropertyObjectEntity getPropertyObjectEntity() {
-        return getValueProperty();
+    public PropertyObjectEntity getReaderProperty() {
+        return getAssertStaticProperty();
+    }
+
+    // EXPORT / JSON / IMPORT
+    public PropertyObjectEntity<?> getAssertStaticProperty() {
+        assert isStaticProperty();
+        return (PropertyObjectEntity<?>) getStaticActionOrProperty();
     }
 
     // presentation info, probably should be merged with inheritDrawOptions mechanism
@@ -674,8 +871,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public ActionOrProperty getDebugBindingProperty() {
         return getInheritedProperty();
     }
-    public ActionOrPropertyObjectEntity getDebugProperty() {
-        return propertyObject;
+    public ActionOrPropertyObjectEntity getDebugActionOrProperty(FormInstanceContext context) {
+        return getActionOrProperty(context);
     }
 
     @Override

@@ -1,13 +1,17 @@
 package lsfusion.server.logics.form.interactive.action.async.map;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Pair;
+import lsfusion.base.Result;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.form.interactive.action.async.AsyncInput;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
-import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
+import lsfusion.server.logics.form.interactive.property.AsyncDataConverter;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
@@ -15,11 +19,8 @@ import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 
-public class AsyncMapInput<T extends PropertyInterface> extends AsyncMapFormExec<T> {
-
-    public final DataClass type;
+public class AsyncMapInput<T extends PropertyInterface> extends AsyncMapValue<T> {
 
     public final InputListEntity<?, T> list;
 
@@ -31,7 +32,8 @@ public class AsyncMapInput<T extends PropertyInterface> extends AsyncMapFormExec
     public final String customEditorFunction;
 
     public AsyncMapInput(DataClass type, InputListEntity<?, T> list, AsyncMapInputList<T> inputList, boolean hasOldValue, PropertyInterfaceImplement<T> oldValue, String customEditorFunction) {
-        this.type = type;
+        super(type);
+
         this.list = list;
         this.inputList = inputList;
 
@@ -69,10 +71,10 @@ public class AsyncMapInput<T extends PropertyInterface> extends AsyncMapFormExec
     }
 
     @Override
-    public AsyncEventExec map(ImRevMap<T, ObjectEntity> mapObjects, FormEntity form, SecurityPolicy policy, ActionOrProperty securityProperty, PropertyObjectEntity<?> drawProperty, GroupObjectEntity toDraw) {
-        if (hasOldValue && !(oldValue instanceof PropertyMapImplement && ((PropertyMapImplement<?, T>) oldValue).mapEntityObjects(mapObjects).equalsMap(drawProperty)))
+    public AsyncEventExec map(ImRevMap<T, ObjectEntity> mapObjects, ConnectionContext context, ActionOrProperty securityProperty, PropertyObjectEntity<?> drawProperty, GroupObjectEntity toDraw) {
+        if (hasOldValue && !(oldValue instanceof PropertyMapImplement && drawProperty != null && ((PropertyMapImplement<?, T>) oldValue).mapEntityObjects(mapObjects).equalsMap(drawProperty)))
             return null;
-        return new AsyncInput(type, list != null && inputList != null ? inputList.map(mapObjects, form, policy, securityProperty, drawProperty, toDraw) : null, customEditorFunction);
+        return new AsyncInput(type, list != null && inputList != null ? inputList.map(mapObjects, (FormInstanceContext) context, securityProperty, drawProperty, toDraw) : null, customEditorFunction);
     }
 
     @Override
@@ -92,12 +94,7 @@ public class AsyncMapInput<T extends PropertyInterface> extends AsyncMapFormExec
     }
 
     @Override
-    public int getMergeOptimisticPriority() {
-        return 1;
-    }
-
-    @Override
-    public boolean needOwnPushResult() {
-        return true; // we have to send input value
+    public <X extends PropertyInterface> Pair<InputListEntity<X, T>, AsyncDataConverter<X>> getAsyncValueList(Result<String> value) {
+        return new Pair<>((InputListEntity<X, T>) list, null);
     }
 }

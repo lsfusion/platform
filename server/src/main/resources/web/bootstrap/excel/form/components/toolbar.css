@@ -1,4 +1,5 @@
-.btn-toolbar .btn {
+.btn-toolbar .btn,
+.btn-toolbar .btn:hover:not(:focus) {
     border: 0;
     padding: 0 0.25em;
 }

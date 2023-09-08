@@ -6,6 +6,8 @@ import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.formula.FormulaExpr;
+import lsfusion.server.data.expr.formula.JSONBuildSingleArrayFormulaImpl;
 import lsfusion.server.data.query.compile.CompileOrder;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.ConcatenateType;
@@ -87,7 +89,7 @@ public enum GroupType implements AggrType {
     }
 
     public boolean isSelectNotInWhere() { // в общем то оптимизационная вещь потом можно убрать
-//        assert isSelect();
+        assert isSelect();
         return this == LAST;
     }
     public Where getWhere(ImList<Expr> exprs) {
@@ -128,6 +130,8 @@ public enum GroupType implements AggrType {
         Expr result = exprs.get(0);
         if(this == LAST)
             result = exprs.get(1).and(result.getWhere());
+        else if(this == JSON_CONCAT)
+            result = FormulaExpr.create(JSONBuildSingleArrayFormulaImpl.instance, ListFact.singleton(result));
         return result.and(orderWhere);
     }
 
@@ -141,7 +145,7 @@ public enum GroupType implements AggrType {
 
     // если не комутативен и не инвариантен к появляению в выборке null'а
     public boolean nullsNotAllowed() {
-        return this == LAST;
+        return this == LAST || this == JSON_CONCAT;
     }
     
     public boolean isLastOpt(boolean needValue, ImList<Expr> exprs) {
@@ -214,13 +218,6 @@ public enum GroupType implements AggrType {
                 exprSource = type.getCast(exprSource, syntax, typeEnv);
         }
         return exprSource;
-    }
-
-    public int numExprs() {
-        if(this==CONCAT || this==LAST)
-            return 2;
-        else
-            return 1;
     }
 
     public Type getType(Type exprType) {

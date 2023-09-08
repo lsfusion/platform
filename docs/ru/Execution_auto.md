@@ -13,11 +13,13 @@ import TabItem from '@theme/TabItem';
 <TabItem value="win">
 
 Исполняемые exe файлы:
-**lsFusion 5.0** (OpenJDK **11.0.16**, PostgreSQL **15.1**, Tomcat **9.0.67**, IntelliJ IDEA Community Edition **2022.3.1**)
+**lsFusion 5.1** (OpenJDK **11.0.16**, PostgreSQL **15.1**, Tomcat **9.0.67**, IntelliJ IDEA Community Edition **2022.3.1**)
 
-- [x64](https://download.lsfusion.org/exe/lsfusion-5.0-x64.exe)
+- [x64](https://download.lsfusion.org/exe/lsfusion-5.1-x64.exe)
 - <details><summary>Предыдущие версии</summary>
 
+    - lsFusion 5.0 Server & Client
+        - [x64](https://download.lsfusion.org/exe/lsfusion-5.0-x64.exe)
     - lsFusion 4.1 Server & Client
         - [x32](https://download.lsfusion.org/exe/lsfusion-4.1.exe)
         - [x64](https://download.lsfusion.org/exe/lsfusion-4.1-x64.exe)
@@ -143,6 +145,12 @@ Classpath сервера по умолчанию устанавливается 
 | RHEL 7 / CentOS 7                | `yum update lsfusion5-client` |
 | Ubuntu 18+ / Debian 9+           | `apt update lsfusion5-client` |
 <!--- comment to prevent multiple error messages in IDEA --->
+
+#### Нестабильные версии
+Обновление на конкретную SNAPSHOT-версию платформы : `source <(curl -s https://download.lsfusion.org/apt/update-lsfusion5) <platform version>`.
+
+Например, `source <(curl -s https://download.lsfusion.org/apt/update-lsfusion5) 6.0-SNAPSHOT`.
+
 </TabItem>
 </Tabs>
 

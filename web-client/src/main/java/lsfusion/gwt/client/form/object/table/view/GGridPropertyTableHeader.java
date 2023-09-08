@@ -55,11 +55,6 @@ public class GGridPropertyTableHeader extends Header<String> {
             }
 
             @Override
-            public boolean stillShowTooltip() {
-                return table.getWidget().isAttached() && table.getWidget().isVisible();
-            }
-
-            @Override
             public String getPath() {
                 return path;
             }
@@ -118,8 +113,6 @@ public class GGridPropertyTableHeader extends Header<String> {
         ResizeHandler.dropCursor(cursorElement, event);
 
         ResizeHandler.checkResizeEvent(table.resizeHelper, cursorElement, childIndex, event);
-
-        TooltipManager.checkTooltipEvent(event, toolTipHelper);
     }
 
     @Override
@@ -127,6 +120,7 @@ public class GGridPropertyTableHeader extends Header<String> {
         Boolean sortDir = table.getSortDirection(this);
 
         renderedCaptionElement = renderTD(th, headerHeight, sortDir, caption, captionElementClass, image, false);
+        TooltipManager.initTooltip(renderedCaptionElement, toolTipHelper);
         renderedSortDir = sortDir;
         renderedCaption = caption;
         renderedCaptionElementClass = captionElementClass;

@@ -30,7 +30,6 @@ import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.action.session.changed.SessionProperty;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
@@ -38,6 +37,7 @@ import lsfusion.server.logics.event.ApplyGlobalEvent;
 import lsfusion.server.logics.event.Link;
 import lsfusion.server.logics.event.LinkType;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.ValueClassWrapper;
@@ -48,7 +48,6 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.infer.AlgType;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
-import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -60,7 +59,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.function.IntFunction;
-import java.util.function.Supplier;
 
 import static lsfusion.interop.action.ServerResponse.*;
 
@@ -76,10 +74,24 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     // вот отсюда идут свойства, которые отвечают за логику представлений и подставляются автоматически для PropertyDrawEntity и PropertyDrawView
     public LocalizedString caption; // assert not null
 
-    public Supplier<AppServerImage> image;
+    public AppServerImage.Reader image;
 
     public void setImage(String imagePath) {
         this.image = AppServerImage.createPropertyImage(imagePath, AppServerImage.getAutoName(() -> caption, this::getName));
+    }
+
+    private String customRenderFunction;
+
+    public String getCustomRenderFunction() {
+        return customRenderFunction;
+    }
+
+    public void setCustomRenderFunction(String customRenderFunction) {
+        this.customRenderFunction = customRenderFunction;
+    }
+
+    public void setSelect(String select) {
+        setCustomRenderFunction(select == null || select.equals("No") ? null : ("select" + select));
     }
 
     public LocalizedString localizedToString() {
@@ -192,7 +204,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         return valueClass != null ? valueClass.getType() : null;
     }
 
-    public abstract boolean isNotNull();
+    public abstract boolean isDrawNotNull();
     
     public String getName() {
         if (isNamed()) {
@@ -201,9 +213,9 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         return null;
     }
 
-    public static AppServerImage getDefaultImage(String name, AppServerImage.AutoName autoName, float rankingThreshold, boolean useDefaultIcon) {
+    public static AppServerImage getDefaultImage(String name, AppServerImage.AutoName autoName, float rankingThreshold, boolean useDefaultIcon, ConnectionContext context) {
         return AppServerImage.createDefaultImage(rankingThreshold, name, AppServerImage.Style.PROPERTY, autoName,
-                () -> useDefaultIcon ? AppServerImage.createPropertyImage(AppServerImage.ACTION, autoName).get() : null);
+                defaultContext -> useDefaultIcon ? AppServerImage.createPropertyImage(AppServerImage.ACTION, autoName).get(defaultContext) : null, context);
     }
 
     public String getNamespace() {
@@ -363,7 +375,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             if(valueClass instanceof CustomClass)
                 classCount += ((CustomClass) valueClass).getAllChildren().size();
         }
-        return isInInterface(mapping.mapOrderValues((i, value) -> orderClasses.get(i).valueClass.getUpSet()), classCount < 100);
+        boolean isAny = false; //previously there was optimization isAny = classCount < 100;
+        return isInInterface(mapping.mapOrderValues((i, value) -> orderClasses.get(i).valueClass.getUpSet()), isAny);
     }
 
     protected abstract ActionOrPropertyClassImplement<T, ?> createClassImplement(ImOrderSet<ValueClassWrapper> classes, ImOrderSet<T> mapping);
@@ -590,7 +603,6 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
         // для всех
         private ClassViewType viewType;
-        private String customRenderFunction;
         private String customEditorFunction;
         private PivotOptions pivotOptions;
 
@@ -602,7 +614,6 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         
         public void proceedDefaultDraw(PropertyDrawEntity<?> entity, FormEntity form, Version version) {
             entity.viewType = viewType;
-            entity.customRenderFunction = customRenderFunction;
             entity.customChangeFunction = customEditorFunction;
             entity.askConfirm = BaseUtils.nvl(askConfirm, false);
             entity.askConfirmMessage = askConfirmMessage;
@@ -613,13 +624,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         }
 
         public void proceedDefaultDesign(PropertyDrawView propertyView) {
-            if(propertyView.isProperty()) {
-                if (propertyView.getType() instanceof LogicalClass) 
-                    propertyView.changeOnSingleClick = Settings.get().getChangeBooleanOnSingleClick();
-            } else
-                propertyView.changeOnSingleClick = Settings.get().getChangeActionOnSingleClick();
-
-            if(propertyView.getCharWidth() == 0)
+            if(propertyView.charWidth == 0)
                 propertyView.setCharWidth(charWidth);
             if(propertyView.getValueFlex() == null)
                 propertyView.setValueFlex(valueFlex);
@@ -696,8 +701,6 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
             if(viewType == null)
                 setViewType(options.viewType);
-            if (customRenderFunction == null)
-                setCustomRenderFunction(options.customRenderFunction);
             if(pivotOptions == null)
                 setPivotOptions(options.pivotOptions);
             if(sticky == null)
@@ -795,10 +798,6 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
         public void setViewType(ClassViewType viewType) {
             this.viewType = viewType;
-        }
-        
-        public void setCustomRenderFunction(String customRenderFunction) {
-            this.customRenderFunction = customRenderFunction;
         }
 
         public void setCustomEditorFunction(String customEditorFunction) {

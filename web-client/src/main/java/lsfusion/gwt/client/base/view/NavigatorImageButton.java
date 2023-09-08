@@ -44,13 +44,8 @@ public class NavigatorImageButton extends ImageButton {
             public String getCreationPath() {
                 return element.creationPath;
             }
-
-            @Override
-            public boolean stillShowTooltip() {
-                return isAttached() && isVisible();
-            }
         };
-        TooltipManager.registerWidget(this, tooltipHelper);
+        TooltipManager.initTooltip(this.getElement(), tooltipHelper);
     }
 
     public void updateElementClass() {
@@ -64,12 +59,15 @@ public class NavigatorImageButton extends ImageButton {
         return element.image;
     }
 
+    private static boolean isForceDiv(String elementClass) {
+        return elementClass != null && (elementClass.contains(WindowsController.NAVBAR_TEXT_ON_HOVER) || elementClass.contains(WindowsController.NAVBAR_TEXT_HIDDEN));
+    }
+
     private boolean forceDiv;
     private void updateForceDiv() {
         String elementClass = element.elementClass;
         GNavigatorWindow drawWindow = element.getDrawWindow();
-        boolean newForceDiv = (elementClass != null && elementClass.contains(WindowsController.NAVBAR_TEXT_ON_HOVER)) ||
-                                drawWindow != null && drawWindow.forceDiv();
+        boolean newForceDiv = isForceDiv(elementClass) || drawWindow != null && isForceDiv(drawWindow.elementClass);
         if(forceDiv != newForceDiv) {
             forceDiv = newForceDiv;
             updateText();

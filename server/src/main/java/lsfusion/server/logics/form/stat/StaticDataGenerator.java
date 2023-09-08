@@ -3,7 +3,6 @@ package lsfusion.server.logics.form.stat;
 import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
@@ -269,7 +268,7 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
                 
                 // reading property values
                 ImMap<ImSet<ObjectEntity>, ImSet<SDP>> groupObjectProps = columnGroupObjectProps.getValue(g).group(key -> {
-                    return ((PropertyObjectEntity<?>) key.getPropertyObjectEntity()).getObjectInstances().filter(allObjects.getSet()); // because of the value groups
+                    return ((PropertyObjectEntity<?>) key.getReaderProperty()).getObjectInstances().filter(allObjects.getSet()); // because of the value groups
                 });
                 for(int i=0,size=groupObjectProps.size();i<size;i++) {
                     ImSet<ObjectEntity> objects = groupObjectProps.getKey(i);
@@ -288,13 +287,13 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
 
                     // adding properties
                     for (SDP queryProp : props)
-                        propQueryBuilder.addProperty(queryProp, queryProp.getPropertyObjectEntity().getExpr(mapPropExprs, modifier));
+                        propQueryBuilder.addProperty(queryProp, queryProp.getReaderProperty().getExpr(mapPropExprs, modifier));
 
                     propQueryBuilder.and(queryWhere);
                     Query<ObjectEntity, SDP> propQuery = propQueryBuilder.getQuery();
                     final ImOrderMap<ImMap<ObjectEntity, Object>, ImMap<SDP, Object>> propData = propQuery.execute(sql, formInterface.getQueryEnv());
 
-                    ImMap<SDP, Type> propTypes = propQuery.getPropertyTypes(PropertyReaderEntity::getType);
+                    ImMap<SDP, Type> propTypes = propQuery.getPropertyTypes(PropertyReaderEntity::getReaderType);
 
                     // converting from row-based to column-based (it's important to keep keys, to reduce footprint)
                     propSources.add(objects, props.mapValues(new Function<SDP, ImMap<ImMap<ObjectEntity, Object>, Object>>() {

@@ -13,7 +13,9 @@ import lsfusion.gwt.client.base.lambda.EFunction;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.form.filter.user.GCompare;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.*;
@@ -51,6 +53,24 @@ public class GwtClientUtils {
         MainFrame.disableConfirmDialog = true;
         Window.Location.reload();
     }
+
+    // GWT utility methods
+    public native static void init() /*-{
+        $wnd.lsfUtils = {
+            isInputKeyEvent: function (event, multiLine) {
+                return @lsfusion.gwt.client.form.event.GKeyStroke::isInputKeyEventBoolean(*)(event, multiLine);
+            },
+            isCharNavigateKeyEvent: function (event) {
+                return @lsfusion.gwt.client.form.event.GKeyStroke::isCharNavigateKeyEvent(*)(event);
+            },
+            setInputElement: function (element, inputElement) {
+                return @lsfusion.gwt.client.form.property.cell.classes.view.SimpleTextBasedCellRenderer::setInputElement(*)(element, inputElement);
+            },
+            useBootstrap: function() {
+                return @lsfusion.gwt.client.view.MainFrame::useBootstrap;
+            }
+        }
+    }-*/;
 
     public static void logout() {
         logout(false);
@@ -406,13 +426,7 @@ public class GwtClientUtils {
     // using absolute positioning, but because in that case it is positioned relative to first not static element, will have to set position to relative (if it's static)
     public static void setupFillParent(Element child) {
         setupFillParentElement(child.getParentElement());
-
-        Style childStyle = child.getStyle();
-        childStyle.setPosition(Style.Position.ABSOLUTE);
-        childStyle.setTop(0, Style.Unit.PX);
-        childStyle.setLeft(0, Style.Unit.PX);
-        childStyle.setBottom(0, Style.Unit.PX);
-        childStyle.setRight(0, Style.Unit.PX);
+        child.addClassName("fill-parent-absolute");
     }
 
     private static void setupFillParentElement(Element parentElement) {
@@ -1026,6 +1040,15 @@ public class GwtClientUtils {
         }
         return null;
     }
+    public static Element getParentWithProperty(Element element, String property) {
+        while (element != null) {
+            if (element.getPropertyObject(property) != null) {
+                return element;
+            }
+            element = element.getParentElement();
+        }
+        return null;
+    }
     public static Element getParentWithClass(Element element, String className) {
         while (element != null) {
             if (element.hasClassName(className)) {
@@ -1087,8 +1110,11 @@ public class GwtClientUtils {
     public static native JavaScriptObject call(JavaScriptObject object)/*-{
         return object();
     }-*/;
-    public static native JavaScriptObject call(JavaScriptObject object, Object param)/*-{
+    public static native JavaScriptObject call(JavaScriptObject object, JavaScriptObject param)/*-{
         return object(param);
+    }-*/;
+    public static native JavaScriptObject call(JavaScriptObject object, JavaScriptObject param1, JavaScriptObject param2)/*-{
+        return object(param1, param2);
     }-*/;
     public static native JavaScriptObject call(JavaScriptObject object, JsArray<JavaScriptObject> params)/*-{
         return object.apply(object, params);
@@ -1096,8 +1122,15 @@ public class GwtClientUtils {
     public static native JavaScriptObject newObject()/*-{
         return {};
     }-*/;
+    public static native JsArray emptyArray()/*-{
+        return [];
+    }-*/;
     public static native void setField(JavaScriptObject object, String field, JavaScriptObject value)/*-{
         return object[field] = value;
+    }-*/;
+
+    public static native JavaScriptObject replaceField(JavaScriptObject object, String field, JavaScriptObject value)/*-{
+        return $wnd.replaceField(object, field, value);
     }-*/;
 
     public static native void removeField(JavaScriptObject object, String field)/*-{
@@ -1146,11 +1179,8 @@ public class GwtClientUtils {
         return hash;
     }-*/;
 
-    public static native boolean isJSObjectPropertiesEquals(JavaScriptObject object1, JavaScriptObject object2)/*-{
-        var object1Keys = Object.keys(object1).filter(function (object1Key) { return !object1Key.startsWith('#') });
-        var object2Keys = Object.keys(object2).filter(function (object2Key) { return !object2Key.startsWith('#') });
-
-        return !(object1Keys.length !== object2Keys.length || (object1Keys.find(function (object1Key) { return object1[object1Key] !== object2[object1Key]}) !== undefined));
+    public static native boolean plainEquals(JavaScriptObject object1, JavaScriptObject object2, String ignoreField)/*-{
+        return $wnd.plainEquals(object1, object2, ignoreField);
     }-*/;
 
     public static native boolean isFunctionContainsArguments(JavaScriptObject fn)/*-{
@@ -1253,27 +1283,7 @@ public class GwtClientUtils {
         return $doc.getElementsByClassName(className);
     }-*/;
 
-    public static class JavaScriptObjectWrapper {
-        private final JavaScriptObject object;
-
-        public JavaScriptObjectWrapper(JavaScriptObject object) {
-            this.object = object;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o)
-                return true;
-
-            if (!(o instanceof JavaScriptObjectWrapper))
-                return false;
-
-            return GwtClientUtils.isJSObjectPropertiesEquals(this.object, ((JavaScriptObjectWrapper) o).object);
-        }
-
-        @Override
-        public int hashCode() {
-            return javaScriptObjectAllFieldsHashCode(object);
-        }
-    }
+    public static native boolean isContainHtmlTag(String value) /*-{
+        return $wnd.isContainHtmlTag(value);
+    }-*/;
 }
