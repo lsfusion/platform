@@ -7,6 +7,7 @@ import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 public class RichTextCellRenderer extends TextCellRenderer {
 
+
     public RichTextCellRenderer(GPropertyDraw property) {
         super(property);
     }
@@ -53,6 +54,22 @@ public class RichTextCellRenderer extends TextCellRenderer {
             quill.root.innerHTML = innerText.includes('<div') ? innerText.replaceAll('<div', '<p').replaceAll('</div>', '</p>') : innerText;
 
         element.quill = quill;
+
+        // quill editor bubble theme does not support opening links from edit mode.
+        // https://github.com/quilljs/quill/issues/857
+        // open links programmatically on ctrl+click
+        quill.on('text-change', function() {
+            var links = quill.root.getElementsByTagName('a');
+            for (var i = 0; i < links.length; i++) {
+                var link = links[i];
+                if (link.onclick == null) {
+                    link.onclick = function (e) {
+                        if (e.ctrlKey)
+                            window.open(this.href, "_blank");
+                    }
+                }
+            }
+        });
 
         //https://quilljs.com/guides/how-to-customize-quill/
         function changeQuillBlotTagName(blotName, tagName){
