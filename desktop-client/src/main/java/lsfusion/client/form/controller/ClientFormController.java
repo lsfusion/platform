@@ -5,7 +5,6 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.Pair;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.identity.DefaultIDGenerator;
@@ -36,7 +35,9 @@ import lsfusion.client.form.design.view.widget.Widget;
 import lsfusion.client.form.filter.ClientRegularFilter;
 import lsfusion.client.form.filter.ClientRegularFilterGroup;
 import lsfusion.client.form.filter.ClientRegularFilterWrapper;
+import lsfusion.client.form.filter.user.ClientFilter;
 import lsfusion.client.form.filter.user.ClientPropertyFilter;
+import lsfusion.client.form.filter.user.controller.FilterController;
 import lsfusion.client.form.filter.view.SingleFilterBox;
 import lsfusion.client.form.object.ClientCustomObjectValue;
 import lsfusion.client.form.object.ClientGroupObject;
@@ -58,10 +59,7 @@ import lsfusion.client.form.view.ClientFormDockable;
 import lsfusion.client.navigator.ClientNavigator;
 import lsfusion.client.view.DockableMainFrame;
 import lsfusion.client.view.MainFrame;
-import lsfusion.interop.action.ClientAction;
-import lsfusion.interop.action.ExceptionClientAction;
-import lsfusion.interop.action.LogMessageClientAction;
-import lsfusion.interop.action.ServerResponse;
+import lsfusion.interop.action.*;
 import lsfusion.interop.base.remote.RemoteRequestInterface;
 import lsfusion.interop.form.FormClientData;
 import lsfusion.interop.form.UpdateMode;
@@ -76,6 +74,7 @@ import lsfusion.interop.form.order.user.Order;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.print.ReportGenerator;
+import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 
 import javax.swing.Timer;
@@ -1441,18 +1440,18 @@ public class ClientFormController implements AsyncListener {
         });
     }
     
-    public void changePropertyOrder(int goID, LinkedHashMap<Integer, Byte> orders) {
+    public void changePropertyOrder(int goID, LinkedHashMap<Integer, Boolean> orders) {
         ClientGroupObject groupObject = form.getGroupObject(goID);
         if (groupObject != null) {
-            LinkedHashMap<ClientPropertyDraw, Order> pOrders = new LinkedHashMap<>();
+            LinkedHashMap<ClientPropertyDraw, Boolean> pOrders = new LinkedHashMap<>();
             for (Integer propertyID : orders.keySet()) {
                 ClientPropertyDraw propertyDraw = form.getProperty(propertyID);
                 if (propertyDraw != null) {
-                    pOrders.put(propertyDraw, Order.deserialize(orders.get(propertyID)));
+                    pOrders.put(propertyDraw, orders.get(propertyID));
                 }
             }
 
-            controllers.get(groupObject).changeOrders(pOrders);
+            controllers.get(groupObject).changeOrders(pOrders, false);
         }
     }
 
@@ -1515,6 +1514,27 @@ public class ClientFormController implements AsyncListener {
             }
         });
     }
+
+    public void changePropertyFilters(int goID, List<FilterClientAction.FilterItem> filters) {
+        ClientGroupObject groupObject = form.getGroupObject(goID);
+        if (groupObject != null) {
+            GridController gridController = controllers.get(groupObject);
+            List<ClientPropertyFilter> props = new ArrayList<>();
+            for (FilterClientAction.FilterItem filter : filters) {
+                ClientPropertyDraw propertyDraw = form.getProperty(filter.propertyId);
+                if (propertyDraw != null) {
+                    Compare compare = null;
+                    try {
+                        compare = Compare.deserialize(filter.compare);
+                    } catch (IOException ignored) {}
+                    
+                    props.add(FilterController.createNewCondition(gridController, new ClientFilter(propertyDraw), null, filter.value, filter.negation, compare, filter.junction));
+                }
+            }
+            
+            gridController.changeFilters(props);
+        }
+    }    
 
     // setRegularFilter is synchronous, that's why busy dialog filter can be set visible, which will lead to another itemStateChanged and setRegularFilter call (with nested sync exception)
     // so we just suppress that call

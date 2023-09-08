@@ -42,7 +42,6 @@ import lsfusion.server.logics.action.controller.stack.EExecutionStackCallable;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.data.ParseException;
-import lsfusion.server.logics.form.interactive.OrderEvent;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.interactive.action.async.PushAsyncAdd;
 import lsfusion.server.logics.form.interactive.action.async.PushAsyncResult;
@@ -53,6 +52,8 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.F
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
+import lsfusion.server.logics.form.interactive.event.FilterEvent;
+import lsfusion.server.logics.form.interactive.event.OrderEvent;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.InteractiveFormReportManager;
 import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
@@ -477,9 +478,11 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                     logger.debug(String.format("new order: %s", order.toString()));
                 }
 
-                propertyDraw.toDraw.changeOrder(propertyDraw.getOrderProperty().getRemappedPropertyObject(keys, false), order);
+                PropertyObjectInstance<?> propertyObject = propertyDraw.getOrderProperty().getRemappedPropertyObject(keys, false);
+                propertyDraw.toDraw.changeOrder(propertyObject, order);
                 
-                form.fireOnOrder(stack, new OrderEvent(propertyDraw.toDraw.getSID()), propertyDraw, order);
+                form.fireOnOrder(stack, new OrderEvent(propertyDraw.toDraw.getSID()), 
+                        Collections.singletonList(new Pair<>(propertyDraw, propertyDraw.toDraw.getUserOrder(propertyObject))));
             }
         });
     }
@@ -495,6 +498,8 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             }
 
             groupObject.clearOrders();
+            
+            List<Pair<PropertyDrawInstance, Boolean>> orders = new ArrayList<>();
 
             for(int i = 0; i < propertyList.size(); i++) {
                 Integer propertyID = propertyList.get(i);
@@ -510,6 +515,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 }
             }
 
+            form.fireOnOrder(stack, new OrderEvent(groupObject.getSID()), orders);
         });
     }
 
@@ -617,16 +623,23 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             for (GroupObjectInstance group : form.getGroups()) {
                 group.clearUserFilters();
             }
+            Set<GroupObjectInstance> filteredObjects = new HashSet<>();
             for (byte[] state : filters) {
                 FilterInstance filter = FilterInstance.deserialize(new DataInputStream(new ByteArrayInputStream(state)), form);
                 GroupObjectInstance applyObject = filter.getApplyObject();
                 if(applyObject != null) {
                     applyObject.addUserFilter(filter);
+                    filteredObjects.add(applyObject);
+                    
                     if (logger.isDebugEnabled()) {
                         logger.debug(String.format("set user filter: [CLASS: %1$s]", filter.getClass()));
                         logger.debug(String.format("apply object: %s", filter.getApplyObject().getID()));
                     }
                 }
+            }
+
+            for (GroupObjectInstance group : filteredObjects) {
+                form.fireOnFilter(stack, new FilterEvent(group.getSID()), group.getUserFilters());
             }
         });
     }

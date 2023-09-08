@@ -82,7 +82,6 @@ import lsfusion.server.logics.event.Event;
 import lsfusion.server.logics.event.PrevScope;
 import lsfusion.server.logics.event.SessionEnvEvent;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
-import lsfusion.server.logics.form.interactive.OrderEvent;
 import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.interactive.action.async.QuickAccess;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
@@ -97,6 +96,8 @@ import lsfusion.server.logics.form.interactive.action.lifecycle.CloseFormAction;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.dialogedit.ClassFormSelector;
+import lsfusion.server.logics.form.interactive.event.FilterEvent;
+import lsfusion.server.logics.form.interactive.event.OrderEvent;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
 import lsfusion.server.logics.form.open.MappedForm;
 import lsfusion.server.logics.form.open.ObjectSelector;
@@ -2586,12 +2587,29 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new OrderEvent(goName, toProperty);
     }
     
+    public FilterEvent createFilterEvent(String goName, String toProp) throws ScriptingErrorLog.SemanticErrorException {
+        LP toProperty = findLPByPropertyUsage(new NamedPropertyUsage(toProp));
+        return new FilterEvent(goName, toProperty);
+    }
+    
     public LAWithParams addScriptedOrderProp(String goName, LPWithParams fromProp)  throws ScriptingErrorLog.SemanticErrorException {
         FormEntity form = getFormFromSeekObjectName(goName);
         GroupObjectEntity go = getSeekGroupObject(form, goName);
 
         if (go != null) {
             return new LAWithParams(addOrderAProp(go, fromProp != null ? fromProp.getLP() : null), Collections.emptyList());
+        } else {
+            errLog.emitGroupObjectNotFoundError(parser, getSeekObjectName(goName));
+            return null;
+        }
+    }
+
+    public LAWithParams addScriptedFilterProp(String goName, LPWithParams fromProp)  throws ScriptingErrorLog.SemanticErrorException {
+        FormEntity form = getFormFromSeekObjectName(goName);
+        GroupObjectEntity go = getSeekGroupObject(form, goName);
+
+        if (go != null) {
+            return new LAWithParams(addFilterAProp(go, fromProp != null ? fromProp.getLP() : null), Collections.emptyList());
         } else {
             errLog.emitGroupObjectNotFoundError(parser, getSeekObjectName(goName));
             return null;

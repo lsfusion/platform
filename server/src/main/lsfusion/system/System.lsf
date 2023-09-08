@@ -368,7 +368,8 @@ requestedTSVectorLink = DATA LOCAL TSVECTOR ();
 
 isActiveForm = DATA LOCAL BOOLEAN ();
 
-orderedProperty = DATA LOCAL JSON();
+orders = DATA LOCAL JSON();
+filters = DATA LOCAL JSON();
 
 edit '{logics.edit}'  ABSTRACT MULTI OVERRIDE FIRST ( Object) TOOLBAR;
 // since now SHOW fills request props, we don't need to do DIALOG, and without dialog there is no REQUEST wrapping, so group change for example will work

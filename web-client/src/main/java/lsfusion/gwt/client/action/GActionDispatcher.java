@@ -56,4 +56,6 @@ public interface GActionDispatcher {
     Object execute(GHttpClientAction action) throws RequestException;
     
     void execute(GOrderAction action);
+    
+    void execute(GFilterAction action);
 }

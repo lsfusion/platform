@@ -36,7 +36,7 @@ import java.sql.SQLException;
 
 public class CompareFilterInstance<P extends PropertyInterface> extends PropertyFilterInstance<P> {
 
-    boolean negate;
+    public boolean negate;
     public Compare compare;
     public CompareInstance value;
 
@@ -48,8 +48,8 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
         junction = inStream.readBoolean();
     }
 
-    public CompareFilterInstance(PropertyObjectInstance<P> property, boolean resolveAdd, GroupObjectInstance toDraw, boolean negate, Compare compare, CompareInstance value) {
-        super(property, resolveAdd, toDraw);
+    public CompareFilterInstance(PropertyObjectInstance<P> property, boolean resolveAdd, GroupObjectInstance toDraw, PropertyDrawInstance<P> propertyDraw, boolean negate, Compare compare, CompareInstance value) {
+        super(property, resolveAdd, toDraw, propertyDraw);
         this.negate = negate;
         this.compare = compare;
         this.value = value;

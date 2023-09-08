@@ -313,4 +313,13 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     public GOrderAction convertAction(OrderClientAction action) {
         return new GOrderAction(action.goID, action.ordersMap);
     }
+
+    @Converter(from = FilterClientAction.class)
+    public GFilterAction convertAction(FilterClientAction action) {
+        List<GFilterAction.FilterItem> filters = new ArrayList<>();
+        for (FilterClientAction.FilterItem filter : action.filters) {
+            filters.add(new GFilterAction.FilterItem(filter.propertyId, filter.compare, filter.negation, filter.value instanceof Serializable ? (Serializable) filter.value : null, filter.junction));
+        }
+        return new GFilterAction(action.goID, filters);
+    }
 }

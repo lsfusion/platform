@@ -30,7 +30,6 @@ import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GCountQuanti
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButtonGroup;
 import lsfusion.gwt.client.form.object.table.grid.view.*;
-import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.*;
 import lsfusion.gwt.client.form.view.Column;
 
@@ -601,11 +600,6 @@ public class GGridController extends GAbstractTableController {
         return table.changePropertyOrders(orders, alreadySet);
     }
 
-    public void changeOrders(LinkedHashMap<GPropertyDraw, GOrder> orders) {
-        assert isList();
-        table.changePropertyOrders(orders);
-    }
-
     public LinkedHashMap<GPropertyDraw, Boolean> getUserOrders() {
         boolean hasUserPreferences = isList() && table.hasUserPreferences();
         if (hasUserPreferences) return table.getUserOrders(getGroupObjectProperties());
@@ -676,6 +670,16 @@ public class GGridController extends GAbstractTableController {
     @Override
     protected long changeFilter(ArrayList<GPropertyFilter> conditions) {
         return formController.changeFilter(groupObject, conditions);
+    }
+
+    public void changeFilters(List<GPropertyFilter> filters) {
+        if (filter.hasFiltersContainer()) {
+            filter.resetConditions();
+            for (GPropertyFilter iFilter : filters) {
+                filter.addCondition(iFilter, null, false, false);
+            }
+            filter.applyFilters();
+        }
     }
 
     private void changeMode(Runnable updateView, GListViewType viewType, boolean setManualUpdateMode) {

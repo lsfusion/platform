@@ -57,7 +57,8 @@ grammar LsfLogics;
     import lsfusion.server.logics.event.ChangeEvent;
     import lsfusion.server.logics.event.Event;
     import lsfusion.server.logics.event.SystemEvent;
-    import lsfusion.server.logics.form.interactive.OrderEvent;
+    import lsfusion.server.logics.form.interactive.event.FilterEvent;
+    import lsfusion.server.logics.form.interactive.event.OrderEvent;
     import lsfusion.server.logics.form.interactive.FormEventType;
     import lsfusion.server.logics.form.interactive.ManageSessionType;
     import lsfusion.server.logics.form.interactive.UpdateType;
@@ -1241,6 +1242,7 @@ formEventDeclaration returns [ActionObjectEntity action, Object type, Boolean re
 		| 	'CHANGE' objectId=ID { $type = $objectId.text; }
 		| 	schedule = scheduleFormEventDeclaration { $type = new FormScheduler($schedule.period, $schedule.fixed); }
 		|   oed = orderEventDeclaration { $type = $oed.type; }
+		|   fed = filterEventDeclaration { $type = $fed.type; }
 		)
 		('REPLACE' { $replace = true; } | 'NOREPLACE' { $replace = false; } )?
 		faprop=formActionObject { $action = $faprop.action; }
@@ -1261,6 +1263,19 @@ orderEventDeclaration returns [OrderEvent type]
 	}
 }
     :   'ORDER' objectId=ID { object = $objectId.text; } ('TO' pu = propertyUsage { propertyName = $pu.name; })?
+    ;
+    
+filterEventDeclaration returns [FilterEvent type]
+@init {
+	String object = null;
+	String propertyName = null;
+}
+@after {
+	if (inMainParseState()) {
+		$type = self.createFilterEvent(object, propertyName);
+	}
+}
+    :   'FILTER' objectId=ID { object = $objectId.text; } ('TO' pu = propertyUsage { propertyName = $pu.name; })?
     ;
 
 
@@ -3266,6 +3281,7 @@ leafKeepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [
 	|	expandADB=expandGroupObjectActionDefinitionBody[context, dynamic] { $action = $expandADB.action; }
 	|	collapseADB=collapseGroupObjectActionDefinitionBody[context, dynamic] { $action = $collapseADB.action; }
 	|   orderADB=orderActionDefinitionBody[context, dynamic] { $action = $orderADB.action; }
+	|   filterADB=filterActionDefinitionBody[context, dynamic] { $action = $filterADB.action; }
 	|	mailADB=emailActionDefinitionBody[context, dynamic] { $action = $mailADB.action; }
 	|	evalADB=evalActionDefinitionBody[context, dynamic] { $action = $evalADB.action; }
 	|	readADB=readActionDefinitionBody[context, dynamic] { $action = $readADB.action; }
@@ -3970,6 +3986,17 @@ orderActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
         gobj=formGroupObjectID
         ('FROM' fromExpr=propertyExpression[context, dynamic])?
     ;
+
+ filterActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
+ @after {
+ 	if (inMainParseState()) {
+ 		$action = self.addScriptedFilterProp($gobj.sid, $fromExpr.property);
+ 	}
+ }
+     :   'FILTER'
+         gobj=formGroupObjectID
+         ('FROM' fromExpr=propertyExpression[context, dynamic])?
+     ;
 
 changeClassActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams action]
 @init {

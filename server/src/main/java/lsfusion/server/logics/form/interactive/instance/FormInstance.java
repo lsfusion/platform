@@ -27,7 +27,6 @@ import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.toolbar.FormGrouping;
 import lsfusion.interop.form.order.Scroll;
-import lsfusion.interop.form.order.user.Order;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.caches.ManualLazy;
@@ -85,7 +84,10 @@ import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.ConcreteObjectClass;
 import lsfusion.server.logics.classes.user.CustomClass;
-import lsfusion.server.logics.form.interactive.*;
+import lsfusion.server.logics.form.interactive.FormCloseType;
+import lsfusion.server.logics.form.interactive.FormEventType;
+import lsfusion.server.logics.form.interactive.ManageSessionType;
+import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.interactive.action.async.*;
 import lsfusion.server.logics.form.interactive.action.input.InputContext;
 import lsfusion.server.logics.form.interactive.action.input.InputListExpr;
@@ -96,6 +98,8 @@ import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
+import lsfusion.server.logics.form.interactive.event.FilterEvent;
+import lsfusion.server.logics.form.interactive.event.OrderEvent;
 import lsfusion.server.logics.form.interactive.instance.design.BaseComponentViewInstance;
 import lsfusion.server.logics.form.interactive.instance.design.ComponentViewInstance;
 import lsfusion.server.logics.form.interactive.instance.design.ContainerViewInstance;
@@ -133,7 +137,6 @@ import lsfusion.server.physics.admin.authentication.security.policy.SecurityPoli
 import lsfusion.server.physics.admin.log.LogInfo;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.admin.profiler.ProfiledObject;
-import org.json.JSONObject;
 
 import javax.swing.*;
 import java.io.IOException;
@@ -2699,23 +2702,16 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         fireEvent(FormEventType.DROP, stack);
     }
 
-    public void fireOnOrder(ExecutionStack stack, OrderEvent orderEvent, PropertyDrawInstance propertyDraw, Order modiType) throws SQLException, SQLHandledException {
-        JSONObject json = new JSONObject(Collections.singletonMap(propertyDraw.getSID(), modiType.name()));
-        
-        LP orderEventProperty = null;
-        for (Object eventObject : entity.getEventActions().keyIt()) {
-            if (eventObject.equals(orderEvent)) {
-                orderEventProperty = ((OrderEvent) eventObject).toProperty;
-                break;
-            }
-        }
-        if (orderEventProperty == null) {
-            orderEventProperty = BL.LM.orderedProperty;
-        }
-        
-        orderEventProperty.change(json, getSession());
+    public void fireOnOrder(ExecutionStack stack, OrderEvent orderEvent, List<Pair<PropertyDrawInstance, Boolean>> orders) throws SQLException, SQLHandledException {
+        orderEvent.store(BL, entity, orders, getSession());
 
         fireEvent(orderEvent, stack);
+    }
+    
+    public void fireOnFilter(ExecutionStack stack, FilterEvent filterEvent, List<FilterInstance> filters) throws SQLException, SQLHandledException {
+        filterEvent.store(BL, entity, filters, getSession());
+
+        fireEvent(filterEvent, stack);
     }
 
     public void fireFormEvent(ExecutionStack stack, FormEvent formEvent, PushAsyncResult pushedAsyncResult) throws SQLException, SQLHandledException {

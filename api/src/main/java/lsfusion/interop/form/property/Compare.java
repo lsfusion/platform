@@ -14,7 +14,11 @@ public enum Compare {
     }
 
     public static Compare deserialize(DataInputStream inStream) throws IOException {
-        switch(inStream.readByte()) {
+        return deserialize(inStream.readByte());
+    }
+
+    public static Compare deserialize(byte ibyte) throws IOException {
+        switch(ibyte) {
             case -1:
                 return null;
             case 0:

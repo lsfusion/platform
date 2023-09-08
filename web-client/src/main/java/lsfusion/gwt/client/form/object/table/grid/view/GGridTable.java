@@ -126,6 +126,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                     orderList.add(entry.getValue());
                 }
                 form.setPropertyOrders(groupObject, propertyList, columnKeyList, orderList);
+                
+                headersChanged();
             }
 
             @Override

@@ -65,7 +65,10 @@ import lsfusion.server.logics.form.interactive.changed.MFormChanges;
 import lsfusion.server.logics.form.interactive.changed.ReallyChanged;
 import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
-import lsfusion.server.logics.form.interactive.instance.filter.*;
+import lsfusion.server.logics.form.interactive.instance.filter.AndFilterInstance;
+import lsfusion.server.logics.form.interactive.instance.filter.CompareFilterInstance;
+import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
+import lsfusion.server.logics.form.interactive.instance.filter.OrFilterInstance;
 import lsfusion.server.logics.form.interactive.instance.order.OrderInstance;
 import lsfusion.server.logics.form.interactive.instance.property.ActionObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
@@ -360,6 +363,11 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     public FilterInstance classFilter;
 
     private final List<FilterInstance> userFilters = new ArrayList<>();
+    
+    public List<FilterInstance> getUserFilters() {
+        return userFilters;
+    }
+    
     public void clearUserFilters() {
         if(!userFilters.isEmpty()) {
             userFilters.clear();
@@ -411,6 +419,10 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         return setOrders;
     }
     private ImOrderMap<OrderInstance,Boolean> userOrders = MapFact.EMPTYORDER();
+    
+    public Boolean getUserOrder(OrderInstance property) {
+        return userOrders.get(property);
+    }
 
     public void changeOrder(OrderInstance property, Order modiType) {
         ImOrderMap<OrderInstance, Boolean> newOrders;

@@ -59,7 +59,7 @@ public abstract class FilterInstance implements Updated {
     public static FilterInstance deserialize(DataInputStream inStream, FormInstance form) throws IOException, SQLException, SQLHandledException {
         CompareFilterInstance filter = new CompareFilterInstance(inStream, form);
         if (filter.value instanceof NullValue) {
-            FilterInstance notNullFilter = new NotNullFilterInstance(filter.property);
+            FilterInstance notNullFilter = new NotNullFilterInstance(filter.property, filter.toDraw, filter.propertyDraw);
             notNullFilter.junction = filter.junction;
             if (!filter.negate) {
                 NotFilterInstance notFilter = new NotFilterInstance(notNullFilter);
@@ -88,7 +88,7 @@ public abstract class FilterInstance implements Updated {
                         if (needWrapContains(value, isContains)) {
                             value = wrapContains(value);
                         }
-                        CompareFilterInstance filterInstance = new CompareFilterInstance(filter.property, filter.resolveAdd, filter.toDraw, filter.negate, filter.compare, new DataObject(value, filterValueClass));
+                        CompareFilterInstance filterInstance = new CompareFilterInstance(filter.property, filter.resolveAdd, filter.toDraw, filter.propertyDraw, filter.negate, filter.compare, new DataObject(value, filterValueClass));
 
                         resultFilter = resultFilter == null ? filterInstance : new OrFilterInstance(resultFilter, filterInstance);
 

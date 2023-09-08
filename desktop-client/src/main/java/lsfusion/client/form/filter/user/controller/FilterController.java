@@ -20,6 +20,7 @@ import lsfusion.client.form.object.table.grid.user.toolbar.view.ToolbarGridButto
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.view.Column;
 import lsfusion.interop.form.event.KeyStrokes;
+import lsfusion.interop.form.property.Compare;
 
 import javax.swing.*;
 import java.awt.*;
@@ -138,8 +139,12 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
         return logicsSupplier.getFiltersContainer();
     }
 
-    public ClientPropertyFilter getNewCondition(ClientFilter filter, ClientGroupObjectValue columnKey) {
-        Pair<ClientPropertyDraw, ClientGroupObjectValue> column = getActualColumn(filter != null ? filter.property: null, columnKey);
+    public static ClientPropertyFilter createNewCondition(TableController logicsSupplier, ClientFilter filter, ClientGroupObjectValue columnKey) {
+        return createNewCondition(logicsSupplier, filter, columnKey, null, null, null, null);   
+    }
+
+    public static ClientPropertyFilter createNewCondition(TableController logicsSupplier, ClientFilter filter, ClientGroupObjectValue columnKey, Object value, Boolean negation, Compare compare, Boolean junction) {
+        Pair<ClientPropertyDraw, ClientGroupObjectValue> column = logicsSupplier.getFilterColumn(filter != null ? filter.property: null, columnKey);
 
         if (column.first == null) {
             return null;
@@ -151,20 +156,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
             filter.property = column.first;
         }
 
-        return new ClientPropertyFilter(filter, logicsSupplier.getSelectedGroupObject(), column.second, null);
-    }
-    
-    private Pair<ClientPropertyDraw, ClientGroupObjectValue> getActualColumn(ClientPropertyDraw property, ClientGroupObjectValue columnKey) {
-        ClientPropertyDraw actualProperty = property;
-        ClientGroupObjectValue actualColumnKey = columnKey;
-
-        if (actualProperty == null) {
-            actualProperty = logicsSupplier.getSelectedFilterProperty();
-            if (actualProperty != null) {
-                actualColumnKey = logicsSupplier.getSelectedColumn();
-            }
-        }
-        return Pair.create(actualProperty, actualColumnKey);
+        return new ClientPropertyFilter(filter, logicsSupplier.getSelectedGroupObject(), column.second, value, negation, compare, junction);
     }
 
     public boolean addCondition() {
@@ -207,7 +199,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
             resetAllConditions(false);
         }
 
-        ClientPropertyFilter condition = getNewCondition(filter, columnKey);
+        ClientPropertyFilter condition = createNewCondition(logicsSupplier, filter, columnKey);
         if (condition != null) {
             addCondition(condition, logicsSupplier, keyEvent, readSelectedValue);
             return true;
@@ -242,7 +234,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
     }
     
     private FilterConditionView findExistingFilter(ClientPropertyDraw propertyDraw, ClientGroupObjectValue columnKey) {
-        Pair<ClientPropertyDraw, ClientGroupObjectValue> column = getActualColumn(propertyDraw, columnKey);
+        Pair<ClientPropertyDraw, ClientGroupObjectValue> column = logicsSupplier.getFilterColumn(propertyDraw, columnKey);
 
         if (!conditionViews.isEmpty()) {
             for (ClientPropertyFilter filter : conditionViews.keySet()) {

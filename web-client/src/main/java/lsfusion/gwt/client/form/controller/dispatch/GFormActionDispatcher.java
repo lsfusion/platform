@@ -141,6 +141,11 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
         form.changePropertyOrder(action.goID, action.ordersMap);
     }
 
+    @Override
+    public void execute(GFilterAction action) {
+        form.changePropertyFilters(action.goID, action.filters);
+    }
+
     // editing (INPUT) functionality
 
     public EventHandler editEventHandler;

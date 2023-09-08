@@ -64,7 +64,8 @@ import lsfusion.server.logics.event.Event;
 import lsfusion.server.logics.event.PrevScope;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.UpdateType;
-import lsfusion.server.logics.form.interactive.action.OrderAction;
+import lsfusion.server.logics.form.interactive.action.activity.FilterAction;
+import lsfusion.server.logics.form.interactive.action.activity.OrderAction;
 import lsfusion.server.logics.form.interactive.action.async.QuickAccess;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapRemove;
 import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelector;
@@ -2059,6 +2060,11 @@ public abstract class LogicsModule {
     @IdentityStrongLazy
     public LA addOrderAProp(GroupObjectEntity object, LP fromProperty) {
         return addAction(null, new LA<>(new OrderAction(object, fromProperty)));
+    }
+
+    @IdentityStrongLazy
+    public LA addFilterAProp(GroupObjectEntity object, LP fromProperty) {
+        return addAction(null, new LA<>(new FilterAction(object, fromProperty)));
     }
 
     public void addConstraint(Property<?> property, LocalizedString message, boolean checkChange) {

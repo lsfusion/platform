@@ -35,7 +35,6 @@ import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.UpdateMode;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.toolbar.FormGrouping;
-import lsfusion.interop.form.order.user.Order;
 
 import javax.swing.*;
 import java.awt.*;
@@ -522,11 +521,6 @@ public class GridController extends AbstractTableController {
         return table.changePropertyOrders(orders, alreadySet);
     }
 
-    public void changeOrders(LinkedHashMap<ClientPropertyDraw, Order> orders) {
-        assert isList();
-        table.changePropertyOrders(orders);
-    }
-
     public OrderedMap<ClientPropertyDraw, Boolean> getUserOrders() {
         boolean hasUserPreferences = isList() && table.hasUserPreferences();
         if (hasUserPreferences) return table.getUserOrders(getGroupObjectProperties());
@@ -562,6 +556,16 @@ public class GridController extends AbstractTableController {
             return table.containsProperty(property);
         else
             return panel.containsProperty(property);
+    }
+    
+    public void changeFilters(List<ClientPropertyFilter> filters) {
+        if (filter.hasFiltersContainer()) {
+            filter.resetConditions();
+            for (ClientPropertyFilter filter : filters) {
+                this.filter.addCondition(filter, this, null, false);
+            }
+            filter.applyFilters(true);
+        }
     }
 
     public void quickEditFilter(KeyEvent initFilterKeyEvent, ClientPropertyDraw propertyDraw, ClientGroupObjectValue columnKey) {

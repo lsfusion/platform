@@ -74,7 +74,8 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
 
     private boolean innerValueChange = false;
     
-    public FilterConditionView(ClientPropertyFilter ifilter, TableController logicsSupplier, UIHandler iuiHandler, ColumnsProvider columnsProvider, boolean controlsVisible, EventObject keyEvent, boolean readSelectedValue) {
+    public FilterConditionView(ClientPropertyFilter ifilter, TableController logicsSupplier, UIHandler iuiHandler, 
+                               ColumnsProvider columnsProvider, boolean controlsVisible, EventObject keyEvent, boolean readSelectedValue) {
         super(false, FlexAlignment.START);
         condition = ifilter;
         this.logicsSupplier = logicsSupplier;

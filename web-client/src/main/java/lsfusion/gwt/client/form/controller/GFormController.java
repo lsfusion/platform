@@ -12,6 +12,7 @@ import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.*;
 import lsfusion.gwt.client.action.GAction;
+import lsfusion.gwt.client.action.GFilterAction;
 import lsfusion.gwt.client.action.GLogMessageAction;
 import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
@@ -47,8 +48,11 @@ import lsfusion.gwt.client.form.design.view.TabbedContainerView;
 import lsfusion.gwt.client.form.event.*;
 import lsfusion.gwt.client.form.filter.GRegularFilter;
 import lsfusion.gwt.client.form.filter.GRegularFilterGroup;
+import lsfusion.gwt.client.form.filter.user.GCompare;
+import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilterDTO;
+import lsfusion.gwt.client.form.filter.user.controller.GFilterController;
 import lsfusion.gwt.client.form.filter.user.view.GFilterConditionView;
 import lsfusion.gwt.client.form.object.*;
 import lsfusion.gwt.client.form.object.panel.controller.GPanelController;
@@ -1314,18 +1318,35 @@ public class GFormController implements EditManager {
         syncResponseDispatch(new ChangePropertyOrder(property.ID, columnKey, modiType));
     }
 
-    public void changePropertyOrder(int goID, LinkedHashMap<Integer, Byte> orders) {
-        GGroupObject groupobject = form.getGroupObject(goID);
-        if (groupobject != null) {
-            LinkedHashMap<GPropertyDraw, GOrder> pOrders = new LinkedHashMap<>();
+    public void changePropertyOrder(int goID, LinkedHashMap<Integer, Boolean> orders) {
+        GGroupObject groupObject = form.getGroupObject(goID);
+        if (groupObject != null) {
+            LinkedHashMap<GPropertyDraw, Boolean> pOrders = new LinkedHashMap<>();
             for (Integer propertyID : orders.keySet()) {
                 GPropertyDraw propertyDraw = form.getProperty(propertyID);
                 if (propertyDraw != null) {
-                    pOrders.put(propertyDraw, GOrder.deserialize(orders.get(propertyID)));
+                    Boolean value = orders.get(propertyID);
+                    pOrders.put(propertyDraw, value);
                 }
             }
 
-            controllers.get(groupobject).changeOrders(pOrders);
+            controllers.get(groupObject).changeOrders(pOrders, false);
+        }
+    }
+
+    public void changePropertyFilters(int goID, List<GFilterAction.FilterItem> filters) {
+        GGroupObject groupObject = form.getGroupObject(goID);
+        if (groupObject != null) {
+            GGridController gGridController = controllers.get(groupObject);
+            List<GPropertyFilter> uFilters = new ArrayList<>();
+            for (GFilterAction.FilterItem filter : filters) {
+                GPropertyDraw propertyDraw = form.getProperty(filter.propertyId);
+                if (propertyDraw != null) {
+                    uFilters.add(GFilterController.createNewCondition(gGridController, new GFilter(propertyDraw), null, PValue.remapValue(filter.value), filter.negation, GCompare.get(filter.compare), filter.junction));
+                }
+            }
+
+            gGridController.changeFilters(uFilters);
         }
     }
 
