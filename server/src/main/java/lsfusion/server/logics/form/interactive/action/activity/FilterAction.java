@@ -45,7 +45,10 @@ public class FilterAction extends UserActivityAction {
 
                         String compareString = jsonObject.optString(COMPARE_KEY);
                         if (!isRedundantString(compareString)) {
-                            filterItem.compare = Compare.valueOf(compareString).serialize();
+                            Compare compare = Compare.get(compareString);
+                            if (compare != null) {
+                                filterItem.compare = compare.serialize();
+                            }
                         }
 
                         filterItem.negation = jsonObject.optBoolean(NEGATION_KEY);

@@ -34,7 +34,7 @@ public class FilterEvent extends UserActivityEvent<FilterInstance> {
                 filterMap.put(UserActivityAction.PROPERTY_KEY, ((PropertyFilterInstance<?>) filter).propertyDraw.getSID());
             }
             if (filter instanceof CompareFilterInstance) {
-                filterMap.put(FilterAction.COMPARE_KEY, ((CompareFilterInstance<?>) filter).compare.name());
+                filterMap.put(FilterAction.COMPARE_KEY, ((CompareFilterInstance<?>) filter).compare.toString());
                 filterMap.put(FilterAction.NEGATION_KEY, ((CompareFilterInstance<?>) filter).negate);
                 CompareInstance value = ((CompareFilterInstance<?>) filter).value;
                 if (value instanceof ObjectValue) {
