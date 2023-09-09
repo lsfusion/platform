@@ -493,37 +493,22 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     }
 
     @Override
-    public boolean isValueUnique(ImMap<Interface, StaticParamNullableExpr> fixedExprs, boolean optimistic) {
+    public boolean isNameValueUnique() {
         T andInterface = getObjectAndInterface(implement.property);
         if(andInterface!=null)
-            return implement.mapping.get(andInterface).mapValueUnique(fixedExprs, optimistic);
+            return implement.mapping.get(andInterface).mapNameValueUnique();
 
-        if(isIdentity) {
-            ImRevMap<T, Interface> joinMapping = BaseUtils.immutableCast(implement.mapping.toRevExclMap());
-            return implement.property.isValueUnique(joinMapping.rightJoin(fixedExprs), optimistic);
-        }
+        if(isIdentity)
+            return implement.property.isNameValueUnique();
 
         FormulaImpl formula = getFormula(implement.property);
         if ((formula instanceof SumFormulaImpl && getValueClass(ClassType.typePolicy) instanceof StringClass) ||
                 formula instanceof StringConcatenateFormulaImpl) {
-            for(PropertyInterfaceImplement<Interface> impl : implement.mapping.valueIt())
-                if(impl.mapValueUnique(fixedExprs, optimistic))
-                    return true;
-
             // concatenating several not unique properties might produce unique property, so we check this
-            return isStatValueUnique(fixedExprs, optimistic);
+            return true;
         }
 
-        // ? if optimistic
-        ImMap<T, StaticParamNullableExpr> implementFixedExprs = implement.mapping.innerJoin(fixedExprs);
-        if(implement.property.isValueUnique(implementFixedExprs, optimistic))
-            return false;
-
-        for(PropertyInterfaceImplement<Interface> impl : implement.mapping.valueIt())
-            if(!impl.mapValueUnique(fixedExprs, optimistic))
-                return false;
-
-        return true;
+        return false;
     }
 
     // filter or custom view completion

@@ -2603,30 +2603,6 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return name != null && BaseUtils.findInCamelCase(name, predefinedSwitchNames::contains);
     }
 
-    // it's heuristics anyway, so why not to try to guess uniqueness by name
-    private static ImSet<String> predefinedValueUniqueNames = SetFact.toSet("name", "id", "number", "caption");
-
-    private boolean isPredefinedValueUnique() {
-        String name = getName();
-//        return name != null && predefinedValueUniqueNames.contains(name);
-        return name != null && BaseUtils.findInCamelCase(name, predefinedValueUniqueNames::contains);
-    }
-
-    protected boolean isStatValueUnique(ImMap<T, StaticParamNullableExpr> fixedExprs, boolean optimistic) {
-        if(!isValueFull(fixedExprs))
-            return false;
-
-        if(isPredefinedValueUnique())
-            return true;
-
-        if(!optimistic) {
-            if(getInterfaceStat(fixedExprs).lessEquals(new Stat(Settings.get().getMinInterfaceStatForValueUnique())))
-                return false;
-        }
-
-        return getSelectStat(fixedExprs).equals(Stat.ONE);
-    }
-
     public enum ValueUniqueType {
         SELECT, // select instead of CHANGE
         INPUT, // input dropdown, CHANGE or SELECTOR
@@ -2656,9 +2632,34 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return isValueUnique(fixedExprs, type.isOptimistic());
     }
 
+    // it's heuristics anyway, so why not to try to guess uniqueness by name
+    private static ImSet<String> predefinedValueUniqueNames = SetFact.toSet("name", "id", "number", "caption");
+
+    // actually protected
+    public boolean isNameValueUnique() {
+        return false;
+    }
+
     // optimistic determines what to do when there is no statistics
     public boolean isValueUnique(ImMap<T, StaticParamNullableExpr> fixedExprs, boolean optimistic) {
-        return false;
+        if(!isValueFull(fixedExprs))
+            return false;
+
+        if(isNameValueUnique()) {
+            String name = getName();
+            if(name != null && BaseUtils.findInCamelCase(name, predefinedValueUniqueNames::contains))
+                return true;
+        }
+
+        // using selectStat (calculation logic), rather than going deep in the property types is better for 2 reasons:
+        // 1. can use MATERIALIZED and its statistics
+        // 2. can handle complex cases for example OVERRIDE empty ABSTRACT, ...
+        if(!optimistic) {
+            if(getInterfaceStat(fixedExprs).lessEquals(new Stat(Settings.get().getMinInterfaceStatForValueUnique())))
+                return false;
+        }
+
+        return getSelectStat(fixedExprs).equals(Stat.ONE);
     }
 
     public boolean isValueFull(ImMap<T, StaticParamNullableExpr> fixedExprs) {

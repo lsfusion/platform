@@ -17,7 +17,6 @@ import lsfusion.server.base.version.impl.NFListImpl;
 import lsfusion.server.base.version.interfaces.NFList;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.GroupType;
-import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.expr.where.CaseExprInterface;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
@@ -346,13 +345,9 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     }
 
     @Override
-    public boolean isValueUnique(ImMap<Interface, StaticParamNullableExpr> fixedExprs, boolean optimistic) {
-        ImList<CalcCase<Interface>> cases = getCases();
-        if(cases.isEmpty())
-            return false;
-
-        for(CalcCase<Interface> propCase : cases)
-            if(!propCase.implement.mapValueUnique(fixedExprs, optimistic))
+    public boolean isNameValueUnique() {
+        for(CalcCase<Interface> propCase : getCases())
+            if(!propCase.implement.mapNameValueUnique())
                 return false;
 
         return true;
