@@ -25,6 +25,11 @@ public class CustomCellRenderer extends CellRenderer {
         return true;
     }
 
+    @Override
+    public boolean canBeRenderedInTD() {
+        return property.customCanBeRenderedInTD;
+    }
+
     protected native void render(JavaScriptObject customRenderer, Element element)/*-{
         customRenderer.render(element);
     }-*/;

@@ -176,6 +176,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public boolean hide;
 
     public String customRenderFunction;
+    public boolean customCanBeRenderedInTD;
 
     public String creationScript;
     public String creationPath;
@@ -696,6 +697,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         returnClass = inStream.readBoolean() ? ClientTypeSerializer.deserializeClientClass(inStream) : null;
         
         customRenderFunction = pool.readString(inStream);
+        customCanBeRenderedInTD = pool.readBoolean(inStream);
 
         eventID = pool.readString(inStream);
 

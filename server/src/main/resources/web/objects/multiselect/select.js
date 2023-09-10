@@ -57,7 +57,7 @@ function selectMultiInput() {
 
     return {
         render: function (element, controller) {
-            let selectizeElement = _wrapElement(element, 'div', controller == null); // it seems that selectize uses parent (because it creates sibling) so for custom cell renderer we need extra div
+            let selectizeElement = _wrapElement(element, 'div', controller == null, true); // it seems that selectize uses parent (because it creates sibling) so for custom cell renderer we need extra div
 
             element.selectizeInstance = $(selectizeElement).selectize({
                 dropdownParent: 'body',
@@ -215,12 +215,17 @@ function _checkBoxRadioButtonGroup(type, shouldBeSelected, hasName, multi) {
     return _option(type, true, ['btn-group'], ['btn-check'], ['btn', 'btn-outline-secondary', 'option-item'], shouldBeSelected, hasName, multi);
 }
 
-function _wrapElement(element, tag, wrap) {
+function _wrapElement(element, tag, wrap, removeAllPMBInTD) {
     let wrapElement = element;
     if(wrap) {
         wrapElement = document.createElement(tag);
         wrapElement.classList.add("fill-parent-perc")
         element.appendChild(wrapElement);
+    }
+
+    if(removeAllPMBInTD) {
+        if(lsfUtils.isTDorTH(element)) // because canBeRenderedInTD can be true
+            wrapElement.classList.add("remove-all-pmb");
     }
     return wrapElement;
 }
@@ -245,7 +250,7 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
 
     return {
         render: function (element) {
-            let options = _wrapElement(element, 'div', false);
+            let options = _wrapElement(element, 'div', isButton, false);
 
             element.options = options;
 
@@ -494,7 +499,7 @@ function _dropDown(selectAttributes, eventListener, multi, shouldBeSelected, htm
     let picker = multi || html;
     return {
         render: function (element, controller) {
-            let select = _wrapElement(element, 'select', element.tagName.toLowerCase() !== 'select');
+            let select = _wrapElement(element, 'select', element.tagName.toLowerCase() !== 'select', !picker);
 
             element.select = select;
             select.classList.add(picker ? "form-control" : "form-select");
