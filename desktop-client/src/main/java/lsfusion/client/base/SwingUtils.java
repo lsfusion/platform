@@ -200,11 +200,14 @@ public class SwingUtils {
         JTextPane textPane = new JTextPane();
         textPane.setText(String.valueOf(message)); //message can be null
         textPane.setEditable(false);
-        int width = (int) (MainFrame.instance.getRootPane().getWidth() * 0.3);
-        textPane.setSize(new Dimension(width, 10));
-        if(getWidth(String.valueOf(message)) >= width) { //set preferred size only for text with long lines
-            int height = Math.min((int) (MainFrame.instance.getRootPane().getHeight() * 0.9), textPane.getPreferredSize().height);
-            textPane.setPreferredSize((new Dimension(width, height)));
+        JRootPane rootPane = MainFrame.instance.getRootPane();
+        if (rootPane != null) {
+            int width = (int) (rootPane.getWidth() * 0.3);
+            textPane.setSize(new Dimension(width, 10));
+            if (getWidth(String.valueOf(message)) >= width) { //set preferred size only for text with long lines
+                int height = Math.min((int) (rootPane.getHeight() * 0.9), textPane.getPreferredSize().height);
+                textPane.setPreferredSize((new Dimension(width, height)));
+            }
         }
         textPane.setBackground(null);
         return textPane;
