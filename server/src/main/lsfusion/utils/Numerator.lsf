@@ -100,7 +100,7 @@ DESIGN defaultNumerators {
     BOX {
         NEW defaultContainer AFTER OBJECTS {
             type = COLUMNS;
-            columns = 3;
+            lines = 3;
             caption = '{numerator.caption.default.numerators}';
         }
     }
