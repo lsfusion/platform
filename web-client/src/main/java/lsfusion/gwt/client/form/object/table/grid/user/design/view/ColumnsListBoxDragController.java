@@ -66,7 +66,7 @@ public class ColumnsListBoxDragController extends PickupDragController {
     @Override
     public void toggleSelection(Widget draggable) {
         super.toggleSelection(draggable);
-        ColumnsListBox currentMouseListBox = (ColumnsListBox) draggable.getParent().getParent();
+        ColumnsListBox currentMouseListBox = draggable != null && draggable.getParent() != null ? (ColumnsListBox) draggable.getParent().getParent() : null;
         ArrayList<Widget> otherWidgets = new ArrayList<>();
         for (Widget widget : context.selectedWidgets) {
             if (widget != null && widget.getParent() != null && widget.getParent().getParent() != currentMouseListBox) {
