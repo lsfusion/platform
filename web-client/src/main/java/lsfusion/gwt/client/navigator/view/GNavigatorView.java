@@ -10,7 +10,7 @@ import lsfusion.gwt.client.navigator.GNavigatorFolder;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
 
-import java.util.Set;
+import java.util.LinkedHashSet;
 
 public abstract class GNavigatorView<T extends GNavigatorWindow> {
     protected T window;
@@ -47,7 +47,7 @@ public abstract class GNavigatorView<T extends GNavigatorWindow> {
         return window.drawScrollBars ? ((ScrollPanel) component).getWidget() : component;
     }
 
-    public abstract void refresh(Set<GNavigatorElement> newElements);
+    public abstract void refresh(LinkedHashSet<GNavigatorElement> newElements);
 
     public GNavigatorElement getSelectedElement() {
         return selected;

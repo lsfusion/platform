@@ -78,7 +78,7 @@ public abstract class MobileNavigatorView {
 
     protected void createNavigatorItem(ComplexPanel panel, GNavigatorElement navigatorElement, int level) {
         boolean isFolder = navigatorElement instanceof GNavigatorFolder;
-        NavigatorImageButton button = new NavigatorImageButton(navigatorElement, false, isFolder, level); // somewhy folder should be span (otherwise there are some odd borders to the right)
+        NavigatorImageButton button = new NavigatorImageButton(navigatorElement, false, isFolder, level, false); // somewhy folder should be span (otherwise there are some odd borders to the right)
         navigatorItems.put(navigatorElement, button);
 
         panel = wrapMenuItem(panel, level, button);
