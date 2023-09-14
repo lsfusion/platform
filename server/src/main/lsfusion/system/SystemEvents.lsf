@@ -46,7 +46,7 @@ NAVIGATOR {
 designEnvUseBootstrap '{system.events.use.bootstrap}' = DATA TBOOLEAN (DesignEnv);
 serverUseBootstrap '{system.events.use.bootstrap}' = DATA BOOLEAN ();
 useBootstrap '{system.events.use.bootstrap}' (DesignEnv d) = IF designEnvUseBootstrap(d) THEN designEnvUseBootstrap(d) == TTRUE ELSE serverUseBootstrap();
-useBootstrap = useBootstrap(currentDesignEnv());
+useBootstrap = useBootstrap(currentDesignEnv()) PREREAD;
 
 bootstrapCaption = (IF useBootstrap() THEN '{system.events.excel.design}' ELSE '{system.events.bootstrap.design}') IF NOT noSystemToolbarCaptions();
 bootstrapImage = IF useBootstrap() THEN 'excel.png' ELSE 'bootstrap.png';
