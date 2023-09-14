@@ -17,7 +17,7 @@ public class NavigatorImageButton extends ImageButton {
     public NavigatorImageButton(GNavigatorElement element, boolean vertical, int level, boolean active, BiConsumer<GNavigatorElement, NativeEvent> clickHandler) {
         this(element, vertical, false, level, active);
 
-        addClickHandler(event -> clickHandler.accept(element, event.getNativeEvent()));
+        addClickHandler(event -> clickHandler.accept(this.element, event.getNativeEvent()));
     }
     public NavigatorImageButton(GNavigatorElement element, boolean vertical, boolean span, int level, boolean active) {
         super(element.caption, element.image, vertical, span ? Document.get().createSpanElement() : Document.get().createAnchorElement());
