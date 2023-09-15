@@ -111,7 +111,7 @@
         <com.google.zxing.version>3.4.1-patched</com.google.zxing.version>
 
         <tess4j.version>4.3.1</tess4j.version>
-        <pdfbox.version>2.0.12</pdfbox.version>
+        <pdfbox.version>2.0.24</pdfbox.version>
     </properties>
 
     <!-- DEPENDENCY VERSIONS -->
