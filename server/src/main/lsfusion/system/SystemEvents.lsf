@@ -636,7 +636,7 @@ DESIGN changes {
             MOVE BOX (dates);
             MOVE BOX(s);
             NEW textContainer {
-                type = CONTAINERV;
+                horizontal = FALSE;
                 fill = 1;
 
                 MOVE PROPERTY(pChanges) {

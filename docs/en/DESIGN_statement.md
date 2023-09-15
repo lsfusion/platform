@@ -251,7 +251,7 @@ DESIGN order { // customizing the design of the form, starting with the default 
         type = SPLITV; // specifying that the container will be a vertical splitter
         MOVE BOX(o) { // moving everything related to the object o to the new container
             PANEL(o) { // configuring how properties are displayed in the object o panel
-                type = CONTAINERV; // making all descendants go from top to bottom
+                horizontal = FALSE; // making all descendants go from top to bottom
                 NEW headerRow1 { // creating a container - the first row
                     horizontal = TRUE;
                     MOVE PROPERTY(date(o)) { // moving the order date property
@@ -271,7 +271,7 @@ DESIGN order { // customizing the design of the form, starting with the default 
                     MOVE PROPERTY(series(o)); // moving the order series property
                 }
                 NEW headerRow2 {
-                    type = CONTAINERV; // descendants - from top to bottom
+                    horizontal = FALSE; // descendants - from top to bottom
                 }
                 MOVE PROPERTY(note(o));
             }

@@ -83,7 +83,7 @@ FORM template '{word.form.template}'
 DESIGN template {
     BOX {
         size = (1024, 768);
-        type = CONTAINERV;
+        horizontal = FALSE;
         MOVE BOX(t) {
             horizontal = TRUE;
             NEW row1 {
