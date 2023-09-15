@@ -26,7 +26,7 @@ DESIGN defaultData {
             tabbed = TRUE;
             NEW commons {
                 type = COLUMNS;
-                columns = 3;
+                lines = 3;
                 caption = '{default.data.form.default.data.caption.general}';
             }
         }

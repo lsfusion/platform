@@ -5,25 +5,6 @@
     height: fit-content; /* it's even more odd - without this height : 100% in tds won't work */
 }
 
-.cell-div {
-    width: 100%;
-    height: 100%;
-}
-
-/* in grid non-column row prop-size-value can be set when there is an explicit-height*/
-.prop-size-value.cell-div {
-    /* it's tricky here
-     cell-div wants 100% and border-box, but prop-size-value wants content-box*/
-    /* so we use the hack with fill-available which respects paddings, and actual width is set in colgroup */
-    width: -webkit-fill-available;
-    width: -moz-available;
-
-    /* we want to stretch div in the cell even if the explicit height is set */
-    /* however there is a problem: prop-size-value sets box-sizing to content-box, and 100% starts ignoring paddings, so the content can overflow the container element */
-    /* it's not really clear how to fix this, the above hack doesn't work. but it's a really rare case (explicit height, wrapped renderer, it has paddings and it's not the largest component) so we'll ignore it for now */
-    min-height: 100%;
-}
-
 /* ----- GGridPropertyTable ----- */
 .dataGridWidget {
     /*border: 1px solid var(--component-border-color);*/

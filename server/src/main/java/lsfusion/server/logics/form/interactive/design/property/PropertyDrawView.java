@@ -242,6 +242,9 @@ public class PropertyDrawView extends BaseComponentView {
     private String getCustomRenderFunction(FormInstanceContext context) {
         return entity.getCustomRenderFunction(context);
     }
+    private boolean isCustomCanBeRenderedInTD(FormInstanceContext context) {
+        return entity.isCustomCanBeRenderedInTD(context);
+    }
 
     public static final boolean defaultSync = true;
 
@@ -568,6 +571,7 @@ public class PropertyDrawView extends BaseComponentView {
         }
         
         pool.writeString(outStream, getCustomRenderFunction(pool.context));
+        pool.writeBoolean(outStream, isCustomCanBeRenderedInTD(pool.context));
 
         pool.writeString(outStream, entity.eventID);
 

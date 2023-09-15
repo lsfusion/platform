@@ -62,6 +62,9 @@ function selectMultiInput() {
             element.selectizeInstance = $(selectizeElement).selectize({
                 dropdownParent: 'body',
 
+                onInitialize: function() {
+                    _removeAllPMBInTD(element, this.$control[0]);
+                },
                 onItemAdd: function (value) {
                     if(!element.silent) {
                         let option = this.options[value];
@@ -225,6 +228,11 @@ function _wrapElement(element, tag, wrap) {
     return wrapElement;
 }
 
+function _removeAllPMBInTD(element, controlElement) {
+    if(lsfUtils.isTDorTH(element)) // because canBeRenderedInTD can be true
+        controlElement.classList.add("remove-all-pmb");
+}
+
 function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBeSelected, hasName, multi) {
     let isButton = isGroup || divClasses == null;
 
@@ -245,7 +253,7 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
 
     return {
         render: function (element) {
-            let options = _wrapElement(element, 'div', false);
+            let options = _wrapElement(element, 'div', isButton);
 
             element.options = options;
 
@@ -498,6 +506,8 @@ function _dropDown(selectAttributes, eventListener, multi, shouldBeSelected, htm
 
             element.select = select;
             select.classList.add(picker ? "form-control" : "form-select");
+            if(!picker)
+               _removeAllPMBInTD(element, select);
 
             Object.keys(selectAttributes).forEach(key => select.setAttribute(key, selectAttributes[key]));
 

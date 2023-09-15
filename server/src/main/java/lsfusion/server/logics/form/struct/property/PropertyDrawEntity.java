@@ -825,6 +825,13 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
         return null;
     }
+    public boolean isCustomCanBeRenderedInTD(FormInstanceContext context) {
+        Select selectProperty = getSelectProperty(context);
+        if(selectProperty != null)
+            return true; // we have "manual" _wrapElement in select.js
+
+        return false;
+    }
 
     private String getCustomRenderFunction() {
         if(customRenderFunction != null)

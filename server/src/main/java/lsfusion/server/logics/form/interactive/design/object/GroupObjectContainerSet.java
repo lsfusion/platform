@@ -118,7 +118,7 @@ public class GroupObjectContainerSet {
         set.filterBoxContainer.add(group.filtersContainer, version);
         group.filtersContainer.setAlignment(FlexAlignment.STRETCH);
         set.filterBoxContainer.add(group.filterControls, version);
-        group.filterControls.setAlignment(FlexAlignment.END);
+        group.filterControls.setAlignment(FlexAlignment.CENTER);
 
         // we're stretching the intermediate containers, and centering the leaf components
         set.toolbarBoxContainer.setType(ContainerType.CONTAINERH);

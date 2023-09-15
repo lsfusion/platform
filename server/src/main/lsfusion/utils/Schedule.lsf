@@ -137,14 +137,14 @@ DESIGN schedule {
         type = SPLITV;
         fill=1;
         NEW topContainer{
-            type = CONTAINERV ;
+            horizontal = FALSE;
             fill=1;
             caption = '{schedule.params}';
             MOVE BOX(s);
             MOVE BOX(d);
         }
         NEW bottomContainer{
-            type = CONTAINERV;
+            horizontal = FALSE;
             fill = 1;
             caption = '{schedule.preview}';
             NEW dateCotainer{

@@ -41,11 +41,9 @@
         <lsf:writeResources resources="${mainResourcesBeforeSystem}"/>
 
         <% pageContext.setAttribute("versionedResources", ServerUtils.getVersionedResources(config.getServletContext(),
-                //need jquery for pivot table
-                //version jquery above 2.2.4 causes to errors in the pivot table
-                "static/js/external/jquery.min.js", //https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js
-                "static/js/external/jquery-ui.min.js", //https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js,
-                "static/css/external/jquery-ui.min.css", //'https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css',
+                "static/js/external/jquery-3.7.1.min.js",
+                "static/js/external/jquery-ui.min.js",
+                "static/css/external/jquery-ui.min.css",
 
                 //export pivot to excel
                 "static/js/tableToExcel.js",
@@ -97,11 +95,11 @@
                 //<script type="text/javascript" src="https://www.google.com/jsapi"></script>
 
                 //map
-                "static/css/external/leaflet.css", //https://unpkg.com/leaflet@1.7.1/dist/leaflet.css
+                "static/css/external/leaflet.css", //https://unpkg.com/leaflet@1.9.4/dist/leaflet.css
                 "static/css/external/leaflet.draw.css", //https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css
                 "static/css/external/MarkerCluster.css", //https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.css
                 "static/css/external/MarkerCluster.Default.css", //https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.Default.css
-                "static/js/external/leaflet.js", //https://unpkg.com/leaflet@1.7.1/dist/leaflet.js
+                "static/js/external/leaflet.js", //https://unpkg.com/leaflet@1.9.4/dist/leaflet.js
                 "static/js/external/leaflet.draw.js", //https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js
                 "static/js/external/leaflet.markercluster.js", //https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/leaflet.markercluster.js
                 "static/js/external/leaflet.polylineDecorator.min.js", //https://cdnjs.cloudflare.com/ajax/libs/leaflet-polylinedecorator/1.1.0/leaflet.polylineDecorator.min.js
@@ -116,8 +114,7 @@
                 "static/css/gMap.css",
 
                 //calendar
-                "static/js/external/fullCalendar.js", //https://cdn.jsdelivr.net/npm/fullcalendar@5.7.2/main.js
-                "static/css/external/fullCalendar.css", // https://cdn.jsdelivr.net/npm/fullcalendar@5.7.2/main.css
+                "static/js/external/fullcalendar.index.global.min.js", //https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js
                 "static/css/gCalendar.css",
                 "static/js/external/fullcalendar-locales-all.js", //https://cdn.jsdelivr.net/npm/fullcalendar@5.7.2/locales-all.js
                 "static/js/fullcalendar-locale-be.js",
@@ -127,17 +124,18 @@
 
                 //dateRangePicker
                 "static/js/external/moment-with-locales.min.js", //https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment-with-locales.min.js // also used to define user date / time formats
-                "static/js/external/moment-jdateformatparser.js", //https://github.com/MadMG/moment-jdateformatparser/blob/master/moment-jdateformatparser.js // also used to define user date / time formats
+                "static/js/external/moment-jdateformatparser.min.js", //https://raw.githubusercontent.com/MadMG/moment-jdateformatparser/master/moment-jdateformatparser.min.js // also used to define user date / time formats
                 "static/js/external/daterangepicker.min.js", //https://cdn.jsdelivr.net/npm/daterangepicker@3.1.0/daterangepicker.min.js
                 "static/css/external/daterangepicker.css", //https://cdn.jsdelivr.net/npm/daterangepicker@3.1.0/daterangepicker.css
                 "static/css/datePicker.css",
 
                 //Quill
-                "static/js/external/quill.js", //https://cdn.quilljs.com/1.3.6/quill.js
+                "static/js/external/quill.min.js", //https://cdn.quilljs.com/1.3.6/quill.min.js
                 "static/css/external/quill.bubble.css", //https://cdn.quilljs.com/1.3.6/quill.bubble.css
                 "static/css/quillRichText.css",
 
                 //Ace code editor
+                //todo minification is needed because the ace library size is larger than 5mb
                 "static/js/ace/src/ace.js",
                 "static/js/ace/src/mode-html.js",
                 "static/js/ace/src/mode-lsf.js",

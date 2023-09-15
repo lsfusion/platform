@@ -46,7 +46,7 @@ NAVIGATOR {
 designEnvUseBootstrap '{system.events.use.bootstrap}' = DATA TBOOLEAN (DesignEnv);
 serverUseBootstrap '{system.events.use.bootstrap}' = DATA BOOLEAN ();
 useBootstrap '{system.events.use.bootstrap}' (DesignEnv d) = IF designEnvUseBootstrap(d) THEN designEnvUseBootstrap(d) == TTRUE ELSE serverUseBootstrap();
-useBootstrap = useBootstrap(currentDesignEnv());
+useBootstrap = useBootstrap(currentDesignEnv()) PREREAD;
 
 bootstrapCaption = (IF useBootstrap() THEN '{system.events.excel.design}' ELSE '{system.events.bootstrap.design}') IF NOT noSystemToolbarCaptions();
 bootstrapImage = IF useBootstrap() THEN 'excel.png' ELSE 'bootstrap.png';
@@ -149,15 +149,15 @@ onWebClientLoad(STRING s) += WHEN s = 'input-quill.js' THEN 22; //for bootstrap 
 onWebClientLoad(STRING s) += WHEN s = 'input-quill.css' THEN 23; //for bootstrap and excell themes
 onWebClientLoad(STRING s) += WHEN s = 'select.js' THEN 24; //for bootstrap and excell themes
 onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'option.css' THEN 25;
-onWebClientLoad(STRING s) += WHEN s = 'selectize.js' THEN 26;
-onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'selectize.bootstrap5.css' THEN 27;
+onWebClientLoad(STRING s) += WHEN s = 'selectize.min.js' THEN 26;
+onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'selectize.bootstrap5.min.css' THEN 27;
 onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'selectize.css' THEN 28;
 onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'select.css' THEN 29;
 //todo use v1.14.0-beta2 there is a bug in beta-3 https://github.com/snapappointments/bootstrap-select/issues/2738
-onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap-select.js' THEN 30;
-onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap-select.css' THEN 31;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'multiple-select.js' THEN 32;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'multiple-select.css' THEN 33;
+onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap-select.min.js' THEN 30;
+onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap-select.min.css' THEN 31;
+onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'multiple-select.min.js' THEN 32;
+onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'multiple-select.min.css' THEN 33;
 
 onWebClientStarted () +{ 
     onWebClientLoad();
@@ -636,7 +636,7 @@ DESIGN changes {
             MOVE BOX (dates);
             MOVE BOX(s);
             NEW textContainer {
-                type = CONTAINERV;
+                horizontal = FALSE;
                 fill = 1;
 
                 MOVE PROPERTY(pChanges) {

@@ -68,6 +68,9 @@ public class GwtClientUtils {
             },
             useBootstrap: function() {
                 return @lsfusion.gwt.client.view.MainFrame::useBootstrap;
+            },
+            isTDorTH: function(element) {
+                return @lsfusion.gwt.client.base.GwtClientUtils::isTDorTH(*)(element);
             }
         }
     }-*/;

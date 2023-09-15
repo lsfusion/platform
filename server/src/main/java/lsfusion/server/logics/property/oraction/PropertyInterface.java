@@ -142,7 +142,8 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
     public Property.Select<P> mapSelect(ImList<Property> viewProperties, boolean forceSelect) {
         return null;
     }
-    public boolean mapValueUnique(ImMap<P, StaticParamNullableExpr> fixedExprs, boolean optimistic) {
+    @Override
+    public boolean mapNameValueUnique() {
         return true;
     }
 
