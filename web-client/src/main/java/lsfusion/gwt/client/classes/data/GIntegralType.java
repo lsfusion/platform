@@ -50,9 +50,6 @@ public abstract class GIntegralType extends GFormatType {
     // render, edit
     @Override
     public String formatString(PValue value, String pattern) {
-        if(value == null)
-            return null;
-
         // there was doubleValue before, but not sure what for
         return getFormat(pattern).format(PValue.getNumberValue(value));
     }

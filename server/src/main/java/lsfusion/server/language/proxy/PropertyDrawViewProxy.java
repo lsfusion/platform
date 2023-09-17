@@ -158,6 +158,10 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
             target.entity.setPropertyExtra((PropertyObjectEntity<?>) caption, PropertyDrawExtraType.CAPTION, getVersion());
     }
 
+    public void setTag(LocalizedString tag) {
+        target.tag = tag.getSourceString();
+    }
+
     public void setImagePath(LocalizedString image) {
         setImage(image);
     }

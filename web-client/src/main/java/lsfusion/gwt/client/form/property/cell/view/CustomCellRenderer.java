@@ -30,6 +30,14 @@ public class CustomCellRenderer extends CellRenderer {
         return property.customCanBeRenderedInTD;
     }
 
+    @Override
+    protected Object getExtraValue(UpdateContext updateContext) {
+        if(property.customNeedPlaceholder)
+            return updateContext.getPlaceholder();
+
+        return super.getExtraValue(updateContext);
+    }
+
     protected native void render(JavaScriptObject customRenderer, Element element)/*-{
         customRenderer.render(element);
     }-*/;
@@ -37,13 +45,13 @@ public class CustomCellRenderer extends CellRenderer {
     @Override
     public boolean updateContent(Element element, PValue value, Object extraValue, UpdateContext updateContext) {
         JavaScriptObject renderValue = GSimpleStateTableView.convertToJSValue(property, value);
-        setRendererValue(customRenderer, element, getController(property, updateContext, element), renderValue);
+        setRendererValue(customRenderer, element, getController(property, updateContext, element), renderValue, (String) extraValue);
 
         return false;
     }
 
-    protected native void setRendererValue(JavaScriptObject customRenderer, Element element, JavaScriptObject controller, JavaScriptObject value)/*-{
-        customRenderer.update(element, controller, value);
+    protected native void setRendererValue(JavaScriptObject customRenderer, Element element, JavaScriptObject controller, JavaScriptObject value, String placeholder)/*-{
+        customRenderer.update(element, controller, value, placeholder);
     }-*/;
 
     @Override

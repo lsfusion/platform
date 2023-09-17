@@ -51,7 +51,11 @@ public class GStringType extends GTextBasedType {
         if(length.isUnlimited())
             return 15;
 
-        int lengthValue = length.getValue();
+        return getScaledCharWidth(length.getValue());
+    }
+
+    // the same is on the server
+    private static int getScaledCharWidth(int lengthValue) {
         return lengthValue <= 12 ? Math.max(lengthValue, 1) : (int) round(12 + pow(lengthValue - 12, 0.7));
     }
 

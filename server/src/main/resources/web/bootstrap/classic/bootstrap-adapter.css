@@ -308,3 +308,19 @@ table.pvtTable thead tr th {
 .cell-with-background {
     background-color: var(--bs-table-bg);
 }
+
+/* we want for the non-form-control placeholder to have the same behaviour look as the form-control placeholder */
+.text-based-value-null:not(a),
+.text-based-value-null.form-control:not(input),
+.text-based-value-empty:not(a),
+.text-based-value-empty.form-control:not(input),
+.form-select > option.option-null {
+    color: var(--bs-secondary-color);
+}
+a.text-based-value-null,
+a.text-based-value-empty {
+    --bs-link-opacity: 0.5;
+}
+.form-select > option {
+    color: var(--bs-body-color)
+}

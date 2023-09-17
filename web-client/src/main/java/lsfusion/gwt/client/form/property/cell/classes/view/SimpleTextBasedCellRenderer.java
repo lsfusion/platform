@@ -217,12 +217,18 @@ public abstract class SimpleTextBasedCellRenderer extends CellRenderer {
         return CELL_HORIZONTAL_PADDING;
     }
 
+    @Override
+    protected Object getExtraValue(UpdateContext updateContext) {
+        return updateContext.getPlaceholder();
+    }
+
     public boolean updateContent(Element element, PValue value, Object extraValue, UpdateContext updateContext) {
-        String innerText = value != null ? format(value) : null;
+        boolean isNull = value == null;
+        String innerText = isNull ? null : format(value);
 
         String title;
         title = property.echoSymbols ? "" : innerText;
-        if(innerText == null) {
+        if(isNull) {
             element.addClassName("text-based-value-null");
             if(property.isEditableNotNull())
                 title = REQUIRED_VALUE;
@@ -241,22 +247,27 @@ public abstract class SimpleTextBasedCellRenderer extends CellRenderer {
         if(innerText.contains("\n"))
             element.addClassName("text-based-value-multi-line");
 
+        String placeholder = extraValue != null ? ((String) extraValue) : null;
         Element inputElement = getInputElement(element);
         if(inputElement != null) {
             assert isTagInput();
             if(property.isEditableNotNull()) {
-                if (innerText.isEmpty()) {
+                if (isNull) {
                     inputElement.addClassName("is-invalid");
                 } else {
                     inputElement.removeClassName("is-invalid");
                 }
             }
             SimpleTextBasedCellEditor.setInputValue(inputElement.cast(), innerText);
+            if (placeholder != null)
+                inputElement.setAttribute("placeholder", placeholder);
+            else
+                inputElement.removeAttribute("placeholder");
             return false;
         }
 
         // important to make paste work (otherwise DataGrid.sinkPasteEvent cannot put empty selection), plus for sizing
-        element.setInnerText(innerText.isEmpty() ? EscapeUtils.UNICODE_NBSP : innerText);
+        element.setInnerText(isNull ? (placeholder != null ? placeholder : EscapeUtils.UNICODE_NBSP) : innerText);
         return true;
     }
 

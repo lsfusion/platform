@@ -12,6 +12,6 @@ public class GPlaceholderReader extends GExtraPropertyReader {
     }
 
     public void update(GPropertyController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
-        controller.updatePropertyPlaceholders(this, values);
+        controller.updatePlaceholderValues(this, values);
     }
 }

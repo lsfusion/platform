@@ -56,6 +56,12 @@ public abstract class GTreeGridRecord extends GridDataRecord {
     public String getBackground(GPropertyDraw property) {
         return (String) getAttribute(property.sID + "_background");
     }
+    public void setPlaceholder(GPropertyDraw property, String placeholder) {
+        setAttribute(property.sID + "_placeholder", placeholder);
+    }
+    public String getPlaceholder(GPropertyDraw property) {
+        return (String) getAttribute(property.sID + "_placeholder");
+    }
     public void setForeground(GPropertyDraw property, String foreground) {
         setAttribute(property.sID + "_foreground", foreground);
     }

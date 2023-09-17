@@ -65,6 +65,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     
     public String customRenderFunction;
     public boolean customCanBeRenderedInTD;
+    public boolean customNeedPlaceholder;
 
     public String toolTip;
     public boolean clearText;

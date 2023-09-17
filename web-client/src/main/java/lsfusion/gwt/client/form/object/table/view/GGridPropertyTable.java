@@ -79,6 +79,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> cellValueElementClasses = new NativeSIDMap<>();
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> cellBackgroundValues = new NativeSIDMap<>();
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> cellForegroundValues = new NativeSIDMap<>();
+    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> placeholders = new NativeSIDMap<>();
     protected NativeHashMap<GGroupObjectValue, PValue> rowBackgroundValues = new NativeHashMap<>();
     protected NativeHashMap<GGroupObjectValue, PValue> rowForegroundValues = new NativeHashMap<>();
 
@@ -111,11 +112,6 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     public static String getDynamicComment(PValue commentObject) {
         String comment = PValue.getStringValue(commentObject);
         return comment != null ? comment.trim() : null;
-    }
-
-    public static String getDynamicPlaceholder(PValue placeholderObject) {
-        String placeholder = PValue.getStringValue(placeholderObject);
-        return placeholder != null ? placeholder.trim() : null;
     }
 
     protected GGridPropertyTableHeader getGridHeader(int i) {
@@ -304,6 +300,10 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     }
     public void updateCellBackgroundValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
         cellBackgroundValues.put(propertyDraw, values);
+    }
+
+    public void updatePlaceholderValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        placeholders.put(propertyDraw, values);
     }
 
     public void updateCellForegroundValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
@@ -721,6 +721,7 @@ protected Double getUserFlex(int i) {
         protected abstract String getValueElementClass(GPropertyDraw property, T record);
         protected abstract String getBackground(GPropertyDraw property, T record);
         protected abstract String getForeground(GPropertyDraw property, T record);
+        protected abstract String getPlaceholder(GPropertyDraw property, T record);
 
         @Override
         public void onEditEvent(EventHandler handler, Cell editCell, Element editRenderElement) {
