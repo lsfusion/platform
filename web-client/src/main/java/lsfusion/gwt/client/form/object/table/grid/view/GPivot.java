@@ -1931,8 +1931,12 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
                 filters.addAll(getFilters(config.getArrayString("cols"), colKeyValues));
 
                 config.getArrayString("rows").push(caption);
-                grid.filter.addConditions(filters, false, true);
-//                updateView(true, null);
+                // if filters isEmpty data is not updated (updateView() is not invoked) and config with new grouping row doesn't apply
+                // if filters is not empty data is updated from remote changes
+                if (filters.isEmpty())
+                    updateView(true, null);
+                else
+                    grid.filter.addConditions(filters, false, true);
             });
             menuBar.addItem(menuItem);
             menuBar.getElement().getStyle().setProperty("maxHeight", getElement().getOffsetHeight() + "px");
