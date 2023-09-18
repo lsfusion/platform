@@ -4867,8 +4867,9 @@ navigatorElementOptions returns [NavigatorElementOptions options]
 @init {
 	$options = new NavigatorElementOptions();
 }
-	:	
-	(	'WINDOW' wid=compoundID { $options.windowName = $wid.sid; }
+	:
+	//PARENT is for future compatibility with 6 version
+	(	('WINDOW' wid=compoundID { $options.windowName = $wid.sid; } 'PARENT'? )
 	|	pos=navigatorElementRelativePosition { $options.location = $pos.location; }
 	|	'IMAGE' path=stringLiteral { $options.imagePath = $path.val; }	
 	)*
