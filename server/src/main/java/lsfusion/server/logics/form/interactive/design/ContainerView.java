@@ -35,7 +35,7 @@ public class ContainerView extends ComponentView {
     
     public boolean collapsed;
 
-    private ContainerType type = ContainerType.CONTAINERV;
+    private ContainerType type;
     private boolean horizontal;
     private boolean tabbed;
 

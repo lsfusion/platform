@@ -71,12 +71,12 @@ public class FormContainerSet {
 
         set.panelContainer = contFactory.createContainer();
         set.panelContainer.setSID(DefaultFormView.getPanelContainerSID());
-        set.panelContainer.setType(ContainerType.CONTAINERH);
+        set.panelContainer.setHorizontal(true);
         set.panelContainer.setAlignment(FlexAlignment.STRETCH);
 
         set.toolbarBoxContainer = contFactory.createContainer();
         set.toolbarBoxContainer.setSID(DefaultFormView.getToolbarBoxContainerSID());
-        set.toolbarBoxContainer.setType(ContainerType.CONTAINERH);
+        set.toolbarBoxContainer.setHorizontal(true);
         set.toolbarBoxContainer.setAlignment(FlexAlignment.STRETCH);
 
         set.groupContainer = contFactory.createContainer();
@@ -86,20 +86,20 @@ public class FormContainerSet {
 
         set.toolbarLeftContainer = contFactory.createContainer();
         set.toolbarLeftContainer.setSID(DefaultFormView.getToolbarLeftContainerSID());
-        set.toolbarLeftContainer.setType(ContainerType.CONTAINERH);
+        set.toolbarLeftContainer.setHorizontal(true);
         set.toolbarLeftContainer.setFlex(0);
         set.toolbarLeftContainer.setAlignment(FlexAlignment.STRETCH);
 
         set.toolbarRightContainer = contFactory.createContainer();
         set.toolbarRightContainer.setSID(DefaultFormView.getToolbarRightContainerSID());
-        set.toolbarRightContainer.setType(ContainerType.CONTAINERH);
+        set.toolbarRightContainer.setHorizontal(true);
         set.toolbarRightContainer.setChildrenAlignment(FlexAlignment.END);
         set.toolbarRightContainer.setFlex(1);
         set.toolbarRightContainer.setAlignment(FlexAlignment.STRETCH);
 
         set.toolbarContainer = contFactory.createContainer(); // контейнер тулбара
         set.toolbarContainer.setSID(DefaultFormView.getToolbarContainerSID());
-        set.toolbarContainer.setType(ContainerType.CONTAINERH);
+        set.toolbarContainer.setHorizontal(true);
         set.toolbarContainer.setAlignment(FlexAlignment.STRETCH);
 
         set.toolbarRightContainer.add(set.toolbarContainer, version);

@@ -104,7 +104,6 @@ public class GroupObjectContainerSet {
         set.toolbarLeftContainer = factory.createContainer();
         set.toolbarLeftContainer.setSID(DefaultFormView.getToolbarLeftContainerSID(sid));
 
-        set.boxContainer.setType(ContainerType.CONTAINERV);
         set.boxContainer.setAlignment(FlexAlignment.STRETCH);
         set.boxContainer.setFlex(1);
         set.boxContainer.add(set.filterBoxContainer, version);
@@ -112,20 +111,20 @@ public class GroupObjectContainerSet {
         set.boxContainer.add(set.toolbarBoxContainer, version);
         set.boxContainer.add(set.panelContainer, version);
         
-        set.filterBoxContainer.setType(ContainerType.CONTAINERH);
+        set.filterBoxContainer.setHorizontal(true);
         set.filterBoxContainer.add(group.filtersContainer, version);
         set.filterBoxContainer.add(group.filterControls, version);
 
-        set.toolbarBoxContainer.setType(ContainerType.CONTAINERH);
+        set.toolbarBoxContainer.setHorizontal(true);
         set.toolbarBoxContainer.setAlignment(FlexAlignment.STRETCH);
         set.toolbarBoxContainer.add(set.toolbarLeftContainer, version);
         set.toolbarBoxContainer.add(set.toolbarRightContainer, version);
 
-        set.toolbarLeftContainer.setType(ContainerType.CONTAINERH);
+        set.toolbarLeftContainer.setHorizontal(true);
         set.toolbarLeftContainer.setAlignment(FlexAlignment.STRETCH);
         set.toolbarLeftContainer.add(group.getToolbarSystem(), version);
 
-        set.toolbarRightContainer.setType(ContainerType.CONTAINERH);
+        set.toolbarRightContainer.setHorizontal(true);
         set.toolbarRightContainer.setAlignment(FlexAlignment.STRETCH);
         set.toolbarRightContainer.setChildrenAlignment(FlexAlignment.END);
         set.toolbarRightContainer.setFlex(1);
@@ -133,14 +132,13 @@ public class GroupObjectContainerSet {
         set.toolbarRightContainer.add(set.filterGroupsContainer, version);
         set.toolbarRightContainer.add(set.toolbarContainer, version);
 
-        set.filterGroupsContainer.setType(ContainerType.CONTAINERH);
+        set.filterGroupsContainer.setHorizontal(true);
         set.filterGroupsContainer.setAlignment(FlexAlignment.CENTER);
         set.filterGroupsContainer.setChildrenAlignment(FlexAlignment.END);
 
-        set.toolbarContainer.setType(ContainerType.CONTAINERH);
+        set.toolbarContainer.setHorizontal(true);
         set.toolbarContainer.setAlignment(FlexAlignment.STRETCH);
 
-        set.panelContainer.setType(ContainerType.CONTAINERV);
         set.panelContainer.setAlignment(FlexAlignment.STRETCH);
         set.panelContainer.add(set.groupContainer, version);
 
