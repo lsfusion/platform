@@ -1935,6 +1935,8 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
 //                updateView(true, null);
             });
             menuBar.addItem(menuItem);
+            menuBar.getElement().getStyle().setProperty("maxHeight", getElement().getOffsetHeight() + "px");
+            menuBar.getElement().getStyle().setOverflowY(Style.Overflow.SCROLL);
         }
 
         GwtClientUtils.showPopupInWindow(popup, menuBar, x, y);
