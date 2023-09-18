@@ -5305,7 +5305,7 @@ imageStatement returns [String image]
     :   ('IMAGE' (img=stringLiteral)? {$image = BaseUtils.nvl($img.val, AppServerImage.AUTO); } | 'NOIMAGE' { $image = AppServerImage.NULL; } )
     ;
 
-simpleNameWithCaption returns [String name, LocalizedString caption] 
+simpleNameWithCaption returns [String name, LocalizedString caption]
 	:	simpleName=ID { $name = $simpleName.text; }
 		(captionStr=localizedStringLiteral { $caption = $captionStr.val; })?
 	;
