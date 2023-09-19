@@ -427,7 +427,6 @@ public class DefaultFormView extends FormView {
 //            if (currentGroupContainer == null) {
 //                //не нашли - создаём
 //                currentGroupContainer = createContainer(currentGroup.caption, null, currentGroupContainerSID);
-//                currentGroupContainer.setType(ContainerType.CONTAINERV);
 //
 //                currentGroupPropsContainer = createGroupPropsContainer(currentGroupContainer, currentGroupPropsContainerSID);
 //
