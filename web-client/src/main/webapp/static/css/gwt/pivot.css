@@ -199,7 +199,6 @@ table.pvtTable tbody tr td {
 .pvtAxisContainer li, 
 .pvtUiContainer > li /* dragged */ {
     list-style-type: none;
-    cursor: move;
     display: flex;
     flex-direction: column;
 }
@@ -369,5 +368,16 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
 .pvtRenderer.form-select,
 .pvtAggregator.form-select,
 .pvtAttr.form-select {
+    margin: var(--border-comp-vert-padding) var(--border-comp-horz-padding);
+}
+
+li div.pvtAttr.selectArrow {
+    background: transparent;
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    width: 1.5em;
+    cursor: default;
     margin: var(--border-comp-vert-padding) var(--border-comp-horz-padding);
 }

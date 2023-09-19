@@ -1361,7 +1361,7 @@
           unused.addClass('pvtHorizList');
         }
         fn1 = function(attr) {
-          var attrElem, checkContainer, closeFilterBox, controls, filterItem, filterItemExcluded, finalButtons, hasExcludedItem, len2, listItem, n, optionElem, placeholder, ref1, sorter, timer, v, value, valueCount, valueList, values;
+          var arrow, attrElem, checkContainer, closeFilterBox, controls, filterItem, filterItemExcluded, finalButtons, hasExcludedItem, len2, listItem, n, placeholder, ref1, sorter, v, value, valueCount, valueList, values;
           values = (function() {
             var results;
             results = [];
@@ -1479,39 +1479,33 @@
           });
           listItem = $("<li>").addClass("axis_" + i);
           listItem.css({
-            lineHeight: opts.valueHeight + "px"
+            lineHeight: opts.valueHeight + "px",
+            position: "relative"
+          });
+          arrow = $("<div>").addClass('pvtAttr selectArrow').appendTo(listItem);
+          arrow.bind("click", function(e) {
+            var left, listHeight, ref2, top;
+            ref2 = $(e.currentTarget.parentElement).position(), left = ref2.left, top = ref2.top;
+            listHeight = Math.min(valueList.outerHeight(), uiTable.height());
+            top = Math.min(uiTable.height() - listHeight, top + 10);
+            left = Math.min(uiTable.width() - valueList.outerWidth(), left + 10);
+            return valueList.css({
+              left: left,
+              top: top,
+              maxHeight: (listHeight - 1) + "px"
+            }).show();
           });
           attrElem = $("<select>").addClass('pvtAttr form-select form-select-sm').data("attrName", attr).appendTo(listItem);
-          optionElem = $("<option>").text(attr).appendTo(attrElem);
-          timer = null;
-          attrElem.bind("click", function(e) {
+          $("<option>").text(attr).appendTo(attrElem);
+          attrElem.bind("dblclick", function(e) {
             var pvtContainer;
-            if (timer !== null) {
-              clearTimeout(timer);
-              timer = null;
-              if (unusedDiv.has(attrElem).length > 0) {
-                pvtContainer = $(uiTable).find('.pvtAxisContainer.pvtHorizList');
-                listItem.appendTo(pvtContainer[pvtContainer.length - 1]);
-              } else {
-                listItem.prependTo(unusedDiv);
-              }
-              refresh();
+            if (unusedDiv.has(attrElem).length > 0) {
+              pvtContainer = $(uiTable).find('.pvtAxisContainer.pvtHorizList');
+              listItem.appendTo(pvtContainer[pvtContainer.length - 1]);
             } else {
-              timer = setTimeout((function() {
-                var left, listHeight, ref2, top;
-                clearTimeout(timer);
-                timer = null;
-                ref2 = $(e.currentTarget).position(), left = ref2.left, top = ref2.top;
-                listHeight = Math.min(valueList.outerHeight(), uiTable.height());
-                top = Math.min(uiTable.height() - listHeight, top + 10);
-                left = Math.min(uiTable.width() - valueList.outerWidth(), left + 10);
-                valueList.css({
-                  left: left,
-                  top: top,
-                  maxHeight: (listHeight - 1) + "px"
-                }).show();
-              }), 250);
+              listItem.prependTo(unusedDiv);
             }
+            refresh();
           });
           if (hasExcludedItem) {
             attrElem.addClass('pvtFilteredAttribute');
