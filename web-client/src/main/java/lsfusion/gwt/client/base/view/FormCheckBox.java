@@ -8,7 +8,7 @@ public class FormCheckBox extends CheckBox {
         super(label);
 
         setStyleName("form-check");
-        getElement().getElementsByTagName("input").getItem(0).addClassName("form-check-input");
+        getElement().getElementsByTagName("input").getItem(0).addClassName("form-check-input panelRendererValue");
         getElement().getElementsByTagName("label").getItem(0).addClassName("form-check-label");
     }
 }
