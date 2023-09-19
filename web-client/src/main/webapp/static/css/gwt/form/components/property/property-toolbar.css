@@ -72,12 +72,12 @@
 /* an input with a toolbar (input "pulls the size" from the upper container) */
 
 .prop-input-w-toolbar {
-    display: flex;
+    /*display: flex;*/
 }
 
 .prop-input-w-toolbar > .prop-input {
-    flex: 1 1 auto;
-    align-self: stretch;
+    /*flex: 1 1 auto;*/
+    /*align-self: stretch;*/
 }
 
 .prop-input-w-toolbar > .property-toolbar {

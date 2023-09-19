@@ -49,21 +49,14 @@ public class SizedFlexPanel extends FlexPanel {
         if((isStretch && !wrap) != alignShrink || // incorrect opposite shrink, stretch with nowrap automatically shrinks, in other cases nothing shrinks
                 isStretch && alignSize != null) { // incorrect opposite size, if size is defined, alignment stretch is ignored
             boolean fixed = true;
-            if(alignShrink && (vertical || supportsIntrinisticHeight)) {
-                setIntrinisticSize(element, !vertical, isStretch && !wrap, alignSize);
+            if((alignShrink || alignSize != null) && (vertical || supportsIntrinisticHeight)) {
+                setIntrinisticSize(element, !vertical, alignShrink, isStretch && !wrap, alignSize);
             } else {
                 if(vertical) {
                     assert isStretch;
-                    if(alignSize == null) {
-                        setMinPanelWidth(element, "fit-content");
-                    } else {
-                        // in theory max(fill-available, alignSize) should be, but fill-available cannot be used in calcs, so
-                        if(size == null || supportsIntrinisticHeight) // we're using an extra div
-                            fixed = false;
-                        else // we're fucked so will use 100% (it ignores margins, but what you gonna do)
-                            setMinPanelWidth(element, "calc(max(100%," + alignSize.getString() + "))");
-                    }
-               } else { // for height fit-content doesn't work
+                    assert alignSize == null;
+                    setMinPanelWidth(element, "fit-content");
+                } else { // for height fit-content doesn't work
                     if(isStretch && wrap && alignShrink && alignSize == null) {
                         // actually opposite flex panel won't help in this case (because opposite flex panel won't be shrinked with STRETCH either)
                         assert !supportsIntrinisticHeight;
@@ -79,7 +72,7 @@ public class SizedFlexPanel extends FlexPanel {
                 wrapPanel.add(widget, GFlexAlignment.STRETCH, isStretch ? 1 : 0, alignShrink, alignSize);
                 if (size != null) { // we want to use intristic widths, because otherwise (when setting the size to the wrap panel) margin/border/padding will be ignored
                     assert !vertical || supportsIntrinisticHeight;
-                    setIntrinisticSize(element, vertical, true, size);
+                    setIntrinisticSize(element, vertical, true, true, size);
                     setPanelSize(element, vertical, size);
                     size = null;
                 }
@@ -96,13 +89,15 @@ public class SizedFlexPanel extends FlexPanel {
         add(widget, beforeIndex, alignment, flex, shrink, size);
     }
 
-    private static void setIntrinisticSize(Element element, boolean vertical, boolean isStretch, GSize size) {
+    private static void setIntrinisticSize(Element element, boolean vertical, boolean isShrink, boolean isStretch, GSize size) {
         element.setPropertyObject(vertical ? "intrinisticShrinkHeight" : "intrinisticShrinkWidth", size);
 
-        if(vertical)
-            element.addClassName("intr-shrink-height");
-        else
-            element.addClassName("intr-shrink-width");
+        if(isShrink) {
+            if (vertical)
+                element.addClassName("intr-shrink-height");
+            else
+                element.addClassName("intr-shrink-width");
+        }
 
         if (isStretch) {
             if(vertical)
