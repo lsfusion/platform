@@ -4,10 +4,6 @@
     margin-top: 1px;
 }
 
-.noOutline {
-    outline: none;
-}
-
 .userPreferencesDualList .dragdrop-selected {
     opacity: 1.0;
 }
@@ -71,21 +67,5 @@
 }
 
 .userPreferencesIntegralTextBox {
-    padding: 0.125rem;
     text-align: right;
-    width: 3em;
-}
-
-.userPreferencesColumnTextBox {
-    padding: 0.125rem;
-    flex: auto !important;
-}
-
-.userPreferencesFontLabel {
-    padding-bottom: 0.0625rem;
-}
-
-.userPreferencesSaveResetButton {
-    width: 13em;
-    margin: 0.0625rem;
 }

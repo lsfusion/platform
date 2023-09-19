@@ -303,12 +303,6 @@ public class GwtClientUtils {
         return object != null && object.toString().equals(string);
     }
 
-    public static Widget createHorizontalStrut(int size) {
-        SimplePanel strut = new SimplePanel();
-        strut.setWidth(size + "px");
-        return strut;
-    }
-
     public static Widget createVerticalStrut(int size) {
         SimplePanel strut = new SimplePanel();
         strut.setHeight(size + "px");
