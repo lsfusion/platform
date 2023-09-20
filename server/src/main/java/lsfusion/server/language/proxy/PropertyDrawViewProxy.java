@@ -152,7 +152,10 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
     public void setCaption(LocalizedString caption) {
         target.caption = caption;
     }
-    
+
+    public void setTag(LocalizedString tag) {
+    }
+
     public void setValueAlignment(FlexAlignment valueAlignment) {
         target.valueAlignment = valueAlignment;
     }
