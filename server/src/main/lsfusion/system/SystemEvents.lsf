@@ -56,6 +56,17 @@ toggleBootstrap () {
     reload();
 }
 
+CLASS BootstrapTheme '{system.events.bootstrap.theme}' {
+    classic '{system.events.bootstrap.theme.classic}'
+}
+
+designEnvBootstrapTheme '{system.events.bootstrap.theme}' = DATA BootstrapTheme (DesignEnv);
+staticCaptionDesignEnvBootstrapTheme '{system.events.bootstrap.theme}' (DesignEnv d) = staticCaption(designEnvBootstrapTheme(d));
+serverBootstrapTheme '{system.events.bootstrap.theme}' = DATA BootstrapTheme ();
+bootstrapTheme '{system.events.bootstrap.theme}' (DesignEnv d) = OVERRIDE designEnvBootstrapTheme(d), serverBootstrapTheme(), BootstrapTheme.classic;
+bootstrapTheme = bootstrapTheme(currentDesignEnv()) PREREAD;
+nameBootstrapTheme = STRING(getWord(staticName(bootstrapTheme()), '.', 2));
+
 colorThemeCaption = (CASE
     WHEN currentColorTheme() == ColorTheme.light THEN '{system.events.dark.mode}'
     WHEN currentColorTheme() == ColorTheme.dark THEN '{system.events.auto.mode}'
@@ -117,7 +128,7 @@ NAVIGATOR {
     NEW toggleColorTheme WINDOW system PARENT BEFORE toggleNavigatorPinMode HEADER colorThemeCaption() IMAGE colorThemeImage();
 }
 
-onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap.min.css' THEN 1;
+onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = nameBootstrapTheme() + '/bootstrap.min.css' THEN 1;
 onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap.min.js' THEN 1;
 onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap-background-inherit.css' THEN 2;
 onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap-adapter.css' THEN 3;
