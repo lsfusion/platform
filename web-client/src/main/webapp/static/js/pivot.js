@@ -1477,10 +1477,9 @@
             valueList.find(".changed:not(:checked)").removeClass("changed").prop("checked", true);
             return closeFilterBox();
           });
-          listItem = $("<li>").addClass("axis_" + i);
+          listItem = $("<li>").addClass("axis_" + i + " pvtAttr-container");
           listItem.css({
-            lineHeight: opts.valueHeight + "px",
-            position: "relative"
+            lineHeight: opts.valueHeight + "px"
           });
           arrow = $("<div>").addClass('pvtAttr selectArrow').appendTo(listItem);
           arrow.bind("click", function(e) {

@@ -878,8 +878,8 @@ callWithJQuery ($) ->
                                 .removeClass("changed").prop("checked", true)
                             closeFilterBox()
 
-                    listItem = $("<li>").addClass("axis_#{i}")
-                    listItem.css(lineHeight: opts.valueHeight + "px", position: "relative")
+                    listItem = $("<li>").addClass("axis_#{i} pvtAttr-container")
+                    listItem.css(lineHeight: opts.valueHeight + "px")
 
                     arrow = $("<div>").addClass('pvtAttr selectArrow').appendTo(listItem)
                     arrow.bind "click", (e) ->

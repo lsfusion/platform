@@ -377,7 +377,10 @@ li div.pvtAttr.selectArrow {
     right: 0;
     bottom: 0;
     top: 0;
-    width: 1.5em;
     cursor: default;
     margin: var(--border-comp-vert-padding) var(--border-comp-horz-padding);
+}
+
+td.pvtAxisContainer li.pvtAttr-container {
+    position: relative;
 }

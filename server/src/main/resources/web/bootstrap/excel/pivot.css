@@ -30,3 +30,7 @@ table.pvtTable thead tr th {
     border-right: 1px solid var(--grid-separator-border-color);
     border-bottom: 1px solid var(--grid-separator-border-color);
 }
+
+li div.pvtAttr.selectArrow {
+    width: 1.5em;
+}
