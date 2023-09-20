@@ -881,7 +881,7 @@ callWithJQuery ($) ->
                     listItem = $("<li>").addClass("axis_#{i} pvtAttr-container")
                     listItem.css(lineHeight: opts.valueHeight + "px")
 
-                    arrow = $("<div>").addClass('pvtAttr selectArrow').appendTo(listItem)
+                    arrow = $("<div>").addClass('selectArrow').appendTo(listItem)
                     arrow.bind "click", (e) ->
                         {left, top} = $(e.currentTarget.parentElement).position()
                         listHeight = Math.min(valueList.outerHeight(), uiTable.height())

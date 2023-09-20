@@ -371,7 +371,7 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
     margin: var(--border-comp-vert-padding) var(--border-comp-horz-padding);
 }
 
-li div.pvtAttr.selectArrow {
+div.selectArrow {
     background: transparent;
     position: absolute;
     right: 0;
@@ -381,6 +381,6 @@ li div.pvtAttr.selectArrow {
     margin: var(--border-comp-vert-padding) var(--border-comp-horz-padding);
 }
 
-td.pvtAxisContainer li.pvtAttr-container {
+li.pvtAttr-container {
     position: relative;
 }

@@ -1481,7 +1481,7 @@
           listItem.css({
             lineHeight: opts.valueHeight + "px"
           });
-          arrow = $("<div>").addClass('pvtAttr selectArrow').appendTo(listItem);
+          arrow = $("<div>").addClass('selectArrow').appendTo(listItem);
           arrow.bind("click", function(e) {
             var left, listHeight, ref2, top;
             ref2 = $(e.currentTarget.parentElement).position(), left = ref2.left, top = ref2.top;

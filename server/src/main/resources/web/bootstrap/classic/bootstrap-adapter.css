@@ -338,6 +338,6 @@ a.text-based-value-empty {
     we will not know real arrow size if bootstrap developers change it in next releases.
     if it is changed, this size must also be changed
 */
-li div.pvtAttr.selectArrow {
+div.selectArrow {
     width: 2.5em;
 }
