@@ -209,9 +209,6 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
             target.entity.setPropertyExtra((PropertyObjectEntity<?>) placeholder, PropertyDrawExtraType.PLACEHOLDER, getVersion());
     }
 
-    public void setTag(LocalizedString tag) {
-    }
-
     public void setValueAlignment(FlexAlignment valueAlignment) {
         target.valueAlignment = valueAlignment;
     }
