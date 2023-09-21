@@ -37,15 +37,11 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
     public static Element renderSized(Element element, GPropertyDraw property, GFont font) {
         if(needWrap(element, property)) {
             element = wrapSized(element, property.getCellRenderer().createRenderElement());
-
-            // the thing is that td ignores min-height (however height in td works just like min-height)
-            // and we want height in table div work as min-height (i.e. to stretch)
-            element.addClassName("cell-div");
         }
 
         // we need to set the size to the "render" element to avoid problems with padding
         GSize valueHeight = property.getValueHeight(font, false, true);
-        if(valueHeight != null) // this way we can avoid prop-size-value cell-div conflict (see the css file) in most cases
+        if(valueHeight != null) // this way we can avoid prop-size-value fill-parent-perc conflict (see the css file) in most cases
             element.addClassName("prop-size-value");
         if(!property.isShrinkOverflowVisible())
             element.addClassName("prop-value-shrink");
@@ -78,6 +74,9 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
 
     private static Element wrapSized(Element element, Element renderElement) {
 //        assert GwtClientUtils.isTDorTH(element);
+        // the thing is that td ignores min-height (however height in td works just like min-height)
+        // and we want height in table div work as min-height (i.e. to stretch)
+        renderElement.addClassName("fill-parent-perc");
         element.appendChild(renderElement);
         return renderElement;
     }

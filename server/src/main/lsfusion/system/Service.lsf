@@ -174,7 +174,7 @@ DESIGN maintenance {
     NEW pane {
         fill = 1;
         type = COLUMNS;
-        columns = 3;
+        lines = 3;
         NEW leftColumn {               
             NEW administration {
                 caption = '{service.form.maintenance.caption.administration}';
@@ -283,7 +283,7 @@ DESIGN settings {
             NEW pane {
                 caption = '{service.form.settings.caption.general}';
                 type = COLUMNS;
-                columns = 3;
+                lines = 3;
                 NEW leftColumn {
                     NEW current {
                         caption = '{service.form.settings.caption.current}';
@@ -754,7 +754,7 @@ DESIGN editProfile {
             
             NEW colors { 
                 type = COLUMNS;
-                columns = 2;
+                lines = 2;
                 MOVE PROPERTY(selectedRowBackgroundColor(u)) { fontSize = 24; }
                 MOVE PROPERTY(selectedCellBackgroundColor(u)) { fontSize = 24; }
                 MOVE PROPERTY(focusedCellBackgroundColor(u)) { fontSize = 24; }
@@ -783,10 +783,14 @@ getClientSettings(User user) ABSTRACT CASE;
 getClientSettings(User user) + WHEN TRUE AND user IS User THEN {
     LOCAL webClientLoadedResources = RAWFILE(STRING);
     LOCAL webClientLoadedResourcesOrder = INTEGER(STRING);
-    FOR onWebClientLoad(STRING s) ORDER onWebClientLoad(s) DO {
-        readResource(s);
-        webClientLoadedResources(resourcePath()) <- RAWFILE (resource());
-        webClientLoadedResourcesOrder(resourcePath()) <- onWebClientLoad(s);
+    IF isWeb() THEN {
+        LOCAL onWebLoad = INTEGER(STRING);
+        onWebLoad (STRING s) <- onWebClientLoad(s);
+        FOR onWebLoad(STRING s) ORDER onWebLoad(s) DO {
+            readResource(s);
+            webClientLoadedResources(resourcePath()) <- RAWFILE (resource());
+            webClientLoadedResourcesOrder(resourcePath()) <- onWebLoad(s);
+        }
     }
     
     LOCAL colorThemeStaticName = STRING();

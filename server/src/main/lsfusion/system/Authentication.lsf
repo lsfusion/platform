@@ -519,7 +519,7 @@ DESIGN customUser {
         };
         GROUP(,u) {
             type = COLUMNS;
-            columns = 1;
+            lines = 1;
         }
     }
 }
@@ -665,8 +665,8 @@ DESIGN reloginLoginUser {
     BOX(data) {
         caption = '';
         GROUP(, data) {
-            columns = 1;
-            type = CONTAINERV;
+            lines = 1;
+            horizontal = FALSE;
             PROPERTY(valueLogin){
                 caption = '{authentication.login}';
                 fontSize = 36;

@@ -84,9 +84,6 @@ public abstract class GIntervalType extends GFormatType {
 
     @Override
     public String formatString(PValue value, String pattern) {
-        if(value == null)
-            return null;
-
         return GwtClientUtils.formatInterval(value, epoch -> format(epoch, pattern));
     }
 

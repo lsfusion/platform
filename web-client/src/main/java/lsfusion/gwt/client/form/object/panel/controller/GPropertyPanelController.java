@@ -166,13 +166,18 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
         if (cellForegroundValues != null) {
             foreground = cellForegroundValues.get(columnKey);
         }
+        PValue placeholder = null;
+        if(placeholders != null) {
+            placeholder = placeholders.get(columnKey);
+        }
         renderer.update(values.get(columnKey),
                 loadings != null && PValue.getBooleanValue(loadings.get(columnKey)),
                 images != null ? PValue.getImageValue(images.get(columnKey)) : null,
                 valueElementClass == null ? property.valueElementClass : PValue.getClassStringValue(valueElementClass),
                 background == null ? property.getBackground() : PValue.getColorStringValue(background),
                 foreground == null ? property.getForeground() : PValue.getColorStringValue(foreground),
-                readOnly != null && PValue.getBooleanValue(readOnly.get(columnKey)));
+                readOnly != null && PValue.getBooleanValue(readOnly.get(columnKey)),
+                placeholder == null ? property.placeholder : PValue.getStringValue(placeholder));
 
         if (captions != null)
             renderer.setCaption(GGridPropertyTable.getDynamicCaption(captions.get(columnKey)));
@@ -183,8 +188,6 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
             renderer.setComment(GGridPropertyTable.getDynamicComment(comments.get(columnKey)));
         if (cellCommentElementClasses != null)
             renderer.setCommentElementClass(PValue.getClassStringValue(cellCommentElementClasses.get(columnKey)));
-        if (placeholders != null)
-            renderer.setPlaceholder(GGridPropertyTable.getDynamicPlaceholder(placeholders.get(columnKey)));
     }
 
     public boolean focus(FocusUtils.Reason reason) {

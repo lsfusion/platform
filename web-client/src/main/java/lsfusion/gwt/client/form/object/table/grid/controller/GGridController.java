@@ -434,6 +434,11 @@ public class GGridController extends GAbstractTableController {
     }
 
     @Override
+    public void updatePlaceholderValues(GPlaceholderReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+        table.updatePlaceholderValues(formController.getProperty(reader.propertyID), values);
+    }
+
+    @Override
     public void updateImageValues(GImageReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         table.updateImageValues(formController.getProperty(reader.propertyID), values);
     }
@@ -474,10 +479,6 @@ public class GGridController extends GAbstractTableController {
 
     @Override
     public void updateCellCommentElementClasses(GCommentElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-    }
-
-    @Override
-    public void updatePropertyPlaceholders(GPlaceholderReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
     }
 
     @Override

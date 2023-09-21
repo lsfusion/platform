@@ -17,6 +17,8 @@
 /server/src/main/java/lsfusion/server/language/LsfLogicsParser.java
 /server/src/main/java/lsfusion/server/language/LsfLogicsParserTokenNames.java
 /server/src/main/java/lsfusion/server/language/LsfLogicsParserBitsetFollow.java
+/server/src/main/java/lsfusion/server/language/LsfLogicsParserBitsetFollow1.java
+/server/src/main/java/lsfusion/server/language/LsfLogicsParserBitsetFollow2.java
 /server/src/main/java/lsfusion/server/language/MigrationScriptLexer.java
 /server/src/main/java/lsfusion/server/language/MigrationScriptParser.java
 

@@ -27,7 +27,7 @@ public class StoredDataProperty extends DataProperty {
     public static SFunctionSet<Property> set = element -> element instanceof StoredDataProperty;
 
     @Override
-    public boolean isValueUnique(ImMap<ClassPropertyInterface, StaticParamNullableExpr> fixedExprs, boolean optimistic) {
-        return isStatValueUnique(fixedExprs, optimistic);
+    public boolean isNameValueUnique() {
+        return true;
     }
 }

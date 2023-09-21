@@ -497,6 +497,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             return record.getForeground(property);
         }
 
+        @Override
+        protected String getPlaceholder(GPropertyDraw property, GTreeGridRecord record) {
+            return record.getPlaceholder(property);
+        }
+
         // in tree property might change
         private static final String PDRAW_ATTRIBUTE = "__gwt_pdraw"; // actually it represents nod depth
 
@@ -566,6 +571,12 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     @Override
     public void updateCellBackgroundValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
         super.updateCellBackgroundValues(propertyDraw, values);
+        dataUpdated = true;
+    }
+
+    @Override
+    public void updatePlaceholderValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        super.updatePlaceholderValues(propertyDraw, values);
         dataUpdated = true;
     }
 
@@ -800,6 +811,12 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                         if (propForegrounds != null)
                             foreground = propForegrounds.get(key);
                         objectRecord.setForeground(property, foreground == null ? property.getForeground() : PValue.getColorStringValue(foreground));
+
+                        PValue placeholder = null;
+                        NativeHashMap<GGroupObjectValue, PValue> propPlaceholders = placeholders.get(property);
+                        if (propPlaceholders != null)
+                            placeholder = propPlaceholders.get(key);
+                        objectRecord.setPlaceholder(property, placeholder == null ? property.placeholder : PValue.getStringValue(placeholder));
 
                         NativeHashMap<GGroupObjectValue, PValue> actionImages = property.isAction() ? cellImages.get(property) : null;
                         objectRecord.setImage(property, actionImages == null ? null : PValue.getImageValue(actionImages.get(key)));

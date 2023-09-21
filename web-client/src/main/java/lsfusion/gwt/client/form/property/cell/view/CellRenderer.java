@@ -510,6 +510,7 @@ public abstract class CellRenderer {
 
                     actionDivElement.appendChild(actionImgElement);
                     actionDivElement.addClassName("property-toolbar-item"); // setting paddings
+                    actionDivElement.setTabIndex(-1);
                     GToolbarView.styleToolbarItem(actionDivElement);
                     actionDivElement.addClassName("background-inherit");
 

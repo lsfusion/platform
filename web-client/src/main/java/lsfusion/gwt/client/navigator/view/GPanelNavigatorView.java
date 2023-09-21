@@ -7,7 +7,7 @@ import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
 import lsfusion.gwt.client.navigator.window.GPanelNavigatorWindow;
 
-import java.util.Set;
+import java.util.LinkedHashSet;
 
 public class GPanelNavigatorView extends GNavigatorView<GPanelNavigatorWindow> {
     private CellPanel panel;
@@ -19,7 +19,7 @@ public class GPanelNavigatorView extends GNavigatorView<GPanelNavigatorWindow> {
     }
 
     @Override
-    public void refresh(Set<GNavigatorElement> newElements) {
+    public void refresh(LinkedHashSet<GNavigatorElement> newElements) {
         panel.clear();
         for (final GNavigatorElement element : newElements) {
             if (!newElements.contains(element.parent)) {
@@ -45,10 +45,8 @@ public class GPanelNavigatorView extends GNavigatorView<GPanelNavigatorWindow> {
     }
 
     private FormButton createButton(final GNavigatorElement element) {
-        FormButton button = new NavigatorImageButton(element, false, 0);
+        FormButton button = new NavigatorImageButton(element, false, 0, false, this::selectElement);
         button.addStyleName("panelNavigatorView");
-
-        button.addMouseDownHandler(event -> selectElement(element, event.getNativeEvent()));
         return button;
     }
 

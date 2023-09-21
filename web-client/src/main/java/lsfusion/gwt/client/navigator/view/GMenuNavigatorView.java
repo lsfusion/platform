@@ -5,7 +5,7 @@ import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
 import lsfusion.gwt.client.navigator.window.GMenuNavigatorWindow;
 
-import java.util.Set;
+import java.util.LinkedHashSet;
 
 public class GMenuNavigatorView extends GNavigatorView<GMenuNavigatorWindow> {
     public GMenuNavigatorView(GMenuNavigatorWindow window, GINavigatorController navigatorController) {
@@ -13,7 +13,7 @@ public class GMenuNavigatorView extends GNavigatorView<GMenuNavigatorWindow> {
     }
 
     @Override
-    public void refresh(Set<GNavigatorElement> newElements) {
+    public void refresh(LinkedHashSet<GNavigatorElement> newElements) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 

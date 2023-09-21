@@ -300,11 +300,55 @@ table.pvtTable thead tr th {
     margin-bottom: 0;
 }
 
-.pvtRenderer, .pvtAggregator, .pvtAttr, .pvtRowsTable li {
+
+/*
+    to still possible to set attributes horizontally
+*/
+.pvtRowsTable li.pvtAttr-container {
+    width: fit-content;
+}
+
+/*
+    so that attributes in the aggregator are the same size
+*/
+.pvtRenderer, .pvtAggregator, .pvtAttr {
     width: -webkit-fill-available;
     width: -moz-available;
 }
 
 .cell-with-background {
     background-color: var(--bs-table-bg);
+}
+
+/* we want for the non-form-control placeholder to have the same behaviour look as the form-control placeholder */
+.text-based-value-null:not(a),
+.text-based-value-null.form-control:not(input),
+.text-based-value-empty:not(a),
+.text-based-value-empty.form-control:not(input),
+.form-select > option.option-null {
+    color: var(--bs-secondary-color);
+}
+a.text-based-value-null,
+a.text-based-value-empty {
+    --bs-link-opacity: 0.5;
+}
+.form-select > option {
+    color: var(--bs-body-color)
+}
+
+/*
+    we use hack with double and single click on grouping attributes in the pivot:
+        add transparent <div> element to the right border of the <select> element exactly above the arrow
+        and set the standard width of this element to 1.5em in pivot.css.
+
+    bootstrap uses custom <select> arrow design in .form-select e.g:
+        ***
+        background-image: var(--bs-form-select-bg-img),var(--bs-form-select-bg-icon,none);
+        background-position: right 0.75rem center;
+        ***
+    we will not know real arrow size if bootstrap developers change it in next releases.
+    if it is changed, this size must also be changed
+*/
+div.selectArrow {
+    width: 2.5em;
 }

@@ -35,7 +35,7 @@ function selectMultiInput() {
     function toOption(object, controller, loaded) {
         return {
             value: controller.getObjectsString(object),
-            text: getName(object),
+            text: _getName(object),
             originalObject: object, // should be parsed by getChangeObjects
             loaded: loaded //for cache clearing
         }
@@ -62,6 +62,9 @@ function selectMultiInput() {
             element.selectizeInstance = $(selectizeElement).selectize({
                 dropdownParent: 'body',
 
+                onInitialize: function() {
+                    _removeAllPMBInTD(element, this.$control[0]);
+                },
                 onItemAdd: function (value) {
                     if(!element.silent) {
                         let option = this.options[value];
@@ -121,7 +124,7 @@ function selectMultiInput() {
             let selectizeInstance = element.selectizeInstance[0].selectize;
             lsfUtils.setInputElement(element, selectizeInstance.$control_input[0])
         },
-        update: function (element, controller, list) {
+        update: function (element, controller, list, placeholder) {
             element.silent = true; // onItemAdd / Remove somewhy is not silenced
             element.controller = controller;
 
@@ -158,6 +161,9 @@ function selectMultiInput() {
                         selectizeInstance.setCaret(selectizeInstance.items.length);
                 }
             }, true, true);
+
+            selectizeInstance.settings.placeholder = placeholder;
+            selectizeInstance.updatePlaceholder();
 
             element.silent = false;
         },
@@ -225,6 +231,11 @@ function _wrapElement(element, tag, wrap) {
     return wrapElement;
 }
 
+function _removeAllPMBInTD(element, controlElement) {
+    if(lsfUtils.isTDorTH(element)) // because canBeRenderedInTD can be true
+        controlElement.classList.add("remove-all-pmb");
+}
+
 function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBeSelected, hasName, multi) {
     let isButton = isGroup || divClasses == null;
 
@@ -245,7 +256,7 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
 
     return {
         render: function (element) {
-            let options = _wrapElement(element, 'div', false);
+            let options = _wrapElement(element, 'div', isButton);
 
             element.options = options;
 
@@ -332,7 +343,7 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
                         }
 
                         input.object = object;
-                        let name = getName(object);
+                        let name = _getName(object);
                         if (isContainHtmlTag(name))
                             label.innerHTML = name;
                         else
@@ -490,14 +501,28 @@ function _selectDropdown(shouldBeSelected) {
         }, false, shouldBeSelected);
 }
 
-function _dropDown(selectAttributes, eventListener, multi, shouldBeSelected, html, isBootstrap) {
+function _setDropdownName(option, name, html, isBootstrap) {
+    if (html) {
+        if (isBootstrap)
+            option.setAttribute("data-content", name);
+        else
+            option.innerHTML = name; //todo check functionality in future releases
+    } else {
+        option.innerText = name;
+    }
+}
+
+function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBootstrap) {
     let picker = multi || html;
     return {
         render: function (element, controller) {
             let select = _wrapElement(element, 'select', element.tagName.toLowerCase() !== 'select');
 
             element.select = select;
-            select.classList.add(picker ? "form-control" : "form-select");
+            if(!picker) {
+                select.classList.add("form-select");
+                _removeAllPMBInTD(element, select);
+            }
 
             Object.keys(selectAttributes).forEach(key => select.setAttribute(key, selectAttributes[key]));
 
@@ -507,12 +532,14 @@ function _dropDown(selectAttributes, eventListener, multi, shouldBeSelected, htm
             if (!multi) {
                 let option = document.createElement('option');
                 option.hidden = shouldBeSelected;
+                if(!picker)
+                    option.classList.add("option-null")
                 select.appendChild(option);
             }
 
-            eventListener(element);
+            render(element);
         },
-        update: function (element, controller, list) {
+        update: function (element, controller, list, placeholder) {
             element.controller = controller;
             let isList = controller.isList();
             list = _convertList(isList, list);
@@ -541,15 +568,7 @@ function _dropDown(selectAttributes, eventListener, multi, shouldBeSelected, htm
                         }
 
                         option.object = object;
-                        let name = getName(object);
-                        if (html) {
-                            if (isBootstrap)
-                                option.setAttribute("data-content", name);
-                            else
-                                option.innerHTML = name; //todo check functionality in future releases
-                        } else {
-                            option.innerText = name;
-                        }
+                        _setDropdownName(option, _getName(object), html, isBootstrap);
 
                         let checked = object.selected;
                         if(!multi) {
@@ -603,6 +622,18 @@ function _dropDown(selectAttributes, eventListener, multi, shouldBeSelected, htm
                             select.classList.add("is-invalid");
                     }
                 }
+
+                if(!picker) {
+                    if(!hasSelected)
+                        select.classList.add("text-based-value-null")
+                    else
+                        select.classList.remove("text-based-value-null")
+                }
+
+                _setDropdownName(select.options[0], placeholder != null ? placeholder : '', html, isBootstrap)
+            } else {
+                // assert picker;
+                select.setAttribute(isBootstrap ? "title" : "placeholder", placeholder != null ? placeholder : '');
             }
 
             if (isList) {
@@ -669,6 +700,6 @@ function _changeSingleDropdownProperty(object, element) {
     element.controller.changeProperty('selected', object, set ? true : null);
 }
 
-function getName(object) {
-    return object.name == null ? '' : String(object.name);
+function _getName(object) {
+    return object.name != null ? String(object.name) : '';
 }

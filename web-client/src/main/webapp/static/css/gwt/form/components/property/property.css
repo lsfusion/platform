@@ -1,7 +1,31 @@
 
-.prop-size-value {
+.prop-size-value,
+.prop-size-value.fill-parent-perc {
     box-sizing: content-box; /* it's important to have content-box sizing, since we're setting explicit heights for the renderer element (and we don't want paddings to be included, since we're calculating elements heights based on contents) */
 }
+
+.prop-size-value.fill-parent-perc {
+    /* it's tricky here
+     fill-parent-perc wants 100% and border-box, but prop-size-value wants content-box*/
+    /* so we use the hack with fill-available which respects paddings, and actual width is set in colgroup */
+    width: -webkit-fill-available;
+    width: -moz-available;
+
+    /* we want to stretch div in the cell even if the explicit height is set */
+    /* however there is a problem: prop-size-value sets box-sizing to content-box, and 100% starts ignoring paddings, so the content can overflow the container element */
+    /* it's not really clear how to fix this, the above hack doesn't work. but it's a really rare case (explicit height, wrapped renderer, it has paddings and it's not the largest component) so we'll ignore it for now */
+    min-height: 100%;
+}
+
+.prop-size-value.fill-parent-flex {
+    /* we want to stretch div in the cell even if the explicit width is set (height is stretched by the flex:1 1 auto even if it is explicitly set) */
+    /* maybe later should be moved directly to the fill-parent-flex */
+    min-width: -webkit-fill-available;
+    min-width: -moz-available;
+    max-width: -webkit-fill-available;
+    max-width: -moz-available;
+}
+
 
 .prop-value-shrink,
 .prop-value-shrink.comp-shrink-horz {
@@ -36,10 +60,6 @@ a.text-based-prop-value:not(.prop-input) { /* we have to set cursor pointer for 
 /* when we have string and \n inside we still don't want it to wrap, so we have to set nowrap for that (we loose pre, but there is no pre-nowrap for now)*/
 .text-based-prop-value.text-based-value-multi-line:not(.text-based-prop-wrap) {
     white-space: nowrap;
-}
-
-.text-based-value-empty {
-    color: var(--null-value-string-color);
 }
 
 .prop-display-flex, .prop-display-flex.btn {

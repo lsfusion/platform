@@ -68,7 +68,7 @@ public class ContainerView extends ComponentView {
 
     public boolean collapsed;
 
-    private ContainerType type = ContainerType.CONTAINERV;
+    private ContainerType type;
     private DebugInfo.DebugPoint debugPoint;
     private boolean horizontal;
     private boolean tabbed;
@@ -243,7 +243,7 @@ public class ContainerView extends ComponentView {
     public Boolean getAlignCaptions() {
         if(alignCaptions != null)
             return alignCaptions;
-        
+
         return isTabbed() ? true : null;
     }
 

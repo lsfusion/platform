@@ -58,6 +58,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     protected List<NativeHashMap<GGroupObjectValue, PValue>> cellValueElementClasses = new ArrayList<>();
     protected List<NativeHashMap<GGroupObjectValue, PValue>> cellBackgroundValues = new ArrayList<>();
     protected List<NativeHashMap<GGroupObjectValue, PValue>> cellForegroundValues = new ArrayList<>();
+    protected List<NativeHashMap<GGroupObjectValue, PValue>> placeholders = new ArrayList<>();
 
     protected boolean checkShowIf(int property, GGroupObjectValue columnKey) {
         NativeHashMap<GGroupObjectValue, PValue> propertyShowIfs = showIfs.get(property);
@@ -184,6 +185,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
                 this.cellValueElementClasses.add(index, null);
                 this.cellBackgroundValues.add(index, null);
                 this.cellForegroundValues.add(index, null);
+                this.placeholders.add(index, null);
 
                 List<NativeHashMap<GGroupObjectValue, PValue>> list = new ArrayList<>();
                 for (int i = 0; i < property.lastReaders.size(); i++)
@@ -369,6 +371,13 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     }
 
     @Override
+    public void updatePlaceholderValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        this.placeholders.set(properties.indexOf(propertyDraw), values);
+
+        this.dataUpdated = true;
+    }
+
+    @Override
     public void updateImageValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
 
     }
@@ -519,6 +528,14 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         return cellBackground.get(GGroupObjectValue.getFullKey(rowKey, columnKey));
     }
 
+    protected PValue getCellPlaceholder(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
+        NativeHashMap<GGroupObjectValue, PValue> placeholder = placeholders.get(properties.indexOf(property));
+        if(placeholder == null)
+            return null;
+
+        return placeholder.get(GGroupObjectValue.getFullKey(rowKey, columnKey));
+    }
+
     protected String getValueElementClass(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
         return getCellValueElementClass(property, rowKey, columnKey);
     }
@@ -526,6 +543,11 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     protected String getBackground(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
         PValue cellBackground = getCellBackground(property, rowKey, columnKey);
         return cellBackground == null ? property.getBackground() : PValue.getColorStringValue(cellBackground);
+    }
+
+    protected String getPlaceholder(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
+        PValue placeholder = getCellPlaceholder(property, rowKey, columnKey);
+        return placeholder == null ? property.placeholder : PValue.getStringValue(placeholder);
     }
 
     protected String getCellForeground(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {

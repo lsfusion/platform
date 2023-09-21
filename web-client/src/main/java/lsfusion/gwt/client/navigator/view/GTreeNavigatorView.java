@@ -8,10 +8,7 @@ import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
 import lsfusion.gwt.client.navigator.window.GTreeNavigatorWindow;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 
@@ -57,7 +54,7 @@ public class GTreeNavigatorView extends GNavigatorView<GTreeNavigatorWindow> {
     }
 
     @Override
-    public void refresh(Set<GNavigatorElement> newElements) {
+    public void refresh(LinkedHashSet<GNavigatorElement> newElements) {
         openElements = new ArrayList<>();
 
         for (Iterator<TreeItem> iterator = tree.treeItemIterator(); iterator.hasNext();) {

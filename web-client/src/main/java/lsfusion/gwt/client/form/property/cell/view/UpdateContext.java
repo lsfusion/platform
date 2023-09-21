@@ -1,14 +1,9 @@
 package lsfusion.gwt.client.form.property.cell.view;
 
-import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import lsfusion.gwt.client.base.AppBaseImage;
-import lsfusion.gwt.client.base.GAsync;
-import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.PValue;
-
-import java.util.ArrayList;
 
 public interface UpdateContext {
     
@@ -34,6 +29,8 @@ public interface UpdateContext {
     default String getBackground() { return null; }
 
     default String getForeground() { return null; }
+
+    default String getPlaceholder() { return null; }
 
     default String getValueElementClass() {
         return null;

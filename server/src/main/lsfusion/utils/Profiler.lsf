@@ -393,7 +393,7 @@ DESIGN profiler {
                 type = SPLITH;
                 fill = 1;
                 NEW pT{
-                    type = SPLITV;
+                    horizontal = FALSE;
                     fill = 1;
                     MOVE BOX(TREE pT){fill = 2;};
                     NEW tabDownUsers{
@@ -404,7 +404,7 @@ DESIGN profiler {
                     }
                 }
                 NEW pB {
-                    type = SPLITV;
+                    horizontal = FALSE;
                     fill = 1;
                     MOVE BOX(TREE pB){fill = 2;};
                     MOVE BOX(downToUp){fill = 1;};

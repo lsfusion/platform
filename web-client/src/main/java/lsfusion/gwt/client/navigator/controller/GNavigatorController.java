@@ -57,18 +57,18 @@ public abstract class GNavigatorController implements GINavigatorController {
     boolean firstUpdate = true;
     @Override
     public void update() {
-        Map<GNavigatorWindow, LinkedHashSet<GNavigatorElement>> result = new HashMap<>();
+        Map<GNavigatorWindow, LinkedHashSet<GNavigatorElement>> selectedElements = new HashMap<>();
 
         for (GNavigatorWindow wind : views.keySet()) {
-            result.put(wind, new LinkedHashSet<GNavigatorElement>());
+            selectedElements.put(wind, new LinkedHashSet<GNavigatorElement>());
         }
 
         // looking for "active" (selected) elements
         for (GNavigatorElement element : root.children)
-            fillSelectedElements(element, root.window, drawWindow -> false, result);
+            fillSelectedElements(element, root.window, drawWindow -> false, selectedElements);
 
         Map<GAbstractWindow, Boolean> visibleElements = new HashMap<>();
-        for (Map.Entry<GNavigatorWindow, LinkedHashSet<GNavigatorElement>> entry : result.entrySet()) {
+        for (Map.Entry<GNavigatorWindow, LinkedHashSet<GNavigatorElement>> entry : selectedElements.entrySet()) {
             GNavigatorView view = views.get(entry.getKey());
             if (view != null) {
                 view.refresh(entry.getValue());

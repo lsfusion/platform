@@ -3,11 +3,14 @@ package lsfusion.base.file;
 import com.google.common.base.Throwables;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.SftpException;
+import org.apache.pdfbox.io.MemoryUsageSetting;
+import org.apache.pdfbox.multipdf.PDFMergerUtility;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.poi.xwpf.usermodel.*;
 
 import java.io.*;
+import java.nio.file.Files;
 
 public class WriteUtils {
 
@@ -44,42 +47,58 @@ public class WriteUtils {
         } else if (append && file.exists()) {
             switch (extension) {
                 case "csv":
-                case "txt":
+                case "txt": {
                     fileData.append(file.getAbsolutePath());
                     break;
+                }
                 case "xls": {
                     try (HSSFWorkbook sourceWB = new HSSFWorkbook(fileData.getInputStream());
-                         HSSFWorkbook destinationWB = new HSSFWorkbook(new FileInputStream(file));
+                         HSSFWorkbook destinationWB = new HSSFWorkbook(Files.newInputStream(file.toPath()));
                          FileOutputStream fos = new FileOutputStream(file)) {
-                            CopyExcelUtil.copyHSSFSheets(sourceWB, destinationWB);
-                            destinationWB.write(fos);
+                        CopyExcelUtil.copyHSSFSheets(sourceWB, destinationWB);
+                        destinationWB.write(fos);
                     }
                     break;
                 }
-                case "xlsx":
+                case "xlsx": {
                     try (XSSFWorkbook sourceWB = new XSSFWorkbook(fileData.getInputStream());
-                         XSSFWorkbook destinationWB = new XSSFWorkbook(new FileInputStream(file));
+                         XSSFWorkbook destinationWB = new XSSFWorkbook(Files.newInputStream(file.toPath()));
                          FileOutputStream fos = new FileOutputStream(file)) {
-                            CopyExcelUtil.copyXSSFSheets(sourceWB, destinationWB);
-                            destinationWB.write(fos);
+                        CopyExcelUtil.copyXSSFSheets(sourceWB, destinationWB);
+                        destinationWB.write(fos);
                     }
                     break;
+                }
                 case "docx": {
                     try (XWPFDocument sourceDoc = new XWPFDocument(fileData.getInputStream());
-                         XWPFDocument destinationDoc = new XWPFDocument(new FileInputStream(file));
+                         XWPFDocument destinationDoc = new XWPFDocument(Files.newInputStream(file.toPath()));
                          FileOutputStream fos = new FileOutputStream(file)) {
-                            CopyWordUtil.copyXWPFDocument(sourceDoc, destinationDoc);
-                            destinationDoc.write(fos);
+                        CopyWordUtil.copyXWPFDocument(sourceDoc, destinationDoc);
+                        destinationDoc.write(fos);
                     }
+                    break;
                 }
-                break;
+                case "pdf": {
+                    appendPDF(file, fileData);
+                    break;
+                }
 
                 default:
-                    throw new RuntimeException("APPEND is supported only for csv, txt, xls, xlsx, docx files");
+                    throw new RuntimeException("APPEND is supported only for csv, txt, xls, xlsx, docx, pdf files");
             }
         } else {
             fileData.write(file);
         }
+    }
+
+    private static void appendPDF(File file, RawFileData fileData) throws IOException {
+        PDFMergerUtility ut = new PDFMergerUtility();
+        ut.addSource(Files.newInputStream(file.toPath()));
+        ut.addSource(fileData.getInputStream());
+        ByteArrayOutputStream destStream = new ByteArrayOutputStream();
+        ut.setDestinationStream(destStream);
+        ut.mergeDocuments(MemoryUsageSetting.setupMainMemoryOnly());
+        destStream.writeTo(Files.newOutputStream(file.toPath()));
     }
 
     private static File createFile(String parent, String filePath) {

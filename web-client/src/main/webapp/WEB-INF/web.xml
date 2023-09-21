@@ -149,7 +149,17 @@
     </filter>
     <filter-mapping>
         <filter-name>characterEncodingFilter</filter-name>
-        <url-pattern>/*</url-pattern>
+        <url-pattern>/exec/*</url-pattern>
+        <url-pattern>/eval/*</url-pattern>
+        <url-pattern>/form</url-pattern>
+        <url-pattern>/uploadFile</url-pattern>
+        <url-pattern>/downloadFile/*</url-pattern>
+        <url-pattern>/login</url-pattern>
+        <url-pattern>/login_check</url-pattern>
+        <url-pattern>/main</url-pattern>
+        <url-pattern>/registration</url-pattern>
+        <url-pattern>/forgot-password</url-pattern>
+        <url-pattern>/change-password</url-pattern>
     </filter-mapping>
 
     <!-- exposes request params and locale to the thread, used in LSFRemoteAuthenticationProvider and ServerMessages.getString (where there is no explicit request) -->

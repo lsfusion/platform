@@ -10,7 +10,6 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.AggrExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
-import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.language.action.LA;
@@ -53,11 +52,11 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
     }
 
     @Override
-    public boolean isValueUnique(ImMap<Interface<I>, StaticParamNullableExpr> fixedExprs, boolean optimistic) {
+    public boolean isNameValueUnique() {
         if(groupType == GroupType.CONCAT) // similar to concat formula
-            return isStatValueUnique(fixedExprs, optimistic);
+            return true;
 
-        return super.isValueUnique(fixedExprs, optimistic);
+        return super.isNameValueUnique();
     }
 
     public static <I extends PropertyInterface<I>> OrderGroupProperty<I> create(LocalizedString caption, ImSet<I> innerInterfaces, ImCol<? extends PropertyInterfaceImplement<I>> groupInterfaces, ImList<PropertyInterfaceImplement<I>> props, PropertyInterfaceImplement<I> whereProp, GroupType groupType, ImOrderMap<PropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull) {

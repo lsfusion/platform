@@ -124,7 +124,7 @@ DESIGN orders {
             NEW filters { 
                 caption = 'Фильтры';
                 // делаем его горизонтальным, чтобы все компоненты шли слева направо
-                type = CONTAINERH; 
+                horizontal = TRUE; 
                 MOVE PROPERTY(df) {
                     caption = 'Дата с';
                 }

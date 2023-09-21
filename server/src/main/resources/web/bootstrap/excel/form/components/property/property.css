@@ -61,3 +61,16 @@
     margin: 0 0.3125rem;
     position:absolute;
 }
+
+.text-based-value-null:not(a),
+.text-based-value-empty:not(a),
+select > option.option-null {
+    color: var(--null-value-string-color);
+}
+a.text-based-value-null,
+a.text-based-value-empty {
+    opacity: 0.5;
+}
+select > option {
+    color: var(--text-color);
+}

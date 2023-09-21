@@ -33,7 +33,7 @@ DESIGN exception {
     OBJECTS {
         NEW pane {
             fill = 1;
-            type = SPLITV;
+            horizontal = FALSE;
             MOVE PROPERTY(valueMessage) {
                 fill = 1;
                 panelCaptionVertical = TRUE;

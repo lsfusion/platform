@@ -5305,7 +5305,7 @@ imageStatement returns [String image]
     :   ('IMAGE' (img=stringLiteral)? {$image = BaseUtils.nvl($img.val, AppServerImage.AUTO); } | 'NOIMAGE' { $image = AppServerImage.NULL; } )
     ;
 
-simpleNameWithCaption returns [String name, LocalizedString caption] 
+simpleNameWithCaption returns [String name, LocalizedString caption]
 	:	simpleName=ID { $name = $simpleName.text; }
 		(captionStr=localizedStringLiteral { $caption = $captionStr.val; })?
 	;
@@ -5714,11 +5714,11 @@ fragment STRING_LITERAL_FRAGMENT:	'\'' (INTERPOLATION_BLOCK | STR_LITERAL_CHAR)*
 fragment ID_FRAGMENT : FIRST_ID_LETTER NEXT_ID_LETTER*;
 fragment NEXTID_FRAGMENT : NEXT_ID_LETTER+;
 
-fragment ID_META_FRAGMENT : (ID_FRAGMENT? (('###' | '##') NEXTID_FRAGMENT)+) | ID_FRAGMENT;
 
-fragment STRING_LITERAL_ID_FRAGMENT : ID_FRAGMENT | STRING_LITERAL_FRAGMENT;
-fragment STRING_LITERAL_NEXTID_FRAGMENT : NEXTID_FRAGMENT | STRING_LITERAL_FRAGMENT;
-fragment STRING_META_FRAGMENT : (NEXTID_FRAGMENT ('###' | '##'))* STRING_LITERAL_FRAGMENT (('###' | '##') STRING_LITERAL_NEXTID_FRAGMENT)*;
+fragment ID_META_FRAGMENT : ('###' | '##')? ID_FRAGMENT (('###' | '##') NEXTID_FRAGMENT)*;
+
+fragment STRING_META_SUFFIX_FRAGMENT : (('###' | '##') (NEXTID_FRAGMENT | STRING_LITERAL_FRAGMENT))*;
+fragment STRING_META_FRAGMENT : ('###' | '##')? (NEXTID_FRAGMENT ('###' | '##'))* STRING_LITERAL_FRAGMENT STRING_META_SUFFIX_FRAGMENT;
 
 fragment INTERVAL_TYPE : 'DATE' | 'DATETIME' | 'TIME' | 'ZDATETIME';
 

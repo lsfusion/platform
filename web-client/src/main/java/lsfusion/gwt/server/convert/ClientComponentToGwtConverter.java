@@ -261,6 +261,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.autoSize = clientPropertyDraw.autoSize;
 
         propertyDraw.customRenderFunction = clientPropertyDraw.customRenderFunction;
+        propertyDraw.customCanBeRenderedInTD = clientPropertyDraw.customCanBeRenderedInTD;
+        propertyDraw.customNeedPlaceholder = clientPropertyDraw.customNeedPlaceholder;
 
         propertyDraw.toolTip = clientPropertyDraw.toolTip;
         propertyDraw.clearText = clientPropertyDraw.clearText;

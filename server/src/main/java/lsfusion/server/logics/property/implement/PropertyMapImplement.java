@@ -7,7 +7,6 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.GroupType;
-import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
@@ -238,9 +237,8 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
         }, select.stat, select.values, select.multi, select.html, select.notNull);
     }
 
-    @Override
-    public boolean mapValueUnique(ImMap<T, StaticParamNullableExpr> fixedExprs, boolean optimistic) {
-        return property.isValueUnique(mapping.innerJoin(fixedExprs), optimistic);
+    public boolean mapNameValueUnique() {
+        return property.isNameValueUnique();
     }
 
     public Inferred<T> mapInferInterfaceClasses(ExClassSet commonValue, InferType inferType) {

@@ -37,7 +37,7 @@ public abstract class GADateType extends GFormatType {
 
     @Override
     public String formatString(PValue value, String pattern) {
-        return value == null ? "" : getFormat(pattern).format(toDate(value));
+        return getFormat(pattern).format(toDate(value));
     }
 
     // "extended" getFormat + some extra formates
