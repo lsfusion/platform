@@ -134,7 +134,7 @@ FORM schedule '{schedule.schedule}'
 
 DESIGN schedule {
     NEW mainContainer{
-        type = SPLITV;
+        horizontal = FALSE;
         fill=1;
         NEW topContainer{
             horizontal = FALSE;
@@ -202,7 +202,7 @@ FORM schedules '{schedule.schedules}'
 
 DESIGN schedules{
     NEW mainContainer{
-        type = SPLITV;
+        horizontal = FALSE;
         fill = 1;
         MOVE BOX(s);
         NEW tabbedContainer{
