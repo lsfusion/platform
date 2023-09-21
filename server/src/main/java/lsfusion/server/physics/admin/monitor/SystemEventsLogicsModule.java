@@ -33,6 +33,8 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
 
     private final AuthenticationLogicsModule authenticationLM;
 
+    public ConcreteCustomClass theme;
+    public ConcreteCustomClass navbar;
     public AbstractCustomClass exception;
     public ConcreteCustomClass clientException;
     public ConcreteCustomClass webClientException;
@@ -50,8 +52,8 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LA<?> onStarted;
 
     public LP useBootstrap;
-    public LP serverUseBootstrap;
-    public LP serverVerticalNavbar;
+    public LP serverTheme;
+    public LP serverNavbar;
     public LP serverNavigatorPinMode;
 
     public LP computerConnection;
@@ -123,6 +125,8 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public void initMetaAndClasses() throws RecognitionException {
         super.initMetaAndClasses();
 
+        theme = (ConcreteCustomClass) findClass("Theme");
+        navbar = (ConcreteCustomClass) findClass("Navbar");
         clientException = (ConcreteCustomClass) findClass("ClientException");
         webClientException = (ConcreteCustomClass) findClass("WebClientException");
         remoteServerException = (ConcreteCustomClass) findClass("RemoteServerException");
@@ -147,8 +151,8 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         onStarted = findAction("onStartedApply[]");
 
         useBootstrap = findProperty("useBootstrap[DesignEnv]");
-        serverUseBootstrap = findProperty("serverUseBootstrap[]");
-        serverVerticalNavbar = findProperty("serverVerticalNavbar[]");
+        serverTheme = findProperty("serverTheme[]");
+        serverNavbar = findProperty("serverNavbar[]");
         serverNavigatorPinMode = findProperty("serverNavigatorPinMode[]");
 
         // Подключения к серверу

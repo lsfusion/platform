@@ -43,29 +43,19 @@ NAVIGATOR {
     NEW logoAction WINDOW logo PARENT HEADER logoHeader() IMAGE logo() CLASS logoActionClass();
 }
 
-designEnvUseBootstrap '{system.events.use.bootstrap}' = DATA TBOOLEAN (DesignEnv);
-serverUseBootstrap '{system.events.use.bootstrap}' = DATA BOOLEAN ();
-useBootstrap '{system.events.use.bootstrap}' (DesignEnv d) = IF designEnvUseBootstrap(d) THEN designEnvUseBootstrap(d) == TTRUE ELSE serverUseBootstrap();
-useBootstrap = useBootstrap(currentDesignEnv()) PREREAD;
-
-bootstrapCaption = (IF useBootstrap() THEN '{system.events.excel.design}' ELSE '{system.events.bootstrap.design}') IF NOT noSystemToolbarCaptions();
-bootstrapImage = IF useBootstrap() THEN 'excel.png' ELSE 'bootstrap.png';
-toggleBootstrap () {
-    designEnvUseBootstrap(currentDesignEnv()) <- IF useBootstrap() THEN TFALSE ELSE TTRUE;
-    APPLY;
-    reload();
+CLASS Theme '{system.events.theme}' {
+    excel '{system.events.theme.excel}',
+    classic '{system.events.theme.classic}'
 }
 
-CLASS BootstrapTheme '{system.events.bootstrap.theme}' {
-    classic '{system.events.bootstrap.theme.classic}'
-}
-
-designEnvBootstrapTheme '{system.events.bootstrap.theme}' = DATA BootstrapTheme (DesignEnv);
-staticCaptionDesignEnvBootstrapTheme '{system.events.bootstrap.theme}' (DesignEnv d) = staticCaption(designEnvBootstrapTheme(d));
-serverBootstrapTheme '{system.events.bootstrap.theme}' = DATA BootstrapTheme ();
-bootstrapTheme '{system.events.bootstrap.theme}' (DesignEnv d) = OVERRIDE designEnvBootstrapTheme(d), serverBootstrapTheme(), BootstrapTheme.classic;
-bootstrapTheme = bootstrapTheme(currentDesignEnv()) PREREAD;
-nameBootstrapTheme = STRING(getWord(staticName(bootstrapTheme()), '.', 2));
+designEnvTheme '{system.events.theme}' = DATA Theme (DesignEnv);
+captionTheme '{system.events.theme}' (DesignEnv d) = staticCaption(designEnvTheme(d));
+serverTheme '{system.events.theme}' = DATA Theme ();
+captionServerTheme '{system.events.theme}' = staticCaption(serverTheme());
+theme '{system.events.theme}' (DesignEnv d) = OVERRIDE designEnvTheme(d), serverTheme(), Theme.classic;
+nameTheme = STRING(getWord(staticName(theme(currentDesignEnv())), '.', 2));
+useBootstrap (DesignEnv d) = theme(d) != Theme.excel;
+useBootstrap() = useBootstrap(currentDesignEnv()) PREREAD;
 
 colorThemeCaption = (CASE
     WHEN currentColorTheme() == ColorTheme.light THEN '{system.events.dark.mode}'
@@ -84,19 +74,17 @@ toggleColorTheme() {
     formRefresh();
 }
 
-designEnvVerticalNavbar '{navigator.navbar.vertical}' = DATA TBOOLEAN (DesignEnv);
-serverVerticalNavbar '{navigator.navbar.vertical}' = DATA BOOLEAN ();
-verticalNavbar '{navigator.navbar.vertical}' (DesignEnv d) = IF designEnvVerticalNavbar(d) THEN designEnvVerticalNavbar(d) == TTRUE ELSE serverVerticalNavbar();
-verticalNavbar = verticalNavbar(currentDesignEnv());
-
-verticalNavbarCaption = (IF verticalNavbar() THEN '{system.events.navbar.horizontal}' ELSE '{system.events.navbar.vertical}') IF NOT noSystemToolbarCaptions();
-verticalNavbarImage = IF verticalNavbar() THEN iconIfAvailable('navbarHorz.png', 'fa-solid fa-window-maximize') ELSE iconIfAvailable('navbarVert.png', 'fa-solid fa-window-maximize fa-rotate-270');
-toggleVerticalNavbar () {
-    designEnvVerticalNavbar(currentDesignEnv()) <- IF verticalNavbar() THEN TFALSE ELSE TTRUE;
-    APPLY;
-    reload();
+CLASS Navbar '{system.events.navbar}' {
+    horizontal '{system.events.navbar.horizontal}',
+    vertical '{system.events.navbar.vertical}'
 }
-verticalNavbarClass = ABSTRACT STRING();
+
+designEnvNavbar '{system.events.navbar}' = DATA Navbar (DesignEnv);
+captionNavbar '{system.events.navbar}' (DesignEnv d) = staticCaption(designEnvNavbar(d));
+serverNavbar '{system.events.navbar}' = DATA Navbar ();
+captionServerNavbar '{system.events.navbar}' = staticCaption(serverNavbar());
+navbar '{system.events.navbar}' (DesignEnv d) = OVERRIDE designEnvNavbar(d), serverNavbar(), Navbar.horizontal;
+verticalNavbar = navbar(currentDesignEnv()) == Navbar.vertical;
 
 useClientNavigatorPinMode '{system.events.navigator.pin.use.client}' = DATA BOOLEAN (DesignEnv);
 designEnvNavigatorPinMode '{navigator.pin.mode}' = DATA TBOOLEAN (DesignEnv);
@@ -121,14 +109,37 @@ toggleNavigatorPinMode () {
 }
 navigatorPinModeClass = ABSTRACT STRING();
 
+FORM design '{system.events.design}'
+    OBJECTS de = DesignEnv PANEL
+    PROPERTIES(de) captionTheme, captionNavbar
+
+    FILTERS de = currentDesignEnv()
+    FILTERS IF storeNavigatorSettingsForComputer() THEN de IS Computer ELSE de IS CustomUser
+
+    EVENTS ON APPLY reload()
+;
+
+DESIGN design {
+    NEW main BEFORE TOOLBARBOX {
+        horizontal = TRUE;
+        MOVE PROPERTY(captionTheme(de));
+        MOVE PROPERTY(captionNavbar(de));
+    }
+}
+
+showDesign() {
+    SHOW design FLOAT;
+}
+
+designCaption = '{system.events.design}' IF NOT noSystemToolbarCaptions();
+
 NAVIGATOR {
-    NEW toggleBootstrap WINDOW system PARENT BEFORE administration HEADER bootstrapCaption() IMAGE bootstrapImage();
-    NEW toggleVerticalNavbar WINDOW system PARENT BEFORE toggleBootstrap HEADER verticalNavbarCaption() IMAGE verticalNavbarImage() CLASS verticalNavbarClass();
-    NEW toggleNavigatorPinMode WINDOW system PARENT BEFORE toggleVerticalNavbar HEADER navigatorPinModeCaption() IMAGE navigatorPinModeImage() CLASS navigatorPinModeClass();
+    NEW showDesign WINDOW system PARENT BEFORE administration HEADER designCaption();
+    NEW toggleNavigatorPinMode WINDOW system PARENT BEFORE showDesign HEADER navigatorPinModeCaption() IMAGE navigatorPinModeImage() CLASS navigatorPinModeClass();
     NEW toggleColorTheme WINDOW system PARENT BEFORE toggleNavigatorPinMode HEADER colorThemeCaption() IMAGE colorThemeImage();
 }
 
-onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = nameBootstrapTheme() + '/bootstrap.min.css' THEN 1;
+onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = nameTheme() + '/bootstrap.min.css' THEN 1;
 onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap.min.js' THEN 1;
 onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap-background-inherit.css' THEN 2;
 onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap-adapter.css' THEN 3;
@@ -155,10 +166,10 @@ onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'filter.css' THEN 1
 onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'toolbar.css' THEN 19;
 onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'pivot.css' THEN 20;
 
-onWebClientLoad(STRING s) += WHEN s = 'scrollbar.css' THEN 21; //for bootstrap and excell themes
-onWebClientLoad(STRING s) += WHEN s = 'input-quill.js' THEN 22; //for bootstrap and excell themes
-onWebClientLoad(STRING s) += WHEN s = 'input-quill.css' THEN 23; //for bootstrap and excell themes
-onWebClientLoad(STRING s) += WHEN s = 'select.js' THEN 24; //for bootstrap and excell themes
+onWebClientLoad(STRING s) += WHEN s = 'scrollbar.css' THEN 21; //for bootstrap and excel themes
+onWebClientLoad(STRING s) += WHEN s = 'input-quill.js' THEN 22; //for bootstrap and excel themes
+onWebClientLoad(STRING s) += WHEN s = 'input-quill.css' THEN 23; //for bootstrap and excel themes
+onWebClientLoad(STRING s) += WHEN s = 'select.js' THEN 24; //for bootstrap and excel themes
 onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'option.css' THEN 25;
 onWebClientLoad(STRING s) += WHEN s = 'selectize.min.js' THEN 26;
 onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'selectize.bootstrap5.min.css' THEN 27;
@@ -416,7 +427,6 @@ onClientStarted () + {
 textOnHoverClass() = IF isWebDesktop() AND NOT navigatorPinMode() THEN ' navbar-text-on-hover' ELSE '';
 verticalTextOnHoverClass() = IF isWebDesktop() AND verticalNavbar() AND NOT navigatorPinMode() THEN ' navbar-text-on-hover' ELSE '';
 
-verticalNavbarClass() += IF isWebMobile() THEN 'navbar-hidden' ELSE NULL;
 navigatorPinModeClass() += IF isWebMobile() THEN 'navbar-hidden' ELSE NULL;
 logoActionClass() += 'navbar-icon-large' + (IF isWebMobile() AND NOT useBootstrap() THEN ' navbar-hidden' ELSE '');
 logoHeader() += IF isWebMobile() OR verticalNavbar() THEN displayName() ELSE NULL;
