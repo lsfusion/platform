@@ -300,7 +300,18 @@ table.pvtTable thead tr th {
     margin-bottom: 0;
 }
 
-.pvtRenderer, .pvtAggregator, .pvtAttr, .pvtRowsTable li {
+
+/*
+    to still possible to set attributes horizontally
+*/
+.pvtRowsTable li.pvtAttr-container {
+    width: fit-content;
+}
+
+/*
+    so that attributes in the aggregator are the same size
+*/
+.pvtRenderer, .pvtAggregator, .pvtAttr {
     width: -webkit-fill-available;
     width: -moz-available;
 }
