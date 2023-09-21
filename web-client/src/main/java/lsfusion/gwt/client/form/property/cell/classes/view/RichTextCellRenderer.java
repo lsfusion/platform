@@ -58,6 +58,7 @@ public class RichTextCellRenderer extends TextCellRenderer {
         // quill editor bubble theme does not support opening links from edit mode.
         // https://github.com/quilljs/quill/issues/857
         // open links programmatically on ctrl+click
+        // text-change event is triggered by RichTextCellEditor.enableEditing method and every time the text changes
         quill.on('text-change', function() {
             var links = quill.root.getElementsByTagName('a');
             for (var i = 0; i < links.length; i++) {
