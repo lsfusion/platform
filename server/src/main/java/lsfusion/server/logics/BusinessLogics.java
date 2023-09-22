@@ -175,6 +175,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     public String topModule;
 
     public String theme;
+    public String size;
     public String navbar;
     
     public Boolean navigatorPinMode;
@@ -220,7 +221,11 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     public void setTheme(String theme) {
         this.theme = theme;
     }
-    
+
+    public void setSize(String size) {
+        this.size = size;
+    }
+
     public void setNavbar(String navbar) {
         this.navbar = navbar;
     }

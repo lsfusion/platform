@@ -997,6 +997,7 @@
         <property name="dateFormat" value="${user.dateFormat:#{null}}"/>
         <property name="timeFormat" value="${user.timeFormat:#{null}}"/>
         <property name="theme" value="${user.theme:#{null}}"/>
+        <property name="size" value="${user.size:#{null}}"/>
         <property name="navbar" value="${user.navbar:#{null}}"/>
         <property name="navigatorPinMode" value="${user.navigatorPinMode:#{null}}"/>
     </bean>

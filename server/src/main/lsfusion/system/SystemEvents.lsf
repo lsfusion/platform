@@ -57,6 +57,30 @@ nameTheme = STRING(getWord(staticName(theme(currentDesignEnv())), '.', 2));
 useBootstrap (DesignEnv d) = theme(d) != Theme.excel;
 useBootstrap() = useBootstrap(currentDesignEnv()) PREREAD;
 
+CLASS Size '{system.events.size}' {
+    normal '{system.events.size.normal}',
+    mini '{system.events.size.mini}'
+}
+
+designEnvSize '{system.events.size}' = DATA Size (DesignEnv);
+captionSize '{system.events.size}' (DesignEnv d) = staticCaption(designEnvSize(d));
+serverSize '{system.events.size}' = DATA Size ();
+captionServerSize '{system.events.size}' = staticCaption(serverSize());
+size '{system.events.size}' (DesignEnv d) = OVERRIDE designEnvSize(d), serverSize(), Size.normal;
+isMini = size(currentDesignEnv()) == Size.mini;
+
+CLASS Navbar '{system.events.navbar}' {
+    horizontal '{system.events.navbar.horizontal}',
+    vertical '{system.events.navbar.vertical}'
+}
+
+designEnvNavbar '{system.events.navbar}' = DATA Navbar (DesignEnv);
+captionNavbar '{system.events.navbar}' (DesignEnv d) = staticCaption(designEnvNavbar(d));
+serverNavbar '{system.events.navbar}' = DATA Navbar ();
+captionServerNavbar '{system.events.navbar}' = staticCaption(serverNavbar());
+navbar '{system.events.navbar}' (DesignEnv d) = OVERRIDE designEnvNavbar(d), serverNavbar(), Navbar.horizontal;
+verticalNavbar = navbar(currentDesignEnv()) == Navbar.vertical;
+
 colorThemeCaption = (CASE
     WHEN currentColorTheme() == ColorTheme.light THEN '{system.events.dark.mode}'
     WHEN currentColorTheme() == ColorTheme.dark THEN '{system.events.auto.mode}'
@@ -73,18 +97,6 @@ toggleColorTheme() {
     apply();
     formRefresh();
 }
-
-CLASS Navbar '{system.events.navbar}' {
-    horizontal '{system.events.navbar.horizontal}',
-    vertical '{system.events.navbar.vertical}'
-}
-
-designEnvNavbar '{system.events.navbar}' = DATA Navbar (DesignEnv);
-captionNavbar '{system.events.navbar}' (DesignEnv d) = staticCaption(designEnvNavbar(d));
-serverNavbar '{system.events.navbar}' = DATA Navbar ();
-captionServerNavbar '{system.events.navbar}' = staticCaption(serverNavbar());
-navbar '{system.events.navbar}' (DesignEnv d) = OVERRIDE designEnvNavbar(d), serverNavbar(), Navbar.horizontal;
-verticalNavbar = navbar(currentDesignEnv()) == Navbar.vertical;
 
 useClientNavigatorPinMode '{system.events.navigator.pin.use.client}' = DATA BOOLEAN (DesignEnv);
 designEnvNavigatorPinMode '{navigator.pin.mode}' = DATA TBOOLEAN (DesignEnv);
@@ -111,7 +123,7 @@ navigatorPinModeClass = ABSTRACT STRING();
 
 FORM design '{system.events.design}'
     OBJECTS de = DesignEnv PANEL
-    PROPERTIES(de) captionTheme, captionNavbar
+    PROPERTIES(de) captionTheme, captionSize SHOWIF useBootstrap(de), captionNavbar
 
     FILTERS de = currentDesignEnv()
     FILTERS IF storeNavigatorSettingsForComputer() THEN de IS Computer ELSE de IS CustomUser
@@ -121,9 +133,11 @@ FORM design '{system.events.design}'
 
 DESIGN design {
     NEW main BEFORE TOOLBARBOX {
-        horizontal = TRUE;
         MOVE PROPERTY(captionTheme(de));
+        MOVE PROPERTY(captionSize(de));
         MOVE PROPERTY(captionNavbar(de));
+        REMOVE PROPERTY(formApply());
+        REMOVE PROPERTY(formCancel());
     }
 }
 
@@ -141,6 +155,7 @@ NAVIGATOR {
 
 onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = nameTheme() + '/bootstrap.min.css' THEN 1;
 onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap.min.js' THEN 1;
+onWebClientLoad(STRING s) += WHEN useBootstrap() AND isMini() AND s = 'mini.css' THEN 1;
 onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap-background-inherit.css' THEN 2;
 onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap-adapter.css' THEN 3;
 onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap-dark.css' THEN 4;

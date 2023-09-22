@@ -673,11 +673,11 @@ resetWindowsLayout '{service.reset.windows.layout}' INTERNAL 'lsfusion.server.lo
 
 EXTEND FORM settings
     PROPERTIES() storeNavigatorSettingsForComputer
-    PROPERTIES() READONLY captionServerTheme, captionServerNavbar, serverNavigatorPinMode 
+    PROPERTIES() READONLY captionServerTheme, captionServerSize, captionServerNavbar, serverNavigatorPinMode 
 
     OBJECTS de = DesignEnv
     PROPERTIES(de) name READONLY,
-        captionTheme, captionNavbar, useClientNavigatorPinMode, 
+        captionTheme, captionSize, captionNavbar, useClientNavigatorPinMode, 
         navigatorPinMode READONLYIF NOT useClientNavigatorPinMode(de), colorThemeName
     FILTERS IF storeNavigatorSettingsForComputer() THEN de IS Computer ELSE de IS CustomUser
 

@@ -34,6 +34,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     private final AuthenticationLogicsModule authenticationLM;
 
     public ConcreteCustomClass theme;
+    public ConcreteCustomClass size;
     public ConcreteCustomClass navbar;
     public AbstractCustomClass exception;
     public ConcreteCustomClass clientException;
@@ -53,6 +54,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
 
     public LP useBootstrap;
     public LP serverTheme;
+    public LP serverSize;
     public LP serverNavbar;
     public LP serverNavigatorPinMode;
 
@@ -126,6 +128,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         super.initMetaAndClasses();
 
         theme = (ConcreteCustomClass) findClass("Theme");
+        size = (ConcreteCustomClass) findClass("Size");
         navbar = (ConcreteCustomClass) findClass("Navbar");
         clientException = (ConcreteCustomClass) findClass("ClientException");
         webClientException = (ConcreteCustomClass) findClass("WebClientException");
@@ -152,6 +155,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
 
         useBootstrap = findProperty("useBootstrap[DesignEnv]");
         serverTheme = findProperty("serverTheme[]");
+        serverSize = findProperty("serverSize[]");
         serverNavbar = findProperty("serverNavbar[]");
         serverNavigatorPinMode = findProperty("serverNavigatorPinMode[]");
 

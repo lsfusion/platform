@@ -1,0 +1,47 @@
+.form-control {
+    padding: 0.125rem 0.25rem;
+}
+
+.form-select {
+    padding: 0.125rem 2.25rem 0.125rem 0.25rem;
+}
+
+.btn {
+    --bs-btn-padding-y: 0.125rem;
+}
+
+.nav {
+    --bs-nav-link-padding-y: 0.25rem;
+}
+
+.navbar-text {
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+}
+
+.card {
+    --bs-card-spacer-y: 0.333rem;
+    --bs-card-spacer-x: 0.333rem;
+}
+
+.dropdown-menu {
+    --bs-dropdown-item-padding-x: 0.5rem;
+    --bs-dropdown-item-padding-y: 0.125rem;
+}
+
+.table>:not(caption)>*>* {
+    padding: 0.25rem 0.25rem;
+}
+
+.dataGridHeaderCell-caption {
+    font-size: 0.7rem;
+}
+
+.caption-panel-header {
+    font-size: 0.7rem;
+}
+:root {
+    --border-padding: 0.25rem;
+    --border-cont-horz-padding: 0.333rem;
+    --border-cont-vert-padding: 0.333rem;
+}

@@ -1876,10 +1876,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
         String logicsCaption = businessLogics.logicsCaption;
         String topModule = businessLogics.topModule;
         String theme = businessLogics.theme;
+        String size = businessLogics.size;
         String navbar = businessLogics.navbar;
         LM.logicsCaption.change(isRedundantString(logicsCaption) ? null : logicsCaption, session);
         LM.topModule.change(isRedundantString(topModule) ? null : topModule, session);
         systemEventsLM.serverTheme.change(isRedundantString(theme) ? NullValue.instance : systemEventsLM.theme.getDataObject(theme), session);
+        systemEventsLM.serverSize.change(isRedundantString(size) ? NullValue.instance : systemEventsLM.size.getDataObject(size), session);
         systemEventsLM.serverNavbar.change(isRedundantString(navbar) ? NullValue.instance : systemEventsLM.navbar.getDataObject(navbar), session);
         systemEventsLM.serverNavigatorPinMode.change(businessLogics.navigatorPinMode, true, session);
         apply(session);
