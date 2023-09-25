@@ -17,22 +17,37 @@ import java.util.Iterator;
 
 public class OpenRawLinkAction extends InternalAction {
     private final ClassPropertyInterface sourceInterface;
+    private final ClassPropertyInterface noWaitInterface;
 
     public OpenRawLinkAction(BaseLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = getOrderInterfaces().iterator();
         sourceInterface = i.next();
+        noWaitInterface = i.next();
     }
 
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
         try {
             ObjectValue sourceObject = context.getDataKeyValue(sourceInterface);
-            for (URI file : ((LinkClass) ((DataObject) sourceObject).getType()).getFiles(sourceObject.getValue())) {
-                context.delayUserInteraction(new OpenUriClientAction(new URI(URIUtil.decode(file.toString()))));
+            boolean noWait = context.getKeyValue(noWaitInterface).getValue() != null;
+            if(sourceObject != null) {
+                for (URI file : ((LinkClass) sourceObject.getType()).getFiles(sourceObject.getValue())) {
+                    OpenUriClientAction action = new OpenUriClientAction(new URI(URIUtil.decode(file.toString())));
+                    if (noWait) {
+                        context.delayUserInteraction(action);
+                    } else {
+                        context.requestUserInteraction(action);
+                    }
+                }
             }
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    @Override
+    protected boolean allowNulls() {
+        return true;
     }
 }
