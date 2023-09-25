@@ -11,7 +11,7 @@
 }
 
 .nav {
-    --bs-nav-link-padding-y: 0.25rem;
+    --bs-nav-link-padding-y: 0.125rem;
 }
 
 .navbar-text {
@@ -24,6 +24,10 @@
     --bs-card-spacer-x: 0.333rem;
 }
 
+.modal {
+    --bs-modal-header-padding: 0.25rem 0.5rem;
+}
+
 .dropdown-menu {
     --bs-dropdown-item-padding-x: 0.5rem;
     --bs-dropdown-item-padding-y: 0.125rem;
@@ -33,13 +37,6 @@
     padding: 0.25rem 0.25rem;
 }
 
-.dataGridHeaderCell-caption {
-    font-size: 0.7rem;
-}
-
-.caption-panel-header {
-    font-size: 0.7rem;
-}
 :root {
     --border-padding: 0.25rem;
     --border-cont-horz-padding: 0.333rem;
