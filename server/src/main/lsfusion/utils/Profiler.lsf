@@ -373,7 +373,7 @@ DESIGN profiler {
             MOVE BOX(pi){fill = 1;};
             NEW options {
                 fill = 2;
-                type = SPLITH;
+                horizontal = TRUE;
                 NEW user {
                     fill = 1;
                     MOVE BOX(r);
@@ -390,7 +390,7 @@ DESIGN profiler {
             caption = '{profiler.form.profiler.caption.call.tree}';
             MOVE PROPERTY (nameSelectedTop());
             NEW split {
-                type = SPLITH;
+                horizontal = TRUE;
                 fill = 1;
                 NEW pT{
                     horizontal = FALSE;

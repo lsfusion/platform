@@ -41,7 +41,7 @@ DESIGN exception {
             }
             NEW stacks {
                 fill = 3;
-                type = SPLITH;
+                horizontal = TRUE;
                 MOVE PROPERTY(valueJavaStack) {
                     panelCaptionVertical = TRUE;
                     fill = 1;
