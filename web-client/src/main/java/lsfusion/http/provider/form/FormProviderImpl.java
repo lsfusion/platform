@@ -24,9 +24,7 @@ import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPrefer
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.servlet.ServletContext;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -40,13 +38,11 @@ import static lsfusion.gwt.server.convert.StaticConverters.convertFont;
 // session scoped - one for one browser (! not tab)
 public class FormProviderImpl implements FormProvider, InitializingBean, DisposableBean {
 
-    @Autowired
-    private NavigatorProvider navigatorProvider;
-    
-    @Autowired
-    private ServletContext servletContext;
+    private final NavigatorProvider navigatorProvider;
 
-    public FormProviderImpl() {}
+    public FormProviderImpl(NavigatorProvider navigatorProvider) {
+        this.navigatorProvider = navigatorProvider;
+    }
 
     public GForm createForm(MainDispatchServlet servlet, RemoteFormInterface remoteForm, FormClientData clientData, String sessionID) throws IOException {
         // 0, 1, 3 are indices from FormClientAction.methodNames array

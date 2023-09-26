@@ -2,7 +2,6 @@ package lsfusion.http.authentication;
 
 import lsfusion.base.ServerUtils;
 import lsfusion.http.provider.logics.LogicsProvider;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 
@@ -16,14 +15,15 @@ import java.util.Locale;
 
 public class LSFAuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
-    @Autowired
-    private LogicsProvider logicsProvider;
+    private final LogicsProvider logicsProvider;
+    private final ServletContext servletContext;
+    private final LSFClientRegistrationRepository clientRegistrations;
 
-    @Autowired
-    private ServletContext servletContext;
-
-    @Autowired
-    private LSFClientRegistrationRepository clientRegistrations;
+    public LSFAuthenticationSuccessHandler(LogicsProvider logicsProvider, ServletContext servletContext, LSFClientRegistrationRepository clientRegistrations) {
+        this.logicsProvider = logicsProvider;
+        this.servletContext = servletContext;
+        this.clientRegistrations = clientRegistrations;
+    }
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {

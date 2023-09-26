@@ -3,6 +3,7 @@ package lsfusion.http.authentication;
 import lsfusion.base.Pair;
 import lsfusion.base.file.FileData;
 import lsfusion.http.controller.LogicsRequestHandler;
+import lsfusion.http.provider.logics.LogicsProvider;
 import lsfusion.http.provider.navigator.NavigatorProviderImpl;
 import lsfusion.interop.base.exception.LockedException;
 import lsfusion.interop.base.exception.LoginException;
@@ -31,6 +32,9 @@ import java.util.Locale;
 import java.util.Map;
 
 public class LSFRemoteAuthenticationProvider extends LogicsRequestHandler implements AuthenticationProvider {
+    public LSFRemoteAuthenticationProvider(LogicsProvider logicsProvider) {
+        super(logicsProvider);
+    }
 
     @Override
     public Authentication authenticate(final Authentication authentication) throws AuthenticationException {

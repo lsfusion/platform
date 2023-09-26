@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.form.object.table.grid.user.design.view;
 
 import com.allen_sauer.gwt.dnd.client.DragHandlerAdapter;
-import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
@@ -23,9 +22,6 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static lsfusion.gwt.client.base.GwtClientUtils.createHorizontalStrut;
-import static lsfusion.gwt.client.base.GwtClientUtils.createVerticalStrut;
 
 public abstract class GUserPreferencesDialog extends DialogModalWindow {
     private static final ClientMessages messages = ClientMessages.Instance.get();
@@ -71,69 +67,54 @@ public abstract class GUserPreferencesDialog extends DialogModalWindow {
         columnsDualListBox.addStyleName(CSS_USER_PREFERENCES_DUAL_LIST);
 
         // column caption settings        
-        columnCaptionBox = new TextBox();
-        columnCaptionBox.addStyleName("userPreferencesColumnTextBox");
+        columnCaptionBox = createTextBox();
         columnCaptionBox.addKeyUpHandler(event -> columnsDualListBox.columnCaptionBoxTextChanged(columnCaptionBox.getText()));
 
         FlexPanel columnCaptionPanel = new FlexPanel();
-        columnCaptionPanel.add(new Label(messages.formGridPreferencesColumnCaption() + ":"), GFlexAlignment.CENTER);
-        columnCaptionPanel.add(createHorizontalStrut(2));
+        Label columnCaptionLabel = createLabel(messages.formGridPreferencesColumnCaption());
+        columnCaptionPanel.add(columnCaptionLabel, GFlexAlignment.CENTER);
         columnCaptionPanel.add(columnCaptionBox);
 
         // column pattern settings
-        columnPatternBox = new TextBox();
-        columnPatternBox.addStyleName("userPreferencesColumnTextBox");
+        columnPatternBox = createTextBox();
         columnPatternBox.addChangeHandler(changeEvent -> columnsDualListBox.columnPatternBoxTextChanged(columnPatternBox.getText()));
 
         FlexPanel columnPatternPanel = new FlexPanel();
-        columnPatternPanel.add(new Label(messages.formGridPreferencesColumnPattern() + ":"), GFlexAlignment.CENTER);
-        columnPatternPanel.add(createHorizontalStrut(2));
+        columnPatternPanel.add(createLabel(messages.formGridPreferencesColumnPattern()), GFlexAlignment.CENTER);
         columnPatternPanel.add(columnPatternBox);
 
-        VerticalPanel columnSettingsPanel = new VerticalPanel();
-        columnSettingsPanel.setSpacing(2);
-        columnSettingsPanel.setWidth("100%");
+        FlexPanel columnSettingsPanel = new FlexPanel();
         columnSettingsPanel.add(columnCaptionPanel);
         columnSettingsPanel.add(columnPatternPanel);
 
         //page size settings
-        pageSizeBox = new TextBox();
-        pageSizeBox.addStyleName("userPreferencesIntegralTextBox");
+        pageSizeBox = createIntegralTextBox();
         FlexPanel pageSizePanel = new FlexPanel();
-        pageSizePanel.add(new Label(messages.formGridPreferencesPageSize() + ":"), GFlexAlignment.CENTER);
-        pageSizePanel.add(createHorizontalStrut(2));
+        pageSizePanel.add(createLabel(messages.formGridPreferencesPageSize()), GFlexAlignment.CENTER);
         pageSizePanel.add(pageSizeBox);
 
         //header height
-        headerHeightBox = new TextBox();
-        headerHeightBox.addStyleName("userPreferencesIntegralTextBox");
+        headerHeightBox = createIntegralTextBox();
         FlexPanel headerHeightPanel = new FlexPanel();
-        headerHeightPanel.add(new Label(messages.formGridPreferencesHeaderHeight() + ":"), GFlexAlignment.CENTER);
-        headerHeightPanel.add(createHorizontalStrut(2));
+        headerHeightPanel.add(createLabel(messages.formGridPreferencesHeaderHeight()), GFlexAlignment.CENTER);
         headerHeightPanel.add(headerHeightBox);
-        
+
+        FlexPanel pageSizeHeaderHeightPanel = new FlexPanel();
+        pageSizeHeaderHeightPanel.add(pageSizePanel);
+        pageSizeHeaderHeightPanel.add(headerHeightPanel);
+
         // font settings
-        sizeBox = new TextBox();
-        sizeBox.addStyleName("userPreferencesIntegralTextBox");
+        sizeBox = createIntegralTextBox();
         boldBox = new FormCheckBox(messages.formGridPreferencesFontStyleBold());
         italicBox = new FormCheckBox(messages.formGridPreferencesFontStyleItalic());
         FlexPanel fontPanel = new FlexPanel();
-        fontPanel.getElement().getStyle().setMargin(2, Style.Unit.PX);
-        Label fontLabel = new Label(messages.formGridPreferencesFontSize() + ":");
-        fontLabel.addStyleName("userPreferencesFontLabel");
-        fontPanel.addCentered(fontLabel);
-        fontPanel.add(createHorizontalStrut(2));
+        fontPanel.addCentered(createLabel(messages.formGridPreferencesFontSize()));
         fontPanel.addCentered(sizeBox);
-        fontPanel.add(createHorizontalStrut(6));
         fontPanel.addCentered(boldBox);
-        fontPanel.add(createHorizontalStrut(6));
         fontPanel.addCentered(italicBox);
-        fontPanel.add(createHorizontalStrut(2));
 
-        VerticalPanel gridSettingsPanel = new VerticalPanel();
-        gridSettingsPanel.setSpacing(2);
-        gridSettingsPanel.add(pageSizePanel);
-        gridSettingsPanel.add(headerHeightPanel);
+        FlexPanel gridSettingsPanel = new FlexPanel(true);
+        gridSettingsPanel.add(pageSizeHeaderHeightPanel);
         gridSettingsPanel.add(new CaptionPanel(messages.formGridPreferencesFont(), fontPanel));
 
         // ok/cancel buttons
@@ -142,29 +123,25 @@ public abstract class GUserPreferencesDialog extends DialogModalWindow {
         addFooterWidget(okButton);
         addFooterWidget(cancelButton);
 
-        VerticalPanel preferencesPanel = new VerticalPanel();
-        preferencesPanel.setSpacing(3);
-        preferencesPanel.setSize("100%", "100%");
+        FlexPanel preferencesPanel = new FlexPanel(true);
         preferencesPanel.add(columnsDualListBox);
-        preferencesPanel.setCellHeight(columnsDualListBox, "100%");
-        preferencesPanel.add(GwtClientUtils.createVerticalStrut(3));
         preferencesPanel.add(new CaptionPanel(messages.formGridPreferencesSelectedColumnSettings(), columnSettingsPanel));
-        preferencesPanel.add(createVerticalStrut(3));
         preferencesPanel.add(new CaptionPanel(messages.formGridPreferencesGridSettings(), gridSettingsPanel));
-        preferencesPanel.add(createVerticalStrut(5));
         if (canBeSaved) {
-            FormButton saveButton = new FormButton(messages.formGridPreferencesSave(), event -> savePressed());
-            saveButton.addStyleName("userPreferencesSaveResetButton");
-            preferencesPanel.add(saveButton);
+            FlexPanel buttonsPanel = new FlexPanel();
 
-            FormButton resetButton = new FormButton(messages.formGridPreferencesReset(), event -> resetPressed());
-            resetButton.addStyleName("userPreferencesSaveResetButton");
-            preferencesPanel.add(resetButton);
+            FormButton saveButton = new FormButton(messages.formGridPreferencesSave(), FormButton.ButtonStyle.PRIMARY, event -> savePressed());
+            saveButton.addStyleName("panelRendererValue");
+            buttonsPanel.add(saveButton);
+
+            FormButton resetButton = new FormButton(messages.formGridPreferencesReset(), FormButton.ButtonStyle.SECONDARY,  event -> resetPressed());
+            resetButton.addStyleName("panelRendererValue");
+            buttonsPanel.add(resetButton);
+
+            preferencesPanel.add(buttonsPanel);
         }
 
         focusPanel = new FocusPanel(preferencesPanel);
-        focusPanel.addStyleName("noOutline");
-        focusPanel.setSize("100%", "100%");
         focusPanel.addKeyDownHandler(event -> {
             if (event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
                 GwtClientUtils.stopPropagation(event);
@@ -408,6 +385,29 @@ public abstract class GUserPreferencesDialog extends DialogModalWindow {
             }
         };
     }
-    
+
+    private Label createLabel(String text) {
+        Label label = new Label(text + ":");
+        label.addStyleName("panel-label wrap-text-not-empty grid-vert-center");
+        return label;
+    }
+
+    private TextBox createIntegralTextBox() {
+        return createTextBox(true);
+    }
+
+    private TextBox createTextBox() {
+        return createTextBox(false);
+    }
+
+    private TextBox createTextBox(boolean integral) {
+        TextBox textBox = new TextBox();
+        textBox.addStyleName("form-control prop-size-value");
+        if(integral) {
+            textBox.addStyleName("userPreferencesIntegralTextBox");
+        }
+        return textBox;
+    }
+
     public abstract void preferencesChanged();
 }

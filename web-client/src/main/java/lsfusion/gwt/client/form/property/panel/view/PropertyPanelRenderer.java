@@ -47,14 +47,14 @@ public class PropertyPanelRenderer extends PanelRenderer {
     }
 
     @Override
-    public void update(PValue value, boolean loading, AppBaseImage image, String valueElementClass, String background, String foreground, boolean readOnly) {
+    public void update(PValue value, boolean loading, AppBaseImage image, String valueElementClass, String background, String foreground, boolean readOnly, String placeholder) {
         if(property.hasDynamicImage() && !property.isAction()) {
             BaseImage.updateImage(image, label, property.panelCaptionVertical);
             image = null;
         }
 
         // we don't need image in value
-        super.update(value, loading, image, valueElementClass, background, foreground, readOnly);
+        super.update(value, loading, image, valueElementClass, background, foreground, readOnly, placeholder);
     }
 
     private SizedWidget initCaption(SizedWidget valuePanel, GPropertyDraw property, Result<CaptionWidget> captionContainer) {
@@ -185,13 +185,5 @@ public class PropertyPanelRenderer extends PanelRenderer {
 
     protected void setCommentClasses(String classes) {
         comment.getElement().addClassName(classes);
-    }
-
-    protected void setPlaceholderText(String placeholder) {
-        InputElement inputElement = SimpleTextBasedCellRenderer.getInputElement(value.getElement());
-        if (placeholder != null)
-            inputElement.setAttribute("placeholder", placeholder);
-        else
-            inputElement.removeAttribute("placeholder");
     }
 }

@@ -217,7 +217,7 @@ DESIGN mail {
     OBJECTS {
         NEW top {
             fill = 1;
-            type = SPLITH;
+            horizontal = TRUE;
             MOVE BOX(a) { width = 300; }
             MOVE BOX(e) { fill = 3; }
         }

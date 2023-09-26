@@ -4,6 +4,7 @@ import lsfusion.base.Pair;
 import lsfusion.base.file.IOUtils;
 import lsfusion.http.provider.form.FormProvider;
 import lsfusion.http.provider.form.FormSessionObject;
+import lsfusion.http.provider.logics.LogicsProvider;
 import lsfusion.http.provider.navigator.NavigatorProvider;
 import lsfusion.http.provider.navigator.NavigatorSessionObject;
 import lsfusion.interop.form.remote.RemoteFormInterface;
@@ -13,7 +14,6 @@ import lsfusion.interop.session.ExternalUtils;
 import org.apache.http.entity.ContentType;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -22,11 +22,14 @@ import java.rmi.RemoteException;
 
 public class ExternalFormRequestHandler extends ExternalRequestHandler {
 
-    @Autowired
-    NavigatorProvider logicsAndNavigatorProvider;
-    
-    @Autowired
-    FormProvider formProvider;
+    public ExternalFormRequestHandler(LogicsProvider logicsProvider, NavigatorProvider logicsAndNavigatorProvider, FormProvider formProvider) {
+        super(logicsProvider);
+        this.logicsAndNavigatorProvider = logicsAndNavigatorProvider;
+        this.formProvider = formProvider;
+    }
+
+    private final NavigatorProvider logicsAndNavigatorProvider;
+    private final FormProvider formProvider;
 
     @Override
     protected void handleRequest(LogicsSessionObject sessionObject, HttpServletRequest request, HttpServletResponse response) throws Exception {

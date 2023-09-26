@@ -10,7 +10,6 @@ import lsfusion.interop.base.exception.RemoteMessageException;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.authentication.OAuth2Authentication;
 import lsfusion.interop.logics.LogicsSessionObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -32,21 +31,29 @@ import static lsfusion.http.authentication.LSFRemoteAuthenticationProvider.getUs
 
 public class OAuth2ToLSFTokenFilter extends OncePerRequestFilter {
     public static final String AUTH_SECRET_KEY = "authSecret";
-
-    @Autowired
     private LogicsProvider logicsProvider;
-
-    @Autowired
-    private ServletContext servletContext;
-
-    @Autowired
+    private ServletContext thisServletContext;
     private LSFClientRegistrationRepository clientRegistrations;
+
+    public void setLogicsProvider(LogicsProvider logicsProvider) {
+        this.logicsProvider = logicsProvider;
+    }
+
+    public void setThisServletContext(ServletContext thisServletContext) {
+        this.thisServletContext = thisServletContext;
+    }
+
+    public void setClientRegistrations(LSFClientRegistrationRepository clientRegistrations) {
+        this.clientRegistrations = clientRegistrations;
+    }
+
+    public OAuth2ToLSFTokenFilter() {}
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        convertToken(logicsProvider, request, response, SecurityContextHolder.getContext().getAuthentication(), servletContext, clientRegistrations);
+        convertToken(logicsProvider, request, response, SecurityContextHolder.getContext().getAuthentication(), thisServletContext, clientRegistrations);
         filterChain.doFilter(request, response);
     }
 

@@ -249,7 +249,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     // for all external calls will set optimistic to true
     public AsyncEventExec getAsyncEventExec(FormInstanceContext context, String actionSID, boolean externalChange) {
-        ActionObjectEntity<?> changeAction = getEventAction(actionSID, context);
+        ActionObjectEntity<?> changeAction = getCheckedEventAction(actionSID, context);
         if (changeAction != null) {
             return changeAction.getAsyncEventExec(context, getSecurityProperty(), isProperty(context) ? getAssertProperty(context) : null, getToDraw(context.entity), optimisticAsync || externalChange);
         }
@@ -780,8 +780,11 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
                 if(selectType != null) {
                     if(elementType == null) {
                         //hasFooter() check is needed to avoid automatically using custom components in the FOOTER
-                        if (!isReadOnly(context) && !hasFooter(context.entity) || forceSelect) { // we don't have to check hasChangeAction, since canBeChanged is checked in getSelectProperty
+                        if ((!isReadOnly(context) && !hasFooter(context.entity)) || forceSelect) { // we don't have to check hasChangeAction, since canBeChanged is checked in getSelectProperty
                             boolean isMulti = select.type == PropertyObjectEntity.Select.Type.MULTI;
+//                            if (select.count == 1 && select.type == PropertyObjectEntity.Select.Type.NOTNULL) {
+//                                elementType = "Single";
+//                            } else
                             if (select.length <= Settings.get().getMaxLengthForValueButton()) {
                                 elementType = isMulti ? "Button" : "ButtonGroup";
                             } else if (select.count <= Settings.get().getMaxInterfaceStatForValueList() && !isList(context)) {
@@ -828,6 +831,14 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public boolean isCustomCanBeRenderedInTD(FormInstanceContext context) {
         Select selectProperty = getSelectProperty(context);
         if(selectProperty != null)
+            return true; // we have "manual" _wrapElement in select.js
+
+        return false;
+    }
+
+    public boolean isCustomNeedPlaceholder(FormInstanceContext context) {
+        Select selectProperty = getSelectProperty(context);
+        if(selectProperty != null && (selectProperty.elementType.equals("Dropdown") || selectProperty.elementType.equals("Input")))
             return true; // we have "manual" _wrapElement in select.js
 
         return false;

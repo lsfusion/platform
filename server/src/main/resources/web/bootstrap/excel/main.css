@@ -16,11 +16,14 @@
     --component-border-color: var(--excel-component-border-color);
 
     --link-color: var(--excel-link-color);
+
+    --excel-font-family: 'Segoe UI', 'Open Sans', Arial Unicode MS, Arial, sans-serif;
+    --excel-font-size: 9pt;
 }
 
 body {
-    font-family: 'Segoe UI', 'Open Sans', Arial Unicode MS, Arial, sans-serif;
-    font-size: 9pt;
+    font-family: var(--excel-font-family);
+    font-size: var(--excel-font-size);
 }
 
 input,

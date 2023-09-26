@@ -381,8 +381,19 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return getBackground(column.property, object, column.columnKey);
     }
 
+    protected String getPlaceholder(String property, GGroupObjectValue object) {
+        Column column = columnMap.get(property);
+        if(column == null)
+            return null;
+        return getPlaceholder(column.property, object, column.columnKey);
+    }
+
     protected String getBackground(String property, JavaScriptObject object) {
         return getBackground(property, getObjects(object));
+    }
+
+    protected String getPlaceholder(String property, JavaScriptObject object) {
+        return getPlaceholder(property, getObjects(object));
     }
 
     protected String getForeground(String property, GGroupObjectValue object) {
@@ -705,6 +716,9 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             },
             getForeground: function (property, object) {
                 return thisObj.@GSimpleStateTableView::getForeground(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
+            },
+            getPlaceholder: function (property, object) {
+                return thisObj.@GSimpleStateTableView::getPlaceholder(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
             },
             changeObject: function (object, rendered, elementClicked) {
                 if(rendered === undefined)

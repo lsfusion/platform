@@ -849,13 +849,13 @@ callWithJQuery ($) ->
                     closeFilterBox = ->
                         if valueList.find("[type='checkbox']").length >
                                valueList.find("[type='checkbox']:checked").length
-                                attrElem.addClass "pvtFilteredAttribute"
-                            else
-                                attrElem.removeClass "pvtFilteredAttribute"
+                            attrElem.addClass "pvtFilteredAttribute"
+                        else
+                            attrElem.removeClass "pvtFilteredAttribute"
 
-                            valueList.find('.pvtSearch').val('')
-                            valueList.find('.pvtCheckContainer p').show()
-                            valueList.hide()
+                        valueList.find('.pvtSearch').val('')
+                        valueList.find('.pvtCheckContainer p').show()
+                        valueList.hide()
 
                     finalButtons = $("<p>").appendTo(valueList)
 
@@ -878,10 +878,21 @@ callWithJQuery ($) ->
                                 .removeClass("changed").prop("checked", true)
                             closeFilterBox()
 
-                    listItem = $("<li>").addClass("axis_#{i}")
+                    listItem = $("<li>").addClass("axis_#{i} pvtAttr-container")
                     listItem.css(lineHeight: opts.valueHeight + "px")
 
-                    listItem.bind "dblclick", () ->
+                    arrow = $("<div>").addClass('selectArrow').appendTo(listItem)
+                    arrow.bind "click", (e) ->
+                        {left, top} = $(e.currentTarget.parentElement).position()
+                        listHeight = Math.min(valueList.outerHeight(), uiTable.height())
+                        top = Math.min(uiTable.height() - listHeight, top + 10)
+                        left = Math.min(uiTable.width() - valueList.outerWidth(), left + 10)
+                        valueList.css(left: left, top: top, maxHeight: "#{listHeight - 1}px").show()
+
+                    attrElem = $("<select>").addClass('pvtAttr form-select form-select-sm').data("attrName", attr).appendTo(listItem)
+                    $("<option>").text(attr).appendTo(attrElem);
+
+                    attrElem.bind "dblclick", (e) ->
                         if unusedDiv.has(attrElem).length > 0
                             pvtContainer = $(uiTable).find('.pvtAxisContainer.pvtHorizList')
                             listItem.appendTo(pvtContainer[pvtContainer.length - 1])
@@ -889,16 +900,7 @@ callWithJQuery ($) ->
                             listItem.prependTo(unusedDiv)
 
                         refresh()
-
-                    attrElem = $("<select>").addClass('pvtAttr form-select form-select-sm').data("attrName", attr).appendTo(listItem)
-                    optionElem = $("<option>").text(attr).appendTo(attrElem);
-
-                    attrElem.bind "click", (e) ->
-                        {left, top} = $(e.currentTarget).position()
-                        listHeight = Math.min(valueList.outerHeight(), uiTable.height())
-                        top = Math.min(uiTable.height() - listHeight, top + 10)
-                        left = Math.min(uiTable.width() - valueList.outerWidth(), left + 10)
-                        valueList.css(left: left, top: top, maxHeight: "#{listHeight - 1}px").show()
+                        return
 
                     attrElem.addClass('pvtFilteredAttribute') if hasExcludedItem
                     unusedDiv.append(listItem)

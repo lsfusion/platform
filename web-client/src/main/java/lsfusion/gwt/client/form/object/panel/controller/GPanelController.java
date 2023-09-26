@@ -176,7 +176,7 @@ public class GPanelController extends GPropertyController {
     }
 
     @Override
-    public void updatePropertyPlaceholders(GPlaceholderReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+    public void updatePlaceholderValues(GPlaceholderReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         GPropertyDraw property = formController.getProperty(reader.propertyID);
         propertyControllers.get(property).setPropertyPlaceholders(values);
 

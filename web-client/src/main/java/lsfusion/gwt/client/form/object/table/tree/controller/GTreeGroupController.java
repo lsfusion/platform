@@ -150,6 +150,11 @@ public class GTreeGroupController extends GAbstractTableController {
     }
 
     @Override
+    public void updatePlaceholderValues(GPlaceholderReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+        tree.updatePlaceholderValues(formController.getProperty(reader.propertyID), values);
+    }
+
+    @Override
     public void updateImageValues(GImageReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         tree.updateImageValues(formController.getProperty(reader.propertyID), values);
     }
@@ -189,10 +194,6 @@ public class GTreeGroupController extends GAbstractTableController {
 
     @Override
     public void updateCellCommentElementClasses(GCommentElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-    }
-
-    @Override
-    public void updatePropertyPlaceholders(GPlaceholderReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
     }
 
     @Override

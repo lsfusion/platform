@@ -303,12 +303,6 @@ public class GwtClientUtils {
         return object != null && object.toString().equals(string);
     }
 
-    public static Widget createHorizontalStrut(int size) {
-        SimplePanel strut = new SimplePanel();
-        strut.setWidth(size + "px");
-        return strut;
-    }
-
     public static Widget createVerticalStrut(int size) {
         SimplePanel strut = new SimplePanel();
         strut.setHeight(size + "px");
@@ -526,7 +520,7 @@ public class GwtClientUtils {
             if (xCorrection > 0 && yCorrection > 0) {
                 // For the same reason with a lack of space on both sides (right and bottom) we show popup on the opposite side of the cursor.
                 // Otherwise, in Firefox we won't see the popup at all.
-                popup.setPopupPosition(mouseX - popupWidth, mouseY - popupHeight);
+                popup.setPopupPosition(max(mouseX - popupWidth, 0), max(mouseY - popupHeight, 0));
             } else {
                 popup.setPopupPosition(
                         xCorrection > 0 ? max(mouseX - xCorrection, 0) : mouseX,

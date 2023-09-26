@@ -80,10 +80,9 @@ public class TreeGroupView extends GridPropertyView implements ServerIdentitySer
 
         filtersContainer = new ContainerView(idGenerator.idShift());
         if (Settings.get().isVerticalColumnsFiltersContainer()) {
-            filtersContainer.setType(ContainerType.CONTAINERV);
             filtersContainer.setLines(DefaultFormView.GROUP_CONTAINER_LINES_COUNT);
         } else {
-            filtersContainer.setType(ContainerType.CONTAINERH);
+            filtersContainer.setHorizontal(true);
         }
 //        filtersContainer.setAlignCaptions(true);
 //        filtersContainer.setLineSize(0);

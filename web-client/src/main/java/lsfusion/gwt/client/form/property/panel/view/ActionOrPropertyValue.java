@@ -15,7 +15,6 @@ import lsfusion.gwt.client.base.view.SizedWidget;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
@@ -38,6 +37,7 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
     private String background;
     private Object foreground;
     protected boolean readOnly;
+    private String placeholder;
 
     public PValue getValue() {
         return value;
@@ -73,6 +73,11 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
     @Override
     public String getBackground() {
         return background;
+    }
+
+    @Override
+    public String getPlaceholder() {
+        return placeholder;
     }
 
     @Override
@@ -276,7 +281,7 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
 
     public abstract void pasteValue(final String value);
 
-    public void update(PValue value, boolean loading, AppBaseImage image, String valueElementClass, String background, String foreground, boolean readOnly) {
+    public void update(PValue value, boolean loading, AppBaseImage image, String valueElementClass, String background, String foreground, boolean readOnly, String placeholder) {
         this.value = value;
         this.loading = loading;
         this.image = image;
@@ -284,6 +289,7 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
         this.background = background;
         this.foreground = foreground;
         this.readOnly = readOnly;
+        this.placeholder = placeholder;
 
         update();
     }

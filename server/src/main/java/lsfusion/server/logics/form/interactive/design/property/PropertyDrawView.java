@@ -18,6 +18,7 @@ import lsfusion.server.data.type.TypeSerializer;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
+import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.classes.data.integral.IntegralClass;
 import lsfusion.server.logics.classes.data.time.DateClass;
@@ -59,6 +60,8 @@ import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 
+import static java.lang.Math.pow;
+import static java.lang.Math.round;
 import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.interop.action.ServerResponse.CHANGE;
 import static lsfusion.interop.action.ServerResponse.EDIT_OBJECT;
@@ -244,6 +247,22 @@ public class PropertyDrawView extends BaseComponentView {
     }
     private boolean isCustomCanBeRenderedInTD(FormInstanceContext context) {
         return entity.isCustomCanBeRenderedInTD(context);
+    }
+    private boolean isCustomNeedPlaceholder(FormInstanceContext context) {
+        return entity.isCustomNeedPlaceholder(context);
+    }
+
+    private LocalizedString getPlaceholder(FormInstanceContext context) {
+        if(placeholder != null)
+            return placeholder;
+
+        if (isProperty(context)) {
+            String tag = getTag(context);
+            if (tag != null && tag.equals("a") && getType(context) instanceof StringClass)
+                return LocalizedString.create("{form.renderer.not.defined}");
+        }
+
+        return null;
     }
 
     public static final boolean defaultSync = true;
@@ -461,7 +480,7 @@ public class PropertyDrawView extends BaseComponentView {
         outStream.writeBoolean(panelCommentFirst);
         pool.writeObject(outStream, panelCommentAlignment);
 
-        pool.writeString(outStream, ThreadLocalContext.localize(placeholder));
+        pool.writeString(outStream, ThreadLocalContext.localize(getPlaceholder(pool.context)));
 
         pool.writeObject(outStream, getChangeOnSingleClick(pool.context));
         outStream.writeBoolean(hide);
@@ -572,6 +591,7 @@ public class PropertyDrawView extends BaseComponentView {
         
         pool.writeString(outStream, getCustomRenderFunction(pool.context));
         pool.writeBoolean(outStream, isCustomCanBeRenderedInTD(pool.context));
+        pool.writeBoolean(outStream, isCustomNeedPlaceholder(pool.context));
 
         pool.writeString(outStream, entity.eventID);
 
@@ -702,8 +722,8 @@ public class PropertyDrawView extends BaseComponentView {
     public int getCharWidth(FormInstanceContext context) {
         PropertyDrawEntity.Select select = entity.getSelectProperty(context);
         if(select != null) {
-            if(select.elementType.equals("Input"))
-                return (charWidth != 0 ? charWidth : select.length / select.count) * 4;
+            if(select.elementType.equals("Input") || (select.elementType.equals("Dropdown") && select.type.equals("Multi")))
+                return getScaledCharWidth((charWidth != 0 ? charWidth : select.length / select.count) * 4);
 
             if (!entity.isList(context) && isAutoSize(context))
                 return 0;
@@ -714,6 +734,12 @@ public class PropertyDrawView extends BaseComponentView {
 
         return charWidth;
     }
+
+    // the same is on the client
+    private static int getScaledCharWidth(int lengthValue) {
+        return lengthValue <= 12 ? Math.max(lengthValue, 1) : (int) round(12 + pow(lengthValue - 12, 0.7));
+    }
+
 
     public void setCharWidth(int minimumCharWidth) {
         this.charWidth = minimumCharWidth;
@@ -857,7 +883,7 @@ public class PropertyDrawView extends BaseComponentView {
 
     public String getTag(FormInstanceContext context) {
         if(tag != null)
-            return tag;
+            return tag.isEmpty() ? null : tag;
 
         if(isCustom(context)) {
             PropertyDrawEntity.Select select = entity.getSelectProperty(context);
@@ -870,9 +896,7 @@ public class PropertyDrawView extends BaseComponentView {
         if (isProperty(context)) {
             Type type = getType(context);
             if((type != null && changeType != null && type.getCompatible(changeType) != null &&
-                    type.useInputTag(!entity.isList(context), context.useBootstrap,
-                            entity.getPropertyExtra(BACKGROUND) != null || design.background != null))
-                    || placeholder != null)
+                    type.useInputTag(!entity.isList(context), context.useBootstrap, hasBackground())))
                 return "input";
 
             if(isLink(context) && !hasFlow(context, ChangeFlowType.INPUT))
@@ -883,6 +907,10 @@ public class PropertyDrawView extends BaseComponentView {
         }
 
         return null;
+    }
+
+    private boolean hasBackground() {
+        return design.background != null || entity.getPropertyExtra(BACKGROUND) != null;
     }
 
     private boolean isLink(FormInstanceContext context) {
@@ -927,7 +955,7 @@ public class PropertyDrawView extends BaseComponentView {
                 if(!context.useBootstrap)
                     return "form-control";
 
-                if (hasFlow(context, ChangeFlowType.INPUT))
+                if (hasFlow(context, ChangeFlowType.INPUT) || hasBackground())
                     return "form-control";
 
                 if (hasChangeAction(context))

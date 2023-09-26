@@ -783,12 +783,14 @@ getClientSettings(User user) ABSTRACT CASE;
 getClientSettings(User user) + WHEN TRUE AND user IS User THEN {
     LOCAL webClientLoadedResources = RAWFILE(STRING);
     LOCAL webClientLoadedResourcesOrder = INTEGER(STRING);
-    LOCAL onWebLoad = INTEGER(STRING);
-    onWebLoad (STRING s) <- onWebClientLoad(s);
-    FOR onWebLoad(STRING s) ORDER onWebLoad(s) DO {
-        readResource(s);
-        webClientLoadedResources(resourcePath()) <- RAWFILE (resource());
-        webClientLoadedResourcesOrder(resourcePath()) <- onWebLoad(s);
+    IF isWeb() THEN {
+        LOCAL onWebLoad = INTEGER(STRING);
+        onWebLoad (STRING s) <- onWebClientLoad(s);
+        FOR onWebLoad(STRING s) ORDER onWebLoad(s) DO {
+            readResource(s);
+            webClientLoadedResources(resourcePath()) <- RAWFILE (resource());
+            webClientLoadedResourcesOrder(resourcePath()) <- onWebLoad(s);
+        }
     }
     
     LOCAL colorThemeStaticName = STRING();

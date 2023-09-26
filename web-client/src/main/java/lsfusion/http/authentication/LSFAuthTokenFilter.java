@@ -1,7 +1,6 @@
 package lsfusion.http.authentication;
 
 import lsfusion.interop.connection.AuthenticationToken;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,10 +17,10 @@ public class LSFAuthTokenFilter extends OncePerRequestFilter {
 
     // maybe later it will make sense to extend AbstractAuthenticationProcessingFilter as sometimes is recommended(with overriding continueChainBeforeSuccessfulAuthentication and empty AuthenticationSuccessHandler to suppress redirect)
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
+    private final AuthenticationManager authenticationManager;
 
-    public LSFAuthTokenFilter() {
+    public LSFAuthTokenFilter(AuthenticationManager authenticationManager) {
+        this.authenticationManager = authenticationManager;
     }
 
     @Override

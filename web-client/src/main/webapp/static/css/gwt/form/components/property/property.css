@@ -17,6 +17,16 @@
     min-height: 100%;
 }
 
+.prop-size-value.fill-parent-flex {
+    /* we want to stretch div in the cell even if the explicit width is set (height is stretched by the flex:1 1 auto even if it is explicitly set) */
+    /* maybe later should be moved directly to the fill-parent-flex */
+    min-width: -webkit-fill-available;
+    min-width: -moz-available;
+    max-width: -webkit-fill-available;
+    max-width: -moz-available;
+}
+
+
 .prop-value-shrink,
 .prop-value-shrink.comp-shrink-horz {
     overflow-x: clip;
@@ -50,10 +60,6 @@ a.text-based-prop-value:not(.prop-input) { /* we have to set cursor pointer for 
 /* when we have string and \n inside we still don't want it to wrap, so we have to set nowrap for that (we loose pre, but there is no pre-nowrap for now)*/
 .text-based-prop-value.text-based-value-multi-line:not(.text-based-prop-wrap) {
     white-space: nowrap;
-}
-
-.text-based-value-empty {
-    color: var(--null-value-string-color);
 }
 
 .prop-display-flex, .prop-display-flex.btn {

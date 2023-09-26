@@ -38,6 +38,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 // session scoped - one for one browser (! not tab)
 public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean {
 
+    public NavigatorProviderImpl() {}
+
     public String servSID = GwtSharedUtils.randomString(25);
     
     public static SessionInfo getSessionInfo(Authentication auth, HttpServletRequest request) {

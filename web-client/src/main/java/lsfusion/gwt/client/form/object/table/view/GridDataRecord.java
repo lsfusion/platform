@@ -77,6 +77,14 @@ public class GridDataRecord implements RowIndexHolder {
         return background != null ? background : rowBackground;
     }
 
+    public void setPlaceholder(String column, String placeholder) {
+        setAttribute(column + "_placeholder", placeholder);
+    }
+
+    public String getPlaceholder(String column) {
+        return (String) getAttribute(column + "_placeholder");
+    }
+
     public void setForeground(String column, String color) {
         setAttribute(column + "_foreground", color);
     }

@@ -10,6 +10,7 @@ import java.io.IOException;
 import static lsfusion.http.controller.MainController.getURLPreservingParameters;
 
 public class LSFAuthenticationFailureHandler extends SimpleUrlAuthenticationFailureHandler {
+    public LSFAuthenticationFailureHandler() {}
 
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException {

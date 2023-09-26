@@ -39,7 +39,6 @@ public abstract class PanelRenderer {
         setCaptionElementClass(property.captionElementClass);
         setComment(property.comment);
         setCommentElementClass(property.commentElementClass);
-        setPlaceholder(property.placeholder);
 
         Element label = getTooltipWidget().getElement();
         TooltipManager.initTooltip(label, new TooltipManager.TooltipHelper() {
@@ -72,8 +71,8 @@ public abstract class PanelRenderer {
         return getSizedWidget().widget;
     }
 
-    public void update(PValue value, boolean loading, AppBaseImage image, String valueElementClass, String background, String foreground, boolean readOnly) {
-        this.value.update(value, loading, image, valueElementClass, background, foreground, readOnly);
+    public void update(PValue value, boolean loading, AppBaseImage image, String valueElementClass, String background, String foreground, boolean readOnly, String placeholder) {
+        this.value.update(value, loading, image, valueElementClass, background, foreground, readOnly, placeholder);
     }
 
     private String caption;
@@ -104,13 +103,6 @@ public abstract class PanelRenderer {
             setCommentClasses(classes);
         }
     }
-    private String placeholder;
-    public void setPlaceholder(String placeholder) {
-        if (!GwtSharedUtils.nullEquals(this.placeholder, placeholder)) {
-            this.placeholder = placeholder;
-            setPlaceholderText(placeholder);
-        }
-    }
 
     protected Widget getTooltipWidget() {
         return getComponent();
@@ -120,7 +112,6 @@ public abstract class PanelRenderer {
     protected abstract void setLabelClasses(String classes);
     protected abstract void setCommentText(String text);
     protected abstract void setCommentClasses(String classes);
-    protected abstract void setPlaceholderText(String text);
 
     public void onBinding(Event event) {
         value.onBinding(event);

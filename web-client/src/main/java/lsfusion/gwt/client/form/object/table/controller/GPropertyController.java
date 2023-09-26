@@ -33,7 +33,7 @@ public abstract class GPropertyController {
     public abstract void updateReadOnlyValues(GReadOnlyReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
     public abstract void updatePropertyComments(GCommentReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
     public abstract void updateCellCommentElementClasses(GCommentElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
-    public abstract void updatePropertyPlaceholders(GPlaceholderReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
+    public abstract void updatePlaceholderValues(GPlaceholderReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
     public abstract void updateLastValues(GLastReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
 
     public abstract boolean isPropertyShown(GPropertyDraw property);

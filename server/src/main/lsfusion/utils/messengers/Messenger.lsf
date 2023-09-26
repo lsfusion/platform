@@ -99,7 +99,7 @@ DESIGN messengers {
     }
     NEW chat {
         fill = 3;
-        type = SPLITH;
+        horizontal = TRUE;
         MOVE BOX(c);
         MOVE BOX(m);
     }
