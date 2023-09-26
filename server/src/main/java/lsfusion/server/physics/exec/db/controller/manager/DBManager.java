@@ -54,6 +54,7 @@ import lsfusion.server.data.table.*;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
+import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.language.MigrationScriptLexer;
@@ -84,7 +85,6 @@ import lsfusion.server.logics.form.interactive.action.input.InputValueList;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.property.AsyncMode;
 import lsfusion.server.logics.form.interactive.property.PropertyAsync;
-import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.navigator.controller.env.*;
 import lsfusion.server.logics.property.AggregateProperty;
 import lsfusion.server.logics.property.CurrentEnvironmentProperty;
@@ -1875,11 +1875,14 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private void setLogicsParams(DataSession session) throws SQLException, SQLHandledException {
         String logicsCaption = businessLogics.logicsCaption;
         String topModule = businessLogics.topModule;
-        boolean useBootstrap = businessLogics.useBootstrap;
+        String theme = businessLogics.theme;
+        String size = businessLogics.size;
+        String navbar = businessLogics.navbar;
         LM.logicsCaption.change(isRedundantString(logicsCaption) ? null : logicsCaption, session);
         LM.topModule.change(isRedundantString(topModule) ? null : topModule, session);
-        systemEventsLM.serverUseBootstrap.change(useBootstrap ? true : null, session);
-        systemEventsLM.serverVerticalNavbar.change(businessLogics.verticalNavbar ? true : null, session);
+        systemEventsLM.serverTheme.change(isRedundantString(theme) ? NullValue.instance : systemEventsLM.theme.getDataObject(theme), session);
+        systemEventsLM.serverSize.change(isRedundantString(size) ? NullValue.instance : systemEventsLM.size.getDataObject(size), session);
+        systemEventsLM.serverNavbar.change(isRedundantString(navbar) ? NullValue.instance : systemEventsLM.navbar.getDataObject(navbar), session);
         systemEventsLM.serverNavigatorPinMode.change(businessLogics.navigatorPinMode, true, session);
         apply(session);
     }

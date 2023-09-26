@@ -673,11 +673,11 @@ resetWindowsLayout '{service.reset.windows.layout}' INTERNAL 'lsfusion.server.lo
 
 EXTEND FORM settings
     PROPERTIES() storeNavigatorSettingsForComputer
-    PROPERTIES() READONLY serverUseBootstrap, serverVerticalNavbar, serverNavigatorPinMode 
+    PROPERTIES() READONLY captionServerTheme, captionServerSize, captionServerNavbar, serverNavigatorPinMode 
 
     OBJECTS de = DesignEnv
     PROPERTIES(de) name READONLY,
-        designEnvUseBootstrap, designEnvVerticalNavbar, useClientNavigatorPinMode, 
+        captionTheme, captionSize, captionNavbar, useClientNavigatorPinMode, 
         navigatorPinMode READONLYIF NOT useClientNavigatorPinMode(de), colorThemeName
     FILTERS IF storeNavigatorSettingsForComputer() THEN de IS Computer ELSE de IS CustomUser
 
@@ -698,8 +698,8 @@ DESIGN settings {
             NEW navigator {
                 caption = '{service.form.settings.caption.navigator}';
                 MOVE PROPERTY(storeNavigatorSettingsForComputer());
-                MOVE PROPERTY (serverUseBootstrap());
-                MOVE PROPERTY (serverVerticalNavbar());
+                MOVE PROPERTY (captionServerTheme());
+                MOVE PROPERTY (captionServerNavbar());
                 MOVE PROPERTY (serverNavigatorPinMode());
                 MOVE BOX(de) {
                     caption = IF storeNavigatorSettingsForComputer() THEN '{authentication.computers}' ELSE '{authentication.users}';
