@@ -2,6 +2,7 @@ package lsfusion.http.controller;
 
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.http.authentication.LSFAuthenticationToken;
+import lsfusion.http.provider.logics.LogicsProvider;
 import lsfusion.http.provider.navigator.NavigatorProviderImpl;
 import lsfusion.http.provider.session.SessionProvider;
 import lsfusion.http.provider.session.SessionSessionObject;
@@ -14,7 +15,6 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.entity.ContentType;
 import org.apache.http.message.BasicNameValuePair;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -34,9 +34,13 @@ import static java.util.Collections.list;
 import static lsfusion.base.ServerMessages.getString;
 
 public class ExternalLogicsAndSessionRequestHandler extends ExternalRequestHandler {
-    
-    @Autowired
-    SessionProvider sessionProvider;
+
+    public ExternalLogicsAndSessionRequestHandler(LogicsProvider logicsProvider, SessionProvider sessionProvider) {
+        super(logicsProvider);
+        this.sessionProvider = sessionProvider;
+    }
+
+    private final SessionProvider sessionProvider;
 
     @Override
     protected void handleRequest(LogicsSessionObject sessionObject, HttpServletRequest request, HttpServletResponse response) throws Exception {

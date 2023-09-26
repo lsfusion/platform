@@ -18,6 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 // session scoped - one for one browser (! not tab)
 public class SessionProviderImpl implements SessionProvider, DisposableBean {
+    public SessionProviderImpl() {}
 
     @Override
     public SessionSessionObject createSession(RemoteLogicsInterface remoteLogics, HttpServletRequest request, String sessionID) throws RemoteException {

@@ -13,6 +13,7 @@ import java.io.IOException;
 import static org.springframework.security.web.WebAttributes.AUTHENTICATION_EXCEPTION;
 
 public class LSFSimpleUrlLogoutSuccessHandler extends SimpleUrlLogoutSuccessHandler {
+    public LSFSimpleUrlLogoutSuccessHandler() {}
 
     @Override
     protected void handle(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {

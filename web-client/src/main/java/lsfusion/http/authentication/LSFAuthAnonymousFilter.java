@@ -4,7 +4,6 @@ import lsfusion.base.ServerUtils;
 import lsfusion.http.provider.logics.LogicsProvider;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.logics.ServerSettings;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
@@ -19,13 +18,13 @@ import java.io.IOException;
 
 public class LSFAuthAnonymousFilter extends OncePerRequestFilter {
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
+    private final AuthenticationManager authenticationManager;
 
-    @Autowired
-    private LogicsProvider logicsProvider;
+    private final LogicsProvider logicsProvider;
 
-    public LSFAuthAnonymousFilter() {
+    public LSFAuthAnonymousFilter(AuthenticationManager authenticationManager, LogicsProvider logicsProvider) {
+        this.authenticationManager = authenticationManager;
+        this.logicsProvider = logicsProvider;
     }
 
     @Override

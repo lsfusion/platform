@@ -3,6 +3,7 @@ package lsfusion.http.controller;
 import com.google.common.base.Throwables;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.Pair;
+import lsfusion.http.provider.logics.LogicsProvider;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.base.exception.RemoteInternalException;
 import lsfusion.interop.base.exception.RemoteMessageException;
@@ -14,7 +15,6 @@ import org.apache.http.HttpEntity;
 import org.apache.http.entity.StringEntity;
 import org.springframework.web.HttpRequestHandler;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -25,6 +25,10 @@ import java.rmi.RemoteException;
 import static lsfusion.base.BaseUtils.nvl;
 
 public abstract class ExternalRequestHandler extends LogicsRequestHandler implements HttpRequestHandler {
+
+    public ExternalRequestHandler(LogicsProvider logicsProvider) {
+        super(logicsProvider);
+    }
 
     protected abstract void handleRequest(LogicsSessionObject sessionObject, HttpServletRequest request, HttpServletResponse response) throws Exception;
 

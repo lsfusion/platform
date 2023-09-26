@@ -13,7 +13,6 @@ import lsfusion.interop.logics.ServerSettings;
 import lsfusion.interop.logics.remote.RemoteLogicsLoaderInterface;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -36,11 +35,11 @@ public class LogicsProviderImpl extends AbstractLogicsProviderImpl implements In
     private int port; // default port
     private String exportName; // default export name
 
-    public LogicsProviderImpl() {
+    public LogicsProviderImpl(ServletContext servletContext) {
+        this.servletContext = servletContext;
     }
 
-    @Autowired
-    private ServletContext servletContext;
+    private final ServletContext servletContext;
 
     @Override
     public void afterPropertiesSet() throws Exception {

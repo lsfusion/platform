@@ -29,7 +29,6 @@ import net.customware.gwt.dispatch.shared.general.StringResult;
 import org.apache.http.entity.ContentType;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -56,14 +55,17 @@ import static org.springframework.security.web.WebAttributes.AUTHENTICATION_EXCE
 @Controller
 public class MainController {
 
-    @Autowired
-    private LogicsProvider logicsProvider;
+    private final LogicsProvider logicsProvider;
+    private final LSFRemoteAuthenticationProvider authenticationProvider;
+    private final LSFClientRegistrationRepository clientRegistrationRepository;
+    private final NavigatorProvider navigatorProvider;
 
-    @Autowired
-    private LSFRemoteAuthenticationProvider authenticationProvider;
-
-    @Autowired
-    private LSFClientRegistrationRepository clientRegistrationRepository;
+    public MainController(LogicsProvider logicsProvider, LSFRemoteAuthenticationProvider authenticationProvider, LSFClientRegistrationRepository clientRegistrationRepository, NavigatorProvider navigatorProvider) {
+        this.logicsProvider = logicsProvider;
+        this.authenticationProvider = authenticationProvider;
+        this.clientRegistrationRepository = clientRegistrationRepository;
+        this.navigatorProvider = navigatorProvider;
+    }
 
     private final Map<String, String> oauth2AuthenticationUrls = new HashMap<>();
     private static final String authorizationRequestBaseUri = "/oauth2/authorization/";
@@ -235,9 +237,6 @@ public class MainController {
         }
         return serverSettings;
     }
-
-    @Autowired
-    private NavigatorProvider navigatorProvider;
 
     @RequestMapping(value = "/main", method = RequestMethod.GET)
     public String processMain(ModelMap model, HttpServletRequest request) {
