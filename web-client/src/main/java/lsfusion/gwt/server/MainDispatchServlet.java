@@ -10,7 +10,6 @@ import lsfusion.gwt.client.base.exception.RemoteRetryException;
 import lsfusion.gwt.client.controller.remote.action.BaseAction;
 import lsfusion.gwt.server.form.handlers.*;
 import lsfusion.gwt.server.logics.handlers.GenerateIDHandler;
-import lsfusion.gwt.server.logics.handlers.ClearServerSettingsCacheHandler;
 import lsfusion.gwt.server.navigator.handlers.*;
 import lsfusion.http.provider.SessionInvalidatedException;
 import lsfusion.http.provider.form.FormProvider;
@@ -63,7 +62,6 @@ public class MainDispatchServlet extends net.customware.gwt.dispatch.server.stan
     protected void addHandlers(InstanceActionHandlerRegistry registry) {
         // logics
         registry.addHandler(new GenerateIDHandler(this));
-        registry.addHandler(new ClearServerSettingsCacheHandler(this));
 
         // navigator
         registry.addHandler(new CloseNavigatorHandler(this));
