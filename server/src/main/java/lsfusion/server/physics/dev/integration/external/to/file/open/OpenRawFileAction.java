@@ -18,6 +18,7 @@ import java.util.Iterator;
 public class OpenRawFileAction extends InternalAction {
     private final ClassPropertyInterface sourceInterface;
     private final ClassPropertyInterface nameInterface;
+    private final ClassPropertyInterface noWaitInterface;
 
     public OpenRawFileAction(BaseLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
@@ -25,6 +26,7 @@ public class OpenRawFileAction extends InternalAction {
         Iterator<ClassPropertyInterface> i = getOrderInterfaces().iterator();
         sourceInterface = i.next();
         nameInterface = i.next();
+        noWaitInterface = i.next();
     }
 
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
@@ -32,10 +34,16 @@ public class OpenRawFileAction extends InternalAction {
             ObjectValue sourceObject = context.getKeyValue(sourceInterface);
             RawFileData source = (RawFileData) sourceObject.getValue();
             String name = (String) context.getKeyValue(nameInterface).getValue();
+            boolean noWait = context.getKeyValue(noWaitInterface).getValue() != null;
 
             if (sourceObject instanceof DataObject && source != null) {
                 String extension = BaseUtils.firstWord(((StaticFormatFileClass) ((DataObject) sourceObject).objectClass).getOpenExtension(source), ",");
-                context.delayUserInteraction(new OpenFileClientAction(source, name, extension));
+                OpenFileClientAction action = new OpenFileClientAction(source, name, extension);
+                if (noWait) {
+                    context.delayUserInteraction(action);
+                } else {
+                    context.requestUserInteraction(action);
+                }
             }
 
 

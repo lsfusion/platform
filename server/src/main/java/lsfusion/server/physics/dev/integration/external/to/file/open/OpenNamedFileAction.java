@@ -13,20 +13,36 @@ import java.util.Iterator;
 
 public class OpenNamedFileAction extends InternalAction {
     private final ClassPropertyInterface sourceInterface;
+    private final ClassPropertyInterface noWaitInterface;
 
     public OpenNamedFileAction(BaseLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = getOrderInterfaces().iterator();
         sourceInterface = i.next();
+        noWaitInterface = i.next();
     }
 
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
         try {
             NamedFileData source = (NamedFileData) context.getDataKeyValue(sourceInterface).getValue();
-            context.delayUserInteraction(new OpenFileClientAction(source.getRawFile(), source.getName(), source.getExtension()));
+            boolean noWait = context.getKeyValue(noWaitInterface).getValue() != null;
+
+            if(source != null) {
+                OpenFileClientAction action = new OpenFileClientAction(source.getRawFile(), source.getName(), source.getExtension());
+                if (noWait) {
+                    context.delayUserInteraction(action);
+                } else {
+                    context.requestUserInteraction(action);
+                }
+            }
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    @Override
+    protected boolean allowNulls() {
+        return true;
     }
 }

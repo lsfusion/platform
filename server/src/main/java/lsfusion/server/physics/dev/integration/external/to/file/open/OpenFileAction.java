@@ -14,6 +14,7 @@ import java.util.Iterator;
 public class OpenFileAction extends InternalAction {
     private final ClassPropertyInterface sourceInterface;
     private final ClassPropertyInterface nameInterface;
+    private final ClassPropertyInterface noWaitInterface;
 
     public OpenFileAction(BaseLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
@@ -21,15 +22,22 @@ public class OpenFileAction extends InternalAction {
         Iterator<ClassPropertyInterface> i = getOrderInterfaces().iterator();
         sourceInterface = i.next();
         nameInterface = i.next();
+        noWaitInterface = i.next();
     }
 
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
         try {
             FileData source = (FileData) context.getKeyValue(sourceInterface).getValue();
             String name = (String) context.getKeyValue(nameInterface).getValue();
+            boolean noWait = context.getKeyValue(noWaitInterface).getValue() != null;
 
             if (source != null) {
-                context.delayUserInteraction(new OpenFileClientAction(source.getRawFile(), name, source.getExtension()));
+                OpenFileClientAction action = new OpenFileClientAction(source.getRawFile(), name, source.getExtension());
+                if (noWait) {
+                    context.delayUserInteraction(action);
+                } else {
+                    context.requestUserInteraction(action);
+                }
             }
 
         } catch (Exception e) {
