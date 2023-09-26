@@ -155,11 +155,11 @@ NAVIGATOR {
 
 onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = nameTheme() + '/bootstrap.min.css' THEN 1;
 onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap.min.js' THEN 1;
-onWebClientLoad(STRING s) += WHEN useBootstrap() AND isMini() AND s = 'mini-padding.css' THEN 1;
-onWebClientLoad(STRING s) += WHEN useBootstrap() AND isMini() AND s = 'mini-font.css' THEN 1;
 onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap-background-inherit.css' THEN 2;
 onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap-adapter.css' THEN 3;
 onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap-dark.css' THEN 4;
+onWebClientLoad(STRING s) += WHEN useBootstrap() AND isMini() AND s = 'mini-padding.css' THEN 5;
+onWebClientLoad(STRING s) += WHEN useBootstrap() AND isMini() AND s = 'mini-font.css' THEN 6;
 
 onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'table.css' THEN 1;
 onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'table-border.css' THEN 2;
