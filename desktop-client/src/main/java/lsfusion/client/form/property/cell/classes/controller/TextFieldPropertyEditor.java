@@ -3,7 +3,6 @@ package lsfusion.client.form.property.cell.classes.controller;
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.GlazedLists;
 import ca.odell.glazedlists.swing.DefaultEventComboBoxModel;
-import lsfusion.base.Pair;
 import lsfusion.base.lambda.AsyncCallback;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.view.ClientColorUtils;
@@ -25,6 +24,7 @@ import lsfusion.interop.form.event.KeyStrokes;
 import lsfusion.interop.form.property.Compare;
 import org.jdesktop.swingx.autocomplete.AutoCompleteComboBoxEditor;
 import org.jdesktop.swingx.autocomplete.ObjectToStringConverter;
+import sun.awt.SunToolkit;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -32,9 +32,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.plaf.basic.BasicComboBoxEditor;
 import javax.swing.plaf.basic.BasicComboPopup;
 import javax.swing.plaf.basic.ComboPopup;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.PlainDocument;
+import javax.swing.text.*;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
@@ -108,6 +106,34 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                 }
             });
         }
+
+        getKeymap().setDefaultAction(new DefaultEditorKit.DefaultKeyTypedAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //copy of default method, but allowed 0x1D (GS - group separator character)
+                JTextComponent target = getTextComponent(e);
+                if ((target != null) && (e != null)) {
+                    if ((! target.isEditable()) || (! target.isEnabled())) {
+                        return;
+                    }
+                    String content = e.getActionCommand();
+                    int mod = e.getModifiers();
+                    if ((content != null) && (!content.isEmpty())) {
+                        boolean isPrintableMask = true;
+                        Toolkit tk = Toolkit.getDefaultToolkit();
+                        if (tk instanceof SunToolkit) {
+                            isPrintableMask = ((SunToolkit)tk).isPrintableCharacterModifiersMask(mod);
+                        }
+
+                        char c = content.charAt(0);
+                        if ((isPrintableMask && (c == 0x1D || (c >= 0x20) && (c != 0x7F))) ||
+                                (!isPrintableMask && (c >= 0x200C) && (c <= 0x200D))) {
+                            target.replaceSelection(content);
+                        }
+                    }
+                }
+            }
+        });
 
         setComponentPopupMenu(new EditorContextMenu(this));
     }
