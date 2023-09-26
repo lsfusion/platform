@@ -94,12 +94,15 @@
     </servlet-mapping>
 
     <!--spring MVC-->
-    <!-- xml with mvc settings is <serlvet-name>-servlet.xml, LSFWeb-servlet.xml in our case -->
     <servlet>
         <servlet-name>LSFWeb</servlet-name>
         <servlet-class>
             org.springframework.web.servlet.DispatcherServlet
         </servlet-class>
+        <init-param>
+            <param-name>contextConfigLocation</param-name>
+            <param-value>/WEB-INF/lsf-mvc-config.xml</param-value>
+        </init-param>
         <load-on-startup>1</load-on-startup>
     </servlet>
     <servlet-mapping>
@@ -126,8 +129,8 @@
     <context-param>
         <param-name>contextConfigLocation</param-name>
         <param-value>
-            /WEB-INF/applicationContext-security.xml
-            /WEB-INF/LSFWeb-servlet.xml
+            /WEB-INF/application-context.xml
+            /WEB-INF/security-config.xml
         </param-value>
     </context-param>
     <listener>

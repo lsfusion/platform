@@ -5,19 +5,15 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.MIMETypeUtils;
 import lsfusion.gwt.server.FileUtils;
 import org.apache.commons.httpclient.util.URIUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.HttpRequestHandler;
 
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 
 public class DownloadFileRequestHandler implements HttpRequestHandler {
-    @Autowired
-    private ServletContext context;
+
+    public DownloadFileRequestHandler() {}
 
     @Override
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {

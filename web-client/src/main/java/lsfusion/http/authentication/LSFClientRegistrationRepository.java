@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.file.FileData;
 import lsfusion.http.controller.LogicsRequestHandler;
 import lsfusion.http.controller.MainController;
+import lsfusion.http.provider.logics.LogicsProvider;
 import lsfusion.http.provider.navigator.NavigatorProviderImpl;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.connection.AuthenticationToken;
@@ -11,7 +12,6 @@ import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.session.ExternalResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -30,10 +30,11 @@ import java.util.concurrent.ConcurrentHashMap;
 public class LSFClientRegistrationRepository extends LogicsRequestHandler implements ClientRegistrationRepository, Iterable<ClientRegistration> {
     private Map<String, ClientRegistration> registrations;
 
-    @Autowired
-    private ServletContext servletContext;
+    private final ServletContext servletContext;
 
-    public LSFClientRegistrationRepository() {
+    public LSFClientRegistrationRepository(LogicsProvider logicsProvider, ServletContext servletContext) {
+        super(logicsProvider);
+        this.servletContext = servletContext;
     }
 
     @Override

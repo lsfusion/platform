@@ -4,10 +4,8 @@ import lsfusion.gwt.server.FileUtils;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.HttpRequestHandler;
 
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -15,8 +13,8 @@ import java.io.IOException;
 import java.util.List;
 
 public class UploadFileRequestHandler implements HttpRequestHandler {
-    @Autowired
-    private ServletContext context;
+
+    public UploadFileRequestHandler() {}
 
     @Override
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

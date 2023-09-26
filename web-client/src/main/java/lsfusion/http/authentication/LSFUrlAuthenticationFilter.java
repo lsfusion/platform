@@ -1,7 +1,6 @@
 package lsfusion.http.authentication;
 
 import lsfusion.http.controller.MainController;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -14,9 +13,11 @@ import java.io.IOException;
 import java.util.Arrays;
 
 public class LSFUrlAuthenticationFilter extends OncePerRequestFilter {
+    private final LSFRemoteAuthenticationProvider authenticationProvider;
 
-    @Autowired
-    private LSFRemoteAuthenticationProvider authenticationProvider;
+    public LSFUrlAuthenticationFilter(LSFRemoteAuthenticationProvider authenticationProvider) {
+        this.authenticationProvider = authenticationProvider;
+    }
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,

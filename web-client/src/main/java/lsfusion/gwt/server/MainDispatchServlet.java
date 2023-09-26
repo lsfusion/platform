@@ -10,6 +10,7 @@ import lsfusion.gwt.client.base.exception.RemoteRetryException;
 import lsfusion.gwt.client.controller.remote.action.BaseAction;
 import lsfusion.gwt.server.form.handlers.*;
 import lsfusion.gwt.server.logics.handlers.GenerateIDHandler;
+import lsfusion.gwt.server.logics.handlers.ClearServerSettingsCacheHandler;
 import lsfusion.gwt.server.navigator.handlers.*;
 import lsfusion.http.provider.SessionInvalidatedException;
 import lsfusion.http.provider.form.FormProvider;
@@ -26,7 +27,6 @@ import net.customware.gwt.dispatch.shared.Action;
 import net.customware.gwt.dispatch.shared.DispatchException;
 import net.customware.gwt.dispatch.shared.Result;
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -41,17 +41,18 @@ import java.text.ParseException;
 public class MainDispatchServlet extends net.customware.gwt.dispatch.server.standard.AbstractStandardDispatchServlet implements org.springframework.web.HttpRequestHandler, org.springframework.beans.factory.InitializingBean, org.springframework.beans.factory.BeanNameAware {
     public final static Logger logger = Logger.getLogger(MainDispatchServlet.class);
 
+    public MainDispatchServlet(LogicsProvider logicsProvider, NavigatorProvider navigatorProvider, FormProvider formProvider, ServletContext servletContext) {
+        this.logicsProvider = logicsProvider;
+        this.navigatorProvider = navigatorProvider;
+        this.formProvider = formProvider;
+        this.servletContext = servletContext;
+    }
+
     protected Dispatch dispatch;
-
-    @Autowired
-    private LogicsProvider logicsProvider;
-    @Autowired
-    private NavigatorProvider navigatorProvider;
-    @Autowired
-    private FormProvider formProvider;
-
-    @Autowired
-    private ServletContext servletContext;
+    private final LogicsProvider logicsProvider;
+    private final NavigatorProvider navigatorProvider;
+    private final FormProvider formProvider;
+    private final ServletContext servletContext;
 
     private boolean useGETForGwtRPC;
     private String rpcPolicyLocation;
@@ -62,6 +63,7 @@ public class MainDispatchServlet extends net.customware.gwt.dispatch.server.stan
     protected void addHandlers(InstanceActionHandlerRegistry registry) {
         // logics
         registry.addHandler(new GenerateIDHandler(this));
+        registry.addHandler(new ClearServerSettingsCacheHandler(this));
 
         // navigator
         registry.addHandler(new CloseNavigatorHandler(this));
@@ -130,10 +132,6 @@ public class MainDispatchServlet extends net.customware.gwt.dispatch.server.stan
 
     public void setRpcPolicyLocation(String rpcPolicyLocation) {
         this.rpcPolicyLocation = rpcPolicyLocation;
-    }
-
-    public void setLogicsProvider(LogicsProvider logicsProvider) {
-        this.logicsProvider = logicsProvider;
     }
 
     @Override
