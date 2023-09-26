@@ -1,9 +1,29 @@
+.quill-input-editor .ql-editor {
+    padding: 4px;
+    white-space: nowrap;
+}
+
+.quill-input-editor {
+    width: 100%;
+    background: var(--component-background-color);
+}
+
+/*
+    quill editor bubble theme does not support opening links from edit mode.
+    on click or on hover a link, only a tooltip is shown, which is not needed
+    https://github.com/quilljs/quill/issues/857
+*/
+.ql-container.ql-bubble:not(.ql-disabled) a:hover::before, .ql-container.ql-bubble:not(.ql-disabled) a:hover::after {
+    visibility: hidden;
+}
+
 .ql-editor {
     width: 100%;
     padding: 1px 0;
     color: var(--text-color);
-    font-family: 'Segoe UI', 'Open Sans', Arial Unicode MS, Arial, sans-serif;
-    font-size: 9pt;
+
+    font-family: var(--bs-body-font-family, var(--excel-font-family));
+    font-size: var(--bs-body-font-size, var(--excel-font-size));
 }
 
 .ql-tooltip {

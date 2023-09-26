@@ -69,6 +69,8 @@
 
 .fill-parent-flex-cont {
     display: flex;
+    /* we need column because of intrinistic width in prop-size-value.fill-parent-flex*/
+    flex-direction: column;
 }
 
 .fill-parent-flex {

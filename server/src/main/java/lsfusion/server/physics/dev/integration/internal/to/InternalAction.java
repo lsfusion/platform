@@ -1,5 +1,7 @@
 package lsfusion.server.physics.dev.integration.internal.to;
 
+import lsfusion.base.Result;
+import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.ScriptingErrorLog;
@@ -10,11 +12,14 @@ import lsfusion.server.logics.action.ExplicitAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.form.open.stat.ImportAction;
+import lsfusion.server.logics.form.stat.struct.imports.hierarchy.json.JSONReader;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.dev.debug.ActionDelegationType;
 
+import java.io.IOException;
 import java.sql.SQLException;
 
 // !!! ONLY ACTIONS CREATED WITH INTERNAL OPERATOR !!!!
@@ -83,7 +88,21 @@ public abstract class InternalAction extends ExplicitAction {
     protected ObjectValue getParamValue(int i, ExecutionContext<ClassPropertyInterface> context) {
         return context.getKeyValue(getParamInterface(i));
     }
-    
+
+    public ObjectValue readResult(ExecutionContext<ClassPropertyInterface> context, LA<?> la) throws SQLException, SQLHandledException {
+        return getBaseLM().getExportValueProperty().readFirstNotNull(context.getSession(), new Result<>(), la.action);
+    }
+
+    public Object readJSONResult(ExecutionContext<ClassPropertyInterface> context, LA<?> la) throws SQLException, SQLHandledException, IOException {
+        ObjectValue result = readResult(context, la);
+        return readJSON(result);
+    }
+
+    public static Object readJSON(ObjectValue result) throws IOException {
+        String charset = ExternalUtils.defaultXMLJSONCharset;
+        return JSONReader.readObject(ImportAction.readFile(result, charset), charset);
+    }
+
     @Override
     protected boolean isSync() {
         return true;

@@ -422,11 +422,11 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         this.connection = connection;
     }
 
-    public synchronized ClientCallBackController getClientCallBack() throws RemoteException {
+    public ClientCallBackController getClientCallBack() throws RemoteException {
         return client;
     }
 
-    public synchronized void pushNotification(EnvStackRunnable run) throws RemoteException {
+    public void pushNotification(EnvStackRunnable run) throws RemoteException {
         if(isClosed())
             return;
 

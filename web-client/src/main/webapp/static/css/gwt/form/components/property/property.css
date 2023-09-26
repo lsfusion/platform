@@ -17,6 +17,16 @@
     min-height: 100%;
 }
 
+.prop-size-value.fill-parent-flex {
+    /* we want to stretch div in the cell even if the explicit width is set (height is stretched by the flex:1 1 auto even if it is explicitly set) */
+    /* maybe later should be moved directly to the fill-parent-flex */
+    min-width: -webkit-fill-available;
+    min-width: -moz-available;
+    max-width: -webkit-fill-available;
+    max-width: -moz-available;
+}
+
+
 .prop-value-shrink,
 .prop-value-shrink.comp-shrink-horz {
     overflow-x: clip;

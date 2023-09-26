@@ -33,7 +33,7 @@ DESIGN exception {
     OBJECTS {
         NEW pane {
             fill = 1;
-            type = SPLITV;
+            horizontal = FALSE;
             MOVE PROPERTY(valueMessage) {
                 fill = 1;
                 panelCaptionVertical = TRUE;
@@ -41,7 +41,7 @@ DESIGN exception {
             }
             NEW stacks {
                 fill = 3;
-                type = SPLITH;
+                horizontal = TRUE;
                 MOVE PROPERTY(valueJavaStack) {
                     panelCaptionVertical = TRUE;
                     fill = 1;
