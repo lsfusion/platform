@@ -146,9 +146,10 @@ showDesign() {
 }
 
 designCaption = '{system.events.design}' IF NOT noSystemToolbarCaptions();
+designImage = iconIfAvailable('design.png','fa-solid fa-eye');
 
 NAVIGATOR {
-    NEW showDesign WINDOW system PARENT BEFORE administration HEADER designCaption();
+    NEW showDesign WINDOW system PARENT BEFORE administration HEADER designCaption() IMAGE designImage();
     NEW toggleNavigatorPinMode WINDOW system PARENT BEFORE showDesign HEADER navigatorPinModeCaption() IMAGE navigatorPinModeImage() CLASS navigatorPinModeClass();
     NEW toggleColorTheme WINDOW system PARENT BEFORE toggleNavigatorPinMode HEADER colorThemeCaption() IMAGE colorThemeImage();
 }
