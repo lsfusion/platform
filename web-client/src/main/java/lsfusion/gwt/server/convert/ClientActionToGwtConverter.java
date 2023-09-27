@@ -23,8 +23,6 @@ import lsfusion.gwt.client.view.GColorTheme;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.http.provider.form.FormSessionObject;
-import lsfusion.http.provider.logics.LogicsProvider;
-import lsfusion.http.provider.logics.LogicsProviderImpl;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.ContainerShowFormType;
 import lsfusion.interop.form.ModalityShowFormType;
@@ -313,10 +311,6 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = ResetServerSettingsCacheClientAction.class)
     public void convertAction(ResetServerSettingsCacheClientAction action, MainDispatchServlet servlet) {
-        LogicsProvider logicsProvider = servlet.getLogicsProvider();
-        if (logicsProvider instanceof LogicsProviderImpl) {
-            LogicsProviderImpl logicsProviderImpl = (LogicsProviderImpl) logicsProvider;
-            logicsProviderImpl.resetServerSettingsCache(logicsProviderImpl.getLogicsConnection(servlet.getRequest()));
-        }
+        servlet.getLogicsProvider().resetServerSettingsCache(servlet.getRequest());
     }
 }

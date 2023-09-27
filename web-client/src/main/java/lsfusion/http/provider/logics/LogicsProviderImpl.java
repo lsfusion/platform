@@ -86,7 +86,7 @@ public class LogicsProviderImpl extends AbstractLogicsProviderImpl implements In
         return new LogicsConnection(host != null ? host : this.host, port != null ? port : this.port, exportName != null ? exportName : this.exportName);
     }
 
-    public LogicsConnection getLogicsConnection(HttpServletRequest request) {
+    private LogicsConnection getLogicsConnection(HttpServletRequest request) {
         return getLogicsConnection(request != null ? request.getParameter("host") : null,
                                    request != null ? BaseUtils.parseInt(request.getParameter("port")) : null,
                                    request != null ? request.getParameter("exportName") : null);
@@ -107,5 +107,10 @@ public class LogicsProviderImpl extends AbstractLogicsProviderImpl implements In
     @Override
     protected RemoteLogicsLoaderInterface lookupLoader(LogicsConnection connection) throws RemoteException, NotBoundException, MalformedURLException {
         return new RemoteLogicsLoaderProxy(super.lookupLoader(connection), connection.host);
+    }
+
+    @Override
+    public void resetServerSettingsCache(HttpServletRequest request) {
+        resetServerSettingsCache(getLogicsConnection(request));
     }
 }
