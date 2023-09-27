@@ -89,8 +89,13 @@ public abstract class AbstractLogicsProviderImpl {
         try {
             return runRequest(connection, (sessionObject, retry) -> sessionObject.getServerSettings(sessionInfo, contextPath, noCache));
         } catch (Throwable t) {
-//            throw Throwables.propagate(t);
             return null;
         }
+    }
+
+    public void resetServerSettingsCache(LogicsConnection connection) {
+        LogicsSessionObject logicsSessionObject = currentLogics.get(connection);
+        if (logicsSessionObject != null)
+            logicsSessionObject.serverSettings = null;
     }
 }

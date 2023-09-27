@@ -86,7 +86,7 @@ public class LogicsProviderImpl extends AbstractLogicsProviderImpl implements In
         return new LogicsConnection(host != null ? host : this.host, port != null ? port : this.port, exportName != null ? exportName : this.exportName);
     }
 
-    private LogicsConnection getLogicsConnection(HttpServletRequest request) {
+    public LogicsConnection getLogicsConnection(HttpServletRequest request) {
         return getLogicsConnection(request != null ? request.getParameter("host") : null,
                                    request != null ? BaseUtils.parseInt(request.getParameter("port")) : null,
                                    request != null ? request.getParameter("exportName") : null);
