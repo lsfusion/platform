@@ -18,6 +18,10 @@
     font-size: 0.8rem;
 }
 
+.btn-toolbar .btn {
+    font-size: 1rem;
+}
+
 .btn {
     --bs-btn-font-size: 0.8rem;
 }
