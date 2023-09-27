@@ -108,4 +108,9 @@ public class LogicsProviderImpl extends AbstractLogicsProviderImpl implements In
     protected RemoteLogicsLoaderInterface lookupLoader(LogicsConnection connection) throws RemoteException, NotBoundException, MalformedURLException {
         return new RemoteLogicsLoaderProxy(super.lookupLoader(connection), connection.host);
     }
+
+    @Override
+    public void resetServerSettingsCache(HttpServletRequest request) {
+        resetServerSettingsCache(getLogicsConnection(request));
+    }
 }
