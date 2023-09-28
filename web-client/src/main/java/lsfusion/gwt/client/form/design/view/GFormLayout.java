@@ -309,24 +309,33 @@ public class GFormLayout extends ResizableComplexPanel {
         return hasVisible;
     }
 
-    public boolean fixSizeOnInit() {
-        return mainContainer.width == -3;
-    }
-
     public Dimension getPreferredSize(GSize maxWidth, GSize maxHeight, Element element) {
         GSize width = mainContainer.getWidth();
         GSize height = mainContainer.getHeight();
 
+        boolean fixWidthOnInit = mainContainer.width == -3;
+        boolean fixHeightOnInit = mainContainer.height == -3;
+        if(!fixWidthOnInit && !fixHeightOnInit) {
+            return new Dimension(null, null); //optimisation
+        }
         Pair<Integer, Integer> extraOffset = setPreferredSize(true, width, height, maxWidth, maxHeight);
         try {
             DataGrid.flushUpdateDOM(); // there can be some pending grid changes, and we need actual sizes
 
-            GSize offsetWidth = GwtClientUtils.getOffsetWidth(element);
-            GSize offsetHeight = GwtClientUtils.getOffsetHeight(element);
-            if(width == null)
-                offsetWidth = offsetWidth.add(extraOffset.first);
-            if(height == null)
-                offsetHeight = offsetHeight.add(extraOffset.second);
+            GSize offsetWidth = null;
+            if (!fixWidthOnInit) {
+                offsetWidth = GwtClientUtils.getOffsetWidth(element);
+                if (width == null)
+                    offsetWidth = offsetWidth.add(extraOffset.first);
+            }
+
+            GSize offsetHeight = null;
+            if (!fixHeightOnInit) {
+                offsetHeight = GwtClientUtils.getOffsetHeight(element);
+                if (height == null)
+                    offsetHeight = offsetHeight.add(extraOffset.second);
+            }
+
             return new Dimension(offsetWidth, offsetHeight);
         } finally {
             setPreferredSize(false, null, null, GSize.ZERO, GSize.ZERO);

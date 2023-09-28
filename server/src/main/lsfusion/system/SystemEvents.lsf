@@ -140,6 +140,7 @@ FORM design '{system.events.design}'
 ;
 
 DESIGN design {
+    width = -1;
     NEW main BEFORE TOOLBARBOX {
         MOVE PROPERTY(captionTheme(de));
         MOVE PROPERTY(captionSize(de));
