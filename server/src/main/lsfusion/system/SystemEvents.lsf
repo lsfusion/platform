@@ -122,7 +122,7 @@ toggleNavigatorPinMode () {
 navigatorPinModeClass = ABSTRACT STRING();
 
 needReload = DATA LOCAL BOOLEAN();
-WHEN LOCAL CHANGED (captionTheme(DesignEnv de)) OR captionSize(de) OR captionNavbar(de) DO {
+WHEN LOCAL CHANGED (captionTheme(DesignEnv de)) OR CHANGED (captionSize(de)) OR CHANGED (captionNavbar(de)) DO {
     needReload() <- TRUE;
 } 
 needReloadText = '{system.events.design.need.reload}';
@@ -141,14 +141,16 @@ FORM design '{system.events.design}'
 
 DESIGN design {
     width = -1;
-    NEW main BEFORE TOOLBARBOX {
-        MOVE PROPERTY(captionTheme(de));
-        MOVE PROPERTY(captionSize(de));
-        MOVE PROPERTY(captionNavbar(de));
-        MOVE PROPERTY(needReloadText());
-        REMOVE PROPERTY(formApply());
-        REMOVE PROPERTY(formCancel());
+    height = -1;
+    MOVE PROPERTY(captionTheme(de));
+    MOVE PROPERTY(captionSize(de));
+    MOVE PROPERTY(captionNavbar(de));
+    MOVE PROPERTY(needReloadText()) {
+        autoSize = TRUE;
     }
+    REMOVE PROPERTY(formApply());
+    REMOVE PROPERTY(formCancel());
+    MOVE TOOLBARBOX;
 }
 
 showDesign() {

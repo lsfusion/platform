@@ -323,14 +323,14 @@ public class GFormLayout extends ResizableComplexPanel {
             DataGrid.flushUpdateDOM(); // there can be some pending grid changes, and we need actual sizes
 
             GSize offsetWidth = null;
-            if (!fixWidthOnInit) {
+            if (fixWidthOnInit) {
                 offsetWidth = GwtClientUtils.getOffsetWidth(element);
                 if (width == null)
                     offsetWidth = offsetWidth.add(extraOffset.first);
             }
 
             GSize offsetHeight = null;
-            if (!fixHeightOnInit) {
+            if (fixHeightOnInit) {
                 offsetHeight = GwtClientUtils.getOffsetHeight(element);
                 if (height == null)
                     offsetHeight = offsetHeight.add(extraOffset.second);
