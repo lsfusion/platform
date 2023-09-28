@@ -309,6 +309,10 @@ public class GFormLayout extends ResizableComplexPanel {
         return hasVisible;
     }
 
+    public boolean fixSizeOnInit() {
+        return mainContainer.width == -3;
+    }
+
     public Dimension getPreferredSize(GSize maxWidth, GSize maxHeight, Element element) {
         GSize width = mainContainer.getWidth();
         GSize height = mainContainer.getHeight();

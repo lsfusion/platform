@@ -121,12 +121,20 @@ toggleNavigatorPinMode () {
 }
 navigatorPinModeClass = ABSTRACT STRING();
 
+needReload = DATA LOCAL BOOLEAN();
+WHEN LOCAL CHANGED (captionTheme(DesignEnv de)) OR captionSize(de) OR captionNavbar(de) DO {
+    needReload() <- TRUE;
+} 
+needReloadText = '{system.events.design.need.reload}';
+
 FORM design '{system.events.design}'
     OBJECTS de = DesignEnv PANEL
     PROPERTIES(de) captionTheme, captionSize SHOWIF useBootstrap(de), captionNavbar
 
     FILTERS de = currentDesignEnv()
     FILTERS IF storeNavigatorSettingsForComputer() THEN de IS Computer ELSE de IS CustomUser
+    
+    PROPERTIES() needReloadText HEADER NULL SHOWIF needReload()
 
     EVENTS ON APPLY reload()
 ;
@@ -136,6 +144,7 @@ DESIGN design {
         MOVE PROPERTY(captionTheme(de));
         MOVE PROPERTY(captionSize(de));
         MOVE PROPERTY(captionNavbar(de));
+        MOVE PROPERTY(needReloadText());
         REMOVE PROPERTY(formApply());
         REMOVE PROPERTY(formCancel());
     }
