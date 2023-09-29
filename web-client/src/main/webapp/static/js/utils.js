@@ -107,6 +107,7 @@ function lsfController(callerElement) {
 }
 
 function reload() {
+    window.onbeforeunload = null;
     document.location.reload();
 }
 

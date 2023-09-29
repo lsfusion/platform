@@ -49,7 +49,7 @@ public class GComponent implements Serializable {
         int size = width;
         if(size == -2)
             return getDefaultWidth();
-        if (size == -1)
+        if (size == -1 || size == -3)
             return null;
         return GSize.getComponentSize(size);
     }
@@ -57,7 +57,7 @@ public class GComponent implements Serializable {
         int size = height;
         if(size == -2)
             return getDefaultHeight();
-        if (size == -1)
+        if (size == -1 || size == -3)
             return null;
         return GSize.getComponentSize(size);
     }
