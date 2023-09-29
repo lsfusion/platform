@@ -6,6 +6,7 @@ import lsfusion.base.file.RawFileData;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ServerSettings {
     public String logicsName;
@@ -20,6 +21,7 @@ public class ServerSettings {
     public String jnlpUrls;
     public boolean disableRegistration;
     public Map<String, String> lsfParams;
+    public Map<String, String> lsfParamsAPIKeys;
     public List<Pair<String, RawFileData>> loginResourcesBeforeSystem;
     public List<Pair<String, RawFileData>> loginResourcesAfterSystem;
 
@@ -40,5 +42,11 @@ public class ServerSettings {
         this.lsfParams = lsfParams;
         this.loginResourcesBeforeSystem = loginResourcesBeforeSystem;
         this.loginResourcesAfterSystem = loginResourcesAfterSystem;
+        separateAPIKeys();
+    }
+
+    private void separateAPIKeys() {
+        lsfParamsAPIKeys = lsfParams.entrySet().stream().filter(entry -> entry.getKey().toLowerCase().contains("apikey")).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        lsfParams.entrySet().removeAll(lsfParamsAPIKeys.entrySet());
     }
 }

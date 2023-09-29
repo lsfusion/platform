@@ -1,11 +1,16 @@
-let mapApiKeyGoogle = lsfParams.mapApiKey_google;
+/*AIzaSyDcexn_rLS3SL6haXqbSiRvKiANGs67sZM*/
 
+let isKeyExist = false;
 //load Google-api if it was not loaded earlier
 //https://issuetracker.google.com/issues/35820648
-if (mapApiKeyGoogle != null && (typeof google !== 'object' || typeof google.maps !== 'object' || typeof google.maps.places !== 'object'))
-    $.getScript('https://maps.googleapis.com/maps/api/js?key=' + mapApiKeyGoogle + '&libraries=places');
-else
-    console.error("google key does not exist");
+function initGoogleAPI(key) {
+    if (key != null && (typeof google !== 'object' || typeof google.maps !== 'object' || typeof google.maps.places !== 'object')) {
+        $.getScript('https://maps.googleapis.com/maps/api/js?key=' + key + '&libraries=places');
+        isKeyExist = true;
+    } else {
+        console.error("google key does not exist");
+    }
+}
 
 function googleAutocomplete() {
     return customGoogleAutocomplete();
@@ -15,7 +20,7 @@ function googleAutocomplete() {
 function customGoogleAutocomplete() {
     return {
         renderInput: (element, controller) => {
-            if (mapApiKeyGoogle != null) {
+            if (isKeyExist) {
                 let autocompleteOptions = {
                     types: ['address'],
                     componentRestrictions: {

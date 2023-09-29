@@ -45,12 +45,15 @@ apiKey '{geo.api.key}' = DATA STRING(MapProvider);
 provider '{geo.api.key.provider}' (MapProvider m) = staticCaption(m) CHARWIDTH 5;
 commercialAPI '{geo.api.key.commercial}' = DATA BOOLEAN(MapProvider); // free or commercial
 lsfParams(STRING s) += GROUP MAX apiKey(MapProvider p) IF s = 'mapApiKey_' + getWord(staticName(p),'.',2);
-lsfParams(STRING s) += GROUP MAX (IF commercialAPI(MapProvider p) THEN 'true') IF s = 'commercialAPI_' + getWord(staticName(p),'.',2);
+lsfParams(STRING s) += 'true' IF (GROUP SUM 1 IF commercialAPI(MapProvider p) AND s = 'commercialAPIKey_' + getWord(staticName(p),'.',2));
 
 googleAutocompleteCountry '{geo.google.autocomplete.country}' = DATA STRING();
 lsfParams(STRING s) += googleAutocompleteCountry() IF s = 'googleMapAutocompleteCountry';
 
-onWebClientLoad() +{ INTERNAL CLIENT 'googleAutocomplete.js'; }
+onWebClientLoad() +{ 
+    INTERNAL CLIENT 'googleAutocomplete.js';
+    INTERNAL CLIENT 'initGoogleAPI' PARAMS GROUP MAX apiKey(MapProvider.google);
+}
 
 getCoordinatesAddress  INTERNAL  'lsfusion.server.logics.classes.data.utils.geo.GetCoordinatesAddressAction' (STRING, MapProvider);
 getCoordinates (STRING address)  { getCoordinatesAddress(address, calculateMapProvider()); }

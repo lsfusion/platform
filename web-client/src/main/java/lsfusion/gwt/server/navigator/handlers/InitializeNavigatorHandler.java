@@ -44,7 +44,7 @@ public class InitializeNavigatorHandler extends NavigatorActionHandler<Initializ
 
         remoteNavigator.updateNavigatorClientSettings(action.screenSize, action.mobile);
 
-        return new InitializeNavigatorResult(gClientSettings, navigatorInfo);
+        return new InitializeNavigatorResult(gClientSettings, navigatorInfo, MainController.lsfParamsAPIKeys);
     }
 
     private static NavigatorInfo getNavigatorInfo(RemoteNavigatorInterface remoteNavigator, MainDispatchServlet servlet, String sessionID) throws RemoteException {
