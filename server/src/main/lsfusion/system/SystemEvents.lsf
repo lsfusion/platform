@@ -170,7 +170,7 @@ onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = nameTheme() + '/bootstr
 onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = nameTheme() + '/bootstrap-adapter.css' THEN 2;
 onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap.min.js' THEN 3;
 onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap-background-inherit.css' THEN 4;
-onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap-adapter-general.css' THEN 5;
+onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap-ext.css' THEN 5;
 onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap-dark.css' THEN 6;
 onWebClientLoad(STRING s) += WHEN useBootstrap() AND isMini() AND s = 'mini-padding.css' THEN 7;
 onWebClientLoad(STRING s) += WHEN useBootstrap() AND isMini() AND s = 'mini-font.css' THEN 8;
