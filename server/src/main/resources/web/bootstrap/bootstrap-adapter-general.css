@@ -1,0 +1,354 @@
+
+/* has to be equal to the input (form-control) border size, to have proper property toolbar position */
+:root {
+    --input-border-width: 1px;
+}
+
+:root {
+    --border-padding: 0.375rem;
+
+    --border-comp-horz-padding: var(--border-padding);
+    --border-comp-vert-padding: var(--border-padding);
+    --border-label-horz-padding: var(--border-padding);
+    --border-label-vert-padding: var(--border-padding);
+    --border-cont-horz-padding: 1rem;
+    --border-cont-vert-padding: 1rem;
+
+    /* should correspond to $table-border-width bootstrap scss variable */
+    --table-outline-width: 1px;
+
+    --text-color: var(--bs-body-color);
+    --background-color: var(--bs-body-bg);
+    --component-background-color: var(--bs-body-bg);
+    --grid-separator-border-color: var(--bs-table-border-color);
+    --component-border-color: var(--panel-border-color);
+
+    --link-color: var(--bs-link-color);
+}
+
+/* there is a really odd style in bootstrap.min.css */
+/*.table > :not(:first-child) {*/
+/*    border-top: 2px solid currentColor*/
+/*}*/
+
+.table > :not(:first-child) {
+    border-top-width: 0;
+}
+.table > :not(:first-child) {
+    border-top-color: inherit;
+}
+
+:root {
+    --border-width: 1px;
+}
+
+/* we don't want to use accordion, so we'll use the card class, but in this case we have to implement collapsible manually */
+
+/* we want to have the same width for expanded and collapsed folders*/
+.caption-panel-header.collapsible::before,
+.nav-bs-mobile-folder::before {
+    /*font-family: "Font Awesome 6 Free";*/
+    margin-right: var(--border-label-horz-padding);
+    width: 0.75em;
+}
+
+.caption-panel-header.collapsible.collapsed::before,
+.nav-bs-mobile-folder.collapsed::before {
+    content: "\f105";
+    font: var(--fa-font-solid);
+}
+
+.caption-panel-header.collapsible:not(.collapsed)::before,
+.nav-bs-mobile-folder:not(.collapsed)::before {
+    content: "\f107";
+    font: var(--fa-font-solid);
+}
+
+/*focused cell, same as table-active (which is used for the table-active), but opacity 0.3 instead of 0.1*/
+.focused-cell {
+    --bs-table-bg-state: rgba(0, 0, 0, 0.3);
+}
+
+/* it's odd, but modal-body has flex-shrink (flex: 1 1 auto), but min-height is not set to zero (as well as overflow:auto), what doesn't make sense */
+.modal-body {
+    min-height: 0;
+}
+
+/* need this since we're using form-control not only for input fields, but for other divs with dynamic content and we want this form-control elements have the same behaviour as the regular form-control inputs */
+/* it could be solved another way buy removing form-control and prop-value from the parent element (and not setting remove-all-pmb), but we don't usually do this */
+.form-control:focus-within {
+    color: var(--bs-body-color);
+    background-color: var(--bs-body-bg);
+    border-color: #86b7fe;
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* the problem that for toolbar there is no appropriate class in bootstrap, default toolbar with "regular" (not solid) icons looks pretty awkward */
+/* so we increase their size, remove paddings / borders to look more authentic / similar to regular buttons */
+
+.btn-toolbar .btn {
+    border: 0;
+    padding: 0 0.25em;
+    font-size: 1.25rem;
+    /* bootstrap uses more complex selectors, so we'll just use important   */
+    border-radius: 0.375em !important;
+}
+
+/* we don't want the toolbar to have transparent background, but we still want hover background (just like for the navigator) */
+
+.btn-toolbar .btn-image:hover {
+    background-color: var(--component-hover-background-color);
+}
+
+.btn-toolbar .btn-image.active {
+    background-color: var(--component-hover-background-color);
+}
+
+/*.fa, .fa-brands, .fa-classic, .fa-regular, .fa-sharp, .fa-solid, .fab, .far, .fas {*/
+/*    line-height: inherit;*/
+/*}*/
+
+.property-toolbar-item:hover,
+.property-toolbar-item.background-inherit:hover {
+    background-color: var(--component-hover-background-color);
+}
+
+/* need this because toolbar is shown over form-control, but it is its sibling and not its child, assert that there is form-control inside */
+.prop-input-w-toolbar .background-inherit {
+    background-color: var(--bs-body-bg); /* should correspond form-control background-color */
+}
+
+/* --- workaround for disappearing sticky cell borders when scrolling --- */
+.scrolled-down:not(.table-borderless) .dataGridHeaderRow,
+/*.scrolled-up:not(.table-borderless) .dataGridFooterRow,*/ /* switched to permanent bottom border in tableContainer */
+.table:not(.table-borderless) .dataGridFooter:not(.empty-footer) .dataGridFooterRow {
+    outline: var(--table-outline-width) solid var(--bs-table-border-color);
+}
+
+@supports (-moz-appearance: none) {
+    /*Fixes missing line under header */
+    .dataGridHeaderRow{
+        outline: var(--table-outline-width) solid var(--bs-table-border-color);
+    }
+}
+
+/* 'border-collapse: collapse' + sticky header/footer make header/footer borders disappear 
+ In fact it looks as if border became transparent. As outline is being drawn outside border, we still see empty line 
+ between header/footer and outline. So we need to hide these borders */
+.scrolled-down:not(.table-borderless) .dataGridHeaderCell,
+.scrolled-down.table-bordered .dataGridHeaderRow,
+.table.table-bordered .empty-header .dataGridHeaderRow,
+.table.table-bordered .empty-footer .dataGridFooterRow,
+.table.table-bordered .dataGridColumnRow,
+.table:not(.table-bordered) .empty-header .dataGridHeaderCell,
+.empty-footer .dataGridFooterCell,
+.empty-footer .arrow-th, /* cell with .arrow-th doesn't have .dataGridFooterCell class. adding for them to behave the same way */
+.dataGridFooterRow:not(.empty-footer) .dataGridFooterCell,
+.dataGridFooterRow:not(.empty-footer) .arrow-th {
+    border-bottom: none;
+}
+.scrolled-down.table-bordered .dataGridHeaderRow,
+.table.table-bordered .dataGridColumnRow,
+.table-bordered .dataGridBody .dataGridRow {
+    border-top: none;
+}
+/* move header and footer on border width in order to see top/bottom outline,
+ which otherwise hides under table container */
+.scrolled-down.table-bordered :not(.empty-header) .dataGridHeaderRow {
+    top: var(--table-outline-width);
+}
+@media (min-width: 570px) {  /* likely because of rounding in mobile version we see "empty" border under footer with bottom: 1px */
+    .table :not(.empty-footer) .dataGridFooterRow {
+        bottom: var(--table-outline-width);
+    }
+}
+.empty-header .dataGridHeaderCell,
+.empty-footer .dataGridFooterCell,
+.empty-footer .arrow-th {  /* cell with .arrow-th doesn't have .dataGridFooterCell class. adding for them to behave the same way */
+    padding: 0;
+}
+/* only partly fixes vertical borders */
+.table.table-bordered .dataGridStickyHeader.sticked,
+.table.table-bordered .dataGridStickyCell.sticked,
+.table.table-bordered .dataGridStickyFooter.sticked {
+    outline: var(--table-outline-width) solid var(--bs-table-border-color);
+    border-right: none;
+}
+
+/* --- --- */
+
+@supports (-moz-appearance: none) {
+    /*This is because in firefox, table cells lose their bottom border because they are hidden by the background.
+    Firefox bug is active more than 11 years https://bugzilla.mozilla.org/show_bug.cgi?id=688556*/
+    .table > :not(caption) > * > * {
+        background-clip: padding-box;
+    }
+}
+
+/* Scroll shadow support */
+
+.scroll-shadow-container-start.scrolled > .scroll-shadow-header {
+    z-index: 1;
+    box-shadow: 0 0.1rem 0.5rem 0 rgba(var(--bs-body-color-rgb),.15);
+}
+.scroll-shadow-container-end.scrolled > .scroll-shadow-header {
+    z-index: 1;
+    box-shadow: 0 -0.1rem 0.5rem 0 rgba(var(--bs-body-color-rgb),.15);
+}
+.flex-dir-horz > .navbar.navbar-popup-over-selected-hover:not(:last-child) > .navbar-nav {
+    box-shadow: 0.2rem 0 0.5rem 0 rgba(var(--bs-body-color-rgb),.15);
+}
+.flex-dir-vert > .navbar.navbar-popup-over-selected-hover:not(:last-child) > .navbar-nav {
+    box-shadow: 0 0.1rem 0.5rem 0 rgba(var(--bs-body-color-rgb),.15);
+}
+.flex-dir-horz > .navbar.navbar-popup-over-selected-hover:last-child > .navbar-nav {
+    box-shadow: -0.2rem 0 0.5rem 0 rgba(var(--bs-body-color-rgb),.15);
+}
+.flex-dir-vert > .navbar.navbar-popup-over-selected-hover:last-child > .navbar-nav {
+    box-shadow: 0 -0.1rem 0.5rem 0 rgba(var(--bs-body-color-rgb),.15);
+}
+
+/* The end tab bar location support - just inverting borders */
+
+.nav-tabs-vert.nav-tabs-end {
+    border-top: var(--bs-nav-tabs-border-width) solid var(--bs-nav-tabs-border-color);
+    border-bottom: none;
+
+    --bs-nav-tabs-link-active-border-color: var(--bs-body-bg) var(--bs-border-color) var(--bs-border-color);
+}
+
+.nav-tabs-vert.nav-tabs-end .nav-link {
+    margin-top: calc(-1 * var(--bs-nav-tabs-border-width));
+    margin-bottom: 0;
+    border-bottom-left-radius: var(--bs-nav-tabs-border-radius);
+    border-bottom-right-radius: var(--bs-nav-tabs-border-radius);
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+
+/* to correspond Font Awesome icons line height */
+.bi.wrap-text-img {
+    line-height: 1;
+}
+
+/* we don't want the badge to have it's own color */
+
+.badge.wrap-text-img {
+    color: unset;
+}
+
+.tableContainer {
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+/* form-select, form-control sets width to 100%, but the platform sizing components itself (with content-box box-sizing), so width : 100% breaks that */
+.form-select.prop-size-value,
+.form-control.prop-size-value {
+    width: unset;
+}
+
+/* bootstrap doesn't wrap button group by default, which is not what we want in the most cases */
+.option-btn-container.btn-group {
+    flex-wrap: wrap;
+}
+
+/*Bootstrap uses a fixed z-index for the some elements, and z-index of the modal-windows(1055) is higher than z-index of dropdown-menu(1000).
+    We manually set z-index in lsf-dropdown to 1070*/
+.dropdown-menu.lsf-dropdown {
+    --bs-dropdown-zindex: 1070;
+}
+
+.selectize-dropdown.selectize-dropdown {
+    /*in excel theme resizable-window.css .modal-form sets z-index to 1000, in bootstrap theme by default z-index of the modal-windows is 1055
+        as the selectize uses its own css-classes which do not overlap with excel and bootstrap css-classes,
+        we will use the z-index used for .dropdown-menu.lsf-dropdown in the bootstrap theme - 1070*/
+    z-index: 1070;
+}
+
+/* wrapping is not desirable behaviour for the toolbar, at least in property toolbar (when toolbar is too large and more than a half of the property width) */
+
+.btn-toolbar.property-toolbar {
+    flex-wrap: nowrap;
+}
+
+/* checkboxes uses it's own margins / paddings */
+
+.panelRendererValue.form-check-input, /* .form-check .form-check-input sets it's own margin-top */
+.form-switch .panelRendererValue.form-check-input /* .form-switch form-check-input sets it's own margin-left */
+{
+    margin: var(--border-comp-vert-padding) var(--border-comp-horz-padding);
+}
+
+/* have no idea, why .form-check .form-check-input margin-top doesn't break the center alignment, so we're changing only left margin in the form-switch */
+.form-switch.dataGridCell .form-check-input {
+    margin-left: unset;
+}
+
+.panel-container.form-switch {
+    padding-left: unset;
+}
+
+table.pvtTable thead tr th {
+    /*bold column captions*/
+    font-weight: bold;
+}
+
+.headertable.table {
+    /*disable margin-bottom from .table,
+    because here we have separate headertable and bodytable*/
+    margin-bottom: 0;
+}
+
+
+/*
+    to still possible to set attributes horizontally
+*/
+.pvtRowsTable li.pvtAttr-container {
+    width: fit-content;
+}
+
+/*
+    so that attributes in the aggregator are the same size
+*/
+.pvtRenderer, .pvtAggregator, .pvtAttr {
+    width: -webkit-fill-available;
+    width: -moz-available;
+}
+
+.cell-with-background {
+    background-color: var(--bs-table-bg);
+}
+
+/* we want for the non-form-control placeholder to have the same behaviour look as the form-control placeholder */
+.text-based-value-null:not(a),
+.text-based-value-null.form-control:not(input),
+.text-based-value-empty:not(a),
+.text-based-value-empty.form-control:not(input),
+.form-select > option.option-null {
+    color: var(--bs-secondary-color);
+}
+a.text-based-value-null,
+a.text-based-value-empty {
+    --bs-link-opacity: 0.5;
+}
+.form-select > option {
+    color: var(--bs-body-color)
+}
+
+/*
+    we use hack with double and single click on grouping attributes in the pivot:
+        add transparent <div> element to the right border of the <select> element exactly above the arrow
+        and set the standard width of this element to 1.5em in pivot.css.
+
+    bootstrap uses custom <select> arrow design in .form-select e.g:
+        ***
+        background-image: var(--bs-form-select-bg-img),var(--bs-form-select-bg-icon,none);
+        background-position: right 0.75rem center;
+        ***
+    we will not know real arrow size if bootstrap developers change it in next releases.
+    if it is changed, this size must also be changed
+*/
+div.selectArrow {
+    width: 2.5em;
+}
