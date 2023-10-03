@@ -417,6 +417,9 @@
 
     .navbar.navbar-auto-icon-font-size .navbar-nav {
         align-items: stretch !important; /* overrides BS !important */
+
+        /*fixes possible bug in chrome 117 with size of logo icon*/
+        height: 100%;
     }
 
     .navbar.navbar-auto-icon-font-size .nav-link,

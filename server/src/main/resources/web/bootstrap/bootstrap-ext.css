@@ -342,8 +342,3 @@ a.text-based-value-empty {
 div.selectArrow {
     width: 2.5em;
 }
-
-/*fixes possible bug in chrome 117 with size of logo icon*/
-.navbar-nav {
-    height: 100%;
-}
