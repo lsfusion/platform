@@ -274,6 +274,8 @@ public interface ClientMessages extends Messages {
     String suggestBoxMatchTip(String separator);
     String suggestBoxContainsTip();
 
+    String fileNameTooLong();
+
     class Instance {
         private static final ClientMessages instance = GWT.create(ClientMessages.class);
 

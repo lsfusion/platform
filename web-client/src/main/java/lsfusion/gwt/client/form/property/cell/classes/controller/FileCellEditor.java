@@ -23,6 +23,7 @@ import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.KeepCellEditor;
 import org.moxieapps.gwt.uploader.client.File;
 import org.moxieapps.gwt.uploader.client.Uploader;
+import org.moxieapps.gwt.uploader.client.events.UploadErrorEvent;
 
 import java.util.List;
 
@@ -59,6 +60,18 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
             newVersionUploader.addFilesToQueue(validFiles);
             newVersionUploader.startUpload();
         }
+
+        // we can catch "File name too long" error only in UploadFileRequestHandler,
+        // but we need to handle it in this place,
+        // we use a hack: in UploadFileRequestHandler write 270 code in response when this error occurs,
+        // and in this place when 270 code (FILE_VALIDATION_FAILED) appears we know that it is an error related to "File name too long".
+        newVersionUploader.setUploadErrorHandler(uploadErrorEvent -> {
+            if (uploadErrorEvent.getMessage().endsWith(String.valueOf(-UploadErrorEvent.ErrorCode.FILE_VALIDATION_FAILED.toInt()))) {
+                loadingBox.hideLoadingBox(true);
+                throw new RuntimeException(ClientMessages.Instance.get().fileNameTooLong());
+            }
+            return false;
+        });
         return hasValidFiles;
     }
 
@@ -131,9 +144,9 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
         }
         return inputElement;
     }
-
+    private LoadingBox loadingBox;
     private Uploader createUploader(Element parent) {
-        LoadingBox loadingBox = new LoadingBox(() -> cancel(parent));
+        loadingBox = new LoadingBox(() -> cancel(parent));
 
         Uploader newVersionUploader = new Uploader();
         newVersionUploader.setUploadURL(GwtClientUtils.getUploadURL(null)) // not sure that is needed
@@ -153,7 +166,7 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
                     return true;
                 })
                 .setUploadSuccessHandler(uploadSuccessEvent -> {
-                    loadingBox.hideLoadingBox();
+                    loadingBox.hideLoadingBox(false);
                     uploaded = true;
                     commit(parent, CommitReason.FORCED);
                     return true;
@@ -163,7 +176,6 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
     }
 
     private class FileInfo {
-        public boolean dialogStarted;
         public String filePrefix;
         public String fileName;
     }
@@ -173,20 +185,17 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
         private final SimplePanel progressPane;
         private GProgressBar prevProgress;
         private Timer timer;
+        private final Runnable cancelAction;
 
         public LoadingBox(Runnable cancelAction) {
             super(messages.loading(), false, ModalWindowSize.FIT_CONTENT);
+            this.cancelAction = cancelAction;
 
             progressPane = new SimplePanel();
             progressPane.setStyleName("dialog-loading-progress");
-
             setBodyWidget(progressPane);
 
-            FormButton btnCancel = new FormButton(messages.cancel(), FormButton.ButtonStyle.SECONDARY, clickEvent -> {
-                hideLoadingBox();
-                cancelAction.run();
-            });
-            addFooterWidget(btnCancel);
+            addFooterWidget(new FormButton(messages.cancel(), FormButton.ButtonStyle.SECONDARY, clickEvent -> hideLoadingBox(true)));
         }
 
         private boolean isShowing = false;
@@ -200,12 +209,15 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
             timer.schedule(1000);
         }
 
-        public void hideLoadingBox() {
+        public void hideLoadingBox(boolean cancel) {
             if(isShowing) {
                 isShowing = false;
                 hide();
             }
             timer.cancel();
+
+            if (cancel)
+                cancelAction.run();
         }
 
         public void setProgress(GProgressBar progress) {
