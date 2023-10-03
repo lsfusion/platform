@@ -488,7 +488,6 @@ DESIGN securityPolicy {
                     caption = '{security.form.application.settings}';
                     MOVE PANEL(ur);
                     NEW roleApplicationSettings {
-                        type = COLUMNS;
                         lines = 3;
                     }
                 }

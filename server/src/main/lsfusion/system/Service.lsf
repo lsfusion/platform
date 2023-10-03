@@ -173,7 +173,6 @@ FORM maintenance '{service.form.maintenance}'
 DESIGN maintenance {        
     NEW pane {
         fill = 1;
-        type = COLUMNS;
         lines = 3;
         NEW leftColumn {               
             NEW administration {
@@ -282,7 +281,6 @@ DESIGN settings {
             fill = 1;
             NEW pane {
                 caption = '{service.form.settings.caption.general}';
-                type = COLUMNS;
                 lines = 3;
                 NEW leftColumn {
                     NEW current {
@@ -761,8 +759,7 @@ DESIGN editProfile {
             
             MOVE PROPERTY(resetWindowsLayout());
             
-            NEW colors { 
-                type = COLUMNS;
+            NEW colors {
                 lines = 2;
                 MOVE PROPERTY(selectedRowBackgroundColor(u)) { fontSize = 24; }
                 MOVE PROPERTY(selectedCellBackgroundColor(u)) { fontSize = 24; }

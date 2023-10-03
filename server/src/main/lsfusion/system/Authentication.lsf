@@ -518,7 +518,6 @@ DESIGN customUser {
             flex = 0.3;
         };
         GROUP(,u) {
-            type = COLUMNS;
             lines = 1;
         }
     }
