@@ -173,4 +173,5 @@
     border: 1px solid var(--dialog-outer-border-color);
     padding: var(--border-padding);
     margin: 0.625rem;
+    z-index: 1080; /* to display the PopupDialogPanel in modal-forms since .modal-form z-index is 1000 */
 }
