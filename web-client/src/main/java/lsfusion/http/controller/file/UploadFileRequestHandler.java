@@ -9,6 +9,7 @@ import org.springframework.web.HttpRequestHandler;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 
@@ -34,6 +35,10 @@ public class UploadFileRequestHandler implements HttpRequestHandler {
                     });
             }
         } catch (Exception e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof FileNotFoundException && cause.getMessage().contains("File name too long"))
+                response.sendError(270);
+
             throw new ServletException(e);
         }
     }
