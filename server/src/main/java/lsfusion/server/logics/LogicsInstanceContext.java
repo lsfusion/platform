@@ -3,6 +3,7 @@ package lsfusion.server.logics;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.ClientAction;
+import lsfusion.interop.action.ResetServerSettingsCacheClientAction;
 import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.server.base.controller.context.AbstractContext;
@@ -90,7 +91,7 @@ public class LogicsInstanceContext extends AbstractContext {
     public void aspectDelayUserInteraction(ClientAction action, String message) {
         if(message != null)
             systemLogger.info("Server message: " + message);
-        else
+        else if (!(action instanceof ResetServerSettingsCacheClientAction)) //todo. temporary fix. problem on empty DB is that ResetServerSettingsCacheClientAction is called when there is no client context yet.
             throw new UnsupportedOperationException("delayUserInteraction is not supported in server context, action : " + action.getClass());
     }
 
