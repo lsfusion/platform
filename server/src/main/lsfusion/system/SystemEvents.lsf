@@ -45,7 +45,13 @@ NAVIGATOR {
 
 CLASS Theme '{system.events.theme}' {
     excel '{system.events.theme.excel}',
-    classic '{system.events.theme.classic}'
+    classic '{system.events.theme.classic}',
+    flatly '{system.events.theme.flatly}',
+    lumen '{system.events.theme.lumen}',
+    quartz '{system.events.theme.quartz}',
+    simplex '{system.events.theme.simplex}',
+    sketchy '{system.events.theme.sketchy}',
+    yeti '{system.events.theme.yeti}'
 }
 
 designEnvTheme '{system.events.theme}' = DATA Theme (DesignEnv);
