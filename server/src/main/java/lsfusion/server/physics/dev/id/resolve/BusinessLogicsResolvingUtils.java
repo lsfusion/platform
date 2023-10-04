@@ -88,8 +88,14 @@ public class BusinessLogicsResolvingUtils {
 
     public static <L extends LAP<?,?>> L findPropertyByCanonicalName(BusinessLogics BL, String canonicalName, ModuleEqualLAPFinder<L> finder) {
         PropertyCanonicalNameParser parser = new PropertyCanonicalNameParser(BL, canonicalName);
+        List<ResolveClassSet> signature;
+        try {
+            signature = parser.getSignature();
+        } catch (CanonicalNameUtils.ParseException e) { // class can be missing
+            return null;
+        }
         List<FoundItem<L>> foundElements = findProperties(BL, parser.getNamespace(), parser.getName(),
-                parser.getSignature(), finder);
+                signature, finder);
         assert foundElements.size() <= 1;
         return foundElements.size() == 0 ? null : foundElements.get(0).value;
     }
