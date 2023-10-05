@@ -39,6 +39,7 @@ import java.util.regex.Pattern;
 
 import static lsfusion.base.BaseUtils.isRedundantString;
 import static lsfusion.client.StartupProperties.LSFUSION_CLIENT_LOGIN_DIALOG_EXTRA_LINK;
+import static lsfusion.client.controller.MainController.getSystemPropertyWithJNLPFallback;
 
 public class LoginDialog extends JDialog {
 
@@ -94,7 +95,7 @@ public class LoginDialog extends JDialog {
         loginBox.requestFocusInWindow();
         getRootPane().setDefaultButton(buttonOK);
 
-        setExtraLink(System.getProperty(LSFUSION_CLIENT_LOGIN_DIALOG_EXTRA_LINK));
+        setExtraLink(getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_LOGIN_DIALOG_EXTRA_LINK));
 
         setWarningMsg(checkVersionError != null ? checkVersionError : warningMsg);
     }
