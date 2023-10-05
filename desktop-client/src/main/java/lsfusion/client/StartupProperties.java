@@ -18,7 +18,7 @@ public class StartupProperties {
 
     public static final String LSFUSION_CLIENT_SINGLEINSTANCE = "lsfusion.client.singleinstance";
 
-    public static final String LSFUSION_CLIENT_LOGIN_DIALOG_EXTRA_LINK = "lsfusion.client.login.dialog.extra.link";
+    public static final String LSFUSION_CLIENT_LOGIN_DIALOG_EXTRA_LINK = "jnlp.client.login.dialog.extra.link";
 
     public static final String LSFUSION_CLIENT_CONNECTION_LOST_TIMEOUT = "lsfusion.client.connection.lost.timeout";
 
