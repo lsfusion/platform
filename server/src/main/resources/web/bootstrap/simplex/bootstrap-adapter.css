@@ -6,3 +6,11 @@
 .btn-check+.btn.btn-outline-secondary:hover {
     color: var(--bs-tertiary-color);
 }
+
+.bg-dark-subtle {
+    background-color: transparent !important;
+}
+
+.bg-body-secondary {
+    background-color: var(--bs-body-bg) !important;
+}
