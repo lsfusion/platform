@@ -706,6 +706,7 @@ DESIGN settings {
                 caption = '{service.form.settings.caption.navigator}';
                 MOVE PROPERTY(storeNavigatorSettingsForComputer());
                 MOVE PROPERTY (captionServerTheme());
+                MOVE PROPERTY (captionServerSize());
                 MOVE PROPERTY (captionServerNavbar());
                 MOVE PROPERTY (serverNavigatorPinMode());
                 MOVE BOX(de) {
