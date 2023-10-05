@@ -140,7 +140,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
         //hack for scanner input
         if(property.eventID != null && property.eventID.equals("SCANNER")) {
             try {
-                Thread.sleep(200);
+                Thread.sleep(300);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
