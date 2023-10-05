@@ -2,7 +2,6 @@ package lsfusion.gwt.client.view;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.logical.shared.CloseEvent;
@@ -34,7 +33,6 @@ import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GColorPreferences;
-import lsfusion.gwt.client.form.object.table.grid.view.GStateTableView;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.navigator.controller.GNavigatorController;
 import lsfusion.gwt.client.navigator.controller.dispatch.GNavigatorActionDispatcher;
@@ -96,8 +94,6 @@ public class MainFrame implements EntryPoint {
     public static boolean verticalNavbar;
 
     public static boolean userFiltersManualApplyMode;
-
-    public static JavaScriptObject lsfParamsAPIKeys;
 
     // async dispatch
     public <T extends Result> long asyncDispatch(final ExecuteNavigatorAction action, RequestCountingAsyncCallback<ServerResponseResult> callback) {
@@ -604,9 +600,6 @@ public class MainFrame implements EntryPoint {
                 verticalNavbar = gClientSettings.verticalNavbar;
 
                 initializeFrame(result.navigatorInfo);
-
-                lsfParamsAPIKeys = GwtClientUtils.newObject();
-                result.lsfParamsAPIKeys.forEach((k, v) -> GwtClientUtils.setField(lsfParamsAPIKeys, k, GStateTableView.fromObject(v)));
             }
         });
     }

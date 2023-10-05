@@ -286,11 +286,8 @@ public class MainController {
         return versionedResources;
     }
 
-    public static Map<String, String> lsfParamsAPIKeys;
     private ServerSettings getServerSettings(HttpServletRequest request, boolean noCache) {
-        ServerSettings serverSettings = logicsProvider.getServerSettings(request, noCache);
-        lsfParamsAPIKeys = getLsfParamsAPIKeys(serverSettings);
-        return serverSettings;
+        return logicsProvider.getServerSettings(request, noCache);
     }
 
     private ClientSettings getClientSettings(String sessionId, HttpServletRequest request) throws RemoteException {
@@ -329,10 +326,6 @@ public class MainController {
 
     private Map<String, String> getLsfParams(ServerSettings serverSettings) {
         return serverSettings != null && serverSettings.lsfParams != null ? serverSettings.lsfParams : null;
-    }
-
-    private Map<String, String> getLsfParamsAPIKeys(ServerSettings serverSettings) {
-        return serverSettings != null && serverSettings.lsfParamsAPIKeys != null ? serverSettings.lsfParamsAPIKeys : null;
     }
 
     private String getFileUrl(FileData file) {

@@ -12,7 +12,6 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.TableContainer;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.property.PValue;
-import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.view.StyleDefaults;
 
 import java.util.ArrayList;
@@ -109,7 +108,7 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
     protected void onUpdate(Element renderElement, JsArray<JavaScriptObject> listObjects) {
         if(map == null) {
             markerClusters = createMarkerClusters();
-            map = createMap(renderElement, markerClusters, grid.getMapTileProvider(), MainFrame.lsfParamsAPIKeys);
+            map = createMap(renderElement, markerClusters, grid.getMapTileProvider());
         }
 
         Map<Object, JsArray<JavaScriptObject>> routes = new HashMap<>();
@@ -207,24 +206,17 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
         return object.hasOwnProperty('fitBounds') ? object.fitBounds : false;
     }-*/;
 
-    protected native JavaScriptObject createMap(com.google.gwt.dom.client.Element element, JavaScriptObject markerClusters, String tileProvider, JavaScriptObject apiKeys)/*-{
+    protected native JavaScriptObject createMap(com.google.gwt.dom.client.Element element, JavaScriptObject markerClusters, String tileProvider)/*-{
         var L = $wnd.L;
         var map = L.map(element);
 
         if (tileProvider === 'google') {
-            //load Google-api if it was not loaded earlier
-            if (typeof $wnd.google !== 'object' || typeof $wnd.google.maps !== 'object')
-                $wnd.$.getScript('https://maps.googleapis.com/maps/api/js?key=' + apiKeys.mapApiKey_google);
             L.gridLayer
                 .googleMutant({
                     type: "roadmap" // valid values are 'roadmap', 'satellite', 'terrain' and 'hybrid'
                 }).addTo(map);
         } else if (tileProvider === 'yandex') {
-            L.yandex()
-                .loadApi({
-                    apiParams: apiKeys.mapApiKey_yandex,
-                    apiUrl: apiKeys.commercialAPIKey_yandex != null ? 'https://enterprise.api-maps.yandex.ru/{version}/' : 'https://api-maps.yandex.ru/{version}/'
-                }).addTo(map);
+            $wnd.lsfParams.yandexMapAPI.addTo(map);
         } else {
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
