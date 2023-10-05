@@ -11,6 +11,7 @@
 
 .btn-check:checked + .btn.btn-outline-secondary.option-item {
     background: var(--selection-color);
+    color: var(--text-color);
 }
 
 .btn-check:checked + .btn.btn-outline-secondary.option-item:hover {
@@ -28,6 +29,7 @@
 }
 
 .option-btn-container.btn-group .btn.option-item {
+    color: var(--disabled-text-color);
     margin: 0;
     flex: 1 1 auto;
 
