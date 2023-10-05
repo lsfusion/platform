@@ -27,11 +27,18 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static lsfusion.base.BaseUtils.isRedundantString;
+import static lsfusion.client.StartupProperties.LSFUSION_CLIENT_LOGIN_DIALOG_EXTRA_LINK;
 
 public class LoginDialog extends JDialog {
 
@@ -46,6 +53,9 @@ public class LoginDialog extends JDialog {
     private JComboBox<String> serverHostComboBox;
     private JCheckBox savePasswordCheckBox;
     private JCheckBox useAnonymousUICheckBox;
+    private String extraLink;
+    private JLabel extraLinkLabel;
+    private JPanel extraLinkPanel;
     private JLabel warningLabel;
     private JPanel warningPanel;
     private JPanel warningPanelWrapper;
@@ -83,6 +93,8 @@ public class LoginDialog extends JDialog {
         setLocationRelativeTo(null);
         loginBox.requestFocusInWindow();
         getRootPane().setDefaultButton(buttonOK);
+
+        setExtraLink(System.getProperty(LSFUSION_CLIENT_LOGIN_DIALOG_EXTRA_LINK));
 
         setWarningMsg(checkVersionError != null ? checkVersionError : warningMsg);
     }
@@ -411,6 +423,14 @@ public class LoginDialog extends JDialog {
         MainController.shutdown();
     }
 
+    public void setExtraLink(String extraLink) {
+        this.extraLink = extraLink;
+        extraLinkLabel.setText(extraLink != null ? "<html><body style='width: " + extraLinkPanel.getSize().width + "'>" + extraLink + "</body></html>" : "");
+        extraLinkLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        extraLinkPanel.setVisible(!isRedundantString(extraLink));
+        pack();
+    }
+
     public void setWarningMsg(String msg) {
         ClientLoggers.clientLogger.info("setWarningMsg: " + msg);
         warningLabel.setText(msg != null ? "<html><body style='width: " + warningPanel.getSize().width + "'>" + msg + "</body></html>" : "");
@@ -545,6 +565,24 @@ public class LoginDialog extends JDialog {
         buttonCancel.setMnemonic('C');
         buttonCancel.setDisplayedMnemonicIndex(0);
         subOKCancelPanel.add(buttonCancel);
+
+        extraLinkPanel = new JPanel();
+        extraLinkLabel = new JLabel("");
+        extraLinkLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                try {
+                    Pattern p = Pattern.compile("<a href=\"(.*)\">.*</a>");
+                    Matcher m = p.matcher(extraLink);
+                    if(m.matches()) {
+                        Desktop.getDesktop().browse(new URI(m.group(1)));
+                    }
+                } catch (URISyntaxException | IOException ignored) {
+                }
+            }
+        });
+        extraLinkPanel.add(extraLinkLabel);
+        mainPanel.add(extraLinkPanel);
 
         warningPanel = new JPanel();
         warningPanel.setBackground(new Color(-39322));

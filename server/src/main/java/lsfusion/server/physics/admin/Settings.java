@@ -3232,4 +3232,14 @@ public class Settings implements Cloneable {
     public void setTooltipDelay(int tooltipDelay) {
         this.tooltipDelay = tooltipDelay;
     }
+
+    private String loginDialogExtraLink;
+
+    public String getLoginDialogExtraLink() {
+        return loginDialogExtraLink;
+    }
+
+    public void setLoginDialogExtraLink(String loginDialogExtraLink) {
+        this.loginDialogExtraLink = loginDialogExtraLink;
+    }
 }

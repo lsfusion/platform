@@ -21,6 +21,7 @@
         <property name="jnlp.lsfusion.client.hostport" value="${jnlp.port}"/>
         <property name="jnlp.lsfusion.client.exportname" value="${jnlp.exportName}"/>
         <property name="jnlp.lsfusion.client.singleinstance" value="${jnlp.singleInstance}"/>
+        <property name="jnlp.lsfusion.client.login.dialog.extra.link" value="${jnlp.extraLink}"/>
         <jar href="lsfusion-client.jar"/>
     </resources>
     <application-desc/>

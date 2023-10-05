@@ -74,6 +74,7 @@ public class GenerateJNLPAction extends InternalAction {
                     .replace("${jnlp.port}", String.valueOf(port != null ? port : DEFAULT_PORT))
                     .replace("${jnlp.exportName}", !isRedundantString(exportName) ? exportName : DEFAULT_EXPORT_NAME)
                     .replace("${jnlp.singleInstance}", String.valueOf(Settings.get().isSingleInstance()))
+                    .replace("${jnlp.extraLink}", Settings.get().getLoginDialogExtraLink())
                     .replace("${jnlp.initHeapSize}", !isRedundantString(initHeapSize) ? initHeapSize : DEFAULT_INIT_HEAP_SIZE)
                     .replace("${jnlp.maxHeapSize}", memoryLimitMaxHeapSize != null ? memoryLimitMaxHeapSize : (!isRedundantString(maxHeapSize) ? maxHeapSize : DEFAULT_MAX_HEAP_SIZE))
                     .replace("${jnlp.minHeapFreeRatio}", !isRedundantString(minHeapFreeRatio) ? minHeapFreeRatio : DEFAULT_MIN_HEAP_FREE_RATIO)
