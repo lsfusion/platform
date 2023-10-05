@@ -17,10 +17,45 @@
     background-color: transparent !important;
 }
 
+/*pinned panel*/
+.bg-body-secondary {
+    background-color: transparent !important;
+}
+
+/*unpinned log panel (right)*/
+.navbar-popup-over-selected-hover.bg-body-secondary {
+    background-color: #dc307c !important;
+}
+
+/*unpinned menu panel (left)*/
+.navbar-vert.navbar-popup-over-selected-hover.bg-body-secondary {
+    background-color: #33b7e2 !important;
+}
+
 .bg-body-tertiary {
     background-color: transparent !important;
 }
 
 .left-border {
     border-left-color: transparent;
+}
+
+/*duplicate or quartz rules .nav-item .nav-link*/
+
+.nav-tabs .nav-item.nav-link:first-child {
+    border-radius: 0.5rem 0 0 0.5rem;
+}
+.nav-tabs .nav-item.nav-link:last-child {
+    border-radius: 0 0.5rem 0.5rem 0;
+}
+
+.nav-tabs .nav-item.nav-link.active {
+    border: none;
+    box-shadow: inset 1px 1px rgba(255, 255, 255, 0.2), inset -1px -1px rgba(255, 255, 255, 0.1), 1px 3px 24px -1px rgba(0, 0, 0, 0.15);
+    background-color: transparent;
+    background-image: linear-gradient(125deg, white, rgba(255, 255, 255, 0.9) 70%);
+    -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
+    border-radius: 0.5rem;
+    transform: scale(1.1);
 }
