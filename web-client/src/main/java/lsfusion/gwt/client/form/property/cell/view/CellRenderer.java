@@ -485,7 +485,9 @@ public abstract class CellRenderer {
             if(loading) {
                 Element loadingImage = StaticImage.LOADING_IMAGE_PATH.createImage();
                 loadingImage.addClassName("property-toolbar-loading");
-                loadingImage.addClassName("background-inherit");
+
+                //We don't need the background-inherit class because when we use it, the loading spinner has a visible square background
+//                loadingImage.addClassName("background-inherit");
 
                 addToToolbar(toolbarElement, start, loadingImage);
             }
