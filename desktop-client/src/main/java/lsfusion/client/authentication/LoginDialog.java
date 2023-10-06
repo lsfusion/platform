@@ -18,6 +18,7 @@ import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.session.ExternalRequest;
 import lsfusion.interop.session.ExternalResponse;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.text.StringEscapeUtils;
 import org.json.JSONArray;
 
 import javax.swing.*;
@@ -95,7 +96,7 @@ public class LoginDialog extends JDialog {
         loginBox.requestFocusInWindow();
         getRootPane().setDefaultButton(buttonOK);
 
-        setExtraLink(getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_LOGIN_DIALOG_EXTRA_LINK));
+        setExtraLink(StringEscapeUtils.unescapeXml(getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_LOGIN_DIALOG_EXTRA_LINK)));
 
         setWarningMsg(checkVersionError != null ? checkVersionError : warningMsg);
     }
