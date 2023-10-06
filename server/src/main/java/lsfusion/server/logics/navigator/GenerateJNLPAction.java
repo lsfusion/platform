@@ -15,12 +15,17 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.security.SecurityLogicsModule;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
+import org.apache.commons.text.StringEscapeUtils;
 
 import java.net.URLDecoder;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
 
-import static lsfusion.base.BaseUtils.*;
+import static lsfusion.base.BaseUtils.isRedundantString;
+import static lsfusion.base.BaseUtils.nvl;
 
 public class GenerateJNLPAction extends InternalAction {
     private static final String DEFAULT_INIT_HEAP_SIZE = "32m";
@@ -74,7 +79,7 @@ public class GenerateJNLPAction extends InternalAction {
                     .replace("${jnlp.port}", String.valueOf(port != null ? port : DEFAULT_PORT))
                     .replace("${jnlp.exportName}", !isRedundantString(exportName) ? exportName : DEFAULT_EXPORT_NAME)
                     .replace("${jnlp.singleInstance}", String.valueOf(Settings.get().isSingleInstance()))
-                    .replace("${jnlp.extraLink}", nvl(Settings.get().getLoginDialogExtraLink(), ""))
+                    .replace("${jnlp.extraLink}", nvl(StringEscapeUtils.escapeXml10(Settings.get().getLoginDialogExtraLink()), ""))
                     .replace("${jnlp.initHeapSize}", !isRedundantString(initHeapSize) ? initHeapSize : DEFAULT_INIT_HEAP_SIZE)
                     .replace("${jnlp.maxHeapSize}", memoryLimitMaxHeapSize != null ? memoryLimitMaxHeapSize : (!isRedundantString(maxHeapSize) ? maxHeapSize : DEFAULT_MAX_HEAP_SIZE))
                     .replace("${jnlp.minHeapFreeRatio}", !isRedundantString(minHeapFreeRatio) ? minHeapFreeRatio : DEFAULT_MIN_HEAP_FREE_RATIO)

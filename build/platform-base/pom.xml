@@ -20,6 +20,7 @@
         <xbasej.version>1.0.1</xbasej.version>
         <jacob.version>1.20</jacob.version>
         <commons.lang.version>3.8.1</commons.lang.version>
+        <commons.text.version>1.10.0</commons.text.version>
         <commons.collections.version>3.2</commons.collections.version>
         <commons.io.version>2.4</commons.io.version>
         <commons.codec.version>1.4</commons.codec.version>
@@ -148,6 +149,11 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
                 <version>${commons.lang.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-text</artifactId>
+                <version>${commons.text.version}</version>
             </dependency>
             <dependency>
                 <groupId>commons-collections</groupId>
