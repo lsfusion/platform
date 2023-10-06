@@ -31,6 +31,7 @@ import java.sql.SQLException;
 
 public class NewSessionAction extends AroundAspectAction {
     private final FunctionSet<SessionDataProperty> explicitMigrateProps; // актуальны и для nested, так как иначе будет отличаться поведение от NEW SESSION
+    private final boolean migrateSessionClasses;
     private final boolean isNested;
     private final boolean singleApply;
     private final boolean newSQL;
@@ -41,13 +42,14 @@ public class NewSessionAction extends AroundAspectAction {
                                                           boolean newSQL,
                                                           FunctionSet<SessionDataProperty> explicitMigrateProps,
                                                           boolean isNested) {
-        this(caption, innerInterfaces, action, singleApply, newSQL, explicitMigrateProps, isNested, null);
+        this(caption, innerInterfaces, action, singleApply, newSQL, explicitMigrateProps, false, isNested, null);
     }
 
     public <I extends PropertyInterface> NewSessionAction(LocalizedString caption, ImOrderSet<I> innerInterfaces,
                                                           ActionMapImplement<?, I> action, boolean singleApply,
                                                           boolean newSQL,
                                                           FunctionSet<SessionDataProperty> explicitMigrateProps,
+                                                          boolean migrateSessionClasses,
                                                           boolean isNested, ImSet<FormEntity> fixedForms) {
         super(caption, innerInterfaces, action);
 
@@ -56,6 +58,7 @@ public class NewSessionAction extends AroundAspectAction {
 
         this.isNested = isNested;
         this.explicitMigrateProps = explicitMigrateProps;
+        this.migrateSessionClasses = migrateSessionClasses;
 
         this.fixedForms = fixedForms;
 
@@ -110,6 +113,9 @@ public class NewSessionAction extends AroundAspectAction {
                 newSession.setParentSession(session);
             } else {
                 migrateSessionProperties(session, newSession);
+                if (migrateSessionClasses) {
+                    session.copyClassChanges(newSession);
+                }
             }
         }
 

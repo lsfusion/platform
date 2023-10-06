@@ -2537,6 +2537,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             other.getSession().changeProperty(e.getKey(), PropertyChangeTableUsage.getChange(e.getValue()));
     }
 
+    public void copyClassChanges(DataSession other) throws SQLException, SQLHandledException {
+        classChanges.copyDataTo(other);
+    }
+
     // assertion что для sessionData уже adjustKeep выполнился
     private Map<DataProperty, PropertyChangeTableUsage<ClassPropertyInterface>> filterNotSessionData(FunctionSet<SessionDataProperty> sessionData) {
         return BaseUtils.filterNotKeys(data, sessionData, SessionDataProperty.class);
