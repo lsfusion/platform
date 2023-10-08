@@ -71,7 +71,7 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrP
     }
 
     @Override
-    public <X extends PropertyInterface> PropertyObjectEntity<?> getProperty(PropertyObjectEntity<X> readOnly) {
+    public <X extends PropertyInterface> PropertyObjectEntity<?> getProperty(PropertyObjectEntity<X> readOnly, boolean isNative) {
         return this;
     }
 

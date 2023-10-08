@@ -152,3 +152,60 @@ function plainEquals(object1, object2, ignoreField) {
 function isContainHtmlTag(value) {
     return value.match(".*\\<[^>]+\\>(.|\n|\r)*");
 }
+
+function setReadonlyNative(element, readonly) {
+    element.readOnly = readonly;
+}
+
+// we don't want elements to receive focus by default
+function createFocusElement(tag) {
+    let element = document.createElement(tag);
+    element.tabIndex = -1;
+    return element;
+}
+
+function setReadonlyClass(element, readonly) {
+    if(readonly)
+        element.classList.add("is-readonly");
+    else
+        element.classList.remove("is-readonly");
+}
+
+function setReadonlyHeur(element, readonly) {
+    if(readonly)
+        element.setAttribute('onclick', 'return false');
+    else
+        element.removeAttribute('onclick')
+}
+
+function setDisabledNative(element, disabled) {
+    element.disabled = disabled;
+}
+
+function setDisabledClass(element, readonly) {
+    if(readonly)
+        element.classList.add("is-disabled");
+    else
+        element.classList.remove("is-disabled");
+}
+
+function setReadonlyType(element, readonly) {
+    if(element.tagName.toLowerCase() === 'input')
+        setReadonlyNative(element, readonly);
+    else
+        setReadonlyClass(element, readonly);
+}
+
+function setDisabledType(element, readonly) {
+    if(['button', 'fieldset', 'input', 'optgroup', 'option', 'option', 'textarea'].includes(element.tagName.toLowerCase()))
+        setDisabledNative(element, readonly);
+    else
+        setDisabledClass(element, readonly);
+}
+
+function createFocusElementType(tag) {
+    if(['a', 'area', 'button', 'iframe', 'input', 'object', 'select', 'textarea', 'summary'].includes(tag.toLowerCase()))
+        return createFocusElement(tag);
+    else
+        return document.createElement(tag);
+}

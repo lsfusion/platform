@@ -322,10 +322,6 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         focus(FocusUtils.Reason.ACTIVATE);
     }
 
-    public Element getTableDataFocusElement() {
-        return getWidget().getElement();
-    }
-
     @Override
     public boolean changePropertyOrders(LinkedHashMap<GPropertyDraw, Boolean> value, boolean alreadySet) {
         return false;

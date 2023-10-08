@@ -25,7 +25,6 @@ import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
-import lsfusion.gwt.client.form.property.cell.classes.view.SimpleTextBasedCellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
@@ -882,13 +881,36 @@ protected Double getUserFlex(int i) {
 
         super.changeSelectedCell(row, column, reason);
 
+        if(!checkFocusElement(reason)) {
+            Element focusElement = getTableDataFocusElement();
+            Element focusedChild = GwtClientUtils.getFocusedChild(focusElement);
+            if(focusElement != focusedChild) {
+                FocusUtils.focus(focusElement, reason);
+            }
+        }
+    }
+
+    @Override
+    public void focusedChanged() {
+        super.focusedChanged();
+
+        if(isFocused) {
+            FocusUtils.Reason focusReason = FocusUtils.getFocusReason(getTableDataFocusElement());
+            checkFocusElement(focusReason != null ? focusReason : FocusUtils.Reason.OTHER);
+        }
+    }
+
+    private boolean checkFocusElement(FocusUtils.Reason reason) {
         if(getSelectedRow() >= 0 && getSelectedColumn() >= 0) {
             Element selectedRenderElement = getSelectedRenderElement(getSelectedColumn());
             if(selectedRenderElement != null) {
-                InputElement inputElement = SimpleTextBasedCellRenderer.getInputElement(selectedRenderElement);
-                if (inputElement != null)
-                    FocusUtils.focus(inputElement, reason);
+                Object focusElement = CellRenderer.getFocusElement(selectedRenderElement);
+                if (focusElement != null && focusElement != CellRenderer.NULL) {
+                    FocusUtils.focus((Element) focusElement, reason);
+                    return true;
+                }
             }
         }
+        return false;
     }
 }

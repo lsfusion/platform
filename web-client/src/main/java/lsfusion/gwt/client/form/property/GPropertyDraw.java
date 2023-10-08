@@ -66,6 +66,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public String customRenderFunction;
     public boolean customCanBeRenderedInTD;
     public boolean customNeedPlaceholder;
+    public boolean customNeedReadonly;
 
     public String toolTip;
     public boolean clearText;
@@ -94,6 +95,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public GType externalChangeType;
     public Map<String, GAsyncEventExec> asyncExecMap;
+    public boolean disableIfReadonly;
 
     public GType getExternalChangeType() {
         return externalChangeType;
@@ -431,10 +433,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
         // starting change on focus, or any key pressed when focus is on input
         boolean isFocus = BrowserEvents.FOCUS.equals(editEvent.getType());
-        InputElement inputElement;
+        Element focusElement;
         if((isFocus || GKeyStroke.isInputKeyEvent(editEvent, () -> SimpleTextBasedCellRenderer.isMultiLineInput(editContext.getEditElement())))
-                && (inputElement = SimpleTextBasedCellRenderer.getInputEventTarget(editContext.getEditElement(), editEvent)) != null &&
-                !(isFocus && isSuppressOnFocusChange(inputElement)))
+                && (focusElement = SimpleTextBasedCellRenderer.getFocusEventTarget(editContext.getEditElement(), editEvent)) != null &&
+                !(isFocus && isSuppressOnFocusChange(focusElement)))
             return CHANGE;
 
         if (GMouseStroke.isChangeEvent(editEvent)) {

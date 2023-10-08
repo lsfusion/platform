@@ -13,6 +13,8 @@ public interface UpdateContext {
 
     default boolean isPropertyReadOnly() { return true; }
 
+    default boolean isTabFocusable() { return false; }
+
     boolean globalCaptionIsDrawn();
 
     PValue getValue();

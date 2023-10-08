@@ -2283,8 +2283,11 @@ public class GFormController implements EditManager {
         if(isReplace) {
 
             if(blurred) { // when editing is commited (thus editing element is removed), set last blurred element to main widget to keep focus there
-                if(editContext.isSetLastBlurred())
-                    MainFrame.setLastBlurredElement(editContext.getFocusElement());
+                if(editContext.isSetLastBlurred()) {
+                    Element focusElement = editContext.getFocusElement();
+                    if(focusElement != null)
+                        MainFrame.setLastBlurredElement(focusElement);
+                }
             } else {
                 if (focusedElement != null) {
                     FocusUtils.focus(focusedElement, FocusUtils.Reason.RESTOREFOCUS);
@@ -2389,7 +2392,7 @@ public class GFormController implements EditManager {
         if(handler.consumed)
             return;
 
-        if(GMouseStroke.isChangeEvent(handler.event) &&
+        if(GMouseStroke.isChangeEvent(handler.event) && focusElement != null &&
                 GwtClientUtils.getFocusedChild(focusElement) == null) // need to check that focus is not on the grid, otherwise when editing for example embedded form, any click will cause moving focus to grid, i.e. stopping the editing
             FocusUtils.focus(focusElement, FocusUtils.Reason.MOUSECHANGE); // it should be done on CLICK, but also on MOUSEDOWN, since we want to focus even if mousedown is later consumed
 

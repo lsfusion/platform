@@ -69,9 +69,9 @@ public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPro
 //
 
     @IdentityInstanceLazy
-    public <X extends PropertyInterface> PropertyObjectEntity<?> getProperty(PropertyObjectEntity<X> readOnly) {
+    public <X extends PropertyInterface> PropertyObjectEntity<?> getProperty(PropertyObjectEntity<X> readOnly, boolean isNative) {
         //        return PropertyFact.createTrue().mapObjects(MapFact.<PropertyInterface, PropertyObjectInterfaceInstance>EMPTY());
-        if(readOnly == null) // optimization
+        if(readOnly == null || !isNative) // optimization
             return PropertyFact.createTrue().mapEntityObjects(MapFact.EMPTYREV());
         return PropertyFact.createNot(readOnly.property.getImplement()).mapEntityObjects(readOnly.mapping);
     }

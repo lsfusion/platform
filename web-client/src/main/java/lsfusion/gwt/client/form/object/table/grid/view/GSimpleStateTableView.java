@@ -86,7 +86,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     }
 
     public Element getTableDataFocusElement() {
-        return tableContainer.getElement();
+        return tableContainer.getFocusElement();
     }
 
     protected abstract Element getCellParent(Element target);
@@ -361,6 +361,12 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
     protected boolean isReadOnly(String property, JavaScriptObject object) {
         return isReadOnly(property, getObjects(object));
+    }
+    protected boolean isDisableIfReadonly(String property) {
+        Column column = columnMap.get(property);
+        if(column == null)
+            return false;
+        return column.property.disableIfReadonly;
     }
 
     protected String getValueElementClass(String property, GGroupObjectValue object) {
@@ -707,6 +713,12 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             },
             isPropertyReadOnly: function (property, object) {
                 return thisObj.@GSimpleStateTableView::isReadOnly(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
+            },
+            isPropertyDisableIfReadonly: function (property) {
+                return thisObj.@GSimpleStateTableView::isDisableIfReadonly(Ljava/lang/String;)(property);
+            },
+            isTabFocusable: function () {
+                return true;
             },
             getValueClass: function (property, object) {
                 return thisObj.@GSimpleStateTableView::getValueElementClass(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);

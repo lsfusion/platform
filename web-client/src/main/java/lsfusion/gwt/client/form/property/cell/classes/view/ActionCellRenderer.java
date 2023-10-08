@@ -93,8 +93,8 @@ public class ActionCellRenderer extends CellRenderer {
         if(extraValue != null)
             BaseImage.updateImage((BaseImage) extraValue, element, property.panelCaptionVertical);
 
-        boolean enabled = !property.isReadOnly() && getActionValue(value);
-        element.setPropertyBoolean("disabled", !enabled);
+//        boolean enabled = !updateContext.isPropertyReadOnly() && getActionValue(value);
+//        element.setPropertyBoolean("disabled", !enabled);
 
         return false;
     }

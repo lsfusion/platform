@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.property.cell.view;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
@@ -12,6 +13,7 @@ import lsfusion.gwt.client.base.view.SizedFlexPanel;
 import lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.event.GKeyStroke;
+import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.object.table.view.GToolbarView;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
@@ -33,6 +35,29 @@ public abstract class CellRenderer {
     protected final String NOT_DEFINED_VALUE = messages.formRendererNotDefined();
     protected final String REQUIRED_VALUE = messages.formRendererRequired();
 
+    private final static String focusElementProp = "focusElement";
+    public static Object getFocusElement(Element parent) {
+        return parent.getPropertyObject(focusElementProp);
+    }
+    public static void setFocusElement(Element parent, Element element) {
+        parent.setPropertyObject(focusElementProp, element == null ? NULL : element);
+    }
+    public static void clearFocusElement(Element parent) {
+        parent.setPropertyObject(focusElementProp, null);
+    }
+    private final static String readonlyFncProp = "readonlyFnc";
+    public final static String NULL = "NULL"; // none / manual
+    public static Object getReadonlyFnc(Element parent) {
+        return parent.getPropertyObject(readonlyFncProp);
+    }
+    // null means that readonly will be set "manually"
+    public static void setReadonlyFnc(Element parent, JavaScriptObject fnc) {
+        parent.setPropertyObject(readonlyFncProp, fnc == null ? NULL : fnc);
+    }
+    public static void clearReadonlyFnc(Element parent) {
+        parent.setPropertyObject(readonlyFncProp, null);
+    }
+
     protected boolean isTagInput() {
         return property.isTagInput();
     }
@@ -48,7 +73,7 @@ public abstract class CellRenderer {
 
         String tag = getTag();
         if(tag != null)
-            renderElement = Document.get().createElement(tag);
+            renderElement = GwtClientUtils.createFocusElementType(tag);
         else
             renderElement = Document.get().createDivElement();
 
@@ -335,16 +360,11 @@ public abstract class CellRenderer {
             isNew = true;
         }
 
-        InputElement inputElement = SimpleTextBasedCellRenderer.getInputElement(element);
-        if(inputElement != null) {
-            assert isTagInput() || this instanceof CustomCellRenderer;
+        boolean readonly = updateContext.isPropertyReadOnly();
+        if(isNew || !equalsReadonlyState(renderedState, readonly)) {
+            renderedState.readonly = readonly;
 
-            boolean readonly = updateContext.isPropertyReadOnly();
-            if(isNew || !equalsReadonlyState(renderedState, readonly)) {
-                renderedState.readonly = readonly;
-
-                inputElement.setReadOnly(readonly);
-            }
+            updateReadonly(element, readonly);
         }
 
         String valueElementClass = updateContext.getValueElementClass();
@@ -379,6 +399,23 @@ public abstract class CellRenderer {
         if(needToRenderToolbarContent())
             renderToolbarContent(element, updateContext, renderedState, cleared);
     }
+
+    private void updateReadonly(Element element, boolean readonly) {
+        boolean disableIfReadonly = property.disableIfReadonly;
+        Object readonlyFnc = getReadonlyFnc(element);
+        if(readonlyFnc != null) {
+            if(readonlyFnc != CellRenderer.NULL)
+                GwtClientUtils.call((JavaScriptObject) readonlyFnc, GSimpleStateTableView.fromObject(readonly), GSimpleStateTableView.fromObject(disableIfReadonly));
+        } else
+            setDefaultReadonlyFnc(element, readonly, disableIfReadonly);
+    }
+
+    private static native JavaScriptObject setDefaultReadonlyFnc(Element element, boolean readonly, boolean disableIfReadonly)/*-{
+        if(disableIfReadonly)
+            $wnd.setDisabledType(element, readonly);
+        else
+            $wnd.setReadonlyType(element, readonly);
+    }-*/;
 
     // in theory in most case we can get previous state without storing it in Element, but for now it's the easiest way
     private static class ToolbarState {
@@ -505,14 +542,13 @@ public abstract class CellRenderer {
                 int hoverCount = 0;
                 for (ToolbarAction toolbarAction : toolbarActions) {
                     // there is an assertion that the DOM structure will be exactly like that in setOnPressed / for optimization reasons
-                    ButtonElement actionDivElement = Document.get().createPushButtonElement();
+                    Element actionDivElement = GwtClientUtils.createFocusElement("button");
                     actionDivElement.addClassName("btn");
 
                     Element actionImgElement = toolbarAction.getImage().createImage();
 
                     actionDivElement.appendChild(actionImgElement);
                     actionDivElement.addClassName("property-toolbar-item"); // setting paddings
-                    actionDivElement.setTabIndex(-1);
                     GToolbarView.styleToolbarItem(actionDivElement);
                     actionDivElement.addClassName("background-inherit");
 

@@ -57,7 +57,9 @@ function selectMultiInput() {
 
     return {
         render: function (element, controller) {
-            let selectizeElement = _wrapElement(element, 'div', controller == null); // it seems that selectize uses parent (because it creates sibling) so for custom cell renderer we need extra div
+            let isList = controller != null;
+
+            let selectizeElement = _wrapElementDiv(element, !isList); // it seems that selectize uses parent (because it creates sibling) so for custom cell renderer we need extra div
 
             element.selectizeInstance = $(selectizeElement).selectize({
                 dropdownParent: 'body',
@@ -122,9 +124,23 @@ function selectMultiInput() {
 
             // we need to do it here, not in update to have relevant focusElement
             let selectizeInstance = element.selectizeInstance[0].selectize;
-            lsfUtils.setInputElement(element, selectizeInstance.$control_input[0])
+            if(!isList)
+                lsfUtils.setFocusElement(element, selectizeInstance.$control_input[0])
+                lsfUtils.setReadonlyFnc(element, (readonly, disableIfReadonly) => {
+                    if(disableIfReadonly) {
+                        if(readonly)
+                            selectizeInstance.disable();
+                        else
+                            selectizeInstance.enable();
+                    } else {
+                        if(readonly)
+                            selectizeInstance.unlock();
+                        else
+                            selectizeInstance.lock();
+                    }
+                })
         },
-        update: function (element, controller, list, placeholder) {
+        update: function (element, controller, list, extraValue) {
             element.silent = true; // onItemAdd / Remove somewhy is not silenced
             element.controller = controller;
 
@@ -162,12 +178,15 @@ function selectMultiInput() {
                 }
             }, true, true);
 
-            selectizeInstance.settings.placeholder = placeholder;
+            selectizeInstance.settings.placeholder = extraValue.placeholder;
             selectizeInstance.updatePlaceholder();
 
             element.silent = false;
         },
         clear: function (element) {
+            lsfUtils.clearFocusElement(element); // !isList check should be here
+            lsfUtils.clearReadonlyFnc(element); // !isList check should be here
+
             element.selectizeInstance[0].selectize.destroy();
         }
     }
@@ -221,10 +240,13 @@ function _checkBoxRadioButtonGroup(type, shouldBeSelected, hasName, multi) {
     return _option(type, true, ['btn-group'], ['btn-check'], ['btn', 'btn-outline-secondary', 'option-item'], shouldBeSelected, hasName, multi);
 }
 
-function _wrapElement(element, tag, wrap) {
+function _wrapElementDiv(element, wrap) {
+    return _wrapElement(element, () => document.createElement('div'), wrap)
+}
+function _wrapElement(element, createElement, wrap) {
     let wrapElement = element;
     if(wrap) {
-        wrapElement = document.createElement(tag);
+        wrapElement = createElement();
         wrapElement.classList.add("fill-parent-perc")
         element.appendChild(wrapElement);
     }
@@ -232,10 +254,15 @@ function _wrapElement(element, tag, wrap) {
 }
 
 function _removeAllPMBInTD(element, controlElement) {
-    if(lsfUtils.isTDorTH(element)) // because canBeRenderedInTD can be true
+    if(_isInGrid(element))
         controlElement.classList.add("remove-all-pmb");
 }
 
+function _isInGrid(element) {
+    return lsfUtils.isTDorTH(element); // because canBeRenderedInTD can be true
+}
+
+// buttons / radios / selects
 function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBeSelected, hasName, multi) {
     let isButton = isGroup || divClasses == null;
 
@@ -255,8 +282,10 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
     }
 
     return {
-        render: function (element) {
-            let options = _wrapElement(element, 'div', isButton);
+        render: function (element, controller) {
+            let isList = controller != null;
+
+            let options = _wrapElementDiv(element, isButton);
 
             element.options = options;
 
@@ -268,7 +297,12 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
                 if (divClasses != null)
                     divClasses.forEach(divClass => options.classList.add(divClass));
             }
-        }, update: function (element, controller, list) {
+
+            if(!isList) {
+                lsfUtils.setFocusElement(element, null);
+                lsfUtils.setReadonlyFnc(element, null);
+            }
+        }, update: function (element, controller, list, extraValue) {
             let isList = controller.isList();
             list = _convertList(isList, list);
             // need this dropAndNotSetChecked to properly handle situations when there are 2 selected in non-multi select
@@ -288,7 +322,9 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
                     case 'update': // update
                         let input, label;
                         if(changeType === 'add') {
-                            input = document.createElement('input');
+                            input = createFocusElement('input');
+                            if(controller.isTabFocusable())
+                                input.tabIndex = 0;
                             inputClasses.forEach(inputClass => input.classList.add(inputClass));
                             input.type = type;
                             input.id = _getRandomId();
@@ -383,6 +419,7 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
                     element.prevSelected = null;
             }
 
+            let focusInput = null;
             for (let i = 0; i < list.length; i++) {
                 let input = _getOptionElement(options, i, true, true);
                 if (isList) {
@@ -391,15 +428,18 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
                     else
                         input.classList.remove('option-item-current');
 
-                    _setReadonly(input, controller.isPropertyReadOnly('selected', input.object));
+                    _setGroupListReadonly(input, controller, input.object);
                 } else {
-                    _setReadonly(input, controller.isReadOnly());
+                    _setGroupReadonly(input, extraValue.readonly, controller.isDisableIfReadonly());
+
+                    if(i === 0)
+                        focusInput = input;
                 }
 
                 if (!multi && shouldBeSelected) {
                     if (isButton) { // bootstrap doesn't support is-invalid for buttons
                         let label = _getOptionElement(options, i, false, true);
-                        if (!hasSelected) {
+                        if (!hasSelected) {``
                             label.classList.add("btn-outline-danger");
                             label.classList.remove("btn-outline-secondary");
                         } else {
@@ -414,6 +454,10 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
                     }
                 }
             }
+            lsfUtils.setFocusElement(element, focusInput);
+        },
+        clear: function (element) {
+            lsfUtils.clearFocusElement(element); // !isList check should be here
         }
     }
 }
@@ -516,12 +560,21 @@ function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBo
     let picker = multi || html;
     return {
         render: function (element, controller) {
-            let select = _wrapElement(element, 'select', element.tagName.toLowerCase() !== 'select');
+            let isList = controller != null;
+
+            let select = _wrapElement(element, () => createFocusElement('select'), element.tagName.toLowerCase() !== 'select');
 
             element.select = select;
             if(!picker) {
                 select.classList.add("form-select");
                 _removeAllPMBInTD(element, select);
+            }
+
+            if(!isList) {
+                lsfUtils.setFocusElement(element, select);
+                lsfUtils.setReadonlyFnc(element, (readonly, disableIfReadonly) => {
+                    _setSelectReadonly(select, readonly, disableIfReadonly);
+                });
             }
 
             Object.keys(selectAttributes).forEach(key => select.setAttribute(key, selectAttributes[key]));
@@ -539,7 +592,7 @@ function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBo
 
             render(element);
         },
-        update: function (element, controller, list, placeholder) {
+        update: function (element, controller, list, extraValue) {
             element.controller = controller;
             let isList = controller.isList();
             list = _convertList(isList, list);
@@ -589,6 +642,7 @@ function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBo
                 }
             });
 
+            let placeholder = extraValue.placeholder;
             if (!multi) {
                 let hasSelected = false;
                 for (let i = 0; i < list.length; i++) {
@@ -640,11 +694,11 @@ function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBo
                 for (let i = 0; i < list.length; i++) {
                     let option = select.options[i + offset];
                     option.setAttribute("readonly", "");
-                    _setReadonly(option, controller.isPropertyReadOnly('selected', option.object));
+                    _setGroupListReadonly(option, controller, option.object);
                 }
-            } else {
-                _setReadonly(select, controller.isReadOnly());
-            }
+            } // else { // we don't need this since we're using the readonlyFnc
+            //     _setReadonly(select, controller.isReadOnly());
+            // }
 
             if (picker) {
                 if (!isBootstrap) {
@@ -656,16 +710,31 @@ function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBo
             }
         },
         clear: function (element) {
-
+            lsfUtils.clearFocusElement(element); // !isList check should be here
+            lsfUtils.clearReadonlyFnc(element); // !isList check should be here
         }
     }
 }
 
-function _setReadonly(element, readonly) {
-    if(readonly)
-        element.setAttribute('onclick', 'return false');
-    else
-        element.removeAttribute('onclick')
+// input in radio group / option in select
+function _setGroupListReadonly(element, controller, object) {
+    _setGroupReadonly(element, controller.isPropertyReadOnly('selected', object), controller.isPropertyDisableIfReadonly('selected'));
+}
+function _setGroupReadonly(element, readonly, disableIfReadonly) {
+    _setReadonly(element, readonly, disableIfReadonly);
+}
+// select
+function _setSelectReadonly(element, readonly, disableIfReadonly) {
+    _setReadonly(element, readonly, disableIfReadonly);
+}
+//
+function _setReadonly(element, readonly, disableIfReadonly) {
+    if(disableIfReadonly) // select, option, input supports disabled
+        setDisabledNative(element, readonly);
+    else {
+        setReadonlyClass(element, readonly);
+        setReadonlyHeur(element, readonly);
+    }
 }
 
 function _convertList(isList, list) {

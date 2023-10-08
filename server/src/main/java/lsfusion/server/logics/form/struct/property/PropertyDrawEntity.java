@@ -108,6 +108,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public Boolean sticky;
     public Boolean sync;
 
+    public Boolean disableIfReadonly;
+
     private String formPath;
 
     private Pair<Integer, Integer> scriptIndex;
@@ -688,7 +690,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public PropertyObjectEntity<?> getProperty(FormInstanceContext context) {
-        return getActionOrProperty(context).getProperty(getReadOnly());
+        return getActionOrProperty(context).getProperty(getReadOnly(), context.isNative);
     }
 
     private PropertyObjectEntity<?> getReadOnly() {
@@ -842,6 +844,21 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             return true; // we have "manual" _wrapElement in select.js
 
         return false;
+    }
+
+    public boolean isCustomNeedReadonly(FormInstanceContext context) {
+        Select selectProperty = getSelectProperty(context);
+        if(selectProperty != null && ((selectProperty.elementType.equals("List") || selectProperty.elementType.startsWith("Button"))))
+            return true; // we use setReadonlyFnc for the _option function in select.js
+
+        return false;
+    }
+
+    public boolean isDisableIfReadonly(FormInstanceContext context) {
+        if(disableIfReadonly != null)
+            return disableIfReadonly;
+
+        return !isProperty(context);
     }
 
     private String getCustomRenderFunction() {

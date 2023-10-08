@@ -84,7 +84,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
         return getRenderInputElement(cellParent) != null;
     }
     private InputElement getRenderInputElement(Element cellParent) {
-        return SimpleTextBasedCellRenderer.getInputElement(cellParent);
+        return SimpleTextBasedCellRenderer.getSimpleInputElement(cellParent);
     }
 
     @Override
@@ -275,7 +275,6 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
 
     public static InputElement renderInputElement(Element cellParent, GPropertyDraw property, boolean multiLine, RenderContext renderContext, boolean removeAllPMB, boolean setupPercentParent) {
         InputElement inputElement = SimpleTextBasedCellRenderer.createInputElement(property);
-        inputElement.setTabIndex(-1); // we don't want input to get focus if it's wrapped or in table (when editing it's not important, but just in case)
 
         CellRenderer.renderTextAlignment(property, inputElement, true);
 

@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
@@ -85,23 +86,13 @@ public abstract class SimpleTextBasedCellRenderer extends CellRenderer {
         return property.createTextInputElement();
     }
 
-    private final static String inputElementProp = "textInputElement";
-
-    public static InputElement getInputEventTarget(Element parent, Event event) {
-        InputElement inputElement = getInputElement(parent);
+    public static InputElement getFocusEventTarget(Element parent, Event event) {
+        InputElement inputElement = getSimpleInputElement(parent);
         return inputElement == event.getEventTarget().cast() ? inputElement : null;
     }
 
     public static boolean isMultiLineInput(Element parent) {
-        return TextAreaElement.is(getInputElement(parent));
-    }
-
-    public static InputElement getInputElement(Element parent) {
-        return (InputElement) parent.getPropertyObject(inputElementProp);
-    }
-
-    public static void setInputElement(Element element, InputElement inputElement) {
-        element.setPropertyObject(inputElementProp, inputElement);
+        return TextAreaElement.is(getSimpleInputElement(parent));
     }
 
     private final static String toolbarContainerProp = "toolbarContainer";
@@ -115,10 +106,39 @@ public abstract class SimpleTextBasedCellRenderer extends CellRenderer {
 
     public static Element getSizeElement(Element element) {
         InputElement sizeElement;
-        if(isToolbarContainer(element) && (sizeElement = getInputElement(element)) != null)
+        if(isToolbarContainer(element) && (sizeElement = getSimpleInputElement(element)) != null)
             return sizeElement;
         return element;
     }
+
+    private final static String inputElementProp = "inputElement";
+    public static InputElement getSimpleInputElement(Element element) {
+        return (InputElement) element.getPropertyObject(inputElementProp);
+    }
+    public static void setSimpleInputElement(Element element, InputElement inputElement) {
+        element.setPropertyObject(inputElementProp, inputElement);
+        setSimpleReadonlyFnc(element, inputElement);
+        setFocusElement(element, inputElement);
+    }
+    public static void clearSimpleInputElement(Element element) {
+        element.setPropertyObject(inputElementProp, null);
+        clearSimpleReadonlyFnc(element);
+        clearFocusElement(element);
+    }
+    public static void setSimpleReadonlyFnc(Element element, InputElement inputElement) {
+        setReadonlyFnc(element, getSimpleReadonlyFnc(inputElement));
+    }
+    public static void clearSimpleReadonlyFnc(Element element) {
+        clearReadonlyFnc(element);
+    }
+    private static native JavaScriptObject getSimpleReadonlyFnc(InputElement element)/*-{
+        return function(readonly, disableIfReadonly) {
+            if(disableIfReadonly)
+                $wnd.setDisabledNative(element, readonly);
+            else
+                $wnd.setReadonlyNative(element, readonly);
+        }
+    }-*/;
 
     @Override
     public boolean renderContent(Element element, RenderContext renderContext) {
@@ -148,7 +168,7 @@ public abstract class SimpleTextBasedCellRenderer extends CellRenderer {
         }
 
         if(inputElement != null)
-            setInputElement(element, inputElement);
+            setSimpleInputElement(element, inputElement);
 
         setPadding(getSizeElement(element));
 
@@ -186,7 +206,7 @@ public abstract class SimpleTextBasedCellRenderer extends CellRenderer {
         }
 
         if(isInputElement)
-            setInputElement(element, null);
+            clearSimpleInputElement(element);
 
         clearPadding(getSizeElement(element));
 
@@ -197,7 +217,7 @@ public abstract class SimpleTextBasedCellRenderer extends CellRenderer {
         element.removeClassName("text-based-value-empty");
 
         if(property.isEditableNotNull()) {
-            Element inputElement = getInputElement(element);
+            Element inputElement = getSimpleInputElement(element);
             if(inputElement != null) {
                 inputElement.removeClassName("is-invalid");
             }
@@ -248,7 +268,7 @@ public abstract class SimpleTextBasedCellRenderer extends CellRenderer {
             element.addClassName("text-based-value-multi-line");
 
         String placeholder = extraValue != null ? ((String) extraValue) : null;
-        Element inputElement = getInputElement(element);
+        Element inputElement = getSimpleInputElement(element);
         if(inputElement != null) {
             assert isTagInput();
             if(property.isEditableNotNull()) {

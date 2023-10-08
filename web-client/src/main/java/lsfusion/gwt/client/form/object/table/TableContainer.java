@@ -33,12 +33,16 @@ public class TableContainer extends ResizableSimplePanel implements HasMaxPrefer
         setStyleName("tableContainer");
 
         this.form = form;
-        getElement().setTabIndex(0);
+        getFocusElement().setTabIndex(0);
 
         DataGrid.initSinkFocusEvents(this);
     }
 
-    protected com.google.gwt.dom.client.Element getScrollableElement() {
+    public com.google.gwt.dom.client.Element getFocusElement() {
+        return getElement();
+    }
+
+    public com.google.gwt.dom.client.Element getScrollableElement() {
         return getElement();
     }
 
@@ -111,7 +115,7 @@ public class TableContainer extends ResizableSimplePanel implements HasMaxPrefer
             removeStyleName("tableContainerBoxed");
         
         if (pendingFocusEvent != null) {
-            propagateFocusToGrid(DataGrid.getTargetAndCheck(getElement(), pendingFocusEvent), pendingFocusEvent);
+            propagateFocusToGrid(DataGrid.getTargetAndCheck(getFocusElement(), pendingFocusEvent), pendingFocusEvent);
             pendingFocusEvent = null;
         }
     }
@@ -174,7 +178,7 @@ public class TableContainer extends ResizableSimplePanel implements HasMaxPrefer
             grid.onGridBrowserEvent(target, event);
         }
 
-        if(!isFocused || DataGrid.isFakeBlur(event, getElement())) {
+        if(!isFocused || DataGrid.isFakeBlur(event, getFocusElement())) {
             return;
         }
         isFocused = false;
