@@ -77,9 +77,11 @@ public class CustomRestoreAction extends InternalAction {
         String dbName = null;
         try {
             String fileBackup = (String) findProperty("file[Backup]").read(context, backupObject);
+            boolean isMultithread = findProperty("isMultithread[Backup]").read(context, backupObject) != null;
+
             Map<String, CustomRestoreTable> tables = getTables(context);
             if (new File(fileBackup).exists() && !tables.isEmpty()) {
-                dbName = context.getDbManager().customRestoreDB(fileBackup, tables.keySet());
+                dbName = context.getDbManager().customRestoreDB(fileBackup, tables.keySet(), isMultithread);
                 importColumns(context, dbName, tables);
             } else {
                 context.requestUserInteraction(new MessageClientAction("Backup File not found or no selected tables", "Error"));

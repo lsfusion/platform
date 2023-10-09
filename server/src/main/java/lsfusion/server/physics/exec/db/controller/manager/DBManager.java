@@ -2502,8 +2502,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
         return adapter.backupDB(context, dumpFileName, threadCount, excludeTables);
     }
 
-    public String customRestoreDB(String fileBackup, Set<String> tables) throws IOException {
-        return adapter.customRestoreDB(fileBackup, tables);
+    public String customRestoreDB(String fileBackup, Set<String> tables, boolean isMultithread) throws IOException {
+        return adapter.customRestoreDB(fileBackup, tables, isMultithread);
     }
 
     public void dropDB(String dbName) throws IOException {

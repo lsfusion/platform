@@ -108,7 +108,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
         return null;
     }
 
-    public String customRestoreDB(String fileBackup, Set<String> tables) throws IOException {
+    public String customRestoreDB(String fileBackup, Set<String> tables, boolean isMultithread) throws IOException {
         return null;
     }
 
