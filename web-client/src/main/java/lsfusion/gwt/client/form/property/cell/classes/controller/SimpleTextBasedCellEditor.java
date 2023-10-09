@@ -340,7 +340,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
 
 //        TextBasedCellRenderer.clearRender(property, element.getStyle(), renderContext);
 
-        clearInputElement(cellParent, needRenderedSize);
+        clearInputElement(cellParent, !needRenderedSize);
 
         super.clearRender(cellParent, renderContext, cancel);
     }

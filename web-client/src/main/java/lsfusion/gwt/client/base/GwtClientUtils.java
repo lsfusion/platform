@@ -488,7 +488,7 @@ public class GwtClientUtils {
 
     public static void clearFlexParentElement(Element parentElement) {
         assert !GwtClientUtils.isTDorTH(parentElement);
-        parentElement.addClassName("fill-parent-flex-cont");
+        parentElement.removeClassName("fill-parent-flex-cont");
     }
 
     public static void setupFlexParent(Element element) {
