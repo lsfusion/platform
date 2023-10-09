@@ -98,97 +98,120 @@ To access design components, you can use their names or address property compone
 
 |Property name|Description|Value type|Default value|Examples|
 |---|---|---|---|---|
+|`span`|todo|Integer literal|`1`|`2`|
+|`defaultComponent`|Specifying that this component should get the focus when the form is initialized. Can only be set for one component on the entire form|Extended [Boolean literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
+|`activated`|todo|[Logical literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
+|`fill`|Similar to the `flex` property, the only difference being that if a zero value is set, the `align` property is set to `START`, otherwise `align` is set to `STRETCH`|`NUMERIC` type literal|`0`|`1.5`|
 |`size`|The base component size in pixels (a value of -1 means that the size is undefined)|A pair of [integer literals](Literals.md#intliteral) (width, height)|`(-1, -1)`|`(100, 20)`|
 |`height`|The base component height in pixels.|Integer literal|`-1`|`50`|
 |`width`|The base component width in pixels.|Integer literal|`-1`|`20`|
-|`background`|The color to be used for the component background|[Literal of class `COLOR`](Literals.md#colorliteral)|`#FFFFFF`|`#FFFFCC`<br/>`RGB(255, 0, 0)`|
-|`foreground`|The color to be used for the component text|Color|`NULL`|`#FFFFCC`<br/>`RGB(255, 0, 0)`|
-|`font`|The font to be used for displaying the component text — for example, property value, action caption, table text|[String literal](Literals.md#strliteral)|depends on the component|`'Tahoma bold 16'`<br/>`'Times 12'`|
-|`fontSize`|The size of the font to be used for displaying the component text|Numeric literal|depends on the component|`10`|
-|`fontStyle`|The style of the font to be used for the component text May contain the words `'bold'` and/or `'italic'`, or an empty string|String literal|`''`|`'bold'`<br/>`'bold italic'`|
-|`defaultComponent`|Specifying that this component should get the focus when the form is initialized. Can only be set for one component on the entire form|Extended [Boolean literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
-|align, alignment|Component alignment inside the container. Acceptable values: `START` (at the beginning), `CENTER` (in the center), `END` (at the end), `STRETCH` (stretched).|Alignment type|`START`|`STRETCH`|
 |`flex`|Extension coefficient. Value of a property similar to the [CSS flex-grow](http://www.w3schools.com/cssref/css3_pr_flex-grow.asp) property. Defines how much the component should grow in size relative to other components.|[`NUMERIC` type literal](Literals.md#numericliteral)|`0`|`0.25`|
-|`fill`|Similar to the `flex` property, the only difference being that if a zero value is set, the `align` property is set to `START`, otherwise `align` is set to `STRETCH`|`NUMERIC` type literal|`0`|`1.5`|
-|noSort |No sorting|[Logical literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
-|`defaultCompare`|Default filter. Acceptable values: `EQUALS`, `GREATER`, `LESS`, `GREATER_EQUALS`, `LESS_EQUALS`, `NOT_EQUALS`, `CONTAINS`, `LIKE`.|String literal|`CONTAINS`|`GREATER`|
+|`shrink`|todo|[Logical literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
+|`alignShrink`|todo|[Logical literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
+|`align`<br/>`alignment`|Component alignment inside the container. Acceptable values: `START` (at the beginning), `CENTER` (in the center), `END` (at the end), `STRETCH` (stretched).|Alignment type|`START`|`STRETCH`|
 |`marginTop`|Top margin|Integer literal|`0`|`3`|
 |`marginRight`|Right margin|Integer literal|`0`|`1`|
 |`marginBottom`|Bottom margin|Integer literal|`0`|`4`|
 |`marginLeft`|Left margin|Integer literal|`0`|`1`|
 |`margin`|Margin. Sets the same value to the following properties: `marginTop`, `marginRight`, `marginBottom`, `marginLeft`|Integer literal|`0`|`5`|
+|`captionFont`|The font to be used for displaying caption of the component|[String literal](Literals.md#strliteral)|depends on the component|`'Tahoma bold 16'`<br/>`'Times 12'`|
+|`font`|The font to be used for displaying the component text — for example, property value, action caption, table text|[String literal](Literals.md#strliteral)|depends on the component|`'Tahoma bold 16'`<br/>`'Times 12'`|
+|`fontSize`|The size of the font to be used for displaying the component text|Numeric literal|depends on the component|`10`|
+|`fontStyle`|The style of the font to be used for the component text May contain the words `'bold'` and/or `'italic'`, or an empty string|String literal|`''`|`'bold'`<br/>`'bold italic'`|
+|`background`|The color to be used for the component background|[Literal of class `COLOR`](Literals.md#colorliteral)|`#FFFFFF`|`#FFFFCC`<br/>`RGB(255, 0, 0)`|
+|`foreground`|The color to be used for the component text|Color|`NULL`|`#FFFFCC`<br/>`RGB(255, 0, 0)`|
+|`imagePath`|The path to the file with the image to be displayed as an action icon. The path is specified relative to the `images` folder|String literal|`NULL`|`'image.png'`|
+|`showIf`|Specifies a condition under which the container will be displayed.|[Expression](Expression.md)|`NULL`|`isLeapYear(date)`<br/>`hasComplexity(a, b)`|
 
 ### Container properties
 
 |Property name|Description|Value type|Default value|Examples|
 |---|---|---|---|---|
 |`caption`|Container header|String literal|`NULL`|`'Caption'`|
-|`type`|Container type. Acceptable values:<br/>`CONTAINERV` - vertical container<br/>`CONTAINERH` - horizontal container<br/>`COLUMNS` - column container<br/>`SPLITV` - vertical splitter<br/>`SPLITH` - horizontal splitter<br/>`TABBED` - tabbed panel<br/>`SCROLL`– a scrollable container, cannot have more than one child|Container type|`CONTAINERV`|`CONTAINERH`<br/>`TABBED`|
-|`childrenAlignment`|Alignment of child components inside a container. Acceptable values: `START`, `CENTER`, `END`|Alignment type|`START`|`CENTER`|
-|`columns`|Number of columns in a `COLUMNS` type container<br/>**deprecated since version 5, use `lines`**|Integer literal|`1`|`3`|
-|`lines`|Number of lines (rows or columns) in container|Integer literal|`1`|`3`|
+|`collapsible`|todo|[Logical literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
+|`collapsed`|todo|[Logical literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
+|`type`|Container type. Acceptable values:<br/>`CONTAINERV` - vertical container<br/>`CONTAINERH` - horizontal container<br/>`COLUMNS` - column container<br/>`SPLITV` - vertical splitter<br/>`SPLITH` - horizontal splitter<br/>`TABBED` - tabbed panel<br/>`SCROLL`– a scrollable container, cannot have more than one child**deprecated since version 5, use `horizontal`, `tabbed`, `lines`**|Container type|`CONTAINERV`|`CONTAINERH`<br/>`TABBED`|
 |`horizontal`|Container is horizontal|[Logical literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
 |`tabbed`|Container is tabbed|[Logical literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
-|`columnLabelsWidth`|Width of component captions in a `COLUMNS` type container.|Integer literal|`0`|`50`|
-|`showIf`|Specifies a condition under which the container will be displayed.|[Expression](Expression.md)|`NULL`|`isLeapYear(date)`<br/>`hasComplexity(a, b)`|
+|`childrenAlignment`|Alignment of child components inside a container. Acceptable values: `START`, `CENTER`, `END`|Alignment type|`START`|`CENTER`|
+|`alignCaptions`|todo|[Logical literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
+|`grid`|todo|[Logical literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
+|`wrap`|todo|[Logical literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
+|`resizeOverflow`|todo|[Logical literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
+|`custom`|todo|[String literal](Literals.md#strliteral)|NULL|todo|
+|`columns`|Number of columns in a `COLUMNS` type container<br/>**deprecated since version 5, use `lines`**|Integer literal|`1`|`3`|
+|`lines`|Number of lines (rows or columns) in container|Integer literal|`1`|`3`|
 
 ### Properties of actions and properties on the form
 
 |Property name|Description|Value type|Default value|Examples|
 |---|---|---|---|---|
-|`caption`|Caption of a property or action|String literal|caption of a property or action|`'Caption'`|
-|`captionClass`|Class of caption of a property or action|String literal|class of caption of a property or action|`'caption-class'`|
-|`askConfirm`|Specifies that an attempt to change the property (execute an action) will show a confirmation request|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
-|`askConfirmMessage`|Text of the confirmation request shown when an attempt to change the property (execute the action) is made|String literal|default message|`'Are you sure you want to modify this property?'`|
 |`autoSize`|Automatic component size option. Applies to text components only|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`boxed`|Drawing a frame (box) around a component|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
-|`valueWidth`|Width of the property value cell in pixels|Integer literal|depends on the property|`100`|
-|`valueHeight`|Height of the property value cell in pixels|Integer literal|depends on the property|`100`|
-|`charWidth`|Width of the property value cell in characters|Integer literal|depends on the property|`10`|
-|`charHeight`|Height of the property value cell in characters (rows).|Integer literal|depends on the property|`2`|
-|`captionWidth`|Width of the property caption in pixels|Integer literal|`-1`|`100`|
-|`captionHeight`|Height of the property caption in pixels|Integer literal|`-1`|`100`|
-|`clearText`|Specifying that the current text should be reset when input starts|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
-|`echoSymbols`|Specifying that a set of `*` characters will be displayed instead of the property value. Used for passwords, for example|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
-|`changeKey`|The key that will trigger the property change event. The definition principle is similar to specifying a parameter in [Keystroke.getKeystroke(String)](https://docs.oracle.com/javase/8/docs/api/javax/swing/KeyStroke.html#getKeyStroke-java.lang.String-)|String literal|`NULL`|`'ctrl F6'`<br/>`'BACK_SPACE'`<br/>`'alt shift X'`|
-|`showChangeKey`|Specifying that the property caption will include that name of the key shortcut that will trigger the change event|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
-|`editOnSingleClick`|Specifying that change event should be triggered after the property component is clicked once<br/>**deprecated, use `changeOnSingleClick` instead**|Extended Boolean literal|depends on the property|`TRUE`<br/>`FALSE`|
-|`changeOnSingleClick`|Specifying that change event should be triggered after the property component is clicked once|Extended Boolean literal|depends on the property|`TRUE`<br/>`FALSE`||`focusable`|Specifying that the property (action) component or a table column can get focus|Extended Boolean literal|changeKey = `NULL`|`TRUE`<br/>`FALSE`|
-|`captionFont`|The font that will be used to display the property caption|String literal|depends on the component|`'Tahoma bold italic 16'`<br/>`'Times 12'`|
-|`hide`|Specifying that the property (action) component should be always hidden|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
-|`imagePath`|The path to the file with the image to be displayed as an action icon. The path is specified relative to the `images` folder|String literal|`NULL`|`'image.png'`|
-|`maxValue`|The maximum numerical value that the property component can have|Integer literal|`NULL`|`1000000`<br/>`5000000000L`|
-|`notNull`|Specifies that in case of a `NULL` property value, the component of this property should be highlighted|Extended Boolean literal|depends on the property|`TRUE`<br/>`FALSE`|
 |`panelCaptionVertical`|Indicates that the captions of property or action components should be drawn above the value on the panel|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`panelCaptionLast`|Indicates that the value should be drawn on the panel prior to thee property caption|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
-|`panelCaptionAlignment`|Caption component alignment inside the container. Acceptable values: `START` (at the beginning), `CENTER` (in the center), `END` (at the end), `STRETCH` (stretched).|Alignment type|`START`|`STRETCH`|
+|`panelCaptionAlignment`|Component caption alignment. Acceptable values: `START` (at the beginning), `CENTER` (in the center), `END` (at the end), `STRETCH` (stretched).|Alignment type|`START`|`STRETCH`|
+|`editOnSingleClick`|Specifying that change event should be triggered after the property component is clicked once<br/>**deprecated, use `changeOnSingleClick` instead**|Extended Boolean literal|depends on the property|`TRUE`<br/>`FALSE`|
+|`changeOnSingleClick`|Specifying that change event should be triggered after the property component is clicked once|Extended Boolean literal|depends on the property|`TRUE`<br/>`FALSE`||`focusable`|Specifying that the property (action) component or a table column can get focus|Extended Boolean literal|changeKey = `NULL`|`TRUE`<br/>`FALSE`|
+|`hide`|Specifying that the property (action) component should be always hidden|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`regexp`|The regular expression that the property value must match during input|String literal|`NULL`|`'^((8\|\\+7)[\\- ]?)?(\\(?\\d\{3\}\\)?[\\- ]?)?[\\d\\- ]\{7,10\}$'`|
 |`regexpMessage`|The message to be shown to the user if they enter a value that does not match the regular expression|String literal|default message|`'Incorrect phone number format'`|
-|`toolTip`|The tip to be shown when the cursor hovers over the caption of a property or action|String literal|Default toolTip|`'Tip'`|
 |`pattern`|Property value formatting template. The syntax of template definition is similar to the [DecimalFormat](https://docs.oracle.com/javase/8/docs/api/java/text/DecimalFormat.html) or [SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html) syntax, depending on the value type|String literal|`NULL`|`#,##0.00`|
-|`comment`|Comment of a property or action|String literal|comment of a property or action|`'Comment'`|
-|`commentClass`|Class of comment of a property or action|String literal|class of comment of a property or action|`'comment-class'`|
-|`panelCommentVertical`|Indicates that the comment of property or action should be drawn above or below the value on the panel|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
-|`panelCommentFirst`|Indicates that the comment should be drawn on the panel before property value|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
-|`panelCommentAlignment`|Comment component alignment inside the container. Acceptable values: `START` (at the beginning), `CENTER` (in the center), `END` (at the end), `STRETCH` (stretched).|Alignment type|`START`|`STRETCH`|
-|`placeholder`|Placeholder of a property or action|String literal|placeholder of a property or action|`'Placeholder'`|
+|`maxValue`|The maximum numerical value that the property component can have|Integer literal|`NULL`|`1000000`<br/>`5000000000L`|
+|`echoSymbols`|Specifying that a set of `*` characters will be displayed instead of the property value. Used for passwords, for example|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
+|`noSort` |No sorting|[Logical literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
+|`valueSize`|Width and height of the property value cell in pixels|A pair of [integer literals](Literals.md#intliteral) (width, height)|`(-1, -1)`|`(100, 20)`|
+|`valueHeight`|Height of the property value cell in pixels|Integer literal|depends on the property|`100`|
+|`valueWidth`|Width of the property value cell in pixels|Integer literal|depends on the property|`100`|
+|`captionHeight`|Height of the property caption in pixels|Integer literal|`-1`|`100`|
+|`captionWidth`|Width of the property caption in pixels|Integer literal|`-1`|`100`|
+|`charHeight`|Height of the property value cell in characters (rows).|Integer literal|depends on the property|`2`|
+|`charWidth`|Width of the property value cell in characters|Integer literal|depends on the property|`10`|
+|`valueFlex` |todo|[Logical literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
+|`changeKey`|The key that will trigger the property change event. The definition principle is similar to specifying a parameter in [Keystroke.getKeystroke(String)](https://docs.oracle.com/javase/8/docs/api/javax/swing/KeyStroke.html#getKeyStroke-java.lang.String-)|String literal|`NULL`|`'ctrl F6'`<br/>`'BACK_SPACE'`<br/>`'alt shift X'`|
+|`changeKeyPriority`|todo|Integer literal|`NULL`|`'1000'`|
+|`changeMouse`|todo|String literal|`NULL`|`'DBLCLK'`|
+|`changeMousePriority`|todo|Integer literal|`NULL`|`'1000'`|
+|`showChangeKey`|Specifying that the property caption will include that name of the key shortcut that will trigger the change event|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
+|`focusable`|todo|[Logical literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
+|`panelColumnVertical`|todo|[Logical literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
+|`caption`|Caption of a property or action|String literal|caption of a property or action|`'Caption'`|
+|`valueAlignment`|Component value alignment. Acceptable values: `START` (at the beginning), `CENTER` (in the center), `END` (at the end), `STRETCH` (stretched).|Alignment type|`START`|`STRETCH`|
+|`clearText`|Specifying that the current text should be reset when input starts|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
+|`notSelectAll`|Specifying that the text is not selected at the start of editing|`FALSE`|`TRUE`<br/>`FALSE`|
+|`askConfirm`|Specifies that an attempt to change the property (execute an action) will show a confirmation request|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
+|`askConfirmMessage`|Text of the confirmation request shown when an attempt to change the property (execute the action) is made|String literal|default message|`'Are you sure you want to modify this property?'`|
+|`toolTip`|The tip to be shown when the cursor hovers over the caption of a property or action|String literal|Default toolTip|`'Tip'`|
+|`notNull`|Specifies that in case of a `NULL` property value, the component of this property should be highlighted|Extended Boolean literal|depends on the property|`TRUE`<br/>`FALSE`|
 
 ### Toolbar properties
 
 |Property name|Description|Value type|Default value|Examples|
 |---|---|---|---|---|
-|`showCalculateSum`|Show the column sum calculation button|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
+|`visible`|Specifying the visibility of the component|Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
 |`showCountQuantity`|Show the row quantity calculation button|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
+|`showCalculateSum`|Show the column sum calculation button|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
 |`showGroup`|Show the grouping report button|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
 |`showPrintGroupXls`|Show the XLS export button|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
 |`showSettings`|Show the table setting button|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
+
+### Grid properties
+
+|Property name|Description|Value type|Default value|Examples|
+|---|---|---|---|---|
+|`autosize`|todo|Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
+|`boxed`|Drawing a frame (box) around a component|Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
+|`tabVertical`|Specifying that focus will be moved from top to bottom (not from left to right)|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
+|`quickSearch`|Specifying that the table will support quick element search|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
+|`headerHeight`|Header height in pixels|Integer literal|NULL|`60`|
+|`resizeOverflow`|todo|[Logical literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
+|`lineWidth`|todo|Integer literal|NULL|`60`|
+|`lineHeight`|todo|Integer literal|NULL|`60`|
 
 ### Other properties
 
 |Property name|Applies to|Description|Value type|Default value|Examples|
 |---|---|---|---|---|---|
-|`tabVertical`|table|Specifying that focus will be moved from top to bottom (not from left to right)|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
-|`quickSearch`|table|Specifying that the table will support quick element search|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`visible`|custom filter, class tree|Specifying the visibility of the component for setting custom filters (class tree)|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
 
 ### `selector` parameters
