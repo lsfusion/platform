@@ -109,6 +109,7 @@ To access design components, you can use their names or address property compone
 |`shrink`|todo|[Logical literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
 |`alignShrink`|todo|[Logical literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
 |`align`<br/>`alignment`|Component alignment inside the container. Acceptable values: `START` (at the beginning), `CENTER` (in the center), `END` (at the end), `STRETCH` (stretched).|Alignment type|`START`|`STRETCH`|
+|`alignCaption`|todo|[Logical literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
 |`marginTop`|Top margin|Integer literal|`0`|`3`|
 |`marginRight`|Right margin|Integer literal|`0`|`1`|
 |`marginBottom`|Bottom margin|Integer literal|`0`|`4`|
@@ -116,11 +117,11 @@ To access design components, you can use their names or address property compone
 |`margin`|Margin. Sets the same value to the following properties: `marginTop`, `marginRight`, `marginBottom`, `marginLeft`|Integer literal|`0`|`5`|
 |`captionFont`|The font to be used for displaying caption of the component|[String literal](Literals.md#strliteral)|depends on the component|`'Tahoma bold 16'`<br/>`'Times 12'`|
 |`font`|The font to be used for displaying the component text — for example, property value, action caption, table text|[String literal](Literals.md#strliteral)|depends on the component|`'Tahoma bold 16'`<br/>`'Times 12'`|
+|`class`|todo|[String literal](Literals.md#strliteral)|NULL|todo|
 |`fontSize`|The size of the font to be used for displaying the component text|Numeric literal|depends on the component|`10`|
 |`fontStyle`|The style of the font to be used for the component text May contain the words `'bold'` and/or `'italic'`, or an empty string|String literal|`''`|`'bold'`<br/>`'bold italic'`|
 |`background`|The color to be used for the component background|[Literal of class `COLOR`](Literals.md#colorliteral)|`#FFFFFF`|`#FFFFCC`<br/>`RGB(255, 0, 0)`|
 |`foreground`|The color to be used for the component text|Color|`NULL`|`#FFFFCC`<br/>`RGB(255, 0, 0)`|
-|`imagePath`|The path to the file with the image to be displayed as an action icon. The path is specified relative to the `images` folder|String literal|`NULL`|`'image.png'`|
 |`showIf`|Specifies a condition under which the container will be displayed.|[Expression](Expression.md)|`NULL`|`isLeapYear(date)`<br/>`hasComplexity(a, b)`|
 
 ### Container properties
@@ -128,9 +129,10 @@ To access design components, you can use their names or address property compone
 |Property name|Description|Value type|Default value|Examples|
 |---|---|---|---|---|
 |`caption`|Container header|String literal|`NULL`|`'Caption'`|
+|`image`|todo|String literal|`NULL`|todo|
 |`collapsible`|todo|[Logical literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
+|`border`|todo|[Logical literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
 |`collapsed`|todo|[Logical literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
-|`type`|Container type. Acceptable values:<br/>`CONTAINERV` - vertical container<br/>`CONTAINERH` - horizontal container<br/>`COLUMNS` - column container<br/>`SPLITV` - vertical splitter<br/>`SPLITH` - horizontal splitter<br/>`TABBED` - tabbed panel<br/>`SCROLL`– a scrollable container, cannot have more than one child**deprecated since version 5, use `horizontal`, `tabbed`, `lines`**|Container type|`CONTAINERV`|`CONTAINERH`<br/>`TABBED`|
 |`horizontal`|Container is horizontal|[Logical literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
 |`tabbed`|Container is tabbed|[Logical literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
 |`childrenAlignment`|Alignment of child components inside a container. Acceptable values: `START`, `CENTER`, `END`|Alignment type|`START`|`CENTER`|
@@ -141,6 +143,8 @@ To access design components, you can use their names or address property compone
 |`custom`|todo|[String literal](Literals.md#strliteral)|NULL|todo|
 |`columns`|Number of columns in a `COLUMNS` type container<br/>**deprecated since version 5, use `lines`**|Integer literal|`1`|`3`|
 |`lines`|Number of lines (rows or columns) in container|Integer literal|`1`|`3`|
+|`lineSize`|todo|Integer literal|NULL|todo|
+|`captionLineSize`|todo|Integer literal|NULL|todo|
 
 ### Properties of actions and properties on the form
 
@@ -175,14 +179,27 @@ To access design components, you can use their names or address property compone
 |`showChangeKey`|Specifying that the property caption will include that name of the key shortcut that will trigger the change event|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
 |`focusable`|todo|[Logical literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
 |`panelColumnVertical`|todo|[Logical literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
+|`valueClass`|todo|String literal|NULL|todo|
+|`captionClass`|todo|String literal|NULL|todo|
 |`caption`|Caption of a property or action|String literal|caption of a property or action|`'Caption'`|
+|`tag`|todo|String literal|NULL|todo|
+|`imagePath`<br>`image`|The path to the file with the image to be displayed as an action icon. The path is specified relative to the `images` folder|String literal|`NULL`|`'image.png'`|
+|`comment`|Comment of a property or action|String literal|NULL|`'Comment'`|
+|`commentClass`|Class of comment of property or action|String literal|NULL|`'comment-class'`|
+|`panelCommentVertical`|Indicates that the comment of property or action should be drawn above or below the value on the panel|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
+|`disableIfReadonly`|todo|[Logical literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
+|`panelCommentFirst`|Indicates that the comment should be drawn on the panel before property value|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
+|`panelCommentAlignment`|Comment component alignment inside the container. Acceptable values: `START` (at the beginning), `CENTER` (in the center), `END` (at the end), `STRETCH` (stretched).|Alignment type|`START`|`STRETCH`|
+|`placeholder`|Placeholder of a property or action|String literal|placeholder of a property or action|`'Placeholder'`|
 |`valueAlignment`|Component value alignment. Acceptable values: `START` (at the beginning), `CENTER` (in the center), `END` (at the end), `STRETCH` (stretched).|Alignment type|`START`|`STRETCH`|
 |`clearText`|Specifying that the current text should be reset when input starts|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`notSelectAll`|Specifying that the text is not selected at the start of editing|`FALSE`|`TRUE`<br/>`FALSE`|
 |`askConfirm`|Specifies that an attempt to change the property (execute an action) will show a confirmation request|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`askConfirmMessage`|Text of the confirmation request shown when an attempt to change the property (execute the action) is made|String literal|default message|`'Are you sure you want to modify this property?'`|
 |`toolTip`|The tip to be shown when the cursor hovers over the caption of a property or action|String literal|Default toolTip|`'Tip'`|
+|`toolbar`|todo|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`notNull`|Specifies that in case of a `NULL` property value, the component of this property should be highlighted|Extended Boolean literal|depends on the property|`TRUE`<br/>`FALSE`|
+|`select`|todo|String literal|NULL|todo|
 
 ### Toolbar properties
 
