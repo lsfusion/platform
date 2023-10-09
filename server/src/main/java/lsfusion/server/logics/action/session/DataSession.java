@@ -2529,12 +2529,15 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         other.dropSessionEventChangedOld(); // так как сессия копируется, два раза события нельзя выполнять
     }
 
-    public void copySessionDataTo(DataSession other, FunctionSet<SessionDataProperty> filter) throws SQLException, SQLHandledException {
+    public void copySessionDataTo(DataSession other, FunctionSet<SessionDataProperty> filter, boolean migrateClasses) throws SQLException, SQLHandledException {
         other.dropChanges(other.filterSessionData(filter).keySet());
 
         // not using dataChanges (since there will be a problem with classes, because there are no class changes in new session, and therefore changes will not be copied, and when copying back will delete existing changes) - somwhere similar to noClasses - but noClasses is more general thing
         for (Map.Entry<SessionDataProperty, PropertyChangeTableUsage<ClassPropertyInterface>> e : filterSessionData(BaseUtils.remove(filter, NONESTING)).entrySet())
             other.getSession().changeProperty(e.getKey(), PropertyChangeTableUsage.getChange(e.getValue()));
+
+        if (migrateClasses)
+            copyClassChanges(other);
     }
 
     public void copyClassChanges(DataSession other) throws SQLException, SQLHandledException {

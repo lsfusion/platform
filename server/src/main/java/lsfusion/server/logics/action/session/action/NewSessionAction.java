@@ -31,7 +31,7 @@ import java.sql.SQLException;
 
 public class NewSessionAction extends AroundAspectAction {
     private final FunctionSet<SessionDataProperty> explicitMigrateProps; // актуальны и для nested, так как иначе будет отличаться поведение от NEW SESSION
-    private final boolean migrateSessionClasses;
+    private final boolean migrateClasses;
     private final boolean isNested;
     private final boolean singleApply;
     private final boolean newSQL;
@@ -49,7 +49,7 @@ public class NewSessionAction extends AroundAspectAction {
                                                           ActionMapImplement<?, I> action, boolean singleApply,
                                                           boolean newSQL,
                                                           FunctionSet<SessionDataProperty> explicitMigrateProps,
-                                                          boolean migrateSessionClasses,
+                                                          boolean migrateClasses,
                                                           boolean isNested, ImSet<FormEntity> fixedForms) {
         super(caption, innerInterfaces, action);
 
@@ -58,7 +58,7 @@ public class NewSessionAction extends AroundAspectAction {
 
         this.isNested = isNested;
         this.explicitMigrateProps = explicitMigrateProps;
-        this.migrateSessionClasses = migrateSessionClasses;
+        this.migrateClasses = migrateClasses;
 
         this.fixedForms = fixedForms;
 
@@ -113,9 +113,6 @@ public class NewSessionAction extends AroundAspectAction {
                 newSession.setParentSession(session);
             } else {
                 migrateSessionProperties(session, newSession);
-                if (migrateSessionClasses) {
-                    session.copyClassChanges(newSession);
-                }
             }
         }
 
@@ -143,7 +140,7 @@ public class NewSessionAction extends AroundAspectAction {
 
     private void migrateSessionProperties(DataSession migrateFrom, DataSession migrateTo) throws SQLException, SQLHandledException {
         assert !newSQL;
-        migrateFrom.copySessionDataTo(migrateTo, migrateProps);
+        migrateFrom.copySessionDataTo(migrateTo, migrateProps, migrateClasses);
     }
 
     protected void finallyAspect(ExecutionContext<PropertyInterface> context, ExecutionContext<PropertyInterface> innerContext) throws SQLException {
