@@ -96,10 +96,13 @@ function interpreter() {
                 }
 
                 let editorValue = value.text;
-                if (editorValue !== aceEditor.getValue())
+                let currentEditorValue = aceEditor.getValue();
+                // first check means that there is no editing is done (because we don't have any start / end editing here)
+                if (currentEditorValue === element.currentValue && editorValue !== currentEditorValue) {
                     aceEditor.setValue(editorValue);
 
-                element.currentValue = editorValue;
+                    element.currentValue = editorValue;
+                }
             }
         }
     }
