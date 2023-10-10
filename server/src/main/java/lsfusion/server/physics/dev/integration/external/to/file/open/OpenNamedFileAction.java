@@ -25,7 +25,7 @@ public class OpenNamedFileAction extends InternalAction {
 
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
         try {
-            NamedFileData source = (NamedFileData) context.getDataKeyValue(sourceInterface).getValue();
+            NamedFileData source = (NamedFileData) context.getKeyValue(sourceInterface).getValue();
             boolean noWait = context.getKeyValue(noWaitInterface).getValue() != null;
 
             if(source != null) {
