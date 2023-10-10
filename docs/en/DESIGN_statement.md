@@ -183,7 +183,7 @@ To access design components, you can use their names or address property compone
 |`captionClass`|todo|String literal|NULL|todo|
 |`caption`|Caption of a property or action|String literal|caption of a property or action|`'Caption'`|
 |`tag`|todo|String literal|NULL|todo|
-|`imagePath`<br>`image`|The path to the file with the image to be displayed as an action icon. The path is specified relative to the `images` folder|String literal|`NULL`|`'image.png'`|
+|`imagePath`<br/>`image`|The path to the file with the image to be displayed as an action icon. The path is specified relative to the `images` folder|String literal|`NULL`|`'image.png'`|
 |`comment`|Comment of a property or action|String literal|NULL|`'Comment'`|
 |`commentClass`|Class of comment of property or action|String literal|NULL|`'comment-class'`|
 |`panelCommentVertical`|Indicates that the comment of property or action should be drawn above or below the value on the panel|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
