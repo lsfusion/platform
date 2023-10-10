@@ -408,6 +408,7 @@ META applicationForm(sid, name)
                 type = TABBED;
                 NEW commons {
                     caption = '{system.form.sid.name.caption.commons}';
+                    height = 1;
                 }
             }
         }
@@ -543,6 +544,7 @@ END
 DESIGN options {
     pane {
         NEW log {
+            height = 1;
             caption = '{service.form.options.caption.logging}';
         }
     }
