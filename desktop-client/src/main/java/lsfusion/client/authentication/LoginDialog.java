@@ -550,24 +550,6 @@ public class LoginDialog extends JDialog {
         savePasswordCheckBox = new JCheckBox(ClientResourceBundle.getString("dialog.remember.me"));
         bottomPanel.add(savePasswordCheckBox, getGridBagConstraints(0, 0, false));
 
-        JPanel okCancelPanel = new JPanel(new BorderLayout());
-        bottomPanel.add(okCancelPanel, getGridBagConstraints(1, 1, false));
-
-        JPanel subOKCancelPanel = new JPanel();
-        subOKCancelPanel.setLayout(new BoxLayout(subOKCancelPanel, BoxLayout.X_AXIS));
-        okCancelPanel.add(subOKCancelPanel, BorderLayout.EAST);
-
-        buttonOK = new JButton(ClientResourceBundle.getString("dialog.ok"));
-        buttonOK.setMnemonic('O');
-        buttonOK.setDisplayedMnemonicIndex(0);
-        subOKCancelPanel.add(buttonOK);
-        subOKCancelPanel.add(Box.createHorizontalStrut(2));
-
-        buttonCancel = new JButton(ClientResourceBundle.getString("dialog.cancel"));
-        buttonCancel.setMnemonic('C');
-        buttonCancel.setDisplayedMnemonicIndex(0);
-        subOKCancelPanel.add(buttonCancel);
-
         extraLinkPanel = new JPanel();
         extraLinkLabel = new JLabel("");
         extraLinkLabel.addMouseListener(new MouseAdapter() {
@@ -584,7 +566,25 @@ public class LoginDialog extends JDialog {
             }
         });
         extraLinkPanel.add(extraLinkLabel);
-        mainPanel.add(extraLinkPanel);
+        bottomPanel.add(extraLinkPanel, getGridBagConstraints(1, 0, false));
+
+        JPanel okCancelPanel = new JPanel(new BorderLayout());
+        bottomPanel.add(okCancelPanel, getGridBagConstraints(2, 1, false));
+
+        JPanel subOKCancelPanel = new JPanel();
+        subOKCancelPanel.setLayout(new BoxLayout(subOKCancelPanel, BoxLayout.X_AXIS));
+        okCancelPanel.add(subOKCancelPanel, BorderLayout.EAST);
+
+        buttonOK = new JButton(ClientResourceBundle.getString("dialog.ok"));
+        buttonOK.setMnemonic('O');
+        buttonOK.setDisplayedMnemonicIndex(0);
+        subOKCancelPanel.add(buttonOK);
+        subOKCancelPanel.add(Box.createHorizontalStrut(2));
+
+        buttonCancel = new JButton(ClientResourceBundle.getString("dialog.cancel"));
+        buttonCancel.setMnemonic('C');
+        buttonCancel.setDisplayedMnemonicIndex(0);
+        subOKCancelPanel.add(buttonCancel);
 
         warningPanel = new JPanel();
         warningPanel.setBackground(new Color(-39322));
