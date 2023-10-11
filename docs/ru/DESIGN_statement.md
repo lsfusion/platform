@@ -109,7 +109,7 @@ title: 'Инструкция DESIGN'
 |`shrink`|todo|Логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
 |`alignShrink`|todo|Логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
 |`align`<br/>`alignment`|Способ выравнивания компонента внутри контейнера. Допустимые значения: `START` (В начале), `CENTER` (В центре), `END` (В конце), `STRETCH` (Растянуть).|Тип выравнивания|`START`|`STRETCH`|
-|`alignCaption`|todo|[Логический литерал](Literals.md#booleanliteral)||`FALSE`|`TRUE`<br/>`FALSE`|
+|`alignCaption`|todo|Логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
 |`marginTop`|Отступ сверху|Целочисленный литерал|`0`|`3`|
 |`marginRight`|Отступ справа|Целочисленный литерал|`0`|`1`|
 |`marginBottom`|Отступ снизу|Целочисленный литерал|`0`|`4`|
@@ -117,7 +117,7 @@ title: 'Инструкция DESIGN'
 |`margin`|Отступ. Устанавливает одинаковое значение свойствам `marginTop`, `marginRight`, `marginBottom`, `marginLeft`|Целочисленный литерал|`0`|`5`|
 |`captionFont`|Шрифт, который будет использоваться для отображения заголовка компонента|[Строковый литерал](Literals.md#strliteral)|зависит от компонента|`'Tahoma bold 16'`<br/>`'Times 12'`|
 |`font`|Шрифт, который будет использоваться для отображения текста компонента, например, значения свойства, заголовка действия, текста в таблице|Строковый литерал|зависит от компонента|`'Tahoma bold 16'`<br/>`'Times 12'`|
-|`class`|todo|[Строковый литерал](Literals.md#strliteral)|NULL|todo|
+|`class`|todo|Строковый литерал|NULL|todo|
 |`fontSize`|Размер шрифта, который будет использоваться для отображения текста компонента|Числовой литерал|зависит от компонента|`10`|
 |`fontStyle`|Стиль шрифта, который будет использоваться для отображения текста компонента. Может содержать слова `'bold'` и/или `'italic'`, либо пустую строку|Строковый литерал|`''`|`'bold'`<br/>`'bold italic'`|
 |`background`|Цвет, который будет использоваться для отображения фона компонента|[Литерал класса `COLOR`](Literals.md#colorliteral)|`#FFFFFF`|`#FFFFCC`<br/>`RGB(255, 0, 0)`|
@@ -132,7 +132,7 @@ title: 'Инструкция DESIGN'
 |`image`|todo|Строковый литерал|`NULL`|todo|
 |`collapsible`|todo|Логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
 |`border`|todo|Логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
-|`collapsed`|todo|[Логический литерал](Literals.md#booleanliteral)||`FALSE`|`TRUE`<br/>`FALSE`|
+|`collapsed`|todo|Логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
 |`horizontal`|Горизонтальный контейнер|Логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
 |`tabbed`|Контейнер с табами|Логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
 |`childrenAlignment`|Способ выравнивания дочерних компонентов внутри контейнера. Допустимые значения: `START`, `CENTER`, `END`|Тип выравнивания|`START`|`CENTER`|
@@ -189,7 +189,7 @@ title: 'Инструкция DESIGN'
 |`comment`|Комментарий свойства или действия|Строковый литерал|Комментарий свойства или действия|`'Комментарий'`|
 |`commentClass`|Класс комментария свойства или действия|Строковый литерал|Класс комментария свойства или действия|`'comment-class'`|
 |`panelCommentVertical`|Указание того, что в панели необходимо рисовать комментарий свойства или действия сверху или снизу от значения|Дополненный логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
-|`disableIfReadonly`|todo|[Logical literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
+|`disableIfReadonly`|todo|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`panelCommentFirst`|Указание того, что в панели необходимо рисовать сначала комментарий, а потом значение свойства|Дополненный логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
 |`panelCommentAlignment`|Способ выравнивания компонента комментария внутри контейнера. Допустимые значения: `START` (В начале), `CENTER` (В центре), `END` (В конце), `STRETCH` (Растянуть).|Тип выравнивания|`START`|`STRETCH`|
 |`placeholder`|Placeholder свойства|Строковый литерал|placeholder свойства|`'Placeholder'`|

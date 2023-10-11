@@ -109,13 +109,13 @@ To access design components, you can use their names or address property compone
 |`shrink`|todo|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`alignShrink`|todo|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`align`<br/>`alignment`|Component alignment inside the container. Acceptable values: `START` (at the beginning), `CENTER` (in the center), `END` (at the end), `STRETCH` (stretched).|Alignment type|`START`|`STRETCH`|
-|`alignCaption`|todo|[Logical literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
+|`alignCaption`|todo|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`marginTop`|Top margin|Integer literal|`0`|`3`|
 |`marginRight`|Right margin|Integer literal|`0`|`1`|
 |`marginBottom`|Bottom margin|Integer literal|`0`|`4`|
 |`marginLeft`|Left margin|Integer literal|`0`|`1`|
 |`margin`|Margin. Sets the same value to the following properties: `marginTop`, `marginRight`, `marginBottom`, `marginLeft`|Integer literal|`0`|`5`|
-|`captionFont`|The font to be used for displaying caption of the component|[String literal](Literals.md#strliteral)|depends on the component|`'Tahoma bold 16'`<br/>`'Times 12'`|
+|`captionFont`|The font to be used for displaying caption of the component|String literal|depends on the component|`'Tahoma bold 16'`<br/>`'Times 12'`|
 |`font`|The font to be used for displaying the component text — for example, property value, action caption, table text|String literal|depends on the component|`'Tahoma bold 16'`<br/>`'Times 12'`|
 |`class`|todo|String literal|NULL|todo|
 |`fontSize`|The size of the font to be used for displaying the component text|Numeric literal|depends on the component|`10`|
@@ -188,7 +188,7 @@ To access design components, you can use their names or address property compone
 |`comment`|Comment of a property or action|String literal|NULL|`'Comment'`|
 |`commentClass`|Class of comment of property or action|String literal|NULL|`'comment-class'`|
 |`panelCommentVertical`|Indicates that the comment of property or action should be drawn above or below the value on the panel|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
-|`disableIfReadonly`|todo|[Logical literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
+|`disableIfReadonly`|todo|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`panelCommentFirst`|Indicates that the comment should be drawn on the panel before property value|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`panelCommentAlignment`|Comment component alignment inside the container. Acceptable values: `START` (at the beginning), `CENTER` (in the center), `END` (at the end), `STRETCH` (stretched).|Alignment type|`START`|`STRETCH`|
 |`placeholder`|Placeholder of a property or action|String literal|placeholder of a property or action|`'Placeholder'`|
