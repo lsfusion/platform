@@ -191,6 +191,10 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
     }
 
     public void addCondition(GPropertyFilter condition, Event keyEvent, boolean replace, boolean readSelectedValue) {
+        this.addCondition(condition, keyEvent, replace, readSelectedValue, true);
+    }
+
+    public void addCondition(GPropertyFilter condition, Event keyEvent, boolean replace, boolean readSelectedValue, boolean focusOnValue) {
         if (replace) {
             resetAllConditions(false);
         }
@@ -207,7 +211,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
 
             logicsSupplier.getForm().getFormLayout().update(-1);
 
-            conditionView.onAdd();
+            conditionView.onAdd(focusOnValue);
 
             if (keyEvent != null) {
                 conditionView.startEditing(keyEvent);

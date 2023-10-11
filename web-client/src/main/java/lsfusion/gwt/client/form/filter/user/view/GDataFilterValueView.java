@@ -13,7 +13,6 @@ import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
-import lsfusion.gwt.client.form.property.cell.view.CustomCellRenderer;
 
 import static lsfusion.gwt.client.form.event.GKeyStroke.isAddUserFilterKeyEvent;
 import static lsfusion.gwt.client.form.event.GKeyStroke.isReplaceUserFilterKeyEvent;
@@ -61,8 +60,10 @@ public class GDataFilterValueView extends SizedFlexPanel {
 //        cell.updateValue(filterValue.value);
     }
 
-    public void onAdd() {
-        cell.focus(FocusUtils.Reason.NEWFILTER);
+    public void onAdd(boolean focus) {
+        if (focus) {
+            cell.focus(FocusUtils.Reason.NEWFILTER);
+        }
     }
 
     public void focusOnValue() {

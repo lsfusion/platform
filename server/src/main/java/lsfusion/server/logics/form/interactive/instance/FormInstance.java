@@ -98,8 +98,7 @@ import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
-import lsfusion.server.logics.form.interactive.event.FilterEvent;
-import lsfusion.server.logics.form.interactive.event.OrderEvent;
+import lsfusion.server.logics.form.interactive.event.UserActivityEvent;
 import lsfusion.server.logics.form.interactive.instance.design.BaseComponentViewInstance;
 import lsfusion.server.logics.form.interactive.instance.design.ComponentViewInstance;
 import lsfusion.server.logics.form.interactive.instance.design.ContainerViewInstance;
@@ -391,9 +390,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
             if(toDraw != null) {
                 OrderInstance order = property.getOrderProperty();
-                toDraw.changeOrder(order, wasOrder.contains(toDraw) ? ADD : REPLACE);
+                toDraw.changeOrder(order, property, wasOrder.contains(toDraw) ? ADD : REPLACE);
                 if (!ascending) {
-                    toDraw.changeOrder(order, DIR);
+                    toDraw.changeOrder(order, property, DIR);
                 }
                 wasOrder.add(toDraw);
             }
@@ -2702,16 +2701,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         fireEvent(FormEventType.DROP, stack);
     }
 
-    public void fireOnOrder(ExecutionStack stack, OrderEvent orderEvent, List<Pair<PropertyDrawInstance, Boolean>> orders) throws SQLException, SQLHandledException {
-        orderEvent.store(BL, entity, orders, getSession());
-
-        fireEvent(orderEvent, stack);
-    }
-    
-    public void fireOnFilter(ExecutionStack stack, FilterEvent filterEvent, List<FilterInstance> filters) throws SQLException, SQLHandledException {
-        filterEvent.store(BL, entity, filters, getSession());
-
-        fireEvent(filterEvent, stack);
+    public void fireOnUserActivity(ExecutionStack stack, UserActivityEvent event) throws SQLException, SQLHandledException {
+        fireEvent(event, stack);
     }
 
     public void fireFormEvent(ExecutionStack stack, FormEvent formEvent, PushAsyncResult pushedAsyncResult) throws SQLException, SQLHandledException {

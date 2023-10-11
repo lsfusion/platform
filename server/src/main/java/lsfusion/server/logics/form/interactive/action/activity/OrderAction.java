@@ -29,27 +29,30 @@ public class OrderAction extends UserActivityAction {
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         FormInstance formInstance = context.getFormInstance(true, true);
         List<JSONObject> objectList = readJSON(context, formInstance.BL.LM.orders);
+        LinkedHashMap<Integer, Boolean> orders = new LinkedHashMap<>();
         if (objectList != null) {
-            LinkedHashMap<Integer, Boolean> orders = new LinkedHashMap<>();
-            
             for (JSONObject jsonObject : objectList) {
                 String propertyString = jsonObject.optString(PROPERTY_KEY);
                 if (!isRedundantString(propertyString)) {
                     PropertyDrawInstance<?> propertyDraw = formInstance.getPropertyDraw(propertyString);
                     if (propertyDraw != null) {
-                        boolean asc = true;
-                        String orderString = jsonObject.optString(ORDER_KEY);
-                        if (!isRedundantString(orderString) && orderString.equalsIgnoreCase(DESC_VALUE)) {
-                            asc = false;
-                        }
+                        // make sure group object is the same
+                        GroupObjectEntity propertyGO = propertyDraw.toDraw.entity;
+                        if (propertyGO == groupObject) {
+                            boolean asc = true;
+                            String orderString = jsonObject.optString(ORDER_KEY);
+                            if (!isRedundantString(orderString) && orderString.equalsIgnoreCase(DESC_VALUE)) {
+                                asc = false;
+                            }
 
-                        orders.put(propertyDraw.getID(), asc);
+                            orders.put(propertyDraw.getID(), asc);
+                        }
                     }
                 }
             }
-            
-            OrderClientAction orderClientAction = new OrderClientAction(groupObject.getID(), orders);
-            context.delayUserInteraction(orderClientAction);
         }
+        
+        OrderClientAction orderClientAction = new OrderClientAction(groupObject.getID(), orders);
+        context.delayUserInteraction(orderClientAction);
     }
 }

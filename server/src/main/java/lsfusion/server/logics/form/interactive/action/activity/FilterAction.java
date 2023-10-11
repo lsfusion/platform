@@ -31,39 +31,38 @@ public class FilterAction extends UserActivityAction {
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         FormInstance formInstance = context.getFormInstance(true, true);
         List<JSONObject> objectList = readJSON(context, formInstance.BL.LM.filters);
-        
-        if (objectList != null) {
-            List<FilterClientAction.FilterItem> filters = new ArrayList<>();
 
+        List<FilterClientAction.FilterItem> filters = new ArrayList<>();
+        if (objectList != null) {
             for (JSONObject jsonObject : objectList) {
                 FilterClientAction.FilterItem filterItem;
                 String propertyString = jsonObject.optString(PROPERTY_KEY);
                 if (!isRedundantString(propertyString)) {
                     PropertyDrawInstance<?> propertyDraw = formInstance.getPropertyDraw(propertyString);
                     if (propertyDraw != null) {
-                        filterItem = new FilterClientAction.FilterItem(propertyDraw.getID());
+                        // make sure group object is the same
+                        GroupObjectEntity propertyGO = propertyDraw.toDraw.entity;
+                        if (propertyGO == groupObject) {
+                            filterItem = new FilterClientAction.FilterItem(propertyDraw.getID());
 
-                        String compareString = jsonObject.optString(COMPARE_KEY);
-                        if (!isRedundantString(compareString)) {
-                            Compare compare = Compare.get(compareString);
-                            if (compare != null) {
-                                filterItem.compare = compare.serialize();
+                            String compareString = jsonObject.optString(COMPARE_KEY);
+                            if (!isRedundantString(compareString)) {
+                                Compare compare = Compare.get(compareString);
+                                if (compare != null) {
+                                    filterItem.compare = compare.serialize();
+                                }
                             }
+                            filterItem.negation = jsonObject.optBoolean(NEGATION_KEY);
+                            filterItem.value = jsonObject.opt(VALUE_KEY);
+                            filterItem.junction = !jsonObject.optBoolean(OR_KEY);
+
+                            filters.add(filterItem);
                         }
-
-                        filterItem.negation = jsonObject.optBoolean(NEGATION_KEY);
-                        
-                        filterItem.value = jsonObject.opt(VALUE_KEY);
-                        
-                        filterItem.junction = !jsonObject.optBoolean(OR_KEY);
-
-                        filters.add(filterItem);
                     }
                 }
             }
-            
-            FilterClientAction filterClientAction = new FilterClientAction(groupObject.getID(), filters);
-            context.delayUserInteraction(filterClientAction);
         }
+        FilterClientAction filterClientAction = new FilterClientAction(groupObject.getID(), filters);
+        context.delayUserInteraction(filterClientAction);
     }
 }

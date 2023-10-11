@@ -96,8 +96,6 @@ import lsfusion.server.logics.form.interactive.action.lifecycle.CloseFormAction;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.dialogedit.ClassFormSelector;
-import lsfusion.server.logics.form.interactive.event.FilterEvent;
-import lsfusion.server.logics.form.interactive.event.OrderEvent;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
 import lsfusion.server.logics.form.open.MappedForm;
 import lsfusion.server.logics.form.open.ObjectSelector;
@@ -2583,34 +2581,49 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
     
-    public OrderEvent createOrderEvent(String goName, String toProp) throws ScriptingErrorLog.SemanticErrorException {
-        LP toProperty = findLPByPropertyUsage(new NamedPropertyUsage(toProp));
-        return new OrderEvent(goName, toProperty);
-    }
-    
-    public FilterEvent createFilterEvent(String goName, String toProp) throws ScriptingErrorLog.SemanticErrorException {
-        LP toProperty = findLPByPropertyUsage(new NamedPropertyUsage(toProp));
-        return new FilterEvent(goName, toProperty);
-    }
-    
-    public LAWithParams addScriptedOrderProp(String goName, LPWithParams fromProp)  throws ScriptingErrorLog.SemanticErrorException {
-        FormEntity form = getFormFromSeekObjectName(goName);
-        GroupObjectEntity go = getSeekGroupObject(form, goName);
+    public LAWithParams addScriptedOrderProp(String goName, NamedPropertyUsage propertyUsage)  throws ScriptingErrorLog.SemanticErrorException {
+        GroupObjectEntity go = getSeekGroupObject(getFormFromSeekObjectName(goName), goName);
 
         if (go != null) {
-            return new LAWithParams(addOrderAProp(go, fromProp != null ? fromProp.getLP() : null), Collections.emptyList());
+            LP<?> fromProp = propertyUsage != null ? findLPNoParamsByPropertyUsage(propertyUsage) : null;
+            return new LAWithParams(addOrderAProp(go, fromProp), Collections.emptyList());
+        } else {
+            errLog.emitGroupObjectNotFoundError(parser, getSeekObjectName(goName));
+            return null;
+        }
+    }
+    
+    public LAWithParams addScriptedReadOrderProp(String goName, NamedPropertyUsage propertyUsage)  throws ScriptingErrorLog.SemanticErrorException {
+        GroupObjectEntity go = getSeekGroupObject(getFormFromSeekObjectName(goName), goName);
+
+        if (go != null) {
+            LP<?> targetProp = propertyUsage != null ? findLPNoParamsByPropertyUsage(propertyUsage) : null;
+            return new LAWithParams(addReadOrderAProp(go, targetProp), Collections.emptyList());
         } else {
             errLog.emitGroupObjectNotFoundError(parser, getSeekObjectName(goName));
             return null;
         }
     }
 
-    public LAWithParams addScriptedFilterProp(String goName, LPWithParams fromProp)  throws ScriptingErrorLog.SemanticErrorException {
+    public LAWithParams addScriptedFilterProp(String goName, NamedPropertyUsage propertyUsage)  throws ScriptingErrorLog.SemanticErrorException {
         FormEntity form = getFormFromSeekObjectName(goName);
         GroupObjectEntity go = getSeekGroupObject(form, goName);
 
         if (go != null) {
-            return new LAWithParams(addFilterAProp(go, fromProp != null ? fromProp.getLP() : null), Collections.emptyList());
+            LP<?> fromProp = propertyUsage != null ? findLPNoParamsByPropertyUsage(propertyUsage) : null;
+            return new LAWithParams(addFilterAProp(go, fromProp), Collections.emptyList());
+        } else {
+            errLog.emitGroupObjectNotFoundError(parser, getSeekObjectName(goName));
+            return null;
+        }
+    }
+
+    public LAWithParams addScriptedReadFilterProp(String goName, NamedPropertyUsage propertyUsage)  throws ScriptingErrorLog.SemanticErrorException {
+        GroupObjectEntity go = getSeekGroupObject(getFormFromSeekObjectName(goName), goName);
+
+        if (go != null) {
+            LP<?> targetProp = propertyUsage != null ? findLPNoParamsByPropertyUsage(propertyUsage) : null;
+            return new LAWithParams(addReadFilterAProp(go, targetProp), Collections.emptyList());
         } else {
             errLog.emitGroupObjectNotFoundError(parser, getSeekObjectName(goName));
             return null;

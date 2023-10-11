@@ -419,15 +419,22 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         return setOrders;
     }
     private ImOrderMap<OrderInstance,Boolean> userOrders = MapFact.EMPTYORDER();
+    // is necessary to identify property draw in ReadOrderAction 
+    private ImMap<OrderInstance, PropertyDrawInstance> userOrdersPropertyMapping = MapFact.EMPTY();
+
+    public ImOrderMap<OrderInstance,Boolean> getUserOrders() {
+        return userOrders;
+    }
     
-    public Boolean getUserOrder(OrderInstance property) {
-        return userOrders.get(property);
+    public ImMap<OrderInstance, PropertyDrawInstance> getUserOrdersPropertyMapping() {
+        return userOrdersPropertyMapping;
     }
 
-    public void changeOrder(OrderInstance property, Order modiType) {
+    public void changeOrder(OrderInstance property, PropertyDrawInstance propertyDraw, Order modiType) {
         ImOrderMap<OrderInstance, Boolean> newOrders;
         if (modiType == Order.REPLACE) {
             newOrders = MapFact.singletonOrder(property, userOrders.containsKey(property) && !userOrders.get(property));
+            userOrdersPropertyMapping = MapFact.EMPTY();
         } else if (modiType == Order.REMOVE) {
             newOrders = userOrders.removeOrderIncl(property);
         } else if (modiType == Order.DIR) {
@@ -440,6 +447,12 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             newOrders = userOrders.addOrderExcl(property, false);
         }
 
+        if (modiType == Order.REMOVE) {
+            userOrdersPropertyMapping = userOrdersPropertyMapping.remove(property);
+        } else {
+            userOrdersPropertyMapping = userOrdersPropertyMapping.addIfNotContains(property, propertyDraw);
+        }
+
         if(!BaseUtils.hashEquals(newOrders, userOrders)) {// оптимизация для пользовательских настроек
             userOrders = newOrders;
             setOrders = null;
@@ -450,6 +463,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     public void clearOrders() {
         if(!userOrders.isEmpty()) { // оптимизация для пользовательских настроек
             userOrders = MapFact.EMPTYORDER();
+            userOrdersPropertyMapping = MapFact.EMPTY();
             setOrders = null;
             updated |= UPDATED_ORDER;
         }

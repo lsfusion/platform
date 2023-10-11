@@ -20,7 +20,7 @@ public class FilterClientAction extends ExecuteClientAction {
     
     public static class FilterItem implements Serializable {
         public int propertyId;
-        public byte compare;
+        public byte compare = -1;
         public boolean negation;
         public Object value;
         public boolean junction;

@@ -1382,7 +1382,7 @@ public class GFormController implements EditManager {
 
     public long changeFilter(GGroupObject groupObject, ArrayList<GPropertyFilter> conditions) {
         currentFilters.put(groupObject, conditions);
-        return applyCurrentFilters();
+        return applyCurrentFilters(Collections.singletonList(groupObject));
     }
 
     public long changeFilter(GTreeGroup treeGroup, ArrayList<GPropertyFilter> conditions) {
@@ -1400,12 +1400,21 @@ public class GFormController implements EditManager {
             currentFilters.put(group, groupFilters);
         }
 
-        return applyCurrentFilters();
+        return applyCurrentFilters(treeGroup.groups);
     }
 
-    private long applyCurrentFilters() {
-        ArrayList<GPropertyFilterDTO> filters = new ArrayList<>();
-        currentFilters.foreachValue(groupFilters -> groupFilters.stream().filter(filter -> !filter.property.isAction()).map(GPropertyFilter::getFilterDTO).collect(Collectors.toCollection(() -> filters)));
+    private long applyCurrentFilters(List<GGroupObject> groups) {
+        Map<Integer, List<GPropertyFilterDTO>> filters = new LinkedHashMap<>();
+        for (GGroupObject group : groups) {
+            List<GPropertyFilterDTO> groupFilters = new ArrayList<>();
+            List<GPropertyFilter> gFilters = currentFilters.get(group);
+            for (GPropertyFilter filter : gFilters) {
+                if (!filter.property.isAction()) {
+                    groupFilters.add(filter.getFilterDTO());
+                }
+            }
+            filters.put(group.ID, groupFilters);
+        }
         return asyncResponseDispatch(new SetUserFilters(filters));
     }
 

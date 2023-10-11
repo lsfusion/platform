@@ -1440,7 +1440,7 @@ public class ClientFormController implements AsyncListener {
         });
     }
     
-    public void changePropertyOrder(int goID, LinkedHashMap<Integer, Boolean> orders) {
+    public void changePropertyOrders(int goID, LinkedHashMap<Integer, Boolean> orders) {
         ClientGroupObject groupObject = form.getGroupObject(goID);
         if (groupObject != null) {
             LinkedHashMap<ClientPropertyDraw, Boolean> pOrders = new LinkedHashMap<>();
@@ -1458,7 +1458,7 @@ public class ClientFormController implements AsyncListener {
     public void setPropertyOrders(final ClientGroupObject groupObject, List<Integer> propertyList, List<byte[]> columnKeyList, List<Boolean> orderList) {
         commitOrCancelCurrentEditing();
 
-        rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("setPropertyOrders - " + groupObject.getLogName()) {
+        rmiQueue.adaptiveSyncRequest(new ProcessServerResponseRmiRequest("setPropertyOrders - " + groupObject.getLogName()) {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
                 return remoteForm.setPropertyOrders(requestIndex, lastReceivedRequestIndex, groupObject.getID(), propertyList, columnKeyList, orderList);
@@ -1468,7 +1468,7 @@ public class ClientFormController implements AsyncListener {
 
     public void changeFilter(ClientGroupObject groupObject, List<ClientPropertyFilter> conditions) throws IOException {
         currentFilters.put(groupObject, new ArrayList<>(conditions));
-        applyCurrentFilters();
+        applyCurrentFilters(Collections.singletonList(groupObject));
     }
 
     public void changeFilter(ClientTreeGroup treeGroup, List<ClientPropertyFilter> conditions) throws IOException {
@@ -1487,7 +1487,7 @@ public class ClientFormController implements AsyncListener {
             currentFilters.put(group, groupFilters);
         }
 
-        applyCurrentFilters();
+        applyCurrentFilters(treeGroup.groups);
     }
 
     public static byte[] serializeClientFilter(ClientPropertyFilter filter) throws IOException {
@@ -1497,20 +1497,22 @@ public class ClientFormController implements AsyncListener {
         return outStream.toByteArray();
     }
 
-    private void applyCurrentFilters() throws IOException {
-        final List<byte[]> filters = new ArrayList<>();
-
-        for (List<ClientPropertyFilter> groupFilters : currentFilters.values()) {
-            for (ClientPropertyFilter filter : groupFilters) {
+    private void applyCurrentFilters(Collection<ClientGroupObject> groups) throws IOException {
+        Map<Integer, byte[][]> filters = new LinkedHashMap<>(); 
+        for (ClientGroupObject group : groups) {
+            final List<byte[]> groupFilters = new ArrayList<>();
+            List<ClientPropertyFilter> gFilters = currentFilters.get(group);
+            for (ClientPropertyFilter filter : gFilters) {
                 if (!filter.property.isAction())
-                    filters.add(serializeClientFilter(filter));
+                    groupFilters.add(serializeClientFilter(filter));
             }
+            filters.put(group.ID, groupFilters.toArray(new byte[filters.size()][]));
         }
 
         rmiQueue.adaptiveSyncRequest(new ProcessServerResponseRmiRequest("applyCurrentFilters") {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.setUserFilters(requestIndex, lastReceivedRequestIndex, filters.toArray(new byte[filters.size()][]));
+                return remoteForm.setUserFilters(requestIndex, lastReceivedRequestIndex, filters);
             }
         });
     }

@@ -57,8 +57,6 @@ grammar LsfLogics;
     import lsfusion.server.logics.event.ChangeEvent;
     import lsfusion.server.logics.event.Event;
     import lsfusion.server.logics.event.SystemEvent;
-    import lsfusion.server.logics.form.interactive.event.FilterEvent;
-    import lsfusion.server.logics.form.interactive.event.OrderEvent;
     import lsfusion.server.logics.form.interactive.FormEventType;
     import lsfusion.server.logics.form.interactive.ManageSessionType;
     import lsfusion.server.logics.form.interactive.UpdateType;
@@ -69,6 +67,7 @@ grammar LsfLogics;
     import lsfusion.server.logics.form.interactive.design.ComponentView;
     import lsfusion.server.logics.form.interactive.design.filter.FilterView;
     import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
+    import lsfusion.server.logics.form.interactive.event.UserActivityEvent;
     import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
     import lsfusion.server.logics.form.open.MappedForm;
     import lsfusion.server.logics.form.stat.SelectTop;
@@ -1252,30 +1251,28 @@ scheduleFormEventDeclaration returns [int period, boolean fixed]
 	:   'SCHEDULE' 'PERIOD' periodLiteral=intLiteral { $period = $periodLiteral.val; } ('FIXED' { $fixed = true; })?
 	;
 	
-orderEventDeclaration returns [OrderEvent type]
+orderEventDeclaration returns [UserActivityEvent type]
 @init {
 	String object = null;
-	String propertyName = null;
 }
 @after {
 	if (inMainParseState()) {
-		$type = self.createOrderEvent(object, propertyName);
+		$type = new UserActivityEvent(object, UserActivityEvent.Type.ORDER);
 	}
 }
-    :   'ORDER' objectId=ID { object = $objectId.text; } ('TO' pu = propertyUsage { propertyName = $pu.name; })?
+    :   'ORDER' objectId=ID { object = $objectId.text; }
     ;
     
-filterEventDeclaration returns [FilterEvent type]
+filterEventDeclaration returns [UserActivityEvent type]
 @init {
 	String object = null;
-	String propertyName = null;
 }
 @after {
 	if (inMainParseState()) {
-		$type = self.createFilterEvent(object, propertyName);
+		$type = new UserActivityEvent(object, UserActivityEvent.Type.FILTER);
 	}
 }
-    :   'FILTER' objectId=ID { object = $objectId.text; } ('TO' pu = propertyUsage { propertyName = $pu.name; })?
+    :   'FILTER' objectId=ID { object = $objectId.text; }
     ;
 
 
@@ -3283,7 +3280,9 @@ leafKeepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [
 	|	expandADB=expandGroupObjectActionDefinitionBody[context, dynamic] { $action = $expandADB.action; }
 	|	collapseADB=collapseGroupObjectActionDefinitionBody[context, dynamic] { $action = $collapseADB.action; }
 	|   orderADB=orderActionDefinitionBody[context, dynamic] { $action = $orderADB.action; }
+	|   readOrderADB=readOrderActionDefinitionBody[context, dynamic] { $action = $readOrderADB.action; }
 	|   filterADB=filterActionDefinitionBody[context, dynamic] { $action = $filterADB.action; }
+	|   readFilterADB=readFilterActionDefinitionBody[context, dynamic] { $action = $readFilterADB.action; }
 	|	mailADB=emailActionDefinitionBody[context, dynamic] { $action = $mailADB.action; }
 	|	evalADB=evalActionDefinitionBody[context, dynamic] { $action = $evalADB.action; }
 	|	readADB=readActionDefinitionBody[context, dynamic] { $action = $readADB.action; }
@@ -3981,24 +3980,46 @@ expandCollapseObjectsList[List<TypedParameter> context, boolean dynamic] returns
 orderActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedOrderProp($gobj.sid, $fromExpr.property);
+		$action = self.addScriptedOrderProp($gobj.sid, $pu.propUsage);
 	}
 }
     :   'ORDER'
         gobj=formGroupObjectID
-        ('FROM' fromExpr=propertyExpression[context, dynamic])?
+        ('FROM' pu=propertyUsage)?
+    ;
+
+readOrderActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
+@after {
+	if (inMainParseState()) {
+		$action = self.addScriptedReadOrderProp($gobj.sid, $pu.propUsage);
+	}
+}
+    :   'READ' 'ORDER'
+        gobj=formGroupObjectID
+        ('TO' pu=propertyUsage)?
     ;
 
  filterActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
  @after {
  	if (inMainParseState()) {
- 		$action = self.addScriptedFilterProp($gobj.sid, $fromExpr.property);
+ 		$action = self.addScriptedFilterProp($gobj.sid, $pu.propUsage);
  	}
  }
      :   'FILTER'
          gobj=formGroupObjectID
-         ('FROM' fromExpr=propertyExpression[context, dynamic])?
+         ('FROM' pu=propertyUsage)?
      ;
+     
+readFilterActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
+@after {
+	if (inMainParseState()) {
+		$action = self.addScriptedReadFilterProp($gobj.sid, $pu.propUsage);
+	}
+}
+    :   'READ' 'FILTER'
+        gobj=formGroupObjectID
+        ('TO' pu=propertyUsage)?
+    ;
 
 changeClassActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams action]
 @init {

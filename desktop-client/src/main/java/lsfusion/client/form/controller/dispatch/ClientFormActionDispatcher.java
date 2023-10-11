@@ -90,7 +90,7 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
 
     @Override
     public void execute(OrderClientAction action) {
-        getFormController().changePropertyOrder(action.goID, action.ordersMap);
+        getFormController().changePropertyOrders(action.goID, action.ordersMap);
     }
 
     @Override

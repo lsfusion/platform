@@ -66,6 +66,8 @@ import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.interactive.action.activity.FilterAction;
 import lsfusion.server.logics.form.interactive.action.activity.OrderAction;
+import lsfusion.server.logics.form.interactive.action.activity.ReadFilterAction;
+import lsfusion.server.logics.form.interactive.action.activity.ReadOrderAction;
 import lsfusion.server.logics.form.interactive.action.async.QuickAccess;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapRemove;
 import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelector;
@@ -2063,8 +2065,18 @@ public abstract class LogicsModule {
     }
 
     @IdentityStrongLazy
+    public LA addReadOrderAProp(GroupObjectEntity object, LP toProperty) {
+        return addAction(null, new LA<>(new ReadOrderAction(object, toProperty)));
+    }
+
+    @IdentityStrongLazy
     public LA addFilterAProp(GroupObjectEntity object, LP fromProperty) {
         return addAction(null, new LA<>(new FilterAction(object, fromProperty)));
+    }
+
+    @IdentityStrongLazy
+    public LA addReadFilterAProp(GroupObjectEntity object, LP toProperty) {
+        return addAction(null, new LA<>(new ReadFilterAction(object, toProperty)));
     }
 
     public void addConstraint(Property<?> property, LocalizedString message, boolean checkChange) {
