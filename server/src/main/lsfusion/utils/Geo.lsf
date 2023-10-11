@@ -44,13 +44,26 @@ isDefault '{geo.api.key.default}' (MapProvider m) = m == calculateMapProvider();
 apiKey '{geo.api.key}' = DATA STRING(MapProvider); 
 provider '{geo.api.key.provider}' (MapProvider m) = staticCaption(m) CHARWIDTH 5;
 commercialAPI '{geo.api.key.commercial}' = DATA BOOLEAN(MapProvider); // free or commercial
-lsfParams(STRING s) += GROUP MAX apiKey(MapProvider p) IF s = 'mapApiKey_' + getWord(staticName(p),'.',2);
-lsfParams(STRING s) += GROUP MAX (IF commercialAPI(MapProvider p) THEN 'true') IF s = 'commercialAPI_' + getWord(staticName(p),'.',2);
 
 googleAutocompleteCountry '{geo.google.autocomplete.country}' = DATA STRING();
 lsfParams(STRING s) += googleAutocompleteCountry() IF s = 'googleMapAutocompleteCountry';
 
-onWebClientLoad() +{ INTERNAL CLIENT 'googleAutocomplete.js'; }
+onWebClientLoad() +{
+    // Two "INTERNAL CLIENT init***MapsAPI" calls are used because:  
+    //  - first INTERNAL CLIENT call is to connect the .js file.
+    //  - second INTERNAL CLIENT call is to pass a api-key as parameter to the function contained in the .js file.
+    IF apiKey(MapProvider.google) THEN {
+        INTERNAL CLIENT 'initGoogleMapsAPI.js';
+        INTERNAL CLIENT 'initGoogleMapsAPI' PARAMS apiKey(MapProvider.google);
+        
+        INTERNAL CLIENT 'googleAutocomplete.js';
+    }
+
+    IF apiKey(MapProvider.yandex) THEN {
+        INTERNAL CLIENT 'initYandexMapsAPI.js';
+        INTERNAL CLIENT 'initYandexMapsAPI' PARAMS apiKey(MapProvider.yandex), commercialAPI(MapProvider.yandex);
+    }
+}
 
 getCoordinatesAddress  INTERNAL  'lsfusion.server.logics.classes.data.utils.geo.GetCoordinatesAddressAction' (STRING, MapProvider);
 getCoordinates (STRING address)  { getCoordinatesAddress(address, calculateMapProvider()); }

@@ -240,7 +240,7 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     @Override
-    public String customRestoreDB(String fileBackup, Set<String> tables) throws IOException {
+    public String customRestoreDB(String fileBackup, Set<String> tables, boolean isMultithread) throws IOException {
 
         String tempDB = "db-temp" + Calendar.getInstance().getTime().getTime();
         String host, port;
@@ -270,6 +270,9 @@ public class PostgreDataAdapter extends DataAdapter {
                 commandLine.addArgument("--dbname");
                 commandLine.addArgument(tempDB);
                 commandLine.addArgument(fileBackup);
+                if(isMultithread) {
+                    commandLine.addArgument("--format d");
+                }
 
                 Map<String, String> env = new HashMap<>(System.getenv());
                 env.put("PGPASSWORD", password);

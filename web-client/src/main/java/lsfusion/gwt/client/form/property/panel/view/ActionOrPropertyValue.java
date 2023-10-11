@@ -2,7 +2,6 @@ package lsfusion.gwt.client.form.property.panel.view;
 
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.AppBaseImage;
@@ -20,6 +19,7 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.view.SimpleTextBasedCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
@@ -68,6 +68,11 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
     @Override
     public boolean isPropertyReadOnly() {
         return readOnly;
+    }
+
+    @Override
+    public boolean isTabFocusable() {
+        return isFocusable();
     }
 
     @Override
@@ -123,9 +128,10 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
     public Element getFocusElement() {
         Element element = getRenderElement();
 
-        InputElement inputElement = SimpleTextBasedCellRenderer.getInputElement(element);
-        if(inputElement != null)
-            return inputElement;
+        Object focusElement = CellRenderer.getFocusElement(element);
+        if(focusElement != null) {
+            return focusElement == CellRenderer.NULL ? null : (Element) focusElement;
+        }
 
         return element;
     }
@@ -140,13 +146,17 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
 
         GFormController.setBindingGroupObject(this,  property.groupObject);
 
-        getFocusElement().setTabIndex(isFocusable() ? 0 : -1);
+        Element focusElement = getFocusElement();
+        if(focusElement != null)
+            focusElement.setTabIndex(isFocusable() ? 0 : -1);
 
         addStyleName("panelRendererValue");
     }
 
     public void focus(FocusUtils.Reason reason) {
-        FocusUtils.focus(getFocusElement(), reason);
+        Element focusElement = getFocusElement();
+        if(focusElement != null)
+            FocusUtils.focus(focusElement, reason);
     }
 
     public SizedWidget getSizedWidget() {
@@ -212,7 +222,8 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
             return;
 
         Element renderElement = getRenderElement();
-        if(SimpleTextBasedCellRenderer.getInputElement(renderElement) == null)
+        Object focusElement = CellRenderer.getFocusElement(renderElement);
+        if(focusElement == null || focusElement == CellRenderer.NULL)
             DataGrid.sinkPasteEvent(renderElement);
 
         isFocused = true;

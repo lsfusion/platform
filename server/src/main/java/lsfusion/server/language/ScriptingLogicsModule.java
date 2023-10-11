@@ -2241,9 +2241,10 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LAWithParams addScriptedNewSessionAProp(LAWithParams action, List<NamedPropertyUsage> migrateSessionProps, boolean migrateAllSessionProps,
-                                                   boolean isNested, boolean singleApply, boolean newSQL, List<String> formIds) throws ScriptingErrorLog.SemanticErrorException {
+                                                   boolean migrateClasses, boolean isNested, boolean singleApply, boolean newSQL, List<String> formIds) throws ScriptingErrorLog.SemanticErrorException {
         ImSet<FormEntity> fixedForms = formIds != null ? findForms(formIds) : null;
-        LA<?> sessionLA = addNewSessionAProp(null, action.getLP(), isNested, singleApply, newSQL, getMigrateProps(migrateSessionProps, migrateAllSessionProps), fixedForms);
+        LA<?> sessionLA = addNewSessionAProp(null, action.getLP(), isNested, singleApply, newSQL,
+                getMigrateProps(migrateSessionProps, migrateAllSessionProps), migrateClasses, fixedForms);
         return new LAWithParams(sessionLA, action.usedParams);
     }
 

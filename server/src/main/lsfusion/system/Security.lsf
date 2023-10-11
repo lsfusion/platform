@@ -484,15 +484,11 @@ DESIGN securityPolicy {
                     GRID(u) { headerHeight = 60; }
                 }
                 
-                NEW roleApplicationScroll {
+                NEW roleApplicationPane {
                     caption = '{security.form.application.settings}';
-                    type = SCROLL;
-                    NEW roleApplicationPane {
-                        MOVE PANEL(ur);
-                        NEW roleApplicationSettings {
-                            type = COLUMNS;
-                            lines = 3;
-                        }
+                    MOVE PANEL(ur);
+                    NEW roleApplicationSettings {
+                        lines = 3;
                     }
                 }
             }

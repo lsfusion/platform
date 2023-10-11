@@ -66,7 +66,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     /**
      * The command used to resolve the pending state.
      */
-    boolean isFocused;
+    protected boolean isFocused;
 
     private final ArrayList<Column<T, ?>> columns = new ArrayList<>();
 
@@ -986,6 +986,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         if(isFocused)
             return;
         DataGrid.sinkPasteEvent(getTableDataFocusElement());
+
         isFocused = true;
         focusedChanged();
     }
@@ -1000,10 +1001,9 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     }
 
     public Element getTableDataFocusElement() {
-        if(!noScrollers)
-            return tableContainer.getElement();
-
-        return getTableElement();
+//        if(!noScrollers)
+        return tableContainer.getFocusElement();
+//        return getTableElement();
     }
 
     /**
@@ -1169,7 +1169,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
     private void preAfterUpdateDOMScrollHorizontal(SetPendingScrollState pendingState) {
         if(!noScrollers) {
-            boolean hasVerticalScroll = GwtClientUtils.hasVerticalScroll(tableContainer.getElement()); // probably getFullWidth should be used
+            boolean hasVerticalScroll = GwtClientUtils.hasVerticalScroll(tableContainer.getScrollableElement()); // probably getFullWidth should be used
             if (this.hasVerticalScroll == null || !this.hasVerticalScroll.equals(hasVerticalScroll))
                 pendingState.hasVertical = hasVerticalScroll;
         }
@@ -1303,7 +1303,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     private void afterUpdateDOMScrollHorizontal(SetPendingScrollState pendingState) {
         if(pendingState.hasVertical != null) {
             hasVerticalScroll = pendingState.hasVertical;
-            updateVerticalScroll(hasVerticalScroll, tableContainer.getElement());
+            updateVerticalScroll(hasVerticalScroll, tableContainer.getScrollableElement());
         }
 
         if (pendingState.left != null) {

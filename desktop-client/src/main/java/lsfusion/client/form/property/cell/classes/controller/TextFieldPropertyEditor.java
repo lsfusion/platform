@@ -136,6 +136,15 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
         });
 
         setComponentPopupMenu(new EditorContextMenu(this));
+
+        //hack for scanner input
+        if(property.eventID != null && property.eventID.equals("SCANNER")) {
+            try {
+                Thread.sleep(300);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     protected boolean disableSuggest() {

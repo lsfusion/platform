@@ -99,7 +99,6 @@ FORM defaultNumerators '{numerator.numerators}'
 DESIGN defaultNumerators {
     BOX {
         NEW defaultContainer AFTER OBJECTS {
-            type = COLUMNS;
             lines = 3;
             caption = '{numerator.caption.default.numerators}';
         }

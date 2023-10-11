@@ -19,7 +19,7 @@ public class TooltipManager {
     private static final ClientMessages messages = ClientMessages.Instance.get();
 
     public static void initTooltip(Element element, final TooltipHelper tooltipHelper) {
-        if (tooltipHelper.getTooltip() != null && MainFrame.showDetailedInfoDelay > 0)
+        if (!MainFrame.mobile && tooltipHelper.getTooltip() != null && MainFrame.showDetailedInfoDelay > 0)
             initTippy(element, getTooltipContent(tooltipHelper, element), MainFrame.showDetailedInfoDelay);
     }
 

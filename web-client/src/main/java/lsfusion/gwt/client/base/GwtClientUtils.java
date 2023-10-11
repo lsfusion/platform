@@ -13,9 +13,7 @@ import lsfusion.gwt.client.base.lambda.EFunction;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.form.filter.user.GCompare;
-import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
-import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.*;
@@ -63,8 +61,17 @@ public class GwtClientUtils {
             isCharNavigateKeyEvent: function (event) {
                 return @lsfusion.gwt.client.form.event.GKeyStroke::isCharNavigateKeyEvent(*)(event);
             },
-            setInputElement: function (element, inputElement) {
-                return @lsfusion.gwt.client.form.property.cell.classes.view.SimpleTextBasedCellRenderer::setInputElement(*)(element, inputElement);
+            setFocusElement: function (element, focusElement) {
+                return @lsfusion.gwt.client.form.property.cell.view.CellRenderer::setFocusElement(*)(element, focusElement);
+            },
+            clearFocusElement: function (element) {
+                return @lsfusion.gwt.client.form.property.cell.view.CellRenderer::clearFocusElement(*)(element);
+            },
+            setReadonlyFnc: function (element, readonlyFnc) {
+                return @lsfusion.gwt.client.form.property.cell.view.CellRenderer::setReadonlyFnc(*)(element, readonlyFnc);
+            },
+            clearReadonlyFnc: function (element) {
+                return @lsfusion.gwt.client.form.property.cell.view.CellRenderer::clearReadonlyFnc(*)(element);
             },
             useBootstrap: function() {
                 return @lsfusion.gwt.client.view.MainFrame::useBootstrap;
@@ -73,6 +80,24 @@ public class GwtClientUtils {
                 return @lsfusion.gwt.client.base.GwtClientUtils::isTDorTH(*)(element);
             }
         }
+    }-*/;
+
+    public static InputElement createCheckInputElement() {
+        InputElement input = createInputElement("checkbox");
+        input.setAttribute("value", "on");
+        return input;
+    };
+    public static InputElement createInputElement(String type) {
+        InputElement input = (InputElement) createFocusElement("input");
+        input.setAttribute("type", type);
+        return input;
+    };
+
+    public native static Element createFocusElement(String tag) /*-{
+        return $wnd.createFocusElement(tag);
+    }-*/;
+    public native static Element createFocusElementType(String tag) /*-{
+        return $wnd.createFocusElementType(tag);
     }-*/;
 
     public static void logout() {
@@ -463,7 +488,7 @@ public class GwtClientUtils {
 
     public static void clearFlexParentElement(Element parentElement) {
         assert !GwtClientUtils.isTDorTH(parentElement);
-        parentElement.addClassName("fill-parent-flex-cont");
+        parentElement.removeClassName("fill-parent-flex-cont");
     }
 
     public static void setupFlexParent(Element element) {

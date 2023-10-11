@@ -309,6 +309,11 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         return new GClientWebAction(resourcePath, action.resourceName, originalResourceName, values, types, returnType, action.isFile, action.syncType);
     }
 
+    @Converter(from = ResetServerSettingsCacheClientAction.class)
+    public void convertAction(ResetServerSettingsCacheClientAction action, MainDispatchServlet servlet) {
+        servlet.getLogicsProvider().resetServerSettingsCache(servlet.getRequest());
+    }
+
     @Converter(from = OrderClientAction.class)
     public GOrderAction convertAction(OrderClientAction action) {
         return new GOrderAction(action.goID, action.ordersMap);

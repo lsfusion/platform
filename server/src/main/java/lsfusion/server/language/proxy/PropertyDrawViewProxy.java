@@ -194,6 +194,10 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.panelCommentVertical = panelCommentVertical;
     }
 
+    public void setDisableIfReadonly(boolean disableIfReadonly) {
+        target.entity.disableIfReadonly = disableIfReadonly;
+    }
+
     public void setPanelCommentFirst(boolean panelCommentFirst) {
         target.panelCommentFirst = panelCommentFirst;
     }

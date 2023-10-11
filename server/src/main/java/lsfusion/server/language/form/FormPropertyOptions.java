@@ -1,5 +1,6 @@
 package lsfusion.server.language.form;
 
+import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.ImList;
@@ -33,7 +34,7 @@ public class FormPropertyOptions {
     private Boolean optimisticAsync;
     private Columns columns;
     private PropertyObjectEntity showIf;
-    private PropertyObjectEntity readOnlyIf;
+    private Pair<PropertyObjectEntity, Boolean> readOnlyIf;
     private PropertyObjectEntity valueElementClass;
     private PropertyObjectEntity background;
     private PropertyObjectEntity foreground;
@@ -137,11 +138,11 @@ public class FormPropertyOptions {
         this.showIf = showIf;
     }
 
-    public PropertyObjectEntity getReadOnlyIf() {
+    public Pair<PropertyObjectEntity, Boolean> getReadOnlyIf() {
         return readOnlyIf;
     }
 
-    public void setReadOnlyIf(PropertyObjectEntity readOnlyIf) {
+    public void setReadOnlyIf(Pair<PropertyObjectEntity, Boolean> readOnlyIf) {
         this.readOnlyIf = readOnlyIf;
     }
 

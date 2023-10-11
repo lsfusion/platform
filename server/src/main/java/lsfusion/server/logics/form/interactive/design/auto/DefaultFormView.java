@@ -478,7 +478,6 @@ public class DefaultFormView extends FormView {
             getPropGroupContainer(propertyDraw, currentGroup.getNFParent(version), version);
 
             propGroupContainer = createContainer(currentGroup.caption, currentGroup.getName(), getPropGroupContainerSID(currentGroup, propertyContainer), Version.global());
-            propGroupContainer.setType(ContainerType.COLUMNS);
             propGroupContainer.setLines(DefaultFormView.GROUP_CONTAINER_LINES_COUNT);
             propGroupContainer.setDebugPoint(currentGroup.getDebugPoint());
 

@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
@@ -40,6 +41,11 @@ public class LogicalCellRenderer extends CellRenderer {
 
     public static void setInputElement(Element element, InputElement inputElement) {
         element.setPropertyObject(inputElementProp, inputElement);
+        SimpleTextBasedCellRenderer.setSimpleReadonlyFnc(element, inputElement);
+    }
+    public static void clearInputElement(Element element) {
+        element.setPropertyObject(inputElementProp, null);
+        SimpleTextBasedCellRenderer.clearSimpleReadonlyFnc(element);
     }
 
     @Override
@@ -73,8 +79,7 @@ public class LogicalCellRenderer extends CellRenderer {
     }
 
     public InputElement createCheckInput() {
-        InputElement input = Document.get().createCheckInputElement();
-        input.setTabIndex(-1);
+        InputElement input = GwtClientUtils.createCheckInputElement();
         input.addClassName("logicalRendererCheckBox");
         input.addClassName("form-check-input"); // bootstrap
         return input;
@@ -93,7 +98,7 @@ public class LogicalCellRenderer extends CellRenderer {
 
     @Override
     public boolean clearRenderContent(Element element, RenderContext renderContext) {
-        setInputElement(element, null);
+        clearInputElement(element);
 
         if(GwtClientUtils.isTDorTH(element))
             clearRenderTextAlignment(property, element, false);

@@ -2,7 +2,6 @@ package lsfusion.server.logics.form.interactive.design;
 
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.design.ContainerFactory;
-import lsfusion.interop.form.design.ContainerType;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 
@@ -83,7 +82,6 @@ public class FormContainerSet {
 
         set.groupContainer = contFactory.createContainer();
         set.groupContainer.setSID(DefaultFormView.getGroupContainerSID(""));
-        set.groupContainer.setType(ContainerType.COLUMNS);
         set.groupContainer.setLines(DefaultFormView.GROUP_CONTAINER_LINES_COUNT);
 
         set.toolbarLeftContainer = contFactory.createContainer();

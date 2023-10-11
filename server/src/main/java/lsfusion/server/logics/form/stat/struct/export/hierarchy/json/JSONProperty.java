@@ -17,6 +17,7 @@ import lsfusion.server.logics.action.SystemAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.FlowResult;
+import lsfusion.server.logics.action.flow.FormChangeFlowType;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.ValueClass;
@@ -276,6 +277,8 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
 
         @Override
         public boolean hasFlow(ChangeFlowType type) {
+            if(type instanceof FormChangeFlowType && !form.hasNoChange((FormChangeFlowType) type))
+                return true;
             if(type == ChangeFlowType.ANYEFFECT)
                 return true;
             return super.hasFlow(type);

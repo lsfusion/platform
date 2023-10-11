@@ -173,7 +173,6 @@ FORM maintenance '{service.form.maintenance}'
 DESIGN maintenance {        
     NEW pane {
         fill = 1;
-        type = COLUMNS;
         lines = 3;
         NEW leftColumn {               
             NEW administration {
@@ -282,7 +281,6 @@ DESIGN settings {
             fill = 1;
             NEW pane {
                 caption = '{service.form.settings.caption.general}';
-                type = COLUMNS;
                 lines = 3;
                 NEW leftColumn {
                     NEW current {
@@ -370,6 +368,8 @@ popSetting '{service.pop.setting}'  INTERNAL  'lsfusion.server.physics.admin.ser
 writeDefaultSettings '{service.write.default.settings}'  INTERNAL  'lsfusion.server.physics.admin.service.action.WriteDefaultSettingsAction' ();
 updateSetting '{service.update.setting}'  INTERNAL  'lsfusion.server.physics.admin.service.action.UpdateSettingAction' (Setting, UserRole, BOOLEAN);
 
+resetServerSettingsCacheAction '{reset.server.settings.cache}' INTERNAL 'lsfusion.server.physics.admin.service.action.ResetServerSettingsCacheAction'();
+
 updateGlobalSetting(Setting r) {
     updateSetting(r, NULL, TRUE); // system user and users without role
     FOR UserRole ur IS UserRole DO // need this even in onStarted, because onStarted is executed after initializing RMI Manager, that's why roleSettings can be already clone, and we need to update it too
@@ -422,6 +422,13 @@ resetConnections() + {
         AND currentLaunch() != launch(c) AND ((NOT isLightStart()) OR connectTime(c) < subtractSeconds(currentDateTime(), 60));
 }
 
+WHEN CHANGED (onLoginLoad(STRING s)) OR CHANGED (lsfParams(s)) DO {
+    resetServerSettingsCacheAction();
+}
+
+WHEN CHANGED (logicsName()) OR CHANGED (displayName()) OR CHANGED (logicsLogo()) OR CHANGED (logicsIcon()) DO {
+    resetServerSettingsCacheAction();
+}
 getServerSettings() ABSTRACT CASE @@noauth;
 
 getServerSettings() + WHEN TRUE THEN {
@@ -434,7 +441,7 @@ getServerSettings() + WHEN TRUE THEN {
     }
     
     generateJnlpUrls();
-    EXPORT JSON FROM logicsName(), displayName(), FILE(logicsLogo()), FILE(logicsIcon()), platformVersion(), apiVersion(), inDevMode(),
+    EXPORT JSON FROM logicsName(), displayName(), logicsLogo = FILE(logicsLogo()), logicsIcon = FILE(logicsIcon()), platformVersion(), apiVersion(), inDevMode(),
     sessionConfigTimeout=INTEGER(valueSetting('sessionConfigTimeout')), anonymousUI=(valueSetting('enableUI')='2'),
     jnlpUrls=exportText(),
     disableRegistration=disableRole('selfRegister'),
@@ -673,11 +680,11 @@ resetWindowsLayout '{service.reset.windows.layout}' INTERNAL 'lsfusion.server.lo
 
 EXTEND FORM settings
     PROPERTIES() storeNavigatorSettingsForComputer
-    PROPERTIES() READONLY serverUseBootstrap, serverVerticalNavbar, serverNavigatorPinMode 
+    PROPERTIES() READONLY captionServerTheme, captionServerSize, captionServerNavbar, serverNavigatorPinMode 
 
     OBJECTS de = DesignEnv
     PROPERTIES(de) name READONLY,
-        designEnvUseBootstrap, designEnvVerticalNavbar, useClientNavigatorPinMode, 
+        captionTheme, captionSize, captionNavbar, useClientNavigatorPinMode, 
         navigatorPinMode READONLYIF NOT useClientNavigatorPinMode(de), colorThemeName
     FILTERS IF storeNavigatorSettingsForComputer() THEN de IS Computer ELSE de IS CustomUser
 
@@ -698,8 +705,9 @@ DESIGN settings {
             NEW navigator {
                 caption = '{service.form.settings.caption.navigator}';
                 MOVE PROPERTY(storeNavigatorSettingsForComputer());
-                MOVE PROPERTY (serverUseBootstrap());
-                MOVE PROPERTY (serverVerticalNavbar());
+                MOVE PROPERTY (captionServerTheme());
+                MOVE PROPERTY (captionServerSize());
+                MOVE PROPERTY (captionServerNavbar());
                 MOVE PROPERTY (serverNavigatorPinMode());
                 MOVE BOX(de) {
                     caption = IF storeNavigatorSettingsForComputer() THEN '{authentication.computers}' ELSE '{authentication.users}';
@@ -752,8 +760,7 @@ DESIGN editProfile {
             
             MOVE PROPERTY(resetWindowsLayout());
             
-            NEW colors { 
-                type = COLUMNS;
+            NEW colors {
                 lines = 2;
                 MOVE PROPERTY(selectedRowBackgroundColor(u)) { fontSize = 24; }
                 MOVE PROPERTY(selectedCellBackgroundColor(u)) { fontSize = 24; }

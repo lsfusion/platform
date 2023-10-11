@@ -30,10 +30,42 @@ public class CustomCellRenderer extends CellRenderer {
         return property.customCanBeRenderedInTD;
     }
 
+    public static class ExtraValue {
+        public final String placeholder;
+        public final boolean readonly;
+
+        public ExtraValue(String placeholder, boolean readonly) {
+            this.placeholder = placeholder;
+            this.readonly = readonly;
+        }
+
+        public JavaScriptObject getJsObject() {
+            return getJsObject(placeholder, readonly);
+        }
+        protected native JavaScriptObject getJsObject(String placeholder, boolean readonly)/*-{
+            return {
+                placeholder: placeholder,
+                readonly: readonly
+            };
+        }-*/;
+
+        @Override
+        public boolean equals(Object o) {
+            return this == o || o instanceof ExtraValue && readonly == ((ExtraValue) o).readonly && GwtClientUtils.nullEquals(placeholder, ((ExtraValue) o).placeholder);
+        }
+
+        @Override
+        public int hashCode() {
+            return GwtClientUtils.nullHash(placeholder) * 31 + (readonly ? 1 : 0);
+        }
+    }
+
     @Override
     protected Object getExtraValue(UpdateContext updateContext) {
-        if(property.customNeedPlaceholder)
-            return updateContext.getPlaceholder();
+        boolean customNeedPlaceholder = property.customNeedPlaceholder;
+        boolean customNeedReadonly = property.customNeedReadonly;
+        if(customNeedPlaceholder || customNeedReadonly)
+            return new ExtraValue(customNeedPlaceholder ? updateContext.getPlaceholder() : null, customNeedReadonly ? updateContext.isPropertyReadOnly() : false);
 
         return super.getExtraValue(updateContext);
     }
@@ -45,13 +77,13 @@ public class CustomCellRenderer extends CellRenderer {
     @Override
     public boolean updateContent(Element element, PValue value, Object extraValue, UpdateContext updateContext) {
         JavaScriptObject renderValue = GSimpleStateTableView.convertToJSValue(property, value);
-        setRendererValue(customRenderer, element, getController(property, updateContext, element), renderValue, (String) extraValue);
+        setRendererValue(customRenderer, element, getController(property, updateContext, element), renderValue, extraValue != null ? ((ExtraValue) extraValue).getJsObject() : null);
 
         return false;
     }
 
-    protected native void setRendererValue(JavaScriptObject customRenderer, Element element, JavaScriptObject controller, JavaScriptObject value, String placeholder)/*-{
-        customRenderer.update(element, controller, value, placeholder);
+    protected native void setRendererValue(JavaScriptObject customRenderer, Element element, JavaScriptObject controller, JavaScriptObject value, JavaScriptObject extraValue)/*-{
+        customRenderer.update(element, controller, value, extraValue);
     }-*/;
 
     @Override
@@ -97,10 +129,10 @@ public class CustomCellRenderer extends CellRenderer {
     }
 
     public static JavaScriptObject getController(GPropertyDraw property, UpdateContext updateContext, Element element) {
-        return getController(property, updateContext, element, updateContext.isPropertyReadOnly());
+        return getController(property, updateContext, element, updateContext.isPropertyReadOnly(), property.disableIfReadonly, updateContext.isTabFocusable());
     }
 
-    private static native JavaScriptObject getController(GPropertyDraw property, UpdateContext updateContext, Element element, Boolean isReadOnly)/*-{
+    private static native JavaScriptObject getController(GPropertyDraw property, UpdateContext updateContext, Element element, boolean isReadOnly, boolean isDisableIfReadonly, boolean isTabFocusable)/*-{
         return {
             change: function (value, renderValueSupplier) {
                 if(value === undefined) // not passed
@@ -123,8 +155,14 @@ public class CustomCellRenderer extends CellRenderer {
             getValues: function(value, successCallback, failureCallback) {
                 return @CustomCellRenderer::getAsyncValues(*)(value, updateContext, successCallback, failureCallback);
             },
-            isReadOnly: function () {
+            isReadOnly: function () { // extraValue.readonly + customNeedReadonly should be used instead if readonly depends on the data (otherwise it won't be updated)
                 return isReadOnly;
+            },
+            isDisableIfReadonly: function () {
+                return isDisableIfReadonly;
+            },
+            isTabFocusable: function () {
+                return isTabFocusable;
             },
             toDateDTO: function (year, month, day) {
                 return @lsfusion.gwt.client.form.property.cell.classes.GDateDTO::new(III)(year, month, day);

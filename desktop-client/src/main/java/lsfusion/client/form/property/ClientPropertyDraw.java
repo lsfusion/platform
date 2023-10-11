@@ -178,6 +178,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public String customRenderFunction;
     public boolean customCanBeRenderedInTD;
     public boolean customNeedPlaceholder;
+    public boolean customNeedReadonly;
+
+    public boolean disableIfReadonly;
 
     public String creationScript;
     public String creationPath;
@@ -700,6 +703,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         customRenderFunction = pool.readString(inStream);
         customCanBeRenderedInTD = pool.readBoolean(inStream);
         customNeedPlaceholder = pool.readBoolean(inStream);
+        customNeedReadonly = pool.readBoolean(inStream);
+
+        disableIfReadonly = pool.readBoolean(inStream);
 
         eventID = pool.readString(inStream);
 

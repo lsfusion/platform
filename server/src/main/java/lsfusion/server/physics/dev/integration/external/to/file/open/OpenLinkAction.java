@@ -28,7 +28,7 @@ public class OpenLinkAction extends InternalAction {
 
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
         try {
-            ObjectValue sourceObject = context.getDataKeyValue(sourceInterface);
+            ObjectValue sourceObject = context.getKeyValue(sourceInterface);
             boolean noWait = context.getKeyValue(noWaitInterface).getValue() != null;
             if (sourceObject != null) {
                 for (URI file : ((LinkClass) sourceObject.getType()).getFiles(sourceObject.getValue())) {

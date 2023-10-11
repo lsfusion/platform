@@ -17,6 +17,12 @@
 .property-toolbar {
     display: flex;
     align-items: center;
+
+    /*
+        bootstrap uses "z-index: 1" in ".btn-group>.btn-check:checked+.btn" rule,
+        and the loading spinner hides under last .btn-group element and becomes invisible
+    */
+    z-index: 1;
 }
 
 .property-toolbar-start {

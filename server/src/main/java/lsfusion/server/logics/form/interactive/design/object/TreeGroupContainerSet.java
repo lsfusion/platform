@@ -2,7 +2,6 @@ package lsfusion.server.logics.form.interactive.design.object;
 
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.design.ContainerFactory;
-import lsfusion.interop.form.design.ContainerType;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
@@ -131,7 +130,6 @@ public class TreeGroupContainerSet {
         set.panelContainer.setAlignment(FlexAlignment.STRETCH);
         set.panelContainer.add(set.groupContainer, version);
 
-        set.groupContainer.setType(ContainerType.COLUMNS);
         set.groupContainer.setLines(DefaultFormView.GROUP_CONTAINER_LINES_COUNT);
 
         treeGroup.getToolbarSystem().setMargin(2);

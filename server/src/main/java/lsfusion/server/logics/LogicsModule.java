@@ -956,17 +956,17 @@ public abstract class LogicsModule {
     public LA addNewSessionAProp(Group group,
                                  LA la, boolean isNested, boolean singleApply, boolean newSQL,
                                  FunctionSet<SessionDataProperty> migrateSessionProps) {
-        return addNewSessionAProp(group, la, isNested, singleApply, newSQL, migrateSessionProps, null);
+        return addNewSessionAProp(group, la, isNested, singleApply, newSQL, migrateSessionProps, false, null);
     }
 
     public LA addNewSessionAProp(Group group,
                                  LA la, boolean isNested, boolean singleApply, boolean newSQL,
-                                 FunctionSet<SessionDataProperty> migrateSessionProps, ImSet<FormEntity> fixedForms) {
+                                 FunctionSet<SessionDataProperty> migrateSessionProps, boolean migrateClasses, ImSet<FormEntity> fixedForms) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(la.listInterfaces.size());
         ActionMapImplement<?, PropertyInterface> actionImplement = mapActionListImplement(la, listInterfaces);
 
         NewSessionAction action = new NewSessionAction(
-                LocalizedString.NONAME, listInterfaces, actionImplement, singleApply, newSQL, migrateSessionProps, isNested, fixedForms);
+                LocalizedString.NONAME, listInterfaces, actionImplement, singleApply, newSQL, migrateSessionProps, migrateClasses, isNested, fixedForms);
 
         return addAction(group, new LA<>(action));
     }

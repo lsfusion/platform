@@ -190,6 +190,8 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         this.entity = entity;
 
         mainContainer = new ContainerView(idGenerator.idShift(), true);
+        mainContainer.width = -3;
+        mainContainer.height = -3;
         setComponentSID(mainContainer, getBoxContainerSID(), version);
 
         Pair<ImOrderSet<GroupObjectEntity>, ImList<Integer>> groups = entity.getNFGroupsComplexOrderSet(version);

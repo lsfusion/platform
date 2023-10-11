@@ -83,7 +83,7 @@ public abstract class DataGridHeaderBuilder<T> implements HeaderBuilder<T> {
     }
 
     private void initArrow(Element parent, boolean bottom) {
-        Element button = Document.get().createPushButtonElement();
+        Element button = GwtClientUtils.createFocusElement("button");
         button.addClassName("btn");
         button.addClassName("btn-light");
         button.addClassName("btn-sm");

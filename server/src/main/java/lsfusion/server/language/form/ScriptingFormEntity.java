@@ -560,7 +560,11 @@ public class ScriptingFormEntity {
             property.setPropertyExtra(imageProperty, PropertyDrawExtraType.IMAGE, version);
         }
 
-        property.setPropertyExtra(options.getReadOnlyIf(), PropertyDrawExtraType.READONLYIF, version);
+        Pair<PropertyObjectEntity, Boolean> readOnlyIf = options.getReadOnlyIf();
+        if(readOnlyIf != null) {
+            property.setPropertyExtra(readOnlyIf.first, PropertyDrawExtraType.READONLYIF, version);
+            property.disableIfReadonly = readOnlyIf.second;
+        }
         if (options.getViewType() != null) {
             property.viewType = options.getViewType();
         }

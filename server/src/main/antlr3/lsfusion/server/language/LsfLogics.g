@@ -861,7 +861,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'OPTIMISTICASYNC' { $options.setOptimisticAsync(true); }
 		|	'COLUMNS' (columnsName=stringLiteral)? '(' ids=nonEmptyIdList ')' { $options.setColumns($columnsName.text, getGroupObjectsList($ids.ids, self.getVersion())); }
 		|	'SHOWIF' propObj=formPropertyObject { $options.setShowIf($propObj.property); }
-		|	'READONLYIF' propObj=formPropertyObject { $options.setReadOnlyIf($propObj.property); }
+		|	{ boolean disableIfReadonly = false; } ('READONLYIF' | 'DISABLEIF' { disableIfReadonly = true; }) propObj=formPropertyObject { $options.setReadOnlyIf(new Pair<>($propObj.property, disableIfReadonly)); }
 		|	'CLASS' propObj=formPropertyObject { $options.setValueElementClass($propObj.property); }
 		|	'BACKGROUND' propObj=formPropertyObject { $options.setBackground($propObj.property); }
 		|	'FOREGROUND' propObj=formPropertyObject { $options.setForeground($propObj.property); }
@@ -2664,6 +2664,7 @@ newExecutorActionDefinitionBody[List<TypedParameter> context, boolean dynamic] r
 newSessionActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {
 	List<NamedPropertyUsage> migrateSessionProps = Collections.emptyList();
+	boolean migrateClasses = false;
 	boolean migrateAllSessionProps = false;
 	boolean isNested = false;
 	boolean singleApply = false;
@@ -2672,12 +2673,13 @@ newSessionActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 }
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedNewSessionAProp($aDB.action, migrateSessionProps, migrateAllSessionProps, isNested, singleApply, newSQL, ids);
+		$action = self.addScriptedNewSessionAProp($aDB.action, migrateSessionProps, migrateAllSessionProps, migrateClasses, isNested, singleApply, newSQL, ids);
 	}
 }
 	:	(	'NEWSESSION' ('NEWSQL' { newSQL = true; })?
 	        ('FORMS' (neIdList=nonEmptyCompoundIdList { ids = $neIdList.ids; }) )?
-	        (mps=nestedPropertiesSelector { migrateAllSessionProps = $mps.all; migrateSessionProps = $mps.props; })?
+	        (mps=nestedPropertiesSelector { migrateAllSessionProps = $mps.all; migrateSessionProps = $mps.props;
+	            migrateClasses = $mps.classes; })?
 
 		|	'NESTEDSESSION' { isNested = true; }
 		)
@@ -4216,13 +4218,14 @@ listActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 		'}'
 	;
 
-nestedPropertiesSelector returns[boolean all = false, List<NamedPropertyUsage> props = new ArrayList<>()]
+nestedPropertiesSelector returns[boolean all = false, List<NamedPropertyUsage> props = new ArrayList<>(), boolean classes = false]
     :   'NESTED'
             (   'LOCAL' { $all = true; }
             |   (
             	'(' list=nonEmptyPropertyUsageList { $props = $list.propUsages; } ')'
             	)
-            )
+            )?
+            ('CLASSES' { $classes = true; })?
     ;
 	
 localDataPropertyDefinition returns [List<LP<?>> properties]

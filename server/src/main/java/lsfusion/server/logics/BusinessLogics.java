@@ -174,9 +174,9 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     public String topModule;
 
-    public boolean useBootstrap;
-    
-    public boolean verticalNavbar;
+    public String theme;
+    public String size;
+    public String navbar;
     
     public Boolean navigatorPinMode;
 
@@ -218,12 +218,16 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         this.topModule = topModule;
     }
 
-    public void setUseBootstrap(boolean useBootstrap) {
-        this.useBootstrap = useBootstrap;
+    public void setTheme(String theme) {
+        this.theme = theme;
     }
-    
-    public void setVerticalNavbar(boolean verticalNavbar) {
-        this.verticalNavbar = verticalNavbar;
+
+    public void setSize(String size) {
+        this.size = size;
+    }
+
+    public void setNavbar(String navbar) {
+        this.navbar = navbar;
     }
     
     public void setNavigatorPinMode(Boolean navigatorPinMode) {

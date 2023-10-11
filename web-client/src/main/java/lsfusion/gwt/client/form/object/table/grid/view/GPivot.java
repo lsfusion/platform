@@ -356,6 +356,10 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         return captions.toArray();
     }
 
+    public Element getTableDataFocusElement() {
+        return getWidget().getElement();
+    }
+
     private Integer[] getPivotSplits(List<List<GPropertyDraw>> propertiesList, String defaultElement) {
         List<Integer> sizes = new ArrayList<>();
         if(defaultElement != null) {
