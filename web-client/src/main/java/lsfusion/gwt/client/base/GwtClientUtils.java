@@ -459,13 +459,7 @@ public class GwtClientUtils {
 
     public static void clearFillParent(Element child) {
         clearFillParentElement(child.getParentElement());
-
-        Style childStyle = child.getStyle();
-        childStyle.clearPosition();
-        childStyle.clearTop();
-        childStyle.clearLeft();
-        childStyle.clearBottom();
-        childStyle.clearRight();
+        child.removeClassName("fill-parent-absolute");
     }
 
     public static void clearFillParentElement(Element parentElement) {
