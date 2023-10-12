@@ -123,6 +123,9 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
 
             onInputReady(parent, oldValue);
 
+            //need for start editing by CHANGEKEY
+            FocusUtils.focus(inputElement, FocusUtils.Reason.OTHER);
+
             parent.addClassName("property-hide-toolbar");
 
             handler.consume(true, false);
