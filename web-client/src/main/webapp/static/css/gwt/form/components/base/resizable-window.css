@@ -9,4 +9,6 @@
 .modal-dialog.modal-fit-content {
     max-width: none;
     width: fit-content;
+    margin-right: auto;
+    margin-left: auto;
 }
