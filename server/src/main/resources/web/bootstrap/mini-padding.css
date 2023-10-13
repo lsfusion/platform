@@ -2,6 +2,11 @@
     padding: 0.125rem 0.25rem;
 }
 
+.form-check {
+    min-height: 0.5rem;
+    margin-bottom: 0.04rem;
+}
+
 .form-select {
     padding: 0.125rem 2.25rem 0.125rem 0.25rem;
 }
