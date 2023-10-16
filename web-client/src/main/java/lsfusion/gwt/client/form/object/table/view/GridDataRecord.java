@@ -94,12 +94,12 @@ public class GridDataRecord implements RowIndexHolder {
         return foreground != null ? foreground : rowForeground;
     }
 
-    public void setReadOnly(String column, boolean readOnly) {
-        setAttribute(column + "_readonly", readOnly ? true : null);
+    public void setReadOnly(String column, Boolean readOnly) {
+        setAttribute(column + "_readonly", readOnly);
     }
 
-    public boolean isReadonly(String column) {
-        return getAttribute(column + "_readonly") != null;
+    public Boolean isReadonly(String column) {
+        return (Boolean) getAttribute(column + "_readonly");
     }
 
     public void setRowBackground(PValue newRowBackground) {

@@ -11,7 +11,7 @@ public interface UpdateContext {
     default void changeProperty(PValue result, GFormController.ChangedRenderValueSupplier renderValueSupplier) {}
     default void executeContextAction(int action) {}
 
-    default boolean isPropertyReadOnly() { return true; }
+    default Boolean isPropertyReadOnly() { return true; }
 
     default boolean isTabFocusable() { return false; }
 

@@ -4,8 +4,6 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import lsfusion.gwt.client.base.FocusUtils;
-import lsfusion.gwt.client.base.GAsync;
-import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -14,8 +12,6 @@ import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.ExecuteEditContext;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.view.MainFrame;
-
-import java.util.ArrayList;
 
 public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements ExecuteEditContext {
 
@@ -35,18 +31,20 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
     }
 
     @Override
-    public boolean isReadOnly() {
-        return isPropertyReadOnly();
+    public Boolean isReadOnly() {
+        return this.isPropertyReadOnly();
     }
 
     @Override
-    public boolean isPropertyReadOnly() {
-        return super.isPropertyReadOnly() || property.isReadOnly();
+    public Boolean isPropertyReadOnly() {
+        if(property.isReadOnly())
+            return true;
+        return super.isPropertyReadOnly();
     }
 
     @Override
     public CellRenderer.ToolbarAction[] getToolbarActions() {
-        return isPropertyReadOnly() ? super.getToolbarActions() : property.getQuickAccessActions(true, isFocused);
+        return this.isPropertyReadOnly() != null ? super.getToolbarActions() : property.getQuickAccessActions(true, isFocused);
     }
 
     @Override

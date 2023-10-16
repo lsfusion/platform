@@ -47,7 +47,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
     }
 
     @Override
-    public void update(PValue value, boolean loading, AppBaseImage image, String valueElementClass, String background, String foreground, boolean readOnly, String placeholder) {
+    public void update(PValue value, boolean loading, AppBaseImage image, String valueElementClass, String background, String foreground, Boolean readOnly, String placeholder) {
         if(property.hasDynamicImage() && !property.isAction()) {
             BaseImage.updateImage(image, label, property.panelCaptionVertical);
             image = null;

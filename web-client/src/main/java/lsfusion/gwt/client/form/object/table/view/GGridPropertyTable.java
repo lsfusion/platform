@@ -815,7 +815,7 @@ protected Double getUserFlex(int i) {
             }
 
             @Override
-            public boolean isPropertyReadOnly() {
+            public Boolean isPropertyReadOnly() {
                 return GGridPropertyTable.this.isReadOnly(cell);
             }
 
@@ -850,7 +850,7 @@ protected Double getUserFlex(int i) {
 
             @Override
             public CellRenderer.ToolbarAction[] getToolbarActions() {
-                return isPropertyReadOnly() ? UpdateContext.super.getToolbarActions() : property.getQuickAccessActions(isSelectedRow(), isFocusedColumn());
+                return isPropertyReadOnly() != null ? UpdateContext.super.getToolbarActions() : property.getQuickAccessActions(isSelectedRow(), isFocusedColumn());
             }
 
             @Override

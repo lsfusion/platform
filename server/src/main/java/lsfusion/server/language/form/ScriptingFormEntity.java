@@ -6,8 +6,8 @@ import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.OrderedMap;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.interop.form.property.PropertyEditType;
@@ -46,6 +46,8 @@ import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
+import lsfusion.server.logics.property.UnionProperty;
+import lsfusion.server.logics.property.cases.CalcCase;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.log.ServerLoggers;
@@ -560,10 +562,11 @@ public class ScriptingFormEntity {
             property.setPropertyExtra(imageProperty, PropertyDrawExtraType.IMAGE, version);
         }
 
-        Pair<PropertyObjectEntity, Boolean> readOnlyIf = options.getReadOnlyIf();
-        if(readOnlyIf != null) {
-            property.setPropertyExtra(readOnlyIf.first, PropertyDrawExtraType.READONLYIF, version);
-            property.disableIfReadonly = readOnlyIf.second;
+        PropertyObjectEntity disableIf = options.getDisableIf();
+        PropertyObjectEntity readOnlyIf = options.getReadOnlyIf();
+        if(disableIf != null || readOnlyIf != null) {
+            property.setPropertyExtra(addReadonlyIfPropertyObject(disableIf, readOnlyIf), PropertyDrawExtraType.READONLYIF, version);
+            property.disableIfReadonly = disableIf != null;
         }
         if (options.getViewType() != null) {
             property.viewType = options.getViewType();
@@ -671,6 +674,32 @@ public class ScriptingFormEntity {
         Boolean sync = options.getSync();
         if(sync != null)
             property.sync = sync;
+    }
+
+    private <A extends PropertyInterface, B extends PropertyInterface, C extends PropertyInterface> PropertyObjectEntity addReadonlyIfPropertyObject(PropertyObjectEntity<A> disableIf, PropertyObjectEntity<B> readOnlyIf) {
+
+        ImSet<ObjectEntity> allObjects;
+        if (disableIf != null) {
+            if (readOnlyIf != null) {
+                allObjects = disableIf.mapping.valuesSet().merge(readOnlyIf.mapping.valuesSet());
+            } else {
+                allObjects = disableIf.mapping.valuesSet();
+            }
+        } else {
+            allObjects = readOnlyIf.mapping.valuesSet();
+        }
+
+        ImRevMap<ObjectEntity, C> objectInterfaces = (ImRevMap<ObjectEntity, C>) allObjects.mapRevValues(UnionProperty.genInterface);
+
+        MList<CalcCase<C>> mListCases = ListFact.mList();
+        if(disableIf != null) {
+            mListCases.add(new CalcCase<>(disableIf.getImplement(objectInterfaces), PropertyFact.createTTrue()));
+        }
+        if(readOnlyIf != null) {
+            mListCases.add(new CalcCase<>(readOnlyIf.getImplement(objectInterfaces), PropertyFact.createTFalse()));
+        }
+
+        return PropertyFact.createCaseProperty(objectInterfaces.valuesSet(), false, mListCases.immutableList()).mapEntityObjects(objectInterfaces.reverse());
     }
 
     private <P extends PropertyInterface, C extends PropertyInterface> PropertyObjectEntity addGroundPropertyObject(PropertyObjectEntity<P> groundProperty, boolean back) {

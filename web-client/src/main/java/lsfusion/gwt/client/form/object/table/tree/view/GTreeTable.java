@@ -980,11 +980,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     @Override
-    public boolean isReadOnly(Cell cell) {
+    public Boolean isReadOnly(Cell cell) {
         GPropertyDraw property = getProperty(cell);
         if (property != null && !property.isReadOnly()) {
             NativeHashMap<GGroupObjectValue, PValue> propReadOnly = readOnly.get(property);
-            return propReadOnly != null && PValue.getBooleanValue(propReadOnly.get(getRowKey(cell)));
+            return propReadOnly == null ? null : PValue.get3SBooleanValue(propReadOnly.get(getRowKey(cell)));
         }
         return true;
     }
