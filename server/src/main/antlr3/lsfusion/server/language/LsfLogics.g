@@ -3280,9 +3280,9 @@ leafKeepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [
 	|	expandADB=expandGroupObjectActionDefinitionBody[context, dynamic] { $action = $expandADB.action; }
 	|	collapseADB=collapseGroupObjectActionDefinitionBody[context, dynamic] { $action = $collapseADB.action; }
 	|   orderADB=orderActionDefinitionBody[context, dynamic] { $action = $orderADB.action; }
-	|   readOrderADB=readOrderActionDefinitionBody[context, dynamic] { $action = $readOrderADB.action; }
+	|   readOrdersADB=readOrdersActionDefinitionBody[context, dynamic] { $action = $readOrdersADB.action; }
 	|   filterADB=filterActionDefinitionBody[context, dynamic] { $action = $filterADB.action; }
-	|   readFilterADB=readFilterActionDefinitionBody[context, dynamic] { $action = $readFilterADB.action; }
+	|   readFiltersADB=readFiltersActionDefinitionBody[context, dynamic] { $action = $readFiltersADB.action; }
 	|	mailADB=emailActionDefinitionBody[context, dynamic] { $action = $mailADB.action; }
 	|	evalADB=evalActionDefinitionBody[context, dynamic] { $action = $evalADB.action; }
 	|	readADB=readActionDefinitionBody[context, dynamic] { $action = $readADB.action; }
@@ -3988,13 +3988,13 @@ orderActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
         ('FROM' pu=propertyUsage)?
     ;
 
-readOrderActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
+readOrdersActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedReadOrderProp($gobj.sid, $pu.propUsage);
+		$action = self.addScriptedReadOrdersProp($gobj.sid, $pu.propUsage);
 	}
 }
-    :   'READ' 'ORDER'
+    :   'ORDERS'
         gobj=formGroupObjectID
         ('TO' pu=propertyUsage)?
     ;
@@ -4010,13 +4010,13 @@ readOrderActionDefinitionBody[List<TypedParameter> context, boolean dynamic] ret
          ('FROM' pu=propertyUsage)?
      ;
      
-readFilterActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
+readFiltersActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedReadFilterProp($gobj.sid, $pu.propUsage);
+		$action = self.addScriptedReadFiltersProp($gobj.sid, $pu.propUsage);
 	}
 }
-    :   'READ' 'FILTER'
+    :   'FILTERS'
         gobj=formGroupObjectID
         ('TO' pu=propertyUsage)?
     ;

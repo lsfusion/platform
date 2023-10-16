@@ -18,8 +18,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ReadFilterAction extends ReadUserActivityAction<List<FilterInstance>> {
-    public ReadFilterAction(GroupObjectEntity groupObject, LP<?> toProperty) {
+public class ReadFiltersAction extends ReadUserActivityAction<List<FilterInstance>> {
+    public ReadFiltersAction(GroupObjectEntity groupObject, LP<?> toProperty) {
         super(groupObject, toProperty);
     }
 

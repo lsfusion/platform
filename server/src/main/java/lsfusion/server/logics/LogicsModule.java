@@ -66,8 +66,8 @@ import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.interactive.action.activity.FilterAction;
 import lsfusion.server.logics.form.interactive.action.activity.OrderAction;
-import lsfusion.server.logics.form.interactive.action.activity.ReadFilterAction;
-import lsfusion.server.logics.form.interactive.action.activity.ReadOrderAction;
+import lsfusion.server.logics.form.interactive.action.activity.ReadFiltersAction;
+import lsfusion.server.logics.form.interactive.action.activity.ReadOrdersAction;
 import lsfusion.server.logics.form.interactive.action.async.QuickAccess;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapRemove;
 import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelector;
@@ -2065,8 +2065,8 @@ public abstract class LogicsModule {
     }
 
     @IdentityStrongLazy
-    public LA addReadOrderAProp(GroupObjectEntity object, LP toProperty) {
-        return addAction(null, new LA<>(new ReadOrderAction(object, toProperty)));
+    public LA addReadOrdersAProp(GroupObjectEntity object, LP toProperty) {
+        return addAction(null, new LA<>(new ReadOrdersAction(object, toProperty)));
     }
 
     @IdentityStrongLazy
@@ -2075,8 +2075,8 @@ public abstract class LogicsModule {
     }
 
     @IdentityStrongLazy
-    public LA addReadFilterAProp(GroupObjectEntity object, LP toProperty) {
-        return addAction(null, new LA<>(new ReadFilterAction(object, toProperty)));
+    public LA addReadFiltersAProp(GroupObjectEntity object, LP toProperty) {
+        return addAction(null, new LA<>(new ReadFiltersAction(object, toProperty)));
     }
 
     public void addConstraint(Property<?> property, LocalizedString message, boolean checkChange) {

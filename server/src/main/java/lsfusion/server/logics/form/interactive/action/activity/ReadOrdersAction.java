@@ -21,8 +21,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ReadOrderAction extends ReadUserActivityAction<ImOrderMap<PropertyDrawInstance, Boolean>> {
-    public ReadOrderAction(GroupObjectEntity groupObject, LP<?> toProperty) {
+public class ReadOrdersAction extends ReadUserActivityAction<ImOrderMap<PropertyDrawInstance, Boolean>> {
+    public ReadOrdersAction(GroupObjectEntity groupObject, LP<?> toProperty) {
         super(groupObject, toProperty);
     }
 
