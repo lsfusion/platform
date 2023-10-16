@@ -96,6 +96,8 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LP formGroupObject;
     public LP groupObjectSIDFormNameGroupObject;
 
+    public LP actionPropertyDraw;
+    public LP propertyPropertyDraw;
     public LP sidPropertyDraw;
     public LP captionPropertyDraw;
     public LP formPropertyDraw;
@@ -306,6 +308,8 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
 
 
         // PropertyDraw
+        actionPropertyDraw = findProperty("action[PropertyDraw]");
+        propertyPropertyDraw = findProperty("property[PropertyDraw]");
         sidPropertyDraw = findProperty("sid[PropertyDraw]");
         captionPropertyDraw = findProperty("caption[PropertyDraw]");
         formPropertyDraw = findProperty("form[PropertyDraw]");

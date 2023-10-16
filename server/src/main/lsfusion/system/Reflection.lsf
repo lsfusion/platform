@@ -153,6 +153,10 @@ TABLE formPropertyDraw (Form, PropertyDraw);
 TABLE propertyDraw (PropertyDraw);
 TABLE propertyDrawCustomUser (PropertyDraw, CustomUser);
 
+action = DATA Action (PropertyDraw);
+property = DATA Property (PropertyDraw);
+actionOrProperty(PropertyDraw p) = OVERRIDE action(p), property(p);
+canonicalNameActionOrProperty '{reflection.action.or.property}' (PropertyDraw p) = canonicalName(actionOrProperty(p)) IN id CHARWIDTH 20;
 sid '{reflection.sid.property.draw}' = DATA STRING[100] (PropertyDraw) IN id CHARWIDTH 20;
 caption '{reflection.caption.property.draw}' = DATA STRING[250] (PropertyDraw) CHARWIDTH 20;
 form '{reflection.form.property.draw}' = DATA Form (PropertyDraw) INDEXED;
@@ -445,7 +449,7 @@ FORM forms '{reflection.form.forms}'
 
     // global
     OBJECTS p = PropertyDraw
-    PROPERTIES(p) READONLY sid, caption
+    PROPERTIES(p) READONLY canonicalNameActionOrProperty, sid, caption 
     PROPERTIES(p) BACKGROUND RGB(224,224,255) captionShow, columnCaption, columnPattern, columnWidth, columnOrder, columnSort, columnAscendingSort
     ORDERS captionShow(p), columnOrder(p)
     FILTERS groupObject(p) = g
@@ -458,7 +462,7 @@ FORM forms '{reflection.form.forms}'
         FILTER '{reflection.has.user.preferences.group.object.custom.user}' hasUserPreferences(g, u) DEFAULT
 
     OBJECTS pu = PropertyDraw
-    PROPERTIES(pu) READONLY sid, caption
+    PROPERTIES(pu) READONLY canonicalNameActionOrProperty, sid, caption
     PROPERTIES(pu, u) BACKGROUND RGB(224,224,255) captionShow, columnCaption, columnPattern, columnWidth, columnFlex, columnOrder, columnSort, columnAscendingSort
     ORDERS captionShow(pu, u), columnOrder(pu, u)
     FILTERS groupObject(pu) = g
@@ -475,7 +479,7 @@ FORM forms '{reflection.form.forms}'
     FILTERS groupObject(fg) = g
 
     OBJECTS pfg = PropertyDraw
-    PROPERTIES(pfg) READONLY sid, caption
+    PROPERTIES(pfg) READONLY canonicalNameActionOrProperty, sid, caption
     PROPERTIES(fg, pfg) groupOrder, sum, max, pivot
     FILTERS groupObject(pfg) = g
 ;
