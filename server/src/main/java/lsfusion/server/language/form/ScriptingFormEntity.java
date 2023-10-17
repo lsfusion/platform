@@ -566,7 +566,6 @@ public class ScriptingFormEntity {
         PropertyObjectEntity readOnlyIf = options.getReadOnlyIf();
         if(disableIf != null || readOnlyIf != null) {
             property.setPropertyExtra(addReadonlyIfPropertyObject(disableIf, readOnlyIf), PropertyDrawExtraType.READONLYIF, version);
-            property.disableIfReadonly = disableIf != null;
         }
         if (options.getViewType() != null) {
             property.viewType = options.getViewType();

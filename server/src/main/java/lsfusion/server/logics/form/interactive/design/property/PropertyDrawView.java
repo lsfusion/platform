@@ -255,10 +255,6 @@ public class PropertyDrawView extends BaseComponentView {
         return entity.isCustomNeedReadonly(context);
     }
 
-    private boolean isDisableIfReadonly(FormInstanceContext context) {
-        return entity.isDisableIfReadonly(context);
-    }
-
     private LocalizedString getPlaceholder(FormInstanceContext context) {
         if(placeholder != null)
             return placeholder;
@@ -600,8 +596,6 @@ public class PropertyDrawView extends BaseComponentView {
         pool.writeBoolean(outStream, isCustomCanBeRenderedInTD(pool.context));
         pool.writeBoolean(outStream, isCustomNeedPlaceholder(pool.context));
         pool.writeBoolean(outStream, isCustomNeedReadonly(pool.context));
-
-        pool.writeBoolean(outStream, isDisableIfReadonly(pool.context));
 
         pool.writeString(outStream, entity.eventID);
 

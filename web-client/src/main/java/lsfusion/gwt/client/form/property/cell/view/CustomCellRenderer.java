@@ -129,10 +129,10 @@ public class CustomCellRenderer extends CellRenderer {
     }
 
     public static JavaScriptObject getController(GPropertyDraw property, UpdateContext updateContext, Element element) {
-        return getController(property, updateContext, element, updateContext.isPropertyReadOnly() != null, property.disableIfReadonly, updateContext.isTabFocusable());
+        return getController(property, updateContext, element, updateContext.isPropertyReadOnly() != null, updateContext.isTabFocusable());
     }
 
-    private static native JavaScriptObject getController(GPropertyDraw property, UpdateContext updateContext, Element element, boolean isReadOnly, boolean isDisableIfReadonly, boolean isTabFocusable)/*-{
+    private static native JavaScriptObject getController(GPropertyDraw property, UpdateContext updateContext, Element element, boolean isReadOnly, boolean isTabFocusable)/*-{
         return {
             change: function (value, renderValueSupplier) {
                 if(value === undefined) // not passed
@@ -157,9 +157,6 @@ public class CustomCellRenderer extends CellRenderer {
             },
             isReadOnly: function () { // extraValue.readonly + customNeedReadonly should be used instead if readonly depends on the data (otherwise it won't be updated)
                 return isReadOnly;
-            },
-            isDisableIfReadonly: function () {
-                return isDisableIfReadonly;
             },
             isTabFocusable: function () {
                 return isTabFocusable;
