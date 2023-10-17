@@ -15,7 +15,7 @@ import java.sql.SQLException;
 
 public class FormCancelAction extends FormFlowAction {
     private static LP showIf = createIfProperty(new Property[] {FormEntity.manageSession, FormEntity.isAdd, FormEntity.isEditing}, new boolean[] {false, true, true});
-    private static LP readOnlyIf = createIfProperty(new Property[] {DataSession.isDataChanged}, new boolean[] {true});
+    private static LP readOnlyIf = createDisableIfNotProperty(DataSession.isDataChanged);
 
     public FormCancelAction(BaseLogicsModule lm) {
         super(lm);

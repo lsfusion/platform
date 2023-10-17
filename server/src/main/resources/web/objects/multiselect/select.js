@@ -130,15 +130,12 @@ function selectMultiInput() {
                     if(readonly != null) {
                         if (readonly) {
                             selectizeInstance.disable();
-                            selectizeInstance.lock();
-                        }
-                        if (!readonly) {
+                        } else {
                             selectizeInstance.enable();
-                            selectizeInstance.unlock();
+                            selectizeInstance.lock();
                         }
                     } else {
                         selectizeInstance.enable();
-                        selectizeInstance.lock();
                     }
                 })
         },
