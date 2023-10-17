@@ -9,10 +9,7 @@ import lsfusion.base.col.heavy.concurrent.weak.ConcurrentIdentityWeakHashSet;
 import lsfusion.base.col.implementations.abs.AMap;
 import lsfusion.base.col.implementations.abs.ASet;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.MExclMap;
-import lsfusion.base.col.interfaces.mutable.MExclSet;
-import lsfusion.base.col.interfaces.mutable.MMap;
-import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWVSMap;
 import lsfusion.base.col.lru.LRUWWEVSMap;
@@ -501,12 +498,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
         return mCustomObjectClassMap.immutable();
     }
 
-    private ImMap<String, Integer> updateStats(SQLSession sql, boolean useSIDsForClasses) throws SQLException, SQLHandledException {
-        ImMap<String, Integer> result = updateTableStats(sql, true); // чтобы сами таблицы статистики получили статистику
+    private void updateStats(SQLSession sql, boolean useSIDsForClasses) throws SQLException, SQLHandledException {
+        updateTableStats(sql, true); // чтобы сами таблицы статистики получили статистику
         updateFullClassStats(sql, useSIDsForClasses);
         if(SystemProperties.doNotCalculateStats)
-            return result;
-        return updateTableStats(sql, false);
+            return;
+        updateTableStats(sql, false);
     }
 
     private void updateFullClassStats(SQLSession sql, boolean useSIDsForClasses) throws SQLException, SQLHandledException {
@@ -549,7 +546,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    private ImMap<String, Integer> updateTableStats(SQLSession sql, boolean statDefault) throws SQLException, SQLHandledException {
+    private void updateTableStats(SQLSession sql, boolean statDefault) throws SQLException, SQLHandledException {
         ImMap<String, Integer> tableStats;
         ImMap<String, Integer> keyStats;
         ImMap<String, Pair<Integer, Integer>> propStats;
@@ -566,7 +563,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
         for (ImplementTable dataTable : LM.tableFactory.getImplementTables()) {
             dataTable.updateStat(tableStats, keyStats, propStats, statDefault);
         }
-        return tableStats;
     }
 
     private static <V> ImMap<String, V> readStatsFromDB(SQLSession sql, LP sIDProp, LP statsProp, final LP notNullProp) throws SQLException, SQLHandledException {
@@ -1168,6 +1164,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     // Удаляем несуществующие индексы и убираем из newDBStructure не изменившиеся индексы.
     // Делаем это до применения migration script, то есть не пытаемся сохранить все возможные индексы по максимуму
     private void checkIndexes(SQLSession sql, OldDBStructure oldDBStructure, NewDBStructure newDBStructure) throws SQLException {
+        startLogger.info("Checking indexes");
         ImMap<String, String> propertyCNChanges = getStoredOldToNewCNMapping(oldDBStructure, newDBStructure);
 
         ImMap<String, ImRevMap<String, String>> oldTableFieldToCN = getFieldToCNMaps(oldDBStructure);
@@ -1466,8 +1463,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
             adapter.ensureScript("jumpWorkdays.tsql", props);
         }
 
-        SQLSyntax syntax = getSyntax();
-
         // "старое" состояние базы
         OldDBStructure oldDBStructure = getOldDBStructure(sql);
         boolean isFirstStart = oldDBStructure.isEmpty();
@@ -1482,8 +1477,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
         runMigrationScript();
         migrationManager.checkMigrationVersion(oldDBStructure.migrationVersion);
 
-        Map<String, String> columnsToDrop = new HashMap<>();
-
         boolean noTransSyncDB = Settings.get().isNoTransSyncDB();
 
         try {
@@ -1494,7 +1487,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
             else
                 sql.startTransaction(DBManager.START_TIL, OperationOwner.unknown);
 
-            // новое состояние базы
             ByteArrayOutputStream outDBStruct = new ByteArrayOutputStream();
             DataOutputStream outDB = new DataOutputStream(outDBStruct);
 
@@ -1502,19 +1494,13 @@ public class DBManager extends LogicsManager implements InitializingBean {
             NewDBStructure newDBStructure = new NewDBStructure(newMigrationVersion);
 
             checkUniqueDBName(newDBStructure);
-            // запишем новое состояние таблиц (чтобы потом изменять можно было бы)
             newDBStructure.write(outDB);
 
-            startLogger.info("Checking indexes");
-
+            // DROP / RENAME indices
             checkIndexes(sql, oldDBStructure, newDBStructure);
 
-            if (!isFirstStart) {
-                startLogger.info("Applying migration script (" + oldDBStructure.migrationVersion + " -> " + newDBStructure.migrationVersion + ")");
-
-                // применяем к oldDBStructure изменения из migration script, переименовываем таблицы и поля
-                alterDBStructure(oldDBStructure, newDBStructure, sql);
-            }
+            if (!isFirstStart)
+                alterDBStructure(sql, oldDBStructure, newDBStructure);
 
             // проверка, не удалятся ли старые таблицы
             if (denyDropTables) {
@@ -1524,199 +1510,56 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 }
             }
 
-            // добавим таблицы которых не было
-            startLogger.info("Creating tables");
-            for (NamedTable table : newDBStructure.tables.keySet()) {
-                if (oldDBStructure.getTable(table.getName()) == null)
-                    sql.createTable(table, table.keys, startLogger);
-            }
+            // CREATE / CHANGE TYPES tables (keys)
 
-            // проверяем изменение структуры ключей
-            for (NamedTable table : newDBStructure.tables.keySet()) {
-                NamedTable oldTable = oldDBStructure.getTable(table.getName());
-                if (oldTable != null) {
-                    for (KeyField key : table.keys) {
-                        KeyField oldKey = oldTable.findKey(key.getName());
-                        if(oldKey == null)
-                            throw new RuntimeException("Key " + key + " is not found in table : " + oldTable + ". New table : " + table);
-                        if (!(key.type.equals(oldKey.type))) {
-                            startLogger.info("Changing type of key column " + key + " in table " + table + " from " + oldKey.type + " to " + key.type);
-                            sql.modifyColumn(table, key, oldKey.type);
-                        }
-                    }
-                }
-            }
+            createTables(sql, oldDBStructure, newDBStructure);
 
-            List<Property> recalculateProperties = new ArrayList<>();
+            changeKeyTypes(sql, oldDBStructure, newDBStructure);
 
-            MExclSet<Pair<String, String>> mDropColumns = SetFact.mExclSet(); // вообще pend'ить нужно только classDataProperty, но их тогда надо будет отличать
+            // BUILDING DIFF properties and objects
 
-            // бежим по свойствам
-            List<DBStoredProperty> restNewDBStored = new LinkedList<>(newDBStructure.storedProperties);
-            List<Property> recalculateStatProperties = new ArrayList<>();
-            Map<ImplementTable, Map<Field, Type>> alterTableMap = new HashMap<>();
-            for (DBStoredProperty oldProperty : oldDBStructure.storedProperties) {
-                NamedTable oldTable = oldDBStructure.getTable(oldProperty.tableName);
+            List<DBStoredProperty> createProperties = new LinkedList<>();
+            Map<ImplementTable, Map<Field, Type>> changePropertyTypes = new HashMap<>();
+            List<MoveDBProperty> moveProperties = new ArrayList<>();
+            List<DBStoredProperty> dropProperties = new ArrayList<>();
+            buildPropertiesDiff(oldDBStructure, newDBStructure, createProperties, changePropertyTypes, moveProperties, dropProperties);
 
-                boolean keep = false, moved = false;
-                for (Iterator<DBStoredProperty> is = restNewDBStored.iterator(); is.hasNext(); ) {
-                    DBStoredProperty newProperty = is.next();
+            ImMap<String, ImMap<String, ImSet<Long>>> movedObjects = buildObjectsDiff(oldDBStructure, newDBStructure);
 
-                    if (newProperty.getCanonicalName().equals(oldProperty.getCanonicalName())) {
-                        MExclMap<KeyField, PropertyInterface> mFoundInterfaces = MapFact.mExclMapMax(newProperty.property.interfaces.size());
-                        for (PropertyInterface propertyInterface : newProperty.property.interfaces) {
-                            KeyField mapKeyField = oldProperty.mapKeys.get(propertyInterface.ID);
-                            if (mapKeyField != null)
-                                mFoundInterfaces.exclAdd(mapKeyField, propertyInterface);
-                        }
-                        ImMap<KeyField, PropertyInterface> foundInterfaces = mFoundInterfaces.immutable();
+            // CREATE / CHANGE TYPE properties
 
-                        if (foundInterfaces.size() == oldProperty.mapKeys.size()) { // если все нашли
-                            ImplementTable newTable = newProperty.getTable();
-                            if (!(keep = newProperty.tableName.equals(oldProperty.tableName))) { // если в другой таблице
-                                sql.addColumn(newTable, newProperty.property.field);
-                                // делаем запрос на перенос
+            createColumns(sql, createProperties);
 
-                                startLogger.info(localize(LocalizedString.createFormatted("{logics.info.property.is.transferred.from.table.to.table}", newProperty.property.field, newProperty.property.caption, oldProperty.tableName, newProperty.tableName)));
-                                newProperty.property.mapTable.table.moveColumn(sql, newProperty.property.field, oldTable,
-                                        foundInterfaces.join((ImMap<PropertyInterface, KeyField>) newProperty.property.mapTable.mapKeys), oldTable.findProperty(oldProperty.getDBName()));
-                                startLogger.info("Done");
-                                moved = true;
-                                recalculateStatProperties.add(newProperty.property);
-                            } else { // надо проверить что тип не изменился
-                                Type oldType = oldTable.findProperty(oldProperty.getDBName()).type;
-                                if (!oldType.equals(newProperty.property.field.type)) {
-                                    startLogger.info("Prepare changing type of property column " + newProperty.property.field + " in table " + newProperty.tableName + " from " + oldType + " to " + newProperty.property.field.type);
-                                    Map<Field, Type> fieldTypeMap = alterTableMap.get(newTable);
-                                    if(fieldTypeMap == null)
-                                        fieldTypeMap = new HashMap<>();
-                                    fieldTypeMap.put(newProperty.property.field, oldType);
-                                    alterTableMap.put(newTable, fieldTypeMap);
-                                }
-                            }
-                            is.remove();
-                        }
-                        break;
-                    }
-                }
-                if (!keep) {
-                    if (oldProperty.isDataProperty && !moved) {
-                        String newName = "_DELETED_" + oldProperty.getDBName();
-                        ExConnection exConnection = sql.getConnection();
-                        Connection connection = exConnection.sql;
-                        Savepoint savepoint = null;
-                        try {
-                            savepoint = connection.setSavepoint();
-                            String oldName = oldProperty.getDBName();
-                            startLogger.info("Deleting column " + oldName + " " + "(renaming to " + newName + ")  in table " + oldProperty.tableName);
-                            sql.renameColumn(oldProperty.getTableName(syntax), oldName, newName);
-                            columnsToDrop.put(newName, oldProperty.tableName);
-                        } catch (PSQLException e) { // колонка с новым именем уже существует
-                            if(savepoint != null)
-                                connection.rollback(savepoint);
-                            mDropColumns.exclAdd(new Pair<>(oldTable.getName(syntax), oldProperty.getDBName()));
-                        } finally {
-                            sql.returnConnection(exConnection, OperationOwner.unknown);
-                        }
-                    } else
-                        mDropColumns.exclAdd(new Pair<>(oldTable.getName(syntax), oldProperty.getDBName()));
-                }
-            }
+            changeColumnTypes(sql, changePropertyTypes);
 
-            for (Map.Entry<ImplementTable, Map<Field, Type>> entry : alterTableMap.entrySet()) {
-                startLogger.info("Changing type of property columns (" + entry.getValue().size() + ") in table " + entry.getKey().getName() + " started");
-                sql.modifyColumns(entry.getKey(), entry.getValue());
-                startLogger.info("Changing type of property columns (" + entry.getValue().size() + ") in table " + entry.getKey().getName() + " finished");
-            }
+            // CREATE indexes
 
-            for (DBStoredProperty property : restNewDBStored) { // добавляем оставшиеся
-                sql.addColumn(property.getTable(), property.property.field);
-                if (!isFirstStart) // если все свойства "новые" то ничего перерасчитывать не надо
-                    recalculateProperties.add(property.property);
-            }
+            createIndexes(sql, oldDBStructure, newDBStructure);
 
-            // обработка изменений с классами
-            MMap<String, ImMap<String, ImSet<Long>>> mToCopy = MapFact.mMap(AMap.addMergeMapSets()); // в какое свойство, из какого свойства - какой класс
-            for (DBConcreteClass oldClass : oldDBStructure.concreteClasses) {
-                for (DBConcreteClass newClass : newDBStructure.concreteClasses) {
-                    if (oldClass.sID.equals(newClass.sID)) {
-                        if (!(oldClass.sDataPropID.equals(newClass.sDataPropID))) // надо пометить перенос, и удаление
-                            mToCopy.add(newClass.sDataPropID, MapFact.singleton(oldClass.sDataPropID, SetFact.singleton(oldClass.ID)));
-                        break;
-                    }
-                }
-            }
-            ImMap<String, ImMap<String, ImSet<Long>>> toCopy = mToCopy.immutable();
-            for (int i = 0, size = toCopy.size(); i < size; i++) { // перенесем классы, которые сохранились, но изменили поле
-                DBStoredProperty classProp = newDBStructure.getProperty(toCopy.getKey(i));
-                NamedTable table = newDBStructure.getTable(classProp.tableName);
-
-                moveObjects(table, sql, oldDBStructure, toCopy.getValue(i), classProp, LM.baseClass);
-            }
-            ImMap<String, ImSet<Long>> toClean = MapFact.mergeMaps(toCopy.values(), ASet.addMergeSet());
-            for (int i = 0, size = toClean.size(); i < size; i++) { // удалим оставшиеся классы
-                DBStoredProperty classProp = oldDBStructure.getProperty(toClean.getKey(i));
-                NamedTable table = oldDBStructure.getTable(classProp.tableName);
-
-                QueryBuilder<KeyField, PropertyField> dropClassObjects = new QueryBuilder<>(table);
-                Where moveWhere = Where.FALSE();
-
-                PropertyField oldField = table.findProperty(classProp.getDBName());
-                Expr oldExpr = table.join(dropClassObjects.getMapExprs()).getExpr(oldField);
-                for (long prevID : toClean.getValue(i))
-                    moveWhere = moveWhere.or(oldExpr.compare(new DataObject(prevID, LM.baseClass.objectClass), Compare.EQUALS));
-                dropClassObjects.addProperty(oldField, Expr.NULL());
-                dropClassObjects.and(moveWhere);
-
-                startLogger.info(localize(LocalizedString.createFormatted("{logics.info.objects.are.removed.from.table}", classProp.tableName)));
-                sql.updateRecords(new ModifyQuery(table, dropClassObjects.getQuery(), OperationOwner.unknown, TableOwner.global));
-            }
-
-            MSet<ImplementTable> mPackTables = SetFact.mSet();
-            for (Pair<String, String> dropColumn : mDropColumns.immutable()) {
-                startLogger.info("Dropping column " + dropColumn.second + " from table " + dropColumn.first);
-                sql.dropColumn(dropColumn.first, dropColumn.second, Settings.get().isStartServerAnyWay());
-                ImplementTable table = (ImplementTable) newDBStructure.getTable(dropColumn.first);
-                if (table != null) mPackTables.add(table);
-            }
-
-            // удаляем таблицы старые
-            for (NamedTable table : oldDBStructure.tables.keySet()) {
-                if (newDBStructure.getTable(table.getName()) == null) {
-                    sql.dropTable(table);
-                    startLogger.info("Table " + table + " has been dropped");
-                }
-            }
-
-            startLogger.info("Packing tables");
-            packTables(sql, mPackTables.immutable(), false); // упакуем таблицы
-
-            // создадим индексы в базе
-            startLogger.info("Adding indexes");
-            for (Map.Entry<NamedTable, List<IndexData<Field>>> mapIndex : newDBStructure.tables.entrySet())
-                for (IndexData<Field> index : mapIndex.getValue()) {
-                    NamedTable table = mapIndex.getKey();
-                    sql.addIndex(table, table.keys, SetFact.fromJavaOrderSet(index.fields), index.options, oldDBStructure.getTable(table.getName()) == null ? null : startLogger, Settings.get().isStartServerAnyWay()); // если таблица новая нет смысла логировать
-                }
-
-//            plus it has to be after fillIDs since it uses getClassObject
-//            not sure that it is needed (and why only classes and not all stats)
-//            ImplementTable.ignoreStatProps(() -> {
-//                if (isFirstStart) {
-//                    try (DataSession session = createSession(OperationOwner.unknown)) { // apply in transaction
-//                        startLogger.info("Recalculate class stats");
-//                        recalculateClassStats(session, false);
-//                        apply(session);
-//                    }
-//                }
-//                return null;
-//            });
-
-            ImMap<String, Integer> tableStats = ImplementTable.reflectionStatProps(() -> {
+            // since the below methods use queries we have to update stat props first
+            ImplementTable.reflectionStatProps(() -> {
                 startLogger.info("Updating stats");
-                return updateStats(sql, true);
+                updateStats(sql, true);
+                return null;
             });
             ImplementTable.updatedStats = true;
+
+            // MOVE properties / objects (both uses query, should be before table drop)
+
+            moveColumns(sql, oldDBStructure, moveProperties);
+
+            moveObjects(sql, oldDBStructure, newDBStructure, movedObjects, LM.baseClass); // should be before tables and columns drop (since class data props are also dropped)
+
+            // DROP properties
+
+            Map<String, String> dropDataProperties = new HashMap<>();
+            dropColumns(sql, dropProperties, dropDataProperties);
+
+            // DROP / PACK tables
+
+            dropTables(sql, oldDBStructure, newDBStructure);
+
+            packTables(sql, oldDBStructure, newDBStructure, dropProperties, movedObjects);
 
             startLogger.info("Filling static objects ids");
             IDChanges idChanges = new IDChanges();
@@ -1749,16 +1592,26 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     ImMap<PropertyField, ObjectValue> propFields = MapFact.singleton(StructTable.instance.struct, new DataObject(RawFileData.EMPTY, ByteArrayClass.instance));
                     sql.insertRecord(StructTable.instance, MapFact.EMPTY(), propFields, true, TableOwner.global, OperationOwner.unknown);
                 }
-
-                startLogger.info("Recalculating aggregations");
-                recalculateAggregations(session, getStack(), sql, recalculateProperties, false, startLogger); // перерасчитаем агрегации
                 apply(session);
 
-                recalculateProperties.addAll(recalculateStatProperties);
-                updateAggregationStats(session,recalculateProperties, tableStats);
-                apply(session);
+                if (!isFirstStart) { // если все свойства "новые" то ничего перерасчитывать не надо
+                    startLogger.info("Recalculating aggregations");
+                    List<Property> recalculateProperties = new ArrayList<>();
+                    for (DBStoredProperty property : createProperties)
+                        recalculateProperties.add(property.property);
+                    recalculateAggregations(session, getStack(), sql, recalculateProperties, false, startLogger);
+                    apply(session);
 
-                writeDroppedColumns(session, columnsToDrop);
+                    List<Pair<Property, Boolean>> updateStatProperties = new ArrayList<>();
+                    for (DBStoredProperty property : createProperties)
+                        updateStatProperties.add(new Pair<>(property.property, property.property instanceof StoredDataProperty)); // we don't want to update DATA stats (it is always zero)
+                    for (MoveDBProperty move : moveProperties)
+                        updateStatProperties.add(new Pair<>(move.newProperty.property, false));
+                    updateAggregationStats(session, updateStatProperties);
+                    apply(session);
+                }
+
+                writeDroppedColumns(session, dropDataProperties);
                 apply(session);
             }
             if(!noTransSyncDB)
@@ -1786,6 +1639,216 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
+    private static void packTables(SQLSession sql, OldDBStructure oldDBStructure, NewDBStructure newDBStructure, List<DBStoredProperty> dropProperties, ImMap<String, ImMap<String, ImSet<Long>>> movedObjects) throws SQLException, SQLHandledException {
+        Set<String> packTableNames = new HashSet<>();
+        for (DBStoredProperty dropColumn : dropProperties)
+            packTableNames.add(dropColumn.tableName);
+        for(ImMap<String, ImSet<Long>> movedOldObjects : movedObjects.valueIt())
+            for(String classPropName : movedOldObjects.keyIt())
+                packTableNames.add(oldDBStructure.getProperty(classPropName).tableName);
+
+        MSet<ImplementTable> mPackTables = SetFact.mSet();
+        for (String packTableName : packTableNames) {
+            ImplementTable packTable = (ImplementTable) newDBStructure.getTable(packTableName);
+            if (packTable != null)
+                mPackTables.add(packTable);
+        }
+        packTables(sql, mPackTables.immutable(), false);
+    }
+
+    private static void moveColumns(SQLSession sql, OldDBStructure oldDBStructure, List<MoveDBProperty> movedProperties) throws Exception {
+        for(MoveDBProperty move : movedProperties) {
+            DBStoredProperty newProperty = move.newProperty;
+            DBStoredProperty oldProperty = move.oldProperty;
+
+            ImplementTable newTable = newProperty.getTable();
+            NamedTable oldTable = oldDBStructure.getTable(oldProperty.tableName);
+
+            sql.addColumn(newTable, newProperty.property.field);
+            startLogger.info(localize(LocalizedString.createFormatted("{logics.info.property.is.transferred.from.table.to.table}", newProperty.property.field, newProperty.property.caption, oldProperty.tableName, newProperty.tableName)));
+            newTable.moveColumn(sql, newProperty.property.field, oldTable, move.mapKeys, oldTable.findProperty(oldProperty.getDBName()));
+            startLogger.info("Done");
+
+            sql.dropColumn(oldProperty.getTableName(sql.syntax), oldProperty.getDBName(), Settings.get().isStartServerAnyWay());
+        }
+    }
+
+    private static void changeColumnTypes(SQLSession sql, Map<ImplementTable, Map<Field, Type>> changedTypeProperties) throws SQLException {
+        for (Map.Entry<ImplementTable, Map<Field, Type>> entry : changedTypeProperties.entrySet()) {
+            startLogger.info("Changing type of property columns (" + entry.getValue().size() + ") in table " + entry.getKey().getName() + " started");
+            sql.modifyColumns(entry.getKey(), entry.getValue());
+            startLogger.info("Changing type of property columns (" + entry.getValue().size() + ") in table " + entry.getKey().getName() + " finished");
+        }
+    }
+
+    private static void buildPropertiesDiff(OldDBStructure oldDBStructure, NewDBStructure newDBStructure, List<DBStoredProperty> createProperties, Map<ImplementTable, Map<Field, Type>> changePropertyTypes, List<MoveDBProperty> moveProperties, List<DBStoredProperty> dropProperties) {
+        createProperties.addAll(newDBStructure.storedProperties);
+        for (DBStoredProperty oldProperty : oldDBStructure.storedProperties) {
+            boolean keep = false;
+            for (Iterator<DBStoredProperty> is = createProperties.iterator(); is.hasNext(); ) {
+                DBStoredProperty newProperty = is.next();
+
+                if (newProperty.getCanonicalName().equals(oldProperty.getCanonicalName())) {
+                    MRevMap<KeyField, PropertyInterface> mFoundInterfaces = MapFact.mRevMapMax(newProperty.property.interfaces.size());
+                    for (PropertyInterface propertyInterface : newProperty.property.interfaces) {
+                        KeyField mapKeyField = oldProperty.mapKeys.get(propertyInterface.ID);
+                        if (mapKeyField != null)
+                            mFoundInterfaces.revAdd(mapKeyField, propertyInterface);
+                    }
+                    ImRevMap<KeyField, PropertyInterface> foundInterfaces = mFoundInterfaces.immutableRev();
+
+                    if (foundInterfaces.size() == oldProperty.mapKeys.size()) {
+                        keep = true;
+                        if (!newProperty.tableName.equals(oldProperty.tableName))
+                            moveProperties.add(new MoveDBProperty(newProperty, oldProperty, foundInterfaces.join((ImRevMap<PropertyInterface, KeyField>) newProperty.property.mapTable.mapKeys)));
+                        else {
+                            Type oldType = oldDBStructure.getTable(oldProperty.tableName).findProperty(oldProperty.getDBName()).type;
+                            if (!oldType.equals(newProperty.property.field.type)) {
+                                startLogger.info("Prepare changing type of property column " + newProperty.property.field + " in table " + newProperty.tableName + " from " + oldType + " to " + newProperty.property.field.type);
+                                changePropertyTypes.computeIfAbsent(newProperty.getTable(), k -> new HashMap<>()).put(newProperty.property.field, oldType);
+                            }
+                        }
+                        is.remove();
+                    }
+                    break;
+                }
+            }
+            if (!keep)
+                dropProperties.add(oldProperty);
+        }
+    }
+
+    private static void dropDataColumn(SQLSession sql, Map<String, String> dropDataProperties, DBStoredProperty oldProperty) throws SQLException {
+        String oldName = oldProperty.getDBName();
+        String newName = "_DELETED_" + oldProperty.getDBName();
+        startLogger.info("Deleting column " + oldName + " " + "(renaming to " + newName + ")  in table " + oldProperty.tableName + " started");
+        sql.renameColumn(oldProperty.getTableName(sql.syntax), oldName, newName);
+        startLogger.info("Deleting column " + oldName + " " + "(renaming to " + newName + ")  in table " + oldProperty.tableName + " finished");
+
+        dropDataProperties.put(newName, oldProperty.tableName);
+    }
+
+    private static void createColumns(SQLSession sql, List<DBStoredProperty> restNewDBStored) throws SQLException {
+        for (DBStoredProperty property : restNewDBStored) // добавляем оставшиеся
+            sql.addColumn(property.getTable(), property.property.field);
+    }
+
+    private static void changeKeyTypes(SQLSession sql, OldDBStructure oldDBStructure, NewDBStructure newDBStructure) throws SQLException {
+        for (NamedTable table : newDBStructure.tables.keySet()) {
+            NamedTable oldTable = oldDBStructure.getTable(table.getName());
+            if (oldTable != null) {
+                for (KeyField key : table.keys) {
+                    KeyField oldKey = oldTable.findKey(key.getName());
+                    if(oldKey == null)
+                        throw new RuntimeException("Key " + key + " is not found in table : " + oldTable + ". New table : " + table);
+                    if (!(key.type.equals(oldKey.type))) {
+                        startLogger.info("Changing type of key column " + key + " in table " + table + " from " + oldKey.type + " to " + key.type);
+                        sql.modifyColumn(table, key, oldKey.type);
+                    }
+                }
+            }
+        }
+    }
+
+    private static void createTables(SQLSession sql, OldDBStructure oldDBStructure, NewDBStructure newDBStructure) throws SQLException {
+        // добавим таблицы которых не было
+        startLogger.info("Creating tables");
+        for (NamedTable table : newDBStructure.tables.keySet()) {
+            if (oldDBStructure.getTable(table.getName()) == null)
+                sql.createTable(table, table.keys, startLogger);
+        }
+    }
+
+    private static void createIndexes(SQLSession sql, OldDBStructure oldDBStructure, NewDBStructure newDBStructure) throws SQLException {
+        startLogger.info("Adding indexes");
+        for (Map.Entry<NamedTable, List<IndexData<Field>>> mapIndex : newDBStructure.tables.entrySet())
+            for (IndexData<Field> index : mapIndex.getValue()) {
+                NamedTable table = mapIndex.getKey();
+                sql.addIndex(table, table.keys, SetFact.fromJavaOrderSet(index.fields), index.options, oldDBStructure.getTable(table.getName()) == null ? null : startLogger, Settings.get().isStartServerAnyWay()); // если таблица новая нет смысла логировать
+            }
+    }
+
+    private static void dropTables(SQLSession sql, OldDBStructure oldDBStructure, NewDBStructure newDBStructure) throws SQLException {
+        // удаляем таблицы старые
+        for (NamedTable table : oldDBStructure.tables.keySet()) {
+            if (newDBStructure.getTable(table.getName()) == null) {
+                sql.dropTable(table);
+                startLogger.info("Table " + table + " has been dropped");
+            }
+        }
+    }
+
+    private static void dropColumns(SQLSession sql, List<DBStoredProperty> dropColumns, Map<String, String> dropDataProperties) throws SQLException {
+        for (DBStoredProperty dropColumn : dropColumns) {
+            boolean droppedData = false;
+            if (dropColumn.isDataProperty) {
+                ExConnection exConnection = sql.getConnection();
+                Connection connection = exConnection.sql;
+                Savepoint savepoint = null;
+                try {
+                    savepoint = connection.setSavepoint();
+                    dropDataColumn(sql, dropDataProperties, dropColumn);
+                    droppedData = true;
+                } catch (PSQLException e) { // колонка с новым именем уже существует
+                    if (savepoint != null)
+                        connection.rollback(savepoint);
+                } finally {
+                    sql.returnConnection(exConnection, OperationOwner.unknown);
+                }
+            }
+            if(!droppedData) {
+                startLogger.info("Dropping column " + dropColumn.getDBName() + " from table " + dropColumn.tableName);
+                sql.dropColumn(dropColumn.getTableName(sql.syntax), dropColumn.getDBName(), Settings.get().isStartServerAnyWay());
+            }
+        }
+    }
+
+    private static void dropObjects(SQLSession sql, OldDBStructure oldDBStructure, ImMap<String, ImMap<String, ImSet<Long>>> movedObjects, BaseClass baseClass) throws SQLException, SQLHandledException {
+        ImMap<String, ImSet<Long>> toClean = MapFact.mergeMaps(movedObjects.values(), ASet.addMergeSet());
+        for (int i = 0, size = toClean.size(); i < size; i++) { // удалим оставшиеся классы
+            DBStoredProperty classProp = oldDBStructure.getProperty(toClean.getKey(i));
+            NamedTable table = oldDBStructure.getTable(classProp.tableName);
+
+            QueryBuilder<KeyField, PropertyField> dropClassObjects = new QueryBuilder<>(table);
+            Where moveWhere = Where.FALSE();
+
+            PropertyField oldField = table.findProperty(classProp.getDBName());
+            Expr oldExpr = table.join(dropClassObjects.getMapExprs()).getExpr(oldField);
+            for (long prevID : toClean.getValue(i))
+                moveWhere = moveWhere.or(oldExpr.compare(new DataObject(prevID, baseClass.objectClass), Compare.EQUALS));
+            dropClassObjects.addProperty(oldField, Expr.NULL());
+            dropClassObjects.and(moveWhere);
+
+            startLogger.info(localize(LocalizedString.createFormatted("{logics.info.objects.are.removed.from.table}", classProp.tableName)));
+            sql.updateRecords(new ModifyQuery(table, dropClassObjects.getQuery(), OperationOwner.unknown, TableOwner.global));
+        }
+    }
+
+    private static void moveObjects(SQLSession sql, OldDBStructure oldDBStructure, NewDBStructure newDBStructure, ImMap<String, ImMap<String, ImSet<Long>>> movedObjects, BaseClass baseClass) throws Exception {
+        for (int i = 0, size = movedObjects.size(); i < size; i++) { // перенесем классы, которые сохранились, но изменили поле
+            DBStoredProperty classProp = newDBStructure.getProperty(movedObjects.getKey(i));
+            NamedTable table = newDBStructure.getTable(classProp.tableName);
+
+            moveObjects(table, sql, oldDBStructure, movedObjects.getValue(i), classProp, baseClass);
+        }
+
+        dropObjects(sql, oldDBStructure, movedObjects, baseClass);
+    }
+
+    private static ImMap<String, ImMap<String, ImSet<Long>>> buildObjectsDiff(OldDBStructure oldDBStructure, NewDBStructure newDBStructure) {
+        MMap<String, ImMap<String, ImSet<Long>>> mToCopy = MapFact.mMap(AMap.addMergeMapSets()); // в какое свойство, из какого свойства - какой класс
+        for (DBConcreteClass oldClass : oldDBStructure.concreteClasses) {
+            for (DBConcreteClass newClass : newDBStructure.concreteClasses) {
+                if (oldClass.sID.equals(newClass.sID)) {
+                    if (!(oldClass.sDataPropID.equals(newClass.sDataPropID))) // надо пометить перенос, и удаление
+                        mToCopy.add(newClass.sDataPropID, MapFact.singleton(oldClass.sDataPropID, SetFact.singleton(oldClass.ID)));
+                    break;
+                }
+            }
+        }
+        return mToCopy.immutable();
+    }
+
     private void createAdditionalIndexRecords(OldDBStructure dbStructure) {
         for (List<IndexData<String>> indexList : dbStructure.tables.values()) {
             List<IndexData<String>> additionalIndexes = new ArrayList<>();
@@ -1804,7 +1867,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
     
     public static void moveObjects(NamedTable table, SQLSession sql, OldDBStructure oldDBStructure, ImMap<String, ImSet<Long>> copyFrom, DBStoredProperty classProp, BaseClass baseClass) throws Exception {
-        ImplementTable.ignoreStatProps(() -> {
+//        ImplementTable.ignoreStatProps(() -> {
             QueryBuilder<KeyField, PropertyField> copyObjects = new QueryBuilder<>(table);
             Expr keyExpr = copyObjects.getMapExprs().singleValue();
             Where moveWhere = Where.FALSE();
@@ -1827,8 +1890,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
             startLogger.info(localize(LocalizedString.createFormatted("{logics.info.objects.are.transferred.from.tables.to.table}", classProp.tableName, mCopyFromTables.immutable().toString())));
             sql.modifyRecords(new ModifyQuery(table, copyObjects.getQuery(), OperationOwner.unknown, TableOwner.global));
-            return null;
-        });
+//            return null;
+//        });
     }
 
     private void classForNameSQL() {
@@ -1900,26 +1963,22 @@ public class DBManager extends LogicsManager implements InitializingBean {
         serverComputer = (long) getComputer(SystemUtils.getLocalHostName(), session, getStack()).object;
     }
 
-    private void updateAggregationStats(DataSession session, List<Property> recalculateProperties, ImMap<String, Integer> tableStats) throws SQLException, SQLHandledException {
-        Map<ImplementTable, List<Property>> propertiesMap; // статистика для новых свойств
+    private void updateAggregationStats(DataSession session, List<Pair<Property, Boolean>> recalculateProperties) throws SQLException, SQLHandledException {
+        Map<ImplementTable, List<Pair<Property, Boolean>>> propertiesMap;
         if (Settings.get().isGroupByTables()) {
             propertiesMap = new HashMap<>();
-            for (Property property : recalculateProperties) {
-                List<Property> entry = propertiesMap.get(property.mapTable.table);
-                if (entry == null)
-                    entry = new ArrayList<>();
-                entry.add(property);
-                propertiesMap.put(property.mapTable.table, entry);
-            }
-            for(Map.Entry<ImplementTable, List<Property>> entry : propertiesMap.entrySet())
+            for (Pair<Property, Boolean> property : recalculateProperties)
+                propertiesMap.computeIfAbsent(property.first.mapTable.table, k -> new ArrayList<>()).add(property);
+
+            for(Map.Entry<ImplementTable, List<Pair<Property, Boolean>>> entry : propertiesMap.entrySet())
                 recalculateAndUpdateStat(session, entry.getKey(), entry.getValue());
         }
     }
 
-    private void recalculateAndUpdateStat(DataSession session, ImplementTable table, List<Property> properties) throws SQLException, SQLHandledException {
-        ImSet<Property> propertySet = SetFact.fromJavaOrderSet(properties).getSet();
-        ImMap<PropertyField, String> fields = propertySet.mapKeyValues(value -> value.field, ActionOrProperty::getCanonicalName);
-        ImSet<PropertyField> skipRecalculateFields = propertySet.filterFn(property -> property instanceof StoredDataProperty).mapSetValues(property -> property.field);
+    private void recalculateAndUpdateStat(DataSession session, ImplementTable table, List<Pair<Property, Boolean>> properties) throws SQLException, SQLHandledException {
+        ImSet<Pair<Property, Boolean>> propertySet = SetFact.fromJavaOrderSet(properties).getSet();
+        ImMap<PropertyField, String> fields = propertySet.mapKeyValues(property -> property.first.field, property -> property.first.getCanonicalName());
+        ImSet<PropertyField> skipRecalculateFields = propertySet.filterFn(property -> property.second).mapSetValues(property -> property.first.field);
         long start = System.currentTimeMillis();
         startLogger.info(String.format("Update Aggregation Stats started: %s", table));
         
@@ -2445,7 +2504,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
     
     // Не разбирается с индексами. Было решено, что сохранять индексы необязательно.
-    private void alterDBStructure(OldDBStructure oldData, NewDBStructure newData, SQLSession sql) throws SQLException {
+    private void alterDBStructure(SQLSession sql, OldDBStructure oldData, NewDBStructure newData) throws SQLException {
+        startLogger.info("Applying migration script (" + oldData.migrationVersion + " -> " + newData.migrationVersion + ")");
+
         // Сохраним изменения имен свойств на форме и элементов навигатора для reflectionManager
         finalPropertyDrawNameChanges = migrationManager.getPropertyDrawNameChangesAfter(oldData.migrationVersion);
         finalNavigatorElementNameChanges = migrationManager.getNavigatorCNChangesAfter(oldData.migrationVersion);
@@ -2522,7 +2583,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
         session.executeDDL(getSyntax().getVacuumDB());
     }
 
-    public void packTables(SQLSession session, ImCol<ImplementTable> tables, boolean isolatedTransaction) throws SQLException, SQLHandledException {
+    public static void packTables(SQLSession session, ImCol<ImplementTable> tables, boolean isolatedTransaction) throws SQLException, SQLHandledException {
+        startLogger.info("Packing tables");
         for (final ImplementTable table : tables) {
             logger.debug(localize("{logics.info.packing.table}") + " (" + table + ")... ");
             run(session, isolatedTransaction, sql -> sql.packTable(table, OperationOwner.unknown, TableOwner.global));
@@ -2880,6 +2942,19 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     outDB.writeUTF(property.mapKeys.getValue(i).getName());
                 }
             }
+        }
+    }
+
+    private static class MoveDBProperty {
+
+        public final DBStoredProperty newProperty;
+        public final DBStoredProperty oldProperty;
+        public final ImRevMap<KeyField, KeyField> mapKeys;
+
+        public MoveDBProperty(DBStoredProperty newProperty, DBStoredProperty oldProperty, ImRevMap<KeyField, KeyField> mapKeys) {
+            this.newProperty = newProperty;
+            this.oldProperty = oldProperty;
+            this.mapKeys = mapKeys;
         }
     }
 

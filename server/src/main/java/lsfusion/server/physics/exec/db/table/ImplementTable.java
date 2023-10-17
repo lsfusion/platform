@@ -161,15 +161,15 @@ public class ImplementTable extends DBTable { // последний интерф
     }
 
     public void moveColumn(SQLSession sql, PropertyField field, NamedTable prevTable, ImMap<KeyField, KeyField> mapFields, PropertyField prevField) throws Exception {
-        ImplementTable.ignoreStatProps(() -> {
-            QueryBuilder<KeyField, PropertyField> moveColumn = new QueryBuilder<>(this);
-            Expr moveExpr = prevTable.join(mapFields.join(moveColumn.getMapExprs())).getExpr(prevField);
-            moveColumn.addProperty(field, moveExpr);
-            moveColumn.and(moveExpr.getWhere());
+//        ImplementTable.ignoreStatProps(() -> {
+        QueryBuilder<KeyField, PropertyField> moveColumn = new QueryBuilder<>(this);
+        Expr moveExpr = prevTable.join(mapFields.join(moveColumn.getMapExprs())).getExpr(prevField);
+        moveColumn.addProperty(field, moveExpr);
+        moveColumn.and(moveExpr.getWhere());
 
-            sql.modifyRecords(new ModifyQuery(this, moveColumn.getQuery(), OperationOwner.unknown, TableOwner.global));
-            return null;
-        });
+        sql.modifyRecords(new ModifyQuery(this, moveColumn.getQuery(), OperationOwner.unknown, TableOwner.global));
+//            return null;
+//        });
     }
 
     @NFLazy
