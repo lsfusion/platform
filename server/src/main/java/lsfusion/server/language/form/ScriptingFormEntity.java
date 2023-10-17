@@ -565,7 +565,7 @@ public class ScriptingFormEntity {
         PropertyObjectEntity disableIf = options.getDisableIf();
         PropertyObjectEntity readOnlyIf = options.getReadOnlyIf();
         if(disableIf != null || readOnlyIf != null) {
-            property.setPropertyExtra(addReadonlyIfPropertyObject(disableIf, readOnlyIf, property.actionOrProperty instanceof ActionObjectEntity), PropertyDrawExtraType.READONLYIF, version);
+            property.setPropertyExtra(addReadonlyIfPropertyObject(disableIf, readOnlyIf), PropertyDrawExtraType.READONLYIF, version);
         }
         if (options.getViewType() != null) {
             property.viewType = options.getViewType();
@@ -675,7 +675,7 @@ public class ScriptingFormEntity {
             property.sync = sync;
     }
 
-    private <A extends PropertyInterface, B extends PropertyInterface, C extends PropertyInterface> PropertyObjectEntity addReadonlyIfPropertyObject(PropertyObjectEntity<A> disableIf, PropertyObjectEntity<B> readOnlyIf, boolean isAction) {
+    private <A extends PropertyInterface, B extends PropertyInterface, C extends PropertyInterface> PropertyObjectEntity addReadonlyIfPropertyObject(PropertyObjectEntity<A> disableIf, PropertyObjectEntity<B> readOnlyIf) {
 
         ImSet<ObjectEntity> allObjects = SetFact.EMPTY();
         if (disableIf != null) {
@@ -692,7 +692,7 @@ public class ScriptingFormEntity {
             mListCases.add(new CalcCase<>(disableIf.getImplement(objectInterfaces), PropertyFact.createTTrue()));
         }
         if(readOnlyIf != null) {
-            mListCases.add(new CalcCase<>(readOnlyIf.getImplement(objectInterfaces), isAction ? PropertyFact.createTTrue() : PropertyFact.createTFalse()));
+            mListCases.add(new CalcCase<>(readOnlyIf.getImplement(objectInterfaces), PropertyFact.createTFalse()));
         }
 
         return PropertyFact.createCaseProperty(objectInterfaces.valuesSet(), false, mListCases.immutableList()).mapEntityObjects(objectInterfaces.reverse());
