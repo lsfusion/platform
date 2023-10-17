@@ -308,7 +308,7 @@ public abstract class CellRenderer {
         public String foreground;
         public String background;
 
-        public boolean readonly;
+        public Boolean readonly;
 
         public String valueElementClass;
 
@@ -322,8 +322,8 @@ public abstract class CellRenderer {
     private static boolean equalsColorState(RenderedState state, String background, String foreground) {
         return GwtClientUtils.nullEquals(state.background, background) && GwtClientUtils.nullEquals(state.foreground, foreground);
     }
-    private static boolean equalsReadonlyState(RenderedState state, boolean readonly) {
-        return state.readonly == readonly;
+    private static boolean equalsReadonlyState(RenderedState state, Boolean readonly) {
+        return GwtClientUtils.nullEquals(state.readonly, readonly);
     }
     private static boolean equalsValueElementClassState(RenderedState state, String elementClass) {
         return GwtClientUtils.nullEquals(state.valueElementClass, elementClass);
@@ -360,7 +360,7 @@ public abstract class CellRenderer {
             isNew = true;
         }
 
-        boolean readonly = updateContext.isPropertyReadOnly();
+        Boolean readonly = updateContext.isPropertyReadOnly();
         if(isNew || !equalsReadonlyState(renderedState, readonly)) {
             renderedState.readonly = readonly;
 
@@ -400,21 +400,18 @@ public abstract class CellRenderer {
             renderToolbarContent(element, updateContext, renderedState, cleared);
     }
 
-    private void updateReadonly(Element element, boolean readonly) {
-        boolean disableIfReadonly = property.disableIfReadonly;
+    private void updateReadonly(Element element, Boolean readonly) {
         Object readonlyFnc = getReadonlyFnc(element);
         if(readonlyFnc != null) {
             if(readonlyFnc != CellRenderer.NULL)
-                GwtClientUtils.call((JavaScriptObject) readonlyFnc, GSimpleStateTableView.fromObject(readonly), GSimpleStateTableView.fromObject(disableIfReadonly));
+                GwtClientUtils.call((JavaScriptObject) readonlyFnc, GSimpleStateTableView.fromObject(readonly));
         } else
-            setDefaultReadonlyFnc(element, readonly, disableIfReadonly);
+            setDefaultReadonlyFnc(element, readonly);
     }
 
-    private static native JavaScriptObject setDefaultReadonlyFnc(Element element, boolean readonly, boolean disableIfReadonly)/*-{
-        if(disableIfReadonly)
-            $wnd.setDisabledType(element, readonly);
-        else
-            $wnd.setReadonlyType(element, readonly);
+    private static native JavaScriptObject setDefaultReadonlyFnc(Element element, Boolean readonly)/*-{
+        $wnd.setDisabledType(element, readonly != null && readonly);
+        $wnd.setReadonlyType(element, readonly != null && !readonly);
     }-*/;
 
     // in theory in most case we can get previous state without storing it in Element, but for now it's the easiest way

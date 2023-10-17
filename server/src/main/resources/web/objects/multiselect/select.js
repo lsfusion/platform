@@ -126,17 +126,16 @@ function selectMultiInput() {
             let selectizeInstance = element.selectizeInstance[0].selectize;
             if(!isList)
                 lsfUtils.setFocusElement(element, selectizeInstance.$control_input[0])
-                lsfUtils.setReadonlyFnc(element, (readonly, disableIfReadonly) => {
-                    if(disableIfReadonly) {
-                        if(readonly)
+                lsfUtils.setReadonlyFnc(element, (readonly) => {
+                    if(readonly != null) {
+                        if (readonly) {
                             selectizeInstance.disable();
-                        else
+                        } else {
                             selectizeInstance.enable();
-                    } else {
-                        if(readonly)
-                            selectizeInstance.unlock();
-                        else
                             selectizeInstance.lock();
+                        }
+                    } else {
+                        selectizeInstance.enable();
                     }
                 })
         },
@@ -430,7 +429,7 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
 
                     _setGroupListReadonly(input, controller, input.object);
                 } else {
-                    _setGroupReadonly(input, extraValue.readonly, controller.isDisableIfReadonly());
+                    _setGroupReadonly(input, extraValue.readonly);
 
                     if(i === 0)
                         focusInput = input;
@@ -572,8 +571,8 @@ function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBo
 
             if(!isList) {
                 lsfUtils.setFocusElement(element, select);
-                lsfUtils.setReadonlyFnc(element, (readonly, disableIfReadonly) => {
-                    _setSelectReadonly(select, readonly, disableIfReadonly);
+                lsfUtils.setReadonlyFnc(element, (readonly) => {
+                    _setSelectReadonly(select, readonly);
                 });
             }
 
@@ -718,23 +717,21 @@ function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBo
 
 // input in radio group / option in select
 function _setGroupListReadonly(element, controller, object) {
-    _setGroupReadonly(element, controller.isPropertyReadOnly('selected', object), controller.isPropertyDisableIfReadonly('selected'));
+    _setGroupReadonly(element, controller.isPropertyReadOnly('selected', object));
 }
-function _setGroupReadonly(element, readonly, disableIfReadonly) {
-    _setReadonly(element, readonly, disableIfReadonly);
+function _setGroupReadonly(element, readonly) {
+    _setReadonly(element, readonly);
 }
 // select
-function _setSelectReadonly(element, readonly, disableIfReadonly) {
-    _setReadonly(element, readonly, disableIfReadonly);
+function _setSelectReadonly(element, readonly) {
+    _setReadonly(element, readonly);
 }
 //
-function _setReadonly(element, readonly, disableIfReadonly) {
-    if(disableIfReadonly) // select, option, input supports disabled
-        setDisabledNative(element, readonly);
-    else {
-        setReadonlyClass(element, readonly);
-        setReadonlyHeur(element, readonly);
-    }
+function _setReadonly(element, readonly) {
+    // select, option, input supports disabled
+    setDisabledNative(element, readonly != null && readonly);
+    setReadonlyClass(element, readonly != null && !readonly);
+    setReadonlyHeur(element,readonly != null && !readonly);
 }
 
 function _convertList(isList, list) {

@@ -15,7 +15,8 @@ import java.sql.SQLException;
 
 public class FormApplyAction extends FormFlowAction {
     private static LP showIf = createIfProperty(new Property[]{FormEntity.manageSession, FormEntity.isEditing}, new boolean[]{false, true});
-    private static LP readOnlyIf = createIfProperty(new Property[]{DataSession.isDataChanged}, new boolean[]{true});
+    private static LP readOnlyIf = createDisableIfNotProperty(DataSession.isDataChanged);
+
 
     public FormApplyAction(BaseLogicsModule lm) {
         super(lm);

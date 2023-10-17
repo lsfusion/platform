@@ -188,7 +188,6 @@ To access design components, you can use their names or address property compone
 |`comment`|Comment of a property or action|String literal|NULL|`'Comment'`|
 |`commentClass`|Class of comment of property or action|String literal|NULL|`'comment-class'`|
 |`panelCommentVertical`|Indicates that the comment of property or action should be drawn above or below the value on the panel|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
-|`disableIfReadonly`|todo|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`panelCommentFirst`|Indicates that the comment should be drawn on the panel before property value|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`panelCommentAlignment`|Comment component alignment inside the container. Acceptable values: `START` (at the beginning), `CENTER` (in the center), `END` (at the end), `STRETCH` (stretched).|Alignment type|`START`|`STRETCH`|
 |`placeholder`|Placeholder of a property or action|String literal|placeholder of a property or action|`'Placeholder'`|

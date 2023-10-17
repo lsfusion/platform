@@ -65,7 +65,7 @@ public class CustomCellRenderer extends CellRenderer {
         boolean customNeedPlaceholder = property.customNeedPlaceholder;
         boolean customNeedReadonly = property.customNeedReadonly;
         if(customNeedPlaceholder || customNeedReadonly)
-            return new ExtraValue(customNeedPlaceholder ? updateContext.getPlaceholder() : null, customNeedReadonly ? updateContext.isPropertyReadOnly() : false);
+            return new ExtraValue(customNeedPlaceholder ? updateContext.getPlaceholder() : null, customNeedReadonly ? updateContext.isPropertyReadOnly() != null : false);
 
         return super.getExtraValue(updateContext);
     }
@@ -129,10 +129,10 @@ public class CustomCellRenderer extends CellRenderer {
     }
 
     public static JavaScriptObject getController(GPropertyDraw property, UpdateContext updateContext, Element element) {
-        return getController(property, updateContext, element, updateContext.isPropertyReadOnly(), property.disableIfReadonly, updateContext.isTabFocusable());
+        return getController(property, updateContext, element, updateContext.isPropertyReadOnly(), updateContext.isTabFocusable());
     }
 
-    private static native JavaScriptObject getController(GPropertyDraw property, UpdateContext updateContext, Element element, boolean isReadOnly, boolean isDisableIfReadonly, boolean isTabFocusable)/*-{
+    private static native JavaScriptObject getController(GPropertyDraw property, UpdateContext updateContext, Element element, Boolean isReadOnly, boolean isTabFocusable)/*-{
         return {
             change: function (value, renderValueSupplier) {
                 if(value === undefined) // not passed
@@ -157,9 +157,6 @@ public class CustomCellRenderer extends CellRenderer {
             },
             isReadOnly: function () { // extraValue.readonly + customNeedReadonly should be used instead if readonly depends on the data (otherwise it won't be updated)
                 return isReadOnly;
-            },
-            isDisableIfReadonly: function () {
-                return isDisableIfReadonly;
             },
             isTabFocusable: function () {
                 return isTabFocusable;

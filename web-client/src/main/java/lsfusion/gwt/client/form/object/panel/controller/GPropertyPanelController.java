@@ -176,7 +176,7 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
                 valueElementClass == null ? property.valueElementClass : PValue.getClassStringValue(valueElementClass),
                 background == null ? property.getBackground() : PValue.getColorStringValue(background),
                 foreground == null ? property.getForeground() : PValue.getColorStringValue(foreground),
-                readOnly != null && PValue.getBooleanValue(readOnly.get(columnKey)),
+                readOnly == null ? null : PValue.get3SBooleanValue(readOnly.get(columnKey)),
                 placeholder == null ? property.placeholder : PValue.getStringValue(placeholder));
 
         if (captions != null)

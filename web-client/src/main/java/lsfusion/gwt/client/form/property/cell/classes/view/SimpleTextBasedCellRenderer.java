@@ -132,11 +132,9 @@ public abstract class SimpleTextBasedCellRenderer extends CellRenderer {
         clearReadonlyFnc(element);
     }
     private static native JavaScriptObject getSimpleReadonlyFnc(InputElement element)/*-{
-        return function(readonly, disableIfReadonly) {
-            if(disableIfReadonly)
-                $wnd.setDisabledNative(element, readonly);
-            else
-                $wnd.setReadonlyNative(element, readonly);
+        return function(readonly) {
+            $wnd.setDisabledNative(element, readonly != null && readonly);
+            $wnd.setReadonlyNative(element, readonly != null && !readonly);
         }
     }-*/;
 

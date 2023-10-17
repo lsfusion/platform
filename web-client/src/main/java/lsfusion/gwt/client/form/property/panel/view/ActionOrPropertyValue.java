@@ -36,7 +36,7 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
     private String valueElementClass;
     private String background;
     private Object foreground;
-    protected boolean readOnly;
+    protected Boolean readOnly;
     private String placeholder;
 
     public PValue getValue() {
@@ -66,7 +66,7 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
     }
 
     @Override
-    public boolean isPropertyReadOnly() {
+    public Boolean isPropertyReadOnly() {
         return readOnly;
     }
 
@@ -292,7 +292,7 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
 
     public abstract void pasteValue(final String value);
 
-    public void update(PValue value, boolean loading, AppBaseImage image, String valueElementClass, String background, String foreground, boolean readOnly, String placeholder) {
+    public void update(PValue value, boolean loading, AppBaseImage image, String valueElementClass, String background, String foreground, Boolean readOnly, String placeholder) {
         this.value = value;
         this.loading = loading;
         this.image = image;

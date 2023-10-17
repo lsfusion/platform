@@ -265,8 +265,6 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.customNeedPlaceholder = clientPropertyDraw.customNeedPlaceholder;
         propertyDraw.customNeedReadonly = clientPropertyDraw.customNeedReadonly;
 
-        propertyDraw.disableIfReadonly = clientPropertyDraw.disableIfReadonly;
-
         propertyDraw.toolTip = clientPropertyDraw.toolTip;
         propertyDraw.clearText = clientPropertyDraw.clearText;
         propertyDraw.tableName = clientPropertyDraw.tableName;

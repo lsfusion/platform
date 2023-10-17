@@ -445,7 +445,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
                             column.setValue(record, propValues.get(fullKey));
                             column.setLoading(record, propLoadings != null && PValue.getBooleanValue(propLoadings.get(fullKey)));
-                            record.setReadOnly(column.columnSID, propReadOnly != null && PValue.getBooleanValue(propReadOnly.get(fullKey)));
+                            record.setReadOnly(column.columnSID, propReadOnly == null ? null : PValue.get3SBooleanValue(propReadOnly.get(fullKey)));
                             PValue valueElementClass = propertyValueElementClasses == null ? null : propertyValueElementClasses.get(fullKey);
                             record.setValueElementClass(column.columnSID, valueElementClass == null ? property.valueElementClass : PValue.getClassStringValue(valueElementClass));
                             PValue background = propertyBackgrounds == null ? null : propertyBackgrounds.get(fullKey);
@@ -766,12 +766,13 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     @Override
-    public boolean isReadOnly(Cell cell) {
+    public Boolean isReadOnly(Cell cell) {
         GPropertyDraw property = getProperty(cell);
         if (property != null && !property.isReadOnly()) {
             GridDataRecord rowRecord = getGridRow(cell);
             GridColumn column = getGridColumn(cell);
-            return column == null || rowRecord == null || rowRecord.isReadonly(column.columnSID);
+            if(column != null && rowRecord != null)
+                return rowRecord.isReadonly(column.columnSID);
         }
         return true;
     }
