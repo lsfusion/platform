@@ -129,10 +129,10 @@ public class CustomCellRenderer extends CellRenderer {
     }
 
     public static JavaScriptObject getController(GPropertyDraw property, UpdateContext updateContext, Element element) {
-        return getController(property, updateContext, element, updateContext.isPropertyReadOnly() != null, updateContext.isTabFocusable());
+        return getController(property, updateContext, element, updateContext.isPropertyReadOnly(), updateContext.isTabFocusable());
     }
 
-    private static native JavaScriptObject getController(GPropertyDraw property, UpdateContext updateContext, Element element, boolean isReadOnly, boolean isTabFocusable)/*-{
+    private static native JavaScriptObject getController(GPropertyDraw property, UpdateContext updateContext, Element element, Boolean isReadOnly, boolean isTabFocusable)/*-{
         return {
             change: function (value, renderValueSupplier) {
                 if(value === undefined) // not passed

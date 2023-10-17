@@ -323,7 +323,7 @@ public abstract class CellRenderer {
         return GwtClientUtils.nullEquals(state.background, background) && GwtClientUtils.nullEquals(state.foreground, foreground);
     }
     private static boolean equalsReadonlyState(RenderedState state, Boolean readonly) {
-        return state.readonly == readonly;
+        return GwtClientUtils.nullEquals(state.readonly, readonly);
     }
     private static boolean equalsValueElementClassState(RenderedState state, String elementClass) {
         return GwtClientUtils.nullEquals(state.valueElementClass, elementClass);

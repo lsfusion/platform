@@ -677,15 +677,12 @@ public class ScriptingFormEntity {
 
     private <A extends PropertyInterface, B extends PropertyInterface, C extends PropertyInterface> PropertyObjectEntity addReadonlyIfPropertyObject(PropertyObjectEntity<A> disableIf, PropertyObjectEntity<B> readOnlyIf) {
 
-        ImSet<ObjectEntity> allObjects;
+        ImSet<ObjectEntity> allObjects = SetFact.EMPTY();
         if (disableIf != null) {
-            if (readOnlyIf != null) {
-                allObjects = disableIf.mapping.valuesSet().merge(readOnlyIf.mapping.valuesSet());
-            } else {
-                allObjects = disableIf.mapping.valuesSet();
-            }
-        } else {
-            allObjects = readOnlyIf.mapping.valuesSet();
+            allObjects = allObjects.merge(disableIf.mapping.valuesSet());
+        }
+        if(readOnlyIf != null) {
+            allObjects = allObjects.merge(readOnlyIf.mapping.valuesSet());
         }
 
         ImRevMap<ObjectEntity, C> objectInterfaces = (ImRevMap<ObjectEntity, C>) allObjects.mapRevValues(UnionProperty.genInterface);

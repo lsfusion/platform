@@ -859,7 +859,8 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'OPTIMISTICASYNC' { $options.setOptimisticAsync(true); }
 		|	'COLUMNS' (columnsName=stringLiteral)? '(' ids=nonEmptyIdList ')' { $options.setColumns($columnsName.text, getGroupObjectsList($ids.ids, self.getVersion())); }
 		|	'SHOWIF' propObj=formPropertyObject { $options.setShowIf($propObj.property); }
-		|	{ boolean disableIf = false; } ('DISABLEIF' { disableIf = true; } | 'READONLYIF') propObj=formPropertyObject { if(disableIf) { $options.setDisableIf($propObj.property); } else { $options.setReadOnlyIf($propObj.property); } ; }
+		|	'DISABLEIF' propObj=formPropertyObject { $options.setDisableIf($propObj.property); }
+		|	'READONLYIF' propObj=formPropertyObject { $options.setReadOnlyIf($propObj.property); }
 		|	'CLASS' propObj=formPropertyObject { $options.setValueElementClass($propObj.property); }
 		|	'BACKGROUND' propObj=formPropertyObject { $options.setBackground($propObj.property); }
 		|	'FOREGROUND' propObj=formPropertyObject { $options.setForeground($propObj.property); }
