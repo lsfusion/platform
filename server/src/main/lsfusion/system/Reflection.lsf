@@ -116,6 +116,8 @@ DESIGN options {
     } 
 }
 
+canonicalNameWithPostfix(ActionOrProperty aop) = CONCAT '_', canonicalName(aop), IF aop IS Action THEN 'action' ELSE 'property';
+actionOrPropertyCanonicalNameWithPostfix '{reflection.property}' (cn) = GROUP AGGR ActionOrProperty aop WHERE aop IS ActionOrProperty BY canonicalNameWithPostfix(aop);
 propertyCanonicalName '{reflection.property}' (cn) = GROUP AGGR Property property WHERE property IS Property BY canonicalName(property);
 actionCanonicalName '{reflection.action}' (cn) = GROUP AGGR Action property WHERE property IS Action BY canonicalName(property);
 propertyTable '{reflection.property}' (string, sID) = GROUP AGGR Property property WHERE stored(property) BY tableSID(property), dbName(property);
@@ -153,9 +155,7 @@ TABLE formPropertyDraw (Form, PropertyDraw);
 TABLE propertyDraw (PropertyDraw);
 TABLE propertyDrawCustomUser (PropertyDraw, CustomUser);
 
-action = DATA Action (PropertyDraw);
-property = DATA Property (PropertyDraw);
-actionOrProperty(PropertyDraw p) = OVERRIDE action(p), property(p);
+actionOrProperty = DATA ActionOrProperty (PropertyDraw);
 canonicalNameActionOrProperty '{reflection.action.or.property}' (PropertyDraw p) = canonicalName(actionOrProperty(p)) IN id CHARWIDTH 20;
 sid '{reflection.sid.property.draw}' = DATA STRING[100] (PropertyDraw) IN id CHARWIDTH 20;
 caption '{reflection.caption.property.draw}' = DATA STRING[250] (PropertyDraw) CHARWIDTH 20;

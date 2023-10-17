@@ -8,6 +8,7 @@ import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
+import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.property.focus.CurrentFormProperty;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
 import org.antlr.runtime.RecognitionException;
@@ -29,6 +30,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public ConcreteCustomClass tableKey;
     public ConcreteCustomClass tableColumn;
     public ConcreteCustomClass dropColumn;
+    public CustomClass actionOrProperty;
     public ConcreteCustomClass property;
     public ConcreteCustomClass action;
     public ConcreteCustomClass groupObject;
@@ -64,6 +66,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LP statsProperty;
     public LP overStatsProperty;
     public LP maxStatsProperty;
+    public LP actionOrPropertyCanonicalNameWithPostfix;
     public LP propertyCanonicalName;
     public LP actionCanonicalName;
     public LP propertyTableSID;
@@ -96,8 +99,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LP formGroupObject;
     public LP groupObjectSIDFormNameGroupObject;
 
-    public LP actionPropertyDraw;
-    public LP propertyPropertyDraw;
+    public LP actionOrPropertyPropertyDraw;
     public LP sidPropertyDraw;
     public LP captionPropertyDraw;
     public LP formPropertyDraw;
@@ -223,6 +225,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         tableKey = (ConcreteCustomClass) findClass("TableKey");
         tableColumn = (ConcreteCustomClass) findClass("TableColumn");
         dropColumn = (ConcreteCustomClass) findClass("DropColumn");
+        actionOrProperty = (CustomClass) findClass("ActionOrProperty");
         property = (ConcreteCustomClass) findClass("Property");
         action = (ConcreteCustomClass) findClass("Action");
         groupObject = (ConcreteCustomClass) findClass("GroupObject");
@@ -266,6 +269,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         classProperty = findProperty("class[Property]");
         complexityProperty = findProperty("complexity[Property]");
         captionProperty = findProperty("caption[Property]");
+        actionOrPropertyCanonicalNameWithPostfix = findProperty("actionOrPropertyCanonicalNameWithPostfix[STRING]");
         propertyCanonicalName = findProperty("propertyCanonicalName[STRING]");
         actionCanonicalName = findProperty("actionCanonicalName[STRING]");
         propertyTableSID = findProperty("propertyTable[STRING[100],STRING[100]]");
@@ -308,8 +312,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
 
 
         // PropertyDraw
-        actionPropertyDraw = findProperty("action[PropertyDraw]");
-        propertyPropertyDraw = findProperty("property[PropertyDraw]");
+        actionOrPropertyPropertyDraw = findProperty("actionOrProperty[PropertyDraw]");
         sidPropertyDraw = findProperty("sid[PropertyDraw]");
         captionPropertyDraw = findProperty("caption[PropertyDraw]");
         formPropertyDraw = findProperty("form[PropertyDraw]");
