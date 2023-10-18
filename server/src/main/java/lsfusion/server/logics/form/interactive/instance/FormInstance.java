@@ -2458,7 +2458,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
             fillChangedReader(group.rowBackgroundReader, group, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps);
             fillChangedReader(group.rowForegroundReader, group, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps);
-            fillChangedReader(group.customOptionsReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps);
+            fillChangedReader(group.customOptionsReader, group, result, SetFact.EMPTY(), hidden, update, true, mReadProperties, changedDrawProps, changedProps);
         }
 
         for (ComponentView component : entity.getPropertyComponents()) {
