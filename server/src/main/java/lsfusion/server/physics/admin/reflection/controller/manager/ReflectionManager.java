@@ -26,6 +26,7 @@ import lsfusion.server.logics.classes.data.integral.LongClass;
 import lsfusion.server.logics.classes.data.utils.time.TimeLogicsModule;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.group.AbstractNode;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
@@ -431,7 +432,10 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
             if (canonicalName != null && formElement.needsToBeSynchronized()) {
                 for (PropertyDrawEntity drawEntity : formElement.getPropertyDrawsListIt()) {
                     GroupObjectEntity groupObjectEntity = drawEntity.getToDraw(formElement);
-                    dataPropertyDraws.add(asList(drawEntity.getCaption().toString(), drawEntity.getSID(), canonicalName, groupObjectEntity == null ? null : groupObjectEntity.getSID()));
+                    String canonicalNameWithPostfix = drawEntity.actionOrProperty.property.getCanonicalName() + "_" +
+                            (drawEntity.actionOrProperty instanceof ActionObjectEntity ? "action" : "property");
+                    dataPropertyDraws.add(asList(drawEntity.getCaption().toString(), drawEntity.getSID(), canonicalName,
+                            groupObjectEntity == null ? null : groupObjectEntity.getSID(), canonicalNameWithPostfix));
                 }
             }
         }
@@ -441,27 +445,32 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         ImportField sidPropertyDrawField = new ImportField(reflectionLM.propertySIDValueClass);
         ImportField nameFormField = new ImportField(reflectionLM.formCanonicalNameClass);
         ImportField sidGroupObjectField = new ImportField(reflectionLM.propertySIDValueClass);
+        ImportField canonicalNameWithPostfixField = new ImportField(reflectionLM.propertyCanonicalNameValueClass);
 
         ImportKey<?> keyForm = new ImportKey(reflectionLM.form, reflectionLM.formByCanonicalName.getMapping(nameFormField));
         ImportKey<?> keyPropertyDraw = new ImportKey(reflectionLM.propertyDraw, reflectionLM.propertyDrawByFormNameAndPropertyDrawSid.getMapping(nameFormField, sidPropertyDrawField));
         ImportKey<?> keyGroupObject = new ImportKey(reflectionLM.groupObject, reflectionLM.groupObjectSIDFormNameGroupObject.getMapping(sidGroupObjectField, nameFormField));
+        ImportKey<?> keyActionOrProperty = new ImportKey(reflectionLM.actionOrProperty, reflectionLM.actionOrPropertyCanonicalNameWithPostfix.getMapping(canonicalNameWithPostfixField));
 
         List<ImportProperty<?>> propsPropertyDraw = new ArrayList<>();
         propsPropertyDraw.add(new ImportProperty(captionPropertyDrawField, reflectionLM.captionPropertyDraw.getMapping(keyPropertyDraw)));
         propsPropertyDraw.add(new ImportProperty(sidPropertyDrawField, reflectionLM.sidPropertyDraw.getMapping(keyPropertyDraw)));
         propsPropertyDraw.add(new ImportProperty(nameFormField, reflectionLM.formPropertyDraw.getMapping(keyPropertyDraw), LM.object(reflectionLM.form).getMapping(keyForm)));
         propsPropertyDraw.add(new ImportProperty(sidGroupObjectField, reflectionLM.groupObjectPropertyDraw.getMapping(keyPropertyDraw), LM.object(reflectionLM.groupObject).getMapping(keyGroupObject)));
+        propsPropertyDraw.add(new ImportProperty(canonicalNameWithPostfixField, reflectionLM.actionOrPropertyPropertyDraw.getMapping(keyPropertyDraw), LM.object(reflectionLM.actionOrProperty).getMapping(keyActionOrProperty)));
 
 
         List<ImportDelete> deletes = new ArrayList<>();
         deletes.add(new ImportDelete(keyPropertyDraw, LM.is(reflectionLM.propertyDraw).getMapping(keyPropertyDraw), false));
 
-        ImportTable table = new ImportTable(asList(captionPropertyDrawField, sidPropertyDrawField, nameFormField, sidGroupObjectField), dataPropertyDraws);
+        ImportTable table = new ImportTable(asList(captionPropertyDrawField, sidPropertyDrawField, nameFormField,
+                sidGroupObjectField, canonicalNameWithPostfixField), dataPropertyDraws);
 
         try {
             try (DataSession session = createSyncSession()) {
                 session.pushVolatileStats("RM_PD");
-                IntegrationService service = new IntegrationService(session, table, asList(keyForm, keyPropertyDraw, keyGroupObject), propsPropertyDraw, deletes);
+                IntegrationService service = new IntegrationService(session, table,
+                        asList(keyForm, keyPropertyDraw, keyGroupObject, keyActionOrProperty), propsPropertyDraw, deletes);
                 service.synchronize(true, false);
                 session.popVolatileStats();
                 apply(session);

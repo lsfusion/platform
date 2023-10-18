@@ -716,7 +716,7 @@ EXTEND FORM forms
     FILTERS countUserPreferences(g, r)
 
     OBJECTS pr = PropertyDraw
-    PROPERTIES(pr) READONLY sid, caption
+    PROPERTIES(pr) READONLY canonicalNameActionOrProperty, sid, caption
     PROPERTIES(pr, r) BACKGROUND RGB(224,224,255) captionShow, hide GRID, columnSort, dropSort GRID
     PROPERTIES(pr, r) BACKGROUND RGB(224,224,255) DRAW r rps = captionShow, rcs = columnSort
     FILTERS groupObject(pr) = g
