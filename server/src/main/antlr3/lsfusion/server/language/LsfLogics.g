@@ -683,7 +683,7 @@ propertyEditCustomView returns [String customEditorFunction]
 listViewType returns [ListViewType type, PivotOptions options, String customRenderFunction, FormLPUsage customOptions, String mapTileProvider]
 	:   'PIVOT' {$type = ListViewType.PIVOT;} ('DEFAULT' | 'NODEFAULT' {$type = null;})? opt = pivotOptions {$options = $opt.options; }
 	|   'MAP' (tileProvider = stringLiteral)? {$type = ListViewType.MAP; $mapTileProvider = $tileProvider.val;}
-	|   'CUSTOM' function=stringLiteral {$type = ListViewType.CUSTOM; $customRenderFunction = $function.val;} ('OPTIONS' decl=customOptionsGroupObjectContext { $customOptions = $decl.customOptions; })?
+	|   'CUSTOM' function=stringLiteral {$type = ListViewType.CUSTOM; $customRenderFunction = $function.val;} (('HEADER' | 'OPTIONS') decl=customOptionsGroupObjectContext { $customOptions = $decl.customOptions; })?
 	|   'CALENDAR' {$type = ListViewType.CALENDAR;}
     ;
 
