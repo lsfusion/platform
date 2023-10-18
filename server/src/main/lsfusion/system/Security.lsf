@@ -452,8 +452,7 @@ DESIGN securityPolicy {
     OBJECTS {
         NEW container {
             fill = 1;
-              
-            horizontal = FALSE;
+            
             NEW roleHeader {
                 fill = 1;
                 MOVE BOX(ur) {

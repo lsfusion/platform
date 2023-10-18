@@ -134,17 +134,14 @@ FORM schedule '{schedule.schedule}'
 
 DESIGN schedule {
     NEW mainContainer{
-        horizontal = FALSE;
         fill=1;
         NEW topContainer{
-            horizontal = FALSE;
             fill=1;
             caption = '{schedule.params}';
             MOVE BOX(s);
             MOVE BOX(d);
         }
         NEW bottomContainer{
-            horizontal = FALSE;
             fill = 1;
             caption = '{schedule.preview}';
             NEW dateCotainer{
@@ -202,7 +199,6 @@ FORM schedules '{schedule.schedules}'
 
 DESIGN schedules{
     NEW mainContainer{
-        horizontal = FALSE;
         fill = 1;
         MOVE BOX(s);
         NEW tabbedContainer{
