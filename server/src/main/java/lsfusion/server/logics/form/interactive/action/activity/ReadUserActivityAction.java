@@ -30,7 +30,7 @@ public abstract class ReadUserActivityAction<T> extends SystemExplicitAction {
         }
         Object writeObject = null;
         if (!objects.isEmpty()) {
-            writeObject = objects.size() > 1 ? new JSONArray(objects) : objects.get(0);
+            writeObject = (objects.size() > 1 ? new JSONArray(objects) : objects.get(0)).toString();
         }
         filterEventProperty.change(writeObject, context.getSession());
     }
