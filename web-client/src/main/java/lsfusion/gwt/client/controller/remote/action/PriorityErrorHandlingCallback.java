@@ -56,7 +56,7 @@ public class PriorityErrorHandlingCallback<T> implements PriorityAsyncCallback<T
     public static int getMaxTries(Throwable caught) {
         if(isAuthException(caught))
             return 0;
-        if (caught instanceof StatusCodeException) // client - web-server
+        if (caught instanceof StatusCodeException && ((StatusCodeException)caught).getStatusCode() != 500) // client - web-server
             return MAX_REQUEST_TRIES;
         else if (caught instanceof RemoteRetryException) // web-server - app-server
             return ((RemoteRetryException) caught).maxTries;
