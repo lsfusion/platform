@@ -774,7 +774,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             if(column != null && rowRecord != null)
                 return rowRecord.isReadonly(column.columnSID);
         }
-        return true;
+        return false;
     }
 
     @Override

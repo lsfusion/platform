@@ -986,7 +986,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             NativeHashMap<GGroupObjectValue, PValue> propReadOnly = readOnly.get(property);
             return propReadOnly == null ? null : PValue.get3SBooleanValue(propReadOnly.get(getRowKey(cell)));
         }
-        return true;
+        return false;
     }
 
     @Override
