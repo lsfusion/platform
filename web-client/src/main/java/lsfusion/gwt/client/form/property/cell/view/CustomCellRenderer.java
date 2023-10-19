@@ -32,9 +32,9 @@ public class CustomCellRenderer extends CellRenderer {
 
     public static class ExtraValue {
         public final String placeholder;
-        public final boolean readonly;
+        public final Boolean readonly;
 
-        public ExtraValue(String placeholder, boolean readonly) {
+        public ExtraValue(String placeholder, Boolean readonly) {
             this.placeholder = placeholder;
             this.readonly = readonly;
         }
@@ -42,7 +42,7 @@ public class CustomCellRenderer extends CellRenderer {
         public JavaScriptObject getJsObject() {
             return getJsObject(placeholder, readonly);
         }
-        protected native JavaScriptObject getJsObject(String placeholder, boolean readonly)/*-{
+        protected native JavaScriptObject getJsObject(String placeholder, Boolean readonly)/*-{
             return {
                 placeholder: placeholder,
                 readonly: readonly
@@ -51,12 +51,12 @@ public class CustomCellRenderer extends CellRenderer {
 
         @Override
         public boolean equals(Object o) {
-            return this == o || o instanceof ExtraValue && readonly == ((ExtraValue) o).readonly && GwtClientUtils.nullEquals(placeholder, ((ExtraValue) o).placeholder);
+            return this == o || o instanceof ExtraValue && GwtClientUtils.nullEquals(readonly, ((ExtraValue) o).readonly) && GwtClientUtils.nullEquals(placeholder, ((ExtraValue) o).placeholder);
         }
 
         @Override
         public int hashCode() {
-            return GwtClientUtils.nullHash(placeholder) * 31 + (readonly ? 1 : 0);
+            return GwtClientUtils.nullHash(placeholder) * 31 + (readonly != null ? (readonly ? 2 : 1) : 0);
         }
     }
 
@@ -65,7 +65,7 @@ public class CustomCellRenderer extends CellRenderer {
         boolean customNeedPlaceholder = property.customNeedPlaceholder;
         boolean customNeedReadonly = property.customNeedReadonly;
         if(customNeedPlaceholder || customNeedReadonly)
-            return new ExtraValue(customNeedPlaceholder ? updateContext.getPlaceholder() : null, customNeedReadonly ? updateContext.isPropertyReadOnly() != null : false);
+            return new ExtraValue(customNeedPlaceholder ? updateContext.getPlaceholder() : null, customNeedReadonly ? updateContext.isPropertyReadOnly() : null);
 
         return super.getExtraValue(updateContext);
     }
