@@ -359,8 +359,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return isReadOnly(column.property, object, column.columnKey);
     }
 
-    protected boolean isReadOnly(String property, JavaScriptObject object) {
-        return isReadOnly(property, getObjects(object));
+    protected Boolean isReadOnly(String property, JavaScriptObject object) {
+        return isReadOnly(property, getObjects(object)) ? false : null;
     }
 
     protected String getValueElementClass(String property, GGroupObjectValue object) {
