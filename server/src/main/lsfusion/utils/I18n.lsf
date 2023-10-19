@@ -141,7 +141,6 @@ FORM dictionary '{i18n.dictionary}'
 
 DESIGN dictionary {
     BOX {
-        horizontal = FALSE;
         MOVE BOX(d);
         MOVE BOX(e);
         NEW test {
