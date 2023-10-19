@@ -70,6 +70,8 @@ function interpreter() {
                     element.currentValue = editorValue;
                 }
             }
+
+            element.currentValue = aceEditor.getValue();
         },
         update: function (element, controller, value) {
             if (element.controller == null)
