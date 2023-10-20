@@ -201,13 +201,13 @@ public class GKeyStroke implements Serializable {
         return event.getType().equals(BrowserEvents.DROP);
     }
 
-    public static boolean isKeyLeftEvent(NativeEvent event) {
+/*    public static boolean isKeyLeftEvent(NativeEvent event) {
         return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_LEFT;
     }
 
     public static boolean isKeyRightEvent(NativeEvent event) {
         return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_RIGHT;
-    }
+    }*/
 
     // what events should be stealed by TextBasedEditor
     public static boolean isCharNavigateHorzKeyEvent(NativeEvent event) {

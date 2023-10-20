@@ -342,11 +342,3 @@ a.text-based-value-empty {
 div.selectArrow {
     width: 2.5em;
 }
-
-.nav-tabs:focus-visible {
-    outline: none;
-}
-
-.nav-tabs:focus-visible label.active {
-    outline: -webkit-focus-ring-color auto 1px;
-}
