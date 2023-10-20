@@ -194,34 +194,21 @@ public interface BaseImage extends Serializable {
         Element htmlElement = (Element) element.getPropertyObject(DIV);
 
         text = text == null ? "" : text;
-        if ((forceDiv && !text.isEmpty()) || GwtClientUtils.isContainHtmlTag(text)) {
-            if(htmlElement == null) {
-                htmlElement = Document.get().createDivElement();
-                htmlElement.addClassName("wrap-text-div");
+        if(htmlElement == null) {
+            htmlElement = Document.get().createDivElement();
+            htmlElement.addClassName("wrap-text-div");
 
-                if(vertical) {
-                    element.addClassName("wrap-div-vert");
-                } else {
-                    element.addClassName("wrap-div-horz");
-                }
-
-                element.appendChild(htmlElement);
-                element.setPropertyObject(DIV, htmlElement);
+            if(vertical) {
+                element.addClassName("wrap-div-vert");
+            } else {
+                element.addClassName("wrap-div-horz");
             }
-            htmlElement.setInnerHTML(text);
-            textNode.setNodeValue("");
-        } else {
-            if(htmlElement != null) {
-                element.removeChild(htmlElement);
-                if(vertical)
-                    element.removeClassName("wrap-div-vert");
-                else
-                    element.removeClassName("wrap-div-horz");
 
-                element.setPropertyObject(DIV, null);
-            }
-            textNode.setNodeValue(text);
+            element.appendChild(htmlElement);
+            element.setPropertyObject(DIV, htmlElement);
         }
+        htmlElement.setInnerHTML(EscapeUtils.toHtml(text));
+        textNode.setNodeValue("");
 
         if (!text.isEmpty()) {
             element.addClassName("wrap-text-not-empty");

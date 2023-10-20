@@ -41,7 +41,7 @@ public class TooltipManager {
     }-*/;
 
     private static Element getTooltipContent(TooltipHelper tooltipHelper, Element element) {
-        HTML tooltipHtml = new HTML(EscapeUtils.toHtml(tooltipHelper.getTooltip(), false), false);
+        HTML tooltipHtml = new HTML(EscapeUtils.toHtml(tooltipHelper.getTooltip()), false);
 
         if (MainFrame.showDetailedInfo) {
             String projectLSFDir = MainFrame.projectLSFDir;

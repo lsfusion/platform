@@ -41,7 +41,6 @@ import java.util.regex.Pattern;
 
 import static javax.mail.Message.RecipientType.TO;
 import static lsfusion.base.BaseUtils.*;
-import static lsfusion.base.EscapeUtils.escapeLineBreakHTML;
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 
 public class SendEmailAction extends SystemExplicitAction {
@@ -216,7 +215,7 @@ public class SendEmailAction extends SystemExplicitAction {
                 } else {
                     inlineText = type.formatString(inlineValue, true);
                 }
-                customInlines.add(EscapeUtils.isContainHtmlTag(inlineText) ? inlineText : escapeLineBreakHTML(inlineText));
+                customInlines.add(EscapeUtils.toHtml(inlineText));
             }
         }
     }
