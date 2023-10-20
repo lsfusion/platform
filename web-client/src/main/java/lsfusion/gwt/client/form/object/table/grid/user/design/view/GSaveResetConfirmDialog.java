@@ -6,6 +6,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.Callback;
+import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
 import lsfusion.gwt.client.base.view.FormRadioButton;
@@ -32,7 +33,7 @@ public class GSaveResetConfirmDialog {
         if (!MainFrame.showDetailedInfo) {
             options = new DialogBoxHelper.OptionType[] {DialogBoxHelper.OptionType.YES, DialogBoxHelper.OptionType.NO};
 
-            contents = new HTML(save ? messages.formGridPreferencesSureToSave() : messages.formGridPreferencesSureToReset());
+            contents = new HTML(EscapeUtils.toHtml(save ? messages.formGridPreferencesSureToSave() : messages.formGridPreferencesSureToReset()));
         } else {
             options = new DialogBoxHelper.OptionType[] {DialogBoxHelper.OptionType.OK, DialogBoxHelper.OptionType.CANCEL};
 
@@ -54,7 +55,7 @@ public class GSaveResetConfirmDialog {
             allUsersRB.addKeyPressHandler(event -> radioKeyPressed(event, callback));
 
             VerticalPanel panel = new VerticalPanel();
-            panel.add(new HTML((save ? messages.formGridPreferencesSave() : messages.formGridPreferencesReset()) + ":"));
+            panel.add(new HTML(EscapeUtils.toHtml((save ? messages.formGridPreferencesSave() : messages.formGridPreferencesReset()) + ":")));
             panel.add(GwtClientUtils.createVerticalStrut(6));
             panel.add(currentUserRB);
             panel.add(allUsersRB);

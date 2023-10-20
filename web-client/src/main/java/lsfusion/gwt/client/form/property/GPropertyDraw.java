@@ -44,7 +44,6 @@ import java.util.List;
 import java.util.Map;
 
 import static com.google.gwt.dom.client.BrowserEvents.KEYDOWN;
-import static lsfusion.gwt.client.base.EscapeUtils.escapeLineBreakHTML;
 import static lsfusion.gwt.client.base.GwtClientUtils.createTooltipHorizontalSeparator;
 import static lsfusion.gwt.client.form.event.GKeyStroke.*;
 import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.CHANGE;
@@ -634,9 +633,9 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             return propCaption.isEmpty() ? null : GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT, propCaption, keyBindingText);
         } else {
             String ifaceObjects = GwtSharedUtils.toString(", ", interfacesCaptions);
-            String scriptPath = creationPath != null ? escapeLineBreakHTML(creationPath) : "";
-            String scriptFormPath = formPath != null ? escapeLineBreakHTML(formPath) : "";
-            
+            String scriptPath = creationPath != null ? creationPath : "";
+            String scriptFormPath = formPath != null ? formPath : "";
+
             if (isAction()) {
                 return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT + getDetailedActionToolTipFormat(),
                         propCaption, keyBindingText, canonicalName, ifaceObjects, scriptPath, propertyFormName, scriptFormPath);
@@ -644,17 +643,13 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
                 String tableName = this.tableName != null ? this.tableName : "&lt;none&gt;";
                 String returnClass = this.returnClass != null ? this.returnClass.toString() : "";
                 String ifaceClasses = GwtSharedUtils.toString(", ", interfacesTypes);
-                String script = creationScript != null ? escapeLineBreakHTML(escapeHTML(creationScript)) : "";
-                
+                String script = creationScript != null ? creationScript : "";
+
                 return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT + getDetailedToolTipFormat(),
                         propCaption, keyBindingText, canonicalName, tableName, ifaceObjects, returnClass, ifaceClasses,
                         script, scriptPath, propertyFormName, scriptFormPath);
             }
         }
-    }
-
-    private String escapeHTML(String value) {
-        return value.replace("<", "&lt;").replace(">", "&gt;");
     }
 
     public GSize getImageWidth(GFont font) {

@@ -245,12 +245,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     @Override
     public void execute(GMessageAction action) {
         pauseDispatching();
-        DialogBoxHelper.showMessageBox(false, action.caption, action.message, new DialogBoxHelper.CloseCallback() {
-            @Override
-            public void closed(DialogBoxHelper.OptionType chosenOption) {
-                continueDispatching();
-            }
-        });
+        DialogBoxHelper.showMessageBox(action.caption, action.message, chosenOption -> continueDispatching());
     }
 
     @Override

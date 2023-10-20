@@ -1600,11 +1600,7 @@ public class GFormController implements EditManager {
     }
 
     public void blockingMessage(String caption, String message, final DialogBoxHelper.CloseCallback callback) {
-        blockingMessage(false, caption, message, callback);
-    }
-
-    public void blockingMessage(boolean isError, String caption, String message, final DialogBoxHelper.CloseCallback callback) {
-        DialogBoxHelper.showMessageBox(isError, caption, message, callback);
+        DialogBoxHelper.showMessageBox(caption, message, callback);
     }
 
     public Dimension getPreferredSize(GSize maxWidth, GSize maxHeight, Element element) {

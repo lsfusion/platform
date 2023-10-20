@@ -3,7 +3,6 @@ package lsfusion.gwt.client.form.controller.dispatch;
 import lsfusion.gwt.client.action.*;
 import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.log.GLog;
-import lsfusion.gwt.client.base.view.DialogBoxHelper;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.WindowHiddenHandler;
 import lsfusion.gwt.client.classes.GObjectClass;
@@ -99,12 +98,7 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
             super.execute(action);
         } else {
             pauseDispatching();
-            form.blockingMessage(action.failed, "lsFusion", action.message, new DialogBoxHelper.CloseCallback() {
-                @Override
-                public void closed(DialogBoxHelper.OptionType chosenOption) {
-                    continueDispatching();
-                }
-            });
+            form.blockingMessage("lsFusion", action.message, chosenOption -> continueDispatching());
         }
     }
 

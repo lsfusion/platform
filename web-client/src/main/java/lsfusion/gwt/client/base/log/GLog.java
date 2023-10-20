@@ -4,6 +4,7 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
 import lsfusion.gwt.client.base.view.ResizableVerticalPanel;
 
@@ -24,7 +25,7 @@ public final class GLog {
         error(message);
 
         ResizableVerticalPanel panel = new ResizableVerticalPanel();
-        HTML constraintMessage = new HTML("<h3 style=\"margin-top: 0;\">" + message + "</h3>");
+        HTML constraintMessage = new HTML("<h3 style=\"margin-top: 0;\">" + EscapeUtils.toHtml(message) + "</h3>");
         panel.add(constraintMessage);
 
         if (!data.isEmpty()) {
@@ -34,19 +35,19 @@ public final class GLog {
             table.setWidth("100%");
 
             for (int i = 0; i < titles.size(); i++) {
-                table.setHTML(0, i, "<b style=\"font-size: 8pt\">" + titles.get(i) + "</b>");
+                table.setHTML(0, i, "<b style=\"font-size: 8pt\">" + EscapeUtils.toHtml(titles.get(i)) + "</b>");
             }
 
             for (int i = 0; i < data.size(); i++) {
                 for (int j = 0; j < data.get(i).size(); j++) {
-                    table.setHTML(i + 1, j, "<div style=\"font-size: 8pt\">" + data.get(i).get(j) + "</div>");
+                    table.setHTML(i + 1, j, "<div style=\"font-size: 8pt\">" + EscapeUtils.toHtml(data.get(i).get(j)) + "</div>");
                 }
             }
 
             panel.add(table);
         }
 
-        DialogBoxHelper.showMessageBox(true, "lsFusion", panel, null);
+        DialogBoxHelper.showMessageBox("lsFusion", panel, null);
     }
 
     public static void error(String message) {

@@ -136,7 +136,7 @@ public class MainFrame implements EntryPoint {
         GWT.setUncaughtExceptionHandler(t -> {
             if (!ignoreException(t)) {
                 GExceptionManager.logClientError(t);
-                DialogBoxHelper.showMessageBox(true, "Error", t.getMessage(), null);
+                DialogBoxHelper.showMessageBox("Error", t.getMessage(), null);
             }
         });
 
