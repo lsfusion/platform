@@ -7,6 +7,7 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
+import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.function.Consumer;
@@ -33,6 +34,15 @@ public class FlexTabBar extends Composite implements TabBar {
                 (vertical ? "nav-tabs-horz" : "nav-tabs-vert") + " " +
                 (end ? "nav-tabs-end" : "nav-tabs-start");
         panel.addStyleName(navTabs);
+        panel.getElement().setTabIndex(0);
+
+        addDomHandler(event -> {
+            if(GKeyStroke.isKeyRightEvent(event.getNativeEvent())) {
+                selectTabByArrow(true);
+            } else if(GKeyStroke.isKeyLeftEvent(event.getNativeEvent())) {
+                selectTabByArrow(false);
+            }
+        }, KeyDownEvent.getType());
 
         FlexPanel wrappedPanel;
         if(MainFrame.mobile || extraTabWidget != null) {
@@ -141,6 +151,15 @@ public class FlexTabBar extends Composite implements TabBar {
             selectedTab--;
 
         panel.remove(getTabItem(index));
+    }
+
+    private void selectTabByArrow(boolean next) {
+        int index = selectedTab + (next ? 1 : -1);
+        if (index == getTabCount())
+            index = 0;
+        if (index == -1)
+            index = getTabCount() - 1;
+        selectTab(index);
     }
 
     /**
