@@ -468,13 +468,6 @@ public class GwtClientUtils {
             parentElement.removeClassName("fill-parent-position");
     }
 
-    public static void setupSizedParent(Element element, boolean autoSize) {
-        if(autoSize)
-            setupPercentParent(element);
-        else
-            setupFillParent(element);
-    }
-
     public static void setupFlexParentElement(Element parentElement) {
         assert !GwtClientUtils.isTDorTH(parentElement);
         parentElement.addClassName("fill-parent-flex-cont");
@@ -504,16 +497,6 @@ public class GwtClientUtils {
 //        element.getStyle().clearWidth();
 //        element.getStyle().clearHeight();
 //        element.getStyle().clearProperty("boxSizing");
-    }
-
-    public static void changePercentFillWidget(Widget widget, boolean percent) {
-        if(percent) {
-            GwtClientUtils.clearFillParent(widget.getElement());
-            GwtClientUtils.setupPercentParent(widget.getElement());
-        } else {
-            GwtClientUtils.clearPercentParent(widget.getElement());
-            GwtClientUtils.setupFillParent(widget.getElement());
-        }
     }
 
     public static void showPopupInWindow(PopupDialogPanel popup, Widget widget, int mouseX, int mouseY) {

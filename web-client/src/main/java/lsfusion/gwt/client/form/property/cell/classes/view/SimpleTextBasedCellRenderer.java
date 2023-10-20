@@ -49,8 +49,8 @@ public abstract class SimpleTextBasedCellRenderer extends CellRenderer {
         if(isTagInput()) // input / textareas has fixed sizes, so can be used with multiline fixed sizes
             return true;
 
-        // td always respects the inner text size, so if it is multi line and not autosized, we have wrap the content into a div
-        if (isMultiLine() && !property.autoSize)
+        // td always respects the inner text height, so if it is multi line and not autosized, we have wrap the content into a div
+        if (isMultiLine() && property.valueHeight != -1)
             return false;
 
         // input we have to render in td, since input is a void element, and it can not have children (and they are needed for the toolbar)
@@ -150,7 +150,7 @@ public abstract class SimpleTextBasedCellRenderer extends CellRenderer {
 
         if(isInput && (isTDOrTH || isToolbarContainer(element))) {
             // assert isTDOrTH != isToolbarContainer(element);
-            inputElement = SimpleTextBasedCellEditor.renderInputElement(element, property, multiLine, renderContext, isTDOrTH, true);
+            inputElement = SimpleTextBasedCellEditor.renderInputElement(element, property, multiLine, renderContext, isTDOrTH);
             renderedAlignment = true;
         } else {
             // otherwise we'll use flex alignment (however text alignment would also do)
@@ -188,7 +188,7 @@ public abstract class SimpleTextBasedCellRenderer extends CellRenderer {
 
         if (isInput && (isTDOrTH || isToolbarContainer(element))) { // needToRenderToolbarContent()
             isInputElement = true;
-            SimpleTextBasedCellEditor.clearInputElement(element, true);
+            SimpleTextBasedCellEditor.clearInputElement(element);
 //            renderedAlignment = true;
         } else {
 //            if(isTDOrTH || isInput) {

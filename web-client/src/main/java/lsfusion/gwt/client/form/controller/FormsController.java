@@ -169,7 +169,7 @@ public abstract class FormsController {
         tabsPanel.addStyleName("forms-container");
 
         container = new ResizableSimplePanel();
-        container.setSizedWidget(tabsPanel, true);
+        container.setPercentMain(tabsPanel);
         container.addStyleName("forms-container-window");
 
         initEditModeTimer();
@@ -477,7 +477,7 @@ public abstract class FormsController {
     }
 
     private boolean isAutoSized(ExecContext execContext, GWindowFormType windowType) {
-        return (windowType.isEmbedded() && execContext.getProperty().autoSize)  || windowType instanceof GContainerWindowFormType || windowType.isPopup() || windowType.isFloat();
+        return (windowType.isEmbedded() && execContext.getProperty().hasAutoSize())  || windowType instanceof GContainerWindowFormType || windowType.isPopup() || windowType.isFloat();
     }
 
     private FormDockable getDuplicateForm(String canonicalName, boolean forbidDuplicate) {

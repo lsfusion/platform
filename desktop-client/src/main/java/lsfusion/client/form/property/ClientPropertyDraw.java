@@ -67,8 +67,11 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public CommentElementClassReader commentElementClassReader = new CommentElementClassReader();
     public PlaceholderReader placeholderReader = new PlaceholderReader();
 
-    public boolean autoSize;
     public boolean boxed;
+
+    public boolean isAutoSize() {
+        return valueHeight == -1 || valueWidth == -1;
+    }
 
     // for pivoting
     public String formula;
@@ -515,8 +518,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream) throws IOException {
         super.customSerialize(pool, outStream);
 
-        outStream.writeBoolean(autoSize);
-
         pool.writeString(outStream, caption);
         pool.writeString(outStream, regexp);
         pool.writeString(outStream, regexpMessage);
@@ -566,8 +567,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, inStream);
-
-        autoSize = inStream.readBoolean();
 
         caption = pool.readString(inStream);
         image = pool.readImageIcon(inStream);

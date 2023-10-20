@@ -233,7 +233,6 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
         grid.headerHeight = clientGrid.headerHeight;
 
-        grid.autoSize = clientGrid.autoSize;
         grid.boxed = clientGrid.boxed;
 
         grid.lineWidth = clientGrid.lineWidth;
@@ -257,8 +256,6 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.canonicalName = clientPropertyDraw.getCanonicalName();
         propertyDraw.propertyFormName = clientPropertyDraw.getPropertyFormName();
         propertyDraw.integrationSID = clientPropertyDraw.getIntegrationSID();
-
-        propertyDraw.autoSize = clientPropertyDraw.autoSize;
 
         propertyDraw.customRenderFunction = clientPropertyDraw.customRenderFunction;
         propertyDraw.customCanBeRenderedInTD = clientPropertyDraw.customCanBeRenderedInTD;
@@ -568,7 +565,6 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
             treeGroup.filters.add(convertOrCast(filter));
         }
 
-        treeGroup.autoSize = clientTreeGroup.autoSize;
         treeGroup.boxed = clientTreeGroup.boxed;
 
         treeGroup.toolbar = convertOrCast(clientTreeGroup.toolbar);

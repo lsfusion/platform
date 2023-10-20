@@ -2195,13 +2195,18 @@ public class GFormController implements EditManager {
 
             GPropertyDraw property = editContext.getProperty();
             CellRenderer cellRenderer = property.getCellRenderer();
-            Pair<Integer, Integer> renderedSize = null;
-            if(property.autoSize) // we need to do it before clearRender to have actual sizes + we need to remove paddings since we're setting width for wrapped component
-                renderedSize = new Pair<>(GwtClientUtils.getWidth(element), GwtClientUtils.getHeight(element));
+
+            // we need to do it before clearRender to have actual sizes + we need to remove paddings since we're setting width for wrapped component
+            Integer renderedWidth = null;
+            if(property.valueWidth == -1)
+                renderedWidth = GwtClientUtils.getWidth(element);
+            Integer renderedHeight = null;
+            if(property.valueHeight == -1)
+                renderedHeight = GwtClientUtils.getHeight(element);
 
             cellRenderer.clearRender(element, renderContext); // dropping previous render
 
-            ((ReplaceCellEditor)cellEditor).render(element, renderContext, renderedSize, oldValue); // rendering new one, filling inputElement
+            ((ReplaceCellEditor)cellEditor).render(element, renderContext, oldValue, renderedWidth, renderedHeight); // rendering new one, filling inputElement
         }
 
         this.cellEditor = cellEditor; // not sure if it should before or after startEditing, but definitely after removeAllChildren, since it leads to blur for example

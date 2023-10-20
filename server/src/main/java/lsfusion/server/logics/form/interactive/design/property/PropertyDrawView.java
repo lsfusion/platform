@@ -169,19 +169,20 @@ public class PropertyDrawView extends BaseComponentView {
         if(valueWidth != null)
             return valueWidth;
 
-        return -1;
+        if(isCustom(context) || !isProperty(context))
+            return -1;
+
+        return -2;
     }
 
     public int getValueHeight(FormInstanceContext context) {
         if(valueHeight != null)
             return valueHeight;
 
-        if(isAutoSize(context)) {
-            if(!isProperty(context) && !entity.hasDynamicImage()) // we want vertical size for action to be equal to text fields
-                return -2;
-        }
+        if(isCustom(context) || (!isProperty(context) && !entity.hasDynamicImage())) // we want vertical size for action to be equal to text fields
+            return -1;
 
-        return -1;
+        return -2;
     }
 
     public int getCaptionWidth(FormEntity entity) {
@@ -429,8 +430,6 @@ public class PropertyDrawView extends BaseComponentView {
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {
         super.customSerialize(pool, outStream);
 
-        outStream.writeBoolean(isAutoSize(pool.context));
-
         pool.writeString(outStream, getDrawCaption());
         AppServerImage.serialize(getImage(pool.context), outStream, pool);
         pool.writeString(outStream, regexp);
@@ -654,7 +653,6 @@ public class PropertyDrawView extends BaseComponentView {
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, inStream);
 
-        autoSize = inStream.readBoolean();
         boxed = inStream.readBoolean();
 
         caption = LocalizedString.create(pool.readString(inStream));
@@ -729,7 +727,7 @@ public class PropertyDrawView extends BaseComponentView {
             if(select.elementType.equals("Input") || (select.elementType.equals("Dropdown") && select.type.equals("Multi")))
                 return getScaledCharWidth((charWidth != 0 ? charWidth : select.length / select.count) * 4);
 
-            if (!entity.isList(context) && isAutoSize(context))
+            if (!entity.isList(context))
                 return 0;
 
             if (select.elementType.startsWith("Button"))
@@ -1006,15 +1004,6 @@ public class PropertyDrawView extends BaseComponentView {
     }
 
     public Boolean boxed;
-
-    public Boolean autoSize;
-
-    public boolean isAutoSize(FormInstanceContext context) {
-        if(autoSize != null)
-            return autoSize;
-
-        return isCustom(context) || !isProperty(context);
-    }
 
     protected boolean isCustom(FormInstanceContext context) {
         return getCustomRenderFunction(context) != null;

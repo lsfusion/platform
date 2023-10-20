@@ -2,8 +2,12 @@ package lsfusion.server.logics.form.interactive.design.object;
 
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.BaseComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
+
+import java.io.DataOutputStream;
+import java.io.IOException;
 
 public abstract class GridPropertyView extends BaseComponentView {
 
@@ -68,13 +72,22 @@ public abstract class GridPropertyView extends BaseComponentView {
         this.lineHeight = lineHeight;
     }
 
-    public Boolean autoSize;
+    @Override
+    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {
+        super.customSerialize(pool, outStream);
 
-    public boolean isAutoSize(FormInstanceContext context) {
-        if(autoSize != null)
-            return autoSize;
+        outStream.writeBoolean(boxed != null);
+        if(boxed != null)
+            outStream.writeBoolean(boxed);
 
-        return isCustom();
+        outStream.writeInt(headerHeight);
+
+        outStream.writeBoolean(resizeOverflow != null);
+        if(resizeOverflow != null)
+            outStream.writeBoolean(resizeOverflow);
+
+        outStream.writeInt(getLineWidth());
+        outStream.writeInt(getLineHeight());
     }
 
     public Boolean boxed;
@@ -83,7 +96,7 @@ public abstract class GridPropertyView extends BaseComponentView {
 
     @Override
     protected int getDefaultWidth(FormInstanceContext context) {
-        if(lineWidth == null && isAutoSize(context))
+        if (lineWidth == null && isCustom())
             return -1;
 
 //        // if we have opposite direction and align shrink, setting default width to zero
@@ -96,7 +109,7 @@ public abstract class GridPropertyView extends BaseComponentView {
 
     @Override
     protected int getDefaultHeight(FormInstanceContext context) {
-        if(lineHeight == null && isAutoSize(context))
+        if (lineHeight == null && isCustom())
             return -1;
 
         return -2;

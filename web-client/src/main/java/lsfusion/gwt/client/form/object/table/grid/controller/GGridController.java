@@ -81,7 +81,7 @@ public class GGridController extends GAbstractTableController {
         this.groupObject = groupObject;
 
         if (isList()) {
-            initGridView(groupObject.grid.autoSize);
+            initGridView();
 
             // proceeding recordView
             GContainer record = groupObject.grid.record;

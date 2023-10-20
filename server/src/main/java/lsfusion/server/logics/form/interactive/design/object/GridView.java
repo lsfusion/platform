@@ -52,21 +52,8 @@ public class GridView extends GridPropertyView {
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {
         super.customSerialize(pool, outStream);
 
-        outStream.writeBoolean(isAutoSize(pool.context));
-        outStream.writeBoolean(boxed != null);
-        if(boxed != null)
-            outStream.writeBoolean(boxed);
-
         outStream.writeBoolean(tabVertical);
         outStream.writeBoolean(quickSearch);
-        outStream.writeInt(headerHeight);
-
-        outStream.writeBoolean(resizeOverflow != null);
-        if(resizeOverflow != null)
-            outStream.writeBoolean(resizeOverflow);
-
-        outStream.writeInt(getLineWidth());
-        outStream.writeInt(getLineHeight());
 
         pool.serializeObject(outStream, getRecord());
 
@@ -77,7 +64,6 @@ public class GridView extends GridPropertyView {
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, inStream);
 
-        autoSize = inStream.readBoolean();
         boxed = inStream.readBoolean() ? inStream.readBoolean() : null;
 
         tabVertical = inStream.readBoolean();

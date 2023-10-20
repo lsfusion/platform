@@ -42,7 +42,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
         if (calendar == null) {
             //fullcalendar bug - https://github.com/fullcalendar/fullcalendar/issues/5863
             //to prevent this when calendar-element height less then ~350px
-            element.getParentElement().getStyle().setProperty("overflow", "auto");
+//            element.getParentElement().getStyle().setProperty("overflow", "auto");
             element.getStyle().setProperty("minHeight", "400px");
             element.getStyle().setProperty("cursor", "default");
             String locale = LocaleInfo.getCurrentLocale().getLocaleName();

@@ -345,13 +345,11 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public int charWidth;
     public int charHeight;
 
-    public int valueWidth = -1;
-    public int valueHeight = -1;
+    public int valueWidth;
+    public int valueHeight;
 
-    public int captionWidth = -1;
-    public int captionHeight = -1;
-
-    public boolean autoSize;
+    public int captionWidth;
+    public int captionHeight;
 
     public boolean panelCaptionVertical;
     public Boolean panelCaptionLast;
@@ -770,12 +768,16 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return getValueWidth(parentFont, true, true).add(getCellRenderer().getWidthPadding() * 2);
     }
 
+    public boolean hasAutoSize() {
+        return valueWidth == -1 || valueHeight == -1;
+    }
+
     // not null
     public GSize getValueWidth(GFont parentFont, boolean needNotNull, boolean globalCaptionIsDrawn) {
         if (valueWidth >= 0)
             return GSize.getValueSize(valueWidth);
 
-        if(!needNotNull && autoSize && valueWidth == -1 && charWidth == 0)
+        if(!needNotNull && valueWidth == -1 && charWidth == 0)
             return null;
 
         return baseType.getValueWidth(getFont(parentFont), this, needNotNull, globalCaptionIsDrawn);
@@ -786,7 +788,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         if (valueHeight >= 0)
             return GSize.getValueSize(valueHeight);
 
-        if(!needNotNull && autoSize && valueHeight == -1 && charHeight == 0)
+        if(!needNotNull && valueHeight == -1 && charHeight == 0)
             return null;
 
         return baseType.getValueHeight(getFont(parentFont), this, needNotNull, globalCaptionIsDrawn);

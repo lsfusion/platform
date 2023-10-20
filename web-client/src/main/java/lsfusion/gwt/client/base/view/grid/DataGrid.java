@@ -122,8 +122,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
     protected final boolean noHeaders;
     protected final boolean noFooters;
-    private final boolean noScrollers;
-    
+
     private int latestHorizontalScrollPosition = 0;
     private int latestLastStickedColumn = -1;
 
@@ -132,7 +131,6 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
         this.noHeaders = noHeaders;
         this.noFooters = noFooters;
-        noScrollers = tableContainer.autoSize;
 
         // INITIALIZING MAIN DATA
         tableWidget = new TableWidget();
@@ -1151,7 +1149,6 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     }
 
     private void beforeUpdateDOMScroll(SetPendingScrollState pendingState) {
-        assert !noScrollers;
         beforeUpdateDOMScrollVertical(pendingState);
     }
 
@@ -1162,17 +1159,14 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
     //force browser-flush
     private void preAfterUpdateDOMScroll(SetPendingScrollState pendingState) {
-        assert !noScrollers;
         preAfterUpdateDOMScrollHorizontal(pendingState);
         preAfterUpdateDOMScrollVertical(pendingState);
     }
 
     private void preAfterUpdateDOMScrollHorizontal(SetPendingScrollState pendingState) {
-        if(!noScrollers) {
-            boolean hasVerticalScroll = GwtClientUtils.hasVerticalScroll(tableContainer.getScrollableElement()); // probably getFullWidth should be used
-            if (this.hasVerticalScroll == null || !this.hasVerticalScroll.equals(hasVerticalScroll))
-                pendingState.hasVertical = hasVerticalScroll;
-        }
+        boolean hasVerticalScroll = GwtClientUtils.hasVerticalScroll(tableContainer.getScrollableElement()); // probably getFullWidth should be used
+        if (this.hasVerticalScroll == null || !this.hasVerticalScroll.equals(hasVerticalScroll))
+            pendingState.hasVertical = hasVerticalScroll;
 
         int currentScrollLeft = tableContainer.getHorizontalScrollPosition();
 
@@ -1273,16 +1267,12 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     }
 
     protected int getViewportWidth() {
-        if(!noScrollers)
-            return tableContainer.getWidth();
-
-        return GwtClientUtils.getWidth(getTableElement());
+        return tableContainer.getWidth();
+//        return GwtClientUtils.getWidth(getTableElement());
     }
     public int getViewportClientHeight() {
-        if(!noScrollers)
-            return tableContainer.getClientHeight();
-
-        return getTableElement().getClientHeight();
+        return tableContainer.getClientHeight();
+//        return getTableElement().getClientHeight();
     }
 
     Boolean hasVerticalScroll;
@@ -1677,7 +1667,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
             SetPendingScrollState[] pendingStates = new SetPendingScrollState[size];
             for (int i = 0; i < size; i++) {
                 DataGrid grid = grids.get(i);
-                if(!grid.noScrollers && GwtClientUtils.isShowing(grid.tableWidget)) { // need this check, since grid can be already hidden (for example when SHOW DOCKED is executed), and in that case get*Width return 0, which leads for example to updateTablePaddings (removing scroll) and thus unnecessary blinking when the grid becomes visible again
+                if(GwtClientUtils.isShowing(grid.tableWidget)) { // need this check, since grid can be already hidden (for example when SHOW DOCKED is executed), and in that case get*Width return 0, which leads for example to updateTablePaddings (removing scroll) and thus unnecessary blinking when the grid becomes visible again
                     showing[i] = true;
                     pendingStates[i] = new SetPendingScrollState();
                 }

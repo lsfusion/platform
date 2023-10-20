@@ -8,7 +8,8 @@ public class GridViewProxy extends ComponentViewProxy<GridView> {
     }
 
     public void setAutoSize(boolean autoSize) {
-        target.autoSize = autoSize;
+        target.width = autoSize ? -1 : -2;
+        target.height = autoSize ? -1 : -2;
     }
 
     public void setBoxed(boolean boxed) {
