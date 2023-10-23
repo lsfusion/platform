@@ -149,14 +149,14 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
     }
 
     public void writeModulesHash() {
-        try(DataSession session = createSession()) {
-            startLogger.info("Writing modulesHash " + modulesHash);
-            LM.findProperty("hashModules[]").change(modulesHash, session);
-            apply(session);
-            startLogger.info("Writing modulesHash finished successfully");
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
+        dbManager.runLoggable(() -> {
+            try(DataSession session = createSession()) {
+                LM.findProperty("hashModules[]").change(modulesHash, session);
+                apply(session);
+            } catch (Exception e) {
+                throw Throwables.propagate(e);
+            }
+        }, "Writing modulesHash " + modulesHash, true);
     }
 
     public boolean isSourceHashChanged() {
@@ -673,7 +673,6 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                 service.synchronize(true, false);
                 session.popVolatileStats();
                 apply(session);
-                startLogger.info("synchronize" + (actions ? "Action" : "Property") + "Parents finished");
             }
         } catch (Exception e) {
             throw Throwables.propagate(e);
