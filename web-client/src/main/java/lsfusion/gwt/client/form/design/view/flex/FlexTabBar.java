@@ -1,13 +1,14 @@
 package lsfusion.gwt.client.form.design.view.flex;
 
-import com.google.gwt.event.dom.client.*;
 import com.google.gwt.event.logical.shared.BeforeSelectionHandler;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.*;
+import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
+import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.function.Consumer;
@@ -255,7 +256,7 @@ public class FlexTabBar extends Composite implements TabBar {
                     break;
 
                 case Event.ONKEYDOWN:
-                    if (((char) DOM.eventGetKeyCode(event)) == KeyCodes.KEY_ENTER) {
+                    if (GKeyStroke.isSpaceKeyEvent(event)) {
                         FlexTabBar.this.selectTabByTabWidget(this);
                         GwtClientUtils.stopPropagation(event);
                     }
