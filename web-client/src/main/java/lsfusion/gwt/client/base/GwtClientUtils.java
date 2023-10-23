@@ -1300,6 +1300,6 @@ public class GwtClientUtils {
     }-*/;
 
     public static native boolean isContainHtmlTag(String value) /*-{
-        return $wnd.isContainHtmlTag(value);
+        return $wnd.isContainHtmlTag(value) != null;
     }-*/;
 }
