@@ -1,12 +1,14 @@
 package lsfusion.gwt.client.form.design.view.flex;
 
-import com.google.gwt.event.dom.client.*;
 import com.google.gwt.event.logical.shared.BeforeSelectionHandler;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.*;
+import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
+import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.function.Consumer;
@@ -33,6 +35,17 @@ public class FlexTabBar extends Composite implements TabBar {
                 (vertical ? "nav-tabs-horz" : "nav-tabs-vert") + " " +
                 (end ? "nav-tabs-end" : "nav-tabs-start");
         panel.addStyleName(navTabs);
+
+        //focus for nav-tabs instead of each nav-item
+        /*panel.getElement().setTabIndex(0);
+
+        addDomHandler(event -> {
+            if(GKeyStroke.isKeyRightEvent(event.getNativeEvent())) {
+                selectTabByArrow(true);
+            } else if(GKeyStroke.isKeyLeftEvent(event.getNativeEvent())) {
+                selectTabByArrow(false);
+            }
+        }, KeyDownEvent.getType());*/
 
         FlexPanel wrappedPanel;
         if(MainFrame.mobile || extraTabWidget != null) {
@@ -120,6 +133,7 @@ public class FlexTabBar extends Composite implements TabBar {
             delWidget = new Item(widget);
 
             delWidget.addStyleName("nav-item");
+            delWidget.getElement().setTabIndex(0);
 
             delWidget.addStyleName("nav-link");
             delWidget.addStyleName("link-secondary");
@@ -142,6 +156,15 @@ public class FlexTabBar extends Composite implements TabBar {
 
         panel.remove(getTabItem(index));
     }
+
+/*    private void selectTabByArrow(boolean next) {
+        int index = selectedTab + (next ? 1 : -1);
+        if (index == getTabCount())
+            index = 0;
+        if (index == -1)
+            index = getTabCount() - 1;
+        selectTab(index);
+    }*/
 
     /**
      * Programmatically selects the specified tab and fires events. Use index -1
@@ -229,11 +252,13 @@ public class FlexTabBar extends Composite implements TabBar {
             switch (DOM.eventGetType(event)) {
                 case Event.ONMOUSEDOWN:
                     FlexTabBar.this.selectTabByTabWidget(this);
+                    GwtClientUtils.stopPropagation(event);
                     break;
 
                 case Event.ONKEYDOWN:
-                    if (((char) DOM.eventGetKeyCode(event)) == KeyCodes.KEY_ENTER) {
+                    if (GKeyStroke.isSpaceKeyEvent(event)) {
                         FlexTabBar.this.selectTabByTabWidget(this);
+                        GwtClientUtils.stopPropagation(event);
                     }
                     break;
             }
