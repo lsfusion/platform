@@ -33,8 +33,8 @@ public class TaskRunner {
     }
 
     // lifecycle
-    public void runTask(PublicTask task, Logger logger) throws InterruptedException {
-        runTask(task, logger, null, null, null);
+    public void runTask(PublicTask task) throws InterruptedException {
+        runTask(task, ServerLoggers.startLogger, null, null, null);
     }
 
     public void runTask(PublicTask task, Logger logger, Integer threadCount, Integer propertyTimeout, ExecutionContext<ClassPropertyInterface> context) throws InterruptedException {

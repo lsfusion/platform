@@ -143,13 +143,13 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static lsfusion.base.BaseUtils.*;
+import static lsfusion.server.physics.admin.log.ServerLoggers.runWithStartLog;
+import static lsfusion.server.physics.admin.log.ServerLoggers.startLog;
 import static lsfusion.server.physics.dev.id.resolve.BusinessLogicsResolvingUtils.findElementByCanonicalName;
 import static lsfusion.server.physics.dev.id.resolve.BusinessLogicsResolvingUtils.findElementByCompoundName;
 
 public abstract class BusinessLogics extends LifecycleAdapter implements InitializingBean {
     protected final static Logger logger = ServerLoggers.systemLogger;
-    public final static Logger sqlLogger = ServerLoggers.sqlLogger;
-    protected final static Logger startLogger = ServerLoggers.startLogger;
     protected final static Logger allocatedBytesLogger = ServerLoggers.allocatedBytesLogger;
 
     public static final String systemScriptsPath = "/system/*.lsf";
@@ -278,7 +278,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     @Override
     protected void onInit(LifecycleEvent event) {
         if (initialized.compareAndSet(false, true)) {
-            startLogger.info("Initializing BusinessLogics");
+            startLog("Initializing BusinessLogics");
             try {
                 getDbManager().ensureLogLevel();
                 
@@ -295,7 +295,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                         dateFormat != null ? dateFormat : BaseUtils.getDatePattern(),
                         timeFormat != null ? timeFormat : BaseUtils.getTimePattern(), timeZone);
 
-                new TaskRunner(this).runTask(initTask, startLogger);
+                new TaskRunner(this).runTask(initTask);
             } catch (RuntimeException re) {
                 throw re;
             } catch (Exception e) {
@@ -306,12 +306,13 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     public LRUWSASVSMap<Object, Method, Object, Object> startLruCache = new LRUWSASVSMap<>(LRUUtil.G2);
     public void cleanCaches() {
-        startLruCache = null;
-        MapCacheAspect.cleanClassCaches();
-        AbstractNode.cleanPropCaches();
-        cleanPropCaches();
+        runWithStartLog(() -> {
+            startLruCache = null;
+            MapCacheAspect.cleanClassCaches();
+            AbstractNode.cleanPropCaches();
+            cleanPropCaches();
+        }, "Cleaning Obsolete caches");
 
-        startLogger.info("Obsolete caches were successfully cleaned");
     }
     
     public ScriptingLogicsModule getModule(String name) {

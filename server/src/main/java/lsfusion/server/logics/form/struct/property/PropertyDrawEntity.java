@@ -76,6 +76,7 @@ import java.util.function.Supplier;
 
 import static lsfusion.interop.action.ServerResponse.*;
 import static lsfusion.server.logics.form.struct.property.PropertyDrawExtraType.*;
+import static lsfusion.server.physics.admin.log.ServerLoggers.startLog;
 
 public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObject implements Instantiable<PropertyDrawInstance>, PropertyReaderEntity {
 
@@ -412,7 +413,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     public void setEventAction(String actionSID, ActionObjectSelector eventAction, boolean ignoreIsInInterfaceCheck) {
         if(actionSID.equals(CHANGE_WYS)) { // CHANGE_WYS, temp check
-            ServerLoggers.startLogger.info("WARNING! CHANGE_WYS is deprecated, use LIST clause in INPUT / DIALOG operator instead " + this);
+            startLog("WARNING! CHANGE_WYS is deprecated, use LIST clause in INPUT / DIALOG operator instead " + this);
             return;
         }
 

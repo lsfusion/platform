@@ -54,9 +54,9 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static lsfusion.base.ApiResourceBundle.getString;
+import static lsfusion.server.physics.admin.log.ServerLoggers.*;
 
 public class SecurityManager extends LogicsManager implements InitializingBean {
-    private static final Logger startLogger = ServerLoggers.startLogger;
     private static final Logger systemLogger = ServerLoggers.systemLogger;
 
     @Deprecated
@@ -107,7 +107,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
 
     @Override
     protected void onInit(LifecycleEvent event) {
-        startLogger.info("Initializing Security Manager.");
+        startLog("Initializing Security Manager");
         this.LM = businessLogics.LM;
         this.authenticationLM = businessLogics.authenticationLM;
         this.securityLM = businessLogics.securityLM;
@@ -121,7 +121,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
 
     @Override
     protected void onStarted(LifecycleEvent event) {
-        startLogger.info("Starting Security Manager.");
+        startLog("Starting Security Manager");
         try {
             businessLogics.initAuthentication(this);
         } catch (SQLException | SQLHandledException e) {
@@ -162,7 +162,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             //migration 4 -> 5 version
             Integer intersectingLoginsCount = (Integer) authenticationLM.intersectingLoginsCount.read(session);
             if(intersectingLoginsCount != null) {
-                startLogger.warn(intersectingLoginsCount + " intersecting logins detected, please remove intersection. It will be forbidden in version 5.");
+                startLogWarn(intersectingLoginsCount + " intersecting logins detected, please remove intersection. It will be forbidden in version 5.");
             }
             
         }
@@ -362,7 +362,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                 if (element != null) {
                     policy.navigator.setPermission(element, getPermissionValue(entry.get("permission")));
                 } else {
-                    startLogger.debug(String.format("NavigatorElement '%s' is not found when applying security policy", canonicalName));
+                    startLogDebug(String.format("NavigatorElement '%s' is not found when applying security policy", canonicalName));
                 }
             }
 
@@ -392,7 +392,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                         policy.propertyChange.setPermission(actionOrProperty, getPermissionValue(entry.get("permissionChange")));
                         policy.propertyEditObjects.setPermission(actionOrProperty, getPermissionValue(entry.get("permissionEditObjects")));
                     } else {
-                        startLogger.debug(String.format("Property '%s' is not found when applying security policy", canonicalName));
+                        startLogDebug(String.format("Property '%s' is not found when applying security policy", canonicalName));
                     }
                 } catch (Exception ignored) {
                 }

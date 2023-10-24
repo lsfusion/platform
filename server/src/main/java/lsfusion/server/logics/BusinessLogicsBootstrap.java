@@ -18,9 +18,10 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class BusinessLogicsBootstrap {
-    private static final Logger logger = ServerLoggers.startLogger;
+import static lsfusion.server.physics.admin.log.ServerLoggers.startLog;
+import static lsfusion.server.physics.admin.log.ServerLoggers.startLogError;
 
+public class BusinessLogicsBootstrap {
     private static AbstractXmlApplicationContext springContext;
     private static LogicsInstance logicsInstance;
 
@@ -32,7 +33,7 @@ public class BusinessLogicsBootstrap {
         SystemProperties.setDGCParams();
 
         long startTime = System.currentTimeMillis();
-        logger.info("Server is starting...");
+        startLog("Server is starting...");
 
 //        initLRUCaches();
 
@@ -42,7 +43,7 @@ public class BusinessLogicsBootstrap {
             logicsInstance = (LogicsInstance) springContext.getBean("logicsInstance");
             instanceCreated = true;
         } catch (Throwable t) {
-            logger.error("Error creating logics instance: ", t);
+            startLogError("Error creating logics instance: ", t);
         }
 
         if (instanceCreated) {
@@ -55,18 +56,18 @@ public class BusinessLogicsBootstrap {
 
                 String version = BaseUtils.getPlatformVersion();
                 if(version != null) {
-                    logger.info("Desktop Client is available at:");
-                    logger.info("Java Web Start (with auto update, requires JDK): https://download.lsfusion.org/java/lsfusion-client-" + version + ".jnlp");
+                    startLog("Desktop Client is available at:");
+                    startLog("Java Web Start (with auto update, requires JDK): https://download.lsfusion.org/java/lsfusion-client-" + version + ".jnlp");
                     if(SystemUtils.IS_OS_WINDOWS) {
-                        logger.info("Installer for Windows (without auto update): https://download.lsfusion.org/exe/lsfusion-desktop-" + version + (SystemUtils.is64Arch() ? "-x64" : "") + ".exe");
+                        startLog("Installer for Windows (without auto update): https://download.lsfusion.org/exe/lsfusion-desktop-" + version + (SystemUtils.is64Arch() ? "-x64" : "") + ".exe");
                     }
                 }
 
                 String revision = ResourceUtils.getRevision(SystemProperties.inDevMode);
-                logger.info("Current version: " + BaseUtils.getPlatformVersion() + " (" + BaseUtils.getApiVersion() + ")" + (revision != null ? (" " + revision) : ""));
-                logger.info("Server has successfully started in " + (System.currentTimeMillis() - startTime) + " ms.");
+                startLog("Current version: " + BaseUtils.getPlatformVersion() + " (" + BaseUtils.getApiVersion() + ")" + (revision != null ? (" " + revision) : ""));
+                startLog("Server has successfully started in " + (System.currentTimeMillis() - startTime) + " ms");
             } catch (Throwable e) {
-                logger.info("Error starting server, server will be stopped.");
+                startLog("Error starting server, server will be stopped");
                 stop();
             }
         }
@@ -95,7 +96,7 @@ public class BusinessLogicsBootstrap {
     private static void registerShutdownHook() {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             if (!stopped) {
-                logger.info("Executing shutdown hook.");
+                startLog("Executing shutdown hook");
                 stop();
             }
         }));
@@ -110,7 +111,7 @@ public class BusinessLogicsBootstrap {
 
     public synchronized static void stop() {
         if (!stopped) {
-            logger.info("Server is stopping...");
+            startLog("Server is stopping...");
 
             try {
                 logicsInstance.stop();
@@ -123,7 +124,7 @@ public class BusinessLogicsBootstrap {
             // поэтому убиваем RMI поток сами, а то зависает
             RMIUtils.killRmiThread();
 
-            logger.info("Server has stopped...");
+            startLog("Server has stopped...");
 
             // форсируем выход в отдельном потоке
             final Thread closer = new Thread("Closing thread...") {
