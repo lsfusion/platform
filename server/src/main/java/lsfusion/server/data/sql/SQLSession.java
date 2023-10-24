@@ -14,6 +14,7 @@ import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSVSMap;
+import lsfusion.base.lambda.E2Runnable;
 import lsfusion.base.lambda.ERunnable;
 import lsfusion.base.lambda.Provider;
 import lsfusion.server.base.MutableClosedObject;
@@ -802,6 +803,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         return getIndexName(table, fields, dbName, null, false, false, syntax);
     }
 
+    public String getIndexName(NamedTable table, DBManager.IndexData<Field> index) {
+        return getIndexName(table, syntax, index.options.dbName, getOrderFields(table.keys, index.options, SetFact.fromJavaOrderSet(index.fields)), index.options.type.suffix());
+    }
+
     static String getIndexName(NamedTable table, SQLSyntax syntax, String dbName, ImOrderMap<Field, Boolean> fields, String suffix) {
         return getIndexName(table, syntax, dbName, fields, suffix, false, false);
     }
@@ -920,26 +925,25 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
 
-    public void addIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<Field> fields, IndexOptions indexOptions, boolean log, boolean ifNotExists) throws SQLException {
-        addIndex(table, getOrderFields(keyFields, indexOptions, fields), indexOptions, log, ifNotExists);
+    public void addIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<Field> fields, IndexOptions indexOptions, boolean ifNotExists) throws SQLException {
+        addIndex(table, getOrderFields(keyFields, indexOptions, fields), indexOptions, ifNotExists);
     }
 
     public void addIndex(NamedTable table, ImOrderMap<Field, Boolean> fields) throws SQLException {
-        addIndex(table, fields, defaultIndexOptions, false, false);
+        addIndex(table, fields, defaultIndexOptions, false);
     }
 
-    public void addIndex(NamedTable table, ImOrderMap<Field, Boolean> fields, IndexOptions indexOptions, boolean log, boolean ifNotExists) throws SQLException {
-        Logger logger = log ? startLogger : null;
+    public void addIndex(NamedTable table, ImOrderMap<Field, Boolean> fields, IndexOptions indexOptions, boolean ifNotExists) throws SQLException {
         String columns = getColumns(fields, indexOptions);
         if (indexOptions.type.isDefault()) {
-            createDefaultIndex(table, fields, indexOptions.dbName, columns, logger, ifNotExists);
+            createDefaultIndex(table, fields, indexOptions.dbName, columns, null, ifNotExists);
         } else if (indexOptions.type.isLike()) {
-            createLikeIndex(table, fields, indexOptions.dbName, columns, logger, ifNotExists);
+            createLikeIndex(table, fields, indexOptions.dbName, columns, null, ifNotExists);
         } else if (indexOptions.type.isMatch()) {
             if (fields.size() == 1 && fields.singleKey().type instanceof TSVectorClass) {
-                createMatchIndexForTsVector(table, indexOptions.dbName, fields, columns, indexOptions, logger, ifNotExists);
+                createMatchIndexForTsVector(table, indexOptions.dbName, fields, columns, indexOptions, null, ifNotExists);
             } else {
-                createMatchIndex(table, fields, indexOptions.dbName, columns, indexOptions, logger, ifNotExists);
+                createMatchIndex(table, fields, indexOptions.dbName, columns, indexOptions, null, ifNotExists);
             }
         }
     }
@@ -975,8 +979,14 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     private void createIndex(NamedTable table, String nameIndex, String columnsPostfix, Logger logger, boolean ifNotExists) throws SQLException {
-        runWithLog(() -> executeDDL("CREATE INDEX " + (ifNotExists ? "IF NOT EXISTS " : "") + nameIndex + " ON " + table.getName(syntax) + columnsPostfix),
-                logger,"Adding index: " + nameIndex);
+        long start = System.currentTimeMillis();
+        if (logger != null) {
+            logger.info(String.format("Adding index started: %s", nameIndex));
+        }
+        executeDDL("CREATE INDEX " + (ifNotExists ? "IF NOT EXISTS " : "") + nameIndex + " ON " + table.getName(syntax) + columnsPostfix);
+        if (logger != null) {
+            logger.info(String.format("Adding index: %s, %sms", nameIndex, System.currentTimeMillis() - start));
+        }
     }
 
     public void dropIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, IndexOptions indexOptions, boolean ifExists) throws SQLException {
@@ -1027,12 +1037,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         String newIndexNameSuffix = (newOptions.type == DEFAULT ? null : newOptions.type.suffix());
         String oldIndexName = getIndexName(table, getOrderFields(keyFields, oldFields, oldOptions), oldOptions.dbName, oldIndexNameSuffix, false, false, syntax);
         String newIndexName = getIndexName(table, getOrderFields(keyFields, newFields, newOptions), newOptions.dbName, newIndexNameSuffix, false, false, syntax);
-        log(logger, "Renaming index from " + oldIndexName + " to " + newIndexName);
+        logger.info("Renaming index from " + oldIndexName + " to " + newIndexName);
         executeDDL("ALTER INDEX " + (ifExists ? "IF EXISTS " : "" ) + oldIndexName + " RENAME TO " + newIndexName);
     }
 
     public void renameIndex(String oldIndexName, String newIndexName) throws SQLException {
-        log(logger, "Renaming index from " + oldIndexName + " to " + newIndexName);
+        logger.info("Renaming index from " + oldIndexName + " to " + newIndexName);
         executeDDL("ALTER INDEX " + oldIndexName + " RENAME TO " + newIndexName);
     }
 

@@ -15,7 +15,6 @@ import lsfusion.base.col.lru.LRUWVSMap;
 import lsfusion.base.col.lru.LRUWWEVSMap;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.lambda.DProcessor;
-import lsfusion.base.lambda.E2Callable;
 import lsfusion.base.lambda.E2Runnable;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.ProgressBar;
@@ -1761,8 +1760,18 @@ public class DBManager extends LogicsManager implements InitializingBean {
         for (Map.Entry<NamedTable, List<IndexData<Field>>> mapIndex : newDBStructure.tables.entrySet())
             for (IndexData<Field> index : mapIndex.getValue()) {
                 NamedTable table = mapIndex.getKey();
-                sql.addIndex(table, table.keys, SetFact.fromJavaOrderSet(index.fields), index.options, oldDBStructure.getTable(table.getName()) != null, Settings.get().isStartServerAnyWay()); // если таблица новая нет смысла логировать
+                addIndexWithStartLog(() ->
+                    sql.addIndex(table, table.keys, SetFact.fromJavaOrderSet(index.fields), index.options, Settings.get().isStartServerAnyWay()),
+                        "Adding index: " + sql.getIndexName(table, index), oldDBStructure.getTable(table.getName()) != null); // no need to log if the table is new
             }
+    }
+
+    private static void addIndexWithStartLog(E2Runnable<SQLException, SQLException> run, String message, boolean log) throws SQLException {
+        if(log) {
+            runWithStartLog(run, message);
+        } else {
+            run.run();
+        }
     }
 
     private static void dropTables(SQLSession sql, OldDBStructure oldDBStructure, NewDBStructure newDBStructure) throws SQLException {

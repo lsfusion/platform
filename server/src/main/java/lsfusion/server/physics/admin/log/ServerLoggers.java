@@ -216,25 +216,13 @@ public class ServerLoggers {
     }
 
     public static void startLog(String message) {
-        log(startLogger, message);
-    }
-
-    public static void log(Logger logger, String message) {
-        logger.info(message);
+        startLogger.info(message);
     }
 
     public static <E1 extends Exception, E2 extends Exception> void runWithStartLog(E2Runnable<E1, E2> run, String message) throws E1, E2 {
-        runWithLog(run, startLogger, message);
-    }
-
-    public static <E1 extends Exception, E2 extends Exception> void runWithLog(E2Runnable<E1, E2> run, Logger logger, String message) throws E1, E2 {
         long start = System.currentTimeMillis();
-        if(logger != null) {
-            logger.info(message + " started");
-        }
+        startLogger.info(message + " started");
         run.run();
-        if(logger != null) {
-            logger.info(message + " finished, " + (System.currentTimeMillis() - start) + "ms");
-        }
+        startLogger.info(message + " finished, " + (System.currentTimeMillis() - start) + "ms");
     }
 }
