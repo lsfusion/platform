@@ -12,3 +12,7 @@
 .modal-dialog.modal-resizable {
     margin: 0;
 }
+
+.form {
+    z-index: 0;
+}
