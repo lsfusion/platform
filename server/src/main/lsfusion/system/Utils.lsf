@@ -145,7 +145,7 @@ splitCamelCase (STRING source, STRING delimiter) = lower(regexpReplace(source, '
 substr (TEXT p1, INTEGER p2, INTEGER p3) = FORMULA TEXT 'substring($1, $2, $3)';
 substrFrom (TEXT p1, INTEGER p2) = FORMULA TEXT PG 'substring($1, $2)', MS 'substring($1, $2, len($1) - $2 + 1)'; 
 
-regexPatternMatch (TEXT str, STRING pattern) = FORMULA BOOLEAN PG '$1~$2';
+regexPatternMatch (TEXT str, STRING pattern) = FORMULA NULL BOOLEAN PG 'CASE WHEN $1~$2 THEN 1 ELSE NULL END';
 
 ltrim (TEXT p1) = FORMULA TEXT 'ltrim($1)';
 rtrim (TEXT p1) = FORMULA TEXT 'rtrim($1)';
