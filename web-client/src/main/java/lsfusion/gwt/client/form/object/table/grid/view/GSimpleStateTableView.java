@@ -93,6 +93,19 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
     private NativeHashMap<String, Column> columnMap;
 
+    private Column getColumn(String key) {
+        Column column = columnMap.get(key);
+        if (column == null) {
+            for (GPropertyDraw property : form.getPropertyDraws()) {
+                if (key.equals(property.integrationSID)) {
+                    column = new Column(property, GGroupObjectValue.EMPTY);
+                    break;
+                }
+            }
+        }
+        return column;
+    }
+
     @Override
     protected void updateView() {
         columnMap = new NativeHashMap<>();
@@ -293,7 +306,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     protected void changeJSProperties(String[] columns, JavaScriptObject[] objects, JavaScriptObject[] newValues) {
         PValue[] mappedValues = new PValue[newValues.length];
         for (int i = 0; i < newValues.length; i++)
-            mappedValues[i] = GSimpleStateTableView.convertFromJSUndefValue(columnMap.get(columns[i]).property.getExternalChangeType(), newValues[i]);
+            mappedValues[i] = GSimpleStateTableView.convertFromJSUndefValue(getColumn(columns[i]).property.getExternalChangeType(), newValues[i]);
         changeProperties(columns, objects, mappedValues);
     }
 
@@ -311,7 +324,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         GPushAsyncResult[] pushAsyncResults = new GPushAsyncResult[length];
 
         for (int i = 0; i < length; i++) {
-            Column column = columnMap.get(columns[i]);
+            Column column = getColumn(columns[i]);
             properties[i] = column.property;
             fullKeys[i] = GGroupObjectValue.getFullKey(getChangeObjects(objects[i]), column.columnKey);
             externalChanges[i] = true;
@@ -336,7 +349,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     }
 
     protected String getCaption(String property) {
-        Column column = columnMap.get(property);
+        Column column = getColumn(property);
         if(column == null)
             return null;
 
@@ -346,14 +359,14 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     }
 
     protected String getCaptionElementClass(String property) {
-        Column column = columnMap.get(property);
+        Column column = getColumn(property);
         if(column == null)
             return null;
         return getCaptionElementClass(column.property, column.columnKey);
     }
 
     protected boolean isReadOnly(String property, GGroupObjectValue object) {
-        Column column = columnMap.get(property);
+        Column column = getColumn(property);
         if(column == null)
             return false;
         return isReadOnly(column.property, object, column.columnKey);
@@ -364,7 +377,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     }
 
     protected String getValueElementClass(String property, GGroupObjectValue object) {
-        Column column = columnMap.get(property);
+        Column column = getColumn(property);
         if(column == null)
             return null;
         return getValueElementClass(column.property, object, column.columnKey);
@@ -375,14 +388,14 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     }
 
     protected String getBackground(String property, GGroupObjectValue object) {
-        Column column = columnMap.get(property);
+        Column column = getColumn(property);
         if(column == null)
             return null;
         return getBackground(column.property, object, column.columnKey);
     }
 
     protected String getPlaceholder(String property, GGroupObjectValue object) {
-        Column column = columnMap.get(property);
+        Column column = getColumn(property);
         if(column == null)
             return null;
         return getPlaceholder(column.property, object, column.columnKey);
@@ -397,7 +410,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     }
 
     protected String getForeground(String property, GGroupObjectValue object) {
-        Column column = columnMap.get(property);
+        Column column = getColumn(property);
         if(column == null)
             return null;
         return getForeground(column.property, object, column.columnKey);
@@ -409,6 +422,10 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
     protected boolean isCurrentObjectKey(JavaScriptObject object){
         return isCurrentKey(getObjects(object));
+    }
+
+    public static boolean isChangeObject(JavaScriptObject object) {
+        return hasKey(object, objectsFieldName) || toObject(object) instanceof GGroupObjectValue;
     }
 
     // change key can be outside view window, and can be obtained from getAsyncValues for example
@@ -459,13 +476,13 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         PValue leftBorder = isDateTimeFilter ? PValue.getPValue(new GDateTimeDTO(startYear, startMonth, startDay, 0, 0, 0)) : PValue.getPValue(new GDateDTO(startYear, startMonth, startDay)) ;
         PValue rightBorder = isDateTimeFilter ? PValue.getPValue(new GDateTimeDTO(endYear, endMonth, endDay, 0, 0, 0)) : PValue.getPValue(new GDateDTO(endYear, endMonth, endDay));
 
-        Column column = columnMap.get(property);
+        Column column = getColumn(property);
         setViewFilters(pageSize, new GPropertyFilter(new GFilter(column.property), grid.groupObject, column.columnKey, leftBorder, GCompare.GREATER_EQUALS),
                 new GPropertyFilter(new GFilter(column.property), grid.groupObject, column.columnKey, rightBorder, GCompare.LESS_EQUALS));
     }
 
     protected void setBooleanViewFilter(String property, int pageSize) {
-        Column column = columnMap.get(property);
+        Column column = getColumn(property);
         setViewFilters(pageSize, new GPropertyFilter(new GFilter(column.property), grid.groupObject, column.columnKey, PValue.getPValue(true), GCompare.EQUALS));
     }
 
@@ -475,13 +492,13 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     }
 
     private String getPropertyJsValue(String property) {
-        Column column = columnMap.get(property);
+        Column column = getColumn(property);
         Object value = column != null ? getJsValue(column.property, getSelectedKey(), column.columnKey) : null;
         return value != null ? value.toString() : null;
     }
 
     protected void getAsyncValues(String property, String value, JavaScriptObject successCallBack, JavaScriptObject failureCallBack) {
-        Column column = columnMap.get(property);
+        Column column = getColumn(property);
         form.getAsyncValues(value, column.property, column.columnKey, ServerResponse.OBJECTS, getJSCallback(successCallBack, failureCallBack));
     }
 
@@ -672,10 +689,21 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         var thisObj = this;
         return {
             changeProperty: function (property, object, newValue, type, index) {
-                if(object === undefined)
+                if(object !== undefined) {
+                    if(newValue === undefined) { //object passed, newValue not passed
+                        //guess if object is object or newValue
+                        if (@GSimpleStateTableView::isChangeObject(*)(object)) {
+                            newValue = @GSimpleStateTableView::UNDEFINED;
+                        } else {
+                            newValue = object;
+                            object = null;
+                        }
+                    }
+                } else {
+                    if(newValue === undefined)
+                        newValue = @GSimpleStateTableView::UNDEFINED;
                     object = null;
-                if(newValue === undefined) // not passed
-                    newValue = @GSimpleStateTableView::UNDEFINED;
+                }
 
                 @GSimpleStateTableView::changeJSDiff(*)(element, null, object, this, property, newValue, type, index);
 
