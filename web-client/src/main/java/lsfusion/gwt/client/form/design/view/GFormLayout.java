@@ -313,10 +313,13 @@ public class GFormLayout extends ResizableComplexPanel {
         GSize width = mainContainer.getWidth();
         GSize height = mainContainer.getHeight();
 
+        boolean hasCustomWidth = mainContainer.width > 0;
+        boolean hasCustomHeight = mainContainer.height > 0;
+
         boolean fixWidthOnInit = mainContainer.width == -3;
         boolean fixHeightOnInit = mainContainer.height == -3;
         if(!fixWidthOnInit && !fixHeightOnInit) {
-            return new Dimension(null, null); //optimisation
+            return new Dimension(hasCustomWidth ? width : null, hasCustomHeight ? height : null); //optimisation
         }
         Pair<Integer, Integer> extraOffset = setPreferredSize(true, width, height, maxWidth, maxHeight);
         try {
@@ -327,6 +330,8 @@ public class GFormLayout extends ResizableComplexPanel {
                 offsetWidth = GwtClientUtils.getOffsetWidth(element);
                 if (width == null)
                     offsetWidth = offsetWidth.add(extraOffset.first);
+            } else if(hasCustomWidth) {
+                offsetWidth = width;
             }
 
             GSize offsetHeight = null;
@@ -334,6 +339,8 @@ public class GFormLayout extends ResizableComplexPanel {
                 offsetHeight = GwtClientUtils.getOffsetHeight(element);
                 if (height == null)
                     offsetHeight = offsetHeight.add(extraOffset.second);
+            } else if(hasCustomHeight) {
+                offsetHeight = height;
             }
 
             return new Dimension(offsetWidth, offsetHeight);
