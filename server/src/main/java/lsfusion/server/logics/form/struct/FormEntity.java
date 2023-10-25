@@ -200,7 +200,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
                 .mapMergeOrderSetValues(entity -> entity.filters.getOrderSet().get(entity.getDefault()).filter).getSet();
     }
 
-    public NFList<PropertyDrawEntity> userFilters = NFFact.list();
+    public NFOrderSet<PropertyDrawEntity> userFilters = NFFact.orderSet();
     public Iterable<PropertyDrawEntity> getUserFiltersIt(Version version) {
         return userFilters.getNFListIt(version);
     }
