@@ -43,7 +43,6 @@ import java.util.*;
 public class BaseClass extends AbstractCustomClass {
 
     protected final static Logger logger = Logger.getLogger(BaseClass.class);
-    private static final Logger startLogger = ServerLoggers.startLogger;
 
     public final UnknownClass unknown;
 

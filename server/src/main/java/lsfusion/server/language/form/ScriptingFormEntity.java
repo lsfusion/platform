@@ -62,6 +62,7 @@ import java.util.Map;
 
 import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.server.logics.form.interactive.action.edit.FormSessionScope.OLDSESSION;
+import static lsfusion.server.physics.admin.log.ServerLoggers.startLog;
 
 public class ScriptingFormEntity {
     private ScriptingLogicsModule LM;
@@ -429,7 +430,7 @@ public class ScriptingFormEntity {
 
             // temporary check
             if(nvl(scope, PropertyDrawEntity.DEFAULT_ACTION_EVENTSCOPE) != OLDSESSION && !(pDrawUsage instanceof ScriptingLogicsModule.FormPredefinedUsage) && (propertyOptions.getEventActions() == null || !propertyOptions.getEventActions().containsKey(ServerResponse.CHANGE)))
-                ServerLoggers.startLogger.info("WARNING! Now default change event action will work in new session " + propertyDraw);
+                startLog("WARNING! Now default change event action will work in new session " + propertyDraw);
 
             propertyDraw.defaultChangeEventScope = scope;
 

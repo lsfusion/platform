@@ -14,6 +14,7 @@ import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSVSMap;
+import lsfusion.base.lambda.E2Runnable;
 import lsfusion.base.lambda.ERunnable;
 import lsfusion.base.lambda.Provider;
 import lsfusion.server.base.MutableClosedObject;
@@ -109,8 +110,7 @@ import java.util.stream.Collectors;
 import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.server.data.table.IndexOptions.defaultIndexOptions;
 import static lsfusion.server.data.table.IndexType.*;
-import static lsfusion.server.physics.admin.log.ServerLoggers.explainLogger;
-import static lsfusion.server.physics.admin.log.ServerLoggers.sqlSuppLog;
+import static lsfusion.server.physics.admin.log.ServerLoggers.*;
 
 public class SQLSession extends MutableClosedObject<OperationOwner> implements AutoCloseable {
 
@@ -720,7 +720,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     // удостоверивается что таблица есть
-    public void ensureTable(NamedTable table, Logger logger) throws SQLException {
+    public void ensureTable(NamedTable table) throws SQLException {
         lockRead(OperationOwner.unknown);
         ExConnection connection = getConnection();
 
@@ -739,7 +739,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             DatabaseMetaData metaData = connection.sql.getMetaData();
             ResultSet tables = metaData.getTables(null, null, syntax.getMetaName(table.getName()), new String[]{"TABLE"});
             if (!tables.next()) {
-                createTable(table, table.keys, logger);
+                createTable(table, table.keys);
                 for (PropertyField property : table.properties)
                     addColumn(table, property);
             }
@@ -752,12 +752,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
 
-    public void addExtraIndexes(NamedTable table, ImOrderSet<KeyField> keys, Logger logger) throws SQLException {
+    public void addExtraIndexes(NamedTable table, ImOrderSet<KeyField> keys) throws SQLException {
         for(int i=1;i<keys.size();i++)
-            addIndex(table, BaseUtils.<ImOrderSet<Field>>immutableCast(keys).subOrder(i, keys.size()).toOrderMap(true), logger);
+            addIndex(table, BaseUtils.<ImOrderSet<Field>>immutableCast(keys).subOrder(i, keys.size()).toOrderMap(true));
     }
 
-    public void checkExtraIndexes(SQLSession threadLocalSQL, NamedTable table, ImOrderSet<KeyField> keys, Logger logger) throws SQLException, SQLHandledException {
+    public void checkExtraIndexes(SQLSession threadLocalSQL, NamedTable table, ImOrderSet<KeyField> keys) throws SQLException, SQLHandledException {
         for(int i=1;i<keys.size();i++) {
             ImOrderMap<Field, Boolean> fields = BaseUtils.<ImOrderSet<Field>>immutableCast(keys).subOrder(i, keys.size()).toOrderMap(true);
             threadLocalSQL.checkDefaultIndex(table, fields, defaultIndexOptions);
@@ -778,7 +778,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         return SetFact.toOrderExclSet(keys.size(), i -> BaseUtils.<ImOrderSet<Field>>immutableCast(keys).subOrder(i, keys.size())).getSet();
     }
 
-    public void createTable(NamedTable table, ImOrderSet<KeyField> keys, Logger logger) throws SQLException {
+    public void createTable(NamedTable table, ImOrderSet<KeyField> keys) throws SQLException {
         MStaticExecuteEnvironment env = StaticExecuteEnvironmentImpl.mEnv();
 
         if (keys.size() == 0)
@@ -788,7 +788,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
 //        System.out.println("CREATE TABLE "+Table.Name+" ("+CreateString+")");
         executeDDL("CREATE TABLE " + table.getName(syntax) + " (" + createString + ")", env.finish());
-        addExtraIndexes(table, keys, null);
+        addExtraIndexes(table, keys);
     }
 
     public void renameTable(NamedTable table, String newTableName) throws SQLException {
@@ -801,6 +801,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
     static String getIndexName(NamedTable table, String dbName, ImOrderMap<String, Boolean> fields, SQLSyntax syntax) {
         return getIndexName(table, fields, dbName, null, false, false, syntax);
+    }
+
+    public String getIndexName(NamedTable table, DBManager.IndexData<Field> index) {
+        return getIndexName(table, syntax, index.options.dbName, getOrderFields(table.keys, index.options, SetFact.fromJavaOrderSet(index.fields)), index.options.type.suffix());
     }
 
     static String getIndexName(NamedTable table, SQLSyntax syntax, String dbName, ImOrderMap<Field, Boolean> fields, String suffix) {
@@ -921,25 +925,25 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
 
-    public void addIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<Field> fields, IndexOptions indexOptions, Logger logger, boolean ifNotExists) throws SQLException {
-        addIndex(table, getOrderFields(keyFields, indexOptions, fields), indexOptions, logger, ifNotExists);
+    public void addIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<Field> fields, IndexOptions indexOptions, boolean ifNotExists) throws SQLException {
+        addIndex(table, getOrderFields(keyFields, indexOptions, fields), indexOptions, ifNotExists);
     }
 
-    public void addIndex(NamedTable table, ImOrderMap<Field, Boolean> fields, Logger logger) throws SQLException {
-        addIndex(table, fields, defaultIndexOptions, logger, false);
+    public void addIndex(NamedTable table, ImOrderMap<Field, Boolean> fields) throws SQLException {
+        addIndex(table, fields, defaultIndexOptions, false);
     }
 
-    public void addIndex(NamedTable table, ImOrderMap<Field, Boolean> fields, IndexOptions indexOptions, Logger logger, boolean ifNotExists) throws SQLException {
+    public void addIndex(NamedTable table, ImOrderMap<Field, Boolean> fields, IndexOptions indexOptions, boolean ifNotExists) throws SQLException {
         String columns = getColumns(fields, indexOptions);
         if (indexOptions.type.isDefault()) {
-            createDefaultIndex(table, fields, indexOptions.dbName, columns, logger, ifNotExists);
+            createDefaultIndex(table, fields, indexOptions.dbName, columns, null, ifNotExists);
         } else if (indexOptions.type.isLike()) {
-            createLikeIndex(table, fields, indexOptions.dbName, columns, logger, ifNotExists);
+            createLikeIndex(table, fields, indexOptions.dbName, columns, null, ifNotExists);
         } else if (indexOptions.type.isMatch()) {
             if (fields.size() == 1 && fields.singleKey().type instanceof TSVectorClass) {
-                createMatchIndexForTsVector(table, indexOptions.dbName, fields, columns, indexOptions, logger, ifNotExists);
+                createMatchIndexForTsVector(table, indexOptions.dbName, fields, columns, indexOptions, null, ifNotExists);
             } else {
-                createMatchIndex(table, fields, indexOptions.dbName, columns, indexOptions, logger, ifNotExists);
+                createMatchIndex(table, fields, indexOptions.dbName, columns, indexOptions, null, ifNotExists);
             }
         }
     }

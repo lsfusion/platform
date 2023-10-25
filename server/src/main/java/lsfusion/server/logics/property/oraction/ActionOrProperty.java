@@ -61,6 +61,7 @@ import java.util.concurrent.Callable;
 import java.util.function.IntFunction;
 
 import static lsfusion.interop.action.ServerResponse.*;
+import static lsfusion.server.physics.admin.log.ServerLoggers.startLog;
 
 public abstract class ActionOrProperty<T extends PropertyInterface> extends AbstractNode {
     public static final IntFunction<PropertyInterface> genInterface = PropertyInterface::new;
@@ -286,7 +287,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     @NFLazy
     public void setEventAction(String eventActionSID, ActionMapImplement<?, T> eventActionImplement) {
         if(eventActionSID.equals(CHANGE_WYS)) { // CHANGE_WYS, temp check
-            ServerLoggers.startLogger.info("WARNING! CHANGE_WYS is deprecated, use LIST clause in INPUT / DIALOG operator instead " + this);
+            startLog("WARNING! CHANGE_WYS is deprecated, use LIST clause in INPUT / DIALOG operator instead " + this);
             return;
         }
 

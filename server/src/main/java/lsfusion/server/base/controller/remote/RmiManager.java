@@ -25,8 +25,10 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
+import static lsfusion.server.physics.admin.log.ServerLoggers.startLog;
+import static lsfusion.server.physics.admin.log.ServerLoggers.startLogError;
+
 public class RmiManager extends LogicsManager implements InitializingBean {
-    private static final Logger logger = ServerLoggers.startLogger;
 
     @Override
     protected BusinessLogics getBusinessLogics() {
@@ -96,12 +98,12 @@ public class RmiManager extends LogicsManager implements InitializingBean {
 
     @Override
     protected void onStarted(LifecycleEvent event) {
-        logger.info("Starting RMI Manager");
+        startLog("Starting RMI Manager");
         try {
             initJMX(); // важно, что до initRMI, так как должен использовать SocketFactory по умолчанию
             initRegistry();
         } catch (IOException e) {
-            logger.error("Error starting RmiManager: ", e);
+            startLogError("Error starting RmiManager: ", e);
             Throwables.propagate(e);
         }
     }
@@ -155,10 +157,10 @@ public class RmiManager extends LogicsManager implements InitializingBean {
     
             // Start the RMI connector server.
             //
-            logger.info("Start the RMI connector server on port "+port);
+            startLog("Start the RMI connector server on port " + port);
             cs.start();
         } catch (IOException e) {
-            logger.error("Error starting JMX: ", e);
+            startLogError("Error starting JMX: ", e);
             Throwables.propagate(e);
         }
     }

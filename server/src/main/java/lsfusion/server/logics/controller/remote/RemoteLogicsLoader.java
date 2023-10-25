@@ -20,9 +20,9 @@ import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 
-public class RemoteLogicsLoader extends LogicsManager implements RemoteLogicsLoaderInterface, InitializingBean {
-    private static final Logger logger = ServerLoggers.startLogger;
+import static lsfusion.server.physics.admin.log.ServerLoggers.startLog;
 
+public class RemoteLogicsLoader extends LogicsManager implements RemoteLogicsLoaderInterface, InitializingBean {
     public static final String EXPORT_NAME = "RemoteLogicsLoader";
 
     private RmiManager rmiManager;
@@ -78,7 +78,7 @@ public class RemoteLogicsLoader extends LogicsManager implements RemoteLogicsLoa
     protected void onStarted(LifecycleEvent event) {
 
         try {
-            new TaskRunner(getBusinessLogics()).runTask(initTask, logger);
+            new TaskRunner(getBusinessLogics()).runTask(initTask);
         } catch (Exception e) {
             throw new RuntimeException("Error starting ReflectionManager: ", e);
         }
@@ -104,7 +104,7 @@ public class RemoteLogicsLoader extends LogicsManager implements RemoteLogicsLoa
     @Override
     protected void onStopping(LifecycleEvent event) {
         if (started) {
-            logger.info("Stopping Remote Logics Loader");
+            startLog("Stopping Remote Logics Loader");
             try {
                 rmiManager.unexport(remoteLogics);
                 rmiManager.unbindAndUnexport(EXPORT_NAME, this);
