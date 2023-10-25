@@ -56,7 +56,7 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
         int size = vertical ? height : width;
         if(size == -2)
             return vertical ? getDefaultHeight() : getDefaultWidth();
-        if (size == -1 || size == -3)
+        if (size == -1)
             return null;
         return size;
     }
