@@ -313,9 +313,9 @@ public class GFormLayout extends ResizableComplexPanel {
         GSize width = mainContainer.getWidth();
         GSize height = mainContainer.getHeight();
 
-        boolean autoWidthOnInit = mainContainer.width == -1;
-        boolean autoHeightOnInit = mainContainer.height == -1;
-        if(autoWidthOnInit && autoHeightOnInit) {
+        boolean fixWidthOnInit = mainContainer.width == -3;
+        boolean fixHeightOnInit = mainContainer.height == -3;
+        if(!fixWidthOnInit && !fixHeightOnInit) {
             return new Dimension(null, null); //optimisation
         }
         Pair<Integer, Integer> extraOffset = setPreferredSize(true, width, height, maxWidth, maxHeight);
@@ -323,14 +323,14 @@ public class GFormLayout extends ResizableComplexPanel {
             DataGrid.flushUpdateDOM(); // there can be some pending grid changes, and we need actual sizes
 
             GSize offsetWidth = null;
-            if (!autoWidthOnInit) {
+            if (fixWidthOnInit) {
                 offsetWidth = GwtClientUtils.getOffsetWidth(element);
                 if (width == null)
                     offsetWidth = offsetWidth.add(extraOffset.first);
             }
 
             GSize offsetHeight = null;
-            if (!autoHeightOnInit) {
+            if (fixHeightOnInit) {
                 offsetHeight = GwtClientUtils.getOffsetHeight(element);
                 if (height == null)
                     offsetHeight = offsetHeight.add(extraOffset.second);
