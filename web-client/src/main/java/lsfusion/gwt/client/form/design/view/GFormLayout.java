@@ -6,6 +6,7 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.focus.DefaultFocusReceiver;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
+import lsfusion.gwt.client.base.size.GFixedSize;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
@@ -313,13 +314,13 @@ public class GFormLayout extends ResizableComplexPanel {
         GSize width = mainContainer.getWidth();
         GSize height = mainContainer.getHeight();
 
-        boolean hasCustomWidth = mainContainer.width > 0;
-        boolean hasCustomHeight = mainContainer.height > 0;
+        GSize customWidth = mainContainer.width >= 0 ? new GFixedSize(mainContainer.width, GFixedSize.Type.PX) : null;
+        GSize customHeight = mainContainer.height >= 0 ? new GFixedSize(mainContainer.height, GFixedSize.Type.PX) : null;
 
         boolean fixWidthOnInit = mainContainer.width == -3;
         boolean fixHeightOnInit = mainContainer.height == -3;
         if(!fixWidthOnInit && !fixHeightOnInit) {
-            return new Dimension(hasCustomWidth ? width : null, hasCustomHeight ? height : null); //optimisation
+            return new Dimension(customWidth, customHeight); //optimisation
         }
         Pair<Integer, Integer> extraOffset = setPreferredSize(true, width, height, maxWidth, maxHeight);
         try {
@@ -330,8 +331,8 @@ public class GFormLayout extends ResizableComplexPanel {
                 offsetWidth = GwtClientUtils.getOffsetWidth(element);
                 if (width == null)
                     offsetWidth = offsetWidth.add(extraOffset.first);
-            } else if(hasCustomWidth) {
-                offsetWidth = width;
+            } else {
+                offsetWidth = customWidth;
             }
 
             GSize offsetHeight = null;
@@ -339,8 +340,8 @@ public class GFormLayout extends ResizableComplexPanel {
                 offsetHeight = GwtClientUtils.getOffsetHeight(element);
                 if (height == null)
                     offsetHeight = offsetHeight.add(extraOffset.second);
-            } else if(hasCustomHeight) {
-                offsetHeight = height;
+            } else {
+                offsetHeight = customHeight;
             }
 
             return new Dimension(offsetWidth, offsetHeight);
