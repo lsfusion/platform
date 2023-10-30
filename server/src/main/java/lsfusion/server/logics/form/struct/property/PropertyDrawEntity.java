@@ -822,7 +822,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
         String custom = getCustomRenderFunction();
         if(custom != null) {
-            if(custom.equals(NOSELECT))
+            if(custom.equals(NOSELECT) || custom.startsWith(SELECT))
                 return null;
             return custom;
         }
