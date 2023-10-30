@@ -265,7 +265,8 @@ tsRankCD(TSVECTOR tsVector, TSQUERY search, INTEGER normalization) = FORMULA DOU
 setWeight(TSVECTOR tsVector, STRING group) = FORMULA TSVECTOR PG 'setweight($1, $2::"char")';
 toTsVector(STRING dictionary, STRING text) = FORMULA TSVECTOR PG 'to_tsvector($1::regconfig, coalesce($2, \'\'))';
 toTsVector(STRING text) = toTsVector('english', text);
-toTsQuery(STRING text) = FORMULA TSQUERY PG 'to_tsquery($1)';
+toTsQuery(STRING dictionary, STRING text) = FORMULA TSQUERY PG 'to_tsquery($1::regconfig, coalesce($2, \'\'))';
+toTsQuery(STRING text) = toTsQuery('english', text);
 
 numNode(TSQUERY search) = FORMULA INTEGER PG 'numnode($1)';
 

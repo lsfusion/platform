@@ -77,7 +77,7 @@ public class AppServerImage {
                 return FULL;
             else if (imageString.contains("/") || imageString.contains("."))
                 return PATH;
-            else if (imageString.contains(" ") || imageString.contains("-"))
+            else if (imageString.contains(" ") || imageString.startsWith("fa-") || imageString.startsWith("bi-"))
                 return ICON;
 
             return NAME_OR_AUTO;

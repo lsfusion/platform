@@ -37,7 +37,7 @@ searchSynonyms(Icon i) = toTsVector(OVERRIDE synonyms(i), '' IF i IS Icon) MATER
 searchStyles(Icon i) = IF type(i) = 'bi' THEN 'regular' // should correspond AppServerImage.createDefaultImage -> getBestIcon param
                               ELSE IF styles(i) = 'brands' THEN '' 
                               ELSE styles(i) MATERIALIZED;
-search '{icon.vector}' (Icon i) = toTsVector(CONCAT ' ', explicit(i), label(i), terms(i), synonyms(i)) MATERIALIZED INDEXED MATCH;
+search '{icon.vector}' (Icon i) = toTsVector(CONCAT ' ', name(i), explicit(i), label(i), terms(i), synonyms(i)) MATERIALIZED INDEXED MATCH;
 
 iconClass(Icon i, STRING style) = IF type(i) = 'bi' THEN 'bi bi-' + name(i)
                               ELSE ((IF styles(i) = 'brands' THEN 'fa-brands'
