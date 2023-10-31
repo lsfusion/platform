@@ -42,6 +42,9 @@ public class ExternalHttpUtils {
             case DELETE:
                 httpRequest = new HttpDeleteWithBody(connectionString);
                 break;
+            case PATCH:
+                httpRequest = new HttpPatch(connectionString);
+                break;
             case PUT:
                 httpRequest = new HttpPut(connectionString);
                 break;

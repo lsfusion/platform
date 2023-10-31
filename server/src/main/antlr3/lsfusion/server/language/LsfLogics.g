@@ -3763,6 +3763,7 @@ externalFormat [List<TypedParameter> context, boolean dynamic] returns [External
 externalHttpMethod returns [ExternalHttpMethod method]
 	:	'DELETE' { $method = ExternalHttpMethod.DELETE; }
 	|	'GET'    { $method = ExternalHttpMethod.GET; }
+	|	'PATCH'    { $method = ExternalHttpMethod.PATCH; }
 	|	'POST'	 { $method = ExternalHttpMethod.POST; }
 	|	'PUT'    { $method = ExternalHttpMethod.PUT; }
 	;
