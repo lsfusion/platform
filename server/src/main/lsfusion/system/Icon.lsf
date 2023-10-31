@@ -37,13 +37,13 @@ searchSynonyms(Icon i) = toTsVector(OVERRIDE synonyms(i), '' IF i IS Icon) MATER
 searchStyles(Icon i) = IF type(i) = 'bi' THEN 'regular' // should correspond AppServerImage.createDefaultImage -> getBestIcon param
                               ELSE IF styles(i) = 'brands' THEN '' 
                               ELSE styles(i) MATERIALIZED;
-search '{icon.vector}' (Icon i) = toTsVector(CONCAT ' ', name(i), explicit(i), label(i), terms(i), synonyms(i)) MATERIALIZED INDEXED MATCH;
+search '{icon.vector}' (Icon i) = toTsVector(CONCAT ' ', explicit(i), label(i), terms(i), synonyms(i)) MATERIALIZED INDEXED MATCH;
 
 iconClass(Icon i, STRING style) = IF type(i) = 'bi' THEN 'bi bi-' + name(i)
                               ELSE ((IF styles(i) = 'brands' THEN 'fa-brands'
                               ELSE (IF styles(i) LIKE '%' + style + '%' THEN 'fa-' + style ELSE 'fa')) + ' fa-' + name(i));
 
-nameToIconQuery(STRING s) = toTsQuery(splitCamelCase(s, ' | '));
+nameToIconQuery(STRING s) = toTsQuery(splitDashAndCamelCase(s, ' & ', ' | '));
 lengthIconQuery(TSQUERY query) = (numNode(query) + 1) / 2;
 
 explicitRank(Icon i, TSQUERY query) = tsRank(searchExplicit(i), query) * 10 * lengthIconQuery(query);
@@ -152,7 +152,7 @@ importIcons '{icon.import.json}' () {
         allProperties(STRING s) <- properties(s) WHERE properties(s);        
     }
 
-    explicit(Icon icn) <- [GROUP CONCAT splitCamelCase(STRING s AS STRING, ' ') , ' ' ORDER s BY allProperties(s)](name(icn));
+    explicit(Icon icn) <- [GROUP CONCAT splitDashAndCamelCase(STRING s AS STRING, ' ', ' ') , ' ' ORDER s BY allProperties(s)](name(icn));
 
     APPLY;
 }

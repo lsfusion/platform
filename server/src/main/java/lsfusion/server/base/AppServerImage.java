@@ -77,10 +77,19 @@ public class AppServerImage {
                 return FULL;
             else if (imageString.contains("/") || imageString.contains("."))
                 return PATH;
-            else if (imageString.contains(" ") || imageString.startsWith("fa-") || imageString.startsWith("bi-"))
+            else if (isIcon(imageString))
                 return ICON;
 
             return NAME_OR_AUTO;
+        }
+
+        private static boolean isIcon(String imageString) {
+            for(String value : imageString.split(" ")) {
+                if(value.equals("fa") || value.equals("bi") || value.startsWith("fa-") || value.startsWith("bi-")) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 
