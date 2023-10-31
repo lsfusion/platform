@@ -140,7 +140,6 @@ length = FORMULA INTEGER PG 'length($1)', MS 'len($1)';
 
 strpos (TEXT string, TEXT substring) = FORMULA INTEGER PG 'strpos($1, $2)', MS 'charindex($2, $1)'; 
 regexpReplace (STRING source, STRING pattern, STRING replace, STRING flags) = FORMULA STRING PG 'REGEXP_REPLACE($1, $2, $3, $4)';
-splitCamelCase (STRING source, STRING delimiter) = lower(regexpReplace(source, '([a-z])([A-Z])', '\\1' + delimiter + '\\2', 'g'));
 
 substr (TEXT p1, INTEGER p2, INTEGER p3) = FORMULA TEXT 'substring($1, $2, $3)';
 substrFrom (TEXT p1, INTEGER p2) = FORMULA TEXT PG 'substring($1, $2)', MS 'substring($1, $2, len($1) - $2 + 1)'; 
@@ -265,7 +264,8 @@ tsRankCD(TSVECTOR tsVector, TSQUERY search, INTEGER normalization) = FORMULA DOU
 setWeight(TSVECTOR tsVector, STRING group) = FORMULA TSVECTOR PG 'setweight($1, $2::"char")';
 toTsVector(STRING dictionary, STRING text) = FORMULA TSVECTOR PG 'to_tsvector($1::regconfig, coalesce($2, \'\'))';
 toTsVector(STRING text) = toTsVector('english', text);
-toTsQuery(STRING text) = FORMULA TSQUERY PG 'to_tsquery($1)';
+toTsQuery(STRING dictionary, STRING text) = FORMULA TSQUERY PG 'to_tsquery($1::regconfig, coalesce($2, \'\'))';
+toTsQuery(STRING text) = toTsQuery('english', text);
 
 numNode(TSQUERY search) = FORMULA INTEGER PG 'numnode($1)';
 
