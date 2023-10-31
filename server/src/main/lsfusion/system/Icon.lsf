@@ -43,7 +43,7 @@ iconClass(Icon i, STRING style) = IF type(i) = 'bi' THEN 'bi bi-' + name(i)
                               ELSE ((IF styles(i) = 'brands' THEN 'fa-brands'
                               ELSE (IF styles(i) LIKE '%' + style + '%' THEN 'fa-' + style ELSE 'fa')) + ' fa-' + name(i));
 
-nameToIconQuery(STRING s) = toTsQuery(splitDashAndCamelCase(s, ' & ', ' | '));
+nameToIconQuery(STRING s) = toTsQuery(splitDashCamelCaseSpace(s, ' | '));
 lengthIconQuery(TSQUERY query) = (numNode(query) + 1) / 2;
 
 explicitRank(Icon i, TSQUERY query) = tsRank(searchExplicit(i), query) * 10 * lengthIconQuery(query);
@@ -152,7 +152,7 @@ importIcons '{icon.import.json}' () {
         allProperties(STRING s) <- properties(s) WHERE properties(s);        
     }
 
-    explicit(Icon icn) <- [GROUP CONCAT splitDashAndCamelCase(STRING s AS STRING, ' ', ' ') , ' ' ORDER s BY allProperties(s)](name(icn));
+    explicit(Icon icn) <- [GROUP CONCAT splitDashCamelCaseSpace(STRING s AS STRING, ' ') , ' ' ORDER s BY allProperties(s)](name(icn));
 
     APPLY;
 }
