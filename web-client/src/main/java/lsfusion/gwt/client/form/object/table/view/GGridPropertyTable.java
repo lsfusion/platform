@@ -34,7 +34,6 @@ import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 import java.util.ArrayList;
 import java.util.List;
 
-import static lsfusion.gwt.client.base.view.ColorUtils.getThemedColor;
 import static lsfusion.gwt.client.form.event.GKeyStroke.*;
 
 public abstract class GGridPropertyTable<T extends GridDataRecord> extends GPropertyTable<T> {
@@ -221,15 +220,12 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         addFilterBinding(event::isEvent, pressed);
     }
     private void addFilterBinding(GFormController.BindingCheck event, GFormController.BindingExec pressed) {
-        form.addBinding(event, new GBindingEnv(null, null, null, GBindingMode.ONLY, GBindingMode.NO, null, null, null), pressed, tableContainer, groupObject);
+        form.addBinding(event, new GBindingEnv(null, null, null, GBindingMode.ONLY, GBindingMode.NO, null, null, null),
+                () -> getSelectedProperty() != null && !getSelectedProperty().getCellRenderer().isCustomRenderer(), pressed, tableContainer, groupObject);
     }
 
     public GFont getFont() {
         return font;
-    }
-
-    public int getAutoSize() {
-        return getTableBodyElement().getOffsetHeight();
     }
     
     public GGroupObjectValue getSelectedKey() {

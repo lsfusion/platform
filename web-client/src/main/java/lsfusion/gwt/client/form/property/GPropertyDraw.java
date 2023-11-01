@@ -432,7 +432,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         boolean isFocus = BrowserEvents.FOCUS.equals(editEvent.getType());
         Element focusElement;
         if((isFocus || GKeyStroke.isInputKeyEvent(editEvent, () -> SimpleTextBasedCellRenderer.isMultiLineInput(editContext.getEditElement())))
-                && (focusElement = SimpleTextBasedCellRenderer.getFocusEventTarget(editContext.getEditElement(), editEvent)) != null &&
+                && (focusElement = SimpleTextBasedCellRenderer.getFocusEventTarget(editContext.getEditElement(), editEvent, isTagInput())) != null &&
                 !(isFocus && isSuppressOnFocusChange(focusElement)))
             return CHANGE;
 

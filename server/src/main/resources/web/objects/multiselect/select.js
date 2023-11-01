@@ -431,14 +431,15 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
                 } else {
                     _setGroupReadonly(input, extraValue != null ? extraValue.readonly : null);
 
-                    if(i === 0)
+                    // fixes the problem of always setting the focus on the first select option in the grid cell
+                    if(input.checked)
                         focusInput = input;
                 }
 
                 if (!multi && shouldBeSelected) {
                     if (isButton) { // bootstrap doesn't support is-invalid for buttons
                         let label = _getOptionElement(options, i, false, true);
-                        if (!hasSelected) {``
+                        if (!hasSelected) {
                             label.classList.add("btn-outline-danger");
                             label.classList.remove("btn-outline-secondary");
                         } else {

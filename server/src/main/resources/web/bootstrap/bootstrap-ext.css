@@ -347,3 +347,8 @@ div.selectArrow {
     margin: 0.25rem;
     line-height: var(--bs-body-line-height);
 }
+
+/* do not show arrow in dropdown select lists when there is no focus */
+select.form-select:not(:focus) {
+    background: none;
+}

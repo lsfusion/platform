@@ -1760,10 +1760,7 @@ public class GFormController implements EditManager {
         return addBinding(event, GBindingEnv.AUTO, pressed, component, groupObject);
     }
     public int addBinding(GInputEvent event, GBindingEnv env, BindingExec pressed, Widget component, GGroupObject groupObject) {
-        return addBinding(event::isEvent, env, pressed, component, groupObject);
-    }
-    public int addBinding(BindingCheck event, GBindingEnv env, BindingExec pressed, Widget component, GGroupObject groupObject) {
-        return addBinding(event, env, null, pressed, component, groupObject);
+        return addBinding(event::isEvent, env, null, pressed, component, groupObject);
     }
     public int addBinding(BindingCheck event, GBindingEnv env, Supplier<Boolean> enabled, BindingExec pressed, Widget component, GGroupObject groupObject) {
         return addBinding(new GBindingEvent(event, env), new Binding(groupObject) {
@@ -2386,6 +2383,12 @@ public class GFormController implements EditManager {
     public void onPropertyBrowserEvent(EventHandler handler, Element renderElement, boolean isCell, Element focusElement, Consumer<EventHandler> onOuterEditBefore,
                                        Consumer<EventHandler> onEdit, Consumer<EventHandler> onOuterEditAfter, Consumer<EventHandler> onCut,
                                        Consumer<EventHandler> onPaste, boolean panel, boolean customRenderer) {
+
+        // allow to navigate in custom button group component in grid cell by pressed shift + left / right
+        // for some reason it doesn't work with ctrl button
+        if (customRenderer && GKeyStroke.isCharNavigateHorzKeyEvent(handler.event) && handler.event.getShiftKey())
+            return;
+
         RequestCellEditor requestCellEditor = getRequestCellEditor();
         boolean isPropertyEditing = requestCellEditor != null && getEditElement() == renderElement;
         if(isPropertyEditing)
