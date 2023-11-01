@@ -1532,10 +1532,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
             changeColumnTypes(sql, changePropertyTypes);
 
-            // CREATE indexes
-
-            createIndexes(sql, oldDBStructure, newDBStructure);
-
             // since the below methods use queries we have to update stat props first
             ImplementTable.reflectionStatProps(() -> {
                 startLog("Updating stats");
@@ -1549,6 +1545,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
             moveColumns(sql, oldDBStructure, moveProperties);
 
             moveObjects(sql, oldDBStructure, newDBStructure, movedObjects, LM.baseClass); // should be before tables and columns drop (since class data props are also dropped)
+
+            // CREATE indexes (need it after moving the columns, because they are created there)
+
+            createIndexes(sql, oldDBStructure, newDBStructure);
 
             // DROP properties
 
