@@ -17,9 +17,7 @@ import java.util.List;
 import static lsfusion.base.BaseUtils.isRedundantString;
 
 public class OrderAction extends UserActivityAction {
-    public static final String ORDER_KEY = "order";
-    public static final String ASC_VALUE = "asc";
-    public static final String DESC_VALUE = "desc";
+    public static final String DESC_KEY = "desc";
     
     public OrderAction(GroupObjectEntity groupObject, LP<?> fromProperty) {
         super(groupObject, fromProperty);
@@ -39,13 +37,8 @@ public class OrderAction extends UserActivityAction {
                         // make sure group object is the same
                         GroupObjectEntity propertyGO = propertyDraw.toDraw.entity;
                         if (propertyGO == groupObject) {
-                            boolean asc = true;
-                            String orderString = jsonObject.optString(ORDER_KEY);
-                            if (!isRedundantString(orderString) && orderString.equalsIgnoreCase(DESC_VALUE)) {
-                                asc = false;
-                            }
-
-                            orders.put(propertyDraw.getID(), asc);
+                            boolean desc = jsonObject.optBoolean(DESC_KEY, false);
+                            orders.put(propertyDraw.getID(), !desc); // as true is for "asc" on client
                         }
                     }
                 }

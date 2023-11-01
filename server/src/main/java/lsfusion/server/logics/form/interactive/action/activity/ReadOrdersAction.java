@@ -53,7 +53,7 @@ public class ReadOrdersAction extends ReadUserActivityAction<ImOrderMap<Property
                 Map<String, Object> orderMap = new HashMap<>();
 
                 orderMap.put(UserActivityAction.PROPERTY_KEY, propertyDraw.getSID());
-                orderMap.put(OrderAction.ORDER_KEY, order ? OrderAction.DESC_VALUE : OrderAction.ASC_VALUE);
+                orderMap.put(OrderAction.DESC_KEY, order); // true is for desc on server
 
                 JSONObject json = new JSONObject(orderMap);
 

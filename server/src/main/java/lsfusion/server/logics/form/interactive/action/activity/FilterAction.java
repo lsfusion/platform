@@ -53,6 +53,7 @@ public class FilterAction extends UserActivityAction {
                                 }
                             }
                             filterItem.negation = jsonObject.optBoolean(NEGATION_KEY);
+                            // value may be String (when stored via ReadFiltersAction), may be any other Object
                             filterItem.value = jsonObject.opt(VALUE_KEY);
                             filterItem.junction = !jsonObject.optBoolean(OR_KEY);
 

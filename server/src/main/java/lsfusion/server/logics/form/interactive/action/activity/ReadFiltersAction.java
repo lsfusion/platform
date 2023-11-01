@@ -51,7 +51,13 @@ public class ReadFiltersAction extends ReadUserActivityAction<List<FilterInstanc
                     filterMap.put(FilterAction.NEGATION_KEY, ((CompareFilterInstance<?>) filter).negate);
                     CompareInstance value = ((CompareFilterInstance<?>) filter).value;
                     if (value instanceof ObjectValue) {
-                        filterMap.put(FilterAction.VALUE_KEY, ((ObjectValue<?>) value).getValue());
+                        // storing String because filter JSON may be imported into filters form
+                        // and no cast to String is being done during import
+                        Object theValue = ((ObjectValue<?>) value).getValue();
+                        if (theValue != null) {
+                            theValue = theValue.toString();
+                        }
+                        filterMap.put(FilterAction.VALUE_KEY, theValue);
                     }
                 } else if (filter instanceof NotNullFilterInstance) {
                     filterMap.put(FilterAction.NEGATION_KEY, true); // according to FilterInstance.deserialize()

@@ -1342,7 +1342,16 @@ public class GFormController implements EditManager {
             for (GFilterAction.FilterItem filter : filters) {
                 GPropertyDraw propertyDraw = form.getProperty(filter.propertyId);
                 if (propertyDraw != null) {
-                    uFilters.add(GFilterController.createNewCondition(gGridController, new GFilter(propertyDraw), null, PValue.remapValue(filter.value), filter.negation, GCompare.get(filter.compare), filter.junction));
+                    PValue value = null;
+                    if (filter.value instanceof String) {
+                        try {
+                            value = propertyDraw.baseType.parseString((String) filter.value, propertyDraw.pattern);
+                        } catch (ParseException ignored) {
+                        }
+                    } else {
+                        value = PValue.remapValue(filter.value);
+                    }
+                    uFilters.add(GFilterController.createNewCondition(gGridController, new GFilter(propertyDraw), null, value, filter.negation, GCompare.get(filter.compare), filter.junction));
                 }
             }
 

@@ -30,7 +30,8 @@ public abstract class ReadUserActivityAction<T> extends SystemExplicitAction {
         }
         Object writeObject = null;
         if (!objects.isEmpty()) {
-            writeObject = (objects.size() > 1 ? new JSONArray(objects) : objects.get(0)).toString();
+            // always writing JSON array for proper import into orders/filters form
+            writeObject = new JSONArray(objects);
         }
         filterEventProperty.change(writeObject, context.getSession());
     }

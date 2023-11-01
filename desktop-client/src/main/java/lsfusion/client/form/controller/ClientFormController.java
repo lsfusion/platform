@@ -83,6 +83,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.rmi.RemoteException;
+import java.text.ParseException;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -1529,8 +1530,15 @@ public class ClientFormController implements AsyncListener {
                     try {
                         compare = Compare.deserialize(filter.compare);
                     } catch (IOException ignored) {}
-                    
-                    props.add(FilterController.createNewCondition(gridController, new ClientFilter(propertyDraw), null, filter.value, filter.negation, compare, filter.junction));
+
+                    Object value = filter.value;
+                    if (filter.value instanceof String) {
+                        try {
+                            value = propertyDraw.baseType.parseString((String) filter.value);
+                        } catch (ParseException ignored) {
+                        }
+                    }
+                    props.add(FilterController.createNewCondition(gridController, new ClientFilter(propertyDraw), null, value, filter.negation, compare, filter.junction));
                 }
             }
             
