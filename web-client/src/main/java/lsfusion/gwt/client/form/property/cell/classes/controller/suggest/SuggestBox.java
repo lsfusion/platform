@@ -11,6 +11,7 @@ import lsfusion.gwt.client.base.BaseStaticImage;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.view.EventHandler;
+import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.base.view.popup.PopupMenuCallback;
 import lsfusion.gwt.client.base.view.popup.PopupMenuItemValue;
 import lsfusion.gwt.client.base.view.popup.PopupMenuPanel;
@@ -73,11 +74,14 @@ public abstract class SuggestBox {
         }
     }
 
-    public SuggestBox(SuggestOracle oracle, InputElement inputElement, Element parent, GCompletionType completionType, BiConsumer<PopupMenuItemValue, CommitReason> commitSelection) {
+    public SuggestBox(SuggestOracle oracle, InputElement inputElement, Element parent, ResizableComplexPanel attachContainer, GCompletionType completionType, BiConsumer<PopupMenuItemValue, CommitReason> commitSelection) {
         this.oracle = oracle;
         this.inputElement = inputElement;
 
         this.suggestionPopup = new PopupMenuPanel();
+
+        attachContainer.add(suggestionPopup);
+        parent.appendChild(suggestionPopup.getElement());
 
         this.completionType = completionType;
         this.commitSelection = commitSelection;

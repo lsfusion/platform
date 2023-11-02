@@ -17,6 +17,7 @@ import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.view.CopyPasteUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.FlexPanel;
+import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.base.view.popup.PopupMenuItemValue;
 import lsfusion.gwt.client.classes.data.GFormatType;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -101,7 +102,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
     private boolean started;
 
     @Override
-    public void start(EventHandler handler, Element parent, PValue oldValue) {
+    public void start(EventHandler handler, Element parent, ResizableComplexPanel attachContainer, PValue oldValue) {
 
         if(GMouseStroke.isChangeEvent(handler.event)) {
             Integer dialogInputActionIndex = property.getDialogInputActionIndex(actions);
@@ -150,7 +151,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
         }
 
         if (hasList) {
-            suggestBox = createSuggestBox(inputElement, parent);
+            suggestBox = createSuggestBox(inputElement, parent, attachContainer);
             
             // don't update suggestions if editing started with char key event. as editor text is empty on init - request is being sent twice
             // wait for editor key listener to catch the event
@@ -371,7 +372,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
         return suggestBox != null;
     }
 
-    private SuggestBox createSuggestBox(InputElement element, Element parent) {
+    private SuggestBox createSuggestBox(InputElement element, Element parent, ResizableComplexPanel attachContainer) {
         return new SuggestBox(new SuggestBox.SuggestOracle() {
             private Timer delayTimer;
             private SuggestBox.Request currentRequest; // current pending request
@@ -518,7 +519,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
                     item.style.minWidth = minWidth + "px";
                 });
             }-*/;
-        }, element, parent, completionType, (suggestion, commitReason) -> validateAndCommit(parent, true, commitReason)) {
+        }, element, parent, attachContainer, completionType, (suggestion, commitReason) -> validateAndCommit(parent, true, commitReason)) {
 
             @Override
             protected Widget createButtonsPanel(Element parent) {

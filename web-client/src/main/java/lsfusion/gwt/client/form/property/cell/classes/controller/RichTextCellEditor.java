@@ -4,6 +4,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
+import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.KeepCellEditor;
@@ -17,7 +18,7 @@ public class RichTextCellEditor extends ARequestValueCellEditor implements Reque
     }
 
     @Override
-    public void start(EventHandler handler, Element parent, PValue oldValue) {
+    public void start(EventHandler handler, Element parent, ResizableComplexPanel attachContainer, PValue oldValue) {
         this.oldValue = getEditorValue(parent);
 
         String value = handler != null ? checkStartEvent(handler.event, parent, null) : null;

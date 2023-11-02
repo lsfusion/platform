@@ -5,6 +5,7 @@ import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.view.EventHandler;
+import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.PValue;
@@ -43,7 +44,7 @@ public abstract class EditingForm extends FormContainer {
         }
 
         @Override
-        public void start(EventHandler handler, Element parent, PValue oldValue) {
+        public void start(EventHandler handler, Element parent, ResizableComplexPanel attachContainer, PValue oldValue) {
         }
     }
 

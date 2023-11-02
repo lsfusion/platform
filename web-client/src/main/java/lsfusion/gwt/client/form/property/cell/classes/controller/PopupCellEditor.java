@@ -7,6 +7,7 @@ import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
+import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
@@ -67,7 +68,7 @@ public interface PopupCellEditor extends RequestCellEditor {
         }
     }
     @Override
-    default void start(EventHandler handler, final Element parent, PValue oldValue) {
+    default void start(EventHandler handler, final Element parent, ResizableComplexPanel attachContainer, PValue oldValue) {
         setPopup(new PopupEditorDialogPanel(this, parent, removeBorder()));
     }
 

@@ -7,6 +7,7 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.FormButton;
+import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.base.view.ResizableVerticalPanel;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
@@ -63,8 +64,8 @@ public class ColorCellEditor extends PopupValueCellEditor {
     }
 
     @Override
-    public void start(EventHandler handler, Element parent, PValue oldValue) {
-        super.start(handler, parent, oldValue);
+    public void start(EventHandler handler, Element parent, ResizableComplexPanel attachContainer, PValue oldValue) {
+        super.start(handler, parent, attachContainer, oldValue);
 
         if (oldValue != null) {
             try {

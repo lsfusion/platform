@@ -7,6 +7,7 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
+import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
@@ -30,8 +31,8 @@ public abstract class PopupValueCellEditor extends WindowValueCellEditor impleme
     }
 
     @Override
-    public void start(EventHandler handler, Element parent, PValue oldValue) {
-        PopupCellEditor.super.start(handler, parent, oldValue);
+    public void start(EventHandler handler, Element parent, ResizableComplexPanel attachContainer, PValue oldValue) {
+        PopupCellEditor.super.start(handler, parent, attachContainer, oldValue);
         GwtClientUtils.showPopupInWindow(getPopup(), createPopupComponent(parent), parent.getAbsoluteLeft(), parent.getAbsoluteBottom());
     }
 
