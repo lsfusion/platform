@@ -271,7 +271,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return grid.recordView.getElement();
     }
 
-    private void hidePopup() {
+    protected void hidePopup() {
         hidePopup(popupObject);
 
         popupObject = null;
@@ -282,7 +282,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
     protected abstract void hidePopup(JavaScriptObject popup);
 
-    private JavaScriptObject popupObject;
+    protected JavaScriptObject popupObject;
     private P popupElementClicked = null;
     private GGroupObjectValue popupKey = null;
     private long popupRequestIndex = -2;
