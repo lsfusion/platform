@@ -39,6 +39,7 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
     public boolean negate;
     public Compare compare;
     public CompareInstance value;
+    public boolean wrappedContainsValue;
 
     public CompareFilterInstance(DataInputStream inStream, FormInstance form) throws IOException, SQLException, SQLHandledException {
         super(inStream,form);
@@ -48,11 +49,12 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
         junction = inStream.readBoolean();
     }
 
-    public CompareFilterInstance(PropertyObjectInstance<P> property, boolean resolveAdd, GroupObjectInstance toDraw, PropertyDrawInstance<P> propertyDraw, boolean negate, Compare compare, CompareInstance value) {
+    public CompareFilterInstance(PropertyObjectInstance<P> property, boolean resolveAdd, GroupObjectInstance toDraw, PropertyDrawInstance<P> propertyDraw, boolean negate, Compare compare, CompareInstance value, boolean wrappedContainsValue) {
         super(property, resolveAdd, toDraw, propertyDraw);
         this.negate = negate;
         this.compare = compare;
         this.value = value;
+        this.wrappedContainsValue = wrappedContainsValue;
     }
 
     private static CompareInstance deserializeCompare(DataInputStream inStream, FormInstance form, ValueClass valueClass) throws IOException, SQLException, SQLHandledException {

@@ -47,15 +47,20 @@ public class ReadFiltersAction extends ReadUserActivityAction<List<FilterInstanc
             if (propertyDraw != null) {
                 filterMap.put(UserActivityAction.PROPERTY_KEY, propertyDraw.getSID());
                 if (filter instanceof CompareFilterInstance) {
-                    filterMap.put(FilterAction.COMPARE_KEY, ((CompareFilterInstance<?>) filter).compare.toString());
-                    filterMap.put(FilterAction.NEGATION_KEY, ((CompareFilterInstance<?>) filter).negate);
-                    CompareInstance value = ((CompareFilterInstance<?>) filter).value;
-                    if (value instanceof ObjectValue) {
+                    CompareFilterInstance<?> cFilter = (CompareFilterInstance<?>) filter;
+                    filterMap.put(FilterAction.COMPARE_KEY, cFilter.compare.toString());
+                    filterMap.put(FilterAction.NEGATION_KEY, cFilter.negate);
+                    if (cFilter.value instanceof ObjectValue) {
                         // storing String because filter JSON may be imported into filters form
                         // and no cast to String is being done during import
-                        Object theValue = ((ObjectValue<?>) value).getValue();
+                        Object theValue = ((ObjectValue<?>) cFilter.value).getValue();
                         if (theValue != null) {
                             theValue = theValue.toString();
+                            
+                            // removing auto-added leading and trailing "%", otherwise they become visible to user
+                            if (cFilter.wrappedContainsValue) {
+                                theValue = FilterInstance.unwrapContains((String) theValue);
+                            }
                         }
                         filterMap.put(FilterAction.VALUE_KEY, theValue);
                     }
