@@ -1058,8 +1058,15 @@ public class GwtClientUtils {
         return null;
     }
 
+    private static String tippyAttribute = "data-tippy-root";
     public static Element getTippyParent(Element element) {
-        return getParentWithAttribute(element, "data-tippy-root");
+        while (element != null) {
+            if (element.hasAttribute(tippyAttribute)) {
+                return element;
+            }
+            element = element.getParentElement();
+        }
+        return null;
     }
 
     public static <T> ArrayList<T> removeLast(ArrayList<T> values) {

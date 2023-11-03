@@ -4,6 +4,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.RootPanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.object.table.TableContainer;
@@ -37,7 +38,7 @@ public abstract class GTippySimpleStateTableView extends GSimpleStateTableView<E
 
     @Override
     protected JavaScriptObject showPopup(Element popupElementClicked, Element popupElement) {
-        return showTippyPopup(popupElementClicked, popupElement);
+        return showTippyPopup(RootPanel.get().getElement(), popupElementClicked, popupElement);
     }
 
     @Override
@@ -45,8 +46,9 @@ public abstract class GTippySimpleStateTableView extends GSimpleStateTableView<E
         hideTippyPopup(popup);
     }
 
-    protected native JavaScriptObject showTippyPopup(Element popupElementClicked, Element popupElement)/*-{
+    protected native JavaScriptObject showTippyPopup(Element appendToElement, Element popupElementClicked, Element popupElement)/*-{
         var popup = $wnd.tippy(popupElementClicked, {
+            appendTo : appendToElement,
             content : popupElement,
             trigger : 'manual',
             interactive : true,
