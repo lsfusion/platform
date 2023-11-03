@@ -468,8 +468,8 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
                 (backgroundColor ? "linear-gradient(" + backgroundColor + "," + backgroundColor + "), " : "") +
                 "url(" + iconUrl + "); -webkit-mask-image:url(" + iconUrl + "); height:42px; width:42px;\"" +
                 " alt=\"\" tabindex=\"0\" " +
-                @lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder::COLUMN_ATTRIBUTE + "=\"true\" " +
-                @lsfusion.gwt.client.view.MainFrame::IGNORE_DBLCLICK_CHECK + "=\"true\">",
+                @lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder::COLUMN_ATTRIBUTE + " " +
+                @lsfusion.gwt.client.view.MainFrame::IGNORE_DBLCLICK_CHECK + ">",
             className: ''
         });
         marker.setIcon(myIcon);

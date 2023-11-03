@@ -1030,9 +1030,18 @@ public class GwtClientUtils {
         return value1 == null ? value2 : value1;
     }
 
-    public static Element getParentWithAttribute(Element element, String property) {
+    public static Element getParentWithNonEmptyAttribute(Element element, String property) {
         while (element != null) {
             if (!element.getAttribute(property).isEmpty()) {
+                return element;
+            }
+            element = element.getParentElement();
+        }
+        return null;
+    }
+    public static Element getParentWithAttribute(Element element, String property) {
+        while (element != null) {
+            if (element.hasAttribute(property)) {
                 return element;
             }
             element = element.getParentElement();
