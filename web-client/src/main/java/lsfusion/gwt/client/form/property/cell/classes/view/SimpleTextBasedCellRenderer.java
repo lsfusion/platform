@@ -86,10 +86,9 @@ public abstract class SimpleTextBasedCellRenderer extends CellRenderer {
         return property.createTextInputElement();
     }
 
-    public static InputElement getFocusEventTarget(Element parent, Event event, boolean isTagInput) {
+    public static InputElement getFocusEventTarget(Element parent, Event event) {
         InputElement inputElement = getSimpleInputElement(parent);
-        // !isTagInput check is required so that right-clicking on a panel property opens a context menu rather than starting editing.
-        return !isTagInput && (inputElement == event.getEventTarget().cast()) ? inputElement : null;
+        return inputElement == event.getEventTarget().cast() ? inputElement : null;
     }
 
     public static boolean isMultiLineInput(Element parent) {

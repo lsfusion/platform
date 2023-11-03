@@ -37,6 +37,37 @@
     background-color: transparent !important;
 }
 
+/*
+    do not show arrow in dropdown select lists when there is no focus
+    arrow in <select> element is background-image
+*/
+.remove-select-arrow.form-select:not(:focus-within):not(.input-active) {
+    /* bootstrap */
+    background-image: none;
+    /* excel */
+    -webkit-appearance: none;
+}
+
+/*
+    do not show arrow in  bootstrap multiple dropdown select when there is no focus
+    arrow in content in :after property
+*/
+.remove-select-arrow:not(.show):not(:focus):after {
+    content: none;
+}
+
+/*
+    do not show arrow in excel multiple dropdown select when there is no focus
+    arrow in <div> with ms-choice class
+*/
+.remove-select-arrow .ms-choice {
+    display: none;
+}
+
+.focused-cell .remove-select-arrow .ms-choice {
+    display: block;
+}
+
 .remove-all-p, .remove-all-p.modal-body {
     padding: 0 !important;
 }

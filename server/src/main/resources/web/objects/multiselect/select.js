@@ -301,6 +301,15 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
                 lsfUtils.setFocusElement(element, null);
                 lsfUtils.setReadonlyFnc(element, null);
             }
+
+            // allow to navigate in custom button group component in grid cell by pressed shift + left / right
+            // for some reason it doesn't work with ctrl button
+            if (isButton && _isInGrid(element))
+                options.addEventListener('keydown', function (e) {
+                    if (e.shiftKey && (e.keyCode === 39 || e.keyCode === 37))
+                        e.stopPropagation();
+                })
+
         }, update: function (element, controller, list, extraValue) {
             let isList = controller.isList();
             list = _convertList(isList, list);
@@ -432,7 +441,7 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
                     _setGroupReadonly(input, extraValue != null ? extraValue.readonly : null);
 
                     // fixes the problem of always setting the focus on the first select option in the grid cell
-                    if(input.checked)
+                    if(list[i].selected)
                         focusInput = input;
                 }
 
@@ -506,6 +515,7 @@ function _selectPicker(multi, html, shouldBeSelected) {
                             _changeSingleDropdownProperty(object, element)
                     }
                 })
+                selectElement.selectpicker('setStyle', 'remove-select-arrow')
             },
             multi, shouldBeSelected, html, true);
     } else {
@@ -514,6 +524,7 @@ function _selectPicker(multi, html, shouldBeSelected) {
                 let select = element.select;
                 $(select).multipleSelect({
                     container: 'body',
+                    classes: 'remove-select-arrow',
                     selectAll: false,
                     position: 'bottom', // todo. bottom is default, but at the bottom of the screen dropdown is hidden and need to be 'top'
                     // position: 'top',
@@ -566,7 +577,7 @@ function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBo
 
             element.select = select;
             if(!picker) {
-                select.classList.add("form-select");
+                select.classList.add("form-select", "remove-select-arrow");
                 _removeAllPMBInTD(element, select);
             }
 
@@ -591,6 +602,17 @@ function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBo
             }
 
             render(element);
+
+            // press on space button on dropdown element in grid-cell opens dropdown instead of adding a filter.
+            // both for multiple and single
+            element.addEventListener('keypress', function (e) {
+                if (e.keyCode === 32) {
+                    e.stopPropagation();
+                    //in excel theme picker space button does not opens dropdown
+                    if (!lsfUtils.useBootstrap() && picker)
+                        $(select).multipleSelect('open');
+                }
+            });
         },
         update: function (element, controller, list, extraValue) {
             element.controller = controller;

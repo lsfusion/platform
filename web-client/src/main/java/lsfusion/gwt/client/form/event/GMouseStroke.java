@@ -30,6 +30,9 @@ public class GMouseStroke {
     public static boolean isDblClickEvent(Event event) {
         return DBLCLICK.equals(event.getType()) && event.getButton() == NativeEvent.BUTTON_LEFT;
     }
+    public static boolean isRightClickEvent(Event event) {
+        return MOUSEDOWN.equals(event.getType()) && event.getButton() == NativeEvent.BUTTON_RIGHT;
+    }
     public static boolean isDblDownEvent(Event event) {
         return isDownEvent(event) && isDblEvent(event);
     }

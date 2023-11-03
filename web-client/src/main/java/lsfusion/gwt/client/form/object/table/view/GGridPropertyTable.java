@@ -220,8 +220,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         addFilterBinding(event::isEvent, pressed);
     }
     private void addFilterBinding(GFormController.BindingCheck event, GFormController.BindingExec pressed) {
-        form.addBinding(event, new GBindingEnv(null, null, null, GBindingMode.ONLY, GBindingMode.NO, null, null, null),
-                () -> getSelectedProperty() != null && !getSelectedProperty().getCellRenderer().isCustomRenderer(), pressed, tableContainer, groupObject);
+        form.addBinding(event, new GBindingEnv(null, null, null, GBindingMode.ONLY, GBindingMode.NO, null, null, null), null, pressed, tableContainer, groupObject);
     }
 
     public GFont getFont() {

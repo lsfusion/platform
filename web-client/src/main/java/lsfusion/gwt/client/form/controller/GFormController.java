@@ -339,6 +339,7 @@ public class GFormController implements EditManager {
 
         filterBox.setStyleName("filter-group-select");
         filterBox.addStyleName("form-select");
+        filterBox.addStyleName("remove-select-arrow");
 
         addFilterView(filterGroup, filterBox);
         if (filterGroup.defaultFilterIndex >= 0) {
@@ -2384,11 +2385,6 @@ public class GFormController implements EditManager {
                                        Consumer<EventHandler> onEdit, Consumer<EventHandler> onOuterEditAfter, Consumer<EventHandler> onCut,
                                        Consumer<EventHandler> onPaste, boolean panel, boolean customRenderer) {
 
-        // allow to navigate in custom button group component in grid cell by pressed shift + left / right
-        // for some reason it doesn't work with ctrl button
-        if (customRenderer && GKeyStroke.isCharNavigateHorzKeyEvent(handler.event) && handler.event.getShiftKey())
-            return;
-
         RequestCellEditor requestCellEditor = getRequestCellEditor();
         boolean isPropertyEditing = requestCellEditor != null && getEditElement() == renderElement;
         if(isPropertyEditing)
@@ -2422,6 +2418,12 @@ public class GFormController implements EditManager {
 
         if(handler.consumed)
             return;
+
+        // this check is required so that right-clicking on a panel property opens a context menu rather than starting editing.
+        if (GMouseStroke.isRightClickEvent(handler.event)) {
+            handler.consume();
+            return;
+        }
 
         if (!isPropertyEditing) { // if editor did not consume event, we don't want it to be handled by "renderer" since it doesn't exist
             onEdit.accept(handler);
