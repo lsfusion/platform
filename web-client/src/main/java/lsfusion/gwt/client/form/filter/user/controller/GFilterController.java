@@ -97,6 +97,12 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
         }
     }
     
+    private void hideControlsIfEmpty() {
+        if (conditionViews.isEmpty()) {
+            setControlsVisible(false);
+        }
+    }
+    
     public void setControlsVisible(boolean visible) {
         controlsVisible = visible;
 
@@ -255,12 +261,18 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
     public void removeCondition(GPropertyFilter condition) {
         removeConditionViewInner(condition);
 
+        hideControlsIfEmpty();
+        
         updateConditionsLastState();
 
         applyFilters(true, null);
     }
 
     public ArrayList<GFilterConditionView> removeAllConditionsWithoutApply() {
+        return removeAllConditionsWithoutApply(true);
+    }
+    
+    public ArrayList<GFilterConditionView> removeAllConditionsWithoutApply(boolean hideControls) {
         ArrayList<GFilterConditionView> changed = new ArrayList<>();
         for (GPropertyFilter filter : new LinkedHashMap<>(conditionViews).keySet()) {
             if (filter.isFixed()) {
@@ -271,8 +283,8 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
                 removeConditionViewInner(filter);
             }
         }
-        if (conditionViews.isEmpty()) {
-            setControlsVisible(false);
+        if (hideControls) {
+            hideControlsIfEmpty();
         }
         return changed;
     }
@@ -297,10 +309,6 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
         removeConditionView(filter);
         GFilterConditionView filterView = conditionViews.remove(filter);
         filterView.isRemoved = true;
-
-        if (conditionViews.isEmpty()) {
-            setControlsVisible(false);
-        }
     }
 
     private void updateConditionsLastState() {

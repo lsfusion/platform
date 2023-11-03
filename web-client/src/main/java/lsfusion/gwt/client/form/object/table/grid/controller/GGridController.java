@@ -675,14 +675,16 @@ public class GGridController extends GAbstractTableController {
 
     public void changeFilters(List<GPropertyFilter> filters) {
         if (filter.hasFiltersContainer()) {
-            // the only changeFilters() call is made when filters are initiated by server via FilterClientAction
-            // in this case we don't want focus to appear on some unexpected grid
-            boolean focusFirstComponent = false;
-            filter.resetAllConditions(focusFirstComponent);
+            // hide controls only if no filters are expected. otherwise leave controls visibility unchanged
+            filter.removeAllConditionsWithoutApply(filters.isEmpty());
+            
             for (GPropertyFilter iFilter : filters) {
                 filter.addCondition(iFilter, null, false, false, false);
             }
-            filter.applyFilters(focusFirstComponent, null);
+            
+            // the only changeFilters() call is made when filters are initiated by server via FilterClientAction
+            // in this case we don't want focus to appear on some unexpected grid
+            filter.applyFilters(false, null);
         }
     }
 

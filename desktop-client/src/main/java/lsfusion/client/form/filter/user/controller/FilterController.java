@@ -118,6 +118,12 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
         }
     }
     
+    private void hideControlsIfEmpty() {
+        if (conditionViews.isEmpty()) {
+            setControlsVisible(false);
+        }
+    }
+    
     public void setControlsVisible(boolean visible) {
         controlsVisible = visible;
 
@@ -252,15 +258,13 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
         layout.removeBaseComponent(condition.filter, conditionViews.get(condition));
         getFiltersContainer().removeFromChildren(condition.filter);
         conditionViews.remove(condition);
-        
-        if (conditionViews.isEmpty()) {
-            setControlsVisible(false);
-        }
     }
 
     @Override
     public void removeCondition(ClientPropertyFilter condition) {
         removeConditionView(condition);
+
+        hideControlsIfEmpty();
 
         updateConditionsLastState();
         
@@ -273,6 +277,16 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
     }
 
     public void resetAllConditions(boolean focusFirstComponent) {
+        removeAllConditionsWithoutApply();
+        
+        applyFilters(focusFirstComponent);
+    }
+
+    public void removeAllConditionsWithoutApply() {
+        removeAllConditionsWithoutApply(true);
+    }
+
+    public void removeAllConditionsWithoutApply(boolean hideControls) {
         for (ClientPropertyFilter filter : new LinkedHashMap<>(conditionViews).keySet()) {
             if (filter.isFixed()) {
                 conditionViews.get(filter).clearValueView();
@@ -281,10 +295,9 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
                 conditionViews.remove(filter);
             }
         }
-        if (conditionViews.isEmpty()) {
-            setControlsVisible(false);
+        if (hideControls) {
+            hideControlsIfEmpty();
         }
-        applyFilters(focusFirstComponent);
     }
 
     public void updateConditionsLastState() {
