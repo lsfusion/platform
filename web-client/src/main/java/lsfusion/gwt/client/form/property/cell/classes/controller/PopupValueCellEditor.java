@@ -31,8 +31,8 @@ public abstract class PopupValueCellEditor extends WindowValueCellEditor impleme
     }
 
     @Override
-    public void start(EventHandler handler, Element parent, ResizableComplexPanel attachContainer, PValue oldValue) {
-        PopupCellEditor.super.start(handler, parent, attachContainer, oldValue);
+    public void start(EventHandler handler, Element parent, PValue oldValue) {
+        PopupCellEditor.super.start(handler, parent, oldValue);
         GwtClientUtils.showPopupInWindow(getPopup(), createPopupComponent(parent), parent.getAbsoluteLeft(), parent.getAbsoluteBottom());
     }
 

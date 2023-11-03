@@ -25,7 +25,7 @@ public class LogicalCellEditor extends ARequestValueCellEditor implements KeepCe
     protected EditManager editManager;
 
     @Override
-    public void start(EventHandler handler, Element parent, ResizableComplexPanel attachContainer, PValue oldValue) {
+    public void start(EventHandler handler, Element parent, PValue oldValue) {
         MainFrame.preventDblClickAfterClick(parent);
 
         value = getNextValue(oldValue, threeState);

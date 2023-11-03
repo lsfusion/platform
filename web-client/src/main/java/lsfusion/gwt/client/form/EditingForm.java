@@ -44,7 +44,7 @@ public abstract class EditingForm extends FormContainer {
         }
 
         @Override
-        public void start(EventHandler handler, Element parent, ResizableComplexPanel attachContainer, PValue oldValue) {
+        public void start(EventHandler handler, Element parent, PValue oldValue) {
         }
     }
 

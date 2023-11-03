@@ -102,7 +102,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
     private boolean started;
 
     @Override
-    public void start(EventHandler handler, Element parent, ResizableComplexPanel attachContainer, PValue oldValue) {
+    public void start(EventHandler handler, Element parent, PValue oldValue) {
 
         if(GMouseStroke.isChangeEvent(handler.event)) {
             Integer dialogInputActionIndex = property.getDialogInputActionIndex(actions);
@@ -151,8 +151,8 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
         }
 
         if (hasList) {
-            suggestBox = createSuggestBox(inputElement, parent, attachContainer);
-            
+            suggestBox = createSuggestBox(inputElement, parent);
+
             // don't update suggestions if editing started with char key event. as editor text is empty on init - request is being sent twice
             // wait for editor key listener to catch the event
             // UPD: for now is reproducible only in panel properties
@@ -267,7 +267,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
 
         return isStringValid(firstPart + stringToAdd + secondPart);
     }
-    
+
     protected boolean isStringValid(String string) {
         try {
             tryParseInputText(string, false);
@@ -372,7 +372,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
         return suggestBox != null;
     }
 
-    private SuggestBox createSuggestBox(InputElement element, Element parent, ResizableComplexPanel attachContainer) {
+    private SuggestBox createSuggestBox(InputElement element, Element parent) {
         return new SuggestBox(new SuggestBox.SuggestOracle() {
             private Timer delayTimer;
             private SuggestBox.Request currentRequest; // current pending request
@@ -519,7 +519,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
                     item.style.minWidth = minWidth + "px";
                 });
             }-*/;
-        }, element, parent, attachContainer, completionType, (suggestion, commitReason) -> validateAndCommit(parent, true, commitReason)) {
+        }, element, parent, completionType, (suggestion, commitReason) -> validateAndCommit(parent, true, commitReason)) {
 
             @Override
             protected Widget createButtonsPanel(Element parent) {

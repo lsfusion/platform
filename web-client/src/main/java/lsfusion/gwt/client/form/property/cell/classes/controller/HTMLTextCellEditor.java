@@ -28,7 +28,7 @@ public class HTMLTextCellEditor extends RequestReplaceValueCellEditor {
     }
 
     @Override
-    public void start(EventHandler handler, Element parent, ResizableComplexPanel attachContainer, PValue oldValue) {
+    public void start(EventHandler handler, Element parent, PValue oldValue) {
         initAceEditor(parent, PValue.getStringValue(oldValue), colorThemeName);
     }
 

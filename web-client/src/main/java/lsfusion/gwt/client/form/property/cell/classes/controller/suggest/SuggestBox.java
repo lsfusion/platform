@@ -5,6 +5,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.BaseStaticImage;
@@ -12,7 +13,6 @@ import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.view.EventHandler;
-import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.base.view.popup.PopupMenuCallback;
 import lsfusion.gwt.client.base.view.popup.PopupMenuItemValue;
 import lsfusion.gwt.client.base.view.popup.PopupMenuPanel;
@@ -75,14 +75,14 @@ public abstract class SuggestBox {
         }
     }
 
-    public SuggestBox(SuggestOracle oracle, InputElement inputElement, Element parent, ResizableComplexPanel attachContainer, GCompletionType completionType, BiConsumer<PopupMenuItemValue, CommitReason> commitSelection) {
+    public SuggestBox(SuggestOracle oracle, InputElement inputElement, Element parent, GCompletionType completionType, BiConsumer<PopupMenuItemValue, CommitReason> commitSelection) {
         this.oracle = oracle;
         this.inputElement = inputElement;
 
         Element tippyParent = GwtClientUtils.getTippyParent(parent);
         this.suggestionPopup = new PopupMenuPanel(tippyParent);
         if(tippyParent != null) {
-            attachContainer.add(suggestionPopup);
+            RootPanel.get().add(suggestionPopup);
         }
 
         this.completionType = completionType;

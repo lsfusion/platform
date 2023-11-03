@@ -95,7 +95,7 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
     }
 
     @Override
-    public void start(EventHandler handler, Element parent, ResizableComplexPanel attachContainer, PValue oldValue) {
+    public void start(EventHandler handler, Element parent, PValue oldValue) {
         Event event;
         if(handler != null && GKeyStroke.isDropEvent(event = handler.event)) {
             drop(event, parent);

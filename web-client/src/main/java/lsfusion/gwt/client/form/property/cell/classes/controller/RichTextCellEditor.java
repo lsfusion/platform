@@ -18,7 +18,7 @@ public class RichTextCellEditor extends ARequestValueCellEditor implements Reque
     }
 
     @Override
-    public void start(EventHandler handler, Element parent, ResizableComplexPanel attachContainer, PValue oldValue) {
+    public void start(EventHandler handler, Element parent, PValue oldValue) {
         this.oldValue = getEditorValue(parent);
 
         String value = handler != null ? checkStartEvent(handler.event, parent, null) : null;

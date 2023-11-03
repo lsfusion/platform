@@ -68,7 +68,7 @@ public interface PopupCellEditor extends RequestCellEditor {
         }
     }
     @Override
-    default void start(EventHandler handler, final Element parent, ResizableComplexPanel attachContainer, PValue oldValue) {
+    default void start(EventHandler handler, final Element parent, PValue oldValue) {
         setPopup(new PopupEditorDialogPanel(this, parent, removeBorder()));
     }
 

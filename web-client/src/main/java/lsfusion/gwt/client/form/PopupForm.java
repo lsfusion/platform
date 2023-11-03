@@ -52,8 +52,8 @@ public class PopupForm extends EditingForm {
         }
 
         @Override
-        public void start(EventHandler handler, Element parent, ResizableComplexPanel attachContainer, PValue oldValue) {
-            PopupCellEditor.super.start(handler, parent, attachContainer, oldValue);
+        public void start(EventHandler handler, Element parent, PValue oldValue) {
+            PopupCellEditor.super.start(handler, parent, oldValue);
 
             Event event;
             if(handler != null && DataGrid.isMouseEvent(event = handler.event)) {

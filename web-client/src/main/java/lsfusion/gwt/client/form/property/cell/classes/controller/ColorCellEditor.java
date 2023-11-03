@@ -64,8 +64,8 @@ public class ColorCellEditor extends PopupValueCellEditor {
     }
 
     @Override
-    public void start(EventHandler handler, Element parent, ResizableComplexPanel attachContainer, PValue oldValue) {
-        super.start(handler, parent, attachContainer, oldValue);
+    public void start(EventHandler handler, Element parent, PValue oldValue) {
+        super.start(handler, parent, oldValue);
 
         if (oldValue != null) {
             try {
