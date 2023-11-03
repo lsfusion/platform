@@ -12,7 +12,6 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.view.FlexPanel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +37,12 @@ public class PopupMenuPanel extends ComplexPanel {
     private int topPosition = -1;
 
     public PopupMenuPanel() {
-        super();
+        this(null);
+    }
+
+    final Element parent;
+    public PopupMenuPanel(Element parent) {
+        this.parent = parent;
 
         setElement(createULElement());
         sinkEvents(Event.ONMOUSEDOWN | Event.ONMOUSEMOVE | Event.ONMOUSEOUT | Event.ONFOCUS | Event.ONKEYDOWN);
@@ -112,7 +116,7 @@ public class PopupMenuPanel extends ComplexPanel {
     public void show() {
         if (showing) {
             return;
-        } else if (isAttached()) {
+        } else if (parent == null && isAttached()) {
             // The popup is attached directly to another panel, so we need to remove
             // it from its parent before showing it. This is a weird use case, but
             // since PopupPanel is a Widget, its legal.
@@ -177,7 +181,7 @@ public class PopupMenuPanel extends ComplexPanel {
 
         if (LocaleInfo.getCurrentLocale().isRTL()) { // RTL case
 
-            int textBoxAbsoluteLeft = relativeObject.getAbsoluteLeft();
+            int textBoxAbsoluteLeft = parent != null ? (relativeObject.getAbsoluteLeft() - parent.getAbsoluteLeft()) : relativeObject.getAbsoluteLeft();
 
             // Right-align the popup. Note that this computation is
             // valid in the case where offsetWidthDiff is negative.
@@ -217,7 +221,7 @@ public class PopupMenuPanel extends ComplexPanel {
         } else { // LTR case
 
             // Left-align the popup.
-            left = relativeObject.getAbsoluteLeft();
+            left = parent != null ? (relativeObject.getAbsoluteLeft() - parent.getAbsoluteLeft()) : relativeObject.getAbsoluteLeft();
 
             // If the suggestion popup is not as wide as the text box, always align to
             // the left edge of the text box. Otherwise, figure out whether to
@@ -250,7 +254,7 @@ public class PopupMenuPanel extends ComplexPanel {
 
         // Calculate top position for the popup
 
-        int top = relativeObject.getAbsoluteTop();
+        int top = parent != null ? (relativeObject.getAbsoluteTop() - parent.getAbsoluteTop()) : relativeObject.getAbsoluteTop();
 
         // Make sure scrolling is taken into account, since
         // box.getAbsoluteTop() takes scrolling into account.
@@ -578,9 +582,17 @@ public class PopupMenuPanel extends ComplexPanel {
             if (topPosition != -1) {
                 setPopupPosition(leftPosition, topPosition);
             }
-            RootPanel.get().add(this);
+            if(parent != null) {
+                parent.appendChild(getElement());
+            } else {
+                RootPanel.get().add(this);
+            }
         } else {
-            RootPanel.get().remove(this);
+            if(parent != null) {
+                parent.removeChild(getElement());
+            } else {
+                RootPanel.get().remove(this);
+            }
         }
         getElement().getStyle().setProperty("overflow", "visible");
 

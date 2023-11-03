@@ -9,6 +9,7 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.BaseStaticImage;
 import lsfusion.gwt.client.base.FocusUtils;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
@@ -78,10 +79,11 @@ public abstract class SuggestBox {
         this.oracle = oracle;
         this.inputElement = inputElement;
 
-        this.suggestionPopup = new PopupMenuPanel();
-
-        attachContainer.add(suggestionPopup);
-        parent.appendChild(suggestionPopup.getElement());
+        Element tippyParent = GwtClientUtils.getTippyParent(parent);
+        this.suggestionPopup = new PopupMenuPanel(tippyParent);
+        if(tippyParent != null) {
+            attachContainer.add(suggestionPopup);
+        }
 
         this.completionType = completionType;
         this.commitSelection = commitSelection;
