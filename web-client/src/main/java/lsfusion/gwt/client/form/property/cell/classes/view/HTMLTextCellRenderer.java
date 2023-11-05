@@ -4,10 +4,7 @@ import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
-import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
-import lsfusion.gwt.client.form.property.cell.view.CustomCellRenderer;
-import lsfusion.gwt.client.form.property.cell.view.RenderContext;
-import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
+import lsfusion.gwt.client.form.property.cell.view.*;
 
 public class HTMLTextCellRenderer extends CellRenderer {
 
@@ -36,7 +33,7 @@ public class HTMLTextCellRenderer extends CellRenderer {
     }
 
     @Override
-    public String format(PValue value) {
+    public String format(PValue value, RendererType rendererType) {
         return getHTMLValue(value);
     }
 

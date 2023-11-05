@@ -9,12 +9,10 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.C
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
+import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-
-import java.util.function.Function;
 
 public class AsyncMapInputList<T extends PropertyInterface> {
 
@@ -30,7 +28,7 @@ public class AsyncMapInputList<T extends PropertyInterface> {
         return new InputList(actions.mapListValues(action -> action.map(context)).toArray(new InputListAction[actions.size()]), strict);
     }
 
-    public InputList map(ImRevMap<T, ObjectEntity> mapObjects, FormInstanceContext context, ActionOrProperty securityProperty, PropertyObjectEntity<?> drawProperty, GroupObjectEntity toDraw) {
+    public InputList map(ImRevMap<T, ObjectEntity> mapObjects, FormInstanceContext context, ActionOrProperty securityProperty, PropertyDrawEntity drawProperty, GroupObjectEntity toDraw) {
         return new InputList(actions.mapListValues(action -> action.map(mapObjects, context, securityProperty, drawProperty, toDraw)).toArray(new InputListAction[actions.size()]), strict).filter(context.securityPolicy, securityProperty);
     }
 

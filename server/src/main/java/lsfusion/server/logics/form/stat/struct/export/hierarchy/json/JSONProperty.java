@@ -44,6 +44,7 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
+import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.property.LazyProperty;
 import lsfusion.server.logics.property.Property;
@@ -230,7 +231,7 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
             }
 
             @Override
-            public AsyncEventExec map(ImRevMap<C, ObjectEntity> mapObjects, ConnectionContext context, ActionOrProperty securityProperty, PropertyObjectEntity<?> drawProperty, GroupObjectEntity toDraw) {
+            public AsyncEventExec map(ImRevMap<C, ObjectEntity> mapObjects, ConnectionContext context, ActionOrProperty securityProperty, PropertyDrawEntity<?> drawProperty, GroupObjectEntity toDraw) {
                 return new AsyncInput(type, null, null);
             }
 
@@ -272,7 +273,7 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
                     throw Throwables.propagate(e);
                 }
             }
-            return null;
+            return FlowResult.FINISH;
         }
 
         @Override

@@ -71,6 +71,4 @@ public abstract class ActionOrPropertyObjectEntity<P extends PropertyInterface, 
         else
             return new ActionObjectEntity<>((Action<I>) property, map, creationScript, creationPath, path);
     }
-
-    public abstract <X extends PropertyInterface> PropertyObjectEntity<?> getProperty(PropertyObjectEntity<X> readOnly, boolean isNative);
 }

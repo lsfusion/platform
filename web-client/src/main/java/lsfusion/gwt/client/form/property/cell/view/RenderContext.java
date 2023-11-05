@@ -9,4 +9,6 @@ public interface RenderContext {
 //    boolean isLoading();
 
     GFont getFont();
+
+    RendererType getRendererType();
 }

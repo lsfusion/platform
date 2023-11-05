@@ -426,11 +426,6 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     protected abstract ArrayList<T> getRows();
 
     public final void onBrowserEvent(Event event) {
-        // Ignore spurious events (such as onblur) while we refresh the table.
-        if (isResolvingState) {
-            return;
-        }
-
         Element target = getTargetAndCheck(getElement(), event);
         if(target == null)
             return;
@@ -444,15 +439,6 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         onGridBrowserEvent(target, event);
     }
 
-    public void onFocusBrowserEvent(Element target, Event event) {
-        // Ignore spurious events (such as onblur) while we refresh the table.
-        if (isResolvingState) {
-            return;
-        }
-
-        onGridBrowserEvent(target, event);
-    }
-
     public void onGridBrowserEvent(Element target, Event event) {
         // moved to GridContainerPanel
 //        String eventType = event.getType();
@@ -460,6 +446,11 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 //            onFocus();
 //        else if (BrowserEvents.BLUR.equals(eventType))
 //            onBlur(event);
+        // Ignore spurious events (such as onblur) while we refresh the table.
+        if (isResolvingState) {
+            assert BrowserEvents.BLUR.equals(event.getType());
+            return;
+        }
 
         // Find the cell where the event occurred.
         TableSectionElement tbody = getTableBodyElement();

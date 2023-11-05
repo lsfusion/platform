@@ -31,6 +31,7 @@ import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.GDateDTO;
 import lsfusion.gwt.client.form.property.cell.classes.GDateTimeDTO;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
+import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.view.Column;
 import lsfusion.interop.action.ServerResponse;
 
@@ -152,7 +153,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
                 GGroupObjectValue fullKey = key != null ? GGroupObjectValue.getFullKey(key, columnKey) : GGroupObjectValue.EMPTY;
 
-                rowValues.push(convertToJSValue(property, propValues.get(fullKey)));
+                rowValues.push(convertToJSValue(property, propValues.get(fullKey), RendererType.SIMPLE));
             }
         }
         rowValues.push(fromObject(key));
@@ -207,8 +208,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return GwtClientUtils.jsonParse((String)key);
     }
 
-    public static JavaScriptObject convertToJSValue(GPropertyDraw property, PValue value) {
-        return convertToJSValue(property.baseType, value);
+    public static JavaScriptObject convertToJSValue(GPropertyDraw property, PValue value, RendererType rendererType) {
+        return convertToJSValue(property.getRenderType(rendererType), value);
     }
 
     protected JsArray<JavaScriptObject> getCaptions(NativeHashMap<String, Column> columnMap, Predicate<GPropertyDraw> filter) {
@@ -326,7 +327,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         for (int i = 0; i < length; i++) {
             Column column = getColumn(columns[i]);
             properties[i] = column.property;
-            fullKeys[i] = GGroupObjectValue.getFullKey(getChangeObjects(objects[i]), column.columnKey);
+            fullKeys[i] = GGroupObjectValue.getFullKey(getJsObjects(objects[i]), column.columnKey);
             externalChanges[i] = true;
             PValue newValue = newValues[i];
             pushAsyncResults[i] = newValue == PValue.UNDEFINED ? null : new GPushAsyncInput(new GUserInputResult(newValue));
@@ -335,7 +336,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         Consumer<Long> onExec = changeRequestIndex -> {
             for (int i = 0; i < length; i++) {
                 GPropertyDraw property = properties[i];
-                if(newValues[i] != PValue.UNDEFINED && property.canUseChangeValueForRendering(property.getExternalChangeType())) { // or use the old value instead of the new value in that case
+                if(newValues[i] != PValue.UNDEFINED && property.canUseChangeValueForRendering(property.getExternalChangeType(), RendererType.SIMPLE)) { // or use the old value instead of the new value in that case
                     GGroupObjectValue fullKey = fullKeys[i];
                     form.pendingChangeProperty(property, fullKey, newValues[i], getValue(property, fullKey), changeRequestIndex);
                 }
@@ -373,7 +374,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     }
 
     protected Boolean isReadOnly(String property, JavaScriptObject object) {
-        return isReadOnly(property, getObjects(object)) ? false : null;
+        return isReadOnly(property, getJsObjects(object)) ? false : null;
     }
 
     protected String getValueElementClass(String property, GGroupObjectValue object) {
@@ -384,7 +385,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     }
 
     protected String getValueElementClass(String property, JavaScriptObject object) {
-        return getValueElementClass(property, getObjects(object));
+        return getValueElementClass(property, getJsObjects(object));
     }
 
     protected String getBackground(String property, GGroupObjectValue object) {
@@ -401,12 +402,23 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return getPlaceholder(column.property, object, column.columnKey);
     }
 
+    private JavaScriptObject getValue(String property, GGroupObjectValue groupObjectValue) {
+        Column column = getColumn(property);
+        if(column == null)
+            return null;
+        return convertToJSValue(column.property, getValue(column.property, GGroupObjectValue.getFullKey(groupObjectValue, column.columnKey)), RendererType.SIMPLE);
+    }
+
     protected String getBackground(String property, JavaScriptObject object) {
-        return getBackground(property, getObjects(object));
+        return getBackground(property, getJsObjects(object));
     }
 
     protected String getPlaceholder(String property, JavaScriptObject object) {
-        return getPlaceholder(property, getObjects(object));
+        return getPlaceholder(property, getJsObjects(object));
+    }
+
+    protected JavaScriptObject getValue(String property, JavaScriptObject object) {
+        return getValue(property, getJsObjects(object));
     }
 
     protected String getForeground(String property, GGroupObjectValue object) {
@@ -417,19 +429,19 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     }
 
     protected String getForeground(String property, JavaScriptObject object) {
-        return getForeground(property, getObjects(object));
+        return getForeground(property, getJsObjects(object));
     }
 
     protected boolean isCurrentObjectKey(JavaScriptObject object){
-        return isCurrentKey(getObjects(object));
+        return isCurrentKey(getJsObjects(object));
     }
 
     public static boolean isChangeObject(JavaScriptObject object) {
         return hasKey(object, objectsFieldName) || toObject(object) instanceof GGroupObjectValue;
     }
 
-    // change key can be outside view window, and can be obtained from getAsyncValues for example
-    protected GGroupObjectValue getChangeObjects(JavaScriptObject object) {
+    // key can be obtained from getAsyncValues for example, and not passed at all
+    protected GGroupObjectValue getJsObjects(JavaScriptObject object) {
         if(object == null)
             return getSelectedKey();
         if(hasKey(object, objectsFieldName))
@@ -489,12 +501,6 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     private void setViewFilters(int pageSize, GPropertyFilter... filters) {
         form.setViewFilters(Arrays.stream(filters).collect(Collectors.toCollection(ArrayList::new)), pageSize);
         setPageSize(pageSize);
-    }
-
-    private String getPropertyJsValue(String property) {
-        Column column = getColumn(property);
-        Object value = column != null ? getJsValue(column.property, getSelectedKey(), column.columnKey) : null;
-        return value != null ? value.toString() : null;
     }
 
     protected void getAsyncValues(String property, String value, JavaScriptObject successCallBack, JavaScriptObject failureCallBack) {
@@ -751,6 +757,9 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             getPlaceholder: function (property, object) {
                 return thisObj.@GSimpleStateTableView::getPlaceholder(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
             },
+            getValue: function (property, object) {
+                return thisObj.@GSimpleStateTableView::getValue(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
+            },
             changeObject: function (object, rendered, elementClicked) {
                 if(rendered === undefined)
                     rendered = false;
@@ -764,14 +773,11 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             setBooleanViewFilter: function (property, pageSize) {
                 thisObj.@GSimpleStateTableView::setBooleanViewFilter(*)(property, pageSize);
             },
-            getCurrentDay: function (propertyName) {
-                return thisObj.@GSimpleStateTableView::getPropertyJsValue(*)(propertyName);
-            },
             getGroupObjectBackgroundColor: function(object) {
                 var color = object.color;
                 if (color)
                     return color.toString();
-                return thisObj.@GStateTableView::getRowBackgroundColor(*)(thisObj.@GSimpleStateTableView::getObjects(*)(object));
+                return thisObj.@GStateTableView::getRowBackgroundColor(*)(thisObj.@GSimpleStateTableView::getJsObjects(*)(object));
             },
             getDisplayBackgroundColor: function (color, isCurrent) {
                 return @lsfusion.gwt.client.base.view.ColorUtils::getThemedColor(Ljava/lang/String;)(color);
@@ -780,7 +786,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                 return @lsfusion.gwt.client.base.view.ColorUtils::getThemedColor(Ljava/lang/String;)(color);
             },
             getGroupObjectForegroundColor: function(object) {
-                return thisObj.@GStateTableView::getRowForegroundColor(*)(thisObj.@GSimpleStateTableView::getObjects(*)(object));
+                return thisObj.@GStateTableView::getRowForegroundColor(*)(thisObj.@GSimpleStateTableView::getJsObjects(*)(object));
             },
             getValues: function (property, value, successCallback, failureCallback) {
                 return this.getPropertyValues(property, value, successCallback, failureCallback);

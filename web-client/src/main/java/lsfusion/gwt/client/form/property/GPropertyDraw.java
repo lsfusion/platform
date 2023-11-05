@@ -29,6 +29,7 @@ import lsfusion.gwt.client.form.property.cell.classes.view.SimpleTextBasedCellRe
 import lsfusion.gwt.client.form.property.cell.controller.ExecuteEditContext;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.CustomCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyValueController;
 import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
@@ -84,7 +85,30 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public boolean isList;
 
-    public GType baseType;
+    public GType getCellType() {
+        return cellType;
+    }
+
+    public GType getValueType() {
+        return valueType;
+    }
+
+    public GType getRenderType(RendererType type) {
+        if(type == RendererType.CELL)
+            return getCellType();
+        else
+            return getValueType();
+    }
+    public GType getPasteType() {
+        return getValueType();
+    }
+    public GType getEventType() {
+        return getCellType();
+    }
+
+    public GType cellType;
+    public GType valueType;
+    public boolean differentValue;
     public String pattern;
     public String defaultPattern;
     public GClass returnClass;
@@ -105,7 +129,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     public GType getFilterBaseType() {
-        return getDefaultCompare().escapeSeparator() ? baseType.getFilterMatchType() : baseType;
+        GType filterType = getRenderType(RendererType.FILTER);
+        return getDefaultCompare().escapeSeparator() ? filterType.getFilterMatchType() : filterType;
     }
 
     public GType getChangeType() {
@@ -255,15 +280,11 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         if(!hasChangeAction)
             return false;
 
-        if (isHtmlText())
+        if (getEventType() instanceof GHTMLTextType)
             return externalChangeType instanceof GHTMLTextType;
 
         // if custom render change is the input of some type, then probably it is a programmatic change (i.e. custom renderer uses changeValue to set this value, and should not be replaced with the input)
         return customRenderFunction == null || externalChangeType == null;
-    }
-
-    public boolean isCustom() {
-        return customRenderFunction != null;
     }
 
     public boolean disableInputList;
@@ -284,7 +305,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     public GCompare[] getFilterCompares() {
-        return baseType.getFilterCompares();
+        return getRenderType(RendererType.FILTER).getFilterCompares();
     }
 
     public boolean hasStaticImage() {
@@ -372,7 +393,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public boolean hide;
 
     private transient CellRenderer cellRenderer;
-    
+    private transient CellRenderer valueRenderer;
+
     public boolean notNull;
 
     public boolean sticky;
@@ -511,41 +533,50 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     public boolean isFilterChange(Event editEvent, Result<Boolean> contextAction) {
-        return GEditBindingMap.isDefaultFilterChange(editEvent, contextAction, baseType.getEditEventFilter());
+        return GEditBindingMap.isDefaultFilterChange(editEvent, contextAction, getRenderType(RendererType.FILTER).getEditEventFilter());
     }
 
     public GPropertyDraw(){}
 
     public PanelRenderer createPanelRenderer(GFormController form, ActionOrPropertyValueController controller, GGroupObjectValue columnKey, Result<CaptionWidget> captionContainer) {
-        return baseType.createPanelRenderer(form, controller, this, columnKey, captionContainer);
+        return getRenderType(RendererType.PANEL).createPanelRenderer(form, controller, this, columnKey, captionContainer);
     }
 
     public boolean isAction() {
-        return baseType instanceof GActionType;
+        return getValueType() instanceof GActionType;
     }
 
-    public boolean isBoolean() {
-        return baseType instanceof GLogicalType;
+    public boolean isPanelBoolean() {
+        return getRenderType(RendererType.PANEL) instanceof GLogicalType;
     }
 
-    public boolean isHtmlText() {
-        return baseType instanceof GHTMLTextType;
-    }
-
-    public CellRenderer getCellRenderer() {
-        if (cellRenderer == null) {
-            if (customRenderFunction != null) {
-                cellRenderer = new CustomCellRenderer(this, customRenderFunction);
-            } else {
-                cellRenderer = baseType.createCellRenderer(this);
+    public CellRenderer getCellRenderer(RendererType rendererType) {
+        if(rendererType == RendererType.CELL || !differentValue) {
+            if (cellRenderer == null) {
+                cellRenderer = createCellRenderer(rendererType, false);
             }
+            return cellRenderer;
+        } else {
+            if (valueRenderer == null)
+                valueRenderer = createCellRenderer(rendererType, true);
+            return valueRenderer;
         }
-        return cellRenderer;
+    }
+
+    public boolean isCustom(RendererType rendererType) {
+        return getCellRenderer(rendererType) instanceof CustomCellRenderer;
+    }
+
+    private CellRenderer createCellRenderer(RendererType rendererType, boolean noCustom) {
+        if (customRenderFunction != null && !noCustom) // we don't want custom renderer if value type differs from the cell type
+            return new CustomCellRenderer(this, customRenderFunction);
+
+        return getRenderType(rendererType).createCellRenderer(this);
     }
 
     public void setUserPattern(String pattern) {
-        if(baseType instanceof GFormatType)
-            this.pattern = pattern != null ? pattern : defaultPattern;
+//        if(baseType instanceof GFormatType)
+        this.pattern = pattern != null ? pattern : defaultPattern;
     }
 
     public PValue parsePaste(String s, GType parseType) {
@@ -561,8 +592,9 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         }
     }
 
-    public boolean canUseChangeValueForRendering(GType type) {
-        return type != null && baseType.getClass() == type.getClass() && !(baseType instanceof GJSONType) && !(baseType instanceof GFileType);
+    public boolean canUseChangeValueForRendering(GType type, RendererType rendererType) {
+        GType renderType = getRenderType(rendererType);
+        return type != null && renderType.getClass() == type.getClass() && !(renderType instanceof GJSONType) && !(renderType instanceof GFileType);
     }
 
     public String getPanelCaption(String caption) {
@@ -684,19 +716,19 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public boolean isFlex() {
         return flex == -2 || super.isFlex();
     }
-    public double getFlex() {
+    public double getFlex(RendererType rendererType) {
         if (flex == -2) {
-            return getValueWidth(null, true, false).getValueFlexSize();
+            return getValueWidth(null, true, false, rendererType).getValueFlexSize();
         }
-        return super.getFlex();
+        return super.getFlex(rendererType);
     }
 
     public boolean isPanelCaptionLast() {
-        return panelCaptionLast != null ? panelCaptionLast : (isBoolean() && !panelCaptionVertical);
+        return panelCaptionLast != null ? panelCaptionLast : (isPanelBoolean() && !panelCaptionVertical);
     }
 
     public boolean isPanelCommentFirst() {
-        return panelCommentFirst != null ? panelCommentFirst : (isBoolean() && !panelCommentVertical);
+        return panelCommentFirst != null ? panelCommentFirst : (isPanelBoolean() && !panelCommentVertical);
     }
 
     public GFlexAlignment getPanelCaptionAlignment() {
@@ -704,7 +736,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     public GFlexAlignment getPanelValueAlignment() {
-        return baseType instanceof GLogicalType && isTagInput() ? GFlexAlignment.CENTER : GFlexAlignment.STRETCH; // we don't want to stretch input, since it's usually has fixed size
+        return getRenderType(RendererType.PANEL) instanceof GLogicalType && isTagInput() ? GFlexAlignment.CENTER : GFlexAlignment.STRETCH; // we don't want to stretch input, since it's usually has fixed size
     }
 
     public GFlexAlignment getPanelCommentAlignment() {
@@ -715,7 +747,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return alignment;
     }
     
-    public Style.TextAlign getHorzTextAlignment() {
+    public Style.TextAlign getHorzTextAlignment(RendererType rendererType) {
         if (valueAlignment != null) {
             switch (valueAlignment) {
                 case START:
@@ -727,15 +759,15 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
                     return Style.TextAlign.RIGHT;
             }
         }
-        return baseType.getHorzTextAlignment();
+        return getRenderType(rendererType).getHorzTextAlignment();
     }
 
-    public String getVertTextAlignment(boolean isInput) {
-        return baseType.getVertTextAlignment(isInput);
+    public String getVertTextAlignment(boolean isInput, RendererType rendererType) {
+        return getRenderType(rendererType).getVertTextAlignment(isInput);
     }
 
-    public InputElement createTextInputElement() {
-        InputElement inputElement = baseType.createTextInputElement();
+    public InputElement createTextInputElement(RendererType rendererType) {
+        InputElement inputElement = getRenderType(rendererType).createTextInputElement();
         inputElement.addClassName("prop-input");
         inputElement.addClassName("form-control");
         return inputElement;
@@ -764,8 +796,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     // not null
     // padding has to be included for grid column for example, and not for panel property (since flex, width, min-width, etc. doesn't include padding)
-    public GSize getValueWidthWithPadding(GFont parentFont) {
-        return getValueWidth(parentFont, true, true).add(getCellRenderer().getWidthPadding() * 2);
+    public GSize getValueWidthWithPadding(GFont parentFont, RendererType rendererType) {
+        return getValueWidth(parentFont, true, true, rendererType).add(getCellRenderer(rendererType).getWidthPadding() * 2);
     }
 
     public boolean hasAutoSize() {
@@ -773,25 +805,25 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     // not null
-    public GSize getValueWidth(GFont parentFont, boolean needNotNull, boolean globalCaptionIsDrawn) {
+    public GSize getValueWidth(GFont parentFont, boolean needNotNull, boolean globalCaptionIsDrawn, RendererType rendererType) {
         if (valueWidth >= 0)
             return GSize.getValueSize(valueWidth);
 
         if(!needNotNull && valueWidth == -1 && charWidth == 0)
             return null;
 
-        return baseType.getValueWidth(getFont(parentFont), this, needNotNull, globalCaptionIsDrawn);
+        return getRenderType(rendererType).getValueWidth(getFont(parentFont), this, needNotNull, globalCaptionIsDrawn);
     }
 
     // not null
-    public GSize getValueHeight(GFont parentFont, boolean needNotNull, boolean globalCaptionIsDrawn) {
+    public GSize getValueHeight(GFont parentFont, boolean needNotNull, boolean globalCaptionIsDrawn, RendererType rendererType) {
         if (valueHeight >= 0)
             return GSize.getValueSize(valueHeight);
 
         if(!needNotNull && valueHeight == -1 && charHeight == 0)
             return null;
 
-        return baseType.getValueHeight(getFont(parentFont), this, needNotNull, globalCaptionIsDrawn);
+        return getRenderType(rendererType).getValueHeight(getFont(parentFont), this, needNotNull, globalCaptionIsDrawn);
     }
 
     private GFont getFont(GFont parentFont) {
@@ -826,8 +858,9 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return getCaptionHeight();
     }
 
-    public GFormatType getFormatType() {
-        return (baseType instanceof GObjectType ? GLongType.instance : ((GFormatType)baseType));
+    public GFormatType getFormatType(RendererType rendererType) {
+        GType renderType = getRenderType(rendererType);
+        return (renderType instanceof GObjectType ? GLongType.instance : ((GFormatType) renderType));
     }
 
     public LinkedHashMap<String, String> getContextMenuItems() {
@@ -852,6 +885,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     @Override
     public boolean isDefautAlignCaption() {
-        return caption != null && !hasColumnGroupObjects() && (!isAction() && (!panelCaptionVertical && !isBoolean()) || isTab());
+        return caption != null && !hasColumnGroupObjects() && (!isAction() && (!panelCaptionVertical && !isPanelBoolean()) || isTab());
     }
 }

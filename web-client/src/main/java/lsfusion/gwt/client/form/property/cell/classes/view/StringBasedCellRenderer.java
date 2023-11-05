@@ -1,11 +1,10 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.form.property.cell.view.RendererType;
 
 import static lsfusion.gwt.client.base.GwtSharedUtils.multiplyString;
 
@@ -22,7 +21,7 @@ public abstract class StringBasedCellRenderer extends SimpleTextBasedCellRendere
     }
 
     @Override
-    public String format(PValue value) {
+    public String format(PValue value, RendererType rendererType) {
         if (echoSymbols)
             return multiplyString(EscapeUtils.UNICODE_BULLET, 6);
 

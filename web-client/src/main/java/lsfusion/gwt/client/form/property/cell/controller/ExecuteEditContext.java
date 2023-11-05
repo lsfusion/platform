@@ -11,6 +11,6 @@ public interface ExecuteEditContext extends EditContext {
     void trySetFocusOnBinding();
 
     default boolean canUseChangeValueForRendering(GType type) {
-        return getProperty().canUseChangeValueForRendering(type);
+        return getProperty().canUseChangeValueForRendering(type, getRenderContext().getRendererType());
     }
 }

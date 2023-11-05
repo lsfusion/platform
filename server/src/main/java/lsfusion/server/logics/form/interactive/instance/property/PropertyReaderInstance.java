@@ -5,6 +5,12 @@ import lsfusion.server.physics.admin.profiler.ProfiledObject;
 public interface PropertyReaderInstance extends ProfiledObject {
 
     PropertyObjectInstance getReaderProperty();
+    default PropertyObjectInstance getCellProperty() {
+        return getReaderProperty();
+    }
+    default PropertyObjectInstance getGroupProperty() { // PIVOT
+        return getReaderProperty();
+    }
 
     byte getTypeID();
 

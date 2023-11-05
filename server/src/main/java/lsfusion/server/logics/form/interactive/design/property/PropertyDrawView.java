@@ -1,5 +1,6 @@
 package lsfusion.server.logics.form.interactive.design.property;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -157,8 +158,20 @@ public class PropertyDrawView extends BaseComponentView {
         return entity.getIntegrationSID();
     }
 
-    public Type getType(FormInstanceContext context) {
-        return entity.getType(context);
+    public Type getAssertCellType(FormInstanceContext context) {
+        return entity.getAssertCellType(context);
+    }
+
+    public Type getAssertValueType(FormInstanceContext context) {
+        return entity.getAssertValueProperty(context).getType();
+    }
+
+    public boolean isDifferentValue(FormInstanceContext context) {
+        return entity.isDifferentValue(context);
+    }
+
+    public Type getFilterType(FormInstanceContext context) {
+        return entity.getFilterProperty(context).getType();
     }
 
     public boolean isProperty(FormInstanceContext context) {
@@ -262,7 +275,7 @@ public class PropertyDrawView extends BaseComponentView {
 
         if (isProperty(context)) {
             String tag = getTag(context);
-            if (tag != null && tag.equals("a") && getType(context) instanceof StringClass)
+            if (tag != null && tag.equals("a") && getAssertValueType(context) instanceof StringClass)
                 return LocalizedString.create("{form.renderer.not.defined}");
         }
 
@@ -342,7 +355,7 @@ public class PropertyDrawView extends BaseComponentView {
         if(!isProperty(context))
             return false;
 
-        if(entity.getAssertProperty(context).isValueUnique(entity.getToDraw(context.entity), Property.ValueUniqueType.STICKY))
+        if(entity.getAssertValueProperty(context).isValueUnique(entity.getToDraw(context.entity), Property.ValueUniqueType.STICKY))
             return true;
 
         if(ThreadLocalContext.getBaseLM().isRecognize(entity.getInheritedProperty()))
@@ -489,15 +502,21 @@ public class PropertyDrawView extends BaseComponentView {
 
         //entity часть
         if(isProperty(pool.context)) {
-            Type type = getType(pool.context);
+            Type cellType = getAssertCellType(pool.context);
             // however this hack helps only in some rare cases, since baseType is used in a lot of places
-            if(type == null) // temporary hack, will not be needed when expression will be automatically patched with "IS Class"
-                type = IntegerClass.instance;
-            TypeSerializer.serializeType(outStream, type);
+            if(cellType == null) // temporary hack, will not be needed when expression will be automatically patched with "IS Class"
+                cellType = IntegerClass.instance;
+            TypeSerializer.serializeType(outStream, cellType);
         } else {
             outStream.writeByte(1);
             outStream.writeByte(DataType.ACTION);
         }
+
+        // optimization
+        boolean differentValue = isDifferentValue(pool.context);
+        outStream.writeBoolean(differentValue);
+        if(differentValue)
+            TypeSerializer.serializeType(outStream, getAssertValueType(pool.context));
 
         pool.writeString(outStream, getTag(pool.context));
         pool.writeString(outStream, getValueElementClass(pool.context));
@@ -527,8 +546,8 @@ public class PropertyDrawView extends BaseComponentView {
         ActionOrProperty inheritedProperty = entity.getInheritedProperty();
         outStream.writeBoolean(inheritedProperty instanceof Property && ((Property<?>) inheritedProperty).disableInputList);
 
-        ActionOrPropertyObjectEntity<?, ?> debug = entity.getDebugActionOrProperty(pool.context); // only for tooltip
-        ActionOrProperty<?> debugBinding = entity.getDebugBindingProperty(); // only for tooltip
+        ActionOrPropertyObjectEntity<?, ?> debug = entity.getReflectionActionOrProperty(); // only for tooltip
+        ActionOrProperty<?> debugBinding = entity.getReflectionBindingProperty(); // only for tooltip
 
         pool.writeString(outStream, debugBinding.getNamespace());
         pool.writeString(outStream, getSID());
@@ -581,7 +600,7 @@ public class PropertyDrawView extends BaseComponentView {
             }
         }
 
-        if(debug instanceof PropertyObjectEntity) {
+        if(isProperty(pool.context)) {
             ValueClass valueClass = ((PropertyObjectEntity<?>) debug).property.getValueClass(ClassType.formPolicy);
             outStream.writeBoolean(valueClass != null);
             if(valueClass != null)
@@ -704,7 +723,7 @@ public class PropertyDrawView extends BaseComponentView {
             return defaultCompare;
 
         if(isProperty(context)) {
-            Type type = getType(context);
+            Type type = getFilterType(context);
             if (type != null) {
                 return type.getDefaultCompare();
             }
@@ -784,14 +803,14 @@ public class PropertyDrawView extends BaseComponentView {
         if(valueFlex != null)
             return valueFlex;
         Type type;
-        return isProperty(context) && (type = getType(context)) != null && type.isFlex();
+        return isProperty(context) && (type = getAssertCellType(context)) != null && type.isFlex();
     }
 
     public boolean isHorizontalValueShrink(FormInstanceContext context) {
 //        if(valueFlex != null)
 //            return valueFlex;
         Type type;
-        return isProperty(context) && (type = getType(context)) != null && type.isFlex();
+        return isProperty(context) && (type = getAssertCellType(context)) != null && type.isFlex();
     }
 
     public boolean isDefaultShrinkOverflowVisible(FormInstanceContext context) {
@@ -845,7 +864,7 @@ public class PropertyDrawView extends BaseComponentView {
         if(pattern != null) {
             if(!formatCalculated) {
                 if(isProperty(context)) {
-                    Type type = getType(context);
+                    Type type = getAssertValueType(context);
                     if (type instanceof IntegralClass) {
                         format = new DecimalFormat(pattern);
                     } else if (type instanceof DateClass || type instanceof TimeClass || type instanceof DateTimeClass) {
@@ -865,7 +884,7 @@ public class PropertyDrawView extends BaseComponentView {
             return changeOnSingleClick;
 
         if(isProperty(context)) {
-            if (getType(context) instanceof LogicalClass)
+            if (getAssertCellType(context) instanceof LogicalClass)
                 return Settings.get().getChangeBooleanOnSingleClick();
         } else
             return Settings.get().getChangeActionOnSingleClick();
@@ -875,7 +894,7 @@ public class PropertyDrawView extends BaseComponentView {
 
     public FlexAlignment getValueAlignment(FormInstanceContext context) {
         if (valueAlignment == null && isProperty(context)) {
-            Type type = getType(context);
+            Type type = getAssertValueType(context);
             if(type != null)
                 return type.getValueAlignment();
             return FlexAlignment.START;
@@ -896,7 +915,7 @@ public class PropertyDrawView extends BaseComponentView {
 
         Type changeType = getChangeType(context, false);
         if (isProperty(context)) {
-            Type type = getType(context);
+            Type type = getAssertCellType(context);
             if((type != null && changeType != null && type.getCompatible(changeType) != null &&
                     type.useInputTag(!entity.isList(context), context.useBootstrap, hasBackground())))
                 return "input";
@@ -939,7 +958,7 @@ public class PropertyDrawView extends BaseComponentView {
     @Override
     protected String getDefaultElementClass(FormInstanceContext context) {
         if(isProperty(context)) {
-            Type type = getType(context);
+            Type type = getAssertCellType(context);
             if (type instanceof LogicalClass && entity.isPredefinedSwitch())
                 return "form-switch";
         }
@@ -991,7 +1010,7 @@ public class PropertyDrawView extends BaseComponentView {
         if(!isProperty(context))
             return true;
 
-        Type type = getType(context);
+        Type type = getAssertCellType(context);
         if(type != null)
             return type.hasToolbar(!entity.isList(context) && isTagInput(context));
 

@@ -76,7 +76,7 @@ public class CustomCellRenderer extends CellRenderer {
 
     @Override
     public boolean updateContent(Element element, PValue value, Object extraValue, UpdateContext updateContext) {
-        JavaScriptObject renderValue = GSimpleStateTableView.convertToJSValue(property, value);
+        JavaScriptObject renderValue = GSimpleStateTableView.convertToJSValue(property, value, updateContext.getRendererType());
         setRendererValue(customRenderer, element, getController(property, updateContext, element), renderValue, extraValue != null ? ((ExtraValue) extraValue).getJsObject() : null);
 
         return false;
@@ -99,7 +99,7 @@ public class CustomCellRenderer extends CellRenderer {
     }-*/;
 
     @Override
-    public String format(PValue value) {
+    public String format(PValue value, RendererType rendererType) {
         return PValue.getStringValue(value);
     }
 
@@ -109,13 +109,17 @@ public class CustomCellRenderer extends CellRenderer {
 
     protected static void changeValue(Element element, UpdateContext updateContext, JavaScriptObject value, GPropertyDraw property, JavaScriptObject renderValueSupplier) {
         GType externalChangeType = property.getExternalChangeType();
+        RendererType rendererType = updateContext.getRendererType();
 
-        boolean canUseChangeValueForRendering = renderValueSupplier != null || property.canUseChangeValueForRendering(externalChangeType);
+        boolean canUseChangeValueForRendering = renderValueSupplier != null || property.canUseChangeValueForRendering(externalChangeType, rendererType);
         if(!canUseChangeValueForRendering) // to break a recursion when there are several changes in update
             rerenderState(element, false);
 
         updateContext.changeProperty(GSimpleStateTableView.convertFromJSUndefValue(externalChangeType, value),
-                renderValueSupplier != null ? (oldValue, changeValue) -> GSimpleStateTableView.convertFromJSValue(property.baseType, GwtClientUtils.call(renderValueSupplier, GSimpleStateTableView.convertToJSValue(property.baseType, oldValue))) : null);
+                renderValueSupplier != null ? (oldValue, changeValue) -> {
+                    GType renderType = property.getRenderType(rendererType);
+                    return GSimpleStateTableView.convertFromJSValue(renderType, GwtClientUtils.call(renderValueSupplier, GSimpleStateTableView.convertToJSValue(renderType, oldValue)));
+                } : null);
 
         // if we don't use change value for rendering, and the renderer is interactive (it's state can be changed without notifying the element)
         // there might be a problem that this change might be grouped with the another change that will change the state to the previous value, but update won't be called (because of caching), which is usually an "unexpected behaviour"

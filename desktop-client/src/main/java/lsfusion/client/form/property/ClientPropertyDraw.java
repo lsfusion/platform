@@ -85,8 +85,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public boolean isList;
 
-    // символьный идентификатор, нужен для обращению к свойствам в печатных формах
-    public ClientType baseType;
+    public ClientType baseType; // cellType
+    public ClientType valueType;
     public ClientClass returnClass;
 
     public String tag;
@@ -622,6 +622,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         hide = inStream.readBoolean();
 
         baseType = ClientTypeSerializer.deserializeClientType(inStream);
+        if(inStream.readBoolean())
+            valueType = ClientTypeSerializer.deserializeClientType(inStream);
 
         tag = pool.readString(inStream);
         valueElementClass = pool.readString(inStream);
