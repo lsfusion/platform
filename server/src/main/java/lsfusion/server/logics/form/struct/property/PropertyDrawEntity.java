@@ -803,8 +803,14 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             PropertyObjectEntity.Select select = ((PropertyObjectEntity<?>) actionOrProperty).getSelectProperty(context, forceSelect, forceFilter);
 
             if(select != null) {
-                if(getExplicitEventAction(CHANGE) != null && !forceSelect)
-                    return null;
+                if (!forceSelect) {
+                    if(getExplicitEventAction(CHANGE) != null)
+                        return null;
+
+                    GroupObjectEntity toDraw = getToDraw(context.entity);
+                    if(toDraw != null && toDraw.isCustom())
+                        return null;
+                }
 
                 String selectType = null;
                 if (select.type == PropertyObjectEntity.Select.Type.MULTI) {
