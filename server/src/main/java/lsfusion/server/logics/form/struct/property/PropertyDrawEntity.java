@@ -831,7 +831,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 //                            if (select.count == 1 && select.type == PropertyObjectEntity.Select.Type.NOTNULL) {
 //                                elementType = "Single";
 //                            } else
-                            if (select.length <= Settings.get().getMaxLengthForValueButton()) {
+                            if (select.length <= Settings.get().getMaxLengthForValueButton() && (!isList(context) || select.length <= Settings.get().getMaxLengthForValueButtonGrid())) {
                                 elementType = isMulti ? "Button" : "ButtonGroup";
                             } else if (select.count <= Settings.get().getMaxInterfaceStatForValueList() && !isList(context)) {
                                 ContainerView container = context.view.get(this).getLayoutParamContainer();
