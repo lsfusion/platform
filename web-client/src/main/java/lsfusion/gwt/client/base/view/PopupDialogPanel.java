@@ -1,9 +1,9 @@
 package lsfusion.gwt.client.base.view;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.user.client.ui.PopupPanel;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.view.popup.PopupPanel;
 import lsfusion.gwt.client.view.MainFrame;
 
 // twin of a WindowBox
