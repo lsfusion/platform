@@ -253,4 +253,5 @@ public class LRUUtil {
     public static Strategy L2 = new Strategy(20, 2 * 60); // может быть полезно, но маловероятно 
     public static Strategy G1 = new Strategy(3 * 60, 30 * 60); // надо иногда, но очищать 
     public static Strategy G2 = new Strategy(60 * 60);
+    public static Strategy G3 = new Strategy(60 * 60 * 24 * 7);
 }

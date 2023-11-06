@@ -50,9 +50,9 @@ import java.util.regex.Pattern;
 
 public class AppServerImage {
 
-    private final static LRUSVSMap<String, AppServerImage> cachedImages = new LRUSVSMap<>(LRUUtil.G2);
-    private final static LRUSVSMap<String, Pair<String, Double>> cachedBestIcons = new LRUSVSMap<>(LRUUtil.G2);
-    private final static LRUSVSMap<Pair<String, Float>, AppServerImage> cachedDefaultImages = new LRUSVSMap<>(LRUUtil.G2);
+    private final static LRUSVSMap<String, AppServerImage> cachedImages = new LRUSVSMap<>(LRUUtil.G3);
+    private final static LRUSVSMap<String, Pair<String, Double>> cachedBestIcons = new LRUSVSMap<>(LRUUtil.G3);
+    private final static LRUSVSMap<Pair<String, Float>, AppServerImage> cachedDefaultImages = new LRUSVSMap<>(LRUUtil.G3);
     private static final AppServerImage NULLIMAGE = new AppServerImage();
 
     public AppServerImage() {
