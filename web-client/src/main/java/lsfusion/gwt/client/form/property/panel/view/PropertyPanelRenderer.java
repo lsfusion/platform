@@ -58,7 +58,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
     }
 
     private SizedWidget initCaption(SizedWidget valuePanel, GPropertyDraw property, Result<CaptionWidget> captionContainer) {
-        if(property.caption == null) // if there is no (empty) static caption and no dynamic caption
+        if(property.caption == null && property.comment == null) // if there is no (empty) static caption and no dynamic caption
             return valuePanel;
 
         label = GFormLayout.createLabelCaptionWidget();
@@ -96,7 +96,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
         SizedWidget commentWidget = null;
         if(property.comment != null) {
             comment = GFormLayout.createLabelCaptionWidget();
-            comment.getElement().setInnerText(property.comment);
+//            setCommentText(property.comment);
             commentWidget = new SizedWidget(comment, property.getCaptionWidth(), property.getCaptionHeight());
             if (isAlignCaption || verticalDiffers) {
                 SizedFlexPanel valueCommentPanel = new SizedFlexPanel(property.panelCommentVertical);
@@ -180,7 +180,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
             return;
         }
 
-        comment.getElement().setInnerText(text);
+        GwtClientUtils.setCaptionHtmlOrText(comment.getElement(), text);
     }
 
     protected void setCommentClasses(String classes) {

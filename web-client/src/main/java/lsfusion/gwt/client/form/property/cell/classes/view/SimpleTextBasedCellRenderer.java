@@ -263,9 +263,6 @@ public abstract class SimpleTextBasedCellRenderer extends CellRenderer {
 
         element.setTitle(title);
 
-        if(innerText.contains("\n"))
-            element.addClassName("text-based-value-multi-line");
-
         String placeholder = extraValue != null ? ((String) extraValue) : null;
         Element inputElement = getSimpleInputElement(element);
         if(inputElement != null) {
@@ -285,8 +282,13 @@ public abstract class SimpleTextBasedCellRenderer extends CellRenderer {
             return false;
         }
 
+        if(innerText.contains("\n"))
+            element.addClassName("text-based-value-multi-line");
+        else
+            element.removeClassName("text-based-value-multi-line");
+
         // important to make paste work (otherwise DataGrid.sinkPasteEvent cannot put empty selection), plus for sizing
-        element.setInnerText(isNull ? (placeholder != null ? placeholder : EscapeUtils.UNICODE_NBSP) : innerText);
+        GwtClientUtils.setDataHtmlOrText(element, isNull ? (placeholder != null ? placeholder : EscapeUtils.UNICODE_NBSP) : innerText, false);
         return true;
     }
 

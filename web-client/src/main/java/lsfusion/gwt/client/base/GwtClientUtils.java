@@ -1282,7 +1282,18 @@ public class GwtClientUtils {
         return $doc.getElementsByClassName(className);
     }-*/;
 
-    public static native boolean isContainHtmlTag(String value) /*-{
-        return $wnd.isContainHtmlTag(value);
+    public static native boolean containsLineBreak(String value) /*-{
+        return $wnd.containsLineBreak(value) != null;
+    }-*/;
+    public static native boolean containsHtmlTag(String value) /*-{
+        return $wnd.containsHtmlTag(value) != null;
+    }-*/;
+
+    // Popup??
+    public static native boolean setCaptionHtmlOrText(Element element, String value) /*-{
+        $wnd.setCaptionHtmlOrText(element, value);
+    }-*/;
+    public static native boolean setDataHtmlOrText(Element element, String value, boolean html) /*-{
+        $wnd.setDataHtmlOrText(element, value, html);
     }-*/;
 }

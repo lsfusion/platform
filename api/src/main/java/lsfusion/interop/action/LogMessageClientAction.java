@@ -1,6 +1,5 @@
 package lsfusion.interop.action;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 

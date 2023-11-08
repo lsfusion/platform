@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
 import com.google.gwt.dom.client.Element;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
@@ -14,9 +15,7 @@ public class LinkCellRenderer extends StringBasedCellRenderer {
     @Override
     public boolean updateContent(Element element, PValue value, Object extraValue, UpdateContext updateContext) {
         String url = PValue.getStringValue(value);
-        if(url != null) {
-            element.setInnerHTML("<a href=\"" + url + "\">" + url + "</a>");
-        }
-        return true;
+        element.setAttribute("href", url != null ? url : "");
+        return super.updateContent(element, value, extraValue, updateContext);
     }
 }

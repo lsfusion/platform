@@ -22,6 +22,7 @@ import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.classes.data.integral.IntegralClass;
+import lsfusion.server.logics.classes.data.link.LinkClass;
 import lsfusion.server.logics.classes.data.time.DateClass;
 import lsfusion.server.logics.classes.data.time.DateTimeClass;
 import lsfusion.server.logics.classes.data.time.TimeClass;
@@ -916,6 +917,8 @@ public class PropertyDrawView extends BaseComponentView {
         Type changeType = getChangeType(context, false);
         if (isProperty(context)) {
             Type type = getAssertCellType(context);
+            if(type instanceof LinkClass)
+                return "a";
             if((type != null && changeType != null && type.getCompatible(changeType) != null &&
                     type.useInputTag(!entity.isList(context), context.useBootstrap, hasBackground())))
                 return "input";

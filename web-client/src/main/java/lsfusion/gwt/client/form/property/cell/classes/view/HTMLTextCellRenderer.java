@@ -4,9 +4,12 @@ import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
-import lsfusion.gwt.client.form.property.cell.view.*;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.CustomCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.RenderContext;
+import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
-public class HTMLTextCellRenderer extends CellRenderer {
+public class HTMLTextCellRenderer extends HTMLBasedCellRenderer {
 
     public HTMLTextCellRenderer(GPropertyDraw property) {
         super(property);
@@ -19,25 +22,13 @@ public class HTMLTextCellRenderer extends CellRenderer {
 
     @Override
     public boolean updateContent(Element element, PValue value, Object extraValue, UpdateContext updateContext) {
-        String renderValue = getHTMLValue(value);
         GwtClientUtils.setField(element, "controller", CustomCellRenderer.getController(property, updateContext, element));
-        element.setInnerHTML(renderValue);
-        return true;
+        return super.updateContent(element, value, extraValue, updateContext);
     }
 
     @Override
     public boolean clearRenderContent(Element element, RenderContext renderContext) {
         GwtClientUtils.removeField(element, "controller");
-
-        return false;
-    }
-
-    @Override
-    public String format(PValue value, RendererType rendererType) {
-        return getHTMLValue(value);
-    }
-
-    private String getHTMLValue(PValue value) {
-        return PValue.getStringValue(value);
+        return super.clearRenderContent(element, renderContext);
     }
 }
