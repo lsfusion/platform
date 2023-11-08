@@ -66,7 +66,7 @@ public abstract class CellRenderer {
         return property.tag;
     }
 
-    public Element createRenderElement() {
+    public Element createRenderElement(RendererType rendererType) {
         assert !isTagInput();
 
         Element renderElement;
@@ -94,7 +94,7 @@ public abstract class CellRenderer {
 
         if(!renderedAlignment) {
             assert !GwtClientUtils.isTDorTH(element) && !SimpleTextBasedCellRenderer.isToolbarContainer(element);
-            renderFlexAlignment(property, element);
+            renderFlexAlignment(property, element, renderContext.getRendererType());
         }
     }
 
@@ -131,10 +131,10 @@ public abstract class CellRenderer {
             element.removeClassName("selectedCellHasEdit");
     }
 
-    private static void renderFlexAlignment(GPropertyDraw property, Element element) {
+    private static void renderFlexAlignment(GPropertyDraw property, Element element, RendererType rendererType) {
         element.addClassName("prop-display-flex");
 
-        Style.TextAlign horzTextAlignment = property.getHorzTextAlignment();
+        Style.TextAlign horzTextAlignment = property.getHorzTextAlignment(rendererType);
         switch(horzTextAlignment) {
             case LEFT:
                 element.addClassName("prop-flex-horz-start");
@@ -147,7 +147,7 @@ public abstract class CellRenderer {
                 break;
         }
 
-        String vertAlignment = property.getVertTextAlignment(false); // here we don't care about baseline / center
+        String vertAlignment = property.getVertTextAlignment(false, rendererType); // here we don't care about baseline / center
         switch (vertAlignment) {
             case "top":
                 element.addClassName("prop-flex-vert-start");
@@ -165,11 +165,11 @@ public abstract class CellRenderer {
         }
     }
 
-    public static void renderTextAlignment(GPropertyDraw property, Element element, boolean isInput) {
+    public static void renderTextAlignment(GPropertyDraw property, Element element, boolean isInput, RendererType rendererType) {
 //        assert GwtClientUtils.isTDorTH(element) || GwtClientUtils.isInput(element);
         assert isInput == GwtClientUtils.isInput(element);
 
-        Style.TextAlign horzTextAlignment = property.getHorzTextAlignment();
+        Style.TextAlign horzTextAlignment = property.getHorzTextAlignment(rendererType);
         switch(horzTextAlignment) {
             case LEFT:
                 element.addClassName("prop-text-horz-start");
@@ -182,7 +182,7 @@ public abstract class CellRenderer {
                 break;
         }
 
-        String vertAlignment = property.getVertTextAlignment(isInput);
+        String vertAlignment = property.getVertTextAlignment(isInput, rendererType);
         switch (vertAlignment) {
             case "top":
                 element.addClassName("prop-text-vert-start");
@@ -208,7 +208,7 @@ public abstract class CellRenderer {
 //        SimpleTextBasedCellRenderer.getSizeElement(element).removeClassName("prop-value-shrink");
 
         if (!renderedAlignment)
-            clearRenderFlexAlignment(property, element);
+            clearRenderFlexAlignment(property, element, renderContext.getRendererType());
 
         // update
         AbstractDataGridBuilder.clearColors(element);
@@ -223,8 +223,8 @@ public abstract class CellRenderer {
         }
         element.setPropertyObject(RENDERED, null);
     }
-    public static void clearRenderTextAlignment(GPropertyDraw property, Element element, boolean isInput) {
-        Style.TextAlign horzTextAlignment = property.getHorzTextAlignment();
+    public static void clearRenderTextAlignment(GPropertyDraw property, Element element, boolean isInput, RendererType rendererType) {
+        Style.TextAlign horzTextAlignment = property.getHorzTextAlignment(rendererType);
         switch(horzTextAlignment) {
             case LEFT:
                 element.removeClassName("prop-text-horz-start");
@@ -237,7 +237,7 @@ public abstract class CellRenderer {
                 break;
         }
 
-        String vertAlignment = property.getVertTextAlignment(isInput);
+        String vertAlignment = property.getVertTextAlignment(isInput, rendererType);
         switch (vertAlignment) {
             case "top":
                 element.removeClassName("prop-text-vert-start");
@@ -254,10 +254,10 @@ public abstract class CellRenderer {
                 break;
         }
     }
-    private static void clearRenderFlexAlignment(GPropertyDraw property, Element element) {
+    private static void clearRenderFlexAlignment(GPropertyDraw property, Element element, RendererType rendererType) {
         element.removeClassName("prop-display-flex");
 
-        Style.TextAlign horzTextAlignment = property.getHorzTextAlignment();
+        Style.TextAlign horzTextAlignment = property.getHorzTextAlignment(rendererType);
         switch(horzTextAlignment) {
             case LEFT:
                 element.removeClassName("prop-flex-horz-start");
@@ -270,7 +270,7 @@ public abstract class CellRenderer {
                 break;
         }
 
-        String vertAlignment = property.getVertTextAlignment(false); // here we don't care about baseline / center
+        String vertAlignment = property.getVertTextAlignment(false, rendererType); // here we don't care about baseline / center
         switch (vertAlignment) {
             case "top":
                 element.removeClassName("prop-flex-vert-start");
@@ -500,7 +500,7 @@ public abstract class CellRenderer {
 
         if(needToolbar) {
             Element toolbarElement = cleared ? null : toolbarState.element;
-            boolean start = !property.getHorzTextAlignment().equals(Style.TextAlign.LEFT);
+            boolean start = !property.getHorzTextAlignment(updateContext.getRendererType()).equals(Style.TextAlign.LEFT);
             if(toolbarElement == null) {
                 toolbarElement = Document.get().createDivElement();
                 toolbarElement.addClassName(start ? "property-toolbar-start" : "property-toolbar-end");
@@ -617,7 +617,7 @@ public abstract class CellRenderer {
         return 0;
     }
 
-    public abstract String format(PValue value);
+    public abstract String format(PValue value, RendererType rendererType);
 
     public boolean isCustomRenderer() {
         return false;

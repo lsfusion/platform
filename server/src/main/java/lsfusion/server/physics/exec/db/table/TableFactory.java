@@ -31,15 +31,12 @@ import lsfusion.server.logics.classes.user.ObjectValueClassSet;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
-import org.apache.log4j.Logger;
 
 import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Function;
 
 public class TableFactory implements FullTablesInterface {
-    private static final Logger startLogger = ServerLoggers.startLogger;
-
     private Map<Integer, NFOrderSet<ImplementTable>> implementTablesMap = new HashMap<>();
     private Map<Integer, List<ImplementTable>> includedTablesMap = new HashMap<>(); // для решения \ выделения проблем с mutability и детерминированностью, без этого можно было бы implementTablesMap обойтись 
 
@@ -168,18 +165,18 @@ public class TableFactory implements FullTablesInterface {
         try {
             sql.startTransaction(DBManager.START_TIL, OperationOwner.unknown);
 
-            sql.ensureTable(IDTable.instance, startLogger);
-            sql.ensureTable(StructTable.instance, startLogger);
+            sql.ensureTable(IDTable.instance);
+            sql.ensureTable(StructTable.instance);
 
             ImMap<Integer, Long> counters = IDTable.getCounters();
             for (int i = 0, size = counters.size(); i < size; i++)
                 sql.ensureRecord(IDTable.instance, MapFact.singleton(IDTable.instance.key, new DataObject(counters.getKey(i), IDTable.idTypeClass)), MapFact.singleton(IDTable.instance.value, new DataObject(counters.getValue(i), SystemClass.instance)), TableOwner.global, OperationOwner.unknown);
 
             // создадим dumb
-            sql.ensureTable(DumbTable.instance, startLogger);
+            sql.ensureTable(DumbTable.instance);
             sql.ensureRecord(DumbTable.instance, MapFact.singleton(DumbTable.instance.key, new DataObject(1L, SystemClass.instance)), MapFact.EMPTY(), TableOwner.global, OperationOwner.unknown);
 
-            sql.ensureTable(EmptyTable.instance, startLogger);
+            sql.ensureTable(EmptyTable.instance);
 
             sql.commitTransaction();
         } catch (Throwable e) {

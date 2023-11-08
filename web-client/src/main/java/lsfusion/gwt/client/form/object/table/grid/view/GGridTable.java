@@ -35,6 +35,7 @@ import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.form.property.cell.view.RendererType;
 
 import java.util.*;
 
@@ -1171,8 +1172,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         }
 
         @Override
-        public boolean isCustomRenderer() {
-            return property.getCellRenderer().isCustomRenderer();
+        public boolean isCustomRenderer(RendererType rendererType) {
+            return property.getCellRenderer(rendererType).isCustomRenderer();
         }
 
         @Override

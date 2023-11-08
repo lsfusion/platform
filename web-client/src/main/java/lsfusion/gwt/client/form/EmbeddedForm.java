@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form;
 
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.DOM;
@@ -8,7 +7,6 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.controller.SmartScheduler;
 import lsfusion.gwt.client.form.controller.FormsController;
@@ -51,7 +49,7 @@ public class EmbeddedForm extends EditingForm {
         }
 
         @Override
-        public void render(Element cellParent, RenderContext renderContext, Pair<Integer, Integer> renderedSize, PValue oldValue) {
+        public void render(Element cellParent, RenderContext renderContext, PValue oldValue, Integer renderedWidth, Integer renderedHeight) {
             renderElement = cellParent;
         }
     }
@@ -90,8 +88,8 @@ public class EmbeddedForm extends EditingForm {
         getAttachContainer().add(widget);
 
         Element element = widget.getElement();
-        GwtClientUtils.setupSizedParent(element, true);
-//        if(!autoSize) {
+        GwtClientUtils.setupPercentParent(element);
+        //        if(!autoSize) {
 //            element.addClassName("comp-shrink-horz");
 //            element.addClassName("comp-shrink-vert");
 //        }

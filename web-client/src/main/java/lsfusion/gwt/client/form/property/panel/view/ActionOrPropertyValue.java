@@ -21,6 +21,7 @@ import lsfusion.gwt.client.form.property.cell.classes.view.SimpleTextBasedCellRe
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
+import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
 import lsfusion.gwt.client.view.MainFrame;
@@ -137,7 +138,7 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
     }
 
     protected void render() {
-        Element renderElement = property.getCellRenderer().createRenderElement();
+        Element renderElement = property.getCellRenderer(getRendererType()).createRenderElement(getRendererType());
         this.form.render(this.property, renderElement, this);
         setElement(renderElement);
 
@@ -162,8 +163,9 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
     public SizedWidget getSizedWidget() {
         boolean globalCaptionIsDrawn = this.globalCaptionIsDrawn;
         GFont font = getFont();
-        GSize valueWidth = property.getValueWidth(font, false, globalCaptionIsDrawn);
-        GSize valueHeight = property.getValueHeight(font, false, globalCaptionIsDrawn);
+        RendererType rendererType = getRendererType();
+        GSize valueWidth = property.getValueWidth(font, false, globalCaptionIsDrawn, rendererType);
+        GSize valueHeight = property.getValueHeight(font, false, globalCaptionIsDrawn, rendererType);
 
         Element renderElement = getRenderElement();
         Element sizeElement = SimpleTextBasedCellRenderer.getSizeElement(renderElement);
@@ -211,7 +213,7 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
                 handler -> {}, // no outer context
                 //ctrl-c ctrl-v from excel adds \n in the end, trim() removes it
                 handler -> CopyPasteUtils.putIntoClipboard(getRenderElement()), handler -> CopyPasteUtils.getFromClipboard(handler, line -> pasteValue(line.trim())),
-                true, property.getCellRenderer().isCustomRenderer());
+                true, property.getCellRenderer(getRendererType()).isCustomRenderer());
 
         form.propagateFocusEvent(event);
     }

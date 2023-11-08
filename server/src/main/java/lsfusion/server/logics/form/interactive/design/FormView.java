@@ -238,7 +238,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
 
     public void addFilter(PropertyDrawEntity filterProperty, Version version) {
         if (!mfilters.containsKey(filterProperty)) {
-            GroupObjectEntity groupObjectEntity = filterProperty.getToDraw(entity);
+            GroupObjectEntity groupObjectEntity = filterProperty.getNFToDraw(entity, version);
             PropertyDrawView propertyDrawView = get(filterProperty);
             FilterView filterView;
             if (groupObjectEntity.isInTree()) {

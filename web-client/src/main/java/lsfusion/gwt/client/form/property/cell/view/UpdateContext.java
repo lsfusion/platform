@@ -37,4 +37,6 @@ public interface UpdateContext {
     default String getValueElementClass() {
         return null;
     }
+
+    RendererType getRendererType();
 }

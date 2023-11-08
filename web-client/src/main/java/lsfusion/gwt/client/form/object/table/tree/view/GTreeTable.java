@@ -37,6 +37,7 @@ import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 import lsfusion.gwt.client.view.MainFrame;
 
@@ -439,7 +440,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
 
         @Override
-        public boolean isCustomRenderer() {
+        public boolean isCustomRenderer(RendererType rendererType) {
             return false;
         }
     }
@@ -519,9 +520,10 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             // if property changed - rerender
             if(!GwtClientUtils.nullEquals(oldProperty, newProperty) && !form.isEditing()) { // we don't want to clear editing (it will be rerendered anyway, however not sure if this check is needed)
                 if(oldProperty != null) {
-                    if(!GPropertyTableBuilder.clearRenderSized(cellElement, oldProperty)) {
-                        assert cellElement == GPropertyTableBuilder.getRenderSizedElement(cellElement, oldProperty);
-                        oldProperty.getCellRenderer().clearRender(cellElement, getRenderContext(cell, cellElement, oldProperty, this));
+                    RendererType rendererType = RendererType.GRID;
+                    if(!GPropertyTableBuilder.clearRenderSized(cellElement, oldProperty, rendererType)) {
+                        assert cellElement == GPropertyTableBuilder.getRenderSizedElement(cellElement, oldProperty, rendererType);
+                        oldProperty.getCellRenderer(rendererType).clearRender(cellElement, getRenderContext(cell, cellElement, oldProperty, this));
                     }
                     cellElement.setPropertyObject(PDRAW_ATTRIBUTE, null);
                 }
@@ -538,8 +540,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
 
         @Override
-        public boolean isCustomRenderer() {
-            return columnProperty.getCellRenderer().isCustomRenderer();
+        public boolean isCustomRenderer(RendererType rendererType) {
+            return columnProperty.getCellRenderer(rendererType).isCustomRenderer();
         }
     }
 

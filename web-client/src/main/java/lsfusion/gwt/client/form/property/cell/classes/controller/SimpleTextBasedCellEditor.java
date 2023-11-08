@@ -35,6 +35,7 @@ import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
+import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.view.MainFrame;
 
 import java.text.ParseException;
@@ -276,51 +277,51 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
         }
     }
 
-    public static InputElement renderInputElement(Element cellParent, GPropertyDraw property, boolean multiLine, RenderContext renderContext, boolean removeAllPMB, boolean setupPercentParent) {
-        InputElement inputElement = SimpleTextBasedCellRenderer.createInputElement(property);
+    public static InputElement renderInputElement(Element cellParent, GPropertyDraw property, boolean multiLine, RenderContext renderContext, boolean removeAllPMB) {
+        RendererType rendererType = renderContext.getRendererType();
+        InputElement inputElement = SimpleTextBasedCellRenderer.createInputElement(property, rendererType);
 
-        CellRenderer.renderTextAlignment(property, inputElement, true);
+        CellRenderer.renderTextAlignment(property, inputElement, true, rendererType);
 
         SimpleTextBasedCellRenderer.render(property, inputElement, renderContext, multiLine);
 
         if(removeAllPMB)
             inputElement.addClassName("remove-all-pmb");
         cellParent.appendChild(inputElement);
-        if(setupPercentParent) {
-            // the problem of the height:100% is that: when it is set for the input element, line-height is ignored (and line-height is used for example in bootstrap, so when the data is drawn with the regular div, but input with the input element, they have different sizes, which is odd)
-            // but flex works fine for the input element, but we cannot set display flex for the table cell element
-            // so we'll use 100% for table cells (it's not that big deal for table cells, because usually there are a lot of cells without input in a row, and they will respect line-height)
-            if(GwtClientUtils.isTDorTH(cellParent))
-                GwtClientUtils.setupPercentParent(inputElement);
-            else
-                GwtClientUtils.setupFlexParent(inputElement);
-        }
+
+        // the problem of the height:100% is that: when it is set for the input element, line-height is ignored (and line-height is used for example in bootstrap, so when the data is drawn with the regular div, but input with the input element, they have different sizes, which is odd)
+        // but flex works fine for the input element, but we cannot set display flex for the table cell element
+        // so we'll use 100% for table cells (it's not that big deal for table cells, because usually there are a lot of cells without input in a row, and they will respect line-height)
+        if(GwtClientUtils.isTDorTH(cellParent))
+            GwtClientUtils.setupPercentParent(inputElement);
+        else
+            GwtClientUtils.setupFlexParent(inputElement);
 
         return inputElement;
     }
 
-    public static void clearInputElement(Element cellParent, boolean setupPercentParent) {
-        if(setupPercentParent)
-            if(!GwtClientUtils.isTDorTH(cellParent))
-                GwtClientUtils.clearFlexParentElement(cellParent);
+    public static void clearInputElement(Element cellParent) {
+        if(!GwtClientUtils.isTDorTH(cellParent))
+            GwtClientUtils.clearFlexParentElement(cellParent);
     }
 
     @Override
-    public void render(Element cellParent, RenderContext renderContext, Pair<Integer, Integer> renderedSize, PValue oldValue) {
+    public void render(Element cellParent, RenderContext renderContext, PValue oldValue, Integer renderedWidth, Integer renderedHeight) {
         assert !isRenderInputElement(cellParent);
 
         SimpleTextBasedCellRenderer.setPadding(cellParent); // paddings should be for the element itself (and in general do not change), because the size is set for this element and reducing paddings will lead to changing element size
 
-        boolean needRenderedSize = property.autoSize;
         boolean multiLine = isMultiLine();
 
-        inputElement = renderInputElement(cellParent, property, multiLine, renderContext, true, !needRenderedSize);
+        inputElement = renderInputElement(cellParent, property, multiLine, renderContext, true);
         addPasteListener(inputElement);
 
         // input doesn't respect justify-content, stretch, plus we want to include paddings in input (to avoid having "selection border")
-        if(needRenderedSize) { // we have to set sizes that were rendered, since input elements have really unpredicatble content sizes
-            inputElement.getStyle().setHeight(renderedSize.second, Style.Unit.PX);
-            inputElement.getStyle().setWidth(renderedSize.first, Style.Unit.PX);
+        // we have to set sizes that were rendered, since input elements have really unpredicatble content sizes
+        if(renderedWidth != null)
+            inputElement.getStyle().setWidth(renderedWidth, Style.Unit.PX);
+        if(renderedHeight != null) {
+            inputElement.getStyle().setHeight(renderedHeight, Style.Unit.PX);
             if(multiLine)
                 // https://stackoverflow.com/questions/7144843/extra-space-under-textarea-differs-along-browsers
                 inputElement.getStyle().setVerticalAlign(Style.VerticalAlign.TOP);
@@ -337,13 +338,11 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
 
         SimpleTextBasedCellRenderer.clearPadding(cellParent);
 
-        boolean needRenderedSize = property.autoSize;
-
 //        TextBasedCellRenderer.clearBasedTextFonts(property, element.getStyle(), renderContext);
 
 //        TextBasedCellRenderer.clearRender(property, element.getStyle(), renderContext);
 
-        clearInputElement(cellParent, !needRenderedSize);
+        clearInputElement(cellParent);
 
         super.clearRender(cellParent, renderContext, cancel);
     }

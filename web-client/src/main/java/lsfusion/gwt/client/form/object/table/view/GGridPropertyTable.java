@@ -27,6 +27,7 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
+import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTable;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
@@ -647,7 +648,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     }
 
     protected double getColumnFlex(int i) {
-        return getColumnPropertyDraw(i).getFlex();
+        return getColumnPropertyDraw(i).getFlex(RendererType.GRID);
     }
 
     protected void setUserWidth(int i, int width) {
@@ -672,7 +673,7 @@ protected Double getUserFlex(int i) {
         //      but the main problem is that % percentage works really odd (but only in Chrome, in Firefox it works fine), it respects paddings, but not the way it does in divs (i.e subtract paddings, and then split the rest). This might create problems in resizing,
         //      plus Firefox doesn't respect min-width for td (as well as Chrome)
         // but there is another way : to create separate columns for flex props : one fixed size, one percent size, and set colspan 2 for headers / rows
-        return getColumnPropertyDraw(i).getValueWidth(font, true, true);
+        return getColumnPropertyDraw(i).getValueWidth(font, true, true, RendererType.GRID);
     }
 
     private <C> Element getRenderElement(Cell cell, TableCellElement parent) {
@@ -683,7 +684,7 @@ protected Double getUserFlex(int i) {
         if(property == null)
             return null;
 
-        return GPropertyTableBuilder.getRenderSizedElement(parent, property);
+        return GPropertyTableBuilder.getRenderSizedElement(parent, property, RendererType.GRID);
     }
 
     protected Element getSelectedRenderElement(int column) {
@@ -698,7 +699,7 @@ protected Double getUserFlex(int i) {
                 handler -> column.onEditEvent(handler, cell, renderElement),
                 handler -> selectionHandler.onCellAfter(handler, cell),
                 handler -> CopyPasteUtils.putIntoClipboard(renderElement), handler -> CopyPasteUtils.getFromClipboard(handler, line -> pasteData(cell, renderElement, GwtClientUtils.getClipboardTable(line))),
-                false, cell.getColumn().isCustomRenderer());
+                false, cell.getColumn().isCustomRenderer(RendererType.GRID));
     }
 
     @Override
@@ -732,7 +733,7 @@ protected Double getUserFlex(int i) {
             if(property == null) // in tree there can be no property in groups other than last
                 return;
 
-            Element renderElement = GPropertyTableBuilder.renderSized(cellElement, property, getFont());
+            Element renderElement = GPropertyTableBuilder.renderSized(cellElement, property, getFont(), RendererType.GRID);
             form.render(property, renderElement, getRenderContext(cell, renderElement, property, this));
         }
 
@@ -744,7 +745,7 @@ protected Double getUserFlex(int i) {
 
             // RERENDER IF NEEDED : we don't have the previous state, so we have to store it in element
 
-            Element renderElement = GPropertyTableBuilder.getRenderSizedElement(cellElement, property);
+            Element renderElement = GPropertyTableBuilder.getRenderSizedElement(cellElement, property, RendererType.GRID);
             form.update(property, renderElement, getUpdateContext(cell, renderElement, property, this));
         }
 //
@@ -790,6 +791,12 @@ protected Double getUserFlex(int i) {
 //            public boolean isLoading() {
 //                return column.isLoading(property, (T) cell.getRow());
 //            }
+
+
+            @Override
+            public RendererType getRendererType() {
+                return RendererType.GRID;
+            }
         };
     }
 
@@ -871,6 +878,11 @@ protected Double getUserFlex(int i) {
                 T row = (T) cell.getRow();
                 String foreground = column.getForeground(property, row);
                 return foreground != null ? foreground : row.getRowForeground();
+            }
+
+            @Override
+            public RendererType getRendererType() {
+                return RendererType.GRID;
             }
         };
     }

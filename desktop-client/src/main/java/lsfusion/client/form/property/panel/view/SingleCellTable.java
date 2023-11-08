@@ -61,7 +61,7 @@ public abstract class SingleCellTable extends ClientPropertyTable {
 
     public void setValue(Object value) {
         model.setValue(value);
-        if(getProperty().autoSize && value instanceof String) {
+        if(getProperty().isAutoSize() && value instanceof String) {
             Dimension size = getSize();
             if (size != null && size.getWidth() > 0) {
                 setPreferredSize(new Dimension((int) getPreferredSize().getWidth(), getHeight((String) value, (int) size.getWidth())));

@@ -81,7 +81,7 @@ public class GGridController extends GAbstractTableController {
         this.groupObject = groupObject;
 
         if (isList()) {
-            initGridView(groupObject.grid.autoSize);
+            initGridView();
 
             // proceeding recordView
             GContainer record = groupObject.grid.record;
@@ -335,7 +335,7 @@ public class GGridController extends GAbstractTableController {
                                 int clientX = event.getClientX();
                                 int clientY = event.getClientY();
 
-                                if (property.baseType instanceof GIntegralType)
+                                if (property.getValueType() instanceof GIntegralType)
                                     formController.calculateSum(groupObject, property, table.getCurrentColumnKey(), clientX, clientY);
                                 else
                                     showSum(null, property, clientX, clientY);

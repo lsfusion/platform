@@ -20,8 +20,6 @@ public class GGrid extends GComponent {
         return null;
     }
 
-    public boolean autoSize;
-
     public GContainer record;
 
     public int lineWidth;

@@ -20,6 +20,7 @@ import com.google.gwt.dom.client.TableCellElement;
 import lsfusion.gwt.client.base.jsni.HasNativeSID;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
+import lsfusion.gwt.client.form.property.cell.view.RendererType;
 
 public abstract class Column<T, C> implements HasNativeSID {
 
@@ -40,5 +41,5 @@ public abstract class Column<T, C> implements HasNativeSID {
 //      return cellElement;
 //  }
 //
-  public abstract boolean isCustomRenderer();
+  public abstract boolean isCustomRenderer(RendererType rendererType);
 }

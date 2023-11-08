@@ -342,3 +342,8 @@ a.text-based-value-empty {
 div.selectArrow {
     width: 2.5em;
 }
+
+.loading-async-icon {
+    margin: 0.25rem;
+    line-height: var(--bs-body-line-height);
+}

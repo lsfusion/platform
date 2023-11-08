@@ -72,10 +72,7 @@ import lsfusion.gwt.client.form.property.cell.classes.controller.RequestCellEdit
 import lsfusion.gwt.client.form.property.cell.classes.controller.RequestValueCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.view.LogicalCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.*;
-import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
-import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
-import lsfusion.gwt.client.form.property.cell.view.RenderContext;
-import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
+import lsfusion.gwt.client.form.property.cell.view.*;
 import lsfusion.gwt.client.form.property.panel.view.ActionPanelRenderer;
 import lsfusion.gwt.client.form.property.table.view.GPropertyContextMenuPopup;
 import lsfusion.gwt.client.form.view.FormContainer;
@@ -98,7 +95,6 @@ import java.util.stream.Collectors;
 import static lsfusion.gwt.client.base.GwtClientUtils.*;
 import static lsfusion.gwt.client.base.GwtSharedUtils.putToDoubleNativeMap;
 import static lsfusion.gwt.client.base.GwtSharedUtils.removeFromDoubleMap;
-import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.CHANGE;
 import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.isChangeEvent;
 
 public class GFormController implements EditManager {
@@ -399,9 +395,10 @@ public class GFormController implements EditManager {
                 GFont font = groupObject.grid.font;
                 // in theory property renderers padding should be included, but it's hard to do that (there will be problems with the memoization)
                 // plus usually there are no paddings for the property renderers in the table (td paddings are used, and they are included see the usages)
-                groupObject.columnSumWidth = groupObject.columnSumWidth.add(property.getValueWidth(font, true, true));
+                RendererType rendererType = RendererType.GRID;
+                groupObject.columnSumWidth = groupObject.columnSumWidth.add(property.getValueWidth(font, true, true, rendererType));
                 groupObject.columnCount++;
-                groupObject.rowMaxHeight = groupObject.rowMaxHeight.max(property.getValueHeight(font, true, true));
+                groupObject.rowMaxHeight = groupObject.rowMaxHeight.max(property.getValueHeight(font, true, true, rendererType));
             }
         }
     }
@@ -887,7 +884,7 @@ public class GFormController implements EditManager {
 
                 GType externalType = property.getExternalChangeType();
                 if(externalType == null)
-                    externalType = property.baseType;
+                    externalType = property.getPasteType();
                 valueRow.add(PValue.remapValueBack(property.parsePaste(sCell, externalType)));
                 rawValueRow.add(sCell);
             }
@@ -970,7 +967,7 @@ public class GFormController implements EditManager {
             if(isBinding) {
                 if(GKeyStroke.isKeyEvent(event)) // we don't want to set focus on mouse binding (it's pretty unexpected behaviour)
                     editContext.trySetFocusOnBinding(); // we want element to be focused on key binding (if it's possible)
-                actionSID = CHANGE;
+                actionSID = GEditBindingMap.CHANGE;
             } else {
                 actionSID = property.getEventSID(event, editContext, contextAction);
                 if(actionSID == null)
@@ -1225,7 +1222,7 @@ public class GFormController implements EditManager {
 
     // for custom renderer, paste, quick access actions (in toolbar and keypress)
     private void executePropertyEventAction(EventHandler handler, ExecuteEditContext editContext, GUserInputResult value, Consumer<Long> onExec) {
-        executePropertyEventAction(handler, editContext, editContext.getProperty().getInputList(), value, CHANGE, true, requestIndex -> {
+        executePropertyEventAction(handler, editContext, editContext.getProperty().getInputList(), value, GEditBindingMap.CHANGE, true, requestIndex -> {
             onExec.accept(requestIndex);
 
             setLoading(editContext, requestIndex);
@@ -2179,14 +2176,19 @@ public class GFormController implements EditManager {
             focusedElement = GwtClientUtils.getFocusedElement();
 
             GPropertyDraw property = editContext.getProperty();
-            CellRenderer cellRenderer = property.getCellRenderer();
-            Pair<Integer, Integer> renderedSize = null;
-            if(property.autoSize) // we need to do it before clearRender to have actual sizes + we need to remove paddings since we're setting width for wrapped component
-                renderedSize = new Pair<>(GwtClientUtils.getWidth(element), GwtClientUtils.getHeight(element));
+            CellRenderer cellRenderer = property.getCellRenderer(renderContext.getRendererType());
+
+            // we need to do it before clearRender to have actual sizes + we need to remove paddings since we're setting width for wrapped component
+            Integer renderedWidth = null;
+            if(property.valueWidth == -1)
+                renderedWidth = GwtClientUtils.getWidth(element);
+            Integer renderedHeight = null;
+            if(property.valueHeight == -1)
+                renderedHeight = GwtClientUtils.getHeight(element);
 
             cellRenderer.clearRender(element, renderContext); // dropping previous render
 
-            ((ReplaceCellEditor)cellEditor).render(element, renderContext, renderedSize, oldValue); // rendering new one, filling inputElement
+            ((ReplaceCellEditor)cellEditor).render(element, renderContext, oldValue, renderedWidth, renderedHeight); // rendering new one, filling inputElement
         }
 
         this.cellEditor = cellEditor; // not sure if it should before or after startEditing, but definitely after removeAllChildren, since it leads to blur for example
@@ -2291,7 +2293,7 @@ public class GFormController implements EditManager {
             return;
         }
 
-        property.getCellRenderer().render(element, renderContext);
+        property.getCellRenderer(renderContext.getRendererType()).render(element, renderContext);
     }
 
     // setting loading
@@ -2334,7 +2336,7 @@ public class GFormController implements EditManager {
         if(isEdited(element))
             return;
 
-        property.getCellRenderer().update(element, updateContext);
+        property.getCellRenderer(updateContext.getRendererType()).update(element, updateContext);
     }
 
     public boolean isEdited(Element element) {

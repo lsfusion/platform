@@ -3,6 +3,11 @@ package lsfusion.interop.form.object.table.grid;
 public enum ListViewType {
     GRID, PIVOT, MAP, CUSTOM, CALENDAR;
 
+    // should match RendererType
+    public boolean isValue() {
+        return this == PIVOT;
+    }
+
     public static ListViewType DEFAULT = GRID;
 
     // should correspond ListViewType in System.lsf

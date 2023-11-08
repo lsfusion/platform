@@ -144,6 +144,7 @@
 ## Обратная связь
 - [Issue tracker](https://github.com/lsfusion/platform/issues) 
 - [Сообщество в Slack](https://slack.lsfusion.org)
+- [Группа в Telegram](https://t.me/lsfusion_official)
 
 ## Лицензия
 Платформа выпускается под лицензией [LGPL v3](http://www.gnu.org/licenses/lgpl-3.0.ru.html), позволяющей свободно использовать, распространять, а также модифицировать платформу под свои нужды.

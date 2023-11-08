@@ -3,7 +3,6 @@ package lsfusion.gwt.client.form.property.cell.classes.controller;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
-import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -46,10 +45,10 @@ public class CustomTextCellEditor extends SimpleTextBasedCellEditor implements C
     }
 
     @Override
-    public void render(Element cellParent, RenderContext renderContext, Pair<Integer, Integer> renderedSize, PValue oldValue) {
-        super.render(cellParent, renderContext, renderedSize, oldValue);
+    public void render(Element cellParent, RenderContext renderContext, PValue oldValue, Integer renderedWidth, Integer renderedHeight) {
+        super.render(cellParent, renderContext, oldValue, renderedWidth, renderedHeight);
 
-        CustomCellEditor.super.render(cellParent, renderContext, renderedSize, oldValue);
+        CustomCellEditor.super.render(cellParent, renderContext, oldValue, renderedWidth, renderedHeight);
     }
 
     @Override

@@ -8,7 +8,10 @@ public class TreeGroupViewProxy extends ComponentViewProxy<TreeGroupView> {
     }
 
     public void setAutoSize(boolean autoSize) {
-        target.autoSize = autoSize;
+        if(target.width == null || target.width < 0)
+            target.width = autoSize ? -1 : -2;
+        if(target.height == null || target.height < 0)
+            target.height = autoSize ? -1 : -2;
     }
 
     public void setBoxed(boolean boxed) {

@@ -17,6 +17,7 @@ import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
+import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyValue;
 import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyValueController;
@@ -68,7 +69,7 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
 
     @Override
     public void pasteValue(String stringValue) {
-        updateAndCommit(PValue.escapeSeparator(property.parsePaste(stringValue, property.baseType), inputList.compare));
+        updateAndCommit(PValue.escapeSeparator(property.parsePaste(stringValue, property.getPasteType()), inputList.compare));
     }
 
     @Override
@@ -98,7 +99,7 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
 
     protected void onEditEvent(EventHandler handler, boolean forceEdit) {
         Result<Boolean> contextAction = new Result<>();
-        if((property.isFilterChange(handler.event, contextAction) || forceEdit) && !property.isCustom()) {
+        if((property.isFilterChange(handler.event, contextAction) || forceEdit) && !property.isCustom(getRendererType())) {
             if(contextAction.result != null) // assert that reset is called
                 updateAndCommit(null);
             else
@@ -208,5 +209,10 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     @Override
     public boolean canUseChangeValueForRendering(GType type) {
         return true;
+    }
+
+    @Override
+    public RendererType getRendererType() {
+        return RendererType.FILTER;
     }
 }

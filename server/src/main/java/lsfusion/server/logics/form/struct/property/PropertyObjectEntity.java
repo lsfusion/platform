@@ -70,11 +70,6 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrP
         return property.read(env, joinImplement);
     }
 
-    @Override
-    public <X extends PropertyInterface> PropertyObjectEntity<?> getProperty(PropertyObjectEntity<X> readOnly, boolean isNative) {
-        return this;
-    }
-
     public <T extends PropertyInterface> PropertyMapImplement<?, T> getImplement(ImRevMap<ObjectEntity, T> mapObjects) {
         return new PropertyMapImplement<>(property, mapping.join(mapObjects));
     }

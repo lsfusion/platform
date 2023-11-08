@@ -11,6 +11,7 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.ExecuteEditContext;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.view.MainFrame;
 
 public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements ExecuteEditContext {
@@ -148,5 +149,10 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
     @Override
     public void executeContextAction(int action) {
         form.executeContextAction( this, action);
+    }
+
+    @Override
+    public RendererType getRendererType() {
+        return RendererType.PANEL;
     }
 }

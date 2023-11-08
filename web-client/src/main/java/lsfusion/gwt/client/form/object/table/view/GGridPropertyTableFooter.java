@@ -6,6 +6,7 @@ import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
+import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
@@ -68,5 +69,10 @@ public class GGridPropertyTableFooter extends Header<String> implements RenderCo
             GPropertyTableBuilder.update(property, th, this);
             prevValue = value;
         }
+    }
+
+    @Override
+    public RendererType getRendererType() {
+        return RendererType.FOOTER;
     }
 }

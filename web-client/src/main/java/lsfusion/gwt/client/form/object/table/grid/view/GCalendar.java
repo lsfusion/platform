@@ -42,7 +42,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
         if (calendar == null) {
             //fullcalendar bug - https://github.com/fullcalendar/fullcalendar/issues/5863
             //to prevent this when calendar-element height less then ~350px
-            element.getParentElement().getStyle().setProperty("overflow", "auto");
+//            element.getParentElement().getStyle().setProperty("overflow", "auto");
             element.getStyle().setProperty("minHeight", "400px");
             element.getStyle().setProperty("cursor", "default");
             String locale = LocaleInfo.getCurrentLocale().getLocaleName();
@@ -69,7 +69,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
             timeZone: 'UTC',
             locale: locale,
             firstDay: 1,
-            initialDate: controller.getCurrentDay(calendarDateType),
+            initialDate: controller.getValue(calendarDateType),
             headerToolbar: {
                 left: 'prev,next today',
                 center: 'title',
@@ -167,7 +167,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
         public Event(JavaScriptObject object, int index) {
             String endEventFieldName = calendarDateType.contains("From") ? calendarDateType.replace("From", "To") : null;
 
-            title = getTitle(object, getCaptions(new NativeHashMap<>(), gPropertyDraw -> gPropertyDraw.baseType.isId()));
+            title = getTitle(object, getCaptions(new NativeHashMap<>(), gPropertyDraw -> gPropertyDraw.sticky));
             start = getStart(object, calendarDateType);
             end = endEventFieldName != null ? getEnd(object, endEventFieldName): null;
             editable = isEditable(object, controller, calendarDateType, endEventFieldName);
@@ -285,7 +285,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
 
     private JsArray<JavaScriptObject> createCalendarEventsObject(NativeHashMap<GGroupObjectValue, Event> events){
         JsArray<JavaScriptObject> calendarEvents = JavaScriptObject.createArray().cast();
-        events.foreachValue(event -> calendarEvents.push(createJsEvent(event, isCurrentObjectKey(event.object))));
+        events.foreachValue(event -> calendarEvents.push(createJsEvent(event, isCurrentKey(getObjects(event.object)))));
         return calendarEvents;
     }
 

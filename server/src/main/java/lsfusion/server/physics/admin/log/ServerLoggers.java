@@ -4,6 +4,7 @@ import lsfusion.base.DaemonThreadFactory;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.lambda.E2Runnable;
 import lsfusion.base.log.FlushableRollingFileAppender;
 import lsfusion.interop.action.LogMessageClientAction;
 import lsfusion.server.base.controller.stack.ExecutionStackAspect;
@@ -196,5 +197,32 @@ public class ServerLoggers {
     public static void pausableLog(String s, Throwable t) {
         if(isPausableLogEnabled())
             pausablesInvocationLogger.debug(s);
+    }
+
+    public static void startLogDebug(String message) {
+        startLogger.debug(message);
+    }
+
+    public static void startLogWarn(String message) {
+        startLogger.warn(message);
+    }
+
+    public static void startLogError(String message) {
+        startLogger.error(message);
+    }
+
+    public static void startLogError(String message, Throwable t) {
+        startLogger.error(message, t);
+    }
+
+    public static void startLog(String message) {
+        startLogger.info(message);
+    }
+
+    public static <E1 extends Exception, E2 extends Exception> void runWithStartLog(E2Runnable<E1, E2> run, String message) throws E1, E2 {
+        long start = System.currentTimeMillis();
+        startLogger.info(message + " started");
+        run.run();
+        startLogger.info(message + " finished, " + (System.currentTimeMillis() - start) + "ms");
     }
 }

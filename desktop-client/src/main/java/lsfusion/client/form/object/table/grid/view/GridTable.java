@@ -345,7 +345,21 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
 
     @Override
     public Dimension getPreferredScrollableViewportSize() {
-        return gridController.getAutoSize() ? getPreferredSize() : SwingDefaults.getTablePreferredSize();
+        boolean autoWidth = gridController.isAutoWidth();
+        boolean autoHeight = gridController.isAutoHeight();
+
+        Dimension tablePreferredSize = SwingDefaults.getTablePreferredSize();
+        if(autoWidth || autoHeight) {
+            Dimension preferredSize = getPreferredSize();
+            if(autoWidth && autoHeight)
+                return preferredSize;
+
+            int preferredWidth = autoWidth ? preferredSize.width : tablePreferredSize.width;
+            int preferredHeight = autoHeight ? preferredSize.height : tablePreferredSize.height;
+            return new Dimension(preferredWidth, preferredHeight);
+        }
+
+        return tablePreferredSize;
     }
 
     private boolean isChangeOnSingleClick(int row, int col) {

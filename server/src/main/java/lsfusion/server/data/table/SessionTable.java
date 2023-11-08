@@ -780,7 +780,7 @@ public class SessionTable extends NamedTable implements ValuesContext<SessionTab
         try(SQLSession dbSql = ThreadLocalContext.getDbManager().createSQL()) {
 
             dbSql.startTransaction(DBManager.DEBUG_TIL, OperationOwner.unknown);
-            dbSql.ensureTable(this, sqlLogger);
+            dbSql.ensureTable(this);
             dbSql.insertSessionBatchRecords(getName(sql.syntax), keys, read(sql, getBaseClass(), OperationOwner.debug).getMap(), OperationOwner.debug, TableOwner.debug);
             dbSql.commitTransaction();
         }

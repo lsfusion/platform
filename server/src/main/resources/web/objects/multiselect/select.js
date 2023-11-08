@@ -465,7 +465,7 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
 
                     _setGroupListReadonly(input, controller, input.object);
                 } else {
-                    _setGroupReadonly(input, extraValue.readonly);
+                    _setGroupReadonly(input, extraValue != null ? extraValue.readonly : null);
 
                     if(i === 0)
                         focusInput = input;

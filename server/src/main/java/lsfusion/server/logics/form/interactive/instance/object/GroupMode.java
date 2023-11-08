@@ -101,19 +101,19 @@ public class GroupMode {
                     GroupType groupType = GroupType.valueOf(propertyGroupType.name());
 
                     // first find last values
-                    ImMap<PropertyDrawInstance<K>.LastReaderInstance, Expr> lastAggrExprs = property.aggrLastReaders.<Expr, SQLException, SQLHandledException>mapOrderValuesEx(lastReaderInstance -> getExpr.apply(lastReaderInstance.getReaderProperty()));
+                    ImMap<PropertyDrawInstance<K>.LastReaderInstance, Expr> lastAggrExprs = property.aggrLastReaders.<Expr, SQLException, SQLHandledException>mapOrderValuesEx(lastReaderInstance -> getExpr.apply(lastReaderInstance.getGroupProperty()));
                     ImOrderMap<Expr, Boolean> orders = property.aggrLastReaders.mapOrderKeyValues(lastAggrExprs::get, lastReaderInstance -> property.entity.lastAggrDesc);
                     ImMap<PropertyDrawInstance<K>.LastReaderInstance, Expr> lastValues = property.aggrLastReaders.getSet().mapValues((PropertyDrawInstance<K>.LastReaderInstance aggrLastReader) ->
                             GroupExpr.create(groupModeExprs, ListFact.toList(ValueExpr.get(groupModeWhere), lastAggrExprs.get(aggrLastReader)), orders, false, GroupType.LAST, groupModeExprs, false));
 
                     if(aggrReader instanceof PropertyDrawInstance) { // calculate value
-                        groupExpr = getExpr.apply(property.getReaderProperty());
+                        groupExpr = getExpr.apply(property.getGroupProperty());
                         groupExpr = FormulaExpr.create(new CastFormulaImpl(NumericClass.get(100, 20)), ListFact.singleton(groupExpr));
                         groupExpr = GroupExpr.create(groupModeExprs, groupExpr, groupModeWhere.and(CompareWhere.equalsNull(lastAggrExprs, lastValues)), groupType, groupModeExprs);
                     } else // select last value
                         groupExpr = lastValues.get((PropertyDrawInstance<K>.LastReaderInstance)aggrReader);
                 } else
-                    groupExpr = getExpr.apply(aggrReader.getReaderProperty());
+                    groupExpr = getExpr.apply(aggrReader.getGroupProperty());
 
                 mCases.add(columnsWhere, groupExpr);
             }

@@ -1,14 +1,11 @@
 package lsfusion.gwt.client.base.view;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.ProvidesResize;
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.GwtClientUtils;
-
-import static lsfusion.gwt.client.base.GwtClientUtils.setupFillParent;
-import static lsfusion.gwt.client.base.GwtClientUtils.setupSizedParent;
 
 public class ResizableSimplePanel extends SimplePanel implements RequiresResize, ProvidesResize, ResizableMainPanel {
     public ResizableSimplePanel() {
@@ -38,13 +35,10 @@ public class ResizableSimplePanel extends SimplePanel implements RequiresResize,
         }
     }
 
-    public void setSizedWidget(Widget widget, boolean autoSize) {
+    public void setPercentMain(Widget widget) {
         setWidget(widget);
-        setupSizedParent(widget.getElement(), autoSize);
-    }
-
-    public void changePercentFillWidget(boolean percent) {
-        GwtClientUtils.changePercentFillWidget(getWidget(), percent);
+        Element element = widget.getElement();
+        GwtClientUtils.setupPercentParent(element);
     }
 
     @Override

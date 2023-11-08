@@ -1,18 +1,14 @@
 package lsfusion.gwt.client.form.view;
 
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.*;
-import lsfusion.gwt.client.base.result.NumberResult;
 import lsfusion.gwt.client.base.view.StaticImageWidget;
-import lsfusion.gwt.client.controller.remote.action.PriorityErrorHandlingCallback;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.property.cell.controller.EndReason;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
 import lsfusion.gwt.client.navigator.window.GWindowFormType;
@@ -157,12 +153,7 @@ public abstract class FormContainer {
         topPanel.setSpacing(5);
 
         StaticImageWidget image = new StaticImageWidget(StaticImage.LOADING_ASYNC);
-
-        //to make the icon rotate in a circle in the bootstrap theme instead of an ellipse
-        if (MainFrame.useBootstrap)
-            image.getElement().getStyle().setProperty("margin", "5px");
-        else
-            image.setSize("32px", "32px");
+        image.addStyleName("loading-async-icon");
 
         topPanel.add(image);
         topPanel.add(new HTML(messages.loading()));

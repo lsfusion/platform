@@ -26,8 +26,9 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+import static lsfusion.server.physics.admin.log.ServerLoggers.startLog;
+
 public class LogicsInstance implements InitializingBean {
-    private static final Logger logger = ServerLoggers.startLogger;
     protected final static Logger lruLogger = ServerLoggers.lruLogger;
 
     private final LogicsInstanceContext context;
@@ -174,7 +175,7 @@ public class LogicsInstance implements InitializingBean {
     }
 
     public void start() {
-        logger.info("Logics instance is starting...");
+        startLog("Logics instance is starting...");
         try {
             ThreadInfo threadInfo = EventThreadInfo.START();
             Runnable beforeAspect = () -> ThreadLocalContext.aspectBeforeLifecycle(this, threadInfo);
@@ -201,7 +202,7 @@ public class LogicsInstance implements InitializingBean {
                 afterAspect.run();
             }
 
-            logger.info("Logics instance has successfully started");
+            startLog("Logics instance has successfully started");
         } catch (Throwable throwable) {
             Throwable rootThrowable = ExceptionUtils.getRootCause(throwable);
             ThrowableWithStack[] throwables = rootThrowable instanceof NestedThreadException // don't need NestedThreadException message+stack (they are always the same / don't matter)
@@ -209,7 +210,7 @@ public class LogicsInstance implements InitializingBean {
                                      : new ThrowableWithStack[]{new ThrowableWithStack(rootThrowable)};
             
             for (ThrowableWithStack nestedThrowable : throwables) {
-                nestedThrowable.log("Exception while starting logics instance", logger);
+                nestedThrowable.log("Exception while starting logics instance", ServerLoggers.startLogger);
             }
 
             lifecycle.fireError();
@@ -219,10 +220,10 @@ public class LogicsInstance implements InitializingBean {
     }
 
     public void stop() {
-        logger.info("Logics instance is stopping...");
+        startLog("Logics instance is stopping...");
         lifecycle.fireStopping();
         lifecycle.fireStopped();
-        logger.info("Logics instance has stopped...");
+        startLog("Logics instance has stopped...");
     }
 
     public DataSession createSession() throws SQLException {

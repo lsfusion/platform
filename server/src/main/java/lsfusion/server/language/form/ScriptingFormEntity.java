@@ -50,7 +50,6 @@ import lsfusion.server.logics.property.UnionProperty;
 import lsfusion.server.logics.property.cases.CalcCase;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
@@ -62,6 +61,7 @@ import java.util.Map;
 
 import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.server.logics.form.interactive.action.edit.FormSessionScope.OLDSESSION;
+import static lsfusion.server.physics.admin.log.ServerLoggers.startLog;
 
 public class ScriptingFormEntity {
     private ScriptingLogicsModule LM;
@@ -429,7 +429,7 @@ public class ScriptingFormEntity {
 
             // temporary check
             if(nvl(scope, PropertyDrawEntity.DEFAULT_ACTION_EVENTSCOPE) != OLDSESSION && !(pDrawUsage instanceof ScriptingLogicsModule.FormPredefinedUsage) && (propertyOptions.getEventActions() == null || !propertyOptions.getEventActions().containsKey(ServerResponse.CHANGE)))
-                ServerLoggers.startLogger.info("WARNING! Now default change event action will work in new session " + propertyDraw);
+                startLog("WARNING! Now default change event action will work in new session " + propertyDraw);
 
             propertyDraw.defaultChangeEventScope = scope;
 
@@ -655,7 +655,7 @@ public class ScriptingFormEntity {
 
         Boolean filter = options.getFilter();
         if(filter != null && filter)
-            form.addFixedFilter(new FilterEntity(property.getAssertProperty(form.getGlobalContext())), version);
+            form.addUserFilter(property, version);
 
         Boolean pivotColumn = options.getPivotColumn();
         if(pivotColumn != null && pivotColumn)
