@@ -60,10 +60,10 @@ public abstract class GNavigatorElement implements Serializable, HasNativeSID {
 
     public String getTooltipText() {
         return MainFrame.showDetailedInfo ?
-                GwtSharedUtils.stringFormat("<html>" +
-                        (caption != null ? ("<b>" + caption + "</b>" + createTooltipHorizontalSeparator()) : "") +
+                GwtSharedUtils.stringFormat("<html>%s" +
                         "<b>sID:</b> %s<br><b>" + ClientMessages.Instance.get().tooltipPath() +
                         ":</b> %s<a class='lsf-tooltip-path'></a> &ensp; <a class='lsf-tooltip-help'></a></html>",
+                        (caption != null ? ("<b>" + caption + "</b>" + createTooltipHorizontalSeparator()) : ""),
                         canonicalName, creationPath) : caption;
     }
 
