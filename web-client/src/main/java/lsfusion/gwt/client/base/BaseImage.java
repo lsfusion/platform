@@ -191,24 +191,38 @@ public interface BaseImage extends Serializable {
     }
     static void updateText(Element element, String text, boolean vertical, boolean forceDiv) {
         Node textNode = (Node) element.getPropertyObject(TEXT); // always present, since it is initialized in initImageText
-        Element htmlElement = (Element) element.getPropertyObject(DIV);
+        Element textElement = (Element) element.getPropertyObject(DIV);
 
+        // using node for optimization purposes (to save extra element in DOM)
         text = text == null ? "" : text;
-        if(htmlElement == null) {
-            htmlElement = Document.get().createDivElement();
-            htmlElement.addClassName("wrap-text-div");
+        if ((forceDiv && !text.isEmpty()) || GwtClientUtils.containsHtmlTag(text) || GwtClientUtils.containsLineBreak(text)) { // nodeValue doesn't support line breaks
+            if(textElement == null) {
+                textElement = Document.get().createDivElement();
+                textElement.addClassName("wrap-text-div");
 
-            if(vertical) {
-                element.addClassName("wrap-div-vert");
-            } else {
-                element.addClassName("wrap-div-horz");
+                if(vertical) {
+                    element.addClassName("wrap-div-vert");
+                } else {
+                    element.addClassName("wrap-div-horz");
+                }
+
+                element.appendChild(textElement);
+                element.setPropertyObject(DIV, textElement);
             }
+            GwtClientUtils.setCaptionHtmlOrText(textElement, text);
+            textNode.setNodeValue("");
+        } else {
+            if(textElement != null) {
+                element.removeChild(textElement);
+                if(vertical)
+                    element.removeClassName("wrap-div-vert");
+                else
+                    element.removeClassName("wrap-div-horz");
 
-            element.appendChild(htmlElement);
-            element.setPropertyObject(DIV, htmlElement);
+                element.setPropertyObject(DIV, null);
+            }
+            textNode.setNodeValue(text);
         }
-        htmlElement.setInnerHTML(EscapeUtils.toHtml(text));
-        textNode.setNodeValue("");
 
         if (!text.isEmpty()) {
             element.addClassName("wrap-text-not-empty");

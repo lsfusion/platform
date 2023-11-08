@@ -54,7 +54,9 @@ public class PopupMenuItem extends SimplePanel {
 
     private static LIElement createLIElement(String text, boolean interactive) {
         LIElement element = Document.get().createLIElement();
-        element.setInnerHTML(text);
+        // actually here should be setDataHtmlOrText with html coming from SimpleTextBasedCellEditor (in getDisplayString),
+        // but a) displayString is always html, because it uses bold styling b) it needs some more refactoring, so we'll leave it this way for now
+        GwtClientUtils.setCaptionHtmlOrText(element, text);
         element.addClassName(interactive ? "dropdown-item" : "dropdown-item-text");
         return element;
     }

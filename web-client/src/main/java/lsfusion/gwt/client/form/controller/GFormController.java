@@ -8,6 +8,7 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.*;
@@ -995,10 +996,10 @@ public class GFormController implements EditManager {
     public void executePropertyEventAction(ExecuteEditContext editContext, String actionSID, EventHandler handler) {
         GPropertyDraw property = editContext.getProperty();
         if (isChangeEvent(actionSID) && property.askConfirm) {
-            blockingConfirm("lsFusion", property.askConfirmMessage, false, chosenOption -> {
-                if (chosenOption == DialogBoxHelper.OptionType.YES)
-                    executePropertyEventActionConfirmed(editContext, actionSID, handler);
-            });
+            DialogBoxHelper.showConfirmBox("lsFusion", EscapeUtils.toHTML(property.askConfirmMessage), false, 0, 0, chosenOption -> {
+                        if (chosenOption == DialogBoxHelper.OptionType.YES)
+                            executePropertyEventActionConfirmed(editContext, actionSID, handler);
+                    });
         } else
             executePropertyEventActionConfirmed(editContext, actionSID, handler);
     }
@@ -1134,7 +1135,7 @@ public class GFormController implements EditManager {
 
     public void asyncCloseForm(GAsyncExecutor asyncExecutor) {
         if(needConfirm) {
-            DialogBoxHelper.showConfirmBox("lsFusion", messages.doYouReallyWantToCloseForm(), false, 0, 0, chosenOption -> {
+            DialogBoxHelper.showConfirmBox("lsFusion", messages.doYouReallyWantToCloseForm(), false, chosenOption -> {
                 if(chosenOption == DialogBoxHelper.OptionType.YES) {
                     formsController.asyncCloseForm(asyncExecutor, formContainer);
                 }
@@ -1146,7 +1147,7 @@ public class GFormController implements EditManager {
 
     public void asyncCloseForm(EditContext editContext, ExecContext execContext, EventHandler handler, String actionSID, GPushAsyncInput pushAsyncResult, boolean externalChange, Consumer<Long> onExec) {
         if(needConfirm) {
-            DialogBoxHelper.showConfirmBox("lsFusion", messages.doYouReallyWantToCloseForm(), false, 0, 0, chosenOption -> {
+            DialogBoxHelper.showConfirmBox("lsFusion", messages.doYouReallyWantToCloseForm(), false, chosenOption -> {
                 if(chosenOption == DialogBoxHelper.OptionType.YES) {
                     asyncCloseForm(editContext, execContext, handler, actionSID, externalChange, onExec);
                 }
@@ -1589,18 +1590,6 @@ public class GFormController implements EditManager {
             onFormHidden(asyncFormController, closeDelay, editFormCloseReason);
             formHidden = true;
         }
-    }
-
-    public void blockingConfirm(String caption, String message, boolean cancel, final DialogBoxHelper.CloseCallback callback) {
-        DialogBoxHelper.showConfirmBox(caption, message, cancel, 0, 0, callback);
-    }
-
-    public void blockingConfirm(String caption, String message, boolean cancel, int timeout, int initialValue, final DialogBoxHelper.CloseCallback callback) {
-        DialogBoxHelper.showConfirmBox(caption, message, cancel, timeout, initialValue, callback);
-    }
-
-    public void blockingMessage(String caption, String message, final DialogBoxHelper.CloseCallback callback) {
-        DialogBoxHelper.showMessageBox(caption, message, callback);
     }
 
     public Dimension getPreferredSize(GSize maxWidth, GSize maxHeight, Element element) {

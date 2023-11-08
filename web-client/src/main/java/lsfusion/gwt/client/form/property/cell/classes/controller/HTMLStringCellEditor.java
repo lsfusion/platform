@@ -22,7 +22,7 @@ public class HTMLStringCellEditor extends SimpleTextBasedCellEditor {
     @Override
     protected String tryFormatInputText(PValue value) {
         String string = PValue.getStringValue(value);
-        if(string == null || GwtClientUtils.isContainHtmlTag(string) || string.contains("\n"))
+        if(string == null || GwtClientUtils.containsHtmlTag(string) || string.contains("\n"))
             string = "";
         return string;
     }

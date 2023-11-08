@@ -9,7 +9,6 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 
@@ -54,7 +53,7 @@ public class DialogBoxHelper {
     }
 
     public static void showMessageBox(String caption, String message, final CloseCallback closeCallback) {
-        new MessageBox(caption, message, 0, closeCallback, OptionType.CLOSE, OptionType.CLOSE).show();
+        showMessageBox(caption, new HTML(message), closeCallback);
     }
 
     public static void showMessageBox(String caption, Widget contents, final CloseCallback closeCallback) {
@@ -66,15 +65,18 @@ public class DialogBoxHelper {
     }
 
     public static void showConfirmBox(String caption, String message, boolean cancel, int timeout, int initialValue, final CloseCallback closeCallback) {
-        OptionType[] options = {OptionType.YES, OptionType.NO};
-        if (cancel)
-            options = new OptionType[]{OptionType.YES, OptionType.NO, OptionType.CLOSE};
-        MessageBox messageBox = new MessageBox(caption, message, timeout, closeCallback, options[initialValue], options);
-        messageBox.show();
+        showConfirmBox(caption, new HTML(message), cancel, timeout, initialValue, closeCallback);
+    }
+
+    public static void showConfirmBox(String caption, Widget contents, boolean cancel, int timeout, int initialValue, final CloseCallback closeCallback) {
+        showConfirmBox(caption, contents, timeout, cancel ? new OptionType[]{OptionType.YES, OptionType.NO, OptionType.CLOSE} : new OptionType[] {OptionType.YES, OptionType.NO}, initialValue, closeCallback);
     }
     
     public static MessageBox showConfirmBox(String caption, Widget contents, OptionType[] options, final CloseCallback closeCallback) {
-        MessageBox messageBox = new MessageBox(caption, contents, 0, closeCallback, options[0], options);
+        return showConfirmBox(caption, contents, 0, options, 0, closeCallback);
+    }
+    public static MessageBox showConfirmBox(String caption, Widget contents, int timeout, OptionType[] options, int initialValue, final CloseCallback closeCallback) {
+        MessageBox messageBox = new MessageBox(caption, contents, timeout, closeCallback, options[initialValue], options);
         messageBox.show();
         return messageBox;
     }
@@ -84,10 +86,6 @@ public class DialogBoxHelper {
         private final HandlerRegistration nativePreviewHandlerRegistration;
         private final CloseCallback closeCallback;
         private FormButton activeButton;
-
-        private MessageBox(String caption, String message, int timeout, final CloseCallback closeCallback, OptionType activeOption, OptionType... options) {
-            this(caption, new HTML(EscapeUtils.toHtml(message)), timeout, closeCallback, activeOption, options);
-        }
 
         private MessageBox(String caption, Widget contents, int timeout, final CloseCallback closeCallback, final OptionType activeOption, OptionType... options) {
             super(caption, false, ModalWindowSize.FIT_CONTENT);

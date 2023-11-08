@@ -41,13 +41,13 @@ public class TooltipManager {
     }-*/;
 
     private static Element getTooltipContent(TooltipHelper tooltipHelper, Element element) {
-        HTML tooltipHtml = new HTML(EscapeUtils.toHtml(tooltipHelper.getTooltip()), false);
+        Element tooltipElement = EscapeUtils.toHTML(tooltipHelper.getTooltip()).getElement();
 
         if (MainFrame.showDetailedInfo) {
             String projectLSFDir = MainFrame.projectLSFDir;
 
             if (!projectLSFDir.isEmpty()) {
-                setLinks(tooltipHelper, projectLSFDir, tooltipHtml);
+                setLinks(tooltipHelper, projectLSFDir, tooltipElement);
             } else {
                 VerticalPanel verticalPanel = new VerticalPanel();
                 verticalPanel.setVisible(false);
@@ -93,20 +93,19 @@ public class TooltipManager {
                 preferencesButton.addStyleName("tooltip-path-preferences-button");
 
                 String debugPath = Cookies.getCookie("debugPath");
-                setLinks(tooltipHelper, debugPath == null ? "use_default_path" : debugPath, tooltipHtml);
+                setLinks(tooltipHelper, debugPath == null ? "use_default_path" : debugPath, tooltipElement);
 
-                tooltipHtml.getElement().appendChild(preferencesButton.getElement());
-                tooltipHtml.getElement().appendChild(verticalPanel.getElement());
+                tooltipElement.appendChild(preferencesButton.getElement());
+                tooltipElement.appendChild(verticalPanel.getElement());
             }
         }
 
-        return tooltipHtml.getElement();
+        return tooltipElement;
     }
 
-    private static void setLinks(TooltipHelper tooltipHelper, String projectLSFDir, HTML tooltipHtml) {
-        Element element = tooltipHtml.getElement();
-        for (int i = 0; i < element.getChildCount(); i++) {
-            Node child = element.getChild(i);
+    private static void setLinks(TooltipHelper tooltipHelper, String projectLSFDir, Element tooltipElement) {
+        for (int i = 0; i < tooltipElement.getChildCount(); i++) {
+            Node child = tooltipElement.getChild(i);
             if (child.getNodeName().equals("A")) {
                 Element childElement = Element.as(child);
                 String elementClass = childElement.getAttribute("class");

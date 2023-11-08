@@ -803,7 +803,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
                     }
 
                     if (elementType != null)
-                        return new Select(select.property, selectType, elementType, select.length, select.count, select.actual, select.html && elementType.equals("Dropdown"));
+                        return new Select(select.property, selectType, elementType, select.length, select.count, select.actual, select.html);
                 }
             }
         }
