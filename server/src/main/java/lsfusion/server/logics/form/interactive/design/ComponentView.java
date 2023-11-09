@@ -14,6 +14,7 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.LocalNestedType;
 import lsfusion.server.logics.classes.data.LogicalClass;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerIdentitySerializable;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
@@ -456,6 +457,6 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         container.finalizeChanges();
     }
 
-    public void prereadAutoIcons(FormView formView, FormInstanceContext context) {
+    public void prereadAutoIcons(FormView formView, ConnectionContext context) {
     }
 }

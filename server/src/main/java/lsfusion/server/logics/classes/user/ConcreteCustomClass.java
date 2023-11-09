@@ -5,6 +5,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.server.base.AppServerImage;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
@@ -25,6 +26,7 @@ import lsfusion.server.logics.classes.ConcreteClass;
 import lsfusion.server.logics.classes.ConcreteValueClass;
 import lsfusion.server.logics.classes.StaticClass;
 import lsfusion.server.logics.classes.user.set.*;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.user.ClassDataProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -229,9 +231,10 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         }
     }
 
-    public void fillIcons(MSet<String> mImages) {
+    public void fillIcons(MSet<String> mImages, ConnectionContext context) {
+        String searchName = AppServerImage.Style.PROPERTY.getSearchName(context);
         for(ObjectInfo object : getStaticObjectsInfoIt())
-            mImages.add(object.image);
+            mImages.add(object.image + "," + searchName);
     }
 
     public void fillIDs(SQLSession sql, QueryEnvironment env, SQLCallable<Long> idGen, LP caption, LP image, LP name, Map<String, ConcreteCustomClass> usedSIds, Set<Long> usedIds, Map<String, String> sidChanges, DBManager.IDChanges dbChanges) throws SQLException, SQLHandledException {

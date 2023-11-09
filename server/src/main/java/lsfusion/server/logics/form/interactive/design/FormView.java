@@ -27,6 +27,7 @@ import lsfusion.server.base.version.interfaces.NFOrderSet;
 import lsfusion.server.base.version.interfaces.NFSet;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncSerializer;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerCustomSerializable;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
@@ -806,7 +807,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     }
 
 
-    public void prereadAutoIcons(FormInstanceContext context) {
+    public void prereadAutoIcons(ConnectionContext context) {
         for(PropertyDrawView property : getPropertiesIt())
             property.getImage(context);
 

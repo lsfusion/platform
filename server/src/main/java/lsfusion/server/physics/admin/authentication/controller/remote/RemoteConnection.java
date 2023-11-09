@@ -113,7 +113,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
                 throw new AuthenticationException(String.format("User with login %s not found", login));
             }
         } else {
-            user = SystemProperties.inDevMode ? securityManager.getAdminUser() : securityManager.getAnonymousUser();
+            user = securityManager.getDefaultLoginUser();
         }
     }
 

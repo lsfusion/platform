@@ -172,8 +172,8 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         return adminUser;
     }
 
-    public DataObject getAnonymousUser() {
-        return anonymousUser;
+    public DataObject getDefaultLoginUser() {
+        return SystemProperties.inDevMode ? getAdminUser() : anonymousUser;
     }
 
     private DataSession createSession() throws SQLException {
