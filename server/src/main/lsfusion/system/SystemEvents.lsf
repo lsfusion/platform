@@ -779,7 +779,7 @@ DESIGN pings {
 property = DATA LOCAL STRING(INTEGER);
 desc = DATA LOCAL BOOLEAN(INTEGER);
 
-FORM orders
+FORM ordersForm
     OBJECTS value = INTEGER
     PROPERTIES(value) property, desc
     FILTERS property(value)
@@ -790,7 +790,7 @@ negation = DATA LOCAL BOOLEAN(INTEGER);
 or = DATA LOCAL BOOLEAN(INTEGER);
 value = DATA LOCAL STRING(INTEGER);
 
-FORM filters
+FORM filtersForm
     OBJECTS f = INTEGER EXTID 'value'
     PROPERTIES(f) property, negation, compare, value, or
     FILTERS property(f)
