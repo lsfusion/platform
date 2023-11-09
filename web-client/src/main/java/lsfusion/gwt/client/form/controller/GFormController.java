@@ -8,7 +8,6 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
-import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.*;
@@ -1343,7 +1342,7 @@ public class GFormController implements EditManager {
                     PValue value = null;
                     if (filter.value instanceof String) {
                         try {
-                            value = propertyDraw.baseType.parseString((String) filter.value, propertyDraw.pattern);
+                            value = propertyDraw.getFilterBaseType().parseString((String) filter.value, propertyDraw.pattern);
                         } catch (ParseException ignored) {
                         }
                     } else {
