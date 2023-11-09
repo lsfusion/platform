@@ -65,7 +65,10 @@ import lsfusion.server.logics.form.interactive.changed.MFormChanges;
 import lsfusion.server.logics.form.interactive.changed.ReallyChanged;
 import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
-import lsfusion.server.logics.form.interactive.instance.filter.*;
+import lsfusion.server.logics.form.interactive.instance.filter.AndFilterInstance;
+import lsfusion.server.logics.form.interactive.instance.filter.CompareFilterInstance;
+import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
+import lsfusion.server.logics.form.interactive.instance.filter.OrFilterInstance;
 import lsfusion.server.logics.form.interactive.instance.order.OrderInstance;
 import lsfusion.server.logics.form.interactive.instance.property.ActionObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
@@ -360,6 +363,11 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     public FilterInstance classFilter;
 
     private final List<FilterInstance> userFilters = new ArrayList<>();
+    
+    public List<FilterInstance> getUserFilters() {
+        return userFilters;
+    }
+    
     public void clearUserFilters() {
         if(!userFilters.isEmpty()) {
             userFilters.clear();
@@ -411,11 +419,22 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         return setOrders;
     }
     private ImOrderMap<OrderInstance,Boolean> userOrders = MapFact.EMPTYORDER();
+    // is necessary to identify property draw in ReadOrderAction 
+    private ImMap<OrderInstance, PropertyDrawInstance> userOrdersPropertyMapping = MapFact.EMPTY();
 
-    public void changeOrder(OrderInstance property, Order modiType) {
+    public ImOrderMap<OrderInstance,Boolean> getUserOrders() {
+        return userOrders;
+    }
+    
+    public ImMap<OrderInstance, PropertyDrawInstance> getUserOrdersPropertyMapping() {
+        return userOrdersPropertyMapping;
+    }
+
+    public void changeOrder(OrderInstance property, PropertyDrawInstance propertyDraw, Order modiType) {
         ImOrderMap<OrderInstance, Boolean> newOrders;
         if (modiType == Order.REPLACE) {
             newOrders = MapFact.singletonOrder(property, userOrders.containsKey(property) && !userOrders.get(property));
+            userOrdersPropertyMapping = MapFact.EMPTY();
         } else if (modiType == Order.REMOVE) {
             newOrders = userOrders.removeOrderIncl(property);
         } else if (modiType == Order.DIR) {
@@ -428,6 +447,12 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             newOrders = userOrders.addOrderExcl(property, false);
         }
 
+        if (modiType == Order.REMOVE) {
+            userOrdersPropertyMapping = userOrdersPropertyMapping.remove(property);
+        } else {
+            userOrdersPropertyMapping = userOrdersPropertyMapping.addIfNotContains(property, propertyDraw);
+        }
+
         if(!BaseUtils.hashEquals(newOrders, userOrders)) {// оптимизация для пользовательских настроек
             userOrders = newOrders;
             setOrders = null;
@@ -438,6 +463,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     public void clearOrders() {
         if(!userOrders.isEmpty()) { // оптимизация для пользовательских настроек
             userOrders = MapFact.EMPTYORDER();
+            userOrdersPropertyMapping = MapFact.EMPTY();
             setOrders = null;
             updated |= UPDATED_ORDER;
         }

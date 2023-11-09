@@ -68,10 +68,9 @@ public abstract class DataFilterValueView extends FlexPanel {
         // with quick filter first value of current cell is cleared and then key symbol is put - we have 2 server requests  
         if (keyEvent == null || KeyStrokes.isChangeAppendKeyEvent(keyEvent)) {
             if (readSelectedValue) {
-                setValue(SwingUtils.escapeSeparator(logicsSupplier.getSelectedValue(condition.property, condition.columnKey), condition.compare));
-            } else {
-                setValue(filterValue.value);
+                filterValue.value = SwingUtils.escapeSeparator(logicsSupplier.getSelectedValue(condition.property, condition.columnKey), condition.compare);
             }
+            setValue(filterValue.value);
         }
     }
 

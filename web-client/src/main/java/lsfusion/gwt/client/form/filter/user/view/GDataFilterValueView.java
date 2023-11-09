@@ -62,8 +62,10 @@ public class GDataFilterValueView extends SizedFlexPanel {
 //        cell.updateValue(filterValue.value);
     }
 
-    public void onAdd() {
-        cell.focus(FocusUtils.Reason.NEWFILTER);
+    public void onAdd(boolean focus) {
+        if (focus) {
+            cell.focus(FocusUtils.Reason.NEWFILTER);
+        }
     }
 
     public void focusOnValue() {

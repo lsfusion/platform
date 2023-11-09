@@ -2,8 +2,31 @@ package lsfusion.gwt.client.form.filter.user;
 
 import lsfusion.gwt.client.ClientMessages;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public enum GCompare {
-    EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS, CONTAINS, MATCH, INARRAY;
+    EQUALS("="), GREATER(">"), LESS("<"), GREATER_EQUALS(">="),
+    LESS_EQUALS("<="), NOT_EQUALS("!="), CONTAINS("_"), MATCH("@"),
+    INARRAY("IN ARRAY");
+
+    private final String str;
+
+    private static final Map<String, GCompare> lookup = new HashMap<>();
+
+    static {
+        for (GCompare c : GCompare.values()) {
+            lookup.put(c.str, c);
+        }
+    }
+
+    GCompare(String str) {
+        this.str = str;
+    }
+
+    public static GCompare get(String str) {
+        return lookup.get(str);
+    }
 
     public static GCompare get(boolean min) {
         return min? GCompare.LESS: GCompare.GREATER;
@@ -60,47 +83,23 @@ public enum GCompare {
 
     @Override
     public String toString() {
-        switch (this) {
-            case EQUALS :
-                return "=";
-            case GREATER :
-                return ">";
-            case LESS :
-                return "<";
-            case GREATER_EQUALS :
-                return ">=";
-            case LESS_EQUALS :
-                return "<=";
-            case NOT_EQUALS :
-                return "!=";
-            case CONTAINS:
-                return "_";
-            case MATCH:
-                return "@";
-            case INARRAY :
-                return "IN ARRAY";
-        }
-        throw new RuntimeException("Serialize Compare");
+        return str;
     }
 
     public String getFullString() {
         switch (this) {
             case EQUALS :
-                return "=";
             case GREATER :
-                return ">";
             case LESS :
-                return "<";
             case GREATER_EQUALS :
-                return ">=";
             case LESS_EQUALS :
-                return "<=";
+                return str;
             case NOT_EQUALS :
-                return "!= (" + ClientMessages.Instance.get().formFilterCompareNotEquals() + ")";
+                return str + " (" + ClientMessages.Instance.get().formFilterCompareNotEquals() + ")";
             case CONTAINS:
-                return "_ (" + ClientMessages.Instance.get().formFilterCompareContains() + ")";
+                return str + " (" + ClientMessages.Instance.get().formFilterCompareContains() + ")";
             case MATCH:
-                return "@ (" + ClientMessages.Instance.get().formFilterCompareSearch() + ")";
+                return str + " (" + ClientMessages.Instance.get().formFilterCompareSearch() + ")";
             case INARRAY :
                 return ClientMessages.Instance.get().formFilterCompareInArray();
         }

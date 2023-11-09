@@ -33,11 +33,7 @@ import lsfusion.gwt.client.form.view.FormDockable;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
 import lsfusion.gwt.client.view.MainFrame;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public abstract class GwtActionDispatcher implements GActionDispatcher {
     private boolean dispatchingPaused;
@@ -356,6 +352,14 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     @Override
     public void execute(GResetWindowsLayoutAction action) {
+    }
+
+    @Override
+    public void execute(GOrderAction action) {
+    }
+
+    @Override
+    public void execute(GFilterAction action) {
     }
 
     private class JSExecutor {

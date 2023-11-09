@@ -98,6 +98,7 @@ import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
+import lsfusion.server.logics.form.interactive.event.UserActivityEvent;
 import lsfusion.server.logics.form.interactive.instance.design.BaseComponentViewInstance;
 import lsfusion.server.logics.form.interactive.instance.design.ComponentViewInstance;
 import lsfusion.server.logics.form.interactive.instance.design.ContainerViewInstance;
@@ -138,7 +139,6 @@ import lsfusion.server.physics.admin.profiler.ProfiledObject;
 
 import javax.swing.*;
 import java.io.IOException;
-import java.lang.String;
 import java.lang.ref.WeakReference;
 import java.sql.SQLException;
 import java.util.*;
@@ -390,9 +390,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
             if(toDraw != null) {
                 OrderInstance order = property.getOrderProperty();
-                toDraw.changeOrder(order, wasOrder.contains(toDraw) ? ADD : REPLACE);
+                toDraw.changeOrder(order, property, wasOrder.contains(toDraw) ? ADD : REPLACE);
                 if (!ascending) {
-                    toDraw.changeOrder(order, DIR);
+                    toDraw.changeOrder(order, property, DIR);
                 }
                 wasOrder.add(toDraw);
             }
@@ -2704,6 +2704,10 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     public void fireOnDrop(ExecutionStack stack) throws SQLException, SQLHandledException {
         formResult = FormCloseType.DROP;
         fireEvent(FormEventType.DROP, stack);
+    }
+
+    public void fireOnUserActivity(ExecutionStack stack, UserActivityEvent event) throws SQLException, SQLHandledException {
+        fireEvent(event, stack);
     }
 
     public void fireFormEvent(ExecutionStack stack, FormEvent formEvent, PushAsyncResult pushedAsyncResult) throws SQLException, SQLHandledException {

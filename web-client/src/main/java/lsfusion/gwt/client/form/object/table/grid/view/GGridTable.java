@@ -127,6 +127,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                     orderList.add(entry.getValue());
                 }
                 form.setPropertyOrders(groupObject, propertyList, columnKeyList, orderList);
+                
+                headersChanged();
             }
 
             @Override
@@ -746,6 +748,16 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         for (Map.Entry<GPropertyDraw, Boolean> entry : orders.entrySet())
             setOrders.put(getMinColumnKey(entry.getKey()), entry.getValue());
         return sortableHeaderManager.changeOrders(groupObject, setOrders, alreadySet);
+    }
+
+    @Override
+    public void changePropertyOrders(LinkedHashMap<GPropertyDraw, GOrder> orders) {
+        for (Map.Entry<GPropertyDraw, GOrder> entry : orders.entrySet()) {
+            sortableHeaderManager.changeOrder(getMinColumnKey(entry.getKey()), entry.getValue());
+        }
+        if (!orders.isEmpty()) {
+            headersChanged();
+        }
     }
 
     private HashMap<GPropertyDraw, GGroupObjectValue> getMinColumnKey(GPropertyDraw property) {

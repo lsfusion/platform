@@ -327,8 +327,8 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
         enableApplyButton();
     }
 
-    public void onAdd() {
-        valueView.onAdd();
+    public void onAdd(boolean focusValueView) {
+        valueView.onAdd(focusValueView);
     }
 
     public void startEditing(Event keyEvent) {

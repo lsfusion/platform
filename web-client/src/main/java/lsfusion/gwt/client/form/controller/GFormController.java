@@ -8,11 +8,11 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
-import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.*;
 import lsfusion.gwt.client.action.GAction;
+import lsfusion.gwt.client.action.GFilterAction;
 import lsfusion.gwt.client.action.GLogMessageAction;
 import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
@@ -48,8 +48,11 @@ import lsfusion.gwt.client.form.design.view.TabbedContainerView;
 import lsfusion.gwt.client.form.event.*;
 import lsfusion.gwt.client.form.filter.GRegularFilter;
 import lsfusion.gwt.client.form.filter.GRegularFilterGroup;
+import lsfusion.gwt.client.form.filter.user.GCompare;
+import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilterDTO;
+import lsfusion.gwt.client.form.filter.user.controller.GFilterController;
 import lsfusion.gwt.client.form.filter.user.view.GFilterConditionView;
 import lsfusion.gwt.client.form.object.*;
 import lsfusion.gwt.client.form.object.panel.controller.GPanelController;
@@ -1312,6 +1315,47 @@ public class GFormController implements EditManager {
         syncResponseDispatch(new ChangePropertyOrder(property.ID, columnKey, modiType));
     }
 
+    public void changePropertyOrder(int goID, LinkedHashMap<Integer, Boolean> orders) {
+        GGroupObject groupObject = form.getGroupObject(goID);
+        if (groupObject != null) {
+            LinkedHashMap<GPropertyDraw, Boolean> pOrders = new LinkedHashMap<>();
+            for (Integer propertyID : orders.keySet()) {
+                GPropertyDraw propertyDraw = form.getProperty(propertyID);
+                if (propertyDraw != null) {
+                    Boolean value = orders.get(propertyID);
+                    pOrders.put(propertyDraw, value);
+                }
+            }
+
+            controllers.get(groupObject).changeOrders(pOrders, false);
+        }
+    }
+
+    public void changePropertyFilters(int goID, List<GFilterAction.FilterItem> filters) {
+        GGroupObject groupObject = form.getGroupObject(goID);
+        if (groupObject != null) {
+            GGridController gGridController = controllers.get(groupObject);
+            List<GPropertyFilter> uFilters = new ArrayList<>();
+            for (GFilterAction.FilterItem filter : filters) {
+                GPropertyDraw propertyDraw = form.getProperty(filter.propertyId);
+                if (propertyDraw != null) {
+                    PValue value = null;
+                    if (filter.value instanceof String) {
+                        try {
+                            value = propertyDraw.getFilterBaseType().parseString((String) filter.value, propertyDraw.pattern);
+                        } catch (ParseException ignored) {
+                        }
+                    } else {
+                        value = PValue.remapValue(filter.value);
+                    }
+                    uFilters.add(GFilterController.createNewCondition(gGridController, new GFilter(propertyDraw), null, value, filter.negation, GCompare.get(filter.compare), filter.junction));
+                }
+            }
+
+            gGridController.changeFilters(uFilters);
+        }
+    }
+
     public void setPropertyOrders(GGroupObject groupObject, List<Integer> propertyList, List<GGroupObjectValue> columnKeyList, List<Boolean> orderList) {
         syncResponseDispatch(new SetPropertyOrders(groupObject.ID, propertyList, columnKeyList, orderList));
     }
@@ -1344,7 +1388,7 @@ public class GFormController implements EditManager {
 
     public long changeFilter(GGroupObject groupObject, ArrayList<GPropertyFilter> conditions) {
         currentFilters.put(groupObject, conditions);
-        return applyCurrentFilters();
+        return applyCurrentFilters(Collections.singletonList(groupObject));
     }
 
     public long changeFilter(GTreeGroup treeGroup, ArrayList<GPropertyFilter> conditions) {
@@ -1362,12 +1406,21 @@ public class GFormController implements EditManager {
             currentFilters.put(group, groupFilters);
         }
 
-        return applyCurrentFilters();
+        return applyCurrentFilters(treeGroup.groups);
     }
 
-    private long applyCurrentFilters() {
-        ArrayList<GPropertyFilterDTO> filters = new ArrayList<>();
-        currentFilters.foreachValue(groupFilters -> groupFilters.stream().filter(filter -> !filter.property.isAction()).map(GPropertyFilter::getFilterDTO).collect(Collectors.toCollection(() -> filters)));
+    private long applyCurrentFilters(List<GGroupObject> groups) {
+        Map<Integer, List<GPropertyFilterDTO>> filters = new LinkedHashMap<>();
+        for (GGroupObject group : groups) {
+            List<GPropertyFilterDTO> groupFilters = new ArrayList<>();
+            List<GPropertyFilter> gFilters = currentFilters.get(group);
+            for (GPropertyFilter filter : gFilters) {
+                if (!filter.property.isAction()) {
+                    groupFilters.add(filter.getFilterDTO());
+                }
+            }
+            filters.put(group.ID, groupFilters);
+        }
         return asyncResponseDispatch(new SetUserFilters(filters));
     }
 

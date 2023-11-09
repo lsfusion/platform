@@ -12,7 +12,6 @@ import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.file.AppImage;
-import lsfusion.server.base.AppServerImage;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.form.ModalityWindowFormType;
 import lsfusion.interop.form.WindowFormType;
@@ -22,6 +21,7 @@ import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.Compare;
+import lsfusion.server.base.AppServerImage;
 import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.base.version.GlobalVersion;
 import lsfusion.server.base.version.LastVersion;
@@ -64,6 +64,10 @@ import lsfusion.server.logics.event.Event;
 import lsfusion.server.logics.event.PrevScope;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.UpdateType;
+import lsfusion.server.logics.form.interactive.action.activity.FilterAction;
+import lsfusion.server.logics.form.interactive.action.activity.OrderAction;
+import lsfusion.server.logics.form.interactive.action.activity.ReadFiltersAction;
+import lsfusion.server.logics.form.interactive.action.activity.ReadOrdersAction;
 import lsfusion.server.logics.form.interactive.action.async.QuickAccess;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapRemove;
 import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelector;
@@ -2053,6 +2057,26 @@ public abstract class LogicsModule {
         }
         ExpandCollapseGroupObjectAction expandProperty = new ExpandCollapseGroupObjectAction(object, objects, type, expand, objectClasses.toArray(new ValueClass[objectClasses.size()]));
         return addAction(null, new LA<>(expandProperty));
+    }
+    
+    @IdentityStrongLazy
+    public LA addOrderAProp(GroupObjectEntity object, LP fromProperty) {
+        return addAction(null, new LA<>(new OrderAction(object, fromProperty)));
+    }
+
+    @IdentityStrongLazy
+    public LA addReadOrdersAProp(GroupObjectEntity object, LP toProperty) {
+        return addAction(null, new LA<>(new ReadOrdersAction(object, toProperty)));
+    }
+
+    @IdentityStrongLazy
+    public LA addFilterAProp(GroupObjectEntity object, LP fromProperty) {
+        return addAction(null, new LA<>(new FilterAction(object, fromProperty)));
+    }
+
+    @IdentityStrongLazy
+    public LA addReadFiltersAProp(GroupObjectEntity object, LP toProperty) {
+        return addAction(null, new LA<>(new ReadFiltersAction(object, toProperty)));
     }
 
     public void addConstraint(Property<?> property, LocalizedString message, boolean checkChange) {

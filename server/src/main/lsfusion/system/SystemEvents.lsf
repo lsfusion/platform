@@ -776,6 +776,26 @@ DESIGN pings {
     PROPERTY(limitDToObj) { caption = '{system.events.form.pings.caption.time.to}'; }    
 }
 
+property = DATA LOCAL STRING(INTEGER);
+desc = DATA LOCAL BOOLEAN(INTEGER);
+
+FORM orders
+    OBJECTS value = INTEGER
+    PROPERTIES(value) property, desc
+    FILTERS property(value)
+;
+
+compare = DATA LOCAL STRING(INTEGER);
+negation = DATA LOCAL BOOLEAN(INTEGER);
+or = DATA LOCAL BOOLEAN(INTEGER);
+value = DATA LOCAL STRING(INTEGER);
+
+FORM filters
+    OBJECTS f = INTEGER EXTID 'value'
+    PROPERTIES(f) property, negation, compare, value, or
+    FILTERS property(f)
+;
+
 NAVIGATOR {
     logs {
         NEW SystemEvents.exceptions;

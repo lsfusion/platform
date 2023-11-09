@@ -673,6 +673,21 @@ public class GGridController extends GAbstractTableController {
         return formController.changeFilter(groupObject, conditions);
     }
 
+    public void changeFilters(List<GPropertyFilter> filters) {
+        if (filter.hasFiltersContainer()) {
+            // hide controls only if no filters are expected. otherwise leave controls visibility unchanged
+            filter.removeAllConditionsWithoutApply(filters.isEmpty());
+            
+            for (GPropertyFilter iFilter : filters) {
+                filter.addCondition(iFilter, null, false, false, false);
+            }
+            
+            // the only changeFilters() call is made when filters are initiated by server via FilterClientAction
+            // in this case we don't want focus to appear on some unexpected grid
+            filter.applyFilters(false, null);
+        }
+    }
+
     private void changeMode(Runnable updateView, GListViewType viewType, boolean setManualUpdateMode) {
         updateView.run();
         table.setSetRequestIndex(formController.changeListViewType(groupObject, table.getPageSize(), viewType, setManualUpdateMode ? GUpdateMode.MANUAL : null));

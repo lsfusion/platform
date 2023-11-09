@@ -1,6 +1,5 @@
 package lsfusion.server.logics.form.interactive.instance.filter;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
@@ -14,16 +13,15 @@ import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.form.interactive.changed.ReallyChanged;
 import lsfusion.server.logics.form.interactive.instance.object.CustomObjectInstance;
+import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
+import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.property.implement.PropertyValueImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;
-import java.util.Collections;
-import java.util.Set;
 
 public class NotNullFilterInstance<P extends PropertyInterface> extends PropertyFilterInstance<P> {
 
@@ -32,7 +30,15 @@ public class NotNullFilterInstance<P extends PropertyInterface> extends Property
     }
 
     public NotNullFilterInstance(PropertyObjectInstance<P> property, boolean resolveAdd) {
-        super(property, resolveAdd);
+        this(property, resolveAdd, null, null);
+    }
+
+    public NotNullFilterInstance(PropertyObjectInstance<P> property, GroupObjectInstance toDraw, PropertyDrawInstance<P> propertyDraw) {
+        this(property, false, toDraw, propertyDraw);
+    }
+
+    public NotNullFilterInstance(PropertyObjectInstance<P> property, boolean resolveAdd, GroupObjectInstance toDraw, PropertyDrawInstance<P> propertyDraw) {
+        super(property, resolveAdd, toDraw, propertyDraw);
     }
 
     public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged, MSet<Property> mUsedProps) throws SQLException, SQLHandledException {
