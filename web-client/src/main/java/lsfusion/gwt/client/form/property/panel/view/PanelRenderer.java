@@ -71,7 +71,7 @@ public abstract class PanelRenderer {
         return getSizedWidget().widget;
     }
 
-    public void update(PValue value, boolean loading, AppBaseImage image, String valueElementClass, String background, String foreground, boolean readOnly, String placeholder) {
+    public void update(PValue value, boolean loading, AppBaseImage image, String valueElementClass, String background, String foreground, Boolean readOnly, String placeholder) {
         this.value.update(value, loading, image, valueElementClass, background, foreground, readOnly, placeholder);
     }
 

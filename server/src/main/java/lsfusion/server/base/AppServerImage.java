@@ -50,9 +50,9 @@ import java.util.regex.Pattern;
 
 public class AppServerImage {
 
-    private final static LRUSVSMap<String, AppServerImage> cachedImages = new LRUSVSMap<>(LRUUtil.G2);
-    private final static LRUSVSMap<String, Pair<String, Double>> cachedBestIcons = new LRUSVSMap<>(LRUUtil.G2);
-    private final static LRUSVSMap<Pair<String, Float>, AppServerImage> cachedDefaultImages = new LRUSVSMap<>(LRUUtil.G2);
+    private final static LRUSVSMap<String, AppServerImage> cachedImages = new LRUSVSMap<>(LRUUtil.G3);
+    private final static LRUSVSMap<String, Pair<String, Double>> cachedBestIcons = new LRUSVSMap<>(LRUUtil.G3);
+    private final static LRUSVSMap<Pair<String, Float>, AppServerImage> cachedDefaultImages = new LRUSVSMap<>(LRUUtil.G3);
     private static final AppServerImage NULLIMAGE = new AppServerImage();
 
     public AppServerImage() {
@@ -77,10 +77,19 @@ public class AppServerImage {
                 return FULL;
             else if (imageString.contains("/") || imageString.contains("."))
                 return PATH;
-            else if (imageString.contains(" ") || imageString.contains("-"))
+            else if (isIcon(imageString))
                 return ICON;
 
             return NAME_OR_AUTO;
+        }
+
+        private static boolean isIcon(String imageString) {
+            for(String value : imageString.split(" ")) {
+                if(value.equals("fa") || value.equals("bi") || value.startsWith("fa-") || value.startsWith("bi-")) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 

@@ -2978,6 +2978,7 @@ public class Settings implements Cloneable {
     public int maxInterfaceStatForValueList = 5;
     public int maxInterfaceStatForValueDropdown = 20;
     public int maxLengthForValueButton = 40;
+    public int maxLengthForValueButtonGrid = 10;
 
     public int getMinInterfaceStatForValueUnique() {
         return minInterfaceStatForValueUnique;
@@ -2993,6 +2994,14 @@ public class Settings implements Cloneable {
 
     public void setMaxInterfaceStatForValueList(int maxInterfaceStatForValueList) {
         this.maxInterfaceStatForValueList = maxInterfaceStatForValueList;
+    }
+
+    public int getMaxLengthForValueButtonGrid() {
+        return maxLengthForValueButtonGrid;
+    }
+
+    public void setMaxLengthForValueButtonGrid(int maxLengthForValueButtonGrid) {
+        this.maxLengthForValueButtonGrid = maxLengthForValueButtonGrid;
     }
 
     public int getMaxInterfaceStatForValueDropdown() {

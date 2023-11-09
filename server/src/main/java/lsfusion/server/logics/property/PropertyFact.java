@@ -364,6 +364,14 @@ public class PropertyFact {
         return createStatic(true, LogicalClass.instance);
     }
 
+    public static <T extends PropertyInterface> PropertyMapImplement<?,T> createTTrue() {
+        return createStatic(true, LogicalClass.threeStateInstance);
+    }
+
+    public static <T extends PropertyInterface> PropertyMapImplement<?,T> createTFalse() {
+        return createStatic(false, LogicalClass.threeStateInstance);
+    }
+
     public static <T extends PropertyInterface> PropertyMapImplement<?,T> createOne() {
         return createStatic(1L, LongClass.instance);
     }
@@ -783,6 +791,13 @@ public class PropertyFact {
         ImOrderSet<L> listInterfaces = innerInterfaces.toOrderSet();
         Action caseAction = new CaseAction(LocalizedString.NONAME, isExclusive, listInterfaces, cases);
         return caseAction.getImplement(listInterfaces);
+    }
+
+    public static <L extends PropertyInterface> PropertyMapImplement<?, L> createCaseProperty(ImSet<L> innerInterfaces, boolean isExclusive, ImList<CalcCase<L>> cases) {
+        ImOrderSet<L> listInterfaces =  innerInterfaces.toOrderSet();
+        final ImRevMap<L, UnionProperty.Interface> mapInterfaces = innerInterfaces.mapRevValues(UnionProperty.genInterface);
+        return new CaseUnionProperty(LocalizedString.NONAME, listInterfaces.mapOrder(mapInterfaces), isExclusive,
+                cases.mapListValues(value -> value.map(mapInterfaces))).getImplement(listInterfaces);
     }
 
     public static <L extends PropertyInterface> ActionMapImplement<?, L> createEmptyAction() {

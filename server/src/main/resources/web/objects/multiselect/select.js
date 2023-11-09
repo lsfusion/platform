@@ -1,6 +1,10 @@
 
 var lsf_events_defined = false;
 
+function selectMultiHTMLInput() {
+    return selectMultiInput(); // check how it will work
+}
+
 function selectMultiInput() {
 
     if(!lsf_events_defined) {
@@ -126,17 +130,16 @@ function selectMultiInput() {
             let selectizeInstance = element.selectizeInstance[0].selectize;
             if(!isList)
                 lsfUtils.setFocusElement(element, selectizeInstance.$control_input[0])
-                lsfUtils.setReadonlyFnc(element, (readonly, disableIfReadonly) => {
-                    if(disableIfReadonly) {
-                        if(readonly)
+                lsfUtils.setReadonlyFnc(element, (readonly) => {
+                    if(readonly != null) {
+                        if (readonly) {
                             selectizeInstance.disable();
-                        else
+                        } else {
                             selectizeInstance.enable();
-                    } else {
-                        if(readonly)
-                            selectizeInstance.unlock();
-                        else
                             selectizeInstance.lock();
+                        }
+                    } else {
+                        selectizeInstance.enable();
                     }
                 })
         },
@@ -193,51 +196,87 @@ function selectMultiInput() {
 }
 
 function selectList() {
-    return _defaultRadioCheckBox('radio', true, true);
+    return _defaultRadioCheckBox('radio', true, true, false, false);
+}
+
+function selectHTMLList() {
+    return _defaultRadioCheckBox('radio', true, true, false, true);
 }
 
 function selectButton() {
-    return _checkBoxRadioButtonToggle('radio', true, true);
+    return _checkBoxRadioButtonToggle('radio', true, true, false, false);
+}
+
+function selectHTMLButton() {
+    return _checkBoxRadioButtonToggle('radio', true, true, false, true);
 }
 
 function selectButtonGroup() {
-    return _checkBoxRadioButtonGroup('radio', true, true);
+    return _checkBoxRadioButtonGroup('radio', true, true, false, false);
+}
+
+function selectHTMLButtonGroup() {
+    return _checkBoxRadioButtonGroup('radio', true, true, false, true);
 }
 
 function selectMultiList() {
-    return _defaultRadioCheckBox('checkbox', false, false, true);
+    return _defaultRadioCheckBox('checkbox', false, false, true, false);
+}
+
+function selectMultiHTMLList() {
+    return _defaultRadioCheckBox('checkbox', false, false, true, true);
 }
 
 function selectMultiButton() {
-    return _checkBoxRadioButtonToggle('checkbox', false, false, true);
+    return _checkBoxRadioButtonToggle('checkbox', false, false, true, false);
+}
+
+function selectMultiHTMLButton() {
+    return _checkBoxRadioButtonToggle('checkbox', false, false, true, true);
 }
 
 function selectMultiButtonGroup() {
-    return _checkBoxRadioButtonGroup('checkbox', false, false, true);
+    return _checkBoxRadioButtonGroup('checkbox', false, false, true, false);
+}
+
+function selectMultiHTMLButtonGroup() {
+    return _checkBoxRadioButtonGroup('checkbox', false, false, true, true);
 }
 
 function selectNullList() {
-    return _defaultRadioCheckBox('radio', false, true);
+    return _defaultRadioCheckBox('radio', false, true, false, false);
+}
+
+function selectNullHTMLList() {
+    return _defaultRadioCheckBox('radio', false, true, false, true);
 }
 
 function selectNullButton() {
-    return _checkBoxRadioButtonToggle('radio', false, true);
+    return _checkBoxRadioButtonToggle('radio', false, true, false, false);
+}
+
+function selectNullHTMLButton() {
+    return _checkBoxRadioButtonToggle('radio', false, true, false, true);
 }
 
 function selectNullButtonGroup() {
-    return _checkBoxRadioButtonGroup('radio', false, true);
+    return _checkBoxRadioButtonGroup('radio', false, true, false, false);
 }
 
-function _defaultRadioCheckBox(type, shouldBeSelected, hasName, multi) {
-    return _option(type, false, ['form-check'], ['form-check-input'], ['form-check-label', 'option-item'], shouldBeSelected, hasName, multi);
+function selectNullHTMLButtonGroup() {
+    return _checkBoxRadioButtonGroup('radio', false, true, false, true);
 }
 
-function _checkBoxRadioButtonToggle(type, shouldBeSelected, hasName, multi) {
-    return _option(type, false, null, ['btn-check'], ['btn', 'btn-outline-secondary', 'option-item'], shouldBeSelected, hasName, multi);
+function _defaultRadioCheckBox(type, shouldBeSelected, hasName, multi, html) {
+    return _option(type, false, ['form-check'], ['form-check-input'], ['form-check-label', 'option-item'], shouldBeSelected, hasName, multi, html);
 }
 
-function _checkBoxRadioButtonGroup(type, shouldBeSelected, hasName, multi) {
-    return _option(type, true, ['btn-group'], ['btn-check'], ['btn', 'btn-outline-secondary', 'option-item'], shouldBeSelected, hasName, multi);
+function _checkBoxRadioButtonToggle(type, shouldBeSelected, hasName, multi, html) {
+    return _option(type, false, null, ['btn-check'], ['btn', 'btn-outline-secondary', 'option-item'], shouldBeSelected, hasName, multi, html);
+}
+
+function _checkBoxRadioButtonGroup(type, shouldBeSelected, hasName, multi, html) {
+    return _option(type, true, ['btn-group'], ['btn-check'], ['btn', 'btn-outline-secondary', 'option-item'], shouldBeSelected, hasName, multi, html);
 }
 
 function _wrapElementDiv(element, wrap) {
@@ -263,7 +302,7 @@ function _isInGrid(element) {
 }
 
 // buttons / radios / selects
-function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBeSelected, hasName, multi) {
+function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBeSelected, hasName, multi, html) {
     let isButton = isGroup || divClasses == null;
 
     function _getRandomId() {
@@ -379,11 +418,7 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
                         }
 
                         input.object = object;
-                        let name = _getName(object);
-                        if (isContainHtmlTag(name))
-                            label.innerHTML = name;
-                        else
-                            label.innerText = name;
+                        _setSelectName(label, _getName(object), html);
                         // we can't use required for styling, because we want "live validation" and not on submit
                         // input.required = shouldBeSelected;
 
@@ -430,7 +465,7 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
 
                     _setGroupListReadonly(input, controller, input.object);
                 } else {
-                    _setGroupReadonly(input, extraValue.readonly, controller.isDisableIfReadonly());
+                    _setGroupReadonly(input, extraValue != null ? extraValue.readonly : null);
 
                     if(i === 0)
                         focusInput = input;
@@ -546,14 +581,14 @@ function _selectDropdown(shouldBeSelected) {
 }
 
 function _setDropdownName(option, name, html, isBootstrap) {
-    if (html) {
-        if (isBootstrap)
-            option.setAttribute("data-content", name);
-        else
-            option.innerHTML = name; //todo check functionality in future releases
-    } else {
-        option.innerText = name;
-    }
+    if(html && isBootstrap)
+        option.setAttribute("data-content", name);
+    else
+        _setSelectName(option, name, html);
+}
+
+function _setSelectName(option, name, html) {
+    setDataHtmlOrText(option, name, html);
 }
 
 function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBootstrap) {
@@ -572,8 +607,8 @@ function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBo
 
             if(!isList) {
                 lsfUtils.setFocusElement(element, select);
-                lsfUtils.setReadonlyFnc(element, (readonly, disableIfReadonly) => {
-                    _setSelectReadonly(select, readonly, disableIfReadonly);
+                lsfUtils.setReadonlyFnc(element, (readonly) => {
+                    _setSelectReadonly(select, readonly);
                 });
             }
 
@@ -718,23 +753,21 @@ function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBo
 
 // input in radio group / option in select
 function _setGroupListReadonly(element, controller, object) {
-    _setGroupReadonly(element, controller.isPropertyReadOnly('selected', object), controller.isPropertyDisableIfReadonly('selected'));
+    _setGroupReadonly(element, controller.isPropertyReadOnly('selected', object));
 }
-function _setGroupReadonly(element, readonly, disableIfReadonly) {
-    _setReadonly(element, readonly, disableIfReadonly);
+function _setGroupReadonly(element, readonly) {
+    _setReadonly(element, readonly);
 }
 // select
-function _setSelectReadonly(element, readonly, disableIfReadonly) {
-    _setReadonly(element, readonly, disableIfReadonly);
+function _setSelectReadonly(element, readonly) {
+    _setReadonly(element, readonly);
 }
 //
-function _setReadonly(element, readonly, disableIfReadonly) {
-    if(disableIfReadonly) // select, option, input supports disabled
-        setDisabledNative(element, readonly);
-    else {
-        setReadonlyClass(element, readonly);
-        setReadonlyHeur(element, readonly);
-    }
+function _setReadonly(element, readonly) {
+    // select, option, input supports disabled
+    setDisabledNative(element, readonly != null && readonly);
+    setReadonlyClass(element, readonly != null && !readonly);
+    setReadonlyHeur(element,readonly != null && !readonly);
 }
 
 function _convertList(isList, list) {

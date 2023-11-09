@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.classes;
 
-import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.client.base.GwtClientUtils;

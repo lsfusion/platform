@@ -2,7 +2,6 @@ package lsfusion.gwt.client.form.object.table;
 
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.DomEvent;
 import com.google.gwt.event.dom.client.MouseWheelEvent;
 import com.google.gwt.event.dom.client.ScrollEvent;
@@ -15,21 +14,15 @@ import lsfusion.gwt.client.base.view.HasMaxPreferredSize;
 import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.view.MainFrame;
-
-import static com.google.gwt.dom.client.Style.Overflow.AUTO;
 
 public class TableContainer extends ResizableSimplePanel implements HasMaxPreferredSize {
 
-    public final boolean autoSize;
     private final GFormController form;
     private TableComponent tableComponent;
     
     private Event pendingFocusEvent;
 
-    public TableContainer(boolean autoSize, GFormController form) {
-        this.autoSize = autoSize;
-        
+    public TableContainer(GFormController form) {
         setStyleName("tableContainer");
 
         this.form = form;
@@ -103,7 +96,7 @@ public class TableContainer extends ResizableSimplePanel implements HasMaxPrefer
 
     public void changeTableComponent(TableComponent tableComponent, boolean boxed) {
         this.tableComponent = tableComponent;
-        setSizedWidget(tableComponent.getWidget(), autoSize);
+        setPercentMain(tableComponent.getWidget());
 
         addHandler(tableComponent.getScrollHandler(), ScrollEvent.getType(), Event.ONSCROLL);
         addHandler(tableComponent.getMouseWheelScrollHandler(), MouseWheelEvent.getType(), Event.ONMOUSEWHEEL);
@@ -186,9 +179,6 @@ public class TableContainer extends ResizableSimplePanel implements HasMaxPrefer
     }
 
     public void setPreferredSize(boolean set, Result<Integer> grids) {
-        if(!autoSize)
-            changePercentFillWidget(set);
-
         if(tableComponent instanceof HasMaxPreferredSize) // needed to setPreferredSize for grid
             ((HasMaxPreferredSize) tableComponent).setPreferredSize(set, grids);
     }

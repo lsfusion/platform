@@ -6,6 +6,7 @@ import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
+import lsfusion.gwt.client.form.property.cell.view.RendererType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -179,7 +180,7 @@ public abstract class GAbstractContainerView {
 
         widget = widget.override(component.getWidth(), component.getHeight());
 
-        widget.add(panel, beforeIndex, component.getFlex(), component.isShrink(), component.getAlignment(), component.isAlignShrink());
+        widget.add(panel, beforeIndex, component.getFlex(RendererType.PANEL), component.isShrink(), component.getAlignment(), component.isAlignShrink());
 
         return widget.widget;
     }

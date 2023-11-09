@@ -1,19 +1,18 @@
 package lsfusion.gwt.client.base;
 
-import com.google.gwt.safehtml.shared.SimpleHtmlSanitizer;
+import com.google.gwt.user.client.Element;
+import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.view.DivWidget;
 
 public class EscapeUtils {
     public static final String UNICODE_NBSP = "\u00A0";
     public static final String UNICODE_BULLET = "\u2022";
 
-    public static String toHtml(String plainString) {
-        if (plainString == null) {
-            return "";
-        }
-        return SimpleHtmlSanitizer.sanitizeHtml(plainString).asString().replaceAll("(\r\n|\n\r|\r|\n)", "<br />");
-    }
-
-    public static String escapeLineBreakHTML(String value) {
-        return value.replace("\n", "<br/>");
+    // MESSAGE, CONFIRM, ASK, tooltip
+    public static Widget toHTML(String plainString) {
+        DivWidget widget = new DivWidget();
+        GwtClientUtils.setCaptionHtmlOrText(widget.getElement(), plainString);
+        return widget;
     }
 }

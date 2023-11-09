@@ -35,6 +35,7 @@ import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.form.property.cell.view.RendererType;
 
 import java.util.*;
 
@@ -446,7 +447,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
                             column.setValue(record, propValues.get(fullKey));
                             column.setLoading(record, propLoadings != null && PValue.getBooleanValue(propLoadings.get(fullKey)));
-                            record.setReadOnly(column.columnSID, propReadOnly != null && PValue.getBooleanValue(propReadOnly.get(fullKey)));
+                            record.setReadOnly(column.columnSID, propReadOnly == null ? null : PValue.get3SBooleanValue(propReadOnly.get(fullKey)));
                             PValue valueElementClass = propertyValueElementClasses == null ? null : propertyValueElementClasses.get(fullKey);
                             record.setValueElementClass(column.columnSID, valueElementClass == null ? property.valueElementClass : PValue.getClassStringValue(valueElementClass));
                             PValue background = propertyBackgrounds == null ? null : propertyBackgrounds.get(fullKey);
@@ -777,14 +778,15 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     @Override
-    public boolean isReadOnly(Cell cell) {
+    public Boolean isReadOnly(Cell cell) {
         GPropertyDraw property = getProperty(cell);
         if (property != null && !property.isReadOnly()) {
             GridDataRecord rowRecord = getGridRow(cell);
             GridColumn column = getGridColumn(cell);
-            return column == null || rowRecord == null || rowRecord.isReadonly(column.columnSID);
+            if(column != null && rowRecord != null)
+                return rowRecord.isReadonly(column.columnSID);
         }
-        return true;
+        return false;
     }
 
     @Override
@@ -818,22 +820,19 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         final int tableColumns = getMaxColumnsCount(table);
         final int selectedColumn = getSelectedColumn();
         if (table.size() > 1 || tableColumns > 1) {
-            DialogBoxHelper.showConfirmBox("lsFusion", messages.formGridSureToPasteMultivalue(), false, new DialogBoxHelper.CloseCallback() {
-                @Override
-                public void closed(DialogBoxHelper.OptionType chosenOption) {
-                    if (chosenOption == DialogBoxHelper.OptionType.YES) {
-                        int columnsToInsert = Math.min(tableColumns, getColumnCount() - selectedColumn);
+            DialogBoxHelper.showConfirmBox("lsFusion", messages.formGridSureToPasteMultivalue(), false, chosenOption -> {
+                if (chosenOption == DialogBoxHelper.OptionType.YES) {
+                    int columnsToInsert = Math.min(tableColumns, getColumnCount() - selectedColumn);
 
-                        final ArrayList<GPropertyDraw> propertyList = new ArrayList<>();
-                        final ArrayList<GGroupObjectValue> columnKeys = new ArrayList<>();
-                        for (int i = 0; i < columnsToInsert; i++) {
-                            GPropertyDraw propertyDraw = getProperty(selectedColumn + i);
-                            propertyList.add(propertyDraw);
-                            columnKeys.add(getColumnKey(selectedColumn + i));
-                        }
-
-                        form.pasteExternalTable(propertyList, columnKeys, table);
+                    final ArrayList<GPropertyDraw> propertyList = new ArrayList<>();
+                    final ArrayList<GGroupObjectValue> columnKeys = new ArrayList<>();
+                    for (int i = 0; i < columnsToInsert; i++) {
+                        GPropertyDraw propertyDraw = getProperty(selectedColumn + i);
+                        propertyList.add(propertyDraw);
+                        columnKeys.add(getColumnKey(selectedColumn + i));
                     }
+
+                    form.pasteExternalTable(propertyList, columnKeys, table);
                 }
             });
             return;
@@ -1185,8 +1184,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         }
 
         @Override
-        public boolean isCustomRenderer() {
-            return property.getCellRenderer().isCustomRenderer();
+        public boolean isCustomRenderer(RendererType rendererType) {
+            return property.getCellRenderer(rendererType).isCustomRenderer();
         }
 
         @Override

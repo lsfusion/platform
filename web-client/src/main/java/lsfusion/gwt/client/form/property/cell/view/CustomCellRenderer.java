@@ -32,9 +32,9 @@ public class CustomCellRenderer extends CellRenderer {
 
     public static class ExtraValue {
         public final String placeholder;
-        public final boolean readonly;
+        public final Boolean readonly;
 
-        public ExtraValue(String placeholder, boolean readonly) {
+        public ExtraValue(String placeholder, Boolean readonly) {
             this.placeholder = placeholder;
             this.readonly = readonly;
         }
@@ -42,7 +42,7 @@ public class CustomCellRenderer extends CellRenderer {
         public JavaScriptObject getJsObject() {
             return getJsObject(placeholder, readonly);
         }
-        protected native JavaScriptObject getJsObject(String placeholder, boolean readonly)/*-{
+        protected native JavaScriptObject getJsObject(String placeholder, Boolean readonly)/*-{
             return {
                 placeholder: placeholder,
                 readonly: readonly
@@ -51,12 +51,12 @@ public class CustomCellRenderer extends CellRenderer {
 
         @Override
         public boolean equals(Object o) {
-            return this == o || o instanceof ExtraValue && readonly == ((ExtraValue) o).readonly && GwtClientUtils.nullEquals(placeholder, ((ExtraValue) o).placeholder);
+            return this == o || o instanceof ExtraValue && GwtClientUtils.nullEquals(readonly, ((ExtraValue) o).readonly) && GwtClientUtils.nullEquals(placeholder, ((ExtraValue) o).placeholder);
         }
 
         @Override
         public int hashCode() {
-            return GwtClientUtils.nullHash(placeholder) * 31 + (readonly ? 1 : 0);
+            return GwtClientUtils.nullHash(placeholder) * 31 + (readonly != null ? (readonly ? 2 : 1) : 0);
         }
     }
 
@@ -65,7 +65,7 @@ public class CustomCellRenderer extends CellRenderer {
         boolean customNeedPlaceholder = property.customNeedPlaceholder;
         boolean customNeedReadonly = property.customNeedReadonly;
         if(customNeedPlaceholder || customNeedReadonly)
-            return new ExtraValue(customNeedPlaceholder ? updateContext.getPlaceholder() : null, customNeedReadonly ? updateContext.isPropertyReadOnly() : false);
+            return new ExtraValue(customNeedPlaceholder ? updateContext.getPlaceholder() : null, customNeedReadonly ? updateContext.isPropertyReadOnly() : null);
 
         return super.getExtraValue(updateContext);
     }
@@ -76,7 +76,7 @@ public class CustomCellRenderer extends CellRenderer {
 
     @Override
     public boolean updateContent(Element element, PValue value, Object extraValue, UpdateContext updateContext) {
-        JavaScriptObject renderValue = GSimpleStateTableView.convertToJSValue(property, value);
+        JavaScriptObject renderValue = GSimpleStateTableView.convertToJSValue(property, value, updateContext.getRendererType());
         setRendererValue(customRenderer, element, getController(property, updateContext, element), renderValue, extraValue != null ? ((ExtraValue) extraValue).getJsObject() : null);
 
         return false;
@@ -99,7 +99,7 @@ public class CustomCellRenderer extends CellRenderer {
     }-*/;
 
     @Override
-    public String format(PValue value) {
+    public String format(PValue value, RendererType rendererType) {
         return PValue.getStringValue(value);
     }
 
@@ -109,13 +109,17 @@ public class CustomCellRenderer extends CellRenderer {
 
     protected static void changeValue(Element element, UpdateContext updateContext, JavaScriptObject value, GPropertyDraw property, JavaScriptObject renderValueSupplier) {
         GType externalChangeType = property.getExternalChangeType();
+        RendererType rendererType = updateContext.getRendererType();
 
-        boolean canUseChangeValueForRendering = renderValueSupplier != null || property.canUseChangeValueForRendering(externalChangeType);
+        boolean canUseChangeValueForRendering = renderValueSupplier != null || property.canUseChangeValueForRendering(externalChangeType, rendererType);
         if(!canUseChangeValueForRendering) // to break a recursion when there are several changes in update
             rerenderState(element, false);
 
         updateContext.changeProperty(GSimpleStateTableView.convertFromJSUndefValue(externalChangeType, value),
-                renderValueSupplier != null ? (oldValue, changeValue) -> GSimpleStateTableView.convertFromJSValue(property.baseType, GwtClientUtils.call(renderValueSupplier, GSimpleStateTableView.convertToJSValue(property.baseType, oldValue))) : null);
+                renderValueSupplier != null ? (oldValue, changeValue) -> {
+                    GType renderType = property.getRenderType(rendererType);
+                    return GSimpleStateTableView.convertFromJSValue(renderType, GwtClientUtils.call(renderValueSupplier, GSimpleStateTableView.convertToJSValue(renderType, oldValue)));
+                } : null);
 
         // if we don't use change value for rendering, and the renderer is interactive (it's state can be changed without notifying the element)
         // there might be a problem that this change might be grouped with the another change that will change the state to the previous value, but update won't be called (because of caching), which is usually an "unexpected behaviour"
@@ -129,10 +133,10 @@ public class CustomCellRenderer extends CellRenderer {
     }
 
     public static JavaScriptObject getController(GPropertyDraw property, UpdateContext updateContext, Element element) {
-        return getController(property, updateContext, element, updateContext.isPropertyReadOnly(), property.disableIfReadonly, updateContext.isTabFocusable());
+        return getController(property, updateContext, element, updateContext.isPropertyReadOnly(), updateContext.isTabFocusable());
     }
 
-    private static native JavaScriptObject getController(GPropertyDraw property, UpdateContext updateContext, Element element, boolean isReadOnly, boolean isDisableIfReadonly, boolean isTabFocusable)/*-{
+    private static native JavaScriptObject getController(GPropertyDraw property, UpdateContext updateContext, Element element, Boolean isReadOnly, boolean isTabFocusable)/*-{
         return {
             change: function (value, renderValueSupplier) {
                 if(value === undefined) // not passed
@@ -157,9 +161,6 @@ public class CustomCellRenderer extends CellRenderer {
             },
             isReadOnly: function () { // extraValue.readonly + customNeedReadonly should be used instead if readonly depends on the data (otherwise it won't be updated)
                 return isReadOnly;
-            },
-            isDisableIfReadonly: function () {
-                return isDisableIfReadonly;
             },
             isTabFocusable: function () {
                 return isTabFocusable;

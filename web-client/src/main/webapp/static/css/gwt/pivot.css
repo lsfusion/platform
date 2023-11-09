@@ -7,6 +7,11 @@
     overflow: hidden;
 }
 
+.pivotTable {
+    /*need for correct work of descendants with position: absolute*/
+    position: relative;
+}
+
 .pvtUiWrapperDiv {
     /* Since .pivotTable has flex-basis: auto, we can't use height: 100% here.
     Even though Chrome and Firefox allows this, Safari doesn't.

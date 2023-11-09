@@ -693,9 +693,7 @@ DESIGN changes {
             MOVE BOX (dates);
             MOVE BOX(s);
             NEW textContainer {
-                horizontal = FALSE;
                 fill = 1;
-
                 MOVE PROPERTY(pChanges) {
                     fill = 0.5;
                     valueSize = ( -1, 200);

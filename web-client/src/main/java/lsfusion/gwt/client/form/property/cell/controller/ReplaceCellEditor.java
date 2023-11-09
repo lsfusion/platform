@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.form.property.cell.controller;
 
 import com.google.gwt.dom.client.Element;
-import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 
@@ -11,7 +10,7 @@ public interface ReplaceCellEditor extends CellEditor {
         return true;
     }
 
-    void render(Element cellParent, RenderContext renderContext, Pair<Integer, Integer> renderedSize, PValue oldValue);
+    void render(Element cellParent, RenderContext renderContext, PValue oldValue, Integer renderedWidth, Integer renderedHeight);
 
     void clearRender(Element cellParent, RenderContext renderContext, boolean cancel);
 }

@@ -86,7 +86,7 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
         super(property);
     }
 
-    public String format(PValue value) {
+    public String format(PValue value, RendererType rendererType) {
         return value == null ? "" : value.toString();
     }
 }

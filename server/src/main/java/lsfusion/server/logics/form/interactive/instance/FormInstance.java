@@ -1071,7 +1071,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 if (columnKey != null) {
                     key = key.addExcl(columnKey);
                 }
-                Type propType = property.getType(context);
+                Type propType = property.entity.getPasteType(context);
                 executeExternalEventAction(property, key, asyncEventExec -> asyncEventExec instanceof AsyncInput ?
                         new PushAsyncInput(new InputResult(ObjectValue.getValue(value.first, ((AsyncInput) asyncEventExec).changeType), null)) :
                         new PushExternalInput(type -> {
@@ -1114,7 +1114,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         ImMap<ObjectInstance, Expr> keys = overrideColumnKeys(mapKeys, columnKeys);
 
-        Expr expr = GroupExpr.create(MapFact.EMPTY(), propertyDraw.getGroupProperty().getExpr(keys, getModifier()), groupObject.getWhere(mapKeys, getModifier()), GroupType.SUM, MapFact.EMPTY());
+        Expr expr = GroupExpr.create(MapFact.EMPTY(), propertyDraw.getSumProperty().getExpr(keys, getModifier()), groupObject.getWhere(mapKeys, getModifier()), GroupType.SUM, MapFact.EMPTY());
 
         QueryBuilder<Object, String> query = new QueryBuilder<>(MapFact.EMPTYREV());
         query.addProperty("sum", expr);
@@ -1411,7 +1411,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 ImMap<ObjectInstance, Expr> keys = overrideColumnKeys(mapKeys, columnKeys);
                 String propertyKey = getSID(property, i);
                 mKeyExprMap.revAdd(propertyKey, new KeyExpr("expr"));
-                Expr propExpr = property.getGroupProperty().getExpr(keys, getModifier());
+                Expr propExpr = property.getSumProperty().getExpr(keys, getModifier());
                 // override to support NULLs
                 Expr expr = FormulaUnionExpr.create(StringOverrideFormulaImpl.instance, ListFact.toList(propExpr, ValueExpr.IMPOSSIBLESTRING));
                 mExprMap.exclAdd(propertyKey, expr);
@@ -1445,12 +1445,12 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 property = toMax.getKey(i - separator);
                 currentList = toMax.getValue(i - separator);
 
-                groupType = GroupType.MAXCHECK(property.getType(context));
+                groupType = GroupType.MAXCHECK(property.getSumProperty().getType());
             }
             for (ImMap<ObjectInstance, DataObject> columnKeys : currentList) {
                 idIndex++;
                 ImMap<ObjectInstance, Expr> keys = overrideColumnKeys(mapKeys, columnKeys);
-                Expr expr = GroupExpr.create(exprMap, property.getGroupProperty().getExpr(keys, getModifier()), groupObject.getWhere(mapKeys, getModifier()), groupType, keyExprMap);
+                Expr expr = GroupExpr.create(exprMap, property.getSumProperty().getExpr(keys, getModifier()), groupObject.getWhere(mapKeys, getModifier()), groupType, keyExprMap);
                 query.addProperty(getSID(property, idIndex), expr);
                 if (onlyNotNull) {
                     query.and(expr.getWhere());
@@ -1463,7 +1463,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             int i = 0;
             for (ImMap<ObjectInstance, DataObject> columnKeys : toGroup.get(property)) {
                 i++;
-                Expr expr = property.getGroupProperty().getExpr(overrideColumnKeys(mapKeys, columnKeys), getModifier());
+                Expr expr = property.getSumProperty().getExpr(overrideColumnKeys(mapKeys, columnKeys), getModifier());
                 Expr gexpr = GroupExpr.create(exprMap, expr, groupObject.getWhere(mapKeys, getModifier()), GroupType.ANY, keyExprMap);
                 query.addProperty(getSID(property, i) + "_key", gexpr);
             }
@@ -2098,7 +2098,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             @ParamMessage ImSet<T> keysSet,
             MExclMap<T, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> valuesMap,
             ImSet<GroupObjectInstance> keyGroupObjects,
-            Function<T, PropertyObjectInstance<?>> getPropertyObject
+            Function<T, PropertyObjectInstance<?>> getGridPropertyObject
     ) throws SQLException, SQLHandledException {
 
         ImRevMap<ObjectInstance, KeyExpr> mapKeys = KeyExpr.getMapKeys(GroupObjectInstance.getObjects(getUpTreeGroups(keyGroupObjects)));
@@ -2141,7 +2141,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             if(groupModeWhere != null)
                 expr = groupExpr(getExpr, key, groupModeWhere, groupModeExprs, groupModes);
             else
-                expr = listExpr(getExpr, key, getPropertyObject);
+                expr = listExpr(getExpr, key, getGridPropertyObject);
 
             selectProps.addProperty(key, expr);
         }
@@ -2428,9 +2428,14 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         forcePropertyDrawUpdates = forcePropertyDrawUpdates.merge(propertyDraw);
     }
 
-    private boolean propertyUpdated(PropertyReaderInstance propertyDraw, GroupObjectInstance toDraw, PropertyObjectInstance propertyObjectInstance, ImSet<GroupObjectInstance> groupObjects, ImSet<PropertyDrawInstance> changedDrawProps, ChangedData changedProps, boolean hidden) throws SQLException, SQLHandledException {
-        if (propertyDraw instanceof PropertyDrawInstance && changedDrawProps.contains((PropertyDrawInstance) propertyDraw))
-            return true;
+    private boolean propertyUpdated(PropertyReaderInstance propertyDraw, GroupObjectInstance toDraw, PropertyObjectInstance propertyObjectInstance, ImSet<GroupObjectInstance> groupObjects, ImSet<PropertyDrawInstance> changedDrawProps, ChangedData changedProps, boolean hidden, FormInstanceContext context) throws SQLException, SQLHandledException {
+        if (propertyDraw instanceof PropertyDrawInstance) {
+            if (changedDrawProps.contains((PropertyDrawInstance) propertyDraw))
+                return true;
+
+            if(toDraw != null && (toDraw.updated & UPDATED_VIEWTYPEVALUE) != 0 && ((PropertyDrawInstance<?>) propertyDraw).entity.isDifferentValue(context))
+                return true;
+        }
 
         // since we return null for all not needed props they are not updated (except when keys are updated and we need to resend nulls)
         if(toDraw != null && toDraw.groupMode != null && !(propertyDraw instanceof PropertyDrawInstance && (toDraw.groupMode.need((PropertyDrawInstance) propertyDraw) || groupUpdated(groupObjects, UPDATED_KEYS))))
@@ -2468,20 +2473,20 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 ImSet<GroupObjectInstance> propRowGrids = drawProperty.getGroupObjectsInGrid();
                 ImSet<GroupObjectInstance> propRowColumnGrids = drawProperty.getColumnGroupObjectsInGrid();
 
-                fillChangedReader(drawProperty, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
-                fillChangedReader(drawProperty.captionReader, toDraw, result, propRowColumnGrids, hidden, updateCaption, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
-                fillChangedReader(drawProperty.captionElementClassReader, toDraw, result, propRowColumnGrids, hidden, updateCaption, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
-                fillChangedReader(drawProperty.footerReader, toDraw, result, propRowColumnGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
-                fillChangedReader(drawProperty.readOnlyReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
-                fillChangedReader(drawProperty.valueElementClassReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
-                fillChangedReader(drawProperty.backgroundReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
-                fillChangedReader(drawProperty.foregroundReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
-                fillChangedReader(drawProperty.imageReader, toDraw, result, drawProperty.isProperty(context) ? propRowColumnGrids : propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
-                fillChangedReader(drawProperty.commentReader, toDraw, result, propRowColumnGrids, hidden, updateCaption, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
-                fillChangedReader(drawProperty.commentElementClassReader, toDraw, result, propRowColumnGrids, hidden, updateCaption, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
-                fillChangedReader(drawProperty.placeholderReader, toDraw, result, propRowColumnGrids, hidden, updateCaption, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
+                fillChangedReader(drawProperty, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
+                fillChangedReader(drawProperty.captionReader, toDraw, result, propRowColumnGrids, hidden, updateCaption, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
+                fillChangedReader(drawProperty.captionElementClassReader, toDraw, result, propRowColumnGrids, hidden, updateCaption, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
+                fillChangedReader(drawProperty.footerReader, toDraw, result, propRowColumnGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
+                fillChangedReader(drawProperty.readOnlyReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
+                fillChangedReader(drawProperty.valueElementClassReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
+                fillChangedReader(drawProperty.backgroundReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
+                fillChangedReader(drawProperty.foregroundReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
+                fillChangedReader(drawProperty.imageReader, toDraw, result, drawProperty.isProperty(context) ? propRowColumnGrids : propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
+                fillChangedReader(drawProperty.commentReader, toDraw, result, propRowColumnGrids, hidden, updateCaption, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
+                fillChangedReader(drawProperty.commentElementClassReader, toDraw, result, propRowColumnGrids, hidden, updateCaption, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
+                fillChangedReader(drawProperty.placeholderReader, toDraw, result, propRowColumnGrids, hidden, updateCaption, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
                 for(PropertyDrawInstance<?>.LastReaderInstance aggrLastReader : drawProperty.aggrLastReaders)
-                    fillChangedReader(aggrLastReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
+                    fillChangedReader(aggrLastReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps, context);
             } else if (oldPropIsShown) {
                 result.dropProperties.exclAdd(drawProperty);
             }
@@ -2493,9 +2498,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
             ImSet<GroupObjectInstance> gridGroups = (group.viewType.isList() ? SetFact.singleton(group) : SetFact.EMPTY());
 
-            fillChangedReader(group.rowBackgroundReader, group, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps);
-            fillChangedReader(group.rowForegroundReader, group, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps);
-            fillChangedReader(group.customOptionsReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps);
+            fillChangedReader(group.rowBackgroundReader, group, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps, context);
+            fillChangedReader(group.rowForegroundReader, group, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps, context);
+            fillChangedReader(group.customOptionsReader, group, result, SetFact.EMPTY(), hidden, update, true, mReadProperties, changedDrawProps, changedProps, context);
         }
 
         for (ComponentView component : entity.getPropertyComponents()) {
@@ -2509,27 +2514,27 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 ContainerView container = (ContainerView) component;
 
                 ContainerViewInstance containerInstance = instanceFactory.getInstance(container);
-                fillChangedReader(containerInstance.captionReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps);
-                fillChangedReader(containerInstance.imageReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps);
-                fillChangedReader(containerInstance.customDesignReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps);
+                fillChangedReader(containerInstance.captionReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps, context);
+                fillChangedReader(containerInstance.imageReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps, context);
+                fillChangedReader(containerInstance.customDesignReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps, context);
 
                 componentInstance = containerInstance;
             } else
                 componentInstance = instanceFactory.getInstance(component);
 
-            fillChangedReader(componentInstance.elementClassReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps);
+            fillChangedReader(componentInstance.elementClassReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps, context);
         }
         return mReadProperties.immutable();
     }
 
-    private void fillChangedReader(PropertyReaderInstance propertyReader, GroupObjectInstance toDraw, MFormChanges result, ImSet<GroupObjectInstance> columnGroupGrids, boolean hidden, boolean update, boolean wasShown, MExclMap<PropertyReaderInstance, ImSet<GroupObjectInstance>> readProperties, ImSet<PropertyDrawInstance> changedDrawProps, ChangedData changedProps) throws SQLException, SQLHandledException {
-        PropertyObjectInstance<?> drawProperty = propertyReader.getReaderProperty();
+    private void fillChangedReader(PropertyReaderInstance propertyReader, GroupObjectInstance toDraw, MFormChanges result, ImSet<GroupObjectInstance> columnGroupGrids, boolean hidden, boolean update, boolean wasShown, MExclMap<PropertyReaderInstance, ImSet<GroupObjectInstance>> readProperties, ImSet<PropertyDrawInstance> changedDrawProps, ChangedData changedProps, FormInstanceContext context) throws SQLException, SQLHandledException {
+        PropertyObjectInstance<?> drawProperty = propertyReader.getReaderProperty(); // actually in pivot mode we care only for AggrReaderInstance but that gonna be checked in propertyUpdated
         if(drawProperty == null)
             return;
 
         boolean needed = !hidden && update;
 
-        boolean read = refresh || !wasShown || (toDraw != null && toDraw.toRefresh()) || propertyUpdated(propertyReader, toDraw, drawProperty, columnGroupGrids, changedDrawProps, changedProps, !needed);
+        boolean read = refresh || !wasShown || (toDraw != null && toDraw.toRefresh()) || propertyUpdated(propertyReader, toDraw, drawProperty, columnGroupGrids, changedDrawProps, changedProps, !needed, context);
 
         if(needed)
             read = pendingRead.remove(propertyReader) || read;
@@ -2607,7 +2612,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         }
 
         for (PropertyDrawInstance<?> property : propertyDraws)
-            query.addProperty(property, property.getGroupProperty().getExpr(query.getMapExprs(), getModifier()));
+            query.addProperty(property, property.getSumProperty().getExpr(query.getMapExprs(), getModifier()));
 
         ImOrderMap<ImMap<ObjectInstance, Object>, ImMap<Object, Object>> resultSelect = query.execute(this, mQueryOrders.immutableOrder(), orderTop);
 

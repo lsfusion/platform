@@ -21,7 +21,10 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
     }
 
     public void setAutoSize(boolean autoSize) {
-        target.autoSize = autoSize;
+        if(target.valueWidth == null || target.valueWidth < 0)
+            target.valueWidth = autoSize ? -1 : -2;
+        if(target.valueHeight == null || target.valueHeight < 0)
+            target.valueHeight = autoSize ? -1 : -2;
     }
 
     public void setBoxed(boolean boxed) {
@@ -192,10 +195,6 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
 
     public void setPanelCommentVertical(boolean panelCommentVertical) {
         target.panelCommentVertical = panelCommentVertical;
-    }
-
-    public void setDisableIfReadonly(boolean disableIfReadonly) {
-        target.entity.disableIfReadonly = disableIfReadonly;
     }
 
     public void setPanelCommentFirst(boolean panelCommentFirst) {

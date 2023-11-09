@@ -22,6 +22,7 @@ import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.controller.ExecuteEditContext;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
+import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 import java.util.ArrayList;
@@ -42,7 +43,7 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
         form.addEnterBindings(GBindingMode.ONLY, ((GGridPropertyTable) GPropertyTable.this)::selectNextCellInColumn, this.groupObject);
     }
 
-    public abstract boolean isReadOnly(Cell cell);
+    public abstract Boolean isReadOnly(Cell cell);
 
     public abstract GPropertyDraw getSelectedProperty();
     public abstract GGroupObjectValue getSelectedColumnKey();
@@ -142,7 +143,7 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
             }
 
             @Override
-            public boolean isReadOnly() {
+            public Boolean isReadOnly() {
                 return GPropertyTable.this.isReadOnly(editCell);
             }
 
@@ -184,6 +185,11 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
 
             @Override
             public void stopEditing() {
+            }
+
+            @Override
+            public RendererType getRendererType() {
+                return RendererType.GRID;
             }
         };
     }

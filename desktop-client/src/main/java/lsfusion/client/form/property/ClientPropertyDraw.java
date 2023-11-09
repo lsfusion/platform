@@ -67,8 +67,11 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public CommentElementClassReader commentElementClassReader = new CommentElementClassReader();
     public PlaceholderReader placeholderReader = new PlaceholderReader();
 
-    public boolean autoSize;
     public boolean boxed;
+
+    public boolean isAutoSize() {
+        return valueHeight == -1 || valueWidth == -1;
+    }
 
     // for pivoting
     public String formula;
@@ -82,8 +85,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public boolean isList;
 
-    // символьный идентификатор, нужен для обращению к свойствам в печатных формах
-    public ClientType baseType;
+    public ClientType baseType; // cellType
+    public ClientType valueType;
     public ClientClass returnClass;
 
     public String tag;
@@ -179,8 +182,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public boolean customCanBeRenderedInTD;
     public boolean customNeedPlaceholder;
     public boolean customNeedReadonly;
-
-    public boolean disableIfReadonly;
 
     public String creationScript;
     public String creationPath;
@@ -517,8 +518,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream) throws IOException {
         super.customSerialize(pool, outStream);
 
-        outStream.writeBoolean(autoSize);
-
         pool.writeString(outStream, caption);
         pool.writeString(outStream, regexp);
         pool.writeString(outStream, regexpMessage);
@@ -568,8 +567,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, inStream);
-
-        autoSize = inStream.readBoolean();
 
         caption = pool.readString(inStream);
         image = pool.readImageIcon(inStream);
@@ -625,6 +622,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         hide = inStream.readBoolean();
 
         baseType = ClientTypeSerializer.deserializeClientType(inStream);
+        if(inStream.readBoolean())
+            valueType = ClientTypeSerializer.deserializeClientType(inStream);
 
         tag = pool.readString(inStream);
         valueElementClass = pool.readString(inStream);
@@ -704,8 +703,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         customCanBeRenderedInTD = pool.readBoolean(inStream);
         customNeedPlaceholder = pool.readBoolean(inStream);
         customNeedReadonly = pool.readBoolean(inStream);
-
-        disableIfReadonly = pool.readBoolean(inStream);
 
         eventID = pool.readString(inStream);
 

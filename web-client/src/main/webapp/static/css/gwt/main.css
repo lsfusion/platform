@@ -33,10 +33,6 @@
     padding: var(--border-comp-vert-padding) var(--border-comp-horz-padding);
 }
 
-.errorLogMessage {
-    color: #ff4500;
-}
-
 .verticalStretchSeparator {
     border-left: 1px solid var(--panel-border-color);
     margin: 0.1875rem 0;
@@ -56,4 +52,8 @@
 .fa-rotate-45 {
     -webkit-transform: rotate(45deg);
     transform: rotate(45deg);
+}
+
+.errorLogMessage {
+    color: #ff4500;
 }

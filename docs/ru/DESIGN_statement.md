@@ -98,26 +98,26 @@ title: 'Инструкция DESIGN'
 
 |Имя свойства|Описание|Вид значения|Значение по умолчанию|Примеры|
 |---|---|---|---|---|
-|`span`|todo|Целочисленный литерал|`1`|`2`|
+|`span`|todo|[Целочисленный литерал](Literals.md#intliteral)|`1`|`2`|
 |`defaultComponent`|Указание того, что на данный компонент должен быть выставлен фокус при инициализации формы. Может быть установлен только для одного компонента на всей форме|Дополненный [логический литерал](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
-|`activated`|todo|[Логический литерал](Literals.md#booleanliteral)||`FALSE`|`TRUE`<br/>`FALSE`|
+|`activated`|todo|[Логический литерал](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
 |`fill`|Аналогично свойству `flex`, но кроме того, если устанавливается нулевое значение, то свойство `align` устанавливается в `START`, иначе `align` устанавливается в `STRETCH`|Литерал типа `NUMERIC`|`0`|`1.5`|
 |`size`|Базовый размер компонента в пикселях (значение `-1` означает, что размер не установлен)|Пара [целочисленных литералов](Literals.md#intliteral) (ширина, высота)|`(-1, -1)`|`(100, 20)`|
 |`height`|Базовый размер компонента по высоте в пикселях.|Целочисленный литерал|`-1`|`50`|
 |`width`|Базовый размер компонента по ширине в пикселях.|Целочисленный литерал|`-1`|`20`|
 |`flex`|Коэффициент расширения. Значение свойства, аналогичного свойству [CSS flex-grow](http://www.w3schools.com/cssref/css3_pr_flex-grow.asp). Задает насколько компонент должен расти в размерах относительно других компонентов|[Литерал типа `NUMERIC`](Literals.md#numericliteral)|`0`|`0.25`|
-|`shrink`|todo|[Логический литерал](Literals.md#booleanliteral)||`FALSE`|`TRUE`<br/>`FALSE`|
-|`alignShrink`|todo|[Логический литерал](Literals.md#booleanliteral)||`FALSE`|`TRUE`<br/>`FALSE`|
+|`shrink`|todo|Логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
+|`alignShrink`|todo|Логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
 |`align`<br/>`alignment`|Способ выравнивания компонента внутри контейнера. Допустимые значения: `START` (В начале), `CENTER` (В центре), `END` (В конце), `STRETCH` (Растянуть).|Тип выравнивания|`START`|`STRETCH`|
-|`alignCaption`|todo|[Логический литерал](Literals.md#booleanliteral)||`FALSE`|`TRUE`<br/>`FALSE`|
+|`alignCaption`|todo|Логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
 |`marginTop`|Отступ сверху|Целочисленный литерал|`0`|`3`|
 |`marginRight`|Отступ справа|Целочисленный литерал|`0`|`1`|
 |`marginBottom`|Отступ снизу|Целочисленный литерал|`0`|`4`|
 |`marginLeft`|Отступ слева|Целочисленный литерал|`0`|`1`|
 |`margin`|Отступ. Устанавливает одинаковое значение свойствам `marginTop`, `marginRight`, `marginBottom`, `marginLeft`|Целочисленный литерал|`0`|`5`|
 |`captionFont`|Шрифт, который будет использоваться для отображения заголовка компонента|[Строковый литерал](Literals.md#strliteral)|зависит от компонента|`'Tahoma bold 16'`<br/>`'Times 12'`|
-|`font`|Шрифт, который будет использоваться для отображения текста компонента, например, значения свойства, заголовка действия, текста в таблице|[Строковый литерал](Literals.md#strliteral)|зависит от компонента|`'Tahoma bold 16'`<br/>`'Times 12'`|
-|`class`|todo|[Строковый литерал](Literals.md#strliteral)|NULL|todo|
+|`font`|Шрифт, который будет использоваться для отображения текста компонента, например, значения свойства, заголовка действия, текста в таблице|Строковый литерал|зависит от компонента|`'Tahoma bold 16'`<br/>`'Times 12'`|
+|`class`|todo|Строковый литерал|NULL|todo|
 |`fontSize`|Размер шрифта, который будет использоваться для отображения текста компонента|Числовой литерал|зависит от компонента|`10`|
 |`fontStyle`|Стиль шрифта, который будет использоваться для отображения текста компонента. Может содержать слова `'bold'` и/или `'italic'`, либо пустую строку|Строковый литерал|`''`|`'bold'`<br/>`'bold italic'`|
 |`background`|Цвет, который будет использоваться для отображения фона компонента|[Литерал класса `COLOR`](Literals.md#colorliteral)|`#FFFFFF`|`#FFFFCC`<br/>`RGB(255, 0, 0)`|
@@ -130,17 +130,17 @@ title: 'Инструкция DESIGN'
 |---|---|---|---|---|
 |`caption`|Заголовок контейнера|Строковый литерал|`NULL`|`'Заголовок'`|
 |`image`|todo|Строковый литерал|`NULL`|todo|
-|`collapsible`|todo|[Логический литерал](Literals.md#booleanliteral)||`FALSE`|`TRUE`<br/>`FALSE`|
-|`border`|todo|[Логический литерал](Literals.md#booleanliteral)||`FALSE`|`TRUE`<br/>`FALSE`|
-|`collapsed`|todo|[Логический литерал](Literals.md#booleanliteral)||`FALSE`|`TRUE`<br/>`FALSE`|
-|`horizontal`|Горизонтальный контейнер|[Логический литерал](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
-|`tabbed`|Контейнер с табами|[Логический литерал](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
+|`collapsible`|todo|Логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
+|`border`|todo|Логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
+|`collapsed`|todo|Логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
+|`horizontal`|Горизонтальный контейнер|Логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
+|`tabbed`|Контейнер с табами|Логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
 |`childrenAlignment`|Способ выравнивания дочерних компонентов внутри контейнера. Допустимые значения: `START`, `CENTER`, `END`|Тип выравнивания|`START`|`CENTER`|
-|`alignCaptions`|todo|[Логический литерал](Literals.md#booleanliteral)||`FALSE`|`TRUE`<br/>`FALSE`|
-|`grid`|todo|[Логический литерал](Literals.md#booleanliteral)||`FALSE`|`TRUE`<br/>`FALSE`|
-|`wrap`|todo|[Логический литерал](Literals.md#booleanliteral)||`FALSE`|`TRUE`<br/>`FALSE`|
-|`resizeOverflow`|todo|[Логический литерал](Literals.md#booleanliteral)||`FALSE`|`TRUE`<br/>`FALSE`|
-|`custom`|todo|[String literal](Literals.md#strliteral)|NULL|todo|
+|`alignCaptions`|todo|Логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
+|`grid`|todo|Логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
+|`wrap`|todo|Логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
+|`resizeOverflow`|todo|Логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
+|`custom`|todo|String literal|NULL|todo|
 |`columns`|Количество колонок в контейнере типа `COLUMNS`<br/>**deprecated since version 5, используйте `lines`**|Целочисленный литерал|`1`|`3`|
 |`lines`|Количество линий (рядов или колонок) в контейнере|Целочисленный литерал|`1`|`3`|
 |`lineSize`|todo|Целочисленный литерал|NULL|todo|
@@ -156,30 +156,31 @@ title: 'Инструкция DESIGN'
 |`panelCaptionLast`|Указание того, что в панели необходимо рисовать сначала значение, а потом заголовок свойства|Дополненный логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
 |`panelCaptionAlignment`|Способ выравнивания заголовка компонента. Допустимые значения: `START` (В начале), `CENTER` (В центре), `END` (В конце), `STRETCH` (Растянуть).|Тип выравнивания|`START`|`STRETCH`|
 |`editOnSingleClick`|Указание того, что при однократном нажатии мышкой на компонент свойства, необходимо начинать редактирование<br/>**deprecated, используйте `changeOnSingleClick`**|Дополненный логический литерал|зависит от свойства|`TRUE`<br/>`FALSE`|
-|`changeOnSingleClick`|Указание того, что при однократном нажатии мышкой на компонент свойства, необходимо начинать редактирование|Дополненный логический литерал|зависит от свойства|`TRUE`<br/>`FALSE`||`focusable`|Указание того, что компонент свойства (действия) или колонка в таблице могут владеть фокусом|Дополненный логический литерал|changeKey = `NULL`|`TRUE`<br/>`FALSE`|
+|`changeOnSingleClick`|Указание того, что при однократном нажатии мышкой на компонент свойства, необходимо начинать редактирование|Дополненный логический литерал|зависит от свойства|`TRUE`<br/>`FALSE`|
+|`focusable`|Указание того, что компонент свойства (действия) или колонка в таблице могут владеть фокусом|Дополненный логический литерал|changeKey = `NULL`|`TRUE`<br/>`FALSE`|
 |`hide`|Указание того, что компонент свойства (действия) должен быть всегда спрятан|Дополненный логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
 |`regexp`|Регулярное выражение, которому должно соответствовать значение свойства при редактировании|Строковый литерал|`NULL`|`'^((8\|\\+7)[\\- ]?)?(\\(?\\d\{3\}\\)?[\\- ]?)?[\\d\\- ]\{7,10\}$'`|
 |`regexpMessage`|Сообщение, которое будет выдано пользователю, если он введет значение не соответствующее регулярному выражению|Строковый литерал|сообщение по умолчанию|`'Неправильный формат телефона'`|
 |`pattern`|Шаблон форматирования значения свойства. Синтаксис задания шаблона аналогичен синтаксису [DecimalFormat](https://docs.oracle.com/javase/8/docs/api/java/text/DecimalFormat.html) либо [SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html) в зависимости от типа значения|Строковый литерал|`NULL`|`'#,##0.00'`|
 |`maxValue`|Максимальное числовое значение, которое позволяет ввести компонент свойства|Целочисленный литерал|`NULL`|`1000000`<br/>`5000000000L`|
 |`echoSymbols`|Указание того, что вместо значения свойства будет показываться набор символов `*`. Используется, например, для паролей|Дополненный логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
-|`noSort`|Запрет сортировки|[Логический литерал](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
+|`noSort`|Запрет сортировки|Логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
 |`defaultCompare`|Фильтр по умолчанию. Допустимые значения: `EQUALS`, `GREATER`, `LESS`, `GREATER_EQUALS`, `LESS_EQUALS`, `NOT_EQUALS`, `CONTAINS`, `LIKE`.|Строковый литерал|`CONTAINS`|`GREATER`|
-|`valueSize`|Ширина и высота ячейки значения свойства в пикселях|Пара [целочисленных литералов](Literals.md#intliteral) (ширина, высота)|`(-1, -1)`|`(100, 100)`|
+|`valueSize`|Ширина и высота ячейки значения свойства в пикселях|Пара целочисленных литералов (ширина, высота)|`(-1, -1)`|`(100, 100)`|
 |`valueHeight`|Высота ячейки значения свойства в пикселях|Целочисленный литерал|зависит от свойства|`100`|
 |`valueWidth`|Ширина ячейки значения свойства в пикселях|Целочисленный литерал|зависит от свойства|`100`|
 |`captionHeight`|Высота заголовка свойства в пикселях|Целочисленный литерал|`-1`|`100`|
 |`captionWidth`|Ширина заголовка свойства в пикселях|Целочисленный литерал|`-1`|`100`|
 |`charHeight`|Высота ячейки значения свойства в символах (рядах).|Целочисленный литерал|зависит от свойства|`2`|
 |`charWidth`|Ширина ячейки значения свойства в символах|Целочисленный литерал|зависит от свойства|`10`|
-|`valueFlex`|todo|[Логический литерал](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
+|`valueFlex`|todo|Логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
 |`changeKey`|Клавиша, при нажатии которой будет начато редактирование свойства. Принцип задания аналогичен заданию параметра в [Keystroke.getKeystroke(String)](https://docs.oracle.com/javase/8/docs/api/javax/swing/KeyStroke.html#getKeyStroke-java.lang.String-)|Строковый литерал|`NULL`|`'ctrl F6'`<br/>`'BACK_SPACE'`<br/>`'alt shift X'`|
 |`changeKeyPriority`|todo|Целочисленный литерал|`NULL`|`1000`|
 |`changeMouse`|todo|Строковый литерал|`NULL`|`'DBLCLK'`|
 |`changeMousePriority`|todo|Целочисленный литерал|`NULL`|`1000`|
 |`showChangeKey`|Указание того, что в заголовок свойства будет включено название сочетания клавиш, по которому будет начато редактирование|Дополненный логический литерал|`TRUE`|`TRUE`<br/>`FALSE`|
-|`focusable`|todo|[Logical literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
-|`panelColumnVertical`|todo|[Logical literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
+|`focusable`|todo|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
+|`panelColumnVertical`|todo|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`valueClass`|todo|Строковый литерал|NULL|todo|
 |`captionClass`|todo|Строковый литерал|NULL|todo|
 |`caption`|Заголовок свойства или действия|Строковый литерал|заголовок свойства или действия|`'Заголовок'`|
@@ -188,7 +189,6 @@ title: 'Инструкция DESIGN'
 |`comment`|Комментарий свойства или действия|Строковый литерал|Комментарий свойства или действия|`'Комментарий'`|
 |`commentClass`|Класс комментария свойства или действия|Строковый литерал|Класс комментария свойства или действия|`'comment-class'`|
 |`panelCommentVertical`|Указание того, что в панели необходимо рисовать комментарий свойства или действия сверху или снизу от значения|Дополненный логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
-|`disableIfReadonly`|todo|[Logical literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
 |`panelCommentFirst`|Указание того, что в панели необходимо рисовать сначала комментарий, а потом значение свойства|Дополненный логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
 |`panelCommentAlignment`|Способ выравнивания компонента комментария внутри контейнера. Допустимые значения: `START` (В начале), `CENTER` (В центре), `END` (В конце), `STRETCH` (Растянуть).|Тип выравнивания|`START`|`STRETCH`|
 |`placeholder`|Placeholder свойства|Строковый литерал|placeholder свойства|`'Placeholder'`|
@@ -222,7 +222,7 @@ title: 'Инструкция DESIGN'
 |`tabVertical`|Указание того, что переход фокуса между ячейками будет осуществляться сверху вниз, а не слева направо|Дополненный логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
 |`quickSearch`|Указание того, что в таблице будет осуществляться быстрый поиск элемента|`FALSE`|`TRUE`<br/>`FALSE`|
 |`headerHeight`|Высота заголовка в пикселях|Целочисленный литерал|NULL|`60`|
-|`resizeOverflow`|todo|[Логический литерал](Literals.md#booleanliteral)||`FALSE`|`TRUE`<br/>`FALSE`|
+|`resizeOverflow`|todo|Логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
 |`lineWidth`|todo|Целочисленный литерал|NULL|`60`|
 |`lineHeight`|todo|Целочисленный литерал|NULL|`60`|
 

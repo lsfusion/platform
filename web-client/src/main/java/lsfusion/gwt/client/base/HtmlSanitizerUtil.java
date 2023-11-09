@@ -18,9 +18,9 @@ public class HtmlSanitizerUtil implements HtmlSanitizer {
 
     private static final Set<String> TAG_WHITELIST = new HashSet<>(
             Arrays.asList("a", "abbr", "acronym", "address", "altGlyph", "altGlyphDef", "altGlyphItem", "animate", "animateMotion",
-                    "animateTransform", "area", "b", "big", "blockquote", "br", "button", "caption", "center", "circle", "cite",
+                    "animateTransform", "area", "b", "big", "blockquote", "body", "br", "br/", "button", "caption", "center", "circle", "cite",
                     "clipPath", "code", "col", "colgroup", "color-profile", "dd", "defs", "del", "desc", "dfn", "dir", "div", "dl",
-                    "dt", "ellipse", "em", "feBlend", "fieldset", "font", "form", "g", "h1", "h2", "h3", "h4", "h5", "h6", "hr", "i",
+                    "dt", "ellipse", "em", "feBlend", "fieldset", "font", "form", "g", "h1", "h2", "h3", "h4", "h5", "h6", "html", "hr", "i",
                     "image", "img", "input", "ins", "kbd", "label", "legend", "li", "line", "linearGradient", "map", "marker", "mask",
                     "menu", "ol", "optgroup", "option", "p", "path", "pattern", "polygon", "polyline", "pre", "q", "radialGradient",
                     "rect", "s", "samp", "select", "small", "span", "stop", "strike", "strong", "sub", "sup", "svg", "table", "tbody",

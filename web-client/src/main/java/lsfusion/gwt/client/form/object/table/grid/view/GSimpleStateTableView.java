@@ -31,6 +31,7 @@ import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.GDateDTO;
 import lsfusion.gwt.client.form.property.cell.classes.GDateTimeDTO;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
+import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.view.Column;
 import lsfusion.interop.action.ServerResponse;
 
@@ -93,6 +94,19 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
     private NativeHashMap<String, Column> columnMap;
 
+    private Column getColumn(String key) {
+        Column column = columnMap.get(key);
+        if (column == null) {
+            for (GPropertyDraw property : form.getPropertyDraws()) {
+                if (key.equals(property.integrationSID)) {
+                    column = new Column(property, GGroupObjectValue.EMPTY);
+                    break;
+                }
+            }
+        }
+        return column;
+    }
+
     @Override
     protected void updateView() {
         columnMap = new NativeHashMap<>();
@@ -139,7 +153,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
                 GGroupObjectValue fullKey = key != null ? GGroupObjectValue.getFullKey(key, columnKey) : GGroupObjectValue.EMPTY;
 
-                rowValues.push(convertToJSValue(property, propValues.get(fullKey)));
+                rowValues.push(convertToJSValue(property, propValues.get(fullKey), RendererType.SIMPLE));
             }
         }
         rowValues.push(fromObject(key));
@@ -194,8 +208,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return GwtClientUtils.jsonParse((String)key);
     }
 
-    public static JavaScriptObject convertToJSValue(GPropertyDraw property, PValue value) {
-        return convertToJSValue(property.baseType, value);
+    public static JavaScriptObject convertToJSValue(GPropertyDraw property, PValue value, RendererType rendererType) {
+        return convertToJSValue(property.getRenderType(rendererType), value);
     }
 
     protected JsArray<JavaScriptObject> getCaptions(NativeHashMap<String, Column> columnMap, Predicate<GPropertyDraw> filter) {
@@ -293,7 +307,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     protected void changeJSProperties(String[] columns, JavaScriptObject[] objects, JavaScriptObject[] newValues) {
         PValue[] mappedValues = new PValue[newValues.length];
         for (int i = 0; i < newValues.length; i++)
-            mappedValues[i] = GSimpleStateTableView.convertFromJSUndefValue(columnMap.get(columns[i]).property.getExternalChangeType(), newValues[i]);
+            mappedValues[i] = GSimpleStateTableView.convertFromJSUndefValue(getColumn(columns[i]).property.getExternalChangeType(), newValues[i]);
         changeProperties(columns, objects, mappedValues);
     }
 
@@ -311,9 +325,9 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         GPushAsyncResult[] pushAsyncResults = new GPushAsyncResult[length];
 
         for (int i = 0; i < length; i++) {
-            Column column = columnMap.get(columns[i]);
+            Column column = getColumn(columns[i]);
             properties[i] = column.property;
-            fullKeys[i] = GGroupObjectValue.getFullKey(getChangeObjects(objects[i]), column.columnKey);
+            fullKeys[i] = GGroupObjectValue.getFullKey(getJsObjects(objects[i]), column.columnKey);
             externalChanges[i] = true;
             PValue newValue = newValues[i];
             pushAsyncResults[i] = newValue == PValue.UNDEFINED ? null : new GPushAsyncInput(new GUserInputResult(newValue));
@@ -322,7 +336,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         Consumer<Long> onExec = changeRequestIndex -> {
             for (int i = 0; i < length; i++) {
                 GPropertyDraw property = properties[i];
-                if(newValues[i] != PValue.UNDEFINED && property.canUseChangeValueForRendering(property.getExternalChangeType())) { // or use the old value instead of the new value in that case
+                if(newValues[i] != PValue.UNDEFINED && property.canUseChangeValueForRendering(property.getExternalChangeType(), RendererType.SIMPLE)) { // or use the old value instead of the new value in that case
                     GGroupObjectValue fullKey = fullKeys[i];
                     form.pendingChangeProperty(property, fullKey, newValues[i], getValue(property, fullKey), changeRequestIndex);
                 }
@@ -336,7 +350,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     }
 
     protected String getCaption(String property) {
-        Column column = columnMap.get(property);
+        Column column = getColumn(property);
         if(column == null)
             return null;
 
@@ -346,79 +360,88 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     }
 
     protected String getCaptionElementClass(String property) {
-        Column column = columnMap.get(property);
+        Column column = getColumn(property);
         if(column == null)
             return null;
         return getCaptionElementClass(column.property, column.columnKey);
     }
 
     protected boolean isReadOnly(String property, GGroupObjectValue object) {
-        Column column = columnMap.get(property);
+        Column column = getColumn(property);
         if(column == null)
             return false;
         return isReadOnly(column.property, object, column.columnKey);
     }
 
-    protected boolean isReadOnly(String property, JavaScriptObject object) {
-        return isReadOnly(property, getObjects(object));
-    }
-    protected boolean isDisableIfReadonly(String property) {
-        Column column = columnMap.get(property);
-        if(column == null)
-            return false;
-        return column.property.disableIfReadonly;
+    protected Boolean isReadOnly(String property, JavaScriptObject object) {
+        return isReadOnly(property, getJsObjects(object)) ? false : null;
     }
 
     protected String getValueElementClass(String property, GGroupObjectValue object) {
-        Column column = columnMap.get(property);
+        Column column = getColumn(property);
         if(column == null)
             return null;
         return getValueElementClass(column.property, object, column.columnKey);
     }
 
     protected String getValueElementClass(String property, JavaScriptObject object) {
-        return getValueElementClass(property, getObjects(object));
+        return getValueElementClass(property, getJsObjects(object));
     }
 
     protected String getBackground(String property, GGroupObjectValue object) {
-        Column column = columnMap.get(property);
+        Column column = getColumn(property);
         if(column == null)
             return null;
         return getBackground(column.property, object, column.columnKey);
     }
 
     protected String getPlaceholder(String property, GGroupObjectValue object) {
-        Column column = columnMap.get(property);
+        Column column = getColumn(property);
         if(column == null)
             return null;
         return getPlaceholder(column.property, object, column.columnKey);
     }
 
+    private JavaScriptObject getValue(String property, GGroupObjectValue groupObjectValue) {
+        Column column = getColumn(property);
+        if(column == null)
+            return null;
+        return convertToJSValue(column.property, getValue(column.property, GGroupObjectValue.getFullKey(groupObjectValue, column.columnKey)), RendererType.SIMPLE);
+    }
+
     protected String getBackground(String property, JavaScriptObject object) {
-        return getBackground(property, getObjects(object));
+        return getBackground(property, getJsObjects(object));
     }
 
     protected String getPlaceholder(String property, JavaScriptObject object) {
-        return getPlaceholder(property, getObjects(object));
+        return getPlaceholder(property, getJsObjects(object));
+    }
+
+    protected JavaScriptObject getValue(String property, JavaScriptObject object) {
+        return getValue(property, getJsObjects(object));
     }
 
     protected String getForeground(String property, GGroupObjectValue object) {
-        Column column = columnMap.get(property);
+        Column column = getColumn(property);
         if(column == null)
             return null;
         return getForeground(column.property, object, column.columnKey);
     }
 
     protected String getForeground(String property, JavaScriptObject object) {
-        return getForeground(property, getObjects(object));
+        return getForeground(property, getJsObjects(object));
     }
 
     protected boolean isCurrentObjectKey(JavaScriptObject object){
-        return isCurrentKey(getObjects(object));
+        return isCurrentKey(getJsObjects(object));
     }
 
-    // change key can be outside view window, and can be obtained from getAsyncValues for example
-    protected GGroupObjectValue getChangeObjects(JavaScriptObject object) {
+    public static boolean isChangeObject(JavaScriptObject object) {
+        return hasKey(object, objectsFieldName) || toObject(object) instanceof GGroupObjectValue;
+    }
+
+    // key can be obtained from getAsyncValues for example, and not passed at all
+    protected GGroupObjectValue getJsObjects(JavaScriptObject object) {
         if(object == null)
             return getSelectedKey();
         if(hasKey(object, objectsFieldName))
@@ -465,13 +488,13 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         PValue leftBorder = isDateTimeFilter ? PValue.getPValue(new GDateTimeDTO(startYear, startMonth, startDay, 0, 0, 0)) : PValue.getPValue(new GDateDTO(startYear, startMonth, startDay)) ;
         PValue rightBorder = isDateTimeFilter ? PValue.getPValue(new GDateTimeDTO(endYear, endMonth, endDay, 0, 0, 0)) : PValue.getPValue(new GDateDTO(endYear, endMonth, endDay));
 
-        Column column = columnMap.get(property);
+        Column column = getColumn(property);
         setViewFilters(pageSize, new GPropertyFilter(new GFilter(column.property), grid.groupObject, column.columnKey, leftBorder, GCompare.GREATER_EQUALS),
                 new GPropertyFilter(new GFilter(column.property), grid.groupObject, column.columnKey, rightBorder, GCompare.LESS_EQUALS));
     }
 
     protected void setBooleanViewFilter(String property, int pageSize) {
-        Column column = columnMap.get(property);
+        Column column = getColumn(property);
         setViewFilters(pageSize, new GPropertyFilter(new GFilter(column.property), grid.groupObject, column.columnKey, PValue.getPValue(true), GCompare.EQUALS));
     }
 
@@ -480,14 +503,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         setPageSize(pageSize);
     }
 
-    private String getPropertyJsValue(String property) {
-        Column column = columnMap.get(property);
-        Object value = column != null ? getJsValue(column.property, getSelectedKey(), column.columnKey) : null;
-        return value != null ? value.toString() : null;
-    }
-
     protected void getAsyncValues(String property, String value, JavaScriptObject successCallBack, JavaScriptObject failureCallBack) {
-        Column column = columnMap.get(property);
+        Column column = getColumn(property);
         form.getAsyncValues(value, column.property, column.columnKey, ServerResponse.OBJECTS, getJSCallback(successCallBack, failureCallBack));
     }
 
@@ -678,10 +695,21 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         var thisObj = this;
         return {
             changeProperty: function (property, object, newValue, type, index) {
-                if(object === undefined)
+                if(object !== undefined) {
+                    if(newValue === undefined) { //object passed, newValue not passed
+                        //guess if object is object or newValue
+                        if (@GSimpleStateTableView::isChangeObject(*)(object)) {
+                            newValue = @GSimpleStateTableView::UNDEFINED;
+                        } else {
+                            newValue = object;
+                            object = null;
+                        }
+                    }
+                } else {
+                    if(newValue === undefined)
+                        newValue = @GSimpleStateTableView::UNDEFINED;
                     object = null;
-                if(newValue === undefined) // not passed
-                    newValue = @GSimpleStateTableView::UNDEFINED;
+                }
 
                 @GSimpleStateTableView::changeJSDiff(*)(element, null, object, this, property, newValue, type, index);
 
@@ -714,9 +742,6 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             isPropertyReadOnly: function (property, object) {
                 return thisObj.@GSimpleStateTableView::isReadOnly(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
             },
-            isPropertyDisableIfReadonly: function (property) {
-                return thisObj.@GSimpleStateTableView::isDisableIfReadonly(Ljava/lang/String;)(property);
-            },
             isTabFocusable: function () {
                 return true;
             },
@@ -732,6 +757,9 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             getPlaceholder: function (property, object) {
                 return thisObj.@GSimpleStateTableView::getPlaceholder(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
             },
+            getValue: function (property, object) {
+                return thisObj.@GSimpleStateTableView::getValue(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
+            },
             changeObject: function (object, rendered, elementClicked) {
                 if(rendered === undefined)
                     rendered = false;
@@ -745,14 +773,11 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             setBooleanViewFilter: function (property, pageSize) {
                 thisObj.@GSimpleStateTableView::setBooleanViewFilter(*)(property, pageSize);
             },
-            getCurrentDay: function (propertyName) {
-                return thisObj.@GSimpleStateTableView::getPropertyJsValue(*)(propertyName);
-            },
             getGroupObjectBackgroundColor: function(object) {
                 var color = object.color;
                 if (color)
                     return color.toString();
-                return thisObj.@GStateTableView::getRowBackgroundColor(*)(thisObj.@GSimpleStateTableView::getObjects(*)(object));
+                return thisObj.@GStateTableView::getRowBackgroundColor(*)(thisObj.@GSimpleStateTableView::getJsObjects(*)(object));
             },
             getDisplayBackgroundColor: function (color, isCurrent) {
                 return @lsfusion.gwt.client.base.view.ColorUtils::getThemedColor(Ljava/lang/String;)(color);
@@ -761,7 +786,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                 return @lsfusion.gwt.client.base.view.ColorUtils::getThemedColor(Ljava/lang/String;)(color);
             },
             getGroupObjectForegroundColor: function(object) {
-                return thisObj.@GStateTableView::getRowForegroundColor(*)(thisObj.@GSimpleStateTableView::getObjects(*)(object));
+                return thisObj.@GStateTableView::getRowForegroundColor(*)(thisObj.@GSimpleStateTableView::getJsObjects(*)(object));
             },
             getValues: function (property, value, successCallback, failureCallback) {
                 return this.getPropertyValues(property, value, successCallback, failureCallback);

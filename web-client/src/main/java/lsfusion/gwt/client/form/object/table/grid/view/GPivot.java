@@ -16,6 +16,7 @@ import lsfusion.gwt.client.base.jsni.NativeStringMap;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.classes.GObjectType;
+import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.classes.data.GLogicalType;
 import lsfusion.gwt.client.controller.remote.DeferredRunner;
@@ -40,6 +41,7 @@ import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
+import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 import lsfusion.gwt.client.form.view.Column;
@@ -130,7 +132,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
 
             CellRenderer renderer = null;
             if(convertDataToStrings)
-                renderer = properties.get(i).getCellRenderer();
+                renderer = properties.get(i).getCellRenderer(RendererType.PIVOT);
 
             for (GGroupObjectValue columnKey : propColumnKeys) {
                 if (checkShowIf(i, columnKey)) // property is hidden
@@ -194,7 +196,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
 
                 aggregator.setAggregator(caption, columnAggregator);
 
-                if (property.baseType instanceof GIntegralType)
+                if (property.getRenderType(RendererType.PIVOT) instanceof GIntegralType)
                     aggrCaptions.add(caption);
             }
         }
@@ -246,7 +248,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     private void pushValue(JsArrayMixed rowValues, NativeHashMap<GGroupObjectValue, PValue> propValues, GGroupObjectValue fullKey, CellRenderer cellRenderer) {
         PValue value = propValues.get(fullKey);
         // in theory in renderColumn there is the reversed converting
-        rowValues.push(value != null ? fromObject(cellRenderer != null ? cellRenderer.format(value) : PValue.getPivotValue(value)) : null);
+        rowValues.push(value != null ? fromObject(cellRenderer != null ? cellRenderer.format(value, RendererType.PIVOT) : PValue.getPivotValue(value)) : null);
     }
 
     public static final String COLUMN = ClientMessages.Instance.get().pivotColumnAttribute();
@@ -317,7 +319,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         }
         if(measures.length() == 0 && MainFrame.pivotOnlySelectedColumn) {
             for(GPropertyDraw property : properties) {
-                if (property.baseType instanceof GIntegralType && (property.sID.equals("PROPERTY(count())") || property.equals(selectedProperty))) {
+                if (property.getRenderType(RendererType.PIVOT) instanceof GIntegralType && (property.sID.equals("PROPERTY(count())") || property.equals(selectedProperty))) {
                     measures.push(columnCaptionMap.get(property));
                 }
             }
@@ -1165,6 +1167,11 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             public boolean isSelectedLink() {
                 return true;
             }
+
+            @Override
+            public RendererType getRendererType() {
+                return RendererType.PIVOT;
+            }
         };
         GPropertyTableBuilder.renderAndUpdate(property, th, this, updateContext);
     }
@@ -1251,7 +1258,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     }
 
     public static void setTableToExcelPropertyAttributes(Element element, PValue value, GPropertyDraw property) {
-        Style.TextAlign textAlignStyle = property.getHorzTextAlignment();
+        Style.TextAlign textAlignStyle = property.getHorzTextAlignment(RendererType.PIVOT);
         if (textAlignStyle != null) {
             switch (textAlignStyle) {
                 case LEFT:
@@ -1284,7 +1291,8 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         //data type and format
         String type;
         String dataValue = null;
-        if(property.baseType instanceof GObjectType || property.baseType instanceof GIntegralType) {
+        GType propType = property.getRenderType(RendererType.PIVOT);
+        if(propType instanceof GObjectType || propType instanceof GIntegralType) {
             type = "n";
             String pattern;
             if(value != null) {
@@ -1306,7 +1314,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
                 pattern = ";;;@";
             }
             element.setAttribute("data-num-fmt", pattern);
-        } else if(property.baseType instanceof GLogicalType) {
+        } else if(propType instanceof GLogicalType) {
             type = "b";
             dataValue = String.valueOf(PValue.getBooleanValue(value));
         } else {
@@ -1523,7 +1531,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     }
 
     private int getColumnMapWidth(String column) {
-        return columnMap.get(column).property.getValueWidthWithPadding(font).getPivotSize();
+        return columnMap.get(column).property.getValueWidthWithPadding(font, RendererType.PIVOT).getPivotSize();
     }
 
     public int getColumnWidth(boolean isValueColumn, JsArrayMixed colKeyValues, JsArrayString axisValues, boolean isArrow, int arrowLevels) {
@@ -2208,5 +2216,10 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     @Override
     public boolean isDefaultBoxed() {
         return false;
+    }
+
+    @Override
+    public RendererType getRendererType() {
+        return RendererType.PIVOT;
     }
 }

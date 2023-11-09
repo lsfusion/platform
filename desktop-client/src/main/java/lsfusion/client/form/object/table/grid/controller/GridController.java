@@ -628,8 +628,11 @@ public class GridController extends AbstractTableController {
         return view;
     }
 
-    public boolean getAutoSize() {
-        return groupObject.grid.autoSize;
+    public boolean isAutoWidth() {
+        return groupObject.grid.width == -1;
+    }
+    public boolean isAutoHeight() {
+        return groupObject.grid.height == -1;
     }
 
     public void setForceHidden(boolean forceHidden) {

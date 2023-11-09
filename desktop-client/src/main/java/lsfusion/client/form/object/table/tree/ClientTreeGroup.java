@@ -27,7 +27,6 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
     
     public ClientToolbar toolbar;
 
-    public boolean autoSize;
     public Boolean boxed;
 
     public boolean plainTreeMode;
@@ -66,7 +65,6 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream) throws IOException {
         super.customSerialize(pool, outStream);
 
-        outStream.writeBoolean(autoSize);
         outStream.writeBoolean(boxed != null);
         if(boxed != null)
             outStream.writeBoolean(boxed);
@@ -88,8 +86,18 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, inStream);
 
-        autoSize = inStream.readBoolean();
+        // GridProperty
+
         boxed = inStream.readBoolean() ? inStream.readBoolean() : null;
+
+        headerHeight = inStream.readInt();
+
+        resizeOverflow = inStream.readBoolean() ? inStream.readBoolean() : null;
+
+        lineWidth = inStream.readInt();
+        lineHeight = inStream.readInt();
+
+        // Tree
 
         groups = pool.deserializeList(inStream);
         toolbar = pool.deserializeObject(inStream);
@@ -100,13 +108,6 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
         plainTreeMode = inStream.readBoolean();
         
         expandOnClick = inStream.readBoolean();
-
-        headerHeight = inStream.readInt();
-
-        resizeOverflow = inStream.readBoolean() ? inStream.readBoolean() : null;
-
-        lineWidth = inStream.readInt();
-        lineHeight = inStream.readInt();
 
         List<ClientGroupObject> upGroups = new ArrayList<>();
         for (ClientGroupObject group : groups) {

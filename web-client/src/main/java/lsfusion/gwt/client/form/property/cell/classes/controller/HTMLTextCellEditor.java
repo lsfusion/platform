@@ -2,7 +2,6 @@ package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
-import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
@@ -43,7 +42,7 @@ public class HTMLTextCellEditor extends RequestReplaceValueCellEditor {
     }
 
     @Override
-    public void render(Element cellParent, RenderContext renderContext, Pair<Integer, Integer> renderedSize, PValue oldValue) {
+    public void render(Element cellParent, RenderContext renderContext, PValue oldValue, Integer renderedWidth, Integer renderedHeight) {
 
     }
 

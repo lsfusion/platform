@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
-import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
@@ -10,6 +9,7 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
+import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 public class LogicalCellRenderer extends CellRenderer {
@@ -60,7 +60,7 @@ public class LogicalCellRenderer extends CellRenderer {
             inputElement = renderInputElement(element);
 
             if(isTDOrTH) {
-                renderTextAlignment(property, element, false);
+                renderTextAlignment(property, element, false, renderContext.getRendererType());
 
                 renderedAlignment = true;
             }
@@ -101,7 +101,7 @@ public class LogicalCellRenderer extends CellRenderer {
         clearInputElement(element);
 
         if(GwtClientUtils.isTDorTH(element))
-            clearRenderTextAlignment(property, element, false);
+            clearRenderTextAlignment(property, element, false, renderContext.getRendererType());
 
         return false;
     }
@@ -137,11 +137,11 @@ public class LogicalCellRenderer extends CellRenderer {
     }
 
     @Override
-    public Element createRenderElement() {
+    public Element createRenderElement(RendererType rendererType) {
         if(isTagInput())
             return createCheckInput();
 
-        return super.createRenderElement();
+        return super.createRenderElement(rendererType);
     }
 
     //    private String getCBImagePath(Object value) {
@@ -150,7 +150,7 @@ public class LogicalCellRenderer extends CellRenderer {
 //    }
 
     @Override
-    public String format(PValue value) {
+    public String format(PValue value, RendererType rendererType) {
         if(threeState) {
             Boolean value3s = get3sBooleanValue(value);
             return value3s != null ? (value3s ? "TRUE" : "FALSE") : "NULL";

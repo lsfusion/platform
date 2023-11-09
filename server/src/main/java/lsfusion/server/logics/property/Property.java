@@ -1946,7 +1946,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
 
     public boolean tooMuchSelectData(ImMap<T, StaticParamNullableExpr> fixedExprs) {
-        return !getSelectCost(fixedExprs.keys()).rows.less(new Stat(Settings.get().getAsyncValuesMaxReadDataCompletionCount()));
+        return !getSelectCost(fixedExprs).rows.less(new Stat(Settings.get().getAsyncValuesMaxReadDataCompletionCount()));
     }
 
     private <X extends PropertyInterface> void setResetAsync(ActionMapImplement<X, T> action) {
@@ -2577,9 +2577,9 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return getSelectStat(getInterfaceParamExprs(fixedInterfaces));
     }
 
-    public Cost getSelectCost(ImSet<T> fixedInterfaces) {
+    public Cost getSelectCost(ImMap<T, StaticParamNullableExpr> fixedInterfaces) {
         // the obtained stat will be incorrect here (see getSelectStat comment) but we don't need it anyway
-        return getSelectCostStat(getInterfaceParamExprs(fixedInterfaces), Compare.MATCH).second;
+        return getSelectCostStat(fixedInterfaces, Compare.MATCH).second;
     }
 
     @IdentityInstanceLazy

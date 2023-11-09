@@ -38,11 +38,11 @@ public abstract class GAbstractTableController extends GPropertyController imple
 
     protected TableContainer gridView;
 
-    public void initGridView(boolean autoSize) {
+    public void initGridView() {
 
         // we need to wrap into simple panel to make layout independent from property value (make flex-basis 0 for upper components)
         // plus we need this panel to change views
-        this.gridView = new TableContainer(autoSize, formController);
+        this.gridView = new TableContainer(formController);
 
         getFormLayout().addBaseComponent(getGridComponent(), this.gridView, getDefaultFocusReceiver());
 

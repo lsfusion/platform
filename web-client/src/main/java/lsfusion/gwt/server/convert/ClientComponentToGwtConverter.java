@@ -233,7 +233,6 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
         grid.headerHeight = clientGrid.headerHeight;
 
-        grid.autoSize = clientGrid.autoSize;
         grid.boxed = clientGrid.boxed;
 
         grid.lineWidth = clientGrid.lineWidth;
@@ -258,14 +257,10 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.propertyFormName = clientPropertyDraw.getPropertyFormName();
         propertyDraw.integrationSID = clientPropertyDraw.getIntegrationSID();
 
-        propertyDraw.autoSize = clientPropertyDraw.autoSize;
-
         propertyDraw.customRenderFunction = clientPropertyDraw.customRenderFunction;
         propertyDraw.customCanBeRenderedInTD = clientPropertyDraw.customCanBeRenderedInTD;
         propertyDraw.customNeedPlaceholder = clientPropertyDraw.customNeedPlaceholder;
         propertyDraw.customNeedReadonly = clientPropertyDraw.customNeedReadonly;
-
-        propertyDraw.disableIfReadonly = clientPropertyDraw.disableIfReadonly;
 
         propertyDraw.toolTip = clientPropertyDraw.toolTip;
         propertyDraw.clearText = clientPropertyDraw.clearText;
@@ -290,7 +285,9 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
             }
         }
 
-        propertyDraw.baseType = typeConverter.convertOrCast(clientPropertyDraw.baseType);
+        propertyDraw.cellType = typeConverter.convertOrCast(clientPropertyDraw.baseType);
+        propertyDraw.differentValue = clientPropertyDraw.valueType != null;
+        propertyDraw.valueType = propertyDraw.differentValue ? typeConverter.convertOrCast(clientPropertyDraw.valueType) : propertyDraw.cellType;
         propertyDraw.returnClass = typeConverter.convertOrCast(clientPropertyDraw.returnClass);
 
         propertyDraw.tag = clientPropertyDraw.tag;
@@ -570,7 +567,6 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
             treeGroup.filters.add(convertOrCast(filter));
         }
 
-        treeGroup.autoSize = clientTreeGroup.autoSize;
         treeGroup.boxed = clientTreeGroup.boxed;
 
         treeGroup.toolbar = convertOrCast(clientTreeGroup.toolbar);

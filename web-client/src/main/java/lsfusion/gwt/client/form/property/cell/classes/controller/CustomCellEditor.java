@@ -3,7 +3,6 @@ package lsfusion.gwt.client.form.property.cell.classes.controller;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
@@ -20,7 +19,7 @@ public interface CustomCellEditor extends RequestValueCellEditor { // ,RequestVa
     GType getType();
     JavaScriptObject getCustomEditor();
 
-    default void render(Element cellParent, RenderContext renderContext, Pair<Integer, Integer> renderedSize, PValue oldValue) {
+    default void render(Element cellParent, RenderContext renderContext, PValue oldValue, Integer renderedWidth, Integer renderedHeight) {
         CustomReplaceCellEditor.render(getRenderFunction(), getCustomEditor(), getCustomElement(cellParent), CustomReplaceCellEditor.getController(this, cellParent), GSimpleStateTableView.convertToJSValue(getType(), oldValue));
     }
 

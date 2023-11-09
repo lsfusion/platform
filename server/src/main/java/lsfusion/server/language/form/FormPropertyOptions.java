@@ -34,7 +34,8 @@ public class FormPropertyOptions {
     private Boolean optimisticAsync;
     private Columns columns;
     private PropertyObjectEntity showIf;
-    private Pair<PropertyObjectEntity, Boolean> readOnlyIf;
+    private PropertyObjectEntity disableIf;
+    private PropertyObjectEntity readOnlyIf;
     private PropertyObjectEntity valueElementClass;
     private PropertyObjectEntity background;
     private PropertyObjectEntity foreground;
@@ -138,11 +139,19 @@ public class FormPropertyOptions {
         this.showIf = showIf;
     }
 
-    public Pair<PropertyObjectEntity, Boolean> getReadOnlyIf() {
+    public PropertyObjectEntity getDisableIf() {
+        return disableIf;
+    }
+
+    public void setDisableIf(PropertyObjectEntity disableIf) {
+        this.disableIf = disableIf;
+    }
+
+    public PropertyObjectEntity getReadOnlyIf() {
         return readOnlyIf;
     }
 
-    public void setReadOnlyIf(Pair<PropertyObjectEntity, Boolean> readOnlyIf) {
+    public void setReadOnlyIf(PropertyObjectEntity readOnlyIf) {
         this.readOnlyIf = readOnlyIf;
     }
 
@@ -474,6 +483,7 @@ public class FormPropertyOptions {
         merged.setOptimisticAsync(nvl(overrides.getOptimisticAsync(), optimisticAsync));
         merged.setColumns(nvl(overrides.getColumns(), columns));
         merged.setShowIf(nvl(overrides.getShowIf(), showIf));
+        merged.setDisableIf(nvl(overrides.getDisableIf(), disableIf));
         merged.setReadOnlyIf(nvl(overrides.getReadOnlyIf(), readOnlyIf));
         merged.setValueElementClass(nvl(overrides.getValueElementClass(), valueElementClass));
         merged.setBackground(nvl(overrides.getBackground(), background));

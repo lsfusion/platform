@@ -295,7 +295,21 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
 
     @Override
     public Dimension getPreferredScrollableViewportSize() {
-        return treeGroup.autoSize ? getPreferredSize() : SwingDefaults.getTablePreferredSize();
+        boolean autoWidth = treeGroup.width == -1;
+        boolean autoHeight = treeGroup.height == -1;
+
+        Dimension tablePreferredSize = SwingDefaults.getTablePreferredSize();
+        if(autoWidth || autoHeight) {
+            Dimension preferredSize = getPreferredSize();
+            if(autoWidth && autoHeight)
+                return preferredSize;
+
+            int preferredWidth = autoWidth ? preferredSize.width : tablePreferredSize.width;
+            int preferredHeight = autoHeight ? preferredSize.height : tablePreferredSize.height;
+            return new Dimension(preferredWidth, preferredHeight);
+        }
+
+        return tablePreferredSize;
     }
 
     private void ordersSet(ClientGroupObject groupObject, LinkedHashMap<ClientPropertyDraw, Boolean> orders) {

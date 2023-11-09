@@ -684,7 +684,7 @@ propertyEditCustomView returns [String customEditorFunction]
 listViewType returns [ListViewType type, PivotOptions options, String customRenderFunction, FormLPUsage customOptions, String mapTileProvider]
 	:   'PIVOT' {$type = ListViewType.PIVOT;} ('DEFAULT' | 'NODEFAULT' {$type = null;})? opt = pivotOptions {$options = $opt.options; }
 	|   'MAP' (tileProvider = stringLiteral)? {$type = ListViewType.MAP; $mapTileProvider = $tileProvider.val;}
-	|   'CUSTOM' function=stringLiteral {$type = ListViewType.CUSTOM; $customRenderFunction = $function.val;} ('OPTIONS' decl=customOptionsGroupObjectContext { $customOptions = $decl.customOptions; })?
+	|   'CUSTOM' function=stringLiteral {$type = ListViewType.CUSTOM; $customRenderFunction = $function.val;} (('HEADER' | 'OPTIONS') decl=customOptionsGroupObjectContext { $customOptions = $decl.customOptions; })?
 	|   'CALENDAR' {$type = ListViewType.CALENDAR;}
     ;
 
@@ -860,7 +860,8 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'OPTIMISTICASYNC' { $options.setOptimisticAsync(true); }
 		|	'COLUMNS' (columnsName=stringLiteral)? '(' ids=nonEmptyIdList ')' { $options.setColumns($columnsName.text, getGroupObjectsList($ids.ids, self.getVersion())); }
 		|	'SHOWIF' propObj=formPropertyObject { $options.setShowIf($propObj.property); }
-		|	{ boolean disableIfReadonly = false; } ('READONLYIF' | 'DISABLEIF' { disableIfReadonly = true; }) propObj=formPropertyObject { $options.setReadOnlyIf(new Pair<>($propObj.property, disableIfReadonly)); }
+		|	'DISABLEIF' propObj=formPropertyObject { $options.setDisableIf($propObj.property); }
+		|	'READONLYIF' propObj=formPropertyObject { $options.setReadOnlyIf($propObj.property); }
 		|	'CLASS' propObj=formPropertyObject { $options.setValueElementClass($propObj.property); }
 		|	'BACKGROUND' propObj=formPropertyObject { $options.setBackground($propObj.property); }
 		|	'FOREGROUND' propObj=formPropertyObject { $options.setForeground($propObj.property); }
@@ -3793,6 +3794,7 @@ externalFormat [List<TypedParameter> context, boolean dynamic] returns [External
 externalHttpMethod returns [ExternalHttpMethod method]
 	:	'DELETE' { $method = ExternalHttpMethod.DELETE; }
 	|	'GET'    { $method = ExternalHttpMethod.GET; }
+	|	'PATCH'    { $method = ExternalHttpMethod.PATCH; }
 	|	'POST'	 { $method = ExternalHttpMethod.POST; }
 	|	'PUT'    { $method = ExternalHttpMethod.PUT; }
 	;

@@ -28,6 +28,7 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 
 import static lsfusion.base.BaseUtils.isRedundantString;
+import static lsfusion.server.physics.admin.log.ServerLoggers.startLogError;
 
 
 public class PostgreDataAdapter extends DataAdapter {
@@ -92,7 +93,7 @@ public class PostgreDataAdapter extends DataAdapter {
                 connect = getConnection(dataBase);
                 dbMajorVersion = connect.getMetaData().getDatabaseMajorVersion();
             } catch (PSQLException e) {
-                ServerLoggers.startLogger.error(String.format("%s (host: %s, user: %s)", e.getMessage(), server, userID));
+                startLogError(String.format("%s (host: %s, user: %s)", e.getMessage(), server, userID));
                 logger.error("EnsureDB error: ", e);
                 //08001 = connection refused (database is not started), 57P03 = the database system is starting up
                 String sqlState = e.getSQLState();

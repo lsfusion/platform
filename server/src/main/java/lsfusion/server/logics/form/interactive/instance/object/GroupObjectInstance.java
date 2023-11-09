@@ -489,6 +489,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     public final static int UPDATED_FILTERPROP = (1 << 10);
     public final static int UPDATED_ORDERPROP = (1 << 11);
 
+    public final static int UPDATED_VIEWTYPEVALUE = (1 << 12);
+
     public int updated = UPDATED_ORDER | UPDATED_FILTER;
 
     private boolean assertNull() {
@@ -858,7 +860,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     public ImMap<GroupColumn, Expr> getGroupExprs(ImMap<ObjectInstance, KeyExpr> mapKeys, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
         return groupMode.groupProps.<Expr, SQLException, SQLHandledException>mapValuesEx(value -> {
             ImMap<ObjectInstance, Expr> mapObjects = MapFact.addExcl(mapKeys, value.columnKeys.mapValues((Function<DataObject, ValueExpr>) DataObject::getExpr));
-            Expr expr = value.property.getReaderProperty().getExpr(mapObjects, modifier, reallyChanged);
+            Expr expr = value.property.getGroupProperty().getExpr(mapObjects, modifier, reallyChanged);
             return FormulaUnionExpr.create(StringOverrideFormulaImpl.instance, ListFact.toList(expr, ValueExpr.IMPOSSIBLESTRING)); // override to support NULLs
         });
     }
@@ -1407,6 +1409,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     public void changeListViewType(ExecutionEnvironment execEnv, ConcreteCustomClass listViewType, ListViewType value) throws SQLException, SQLHandledException {
         setViewFilters(Collections.emptySet());
 
+        if(this.listViewType != null && this.listViewType.isValue() != value.isValue())
+            updated |= UPDATED_VIEWTYPEVALUE;
         this.listViewType = value;
         execEnv.change(entity.getListViewType(listViewType).property, new PropertyChange<>(listViewType.getDataObject(value.getObjectName())));
     }

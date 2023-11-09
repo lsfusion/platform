@@ -146,6 +146,10 @@
                 <entry key="defaultFormImageRankingThreshold" value="${settings.defaultFormImageRankingThreshold:}"/>
                 <entry key="defaultContainerImageRankingThreshold" value="${settings.defaultContainerImageRankingThreshold:}"/>
                 <entry key="defaultPropertyImageRankingThreshold" value="${settings.defaultPropertyImageRankingThreshold:}"/>
+                <entry key="minInterfaceStatForValueUnique" value="${settings.minInterfaceStatForValueUnique:}"/>
+                <entry key="maxInterfaceStatForValueList" value="${settings.maxInterfaceStatForValueList:}"/>
+                <entry key="maxInterfaceStatForValueDropdown" value="${settings.maxInterfaceStatForValueDropdown:}"/>
+                <entry key="maxLengthForValueButton" value="${settings.maxLengthForValueButton:}"/>
             </map>
         </property>
         </bean>

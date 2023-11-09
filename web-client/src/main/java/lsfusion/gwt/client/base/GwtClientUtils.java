@@ -459,26 +459,13 @@ public class GwtClientUtils {
 
     public static void clearFillParent(Element child) {
         clearFillParentElement(child.getParentElement());
-
-        Style childStyle = child.getStyle();
-        childStyle.clearPosition();
-        childStyle.clearTop();
-        childStyle.clearLeft();
-        childStyle.clearBottom();
-        childStyle.clearRight();
+        child.removeClassName("fill-parent-absolute");
     }
 
     public static void clearFillParentElement(Element parentElement) {
         String parentPosition = parentElement.getStyle().getPosition();
         if (parentPosition != null && parentPosition.equals(Style.Position.RELATIVE.getCssName()))
             parentElement.removeClassName("fill-parent-position");
-    }
-
-    public static void setupSizedParent(Element element, boolean autoSize) {
-        if(autoSize)
-            setupPercentParent(element);
-        else
-            setupFillParent(element);
     }
 
     public static void setupFlexParentElement(Element parentElement) {
@@ -510,16 +497,6 @@ public class GwtClientUtils {
 //        element.getStyle().clearWidth();
 //        element.getStyle().clearHeight();
 //        element.getStyle().clearProperty("boxSizing");
-    }
-
-    public static void changePercentFillWidget(Widget widget, boolean percent) {
-        if(percent) {
-            GwtClientUtils.clearFillParent(widget.getElement());
-            GwtClientUtils.setupPercentParent(widget.getElement());
-        } else {
-            GwtClientUtils.clearPercentParent(widget.getElement());
-            GwtClientUtils.setupFillParent(widget.getElement());
-        }
     }
 
     public static void showPopupInWindow(PopupDialogPanel popup, Widget widget, int mouseX, int mouseY) {
@@ -1305,7 +1282,18 @@ public class GwtClientUtils {
         return $doc.getElementsByClassName(className);
     }-*/;
 
-    public static native boolean isContainHtmlTag(String value) /*-{
-        return $wnd.isContainHtmlTag(value);
+    public static native boolean containsLineBreak(String value) /*-{
+        return $wnd.containsLineBreak(value) != null;
+    }-*/;
+    public static native boolean containsHtmlTag(String value) /*-{
+        return $wnd.containsHtmlTag(value) != null;
+    }-*/;
+
+    // Popup??
+    public static native boolean setCaptionHtmlOrText(Element element, String value) /*-{
+        $wnd.setCaptionHtmlOrText(element, value);
+    }-*/;
+    public static native boolean setDataHtmlOrText(Element element, String value, boolean html) /*-{
+        $wnd.setDataHtmlOrText(element, value, html);
     }-*/;
 }

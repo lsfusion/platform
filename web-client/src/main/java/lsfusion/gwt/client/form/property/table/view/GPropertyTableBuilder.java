@@ -13,6 +13,7 @@ import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.object.table.grid.view.GPivot;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
+import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 import java.util.List;
@@ -30,17 +31,17 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
     // when we have a td and it is not a simple text, we have to wrap it, because td has a display : table-cell (and often incorrect element type in general)
     // and thus height for example always work like min-height, so the size depends on
     // and it can not be changed and it's behaviour is often very odd
-    private static boolean needWrap(Element element, GPropertyDraw property) {
-        return GwtClientUtils.isTDorTH(element) && !property.getCellRenderer().canBeRenderedInTD();
+    private static boolean needWrap(Element element, GPropertyDraw property, RendererType rendererType) {
+        return GwtClientUtils.isTDorTH(element) && !property.getCellRenderer(rendererType).canBeRenderedInTD();
     }
 
-    public static Element renderSized(Element element, GPropertyDraw property, GFont font) {
-        if(needWrap(element, property)) {
-            element = wrapSized(element, property.getCellRenderer().createRenderElement());
+    public static Element renderSized(Element element, GPropertyDraw property, GFont font, RendererType rendererType) {
+        if(needWrap(element, property, rendererType)) {
+            element = wrapSized(element, property.getCellRenderer(rendererType).createRenderElement(rendererType));
         }
 
         // we need to set the size to the "render" element to avoid problems with padding
-        GSize valueHeight = property.getValueHeight(font, false, true);
+        GSize valueHeight = property.getValueHeight(font, false, true, rendererType);
         if(valueHeight != null) // this way we can avoid prop-size-value fill-parent-perc conflict (see the css file) in most cases
             element.addClassName("prop-size-value");
         if(!property.isShrinkOverflowVisible())
@@ -51,15 +52,15 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         return element;
     }
 
-    public static Element getRenderSizedElement(Element element, GPropertyDraw property) {
-        if(needWrap(element, property))
+    public static Element getRenderSizedElement(Element element, GPropertyDraw property, RendererType rendererType) {
+        if(needWrap(element, property, rendererType))
             element = unwrapSized(element);
 
         return element;
     }
 
-    public static boolean clearRenderSized(Element element, GPropertyDraw property) {
-        if(needWrap(element, property)) {
+    public static boolean clearRenderSized(Element element, GPropertyDraw property, RendererType rendererType) {
+        if(needWrap(element, property, rendererType)) {
             GwtClientUtils.removeAllChildren(element);
 
             return true;
@@ -96,12 +97,14 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
 
     // pivot / footer
     public static void render(GPropertyDraw property, Element element, RenderContext renderContext) {
-        property.getCellRenderer().render(renderSized(element, property, renderContext.getFont()), renderContext);
+        RendererType rendererType = renderContext.getRendererType();
+        property.getCellRenderer(rendererType).render(renderSized(element, property, renderContext.getFont(), rendererType), renderContext);
     }
 
     // pivot (render&update), footer (render&update, update)
     public static void update(GPropertyDraw property, Element element, UpdateContext updateContext) {
-        property.getCellRenderer().update(getRenderSizedElement(element, property), updateContext);
+        RendererType rendererType = updateContext.getRendererType();
+        property.getCellRenderer(rendererType).update(getRenderSizedElement(element, property, rendererType), updateContext);
     }
 
     @Override
