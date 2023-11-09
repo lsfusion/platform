@@ -3,7 +3,6 @@ package lsfusion.server.language;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
-import lsfusion.server.base.ResourceUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -11,7 +10,6 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
-import lsfusion.server.base.AppServerImage;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.WindowFormType;
@@ -22,6 +20,8 @@ import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.interop.session.ExternalHttpMethod;
+import lsfusion.server.base.AppServerImage;
+import lsfusion.server.base.ResourceUtils;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.Version;
@@ -64,6 +64,7 @@ import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.file.FileClass;
+import lsfusion.server.logics.classes.data.file.JSONClass;
 import lsfusion.server.logics.classes.data.file.StaticFormatFileClass;
 import lsfusion.server.logics.classes.data.integral.DoubleClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
@@ -141,7 +142,10 @@ import lsfusion.server.physics.admin.reflection.property.CanonicalNameProperty;
 import lsfusion.server.physics.dev.debug.*;
 import lsfusion.server.physics.dev.debug.action.ShowRecDepAction;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.physics.dev.id.name.*;
+import lsfusion.server.physics.dev.id.name.ClassCanonicalNameUtils;
+import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
+import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
+import lsfusion.server.physics.dev.id.name.PropertyCompoundNameParser;
 import lsfusion.server.physics.dev.id.resolve.ResolvingErrors;
 import lsfusion.server.physics.dev.id.resolve.ResolvingErrors.ResolvingError;
 import lsfusion.server.physics.dev.integration.external.to.*;
@@ -3950,9 +3954,6 @@ public class ScriptingLogicsModule extends LogicsModule {
                                                                            String separator, boolean noEscape, SelectTop selectTop, String charset, NamedPropertyUsage propUsage,
                                                                            OrderedMap<GroupObjectEntity, NamedPropertyUsage> propUsages, List<TypedParameter> objectsContext,
                                                                            List<LPWithParams> contextFilters, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
-        if(exportType == null)
-            exportType = FormIntegrationType.JSON;
-
         ImList<O> mappedObjects = mapped.objects;
         ImOrderSet<O> contextObjects = getMappingObjectsArray(mapped, objectsContext);
 
@@ -3967,34 +3968,41 @@ public class ScriptingLogicsModule extends LogicsModule {
             assert !objectProp.out && !objectProp.constraintFilter;
         }
 
-        LP<?> singleExportFile = null;
-        MExclMap<GroupObjectEntity, LP> exportFiles = MapFact.mExclMap();
-        if(exportType.isPlain()) {
-            if(propUsages != null) {
-                for (Map.Entry<GroupObjectEntity, NamedPropertyUsage> entry : propUsages.entrySet()) {
-                    exportFiles.exclAdd(entry.getKey(), findLPNoParamsByPropertyUsage(entry.getValue()));
-                }
-            } else if (propUsage != null) {
-                errLog.emitSimpleError(parser, String.format("EXPORT %s TO single file not supported", exportType));
-            } else {
-                errLog.emitSimpleError(parser, "Output file(s) for export not specified");
-            }
-        } else {
-            if(propUsages != null) {
-                errLog.emitSimpleError(parser, String.format("EXPORT %s TO multiple files not supported", exportType));
-            } else {
-                singleExportFile = propUsage != null ? findLPNoParamsByPropertyUsage(propUsage) : baseLM.exportFile;
-            }
-        }
-
-        if(rootProperty != null) {
+        if (rootProperty != null) {
             errLog.emitSimpleError(parser, "EXPORT form with ROOT not supported");
         }
-        if(tagProperty != null) {
+        if (tagProperty != null) {
             errLog.emitSimpleError(parser, "EXPORT form with TAG not supported");
         }
-        if(attr) {
+        if (attr) {
             errLog.emitSimpleError(parser, "EXPORT form with ATTR not supported");
+        }
+
+        LP<?> singleExportFile = null;
+        MExclMap<GroupObjectEntity, LP> exportFiles = MapFact.mExclMap();
+        if (propUsages != null) {
+            for (Map.Entry<GroupObjectEntity, NamedPropertyUsage> entry : propUsages.entrySet()) {
+                LP<?> propertyUsage = findLPNoParamsByPropertyUsage(entry.getValue());
+                exportFiles.exclAdd(entry.getKey(), propertyUsage);
+                checks.checkExportFromFileExpression(propertyUsage);
+            }
+        } else {
+            singleExportFile = propUsage != null ? findLPNoParamsByPropertyUsage(propUsage) : baseLM.exportFile;
+            checks.checkExportFromFileExpression(singleExportFile);
+        }
+
+        exportType = adjustExportFormatFromFileType(exportType, singleExportFile, exportFiles.immutable().values().toJavaCol());
+
+        if (exportType.isPlain()) {
+            if (exportFiles.isEmpty()) {
+                if (singleExportFile != null) {
+                    errLog.emitSimpleError(parser, String.format("EXPORT %s TO single file not supported", exportType));
+                } else {
+                    errLog.emitSimpleError(parser, "Output file(s) for export not specified");
+                }
+            }
+        } else if (!exportFiles.isEmpty()) {
+            errLog.emitSimpleError(parser, String.format("EXPORT %s TO multiple files not supported", exportType));
         }
 
         ValueClass sheetName = sheetNameProperty != null ? getValueClassByParamProperty(sheetNameProperty, params) : null;
@@ -4256,6 +4264,19 @@ public class ScriptingLogicsModule extends LogicsModule {
             return new LPWithParams(result, resultInterfaces);
     }
 
+    private FormIntegrationType adjustExportFormatFromFileType(FormIntegrationType format, LP fileProp, Collection<LP> fileProps) {
+        if (format == null) {
+            if (fileProps != null && !fileProps.isEmpty())
+                fileProp = fileProps.iterator().next();
+            Type type = fileProp.property.getType();
+            if (type instanceof StaticFormatFileClass)
+                return ((StaticFormatFileClass) type).getIntegrationType();
+            else
+                return FormIntegrationType.JSON;
+        }
+        return format;
+    }
+
     public LAWithParams addScriptedExportAction(List<TypedParameter> oldContext, FormIntegrationType type, final List<String> ids, List<Boolean> literals,
                                                 List<LPWithParams> exprs, List<LPTrivialLA> propUsages, LPWithParams whereProperty, NamedPropertyUsage fileProp,
                                                 LPWithParams sheetNameProperty, LPWithParams rootProperty, LPWithParams tagProperty,
@@ -4265,6 +4286,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         LP<?> targetProp = fileProp != null ? findLPNoParamsByPropertyUsage(fileProp) : null;
         if(targetProp == null)
             targetProp = baseLM.exportFile;
+
+        checks.checkExportFromFileExpression(targetProp);
 
         List<LPWithParams> exExprs = new ArrayList<>(exprs);
 
@@ -4291,8 +4314,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         ImOrderMap<String, Boolean> orders = mOrders.immutableOrder();
         ImList<IntegrationPropUsage> exPropUsages = mExPropUsages.immutableList();
 
-        if(type == null)
-            type = FormIntegrationType.JSON;
+        type = adjustExportFormatFromFileType(type, targetProp, null);
 //            type = doesExtendContext(oldContext.size(), new ArrayList<LAPWithParams>(), props) ? FormIntegrationType.JSON : FormIntegrationType.TABLE;
 
         // technically it's a mixed operator with exec technics (root, tag like SHOW / DIALOG) and operator technics (exprs, where like CHANGE)
@@ -4475,7 +4497,9 @@ public class ScriptingLogicsModule extends LogicsModule {
                 fileProp = fileProps.values().iterator().next();
             Type type = getTypeByParamProperty(fileProp, context);
             if(type instanceof StaticFormatFileClass)
-                return ((StaticFormatFileClass)type).getIntegrationType();
+                return ((StaticFormatFileClass) type).getIntegrationType();
+            else if (type instanceof JSONClass)
+                return FormIntegrationType.JSON;
         }
         return format;
     }

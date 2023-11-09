@@ -627,7 +627,11 @@ public class ScriptingErrorLog {
     }
 
     public void emitImportFromWrongClassError(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "FROM expression should return FILE value");
+        emitSimpleError(parser, "FROM expression should return FILE or JSON value");
+    }
+
+    public void emitExportFromWrongClassError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "TO expression should return FILE or JSON value");
     }
 
     public void emitPropertyWithParamsExpectedError(ScriptParser parser, String propertyName, String paramClasses) throws SemanticErrorException {
