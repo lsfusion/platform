@@ -30,6 +30,7 @@ import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncInput;
 import lsfusion.server.logics.form.interactive.action.async.AsyncNoWaitExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncSerializer;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.BaseComponentView;
@@ -314,7 +315,7 @@ public class PropertyDrawView extends BaseComponentView {
         this.image = AppServerImage.createPropertyImage(image, this);
     }
 
-    public AppServerImage getImage(FormInstanceContext context) {
+    public AppServerImage getImage(ConnectionContext context) {
         if(this.image != null)
             return this.image.get(context);
 
@@ -325,7 +326,7 @@ public class PropertyDrawView extends BaseComponentView {
         return getDefaultImage(context);
     }
 
-    private AppServerImage getDefaultImage(FormInstanceContext context) {
+    private AppServerImage getDefaultImage(ConnectionContext context) {
         return ActionOrProperty.getDefaultImage(AppServerImage.AUTO, getAutoName(), Settings.get().getDefaultPropertyImageRankingThreshold(), Settings.get().isDefaultPropertyImage(), context);
     }
 

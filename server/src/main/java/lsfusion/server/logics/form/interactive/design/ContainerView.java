@@ -565,7 +565,7 @@ public class ContainerView extends ComponentView {
     }
 
     @Override
-    public void prereadAutoIcons(FormView formView, FormInstanceContext context) {
+    public void prereadAutoIcons(FormView formView, ConnectionContext context) {
         getImage(formView, context);
         for(ComponentView child : getChildrenIt())
             child.prereadAutoIcons(formView, context);

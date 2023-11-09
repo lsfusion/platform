@@ -1243,7 +1243,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         }
     }
 
-    public void prereadAutoIcons(FormInstanceContext context) {
+    public void prereadAutoIcons(ConnectionContext context) {
         getRichDesign().prereadAutoIcons(context);
     }
 
