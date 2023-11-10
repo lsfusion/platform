@@ -113,7 +113,7 @@ public class PopupPanel extends SimplePanel implements SourcesPopupEvents,
   /**
    * An {@link Animation} used to enlarge the popup into view.
    */
-  static class ResizeAnimation extends Animation {
+  class ResizeAnimation extends Animation {
     /**
      * The {@link PopupPanel} being affected.
      */
@@ -324,10 +324,24 @@ public class PopupPanel extends SimplePanel implements SourcesPopupEvents,
         if (curPanel.topPosition != -1) {
           curPanel.setPopupPosition(curPanel.leftPosition, curPanel.topPosition);
         }
-        RootPanel.get().add(curPanel);
+
+        //RootPanel.get().add(curPanel);
+        if(parent != null) {
+          RootPanel.get().add(curPanel);
+          parent.appendChild(curPanel.getElement());
+        } else {
+          RootPanel.get().add(curPanel);
+        }
+
       } else {
         if (!isUnloading) {
-          RootPanel.get().remove(curPanel);
+          //RootPanel.get().remove(curPanel);
+          if(parent != null) {
+            parent.removeChild(curPanel.getElement());
+          } else {
+            RootPanel.get().remove(curPanel);
+          }
+
         }
       }
       curPanel.getElement().getStyle().setProperty("overflow", "visible");
@@ -419,9 +433,12 @@ public class PopupPanel extends SimplePanel implements SourcesPopupEvents,
    * Creates an empty popup panel. A child widget must be added to it before it
    * is shown.
    */
-  public PopupPanel() {
+  private final Element parent;
+  public PopupPanel(Element parent) {
     super();
     super.getContainerElement().appendChild(impl.createElement());
+
+    this.parent = parent;
 
     // Default position of popup should be in the upper-left corner of the
     // window. By setting a default position, the popup will not appear in
@@ -438,8 +455,8 @@ public class PopupPanel extends SimplePanel implements SourcesPopupEvents,
    *          hidden when the user clicks outside of it or the history token
    *          changes.
    */
-  public PopupPanel(boolean autoHide) {
-    this();
+  public PopupPanel(Element parent, boolean autoHide) {
+    this(parent);
     this.autoHide = autoHide;
     this.autoHideOnHistoryEvents = autoHide;
   }
@@ -454,8 +471,8 @@ public class PopupPanel extends SimplePanel implements SourcesPopupEvents,
    * @param modal <code>true</code> if keyboard or mouse events that do not
    *          target the PopupPanel or its children should be ignored
    */
-  public PopupPanel(boolean autoHide, boolean modal) {
-    this(autoHide);
+  public PopupPanel(Element parent, boolean autoHide, boolean modal) {
+    this(parent, autoHide);
     this.modal = modal;
   }
 
@@ -1190,7 +1207,9 @@ public class PopupPanel extends SimplePanel implements SourcesPopupEvents,
 
     if (LocaleInfo.getCurrentLocale().isRTL()) { // RTL case
 
-      int textBoxAbsoluteLeft = relativeObject.getAbsoluteLeft();
+      //int textBoxAbsoluteLeft = relativeObject.getAbsoluteLeft();
+      int textBoxAbsoluteLeft = parent != null ? (relativeObject.getAbsoluteLeft() - parent.getAbsoluteLeft()) : relativeObject.getAbsoluteLeft();
+
 
       // Right-align the popup. Note that this computation is
       // valid in the case where offsetWidthDiff is negative.
@@ -1232,7 +1251,7 @@ public class PopupPanel extends SimplePanel implements SourcesPopupEvents,
     } else { // LTR case
 
       // Left-align the popup.
-      left = relativeObject.getAbsoluteLeft();
+      left = parent != null ? (relativeObject.getAbsoluteLeft() - parent.getAbsoluteLeft()) : relativeObject.getAbsoluteLeft();
 
       // If the suggestion popup is not as wide as the text box, always align to
       // the left edge of the text box. Otherwise, figure out whether to
@@ -1266,7 +1285,8 @@ public class PopupPanel extends SimplePanel implements SourcesPopupEvents,
 
     // Calculate top position for the popup
 
-    int top = relativeObject.getAbsoluteTop();
+    //int top = relativeObject.getAbsoluteTop();
+    int top = parent != null ? (relativeObject.getAbsoluteTop() - parent.getAbsoluteTop()) : relativeObject.getAbsoluteTop();
 
     // Make sure scrolling is taken into account, since
     // box.getAbsoluteTop() takes scrolling into account.
