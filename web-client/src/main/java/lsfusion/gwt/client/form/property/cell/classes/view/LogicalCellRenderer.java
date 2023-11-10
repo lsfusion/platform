@@ -11,6 +11,7 @@ import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
+import lsfusion.gwt.client.view.MainFrame;
 
 public class LogicalCellRenderer extends CellRenderer {
 
@@ -81,6 +82,10 @@ public class LogicalCellRenderer extends CellRenderer {
     public InputElement createCheckInput() {
         InputElement input = GwtClientUtils.createCheckInputElement();
         input.addClassName("logicalRendererCheckBox");
+
+        if (!MainFrame.useBootstrap)
+            input.addClassName("checkbox-outline");
+
         input.addClassName("form-check-input"); // bootstrap
         return input;
     }

@@ -515,7 +515,9 @@ function _selectPicker(multi, html, shouldBeSelected) {
                             _changeSingleDropdownProperty(object, element)
                     }
                 })
-                selectElement.selectpicker('setStyle', 'remove-select-arrow')
+                // cannot use _removeAllPMBInTD()
+                if (_isInGrid(element.parentElement))
+                    selectElement.selectpicker('setStyle', 'remove-all-pmb')
             },
             multi, shouldBeSelected, html, true);
     } else {
@@ -524,7 +526,7 @@ function _selectPicker(multi, html, shouldBeSelected) {
                 let select = element.select;
                 $(select).multipleSelect({
                     container: 'body',
-                    classes: 'remove-select-arrow',
+                    classes: _isInGrid(element.parentElement) ? 'remove-all-pmb' : '', // can not use _removeAllPMBInTD()
                     selectAll: false,
                     position: 'bottom', // todo. bottom is default, but at the bottom of the screen dropdown is hidden and need to be 'top'
                     // position: 'top',
@@ -577,7 +579,9 @@ function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBo
 
             element.select = select;
             if(!picker) {
-                select.classList.add("form-select", "remove-select-arrow");
+                select.classList.add("form-select");
+                if (lsfUtils.useBootstrap())
+                    select.classList.add("transparent-background");
                 _removeAllPMBInTD(element, select);
             }
 
@@ -605,14 +609,16 @@ function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBo
 
             // press on space button on dropdown element in grid-cell opens dropdown instead of adding a filter.
             // both for multiple and single
-            element.addEventListener('keypress', function (e) {
-                if (e.keyCode === 32) {
-                    e.stopPropagation();
-                    //in excel theme picker space button does not opens dropdown
-                    if (!lsfUtils.useBootstrap() && picker)
-                        $(select).multipleSelect('open');
-                }
-            });
+            if (_isInGrid(element)) {
+                element.addEventListener('keypress', function (e) {
+                    if (e.keyCode === 32) {
+                        e.stopPropagation();
+                        //in excel theme picker space button does not opens dropdown
+                        if (!lsfUtils.useBootstrap() && picker)
+                            $(select).multipleSelect('open');
+                    }
+                });
+            }
         },
         update: function (element, controller, list, extraValue) {
             element.controller = controller;

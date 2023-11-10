@@ -37,35 +37,33 @@
     background-color: transparent !important;
 }
 
-/*
-    do not show arrow in dropdown select lists when there is no focus
-    arrow in <select> element is background-image
-*/
-.remove-select-arrow.form-select:not(:focus-within):not(.input-active) {
+/*  do not show arrow in dropdown select lists when there is in grid cell and no focus. arrow in <select> element is background-image  */
+.form-select.remove-all-pmb:not(:focus-within):not(.input-active) {
     /* bootstrap */
     background-image: none;
+
     /* excel */
-    -webkit-appearance: none;
+    -webkit-appearance: none; /* chrome */
+    -moz-appearance: none; /* firefox */
 }
 
-/*
-    do not show arrow in  bootstrap multiple dropdown select when there is no focus
-    arrow in content in :after property
-*/
-.remove-select-arrow:not(.show):not(:focus):after {
+/* remove default white background */
+.transparent-background.form-select {
+    background-color: transparent;
+}
+
+/* do not show arrow in  bootstrap multiple dropdown select when there is no focus */
+.remove-all-pmb:not(:focus-within).dropdown-toggle::after {
     content: none;
 }
 
-/*
-    do not show arrow in excel multiple dropdown select when there is no focus
-    arrow in <div> with ms-choice class
-*/
-.remove-select-arrow .ms-choice {
-    display: none;
+.bootstrap-select .remove-all-pmb.dropdown-toggle:focus {
+    outline: none !important; /* !important is needed because in bootstrap-select.css rule ".bootstrap-select .dropdown-toggle:focus" used !important too*/
 }
 
-.focused-cell .remove-select-arrow .ms-choice {
-    display: block;
+/* do not show arrow in excel multiple dropdown select when there is no focus */
+.dataGridCell:not(.focused-cell) .remove-all-pmb .ms-choice {
+    display: none;
 }
 
 .remove-all-p, .remove-all-p.modal-body {
@@ -210,4 +208,13 @@
 }
 .grid-dir-horz {
     grid-auto-flow: column;
+}
+
+/*
+    fix for displaying focus on BOOLEAN(checkbox) panel properties
+    panelRendererValueFocused sets background and border to element, but it has no effect on the checkbox element
+ */
+.checkbox-outline.panelRendererValueFocused {
+    outline-offset: 0;
+    outline: var(--focus-color) auto 1px;
 }
