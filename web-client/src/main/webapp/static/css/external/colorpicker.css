@@ -1,0 +1,4 @@
+/*coloris set 'value' and it's shown in renderer. We don't want to show it*/
+input[data-coloris=true] {
+    color: transparent !important;
+}

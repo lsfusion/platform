@@ -1,24 +1,20 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.user.client.ui.FlowPanel;
-import com.google.gwt.user.client.ui.HasAlignment;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.jsni.Function;
 import lsfusion.gwt.client.base.view.EventHandler;
-import lsfusion.gwt.client.base.view.FormButton;
-import lsfusion.gwt.client.base.view.ResizableVerticalPanel;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.ColorDTO;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
-import net.auroris.ColorPicker.client.ColorPicker;
+
+import static lsfusion.gwt.client.base.GwtSharedUtils.nullEmpty;
 
 public class ColorCellEditor extends PopupValueCellEditor {
     private static final ClientMessages messages = ClientMessages.Instance.get();
-
-    private ColorPicker colorPicker;
 
     public ColorCellEditor(EditManager editManager, GPropertyDraw property) {
         super(editManager, property);
@@ -26,25 +22,7 @@ public class ColorCellEditor extends PopupValueCellEditor {
 
     @Override
     protected Widget createPopupComponent(Element parent) {
-        colorPicker = new ColorPicker();
-
-        FormButton btnOk = new FormButton(messages.ok(), event -> commit(parent, CommitReason.FORCED));
-
-        FormButton btnCancel = new FormButton(messages.cancel(), event -> cancel(parent));
-
-        FormButton btnReset = new FormButton(messages.reset(), event -> reset(parent));
-
-        FlowPanel bottomPane = new FlowPanel();
-        bottomPane.add(btnOk);
-        bottomPane.add(btnCancel);
-        bottomPane.add(btnReset);
-
-        ResizableVerticalPanel mainPane = new ResizableVerticalPanel();
-        mainPane.add(colorPicker);
-        mainPane.add(bottomPane);
-        mainPane.setCellHorizontalAlignment(bottomPane, HasAlignment.ALIGN_RIGHT);
-
-        return mainPane;
+        throw new IllegalStateException("shouldn't be called: start method of ColorCellEditor doesn't call super");
     }
 
     @Override
@@ -55,23 +33,69 @@ public class ColorCellEditor extends PopupValueCellEditor {
 
     @Override
     public PValue getCommitValue(Element parent, Integer contextAction) {
-        return PValue.getPValue(new ColorDTO(colorPicker.getHexColor()));
+        String background = nullEmpty(parent.getPropertyString("hexValue"));
+        return background != null ? PValue.getPValue(new ColorDTO(background)) : null;
     }
 
     public void reset(Element parent) {
         commitValue(parent, (PValue) null);
     }
 
+    private void finishEditing(Element parent) {
+        commitValue(parent, getCommitValue(parent, null));
+    }
+
+    Function eventListener = null;
     @Override
     public void start(EventHandler handler, Element parent, PValue oldValue) {
-        super.start(handler, parent, oldValue);
-
         if (oldValue != null) {
             try {
-                colorPicker.setHex(PValue.getColorValue(oldValue).value);
+                String defaultColor = PValue.getColorValue(oldValue).value;
+                if(defaultColor != null) {
+                    parent.setAttribute("value", "#" + defaultColor);
+                }
             } catch (Exception e) {
                 throw new IllegalStateException("can't convert string value to color");
             }
         }
+
+        if(eventListener == null) {
+            initColoris(parent, messages.ok(), messages.reset());
+            eventListener = addEventListener(parent);
+        }
     }
+
+    protected native void initColoris(Element input, String okText, String resetText)/*-{
+        $wnd.Coloris({
+            closeButton: true,
+            closeLabel: okText,
+            clearButton: true,
+            clearLabel: resetText,
+            alpha: false
+        });
+    }-*/;
+
+    @Override
+    public void stop(Element parent, boolean cancel, boolean blurred) {
+        removeEventListener(parent, eventListener);
+        eventListener = null;
+    }
+
+    protected native Function addEventListener(Element input)/*-{
+        var instance = this;
+        fn = function(event) {
+            var color = event.currentTarget.value;
+            event.target.style.backgroundColor =  color ? color : null;
+            event.target.hexValue = color ? color.substring(1) : null;
+            instance.@ColorCellEditor::finishEditing(*)(input);
+        };
+
+        input.addEventListener('close', fn);
+        return fn;
+    }-*/;
+
+    protected native void removeEventListener(Element input, Function fn)/*-{
+        input.removeEventListener('close', fn);
+    }-*/;
+
 }

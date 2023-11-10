@@ -1,6 +1,8 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.InputElement;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
@@ -12,6 +14,14 @@ public class ColorCellRenderer extends CellRenderer {
 
     public ColorCellRenderer(GPropertyDraw property) {
         super(property);
+    }
+
+    @Override
+    public Element createRenderElement() {
+        InputElement renderElement = Document.get().createTextInputElement();
+        renderElement.setAttribute("data-coloris", "true");
+        renderElement.setAttribute("autocomplete", "off");
+        return renderElement;
     }
 
     @Override

@@ -184,7 +184,11 @@
                 "static/css/gwt/navigator/navigator.css",
                 "static/css/gwt/navigator/split-window.css",
                 "static/css/gwt/navigator/tab-window.css",
-                "static/css/gwt/option.css"
+                "static/css/gwt/option.css",
+
+                "static/js/external/coloris.js",
+                "static/css/external/coloris.css",
+                "static/css/external/colorpicker.css"
         ));%>
 
         <lsf:writeResources resources="${versionedResources}"/>
