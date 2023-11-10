@@ -4,6 +4,7 @@ import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.classes.GType;
+import lsfusion.gwt.client.classes.data.GColorType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.filter.user.GCompare;
@@ -158,10 +159,12 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     }
 
     public void setApplied(boolean applied) {
-        if (applied) {
-            getElement().addClassName("userFilerValueCellApplied");
-        } else {
-            getElement().removeClassName("userFilerValueCellApplied");
+        if (!(property.getFilterBaseType() instanceof GColorType)) {
+            if (applied) {
+                getElement().addClassName("filter-applied");
+            } else {
+                getElement().removeClassName("filter-applied");
+            }
         }
     }
 

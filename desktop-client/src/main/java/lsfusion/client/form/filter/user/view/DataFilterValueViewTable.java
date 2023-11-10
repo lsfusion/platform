@@ -2,6 +2,7 @@ package lsfusion.client.form.filter.user.view;
 
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.view.SwingDefaults;
+import lsfusion.client.classes.data.ClientColorClass;
 import lsfusion.client.classes.data.ClientRichTextClass;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.view.widget.TableWidget;
@@ -237,7 +238,9 @@ class DataFilterValueViewTable extends TableWidget implements TableTransferHandl
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             PropertyRenderer renderer = getProperty().getRendererComponent();
             renderer.updateRenderer(value, isSelected, hasFocus, false, DataFilterValueViewTable.this.hasFocus());
-            renderer.getComponent().setBackground(applied ? SwingDefaults.getSelectionColor() : SwingDefaults.getTableCellBackground());
+            if (!(getProperty().baseType instanceof ClientColorClass)) {
+                renderer.getComponent().setBackground(applied ? SwingDefaults.getSelectionColor() : SwingDefaults.getTableCellBackground());
+            }
             return renderer.getComponent();
         }
     }
