@@ -61,53 +61,63 @@ public class PropertyPanelRenderer extends PanelRenderer {
         if(property.caption == null && property.comment == null) // if there is no (empty) static caption and no dynamic caption
             return valuePanel;
 
-        label = GFormLayout.createLabelCaptionWidget();
-        BaseImage.initImageText(label, null, property.appImage, property.panelCaptionVertical);
-        label.addStyleName("panel-label");
-
         // id and for we need to support editing when clicking on the label
         // however only CLICK and CHANGE (for boolean props) are propagated to the input, and not MOUSEDOWN
         // but since we use MOUSEDOWN as a change event (so it starts editing) we need to propagate MOUSEDOWN manually
         // we need id to be global (otherwise everything stops working if the same form is opened twice)
         String globalID = form.globalID + "->" + property.propertyFormName;
         value.getElement().setId(globalID);
-        label.getElement().setAttribute("for", globalID);
-        label.addDomHandler(event -> {
-            GwtClientUtils.fireOnMouseDown(value.getElement());
-        }, MouseDownEvent.getType());
 
-        if (this.property.captionFont != null)
-            this.property.captionFont.apply(label.getElement().getStyle());
+        SizedWidget sizedLabel = null;
+        if(property.caption != null) {
+            label = GFormLayout.createLabelCaptionWidget();
+            BaseImage.initImageText(label, null, property.appImage, property.panelCaptionVertical);
+            label.addStyleName("panel-label");
 
-        // mostly it is needed to handle margins / paddings / layouting but we do it ourselves
+            label.getElement().setAttribute("for", globalID);
+            label.addDomHandler(event -> {
+                GwtClientUtils.fireOnMouseDown(value.getElement());
+            }, MouseDownEvent.getType());
+
+            if (this.property.captionFont != null)
+                this.property.captionFont.apply(label.getElement().getStyle());
+
+            // mostly it is needed to handle margins / paddings / layouting but we do it ourselves
 //        CellRenderer cellRenderer = property.getCellRenderer();
 //        cellRenderer.renderPanelLabel(label);
 
+            sizedLabel = new SizedWidget(label, property.getCaptionWidth(), property.getCaptionHeight());
+        }
+
         GFlexAlignment panelCaptionAlignment = property.getPanelCaptionAlignment(); // vertical alignment
-        GFlexAlignment panelValueAlignment = property.getPanelValueAlignment(); // vertical alignment
-        GFlexAlignment panelCommentAlignment = property.getPanelCommentAlignment(); // vertical alignment
         boolean captionLast = property.isPanelCaptionLast();
+
+        GFlexAlignment panelValueAlignment = property.getPanelValueAlignment(); // vertical alignment
+
+        GFlexAlignment panelCommentAlignment = property.getPanelCommentAlignment(); // vertical alignment
         boolean commentFirst = property.isPanelCommentFirst();
-        SizedWidget sizedLabel = new SizedWidget(label, property.getCaptionWidth(), property.getCaptionHeight());
 
         boolean isAlignCaption = property.isAlignCaption() && captionContainer != null;
-        boolean verticalDiffers = property.panelCaptionVertical != property.panelCommentVertical;
+        boolean verticalDiffers = property.caption != null && property.comment != null && property.panelCaptionVertical != property.panelCommentVertical;
+        boolean panelVertical = property.caption != null ? property.panelCaptionVertical : property.panelCommentVertical;
 
-        SizedWidget commentWidget = null;
+        SizedWidget sizedComment = null;
         if(property.comment != null) {
             comment = GFormLayout.createLabelCaptionWidget();
-//            setCommentText(property.comment);
-            commentWidget = new SizedWidget(comment, property.getCaptionWidth(), property.getCaptionHeight());
+            comment.addStyleName("panel-comment");
+
+            //            setCommentText(property.comment);
+            sizedComment = new SizedWidget(comment, property.getCaptionWidth(), property.getCaptionHeight());
             if (isAlignCaption || verticalDiffers) {
                 SizedFlexPanel valueCommentPanel = new SizedFlexPanel(property.panelCommentVertical);
 
                 if (commentFirst)
-                    commentWidget.add(valueCommentPanel, panelCommentAlignment);
+                    sizedComment.add(valueCommentPanel, panelCommentAlignment);
 
                 valuePanel.addFill(valueCommentPanel);
 
                 if (!commentFirst)
-                    commentWidget.add(valueCommentPanel, panelCommentAlignment);
+                    sizedComment.add(valueCommentPanel, panelCommentAlignment);
 
                 valuePanel = new SizedWidget(valueCommentPanel);
             }
@@ -121,22 +131,22 @@ public class PropertyPanelRenderer extends PanelRenderer {
             return captionLast ? sizedLabel : valuePanel;
         }
 
-        SizedFlexPanel panel = new SizedFlexPanel(property.panelCaptionVertical);
+        SizedFlexPanel panel = new SizedFlexPanel(panelVertical);
         panel.addStyleName("panel-container");
 
-        if (!captionLast)
+        if (sizedLabel != null && !captionLast)
             sizedLabel.add(panel, panelCaptionAlignment);
 
-        if (commentWidget != null && !verticalDiffers && commentFirst)
-            commentWidget.add(panel, panelCommentAlignment);
+        if (sizedComment != null && commentFirst && !verticalDiffers)
+            sizedComment.add(panel, panelCommentAlignment);
 
         panel.transparentResize = true;
         valuePanel.add(panel, panelValueAlignment, 1, true);
 
-        if (commentWidget != null && !verticalDiffers && !commentFirst)
-            commentWidget.add(panel, panelCommentAlignment);
+        if (sizedComment != null && !verticalDiffers && !commentFirst)
+            sizedComment.add(panel, panelCommentAlignment);
 
-        if (captionLast)
+        if (sizedLabel != null && captionLast)
             sizedLabel.add(panel, panelCaptionAlignment);
 
         // mostly it is needed to handle margins / paddings / layouting but we do it ourselves
@@ -184,6 +194,10 @@ public class PropertyPanelRenderer extends PanelRenderer {
     }
 
     protected void setCommentClasses(String classes) {
+        if(comment == null) {
+            return;
+        }
+
         comment.getElement().addClassName(classes);
     }
 }

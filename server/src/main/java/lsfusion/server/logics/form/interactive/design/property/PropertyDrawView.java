@@ -492,7 +492,7 @@ public class PropertyDrawView extends BaseComponentView {
         pool.writeObject(outStream, getValueAlignment(pool.context));
 
         pool.writeString(outStream, ThreadLocalContext.localize(comment));
-        pool.writeString(outStream, commentElementClass);
+        pool.writeString(outStream, getCommentElementClass(pool.context));
         outStream.writeBoolean(panelCommentVertical);
         outStream.writeBoolean(panelCommentFirst);
         pool.writeObject(outStream, panelCommentAlignment);
@@ -998,6 +998,13 @@ public class PropertyDrawView extends BaseComponentView {
         }
 
         return null;
+    }
+
+    public String getCommentElementClass(FormInstanceContext context) {
+        if(commentElementClass != null)
+            return commentElementClass;
+
+        return "form-text";
     }
 
     private boolean isSimpleText(FormInstanceContext context) {
