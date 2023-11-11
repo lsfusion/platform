@@ -2,10 +2,3 @@
 input[data-coloris=true] {
     color: transparent !important;
 }
-
-.clr-close,
-.clr-cancel,
-.clr-clear {
-    margin: 0 10px 10px !important;
-    padding: 0 10px !important;
-}

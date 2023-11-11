@@ -60,17 +60,15 @@ public class ColorCellEditor extends PopupValueCellEditor {
         }
 
         if(eventListener == null) {
-            initColoris(parent, messages.ok(), messages.cancel(), messages.reset());
+            initColoris(parent, messages.ok(), messages.reset());
             eventListener = addEventListener(parent);
         }
     }
 
-    protected native void initColoris(Element input, String okText, String cancelText, String resetText)/*-{
+    protected native void initColoris(Element input, String okText, String resetText)/*-{
         $wnd.Coloris({
             closeButton: true,
             closeLabel: okText,
-            cancelButton: true,
-            cancelLabel: cancelText,
             clearButton: true,
             clearLabel: resetText,
             alpha: false

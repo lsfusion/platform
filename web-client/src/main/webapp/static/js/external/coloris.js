@@ -7,7 +7,7 @@
 (function (window, document, Math, undefined) {
   var ctx = document.createElement('canvas').getContext('2d');
   var currentColor = { r: 0, g: 0, b: 0, h: 0, s: 0, v: 0, a: 1 };
-  var container,picker,colorArea,colorMarker,colorPreview,colorValue,closeButton,cancelButton,clearButton,
+  var container,picker,colorArea,colorMarker,colorPreview,colorValue,clearButton,closeButton,
   hueSlider,hueMarker,alphaSlider,alphaMarker,currentEl,currentFormat,oldColor,keyboardNav,
   colorAreaDims = {};
 
@@ -30,17 +30,14 @@
     selectInput: false,
     inline: false,
     defaultColor: '#000000',
-    closeButton: false,
-    closeLabel: 'Close',
-    cancelButton: false,
-    cancelLabel: 'Cancel',
     clearButton: false,
     clearLabel: 'Clear',
+    closeButton: false,
+    closeLabel: 'Close',
     onChange: function onChange() {return undefined;},
     a11y: {
       open: 'Open color picker',
       close: 'Close color picker',
-      cancel: 'Cancel the selected color',
       clear: 'Clear the selected color',
       marker: 'Saturation: {s}. Brightness: {v}.',
       hueSlider: 'Hue slider',
@@ -158,34 +155,6 @@
             setColorFromStr(defaultColor);
           }
           break;
-        case 'closeButton':
-          settings.closeButton = !!options.closeButton;
-
-          if (settings.closeButton) {
-            picker.insertBefore(closeButton, colorPreview);
-          } else {
-            colorPreview.appendChild(closeButton);
-          }
-
-          break;
-        case 'closeLabel':
-          settings.closeLabel = options.closeLabel;
-          closeButton.innerHTML = settings.closeLabel;
-          break;
-        case 'cancelButton':
-          settings.cancelButton = !!options.cancelButton;
-
-          if (settings.cancelButton) {
-            picker.insertBefore(cancelButton, colorPreview);
-          } else {
-            colorPreview.appendChild(cancelButton);
-          }
-
-          break;
-        case 'cancelLabel':
-          settings.cancelLabel = options.cancelLabel;
-          cancelButton.innerHTML = settings.cancelLabel;
-          break;
         case 'clearButton':
           // Backward compatibility
           if (typeof options.clearButton === 'object') {
@@ -203,6 +172,20 @@
         case 'clearLabel':
           settings.clearLabel = options.clearLabel;
           clearButton.innerHTML = settings.clearLabel;
+          break;
+        case 'closeButton':
+          settings.closeButton = !!options.closeButton;
+
+          if (settings.closeButton) {
+            picker.insertBefore(closeButton, colorPreview);
+          } else {
+            colorPreview.appendChild(closeButton);
+          }
+
+          break;
+        case 'closeLabel':
+          settings.closeLabel = options.closeLabel;
+          closeButton.innerHTML = settings.closeLabel;
           break;
         case 'a11y':
           var labels = options.a11y;
@@ -224,7 +207,6 @@
             openLabel.innerHTML = settings.a11y.open;
             swatchLabel.innerHTML = settings.a11y.swatch;
             closeButton.setAttribute('aria-label', settings.a11y.close);
-            cancelButton.setAttribute('aria-label', settings.a11y.cancel);
             clearButton.setAttribute('aria-label', settings.a11y.clear);
             hueSlider.setAttribute('aria-label', settings.a11y.hueSlider);
             alphaSlider.setAttribute('aria-label', settings.a11y.alphaSlider);
@@ -968,15 +950,10 @@
     '<span></span>' +
     '</fieldset>' +
     '</div>' +
-    '<div id="clr-swatches" class="clr-swatches"></div>' +
-    ("<button type=\"button\" id=\"clr-close\" class=\"clr-close\" aria-label=\"" +
-        settings.a11y.close + "\">" + settings.closeLabel + "</button>") +
-    ("<button type=\"button\" id=\"clr-cancel\" class=\"clr-cancel\" aria-label=\"" +
-        settings.a11y.cancel + "\">" + settings.cancelLabel + "</button>") +
-    ("<button type=\"button\" id=\"clr-clear\" class=\"clr-clear\" aria-label=\"" +
-        settings.a11y.clear + "\">" + settings.clearLabel + "</button>") +
-    '<div id="clr-color-preview" class="clr-preview">' +
-
+    '<div id="clr-swatches" class="clr-swatches"></div>' + ("<button type=\"button\" id=\"clr-clear\" class=\"clr-clear\" aria-label=\"" +
+    settings.a11y.clear + "\">" + settings.clearLabel + "</button>") +
+    '<div id="clr-color-preview" class="clr-preview">' + ("<button type=\"button\" id=\"clr-close\" class=\"clr-close\" aria-label=\"" +
+    settings.a11y.close + "\">" + settings.closeLabel + "</button>") +
     '</div>' + ("<span id=\"clr-open-label\" hidden>" +
     settings.a11y.open + "</span>") + ("<span id=\"clr-swatch-label\" hidden>" +
     settings.a11y.swatch + "</span>");
@@ -987,9 +964,8 @@
     // Reference the UI elements
     colorArea = getEl('clr-color-area');
     colorMarker = getEl('clr-color-marker');
-    closeButton = getEl('clr-close');
-    cancelButton = getEl('clr-cancel');
     clearButton = getEl('clr-clear');
+    closeButton = getEl('clr-close');
     colorPreview = getEl('clr-color-preview');
     colorValue = getEl('clr-color-value');
     hueSlider = getEl('clr-hue-slider');
@@ -1031,18 +1007,13 @@
       }
     });
 
-    addListener(closeButton, 'click', function (event) {
-      pickColor();
+    addListener(clearButton, 'click', function (event) {
+      pickColor('');
       closePicker();
     });
 
-    addListener(cancelButton, 'click', function (event) {
-      pickColor(oldColor);
-      closePicker(true);
-    });
-
-    addListener(clearButton, 'click', function (event) {
-      pickColor('');
+    addListener(closeButton, 'click', function (event) {
+      pickColor();
       closePicker();
     });
 
