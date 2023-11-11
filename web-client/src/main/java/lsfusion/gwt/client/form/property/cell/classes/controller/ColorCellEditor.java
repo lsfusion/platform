@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.jsni.Function;
@@ -60,12 +61,11 @@ public class ColorCellEditor extends PopupValueCellEditor {
         }
 
         if(eventListener == null) {
-            initColoris(parent, messages.ok(), messages.reset());
-            eventListener = addEventListener(parent);
+            eventListener = startColoris(RootPanel.get().getElement(), parent, messages.ok(), messages.cancel(), messages.reset());
         }
     }
 
-    protected native void initColoris(Element input, String okText, String resetText)/*-{
+    protected native Function startColoris(Element root, Element input, String okText, String cancelText, String resetText)/*-{
         $wnd.Coloris({
             closeButton: true,
             closeLabel: okText,
@@ -73,15 +73,19 @@ public class ColorCellEditor extends PopupValueCellEditor {
             clearLabel: resetText,
             alpha: false
         });
-    }-*/;
+        $wnd.Coloris.ready(function() {
+            var picker = root.getElementsByClassName('clr-picker')[0];
+            var button = document.createElement('button');
 
-    @Override
-    public void stop(Element parent, boolean cancel, boolean blurred) {
-        removeEventListener(parent, eventListener);
-        eventListener = null;
-    }
+            picker.appendChild(button);
+            button.setAttribute('type', 'button');
+            button.classList.add('clr-cancel');
+            button.textContent = cancelText;
+            button.addEventListener('click', function() {
+                $wnd.Coloris.close(true);
+            });
+    });
 
-    protected native Function addEventListener(Element input)/*-{
         var instance = this;
         fn = function(event) {
             var color = event.currentTarget.value;
@@ -94,7 +98,14 @@ public class ColorCellEditor extends PopupValueCellEditor {
         return fn;
     }-*/;
 
-    protected native void removeEventListener(Element input, Function fn)/*-{
+    @Override
+    public void stop(Element parent, boolean cancel, boolean blurred) {
+        stopColoris(RootPanel.get().getElement(), parent, eventListener);
+        eventListener = null;
+    }
+
+    protected native void stopColoris(Element root, Element input, Function fn)/*-{
+        root.getElementsByClassName('clr-cancel')[0].remove();
         input.removeEventListener('close', fn);
     }-*/;
 

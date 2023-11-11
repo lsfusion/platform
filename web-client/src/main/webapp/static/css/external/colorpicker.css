@@ -2,3 +2,27 @@
 input[data-coloris=true] {
     color: transparent !important;
 }
+
+.clr-close,
+.clr-cancel,
+.clr-clear {
+    margin: 0 10px 10px !important;
+    padding: 0 10px !important;
+}
+
+.clr-cancel {
+    order: 2;
+    height: 24px;
+    border: 0;
+    border-radius: 12px;
+    color: #fff;
+    background-color: #666;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 400;
+    cursor: pointer;
+    display: block;
+}
+
+
+
