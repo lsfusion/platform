@@ -302,13 +302,14 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
                 lsfUtils.setReadonlyFnc(element, null);
             }
 
-            // allow to navigate in custom button group component in grid cell by pressed shift + left / right
+            // allow to navigate in custom button group component in grid cell by pressed shift + left / right or shift + up / down
             // for some reason it doesn't work with ctrl button
-            if (isButton && _isInGrid(element))
+            if (_isInGrid(element)) {
                 options.addEventListener('keydown', function (e) {
-                    if (e.shiftKey && (e.keyCode === 39 || e.keyCode === 37))
+                    if (e.shiftKey && ((isButton && (e.keyCode === 39 || e.keyCode === 37)) || (e.keyCode === 40 || e.keyCode === 38)))
                         e.stopPropagation();
                 })
+            }
 
         }, update: function (element, controller, list, extraValue) {
             let isList = controller.isList();
@@ -516,8 +517,8 @@ function _selectPicker(multi, html, shouldBeSelected) {
                     }
                 })
                 // cannot use _removeAllPMBInTD()
-                if (_isInGrid(element.parentElement))
-                    selectElement.selectpicker('setStyle', 'remove-all-pmb')
+                if (_isInGrid(element))
+                    selectElement.selectpicker('setStyle', 'remove-all-pmb');
             },
             multi, shouldBeSelected, html, true);
     } else {
@@ -526,7 +527,6 @@ function _selectPicker(multi, html, shouldBeSelected) {
                 let select = element.select;
                 $(select).multipleSelect({
                     container: 'body',
-                    classes: _isInGrid(element.parentElement) ? 'remove-all-pmb' : '', // can not use _removeAllPMBInTD()
                     selectAll: false,
                     position: 'bottom', // todo. bottom is default, but at the bottom of the screen dropdown is hidden and need to be 'top'
                     // position: 'top',
@@ -545,6 +545,7 @@ function _selectPicker(multi, html, shouldBeSelected) {
                         element.silent = false;// Because "refresh" is called after every update, which removes the dropdown
                     }
                 });
+                _removeAllPMBInTD(element, select);
             }, multi, shouldBeSelected, html, false);
     }
 }
@@ -580,8 +581,6 @@ function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBo
             element.select = select;
             if(!picker) {
                 select.classList.add("form-select");
-                if (lsfUtils.useBootstrap())
-                    select.classList.add("transparent-background");
                 _removeAllPMBInTD(element, select);
             }
 
