@@ -2,35 +2,58 @@ package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.jsni.Function;
-import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.ColorDTO;
-import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 
 import static lsfusion.gwt.client.base.GwtSharedUtils.nullEmpty;
 
-public class ColorCellEditor extends PopupValueCellEditor {
+public class ColorCellEditor extends TextBasedPopupCellEditor {
     private static final ClientMessages messages = ClientMessages.Instance.get();
 
     public ColorCellEditor(EditManager editManager, GPropertyDraw property) {
         super(editManager, property);
     }
 
+    Function eventListener = null;
     @Override
-    protected Widget createPopupComponent(Element parent) {
-        throw new IllegalStateException("shouldn't be called: start method of ColorCellEditor doesn't call super");
+    protected Widget createPopupComponent(Element parent, PValue oldValue) {
+
+        if (oldValue != null) {
+            try {
+                String defaultColor = PValue.getColorValue(oldValue).value;
+                if(defaultColor != null) {
+                    editBox.setAttribute("value", "#" + defaultColor);
+                }
+            } catch (Exception e) {
+                throw new IllegalStateException("can't convert string value to color");
+            }
+        }
+
+        editBox.setAttribute("data-coloris", "true");
+        editBox.setAttribute("autocomplete", "off");
+
+        if(eventListener == null) {
+            eventListener = startColoris(RootPanel.get().getElement(), editBox, messages.ok(), messages.cancel(), messages.reset());
+        }
+
+        popup.setVisible(false);
+
+        editBox.click();
+
+        return new SimplePanel();
     }
 
-    @Override
-    public void enterPressed(Element parent) {
-        super.enterPressed(parent);
-        validateAndCommit(parent, false, CommitReason.ENTERPRESSED);
-    }
+//    @Override
+//    public void enterPressed(Element parent) {
+//        super.enterPressed(parent);
+//        validateAndCommit(parent, false, CommitReason.ENTERPRESSED);
+//    }
 
     @Override
     public PValue getCommitValue(Element parent, Integer contextAction) {
@@ -44,25 +67,6 @@ public class ColorCellEditor extends PopupValueCellEditor {
 
     private void finishEditing(Element parent) {
         commitValue(parent, getCommitValue(parent, null));
-    }
-
-    Function eventListener = null;
-    @Override
-    public void start(EventHandler handler, Element parent, PValue oldValue) {
-        if (oldValue != null) {
-            try {
-                String defaultColor = PValue.getColorValue(oldValue).value;
-                if(defaultColor != null) {
-                    parent.setAttribute("value", "#" + defaultColor);
-                }
-            } catch (Exception e) {
-                throw new IllegalStateException("can't convert string value to color");
-            }
-        }
-
-        if(eventListener == null) {
-            eventListener = startColoris(RootPanel.get().getElement(), parent, messages.ok(), messages.cancel(), messages.reset());
-        }
     }
 
     protected native Function startColoris(Element root, Element input, String okText, String cancelText, String resetText)/*-{
@@ -102,6 +106,7 @@ public class ColorCellEditor extends PopupValueCellEditor {
     public void stop(Element parent, boolean cancel, boolean blurred) {
         stopColoris(RootPanel.get().getElement(), parent, eventListener);
         eventListener = null;
+        super.stop(parent, cancel, blurred);
     }
 
     protected native void stopColoris(Element root, Element input, Function fn)/*-{

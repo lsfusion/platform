@@ -16,13 +16,13 @@ public class ColorCellRenderer extends CellRenderer {
         super(property);
     }
 
-    @Override
-    public Element createRenderElement() {
-        InputElement renderElement = Document.get().createTextInputElement();
-        renderElement.setAttribute("data-coloris", "true");
-        renderElement.setAttribute("autocomplete", "off");
-        return renderElement;
-    }
+//    @Override
+//    public Element createRenderElement() {
+//        InputElement renderElement = Document.get().createTextInputElement();
+//        renderElement.setAttribute("data-coloris", "true");
+//        renderElement.setAttribute("autocomplete", "off");
+//        return renderElement;
+//    }
 
     @Override
     public boolean renderContent(Element element, RenderContext renderContext) {
