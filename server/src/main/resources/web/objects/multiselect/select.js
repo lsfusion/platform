@@ -267,12 +267,11 @@ function _isInGrid(element) {
 
 function _setIsEditing(element, add) {
     let editingClassName = 'is-editing';
-    let contains = element.classList.contains(editingClassName);
 
-    if (contains && !add)
-        element.classList.remove(editingClassName);
-    else if (!contains && add)
+    if (add)
         element.classList.add(editingClassName);
+    else
+        element.classList.remove(editingClassName);
 }
 
 // buttons / radios / selects
@@ -625,10 +624,10 @@ function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBo
 
             render(element);
 
-            // press on space button on dropdown element in grid-cell opens dropdown instead of adding a filter.
             // both for multiple and single
             if (_isInGrid(element)) {
-                element.addEventListener('keypress', function (e) {
+                // press on space button on dropdown element in grid-cell opens dropdown instead of adding a filter.
+                select.addEventListener('keypress', function (e) {
                     if (e.keyCode === 32) {
                         e.stopPropagation();
                         //in excel theme picker space button does not opens dropdown
@@ -638,15 +637,15 @@ function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBo
                 });
 
                 // control opening of drop-down menu
-                select.addEventListener('change', function (e) {
+                select.addEventListener('change', function () {
                     _setIsEditing(select, false);
                 });
 
-                select.addEventListener('blur', function (e) {
+                select.addEventListener('blur', function () {
                     _setIsEditing(select, false);
                 });
 
-                select.addEventListener('mousedown', function (e) {
+                select.addEventListener('mousedown', function () {
                     _setIsEditing(select, true);
                 });
 

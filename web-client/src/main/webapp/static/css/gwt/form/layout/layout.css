@@ -21,77 +21,65 @@
 
 /* ---------- FOR ALL GRID ELEMENTS ---------- */
 
-    /*, .remove-all-pmb.form-control, .remove-all-pmb.form-control:focus, .remove-all-pmb.form-control:hover */
-    .remove-all-pmb {
-        padding: 0 !important;
-        margin: 0 !important;
-        border: none !important;
-        box-shadow: none !important;
+/*, .remove-all-pmb.form-control, .remove-all-pmb.form-control:focus, .remove-all-pmb.form-control:hover */
+.remove-all-pmb {
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
 
-        /* for example text-area.form-control sets the minimum height */
-        /* and when there is minimum height the content overflow it's parent, which leads to unpredictable scrolls (for example if textarea is removed, and new text is set, there can be some scroll left after that. It's not crucial but nevertheless not that pretty)*/
-        min-height: 0 !important;
-        min-width: 0 !important;
-    }
+    /* for example text-area.form-control sets the minimum height */
+    /* and when there is minimum height the content overflow it's parent, which leads to unpredictable scrolls (for example if textarea is removed, and new text is set, there can be some scroll left after that. It's not crucial but nevertheless not that pretty)*/
+    min-height: 0 !important;
+    min-width: 0 !important;
+}
 
-        /* ********** SINGLE SELECT  ********** */
+/* ********** SINGLE SELECT  ********** */
 
-            /*  do not show arrow in dropdown select lists when there is in grid cell and no focus. arrow in <select> element is background-image  */
-            .form-select.remove-all-pmb:not(.is-editing) {
-                background-color: transparent !important;
-                /* bootstrap */
-                background-image: none;
+:not(.is-editing) > .remove-all-pmb:not(.is-editing) {
+    background-color: transparent !important;
+}
 
-                /* excel */
-                -webkit-appearance: none; /* chrome */
-                -moz-appearance: none; /* firefox */
-            }
+/*  do not show arrow in dropdown select lists when there is in grid cell and no focus. arrow in <select> element is background-image  */
+.form-select.remove-all-pmb:not(.is-editing) {
+    /*background-color: transparent !important;*/
+    /* bootstrap */
+    background-image: none;
 
-        /* ********** ****** ******  ********** */
+    /* excel */
+    -webkit-appearance: none; /* chrome */
+    -moz-appearance: none; /* firefox */
+}
 
-        /* ********** MULTI SELECT  ********** */
+/* ********** MULTI SELECT  ********** */
 
-            /* ********** SELECTMULTIINPUT ********** */
+/* ********** BOOTSTRAP ********** */
 
-                .selectize-input.remove-all-pmb:not(.is-editing) {
-                    background-color: transparent !important;
-                }
+/* do not show arrow in bootstrap multiple dropdown select when there is no focus */
+:not(.is-editing) > .remove-all-pmb .dropdown-toggle:after {
+    content: none;
+}
 
-            /* ********** **************** ********** */
+:not(.is-editing) > .remove-all-pmb .dropdown-toggle {
+    border: none;
+    border-radius: unset;
+    background-color: transparent !important;
+}
 
-            /* ********** BOOTSTRAP ********** */
+/* ********** EXCEL ********** */
 
-                /* do not show arrow in bootstrap multiple dropdown select when there is no focus */
-                :not(.is-editing) > .remove-all-pmb .dropdown-toggle:after {
-                    content: none;
-                }
+/* because focus event comes to <select> element, but MultipleSelect displays <button>, we write css rule with "+" */
+/* excel. multiple select. since the MultipleSelect draws this component as <button>, this component needs to remove the border  */
+:not(.is-editing) > .remove-all-pmb .ms-choice {
+    border: none;
+    border-radius: unset;
+    background-color: transparent !important;
+}
 
-                :not(.is-editing) > .remove-all-pmb .dropdown-toggle {
-                    border: none;
-                    border-radius: unset;
-                    background-color: transparent !important;
-                }
-
-            /* ********** ********* ********** */
-
-            /* ********** EXCEL ********** */
-
-                /* because focus event comes to <select> element, but MultipleSelect displays <button>, we write css rule with "+" */
-                /* excel. multiple select. since the MultipleSelect draws this component as <button>, this component needs to remove the border  */
-                :not(.is-editing) > .remove-all-pmb .ms-choice {
-                    border: none;
-                    border-radius: unset;
-                    background-color: transparent !important;
-                }
-
-                /* excel. multiple select. remove arrow. */
-                :not(.is-editing) > .remove-all-pmb .ms-choice .icon-caret{
-                    display: none;
-                }
-
-            /* ********** ***** ********** */
-
-        /* ********** ***** ******  ********** */
+/* excel. multiple select. remove arrow. */
+:not(.is-editing) > .remove-all-pmb .ms-choice .icon-caret{
+    display: none;
+}
 
 /* ---------- --- --- ---- -------- ---------- */
 
