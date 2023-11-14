@@ -186,9 +186,8 @@
                 "static/css/gwt/navigator/tab-window.css",
                 "static/css/gwt/option.css",
 
-                "static/js/external/coloris.min.js",
-                "static/css/external/coloris.min.css",
-                "static/css/external/colorpicker.css"
+                "static/js/external/alwan.min.js",
+                "static/css/external/alwan.min.css"
         ));%>
 
         <lsf:writeResources resources="${versionedResources}"/>

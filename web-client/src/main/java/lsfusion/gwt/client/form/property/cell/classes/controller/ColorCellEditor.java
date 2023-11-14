@@ -1,17 +1,16 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.base.jsni.Function;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.ColorDTO;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
-
-import static lsfusion.gwt.client.base.GwtSharedUtils.nullEmpty;
+import lsfusion.gwt.client.view.MainFrame;
 
 public class ColorCellEditor extends TextBasedPopupCellEditor {
     private static final ClientMessages messages = ClientMessages.Instance.get();
@@ -20,98 +19,123 @@ public class ColorCellEditor extends TextBasedPopupCellEditor {
         super(editManager, property);
     }
 
-    Function eventListener = null;
+    JavaScriptObject alwan = null;
+    PValue prevValue = null;
     @Override
     protected Widget createPopupComponent(Element parent, PValue oldValue) {
-
+        prevValue = oldValue;
+        String defaultColor = null;
         if (oldValue != null) {
             try {
-                String defaultColor = PValue.getColorValue(oldValue).value;
-                if(defaultColor != null) {
-                    editBox.setAttribute("value", "#" + defaultColor);
-                }
+                defaultColor = PValue.getColorValue(oldValue).value;
             } catch (Exception e) {
                 throw new IllegalStateException("can't convert string value to color");
             }
         }
 
-        editBox.setAttribute("data-coloris", "true");
-        editBox.setAttribute("autocomplete", "off");
-
-        if(eventListener == null) {
-            eventListener = startColoris(RootPanel.get().getElement(), editBox, messages.ok(), messages.cancel(), messages.reset());
+        if(alwan == null) {
+            alwan = initAlwan(RootPanel.get().getElement(), editBox, defaultColor,
+                    messages.ok(), messages.cancel(), messages.reset());
+            popup.addAutoHidePartner(getPickerElement(RootPanel.get().getElement()));
         }
 
         popup.setVisible(false);
 
+        editBox.setAttribute("autocomplete", "off");
         editBox.click();
 
         return new SimplePanel();
     }
 
-//    @Override
-//    public void enterPressed(Element parent) {
-//        super.enterPressed(parent);
-//        validateAndCommit(parent, false, CommitReason.ENTERPRESSED);
-//    }
-
     @Override
     public PValue getCommitValue(Element parent, Integer contextAction) {
-        String background = nullEmpty(parent.getPropertyString("hexValue"));
+        String background = getColor(alwan);
         return background != null ? PValue.getPValue(new ColorDTO(background)) : null;
-    }
-
-    public void reset(Element parent) {
-        commitValue(parent, (PValue) null);
     }
 
     private void finishEditing(Element parent) {
         commitValue(parent, getCommitValue(parent, null));
     }
 
-    protected native Function startColoris(Element root, Element input, String okText, String cancelText, String resetText)/*-{
-        $wnd.Coloris({
-            closeButton: true,
-            closeLabel: okText,
-            clearButton: true,
-            clearLabel: resetText,
-            alpha: false
-        });
-        $wnd.Coloris.ready(function() {
-            var picker = root.getElementsByClassName('clr-picker')[0];
-            var button = document.createElement('button');
+    private void cancelEditing(Element parent) {
+        commitValue(parent, prevValue);
+    }
 
-            picker.appendChild(button);
-            button.setAttribute('type', 'button');
-            button.classList.add('clr-cancel');
-            button.textContent = cancelText;
-            button.addEventListener('click', function() {
-                $wnd.Coloris.close(true);
-            });
-    });
+    public void reset(Element parent) {
+        commitValue(parent, (PValue) null);
+    }
 
+    private String getTheme() {
+        return MainFrame.colorTheme.isLight() ? "light" : "dark";
+    };
+
+    private String getColor(String defaultColor) {
+        return "#" + (defaultColor != null ? defaultColor : MainFrame.colorTheme.isLight() ? "fff" : "000");
+    };
+
+    private native JavaScriptObject initAlwan(Element root, Element input, String defaultColor,
+                                              String okText, String cancelText, String resetText)/*-{
         var instance = this;
-        fn = function(event) {
-            var color = event.currentTarget.value;
-            event.target.style.backgroundColor =  color ? color : null;
-            event.target.hexValue = color ? color.substring(1) : null;
-            instance.@ColorCellEditor::finishEditing(*)(input);
-        };
 
-        input.addEventListener('close', fn);
-        return fn;
+        var alwan = new $wnd.Alwan(input, {
+            opacity: false,
+            inputs: { hex: true, rgb: false,  hsl: false  },
+            color: instance.@ColorCellEditor::getColor(Ljava/lang/String;)(defaultColor),
+            theme: instance.@ColorCellEditor::getTheme(*)()
+        });
+
+        var picker = root.getElementsByClassName('alwan')[0];
+
+        var okButton = document.createElement('button');
+        okButton.setAttribute('type', 'button');
+        okButton.classList.add('btn');
+        okButton.textContent = okText;
+        okButton.addEventListener('click', function() {
+            instance.@ColorCellEditor::finishEditing(*)(input);
+        });
+        picker.appendChild(okButton);
+
+        var cancelButton = document.createElement('button');
+        cancelButton.setAttribute('type', 'button');
+        cancelButton.classList.add('btn');
+        cancelButton.textContent = cancelText;
+        cancelButton.addEventListener('click', function() {
+            instance.@ColorCellEditor::cancelEditing(*)(input);
+        });
+        picker.appendChild(cancelButton);
+
+        var resetButton = document.createElement('button');
+        resetButton.setAttribute('type', 'button');
+        resetButton.classList.add('btn');
+        resetButton.textContent = resetText;
+        resetButton.addEventListener('click', function() {
+            instance.@ColorCellEditor::reset(*)(input);
+        });
+        picker.appendChild(resetButton);
+
+        alwan.open();
+
+        return alwan;
     }-*/;
+
+    private native String getColor(JavaScriptObject alwan)/*-{
+        return alwan.getColor().hex.substring(1);
+    }-*/;
+
+    private native Element getPickerElement(Element root)/*-{
+        return root.getElementsByClassName('alwan')[0];
+    }-*/;
+
 
     @Override
     public void stop(Element parent, boolean cancel, boolean blurred) {
-        stopColoris(RootPanel.get().getElement(), parent, eventListener);
-        eventListener = null;
+        destroyAlwan(alwan);
+        alwan = null;
         super.stop(parent, cancel, blurred);
     }
 
-    protected native void stopColoris(Element root, Element input, Function fn)/*-{
-        root.getElementsByClassName('clr-cancel')[0].remove();
-        input.removeEventListener('close', fn);
+    private native void destroyAlwan(JavaScriptObject alwan)/*-{
+            alwan.destroy();
     }-*/;
 
 }
