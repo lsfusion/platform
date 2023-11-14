@@ -95,6 +95,10 @@ function selectMultiInput() {
                     // setting autoHidePartner to avoid fake blurs
                     dropdown[0].autoHidePartner = element;
                     this.setCaret(this.items.length);
+                    _setIsEditing(this.$control[0], true);
+                },
+                onDropdownClose: function () {
+                    _setIsEditing(this.$control[0], false);
                 },
                 respect_word_boundaries: false, // undocumented feature. But for some reason it includes support for searching by Cyrillic characters
                 preload: 'focus',
@@ -259,6 +263,16 @@ function _removeAllPMBInTD(element, controlElement) {
 
 function _isInGrid(element) {
     return lsfUtils.isTDorTH(element); // because canBeRenderedInTD can be true
+}
+
+function _setIsEditing(element, add) {
+    let editingClassName = 'is-editing';
+    let contains = element.classList.contains(editingClassName);
+
+    if (contains && !add)
+        element.classList.remove(editingClassName);
+    else if (!contains && add)
+        element.classList.add(editingClassName);
 }
 
 // buttons / radios / selects
@@ -515,10 +529,13 @@ function _selectPicker(multi, html, shouldBeSelected) {
                         else
                             _changeSingleDropdownProperty(object, element)
                     }
+                });
+                selectElement.on('shown.bs.select', function (e) {
+                    _setIsEditing(element, true);
+                });
+                selectElement.on('hidden.bs.select', function (e) {
+                    _setIsEditing(element, false);
                 })
-                // cannot use _removeAllPMBInTD()
-                if (_isInGrid(element))
-                    selectElement.selectpicker('setStyle', 'remove-all-pmb');
             },
             multi, shouldBeSelected, html, true);
     } else {
@@ -540,12 +557,13 @@ function _selectPicker(multi, html, shouldBeSelected) {
                     },
                     onOpen: function () {
                         element.silent = true; // Because "refresh" is called after every update, which removes the dropdown
+                        _setIsEditing(element, true);
                     },
                     onClose: function () {
                         element.silent = false;// Because "refresh" is called after every update, which removes the dropdown
+                        _setIsEditing(element, false);
                     }
                 });
-                _removeAllPMBInTD(element, select);
             }, multi, shouldBeSelected, html, false);
     }
 }
@@ -579,10 +597,11 @@ function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBo
             let select = _wrapElement(element, () => createFocusElement('select'), element.tagName.toLowerCase() !== 'select');
 
             element.select = select;
-            if(!picker) {
+
+            if(!picker)
                 select.classList.add("form-select");
-                _removeAllPMBInTD(element, select);
-            }
+
+            _removeAllPMBInTD(element, select);
 
             if(!isList) {
                 lsfUtils.setFocusElement(element, select);
@@ -616,6 +635,24 @@ function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBo
                         if (!lsfUtils.useBootstrap() && picker)
                             $(select).multipleSelect('open');
                     }
+                });
+
+                // control opening of drop-down menu
+                select.addEventListener('change', function (e) {
+                    _setIsEditing(select, false);
+                });
+
+                select.addEventListener('blur', function (e) {
+                    _setIsEditing(select, false);
+                });
+
+                select.addEventListener('mousedown', function (e) {
+                    _setIsEditing(select, true);
+                });
+
+                select.addEventListener('keydown', function (e) {
+                    if (e.keyCode === 32)
+                        _setIsEditing(select, true);
                 });
             }
         },
