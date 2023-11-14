@@ -184,6 +184,9 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
         if (checkExistingFilter) {
             GFilterConditionView existingFilter = findExistingFilter(propertyDraw, columnKey);
             if (existingFilter != null) {
+                if (readSelectedValue) {
+                    existingFilter.putSelectedValue();
+                }
                 existingFilter.focusValueView(); // to leave focus on value with manual apply mode and be able to apply on Enter
                 existingFilter.startEditing(keyEvent);
                 return;

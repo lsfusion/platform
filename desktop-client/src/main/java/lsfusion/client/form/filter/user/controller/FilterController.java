@@ -192,6 +192,9 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
         if (checkExistingFilter) {
             FilterConditionView existingFilter = findExistingFilter(propertyDraw, columnKey);
             if (existingFilter != null) {
+                if (readSelectedValue) {
+                    existingFilter.putSelectedValue();
+                }
                 existingFilter.startEditing(keyEvent);
                 return true;
             }

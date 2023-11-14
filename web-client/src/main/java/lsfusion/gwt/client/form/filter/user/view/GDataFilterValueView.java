@@ -38,13 +38,12 @@ public class GDataFilterValueView extends SizedFlexPanel {
 
         cell = new GDataFilterPropertyValue(condition, logicsSupplier.getForm(), this::valueChanged, this::editingCancelled);
 
-        GPropertyDraw property = condition.property;
         sizedView = cell.getSizedWidget();
         sizedView.widget.addStyleName("filter-data-property-value form-control");
         sizedView.addFill(this);
 
-        if (readSelectedValue && !property.differentValue)
-            filterValue.value = PValue.escapeSeparator(logicsSupplier.getSelectedValue(property, condition.columnKey), condition.compare);
+        if (readSelectedValue && !condition.property.differentValue)
+            filterValue.value = readSelectedValue(condition);
 
         cell.updateValue(filterValue.value);
     }
@@ -72,6 +71,15 @@ public class GDataFilterValueView extends SizedFlexPanel {
         cell.focus(FocusUtils.Reason.OTHER);
     }
 
+    private PValue readSelectedValue(GPropertyFilter condition) {
+        return PValue.escapeSeparator(logicsSupplier.getSelectedValue(condition.property, condition.columnKey), condition.compare);
+    } 
+    
+    public void putSelectedValue(GPropertyFilter condition) {
+        filterValue.value = readSelectedValue(condition);
+        cell.updateValue(filterValue.value);
+    }
+    
     public void startEditing(Event keyEvent) {
         if (GwtClientUtils.isShowing(cell) && !logicsSupplier.getForm().isEditing()) { // suggest box may appear in (0,0) if filter is already gone (as it's called in scheduleDeferred)
             GPropertyDraw gPropertyDraw = cell.getProperty();

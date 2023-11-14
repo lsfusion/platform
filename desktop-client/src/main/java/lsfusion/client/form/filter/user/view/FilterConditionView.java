@@ -336,6 +336,10 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
 
         logicsSupplier.getFormController().revalidate();
     }
+    
+    public void putSelectedValue() {
+        valueView.putSelectedValue(condition);
+    }
 
     public void startEditing(EventObject initFilterEvent) {
         valueView.startEditing(initFilterEvent);
