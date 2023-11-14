@@ -1795,10 +1795,7 @@ public class GFormController implements EditManager {
         return addBinding(event, GBindingEnv.AUTO, pressed, component, groupObject);
     }
     public int addBinding(GInputEvent event, GBindingEnv env, BindingExec pressed, Widget component, GGroupObject groupObject) {
-        return addBinding(event::isEvent, env, pressed, component, groupObject);
-    }
-    public int addBinding(BindingCheck event, GBindingEnv env, BindingExec pressed, Widget component, GGroupObject groupObject) {
-        return addBinding(event, env, null, pressed, component, groupObject);
+        return addBinding(event::isEvent, env, null, pressed, component, groupObject);
     }
     public int addBinding(BindingCheck event, GBindingEnv env, Supplier<Boolean> enabled, BindingExec pressed, Widget component, GGroupObject groupObject) {
         return addBinding(new GBindingEvent(event, env), new Binding(groupObject) {
@@ -2219,6 +2216,7 @@ public class GFormController implements EditManager {
 
         Element element = getEditElement();
 
+        element.addClassName("is-editing");
         editContext.startEditing();
 
         if(!editContext.isFocusable()) // assert that otherwise it's already has focus
@@ -2308,6 +2306,7 @@ public class GFormController implements EditManager {
         //getAsyncValues need editContext, so it must be after clearRenderer
         this.editContext = null;
 
+        renderElement.removeClassName("is-editing");
         editContext.stopEditing();
 
         if(isReplace)

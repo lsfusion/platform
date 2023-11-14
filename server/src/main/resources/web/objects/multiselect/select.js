@@ -99,6 +99,10 @@ function selectMultiInput() {
                     // setting autoHidePartner to avoid fake blurs
                     dropdown[0].autoHidePartner = element;
                     this.setCaret(this.items.length);
+                    _setIsEditing(this.$control[0], true);
+                },
+                onDropdownClose: function () {
+                    _setIsEditing(this.$control[0], false);
                 },
                 respect_word_boundaries: false, // undocumented feature. But for some reason it includes support for searching by Cyrillic characters
                 preload: 'focus',
@@ -301,6 +305,15 @@ function _isInGrid(element) {
     return lsfUtils.isTDorTH(element); // because canBeRenderedInTD can be true
 }
 
+function _setIsEditing(element, add) {
+    let editingClassName = 'is-editing';
+
+    if (add)
+        element.classList.add(editingClassName);
+    else
+        element.classList.remove(editingClassName);
+}
+
 // buttons / radios / selects
 function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBeSelected, hasName, multi, html) {
     let isButton = isGroup || divClasses == null;
@@ -341,6 +354,16 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
                 lsfUtils.setFocusElement(element, null);
                 lsfUtils.setReadonlyFnc(element, null);
             }
+
+            // allow to navigate in custom button group component in grid cell by pressed shift + left / right or shift + up / down
+            // for some reason it doesn't work with ctrl button
+            if (_isInGrid(element)) {
+                options.addEventListener('keydown', function (e) {
+                    if (e.shiftKey && ((isButton && (e.keyCode === 39 || e.keyCode === 37)) || (e.keyCode === 40 || e.keyCode === 38)))
+                        e.stopPropagation();
+                })
+            }
+
         }, update: function (element, controller, list, extraValue) {
             let isList = controller.isList();
             list = _convertList(isList, list);
@@ -467,14 +490,15 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
                 } else {
                     _setGroupReadonly(input, extraValue != null ? extraValue.readonly : null);
 
-                    if(i === 0)
+                    // fixes the problem of always setting the focus on the first select option in the grid cell
+                    if(list[i].selected)
                         focusInput = input;
                 }
 
                 if (!multi && shouldBeSelected) {
                     if (isButton) { // bootstrap doesn't support is-invalid for buttons
                         let label = _getOptionElement(options, i, false, true);
-                        if (!hasSelected) {``
+                        if (!hasSelected) {
                             label.classList.add("btn-outline-danger");
                             label.classList.remove("btn-outline-secondary");
                         } else {
@@ -540,6 +564,12 @@ function _selectPicker(multi, html, shouldBeSelected) {
                         else
                             _changeSingleDropdownProperty(object, element)
                     }
+                });
+                selectElement.on('shown.bs.select', function (e) {
+                    _setIsEditing(element, true);
+                });
+                selectElement.on('hidden.bs.select', function (e) {
+                    _setIsEditing(element, false);
                 })
             },
             multi, shouldBeSelected, html, true);
@@ -562,9 +592,11 @@ function _selectPicker(multi, html, shouldBeSelected) {
                     },
                     onOpen: function () {
                         element.silent = true; // Because "refresh" is called after every update, which removes the dropdown
+                        _setIsEditing(element, true);
                     },
                     onClose: function () {
                         element.silent = false;// Because "refresh" is called after every update, which removes the dropdown
+                        _setIsEditing(element, false);
                     }
                 });
             }, multi, shouldBeSelected, html, false);
@@ -600,10 +632,11 @@ function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBo
             let select = _wrapElement(element, () => createFocusElement('select'), element.tagName.toLowerCase() !== 'select');
 
             element.select = select;
-            if(!picker) {
+
+            if(!picker)
                 select.classList.add("form-select");
-                _removeAllPMBInTD(element, select);
-            }
+
+            _removeAllPMBInTD(element, select);
 
             if(!isList) {
                 lsfUtils.setFocusElement(element, select);
@@ -626,6 +659,37 @@ function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBo
             }
 
             render(element);
+
+            // both for multiple and single
+            if (_isInGrid(element)) {
+                // press on space button on dropdown element in grid-cell opens dropdown instead of adding a filter.
+                select.addEventListener('keypress', function (e) {
+                    if (e.keyCode === 32) {
+                        e.stopPropagation();
+                        //in excel theme picker space button does not opens dropdown
+                        if (!lsfUtils.useBootstrap() && picker)
+                            $(select).multipleSelect('open');
+                    }
+                });
+
+                // control opening of drop-down menu
+                select.addEventListener('change', function () {
+                    _setIsEditing(select, false);
+                });
+
+                select.addEventListener('blur', function () {
+                    _setIsEditing(select, false);
+                });
+
+                select.addEventListener('mousedown', function () {
+                    _setIsEditing(select, true);
+                });
+
+                select.addEventListener('keydown', function (e) {
+                    if (e.keyCode === 32)
+                        _setIsEditing(select, true);
+                });
+            }
         },
         update: function (element, controller, list, extraValue) {
             element.controller = controller;
