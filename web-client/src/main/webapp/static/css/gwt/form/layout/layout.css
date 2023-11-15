@@ -41,8 +41,7 @@
 }
 
 /*  do not show arrow in dropdown select lists when there is in grid cell and no focus. arrow in <select> element is background-image  */
-.form-select.remove-all-pmb:not(.is-editing) {
-    /*background-color: transparent !important;*/
+:not(.focused-cell) > .form-select.remove-all-pmb {
     /* bootstrap */
     background-image: none;
 
@@ -56,7 +55,7 @@
 /* ********** BOOTSTRAP ********** */
 
 /* do not show arrow in bootstrap multiple dropdown select when there is no focus */
-:not(.is-editing) > .remove-all-pmb .dropdown-toggle:after {
+:not(.focused-cell) > .remove-all-pmb .dropdown-toggle:after {
     content: none;
 }
 
@@ -77,7 +76,7 @@
 }
 
 /* excel. multiple select. remove arrow. */
-:not(.is-editing) > .remove-all-pmb .ms-choice .icon-caret{
+:not(.focused-cell) > .remove-all-pmb .ms-choice .icon-caret{
     display: none;
 }
 
