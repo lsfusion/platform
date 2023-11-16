@@ -6,15 +6,18 @@ import javax.naming.Context;
 import javax.naming.NamingEnumeration;
 import javax.naming.directory.*;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 
 public class LDAPAuthenticationService {
 
     private String server;
     private Integer port;
-    private String baseDN;
-    private String userDNSuffix;
+    private final String baseDN;
+    private final String userDNSuffix;
 
     public LDAPAuthenticationService(String server, Integer port, String baseDN, String userDNSuffix) {
         this.server = server;
@@ -50,11 +53,12 @@ public class LDAPAuthenticationService {
             String lastName = null;
             String email = null;
             List<String> groupNames = new ArrayList<>();
+            Map<String, Object> additionalInfo = new HashMap<>();
 
             if (baseDN != null) {
-                NamingEnumeration personResults = authContext.search(baseDN, "(userPrincipalName=" + principal + ")", controls);
+                NamingEnumeration<SearchResult> personResults = authContext.search(baseDN, "(userPrincipalName=" + principal + ")", controls);
                 while (personResults.hasMore()) {
-                    SearchResult searchResult = (SearchResult) personResults.next();
+                    SearchResult searchResult = personResults.next();
 
                     Attribute givenName = searchResult.getAttributes().get("givenName");
                     if (givenName != null)
@@ -86,15 +90,18 @@ public class LDAPAuthenticationService {
                             }
                         }
                     }
+
+                    for (Attribute attribute : Collections.list(searchResult.getAttributes().getAll())) {
+                        additionalInfo.put(attribute.getID(), attribute.get());
+                    }
                 }
             }
 
-
-            return new LDAPParameters(true, firstName, lastName, email, groupNames);
+            return new LDAPParameters(true, firstName, lastName, email, groupNames, additionalInfo);
         } catch (CommunicationException e) {
             throw e;
         } catch (AuthenticationException e) {
-            return new LDAPParameters(false, null, null, null, null);
+            return new LDAPParameters(false, null, null, null, null, null);
         } catch (Exception e) {
             throw new RuntimeException("Error while authenticating using LDAP : ", e);
         } finally {

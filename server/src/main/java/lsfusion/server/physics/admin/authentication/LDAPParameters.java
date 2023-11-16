@@ -1,21 +1,24 @@
 package lsfusion.server.physics.admin.authentication;
 
 import java.util.List;
+import java.util.Map;
 
 public class LDAPParameters {
 
-    private boolean connected;
-    private String firstName;
-    private String lastName;
-    private String email;
-    private List<String> groupNames;
+    private final boolean connected;
+    private final String firstName;
+    private final String lastName;
+    private final String email;
+    private final List<String> groupNames;
+    private final Map<String, Object> additionalInfo;
 
-    public LDAPParameters(boolean connected, String firstName, String lastName, String email, List<String> groupNames) {
+    public LDAPParameters(boolean connected, String firstName, String lastName, String email, List<String> groupNames, Map<String, Object> additionalInfo) {
         this.connected = connected;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.groupNames = groupNames;
+        this.additionalInfo = additionalInfo;
     }
 
     public boolean isConnected() {
@@ -37,4 +40,8 @@ public class LDAPParameters {
     public List<String> getGroupNames() {
         return groupNames;
     }
-}                       
+
+    public Map<String, Object> getAdditionalInfo() {
+        return additionalInfo;
+    }
+}
