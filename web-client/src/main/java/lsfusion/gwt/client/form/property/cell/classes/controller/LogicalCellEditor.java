@@ -5,23 +5,17 @@ import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.property.PValue;
-import lsfusion.gwt.client.form.property.cell.classes.view.LogicalCellRenderer;
-import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
-import lsfusion.gwt.client.form.property.cell.controller.KeepCellEditor;
 import lsfusion.gwt.client.view.MainFrame;
 
-public class LogicalCellEditor extends ARequestValueCellEditor implements KeepCellEditor {
+public class LogicalCellEditor extends TypeInputBasedCellEditor {
 
     private boolean threeState;
 
     public LogicalCellEditor(EditManager editManager, boolean threeState) {
         super(editManager);
-        this.editManager = editManager;
         this.threeState = threeState;
     }
-
-    protected EditManager editManager;
 
     @Override
     public void start(EventHandler handler, Element parent, PValue oldValue) {
@@ -33,14 +27,10 @@ public class LogicalCellEditor extends ARequestValueCellEditor implements KeepCe
         // pointer-events:none, but in that case mouse events won't work without a wrapper
         // commit changes after change in the control is done (CHANGE event) that
         if(!( // it's important to delay only that events that will lead to the CHANGE event (otherwise there will be no CHANGE event to wait)
-            LogicalCellRenderer.getInputElement(parent) == handler.event.getEventTarget().cast() &&
+            TypeInputBasedCellRenderer.getInputElement(parent) == handler.event.getEventTarget().cast() &&
             (GMouseStroke.isChangeEvent(handler.event)
             || GKeyStroke.isLogicalInputChangeEvent(handler.event))))
             commit(parent);
-    }
-
-    public void commit(Element parent) {
-        commit(parent, CommitReason.FORCED);
     }
 
     private PValue value;
@@ -52,14 +42,6 @@ public class LogicalCellEditor extends ARequestValueCellEditor implements KeepCe
     @Override
     public void stop(Element parent, boolean cancel, boolean blurred) {
         value = null;
-    }
-
-    @Override
-    public void onBrowserEvent(Element parent, EventHandler handler) {
-        if(GKeyStroke.isChangeEvent(handler.event)) {
-            commit(parent);
-            handler.consume();
-        }
     }
 
     private PValue getNextValue(PValue value, boolean threeState) {

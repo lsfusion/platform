@@ -17,7 +17,7 @@ import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import static lsfusion.gwt.client.view.StyleDefaults.CELL_HORIZONTAL_PADDING;
 
 // the renderer which may be renderered as plain input (or td in table)
-public abstract class SimpleTextBasedCellRenderer extends CellRenderer {
+public abstract class SimpleTextBasedCellRenderer extends InputBasedCellRenderer {
 
     public SimpleTextBasedCellRenderer(GPropertyDraw property) {
         super(property);
@@ -60,27 +60,17 @@ public abstract class SimpleTextBasedCellRenderer extends CellRenderer {
     }
 
     @Override
-    public Element createRenderElement(RendererType rendererType) {
-        if(isTagInput()) {
-            if(needToRenderToolbarContent()) { // for an input with a toolbar we have to wrap it in a div to draw a toolbar
-                DivElement toolbarContainer = Document.get().createDivElement();
-                toolbarContainer.addClassName("prop-input-w-toolbar");
-                setToolbarContainer(toolbarContainer);
-                return toolbarContainer;
-            } else
-                return createInputElement(property, rendererType);
-        }
-
-        return super.createRenderElement(rendererType);
-    }
-
-    @Override
     public void renderPanelLabel(Widget label) {
         // we're not setting form-label since it's mostly used only for layouting, which we do ourselves
 //        if(property.panelCaptionVertical)
 //            label.addStyleName("form-label");
 //        else
 //            label.addStyleName("col-form-label");
+    }
+
+    @Override
+    protected InputElement createInput(GPropertyDraw property, RendererType rendererType) {
+        return createInputElement(property, rendererType);
     }
 
     public static InputElement createInputElement(GPropertyDraw property, RendererType rendererType) {
@@ -94,15 +84,6 @@ public abstract class SimpleTextBasedCellRenderer extends CellRenderer {
 
     public static boolean isMultiLineInput(Element parent) {
         return TextAreaElement.is(getSimpleInputElement(parent));
-    }
-
-    private final static String toolbarContainerProp = "toolbarContainer";
-
-    private static void setToolbarContainer(Element element) {
-        element.setPropertyBoolean(toolbarContainerProp, true);
-    }
-    public  static boolean isToolbarContainer(Element element) {
-        return element.getPropertyBoolean(toolbarContainerProp);
     }
 
     public static Element getSizeElement(Element element) {

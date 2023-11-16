@@ -7,13 +7,12 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.SizedFlexPanel;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
-import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
-import lsfusion.gwt.client.form.property.cell.view.RenderContext;
+import lsfusion.gwt.client.form.property.cell.classes.controller.TypeInputBasedCellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.view.MainFrame;
 
-public class LogicalCellRenderer extends CellRenderer {
+public class LogicalCellRenderer extends TypeInputBasedCellRenderer {
 
     private boolean threeState;
 
@@ -22,55 +21,11 @@ public class LogicalCellRenderer extends CellRenderer {
         this.threeState = threeState;
     }
 
-    @Override
-    public boolean canBeRenderedInTD() {
-        return true;
-    }
-
-    private final static String inputElementProp = "logicalInputElement";
-
     public static InputElement getInputEventTarget(Element parent, Event event) {
         InputElement inputElement = getInputElement(parent);
         if(inputElement == event.getEventTarget().cast())
             return inputElement;
         return null;
-    }
-
-    public static InputElement getInputElement(Element parent) {
-        return (InputElement) parent.getPropertyObject(inputElementProp);
-    }
-
-    public static void setInputElement(Element element, InputElement inputElement) {
-        element.setPropertyObject(inputElementProp, inputElement);
-        SimpleTextBasedCellRenderer.setSimpleReadonlyFnc(element, inputElement);
-    }
-    public static void clearInputElement(Element element) {
-        element.setPropertyObject(inputElementProp, null);
-        SimpleTextBasedCellRenderer.clearSimpleReadonlyFnc(element);
-    }
-
-    @Override
-    public boolean renderContent(Element element, RenderContext renderContext) {
-        InputElement inputElement;
-
-        boolean renderedAlignment = false;
-
-        boolean isTDOrTH = GwtClientUtils.isTDorTH(element); // because canBeRenderedInTD can be true
-        boolean isInput = isTagInput();
-        if (!isInput || isTDOrTH) {
-            inputElement = renderInputElement(element);
-
-            if(isTDOrTH) {
-                renderTextAlignment(property, element, false, renderContext.getRendererType());
-
-                renderedAlignment = true;
-            }
-        } else
-            inputElement = (InputElement) element;
-
-        setInputElement(element, inputElement);
-
-        return renderedAlignment;
     }
 
     public InputElement renderInputElement(Element element) {
@@ -99,16 +54,6 @@ public class LogicalCellRenderer extends CellRenderer {
     public void renderPanelContainer(SizedFlexPanel panel) {
         // we're not setting form-check since it's mostly used only for layouting, which we do ourselves
 //        panel.addStyleName("form-check");
-    }
-
-    @Override
-    public boolean clearRenderContent(Element element, RenderContext renderContext) {
-        clearInputElement(element);
-
-        if(GwtClientUtils.isTDorTH(element))
-            clearRenderTextAlignment(property, element, false, renderContext.getRendererType());
-
-        return false;
     }
 
     @Override
@@ -142,11 +87,8 @@ public class LogicalCellRenderer extends CellRenderer {
     }
 
     @Override
-    public Element createRenderElement(RendererType rendererType) {
-        if(isTagInput())
-            return createCheckInput();
-
-        return super.createRenderElement(rendererType);
+    protected InputElement createInput(GPropertyDraw property, RendererType rendererType) {
+        return createCheckInput();
     }
 
     //    private String getCBImagePath(Object value) {
