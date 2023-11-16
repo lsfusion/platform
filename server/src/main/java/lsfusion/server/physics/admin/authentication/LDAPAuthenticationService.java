@@ -53,7 +53,7 @@ public class LDAPAuthenticationService {
             String lastName = null;
             String email = null;
             List<String> groupNames = new ArrayList<>();
-            Map<String, Object> additionalInfo = new HashMap<>();
+            Map<String, Object> attributes = new HashMap<>();
 
             if (baseDN != null) {
                 NamingEnumeration<SearchResult> personResults = authContext.search(baseDN, "(userPrincipalName=" + principal + ")", controls);
@@ -92,12 +92,12 @@ public class LDAPAuthenticationService {
                     }
 
                     for (Attribute attribute : Collections.list(searchResult.getAttributes().getAll())) {
-                        additionalInfo.put(attribute.getID(), attribute.get());
+                        attributes.put(attribute.getID(), attribute.get());
                     }
                 }
             }
 
-            return new LDAPParameters(true, firstName, lastName, email, groupNames, additionalInfo);
+            return new LDAPParameters(true, firstName, lastName, email, groupNames, attributes);
         } catch (CommunicationException e) {
             throw e;
         } catch (AuthenticationException e) {

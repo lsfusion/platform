@@ -13,12 +13,12 @@ public class OAuth2Authentication extends Authentication {
     private final String email;
     private String firstName;
     private String lastName;
-    private final Map<String, Object> additionalInfo;
+    private final Map<String, Object> attributes;
 
     public OAuth2Authentication(String login, String authSecret, Map<String, Object> userInfo) {
         super(login);
         this.authSecret = authSecret;
-        this.additionalInfo = userInfo;
+        this.attributes = userInfo;
 
         String email = (String) userInfo.get(EMAIL_KEY);
         String name = (String) userInfo.get(NAME_KEY);
@@ -39,8 +39,8 @@ public class OAuth2Authentication extends Authentication {
         return new Pair<>(names[0], names.length > 1 ? names[1] : null);
     }
 
-    public Map<String, Object> getAdditionalInfo() {
-        return additionalInfo;
+    public Map<String, Object> getAttributes() {
+        return attributes;
     }
 
     public String getAuthSecret() {

@@ -260,7 +260,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                                 userObject = addUser(authentication.getUserName(), ((PasswordAuthentication) authentication).getPassword(), session);
                             }
                             setUserParameters(userObject, ldapParameters.getFirstName(), ldapParameters.getLastName(),
-                                    ldapParameters.getEmail(), ldapParameters.getGroupNames(), ldapParameters.getAdditionalInfo(), session);
+                                    ldapParameters.getEmail(), ldapParameters.getGroupNames(), ldapParameters.getAttributes(), session);
                             apply(session, stack);
                         } else {
                             throw new LoginException();
@@ -282,7 +282,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                     String pwd = BaseUtils.generatePassword(20, false, true);
                     userObject = addUser(oauth2.getUserName(), pwd, session);
                     setUserParameters(userObject, oauth2.getFirstName(), oauth2.getLastName(), oauth2.getEmail(),
-                            Collections.singletonList("selfRegister"), oauth2.getAdditionalInfo(),  session);
+                            Collections.singletonList("selfRegister"), oauth2.getAttributes(),  session);
                     apply(session, stack);
                 }
             }
@@ -431,7 +431,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         } else return null;
     }
 
-    public void setUserParameters(DataObject customUser, String firstName, String lastName, String email, List<String> userRoleSIDs, Map<String, Object> additionalInfo, DataSession session) {
+    public void setUserParameters(DataObject customUser, String firstName, String lastName, String email, List<String> userRoleSIDs, Map<String, Object> attributes, DataSession session) {
         try {
             if (firstName != null)
                 authenticationLM.firstNameContact.change(firstName, session, customUser);
@@ -453,11 +453,11 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                 }
             }
 
-            if (additionalInfo != null) {
-                for (String key : additionalInfo.keySet()) {
-                    Object value = additionalInfo.get(key);
+            if (attributes != null) {
+                for (String key : attributes.keySet()) {
+                    Object value = attributes.get(key);
                     if (value != null)
-                        authenticationLM.additionalInfo.change(value.toString(), session, customUser, new DataObject(key));
+                        authenticationLM.attributes.change(value.toString(), session, customUser, new DataObject(key));
                 }
             }
         } catch (SQLException | SQLHandledException e) {
