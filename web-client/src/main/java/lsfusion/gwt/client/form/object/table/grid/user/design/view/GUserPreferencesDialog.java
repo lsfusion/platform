@@ -371,7 +371,7 @@ public abstract class GUserPreferencesDialog extends DialogModalWindow {
                 preferencesChanged();
                 String caption = save ? messages.formGridPreferencesSaving() : messages.formGridPreferencesResetting();
                 String message = save ? messages.formGridPreferencesSaveSuccess() : messages.formGridPreferencesResetSuccess();
-                DialogBoxHelper.showMessageBox(false, caption, message, chosenOption -> focusPanel.setFocus(true));
+                DialogBoxHelper.showMessageBox(caption, message, chosenOption -> focusPanel.setFocus(true));
             }
 
             @Override

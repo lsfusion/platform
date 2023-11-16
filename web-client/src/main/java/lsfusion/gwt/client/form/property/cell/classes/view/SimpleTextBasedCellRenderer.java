@@ -11,6 +11,7 @@ import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.controller.SimpleTextBasedCellEditor;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
+import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 import static lsfusion.gwt.client.view.StyleDefaults.CELL_HORIZONTAL_PADDING;
@@ -72,8 +73,8 @@ public abstract class SimpleTextBasedCellRenderer extends InputBasedCellRenderer
         return createInputElement(property);
     }
 
-    public static InputElement createInputElement(GPropertyDraw property) {
-        return property.createTextInputElement();
+    public static InputElement createInputElement(GPropertyDraw property, RendererType rendererType) {
+        return property.createTextInputElement(rendererType);
     }
 
     public static InputElement getFocusEventTarget(Element parent, Event event) {
@@ -137,7 +138,7 @@ public abstract class SimpleTextBasedCellRenderer extends InputBasedCellRenderer
             // otherwise we'll use flex alignment (however text alignment would also do)
             // there is some difference in div between align-items center and vertical align baseline / middle, and align items center seems to be more accurate (and better match input vertical align baseline / middle)
             if(isTDOrTH || isInput) {
-                renderTextAlignment(property, element, isInput);
+                renderTextAlignment(property, element, isInput, renderContext.getRendererType());
                 renderedAlignment = true;
             }
             SimpleTextBasedCellRenderer.render(property, element, renderContext, multiLine);
@@ -173,7 +174,7 @@ public abstract class SimpleTextBasedCellRenderer extends InputBasedCellRenderer
 //            renderedAlignment = true;
         } else {
 //            if(isTDOrTH || isInput) {
-                clearRenderTextAlignment(property, element, isInput);
+                clearRenderTextAlignment(property, element, isInput, renderContext.getRendererType());
 //                renderedAlignment = true;
 //            }
 
@@ -223,7 +224,7 @@ public abstract class SimpleTextBasedCellRenderer extends InputBasedCellRenderer
 
     public boolean updateContent(Element element, PValue value, Object extraValue, UpdateContext updateContext) {
         boolean isNull = value == null;
-        String innerText = isNull ? null : format(value);
+        String innerText = isNull ? null : format(value, updateContext.getRendererType());
 
         String title;
         title = property.echoSymbols ? "" : innerText;
@@ -242,9 +243,6 @@ public abstract class SimpleTextBasedCellRenderer extends InputBasedCellRenderer
         }
 
         element.setTitle(title);
-
-        if(innerText.contains("\n"))
-            element.addClassName("text-based-value-multi-line");
 
         String placeholder = extraValue != null ? ((String) extraValue) : null;
         Element inputElement = getSimpleInputElement(element);
@@ -265,10 +263,15 @@ public abstract class SimpleTextBasedCellRenderer extends InputBasedCellRenderer
             return false;
         }
 
+        if(innerText.contains("\n"))
+            element.addClassName("text-based-value-multi-line");
+        else
+            element.removeClassName("text-based-value-multi-line");
+
         // important to make paste work (otherwise DataGrid.sinkPasteEvent cannot put empty selection), plus for sizing
-        element.setInnerText(isNull ? (placeholder != null ? placeholder : EscapeUtils.UNICODE_NBSP) : innerText);
+        GwtClientUtils.setDataHtmlOrText(element, isNull ? (placeholder != null ? placeholder : EscapeUtils.UNICODE_NBSP) : innerText, false);
         return true;
     }
 
-    public abstract String format(PValue value);
+    public abstract String format(PValue value, RendererType rendererType);
 }

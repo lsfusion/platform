@@ -21,8 +21,10 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
     }
 
     public void setAutoSize(boolean autoSize) {
-        target.valueWidth = autoSize ? -1 : -2;
-        target.valueHeight = autoSize ? -1 : -2;
+        if(target.valueWidth == null || target.valueWidth < 0)
+            target.valueWidth = autoSize ? -1 : -2;
+        if(target.valueHeight == null || target.valueHeight < 0)
+            target.valueHeight = autoSize ? -1 : -2;
     }
 
     public void setBoxed(boolean boxed) {

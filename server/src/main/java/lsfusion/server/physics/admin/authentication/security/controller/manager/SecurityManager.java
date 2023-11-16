@@ -6,11 +6,8 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
-import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.base.col.lru.LRUSVSMap;
-import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.base.exception.LockedException;
 import lsfusion.interop.base.exception.LoginException;
@@ -29,7 +26,6 @@ import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
-import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.physics.admin.Settings;
@@ -172,8 +168,8 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         return adminUser;
     }
 
-    public DataObject getAnonymousUser() {
-        return anonymousUser;
+    public DataObject getDefaultLoginUser() {
+        return SystemProperties.inDevMode ? getAdminUser() : anonymousUser;
     }
 
     private DataSession createSession() throws SQLException {
@@ -264,7 +260,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                                 userObject = addUser(authentication.getUserName(), ((PasswordAuthentication) authentication).getPassword(), session);
                             }
                             setUserParameters(userObject, ldapParameters.getFirstName(), ldapParameters.getLastName(),
-                                    ldapParameters.getEmail(), ldapParameters.getGroupNames(), session);
+                                    ldapParameters.getEmail(), ldapParameters.getGroupNames(), ldapParameters.getAttributes(), session);
                             apply(session, stack);
                         } else {
                             throw new LoginException();
@@ -276,17 +272,17 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                 if (!authenticated && (userObject == null || !authenticationLM.checkPassword(session, userObject, ((PasswordAuthentication) authentication).getPassword())))
                     throw new LoginException();
             } else {
-                String webClientAuthSecret = ((OAuth2Authentication) authentication).getAuthSecret();
-                if ((webClientAuthSecret == null || !webClientAuthSecret.equals(getWebClientSecret()))) {
+                OAuth2Authentication oauth2 = (OAuth2Authentication) authentication;
+                String webClientAuthSecret = oauth2.getAuthSecret();
+                if ((webClientAuthSecret == null || !webClientAuthSecret.equals(getWebClientSecret())))
                     throw new AuthenticationException(getString("exceptions.incorrect.web.client.auth.token"));
-                }
-                userObject = readUser(authentication.getUserName(), session);
+
+                userObject = readUser(oauth2.getUserName(), session);
                 if (userObject == null) {
                     String pwd = BaseUtils.generatePassword(20, false, true);
-                    userObject = addUser(authentication.getUserName(), pwd, session);
-                    setUserParameters(userObject, ((OAuth2Authentication) authentication).getFirstName(),
-                            ((OAuth2Authentication) authentication).getLastName(), ((OAuth2Authentication) authentication).getEmail(),
-                            Collections.singletonList("selfRegister"), session);
+                    userObject = addUser(oauth2.getUserName(), pwd, session);
+                    setUserParameters(userObject, oauth2.getFirstName(), oauth2.getLastName(), oauth2.getEmail(),
+                            Collections.singletonList("selfRegister"), oauth2.getAttributes(),  session);
                     apply(session, stack);
                 }
             }
@@ -435,9 +431,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         } else return null;
     }
 
-    private LRUSVSMap<Long, ImCol<ImMap<String, Object>>> propertyPolicyCache = new LRUSVSMap<>(LRUUtil.G2);
-
-    public void setUserParameters(DataObject customUser, String firstName, String lastName, String email, List<String> userRoleSIDs, DataSession session) {
+    public void setUserParameters(DataObject customUser, String firstName, String lastName, String email, List<String> userRoleSIDs, Map<String, Object> attributes, DataSession session) {
         try {
             if (firstName != null)
                 authenticationLM.firstNameContact.change(firstName, session, customUser);
@@ -456,6 +450,14 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                         securityLM.inCustomUserUserRole.change(true, session, customUser, (DataObject) userRole);
                         break;
                     }
+                }
+            }
+
+            if (attributes != null) {
+                for (String key : attributes.keySet()) {
+                    Object value = attributes.get(key);
+                    if (value != null)
+                        authenticationLM.attributes.change(value.toString(), session, customUser, new DataObject(key));
                 }
             }
         } catch (SQLException | SQLHandledException e) {

@@ -43,7 +43,7 @@
     background-color: var(--component-background-color);
 }
 
-.userFilerValueCellApplied, .userFilerValueCellApplied .background-inherit {
+.filter-data-property-value.filter-applied, .filter-data-property-value.filter-applied .background-inherit {
     background-color: var(--selection-color);
 }
 

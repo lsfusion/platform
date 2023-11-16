@@ -2,7 +2,6 @@ package lsfusion.server.logics.form.struct.action;
 
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
@@ -11,9 +10,9 @@ import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.controller.init.Instantiable;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.instance.property.ActionObjectInstance;
-import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
+import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.form.interactive.action.async.*;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
@@ -49,7 +48,7 @@ public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPro
         return this.property.getGroupChange(entity, mapping);
     }
 
-    public AsyncEventExec getAsyncEventExec(FormInstanceContext context, ActionOrProperty securityProperty, PropertyObjectEntity drawProperty, GroupObjectEntity toDraw, boolean optimistic) {
+    public AsyncEventExec getAsyncEventExec(FormInstanceContext context, ActionOrProperty securityProperty, PropertyDrawEntity drawProperty, GroupObjectEntity toDraw, boolean optimistic) {
         AsyncMapEventExec<P> asyncExec = property.getAsyncEventExec(optimistic);
         if(asyncExec != null)
             return asyncExec.map(mapping, context, securityProperty, drawProperty, toDraw);
@@ -68,16 +67,16 @@ public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPro
 //    }
 //
 
-    @IdentityInstanceLazy
-    public <X extends PropertyInterface> PropertyObjectEntity<?> getProperty(PropertyObjectEntity<X> readOnly, boolean isNative) {
-        //        return PropertyFact.createTrue().mapObjects(MapFact.<PropertyInterface, PropertyObjectInterfaceInstance>EMPTY());
-        if(readOnly == null || !isNative) // optimization
-            return PropertyFact.createTrue().mapEntityObjects(MapFact.EMPTYREV());
-        return PropertyFact.createNot(readOnly.property.getImplement()).mapEntityObjects(readOnly.mapping);
+    private static PropertyObjectEntity TRUE;
+    public static <X extends PropertyInterface> PropertyObjectEntity<X> TRUE() {
+        if(TRUE == null) {
+            TRUE = PropertyFact.createTrue().mapEntityObjects(MapFact.EMPTYREV());
+        }
+        return TRUE;
     }
 
     @Override
-    public ActionObjectEntity<P> getAction(FormEntity form, PropertyObjectEntity property) {
+    public ActionObjectEntity<P> getAction(FormInstanceContext context) {
         return this;
     }
 }

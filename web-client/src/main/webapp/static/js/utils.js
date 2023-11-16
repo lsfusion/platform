@@ -149,8 +149,25 @@ function plainEquals(object1, object2, ignoreField) {
     return !(object1Keys.length !== object2Keys.length || (object1Keys.find(function (object1Key) { return object1Key !== ignoreField && object1[object1Key] !== object2[object1Key]}) !== undefined));
 }
 
-function isContainHtmlTag(value) {
+function containsLineBreak(value) {
+    return value.indexOf("\n") >= 0;
+}
+function containsHtmlTag(value) {
     return value.match(".*\\<[^>]+\\>(.|\n|\r)*");
+}
+
+// actually it is also data, however usually it's metadata
+function setCaptionHtmlOrText(element, value) {
+    setHtmlOrText(element, value, containsHtmlTag(value));
+}
+function setDataHtmlOrText(element, value, html) {
+    setHtmlOrText(element, value, html)
+}
+function setHtmlOrText(element, value, html) {
+    if(html)
+        element.innerHTML = value;
+    else
+        element.innerText = value; // will add linebreaks (maybe optimization of using textContent / nodeValue is possible)
 }
 
 function setReadonlyNative(element, readonly) {

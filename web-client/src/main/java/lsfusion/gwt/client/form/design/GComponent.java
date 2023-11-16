@@ -8,6 +8,7 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyReader;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.ColorDTO;
+import lsfusion.gwt.client.form.property.cell.view.RendererType;
 
 import java.io.Serializable;
 
@@ -87,7 +88,7 @@ public class GComponent implements Serializable {
     public boolean isFlex() {
         return flex > 0;
     }
-    public double getFlex() {
+    public double getFlex(RendererType rendererType) {
         return flex;
     }
 

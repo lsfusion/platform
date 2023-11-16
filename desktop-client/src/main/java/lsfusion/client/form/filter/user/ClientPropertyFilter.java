@@ -22,17 +22,21 @@ public class ClientPropertyFilter {
     public boolean junction = true; //true - conjunction, false - disjunction
 
     public ClientPropertyFilter(ClientFilter filter, ClientGroupObject groupObject, ClientGroupObjectValue columnKey, Object value) {
-        this(filter, groupObject, filter.property, new ClientDataFilterValue(value), columnKey, false, filter.property.getDefaultCompare(), true);
+        this(filter, groupObject, columnKey, value, null, null, null);
     }
-    public ClientPropertyFilter(ClientFilter filter, ClientGroupObject groupObject, ClientPropertyDraw property, ClientDataFilterValue value, ClientGroupObjectValue columnKey, boolean negation, Compare compare, boolean junction) {
+    public ClientPropertyFilter(ClientFilter filter, ClientGroupObject groupObject, ClientGroupObjectValue columnKey, Object value, Boolean negation, Compare compare, Boolean junction) {
         this.filter = filter;
         this.groupObject = groupObject;
-        this.property = property;
-        this.value = value;
+        this.property = filter.property;
+        this.value = new ClientDataFilterValue(value);
         this.columnKey = columnKey;
-        this.negation = negation;
-        this.compare = compare;
-        this.junction = junction;
+        if (negation != null) {
+            this.negation = negation;
+        }
+        this.compare = compare != null ? compare : filter.property.getDefaultCompare();
+        if (junction != null) {
+            this.junction = junction;
+        }
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {

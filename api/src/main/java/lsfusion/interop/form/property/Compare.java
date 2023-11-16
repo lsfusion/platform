@@ -3,18 +3,44 @@ package lsfusion.interop.form.property;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import static lsfusion.base.ApiResourceBundle.getString;
 
 public enum Compare {
-    EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS, CONTAINS, MATCH, INARRAY;
+    EQUALS("="), GREATER(">"), LESS("<"), GREATER_EQUALS(">="), 
+    LESS_EQUALS("<="), NOT_EQUALS("!="), CONTAINS("_"), MATCH("@"), 
+    INARRAY("IN ARRAY");
+
+    private final String str;
+
+    private static final Map<String, Compare> lookup = new HashMap<>();
+
+    static {
+        for (Compare c : Compare.values()) {
+            lookup.put(c.str, c);
+        }
+    }
+
+    Compare(String str) {
+        this.str = str;
+    }
+
+    public static Compare get(String str) {
+        return lookup.get(str);
+    }
 
     public static Compare get(boolean min) {
         return min?Compare.LESS:Compare.GREATER;
     }
 
     public static Compare deserialize(DataInputStream inStream) throws IOException {
-        switch(inStream.readByte()) {
+        return deserialize(inStream.readByte());
+    }
+
+    public static Compare deserialize(byte ibyte) throws IOException {
+        switch(ibyte) {
             case -1:
                 return null;
             case 0:
@@ -91,47 +117,23 @@ public enum Compare {
 
     @Override
     public String toString() {
-        switch (this) {
-            case EQUALS :
-                return "=";
-            case GREATER :
-                return ">";
-            case LESS :
-                return "<";
-            case GREATER_EQUALS :
-                return ">=";
-            case LESS_EQUALS :
-                return "<=";
-            case NOT_EQUALS :
-                return "!=";
-            case CONTAINS:
-                return "_";
-            case MATCH:
-                return "@";
-            case INARRAY :
-                return "IN ARRAY";
-        }
-        throw new RuntimeException("Serialize Compare");
+        return str;
     }
 
     public String getFullString() {
         switch (this) {
             case EQUALS :
-                return "=";
             case GREATER :
-                return ">";
             case LESS :
-                return "<";
             case GREATER_EQUALS :
-                return ">=";
             case LESS_EQUALS :
-                return "<=";
+                return str;
             case NOT_EQUALS :
-                return "!= (" + getString("filter.compare.not.equals") + ")";
+                return str + " (" + getString("filter.compare.not.equals") + ")";
             case CONTAINS:
-                return "_ (" + getString("filter.compare.contains") + ")";
+                return str + " (" + getString("filter.compare.contains") + ")";
             case MATCH:
-                return "@ (" + getString("filter.compare.search") + ")";
+                return str + " (" + getString("filter.compare.search") + ")";
             case INARRAY :
                 return getString("filter.compare.in.array");
         }
@@ -162,8 +164,7 @@ public enum Compare {
         return "";
     }
 
-    //todo: rename to escapeSeparator
-    public boolean escapeComma() {
+    public boolean escapeSeparator() {
         return this == EQUALS || this == CONTAINS || this == MATCH;
     }
 }

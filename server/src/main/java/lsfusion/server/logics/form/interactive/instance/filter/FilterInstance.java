@@ -59,7 +59,7 @@ public abstract class FilterInstance implements Updated {
     public static FilterInstance deserialize(DataInputStream inStream, FormInstance form) throws IOException, SQLException, SQLHandledException {
         CompareFilterInstance filter = new CompareFilterInstance(inStream, form);
         if (filter.value instanceof NullValue) {
-            FilterInstance notNullFilter = new NotNullFilterInstance(filter.property);
+            FilterInstance notNullFilter = new NotNullFilterInstance(filter.property, filter.toDraw, filter.propertyDraw);
             notNullFilter.junction = filter.junction;
             if (!filter.negate) {
                 NotFilterInstance notFilter = new NotFilterInstance(notNullFilter);
@@ -85,10 +85,12 @@ public abstract class FilterInstance implements Updated {
                     Matcher matcher = Pattern.compile("(?:\\\\.|[^\\\\" + separator + "])+", Pattern.DOTALL).matcher(filterValue);
                     while (matcher.find()) {
                         String value = matcher.group().replace("\\" + separator, separator); //unescape escaped separator
-                        if (needWrapContains(value, isContains)) {
+                        boolean wrapContains = needWrapContains(value, isContains);
+                        if (wrapContains) {
                             value = wrapContains(value);
                         }
-                        CompareFilterInstance filterInstance = new CompareFilterInstance(filter.property, filter.resolveAdd, filter.toDraw, filter.negate, filter.compare, new DataObject(value, filterValueClass));
+                        CompareFilterInstance filterInstance = new CompareFilterInstance(filter.property, filter.resolveAdd, 
+                                filter.toDraw, filter.propertyDraw, filter.negate, filter.compare, new DataObject(value, filterValueClass), wrapContains);
 
                         resultFilter = resultFilter == null ? filterInstance : new OrFilterInstance(resultFilter, filterInstance);
 
@@ -99,6 +101,7 @@ public abstract class FilterInstance implements Updated {
                     }
                 } else if (needWrapContains(filterValue, isContains)) {
                     filter.value = new DataObject(wrapContains(filterValue), filterValueClass);
+                    filter.wrappedContainsValue = true;
                 }
             }
         }
@@ -111,6 +114,11 @@ public abstract class FilterInstance implements Updated {
 
     public static String wrapContains(String value) {
         return "%" + value + "%";
+    }
+    
+    public static String unwrapContains(String value) {
+        assert value.startsWith("%") && value.endsWith("%");
+        return value.substring(1, value.length() - 1);
     }
 
     public abstract GroupObjectInstance getApplyObject();

@@ -50,9 +50,9 @@ import java.util.regex.Pattern;
 
 public class AppServerImage {
 
-    private final static LRUSVSMap<String, AppServerImage> cachedImages = new LRUSVSMap<>(LRUUtil.G2);
-    private final static LRUSVSMap<String, Pair<String, Double>> cachedBestIcons = new LRUSVSMap<>(LRUUtil.G2);
-    private final static LRUSVSMap<Pair<String, Float>, AppServerImage> cachedDefaultImages = new LRUSVSMap<>(LRUUtil.G2);
+    private final static LRUSVSMap<String, AppServerImage> cachedImages = new LRUSVSMap<>(LRUUtil.G3);
+    private final static LRUSVSMap<String, Pair<String, Double>> cachedBestIcons = new LRUSVSMap<>(LRUUtil.G3);
+    private final static LRUSVSMap<Pair<String, Float>, AppServerImage> cachedDefaultImages = new LRUSVSMap<>(LRUUtil.G3);
     private static final AppServerImage NULLIMAGE = new AppServerImage();
 
     public AppServerImage() {
@@ -130,17 +130,6 @@ public class AppServerImage {
     }
 
     public final static ThreadLocal<MSet<String>> prereadBestIcons = new ThreadLocal<>();
-    public static void prereadBestIcons(BusinessLogics BL, DBManager dbManager, Runnable run, String type) {
-        MSet<String> mImages = SetFact.mSet();
-        prereadBestIcons.set(mImages);
-        try {
-            run.run();
-        } finally {
-            prereadBestIcons.set(null);
-        }
-
-        prereadBestIcons(BL, dbManager, mImages.immutable());
-    }
 
     public static void prereadBestIcons(BusinessLogics BL, DBManager dbManager, ImSet<String> images) {
         ImMap<String, Pair<String, Double>> readImages = readBestIcons(BL, dbManager, images);
@@ -259,7 +248,7 @@ public class AppServerImage {
     public static final String DELETE = "delete.png";
     public static final String EMAIL = "email.png";
 
-    private static final Pattern nonEnglishCaption = Pattern.compile("(\\w|\\s|\\p{Punct})+");
+    private static final Pattern isEnglishCaption = Pattern.compile("(\\w|\\s|\\p{Punct})+");
     private static String replaceAll(String text, Function<Matcher, String> replace) {
         Matcher m = toCamelCase.matcher(text);
 
@@ -351,7 +340,7 @@ public class AppServerImage {
             LocalizedString readCaption = caption.get();
             if(readCaption != null && !readCaption.isEmpty()) {
                 String englishCaption = ThreadLocalContext.localize(readCaption, Locale.ENGLISH);
-                if(nonEnglishCaption.matcher(englishCaption).matches()) {
+                if(isEnglishCaption.matcher(englishCaption).matches()) {
                     camelCased = toCamelCase(englishCaption);
 //                    can't use it for now, because it requires Java 9
 //                  camelCased = toCamelCase.matcher(englishCaption).replaceAll(match -> match.group(2).toUpperCase());

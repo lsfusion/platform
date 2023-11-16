@@ -21,7 +21,7 @@ import java.sql.SQLException;
 
 public class NotFilterInstance extends FilterInstance {
 
-    private final FilterInstance filter;
+    public final FilterInstance filter;
 
     public NotFilterInstance(FilterInstance filter) {
         this.filter = filter;

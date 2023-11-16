@@ -6,6 +6,7 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
+import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 public interface EditContext extends ExecContext {
@@ -41,4 +42,6 @@ public interface EditContext extends ExecContext {
     boolean canUseChangeValueForRendering(GType type);
 
     default Object modifyPastedString(String pastedText) { return pastedText; }
+
+    RendererType getRendererType();
 }

@@ -14,6 +14,20 @@ public enum GOrder {
             case DIR:
                 return 3;
         }
-        throw new RuntimeException("Serialize Scroll");
+        throw new RuntimeException("Serialize Order");
+    }
+
+    public static GOrder deserialize(byte data) {
+        switch(data) {
+            case 0:
+                return REPLACE;
+            case 1:
+                return ADD;
+            case 2:
+                return REMOVE;
+            case 3:
+                return DIR;
+        }
+        throw new RuntimeException("Deserialize Order");
     }
 }

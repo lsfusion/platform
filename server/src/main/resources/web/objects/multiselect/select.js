@@ -1,6 +1,10 @@
 
 var lsf_events_defined = false;
 
+function selectMultiHTMLInput() {
+    return selectMultiInput(); // check how it will work
+}
+
 function selectMultiInput() {
 
     if(!lsf_events_defined) {
@@ -95,6 +99,10 @@ function selectMultiInput() {
                     // setting autoHidePartner to avoid fake blurs
                     dropdown[0].autoHidePartner = element;
                     this.setCaret(this.items.length);
+                    _setIsEditing(this.$control[0], true);
+                },
+                onDropdownClose: function () {
+                    _setIsEditing(this.$control[0], false);
                 },
                 respect_word_boundaries: false, // undocumented feature. But for some reason it includes support for searching by Cyrillic characters
                 preload: 'focus',
@@ -192,51 +200,87 @@ function selectMultiInput() {
 }
 
 function selectList() {
-    return _defaultRadioCheckBox('radio', true, true);
+    return _defaultRadioCheckBox('radio', true, true, false, false);
+}
+
+function selectHTMLList() {
+    return _defaultRadioCheckBox('radio', true, true, false, true);
 }
 
 function selectButton() {
-    return _checkBoxRadioButtonToggle('radio', true, true);
+    return _checkBoxRadioButtonToggle('radio', true, true, false, false);
+}
+
+function selectHTMLButton() {
+    return _checkBoxRadioButtonToggle('radio', true, true, false, true);
 }
 
 function selectButtonGroup() {
-    return _checkBoxRadioButtonGroup('radio', true, true);
+    return _checkBoxRadioButtonGroup('radio', true, true, false, false);
+}
+
+function selectHTMLButtonGroup() {
+    return _checkBoxRadioButtonGroup('radio', true, true, false, true);
 }
 
 function selectMultiList() {
-    return _defaultRadioCheckBox('checkbox', false, false, true);
+    return _defaultRadioCheckBox('checkbox', false, false, true, false);
+}
+
+function selectMultiHTMLList() {
+    return _defaultRadioCheckBox('checkbox', false, false, true, true);
 }
 
 function selectMultiButton() {
-    return _checkBoxRadioButtonToggle('checkbox', false, false, true);
+    return _checkBoxRadioButtonToggle('checkbox', false, false, true, false);
+}
+
+function selectMultiHTMLButton() {
+    return _checkBoxRadioButtonToggle('checkbox', false, false, true, true);
 }
 
 function selectMultiButtonGroup() {
-    return _checkBoxRadioButtonGroup('checkbox', false, false, true);
+    return _checkBoxRadioButtonGroup('checkbox', false, false, true, false);
+}
+
+function selectMultiHTMLButtonGroup() {
+    return _checkBoxRadioButtonGroup('checkbox', false, false, true, true);
 }
 
 function selectNullList() {
-    return _defaultRadioCheckBox('radio', false, true);
+    return _defaultRadioCheckBox('radio', false, true, false, false);
+}
+
+function selectNullHTMLList() {
+    return _defaultRadioCheckBox('radio', false, true, false, true);
 }
 
 function selectNullButton() {
-    return _checkBoxRadioButtonToggle('radio', false, true);
+    return _checkBoxRadioButtonToggle('radio', false, true, false, false);
+}
+
+function selectNullHTMLButton() {
+    return _checkBoxRadioButtonToggle('radio', false, true, false, true);
 }
 
 function selectNullButtonGroup() {
-    return _checkBoxRadioButtonGroup('radio', false, true);
+    return _checkBoxRadioButtonGroup('radio', false, true, false, false);
 }
 
-function _defaultRadioCheckBox(type, shouldBeSelected, hasName, multi) {
-    return _option(type, false, ['form-check'], ['form-check-input'], ['form-check-label', 'option-item'], shouldBeSelected, hasName, multi);
+function selectNullHTMLButtonGroup() {
+    return _checkBoxRadioButtonGroup('radio', false, true, false, true);
 }
 
-function _checkBoxRadioButtonToggle(type, shouldBeSelected, hasName, multi) {
-    return _option(type, false, null, ['btn-check'], ['btn', 'btn-outline-secondary', 'option-item'], shouldBeSelected, hasName, multi);
+function _defaultRadioCheckBox(type, shouldBeSelected, hasName, multi, html) {
+    return _option(type, false, ['form-check'], ['form-check-input'], ['form-check-label', 'option-item'], shouldBeSelected, hasName, multi, html);
 }
 
-function _checkBoxRadioButtonGroup(type, shouldBeSelected, hasName, multi) {
-    return _option(type, true, ['btn-group'], ['btn-check'], ['btn', 'btn-outline-secondary', 'option-item'], shouldBeSelected, hasName, multi);
+function _checkBoxRadioButtonToggle(type, shouldBeSelected, hasName, multi, html) {
+    return _option(type, false, null, ['btn-check'], ['btn', 'btn-outline-secondary', 'option-item'], shouldBeSelected, hasName, multi, html);
+}
+
+function _checkBoxRadioButtonGroup(type, shouldBeSelected, hasName, multi, html) {
+    return _option(type, true, ['btn-group'], ['btn-check'], ['btn', 'btn-outline-secondary', 'option-item'], shouldBeSelected, hasName, multi, html);
 }
 
 function _wrapElementDiv(element, wrap) {
@@ -261,8 +305,17 @@ function _isInGrid(element) {
     return lsfUtils.isTDorTH(element); // because canBeRenderedInTD can be true
 }
 
+function _setIsEditing(element, add) {
+    let editingClassName = 'is-editing';
+
+    if (add)
+        element.classList.add(editingClassName);
+    else
+        element.classList.remove(editingClassName);
+}
+
 // buttons / radios / selects
-function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBeSelected, hasName, multi) {
+function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBeSelected, hasName, multi, html) {
     let isButton = isGroup || divClasses == null;
 
     function _getRandomId() {
@@ -301,6 +354,16 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
                 lsfUtils.setFocusElement(element, null);
                 lsfUtils.setReadonlyFnc(element, null);
             }
+
+            // allow to navigate in custom button group component in grid cell by pressed shift + left / right or shift + up / down
+            // for some reason it doesn't work with ctrl button
+            if (_isInGrid(element)) {
+                options.addEventListener('keydown', function (e) {
+                    if (e.shiftKey && ((isButton && (e.keyCode === 39 || e.keyCode === 37)) || (e.keyCode === 40 || e.keyCode === 38)))
+                        e.stopPropagation();
+                })
+            }
+
         }, update: function (element, controller, list, extraValue) {
             let isList = controller.isList();
             list = _convertList(isList, list);
@@ -378,11 +441,7 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
                         }
 
                         input.object = object;
-                        let name = _getName(object);
-                        if (isContainHtmlTag(name))
-                            label.innerHTML = name;
-                        else
-                            label.innerText = name;
+                        _setSelectName(label, _getName(object), html);
                         // we can't use required for styling, because we want "live validation" and not on submit
                         // input.required = shouldBeSelected;
 
@@ -431,14 +490,15 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
                 } else {
                     _setGroupReadonly(input, extraValue != null ? extraValue.readonly : null);
 
-                    if(i === 0)
+                    // fixes the problem of always setting the focus on the first select option in the grid cell
+                    if(list[i].selected)
                         focusInput = input;
                 }
 
                 if (!multi && shouldBeSelected) {
                     if (isButton) { // bootstrap doesn't support is-invalid for buttons
                         let label = _getOptionElement(options, i, false, true);
-                        if (!hasSelected) {``
+                        if (!hasSelected) {
                             label.classList.add("btn-outline-danger");
                             label.classList.remove("btn-outline-secondary");
                         } else {
@@ -504,6 +564,12 @@ function _selectPicker(multi, html, shouldBeSelected) {
                         else
                             _changeSingleDropdownProperty(object, element)
                     }
+                });
+                selectElement.on('shown.bs.select', function (e) {
+                    _setIsEditing(element, true);
+                });
+                selectElement.on('hidden.bs.select', function (e) {
+                    _setIsEditing(element, false);
                 })
             },
             multi, shouldBeSelected, html, true);
@@ -526,9 +592,11 @@ function _selectPicker(multi, html, shouldBeSelected) {
                     },
                     onOpen: function () {
                         element.silent = true; // Because "refresh" is called after every update, which removes the dropdown
+                        _setIsEditing(element, true);
                     },
                     onClose: function () {
                         element.silent = false;// Because "refresh" is called after every update, which removes the dropdown
+                        _setIsEditing(element, false);
                     }
                 });
             }, multi, shouldBeSelected, html, false);
@@ -545,14 +613,14 @@ function _selectDropdown(shouldBeSelected) {
 }
 
 function _setDropdownName(option, name, html, isBootstrap) {
-    if (html) {
-        if (isBootstrap)
-            option.setAttribute("data-content", name);
-        else
-            option.innerHTML = name; //todo check functionality in future releases
-    } else {
-        option.innerText = name;
-    }
+    if(html && isBootstrap)
+        option.setAttribute("data-content", name);
+    else
+        _setSelectName(option, name, html);
+}
+
+function _setSelectName(option, name, html) {
+    setDataHtmlOrText(option, name, html);
 }
 
 function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBootstrap) {
@@ -564,10 +632,11 @@ function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBo
             let select = _wrapElement(element, () => createFocusElement('select'), element.tagName.toLowerCase() !== 'select');
 
             element.select = select;
-            if(!picker) {
+
+            if(!picker)
                 select.classList.add("form-select");
-                _removeAllPMBInTD(element, select);
-            }
+
+            _removeAllPMBInTD(element, select);
 
             if(!isList) {
                 lsfUtils.setFocusElement(element, select);
@@ -590,6 +659,37 @@ function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBo
             }
 
             render(element);
+
+            // both for multiple and single
+            if (_isInGrid(element)) {
+                // press on space button on dropdown element in grid-cell opens dropdown instead of adding a filter.
+                select.addEventListener('keypress', function (e) {
+                    if (e.keyCode === 32) {
+                        e.stopPropagation();
+                        //in excel theme picker space button does not opens dropdown
+                        if (!lsfUtils.useBootstrap() && picker)
+                            $(select).multipleSelect('open');
+                    }
+                });
+
+                // control opening of drop-down menu
+                select.addEventListener('change', function () {
+                    _setIsEditing(select, false);
+                });
+
+                select.addEventListener('blur', function () {
+                    _setIsEditing(select, false);
+                });
+
+                select.addEventListener('mousedown', function () {
+                    _setIsEditing(select, true);
+                });
+
+                select.addEventListener('keydown', function (e) {
+                    if (e.keyCode === 32)
+                        _setIsEditing(select, true);
+                });
+            }
         },
         update: function (element, controller, list, extraValue) {
             element.controller = controller;

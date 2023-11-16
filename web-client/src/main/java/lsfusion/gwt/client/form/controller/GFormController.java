@@ -12,6 +12,7 @@ import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.*;
 import lsfusion.gwt.client.action.GAction;
+import lsfusion.gwt.client.action.GFilterAction;
 import lsfusion.gwt.client.action.GLogMessageAction;
 import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
@@ -47,8 +48,11 @@ import lsfusion.gwt.client.form.design.view.TabbedContainerView;
 import lsfusion.gwt.client.form.event.*;
 import lsfusion.gwt.client.form.filter.GRegularFilter;
 import lsfusion.gwt.client.form.filter.GRegularFilterGroup;
+import lsfusion.gwt.client.form.filter.user.GCompare;
+import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilterDTO;
+import lsfusion.gwt.client.form.filter.user.controller.GFilterController;
 import lsfusion.gwt.client.form.filter.user.view.GFilterConditionView;
 import lsfusion.gwt.client.form.object.*;
 import lsfusion.gwt.client.form.object.panel.controller.GPanelController;
@@ -71,10 +75,7 @@ import lsfusion.gwt.client.form.property.cell.classes.controller.RequestCellEdit
 import lsfusion.gwt.client.form.property.cell.classes.controller.RequestValueCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.view.LogicalCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.*;
-import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
-import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
-import lsfusion.gwt.client.form.property.cell.view.RenderContext;
-import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
+import lsfusion.gwt.client.form.property.cell.view.*;
 import lsfusion.gwt.client.form.property.panel.view.ActionPanelRenderer;
 import lsfusion.gwt.client.form.property.table.view.GPropertyContextMenuPopup;
 import lsfusion.gwt.client.form.view.FormContainer;
@@ -97,7 +98,6 @@ import java.util.stream.Collectors;
 import static lsfusion.gwt.client.base.GwtClientUtils.*;
 import static lsfusion.gwt.client.base.GwtSharedUtils.putToDoubleNativeMap;
 import static lsfusion.gwt.client.base.GwtSharedUtils.removeFromDoubleMap;
-import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.CHANGE;
 import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.isChangeEvent;
 
 public class GFormController implements EditManager {
@@ -398,9 +398,10 @@ public class GFormController implements EditManager {
                 GFont font = groupObject.grid.font;
                 // in theory property renderers padding should be included, but it's hard to do that (there will be problems with the memoization)
                 // plus usually there are no paddings for the property renderers in the table (td paddings are used, and they are included see the usages)
-                groupObject.columnSumWidth = groupObject.columnSumWidth.add(property.getValueWidth(font, true, true));
+                RendererType rendererType = RendererType.GRID;
+                groupObject.columnSumWidth = groupObject.columnSumWidth.add(property.getValueWidth(font, true, true, rendererType));
                 groupObject.columnCount++;
-                groupObject.rowMaxHeight = groupObject.rowMaxHeight.max(property.getValueHeight(font, true, true));
+                groupObject.rowMaxHeight = groupObject.rowMaxHeight.max(property.getValueHeight(font, true, true, rendererType));
             }
         }
     }
@@ -886,7 +887,7 @@ public class GFormController implements EditManager {
 
                 GType externalType = property.getExternalChangeType();
                 if(externalType == null)
-                    externalType = property.baseType;
+                    externalType = property.getPasteType();
                 valueRow.add(PValue.remapValueBack(property.parsePaste(sCell, externalType)));
                 rawValueRow.add(sCell);
             }
@@ -969,7 +970,7 @@ public class GFormController implements EditManager {
             if(isBinding) {
                 if(GKeyStroke.isKeyEvent(event)) // we don't want to set focus on mouse binding (it's pretty unexpected behaviour)
                     editContext.trySetFocusOnBinding(); // we want element to be focused on key binding (if it's possible)
-                actionSID = CHANGE;
+                actionSID = GEditBindingMap.CHANGE;
             } else {
                 actionSID = property.getEventSID(event, editContext, contextAction);
                 if(actionSID == null)
@@ -995,10 +996,10 @@ public class GFormController implements EditManager {
     public void executePropertyEventAction(ExecuteEditContext editContext, String actionSID, EventHandler handler) {
         GPropertyDraw property = editContext.getProperty();
         if (isChangeEvent(actionSID) && property.askConfirm) {
-            blockingConfirm("lsFusion", property.askConfirmMessage, false, chosenOption -> {
-                if (chosenOption == DialogBoxHelper.OptionType.YES)
-                    executePropertyEventActionConfirmed(editContext, actionSID, handler);
-            });
+            DialogBoxHelper.showConfirmBox("lsFusion", EscapeUtils.toHTML(property.askConfirmMessage), false, 0, 0, chosenOption -> {
+                        if (chosenOption == DialogBoxHelper.OptionType.YES)
+                            executePropertyEventActionConfirmed(editContext, actionSID, handler);
+                    });
         } else
             executePropertyEventActionConfirmed(editContext, actionSID, handler);
     }
@@ -1134,7 +1135,7 @@ public class GFormController implements EditManager {
 
     public void asyncCloseForm(GAsyncExecutor asyncExecutor) {
         if(needConfirm) {
-            DialogBoxHelper.showConfirmBox("lsFusion", messages.doYouReallyWantToCloseForm(), false, 0, 0, chosenOption -> {
+            DialogBoxHelper.showConfirmBox("lsFusion", messages.doYouReallyWantToCloseForm(), false, chosenOption -> {
                 if(chosenOption == DialogBoxHelper.OptionType.YES) {
                     formsController.asyncCloseForm(asyncExecutor, formContainer);
                 }
@@ -1146,7 +1147,7 @@ public class GFormController implements EditManager {
 
     public void asyncCloseForm(EditContext editContext, ExecContext execContext, EventHandler handler, String actionSID, GPushAsyncInput pushAsyncResult, boolean externalChange, Consumer<Long> onExec) {
         if(needConfirm) {
-            DialogBoxHelper.showConfirmBox("lsFusion", messages.doYouReallyWantToCloseForm(), false, 0, 0, chosenOption -> {
+            DialogBoxHelper.showConfirmBox("lsFusion", messages.doYouReallyWantToCloseForm(), false, chosenOption -> {
                 if(chosenOption == DialogBoxHelper.OptionType.YES) {
                     asyncCloseForm(editContext, execContext, handler, actionSID, externalChange, onExec);
                 }
@@ -1224,7 +1225,7 @@ public class GFormController implements EditManager {
 
     // for custom renderer, paste, quick access actions (in toolbar and keypress)
     private void executePropertyEventAction(EventHandler handler, ExecuteEditContext editContext, GUserInputResult value, Consumer<Long> onExec) {
-        executePropertyEventAction(handler, editContext, editContext.getProperty().getInputList(), value, CHANGE, true, requestIndex -> {
+        executePropertyEventAction(handler, editContext, editContext.getProperty().getInputList(), value, GEditBindingMap.CHANGE, true, requestIndex -> {
             onExec.accept(requestIndex);
 
             setLoading(editContext, requestIndex);
@@ -1314,6 +1315,47 @@ public class GFormController implements EditManager {
         syncResponseDispatch(new ChangePropertyOrder(property.ID, columnKey, modiType));
     }
 
+    public void changePropertyOrder(int goID, LinkedHashMap<Integer, Boolean> orders) {
+        GGroupObject groupObject = form.getGroupObject(goID);
+        if (groupObject != null) {
+            LinkedHashMap<GPropertyDraw, Boolean> pOrders = new LinkedHashMap<>();
+            for (Integer propertyID : orders.keySet()) {
+                GPropertyDraw propertyDraw = form.getProperty(propertyID);
+                if (propertyDraw != null) {
+                    Boolean value = orders.get(propertyID);
+                    pOrders.put(propertyDraw, value);
+                }
+            }
+
+            controllers.get(groupObject).changeOrders(pOrders, false);
+        }
+    }
+
+    public void changePropertyFilters(int goID, List<GFilterAction.FilterItem> filters) {
+        GGroupObject groupObject = form.getGroupObject(goID);
+        if (groupObject != null) {
+            GGridController gGridController = controllers.get(groupObject);
+            List<GPropertyFilter> uFilters = new ArrayList<>();
+            for (GFilterAction.FilterItem filter : filters) {
+                GPropertyDraw propertyDraw = form.getProperty(filter.propertyId);
+                if (propertyDraw != null) {
+                    PValue value = null;
+                    if (filter.value instanceof String) {
+                        try {
+                            value = propertyDraw.getFilterBaseType().parseString((String) filter.value, propertyDraw.pattern);
+                        } catch (ParseException ignored) {
+                        }
+                    } else {
+                        value = PValue.remapValue(filter.value);
+                    }
+                    uFilters.add(GFilterController.createNewCondition(gGridController, new GFilter(propertyDraw), null, value, filter.negation, GCompare.get(filter.compare), filter.junction));
+                }
+            }
+
+            gGridController.changeFilters(uFilters);
+        }
+    }
+
     public void setPropertyOrders(GGroupObject groupObject, List<Integer> propertyList, List<GGroupObjectValue> columnKeyList, List<Boolean> orderList) {
         syncResponseDispatch(new SetPropertyOrders(groupObject.ID, propertyList, columnKeyList, orderList));
     }
@@ -1346,7 +1388,7 @@ public class GFormController implements EditManager {
 
     public long changeFilter(GGroupObject groupObject, ArrayList<GPropertyFilter> conditions) {
         currentFilters.put(groupObject, conditions);
-        return applyCurrentFilters();
+        return applyCurrentFilters(Collections.singletonList(groupObject));
     }
 
     public long changeFilter(GTreeGroup treeGroup, ArrayList<GPropertyFilter> conditions) {
@@ -1364,12 +1406,21 @@ public class GFormController implements EditManager {
             currentFilters.put(group, groupFilters);
         }
 
-        return applyCurrentFilters();
+        return applyCurrentFilters(treeGroup.groups);
     }
 
-    private long applyCurrentFilters() {
-        ArrayList<GPropertyFilterDTO> filters = new ArrayList<>();
-        currentFilters.foreachValue(groupFilters -> groupFilters.stream().filter(filter -> !filter.property.isAction()).map(GPropertyFilter::getFilterDTO).collect(Collectors.toCollection(() -> filters)));
+    private long applyCurrentFilters(List<GGroupObject> groups) {
+        Map<Integer, List<GPropertyFilterDTO>> filters = new LinkedHashMap<>();
+        for (GGroupObject group : groups) {
+            List<GPropertyFilterDTO> groupFilters = new ArrayList<>();
+            List<GPropertyFilter> gFilters = currentFilters.get(group);
+            for (GPropertyFilter filter : gFilters) {
+                if (!filter.property.isAction()) {
+                    groupFilters.add(filter.getFilterDTO());
+                }
+            }
+            filters.put(group.ID, groupFilters);
+        }
         return asyncResponseDispatch(new SetUserFilters(filters));
     }
 
@@ -1591,22 +1642,6 @@ public class GFormController implements EditManager {
         }
     }
 
-    public void blockingConfirm(String caption, String message, boolean cancel, final DialogBoxHelper.CloseCallback callback) {
-        DialogBoxHelper.showConfirmBox(caption, message, cancel, 0, 0, callback);
-    }
-
-    public void blockingConfirm(String caption, String message, boolean cancel, int timeout, int initialValue, final DialogBoxHelper.CloseCallback callback) {
-        DialogBoxHelper.showConfirmBox(caption, message, cancel, timeout, initialValue, callback);
-    }
-
-    public void blockingMessage(String caption, String message, final DialogBoxHelper.CloseCallback callback) {
-        blockingMessage(false, caption, message, callback);
-    }
-
-    public void blockingMessage(boolean isError, String caption, String message, final DialogBoxHelper.CloseCallback callback) {
-        DialogBoxHelper.showMessageBox(isError, caption, message, callback);
-    }
-
     public Dimension getPreferredSize(GSize maxWidth, GSize maxHeight, Element element) {
         return formLayout.getPreferredSize(maxWidth, maxHeight, element);
     }
@@ -1760,10 +1795,7 @@ public class GFormController implements EditManager {
         return addBinding(event, GBindingEnv.AUTO, pressed, component, groupObject);
     }
     public int addBinding(GInputEvent event, GBindingEnv env, BindingExec pressed, Widget component, GGroupObject groupObject) {
-        return addBinding(event::isEvent, env, pressed, component, groupObject);
-    }
-    public int addBinding(BindingCheck event, GBindingEnv env, BindingExec pressed, Widget component, GGroupObject groupObject) {
-        return addBinding(event, env, null, pressed, component, groupObject);
+        return addBinding(event::isEvent, env, null, pressed, component, groupObject);
     }
     public int addBinding(BindingCheck event, GBindingEnv env, Supplier<Boolean> enabled, BindingExec pressed, Widget component, GGroupObject groupObject) {
         return addBinding(new GBindingEvent(event, env), new Binding(groupObject) {
@@ -2184,6 +2216,7 @@ public class GFormController implements EditManager {
 
         Element element = getEditElement();
 
+        element.addClassName("is-editing");
         editContext.startEditing();
 
         if(!editContext.isFocusable()) // assert that otherwise it's already has focus
@@ -2194,7 +2227,7 @@ public class GFormController implements EditManager {
             focusedElement = GwtClientUtils.getFocusedElement();
 
             GPropertyDraw property = editContext.getProperty();
-            CellRenderer cellRenderer = property.getCellRenderer();
+            CellRenderer cellRenderer = property.getCellRenderer(renderContext.getRendererType());
 
             // we need to do it before clearRender to have actual sizes + we need to remove paddings since we're setting width for wrapped component
             Integer renderedWidth = null;
@@ -2273,6 +2306,7 @@ public class GFormController implements EditManager {
         //getAsyncValues need editContext, so it must be after clearRenderer
         this.editContext = null;
 
+        renderElement.removeClassName("is-editing");
         editContext.stopEditing();
 
         if(isReplace)
@@ -2311,7 +2345,7 @@ public class GFormController implements EditManager {
             return;
         }
 
-        property.getCellRenderer().render(element, renderContext);
+        property.getCellRenderer(renderContext.getRendererType()).render(element, renderContext);
     }
 
     // setting loading
@@ -2354,7 +2388,7 @@ public class GFormController implements EditManager {
         if(isEdited(element))
             return;
 
-        property.getCellRenderer().update(element, updateContext);
+        property.getCellRenderer(updateContext.getRendererType()).update(element, updateContext);
     }
 
     public boolean isEdited(Element element) {

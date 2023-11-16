@@ -6,6 +6,7 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.controller.TypeInputBasedCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 public class ColorCellRenderer extends TypeInputBasedCellRenderer {
@@ -43,7 +44,7 @@ public class ColorCellRenderer extends TypeInputBasedCellRenderer {
     }
 
     @Override
-    public String format(PValue value) {
+    public String format(PValue value, RendererType rendererType) {
         return getColorValue(value);
     }
 }

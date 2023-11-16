@@ -50,7 +50,6 @@ import lsfusion.server.logics.property.UnionProperty;
 import lsfusion.server.logics.property.cases.CalcCase;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 

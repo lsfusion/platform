@@ -623,8 +623,20 @@ public class ScriptingLogicsModuleChecks {
     }
 
     public void checkImportFromFileExpression(LPWithParams params) throws ScriptingErrorLog.SemanticErrorException {
-        if (params.getLP() != null && !(params.getLP().property.getType() instanceof FileClass)) {
-            errLog.emitImportFromWrongClassError(parser);    
+        if (params.getLP() != null) {
+            Type type = params.getLP().property.getType();
+            if (!(type instanceof FileClass || type instanceof JSONClass)) {
+                errLog.emitImportFromWrongClassError(parser);
+            }
+        }
+    }
+
+    public void checkExportFromFileExpression(LP prop) throws ScriptingErrorLog.SemanticErrorException {
+        if (prop != null) {
+            Type type = prop.property.getType();
+            if (!(type instanceof FileClass || type instanceof JSONClass)) {
+                errLog.emitExportFromWrongClassError(parser);
+            }
         }
     }
 

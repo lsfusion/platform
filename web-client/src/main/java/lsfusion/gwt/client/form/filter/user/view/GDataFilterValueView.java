@@ -6,6 +6,7 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.SizedFlexPanel;
 import lsfusion.gwt.client.base.view.SizedWidget;
+import lsfusion.gwt.client.classes.data.GLogicalType;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GDataFilterValue;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
@@ -13,7 +14,7 @@ import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
-import lsfusion.gwt.client.form.property.cell.view.CustomCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.RendererType;
 
 import static lsfusion.gwt.client.form.event.GKeyStroke.isAddUserFilterKeyEvent;
 import static lsfusion.gwt.client.form.event.GKeyStroke.isReplaceUserFilterKeyEvent;
@@ -37,13 +38,12 @@ public class GDataFilterValueView extends SizedFlexPanel {
 
         cell = new GDataFilterPropertyValue(condition, logicsSupplier.getForm(), this::valueChanged, this::editingCancelled);
 
-        GPropertyDraw property = condition.property;
         sizedView = cell.getSizedWidget();
         sizedView.widget.addStyleName("filter-data-property-value form-control");
         sizedView.addFill(this);
 
-        if (readSelectedValue)
-            filterValue.value = PValue.escapeSeparator(logicsSupplier.getSelectedValue(property, condition.columnKey), condition.compare);
+        if (readSelectedValue && !condition.property.differentValue)
+            filterValue.value = readSelectedValue(condition);
 
         cell.updateValue(filterValue.value);
     }
@@ -61,17 +61,29 @@ public class GDataFilterValueView extends SizedFlexPanel {
 //        cell.updateValue(filterValue.value);
     }
 
-    public void onAdd() {
-        cell.focus(FocusUtils.Reason.NEWFILTER);
+    public void onAdd(boolean focus) {
+        if (focus) {
+            cell.focus(FocusUtils.Reason.NEWFILTER);
+        }
     }
 
     public void focusOnValue() {
         cell.focus(FocusUtils.Reason.OTHER);
     }
 
+    private PValue readSelectedValue(GPropertyFilter condition) {
+        return PValue.escapeSeparator(logicsSupplier.getSelectedValue(condition.property, condition.columnKey), condition.compare);
+    } 
+    
+    public void putSelectedValue(GPropertyFilter condition) {
+        filterValue.value = readSelectedValue(condition);
+        cell.updateValue(filterValue.value);
+    }
+    
     public void startEditing(Event keyEvent) {
         if (GwtClientUtils.isShowing(cell) && !logicsSupplier.getForm().isEditing()) { // suggest box may appear in (0,0) if filter is already gone (as it's called in scheduleDeferred)
-            if (!cell.getProperty().isBoolean()) {
+            GPropertyDraw gPropertyDraw = cell.getProperty();
+            if (!(gPropertyDraw.getRenderType(RendererType.FILTER) instanceof GLogicalType)) {
                 cell.onEditEvent(new EventHandler(keyEvent), isAddUserFilterKeyEvent(keyEvent) || isReplaceUserFilterKeyEvent(keyEvent));
 //                EventHandler handler = new EventHandler(keyEvent);
 //                if (isAddUserFilterKeyEvent(keyEvent) || isReplaceUserFilterKeyEvent(keyEvent)) {

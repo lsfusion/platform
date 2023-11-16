@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.InputElement;
+import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
@@ -9,7 +8,9 @@ import lsfusion.gwt.client.base.view.SizedFlexPanel;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.controller.TypeInputBasedCellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
+import lsfusion.gwt.client.view.MainFrame;
 
 public class LogicalCellRenderer extends TypeInputBasedCellRenderer {
 
@@ -36,6 +37,10 @@ public class LogicalCellRenderer extends TypeInputBasedCellRenderer {
     public InputElement createCheckInput() {
         InputElement input = GwtClientUtils.createCheckInputElement();
         input.addClassName("logicalRendererCheckBox");
+
+        if (!MainFrame.useBootstrap)
+            input.addClassName("checkbox-outline");
+
         input.addClassName("form-check-input"); // bootstrap
         return input;
     }
@@ -92,7 +97,7 @@ public class LogicalCellRenderer extends TypeInputBasedCellRenderer {
 //    }
 
     @Override
-    public String format(PValue value) {
+    public String format(PValue value, RendererType rendererType) {
         if(threeState) {
             Boolean value3s = get3sBooleanValue(value);
             return value3s != null ? (value3s ? "TRUE" : "FALSE") : "NULL";

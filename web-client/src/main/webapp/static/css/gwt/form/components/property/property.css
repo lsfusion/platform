@@ -50,7 +50,7 @@ a.text-based-prop-value:not(.prop-input) { /* we have to set cursor pointer for 
     cursor: pointer;
 }
 
-/* we set pre to preserve white spaces and line preaks in prop data*/
+/* we set pre to preserve white spaces and line breaks in prop data*/
 .text-based-prop-value {
     white-space: pre;
 }

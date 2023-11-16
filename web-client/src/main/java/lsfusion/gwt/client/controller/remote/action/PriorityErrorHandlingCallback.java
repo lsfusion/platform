@@ -26,12 +26,12 @@ public class PriorityErrorHandlingCallback<T> implements PriorityAsyncCallback<T
             return;
 
         if (caught instanceof RequestTimeoutException) {
-            DialogBoxHelper.showMessageBox(true, messages.error(), messages.actionTimeoutError(), false, null);
+            DialogBoxHelper.showMessageBox(messages.error(), messages.actionTimeoutError(), null);
             return;
         } else if (caught instanceof StatusCodeException) {
             StatusCodeException statusEx = (StatusCodeException) caught;
             if (statusEx.getStatusCode() == 500 && statusEx.getEncodedResponse().contains(TIMEOUT_MESSAGE)) {
-                DialogBoxHelper.showMessageBox(true, messages.error(), messages.sessionTimeoutError(), false, new DialogBoxHelper.CloseCallback() {
+                DialogBoxHelper.showMessageBox(messages.error(), messages.sessionTimeoutError(), new DialogBoxHelper.CloseCallback() {
                     @Override
                     public void closed(DialogBoxHelper.OptionType chosenOption) {
                         GwtClientUtils.logout();
@@ -40,7 +40,7 @@ public class PriorityErrorHandlingCallback<T> implements PriorityAsyncCallback<T
                 return;
             }
         } else if (caught instanceof RemoteMessageDispatchException) {
-            DialogBoxHelper.showMessageBox(true, messages.error(), caught.getMessage(), false, null);
+            DialogBoxHelper.showMessageBox(messages.error(), caught.getMessage(), null);
             return;
         }
         // messages.internalServerError();
