@@ -6,6 +6,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
+import lsfusion.gwt.client.form.property.cell.view.RendererType;
 
 public abstract class InputBasedCellRenderer extends CellRenderer {
 
@@ -14,7 +15,7 @@ public abstract class InputBasedCellRenderer extends CellRenderer {
     }
 
     @Override
-    public Element createRenderElement() {
+    public Element createRenderElement(RendererType rendererType) {
         if(isTagInput()) {
             if(needToRenderToolbarContent()) { // for an input with a toolbar we have to wrap it in a div to draw a toolbar
                 DivElement toolbarContainer = Document.get().createDivElement();
@@ -22,13 +23,13 @@ public abstract class InputBasedCellRenderer extends CellRenderer {
                 setToolbarContainer(toolbarContainer);
                 return toolbarContainer;
             } else
-                return createInput(property);
+                return createInput(property, rendererType);
         }
 
-        return super.createRenderElement();
+        return super.createRenderElement(rendererType);
     }
 
-    protected abstract InputElement createInput(GPropertyDraw property);
+    protected abstract InputElement createInput(GPropertyDraw property, RendererType rendererType);
 
     private final static String toolbarContainerProp = "toolbarContainer";
 

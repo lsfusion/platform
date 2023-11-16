@@ -16,7 +16,7 @@ public class ColorCellRenderer extends TypeInputBasedCellRenderer {
     }
 
     @Override
-    protected InputElement createInput(GPropertyDraw property) {
+    protected InputElement createInput(GPropertyDraw property, RendererType rendererType) {
         InputElement input = GwtClientUtils.createInputElement("color");
         input.addClassName("input-color"); //set opacity
         return input;

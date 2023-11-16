@@ -43,10 +43,10 @@ public abstract class TypeInputBasedCellRenderer extends InputBasedCellRenderer 
         boolean isTDOrTH = GwtClientUtils.isTDorTH(element); // because canBeRenderedInTD can be true
         boolean isInput = isTagInput();
         if (!isInput || isTDOrTH || isToolbarContainer(element)) {
-            inputElement = renderInputElement(element);
+            inputElement = renderInputElement(element, renderContext);
 
             if(isTDOrTH) {
-                renderTextAlignment(property, element, false);
+                renderTextAlignment(property, element, false, renderContext.getRendererType());
 
                 renderedAlignment = true;
             }
@@ -58,8 +58,8 @@ public abstract class TypeInputBasedCellRenderer extends InputBasedCellRenderer 
         return renderedAlignment;
     }
 
-    public InputElement renderInputElement(Element element) {
-        InputElement inputElement = createInput(property);
+    public InputElement renderInputElement(Element element, RenderContext renderContext) {
+        InputElement inputElement = createInput(property, renderContext.getRendererType());
         element.appendChild(inputElement);
         return inputElement;
     }
@@ -69,7 +69,7 @@ public abstract class TypeInputBasedCellRenderer extends InputBasedCellRenderer 
         clearInputElement(element);
 
         if(GwtClientUtils.isTDorTH(element))
-            clearRenderTextAlignment(property, element, false);
+            clearRenderTextAlignment(property, element, false, renderContext.getRendererType());
 
         return false;
     }

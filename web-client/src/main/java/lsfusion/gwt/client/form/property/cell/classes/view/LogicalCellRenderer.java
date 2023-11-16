@@ -87,7 +87,7 @@ public class LogicalCellRenderer extends TypeInputBasedCellRenderer {
     }
 
     @Override
-    protected InputElement createInput(GPropertyDraw property) {
+    protected InputElement createInput(GPropertyDraw property, RendererType rendererType) {
         return createCheckInput();
     }
 

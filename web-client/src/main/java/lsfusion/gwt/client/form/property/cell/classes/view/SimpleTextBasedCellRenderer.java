@@ -69,8 +69,8 @@ public abstract class SimpleTextBasedCellRenderer extends InputBasedCellRenderer
     }
 
     @Override
-    protected InputElement createInput(GPropertyDraw property) {
-        return createInputElement(property);
+    protected InputElement createInput(GPropertyDraw property, RendererType rendererType) {
+        return createInputElement(property, rendererType);
     }
 
     public static InputElement createInputElement(GPropertyDraw property, RendererType rendererType) {
