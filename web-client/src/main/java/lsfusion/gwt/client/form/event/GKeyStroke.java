@@ -6,6 +6,7 @@ import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
+import lsfusion.gwt.client.view.MainFrame;
 
 import java.io.Serializable;
 import java.util.function.BooleanSupplier;
@@ -193,8 +194,13 @@ public class GKeyStroke implements Serializable {
         return isCharNavigateHorzKeyEvent(event) || isCharNavigateVertKeyEvent(event);
     }
     public static boolean isInputKeyEvent(Event event, BooleanSupplier isMultiLine) {
-        return isCharModifyKeyEvent(event, null) ||
+        return isCharModifyKeyEvent(event, null) || isMobileKeyEvent(event) ||
                 isCharNavigateHorzKeyEvent(event) || (isCharNavigateVertKeyEvent(event) && isMultiLine.getAsBoolean()) || isPasteFromClipboardEvent(event);
+    }
+
+    //https://stackoverflow.com/questions/65453381/android-keyboard-keypress-not-returning-anything-keydown-returning-229
+    public static boolean isMobileKeyEvent(Event event) {
+        return MainFrame.mobile && isKeyDownEvent(event) && event.getKeyCode() == 229;
     }
 
     public static boolean isDropEvent(Event event) {
