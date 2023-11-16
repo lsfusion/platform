@@ -94,7 +94,6 @@
         <gwt.dnd.version>3.3.4</gwt.dnd.version>
         <gin.version>2.1.2</gin.version>
         <gwt.dispatch.version>1.2.0</gwt.dispatch.version>
-        <color.picker.version>2.1-patched</color.picker.version>
         <moxieapps.gwt.uploader.version>1.1.0</moxieapps.gwt.uploader.version>
         <gwt.selection.version>1.1</gwt.selection.version>
         <lib.gwt.svg.version>0.5.15</lib.gwt.svg.version>
@@ -576,11 +575,6 @@
                 <groupId>net.customware.gwt.dispatch</groupId>
                 <artifactId>gwt-dispatch</artifactId>
                 <version>${gwt.dispatch.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>net.auroris</groupId>
-                <artifactId>colorpicker</artifactId>
-                <version>${color.picker.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.allen-sauer.gwt.dnd</groupId>

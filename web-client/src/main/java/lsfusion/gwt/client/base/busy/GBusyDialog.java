@@ -1,7 +1,5 @@
 package lsfusion.gwt.client.base.busy;
 
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
@@ -196,12 +194,9 @@ public class GBusyDialog extends DialogModalWindow {
     private void cancelAction() {
         DialogBoxHelper.showConfirmBox(messages.busyDialogCancelTransaction(),
                 messages.busyDialogCancelTransactionConfirm(),
-                false, new DialogBoxHelper.CloseCallback() {
-                    @Override
-                    public void closed(DialogBoxHelper.OptionType chosenOption) {
-                        if (chosenOption == DialogBoxHelper.OptionType.YES) {
-                            needInterrupt = false;
-                        }
+                false, chosenOption -> {
+                    if (chosenOption == DialogBoxHelper.OptionType.YES) {
+                        needInterrupt = false;
                     }
                 });
     }
@@ -209,12 +204,9 @@ public class GBusyDialog extends DialogModalWindow {
     private void interruptAction() {
         DialogBoxHelper.showConfirmBox(messages.busyDialogInterruptTransaction(),
                 messages.busyDialogInterruptTransactionConfirm(),
-                false, new DialogBoxHelper.CloseCallback() {
-                    @Override
-                    public void closed(DialogBoxHelper.OptionType chosenOption) {
-                        if (chosenOption == DialogBoxHelper.OptionType.YES) {
-                            needInterrupt = true;
-                        }
+                false, chosenOption -> {
+                    if (chosenOption == DialogBoxHelper.OptionType.YES) {
+                        needInterrupt = true;
                     }
                 });
     }

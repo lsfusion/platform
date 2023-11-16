@@ -5,7 +5,6 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.Pair;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.identity.DefaultIDGenerator;
@@ -36,7 +35,9 @@ import lsfusion.client.form.design.view.widget.Widget;
 import lsfusion.client.form.filter.ClientRegularFilter;
 import lsfusion.client.form.filter.ClientRegularFilterGroup;
 import lsfusion.client.form.filter.ClientRegularFilterWrapper;
+import lsfusion.client.form.filter.user.ClientFilter;
 import lsfusion.client.form.filter.user.ClientPropertyFilter;
+import lsfusion.client.form.filter.user.controller.FilterController;
 import lsfusion.client.form.filter.view.SingleFilterBox;
 import lsfusion.client.form.object.ClientCustomObjectValue;
 import lsfusion.client.form.object.ClientGroupObject;
@@ -58,10 +59,7 @@ import lsfusion.client.form.view.ClientFormDockable;
 import lsfusion.client.navigator.ClientNavigator;
 import lsfusion.client.view.DockableMainFrame;
 import lsfusion.client.view.MainFrame;
-import lsfusion.interop.action.ClientAction;
-import lsfusion.interop.action.ExceptionClientAction;
-import lsfusion.interop.action.LogMessageClientAction;
-import lsfusion.interop.action.ServerResponse;
+import lsfusion.interop.action.*;
 import lsfusion.interop.base.remote.RemoteRequestInterface;
 import lsfusion.interop.form.FormClientData;
 import lsfusion.interop.form.UpdateMode;
@@ -76,6 +74,7 @@ import lsfusion.interop.form.order.user.Order;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.print.ReportGenerator;
+import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 
 import javax.swing.Timer;
@@ -84,6 +83,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.rmi.RemoteException;
+import java.text.ParseException;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -1440,11 +1440,26 @@ public class ClientFormController implements AsyncListener {
             }
         });
     }
+    
+    public void changePropertyOrders(int goID, LinkedHashMap<Integer, Boolean> orders) {
+        ClientGroupObject groupObject = form.getGroupObject(goID);
+        if (groupObject != null) {
+            LinkedHashMap<ClientPropertyDraw, Boolean> pOrders = new LinkedHashMap<>();
+            for (Integer propertyID : orders.keySet()) {
+                ClientPropertyDraw propertyDraw = form.getProperty(propertyID);
+                if (propertyDraw != null) {
+                    pOrders.put(propertyDraw, orders.get(propertyID));
+                }
+            }
+
+            controllers.get(groupObject).changeOrders(pOrders, false);
+        }
+    }
 
     public void setPropertyOrders(final ClientGroupObject groupObject, List<Integer> propertyList, List<byte[]> columnKeyList, List<Boolean> orderList) {
         commitOrCancelCurrentEditing();
 
-        rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("setPropertyOrders - " + groupObject.getLogName()) {
+        rmiQueue.adaptiveSyncRequest(new ProcessServerResponseRmiRequest("setPropertyOrders - " + groupObject.getLogName()) {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
                 return remoteForm.setPropertyOrders(requestIndex, lastReceivedRequestIndex, groupObject.getID(), propertyList, columnKeyList, orderList);
@@ -1454,7 +1469,7 @@ public class ClientFormController implements AsyncListener {
 
     public void changeFilter(ClientGroupObject groupObject, List<ClientPropertyFilter> conditions) throws IOException {
         currentFilters.put(groupObject, new ArrayList<>(conditions));
-        applyCurrentFilters();
+        applyCurrentFilters(Collections.singletonList(groupObject));
     }
 
     public void changeFilter(ClientTreeGroup treeGroup, List<ClientPropertyFilter> conditions) throws IOException {
@@ -1473,7 +1488,7 @@ public class ClientFormController implements AsyncListener {
             currentFilters.put(group, groupFilters);
         }
 
-        applyCurrentFilters();
+        applyCurrentFilters(treeGroup.groups);
     }
 
     public static byte[] serializeClientFilter(ClientPropertyFilter filter) throws IOException {
@@ -1483,23 +1498,53 @@ public class ClientFormController implements AsyncListener {
         return outStream.toByteArray();
     }
 
-    private void applyCurrentFilters() throws IOException {
-        final List<byte[]> filters = new ArrayList<>();
-
-        for (List<ClientPropertyFilter> groupFilters : currentFilters.values()) {
-            for (ClientPropertyFilter filter : groupFilters) {
+    private void applyCurrentFilters(Collection<ClientGroupObject> groups) throws IOException {
+        Map<Integer, byte[][]> filters = new LinkedHashMap<>(); 
+        for (ClientGroupObject group : groups) {
+            final List<byte[]> groupFilters = new ArrayList<>();
+            List<ClientPropertyFilter> gFilters = currentFilters.get(group);
+            for (ClientPropertyFilter filter : gFilters) {
                 if (!filter.property.isAction())
-                    filters.add(serializeClientFilter(filter));
+                    groupFilters.add(serializeClientFilter(filter));
             }
+            filters.put(group.ID, groupFilters.toArray(new byte[filters.size()][]));
         }
 
         rmiQueue.adaptiveSyncRequest(new ProcessServerResponseRmiRequest("applyCurrentFilters") {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.setUserFilters(requestIndex, lastReceivedRequestIndex, filters.toArray(new byte[filters.size()][]));
+                return remoteForm.setUserFilters(requestIndex, lastReceivedRequestIndex, filters);
             }
         });
     }
+
+    public void changePropertyFilters(int goID, List<FilterClientAction.FilterItem> filters) {
+        ClientGroupObject groupObject = form.getGroupObject(goID);
+        if (groupObject != null) {
+            GridController gridController = controllers.get(groupObject);
+            List<ClientPropertyFilter> props = new ArrayList<>();
+            for (FilterClientAction.FilterItem filter : filters) {
+                ClientPropertyDraw propertyDraw = form.getProperty(filter.propertyId);
+                if (propertyDraw != null) {
+                    Compare compare = null;
+                    try {
+                        compare = Compare.deserialize(filter.compare);
+                    } catch (IOException ignored) {}
+
+                    Object value = filter.value;
+                    if (filter.value instanceof String) {
+                        try {
+                            value = propertyDraw.baseType.parseString((String) filter.value);
+                        } catch (ParseException ignored) {
+                        }
+                    }
+                    props.add(FilterController.createNewCondition(gridController, new ClientFilter(propertyDraw), null, value, filter.negation, compare, filter.junction));
+                }
+            }
+            
+            gridController.changeFilters(props);
+        }
+    }    
 
     // setRegularFilter is synchronous, that's why busy dialog filter can be set visible, which will lead to another itemStateChanged and setRegularFilter call (with nested sync exception)
     // so we just suppress that call

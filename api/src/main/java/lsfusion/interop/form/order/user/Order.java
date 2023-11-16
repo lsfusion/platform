@@ -14,7 +14,7 @@ public enum Order {
             case 3:
                 return DIR;
         }
-        throw new RuntimeException("Deserialize Scroll");
+        throw new RuntimeException("Deserialize Order");
     }
 
     public byte serialize() {
@@ -28,7 +28,7 @@ public enum Order {
             case DIR:
                 return 3;
         }
-        throw new RuntimeException("Serialize Scroll");
+        throw new RuntimeException("Serialize Order");
     }
 
 }

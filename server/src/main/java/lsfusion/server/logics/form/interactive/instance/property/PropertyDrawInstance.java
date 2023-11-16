@@ -1,5 +1,6 @@
 package lsfusion.server.logics.form.interactive.instance.property;
 
+import com.sun.org.apache.bcel.internal.generic.ARETURN;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.Result;
@@ -13,7 +14,6 @@ import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.lambda.SQLCallable;
-import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInput;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapValue;
@@ -112,7 +112,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     // filter / custom view
     private <X extends PropertyInterface> InputValueList<X> getInputValueList(Function<PropertyObjectInterfaceInstance, ObjectValue> valuesGetter, Result<ImRevMap<X, ObjectInstance>> rMapObjects, int useFilters) {
         // actually that all X can be different
-        PropertyObjectInstance<X> valueProperty = (PropertyObjectInstance<X>) getProperty();
+        PropertyObjectInstance<X> valueProperty = (PropertyObjectInstance<X>) getValueProperty();
 
         InputValueList<X> list;
         if(useFilters > 0)
@@ -161,10 +161,6 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         return entity.isProperty(context);
     }
 
-    public Type getType(FormInstanceContext context) {
-        return entity.getType(context);
-    }
-
     public HiddenReaderInstance hiddenReader = new HiddenReaderInstance();
 
     // предполагается что propertyCaption ссылается на все из propertyObject но без toDraw (хотя опять таки не обязательно)
@@ -198,14 +194,14 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
 
     public PropertyDrawInstance(PropertyDrawEntity<P> entity,
                                 ActionOrPropertyObjectInstance<?, ?> actionOrProperty,
-                                PropertyObjectInstance<?> property,
+                                PropertyObjectInstance<?> cellProperty,
                                 GroupObjectInstance toDraw,
                                 ImOrderSet<GroupObjectInstance> columnGroupObjects,
                                 ImMap<PropertyDrawExtraType, PropertyObjectInstance<?>> propertyExtras,
                                 ImList<PropertyObjectInstance<?>> propertiesAggrLast) {
         super(entity);
         this.actionOrProperty = actionOrProperty;
-        this.property = property;
+        this.cellProperty = cellProperty;
         this.toDraw = toDraw;
         this.columnGroupObjects = columnGroupObjects;
 
@@ -238,33 +234,47 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         aggrLastReaders = SetFact.toOrderExclSet(propertiesAggrLast.size(), LastReaderInstance::new);
     }
 
-    // PIVOT / GRID
     public PropertyObjectInstance getReaderProperty() {
-        return getProperty();
+        if(toDraw != null && toDraw.viewType.isList() && toDraw.listViewType.isValue())
+            return getValueProperty();
+
+        return getCellProperty();
     }
 
-    public PropertyObjectInstance<?> getProperty() {
-        return property;
+    // CELL (GRID / PANEL)
+    @Override
+    public PropertyObjectInstance getCellProperty() {
+        return cellProperty;
     }
 
-    // DEPRECATED
+    // REST
     public PropertyObjectInstance<?> getValueProperty() {
-        return getProperty();
+        if(actionOrProperty instanceof PropertyObjectInstance)
+            return (PropertyObjectInstance<?>) actionOrProperty;
+
+        return cellProperty;
     }
-    // SUM / GROUP / DEPRECATED
-    public PropertyObjectInstance<?> getGroupProperty() {
-        return getProperty();
+
+    // PIVOT
+    @Override
+    public PropertyObjectInstance getGroupProperty() {
+        return getValueProperty();
+    }
+
+    // SUM / GROUP DESKTOP
+    public PropertyObjectInstance<?> getSumProperty() {
+        return getValueProperty();
     }
 
     public PropertyObjectInstance<?> getFilterProperty() {
-        return getProperty();
+        return getValueProperty();
     }
 
     public PropertyObjectInstance<?> getOrderProperty() {
-        return getProperty();
+        return getValueProperty();
     }
 
-    private final PropertyObjectInstance<?> property;
+    private final PropertyObjectInstance<?> cellProperty;
 
     public byte getTypeID() {
         return PropertyReadType.DRAW;

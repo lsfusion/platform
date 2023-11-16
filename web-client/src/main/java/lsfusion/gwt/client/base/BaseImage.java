@@ -191,13 +191,14 @@ public interface BaseImage extends Serializable {
     }
     static void updateText(Element element, String text, boolean vertical, boolean forceDiv) {
         Node textNode = (Node) element.getPropertyObject(TEXT); // always present, since it is initialized in initImageText
-        Element htmlElement = (Element) element.getPropertyObject(DIV);
+        Element textElement = (Element) element.getPropertyObject(DIV);
 
+        // using node for optimization purposes (to save extra element in DOM)
         text = text == null ? "" : text;
-        if ((forceDiv && !text.isEmpty()) || GwtClientUtils.isContainHtmlTag(text)) {
-            if(htmlElement == null) {
-                htmlElement = Document.get().createDivElement();
-                htmlElement.addClassName("wrap-text-div");
+        if ((forceDiv && !text.isEmpty()) || GwtClientUtils.containsHtmlTag(text) || GwtClientUtils.containsLineBreak(text)) { // nodeValue doesn't support line breaks
+            if(textElement == null) {
+                textElement = Document.get().createDivElement();
+                textElement.addClassName("wrap-text-div");
 
                 if(vertical) {
                     element.addClassName("wrap-div-vert");
@@ -205,14 +206,14 @@ public interface BaseImage extends Serializable {
                     element.addClassName("wrap-div-horz");
                 }
 
-                element.appendChild(htmlElement);
-                element.setPropertyObject(DIV, htmlElement);
+                element.appendChild(textElement);
+                element.setPropertyObject(DIV, textElement);
             }
-            htmlElement.setInnerHTML(text);
+            GwtClientUtils.setCaptionHtmlOrText(textElement, text);
             textNode.setNodeValue("");
         } else {
-            if(htmlElement != null) {
-                element.removeChild(htmlElement);
+            if(textElement != null) {
+                element.removeChild(textElement);
                 if(vertical)
                     element.removeClassName("wrap-div-vert");
                 else

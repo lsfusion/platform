@@ -67,12 +67,15 @@ public class InputValueList<P extends PropertyInterface> {
         return property.getSelectStat(mapValues.keys());
     }
 
+    private ImSet<P> getInterfaceParams() { // maybe classes from ObjectValue should be used with the proper caching
+        return mapValues.keys();
+    }
     public Stat getInterfaceStat() {
-        return property.getInterfaceStat(mapValues.keys());
+        return property.getInterfaceStat(getInterfaceParams());
     }
 
     public Cost getInterfaceCost() {
-        return property.getInterfaceCost(mapValues.keys());
+        return property.getInterfaceCost(getInterfaceParams());
     }
 
     public boolean isHighlight() {

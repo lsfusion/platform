@@ -660,6 +660,7 @@
 
     <bean id="prereadIconsTask" class="lsfusion.server.logics.form.controller.init.PrereadIconsTask">
         <property name="BL" ref="businessLogics"/>
+        <property name="securityManager" ref="securityManager"/>
         <property name="dependencies">
             <set>
                 <ref bean="executeImportIconsTask"/> <!-- icons should be synchronized first -->

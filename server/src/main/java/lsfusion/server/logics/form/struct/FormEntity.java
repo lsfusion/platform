@@ -638,13 +638,14 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         FormInstanceContext context = FormInstanceContext.CACHE(this);
         for(PropertyDrawEntity property : getPropertyDrawsList()) {
             PropertyObjectEntity<T> valueProperty;
-            if(property.isProperty(context) &&
-                (valueProperty = property.getAssertProperty(context)).mapping.valuesSet().containsAll(changeProp.getObjects()) &&
-                (!(changeProp instanceof PropertyMapImplement) || Property.depends(valueProperty.property, ((PropertyMapImplement<?, ?>) changeProp).property)) && // optimization
-                valueProperty.property.isChangedWhen(toNull, changeProp.getImplement(valueProperty.mapping.reverse()))) {
-                if(mProps == null)
-                    mProps = ListFact.mList();
-                mProps.add(property);
+            if(property.isProperty(context)) {
+                if ((valueProperty = property.getAssertCellProperty(context)).mapping.valuesSet().containsAll(changeProp.getObjects()) &&
+                        (!(changeProp instanceof PropertyMapImplement) || Property.depends(valueProperty.property, ((PropertyMapImplement<?, ?>) changeProp).property)) && // optimization
+                        valueProperty.property.isChangedWhen(toNull, changeProp.getImplement(valueProperty.mapping.reverse()))) {
+                    if (mProps == null)
+                        mProps = ListFact.mList();
+                    mProps.add(property);
+                }
             }
         }
         if(mProps != null)
@@ -717,7 +718,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
             return new GroupMetaExternal(properties.getSet().mapValues((PropertyDrawEntity property) ->  {
                     AsyncEventExec asyncEventExec = ((PropertyDrawEntity<?>) property).getAsyncEventExec(context, CHANGE, true);
                     Boolean newDelete = asyncEventExec instanceof AsyncAddRemove ? ((AsyncAddRemove) asyncEventExec).add : null;
-                    return new PropMetaExternal(ThreadLocalContext.localize(property.getCaption()), property.isProperty(context) ? property.getType(context).getJSONType() : "action", newDelete);
+                    return new PropMetaExternal(ThreadLocalContext.localize(property.getCaption()), property.isProperty(context) ? property.getExternalType(context).getJSONType() : "action", newDelete);
                 }));
         }));
     }
@@ -1242,7 +1243,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         }
     }
 
-    public void prereadAutoIcons(FormInstanceContext context) {
+    public void prereadAutoIcons(ConnectionContext context) {
         getRichDesign().prereadAutoIcons(context);
     }
 

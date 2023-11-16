@@ -31,6 +31,7 @@ import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.group.AbstractNode;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.navigator.NavigatorAction;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.property.Property;
@@ -420,8 +421,9 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                 if (canonicalName != null && formElement.needsToBeSynchronized()) {
                     for (PropertyDrawEntity drawEntity : formElement.getPropertyDrawsListIt()) {
                         GroupObjectEntity groupObjectEntity = drawEntity.getToDraw(formElement);
-                        String canonicalNameWithPostfix = drawEntity.actionOrProperty.property.getCanonicalName() + "_" +
-                                (drawEntity.actionOrProperty instanceof ActionObjectEntity ? "action" : "property");
+                        ActionOrPropertyObjectEntity actionOrProperty = drawEntity.getReflectionActionOrProperty();
+                    String canonicalNameWithPostfix = actionOrProperty.property.getCanonicalName() + "_" +
+                                (actionOrProperty instanceof ActionObjectEntity ? "action" : "property");
                         dataPropertyDraws.add(asList(drawEntity.getCaption().toString(), drawEntity.getSID(), canonicalName,
                                 groupObjectEntity == null ? null : groupObjectEntity.getSID(), canonicalNameWithPostfix));
                     }

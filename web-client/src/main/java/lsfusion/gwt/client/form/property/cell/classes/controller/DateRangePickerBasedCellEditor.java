@@ -2,12 +2,14 @@ package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.core.client.JsDate;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.SimplePanel;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.controller.SmartScheduler;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
+import lsfusion.gwt.client.form.property.cell.view.RendererType;
 
 import java.text.ParseException;
 
@@ -88,6 +90,10 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
         // pickerDate may be null because we update the input field and on select 'date_from' - 'date_to' will be null
         return pickerDate == null ? this.@DateRangePickerBasedCellEditor::getPickerStartDate(*)() : pickerDate.isValid() ? pickerDate.toDate() : null; // toDate because it is "Moment js" object
     }-*/;
+
+    private Style.TextAlign getHorzTextAlignment() {
+        return property.getHorzTextAlignment(RendererType.CELL); // should be taken from RenderContext, but for now this would do
+    }
 
     protected native void createPicker(Element tippyParent, Element parent, JsDate startDate, JsDate endDate, String pattern, boolean singleDatePicker, boolean time, boolean date)/*-{
         window.$ = $wnd.jQuery;
@@ -174,7 +180,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
 
         //swap 'left' and 'right' because dateRangePicker library swap them inexplicably for what
         function getPickerAlign() {
-            var propertyHorTextAlignment = thisObj.@SimpleTextBasedCellEditor::property.@GPropertyDraw::getHorzTextAlignment()();
+            var propertyHorTextAlignment = thisObj.@DateRangePickerBasedCellEditor::getHorzTextAlignment()();
             propertyHorTextAlignment = propertyHorTextAlignment === @com.google.gwt.dom.client.Style.TextAlign::LEFT ? @com.google.gwt.dom.client.Style.TextAlign::RIGHT
                 : propertyHorTextAlignment === @com.google.gwt.dom.client.Style.TextAlign::RIGHT ? @com.google.gwt.dom.client.Style.TextAlign::LEFT : propertyHorTextAlignment;
             return propertyHorTextAlignment.@com.google.gwt.dom.client.Style.TextAlign::getCssName()();

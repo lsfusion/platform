@@ -14,6 +14,7 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.form.event.*;
+import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.filter.user.GFilterControls;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
@@ -24,6 +25,7 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.view.Column;
 import lsfusion.gwt.client.view.MainFrame;
 
@@ -95,6 +97,12 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
         }
     }
     
+    private void hideControlsIfEmpty() {
+        if (conditionViews.isEmpty()) {
+            setControlsVisible(false);
+        }
+    }
+    
     public void setControlsVisible(boolean visible) {
         controlsVisible = visible;
 
@@ -119,8 +127,12 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
         return logicsSupplier.getFiltersContainer();
     }
 
-    public GPropertyFilter getNewCondition(GFilter filter, GGroupObjectValue columnKey) {
-        Pair<GPropertyDraw, GGroupObjectValue> column = getActualColumn(filter != null ? filter.property: null, columnKey);
+    public static GPropertyFilter createNewCondition(GTableController logicsSupplier, GFilter filter, GGroupObjectValue columnKey) {
+        return createNewCondition(logicsSupplier, filter, columnKey, null, null, null, null);
+    }
+
+    public static GPropertyFilter createNewCondition(GTableController logicsSupplier, GFilter filter, GGroupObjectValue columnKey, PValue value, Boolean negation, GCompare compare, Boolean junction) {
+        Pair<GPropertyDraw, GGroupObjectValue> column = getActualColumn(logicsSupplier, filter != null ? filter.property: null, columnKey);
         
         if (column.first == null)
             return null;
@@ -131,10 +143,10 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
             filter.property = column.first;
         }
 
-        return new GPropertyFilter(filter, logicsSupplier.getSelectedGroupObject(), column.second, null, column.first.getDefaultCompare());
+        return new GPropertyFilter(filter, logicsSupplier.getSelectedGroupObject(), column.second, value, negation, compare, junction);
     }
 
-    private Pair<GPropertyDraw, GGroupObjectValue> getActualColumn(GPropertyDraw property, GGroupObjectValue columnKey) {
+    private static Pair<GPropertyDraw, GGroupObjectValue> getActualColumn(GTableController logicsSupplier, GPropertyDraw property, GGroupObjectValue columnKey) {
         GPropertyDraw actualProperty = property;
         GGroupObjectValue actualColumnKey = columnKey;
 
@@ -172,6 +184,9 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
         if (checkExistingFilter) {
             GFilterConditionView existingFilter = findExistingFilter(propertyDraw, columnKey);
             if (existingFilter != null) {
+                if (readSelectedValue) {
+                    existingFilter.putSelectedValue();
+                }
                 existingFilter.focusValueView(); // to leave focus on value with manual apply mode and be able to apply on Enter
                 existingFilter.startEditing(keyEvent);
                 return;
@@ -181,10 +196,14 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
     }
 
     public void addCondition(GFilter filter, GGroupObjectValue columnKey, Event keyEvent, boolean replace, boolean readSelectedValue) {
-        addCondition(getNewCondition(filter, columnKey), keyEvent, replace, readSelectedValue);
+        addCondition(createNewCondition(logicsSupplier, filter, columnKey), keyEvent, replace, readSelectedValue);
     }
 
     public void addCondition(GPropertyFilter condition, Event keyEvent, boolean replace, boolean readSelectedValue) {
+        this.addCondition(condition, keyEvent, replace, readSelectedValue, true);
+    }
+
+    public void addCondition(GPropertyFilter condition, Event keyEvent, boolean replace, boolean readSelectedValue, boolean focusOnValue) {
         if (replace) {
             resetAllConditions(false);
         }
@@ -201,7 +220,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
 
             logicsSupplier.getForm().getFormLayout().update(-1);
 
-            conditionView.onAdd();
+            conditionView.onAdd(focusOnValue);
 
             if (keyEvent != null) {
                 conditionView.startEditing(keyEvent);
@@ -222,7 +241,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
     }
     
     private GFilterConditionView findExistingFilter(GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
-        Pair<GPropertyDraw, GGroupObjectValue> column = getActualColumn(propertyDraw, columnKey);
+        Pair<GPropertyDraw, GGroupObjectValue> column = getActualColumn(logicsSupplier, propertyDraw, columnKey);
 
         if (!conditionViews.isEmpty()) {
             for (GPropertyFilter filter : conditionViews.keySet()) {
@@ -245,12 +264,18 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
     public void removeCondition(GPropertyFilter condition) {
         removeConditionViewInner(condition);
 
+        hideControlsIfEmpty();
+        
         updateConditionsLastState();
 
         applyFilters(true, null);
     }
 
     public ArrayList<GFilterConditionView> removeAllConditionsWithoutApply() {
+        return removeAllConditionsWithoutApply(true);
+    }
+    
+    public ArrayList<GFilterConditionView> removeAllConditionsWithoutApply(boolean hideControls) {
         ArrayList<GFilterConditionView> changed = new ArrayList<>();
         for (GPropertyFilter filter : new LinkedHashMap<>(conditionViews).keySet()) {
             if (filter.isFixed()) {
@@ -261,8 +286,8 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
                 removeConditionViewInner(filter);
             }
         }
-        if (conditionViews.isEmpty()) {
-            setControlsVisible(false);
+        if (hideControls) {
+            hideControlsIfEmpty();
         }
         return changed;
     }
@@ -287,10 +312,6 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
         removeConditionView(filter);
         GFilterConditionView filterView = conditionViews.remove(filter);
         filterView.isRemoved = true;
-
-        if (conditionViews.isEmpty()) {
-            setControlsVisible(false);
-        }
     }
 
     private void updateConditionsLastState() {

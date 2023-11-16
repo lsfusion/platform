@@ -327,10 +327,16 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
         enableApplyButton();
     }
 
-    public void onAdd() {
-        valueView.onAdd();
+    public void onAdd(boolean focusValueView) {
+        valueView.onAdd(focusValueView);
     }
 
+    public void putSelectedValue() {
+        if (!condition.property.differentValue) {
+            valueView.putSelectedValue(condition);
+        }
+    }
+    
     public void startEditing(Event keyEvent) {
         // scheduleDeferred to fix focus issues with quick filter (adding condition by char key)
         // UPD (quick filter): with scheduleDeferred() keyUp event often doesn't reach suggest box and initial suggestions don't appear

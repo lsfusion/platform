@@ -59,6 +59,7 @@ birthday '{authentication.birthday.contact}' = DATA DATE (Contact);
 
 email '{authentication.email.contact}'= DATA STRING[400] (Contact) CHARWIDTH 20 REGEXP '[-!#-\'*+/-9=?A-Z^-~]+(\\.[-!#-\'*+/-9=?A-Z^-~]+)*@[0-9A-Za-z]([0-9A-Za-z-]{0,61}[0-9A-Za-z])?(\\.[0-9A-Za-z]([0-9A-Za-z-]{0,61}[0-9A-Za-z])?)+' '<html>{authentication.email.contact.incorrect}</html>';
 contact (email) = GROUP MAX Contact contact BY email(contact);
+attributes '{authentication.attributes.contact}' = DATA STRING (Contact, STRING);
 
 // User
 

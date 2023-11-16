@@ -36,6 +36,7 @@ import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
+import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.view.MainFrame;
 
 import java.text.ParseException;
@@ -278,9 +279,10 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
     }
 
     public static InputElement renderInputElement(Element cellParent, GPropertyDraw property, boolean multiLine, RenderContext renderContext, boolean removeAllPMB) {
-        InputElement inputElement = SimpleTextBasedCellRenderer.createInputElement(property);
+        RendererType rendererType = renderContext.getRendererType();
+        InputElement inputElement = SimpleTextBasedCellRenderer.createInputElement(property, rendererType);
 
-        CellRenderer.renderTextAlignment(property, inputElement, true);
+        CellRenderer.renderTextAlignment(property, inputElement, true, rendererType);
 
         SimpleTextBasedCellRenderer.render(property, inputElement, renderContext, multiLine);
 

@@ -4,6 +4,7 @@ import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.classes.GType;
+import lsfusion.gwt.client.classes.data.GColorType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.filter.user.GCompare;
@@ -17,6 +18,7 @@ import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
+import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyValue;
 import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyValueController;
@@ -68,7 +70,7 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
 
     @Override
     public void pasteValue(String stringValue) {
-        updateAndCommit(PValue.escapeSeparator(property.parsePaste(stringValue, property.baseType), inputList.compare));
+        updateAndCommit(PValue.escapeSeparator(property.parsePaste(stringValue, property.getPasteType()), inputList.compare));
     }
 
     @Override
@@ -98,7 +100,7 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
 
     protected void onEditEvent(EventHandler handler, boolean forceEdit) {
         Result<Boolean> contextAction = new Result<>();
-        if((property.isFilterChange(handler.event, contextAction) || forceEdit) && !property.isCustom()) {
+        if((property.isFilterChange(handler.event, contextAction) || forceEdit) && !property.isCustom(getRendererType())) {
             if(contextAction.result != null) // assert that reset is called
                 updateAndCommit(null);
             else
@@ -157,10 +159,12 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     }
 
     public void setApplied(boolean applied) {
-        if (applied) {
-            getElement().addClassName("userFilerValueCellApplied");
-        } else {
-            getElement().removeClassName("userFilerValueCellApplied");
+        if (!(property.getFilterBaseType() instanceof GColorType)) {
+            if (applied) {
+                getElement().addClassName("filter-applied");
+            } else {
+                getElement().removeClassName("filter-applied");
+            }
         }
     }
 
@@ -208,5 +212,10 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     @Override
     public boolean canUseChangeValueForRendering(GType type) {
         return true;
+    }
+
+    @Override
+    public RendererType getRendererType() {
+        return RendererType.FILTER;
     }
 }

@@ -375,8 +375,8 @@ public class FormChanges {
 
     // assert that it was filtered by filterPropertiesExternal
     private void serializePropertiesExternal(FormInstanceContext context, JSONObject jsonObject, ImSet<PropertyDrawInstance> serializeProps, ImMap<ObjectInstance, DataObject> gridObjectRow) {
-        for(PropertyDrawInstance property : serializeProps)
-            jsonObject.put(property.getIntegrationSID(), RemoteForm.formatJSONNull(property.getType(context), properties.get(property).get(gridObjectRow).getValue()));
+        for(PropertyDrawInstance<?> property : serializeProps)
+            jsonObject.put(property.getIntegrationSID(), RemoteForm.formatJSONNull(property.entity.getExternalType(context), properties.get(property).get(gridObjectRow).getValue()));
     } 
 
     private ImSet<PropertyDrawInstance> filterPropertiesExternal(FormInstanceContext context, ImSet<PropertyDrawInstance> serializeProps, final boolean panel) {

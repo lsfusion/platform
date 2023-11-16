@@ -335,7 +335,7 @@ public class GGridController extends GAbstractTableController {
                                 int clientX = event.getClientX();
                                 int clientY = event.getClientY();
 
-                                if (property.baseType instanceof GIntegralType)
+                                if (property.getValueType() instanceof GIntegralType)
                                     formController.calculateSum(groupObject, property, table.getCurrentColumnKey(), clientX, clientY);
                                 else
                                     showSum(null, property, clientX, clientY);
@@ -671,6 +671,21 @@ public class GGridController extends GAbstractTableController {
     @Override
     protected long changeFilter(ArrayList<GPropertyFilter> conditions) {
         return formController.changeFilter(groupObject, conditions);
+    }
+
+    public void changeFilters(List<GPropertyFilter> filters) {
+        if (filter.hasFiltersContainer()) {
+            // hide controls only if no filters are expected. otherwise leave controls visibility unchanged
+            filter.removeAllConditionsWithoutApply(filters.isEmpty());
+            
+            for (GPropertyFilter iFilter : filters) {
+                filter.addCondition(iFilter, null, false, false, false);
+            }
+            
+            // the only changeFilters() call is made when filters are initiated by server via FilterClientAction
+            // in this case we don't want focus to appear on some unexpected grid
+            filter.applyFilters(false, null);
+        }
     }
 
     private void changeMode(Runnable updateView, GListViewType viewType, boolean setManualUpdateMode) {

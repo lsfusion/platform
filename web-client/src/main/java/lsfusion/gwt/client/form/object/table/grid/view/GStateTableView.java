@@ -20,6 +20,7 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
+import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.view.Column;
@@ -328,6 +329,10 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     }
 
     @Override
+    public void changePropertyOrders(LinkedHashMap<GPropertyDraw, GOrder> value) {
+    }
+
+    @Override
     public void updateRowBackgroundValues(NativeHashMap<GGroupObjectValue, PValue> values) {
         rowBackgroundValues = values;
     }
@@ -481,11 +486,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         return form.changeGroupObject(grid.groupObject, value);
     }
 
-    protected Object getJsValue(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
-        return GSimpleStateTableView.convertToJSValue(property, getValue(property, GGroupObjectValue.getFullKey(rowKey, columnKey)));
-    }
-
-    protected PValue getValue(GPropertyDraw property, GGroupObjectValue fullKey) {
+    public PValue getValue(GPropertyDraw property, GGroupObjectValue fullKey) {
         return values.get(properties.indexOf(property)).get(fullKey);
     }
 

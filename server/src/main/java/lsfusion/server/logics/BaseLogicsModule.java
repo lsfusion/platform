@@ -223,6 +223,9 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LP showResult;
 
     public LP getExtension;
+    
+    public LP orders;
+    public LP filters;
     public LP inputFileName;
 
     public LP<?> imported;
@@ -594,6 +597,9 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         statCustomObjectClass = findProperty("stat[CustomObjectClass]");
 
         getExtension = findProperty("getExtension[?]");
+        
+        orders = findProperty("orders[]");
+        filters = findProperty("filters[]");
 
         // Настройка отчетов
         reportRowHeight = findProperty("reportRowHeight[]");

@@ -15,7 +15,9 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class SetUserFiltersHandler extends FormServerResponseActionHandler<SetUserFilters> {
     public SetUserFiltersHandler(MainDispatchServlet servlet) {
@@ -24,11 +26,16 @@ public class SetUserFiltersHandler extends FormServerResponseActionHandler<SetUs
 
     @Override
     public ServerResponseResult executeEx(final SetUserFilters action, ExecutionContext context) throws RemoteException {
-        return getServerResponseResult(action, remoteForm ->
-                remoteForm.setUserFilters(action.requestIndex, action.lastReceivedRequestIndex, serializeFilters(action.filters)));
+        return getServerResponseResult(action, remoteForm -> {
+            Map<Integer, byte[][]> serializedFilters = new LinkedHashMap<>();
+            for (Integer gid : action.filters.keySet()) {
+                serializedFilters.put(gid, serializeFilters(action.filters.get(gid)));
+            }
+            return remoteForm.setUserFilters(action.requestIndex, action.lastReceivedRequestIndex, serializedFilters);
+        });
     }
 
-    protected static byte[][] serializeFilters(ArrayList<GPropertyFilterDTO> filtersDTO) {
+    protected static byte[][] serializeFilters(List<GPropertyFilterDTO> filtersDTO) {
 
         List<byte[]> filters = new ArrayList<>();
         try {

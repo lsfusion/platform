@@ -15,20 +15,24 @@ public class GPropertyFilter {
 
     public boolean negation;
     public GCompare compare;
-    public boolean junction; //true - conjunction, false - disjunction
+    public boolean junction = true; //true - conjunction, false - disjunction
 
     public GPropertyFilter(GFilter filter, GGroupObject groupObject, GGroupObjectValue columnKey, PValue value, GCompare compare) {
-        this(filter, groupObject, filter.property, new GDataFilterValue(value), columnKey, false, compare, true);
+        this(filter, groupObject, columnKey, value, null, compare, null);
     }
-    public GPropertyFilter(GFilter filter, GGroupObject groupObject, GPropertyDraw property, GDataFilterValue value, GGroupObjectValue columnKey, boolean negation, GCompare compare, boolean junction) {
+    public GPropertyFilter(GFilter filter, GGroupObject groupObject, GGroupObjectValue columnKey, PValue value, Boolean negation, GCompare compare, Boolean junction) {
         this.filter = filter;
         this.groupObject = groupObject;
-        this.property = property;
-        this.value = value;
+        this.property = filter.property;
+        this.value = new GDataFilterValue(value);
         this.columnKey = columnKey;
-        this.negation = negation;
-        this.compare = compare;
-        this.junction = junction;
+        if (negation != null) {
+            this.negation = negation;
+        }
+        this.compare = compare != null ? compare : filter.property.getDefaultCompare();
+        if (junction != null) {
+            this.junction = junction;
+        }
     }
 
     public GPropertyFilterDTO getFilterDTO() {

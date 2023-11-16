@@ -11,12 +11,13 @@ import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.controller.SimpleTextBasedCellEditor;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
+import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 import static lsfusion.gwt.client.view.StyleDefaults.CELL_HORIZONTAL_PADDING;
 
 // the renderer which may be renderered as plain input (or td in table)
-public abstract class SimpleTextBasedCellRenderer extends CellRenderer {
+public abstract class SimpleTextBasedCellRenderer extends InputBasedCellRenderer {
 
     public SimpleTextBasedCellRenderer(GPropertyDraw property) {
         super(property);
@@ -59,21 +60,6 @@ public abstract class SimpleTextBasedCellRenderer extends CellRenderer {
     }
 
     @Override
-    public Element createRenderElement() {
-        if(isTagInput()) {
-            if(needToRenderToolbarContent()) { // for an input with a toolbar we have to wrap it in a div to draw a toolbar
-                DivElement toolbarContainer = Document.get().createDivElement();
-                toolbarContainer.addClassName("prop-input-w-toolbar");
-                setToolbarContainer(toolbarContainer);
-                return toolbarContainer;
-            } else
-                return createInputElement(property);
-        }
-
-        return super.createRenderElement();
-    }
-
-    @Override
     public void renderPanelLabel(Widget label) {
         // we're not setting form-label since it's mostly used only for layouting, which we do ourselves
 //        if(property.panelCaptionVertical)
@@ -82,8 +68,13 @@ public abstract class SimpleTextBasedCellRenderer extends CellRenderer {
 //            label.addStyleName("col-form-label");
     }
 
-    public static InputElement createInputElement(GPropertyDraw property) {
-        return property.createTextInputElement();
+    @Override
+    protected InputElement createInput(GPropertyDraw property, RendererType rendererType) {
+        return createInputElement(property, rendererType);
+    }
+
+    public static InputElement createInputElement(GPropertyDraw property, RendererType rendererType) {
+        return property.createTextInputElement(rendererType);
     }
 
     public static InputElement getFocusEventTarget(Element parent, Event event) {
@@ -93,15 +84,6 @@ public abstract class SimpleTextBasedCellRenderer extends CellRenderer {
 
     public static boolean isMultiLineInput(Element parent) {
         return TextAreaElement.is(getSimpleInputElement(parent));
-    }
-
-    private final static String toolbarContainerProp = "toolbarContainer";
-
-    private static void setToolbarContainer(Element element) {
-        element.setPropertyBoolean(toolbarContainerProp, true);
-    }
-    public  static boolean isToolbarContainer(Element element) {
-        return element.getPropertyBoolean(toolbarContainerProp);
     }
 
     public static Element getSizeElement(Element element) {
@@ -156,7 +138,7 @@ public abstract class SimpleTextBasedCellRenderer extends CellRenderer {
             // otherwise we'll use flex alignment (however text alignment would also do)
             // there is some difference in div between align-items center and vertical align baseline / middle, and align items center seems to be more accurate (and better match input vertical align baseline / middle)
             if(isTDOrTH || isInput) {
-                renderTextAlignment(property, element, isInput);
+                renderTextAlignment(property, element, isInput, renderContext.getRendererType());
                 renderedAlignment = true;
             }
             SimpleTextBasedCellRenderer.render(property, element, renderContext, multiLine);
@@ -192,7 +174,7 @@ public abstract class SimpleTextBasedCellRenderer extends CellRenderer {
 //            renderedAlignment = true;
         } else {
 //            if(isTDOrTH || isInput) {
-                clearRenderTextAlignment(property, element, isInput);
+                clearRenderTextAlignment(property, element, isInput, renderContext.getRendererType());
 //                renderedAlignment = true;
 //            }
 
@@ -242,7 +224,7 @@ public abstract class SimpleTextBasedCellRenderer extends CellRenderer {
 
     public boolean updateContent(Element element, PValue value, Object extraValue, UpdateContext updateContext) {
         boolean isNull = value == null;
-        String innerText = isNull ? null : format(value);
+        String innerText = isNull ? null : format(value, updateContext.getRendererType());
 
         String title;
         title = property.echoSymbols ? "" : innerText;
@@ -261,9 +243,6 @@ public abstract class SimpleTextBasedCellRenderer extends CellRenderer {
         }
 
         element.setTitle(title);
-
-        if(innerText.contains("\n"))
-            element.addClassName("text-based-value-multi-line");
 
         String placeholder = extraValue != null ? ((String) extraValue) : null;
         Element inputElement = getSimpleInputElement(element);
@@ -284,10 +263,15 @@ public abstract class SimpleTextBasedCellRenderer extends CellRenderer {
             return false;
         }
 
+        if(innerText.contains("\n"))
+            element.addClassName("text-based-value-multi-line");
+        else
+            element.removeClassName("text-based-value-multi-line");
+
         // important to make paste work (otherwise DataGrid.sinkPasteEvent cannot put empty selection), plus for sizing
-        element.setInnerText(isNull ? (placeholder != null ? placeholder : EscapeUtils.UNICODE_NBSP) : innerText);
+        GwtClientUtils.setDataHtmlOrText(element, isNull ? (placeholder != null ? placeholder : EscapeUtils.UNICODE_NBSP) : innerText, false);
         return true;
     }
 
-    public abstract String format(PValue value);
+    public abstract String format(PValue value, RendererType rendererType);
 }

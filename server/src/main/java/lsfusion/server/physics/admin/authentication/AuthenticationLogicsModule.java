@@ -34,6 +34,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LP lastNameContact;
     public LP emailContact;
     public LP contactEmail;
+    public LP attributes;
 
     public LP isLockedCustomUser;
     public LP<?> loginCustomUser;
@@ -143,6 +144,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         lastNameContact = findProperty("lastName[Contact]");
         emailContact = findProperty("email[Contact]");
         contactEmail = findProperty("contact[STRING[400]]");
+        attributes = findProperty("attributes[Contact, STRING]");
 
         currentUserName = findProperty("currentUserName[]");
 

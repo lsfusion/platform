@@ -35,11 +35,11 @@ import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.form.property.cell.view.RendererType;
 
 import java.util.*;
 
 import static java.lang.Boolean.TRUE;
-import static java.lang.Math.min;
 import static java.lang.String.valueOf;
 import static lsfusion.gwt.client.base.GwtSharedUtils.*;
 
@@ -127,6 +127,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                     orderList.add(entry.getValue());
                 }
                 form.setPropertyOrders(groupObject, propertyList, columnKeyList, orderList);
+                
+                headersChanged();
             }
 
             @Override
@@ -748,6 +750,16 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         return sortableHeaderManager.changeOrders(groupObject, setOrders, alreadySet);
     }
 
+    @Override
+    public void changePropertyOrders(LinkedHashMap<GPropertyDraw, GOrder> orders) {
+        for (Map.Entry<GPropertyDraw, GOrder> entry : orders.entrySet()) {
+            sortableHeaderManager.changeOrder(getMinColumnKey(entry.getKey()), entry.getValue());
+        }
+        if (!orders.isEmpty()) {
+            headersChanged();
+        }
+    }
+
     private HashMap<GPropertyDraw, GGroupObjectValue> getMinColumnKey(GPropertyDraw property) {
         GridColumn column = getGridColumn(property, null);
         HashMap<GPropertyDraw, GGroupObjectValue> key = new HashMap<>();
@@ -808,22 +820,19 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         final int tableColumns = getMaxColumnsCount(table);
         final int selectedColumn = getSelectedColumn();
         if (table.size() > 1 || tableColumns > 1) {
-            DialogBoxHelper.showConfirmBox("lsFusion", messages.formGridSureToPasteMultivalue(), false, new DialogBoxHelper.CloseCallback() {
-                @Override
-                public void closed(DialogBoxHelper.OptionType chosenOption) {
-                    if (chosenOption == DialogBoxHelper.OptionType.YES) {
-                        int columnsToInsert = Math.min(tableColumns, getColumnCount() - selectedColumn);
+            DialogBoxHelper.showConfirmBox("lsFusion", messages.formGridSureToPasteMultivalue(), false, chosenOption -> {
+                if (chosenOption == DialogBoxHelper.OptionType.YES) {
+                    int columnsToInsert = Math.min(tableColumns, getColumnCount() - selectedColumn);
 
-                        final ArrayList<GPropertyDraw> propertyList = new ArrayList<>();
-                        final ArrayList<GGroupObjectValue> columnKeys = new ArrayList<>();
-                        for (int i = 0; i < columnsToInsert; i++) {
-                            GPropertyDraw propertyDraw = getProperty(selectedColumn + i);
-                            propertyList.add(propertyDraw);
-                            columnKeys.add(getColumnKey(selectedColumn + i));
-                        }
-
-                        form.pasteExternalTable(propertyList, columnKeys, table);
+                    final ArrayList<GPropertyDraw> propertyList = new ArrayList<>();
+                    final ArrayList<GGroupObjectValue> columnKeys = new ArrayList<>();
+                    for (int i = 0; i < columnsToInsert; i++) {
+                        GPropertyDraw propertyDraw = getProperty(selectedColumn + i);
+                        propertyList.add(propertyDraw);
+                        columnKeys.add(getColumnKey(selectedColumn + i));
                     }
+
+                    form.pasteExternalTable(propertyList, columnKeys, table);
                 }
             });
             return;
@@ -1175,8 +1184,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         }
 
         @Override
-        public boolean isCustomRenderer() {
-            return property.getCellRenderer().isCustomRenderer();
+        public boolean isCustomRenderer(RendererType rendererType) {
+            return property.getCellRenderer(rendererType).isCustomRenderer();
         }
 
         @Override
