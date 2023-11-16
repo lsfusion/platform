@@ -1,53 +1,31 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
-import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
-import lsfusion.gwt.client.base.EscapeUtils;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
-import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
-import lsfusion.gwt.client.form.property.cell.view.RenderContext;
+import lsfusion.gwt.client.form.property.cell.classes.controller.TypeInputBasedCellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
-public class ColorCellRenderer extends CellRenderer {
+public class ColorCellRenderer extends TypeInputBasedCellRenderer {
 
     public ColorCellRenderer(GPropertyDraw property) {
         super(property);
     }
 
-//    @Override
-//    public Element createRenderElement() {
-//        InputElement renderElement = Document.get().createTextInputElement();
-//        renderElement.setAttribute("data-coloris", "true");
-//        renderElement.setAttribute("autocomplete", "off");
-//        return renderElement;
-//    }
-
     @Override
-    public boolean renderContent(Element element, RenderContext renderContext) {
-        element.setInnerText(EscapeUtils.UNICODE_NBSP);
-//        element.getStyle().setBorderWidth(0, Style.Unit.PX);
-
-        return false;
-    }
-
-    @Override
-    public boolean clearRenderContent(Element element, RenderContext renderContext) {
-//        element.getStyle().clearBackgroundColor();
-        element.setTitle(null);
-
-        return false;
+    protected InputElement createInput(GPropertyDraw property) {
+        InputElement input = GwtClientUtils.createInputElement("color");
+        input.addClassName("input-color"); //set opacity
+        return input;
     }
 
     @Override
     public boolean updateContent(Element element, PValue value, Object extraValue, UpdateContext updateContext) {
-        String baseColor = getColorValue(value);
-        element.setTitle(baseColor);
-
-//        color is set with getBaseBackground
-//        element.getStyle().setBackgroundColor(baseColor);
-
+        element.addClassName("form-control");
+        InputElement input = getInputElement(element);
+        input.setValue(getColorValue(value));
         return false;
     }
 

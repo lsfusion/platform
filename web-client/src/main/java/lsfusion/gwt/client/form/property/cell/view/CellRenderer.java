@@ -18,7 +18,7 @@ import lsfusion.gwt.client.form.object.table.view.GToolbarView;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
-import lsfusion.gwt.client.form.property.cell.classes.view.SimpleTextBasedCellRenderer;
+import lsfusion.gwt.client.form.property.cell.classes.view.InputBasedCellRenderer;
 import lsfusion.gwt.client.view.GColorTheme;
 import lsfusion.gwt.client.view.MainFrame;
 
@@ -93,7 +93,7 @@ public abstract class CellRenderer {
 //        SimpleTextBasedCellRenderer.getSizeElement(element).addClassName("prop-value-shrink");
 
         if(!renderedAlignment) {
-            assert !GwtClientUtils.isTDorTH(element) && !SimpleTextBasedCellRenderer.isToolbarContainer(element);
+            assert !GwtClientUtils.isTDorTH(element) && !InputBasedCellRenderer.isToolbarContainer(element);
             renderFlexAlignment(property, element);
         }
     }

@@ -20,7 +20,7 @@ public class GColorType extends GDataType {
 
     @Override
     public RequestValueCellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, EditContext editContext) {
-        return new ColorCellEditor(editManager, editProperty);
+        return new ColorCellEditor(editManager);
     }
 
     @Override

@@ -20,3 +20,7 @@
 
 .panelRendererValueEdited {
 }
+
+.input-color {
+    opacity: 0;
+}

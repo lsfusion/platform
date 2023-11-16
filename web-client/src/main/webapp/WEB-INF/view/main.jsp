@@ -184,10 +184,7 @@
                 "static/css/gwt/navigator/navigator.css",
                 "static/css/gwt/navigator/split-window.css",
                 "static/css/gwt/navigator/tab-window.css",
-                "static/css/gwt/option.css",
-
-                "static/js/external/alwan.min.js",
-                "static/css/external/alwan.min.css"
+                "static/css/gwt/option.css"
         ));%>
 
         <lsf:writeResources resources="${versionedResources}"/>

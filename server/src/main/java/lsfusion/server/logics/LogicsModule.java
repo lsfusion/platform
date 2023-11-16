@@ -53,6 +53,7 @@ import lsfusion.server.logics.action.session.action.NewSessionAction;
 import lsfusion.server.logics.action.session.changed.IncrementType;
 import lsfusion.server.logics.classes.StaticClass;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.classes.data.ColorClass;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.data.StringClass;
@@ -1006,7 +1007,7 @@ public abstract class LogicsModule {
                                                                                               ImList<InputContextAction<?, T>> contextActions, String customEditorFunction, boolean notNull) {
         InputContextSelector<T> contextSelector = null;
         if(contextList == null && contextFilter == null && valueProperty != null) {
-            if(Property.isDefaultWYSInput(valueClass) && !valueProperty.disableInputList) { // && // if string and not disabled
+            if((Property.isDefaultWYSInput(valueClass) || valueClass instanceof ColorClass) && !valueProperty.disableInputList) { // && // if string and not disabled
                 contextList = new InputListEntity<>(valueProperty, MapFact.EMPTYREV());
 
                 // we're doing this with a "selector", because at this point not stats is available (synchronizeDB has not been run yet)
