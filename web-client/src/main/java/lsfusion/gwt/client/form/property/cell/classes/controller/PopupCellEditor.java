@@ -34,7 +34,8 @@ public interface PopupCellEditor extends RequestCellEditor {
         private final PopupCellEditor editor;
         private final Element parent;
 
-        public PopupEditorDialogPanel(PopupCellEditor editor, Element parent, boolean removeBorder) {
+        public PopupEditorDialogPanel(PopupCellEditor editor, Element tippyParent, Element parent, boolean removeBorder) {
+            super(tippyParent, true);
             this.editor = editor;
             this.parent = parent;
 
@@ -68,7 +69,7 @@ public interface PopupCellEditor extends RequestCellEditor {
     }
     @Override
     default void start(EventHandler handler, final Element parent, PValue oldValue) {
-        setPopup(new PopupEditorDialogPanel(this, parent, removeBorder()));
+        setPopup(new PopupEditorDialogPanel(this, GwtClientUtils.getTippyParent(parent), parent, removeBorder()));
     }
 
     default void stop(Element parent, boolean cancel, boolean blurred) {

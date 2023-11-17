@@ -1515,7 +1515,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     private static final String SCROLL_SHADOW_CONTAINER = "__scroll_shadow_container";
     private static void setContentScrolled(Widget widget) {
         Element element = widget.getElement();
-        Element container = GwtClientUtils.getParentWithAttribute(element, SCROLL_SHADOW_CONTAINER);
+        Element container = GwtClientUtils.getParentWithNonEmptyAttribute(element, SCROLL_SHADOW_CONTAINER);
         if(container != null) { // just in case
             int scrollTop = element.getScrollTop();
             if(container.getAttribute(SCROLL_SHADOW_CONTAINER).equals("end") ?

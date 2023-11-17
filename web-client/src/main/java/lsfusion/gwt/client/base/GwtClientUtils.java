@@ -7,11 +7,15 @@ import com.google.gwt.i18n.client.Dictionary;
 import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.*;
+import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.user.client.ui.UIObject;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.lambda.EFunction;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
+import lsfusion.gwt.client.base.view.popup.PopupPanel;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.view.MainFrame;
@@ -1030,9 +1034,18 @@ public class GwtClientUtils {
         return value1 == null ? value2 : value1;
     }
 
-    public static Element getParentWithAttribute(Element element, String property) {
+    public static Element getParentWithNonEmptyAttribute(Element element, String property) {
         while (element != null) {
             if (!element.getAttribute(property).isEmpty()) {
+                return element;
+            }
+            element = element.getParentElement();
+        }
+        return null;
+    }
+    public static Element getParentWithAttribute(Element element, String property) {
+        while (element != null) {
+            if (element.hasAttribute(property)) {
                 return element;
             }
             element = element.getParentElement();
@@ -1051,6 +1064,17 @@ public class GwtClientUtils {
     public static Element getParentWithClass(Element element, String className) {
         while (element != null) {
             if (element.hasClassName(className)) {
+                return element;
+            }
+            element = element.getParentElement();
+        }
+        return null;
+    }
+
+    private static String tippyAttribute = "data-tippy-root";
+    public static Element getTippyParent(Element element) {
+        while (element != null) {
+            if (element.hasAttribute(tippyAttribute)) {
                 return element;
             }
             element = element.getParentElement();

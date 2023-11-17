@@ -4,6 +4,7 @@ import com.google.gwt.core.client.JsDate;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.SimplePanel;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.controller.SmartScheduler;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
@@ -48,7 +49,8 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
     @Override
     public SimplePanel createPopupComponent(Element parent, PValue oldValue) {
         assert oldValue != null;
-        createPicker(parent, getStartDate(oldValue), getEndDate(oldValue), getPattern(), isSinglePicker(), isTimeEditor(), isDateEditor());
+        Element tippyParent = GwtClientUtils.getTippyParent(parent);
+        createPicker(tippyParent, parent, getStartDate(oldValue), getEndDate(oldValue), getPattern(), isSinglePicker(), isTimeEditor(), isDateEditor());
 
         popup.setVisible(false);
         popup.addAutoHidePartner(getPickerElement());
@@ -93,7 +95,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
         return property.getHorzTextAlignment(RendererType.CELL); // should be taken from RenderContext, but for now this would do
     }
 
-    protected native void createPicker(Element parent, JsDate startDate, JsDate endDate, String pattern, boolean singleDatePicker, boolean time, boolean date)/*-{
+    protected native void createPicker(Element tippyParent, Element parent, JsDate startDate, JsDate endDate, String pattern, boolean singleDatePicker, boolean time, boolean date)/*-{
         window.$ = $wnd.jQuery;
         var thisObj = this;
         var editElement = $(thisObj.@TextBasedPopupCellEditor::editBox);
@@ -131,6 +133,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
                 "firstDay": 1,
                 format: $wnd.moment().toMomentFormatString(pattern)
             },
+            parentEl: tippyParent,
             startDate: startDate,
             endDate: endDate,
             timePicker: !date,

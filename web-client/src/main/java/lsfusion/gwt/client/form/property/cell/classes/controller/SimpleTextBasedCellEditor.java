@@ -17,6 +17,7 @@ import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.view.CopyPasteUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.FlexPanel;
+import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.base.view.popup.PopupMenuItemValue;
 import lsfusion.gwt.client.classes.data.GFormatType;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -152,7 +153,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
 
         if (hasList) {
             suggestBox = createSuggestBox(inputElement, parent);
-            
+
             // don't update suggestions if editing started with char key event. as editor text is empty on init - request is being sent twice
             // wait for editor key listener to catch the event
             // UPD: for now is reproducible only in panel properties
@@ -267,7 +268,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
 
         return isStringValid(firstPart + stringToAdd + secondPart);
     }
-    
+
     protected boolean isStringValid(String string) {
         try {
             tryParseInputText(string, false);

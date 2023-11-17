@@ -32,7 +32,10 @@ public abstract class PopupValueCellEditor extends WindowValueCellEditor impleme
     @Override
     public void start(EventHandler handler, Element parent, PValue oldValue) {
         PopupCellEditor.super.start(handler, parent, oldValue);
-        GwtClientUtils.showPopupInWindow(getPopup(), createPopupComponent(parent), parent.getAbsoluteLeft(), parent.getAbsoluteBottom());
+        Element tippyParent = GwtClientUtils.getTippyParent(parent);
+        int left = tippyParent != null ? (tippyParent.getAbsoluteLeft() - parent.getAbsoluteLeft()) : parent.getAbsoluteLeft();
+        int bottom = tippyParent != null ? (tippyParent.getAbsoluteBottom() - parent.getAbsoluteBottom()) : parent.getAbsoluteBottom();
+        GwtClientUtils.showPopupInWindow(getPopup(), createPopupComponent(parent), left, bottom);
     }
 
     protected abstract Widget createPopupComponent(Element parent);
