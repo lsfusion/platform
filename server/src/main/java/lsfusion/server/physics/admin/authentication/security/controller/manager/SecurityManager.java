@@ -431,7 +431,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         } else return null;
     }
 
-    public void setUserParameters(DataObject customUser, String firstName, String lastName, String email, List<String> userRoleSIDs, Map<String, Object> attributes, DataSession session) {
+    public void setUserParameters(DataObject customUser, String firstName, String lastName, String email, List<String> userRoleSIDs, Map<String, String> attributes, DataSession session) {
         try {
             if (firstName != null)
                 authenticationLM.firstNameContact.change(firstName, session, customUser);
@@ -455,9 +455,9 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
 
             if (attributes != null) {
                 for (String key : attributes.keySet()) {
-                    Object value = attributes.get(key);
+                    String value = attributes.get(key);
                     if (value != null)
-                        authenticationLM.attributes.change(value.toString(), session, customUser, new DataObject(key));
+                        authenticationLM.attributes.change(value, session, customUser, new DataObject(key));
                 }
             }
         } catch (SQLException | SQLHandledException e) {

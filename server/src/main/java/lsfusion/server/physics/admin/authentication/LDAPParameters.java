@@ -10,9 +10,9 @@ public class LDAPParameters {
     private final String lastName;
     private final String email;
     private final List<String> groupNames;
-    private final Map<String, Object> attributes;
+    private final Map<String, String> attributes;
 
-    public LDAPParameters(boolean connected, String firstName, String lastName, String email, List<String> groupNames, Map<String, Object> attributes) {
+    public LDAPParameters(boolean connected, String firstName, String lastName, String email, List<String> groupNames, Map<String, String> attributes) {
         this.connected = connected;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -41,7 +41,7 @@ public class LDAPParameters {
         return groupNames;
     }
 
-    public Map<String, Object> getAttributes() {
+    public Map<String, String> getAttributes() {
         return attributes;
     }
 }

@@ -1,6 +1,7 @@
 package lsfusion.interop.connection.authentication;
 
 import lsfusion.base.Pair;
+import java.util.HashMap;
 import java.util.Map;
 
 public class OAuth2Authentication extends Authentication {
@@ -13,12 +14,15 @@ public class OAuth2Authentication extends Authentication {
     private final String email;
     private String firstName;
     private String lastName;
-    private final Map<String, Object> attributes;
+    private final Map<String, String> attributes = new HashMap<>();
 
     public OAuth2Authentication(String login, String authSecret, Map<String, Object> userInfo) {
         super(login);
         this.authSecret = authSecret;
-        this.attributes = userInfo;
+        for (String key : userInfo.keySet()) {
+            Object attributeValue = userInfo.get(key);
+            attributes.put(key, attributeValue != null ? attributeValue.toString() : null);
+        }
 
         String email = (String) userInfo.get(EMAIL_KEY);
         String name = (String) userInfo.get(NAME_KEY);
@@ -39,7 +43,7 @@ public class OAuth2Authentication extends Authentication {
         return new Pair<>(names[0], names.length > 1 ? names[1] : null);
     }
 
-    public Map<String, Object> getAttributes() {
+    public Map<String, String> getAttributes() {
         return attributes;
     }
 
