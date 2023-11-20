@@ -49,7 +49,7 @@ public class ExportXMLAction<O extends ObjectSelector> extends ExportHierarchica
     protected void writeRootNode(PrintWriter printWriter, XMLNode rootNode) throws IOException {
         Element element = rootNode.element;
         XMLOutputter xmlOutput = new XMLOutputter();
-        xmlOutput.setFormat(Format.getPrettyFormat().setEncoding(charset).setOmitDeclaration(noHeader));
+        xmlOutput.setFormat(Format.getRawFormat().setIndent("  ").setEncoding(charset).setOmitDeclaration(noHeader));
         xmlOutput.output(new Document(element), printWriter);
     }
 }
