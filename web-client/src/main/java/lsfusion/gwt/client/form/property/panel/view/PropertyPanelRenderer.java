@@ -58,7 +58,10 @@ public class PropertyPanelRenderer extends PanelRenderer {
     }
 
     private SizedWidget initCaption(SizedWidget valuePanel, GPropertyDraw property, Result<CaptionWidget> captionContainer) {
-        if(property.caption == null && property.comment == null) // if there is no (empty) static caption and no dynamic caption
+        // if there is no (empty) static caption and no dynamic caption and no comment
+        // and no elementClass (is because of the intersection with value сlass, besides, some classes,
+        // like form-switch, should be applied not to input, but to the parent div and otherwise will not work)
+        if(property.caption == null && property.comment == null && property.elementClass == null)
             return valuePanel;
 
         // id and for we need to support editing when clicking on the label
