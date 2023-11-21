@@ -227,7 +227,7 @@ public abstract class SimpleTextBasedCellRenderer extends InputBasedCellRenderer
         String innerText = isNull ? null : format(value, updateContext.getRendererType());
 
         String title;
-        title = property.echoSymbols ? "" : innerText;
+        title = property.valueTooltip != null || property.echoSymbols ? "" : innerText;
         if(isNull) {
             element.addClassName("text-based-value-null");
             if(property.isEditableNotNull())

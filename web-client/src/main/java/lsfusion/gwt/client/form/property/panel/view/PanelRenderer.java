@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.property.panel.view;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
@@ -14,6 +15,8 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 
 import java.util.ArrayList;
+
+import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
 
 public abstract class PanelRenderer {
 
@@ -34,6 +37,9 @@ public abstract class PanelRenderer {
         value = new ActionOrPropertyPanelValue(property, columnKey, form, globalCaptionIsDrawn, controller); // captionContainer != null, now we use different approach when button is renderered as caption
     }
 
+    private JavaScriptObject tippy = null;
+    private TooltipManager.TooltipHelper tooltipHelper = null;
+
     protected void finalizeInit() {
         setCaption(property.caption);
         setCaptionElementClass(property.captionElementClass);
@@ -41,11 +47,11 @@ public abstract class PanelRenderer {
         setCommentElementClass(property.commentElementClass);
 
         Element label = getTooltipWidget().getElement();
-        TooltipManager.initTooltip(label, new TooltipManager.TooltipHelper() {
-            public String getTooltip() {
+        tippy = TooltipManager.initTooltip(label, tooltipHelper = new TooltipManager.TooltipHelper() {
+            public String getTooltip(String dynamicTooltip) {
                 if(value.isEditing)
                     return null;
-                return property.getTooltip(caption);
+                return property.getTooltip(nvl(dynamicTooltip, caption));
             }
 
             public String getPath() {
@@ -71,8 +77,11 @@ public abstract class PanelRenderer {
         return getSizedWidget().widget;
     }
 
-    public void update(PValue value, boolean loading, AppBaseImage image, String valueElementClass, String background, String foreground, Boolean readOnly, String placeholder) {
-        this.value.update(value, loading, image, valueElementClass, background, foreground, readOnly, placeholder);
+    public void update(PValue value, boolean loading, AppBaseImage image, String valueElementClass,
+                       String background, String foreground, Boolean readOnly, String placeholder,
+                       String tooltip, String valueTooltip) {
+        this.value.update(value, loading, image, valueElementClass, background, foreground, readOnly, placeholder,
+                tooltip, valueTooltip);
     }
 
     private String caption;
@@ -101,6 +110,15 @@ public abstract class PanelRenderer {
         if (!GwtSharedUtils.nullEquals(this.commentElementClass, classes)) {
             this.commentElementClass = classes;
             setCommentClasses(classes);
+        }
+    }
+
+    private String tooltip;
+    public void setTooltip(String tooltip) {
+        if (!GwtSharedUtils.nullEquals(this.tooltip, tooltip)) {
+            this.tooltip = tooltip;
+            Element label = getTooltipWidget().getElement();
+            TooltipManager.updateContent(tippy, label, tooltipHelper, tooltip);
         }
     }
 

@@ -67,6 +67,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public CommentElementClassReader commentElementClassReader = new CommentElementClassReader();
     public PlaceholderReader placeholderReader = new PlaceholderReader();
 
+    public TooltipReader tooltipReader = new TooltipReader();
+    public ValueTooltipReader valueTooltipReader = new ValueTooltipReader();
+
     public boolean boxed;
 
     public boolean isAutoSize() {
@@ -143,6 +146,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public String placeholder;
 
+    public String tooltip;
+    public String valueTooltip;
+
     public int charWidth;
     public int charHeight;
 
@@ -164,8 +170,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     protected String canonicalName;
     protected String propertyFormName; // PropertyDrawEntity.sID
     protected String integrationSID;
-
-    public String toolTip;
 
     public ClientGroupObject groupObject;
     public String columnsName;
@@ -559,6 +563,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         pool.writeString(outStream, placeholder);
 
+        pool.writeString(outStream, tooltip);
+        pool.writeString(outStream, valueTooltip);
+
         pool.writeObject(outStream, changeOnSingleClick);
         outStream.writeBoolean(hide);
 
@@ -618,6 +625,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         placeholder = pool.readString(inStream);
 
+        tooltip = pool.readString(inStream);
+        valueTooltip = pool.readString(inStream);
+
         changeOnSingleClick = pool.readObject(inStream);
         hide = inStream.readBoolean();
 
@@ -656,8 +666,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         canonicalName = pool.readString(inStream);
         propertyFormName = pool.readString(inStream);
         integrationSID = pool.readString(inStream);
-
-        toolTip = pool.readString(inStream);
 
         groupObject = pool.deserializeObject(inStream);
 
@@ -855,7 +863,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return keyStroke == null ? "" : String.format("<html><b>" + hotkey + ":</b> %1$s</html>", keyStroke);
     }
     public String getTooltipText(String caption) {
-        String propCaption = nullTrim(!isRedundantString(toolTip) ? toolTip : caption);
+        String propCaption = nullTrim(!isRedundantString(tooltip) ? tooltip : caption);
         String changeKeyText = changeKey == null ? "" : String.format(EDIT_KEY_TOOL_TIP_FORMAT, getChangeKeyCaption());
 
         if (!MainController.showDetailedInfo) {
@@ -1125,6 +1133,40 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         public byte getType() {
             return PropertyReadType.PLACEHOLDER;
+        }
+    }
+
+    public class TooltipReader implements ClientPropertyReader {
+        public ClientGroupObject getGroupObject() {
+            return ClientPropertyDraw.this.getGroupObject();
+        }
+
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
+        }
+
+        public int getID() {
+            return ClientPropertyDraw.this.getID();
+        }
+
+        public byte getType() {
+            return PropertyReadType.TOOLTIP;
+        }
+    }
+
+    public class ValueTooltipReader implements ClientPropertyReader {
+        public ClientGroupObject getGroupObject() {
+            return ClientPropertyDraw.this.getGroupObject();
+        }
+
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
+        }
+
+        public int getID() {
+            return ClientPropertyDraw.this.getID();
+        }
+
+        public byte getType() {
+            return PropertyReadType.VALUETOOLTIP;
         }
     }
 }

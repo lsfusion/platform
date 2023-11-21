@@ -44,4 +44,8 @@ public class PropertyReadType {
     public final static byte COMMENTELEMENTCLASS = 20;
 
     public final static byte PLACEHOLDER = 21;
+
+    public final static byte TOOLTIP = 22;
+
+    public final static byte VALUETOOLTIP = 23;
 }

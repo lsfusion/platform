@@ -261,8 +261,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.customCanBeRenderedInTD = clientPropertyDraw.customCanBeRenderedInTD;
         propertyDraw.customNeedPlaceholder = clientPropertyDraw.customNeedPlaceholder;
         propertyDraw.customNeedReadonly = clientPropertyDraw.customNeedReadonly;
-
-        propertyDraw.toolTip = clientPropertyDraw.toolTip;
+        
         propertyDraw.clearText = clientPropertyDraw.clearText;
         propertyDraw.tableName = clientPropertyDraw.tableName;
         propertyDraw.interfacesCaptions = clientPropertyDraw.interfacesCaptions;
@@ -352,6 +351,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.commentReader = convertCommentReader(clientPropertyDraw.commentReader);
         propertyDraw.commentElementClassReader = convertCommentElementClassReader(clientPropertyDraw.commentElementClassReader);
         propertyDraw.placeholderReader = convertPlaceholderReader(clientPropertyDraw.placeholderReader);
+        propertyDraw.tooltipReader = convertTooltipReader(clientPropertyDraw.tooltipReader);
+        propertyDraw.valueTooltipReader = convertValueTooltipReader(clientPropertyDraw.valueTooltipReader);
 
         propertyDraw.formula = clientPropertyDraw.formula;
         if(clientPropertyDraw.formula != null) {
@@ -393,6 +394,9 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.panelCommentAlignment = convertFlexAlignment(clientPropertyDraw.panelCommentAlignment);
 
         propertyDraw.placeholder = clientPropertyDraw.placeholder;
+
+        propertyDraw.tooltip = clientPropertyDraw.tooltip;
+        propertyDraw.valueTooltip = clientPropertyDraw.valueTooltip;
 
         propertyDraw.changeOnSingleClick = clientPropertyDraw.changeOnSingleClick;
         
@@ -544,6 +548,14 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
     public GPlaceholderReader convertPlaceholderReader(ClientPropertyDraw.PlaceholderReader reader) {
         return reader == null ? null : new GPlaceholderReader(reader.getID(), reader.getGroupObject() != null ? reader.getGroupObject().ID : -1);
+    }
+
+    public GTooltipReader convertTooltipReader(ClientPropertyDraw.TooltipReader reader) {
+        return reader == null ? null : new GTooltipReader(reader.getID(), reader.getGroupObject() != null ? reader.getGroupObject().ID : -1);
+    }
+
+    public GValueTooltipReader convertValueTooltipReader(ClientPropertyDraw.ValueTooltipReader reader) {
+        return reader == null ? null : new GValueTooltipReader(reader.getID(), reader.getGroupObject() != null ? reader.getGroupObject().ID : -1);
     }
 
     @Cached

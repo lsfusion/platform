@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.base;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.Style;
@@ -18,13 +19,14 @@ import java.util.Date;
 public class TooltipManager {
     private static final ClientMessages messages = ClientMessages.Instance.get();
 
-    public static void initTooltip(Element element, final TooltipHelper tooltipHelper) {
-        if (!MainFrame.mobile && tooltipHelper.getTooltip() != null && MainFrame.showDetailedInfoDelay > 0)
-            initTippy(element, getTooltipContent(tooltipHelper, element), MainFrame.showDetailedInfoDelay);
+    public static JavaScriptObject initTooltip(Element element, final TooltipHelper tooltipHelper) {
+        if (!MainFrame.mobile && tooltipHelper.getTooltip(null) != null && MainFrame.showDetailedInfoDelay > 0)
+            return initTippy(element, getTooltipContent(tooltipHelper, null, element), MainFrame.showDetailedInfoDelay);
+        return null;
     }
 
-    private static native void initTippy(Element element, Element content, int delay)/*-{
-        $wnd.tippy(element, {
+    private static native JavaScriptObject initTippy(Element element, Element content, int delay)/*-{
+        var tippy = $wnd.tippy(element, {
             trigger: 'mouseenter',
             content: content,
             appendTo: $wnd.document.body,
@@ -34,14 +36,33 @@ public class TooltipManager {
             allowHTML: true,
             delay: [delay, null]
         });
+        if(content == null)
+            tippy.disable();
+        return tippy;
+    }-*/;
+
+    public static void updateContent(JavaScriptObject tippy, Element element, final TooltipHelper tooltipHelper, String dynamicTooltip) {
+        updateContent(tippy, getTooltipContent(tooltipHelper, dynamicTooltip, element));
+    }
+
+    private static native void updateContent(JavaScriptObject tippy, Element content)/*-{
+        tippy.setContent(content);
+        if(content == null)
+            tippy.disable();
+        else
+            tippy.enable();
     }-*/;
 
     private static native void hide(Element element)/*-{
         element._tippy.hide();
     }-*/;
 
-    private static Element getTooltipContent(TooltipHelper tooltipHelper, Element element) {
-        Element tooltipElement = EscapeUtils.toHTML(tooltipHelper.getTooltip()).getElement();
+    private static Element getTooltipContent(TooltipHelper tooltipHelper, String dynamicTooltip, Element element) {
+        String tooltip = tooltipHelper.getTooltip(dynamicTooltip);
+        if(GwtSharedUtils.isRedundantString(tooltip)) {
+            return null;
+        }
+        Element tooltipElement = EscapeUtils.toHTML(tooltip).getElement();
 
         if (MainFrame.showDetailedInfo) {
             String projectLSFDir = MainFrame.projectLSFDir;
@@ -141,7 +162,7 @@ public class TooltipManager {
     }
 
     public static abstract class TooltipHelper {
-        public abstract String getTooltip();
+        public abstract String getTooltip(String dynamicTooltip);
 
         public String getPath() {
             return null;

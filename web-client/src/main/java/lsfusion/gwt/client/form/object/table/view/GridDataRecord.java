@@ -85,6 +85,22 @@ public class GridDataRecord implements RowIndexHolder {
         return (String) getAttribute(column + "_placeholder");
     }
 
+    public void setTooltip(String column, String tooltip) {
+        setAttribute(column + "_tooltip", tooltip);
+    }
+
+    public String getTooltip(String column) {
+        return (String) getAttribute(column + "_tooltip");
+    }
+
+    public void setValueTooltip(String column, String valueTooltip) {
+        setAttribute(column + "_valueTooltip", valueTooltip);
+    }
+
+    public String getValueTooltip(String column) {
+        return (String) getAttribute(column + "_valueTooltip");
+    }
+
     public void setForeground(String column, String color) {
         setAttribute(column + "_foreground", color);
     }

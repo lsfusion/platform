@@ -1,6 +1,5 @@
 package lsfusion.server.logics.form.interactive.design.property;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -127,11 +126,13 @@ public class PropertyDrawView extends BaseComponentView {
 
     public LocalizedString placeholder;
 
+    public LocalizedString tooltip;
+    public LocalizedString valueTooltip;
+
     public LocalizedString caption;
     public AppServerImage.Reader image;
     public boolean clearText;
     public boolean notSelectAll;
-    public String toolTip;
 
     public Boolean toolbar;
 
@@ -499,6 +500,9 @@ public class PropertyDrawView extends BaseComponentView {
 
         pool.writeString(outStream, ThreadLocalContext.localize(getPlaceholder(pool.context)));
 
+        pool.writeString(outStream, ThreadLocalContext.localize(tooltip));
+        pool.writeString(outStream, ThreadLocalContext.localize(valueTooltip));
+
         pool.writeObject(outStream, getChangeOnSingleClick(pool.context));
         outStream.writeBoolean(hide);
 
@@ -556,7 +560,6 @@ public class PropertyDrawView extends BaseComponentView {
         pool.writeString(outStream, debugBinding.getCanonicalName());
         pool.writeString(outStream, getPropertyFormName());
         pool.writeString(outStream, getIntegrationSID());
-        pool.writeString(outStream, toolTip);
         pool.serializeObject(outStream, pool.context.view.getGroupObject(entity.getToDraw(pool.context.entity)));
 
         pool.writeString(outStream, entity.columnsName);

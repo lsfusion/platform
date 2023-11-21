@@ -4,10 +4,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.base.BaseImage;
-import lsfusion.gwt.client.base.BaseStaticImage;
-import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.StaticImage;
+import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.view.ColorUtils;
 import lsfusion.gwt.client.base.view.SizedFlexPanel;
 import lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder;
@@ -21,6 +18,8 @@ import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.view.InputBasedCellRenderer;
 import lsfusion.gwt.client.view.GColorTheme;
 import lsfusion.gwt.client.view.MainFrame;
+
+import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
 
 public abstract class CellRenderer {
 
@@ -312,6 +311,8 @@ public abstract class CellRenderer {
 
         public String valueElementClass;
 
+        public String valueTooltip;
+
         public boolean rerender;
 
         public ToolbarState toolbar;
@@ -327,6 +328,9 @@ public abstract class CellRenderer {
     }
     private static boolean equalsValueElementClassState(RenderedState state, String elementClass) {
         return GwtClientUtils.nullEquals(state.valueElementClass, elementClass);
+    }
+    private static boolean equalsValueTooltipState(RenderedState state, String valueTooltip) {
+        return GwtClientUtils.nullEquals(state.valueTooltip, valueTooltip);
     }
 
     private static final String RENDERED = "rendered";
@@ -372,6 +376,26 @@ public abstract class CellRenderer {
             renderedState.valueElementClass = valueElementClass;
 
             BaseImage.updateClasses(element, valueElementClass);
+        }
+
+        String valueTooltip = updateContext.getValueTooltip();
+        if(isNew || !equalsValueTooltipState(renderedState, valueTooltip)) {
+            renderedState.valueTooltip = valueTooltip;
+            if(isNew) {
+                TooltipManager.TooltipHelper valueTooltipHelper = new TooltipManager.TooltipHelper() {
+                    @Override
+                    public String getTooltip(String dynamicTooltip) {
+                        return nvl(dynamicTooltip, valueTooltip);
+                    }
+                };
+                JavaScriptObject valueTippy = TooltipManager.initTooltip(element, valueTooltipHelper);
+                element.setPropertyObject("valueTooltipHelper", valueTooltipHelper);
+                element.setPropertyObject("valueTippy", valueTippy);
+            } else {
+                TooltipManager.TooltipHelper valueTooltipHelper = (TooltipManager.TooltipHelper) element.getPropertyObject("valueTooltipHelper");
+                JavaScriptObject valueTippy = (JavaScriptObject) element.getPropertyObject("valueTippy");
+                TooltipManager.updateContent(valueTippy, element, valueTooltipHelper, valueTooltip);
+            }
         }
 
         // already themed colors expected

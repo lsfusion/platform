@@ -212,6 +212,31 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
             target.entity.setPropertyExtra((PropertyObjectEntity<?>) placeholder, PropertyDrawExtraType.PLACEHOLDER, getVersion());
     }
 
+    //backward compatibility
+    public void setToolTip(Object toolTip) {
+        setTooltip(toolTip);
+    }
+
+    public void setTooltip(Object tooltip) {
+        if(tooltip instanceof LocalizedString)
+            target.tooltip = (LocalizedString) tooltip;
+        else {
+            if (target.tooltip == null)
+                target.tooltip = LocalizedString.NONAME;
+            target.entity.setPropertyExtra((PropertyObjectEntity<?>) tooltip, PropertyDrawExtraType.TOOLTIP, getVersion());
+        }
+    }
+
+    public void setValueTooltip(Object valueTooltip) {
+        if(valueTooltip instanceof LocalizedString)
+            target.valueTooltip = (LocalizedString) valueTooltip;
+        else {
+            if (target.valueTooltip == null)
+                target.valueTooltip = LocalizedString.NONAME;
+            target.entity.setPropertyExtra((PropertyObjectEntity<?>) valueTooltip, PropertyDrawExtraType.VALUETOOLTIP, getVersion());
+        }
+    }
+
     public void setValueAlignment(FlexAlignment valueAlignment) {
         target.valueAlignment = valueAlignment;
     }
@@ -230,10 +255,6 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
 
     public void setAskConfirmMessage(LocalizedString askConfirmMessage) {
         target.entity.askConfirmMessage = askConfirmMessage.getSourceString();
-    }
-    
-    public void setToolTip(LocalizedString toolTip) {
-        target.toolTip = toolTip.getSourceString();
     }
 
     public void setToolbar(boolean toolbar) {

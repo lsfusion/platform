@@ -58,7 +58,7 @@ public class ActionPanelView extends ButtonWidget implements PanelView, EditProp
         editDispatcher = new EditPropertyDispatcher(this, form.getDispatcherListener());
 
         setCaption(property.getPropertyCaption());
-        setToolTip(property.getPropertyCaption());
+        setTooltip(property.getPropertyCaption());
 
         if (property.isReadOnly()) {
             setEnabled(false);
@@ -240,8 +240,8 @@ public class ActionPanelView extends ButtonWidget implements PanelView, EditProp
         setIcon(new ImageIcon(image));
     }
 
-    public void setToolTip(String caption) {
-        LSFTooltipManager.initTooltip(this, property.getTooltipText(!BaseUtils.isRedundantString(property.toolTip) ? property.toolTip : caption),
+    public void setTooltip(String caption) {
+        LSFTooltipManager.initTooltip(this, property.getTooltipText(!BaseUtils.isRedundantString(property.tooltip) ? property.tooltip : caption),
                 property.path, property.creationPath);
     }
 

@@ -1,13 +1,10 @@
 package lsfusion.gwt.client.form.property.panel.view;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.AppBaseImage;
-import lsfusion.gwt.client.base.BaseImage;
-import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.Result;
+import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.SizedFlexPanel;
 import lsfusion.gwt.client.base.view.SizedWidget;
@@ -17,7 +14,8 @@ import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
-import lsfusion.gwt.client.form.property.cell.classes.view.SimpleTextBasedCellRenderer;
+
+import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
 
 public class PropertyPanelRenderer extends PanelRenderer {
 
@@ -27,14 +25,27 @@ public class PropertyPanelRenderer extends PanelRenderer {
 
     private Widget comment;
 
+    protected JavaScriptObject valueTippy = null;
+    protected TooltipManager.TooltipHelper valueTooltipHelper = null;
+
     public PropertyPanelRenderer(final GFormController form, ActionOrPropertyValueController controller, GPropertyDraw property, GGroupObjectValue columnKey, Result<CaptionWidget> captionContainer) {
         super(form, controller, property, columnKey, property.isAction()); // assert if is Action that property has alignCaption() true and captionContainer != null
 
         SizedWidget valueWidget = value.getSizedWidget();
+        Element valueElement = valueWidget.widget.getElement();
 
-        setStyles(valueWidget.widget.getElement(), property.isEditableNotNull(), property.hasChangeAction);
+        setStyles(valueElement, property.isEditableNotNull(), property.hasChangeAction);
 
         sizedView = initCaption(valueWidget, property, captionContainer);
+
+        if(property.valueTooltip != null) {
+            valueTippy = TooltipManager.initTooltip(valueElement, valueTooltipHelper = new TooltipManager.TooltipHelper() {
+                @Override
+                public String getTooltip(String dynamicTooltip) {
+                    return nvl(dynamicTooltip, "");
+                }
+            });
+        }
 
         finalizeInit();
     }
@@ -47,14 +58,17 @@ public class PropertyPanelRenderer extends PanelRenderer {
     }
 
     @Override
-    public void update(PValue value, boolean loading, AppBaseImage image, String valueElementClass, String background, String foreground, Boolean readOnly, String placeholder) {
+    public void update(PValue value, boolean loading, AppBaseImage image, String valueElementClass,
+                       String background, String foreground, Boolean readOnly, String placeholder,
+                       String tooltip, String valueTooltip) {
         if(property.hasDynamicImage() && !property.isAction()) {
             BaseImage.updateImage(image, label, property.panelCaptionVertical);
             image = null;
         }
 
         // we don't need image in value
-        super.update(value, loading, image, valueElementClass, background, foreground, readOnly, placeholder);
+        super.update(value, loading, image, valueElementClass, background, foreground, readOnly, placeholder,
+                tooltip, valueTooltip);
     }
 
     private SizedWidget initCaption(SizedWidget valuePanel, GPropertyDraw property, Result<CaptionWidget> captionContainer) {

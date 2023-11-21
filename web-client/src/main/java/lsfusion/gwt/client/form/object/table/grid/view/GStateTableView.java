@@ -60,6 +60,8 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     protected List<NativeHashMap<GGroupObjectValue, PValue>> cellBackgroundValues = new ArrayList<>();
     protected List<NativeHashMap<GGroupObjectValue, PValue>> cellForegroundValues = new ArrayList<>();
     protected List<NativeHashMap<GGroupObjectValue, PValue>> placeholders = new ArrayList<>();
+    protected List<NativeHashMap<GGroupObjectValue, PValue>> tooltips = new ArrayList<>();
+    protected List<NativeHashMap<GGroupObjectValue, PValue>> valueTooltips = new ArrayList<>();
 
     protected boolean checkShowIf(int property, GGroupObjectValue columnKey) {
         NativeHashMap<GGroupObjectValue, PValue> propertyShowIfs = showIfs.get(property);
@@ -187,6 +189,8 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
                 this.cellBackgroundValues.add(index, null);
                 this.cellForegroundValues.add(index, null);
                 this.placeholders.add(index, null);
+                this.tooltips.add(index, null);
+                this.valueTooltips.add(index, null);
 
                 List<NativeHashMap<GGroupObjectValue, PValue>> list = new ArrayList<>();
                 for (int i = 0; i < property.lastReaders.size(); i++)
@@ -379,6 +383,20 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     }
 
     @Override
+    public void updateTooltipValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        this.tooltips.set(properties.indexOf(propertyDraw), values);
+
+        this.dataUpdated = true;
+    }
+
+    @Override
+    public void updateValueTooltipValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        this.valueTooltips.set(properties.indexOf(propertyDraw), values);
+
+        this.dataUpdated = true;
+    }
+
+    @Override
     public void updateImageValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
 
     }
@@ -533,6 +551,22 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         return placeholder.get(GGroupObjectValue.getFullKey(rowKey, columnKey));
     }
 
+    protected PValue getCellTooltip(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
+        NativeHashMap<GGroupObjectValue, PValue> tooltip = tooltips.get(properties.indexOf(property));
+        if(tooltip == null)
+            return null;
+
+        return tooltip.get(GGroupObjectValue.getFullKey(rowKey, columnKey));
+    }
+
+    protected PValue getCellValueTooltip(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
+        NativeHashMap<GGroupObjectValue, PValue> valueTooltip = valueTooltips.get(properties.indexOf(property));
+        if(valueTooltip == null)
+            return null;
+
+        return valueTooltip.get(GGroupObjectValue.getFullKey(rowKey, columnKey));
+    }
+
     protected String getValueElementClass(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
         return getCellValueElementClass(property, rowKey, columnKey);
     }
@@ -545,6 +579,16 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     protected String getPlaceholder(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
         PValue placeholder = getCellPlaceholder(property, rowKey, columnKey);
         return placeholder == null ? property.placeholder : PValue.getStringValue(placeholder);
+    }
+
+    protected String getTooltip(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
+        PValue tooltip = getCellTooltip(property, rowKey, columnKey);
+        return tooltip == null ? property.tooltip : PValue.getStringValue(tooltip);
+    }
+
+    protected String getValueTooltip(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
+        PValue valueTooltip = getCellValueTooltip(property, rowKey, columnKey);
+        return valueTooltip == null ? property.valueTooltip : PValue.getStringValue(valueTooltip);
     }
 
     protected String getCellForeground(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {

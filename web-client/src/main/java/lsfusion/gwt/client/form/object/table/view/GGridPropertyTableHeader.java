@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.object.table.view;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.*;
 import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.size.GSize;
@@ -10,6 +11,7 @@ import lsfusion.gwt.client.form.property.panel.view.PropertyPanelRenderer;
 import java.util.function.Supplier;
 
 import static com.google.gwt.dom.client.BrowserEvents.DBLCLICK;
+import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 import static lsfusion.gwt.client.base.GwtSharedUtils.nullEquals;
 
@@ -20,6 +22,7 @@ public class GGridPropertyTableHeader extends Header<String> {
     private String renderedCaption;
     private String renderedCaptionElementClass;
     private AppBaseImage renderedImage;
+    private String renderedTooltip;
     private Boolean renderedSortDir;
 
     private Element renderedCaptionElement;
@@ -27,11 +30,12 @@ public class GGridPropertyTableHeader extends Header<String> {
     private String caption;
     private String captionElementClass;
     private AppBaseImage image;
-    private String toolTip;
+    private String tooltip;
     private String path;
     private String creationPath;
     private String formPath;
-    private final TooltipManager.TooltipHelper toolTipHelper;
+    protected JavaScriptObject tippy = null;
+    private final TooltipManager.TooltipHelper tooltipHelper;
 
     private boolean notNull;
     private boolean hasChangeAction;
@@ -40,18 +44,18 @@ public class GGridPropertyTableHeader extends Header<String> {
 
     private boolean sticky;
 
-    public GGridPropertyTableHeader(GGridPropertyTable table, String caption, String captionElementClass, AppBaseImage image, String toolTip, boolean sticky) {
+    public GGridPropertyTableHeader(GGridPropertyTable table, String caption, String captionElementClass, AppBaseImage image, String tooltip, boolean sticky) {
         this.caption = caption;
         this.captionElementClass = captionElementClass;
         this.image = image;
         this.table = table;
-        this.toolTip = toolTip;
+        this.tooltip = tooltip;
         this.sticky = sticky;
 
-        toolTipHelper = new TooltipManager.TooltipHelper() {
+        tooltipHelper = new TooltipManager.TooltipHelper() {
             @Override
-            public String getTooltip() {
-                return GGridPropertyTableHeader.this.toolTip;
+            public String getTooltip(String dynamicTooltip) {
+                return nvl(dynamicTooltip, GGridPropertyTableHeader.this.tooltip);
             }
 
             @Override
@@ -91,8 +95,8 @@ public class GGridPropertyTableHeader extends Header<String> {
         this.image = image;
     }
 
-    public void setToolTip(String toolTip) {
-        this.toolTip = toolTip;
+    public void setTooltip(String tooltip) {
+        this.tooltip = tooltip;
     }
 
     public void setHeaderHeight(GSize headerHeight) {
@@ -120,7 +124,7 @@ public class GGridPropertyTableHeader extends Header<String> {
         Boolean sortDir = table.getSortDirection(this);
 
         renderedCaptionElement = renderTD(th, headerHeight, sortDir, caption, captionElementClass, image, false);
-        TooltipManager.initTooltip(renderedCaptionElement, toolTipHelper);
+        tippy = TooltipManager.initTooltip(renderedCaptionElement, tooltipHelper);
         renderedSortDir = sortDir;
         renderedCaption = caption;
         renderedCaptionElementClass = captionElementClass;
@@ -229,6 +233,10 @@ public class GGridPropertyTableHeader extends Header<String> {
             if (!nullEquals(this.image, renderedImage)) {
                 renderImage(renderedCaptionElement, image);
                 renderedImage = image;
+            }
+            if (!nullEquals(this.tooltip, renderedTooltip)) {
+                TooltipManager.updateContent(tippy, renderedCaptionElement, tooltipHelper, tooltip);
+                renderedTooltip = tooltip;
             }
         }
     }

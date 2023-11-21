@@ -439,6 +439,16 @@ public class GGridController extends GAbstractTableController {
     }
 
     @Override
+    public void updateTooltipValues(GTooltipReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+        table.updateTooltipValues(formController.getProperty(reader.propertyID), values);
+    }
+
+    @Override
+    public void updateValueTooltipValues(GValueTooltipReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+        table.updateValueTooltipValues(formController.getProperty(reader.propertyID), values);
+    }
+
+    @Override
     public void updateImageValues(GImageReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         table.updateImageValues(formController.getProperty(reader.propertyID), values);
     }

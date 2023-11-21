@@ -21,7 +21,7 @@ public class GGridPropertyTableFooter extends Header<String> implements RenderCo
     protected PValue value;
     private boolean sticky;
 
-    public GGridPropertyTableFooter(GGridPropertyTable table, GPropertyDraw property, PValue value, String toolTip, boolean sticky) {
+    public GGridPropertyTableFooter(GGridPropertyTable table, GPropertyDraw property, PValue value, String tooltip, boolean sticky) {
         this.table = table;
         this.property = property;
         this.value = value;

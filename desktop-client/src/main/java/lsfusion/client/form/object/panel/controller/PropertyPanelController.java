@@ -266,7 +266,7 @@ public class PropertyPanelController {
         if (captions != null) {
             String caption = property.getDynamicCaption(captions.get(columnKey));
             view.setCaption(caption);
-            view.setToolTip(caption);
+            view.setTooltip(caption);
         }
     }
 }
