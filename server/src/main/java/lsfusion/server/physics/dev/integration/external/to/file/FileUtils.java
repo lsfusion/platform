@@ -406,13 +406,34 @@ public class FileUtils {
         });
     }
 
-    public static String runCmd(String command, String directory) throws IOException {
+    public static ArrayList<String> runCmd(String command, String directory, boolean wait) throws IOException {
         Runtime runtime = Runtime.getRuntime();
         Process p = directory != null ? runtime.exec(command, null, new File(directory)) : runtime.exec(command);
-        try (BufferedInputStream err = new BufferedInputStream(p.getErrorStream())) {
+        ArrayList<String> result = null;
+        if (wait) {
+            try {
+                result = new ArrayList<>();
+
+                result.add(readInputStreamToString(p.getInputStream()));
+                result.add(readInputStreamToString(p.getErrorStream()));
+
+                p.waitFor();
+
+                int exitValue = p.exitValue();
+                result.add(exitValue == 0 ? null : String.valueOf(exitValue));
+
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return result;
+    }
+
+    private static String readInputStreamToString(InputStream inputStream) throws IOException {
+        try (BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream)) { //
             StringBuilder errS = new StringBuilder();
             byte[] b = new byte[1024];
-            while (err.read(b) != -1) {
+            while (bufferedInputStream.read(b) != -1) {
                 errS.append(new String(b, SystemUtils.IS_OS_WINDOWS ?  "cp866" : "utf-8").trim()).append("\n");
             }
             return BaseUtils.trimToNull(errS.toString());
