@@ -25,8 +25,18 @@ public abstract class CellRenderer {
 
     protected final GPropertyDraw property;
 
+    TooltipManager.TooltipHelper valueTooltipHelper;
+
     public CellRenderer(GPropertyDraw property) {
         this.property = property;
+
+        valueTooltipHelper = new TooltipManager.TooltipHelper() {
+            @Override
+            public String getTooltip(String dynamicTooltip) {
+                return nvl(dynamicTooltip, property.valueTooltip);
+            }
+        };
+
     }
 
     private static final ClientMessages messages = ClientMessages.Instance.get();
@@ -381,21 +391,14 @@ public abstract class CellRenderer {
         String valueTooltip = updateContext.getValueTooltip();
         if((isNew && valueTooltip != null) || !equalsValueTooltipState(renderedState, valueTooltip)) {
             renderedState.valueTooltip = valueTooltip;
+            JavaScriptObject valueTippy;
             if(isNew) {
-                TooltipManager.TooltipHelper valueTooltipHelper = new TooltipManager.TooltipHelper() {
-                    @Override
-                    public String getTooltip(String dynamicTooltip) {
-                        return nvl(dynamicTooltip, valueTooltip);
-                    }
-                };
-                JavaScriptObject valueTippy = TooltipManager.initTooltip(element, valueTooltipHelper);
-                element.setPropertyObject("valueTooltipHelper", valueTooltipHelper);
+                valueTippy = TooltipManager.initTooltip(element, valueTooltipHelper);
                 element.setPropertyObject("valueTippy", valueTippy);
             } else {
-                TooltipManager.TooltipHelper valueTooltipHelper = (TooltipManager.TooltipHelper) element.getPropertyObject("valueTooltipHelper");
-                JavaScriptObject valueTippy = (JavaScriptObject) element.getPropertyObject("valueTippy");
-                TooltipManager.updateContent(valueTippy, element, valueTooltipHelper, valueTooltip);
+                valueTippy = (JavaScriptObject) element.getPropertyObject("valueTippy");
             }
+            TooltipManager.updateContent(valueTippy, element, valueTooltipHelper, valueTooltip);
         }
 
         // already themed colors expected
