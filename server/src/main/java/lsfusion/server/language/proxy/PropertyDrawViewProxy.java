@@ -175,9 +175,14 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
     public void setAskConfirmMessage(LocalizedString askConfirmMessage) {
         target.entity.askConfirmMessage = askConfirmMessage.getSourceString();
     }
-    
+
+    //backward compatibility
     public void setToolTip(LocalizedString toolTip) {
-        target.toolTip = toolTip.getSourceString();
+        setTooltip(toolTip);
+    }
+
+    public void setTooltip(LocalizedString toolTip) {
+        target.tooltip = toolTip.getSourceString();
     }
     
     public void setNotNull(boolean notNull) {

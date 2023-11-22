@@ -104,7 +104,7 @@ public class PropertyDrawView extends BaseComponentView {
     public LocalizedString caption;
     public boolean clearText;
     public boolean notSelectAll;
-    public String toolTip;
+    public String tooltip;
 
     public boolean notNull;
 
@@ -448,7 +448,7 @@ public class PropertyDrawView extends BaseComponentView {
         pool.writeString(outStream, debugBinding.getCanonicalName());
         pool.writeString(outStream, getPropertyFormName());
         pool.writeString(outStream, getIntegrationSID());
-        pool.writeString(outStream, toolTip);
+        pool.writeString(outStream, tooltip);
         pool.serializeObject(outStream, pool.context.view.getGroupObject(entity.getToDraw(pool.context.view.entity)));
 
         pool.writeString(outStream, entity.columnsName);
