@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
+
 public class GFormLayout extends ResizableComplexPanel {
 
     private final GFormController form;
@@ -62,8 +64,8 @@ public class GFormLayout extends ResizableComplexPanel {
         boolean isMain = container.main;
         TooltipManager.initTooltip(header.getElement(), new TooltipManager.TooltipHelper() {
             @Override
-            public String getTooltip() {
-                return isMain ? form.form.getTooltip() : container.getTooltip();
+            public String getTooltip(String dynamicTooltip) {
+                return nvl(dynamicTooltip, isMain ? form.form.getTooltip() : container.getTooltip());
             }
 
             @Override

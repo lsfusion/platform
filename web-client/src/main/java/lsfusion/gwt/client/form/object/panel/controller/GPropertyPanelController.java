@@ -51,6 +51,8 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
     private NativeHashMap<GGroupObjectValue, PValue> comments;
     private NativeHashMap<GGroupObjectValue, PValue> cellCommentElementClasses;
     private NativeHashMap<GGroupObjectValue, PValue> placeholders;
+    private NativeHashMap<GGroupObjectValue, PValue> tooltips;
+    private NativeHashMap<GGroupObjectValue, PValue> valueTooltips;
 
     public GPropertyPanelController(GPropertyDraw property, GFormController form) {
         this.property = property;
@@ -170,6 +172,10 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
         if(placeholders != null) {
             placeholder = placeholders.get(columnKey);
         }
+        PValue valueTooltip = null;
+        if(valueTooltips != null) {
+            valueTooltip = valueTooltips.get(columnKey);
+        }
         renderer.update(values.get(columnKey),
                 loadings != null && PValue.getBooleanValue(loadings.get(columnKey)),
                 images != null ? PValue.getImageValue(images.get(columnKey)) : null,
@@ -177,7 +183,8 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
                 background == null ? property.getBackground() : PValue.getColorStringValue(background),
                 foreground == null ? property.getForeground() : PValue.getColorStringValue(foreground),
                 readOnly == null ? null : PValue.get3SBooleanValue(readOnly.get(columnKey)),
-                placeholder == null ? property.placeholder : PValue.getStringValue(placeholder));
+                placeholder == null ? property.placeholder : PValue.getStringValue(placeholder),
+                valueTooltip == null ? property.valueTooltip : PValue.getStringValue(valueTooltip));
 
         if (captions != null)
             renderer.setCaption(GGridPropertyTable.getDynamicCaption(captions.get(columnKey)));
@@ -188,6 +195,9 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
             renderer.setComment(GGridPropertyTable.getDynamicComment(comments.get(columnKey)));
         if (cellCommentElementClasses != null)
             renderer.setCommentElementClass(PValue.getClassStringValue(cellCommentElementClasses.get(columnKey)));
+
+        if (tooltips != null)
+            renderer.setTooltip(GGridPropertyTable.getDynamicTooltip(tooltips.get(columnKey)));
     }
 
     public boolean focus(FocusUtils.Reason reason) {
@@ -293,5 +303,13 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
 
     public void setPropertyPlaceholders(NativeHashMap<GGroupObjectValue, PValue> placeholders) {
         this.placeholders = placeholders;
+    }
+
+    public void setPropertyTooltips(NativeHashMap<GGroupObjectValue, PValue> tooltips) {
+        this.tooltips = tooltips;
+    }
+
+    public void setPropertyValueTooltips(NativeHashMap<GGroupObjectValue, PValue> valueTooltips) {
+        this.valueTooltips = valueTooltips;
     }
 }

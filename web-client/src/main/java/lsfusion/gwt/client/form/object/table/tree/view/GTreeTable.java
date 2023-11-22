@@ -503,6 +503,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             return record.getPlaceholder(property);
         }
 
+        @Override
+        protected String getValueTooltip(GPropertyDraw property, GTreeGridRecord record) {
+            return record.getValueTooltip(property);
+        }
+
         // in tree property might change
         private static final String PDRAW_ATTRIBUTE = "__gwt_pdraw"; // actually it represents nod depth
 
@@ -579,6 +584,18 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     @Override
     public void updatePlaceholderValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
         super.updatePlaceholderValues(propertyDraw, values);
+        dataUpdated = true;
+    }
+
+    @Override
+    public void updateTooltipValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        super.updateTooltipValues(propertyDraw, values);
+        dataUpdated = true;
+    }
+
+    @Override
+    public void updateValueTooltipValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        super.updateValueTooltipValues(propertyDraw, values);
         dataUpdated = true;
     }
 
@@ -819,6 +836,12 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                         if (propPlaceholders != null)
                             placeholder = propPlaceholders.get(key);
                         objectRecord.setPlaceholder(property, placeholder == null ? property.placeholder : PValue.getStringValue(placeholder));
+
+                        PValue valueTooltip = null;
+                        NativeHashMap<GGroupObjectValue, PValue> propValueTooltips = valueTooltips.get(property);
+                        if (propValueTooltips != null)
+                            valueTooltip = propValueTooltips.get(key);
+                        objectRecord.setValueTooltip(property, valueTooltip == null ? property.valueTooltip : PValue.getStringValue(valueTooltip));
 
                         NativeHashMap<GGroupObjectValue, PValue> actionImages = property.isAction() ? cellImages.get(property) : null;
                         objectRecord.setImage(property, actionImages == null ? null : PValue.getImageValue(actionImages.get(key)));

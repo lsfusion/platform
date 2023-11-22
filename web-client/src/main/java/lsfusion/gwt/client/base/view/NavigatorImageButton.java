@@ -10,6 +10,8 @@ import lsfusion.gwt.client.navigator.window.view.WindowsController;
 
 import java.util.function.BiConsumer;
 
+import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
+
 public class NavigatorImageButton extends ImageButton {
 
     private GNavigatorElement element;
@@ -45,8 +47,8 @@ public class NavigatorImageButton extends ImageButton {
 
         TooltipManager.TooltipHelper tooltipHelper = new TooltipManager.TooltipHelper() {
             @Override
-            public String getTooltip() {
-                return element.getTooltipText();
+            public String getTooltip(String dynamicTooltip) {
+                return nvl(dynamicTooltip, element.getTooltipText());
             }
 
             @Override

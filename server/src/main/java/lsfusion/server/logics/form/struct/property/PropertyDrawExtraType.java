@@ -197,6 +197,38 @@ public enum PropertyDrawExtraType {
         public String getText() {
             return "PLACEHOLDER";
         }
+    },
+    TOOLTIP {
+        @Override
+        public ReportFieldExtraType getReportExtraType() {
+            return null;
+        }
+
+        @Override
+        public byte getPropertyReadType() {
+            return PropertyReadType.TOOLTIP;
+        }
+
+        @Override
+        public String getText() {
+            return "TOOLTIP";
+        }
+    },
+    VALUETOOLTIP {
+        @Override
+        public ReportFieldExtraType getReportExtraType() {
+            return null;
+        }
+
+        @Override
+        public byte getPropertyReadType() {
+            return PropertyReadType.VALUETOOLTIP;
+        }
+
+        @Override
+        public String getText() {
+            return "VALUETOOLTIP";
+        }
     }
     ;
 

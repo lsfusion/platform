@@ -181,6 +181,10 @@ public class ClientFormChanges {
                 return clientForm.getProperty(inStream.readInt()).commentElementClassReader;
             case PropertyReadType.PLACEHOLDER:
                 return clientForm.getProperty(inStream.readInt()).placeholderReader;
+            case PropertyReadType.TOOLTIP:
+                return clientForm.getProperty(inStream.readInt()).tooltipReader;
+            case PropertyReadType.VALUETOOLTIP:
+                return clientForm.getProperty(inStream.readInt()).valueTooltipReader;
             default:
                 throw new IOException();
         }

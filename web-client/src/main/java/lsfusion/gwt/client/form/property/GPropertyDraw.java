@@ -68,7 +68,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public boolean customNeedPlaceholder;
     public boolean customNeedReadonly;
 
-    public String toolTip;
     public boolean clearText;
     public String tableName;
     public String[] interfacesCaptions;
@@ -351,6 +350,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GCommentReader commentReader;
     public GCommentElementClassReader commentElementClassReader;
     public GPlaceholderReader placeholderReader;
+    public GTooltipReader tooltipReader;
+    public GValueTooltipReader valueTooltipReader;
 
     // for pivoting
     public String formula;
@@ -386,6 +387,9 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GFlexAlignment panelCommentAlignment;
 
     public String placeholder;
+
+    public String tooltip;
+    public String valueTooltip;
 
     public Boolean changeOnSingleClick;
 
@@ -656,7 +660,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     public String getTooltip(String caption) {
-        String propCaption = GwtSharedUtils.nullTrim(!GwtSharedUtils.isRedundantString(toolTip) ? toolTip : caption);
+        String propCaption = GwtSharedUtils.nullTrim(!GwtSharedUtils.isRedundantString(tooltip) ? tooltip : caption);
         String keyBindingText = hasKeyBinding() ? GwtSharedUtils.stringFormat(getChangeKeyToolTipFormat(), getKeyBindingText()) : "";
 
         if (!MainFrame.showDetailedInfo) {

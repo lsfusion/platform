@@ -439,6 +439,16 @@ public class GGridController extends GAbstractTableController {
     }
 
     @Override
+    public void updateTooltipValues(GTooltipReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+        table.updateTooltipValues(formController.getProperty(reader.propertyID), values);
+    }
+
+    @Override
+    public void updateValueTooltipValues(GValueTooltipReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+        table.updateValueTooltipValues(formController.getProperty(reader.propertyID), values);
+    }
+
+    @Override
     public void updateImageValues(GImageReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         table.updateImageValues(formController.getProperty(reader.propertyID), values);
     }
@@ -744,18 +754,4 @@ public class GGridController extends GAbstractTableController {
             }
         }
     }
-
-//    private static void updateTooltip(GGridTable table) {
-//        String tooltip = messages.formGridPreferences() + " (";
-//        if (table.userPreferencesSaved()) {
-//            tooltip += messages.formGridPreferencesSavedForCurrentUser();
-//        } else if (table.generalPreferencesSaved()) {
-//            tooltip += messages.formGridPreferencesSavedForAllUsers();
-//        } else {
-//            tooltip += messages.formGridPreferencesNotSaved();
-//        }
-//
-//        setTitle(tooltip + ")");
-//    }
-
 }

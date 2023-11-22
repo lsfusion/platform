@@ -35,6 +35,7 @@ import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 import java.util.ArrayList;
 import java.util.List;
 
+import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
 import static lsfusion.gwt.client.form.event.GKeyStroke.*;
 
 public abstract class GGridPropertyTable<T extends GridDataRecord> extends GPropertyTable<T> {
@@ -79,6 +80,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> cellBackgroundValues = new NativeSIDMap<>();
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> cellForegroundValues = new NativeSIDMap<>();
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> placeholders = new NativeSIDMap<>();
+    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> tooltips = new NativeSIDMap<>();
+    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> valueTooltips = new NativeSIDMap<>();
     protected NativeHashMap<GGroupObjectValue, PValue> rowBackgroundValues = new NativeHashMap<>();
     protected NativeHashMap<GGroupObjectValue, PValue> rowForegroundValues = new NativeHashMap<>();
 
@@ -108,9 +111,21 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return property.appImage;
     }
 
+    public static String getPropertyTooltip(NativeHashMap<GGroupObjectValue, PValue> propTooltips, GPropertyDraw property, GGroupObjectValue columnKey) {
+        if (propTooltips != null)
+            return getDynamicTooltip(propTooltips.get(columnKey));
+
+        return property.tooltip;
+    }
+
     public static String getDynamicComment(PValue commentObject) {
         String comment = PValue.getStringValue(commentObject);
         return comment != null ? comment.trim() : null;
+    }
+
+    public static String getDynamicTooltip(PValue tooltipObject) {
+        String tooltip = PValue.getStringValue(tooltipObject);
+        return tooltip != null ? tooltip.trim() : null;
     }
 
     protected GGridPropertyTableHeader getGridHeader(int i) {
@@ -299,6 +314,14 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     public void updatePlaceholderValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
         placeholders.put(propertyDraw, values);
+    }
+
+    public void updateTooltipValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        tooltips.put(propertyDraw, values);
+    }
+
+    public void updateValueTooltipValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        valueTooltips.put(propertyDraw, values);
     }
 
     public void updateCellForegroundValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
@@ -557,13 +580,14 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     protected void updatePropertyHeader(GGroupObjectValue columnKey, GPropertyDraw property, int index) {
         String columnCaption = getPropertyCaption(property, columnKey);
+        String columnTooltip = getPropertyTooltip(property, columnKey);
         GGridPropertyTableHeader header = getGridHeader(index);
         if(header != null) {
             header.setCaption(columnCaption, property.notNull, property.hasChangeAction);
             header.setCaptionElementClass(getCaptionElementClass(property, columnKey));
             header.setImage(!property.isAction() ? getPropertyImage(property, columnKey) : null);
             header.setPaths(property.path, property.creationPath, property.formPath);
-            header.setToolTip(property.getTooltip(columnCaption));
+            header.setTooltip(property.getTooltip(nvl(columnTooltip, columnCaption)));
             header.setHeaderHeight(property.getHeaderCaptionHeight(this));
         } else
             assert columnCaption == null || columnCaption.isEmpty();
@@ -627,6 +651,10 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     protected AppBaseImage getPropertyImage(GPropertyDraw property, GGroupObjectValue columnKey) {
         return getPropertyImage(cellImages.get(property), property, columnKey);
+    }
+
+    protected String getPropertyTooltip(GPropertyDraw property, GGroupObjectValue columnKey) {
+        return getPropertyTooltip(tooltips.get(property), property, columnKey);
     }
 
     protected PValue getPropertyFooter(GPropertyDraw property, GGroupObjectValue columnKey) {
@@ -717,6 +745,7 @@ protected Double getUserFlex(int i) {
         protected abstract String getBackground(GPropertyDraw property, T record);
         protected abstract String getForeground(GPropertyDraw property, T record);
         protected abstract String getPlaceholder(GPropertyDraw property, T record);
+        protected abstract String getValueTooltip(GPropertyDraw property, T record);
 
         @Override
         public void onEditEvent(EventHandler handler, Cell editCell, Element editRenderElement) {
@@ -873,6 +902,18 @@ protected Double getUserFlex(int i) {
                 T row = (T) cell.getRow();
                 String foreground = column.getForeground(property, row);
                 return foreground != null ? foreground : row.getRowForeground();
+            }
+
+            @Override
+            public String getPlaceholder() {
+                T row = (T) cell.getRow();
+                return column.getPlaceholder(property, row);
+            }
+
+            @Override
+            public String getValueTooltip() {
+                T row = (T) cell.getRow();
+                return column.getValueTooltip(property, row);
             }
 
             @Override

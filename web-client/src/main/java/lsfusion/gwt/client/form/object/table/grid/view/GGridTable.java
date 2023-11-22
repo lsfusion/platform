@@ -434,6 +434,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                     NativeHashMap<GGroupObjectValue, PValue> propertyBackgrounds = cellBackgroundValues.get(property);
                     NativeHashMap<GGroupObjectValue, PValue> propertyForegrounds = cellForegroundValues.get(property);
                     NativeHashMap<GGroupObjectValue, PValue> propertyPlaceholders = placeholders.get(property);
+                    NativeHashMap<GGroupObjectValue, PValue> propertyValueTooltips = valueTooltips.get(property);
                     NativeHashMap<GGroupObjectValue, PValue> actionImages = property.isAction() ? cellImages.get(property) : null;
 
                     for (GGroupObjectValue columnKey : columnKeys.get(property)) {
@@ -456,6 +457,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                             record.setForeground(column.columnSID, foreground == null ? property.getForeground() : PValue.getColorStringValue(foreground));
                             PValue placeholder = propertyPlaceholders == null ? null : propertyPlaceholders.get(fullKey);
                             record.setPlaceholder(column.columnSID, placeholder == null ? property.placeholder : PValue.getStringValue(placeholder));
+                            PValue valueTooltip = propertyValueTooltips == null ? null : propertyValueTooltips.get(fullKey);
+                            record.setValueTooltip(column.columnSID, valueTooltip == null ? property.valueTooltip : PValue.getStringValue(valueTooltip));
                             record.setImage(column.columnSID, actionImages == null ? null : PValue.getImageValue(actionImages.get(fullKey)));
                         }
                     }
@@ -651,6 +654,20 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     @Override
     public void updatePlaceholderValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
         super.updatePlaceholderValues(propertyDraw, values);
+        updatedProperties.put(propertyDraw, TRUE);
+        dataUpdated = true;
+    }
+
+    @Override
+    public void updateTooltipValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        super.updateTooltipValues(propertyDraw, values);
+        updatedProperties.put(propertyDraw, TRUE);
+        captionsUpdated = true;
+    }
+
+    @Override
+    public void updateValueTooltipValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        super.updateValueTooltipValues(propertyDraw, values);
         updatedProperties.put(propertyDraw, TRUE);
         dataUpdated = true;
     }
@@ -1239,6 +1256,10 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         @Override
         protected String getPlaceholder(GPropertyDraw property, GridDataRecord record) {
             return record.getPlaceholder(columnSID);
+        }
+        @Override
+        protected String getValueTooltip(GPropertyDraw property, GridDataRecord record) {
+            return record.getValueTooltip(columnSID);
         }
     }
 

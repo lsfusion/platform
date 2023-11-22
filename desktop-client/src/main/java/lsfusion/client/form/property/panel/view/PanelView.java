@@ -14,7 +14,7 @@ public interface PanelView {
     boolean forceEdit();
     boolean isShowing();
     void setCaption(String caption);
-    void setToolTip(String caption);
+    void setTooltip(String caption);
     void setBackgroundColor(Color background);
     void setForegroundColor(Color foreground);
     void setImage(Image image);

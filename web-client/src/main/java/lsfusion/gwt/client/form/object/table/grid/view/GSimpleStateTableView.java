@@ -402,6 +402,20 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return getPlaceholder(column.property, object, column.columnKey);
     }
 
+    protected String getTooltip(String property, GGroupObjectValue object) {
+        Column column = getColumn(property);
+        if(column == null)
+            return null;
+        return getTooltip(column.property, object, column.columnKey);
+    }
+
+    protected String getValueTooltip(String property, GGroupObjectValue object) {
+        Column column = getColumn(property);
+        if(column == null)
+            return null;
+        return getValueTooltip(column.property, object, column.columnKey);
+    }
+
     private JavaScriptObject getValue(String property, GGroupObjectValue groupObjectValue) {
         Column column = getColumn(property);
         if(column == null)
@@ -415,6 +429,14 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
     protected String getPlaceholder(String property, JavaScriptObject object) {
         return getPlaceholder(property, getJsObjects(object));
+    }
+
+    protected String getTooltip(String property, JavaScriptObject object) {
+        return getTooltip(property, getJsObjects(object));
+    }
+
+    protected String getValueTooltip(String property, JavaScriptObject object) {
+        return getValueTooltip(property, getJsObjects(object));
     }
 
     protected JavaScriptObject getValue(String property, JavaScriptObject object) {
@@ -756,6 +778,12 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             },
             getPlaceholder: function (property, object) {
                 return thisObj.@GSimpleStateTableView::getPlaceholder(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
+            },
+            getTooltip: function (property, object) {
+                return thisObj.@GSimpleStateTableView::getTooltip(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
+            },
+            getValueTooltip: function (property, object) {
+                return thisObj.@GSimpleStateTableView::getValueTooltip(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
             },
             getValue: function (property, object) {
                 return thisObj.@GSimpleStateTableView::getValue(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);

@@ -1,13 +1,9 @@
 package lsfusion.gwt.client.form.property.panel.view;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.AppBaseImage;
-import lsfusion.gwt.client.base.BaseImage;
-import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.Result;
+import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.SizedFlexPanel;
 import lsfusion.gwt.client.base.view.SizedWidget;
@@ -17,7 +13,6 @@ import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
-import lsfusion.gwt.client.form.property.cell.classes.view.SimpleTextBasedCellRenderer;
 
 public class PropertyPanelRenderer extends PanelRenderer {
 
@@ -47,14 +42,15 @@ public class PropertyPanelRenderer extends PanelRenderer {
     }
 
     @Override
-    public void update(PValue value, boolean loading, AppBaseImage image, String valueElementClass, String background, String foreground, Boolean readOnly, String placeholder) {
+    public void update(PValue value, boolean loading, AppBaseImage image, String valueElementClass,
+                       String background, String foreground, Boolean readOnly, String placeholder, String valueTooltip) {
         if(property.hasDynamicImage() && !property.isAction()) {
             BaseImage.updateImage(image, label, property.panelCaptionVertical);
             image = null;
         }
 
         // we don't need image in value
-        super.update(value, loading, image, valueElementClass, background, foreground, readOnly, placeholder);
+        super.update(value, loading, image, valueElementClass, background, foreground, readOnly, placeholder, valueTooltip);
     }
 
     private SizedWidget initCaption(SizedWidget valuePanel, GPropertyDraw property, Result<CaptionWidget> captionContainer) {

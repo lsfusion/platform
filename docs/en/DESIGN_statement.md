@@ -191,12 +191,14 @@ To access design components, you can use their names or address property compone
 |`panelCommentFirst`|Indicates that the comment should be drawn on the panel before property value|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`panelCommentAlignment`|Comment component alignment inside the container. Acceptable values: `START` (at the beginning), `CENTER` (in the center), `END` (at the end), `STRETCH` (stretched).|Alignment type|`START`|`STRETCH`|
 |`placeholder`|Placeholder of a property or action|String literal|placeholder of a property or action|`'Placeholder'`|
+|`tooltip`|The tip to be shown when the cursor hovers over the caption of a property or action|String literal|Default tooltip|`'Tip'`|
+|`toolTip`|Same as tooltip<br/>**deprecated since version 6, use `tooltip`**|String literal|Default tooltip|`'Tip'`|
+|`valueToolTip`|The tip to be shown when the cursor hovers over the value of a property|String literal|Default tooltip|`'Tip'`|
 |`valueAlignment`|Component value alignment. Acceptable values: `START` (at the beginning), `CENTER` (in the center), `END` (at the end), `STRETCH` (stretched).|Alignment type|`START`|`STRETCH`|
 |`clearText`|Specifying that the current text should be reset when input starts|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`notSelectAll`|Specifying that the text is not selected at the start of editing|`FALSE`|`TRUE`<br/>`FALSE`|
 |`askConfirm`|Specifies that an attempt to change the property (execute an action) will show a confirmation request|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`askConfirmMessage`|Text of the confirmation request shown when an attempt to change the property (execute the action) is made|String literal|default message|`'Are you sure you want to modify this property?'`|
-|`toolTip`|The tip to be shown when the cursor hovers over the caption of a property or action|String literal|Default toolTip|`'Tip'`|
 |`toolbar`|todo|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`notNull`|Specifies that in case of a `NULL` property value, the component of this property should be highlighted|Extended Boolean literal|depends on the property|`TRUE`<br/>`FALSE`|
 |`select`|todo|String literal|NULL|todo|

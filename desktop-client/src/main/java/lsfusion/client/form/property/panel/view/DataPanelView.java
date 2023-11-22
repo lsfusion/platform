@@ -105,7 +105,7 @@ public class DataPanelView extends FlexPanel implements PanelView {
             labelMarginRight = captionContainer != null || !tableFirst;
 
         setOpaque(false);
-        setToolTip(property.getPropertyCaption());
+        setTooltip(property.getPropertyCaption());
 
         if (property.eventID != null) {
             valueEventListener = new ValueEventListener() {
@@ -284,7 +284,7 @@ public class DataPanelView extends FlexPanel implements PanelView {
         return property.toString();
     }
 
-    public void setToolTip(String caption) {
+    public void setTooltip(String caption) {
         LSFTooltipManager.initTooltip(label, property.getTooltipText(caption), property.path, property.creationPath);
     }
 

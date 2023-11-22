@@ -184,6 +184,22 @@ public class GPanelController extends GPropertyController {
     }
 
     @Override
+    public void updateTooltipValues(GTooltipReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+        GPropertyDraw property = formController.getProperty(reader.propertyID);
+        propertyControllers.get(property).setPropertyTooltips(values);
+
+        updatedProperties.put(property, TRUE);
+    }
+
+    @Override
+    public void updateValueTooltipValues(GValueTooltipReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+        GPropertyDraw property = formController.getProperty(reader.propertyID);
+        propertyControllers.get(property).setPropertyValueTooltips(values);
+
+        updatedProperties.put(property, TRUE);
+    }
+
+    @Override
     public void updateLastValues(GLastReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
     }
 

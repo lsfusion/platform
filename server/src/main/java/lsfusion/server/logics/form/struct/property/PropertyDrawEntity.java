@@ -553,7 +553,9 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public ImSet<ObjectEntity> getObjectInstances(Function<PropertyDrawExtraType, PropertyObjectEntity<?>> getProperty) {
         MAddSet<ActionOrPropertyObjectEntity<?, ?>> propertyObjects = SetFact.mAddSet();
 
-        PropertyDrawExtraType[] neededTypes = {CAPTION, FOOTER, SHOWIF, VALUEELEMENTCLASS, CAPTIONELEMENTCLASS, BACKGROUND, FOREGROUND, IMAGE, READONLYIF, COMMENT, COMMENTELEMENTCLASS, PLACEHOLDER};
+        PropertyDrawExtraType[] neededTypes = {CAPTION, FOOTER, SHOWIF, VALUEELEMENTCLASS, CAPTIONELEMENTCLASS,
+                BACKGROUND, FOREGROUND, IMAGE, READONLYIF, COMMENT, COMMENTELEMENTCLASS, PLACEHOLDER,
+                TOOLTIP, VALUETOOLTIP};
         for (PropertyDrawExtraType type : neededTypes) {
             PropertyObjectEntity<?> prop = getProperty.apply(type);
             if (prop != null) {
