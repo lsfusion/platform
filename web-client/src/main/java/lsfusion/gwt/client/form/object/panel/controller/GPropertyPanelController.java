@@ -172,10 +172,6 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
         if(placeholders != null) {
             placeholder = placeholders.get(columnKey);
         }
-        PValue tooltip = null;
-        if(tooltips != null) {
-            tooltip = tooltips.get(columnKey);
-        }
         PValue valueTooltip = null;
         if(valueTooltips != null) {
             valueTooltip = valueTooltips.get(columnKey);
@@ -188,7 +184,6 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
                 foreground == null ? property.getForeground() : PValue.getColorStringValue(foreground),
                 readOnly == null ? null : PValue.get3SBooleanValue(readOnly.get(columnKey)),
                 placeholder == null ? property.placeholder : PValue.getStringValue(placeholder),
-                tooltip == null ? property.tooltip : PValue.getStringValue(tooltip),
                 valueTooltip == null ? property.valueTooltip : PValue.getStringValue(valueTooltip));
 
         if (captions != null)

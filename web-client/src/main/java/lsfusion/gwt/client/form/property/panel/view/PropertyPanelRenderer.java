@@ -43,16 +43,14 @@ public class PropertyPanelRenderer extends PanelRenderer {
 
     @Override
     public void update(PValue value, boolean loading, AppBaseImage image, String valueElementClass,
-                       String background, String foreground, Boolean readOnly, String placeholder,
-                       String tooltip, String valueTooltip) {
+                       String background, String foreground, Boolean readOnly, String placeholder, String valueTooltip) {
         if(property.hasDynamicImage() && !property.isAction()) {
             BaseImage.updateImage(image, label, property.panelCaptionVertical);
             image = null;
         }
 
         // we don't need image in value
-        super.update(value, loading, image, valueElementClass, background, foreground, readOnly, placeholder,
-                tooltip, valueTooltip);
+        super.update(value, loading, image, valueElementClass, background, foreground, readOnly, placeholder, valueTooltip);
     }
 
     private SizedWidget initCaption(SizedWidget valuePanel, GPropertyDraw property, Result<CaptionWidget> captionContainer) {
