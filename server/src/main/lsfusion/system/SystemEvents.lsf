@@ -648,12 +648,10 @@ DESIGN exceptions {
 
                 MOVE PROPERTY(javaStackTrace(e)) {
                     fill = 0.5;
-                    valueSize = ( -1, 200);
                     panelCaptionVertical = TRUE;
                 }
                 MOVE PROPERTY(lsfStackTrace(e)) {
                     fill = 0.5;
-                    valueSize = ( -1, 200);
                     panelCaptionVertical = TRUE;
                 }
             }
