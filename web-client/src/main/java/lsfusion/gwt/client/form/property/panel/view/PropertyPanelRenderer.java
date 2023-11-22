@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.property.panel.view;
 
-import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.user.client.ui.Widget;
@@ -15,8 +14,6 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 
-import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
-
 public class PropertyPanelRenderer extends PanelRenderer {
 
     private SizedWidget sizedView;
@@ -25,27 +22,14 @@ public class PropertyPanelRenderer extends PanelRenderer {
 
     private Widget comment;
 
-    protected JavaScriptObject valueTippy = null;
-    protected TooltipManager.TooltipHelper valueTooltipHelper = null;
-
     public PropertyPanelRenderer(final GFormController form, ActionOrPropertyValueController controller, GPropertyDraw property, GGroupObjectValue columnKey, Result<CaptionWidget> captionContainer) {
         super(form, controller, property, columnKey, property.isAction()); // assert if is Action that property has alignCaption() true and captionContainer != null
 
         SizedWidget valueWidget = value.getSizedWidget();
-        Element valueElement = valueWidget.widget.getElement();
 
-        setStyles(valueElement, property.isEditableNotNull(), property.hasChangeAction);
+        setStyles(valueWidget.widget.getElement(), property.isEditableNotNull(), property.hasChangeAction);
 
         sizedView = initCaption(valueWidget, property, captionContainer);
-
-        if(property.valueTooltip != null) {
-            valueTippy = TooltipManager.initTooltip(valueElement, valueTooltipHelper = new TooltipManager.TooltipHelper() {
-                @Override
-                public String getTooltip(String dynamicTooltip) {
-                    return nvl(dynamicTooltip, "");
-                }
-            });
-        }
 
         finalizeInit();
     }

@@ -62,12 +62,6 @@ public abstract class GTreeGridRecord extends GridDataRecord {
     public String getPlaceholder(GPropertyDraw property) {
         return (String) getAttribute(property.sID + "_placeholder");
     }
-    public void setTooltip(GPropertyDraw property, String tooltip) {
-        setAttribute(property.sID + "_tooltip", tooltip);
-    }
-    public String getTooltip(GPropertyDraw property) {
-        return (String) getAttribute(property.sID + "_tooltip");
-    }
     public void setValueTooltip(GPropertyDraw property, String valueTooltip) {
         setAttribute(property.sID + "_valueTooltip", valueTooltip);
     }

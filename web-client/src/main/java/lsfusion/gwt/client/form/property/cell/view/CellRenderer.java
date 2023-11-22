@@ -379,7 +379,7 @@ public abstract class CellRenderer {
         }
 
         String valueTooltip = updateContext.getValueTooltip();
-        if(isNew || !equalsValueTooltipState(renderedState, valueTooltip)) {
+        if((isNew && valueTooltip != null) || !equalsValueTooltipState(renderedState, valueTooltip)) {
             renderedState.valueTooltip = valueTooltip;
             if(isNew) {
                 TooltipManager.TooltipHelper valueTooltipHelper = new TooltipManager.TooltipHelper() {

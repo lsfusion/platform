@@ -754,18 +754,4 @@ public class GGridController extends GAbstractTableController {
             }
         }
     }
-
-//    private static void updateTooltip(GGridTable table) {
-//        String tooltip = messages.formGridPreferences() + " (";
-//        if (table.userPreferencesSaved()) {
-//            tooltip += messages.formGridPreferencesSavedForCurrentUser();
-//        } else if (table.generalPreferencesSaved()) {
-//            tooltip += messages.formGridPreferencesSavedForAllUsers();
-//        } else {
-//            tooltip += messages.formGridPreferencesNotSaved();
-//        }
-//
-//        setTitle(tooltip + ")");
-//    }
-
 }

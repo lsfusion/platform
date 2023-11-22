@@ -745,7 +745,6 @@ protected Double getUserFlex(int i) {
         protected abstract String getBackground(GPropertyDraw property, T record);
         protected abstract String getForeground(GPropertyDraw property, T record);
         protected abstract String getPlaceholder(GPropertyDraw property, T record);
-        protected abstract String getTooltip(GPropertyDraw property, T record);
         protected abstract String getValueTooltip(GPropertyDraw property, T record);
 
         @Override
@@ -909,12 +908,6 @@ protected Double getUserFlex(int i) {
             public String getPlaceholder() {
                 T row = (T) cell.getRow();
                 return column.getPlaceholder(property, row);
-            }
-
-            @Override
-            public String getTooltip() {
-                T row = (T) cell.getRow();
-                return column.getTooltip(property, row);
             }
 
             @Override

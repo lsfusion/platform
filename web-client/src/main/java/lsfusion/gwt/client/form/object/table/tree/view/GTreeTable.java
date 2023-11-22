@@ -504,11 +504,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
 
         @Override
-        protected String getTooltip(GPropertyDraw property, GTreeGridRecord record) {
-            return record.getTooltip(property);
-        }
-
-        @Override
         protected String getValueTooltip(GPropertyDraw property, GTreeGridRecord record) {
             return record.getValueTooltip(property);
         }
@@ -841,12 +836,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                         if (propPlaceholders != null)
                             placeholder = propPlaceholders.get(key);
                         objectRecord.setPlaceholder(property, placeholder == null ? property.placeholder : PValue.getStringValue(placeholder));
-
-                        PValue tooltip = null;
-                        NativeHashMap<GGroupObjectValue, PValue> propTooltips = tooltips.get(property);
-                        if (propTooltips != null)
-                            tooltip = propTooltips.get(key);
-                        objectRecord.setTooltip(property, tooltip == null ? property.tooltip : PValue.getStringValue(tooltip));
 
                         PValue valueTooltip = null;
                         NativeHashMap<GGroupObjectValue, PValue> propValueTooltips = valueTooltips.get(property);
