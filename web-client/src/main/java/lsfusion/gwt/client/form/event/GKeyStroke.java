@@ -101,6 +101,7 @@ public class GKeyStroke implements Serializable {
             case KEY_ESCAPE: keyString = "ESCAPE"; break;
             case KEY_TAB: keyString = "TAB"; break;
             case KEY_INSERT: keyString = "INSERT"; break;
+            case KEY_SPACE: keyString = "SPACE"; break;
             case KEY_F1: keyString = "F1"; break;
             case KEY_F1+1: keyString = "F2"; break;
             case KEY_F1+2: keyString = "F3"; break;
