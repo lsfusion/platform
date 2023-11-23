@@ -961,7 +961,7 @@ public class GFormController implements EditManager {
 
         if(BrowserEvents.CONTEXTMENU.equals(event.getType())) {
             handler.consume();
-            GPropertyContextMenuPopup.show(property, event.getClientX(), event.getClientY(), actionSID -> {
+            GPropertyContextMenuPopup.show(property, Element.as(event.getEventTarget()), actionSID -> {
                 executePropertyEventAction(editContext, actionSID, handler);
             });
         } else {
@@ -1497,20 +1497,20 @@ public class GFormController implements EditManager {
         }
     }
 
-    public void countRecords(final GGroupObject groupObject, int clientX, int clientY) {
+    public void countRecords(final GGroupObject groupObject) {
         asyncDispatch(new CountRecords(groupObject.ID), new CustomErrorHandlingCallback<NumberResult>() {
             @Override
             public void onSuccess(NumberResult result) {
-                controllers.get(groupObject).showRecordQuantity((Integer) result.value, clientX, clientY);
+                controllers.get(groupObject).showRecordQuantity((Integer) result.value);
             }
         });
     }
 
-    public void calculateSum(final GGroupObject groupObject, final GPropertyDraw propertyDraw, GGroupObjectValue columnKey, int clientX, int clientY) {
+    public void calculateSum(final GGroupObject groupObject, final GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
         asyncDispatch(new CalculateSum(propertyDraw.ID, columnKey), new CustomErrorHandlingCallback<NumberResult>() {
             @Override
             public void onSuccess(NumberResult result) {
-                controllers.get(groupObject).showSum(result.value, propertyDraw, clientX, clientY);
+                controllers.get(groupObject).showSum(result.value, propertyDraw);
             }
         });
     }

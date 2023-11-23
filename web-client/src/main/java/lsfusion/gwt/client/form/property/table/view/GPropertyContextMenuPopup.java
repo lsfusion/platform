@@ -1,11 +1,13 @@
 package lsfusion.gwt.client.form.property.table.view;
 
+import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
-import lsfusion.gwt.client.base.view.PopupDialogPanel;
+import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import java.util.LinkedHashMap;
@@ -16,7 +18,7 @@ public class GPropertyContextMenuPopup {
         void onMenuItemSelected(String actionSID);
     }
 
-    public static void show(GPropertyDraw property, int x, int y, final ItemSelectionListener selectionListener) {
+    public static void show(GPropertyDraw property, Element element, final ItemSelectionListener selectionListener) {
         if (property == null) {
             return;
         }
@@ -26,13 +28,13 @@ public class GPropertyContextMenuPopup {
             return;
         }
 
-        final PopupDialogPanel popup = new PopupDialogPanel();
+        final Result<JavaScriptObject> popup = new Result<>();
 
         final MenuBar menuBar = new MenuBar(true);
         for (final Map.Entry<String, String> item : contextMenuItems.entrySet()) {
             final String actionSID = item.getKey();
             MenuItem menuItem = new MenuItem(ensureMenuItemCaption(item.getValue()), () -> {
-                popup.hide();
+                GwtClientUtils.hideTippyPopup(popup.result);
                 selectionListener.onMenuItemSelected(actionSID);
             }) {
                 @Override
@@ -49,7 +51,7 @@ public class GPropertyContextMenuPopup {
             menuBar.addItem(menuItem);
         }
 
-        GwtClientUtils.showPopupInWindow(popup, menuBar, x, y);
+        popup.result = GwtClientUtils.showTippyPopup(element, menuBar);
     }
     
     private static String ensureMenuItemCaption(String caption) {

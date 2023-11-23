@@ -7,7 +7,9 @@ import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.i18n.client.constants.NumberConstants;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
+import com.google.gwt.user.client.ui.RootPanel;
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
@@ -1875,7 +1877,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         
         return {
             valueCellDblClickHandler: function (event, td, rowKeyValues, colKeyValues) {
-                instance.@GPivot::cellDblClickAction(*)(rowKeyValues, colKeyValues, event.clientX, event.clientY);
+                instance.@GPivot::cellDblClickAction(*)(rowKeyValues, colKeyValues, td);
             },
 
             rowAttrHeaderClickHandler: function (event, th, rowKeyValues, attrName) {
@@ -1924,9 +1926,8 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
 
     }-*/;
 
-    private void cellDblClickAction(JsArrayMixed rowKeyValues, JsArrayMixed colKeyValues, int x, int y) {
-        final PopupDialogPanel popup = new PopupDialogPanel();
-
+    private void cellDblClickAction(JsArrayMixed rowKeyValues, JsArrayMixed colKeyValues, Element td) {
+        final Result<JavaScriptObject> popup = new Result<>();
         List<String> menuItems = new ArrayList<>();
         JsArrayString cols = config.getArrayString("cols");
         JsArrayString rows = config.getArrayString("rows");
@@ -1935,7 +1936,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         final MenuBar menuBar = new MenuBar(true);
         for(String caption : menuItems) {
             MenuItem menuItem = new MenuItem(caption, () -> {
-                popup.hide();
+                GwtClientUtils.hideTippyPopup(popup.result);
                 config = reduceRows(config, config.getArrayString("rows"), rowKeyValues.length());
 
                 ArrayList<GPropertyFilter> filters = new ArrayList<>();
@@ -1955,7 +1956,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             menuBar.getElement().getStyle().setOverflowY(Style.Overflow.SCROLL);
         }
 
-        GwtClientUtils.showPopupInWindow(popup, menuBar, x, y);
+        popup.result = GwtClientUtils.showTippyPopup(td, menuBar);
     }
 
 

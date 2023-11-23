@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.controller;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
@@ -13,10 +14,7 @@ import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.RemoteDispatchAsync;
 import lsfusion.gwt.client.action.GFormAction;
 import lsfusion.gwt.client.action.GHideFormAction;
-import lsfusion.gwt.client.base.BaseImage;
-import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.Pair;
-import lsfusion.gwt.client.base.StaticImage;
+import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.controller.remote.action.RequestCountingAsyncCallback;
@@ -45,7 +43,6 @@ import lsfusion.gwt.client.navigator.window.GShowFormType;
 import lsfusion.gwt.client.navigator.window.GWindowFormType;
 import lsfusion.gwt.client.navigator.window.view.WindowsController;
 import lsfusion.gwt.client.view.MainFrame;
-import net.customware.gwt.dispatch.shared.Result;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -94,7 +91,7 @@ public abstract class FormsController {
             @Override
             public ClickHandler getClickHandler() {
                 return event -> {
-                    PopupDialogPanel popup = new PopupDialogPanel();
+                    final Result<JavaScriptObject> popup = new Result<>();
                     FlexPanel panel = new FlexPanel(true);
                     panel.getElement().addClassName("btn-toolbar");
                     StaticImage[] buttons = new StaticImage[] { StaticImage.DEFAULTMODE, StaticImage.LINKMODE, StaticImage.DIALOGMODE};
@@ -105,13 +102,13 @@ public abstract class FormsController {
                             public ClickHandler getClickHandler() {
                                 return event -> {
                                     selectEditMode(index);
-                                    popup.hide();
+                                    GwtClientUtils.hideTippyPopup(popup.result);
                                 };
                             }
                         });
                     }
 
-                    GwtClientUtils.showPopupInWindow(popup, panel, getAbsoluteLeft(), getAbsoluteTop() + getOffsetHeight());
+                    popup.result = GwtClientUtils.showTippyPopup(editModeButton.getElement(), panel);
                 };
             }
         };
@@ -620,9 +617,9 @@ public abstract class FormsController {
         windowsController.resetLayout();
     }
 
-    public abstract <T extends Result> long syncDispatch(final ExecuteNavigatorAction action, RequestCountingAsyncCallback<ServerResponseResult> callback);
+    public abstract long syncDispatch(final ExecuteNavigatorAction action, RequestCountingAsyncCallback<ServerResponseResult> callback);
 
-    public abstract <T extends Result> long asyncDispatch(final ExecuteNavigatorAction action, RequestCountingAsyncCallback<ServerResponseResult> callback);
+    public abstract long asyncDispatch(final ExecuteNavigatorAction action, RequestCountingAsyncCallback<ServerResponseResult> callback);
 
     public abstract GNavigatorActionDispatcher getDispatcher();
 
