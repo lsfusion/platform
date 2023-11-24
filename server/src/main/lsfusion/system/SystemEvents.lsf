@@ -10,6 +10,10 @@ onWebClientStarted  ABSTRACT LIST ( );
 onWebClientLoad ABSTRACT LIST ();
 
 onLoginLoad = ABSTRACT CASE INTEGER(STRING);
+
+onWebClientLoadBootstrap = ABSTRACT CASE INTEGER(STRING);
+onWebClientLoadNotBootstrap = ABSTRACT CASE INTEGER(STRING);
+
 onWebClientLoad = ABSTRACT CASE INTEGER(STRING);
 
 onStartedApply() {
@@ -172,50 +176,50 @@ NAVIGATOR {
     NEW toggleColorTheme WINDOW system PARENT BEFORE toggleNavigatorPinMode HEADER colorThemeCaption() IMAGE colorThemeImage();
 }
 
-onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = nameTheme() + '/bootstrap.min.css' THEN 1;
-onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = nameTheme() + '/bootstrap-adapter.css' THEN 2;
-onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap.min.js' THEN 3;
-onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap-background-inherit.css' THEN 4;
-onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap-ext.css' THEN 5;
-onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap-dark.css' THEN 6;
-onWebClientLoad(STRING s) += WHEN useBootstrap() AND isMini() AND s = 'mini-padding.css' THEN 7;
-onWebClientLoad(STRING s) += WHEN useBootstrap() AND isMini() AND s = 'mini-font.css' THEN 8;
+onWebClientLoadBootstrap(STRING s) += WHEN s = nameTheme() + '/bootstrap.min.css' THEN 1;
+onWebClientLoadBootstrap(STRING s) += WHEN s = nameTheme() + '/bootstrap-adapter.css' THEN 2;
+onWebClientLoadBootstrap(STRING s) += WHEN s = 'bootstrap.min.js' THEN 3;
+onWebClientLoadBootstrap(STRING s) += WHEN s = 'bootstrap-background-inherit.css' THEN 4;
+onWebClientLoadBootstrap(STRING s) += WHEN s = 'bootstrap-ext.css' THEN 5;
+onWebClientLoadBootstrap(STRING s) += WHEN s = 'bootstrap-dark.css' THEN 6;
+onWebClientLoadBootstrap(STRING s) += WHEN isMini() AND s = 'mini-padding.css' THEN 7;
+onWebClientLoadBootstrap(STRING s) += WHEN isMini() AND s = 'mini-font.css' THEN 8;
 
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'table.css' THEN 1;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'table-border.css' THEN 2;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'table-sticky.css' THEN 3;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'table-container-border.css' THEN 4;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'caption-panel-border.css' THEN 5;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'tab-panel.css' THEN 6;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'navigator.css' THEN 7;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'split-window-border.css' THEN 8;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'layout.css' THEN 9;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'panel-renderer-border.css' THEN 10;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'property-toolbar-border.css' THEN 11;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'main.css' THEN 12;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'main-border.css' THEN 13;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'popup-menu.css' THEN 14;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'resizable-window.css' THEN 15;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'property.css' THEN 16;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'button.css' THEN 17;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'filter.css' THEN 18;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'toolbar.css' THEN 19;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'pivot.css' THEN 20;
+onWebClientLoadNotBootstrap(STRING s) += WHEN s = 'table.css' THEN 1;
+onWebClientLoadNotBootstrap(STRING s) += WHEN s = 'table-border.css' THEN 2;
+onWebClientLoadNotBootstrap(STRING s) += WHEN s = 'table-sticky.css' THEN 3;
+onWebClientLoadNotBootstrap(STRING s) += WHEN s = 'table-container-border.css' THEN 4;
+onWebClientLoadNotBootstrap(STRING s) += WHEN s = 'caption-panel-border.css' THEN 5;
+onWebClientLoadNotBootstrap(STRING s) += WHEN s = 'tab-panel.css' THEN 6;
+onWebClientLoadNotBootstrap(STRING s) += WHEN s = 'navigator.css' THEN 7;
+onWebClientLoadNotBootstrap(STRING s) += WHEN s = 'split-window-border.css' THEN 8;
+onWebClientLoadNotBootstrap(STRING s) += WHEN s = 'layout.css' THEN 9;
+onWebClientLoadNotBootstrap(STRING s) += WHEN s = 'panel-renderer-border.css' THEN 10;
+onWebClientLoadNotBootstrap(STRING s) += WHEN s = 'property-toolbar-border.css' THEN 11;
+onWebClientLoadNotBootstrap(STRING s) += WHEN s = 'main.css' THEN 12;
+onWebClientLoadNotBootstrap(STRING s) += WHEN s = 'main-border.css' THEN 13;
+onWebClientLoadNotBootstrap(STRING s) += WHEN s = 'popup-menu.css' THEN 14;
+onWebClientLoadNotBootstrap(STRING s) += WHEN s = 'resizable-window.css' THEN 15;
+onWebClientLoadNotBootstrap(STRING s) += WHEN s = 'property.css' THEN 16;
+onWebClientLoadNotBootstrap(STRING s) += WHEN s = 'button.css' THEN 17;
+onWebClientLoadNotBootstrap(STRING s) += WHEN s = 'filter.css' THEN 18;
+onWebClientLoadNotBootstrap(STRING s) += WHEN s = 'toolbar.css' THEN 19;
+onWebClientLoadNotBootstrap(STRING s) += WHEN s = 'pivot.css' THEN 20;
 
 onWebClientLoad(STRING s) += WHEN s = 'scrollbar.css' THEN 21; //for bootstrap and excel themes
 onWebClientLoad(STRING s) += WHEN s = 'input-quill.js' THEN 22; //for bootstrap and excel themes
 onWebClientLoad(STRING s) += WHEN s = 'input-quill.css' THEN 23; //for bootstrap and excel themes
 onWebClientLoad(STRING s) += WHEN s = 'select.js' THEN 24; //for bootstrap and excell themes
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'option.css' THEN 25;
+onWebClientLoadNotBootstrap(STRING s) += WHEN s = 'option.css' THEN 25;
 onWebClientLoad(STRING s) += WHEN s = 'selectize.min.js' THEN 26;
-onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'selectize.bootstrap5.min.css' THEN 27;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'selectize.css' THEN 28;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'select.css' THEN 29;
+onWebClientLoadBootstrap(STRING s) += WHEN s = 'selectize.bootstrap5.min.css' THEN 27;
+onWebClientLoadNotBootstrap(STRING s) += WHEN s = 'selectize.css' THEN 28;
+onWebClientLoadNotBootstrap(STRING s) += WHEN s = 'select.css' THEN 29;
 //todo use v1.14.0-beta2 there is a bug in beta-3 https://github.com/snapappointments/bootstrap-select/issues/2738
-onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap-select.min.js' THEN 29;
-onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap-select.min.css' THEN 30;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'multiple-select.min.js' THEN 31;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'multiple-select.min.css' THEN 32;
+onWebClientLoadBootstrap(STRING s) += WHEN s = 'bootstrap-select.min.js' THEN 29;
+onWebClientLoadBootstrap(STRING s) += WHEN s = 'bootstrap-select.min.css' THEN 30;
+onWebClientLoadNotBootstrap(STRING s) += WHEN s = 'multiple-select.min.js' THEN 31;
+onWebClientLoadNotBootstrap(STRING s) += WHEN s = 'multiple-select.min.css' THEN 32;
 
 onWebClientStarted () +{ 
     onWebClientLoad();
