@@ -200,6 +200,8 @@ generateUUID  INTERNAL 'lsfusion.server.logics.classes.data.utils.string.Generat
 escapeJSONValue (TEXT t) = replace(replace(replace(replace(replace(t, '\\', '\\\\'), '"', '\\"'), '\n', ''), '\r', ''), '\t', '');
 escapeXMLValue(TEXT t) = replace(replace(replace(replace(replace(t, '&', '&amp;'), '<', '&lt;'), '>', '&gt;'), '"', '&quot;'), '\'', '&apos;');
 
+copyToClipboard INTERNAL 'lsfusion.server.logics.classes.data.utils.string.CopyToClipboardAction' (TEXT);
+
 // --------------------------------------------- Numeric operations --------------------------------- //
 floor = FORMULA 'floor($1)';
 floor = FORMULA NULL 'floor(($1)/notZero($2))*($2)';
