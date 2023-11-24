@@ -8,6 +8,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.SystemUtils;
 import lsfusion.base.file.*;
+import lsfusion.interop.action.RunCommandActionResult;
 import org.apache.commons.net.ftp.FTPFile;
 
 import java.io.*;
@@ -406,22 +407,19 @@ public class FileUtils {
         });
     }
 
-    public static ArrayList<String> runCmd(String command, String directory, boolean wait) throws IOException {
+    public static RunCommandActionResult runCmd(String command, String directory, boolean wait) throws IOException {
         Runtime runtime = Runtime.getRuntime();
         Process p = directory != null ? runtime.exec(command, null, new File(directory)) : runtime.exec(command);
-        ArrayList<String> result = null;
+        RunCommandActionResult result = null;
         if (wait) {
             try {
-                result = new ArrayList<>();
-
-                result.add(readInputStreamToString(p.getInputStream()));
-                result.add(readInputStreamToString(p.getErrorStream()));
+                String cmdOut = readInputStreamToString(p.getInputStream());
+                String cmdErr = readInputStreamToString(p.getErrorStream());
 
                 p.waitFor();
 
                 int exitValue = p.exitValue();
-                result.add(exitValue == 0 ? null : String.valueOf(exitValue));
-
+                result = new RunCommandActionResult(cmdOut, cmdErr, exitValue);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }

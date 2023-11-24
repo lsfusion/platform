@@ -91,8 +91,8 @@ properties = DATA LOCAL STRING (STRING);
 readProperties INTERNAL 'lsfusion.server.physics.dev.integration.external.to.file.ReadPropertiesAction' (RAWFILE);
 
 // ---------------------------------- Console  ---------------------------------- //
-cmdSTDOUT '{utils.cmd.std.out}' = DATA LOCAL STRING ();
-cmdSTDERR '{utils.cmd.std.err}' = DATA LOCAL STRING ();
+cmdOut '{utils.cmd.std.out}' = DATA LOCAL STRING ();
+cmdErr '{utils.cmd.std.err}' = DATA LOCAL STRING ();
 cmd '{utils.cmd}' (TEXT command, TEXT directory, BOOLEAN isClient, BOOLEAN wait)  INTERNAL  'lsfusion.server.physics.admin.interpreter.action.RunCommandAction';
 cmd '{utils.cmd}' (TEXT command, BOOLEAN wait)  {cmd(command, NULL, NULL, wait); }
 cmd '{utils.cmd}' (TEXT command)  {cmd(command, NULL, NULL, NULL ); }

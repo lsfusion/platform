@@ -22,7 +22,6 @@ public class RunCommandClientAction implements ClientAction {
         try {
             return FileUtils.runCmd(command, directory, wait);
         } catch (Exception e) {
-            e.printStackTrace();
             throw Throwables.propagate(e);
         }
     }
