@@ -1,6 +1,9 @@
 package lsfusion.gwt.client.base;
 
-import com.google.gwt.core.client.*;
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArray;
+import com.google.gwt.core.client.JsDate;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.DomEvent;
 import com.google.gwt.i18n.client.Dictionary;
@@ -14,7 +17,6 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.lambda.EFunction;
 import lsfusion.gwt.client.base.size.GSize;
-import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.base.view.popup.PopupPanel;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.property.PValue;
@@ -533,11 +535,6 @@ public class GwtClientUtils {
             popup.destroy();
         }
     }-*/;
-
-    public static void showPopup(PopupDialogPanel popup, int mouseX, int mouseY) {
-        popup.show();
-        setPopupPosition(popup, mouseX, mouseY);
-    }
 
     public static void setPopupPosition(PopupPanel popup, int mouseX, int mouseY) {
         int popupWidth = popup.getOffsetWidth();

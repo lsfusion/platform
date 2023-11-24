@@ -1,17 +1,17 @@
 package lsfusion.gwt.client.form;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
-import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.property.PValue;
-import lsfusion.gwt.client.form.property.cell.classes.controller.PopupCellEditor;
-import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
@@ -21,65 +21,38 @@ import lsfusion.gwt.client.view.MainFrame;
 
 public class PopupForm extends EditingForm {
 
-    private class PopupFormCellEditor extends CellEditor implements PopupCellEditor {
-
-        @Override
-        public void enterPressed(Element parent) {
-            commit(parent,  CommitReason.ENTERPRESSED);
-        }
-
-        @Override
-        public boolean commitOnAutoClose() {
-            return true;
-        }
-
-        protected PopupDialogPanel popup;
-
-        @Override
-        public boolean removeBorder() {
-            return true;
-        }
-
-        @Override
-        public void setPopup(PopupDialogPanel popup) {
-            this.popup = popup;
-        }
-
-        @Override
-        public PopupDialogPanel getPopup() {
-            return popup;
-        }
+    public class PopupFormCellEditor extends CellEditor {
 
         @Override
         public void start(EventHandler handler, Element parent, PValue oldValue) {
-            PopupCellEditor.super.start(handler, parent, oldValue);
-
             Event event;
             if(handler != null && DataGrid.isMouseEvent(event = handler.event)) {
-                clientX = event.getClientX();
-                clientY = event.getClientY();
+                parentElement = Element.as(event.getEventTarget());
             } else {
-                clientX = parent.getAbsoluteLeft();
-                clientY = parent.getAbsoluteTop();
+                parentElement = parent;
             }
+        }
+
+        @Override
+        public boolean checkEnterEvent(NativeEvent event) {
+            return GKeyStroke.isPlainKeyEvent(event);
         }
 
         @Override
         public void stop(Element parent, boolean cancel, boolean blurred) {
             onBlur(true);
 
-            // actual hide
-            PopupCellEditor.super.stop(parent, cancel, blurred);
-
             if(prevForm != null)
                 prevForm.onFocus(false);
         }
     }
 
-    private int clientX;
-    private int clientY;
+    protected Widget formWidget;
+    private Element parentElement;
 
     private FormContainer prevForm;
+
+    private JavaScriptObject popup = null;
 
     @Override
     public void show(GAsyncFormController asyncFormController) {
@@ -87,35 +60,29 @@ public class PopupForm extends EditingForm {
         if(prevForm != null) // if there were no currentForm
             prevForm.onBlur(false);
 
-        GwtClientUtils.showPopup(getPopup(), clientX, clientY);
+        popup = GwtClientUtils.showTippyPopup(parentElement, formWidget);
 
         onFocus(true);
     }
 
     @Override
     protected void setFormContent(Widget widget) {
-        getPopup().setWidget(widget);
+        this.formWidget = widget;
     }
 
     @Override
     protected void removeFormContent(Widget widget) {
-        getPopup().setWidget(null);
+        GwtClientUtils.hideTippyPopup(popup);
     }
 
-    private PopupFormCellEditor cellEditor;
     @Override
     protected CellEditor createCellEditor() {
-        cellEditor = new PopupFormCellEditor();
-        return cellEditor;
-    }
-
-    protected PopupDialogPanel getPopup() {
-        return cellEditor.popup;
+        return new PopupFormCellEditor();
     }
 
     @Override
     public Element getFocusedElement() {
-        return getPopup().getElement();
+        return formWidget.getElement();
     }
 
     public PopupForm(FormsController formsController, long editRequestIndex, boolean async, Event editEvent, EditContext editContext, GFormController contextForm) {
