@@ -217,6 +217,7 @@ public abstract class FormsController {
         }
         if (f12) {
             groupChangeMode = true;
+            GwtClientUtils.stopPropagation(event); //prevent running browser debugger
         } else if (groupChangeMode) {
             new Timer() {
                 @Override
