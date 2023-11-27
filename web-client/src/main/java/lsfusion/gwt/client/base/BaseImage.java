@@ -63,7 +63,7 @@ public interface BaseImage extends Serializable {
         boolean is(Widget widget, Widget parent, String className);
     }
     static void updateClasses(Widget widget, String classes, PropagateClasses propagateClasses) {
-        updateClasses(widget, buildClassesChanges(widget.getElement(), classes), propagateClasses);
+        updateClasses(widget, buildClassesChanges(widget.getElement(), classes, emptyPostfix), propagateClasses);
     }
     static void updateClasses(Widget widget, NativeStringMap<Boolean> classChanges, PropagateClasses propagateClasses) {
         Widget parent = widget.getParent();
@@ -81,7 +81,7 @@ public interface BaseImage extends Serializable {
                 boolean prevNeedOnHover = prevAggrClasses == childCount;
                 boolean newNeedOnHover = newAggrClasses == childCount;
                 if (prevNeedOnHover != newNeedOnHover) { // changed status
-                    assert newNeedOnHover == add;
+                    //assert newNeedOnHover == add;
                     propagated = true;
                     for (int i = 0; i < childCount; i++) { // updating siblings
                         Widget siblingWidget = ((FlexPanel) parent).getWidget(i); // parentElement.getChild()
@@ -104,22 +104,30 @@ public interface BaseImage extends Serializable {
         }
     }
 
-    static NativeStringMap<Boolean> buildClassesChanges(Element element, String newClasses) {
-        String[] prevClasses = (String[]) element.getPropertyObject(GwtClientUtils.LSF_CLASSES_ATTRIBUTE);
-        if(prevClasses == null)
-            prevClasses = new String[0];
+    String emptyPostfix = "";
+
+    static NativeStringMap<Boolean> buildClassesChanges(Element element, String newClasses, String newPostfix) {
+        String[] prevClassesWithPostfix = (String[]) element.getPropertyObject(GwtClientUtils.LSF_CLASSES_ATTRIBUTE);
+        if(prevClassesWithPostfix == null)
+            prevClassesWithPostfix = new String[0];
 
         NativeStringMap<Boolean> changes = new NativeStringMap<>();
-        for(String prevClass : prevClasses) {
-            changes.put(prevClass, false);
+        for(String prevClassWithPostfix : prevClassesWithPostfix) {
+            String prevClass = prevClassWithPostfix.substring(0, prevClassWithPostfix.lastIndexOf("_"));
+            String prevPostfix = prevClassWithPostfix.substring(prevClassWithPostfix.lastIndexOf("_"));
+            if(newPostfix.equals(prevPostfix))
+                changes.put(prevClass, false);
         }
 
         String[] classes = newClasses != null ? newClasses.split(" ") : new String[0];
-        for(String newClass : classes) {
+        String[] newClassesWithPostfix = new String[classes.length];
+        for(int i = 0; i < classes.length; i++) {
+            String newClass = classes[i];
+            newClassesWithPostfix[i] = newClass + "_" + newPostfix;
             if(changes.remove(newClass) == null)
                 changes.put(newClass, true);
         }
-        element.setPropertyObject(GwtClientUtils.LSF_CLASSES_ATTRIBUTE, classes);
+        element.setPropertyObject(GwtClientUtils.LSF_CLASSES_ATTRIBUTE, newClassesWithPostfix);
 
         return changes;
     }
@@ -134,7 +142,10 @@ public interface BaseImage extends Serializable {
     }
 
     static void updateClasses(Element element, String classes) {
-        buildClassesChanges(element, classes).foreachEntry((aclass, add) -> {
+        updateClasses(element, classes, emptyPostfix);
+    }
+    static void updateClasses(Element element, String classes, String postfix) {
+        buildClassesChanges(element, classes, postfix).foreachEntry((aclass, add) -> {
             applyClassChange(element, aclass, add);
         });
     }
