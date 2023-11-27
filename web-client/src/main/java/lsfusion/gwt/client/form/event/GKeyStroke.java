@@ -168,6 +168,10 @@ public class GKeyStroke implements Serializable {
         return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_F12;
     }
 
+    public static boolean isGroupChangeKeyEvent(NativeEvent event) {
+        return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_F12;
+    }
+
     public static Event createAddUserFilterKeyEvent() {
         return Event.as(Document.get().createKeyDownEvent(ADD_USER_FILTER_KEY_STROKE.ctrlPressed,
                 ADD_USER_FILTER_KEY_STROKE.altPressed,

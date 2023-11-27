@@ -1,6 +1,9 @@
 package lsfusion.gwt.client.form.property;
 
-import com.google.gwt.dom.client.*;
+import com.google.gwt.dom.client.BrowserEvents;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.InputElement;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.*;
@@ -38,16 +41,11 @@ import lsfusion.interop.action.ServerResponse;
 
 import java.io.Serializable;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.google.gwt.dom.client.BrowserEvents.KEYDOWN;
 import static lsfusion.gwt.client.base.GwtClientUtils.createTooltipHorizontalSeparator;
 import static lsfusion.gwt.client.form.event.GKeyStroke.*;
-import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.CHANGE;
 
 public class GPropertyDraw extends GComponent implements GPropertyReader, Serializable {
     public int ID;
@@ -447,7 +445,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         Integer inputActionIndex = getInputActionIndex(editEvent, false);
         if(inputActionIndex != null) {
             contextAction.set(inputActionIndex);
-            return CHANGE;
+            return GEditBindingMap.changeOrGroupChange();
         }
 
         if (isEditObjectEvent(editEvent, hasEditObjectAction, hasUserChangeAction())) // has to be before isChangeEvent, since also handles MOUSE CHANGE event
@@ -459,7 +457,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         if((isFocus || GKeyStroke.isInputKeyEvent(editEvent, () -> SimpleTextBasedCellRenderer.isMultiLineInput(editContext.getEditElement())))
                 && (focusElement = SimpleTextBasedCellRenderer.getFocusEventTarget(editContext.getEditElement(), editEvent)) != null &&
                 !(isFocus && isSuppressOnFocusChange(focusElement)))
-            return CHANGE;
+            return GEditBindingMap.changeOrGroupChange();
 
         if (GMouseStroke.isChangeEvent(editEvent)) {
             Integer actionIndex = (Integer) GEditBindingMap.getToolbarAction(editEvent);
@@ -467,16 +465,16 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
                 actionIndex = getDialogInputActionIndex();
             }
             contextAction.set(actionIndex);
-            return CHANGE;
+            return GEditBindingMap.changeOrGroupChange();
         }
 
         if (isGroupChangeKeyEvent(editEvent))
-            return GEditBindingMap.GROUP_CHANGE;
+            GwtClientUtils.stopPropagation(editEvent);
 
         GType changeType = getChangeType();
         if (isCharModifyKeyEvent(editEvent, changeType == null ? null : changeType.getEditEventFilter()) ||
                 isDropEvent(editEvent) || isChangeAppendKeyEvent(editEvent))
-            return CHANGE;
+            return GEditBindingMap.changeOrGroupChange();
 
         return null;
     }
