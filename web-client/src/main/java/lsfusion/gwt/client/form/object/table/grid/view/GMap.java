@@ -216,7 +216,7 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
                     type: "roadmap" // valid values are 'roadmap', 'satellite', 'terrain' and 'hybrid'
                 }).addTo(map);
         } else if (tileProvider === 'yandex') {
-            $wnd.lsfParams.yandexMapAPI.addTo(map);
+            L.yandex().addTo(map);
         } else {
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
