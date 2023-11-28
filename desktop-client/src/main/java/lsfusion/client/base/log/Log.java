@@ -148,13 +148,10 @@ public final class Log {
         titlePanel.setBorder(null);
 
         double screenWidth = (MainFrame.instance != null ? MainFrame.instance.getRootPane().getWidth() : Toolkit.getDefaultToolkit().getScreenSize().width)  * 0.9;
-        double screenHeight = (MainFrame.instance != null ? MainFrame.instance.getRootPane().getHeight() : Toolkit.getDefaultToolkit().getScreenSize().height)  * 0.3;
         double titleWidth = titlePanel.getPreferredSize().getWidth();
         double titleHeight = titlePanel.getPreferredSize().getHeight();
-        JScrollPane scroll = new JScrollPane(titlePanel);
-        scroll.setPreferredSize(new Dimension((int) Math.min(screenWidth, titleWidth), (int) Math.min(screenHeight, titleHeight)));
-        titlePanel.setCaretPosition(0);
-        labelPanel.add(scroll);
+        titlePanel.setPreferredSize(new Dimension((int) Math.min(screenWidth, titleWidth), (int) (titleHeight * Math.ceil(titleWidth / screenWidth))));
+        labelPanel.add(titlePanel);
         labelPanel.add(Box.createHorizontalGlue());
         
         JPanel messagePanel = new JPanel();
