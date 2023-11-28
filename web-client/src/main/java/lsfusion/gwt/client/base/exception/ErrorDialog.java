@@ -32,6 +32,7 @@ public class ErrorDialog extends DialogModalWindow {
         body.add(message);
 
         Style messageStyle = message.getElement().getStyle();
+        messageStyle.setProperty("overflow", "auto");
         messageStyle.setProperty("maxWidth", (Window.getClientWidth() * 0.9) + "px");
         messageStyle.setProperty("maxHeight", (Window.getClientHeight() * 0.3) + "px");
 
