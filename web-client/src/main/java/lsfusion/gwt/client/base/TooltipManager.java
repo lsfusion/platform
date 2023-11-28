@@ -42,7 +42,9 @@ public class TooltipManager {
     }-*/;
 
     public static void updateContent(JavaScriptObject tippy, Element element, final TooltipHelper tooltipHelper, String dynamicTooltip) {
-        updateContent(tippy, getTooltipContent(tooltipHelper, dynamicTooltip, element));
+        if(tippy != null) {
+            updateContent(tippy, getTooltipContent(tooltipHelper, dynamicTooltip, element));
+        }
     }
 
     private static native void updateContent(JavaScriptObject tippy, Element content)/*-{
