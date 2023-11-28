@@ -387,7 +387,7 @@ public abstract class CellRenderer {
         if(isNew || !equalsValueElementClassState(renderedState, valueElementClass)) {
             renderedState.valueElementClass = valueElementClass;
 
-            BaseImage.updateClasses(element, valueElementClass);
+            BaseImage.updateClasses(element, valueElementClass, "value");
         }
 
         if(valueTooltipHelper != null) {

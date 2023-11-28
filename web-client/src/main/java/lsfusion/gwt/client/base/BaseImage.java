@@ -63,7 +63,7 @@ public interface BaseImage extends Serializable {
         boolean is(Widget widget, Widget parent, String className);
     }
     static void updateClasses(Widget widget, String classes, PropagateClasses propagateClasses) {
-        updateClasses(widget, buildClassesChanges(widget.getElement(), classes), propagateClasses);
+        updateClasses(widget, buildClassesChanges(widget.getElement(), classes, emptyPostfix), propagateClasses);
     }
     static void updateClasses(Widget widget, NativeStringMap<Boolean> classChanges, PropagateClasses propagateClasses) {
         Widget parent = widget.getParent();
@@ -104,8 +104,11 @@ public interface BaseImage extends Serializable {
         }
     }
 
-    static NativeStringMap<Boolean> buildClassesChanges(Element element, String newClasses) {
-        String[] prevClasses = (String[]) element.getPropertyObject(GwtClientUtils.LSF_CLASSES_ATTRIBUTE);
+    String emptyPostfix = "";
+
+    //use postfix to avoid intersection valueElementClass with GComponent.elementClass
+    static NativeStringMap<Boolean> buildClassesChanges(Element element, String newClasses, String postfix) {
+        String[] prevClasses = (String[]) element.getPropertyObject(GwtClientUtils.LSF_CLASSES_ATTRIBUTE + postfix);
         if(prevClasses == null)
             prevClasses = new String[0];
 
@@ -119,7 +122,7 @@ public interface BaseImage extends Serializable {
             if(changes.remove(newClass) == null)
                 changes.put(newClass, true);
         }
-        element.setPropertyObject(GwtClientUtils.LSF_CLASSES_ATTRIBUTE, classes);
+        element.setPropertyObject(GwtClientUtils.LSF_CLASSES_ATTRIBUTE + postfix, classes);
 
         return changes;
     }
@@ -134,7 +137,10 @@ public interface BaseImage extends Serializable {
     }
 
     static void updateClasses(Element element, String classes) {
-        buildClassesChanges(element, classes).foreachEntry((aclass, add) -> {
+        updateClasses(element, classes, emptyPostfix);
+    }
+    static void updateClasses(Element element, String classes, String postfix) {
+        buildClassesChanges(element, classes, postfix).foreachEntry((aclass, add) -> {
             applyClassChange(element, aclass, add);
         });
     }
