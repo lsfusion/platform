@@ -106,6 +106,7 @@ public interface BaseImage extends Serializable {
 
     String emptyPostfix = "";
 
+    //use postfix to avoid intersection valueElementClass with GComponent.elementClass
     static NativeStringMap<Boolean> buildClassesChanges(Element element, String newClasses, String postfix) {
         String[] prevClasses = (String[]) element.getPropertyObject(GwtClientUtils.LSF_CLASSES_ATTRIBUTE + postfix);
         if(prevClasses == null)

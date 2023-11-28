@@ -191,7 +191,7 @@ public class ContainerView extends ComponentView {
     }
 
     private boolean hasCaption() {
-        return !PropertyDrawView.hasNoCaption(caption, propertyCaption);
+        return !PropertyDrawView.hasNoCaption(caption, propertyCaption, null);
     }
 
     public void setBorder(boolean border) {
