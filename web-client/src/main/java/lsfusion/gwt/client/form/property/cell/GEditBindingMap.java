@@ -95,4 +95,11 @@ public class GEditBindingMap implements Serializable {
         return contextMenuBindingMap;
     }
 
+    public static String changeOrGroupChange() {
+        if(FormsController.isGroupChangeMode())
+            return GEditBindingMap.GROUP_CHANGE;
+        else
+            return GEditBindingMap.CHANGE;
+    }
+
 }

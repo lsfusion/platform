@@ -342,7 +342,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                 }
             }
         };
-        String actionSID = GEditBindingMap.CHANGE;
+        String actionSID = GEditBindingMap.changeOrGroupChange();
         if(length == 1 && newValues[0] == PValue.UNDEFINED)
             form.executePropertyEventAction(properties[0], fullKeys[0], actionSID, (GPushAsyncInput) pushAsyncResults[0], externalChanges[0], onExec);
         else

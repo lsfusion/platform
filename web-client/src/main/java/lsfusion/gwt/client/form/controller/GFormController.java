@@ -970,7 +970,7 @@ public class GFormController implements EditManager {
             if(isBinding) {
                 if(GKeyStroke.isKeyEvent(event)) // we don't want to set focus on mouse binding (it's pretty unexpected behaviour)
                     editContext.trySetFocusOnBinding(); // we want element to be focused on key binding (if it's possible)
-                actionSID = GEditBindingMap.CHANGE;
+                actionSID = GEditBindingMap.changeOrGroupChange();
             } else {
                 actionSID = property.getEventSID(event, editContext, contextAction);
                 if(actionSID == null)
@@ -1225,7 +1225,7 @@ public class GFormController implements EditManager {
 
     // for custom renderer, paste, quick access actions (in toolbar and keypress)
     private void executePropertyEventAction(EventHandler handler, ExecuteEditContext editContext, GUserInputResult value, Consumer<Long> onExec) {
-        executePropertyEventAction(handler, editContext, editContext.getProperty().getInputList(), value, GEditBindingMap.CHANGE, true, requestIndex -> {
+        executePropertyEventAction(handler, editContext, editContext.getProperty().getInputList(), value, GEditBindingMap.changeOrGroupChange(), true, requestIndex -> {
             onExec.accept(requestIndex);
 
             setLoading(editContext, requestIndex);
