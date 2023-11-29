@@ -12,7 +12,6 @@ title: 'Инструкция WINDOW'
 
     HIDETITLE 
     HIDESCROLLBARS 
-    DRAWROOT 
     VERTICAL | HORIZONTAL
     POSITION(x, y, width, height)
     LEFT | RIGHT | TOP | BOTTOM
@@ -48,10 +47,6 @@ title: 'Инструкция WINDOW'
     - `HIDESCROLLBARS`
 
         Указание на отсутствие скроллбаров для компонента данного окна.
-
-    - `DRAWROOT`
-
-        Указание того, что элементы [навигатора](Navigator.md), потомки которых будут добавлены в это окно, также будут добавлены в него.
 
     - `VERTICAL` | `HORIZONTAL`
 
@@ -139,8 +134,8 @@ WINDOW root 'Корень' TOOLBAR HIDETITLE HIDESCROLLBARS HORIZONTAL POSITION(
 WINDOW toolbar 'Тулбар' TOOLBAR HIDETITLE VERTICAL POSITION(0, 6, 20, 64);
 WINDOW tree 'Дерево' TOOLBAR HIDETITLE POSITION(0, 6, 20, 64);
 
-// меню без скроллбаров под окном root
-WINDOW menu MENU HIDESCROLLBARS DRAWROOT POSITION(20, 6, 80, 4);
+// меню без скроллбаров
+WINDOW menu MENU HIDESCROLLBARS POSITION(20, 6, 80, 4);
 
 // горизонтальный тулбар внизу рабочего стола, в котором все кнопки будут выравниваться по центру, а текст выравниваться вверх
 // в этот тулбар можно, например, помещать формы для быстрого открытия

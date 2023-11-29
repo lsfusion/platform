@@ -91,8 +91,8 @@ WINDOW root 'Root' TOOLBAR HIDETITLE HIDESCROLLBARS HORIZONTAL POSITION(0, 0, 10
 WINDOW toolbar 'Toolbar' TOOLBAR HIDETITLE VERTICAL POSITION(0, 6, 20, 64);
 WINDOW tree 'Tree' TOOLBAR HIDETITLE POSITION(0, 6, 20, 64);
 
-// menu without scrollbars under the root window
-WINDOW menu MENU HIDESCROLLBARS DRAWROOT POSITION(20, 6, 80, 4);
+// menu without scrollbars
+WINDOW menu MENU HIDESCROLLBARS POSITION(20, 6, 80, 4);
 
 // a horizontal toolbar at the bottom of the desktop, in which all buttons will be centered and text will be aligned up
 // in this toolbar, for example, it is possible to place forms for quick opening

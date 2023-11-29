@@ -131,7 +131,7 @@ define("ace/mode/lsf",["require","exports","module","ace/lib/oop","ace/mode/text
             "keyword.inline.event": "NOINLINE|INLINE",
             "keyword.index.statement": "INDEX",
             "windowkeyword..type": "MENU",
-            "keyword.window.options": "HIDETITLE|DRAWROOT|HIDESCROLLBARS|HALIGN|VALIGN|TEXTHALIGN|TEXTVALIGN",
+            "keyword.window.options": "HIDETITLE|HIDESCROLLBARS|HALIGN|VALIGN|TEXTHALIGN|TEXTVALIGN",
             "keyword.border.position": "BOTTOM",
             "keyword.dock.position": "POSITION",
             "keyword.orientation": "VERTICAL|HORIZONTAL",
