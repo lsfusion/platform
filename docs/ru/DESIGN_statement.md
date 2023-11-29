@@ -141,7 +141,6 @@ title: 'Инструкция DESIGN'
 |`wrap`|todo|Логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
 |`resizeOverflow`|todo|Логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
 |`custom`|todo|String literal|NULL|todo|
-|`columns`|Количество колонок в контейнере типа `COLUMNS`<br/>**deprecated since version 5, используйте `lines`**|Целочисленный литерал|`1`|`3`|
 |`lines`|Количество линий (рядов или колонок) в контейнере|Целочисленный литерал|`1`|`3`|
 |`lineSize`|todo|Целочисленный литерал|NULL|todo|
 |`captionLineSize`|todo|Целочисленный литерал|NULL|todo|

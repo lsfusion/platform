@@ -39,10 +39,6 @@ public class FormViewProxy extends ViewProxy<FormView> {
         mainContainerProxy.setWidth(width);
     }
 
-    public void setColumns(int columns) {
-        mainContainerProxy.setColumns(columns);
-    }
-
     public void setMarginTop(int marginTop) {
         mainContainerProxy.setMarginTop(marginTop);
     }

@@ -141,7 +141,6 @@ To access design components, you can use their names or address property compone
 |`wrap`|todo|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`resizeOverflow`|todo|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`custom`|todo|String literal|NULL|todo|
-|`columns`|Number of columns in a `COLUMNS` type container<br/>**deprecated since version 5, use `lines`**|Integer literal|`1`|`3`|
 |`lines`|Number of lines (rows or columns) in container|Integer literal|`1`|`3`|
 |`lineSize`|todo|Integer literal|NULL|todo|
 |`captionLineSize`|todo|Integer literal|NULL|todo|

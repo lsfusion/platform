@@ -90,11 +90,6 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
             target.setPropertyCustomDesign((PropertyObjectEntity<?>) caption);
     }
 
-    //backward compatibility
-    public void setColumns(int columns) {
-        target.lines = columns;
-    }
-
     public void setLines(int lines) {
         target.lines = lines;
     }
