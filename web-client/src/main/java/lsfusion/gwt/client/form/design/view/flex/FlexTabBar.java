@@ -252,7 +252,7 @@ public class FlexTabBar extends Composite implements TabBar {
             switch (DOM.eventGetType(event)) {
                 case Event.ONMOUSEDOWN:
                     FlexTabBar.this.selectTabByTabWidget(this);
-                    GwtClientUtils.stopPropagation(event);
+                    GwtClientUtils.stopPropagation(event, true, false);
                     break;
 
                 case Event.ONKEYDOWN:
