@@ -1,7 +1,6 @@
 package lsfusion.server.language.proxy;
 
 import lsfusion.interop.base.view.FlexAlignment;
-import lsfusion.interop.form.design.ContainerType;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
@@ -49,10 +48,6 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
 
     public void setCollapsed(boolean collapsed) {
         target.setCollapsed(collapsed);
-    }
-    
-    public void setType(ContainerType type) {
-        target.setType(type);
     }
 
     public void setHorizontal(boolean horizontal) {

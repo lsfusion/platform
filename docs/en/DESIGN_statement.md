@@ -289,7 +289,6 @@ DESIGN order { // customizing the design of the form, starting with the default 
     // in which we put two containers - header and specifications
     NEW orderPane FIRST { 
         fill = 1; // specifying that the container should occupy all the space available to it
-        type = SPLITV; // specifying that the container will be a vertical splitter
         MOVE BOX(o) { // moving everything related to the object o to the new container
             PANEL(o) { // configuring how properties are displayed in the object o panel
                 horizontal = FALSE; // making all descendants go from top to bottom

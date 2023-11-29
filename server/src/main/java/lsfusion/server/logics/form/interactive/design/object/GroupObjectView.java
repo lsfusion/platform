@@ -2,8 +2,6 @@ package lsfusion.server.logics.form.interactive.design.object;
 
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.identity.IDGenerator;
-import lsfusion.interop.base.view.FlexAlignment;
-import lsfusion.interop.form.design.ContainerType;
 import lsfusion.interop.form.object.AbstractGroupObject;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;

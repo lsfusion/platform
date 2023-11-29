@@ -13,22 +13,7 @@ Each component must have its own unique name within *the form*.
 
 ### Containers {#containers}
 
-All children of any container make an ordered list. It is necessary to determine how the child components of each container on the form should be placed. To do this, one of the following *types* can be specified for a container:
-
--   *Vertical container* (`CONTAINERV`): children are placed from top to bottom.
--   *Horizontal container* (`CONTAINERH`): children are placed from left to right.
--   *Tabbed panel* (`TABBED`): at any given time exactly one child component is shown. This component is determined by user via selecting the corresponding tab.
--   *Column container* (`COLUMNS`): components are placed in a fixed number of columns. When a child component is added, it is placed in the first column with the minimum number of components. In fact, columns are filled first from left to right and then, when the number of columns reaches the specified one, a new row begins, which is located relative to the previous ones from top to bottom; the layout then goes again from left to right and so on. 
--   *Vertical splitter* (`SPLITV`): can be used only if the container has exactly two child components. In this case they are arranged from top to bottom, and the user can change how much space is given to each of them.
--   *Horizontal splitter* (`SPLITH`): similar to a vertical splitter, but the child components are placed from left to right.
--   *Scrollable container* (`SCROLL`): can be used only if the container has exactly one child component. This single component occupies all the space it needs in the container, and if there is not enough a scroll bar appears.
-
-
-:::caution
-In future versions, the last three types of containers (`SPLITV`, `SPLITH`, `SCROLL`) will be deprecated and [replaced](https://github.com/lsfusion/platform/issues/22) with the corresponding `split` and `scroll` options in vertical and horizontal containers.
-:::
-
-The default container type is vertical container (`CONTAINERV`).
+All children of any container make an ordered list. It is necessary to determine how the child components of each container on the form should be placed. To do this, horizontal, tabbed or lines options can be specified for a container.
 
 If at some point a container has no child components , or they are invisible, it is automatically hidden. In turn, if a component is not a child of any container, then it will not be shown on the form.
 
@@ -193,7 +178,6 @@ DESIGN order { // customizing the design of the form, starting with the default 
     // put two containers - header and specifications
     NEW orderPane FIRST { 
         fill = 1; // specifying that the container should occupy all the space available to it
-        type = SPLITV; // specifying that the container will be a vertical splitter
         MOVE BOX(o) { // moving everything related to the object o to the new container
             PANEL(o) { // configuring how properties are displayed in the object o panel
                 horizontal = FALSE; // making all descendants go from top to bottom

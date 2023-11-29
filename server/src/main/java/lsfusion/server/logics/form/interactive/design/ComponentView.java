@@ -102,18 +102,12 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     }
 
     public double getFlex(FormInstanceContext context) {
-        ContainerView container = getLayoutParamContainer();
-        if (container != null) {
-            if (container.isScroll() || container.isSplit())
-                return flex != null && flex != 0 ? flex : 1;
-        }
-
         if (flex != null)
             return flex;
 
-        if (container != null) {
-            if (container.isTabbed())
-                return 1;
+        ContainerView container = getLayoutParamContainer();
+        if (container != null && container.isTabbed()) {
+            return 1;
         }
         return getDefaultFlex(context);
     }
@@ -127,9 +121,8 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
             return alignment;
 
         ContainerView container = getLayoutParamContainer();
-        if (container != null) {
-            if ((container.isScroll() || container.isSplit() || container.isTabbed()))
-                return FlexAlignment.STRETCH;
+        if (container != null && container.isTabbed()) {
+            return FlexAlignment.STRETCH;
         }
         return getDefaultAlignment(context);
     }
@@ -145,11 +138,6 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     public boolean isShrink(FormInstanceContext context, boolean explicit) {
         if(shrink != null)
             return shrink;
-
-        ContainerView container = getLayoutParamContainer();
-        if(container != null && container.isSplit())
-            return true;
-
         return isDefaultShrink(context, explicit);
     }
 
@@ -165,9 +153,8 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         if(alignShrink != null)
             return alignShrink;
 
-        ContainerView container = getLayoutParamContainer();
         FlexAlignment alignment = getAlignment(context);
-        if(alignment == FlexAlignment.STRETCH && (container == null || !container.isScroll()))
+        if(alignment == FlexAlignment.STRETCH)
             return true;
 
         return isDefaultAlignShrink(context, explicit);

@@ -12,7 +12,6 @@ grammar LsfLogics;
     import lsfusion.interop.form.WindowFormType;
     import lsfusion.interop.form.ContainerWindowFormType;
     import lsfusion.interop.form.ModalityWindowFormType;
-    import lsfusion.interop.form.design.ContainerType;
     import lsfusion.interop.base.view.FlexAlignment;
     import lsfusion.interop.form.event.FormScheduler;
     import lsfusion.interop.form.object.table.grid.ListViewType;
@@ -5238,7 +5237,6 @@ componentPropertyValue returns [Object value] //commented literals are in design
 	|   tb=tbooleanLiteral { $value = $tb.val; }
 	|   intB=boundsIntLiteral { $value = $intB.val; }
 	|   doubleB=boundsDoubleLiteral { $value = $doubleB.val; }
-	|   contType=containerTypeLiteral { $value = $contType.val; }
 	|   alignment=flexAlignmentLiteral { $value = $alignment.val; }
 	|   prop=designPropertyObject { $value = BaseUtils.nvl($prop.literal, $prop.property); }
 	;
@@ -5711,16 +5709,6 @@ boundsDoubleLiteral returns [Bounds val]
 
 codeLiteral returns [String val]
 	:	s=CODE_LITERAL { $val = $s.text; }
-	;
-
-containerTypeLiteral returns [ContainerType val]
-	:	'CONTAINERV' { $val = ContainerType.CONTAINERV; }	
-	|	'CONTAINERH' { $val = ContainerType.CONTAINERH; }	
-	|	'COLUMNS' { $val = ContainerType.COLUMNS; }
-	|	'TABBED' { $val = ContainerType.TABBED_PANE; }
-	|	'SPLITH' { $val = ContainerType.HORIZONTAL_SPLIT_PANE; }
-	|	'SPLITV' { $val = ContainerType.VERTICAL_SPLIT_PANE; }
-	|   'SCROLL' { $val = ContainerType.SCROLL; }
 	;
 
 flexAlignmentLiteral returns [FlexAlignment val]

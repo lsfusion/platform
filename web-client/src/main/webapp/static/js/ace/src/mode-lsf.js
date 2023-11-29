@@ -144,7 +144,6 @@ define("ace/mode/lsf",["require","exports","module","ace/lib/oop","ace/mode/text
             "keyword.group.object.tree.component.selector.type": "TOOLBARSYSTEM|FILTERGROUPS|USERFILTER|GRIDBOX|CLASSCHOOSER",
             "keyword.meta.code.decl.statement": "META|END",
             "keyword.color.literal": "RGB",
-            "keyword.container.type.literal": "CONTAINERV|CONTAINERH|TABBED|SPLITH|SPLITV|SCROLL",
             "keyword.flex.alignment.literal": "START|CENTER|STRETCH",
             "keyword.property.edit.type.literal": "CHANGEABLE",
             "keyword.email.recipient.type.literal": "CC|BCC",
