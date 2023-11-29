@@ -1307,7 +1307,7 @@ public class GwtClientUtils {
     }-*/;
 
     public static native boolean containsLineBreak(String value) /*-{
-        return $wnd.containsLineBreak(value) != null;
+        return $wnd.containsLineBreak(value);
     }-*/;
     public static native boolean containsHtmlTag(String value) /*-{
         return $wnd.containsHtmlTag(value) != null;
