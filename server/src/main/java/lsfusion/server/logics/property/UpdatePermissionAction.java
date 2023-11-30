@@ -40,7 +40,14 @@ public class UpdatePermissionAction extends InternalAction {
             SecurityManager securityManager = context.getLogicsInstance().getSecurityManager();
             RoleSecurityPolicy sp = securityManager.cachedSecurityPolicies.get(userRole);
             if (sp != null) {
-                ElementSecurityPolicy esp = type.equals("view") ? sp.propertyView : type.equals("change") ? sp.propertyChange : type.equals("editObjects") ? sp.propertyEditObjects : null;
+                ElementSecurityPolicy esp;
+                switch (type) {
+                    case "view": esp = sp.propertyView; break;
+                    case "change": esp = sp.propertyChange; break;
+                    case "editObjects": esp = sp.propertyEditObjects; break;
+                    case "groupChange": esp = sp.propertyGroupChange; break;
+                    default: esp = null;
+                }
                 if (esp != null) {
                     LAP property = context.getBL().findPropertyElseAction(actionOrProperty);
                     if (property != null) {

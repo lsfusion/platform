@@ -174,6 +174,8 @@ END
 
 @initPropertyPermission(editObjects, '{security.editObjects}');       
 
+@initPropertyPermission(groupChange, '{security.groupChange}');       
+
 //remove after onStarted
 dataPermitChange = DATA BOOLEAN (PropertyGroup);
 dataPermitChange = DATA BOOLEAN (ActionOrProperty) CHARWIDTH 10;
@@ -606,6 +608,7 @@ END
 @designPropertyPermission(view);
 @designPropertyPermission(change);
 @designPropertyPermission(editObjects);
+@designPropertyPermission(groupChange);
 
 initHeapSize '{security.client.init.heap.size}' = DATA STRING[100]();
 maxHeapSize '{security.client.max.heap.size}' = DATA STRING[100]();
