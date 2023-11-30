@@ -141,7 +141,7 @@ define("ace/mode/lsf",["require","exports","module","ace/lib/oop","ace/mode/text
             "keyword.design.header": "DESIGN",
             "keyword.remove.component.statement": "REMOVE",
             "keyword.component.single.selector.type": "BOX|TOOLBARBOX|TOOLBARLEFT|TOOLBARRIGHT",
-            "keyword.group.object.tree.component.selector.type": "TOOLBARSYSTEM|FILTERGROUPS|USERFILTER|GRIDBOX|CLASSCHOOSER",
+            "keyword.group.object.tree.component.selector.type": "TOOLBARSYSTEM|FILTERGROUPS|USERFILTER|CLASSCHOOSER",
             "keyword.meta.code.decl.statement": "META|END",
             "keyword.color.literal": "RGB",
             "keyword.container.type.literal": "CONTAINERV|CONTAINERH|TABBED|SPLITH|SPLITV|SCROLL",

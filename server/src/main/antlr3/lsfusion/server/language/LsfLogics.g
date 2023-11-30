@@ -5172,11 +5172,9 @@ groupObjectTreeComponentSelector returns [String sid]
         |   gost=groupObjectTreeComponentSelectorType 
             { 
                 result = $gost.text;
-                // backward compatibility. USERFILTER and GRIDBOX components are removed in v5.0
+                // backward compatibility. USERFILTER component was removed in v5.0
                 if ("USERFILTER".equals(result)) { 
                     result = "FILTERS";
-                } else if ("GRIDBOX".equals(result)) {
-                   result = "GRID";
                 }
             })
         '(' gots = groupObjectTreeSelector ')'
@@ -5187,7 +5185,7 @@ groupObjectTreeComponentSelector returns [String sid]
 
 groupObjectTreeComponentSelectorType
     :
-    	'TOOLBARSYSTEM' | 'FILTERGROUPS' | 'USERFILTER' | 'GRIDBOX' | 'CLASSCHOOSER' | 'GRID' | 'FILTERBOX' | 'FILTERS' | 'FILTERCONTROLS'
+    	'TOOLBARSYSTEM' | 'FILTERGROUPS' | 'USERFILTER' | 'CLASSCHOOSER' | 'GRID' | 'FILTERBOX' | 'FILTERS' | 'FILTERCONTROLS'
     ;
 
 propertySelector[ScriptingFormView formView] returns [PropertyDrawView propertyView = null]
