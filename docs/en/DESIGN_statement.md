@@ -298,7 +298,7 @@ DESIGN order { // customizing the design of the form, starting with the default 
                         // "override" the property caption in the form design (instead of the standard one)
                         caption = 'Date of the edited order'; 
                         // setting a hint for the order date property
-                        toolTip = 'Input here the date the order was made'; 
+                        tooltip = 'Input here the date the order was made'; 
                         background = #00FFFF; // making the background red
                     }
                     MOVE PROPERTY(time(o)) { // moving the order time property
