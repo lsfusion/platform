@@ -239,7 +239,15 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
         }
     };
 
-    public final ClientPropertyReader elementClassReader = new ClientPropertyReader() {
+    public final ClientPropertyReader elementClassReader = new ElementClassAttrReader(false);
+    public final ClientPropertyReader elementAttrReader = new ElementClassAttrReader(true);
+
+    public class ElementClassAttrReader implements ClientPropertyReader {
+        public boolean attr;
+        public ElementClassAttrReader(boolean attr) {
+            this.attr = attr;
+        }
+
         public ClientGroupObject getGroupObject() {
             return null;
         }
@@ -252,26 +260,9 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
         }
 
         public byte getType() {
-            return PropertyReadType.COMPONENT_ELEMENTCLASS;
+            return attr ? PropertyReadType.COMPONENT_ELEMENTATTR : PropertyReadType.COMPONENT_ELEMENTCLASS;
         }
-    };
-
-    public final ClientPropertyReader elementAttrReader = new ClientPropertyReader() {
-        public ClientGroupObject getGroupObject() {
-            return null;
-        }
-
-        public void update(Map<ClientGroupObjectValue, Object> values, boolean updateKeys, TableController controller) {
-        }
-
-        public int getID() {
-            return ClientComponent.this.getID();
-        }
-
-        public byte getType() {
-            return PropertyReadType.COMPONENT_ELEMENTATTR;
-        }
-    };
+    }
 
     public int getVerticalMargin() {
         return marginTop + marginBottom;
