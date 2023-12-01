@@ -51,7 +51,7 @@ a.text-based-prop-value:not(.prop-input) { /* we have to set cursor pointer for 
 }
 
 /* we set pre to preserve white spaces and line breaks in prop data*/
-.text-based-prop-value {
+body:not(.grid-cell-word-wrap) .text-based-prop-value {
     white-space: pre;
 }
 .text-based-prop-value.text-based-prop-wrap {

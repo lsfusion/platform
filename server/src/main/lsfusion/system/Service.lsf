@@ -818,6 +818,8 @@ getClientSettings(User user) + WHEN TRUE AND user IS User THEN {
         autoReconnectOnConnectionLost = (GROUP MAX autoReconnectOnConnectionLost(UserRole ur) IF has(user, ur)),
         showDetailedInfo = (GROUP MAX showDetailedInfo(UserRole ur) IF has(user, ur)),
         showDetailedInfoDelay = valueSetting('tooltipDelay'),
+        suppressOnFocusChange = IF suppressOnFocusChange(user) THEN (IF suppressOnFocusChange(user) == TTRUE THEN TRUE ELSE NULL) ELSE valueSettingBoolean('suppressOnFocusChange'),
+        gridCellWordWrap = IF gridCellWordWrap(user) THEN (IF gridCellWordWrap(user) == TTRUE THEN TRUE ELSE NULL) ELSE valueSettingBoolean('gridCellWordWrap'),
         devMode = inDevMode() OR (devMode(user)),
         projectLSFDir = projectLSFDir(),
         colorThemeString = IF (colorThemeStaticName()) THEN substrFrom(colorThemeStaticName(), strpos(colorThemeStaticName(), '.') + 1),

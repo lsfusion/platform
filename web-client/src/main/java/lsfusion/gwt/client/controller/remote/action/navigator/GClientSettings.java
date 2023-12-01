@@ -13,6 +13,8 @@ public class GClientSettings implements Serializable {
     public boolean showDetailedInfo;
     public boolean autoReconnectOnConnectionLost;
     public int showDetailedInfoDelay;
+    public boolean suppressOnFocusChange;
+    public boolean gridCellWordWrap;
     public boolean forbidDuplicateForms;
     public boolean pivotOnlySelectedColumn;
     public String matchSearchSeparator;
@@ -33,8 +35,9 @@ public class GClientSettings implements Serializable {
     public GClientSettings() {
     }
 
-    public GClientSettings(long busyDialogTimeout, boolean devMode, String projectLSFDir, boolean showDetailedInfo, int showDetailedInfoDelay, boolean autoReconnectOnConnectionLost, boolean forbidDuplicateForms,
-                           boolean pivotOnlySelectedColumn, String matchSearchSeparator, GColorTheme colorTheme, boolean useBootstrap, Map<String, String> versionedColorThemesCss,
+    public GClientSettings(long busyDialogTimeout, boolean devMode, String projectLSFDir, boolean showDetailedInfo, int showDetailedInfoDelay, boolean suppressOnFocusChange,
+                           boolean gridCellWordWrap, boolean autoReconnectOnConnectionLost, boolean forbidDuplicateForms, boolean pivotOnlySelectedColumn,
+                           String matchSearchSeparator, GColorTheme colorTheme, boolean useBootstrap, Map<String, String> versionedColorThemesCss,
                            GColorPreferences colorPreferences, String dateFormat, String timeFormat, String staticImagesURL, String[] preDefinedDateRangesNames,
                            boolean useTextAsFilterSeparator, boolean verticalNavbar, boolean userFiltersManualApplyMode) {
         this.busyDialogTimeout = busyDialogTimeout;
@@ -43,6 +46,8 @@ public class GClientSettings implements Serializable {
         this.showDetailedInfo = showDetailedInfo;
         this.autoReconnectOnConnectionLost = autoReconnectOnConnectionLost;
         this.showDetailedInfoDelay = showDetailedInfoDelay;
+        this.suppressOnFocusChange = suppressOnFocusChange;
+        this.gridCellWordWrap = gridCellWordWrap;
         this.forbidDuplicateForms = forbidDuplicateForms;
         this.pivotOnlySelectedColumn = pivotOnlySelectedColumn;
         this.matchSearchSeparator = matchSearchSeparator;

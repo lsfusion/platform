@@ -113,6 +113,9 @@ designEnvNavigatorPinMode '{navigator.pin.mode}' = DATA TBOOLEAN (DesignEnv);
 serverNavigatorPinMode '{navigator.pin.mode}' = DATA TBOOLEAN ();
 navigatorPinMode '{navigator.pin.mode}' (DesignEnv d) = IF useClientNavigatorPinMode(d) THEN designEnvNavigatorPinMode(d) ELSE serverNavigatorPinMode();
 navigatorPinMode() = navigatorPinMode(currentDesignEnv());
+suppressOnFocusChange '{service.suppress.on.focus.change}' = DATA TBOOLEAN(DesignEnv);
+gridCellWordWrap '{service.grid.cell.word.wrap}' = DATA TBOOLEAN(DesignEnv);
+userFiltersManualApplyMode '{service.user.filters.manual.apply.mode}' = DATA TBOOLEAN (CustomUser);
 
 navigatorPinModeCaption = (IF navigatorPinMode()
     THEN (IF navigatorPinMode() == TFALSE
@@ -139,7 +142,7 @@ needReloadText = '{system.events.design.need.reload}';
 
 FORM design '{system.events.design}'
     OBJECTS de = DesignEnv PANEL
-    PROPERTIES(de) captionTheme, captionSize SHOWIF useBootstrap(de), captionNavbar
+    PROPERTIES(de) captionTheme, captionSize SHOWIF useBootstrap(de), captionNavbar, suppressOnFocusChange, gridCellWordWrap, userFiltersManualApplyMode
 
     FILTERS de = currentDesignEnv()
     FILTERS IF storeNavigatorSettingsForComputer() THEN de IS Computer ELSE de IS CustomUser
@@ -155,6 +158,9 @@ DESIGN design {
     MOVE PROPERTY(captionTheme(de));
     MOVE PROPERTY(captionSize(de));
     MOVE PROPERTY(captionNavbar(de));
+    MOVE PROPERTY(suppressOnFocusChange(de));
+    MOVE PROPERTY(gridCellWordWrap(de));
+    MOVE PROPERTY(userFiltersManualApplyMode(de));
     MOVE PROPERTY(needReloadText()) {
         autoSize = TRUE;
     }
@@ -452,7 +458,6 @@ noSystemToolbarCaptions() += isNativeDesktop();
 dontShowCloseButtonOnInactiveTab '{service.dont.show.close.button.on.inactive.tab}' = DATA BOOLEAN(CustomUser);
 dontShowCloseButtonOnInactiveTab = dontShowCloseButtonOnInactiveTab(currentUser());
 
-userFiltersManualApplyMode '{service.user.filters.manual.apply.mode}' = DATA TBOOLEAN (CustomUser);
 userFiltersManualApplyMode = userFiltersManualApplyMode(currentUser());
 
 onClientStarted () + {

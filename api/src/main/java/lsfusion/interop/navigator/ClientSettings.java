@@ -21,6 +21,8 @@ public class ClientSettings implements Serializable {
     public boolean showDetailedInfo;
     public boolean autoReconnectOnConnectionLost;
     public int showDetailedInfoDelay;
+    public boolean suppressOnFocusChange;
+    public boolean gridCellWordWrap;
     public boolean forbidDuplicateForms;
     public boolean showNotDefinedStrings;
     public boolean pivotOnlySelectedColumn;
@@ -38,14 +40,13 @@ public class ClientSettings implements Serializable {
     public int maxRequestQueueSize;
 
 
-    public ClientSettings(LocalePreferences localePreferences, String currentUserName, Integer fontSize, boolean busyDialog,
-                          long busyDialogTimeout, boolean useRequestTimeout, boolean devMode, String projectLSFDir,
-                          boolean showDetailedInfo, int showDetailedInfoDelay, boolean autoReconnectOnConnectionLost, boolean forbidDuplicateForms, boolean showNotDefinedStrings,
-                          boolean pivotOnlySelectedColumn, String matchSearchSeparator,
-                          ColorTheme colorTheme, boolean useBootstrap, ColorPreferences colorPreferences, String[] preDefinedDateRangesNames,
-                          boolean useTextAsFilterSeparator, List<Pair<String, RawFileData>> mainResourcesBeforeSystem,
-                          List<Pair<String, RawFileData>> mainResourcesAfterSystem, boolean verticalNavbar, boolean userFiltersManualApplyMode,
-                          int maxRequestQueueSize) {
+    public ClientSettings(LocalePreferences localePreferences, String currentUserName, Integer fontSize, boolean busyDialog, long busyDialogTimeout,
+                          boolean useRequestTimeout, boolean devMode, String projectLSFDir, boolean showDetailedInfo, int showDetailedInfoDelay,
+                          boolean suppressOnFocusChange, boolean gridCellWordWrap, boolean autoReconnectOnConnectionLost, boolean forbidDuplicateForms,
+                          boolean showNotDefinedStrings, boolean pivotOnlySelectedColumn, String matchSearchSeparator, ColorTheme colorTheme,
+                          boolean useBootstrap, ColorPreferences colorPreferences, String[] preDefinedDateRangesNames, boolean useTextAsFilterSeparator,
+                          List<Pair<String, RawFileData>> mainResourcesBeforeSystem, List<Pair<String, RawFileData>> mainResourcesAfterSystem,
+                          boolean verticalNavbar, boolean userFiltersManualApplyMode, int maxRequestQueueSize) {
         this.localePreferences = localePreferences;
         this.currentUserName = currentUserName;
         this.fontSize = fontSize;
@@ -57,6 +58,8 @@ public class ClientSettings implements Serializable {
         this.showDetailedInfo = showDetailedInfo;
         this.autoReconnectOnConnectionLost = autoReconnectOnConnectionLost;
         this.showDetailedInfoDelay = showDetailedInfoDelay;
+        this.suppressOnFocusChange = suppressOnFocusChange;
+        this.gridCellWordWrap = gridCellWordWrap;
         this.forbidDuplicateForms = forbidDuplicateForms;
         this.showNotDefinedStrings = showNotDefinedStrings;
         this.pivotOnlySelectedColumn = pivotOnlySelectedColumn;
