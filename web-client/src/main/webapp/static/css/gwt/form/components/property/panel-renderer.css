@@ -8,10 +8,12 @@
 }
 
 .panel-label {
-    white-space: nowrap;
-
     margin-top: var(--border-label-vert-padding);
     margin-bottom: var(--border-label-vert-padding);
+}
+
+.content-word-wrap .panel-label {
+    white-space: nowrap;
 }
 
 .panelRendererValue {

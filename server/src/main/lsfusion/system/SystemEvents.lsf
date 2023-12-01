@@ -114,7 +114,7 @@ serverNavigatorPinMode '{navigator.pin.mode}' = DATA TBOOLEAN ();
 navigatorPinMode '{navigator.pin.mode}' (DesignEnv d) = IF useClientNavigatorPinMode(d) THEN designEnvNavigatorPinMode(d) ELSE serverNavigatorPinMode();
 navigatorPinMode() = navigatorPinMode(currentDesignEnv());
 suppressOnFocusChange '{service.suppress.on.focus.change}' = DATA TBOOLEAN(DesignEnv);
-gridCellWordWrap '{service.grid.cell.word.wrap}' = DATA TBOOLEAN(DesignEnv);
+contentWordWrap '{service.content.word.wrap}' = DATA TBOOLEAN(DesignEnv);
 userFiltersManualApplyMode '{service.user.filters.manual.apply.mode}' = DATA TBOOLEAN (CustomUser);
 
 navigatorPinModeCaption = (IF navigatorPinMode()
@@ -142,7 +142,7 @@ needReloadText = '{system.events.design.need.reload}';
 
 FORM design '{system.events.design}'
     OBJECTS de = DesignEnv PANEL
-    PROPERTIES(de) captionTheme, captionSize SHOWIF useBootstrap(de), captionNavbar, suppressOnFocusChange, gridCellWordWrap, userFiltersManualApplyMode
+    PROPERTIES(de) captionTheme, captionSize SHOWIF useBootstrap(de), captionNavbar, suppressOnFocusChange, contentWordWrap, userFiltersManualApplyMode
 
     FILTERS de = currentDesignEnv()
     FILTERS IF storeNavigatorSettingsForComputer() THEN de IS Computer ELSE de IS CustomUser
@@ -159,7 +159,7 @@ DESIGN design {
     MOVE PROPERTY(captionSize(de));
     MOVE PROPERTY(captionNavbar(de));
     MOVE PROPERTY(suppressOnFocusChange(de));
-    MOVE PROPERTY(gridCellWordWrap(de));
+    MOVE PROPERTY(contentWordWrap(de));
     MOVE PROPERTY(userFiltersManualApplyMode(de));
     MOVE PROPERTY(needReloadText()) {
         autoSize = TRUE;

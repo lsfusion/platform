@@ -39,6 +39,6 @@
     display: inline;
 }
 
-.wrap-text-nowrap {
+.content-word-wrap .wrap-text-nowrap {
     white-space: nowrap;
 }

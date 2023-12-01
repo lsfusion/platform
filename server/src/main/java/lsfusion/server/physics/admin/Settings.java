@@ -3252,13 +3252,13 @@ public class Settings implements Cloneable {
         this.suppressOnFocusChange = suppressOnFocusChange;
     }
 
-    private boolean gridCellWordWrap = false;
+    private boolean contentWordWrap = false;
 
-    public boolean isGridCellWordWrap() {
-        return gridCellWordWrap;
+    public boolean isContentWordWrap() {
+        return contentWordWrap;
     }
 
-    public void setGridCellWordWrap(boolean gridCellWordWrap) {
-        this.gridCellWordWrap = gridCellWordWrap;
+    public void setContentWordWrap(boolean contentWordWrap) {
+        this.contentWordWrap = contentWordWrap;
     }
 }
