@@ -8,8 +8,9 @@ import lsfusion.server.logics.form.interactive.instance.property.PropertyReaderI
 
 public class ContainerViewInstance extends ComponentViewInstance<ContainerView> {
 
-    public ContainerViewInstance(ContainerView entity, ImMap<ContainerViewExtraType, PropertyObjectInstance<?>> extras, PropertyObjectInstance propertyElementClass) {
-        super(entity, propertyElementClass);
+    public ContainerViewInstance(ContainerView entity, ImMap<ContainerViewExtraType, PropertyObjectInstance<?>> extras,
+                                 PropertyObjectInstance propertyElementClass, PropertyObjectInstance propertyElementAttr) {
+        super(entity, propertyElementClass, propertyElementAttr);
 
         propertyCaption = extras.get(ContainerViewExtraType.CAPTION);
         captionReader = new ExtraReaderInstance(ContainerViewExtraType.CAPTION, propertyCaption);

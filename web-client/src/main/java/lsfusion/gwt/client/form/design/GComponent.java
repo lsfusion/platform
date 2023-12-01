@@ -19,6 +19,7 @@ public class GComponent implements Serializable {
     public boolean defaultComponent;
 
     public String elementClass;
+    public String elementAttr;
 
     public int width = -1;
     public int height = -1;
@@ -172,4 +173,26 @@ public class GComponent implements Serializable {
         }
     }
     public final GPropertyReader elementClassReader = new GElementClassReader();
+
+    private class GElementAttrReader implements GPropertyReader {
+        private String sID;
+
+        public GElementAttrReader() {
+        }
+
+        @Override
+        public void update(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
+            controller.getFormLayout().setElementAttr(GComponent.this, PValue.getClassStringValue(values.get(GGroupObjectValue.EMPTY)));
+        }
+
+        @Override
+        public String getNativeSID() {
+            if(sID == null) {
+                sID = "_COMPONENT_" + "ELEMENTATTRREADER" + "_" + GComponent.this.sID;
+            }
+            return sID;
+        }
+    }
+    public final GPropertyReader elementAttrReader = new GElementAttrReader();
+
 }
