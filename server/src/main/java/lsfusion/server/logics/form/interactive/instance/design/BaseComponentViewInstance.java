@@ -15,8 +15,8 @@ public class BaseComponentViewInstance extends ComponentViewInstance<ComponentVi
 
     public final ShowIfReaderInstance showIfReader;
 
-    public BaseComponentViewInstance(ComponentView entity, PropertyObjectInstance propertyElementClass) {
-        super(entity, propertyElementClass);
+    public BaseComponentViewInstance(ComponentView entity, PropertyObjectInstance propertyElementClass, PropertyObjectInstance propertyElementAttr) {
+        super(entity, propertyElementClass, propertyElementAttr);
 
         this.showIfReader = new ShowIfReaderInstance();
     }

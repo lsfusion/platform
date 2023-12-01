@@ -59,6 +59,10 @@ public interface BaseImage extends Serializable {
         updateClasses(widget.getElement(), classes);
     }
 
+    static void updateAttrs(Widget widget, String attrs) {
+        updateAttrs(widget.getElement(), attrs);
+    }
+
     interface PropagateClasses {
         boolean is(Widget widget, Widget parent, String className);
     }
@@ -136,12 +140,55 @@ public interface BaseImage extends Serializable {
         }
     }
 
+    //use postfix to avoid intersection valueElementClass with GComponent.elementClass
+    static NativeStringMap<Pair<String, Boolean>> buildAttrsChanges(Element element, String newAttrs, String postfix) {
+        String[] prevAttrs = (String[]) element.getPropertyObject(GwtClientUtils.LSF_ATTRS_ATTRIBUTE + postfix);
+        if(prevAttrs == null)
+            prevAttrs = new String[0];
+
+        NativeStringMap<Pair<String, Boolean>> changes = new NativeStringMap<>();
+        for(String prevAttr : prevAttrs) {
+            changes.put(prevAttr, new Pair(null, false));
+        }
+
+        String[] attrs = newAttrs != null ? newAttrs.split(";") : new String[0];
+        for(String attr : attrs) {
+            String[] attrKeyValue = attr.split("=");
+            String attrKey = attrKeyValue[0];
+            String attrValue = attrKeyValue.length > 1 ? attrKeyValue[1] : null;
+            if (changes.remove(attrKey) == null)
+                changes.put(attrKey, new Pair(attrValue, true));
+        }
+
+        element.setPropertyObject(GwtClientUtils.LSF_ATTRS_ATTRIBUTE + postfix, newAttrs);
+
+        return changes;
+    }
+
+    static void applyAttrChange(Element element, String attr, String value, Boolean add) {
+        if (!GwtSharedUtils.isRedundantString(attr)) {
+            if (add)
+                element.setAttribute(attr, value);
+            else
+                element.removeAttribute(attr);
+        }
+    }
+
     static void updateClasses(Element element, String classes) {
         updateClasses(element, classes, emptyPostfix);
     }
     static void updateClasses(Element element, String classes, String postfix) {
         buildClassesChanges(element, classes, postfix).foreachEntry((aclass, add) -> {
             applyClassChange(element, aclass, add);
+        });
+    }
+
+    static void updateAttrs(Element element, String attrs) {
+        updateAttrs(element, attrs, emptyPostfix);
+    }
+    static void updateAttrs(Element element, String attrs, String postfix) {
+        buildAttrsChanges(element, attrs, postfix).foreachEntry((aclass, add) -> {
+            applyAttrChange(element, aclass, add.first, add.second);
         });
     }
 

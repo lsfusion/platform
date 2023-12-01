@@ -37,6 +37,8 @@ public class PropertyReadType {
 
     public final static byte COMPONENT_ELEMENTCLASS = 17;
 
+    public final static byte COMPONENT_ELEMENTATTR = 24;
+
     public final static byte CAPTIONELEMENTCLASS = 18;
 
     public final static byte COMMENT = 19;
