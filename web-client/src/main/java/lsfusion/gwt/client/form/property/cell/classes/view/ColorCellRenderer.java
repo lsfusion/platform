@@ -24,7 +24,6 @@ public class ColorCellRenderer extends TypeInputBasedCellRenderer {
 
     @Override
     public boolean updateContent(Element element, PValue value, Object extraValue, UpdateContext updateContext) {
-        element.addClassName("form-control");
         InputElement input = getInputElement(element);
         input.setValue(getColorValue(value));
         return false;
