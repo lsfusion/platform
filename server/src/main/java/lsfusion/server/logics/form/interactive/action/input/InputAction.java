@@ -4,7 +4,6 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.file.AppImage;
-import lsfusion.server.base.AppServerImage;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
@@ -16,11 +15,10 @@ import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.form.interactive.action.async.InputList;
-import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInput;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInput;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInputList;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInputListAction;
-import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
@@ -131,7 +129,7 @@ public class InputAction extends SystemExplicitAction {
 
     @IdentityInstanceLazy
     private InputList getInputList() {
-        return getMapInputList().map(new ConnectionContext(true));
+        return getMapInputList().map();
     }
 
     @Override

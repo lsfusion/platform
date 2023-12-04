@@ -157,7 +157,7 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
         Result<Object> result = new Result<>();
         // we'll be optimists and assume that this value will stay
         long dispatchingIndex = getDispatchingIndex();
-        form.edit(action.readType, editEventHandler, action.hasOldValue, PValue.remapValue(action.oldValue), action.inputList,
+        form.edit(action.readType, editEventHandler, action.hasOldValue, PValue.remapValue(action.oldValue), action.inputList, action.inputListActions,
                 (value, onExec) -> {
                     onExec.accept(dispatchingIndex);
 

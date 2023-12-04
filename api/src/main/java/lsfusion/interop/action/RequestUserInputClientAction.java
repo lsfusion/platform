@@ -8,8 +8,10 @@ public class RequestUserInputClientAction implements ClientAction {
     public final String customChangeFunction;
     
     public final byte[] inputList;
+    public final byte[] inputListActions;
 
-    public RequestUserInputClientAction(byte[] readType, byte[] oldValue, boolean hasOldValue, String customChangeFunction, byte[] inputList) {
+    public RequestUserInputClientAction(byte[] readType, byte[] oldValue, boolean hasOldValue, String customChangeFunction,
+                                        byte[] inputList, byte[] inputListActions) {
         this.readType = readType;
         this.oldValue = oldValue;
         this.hasOldValue = hasOldValue;
@@ -17,6 +19,7 @@ public class RequestUserInputClientAction implements ClientAction {
         this.customChangeFunction = customChangeFunction;
 
         this.inputList = inputList;
+        this.inputListActions = inputListActions;
 //        assert hasOldValue || oldValue == null;
     }
 

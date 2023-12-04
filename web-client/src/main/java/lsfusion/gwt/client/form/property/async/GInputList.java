@@ -6,16 +6,13 @@ import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.GComple
 import java.io.Serializable;
 
 public class GInputList implements Serializable {
-
-    public GInputListAction[] actions; // null if there is no list
     public GCompletionType completionType;
     public GCompare compare;
 
     public GInputList() {
     }
 
-    public GInputList(GInputListAction[] actions, GCompletionType completionType, GCompare compare) {
-        this.actions = actions;
+    public GInputList(GCompletionType completionType, GCompare compare) {
         this.completionType = completionType;
         this.compare = compare;
     }

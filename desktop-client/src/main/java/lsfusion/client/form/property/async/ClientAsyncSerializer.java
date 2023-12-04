@@ -38,6 +38,16 @@ public class ClientAsyncSerializer {
     }
 
     public static ClientInputList deserializeInputList(DataInputStream inStream) throws IOException {
+        return new ClientInputList(inStream.readBoolean() ? CompletionType.STRICT : CompletionType.NON_STRICT, null);
+    }
+
+    public static ClientInputList deserializeInputList(byte[] array) throws IOException {
+        if(array == null)
+            return null;
+        return deserializeInputList(new DataInputStream(new ByteArrayInputStream(array)));
+    }
+
+    public static ClientInputListAction[]  deserializeInputListActions(DataInputStream inStream) throws IOException {
         int actionsLength = inStream.readByte();
         ClientInputListAction[] actions = new ClientInputListAction[actionsLength];
         for (int i = 0; i < actionsLength; i++) {
@@ -55,14 +65,15 @@ public class ClientAsyncSerializer {
             actions[i] = new ClientInputListAction(action, id, asyncExec, keyStroke, editingBindingMode, quickAccessList, index);
         }
 
-        return new ClientInputList(actions, inStream.readBoolean() ? CompletionType.STRICT : CompletionType.NON_STRICT, null);
+        return actions;
     }
 
-    public static ClientInputList deserializeInputList(byte[] array) throws IOException {
+    public static ClientInputListAction[] deserializeInputListActions(byte[] array) throws IOException {
         if(array == null)
             return null;
-        return deserializeInputList(new DataInputStream(new ByteArrayInputStream(array)));
+        return deserializeInputListActions(new DataInputStream(new ByteArrayInputStream(array)));
     }
+
 
     public static ClientQuickAccessMode deserializeQuickAccessMode(DataInputStream inStream) throws IOException {
         byte type = inStream.readByte();

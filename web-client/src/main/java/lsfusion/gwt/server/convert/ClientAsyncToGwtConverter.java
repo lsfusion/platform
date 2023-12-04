@@ -34,11 +34,17 @@ public class ClientAsyncToGwtConverter extends CachedObjectConverter {
     @Cached
     @Converter(from = ClientInputList.class)
     public GInputList convertInputList(ClientInputList inputList) {
-        GInputListAction[] inputListActions = new GInputListAction[inputList.actions.length];
-        for(int i = 0; i < inputList.actions.length;i++) {
-            inputListActions[i] = convertOrCast(inputList.actions[i]);
+        return new GInputList(convertOrCast(inputList.completionType), null);
+    }
+
+    @Cached
+    @Converter(from = ClientInputListAction[].class)
+    public GInputListAction[] convertInputList(ClientInputListAction[] actions) {
+        GInputListAction[] result = new GInputListAction[actions.length];
+        for(int i = 0; i < actions.length;i++) {
+            result[i] = convertOrCast(actions[i]);
         }
-        return new GInputList(inputListActions, convertOrCast(inputList.completionType), null);
+        return result;
     }
 
     @Cached
@@ -108,7 +114,7 @@ public class ClientAsyncToGwtConverter extends CachedObjectConverter {
     @Cached
     @Converter(from = ClientAsyncInput.class)
     public GAsyncInput convertAsyncInput(ClientAsyncInput clientAsyncInput) {
-        return new GAsyncInput(typeConverter.convertOrCast(clientAsyncInput.changeType), convertOrCast(clientAsyncInput.inputList), clientAsyncInput.customEditorFunction);
+        return new GAsyncInput(typeConverter.convertOrCast(clientAsyncInput.changeType), convertOrCast(clientAsyncInput.inputList), convertOrCast(clientAsyncInput.inputListActions), clientAsyncInput.customEditorFunction);
     }
 
     @Cached

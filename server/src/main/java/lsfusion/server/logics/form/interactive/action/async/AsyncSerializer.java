@@ -23,14 +23,27 @@ public class AsyncSerializer {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         DataOutputStream dataStream = new DataOutputStream(outStream);
 
-        serializeInputList(inputList, context, dataStream);
+        serializeInputList(inputList, dataStream);
 
         return outStream.toByteArray();
     }
 
-    public static void serializeInputList(InputList inputList, ConnectionContext context, DataOutputStream dataStream) throws IOException {
-        dataStream.write(inputList.actions.length);
-        for(InputListAction action : inputList.actions) {
+    public static void serializeInputList(InputList inputList, DataOutputStream dataStream) throws IOException {
+        dataStream.writeBoolean(inputList.strict);
+    }
+
+    public static byte[] serializeInputListActions(InputListAction[] inputListActions, ConnectionContext context) throws IOException {
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        DataOutputStream dataStream = new DataOutputStream(outStream);
+
+        serializeInputListActions(inputListActions, context, dataStream);
+
+        return outStream.toByteArray();
+    }
+
+    public static void serializeInputListActions(InputListAction[] inputListActions, ConnectionContext context, DataOutputStream dataStream) throws IOException {
+        dataStream.write(inputListActions.length);
+        for(InputListAction action : inputListActions) {
             AppServerImage.serialize(action.action.get(context), dataStream);
             dataStream.writeUTF(action.id);
             AsyncSerializer.serializeEventExec(action.asyncExec, context, dataStream);
@@ -47,7 +60,6 @@ public class AsyncSerializer {
             }
             dataStream.writeInt(action.index);
         }
-        dataStream.writeBoolean(inputList.strict);
     }
 
     public static int serializeQuickAccessMode(QuickAccessMode quickAccessMode) {

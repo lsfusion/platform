@@ -24,6 +24,7 @@ import lsfusion.client.form.order.user.MultiLineHeaderRenderer;
 import lsfusion.client.form.order.user.TableSortableHeaderManager;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.async.ClientInputList;
+import lsfusion.client.form.property.async.ClientInputListAction;
 import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.client.form.property.cell.controller.ClientAbstractCellEditor;
 import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispatcher;
@@ -90,6 +91,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
     protected ClientType currentEditType;
     protected Object currentEditValue;
     protected ClientInputList currentInputList;
+    protected ClientInputListAction[] currentInputListActions;
     protected String currentActionSID;
     protected boolean editPerformed;
     protected boolean commitingValue;
@@ -861,6 +863,11 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
         return currentInputList;
     }
 
+    @Override
+    public ClientInputListAction[] getCurrentInputListActions() {
+        return currentInputListActions;
+    }
+
     public String getCurrentActionSID() {
         return currentActionSID;
     }
@@ -939,7 +946,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
         return editDispatcher.executePropertyEventAction(property, columnKey, actionSID, editEvent, contextAction);
     }
 
-    public boolean requestValue(ClientType valueType, Object oldValue, ClientInputList inputList, String actionSID) {
+    public boolean requestValue(ClientType valueType, Object oldValue, ClientInputList inputList, ClientInputListAction[] inputListActions, String actionSID) {
         //пока чтение значения можно вызывать только один раз в одном изменении...
         //если получится безусловно задержать фокус, то это ограничение можно будет убрать
         Preconditions.checkState(!commitingValue, "You can request value only once per edit action.");
@@ -948,6 +955,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
         currentEditType = valueType;
         currentEditValue = oldValue;
         currentInputList = inputList;
+        currentInputListActions = inputListActions;
         currentActionSID = actionSID;
 
         if (!super.editCellAt(editRow, editCol, editEvent)) {

@@ -76,7 +76,8 @@ public class AsyncMapInput<T extends PropertyInterface> extends AsyncMapValue<T>
                 oldValue instanceof PropertyMapImplement && drawProperty != null && context instanceof FormInstanceContext && drawProperty.isProperty((FormInstanceContext) context) &&
                 ((PropertyMapImplement<?, T>) oldValue).mapEntityObjects(mapObjects).equalsMap(drawProperty.getAssertCellProperty((FormInstanceContext) context))))
             return null;
-        return new AsyncInput(type, list != null && inputList != null ? inputList.map(mapObjects, (FormInstanceContext) context, securityProperty, drawProperty, toDraw) : null, customEditorFunction);
+        return new AsyncInput(type, list != null && inputList != null ? inputList.map() : null,
+                list != null && inputList != null ? inputList.map(mapObjects, (FormInstanceContext) context, securityProperty, drawProperty, toDraw) : null, customEditorFunction);
     }
 
     @Override

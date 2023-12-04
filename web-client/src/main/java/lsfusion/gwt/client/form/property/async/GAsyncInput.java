@@ -12,6 +12,7 @@ public class GAsyncInput extends GAsyncFormExec {
     public GType changeType;
 
     public GInputList inputList;
+    public GInputListAction[] inputListActions;
 
     public String customEditFunction;
 
@@ -19,9 +20,10 @@ public class GAsyncInput extends GAsyncFormExec {
     public GAsyncInput() {
     }
 
-    public GAsyncInput(GType changeType, GInputList inputList, String customEditFunction) {
+    public GAsyncInput(GType changeType, GInputList inputList, GInputListAction[] inputListActions, String customEditFunction) {
         this.changeType = changeType;
         this.inputList = inputList;
+        this.inputListActions = inputListActions;
         this.customEditFunction = customEditFunction;
     }
 
