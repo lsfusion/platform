@@ -68,6 +68,8 @@ public class MainFrame implements EntryPoint {
     public static boolean showDetailedInfo;
     public static boolean autoReconnectOnConnectionLost;
     public static int showDetailedInfoDelay;
+    public static boolean suppressOnFocusChange;
+    public static boolean contentWordWrap;
     public static boolean forbidDuplicateForms;
     public static boolean useBootstrap;
     public static long busyDialogTimeout;
@@ -489,6 +491,7 @@ public class MainFrame implements EntryPoint {
 
         FormsController.setGlobalClassName(true, useBootstrap ? "nav-bootstrap" : "nav-excel");
         FormsController.setGlobalClassName(true, mobile ? "nav-mobile" : "nav-desktop");
+        FormsController.setGlobalClassName(contentWordWrap, "content-word-wrap");
 
         if (mobile) {
             if (useBootstrap) {
@@ -583,6 +586,8 @@ public class MainFrame implements EntryPoint {
                 projectLSFDir = gClientSettings.projectLSFDir;
                 showDetailedInfo = gClientSettings.showDetailedInfo;
                 showDetailedInfoDelay = gClientSettings.showDetailedInfoDelay;
+                suppressOnFocusChange = gClientSettings.suppressOnFocusChange;
+                contentWordWrap = gClientSettings.contentWordWrap;
                 autoReconnectOnConnectionLost = gClientSettings.autoReconnectOnConnectionLost;
                 forbidDuplicateForms = gClientSettings.forbidDuplicateForms;
                 pivotOnlySelectedColumn = gClientSettings.pivotOnlySelectedColumn;

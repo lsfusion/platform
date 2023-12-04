@@ -3241,4 +3241,24 @@ public class Settings implements Cloneable {
     public void setTooltipDelay(int tooltipDelay) {
         this.tooltipDelay = tooltipDelay;
     }
+
+    private boolean suppressOnFocusChange = false;
+
+    public boolean isSuppressOnFocusChange() {
+        return suppressOnFocusChange;
+    }
+
+    public void setSuppressOnFocusChange(boolean suppressOnFocusChange) {
+        this.suppressOnFocusChange = suppressOnFocusChange;
+    }
+
+    private boolean contentWordWrap = false;
+
+    public boolean isContentWordWrap() {
+        return contentWordWrap;
+    }
+
+    public void setContentWordWrap(boolean contentWordWrap) {
+        this.contentWordWrap = contentWordWrap;
+    }
 }
