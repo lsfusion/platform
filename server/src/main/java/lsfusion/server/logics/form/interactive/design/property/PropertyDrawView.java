@@ -129,6 +129,8 @@ public class PropertyDrawView extends BaseComponentView {
     public LocalizedString tooltip;
     public LocalizedString valueTooltip;
 
+    public LocalizedString valueAttr;
+
     public LocalizedString caption;
     public AppServerImage.Reader image;
     public boolean clearText;
@@ -502,6 +504,8 @@ public class PropertyDrawView extends BaseComponentView {
 
         pool.writeString(outStream, ThreadLocalContext.localize(tooltip));
         pool.writeString(outStream, ThreadLocalContext.localize(valueTooltip));
+
+        pool.writeString(outStream, ThreadLocalContext.localize(valueAttr));
 
         pool.writeObject(outStream, getChangeOnSingleClick(pool.context));
         outStream.writeBoolean(hide);

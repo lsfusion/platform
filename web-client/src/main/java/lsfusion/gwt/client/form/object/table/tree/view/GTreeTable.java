@@ -508,6 +508,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             return record.getValueTooltip(property);
         }
 
+        @Override
+        protected String getValueAttr(GPropertyDraw property, GTreeGridRecord record) {
+            return record.getValueAttr(property);
+        }
+
         // in tree property might change
         private static final String PDRAW_ATTRIBUTE = "__gwt_pdraw"; // actually it represents nod depth
 
@@ -596,6 +601,12 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     @Override
     public void updateValueTooltipValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
         super.updateValueTooltipValues(propertyDraw, values);
+        dataUpdated = true;
+    }
+
+    @Override
+    public void updateValueAttrValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        super.updateValueAttrValues(propertyDraw, values);
         dataUpdated = true;
     }
 
@@ -842,6 +853,12 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                         if (propValueTooltips != null)
                             valueTooltip = propValueTooltips.get(key);
                         objectRecord.setValueTooltip(property, valueTooltip == null ? property.valueTooltip : PValue.getStringValue(valueTooltip));
+
+                        PValue valueAttr = null;
+                        NativeHashMap<GGroupObjectValue, PValue> propValueAttrs = valueAttrs.get(property);
+                        if (propValueAttrs != null)
+                            valueAttr = propValueAttrs.get(key);
+                        objectRecord.setValueAttr(property, valueAttr == null ? property.valueAttr : PValue.getStringValue(valueAttr));
 
                         NativeHashMap<GGroupObjectValue, PValue> actionImages = property.isAction() ? cellImages.get(property) : null;
                         objectRecord.setImage(property, actionImages == null ? null : PValue.getImageValue(actionImages.get(key)));

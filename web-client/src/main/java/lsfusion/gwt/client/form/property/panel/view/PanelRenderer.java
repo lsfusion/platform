@@ -78,8 +78,10 @@ public abstract class PanelRenderer {
     }
 
     public void update(PValue value, boolean loading, AppBaseImage image, String valueElementClass,
-                       String background, String foreground, Boolean readOnly, String placeholder, String valueTooltip) {
-        this.value.update(value, loading, image, valueElementClass, background, foreground, readOnly, placeholder, valueTooltip);
+                       String background, String foreground, Boolean readOnly, String placeholder,
+                       String valueTooltip, String valueAttr) {
+        this.value.update(value, loading, image, valueElementClass, background, foreground, readOnly, placeholder,
+                valueTooltip, valueAttr);
     }
 
     private String caption;

@@ -1,6 +1,5 @@
 package lsfusion.server.logics.form.interactive.instance.property;
 
-import com.sun.org.apache.bcel.internal.generic.ARETURN;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.Result;
@@ -178,6 +177,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public final PropertyObjectInstance<?> propertyPlaceholder;
     public final PropertyObjectInstance<?> propertyTooltip;
     public final PropertyObjectInstance<?> propertyValueTooltip;
+    public final PropertyObjectInstance<?> propertyValueAttr;
     public final ImList<PropertyObjectInstance<?>> propertiesAggrLast;
 
     public ExtraReaderInstance captionReader;
@@ -194,6 +194,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public ExtraReaderInstance placeholderReader;
     public ExtraReaderInstance tooltipReader;
     public ExtraReaderInstance valueTooltipReader;
+    public ExtraReaderInstance valueAttrReader;
     public final ImOrderSet<LastReaderInstance> aggrLastReaders;
 
     public PropertyDrawInstance(PropertyDrawEntity<P> entity,
@@ -223,6 +224,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         propertyPlaceholder = propertyExtras.get(PropertyDrawExtraType.PLACEHOLDER);
         propertyTooltip = propertyExtras.get(PropertyDrawExtraType.TOOLTIP);
         propertyValueTooltip = propertyExtras.get(PropertyDrawExtraType.VALUETOOLTIP);
+        propertyValueAttr = propertyExtras.get(PropertyDrawExtraType.VALUEATTR);
         this.propertiesAggrLast = propertiesAggrLast;
 
         captionReader = new ExtraReaderInstance(PropertyDrawExtraType.CAPTION, propertyCaption);
@@ -239,6 +241,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         placeholderReader = new ExtraReaderInstance(PropertyDrawExtraType.PLACEHOLDER, propertyPlaceholder);
         tooltipReader = new ExtraReaderInstance(PropertyDrawExtraType.TOOLTIP, propertyTooltip);
         valueTooltipReader = new ExtraReaderInstance(PropertyDrawExtraType.VALUETOOLTIP, propertyValueTooltip);
+        valueAttrReader = new ExtraReaderInstance(PropertyDrawExtraType.VALUEATTR, propertyValueAttr);
         aggrLastReaders = SetFact.toOrderExclSet(propertiesAggrLast.size(), LastReaderInstance::new);
     }
 

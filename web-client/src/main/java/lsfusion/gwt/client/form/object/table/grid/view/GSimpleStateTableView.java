@@ -416,6 +416,13 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return getValueTooltip(column.property, object, column.columnKey);
     }
 
+    protected String getValueAttr(String property, GGroupObjectValue object) {
+        Column column = getColumn(property);
+        if(column == null)
+            return null;
+        return getValueAttr(column.property, object, column.columnKey);
+    }
+
     private JavaScriptObject getValue(String property, GGroupObjectValue groupObjectValue) {
         Column column = getColumn(property);
         if(column == null)
@@ -437,6 +444,10 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
     protected String getValueTooltip(String property, JavaScriptObject object) {
         return getValueTooltip(property, getJsObjects(object));
+    }
+
+    protected String getValueAttr(String property, JavaScriptObject object) {
+        return getValueAttr(property, getJsObjects(object));
     }
 
     protected JavaScriptObject getValue(String property, JavaScriptObject object) {
@@ -784,6 +795,9 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             },
             getValueTooltip: function (property, object) {
                 return thisObj.@GSimpleStateTableView::getValueTooltip(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
+            },
+            getValueAttr: function (property, object) {
+                return thisObj.@GSimpleStateTableView::getValueAttr(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
             },
             getValue: function (property, object) {
                 return thisObj.@GSimpleStateTableView::getValue(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);

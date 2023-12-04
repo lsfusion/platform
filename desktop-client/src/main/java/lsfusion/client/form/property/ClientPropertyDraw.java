@@ -70,6 +70,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public TooltipReader tooltipReader = new TooltipReader();
     public ValueTooltipReader valueTooltipReader = new ValueTooltipReader();
 
+    public ValueAttrReader valueAttrReader = new ValueAttrReader();
+
     public boolean boxed;
 
     public boolean isAutoSize() {
@@ -148,6 +150,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public String tooltip;
     public String valueTooltip;
+
+    public String valueAttr;
 
     public int charWidth;
     public int charHeight;
@@ -566,6 +570,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         pool.writeString(outStream, tooltip);
         pool.writeString(outStream, valueTooltip);
 
+        pool.writeString(outStream, valueAttr);
+
         pool.writeObject(outStream, changeOnSingleClick);
         outStream.writeBoolean(hide);
 
@@ -627,6 +633,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         tooltip = pool.readString(inStream);
         valueTooltip = pool.readString(inStream);
+
+        valueAttr = pool.readString(inStream);
 
         changeOnSingleClick = pool.readObject(inStream);
         hide = inStream.readBoolean();
@@ -1167,6 +1175,23 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         public byte getType() {
             return PropertyReadType.VALUETOOLTIP;
+        }
+    }
+
+    public class ValueAttrReader implements ClientPropertyReader {
+        public ClientGroupObject getGroupObject() {
+            return ClientPropertyDraw.this.getGroupObject();
+        }
+
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
+        }
+
+        public int getID() {
+            return ClientPropertyDraw.this.getID();
+        }
+
+        public byte getType() {
+            return PropertyReadType.VALUEATTR;
         }
     }
 }
