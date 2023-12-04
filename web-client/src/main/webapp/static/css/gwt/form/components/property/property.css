@@ -51,7 +51,7 @@ a.text-based-prop-value:not(.prop-input) { /* we have to set cursor pointer for 
 }
 
 /* we set pre to preserve white spaces and line breaks in prop data*/
-body:not(.content-word-wrap) .text-based-prop-value {
+body:not(.content-word-wrap) .text-based-prop-value { /* :not() selector without the "body" does not work because looks for any ancestor that is not an ".content-word-wrap" which is always true and css doesn't know which ancestor is the right ancestor */
     white-space: pre;
 }
 .text-based-prop-value.text-based-prop-wrap {

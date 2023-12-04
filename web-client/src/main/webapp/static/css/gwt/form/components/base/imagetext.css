@@ -39,6 +39,6 @@
     display: inline;
 }
 
-.content-word-wrap .wrap-text-nowrap {
+body:not(.content-word-wrap) .wrap-text-nowrap { /* :not() selector without the "body" does not work because looks for any ancestor that is not an ".content-word-wrap" which is always true and css doesn't know which ancestor is the right ancestor */
     white-space: nowrap;
 }

@@ -135,7 +135,8 @@ toggleNavigatorPinMode () {
 navigatorPinModeClass = ABSTRACT STRING();
 
 needReload = DATA LOCAL BOOLEAN();
-WHEN LOCAL CHANGED (captionTheme(DesignEnv de)) OR CHANGED (captionSize(de)) OR CHANGED (captionNavbar(de)) DO {
+WHEN LOCAL CHANGED (captionTheme(DesignEnv de)) OR CHANGED (captionSize(de)) OR CHANGED (captionNavbar(de))
+    OR CHANGED (suppressOnFocusChange(de))  OR CHANGED (contentWordWrap(de))  OR CHANGED (userFiltersManualApplyMode(de)) DO {
     needReload() <- TRUE;
 } 
 needReloadText = '{system.events.design.need.reload}';
@@ -162,6 +163,7 @@ DESIGN design {
     MOVE PROPERTY(contentWordWrap(de));
     MOVE PROPERTY(userFiltersManualApplyMode(de));
     MOVE PROPERTY(needReloadText()) {
+        class = 'alert alert-secondary';
         autoSize = TRUE;
     }
     REMOVE PROPERTY(formApply());
