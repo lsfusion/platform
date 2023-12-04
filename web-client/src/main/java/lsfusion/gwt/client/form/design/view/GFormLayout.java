@@ -210,15 +210,6 @@ public class GFormLayout extends ResizableComplexPanel {
         }
     }
 
-    public void setElementAttr(GComponent component, String elementAttr) {
-        component.elementAttr = elementAttr;
-
-        Widget widget = component instanceof GContainer ? containerViews.get((GContainer) component).getView() : baseComponentViews.get(component);
-        if(widget != null) {
-            BaseImage.updateAttrs(widget, component.elementAttr);
-        }
-    }
-
     public void add(GComponent key, ComponentWidget view, DefaultFocusReceiver focusReceiver) {
         // debug info
         if (key.sID != null)

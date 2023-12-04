@@ -29,7 +29,6 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
     public ClientContainer container;
 
     public String elementClass;
-    public String elementAttr;
 
     public int width;
     public int height;
@@ -104,7 +103,6 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
         container = pool.deserializeObject(inStream);
 
         elementClass = pool.readString(inStream);
-        elementAttr = pool.readString(inStream);
 
         width = inStream.readInt();
         height = inStream.readInt();
@@ -253,23 +251,6 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
 
         public byte getType() {
             return PropertyReadType.COMPONENT_ELEMENTCLASS;
-        }
-    };
-
-    public final ClientPropertyReader elementAttrReader = new ClientPropertyReader() {
-        public ClientGroupObject getGroupObject() {
-            return null;
-        }
-
-        public void update(Map<ClientGroupObjectValue, Object> values, boolean updateKeys, TableController controller) {
-        }
-
-        public int getID() {
-            return ClientComponent.this.getID();
-        }
-
-        public byte getType() {
-            return PropertyReadType.COMPONENT_ELEMENTATTR;
         }
     };
 

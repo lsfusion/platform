@@ -80,7 +80,6 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         component.defaultComponent = clientComponent.defaultComponent;
 
         component.elementClass = clientComponent.elementClass;
-        component.elementAttr = clientComponent.elementAttr;
 
         component.width = clientComponent.width;
         component.height = clientComponent.height;

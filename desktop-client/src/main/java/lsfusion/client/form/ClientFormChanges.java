@@ -173,8 +173,6 @@ public class ClientFormChanges {
                 return clientForm.findComponentByID(inStream.readInt()).showIfReader;
             case PropertyReadType.COMPONENT_ELEMENTCLASS:
                 return clientForm.findComponentByID(inStream.readInt()).elementClassReader;
-            case PropertyReadType.COMPONENT_ELEMENTATTR:
-                return clientForm.findComponentByID(inStream.readInt()).elementAttrReader;
             case PropertyReadType.CUSTOM_OPTIONS:
                 return clientForm.getGroupObject(inStream.readInt()).customOptionsReader;
             case PropertyReadType.COMMENT:

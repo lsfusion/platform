@@ -105,13 +105,6 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> im
             target.setPropertyElementClass((PropertyObjectEntity<?>) elementClass);
     }
 
-    public void setAttr(Object elementAttr) {
-        if(elementAttr instanceof LocalizedString)
-            target.setElementAttr(elementAttr.toString());
-        else
-            target.setPropertyElementAttr((PropertyObjectEntity<?>) elementAttr);
-    }
-
     public void setFontSize(int fontSize) {
         ComponentDesign design = target.design;
 

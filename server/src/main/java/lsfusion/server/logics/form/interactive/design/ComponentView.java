@@ -45,9 +45,6 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     public PropertyObjectEntity propertyElementClass;
     public String elementClass;
 
-    public PropertyObjectEntity propertyElementAttr;
-    public String elementAttr;
-
     public Integer width;
     public Integer height;
 
@@ -92,10 +89,6 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
 
     protected String getDefaultElementClass(FormInstanceContext context) {
         return null;
-    }
-
-    public String getElementAttr() {
-        return elementAttr;
     }
 
     /* should be set when the component is shrinked automatically inside and can not overflow (it's needed for shadows, because sometimes they overflow, but should not be clipped) */
@@ -233,14 +226,6 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         this.propertyElementClass = propertyElementClass;
     }
 
-    public void setElementAttr(String elementAttr) {
-        this.elementAttr = elementAttr;
-    }
-
-    public void setPropertyElementAttr(PropertyObjectEntity<?> propertyElementAttr) {
-        this.propertyElementAttr = propertyElementAttr;
-    }
-
     public void setAlignCaption(boolean alignCaption) {
         this.alignCaption = alignCaption;
     }
@@ -374,7 +359,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     }
 
     protected boolean hasPropertyComponent() {
-        return showIf != null || propertyElementClass != null || propertyElementAttr != null;
+        return showIf != null || propertyElementClass != null;
     }
 
     public void fillPropertyComponents(MExclSet<ComponentView> mComponents) {
@@ -407,7 +392,6 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         pool.serializeObject(outStream, getContainer());
 
         pool.writeString(outStream, getElementClass(pool.context));
-        pool.writeString(outStream, getElementAttr());
 
         outStream.writeInt(getWidth(pool.context));
         outStream.writeInt(getHeight(pool.context));

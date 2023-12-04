@@ -2525,7 +2525,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 componentInstance = instanceFactory.getInstance(component);
 
             fillChangedReader(componentInstance.elementClassReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps, context);
-            fillChangedReader(componentInstance.elementAttrReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps, context);
         }
         return mReadProperties.immutable();
     }

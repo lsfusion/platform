@@ -186,7 +186,6 @@ public class GwtClientUtils {
     }
 
     public static final String LSF_CLASSES_ATTRIBUTE = "lsf_classes_attribute";
-    public static final String LSF_ATTRS_ATTRIBUTE = "lsf_attrs_attribute";
 
     public static void setThemeImage(String imagePath, Consumer<String> modifier) {
         assert imagePath != null;

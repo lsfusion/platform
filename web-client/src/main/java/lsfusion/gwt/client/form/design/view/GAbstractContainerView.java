@@ -130,7 +130,6 @@ public abstract class GAbstractContainerView {
         }
 
         BaseImage.updateClasses(view, child.elementClass);
-        BaseImage.updateAttrs(view, child.elementAttr);
 
         return view;
     }
