@@ -92,7 +92,7 @@ public class GPanelController extends GPropertyController {
     }
 
     @Override
-    public void updateCellValueElementClasses(GValueOptionReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+    public void updateCellValueElementClasses(GValueElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         GPropertyDraw property = formController.getProperty(reader.propertyID);
         propertyControllers.get(property).setCellValueElementClasses(values);
 
@@ -192,7 +192,7 @@ public class GPanelController extends GPropertyController {
     }
 
     @Override
-    public void updateValueTooltipValues(GValueOptionReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+    public void updateValueTooltipValues(GValueTooltipReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         GPropertyDraw property = formController.getProperty(reader.propertyID);
         propertyControllers.get(property).setPropertyValueTooltips(values);
 
@@ -200,7 +200,7 @@ public class GPanelController extends GPropertyController {
     }
 
     @Override
-    public void updateValueAttrValues(GValueOptionReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+    public void updateValueAttrValues(GValueAttrReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         GPropertyDraw property = formController.getProperty(reader.propertyID);
         propertyControllers.get(property).setPropertyValueAttrs(values);
 
