@@ -54,7 +54,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public CaptionReader captionReader = new CaptionReader();
     public ShowIfReader showIfReader = new ShowIfReader();
-    public ValueElementClassReader valueElementClassReader = new ValueElementClassReader();
+    public ValueOptionReader valueElementClassReader = new ValueOptionReader(PropertyReadType.CELL_VALUEELEMENTCLASS);
     public CaptionElementClassReader captionElementClassReader = new CaptionElementClassReader();
     public BackgroundReader backgroundReader = new BackgroundReader();
     public ForegroundReader foregroundReader = new ForegroundReader();
@@ -68,9 +68,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public PlaceholderReader placeholderReader = new PlaceholderReader();
 
     public TooltipReader tooltipReader = new TooltipReader();
-    public ValueTooltipReader valueTooltipReader = new ValueTooltipReader();
+    public ValueOptionReader valueTooltipReader = new ValueOptionReader(PropertyReadType.VALUETOOLTIP);
 
-    public ValueAttrReader valueAttrReader = new ValueAttrReader();
+    public ValueOptionReader valueAttrReader = new ValueOptionReader(PropertyReadType.VALUEATTR);
 
     public boolean boxed;
 
@@ -1005,23 +1005,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         }
     }
 
-    public class ValueElementClassReader implements ClientPropertyReader {
-        public ClientGroupObject getGroupObject() {
-            return ClientPropertyDraw.this.getGroupObject();
-        }
-
-        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
-        }
-
-        public int getID() {
-            return ClientPropertyDraw.this.getID();
-        }
-
-        public byte getType() {
-            return PropertyReadType.CELL_VALUEELEMENTCLASS;
-        }
-    }
-
     public class CaptionElementClassReader implements ClientPropertyReader {
         public ClientGroupObject getGroupObject() {
             return ClientPropertyDraw.this.getGroupObject();
@@ -1161,7 +1144,13 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         }
     }
 
-    public class ValueTooltipReader implements ClientPropertyReader {
+    public class ValueOptionReader implements ClientPropertyReader {
+
+        byte type;
+        public ValueOptionReader(byte type) {
+            this.type = type;
+        }
+
         public ClientGroupObject getGroupObject() {
             return ClientPropertyDraw.this.getGroupObject();
         }
@@ -1174,24 +1163,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         }
 
         public byte getType() {
-            return PropertyReadType.VALUETOOLTIP;
-        }
-    }
-
-    public class ValueAttrReader implements ClientPropertyReader {
-        public ClientGroupObject getGroupObject() {
-            return ClientPropertyDraw.this.getGroupObject();
-        }
-
-        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
-        }
-
-        public int getID() {
-            return ClientPropertyDraw.this.getID();
-        }
-
-        public byte getType() {
-            return PropertyReadType.VALUEATTR;
+            return type;
         }
     }
 }

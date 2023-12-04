@@ -21,7 +21,7 @@ public abstract class GPropertyController {
         return formController.formLayout;
     }
 
-    public abstract void updateCellValueElementClasses(GValueElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
+    public abstract void updateCellValueElementClasses(GValueOptionReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
     public abstract void updateCellCaptionElementClasses(GCaptionElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
     public abstract void updateCellBackgroundValues(GBackgroundReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
     public abstract void updateCellForegroundValues(GForegroundReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
@@ -35,8 +35,8 @@ public abstract class GPropertyController {
     public abstract void updateCellCommentElementClasses(GCommentElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
     public abstract void updatePlaceholderValues(GPlaceholderReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
     public abstract void updateTooltipValues(GTooltipReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
-    public abstract void updateValueTooltipValues(GValueTooltipReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
-    public abstract void updateValueAttrValues(GValueAttrReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
+    public abstract void updateValueTooltipValues(GValueOptionReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
+    public abstract void updateValueAttrValues(GValueOptionReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
     public abstract void updateLastValues(GLastReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
 
     public abstract boolean isPropertyShown(GPropertyDraw property);
