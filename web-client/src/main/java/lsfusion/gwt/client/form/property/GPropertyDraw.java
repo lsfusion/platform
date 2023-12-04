@@ -224,11 +224,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     private QuickAccessAction[] calculateQuickAccessActions(boolean isSelected, boolean isFocused) {
-        GInputList inputList = getInputList();
         GInputListAction[] inputListActions = getInputListActions();
 
         List<QuickAccessAction> actions = new ArrayList<>();
-        if(inputList != null) {
+        if(inputListActions != null) {
             for (int i = 0; i < inputListActions.length; i++) {
                 List<GQuickAccess> quickAccessList = inputListActions[i].quickAccessList;
 
