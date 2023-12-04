@@ -419,7 +419,7 @@ public class GGridController extends GAbstractTableController {
     }
 
     @Override
-    public void updateCellValueElementClasses(GValueElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+    public void updateCellValueElementClasses(GValueOptionReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         table.updateCellValueElementClasses(formController.getProperty(reader.propertyID), values);
     }
 
@@ -444,12 +444,12 @@ public class GGridController extends GAbstractTableController {
     }
 
     @Override
-    public void updateValueTooltipValues(GValueTooltipReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+    public void updateValueTooltipValues(GValueOptionReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         table.updateValueTooltipValues(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
-    public void updateValueAttrValues(GValueAttrReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+    public void updateValueAttrValues(GValueOptionReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         table.updateValueAttrValues(formController.getProperty(reader.propertyID), values);
     }
 

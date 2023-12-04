@@ -338,7 +338,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GShowIfReader showIfReader;
     public GFooterReader footerReader;
     public GReadOnlyReader readOnlyReader;
-    public GValueElementClassReader valueElementClassReader;
+    public GValueOptionReader valueElementClassReader;
 
     public GCaptionElementClassReader captionElementClassReader;
     public GBackgroundReader backgroundReader;
@@ -349,8 +349,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GCommentElementClassReader commentElementClassReader;
     public GPlaceholderReader placeholderReader;
     public GTooltipReader tooltipReader;
-    public GValueTooltipReader valueTooltipReader;
-    public GValueAttrReader valueAttrReader;
+    public GValueOptionReader valueTooltipReader;
+    public GValueOptionReader valueAttrReader;
 
     // for pivoting
     public String formula;
