@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.object.table.tree.view;
 
 import lsfusion.gwt.client.base.AppBaseImage;
 import lsfusion.gwt.client.form.object.GGroupObject;
+import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.view.GridDataRecord;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
@@ -66,12 +67,6 @@ public abstract class GTreeGridRecord extends GridDataRecord {
     }
     public String getValueTooltip(GPropertyDraw property) {
         return (String) getAttribute(property.sID + "_valueTooltip");
-    }
-    public void setValueAttr(GPropertyDraw property, String valueAttr) {
-        setAttribute(property.sID + "_valueAttr", valueAttr);
-    }
-    public String getValueAttr(GPropertyDraw property) {
-        return (String) getAttribute(property.sID + "_valueAttr");
     }
     public void setForeground(GPropertyDraw property, String foreground) {
         setAttribute(property.sID + "_foreground", foreground);

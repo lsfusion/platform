@@ -200,14 +200,6 @@ public class GPanelController extends GPropertyController {
     }
 
     @Override
-    public void updateValueAttrValues(GValueAttrReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
-        GPropertyDraw property = formController.getProperty(reader.propertyID);
-        propertyControllers.get(property).setPropertyValueAttrs(values);
-
-        updatedProperties.put(property, TRUE);
-    }
-
-    @Override
     public void updateLastValues(GLastReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
     }
 

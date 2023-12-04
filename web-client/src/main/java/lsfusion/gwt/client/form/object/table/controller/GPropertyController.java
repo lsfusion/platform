@@ -36,7 +36,6 @@ public abstract class GPropertyController {
     public abstract void updatePlaceholderValues(GPlaceholderReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
     public abstract void updateTooltipValues(GTooltipReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
     public abstract void updateValueTooltipValues(GValueTooltipReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
-    public abstract void updateValueAttrValues(GValueAttrReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
     public abstract void updateLastValues(GLastReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
 
     public abstract boolean isPropertyShown(GPropertyDraw property);

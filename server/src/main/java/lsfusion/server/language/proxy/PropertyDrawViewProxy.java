@@ -237,16 +237,6 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         }
     }
 
-    public void setValueAttr(Object valueAttr) {
-        if(valueAttr instanceof LocalizedString)
-            target.valueAttr = (LocalizedString) valueAttr;
-        else {
-            if (target.valueAttr == null)
-                target.valueAttr = LocalizedString.NONAME;
-            target.entity.setPropertyExtra((PropertyObjectEntity<?>) valueAttr, PropertyDrawExtraType.VALUEATTR, getVersion());
-        }
-    }
-
     public void setValueAlignment(FlexAlignment valueAlignment) {
         target.valueAlignment = valueAlignment;
     }

@@ -82,7 +82,6 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> placeholders = new NativeSIDMap<>();
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> tooltips = new NativeSIDMap<>();
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> valueTooltips = new NativeSIDMap<>();
-    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> valueAttrs = new NativeSIDMap<>();
     protected NativeHashMap<GGroupObjectValue, PValue> rowBackgroundValues = new NativeHashMap<>();
     protected NativeHashMap<GGroupObjectValue, PValue> rowForegroundValues = new NativeHashMap<>();
 
@@ -323,10 +322,6 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     public void updateValueTooltipValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
         valueTooltips.put(propertyDraw, values);
-    }
-
-    public void updateValueAttrValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
-        valueAttrs.put(propertyDraw, values);
     }
 
     public void updateCellForegroundValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
@@ -751,7 +746,6 @@ protected Double getUserFlex(int i) {
         protected abstract String getForeground(GPropertyDraw property, T record);
         protected abstract String getPlaceholder(GPropertyDraw property, T record);
         protected abstract String getValueTooltip(GPropertyDraw property, T record);
-        protected abstract String getValueAttr(GPropertyDraw property, T record);
 
         @Override
         public void onEditEvent(EventHandler handler, Cell editCell, Element editRenderElement) {
@@ -920,12 +914,6 @@ protected Double getUserFlex(int i) {
             public String getValueTooltip() {
                 T row = (T) cell.getRow();
                 return column.getValueTooltip(property, row);
-            }
-
-            @Override
-            public String getValueAttr() {
-                T row = (T) cell.getRow();
-                return column.getValueAttr(property, row);
             }
 
             @Override

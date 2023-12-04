@@ -93,14 +93,6 @@ public class GridDataRecord implements RowIndexHolder {
         return (String) getAttribute(column + "_valueTooltip");
     }
 
-    public void setValueAttr(String column, String valueAttr) {
-        setAttribute(column + "_valueAttr", valueAttr);
-    }
-
-    public String getValueAttr(String column) {
-        return (String) getAttribute(column + "_valueAttr");
-    }
-
     public void setForeground(String column, String color) {
         setAttribute(column + "_foreground", color);
     }

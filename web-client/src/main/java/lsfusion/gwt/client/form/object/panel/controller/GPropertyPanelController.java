@@ -53,7 +53,6 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
     private NativeHashMap<GGroupObjectValue, PValue> placeholders;
     private NativeHashMap<GGroupObjectValue, PValue> tooltips;
     private NativeHashMap<GGroupObjectValue, PValue> valueTooltips;
-    private NativeHashMap<GGroupObjectValue, PValue> valueAttrs;
 
     public GPropertyPanelController(GPropertyDraw property, GFormController form) {
         this.property = property;
@@ -177,10 +176,6 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
         if(valueTooltips != null) {
             valueTooltip = valueTooltips.get(columnKey);
         }
-        PValue valueAttr = null;
-        if(valueAttrs != null) {
-            valueAttr = valueAttrs.get(columnKey);
-        }
         renderer.update(values.get(columnKey),
                 loadings != null && PValue.getBooleanValue(loadings.get(columnKey)),
                 images != null ? PValue.getImageValue(images.get(columnKey)) : null,
@@ -189,8 +184,7 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
                 foreground == null ? property.getForeground() : PValue.getColorStringValue(foreground),
                 readOnly == null ? null : PValue.get3SBooleanValue(readOnly.get(columnKey)),
                 placeholder == null ? property.placeholder : PValue.getStringValue(placeholder),
-                valueTooltip == null ? property.valueTooltip : PValue.getStringValue(valueTooltip),
-                valueAttr == null ? property.valueAttr : PValue.getStringValue(valueAttr));
+                valueTooltip == null ? property.valueTooltip : PValue.getStringValue(valueTooltip));
 
         if (captions != null)
             renderer.setCaption(GGridPropertyTable.getDynamicCaption(captions.get(columnKey)));
@@ -317,9 +311,5 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
 
     public void setPropertyValueTooltips(NativeHashMap<GGroupObjectValue, PValue> valueTooltips) {
         this.valueTooltips = valueTooltips;
-    }
-
-    public void setPropertyValueAttrs(NativeHashMap<GGroupObjectValue, PValue> valueAttrs) {
-        this.valueAttrs = valueAttrs;
     }
 }

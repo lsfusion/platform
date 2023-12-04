@@ -40,7 +40,6 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
     protected Boolean readOnly;
     private String placeholder;
     private String valueTooltip;
-    private String valueAttr;
 
     public PValue getValue() {
         return value;
@@ -91,11 +90,6 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
     @Override
     public String getValueTooltip() {
         return valueTooltip;
-    }
-
-    @Override
-    public String getValueAttr() {
-        return valueAttr;
     }
 
     @Override
@@ -307,8 +301,7 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
     public abstract void pasteValue(final String value);
 
     public void update(PValue value, boolean loading, AppBaseImage image, String valueElementClass,
-                       String background, String foreground, Boolean readOnly, String placeholder,
-                       String valueTooltip, String valueAttr) {
+                       String background, String foreground, Boolean readOnly, String placeholder, String valueTooltip) {
         this.value = value;
         this.loading = loading;
         this.image = image;
@@ -318,7 +311,6 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
         this.readOnly = readOnly;
         this.placeholder = placeholder;
         this.valueTooltip = valueTooltip;
-        this.valueAttr = valueAttr;
 
         update();
     }

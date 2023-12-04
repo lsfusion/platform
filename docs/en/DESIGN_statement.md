@@ -193,8 +193,6 @@ To access design components, you can use their names or address property compone
 |`tooltip`|The tip to be shown when the cursor hovers over the caption of a property or action|String literal|Default tooltip|`'Tip'`|
 |`toolTip`|Same as tooltip<br/>**deprecated since version 6, use `tooltip`**|String literal|Default tooltip|`'Tip'`|
 |`valueToolTip`|The tip to be shown when the cursor hovers over the value of a property|String literal|Default tooltip|`'Tip'`|
-|`attr`|HTML attributes for caption of element (keys-value pairs)|String literal|Default tooltip|`'attr1=xxx;attr2=5'`|
-|`valueAttr`|HTML attributes for value of element (keys-values pairs)|String literal|Default tooltip|`'attr1=xxx;attr2=5'`|
 |`valueAlignment`|Component value alignment. Acceptable values: `START` (at the beginning), `CENTER` (in the center), `END` (at the end), `STRETCH` (stretched).|Alignment type|`START`|`STRETCH`|
 |`clearText`|Specifying that the current text should be reset when input starts|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`notSelectAll`|Specifying that the text is not selected at the start of editing|`FALSE`|`TRUE`<br/>`FALSE`|

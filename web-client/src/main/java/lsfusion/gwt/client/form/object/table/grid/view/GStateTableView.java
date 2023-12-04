@@ -62,7 +62,6 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     protected List<NativeHashMap<GGroupObjectValue, PValue>> placeholders = new ArrayList<>();
     protected List<NativeHashMap<GGroupObjectValue, PValue>> tooltips = new ArrayList<>();
     protected List<NativeHashMap<GGroupObjectValue, PValue>> valueTooltips = new ArrayList<>();
-    protected List<NativeHashMap<GGroupObjectValue, PValue>> valueAttrs = new ArrayList<>();
 
     protected boolean checkShowIf(int property, GGroupObjectValue columnKey) {
         NativeHashMap<GGroupObjectValue, PValue> propertyShowIfs = showIfs.get(property);
@@ -192,7 +191,6 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
                 this.placeholders.add(index, null);
                 this.tooltips.add(index, null);
                 this.valueTooltips.add(index, null);
-                this.valueAttrs.add(index, null);
 
                 List<NativeHashMap<GGroupObjectValue, PValue>> list = new ArrayList<>();
                 for (int i = 0; i < property.lastReaders.size(); i++)
@@ -399,13 +397,6 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     }
 
     @Override
-    public void updateValueAttrValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
-        this.valueAttrs.set(properties.indexOf(propertyDraw), values);
-
-        this.dataUpdated = true;
-    }
-
-    @Override
     public void updateImageValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
 
     }
@@ -576,14 +567,6 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         return valueTooltip.get(GGroupObjectValue.getFullKey(rowKey, columnKey));
     }
 
-    protected PValue getCellValueAttr(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
-        NativeHashMap<GGroupObjectValue, PValue> valueAttr = this.valueAttrs.get(properties.indexOf(property));
-        if(valueAttr == null)
-            return null;
-
-        return valueAttr.get(GGroupObjectValue.getFullKey(rowKey, columnKey));
-    }
-
     protected String getValueElementClass(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
         return getCellValueElementClass(property, rowKey, columnKey);
     }
@@ -606,11 +589,6 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     protected String getValueTooltip(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
         PValue valueTooltip = getCellValueTooltip(property, rowKey, columnKey);
         return valueTooltip == null ? property.valueTooltip : PValue.getStringValue(valueTooltip);
-    }
-
-    protected String getValueAttr(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
-        PValue valueAttr = getCellValueAttr(property, rowKey, columnKey);
-        return valueAttr == null ? property.valueAttr : PValue.getStringValue(valueAttr);
     }
 
     protected String getCellForeground(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
