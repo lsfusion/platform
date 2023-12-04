@@ -29,6 +29,7 @@ public abstract class GTippySimpleStateTableView extends GSimpleStateTableView<E
             appendTo : appendToElement,
             content : popupElement,
             trigger : 'manual',
+            maxWidth: 'none', // default maxWidth is 350px and content does not fit in tooltip
             interactive : true,
             allowHTML : true
         });
