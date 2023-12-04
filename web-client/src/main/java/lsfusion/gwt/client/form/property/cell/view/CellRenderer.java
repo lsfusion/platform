@@ -325,6 +325,8 @@ public abstract class CellRenderer {
 
         public String valueTooltip;
 
+        public String valueAttr;
+
         public boolean rerender;
 
         public ToolbarState toolbar;
@@ -343,6 +345,9 @@ public abstract class CellRenderer {
     }
     private static boolean equalsValueTooltipState(RenderedState state, String valueTooltip) {
         return GwtClientUtils.nullEquals(state.valueTooltip, valueTooltip);
+    }
+    private static boolean equalsValueAttrState(RenderedState state, String valueAttr) {
+        return GwtClientUtils.nullEquals(state.valueAttr, valueAttr);
     }
 
     private static final String RENDERED = "rendered";
@@ -403,6 +408,13 @@ public abstract class CellRenderer {
                 }
                 TooltipManager.updateContent(valueTippy, element, valueTooltipHelper, valueTooltip);
             }
+        }
+
+        String valueAttr = updateContext.getValueAttr();
+        if(isNew || !equalsValueAttrState(renderedState, valueAttr)) {
+            renderedState.valueAttr = valueAttr;
+
+            BaseImage.updateAttrs(element, valueAttr, "value");
         }
 
         // already themed colors expected

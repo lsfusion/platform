@@ -38,6 +38,8 @@ public interface UpdateContext {
 
     default String getValueTooltip() { return null; }
 
+    default String getValueAttr() { return null; }
+
     default String getValueElementClass() {
         return null;
     }

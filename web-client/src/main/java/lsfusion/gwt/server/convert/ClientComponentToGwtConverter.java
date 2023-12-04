@@ -354,6 +354,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.placeholderReader = convertPlaceholderReader(clientPropertyDraw.placeholderReader);
         propertyDraw.tooltipReader = convertTooltipReader(clientPropertyDraw.tooltipReader);
         propertyDraw.valueTooltipReader = convertValueTooltipReader(clientPropertyDraw.valueTooltipReader);
+        propertyDraw.valueAttrReader = convertValueAttrReader(clientPropertyDraw.valueAttrReader);
 
         propertyDraw.formula = clientPropertyDraw.formula;
         if(clientPropertyDraw.formula != null) {
@@ -398,6 +399,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
         propertyDraw.tooltip = clientPropertyDraw.tooltip;
         propertyDraw.valueTooltip = clientPropertyDraw.valueTooltip;
+
+        propertyDraw.valueAttr = clientPropertyDraw.valueAttr;
 
         propertyDraw.changeOnSingleClick = clientPropertyDraw.changeOnSingleClick;
         
@@ -557,6 +560,10 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
     public GValueTooltipReader convertValueTooltipReader(ClientPropertyDraw.ValueTooltipReader reader) {
         return reader == null ? null : new GValueTooltipReader(reader.getID(), reader.getGroupObject() != null ? reader.getGroupObject().ID : -1);
+    }
+
+    public GValueAttrReader convertValueAttrReader(ClientPropertyDraw.ValueAttrReader reader) {
+        return reader == null ? null : new GValueAttrReader(reader.getID(), reader.getGroupObject() != null ? reader.getGroupObject().ID : -1);
     }
 
     @Cached

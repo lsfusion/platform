@@ -152,6 +152,8 @@ public class GFormChanges {
                 return form.getProperty(readerId).tooltipReader;
             case GPropertyReadType.VALUETOOLTIP:
                 return form.getProperty(readerId).valueTooltipReader;
+            case GPropertyReadType.VALUEATTR:
+                return form.getProperty(readerId).valueAttrReader;
             default:
                 return null;
         }
@@ -191,5 +193,6 @@ public class GFormChanges {
         public final static byte PLACEHOLDER = 21;
         public final static byte TOOLTIP = 22;
         public final static byte VALUETOOLTIP = 23;
+        public final static byte VALUEATTR = 25;
     }
 }

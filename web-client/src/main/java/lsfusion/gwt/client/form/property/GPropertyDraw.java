@@ -350,6 +350,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GPlaceholderReader placeholderReader;
     public GTooltipReader tooltipReader;
     public GValueTooltipReader valueTooltipReader;
+    public GValueAttrReader valueAttrReader;
 
     // for pivoting
     public String formula;
@@ -388,6 +389,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public String tooltip;
     public String valueTooltip;
+
+    public String valueAttr;
 
     public Boolean changeOnSingleClick;
 
