@@ -10,11 +10,11 @@ import static lsfusion.interop.form.property.PropertyReadType.COMPONENT_ELEMENTC
 
 public class ComponentViewInstance<T extends ComponentView> extends CellInstance<T> {
 
-    public final ElementClassAttrReaderInstance elementClassReader;
+    public final ComponentViewInstance.ElementClassReaderInstance elementClassReader;
 
     public final PropertyObjectInstance propertyElementClass;
 
-    public final ElementClassAttrReaderInstance elementAttrReader;
+    public final ComponentViewInstance.ElementAttrReaderInstance elementAttrReader;
 
     public final PropertyObjectInstance propertyElementAttr;
 
@@ -22,25 +22,21 @@ public class ComponentViewInstance<T extends ComponentView> extends CellInstance
         super(entity);
 
         this.propertyElementClass = propertyElementClass;
-        this.elementClassReader = new ElementClassAttrReaderInstance(false);
+        this.elementClassReader = new ComponentViewInstance.ElementClassReaderInstance();
 
         this.propertyElementAttr = propertyElementAttr;
-        this.elementAttrReader = new ElementClassAttrReaderInstance(true);
+        this.elementAttrReader = new ComponentViewInstance.ElementAttrReaderInstance();
     }
 
-    public class ElementClassAttrReaderInstance implements PropertyReaderInstance {
-        public boolean attr;
-        public ElementClassAttrReaderInstance(boolean attr) {
-            this.attr = attr;
-        }
+    public class ElementClassReaderInstance implements PropertyReaderInstance {
 
         public PropertyObjectInstance getReaderProperty() {
-            return attr ? propertyElementAttr : propertyElementClass;
+            return propertyElementClass;
         }
 
         @Override
         public byte getTypeID() {
-            return attr ? COMPONENT_ELEMENTATTR : COMPONENT_ELEMENTCLASS;
+            return COMPONENT_ELEMENTCLASS;
         }
 
         @Override
@@ -52,4 +48,26 @@ public class ComponentViewInstance<T extends ComponentView> extends CellInstance
             return null;
         }
     }
+
+    public class ElementAttrReaderInstance implements PropertyReaderInstance {
+
+        public PropertyObjectInstance getReaderProperty() {
+            return propertyElementAttr;
+        }
+
+        @Override
+        public byte getTypeID() {
+            return COMPONENT_ELEMENTATTR;
+        }
+
+        @Override
+        public int getID() {
+            return ComponentViewInstance.this.getID();
+        }
+        @Override
+        public Object getProfiledObject() {
+            return null;
+        }
+    }
+
 }

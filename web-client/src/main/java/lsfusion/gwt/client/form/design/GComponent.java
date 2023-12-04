@@ -153,36 +153,46 @@ public class GComponent implements Serializable {
     }
     public final GPropertyReader showIfReader = new GShowIfReader();
 
-    private class GElementClassAttrReader implements GPropertyReader {
+    private class GElementClassReader implements GPropertyReader {
         private String sID;
 
-        @SuppressWarnings("unused")
-        public GElementClassAttrReader() {
-        }
-
-        private boolean attr;
-        public GElementClassAttrReader(boolean attr) {
-            this.attr = attr;
+        public GElementClassReader() {
         }
 
         @Override
         public void update(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
-            if(attr) {
-                controller.getFormLayout().setElementAttr(GComponent.this, PValue.getClassStringValue(values.get(GGroupObjectValue.EMPTY)));
-            } else {
-                controller.getFormLayout().setElementClass(GComponent.this, PValue.getClassStringValue(values.get(GGroupObjectValue.EMPTY)));
-            }
+            controller.getFormLayout().setElementClass(GComponent.this, PValue.getClassStringValue(values.get(GGroupObjectValue.EMPTY)));
         }
 
         @Override
         public String getNativeSID() {
             if(sID == null) {
-                sID = "_COMPONENT_" + (attr ? "ELEMENTATTRREADER" : "ELEMENTCLASSREADER") + "_" + GComponent.this.sID;
+                sID = "_COMPONENT_" + "ELEMENTCLASSREADER" + "_" + GComponent.this.sID;
             }
             return sID;
         }
     }
+    public final GPropertyReader elementClassReader = new GElementClassReader();
 
-    public final GPropertyReader elementClassReader = new GElementClassAttrReader(false);
-    public final GPropertyReader elementAttrReader = new GElementClassAttrReader(true);
+    private class GElementAttrReader implements GPropertyReader {
+        private String sID;
+
+        public GElementAttrReader() {
+        }
+
+        @Override
+        public void update(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
+            controller.getFormLayout().setElementAttr(GComponent.this, PValue.getClassStringValue(values.get(GGroupObjectValue.EMPTY)));
+        }
+
+        @Override
+        public String getNativeSID() {
+            if(sID == null) {
+                sID = "_COMPONENT_" + "ELEMENTATTRREADER" + "_" + GComponent.this.sID;
+            }
+            return sID;
+        }
+    }
+    public final GPropertyReader elementAttrReader = new GElementAttrReader();
+
 }
