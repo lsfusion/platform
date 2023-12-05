@@ -277,7 +277,7 @@ To access design components, you can use their names or address property compone
     - `GRID` - a table component
     - `TOOLBARSYSTEM` - a system toolbar (number of records, group adjustment, etc.).
     - `FILTERGROUPS` - contains filter group components
-    - `USERFILTER` - a component that displays custom filters<br/>**deprecated since version 5, use `FILTERS`**
+    - `FILTERS` - a component that displays custom filters<br/>**deprecated since version 5, use `FILTERS`**
 
 ## Examples
 

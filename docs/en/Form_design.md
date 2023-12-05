@@ -25,7 +25,7 @@ When defining the form design, the developer can use the following base componen
 
 -   *Table/Tree* (`GRID`): a component consisting of rows and columns in which the rows correspond to object collections of the corresponding [group of objects](Form_structure.md) and columns correspond to [properties](Properties.md) and [actions](Actions.md).
 -   *System toolbar* (`TOOLBARSYSTEM`): a panel consisting of buttons with which the user can execute various system actions on the rows in the table. Automatically hidden if the table becomes invisible.
--   *User filter* (`USERFILTER`): a component with which the user can create and apply their own filters to a table.
+-   *User filter* (`FILTERS`): a component with which the user can create and apply their own filters to a table.
 
 *Filter groups*
 
@@ -140,7 +140,7 @@ The automatic design is generated as follows:
                         -   `FILTERGROUP`: base component of a Filter group. Alignment: `CENTER`.
                     -   `TOOLBAR(<group of objects / tree>)`:  contains the components of the properties displayed in the `TOOLBAR` [view](Interactive_view.md#property) and [display group](Form_structure.md#drawgroup) equal to the specified one. Horizontal container. Alignment: `CENTER`.
                         -   `PROPERTY(<property>)`: base component of the Property Panel.
-            -   `USERFILTER(<group of objects / tree>)`:  base component of the User filter. Alignment: `STRETCH`.
+            -   `FILTERS(<group of objects / tree>)`:  base component of the User filter. Alignment: `STRETCH`.
             -   `PANEL(<group of objects / tree>)`: contains the components of the properties displayed in the `PANEL` [view](Interactive_view.md#property). Vertical container. Alignment: `STRETCH`. If several properties belong to [groups](Groups_of_properties_and_actions.md) for which it is necessary to create separate containers, then a corresponding hierarchy of containers is created for them and the components of these properties are placed in it:
                 -   `GROUP(<property group>, <group of objects / tree>)`: contains components of properties that belong to the specified object group and property group (or do not belong to any property group: in this case the property group is not specified, for example `GROUP(,a))`. Column container.
                     -   `PROPERTY(<property>)`: base component of the Property Panel.
