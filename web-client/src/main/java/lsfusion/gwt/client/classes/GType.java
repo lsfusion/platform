@@ -50,7 +50,7 @@ public abstract class GType implements Serializable {
     }
 
     private GSize getDefaultCharWidth(GFont font, GPropertyDraw propertyDraw) {
-        String widthString = getDefaultWidthString(propertyDraw);
+        String widthString = propertyDraw.charWidth != 0 ? replicateZero(propertyDraw.charWidth) : getDefaultWidthString(propertyDraw);
 
         return GFontMetrics.getStringWidth(font, widthString);
     }
@@ -76,8 +76,11 @@ public abstract class GType implements Serializable {
     }
 
     protected String getDefaultWidthString(GPropertyDraw propertyDraw) {
-        int defaultCharWidth = propertyDraw.charWidth != 0 ? propertyDraw.charWidth : getDefaultCharWidth();
-        return GwtSharedUtils.replicate('0', defaultCharWidth);
+        return replicateZero(getDefaultCharWidth());
+    }
+
+    private String replicateZero(int length) {
+        return GwtSharedUtils.replicate('0', length);
     }
 
     protected String getDefaultHeightString(GPropertyDraw propertyDraw) {
