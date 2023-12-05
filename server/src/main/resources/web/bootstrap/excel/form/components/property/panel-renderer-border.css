@@ -3,6 +3,7 @@
 .cell-with-background,
 .cell-with-background .background-inherit,
 /*hack to increase selectivity*/
+.cell-with-background.btn,
 .cell-with-background.form-control,
 .cell-with-background.form-control .background-inherit,
 .cell-with-background > .form-control,
