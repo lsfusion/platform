@@ -45,6 +45,7 @@ grammar LsfLogics;
     import lsfusion.server.language.property.PropertySettings;
     import lsfusion.server.language.property.oraction.ActionOrPropertySettings;
     import lsfusion.server.language.property.oraction.LAP;
+    import lsfusion.server.logics.action.flow.ChangeFlowActionType;
     import lsfusion.server.logics.action.flow.Inline;
     import lsfusion.server.logics.action.flow.ListCaseAction;
     import lsfusion.server.logics.action.session.LocalNestedType;
@@ -4447,15 +4448,16 @@ forActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams acti
 
 terminalFlowActionDefinitionBody returns [LAWithParams action]
 @init {
-	boolean isBreak = true;
+	ChangeFlowActionType type = null;
 }
 @after {
 	if (inMainParseState()) {
-		$action = self.getTerminalFlowAction(isBreak);
+		$action = self.getTerminalFlowAction(type);
 	}
 }
-	:	'BREAK'
-	|	'RETURN' { isBreak = false; }
+	:	'BREAK' { type = ChangeFlowActionType.BREAK; }
+	|   'CONTINUE' { type = ChangeFlowActionType.CONTINUE; }
+	|	'RETURN' { type = ChangeFlowActionType.RETURN; }
 	;
 
 

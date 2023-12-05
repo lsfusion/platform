@@ -51,9 +51,7 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.ExplicitAction;
-import lsfusion.server.logics.action.flow.BreakAction;
-import lsfusion.server.logics.action.flow.ListCaseAction;
-import lsfusion.server.logics.action.flow.ReturnAction;
+import lsfusion.server.logics.action.flow.*;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.LocalNestedType;
@@ -2972,8 +2970,20 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LAWithParams(result, usedParams);
     }
 
-    public LAWithParams getTerminalFlowAction(boolean isBreak) {
-        return new LAWithParams(isBreak ? new LA<>(new BreakAction()) : new LA<>(new ReturnAction()), new ArrayList<>());
+    public LAWithParams getTerminalFlowAction(ChangeFlowActionType type) {
+        ChangeFlowAction action = null;
+        switch (type) {
+            case BREAK:
+                action = new BreakAction();
+                break;
+            case CONTINUE:
+                action = new ContinueAction();
+                break;
+            case RETURN:
+                action = new ReturnAction();
+                break;
+        }
+        return new LAWithParams(new LA<>(action), new ArrayList<>());
     }
 
     private List<Integer> getParamsAssertList(List<LPWithParams> list) {

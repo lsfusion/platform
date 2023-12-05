@@ -4,6 +4,7 @@ public class ChangeFlowType {
     public static final ChangeFlowType APPLY = new ChangeFlowType();
     public static final ChangeFlowType CANCEL = new ChangeFlowType();
     public static final ChangeFlowType BREAK = new ChangeFlowType();
+    public static final ChangeFlowType CONTINUE = new ChangeFlowType();
     public static final ChangeFlowType RETURN = new ChangeFlowType();
     public static final ChangeFlowType SYNC = new ChangeFlowType();
     public static final ChangeFlowType NEWSESSION = new ChangeFlowType();

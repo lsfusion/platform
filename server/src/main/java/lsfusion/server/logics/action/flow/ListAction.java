@@ -157,7 +157,7 @@ public class ListAction extends ListCaseAction {
         for(int i = actions.size() - 1; i>= 0; i--) {
             Action<?> listAction = actions.get(i).action;
             
-            if(lookingForChangeFlow && (listAction.hasFlow(ChangeFlowType.BREAK) || listAction.hasFlow(ChangeFlowType.RETURN)))
+            if(lookingForChangeFlow && (listAction.hasFlow(ChangeFlowType.BREAK) || listAction.hasFlow(ChangeFlowType.CONTINUE) || listAction.hasFlow(ChangeFlowType.RETURN)))
                 return false;
 
             boolean endsWithApply = listAction.endsWithApplyAndNoChangesAfterBreaksBefore(type);
