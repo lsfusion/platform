@@ -92,13 +92,13 @@ navbar '{system.events.navbar}' (DesignEnv d) = OVERRIDE designEnvNavbar(d), ser
 verticalNavbar = navbar(currentDesignEnv()) == Navbar.vertical;
 
 colorThemeCaption = (CASE
-    WHEN currentColorTheme() == ColorTheme.light THEN '{system.events.dark.mode}'
-    WHEN currentColorTheme() == ColorTheme.dark THEN '{system.events.auto.mode}'
-    ELSE '{system.events.light.mode}') IF NOT noSystemToolbarCaptions();
+    WHEN currentColorTheme() == ColorTheme.light THEN '{system.events.light.mode}'
+    WHEN currentColorTheme() == ColorTheme.dark THEN '{system.events.dark.mode}'
+    ELSE '{system.events.light.auto}') IF NOT noSystemToolbarCaptions();
 colorThemeImage = CASE 
-    WHEN currentColorTheme() == ColorTheme.light THEN 'darkMode.png' 
-    WHEN currentColorTheme() == ColorTheme.dark THEN 'autoMode.png' 
-    ELSE 'lightMode.png';
+    WHEN currentColorTheme() == ColorTheme.light THEN 'lightMode.png' 
+    WHEN currentColorTheme() == ColorTheme.dark THEN 'darkMode.png' 
+    ELSE 'autoMode.png';
 toggleColorTheme() {
     designEnvColorTheme(currentDesignEnv()) <- CASE
         WHEN currentColorTheme() == ColorTheme.light THEN ColorTheme.dark
@@ -119,14 +119,14 @@ userFiltersManualApplyMode '{service.user.filters.manual.apply.mode}' = DATA TBO
 
 navigatorPinModeCaption = (IF navigatorPinMode()
     THEN (IF navigatorPinMode() == TFALSE
-        THEN '{system.events.navigator.pin.all}'
-        ELSE '{system.events.navigator.pin.none}')
-    ELSE '{system.events.navigator.pin.navbar}') IF NOT noSystemToolbarCaptions();
+        THEN '{system.events.navigator.pin.navbar}'
+        ELSE '{system.events.navigator.pin.all}')
+    ELSE '{system.events.navigator.pin.none}') IF NOT noSystemToolbarCaptions();
 navigatorPinModeImage = IF navigatorPinMode() 
     THEN (IF navigatorPinMode() == TFALSE 
-        THEN iconIfAvailable('navigatorPinAll.png','fa-solid fa-thumbtack fa-rotate-90') 
-        ELSE iconIfAvailable('navigatorPinNone.png','fa-solid fa-thumbtack')) 
-    ELSE iconIfAvailable('navigatorPinNavbar.png','fa-solid fa-thumbtack fa-rotate-45');
+        THEN iconIfAvailable('navigatorPinNavbar.png','fa-solid fa-thumbtack fa-rotate-90') 
+        ELSE iconIfAvailable('navigatorPinAll.png','fa-solid fa-thumbtack')) 
+    ELSE iconIfAvailable('navigatorPinNone.png','fa-solid fa-thumbtack fa-rotate-45');
 toggleNavigatorPinMode () {
     designEnvNavigatorPinMode(currentDesignEnv()) <- IF navigatorPinMode() THEN (IF navigatorPinMode() == TFALSE THEN TTRUE ELSE NULL) ELSE TFALSE;
     useClientNavigatorPinMode(currentDesignEnv()) <- TRUE;
