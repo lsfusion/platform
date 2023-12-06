@@ -74,7 +74,6 @@ public class ClientAsyncSerializer {
         return deserializeInputListActions(new DataInputStream(new ByteArrayInputStream(array)));
     }
 
-
     public static ClientQuickAccessMode deserializeQuickAccessMode(DataInputStream inStream) throws IOException {
         byte type = inStream.readByte();
         switch (type) {

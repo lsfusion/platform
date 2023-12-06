@@ -102,7 +102,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
             list = listEntity.map(mapValues);
             newSession = listEntity.newSession;
             if(asyncExec instanceof AsyncMapInput)
-                strictValues = ((AsyncMapInput<P>) asyncExec).inputList.strict;
+                strictValues = ((AsyncMapInput<P>) asyncExec).strict;
         }
 
         asyncMode = converter != null ? AsyncMode.OBJECTS : (strictValues ? AsyncMode.STRICTVALUES : AsyncMode.VALUES);
