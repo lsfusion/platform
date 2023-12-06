@@ -57,7 +57,7 @@ public class OverJDBField extends JDBField {
                 decimalformat.setDecimalFormatSymbols(dfSymbols);
 
                 String s1 = decimalformat.format(number);
-                int k = getLength() - s1.length();
+                int k = getLength() + (number.doubleValue() < 0 ? 1 : 0) - s1.length();
                 if (k < 0) {
                     throw new JDBFException("Value " + number + " cannot fit in pattern: '" + stringBuilder + "'.");
                 }
