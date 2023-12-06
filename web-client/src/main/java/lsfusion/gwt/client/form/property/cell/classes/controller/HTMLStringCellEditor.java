@@ -9,7 +9,7 @@ import lsfusion.gwt.client.form.property.async.GInputListAction;
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.GCompletionType;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 
-public class HTMLStringCellEditor extends SimpleTextBasedCellEditor {
+public class HTMLStringCellEditor extends TextBasedCellEditor {
 
     public HTMLStringCellEditor(EditManager editManager, GPropertyDraw property, GInputList inputList, GInputListAction[] inputListActions) {
         super(editManager, property, inputList, inputListActions);

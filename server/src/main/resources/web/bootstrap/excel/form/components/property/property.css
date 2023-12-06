@@ -67,6 +67,9 @@
 select > option.option-null {
     color: var(--null-value-string-color);
 }
+.text-based-value-null > input[type="color"] {
+    opacity: 0.5;
+}
 a.text-based-value-null,
 a.text-based-value-empty {
     opacity: 0.5;

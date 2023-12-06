@@ -73,6 +73,7 @@ import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.controller.CustomReplaceCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.controller.RequestCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.controller.RequestValueCellEditor;
+import lsfusion.gwt.client.form.property.cell.classes.view.InputBasedCellRenderer;
 import lsfusion.gwt.client.form.property.cell.classes.view.LogicalCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.*;
 import lsfusion.gwt.client.form.property.cell.view.*;
@@ -1215,10 +1216,6 @@ public class GFormController implements EditManager {
         });
     }
 
-    // for quick access actions (in toolbar)
-    public void executeContextAction(ExecuteEditContext editContext, int contextAction) {
-        executeContextAction(null, editContext, contextAction);
-    }
     // for quick access actions (in toolbar and keypress)
     public void executeContextAction(EventHandler handler, ExecuteEditContext editContext, int contextAction) {
         executePropertyEventAction(handler, editContext, new GUserInputResult(null, contextAction), requestIndex -> {});
@@ -1601,6 +1598,13 @@ public class GFormController implements EditManager {
             MainFrame.setLastBlurredElement(Element.as(event.getEventTarget()));
         formsController.checkEditModeEvents(event);
         return previewLoadingManagerSinkEvents(event) && MainFrame.previewEvent(target, event, isEditing());
+    }
+
+    public boolean previewEvent(Event event, Element element) {
+        Element target = DataGrid.getBrowserTargetAndCheck(element, event);
+        if(target == null)
+            return false;
+        return previewEvent(target, event);
     }
 
     public GFormController contextEditForm;
@@ -2396,7 +2400,29 @@ public class GFormController implements EditManager {
         return editContext != null && editContext.getEditElement() == element;
     }
 
-    public static void setBackgroundColor(Element element, String color) {
+
+    // we want to set the colors for the td (not the sized element), since we usually want the background color to include td paddings
+    // it's not pretty, but other solutions also are not (for example pulling td all over the stack, or including it in the update contexts, however later this might change)
+    private static Element getColorElement(Element element) {
+        Element parentElement = element.getParentElement();
+        if(isTDorTH(parentElement))
+            return parentElement;
+        return element;
+    }
+
+    public static void updateColors(Element element, String backgroundColor, String foregroundColor) {
+        setBackgroundColor(element, backgroundColor);
+        setForegroundColor(element, foregroundColor);
+    }
+
+    public static void clearColors(Element element) {
+        setBackgroundColor(element, null);
+        setForegroundColor(element, null);
+    }
+
+    private static void setBackgroundColor(Element element, String color) {
+        element = getColorElement(element);
+
         if(color != null) {
             element.addClassName("cell-with-background");
         } else {
@@ -2410,7 +2436,7 @@ public class GFormController implements EditManager {
         element.style.setProperty("--bs-body-bg", background);
     }-*/;
 
-    public static void setForegroundColor(Element element, String color) {
+    private static void setForegroundColor(Element element, String color) {
         if (color != null) {
             element.getStyle().setColor(color);
         } else {
@@ -2487,7 +2513,9 @@ public class GFormController implements EditManager {
         // there can be the CHANGE event that wasn't started with regular edit mechanism (for example if !isChangeOnSingleClick and user clicks on the input)
         // in this case we have to "cancel" the change
         // probably the same should be done for SimpleTextBasedRenderer but there are no such scenarios for now
-        if(BrowserEvents.CHANGE.equals(handler.event.getType()) && (inputElement = LogicalCellRenderer.getInputEventTarget(renderElement, handler.event)) != null) {
+        if(GKeyStroke.isChangeEvent(handler.event) &&
+                (inputElement = InputBasedCellRenderer.getInputEventTarget(renderElement, handler.event)) != null &&
+                InputBasedCellRenderer.getInputElementType(renderElement).isLogical()) {
             LogicalCellRenderer.cancelChecked(inputElement);
             handler.consume();
         }

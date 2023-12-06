@@ -50,6 +50,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static java.lang.Math.min;
 
@@ -729,7 +730,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         selectedColumnChanged = true;
         scheduleUpdateDOM();
     }
-    public void focusedChanged() {
+    public void focusedChanged(Element target, Event focusEvent) {
         focusedChanged = true;
         if(!isResolvingState) // hack, grid elements can have focus and not be in editing mode (for example input) and removing such elements will lead to blur
             scheduleUpdateDOM();
@@ -971,22 +972,22 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
     protected abstract boolean previewEvent(Element target, Event event);
 
-    public void onFocus() {
+    public void onFocus(Element target, Event focusEvent) {
         if(isFocused)
             return;
         DataGrid.sinkPasteEvent(getTableDataFocusElement());
 
         isFocused = true;
-        focusedChanged();
+        focusedChanged(target, focusEvent);
     }
 
-    public void onBlur(Event event) {
+    public void onBlur(Element target, Event event) {
         if(!isFocused || isFakeBlur(event, getElement()))
             return;
         //if !isFocused should be replaced to assert; isFocused must be true, but sometimes is not (related to LoadingManager)
         //assert isFocused;
         isFocused = false;
-        focusedChanged();
+        focusedChanged(target, event);
     }
 
     public Element getTableDataFocusElement() {
@@ -1783,7 +1784,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
             this.display = display;
         }
 
-        public void onCellBefore(EventHandler handler, Cell cell, Function<Boolean, Boolean> isChangeOnSingleClick) {
+        public void onCellBefore(EventHandler handler, Cell cell, Function<Boolean, Boolean> isChangeOnSingleClick, Supplier<Element> getNativeEventElement) {
             Event event = handler.event;
             boolean changeEvent = GMouseStroke.isChangeEvent(event);
             if (changeEvent || GMouseStroke.isContextMenuEvent(event)) {
@@ -1799,8 +1800,13 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
                     else
                         changeCell(row, col, reason);
 
-                    if(changeEvent && !isChangeOnSingleClick.apply(rowChanged)) // we'll propagate native events to enable (support) "text selection" feature
-                        handler.consume(true, true); // we'll propagate events upper, to process bindings if there are any (for example CTRL+CLICK)
+                    if(changeEvent && !isChangeOnSingleClick.apply(rowChanged)) {
+                        Element nativeEventElement = getNativeEventElement.get();
+                        if(nativeEventElement != null)
+                            MainFrame.preventClickAfterDown(nativeEventElement, event); // most input elements show popups on mouse click (not mousedown)
+                        // we'll propagate native events by default, at least to enable (support) "text selection" feature
+                        handler.consume(nativeEventElement == null, true); // we'll propagate events upper, to process bindings if there are any (for example CTRL+CLICK)
+                    }
                 }
 //                else if(BrowserEvents.CLICK.equals(eventType) && // if clicked on grid and element is not natively focusable steal focus
 //                        !CellBasedWidgetImpl.get().isFocusable(Element.as(event.getEventTarget())))

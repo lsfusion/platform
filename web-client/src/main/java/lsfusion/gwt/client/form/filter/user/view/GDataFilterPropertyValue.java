@@ -14,6 +14,7 @@ import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.async.GInputListAction;
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.GCompletionType;
+import lsfusion.gwt.client.form.property.cell.classes.view.InputBasedCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
@@ -58,7 +59,7 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     }
 
     private void updateValue(PValue value, boolean loading) {
-        update(value, loading, null, property.valueElementClass, property.getBackground(), property.getForeground(), false, null,
+        update(value, loading, null, property.valueElementClass, property.getBackground(), property.getForeground(), null, null,
                 property.valueTooltip);
     }
 
@@ -70,8 +71,8 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
         updateValue(value, loading);
     }
 
-    @Override
-    public void pasteValue(String stringValue) {
+    public
+    @Override void pasteValue(String stringValue) {
         updateAndCommit(PValue.escapeSeparator(property.parsePaste(stringValue, property.getPasteType()), inputList.compare));
     }
 
@@ -151,11 +152,6 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
         updateAndCommit(result);
     }
 
-    @Override
-    public void executeContextAction(int action) {
-        throw new UnsupportedOperationException();
-    }
-
     private void updateAndCommit(PValue pValue) {
         updateValue(pValue);
         afterCommit.accept(pValue);
@@ -220,5 +216,10 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     @Override
     public RendererType getRendererType() {
         return RendererType.FILTER;
+    }
+
+    @Override
+    public boolean isInputRemoveAllPMB() { // filter is closer to the grid in this case
+        return true;
     }
 }

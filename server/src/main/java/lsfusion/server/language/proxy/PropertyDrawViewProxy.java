@@ -165,6 +165,10 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.tag = tag.getSourceString();
     }
 
+    public void setInputType(LocalizedString inputType) {
+        target.inputType = inputType.getSourceString();
+    }
+
     public void setImagePath(LocalizedString image) {
         setImage(image);
     }

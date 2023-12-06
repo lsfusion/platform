@@ -13,7 +13,7 @@ public abstract class GADateType extends GFormatType {
 
     @Override
     public DateCellRenderer createCellRenderer(GPropertyDraw property) {
-        return new DateCellRenderer(property);
+        return new DateCellRenderer(property, this);
     }
 
     @Override
@@ -40,12 +40,21 @@ public abstract class GADateType extends GFormatType {
         return getFormat(pattern).format(toDate(value));
     }
 
+    public PValue parseISOString(String value) throws ParseException {
+        return value.isEmpty() ? null : fromDate(GDateType.parseDate(value, getISOFormat()));
+    }
+
+    public String formatISOString(PValue value) {
+        return getISOFormat().format(toDate(value));
+    }
+
     // "extended" getFormat + some extra formates
     protected DateTimeFormat[] getFormats(String pattern) {
         return new DateTimeFormat[] {getFormat(pattern)};
     }
 
     public abstract DateTimeFormat getFormat(String pattern);
+    public abstract DateTimeFormat getISOFormat(); // format to be used in input date / datetime-local / time
 
     public abstract PValue fromDate(Date date);
 

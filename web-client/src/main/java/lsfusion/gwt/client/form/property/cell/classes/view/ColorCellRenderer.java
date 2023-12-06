@@ -9,31 +9,19 @@ import lsfusion.gwt.client.form.property.cell.classes.controller.TypeInputBasedC
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
-public class ColorCellRenderer extends TypeInputBasedCellRenderer {
+public class ColorCellRenderer extends TextBasedCellRenderer {
 
     public ColorCellRenderer(GPropertyDraw property) {
         super(property);
     }
 
     @Override
-    protected InputElement createInput(GPropertyDraw property, RendererType rendererType) {
-        InputElement input = GwtClientUtils.createInputElement("color");
-        input.addClassName("input-color"); //set opacity
-        return input;
-    }
-
-    @Override
-    public boolean updateContent(Element element, PValue value, Object extraValue, UpdateContext updateContext) {
-        InputElement input = getInputElement(element);
-        input.setValue(getColorValue(value));
-        return false;
-    }
-
-    @Override
     protected String getBackground(UpdateContext updateContext) {
-        String colorValue = getColorValue(updateContext.getValue());
-        if (colorValue != null)
-            return colorValue;
+        if(!isTagInput()) {
+            String colorValue = getColorValue(updateContext.getValue());
+            if (colorValue != null)
+                return colorValue;
+        }
 
         return super.getBackground(updateContext);
     }

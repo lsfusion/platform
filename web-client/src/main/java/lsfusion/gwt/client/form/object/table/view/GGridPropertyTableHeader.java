@@ -235,7 +235,7 @@ public class GGridPropertyTableHeader extends Header<String> {
                 renderedImage = image;
             }
             if (!nullEquals(this.tooltip, renderedTooltip)) {
-                TooltipManager.updateContent(tippy, renderedCaptionElement, tooltipHelper, tooltip);
+                TooltipManager.updateContent(tippy, tooltipHelper, tooltip);
                 renderedTooltip = tooltip;
             }
         }

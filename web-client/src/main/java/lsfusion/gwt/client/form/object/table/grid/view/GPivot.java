@@ -1169,6 +1169,11 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             }
 
             @Override
+            public GFormController getForm() {
+                return form;
+            }
+
+            @Override
             public RendererType getRendererType() {
                 return RendererType.PIVOT;
             }
@@ -2221,5 +2226,10 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     @Override
     public RendererType getRendererType() {
         return RendererType.PIVOT;
+    }
+
+    @Override
+    public boolean isInputRemoveAllPMB() {
+        return true;
     }
 }

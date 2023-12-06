@@ -231,13 +231,27 @@ public class MainFrame implements EntryPoint {
     private static Element beforeLastClickedTarget;
     private static Element lastClickedTarget;
     private static Event lastClickedEvent;
+    private static Event lastDownEvent;
     private static boolean previewClickEvent(Element target, Event event) {
-        if (GMouseStroke.isClickEvent(event))
+        if (GMouseStroke.isClickEvent(event)) {
             if (event != lastClickedEvent) { // checking lastClickedEvent since it can be propagated (or not)
                 lastClickedEvent = event;
                 beforeLastClickedTarget = lastClickedTarget;
                 lastClickedTarget = target;
+
+                if(ignoreClickAfterDown(target)) {
+                    GwtClientUtils.stopPropagation(event);
+                    return false;
+                }
             }
+        }
+        if (GMouseStroke.isDownEvent(event)) {
+            if (event != lastDownEvent) { // checking lastDownEvent since it can be propagated (or not)
+                lastDownEvent = event;
+
+                ignoreClickAfterDown(target); // just in case if we missed click event
+            }
+        }
         if(GMouseStroke.isDblClickEvent(event)) {
             if(lastClickedTarget != null && ignoreDblClickAfterClick(lastClickedTarget))
                 return false;
@@ -271,6 +285,20 @@ public class MainFrame implements EntryPoint {
     //lastClickedTarget and beforeLastClickedTarget can be not equal if we change element at first click
     private static boolean noIgnoreDblClickCheck(Element element) {
         return GwtClientUtils.getParentWithAttribute(element, IGNORE_DBLCLICK_CHECK) == null;
+    }
+
+    //if we process two single clicks, we don't want to process double click
+    public static final String IGNORE_CLICK_AFTER_DOWN = "__ignore_click_after_down";
+
+    public static void preventClickAfterDown(Element element, Event event) {
+        element.setAttribute(IGNORE_CLICK_AFTER_DOWN, "true");
+        lastDownEvent = event;
+    }
+
+    private static boolean ignoreClickAfterDown(Element element) {
+        boolean hasAttribute = element.hasAttribute(IGNORE_CLICK_AFTER_DOWN);
+        element.removeAttribute(IGNORE_CLICK_AFTER_DOWN);
+        return hasAttribute;
     }
 
     public void initializeFrame(NavigatorInfo result) {

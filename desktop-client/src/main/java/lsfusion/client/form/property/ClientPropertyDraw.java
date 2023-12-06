@@ -93,6 +93,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public ClientClass returnClass;
 
     public String tag;
+    public String inputType;
     public String valueElementClass;
     public String captionElementClass;
     public boolean toolbar;
@@ -636,6 +637,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             valueType = ClientTypeSerializer.deserializeClientType(inStream);
 
         tag = pool.readString(inStream);
+        inputType = pool.readString(inStream);
         valueElementClass = pool.readString(inStream);
         captionElementClass = pool.readString(inStream);
         toolbar = pool.readBoolean(inStream);

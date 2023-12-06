@@ -27,6 +27,7 @@
     margin: 0 !important;
     border: none !important;
     box-shadow: none !important;
+    outline: none !important;
 
     /* for example text-area.form-control sets the minimum height */
     /* and when there is minimum height the content overflow it's parent, which leads to unpredictable scrolls (for example if textarea is removed, and new text is set, there can be some scroll left after that. It's not crucial but nevertheless not that pretty)*/
@@ -113,7 +114,7 @@
 }
 
 .fill-parent-flex-cont {
-    display: flex;
+    display: flex !important; /* form-control for example sets display:block*/
     /* we need column because of intrinistic width in prop-size-value.fill-parent-flex*/
     flex-direction: column;
 }
@@ -224,13 +225,4 @@
 }
 .grid-dir-horz {
     grid-auto-flow: column;
-}
-
-/*
-    fix for displaying focus on BOOLEAN(checkbox) panel properties
-    panelRendererValueFocused sets background and border to element, but it has no effect on the checkbox element
- */
-.checkbox-outline.panelRendererValueFocused {
-    outline-offset: 0;
-    outline: var(--focus-color) auto 1px;
 }

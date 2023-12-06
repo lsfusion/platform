@@ -1,8 +1,6 @@
 package lsfusion.gwt.client.classes;
 
-import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.Style;
-import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.size.GSize;
@@ -119,7 +117,8 @@ public abstract class GType implements Serializable {
         return "center";
     }
 
-    public InputElement createTextInputElement() {
-        return GwtClientUtils.createInputElement("text");
+    private final static GInputType inputType = new GInputType("text");
+    public GInputType getValueInputType() {
+        return inputType;
     }
 }

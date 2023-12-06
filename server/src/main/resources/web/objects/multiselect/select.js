@@ -6,29 +6,34 @@ function selectMultiHTMLInput() {
 }
 
 function selectMultiInput() {
+    function handleKeyEvent(selectize, e, mouseDown) {
+        if(selectize.isOpen) { // is editing
+            if(selectize.controller.isEditInputKeyEvent(e, true) || (mouseDown && (e.key === 'Enter' || e.key === 'Escape')))
+                e.stopPropagation()
+        } else {
+            if(selectize.controller.isRenderInputKeyEvent(e, true))
+                e.stopPropagation();
+        }
+    }
 
     if(!lsf_events_defined) {
         Selectize.define('lsf_events', function () {
             let selfKeyDown = this.onKeyDown;
             this.onKeyDown = function (e) {
-                // we want navigation keys to work after dropdown is closed
-                if (!this.isOpen && lsfUtils.isCharNavigateKeyEvent(e))
-                    return;
                 // we're copying suggest + multi line text event handling
-                if (e.shiftKey === true && e.key === 'Enter')
+                if (e.shiftKey === true && e.key === 'Enter') {
                     this.close();
-                else
-                    selfKeyDown.apply(this, arguments);
-
-                if (lsfUtils.isInputKeyEvent(e, this.isOpen) || e.key === 'Enter' || e.key === 'Escape')
                     e.stopPropagation();
+                    return;
+                }
+
+                handleKeyEvent(this, e, true);
+                selfKeyDown.apply(this, arguments);
             }
             let selfKeyPress = this.onKeyPress;
             this.onKeyPress = function (e) {
+                handleKeyEvent(this, e, false);+
                 selfKeyPress.apply(this, arguments);
-
-                if (lsfUtils.isInputKeyEvent(e, this.isOpen))
-                    e.stopPropagation();
             }
             this.onItemSelect = function (e) {
             }
@@ -164,6 +169,7 @@ function selectMultiInput() {
             }
 
             let selectizeInstance = element.selectizeInstance[0].selectize;
+            selectizeInstance.controller = controller; // needed for lsf_events
             controller.diff(list, (type, index, object) => {
                 let selectizeOption = toOption(object, controller, false);
                 let optionValue = selectizeOption.value;
@@ -681,8 +687,14 @@ function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBo
                     _setIsEditing(select, false);
                 });
 
-                select.addEventListener('mousedown', function () {
-                    _setIsEditing(select, true);
+                select.addEventListener('mousedown', function (e) {
+                    // dropdown can be prevented if !isChangeOnSingleClick
+                    // if(!element.controller.previewEvent(select, e))
+                    //     return;
+                    setTimeout(function() {
+                       if(!e.defaultPrevented)
+                            _setIsEditing(select, true);
+                    });
                 });
 
                 select.addEventListener('keydown', function (e) {

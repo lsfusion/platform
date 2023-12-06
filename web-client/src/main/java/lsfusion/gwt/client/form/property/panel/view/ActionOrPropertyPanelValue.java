@@ -147,12 +147,12 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
     }
 
     @Override
-    public void executeContextAction(int action) {
-        form.executeContextAction( this, action);
+    public RendererType getRendererType() {
+        return RendererType.PANEL;
     }
 
     @Override
-    public RendererType getRendererType() {
-        return RendererType.PANEL;
+    public boolean isInputRemoveAllPMB() {
+        return false;
     }
 }

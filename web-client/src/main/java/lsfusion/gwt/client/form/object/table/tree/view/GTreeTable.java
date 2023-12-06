@@ -15,7 +15,6 @@ import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.ColorUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
-import lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder;
 import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
@@ -167,7 +166,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                 String captionElementClass = property.captionElementClass;
                 AppBaseImage propertyImage = !property.isAction() ? property.appImage : null;
                 GGridPropertyTableHeader header = noHeaders ? null : new GGridPropertyTableHeader(this, propertyCaption, captionElementClass, propertyImage, property.getTooltip(propertyCaption), gridColumn.isSticky());
-                GGridPropertyTableFooter footer = noFooters ? null : new GGridPropertyTableFooter(this, property, null, null, gridColumn.isSticky());
+                GGridPropertyTableFooter footer = noFooters ? null : new GGridPropertyTableFooter(this, property, null, null, gridColumn.isSticky(), form);
 
                 insertColumn(index, gridColumn, header, footer);
 
@@ -404,7 +403,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                 renderedState.background = background;
                 renderedState.foreground = foreground;
 
-                AbstractDataGridBuilder.updateColors(cellElement, background, foreground);
+                GFormController.updateColors(cellElement, background, foreground);
             }
 
             GTreeColumnValue treeValue = getTreeValue(cell);

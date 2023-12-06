@@ -1038,6 +1038,11 @@ public abstract class LogicsModule {
                                                              ImOrderSet<T> orderInterfaces, InputListEntity<?, T> contextList,
                                                              FormSessionScope contextScope, InputContextSelector<T> contextSelector,
                                                              ImList<InputContextAction<?, T>> contextActions, String customEditorFunction, boolean notNull) {
+        // adding reset action
+        if (!notNull && targetProp != null) {
+            contextActions = ListFact.add(contextActions, InputListEntity.getResetAction(baseLM, targetProp));
+        }
+
         if(contextList != null) {
 
             if (contextScope == FormSessionScope.NEWSESSION) {
@@ -1050,11 +1055,6 @@ public abstract class LogicsModule {
             }
         }
 
-        // adding reset action
-        if (!notNull && targetProp != null && baseLM.getRequestCanceledProperty() != null) {
-            contextActions = ListFact.add(contextActions, InputListEntity.getResetAction(baseLM, targetProp));
-        }
-        
         return addAction(null, new LA(new InputAction(LocalizedString.create("Input"), valueClass, targetProp, hasOldValue, orderInterfaces, contextList, contextSelector, contextActions, customEditorFunction)));
     }
 

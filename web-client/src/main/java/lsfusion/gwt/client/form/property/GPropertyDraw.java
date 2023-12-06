@@ -2,7 +2,6 @@ package lsfusion.gwt.client.form.property;
 
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.ClientMessages;
@@ -11,10 +10,7 @@ import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
-import lsfusion.gwt.client.classes.GActionType;
-import lsfusion.gwt.client.classes.GClass;
-import lsfusion.gwt.client.classes.GObjectType;
-import lsfusion.gwt.client.classes.GType;
+import lsfusion.gwt.client.classes.*;
 import lsfusion.gwt.client.classes.data.*;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -28,7 +24,7 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.async.*;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
-import lsfusion.gwt.client.form.property.cell.classes.view.SimpleTextBasedCellRenderer;
+import lsfusion.gwt.client.form.property.cell.classes.view.InputBasedCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.ExecuteEditContext;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.CustomCellRenderer;
@@ -110,6 +106,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GClass returnClass;
 
     public String tag;
+    public GInputType inputType;
     public String valueElementClass;
     public boolean toolbar;
 
@@ -447,7 +444,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
                 return actionSID;
         }
 
-        Integer inputActionIndex = getInputActionIndex(editEvent, false);
+        Integer inputActionIndex = getKeyInputActionIndex(getInputListActions(), editEvent, false);
         if(inputActionIndex != null) {
             contextAction.set(inputActionIndex);
             return GEditBindingMap.changeOrGroupChange();
@@ -458,11 +455,25 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
         // starting change on focus, or any key pressed when focus is on input
         boolean isFocus = BrowserEvents.FOCUS.equals(editEvent.getType());
-        Element focusElement;
-        if((isFocus || GKeyStroke.isInputKeyEvent(editEvent, () -> SimpleTextBasedCellRenderer.isMultiLineInput(editContext.getEditElement())))
-                && (focusElement = SimpleTextBasedCellRenderer.getFocusEventTarget(editContext.getEditElement(), editEvent)) != null &&
-                !(isFocus && isSuppressOnFocusChange(focusElement)))
-            return GEditBindingMap.changeOrGroupChange();
+        Element editElement = editContext.getEditElement();
+        Element inputElement = InputBasedCellRenderer.getInputEventTarget(editElement, editEvent);
+        if (inputElement != null) {
+            UpdateContext updateContext = editContext.getUpdateContext();
+
+            GInputType inputType = InputBasedCellRenderer.getInputElementType(editElement);
+            if(inputType.isStretchText()) {
+                if (isFocus && !isSuppressOnFocusChange(inputElement))
+                    return GEditBindingMap.changeOrGroupChange();
+
+                if (InputBasedCellRenderer.isInputKeyEvent(editEvent, updateContext, inputType.isMultilineText()))
+                    return GEditBindingMap.changeOrGroupChange();
+            }
+
+            if (!updateContext.isNavigateInput() && GKeyStroke.isKeyDownEvent(editEvent))
+                if (editEvent.getShiftKey() && (isCharNavigateHorzKeyEvent(editEvent) || isCharNavigateVertKeyEvent(editEvent))) {
+                    return GEditBindingMap.changeOrGroupChange();
+                }
+        }
 
         if (GMouseStroke.isChangeEvent(editEvent)) {
             Integer actionIndex = (Integer) GEditBindingMap.getToolbarAction(editEvent);
@@ -481,12 +492,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return null;
     }
 
-    public Integer getInputActionIndex(Event editEvent, boolean isEditing) {
-        GInputListAction[] inputListActions;
-        if (KEYDOWN.equals(editEvent.getType()) && (inputListActions = getInputListActions()) != null) {
+    public Integer getKeyInputActionIndex(GInputListAction[] actions, Event editEvent, boolean isEditing) {
+        if (actions != null && KEYDOWN.equals(editEvent.getType())) {
             GKeyStroke keyStroke = null;
-            for (int i = 0; i < inputListActions.length; i++) {
-                GInputListAction action = inputListActions[i];
+            for (GInputListAction action : actions) {
                 if (action.keyStroke != null) {
                     if (keyStroke == null)
                         keyStroke = getKeyStroke(editEvent);
@@ -509,8 +518,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public Integer getDialogInputActionIndex(GInputListAction[] actions) {
         if (actions != null && (disableInputList || FormsController.isDialogMode())) {
-            for (int i = 0; i < actions.length; i++) {
-                GInputListAction action = actions[i];
+            for (GInputListAction action : actions) {
                 //addDialogInputAProp from server
                 if (action.id != null && action.id.equals(AppStaticImage.INPUT_DIALOG)) {
                     return action.index;
@@ -763,13 +771,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public String getVertTextAlignment(boolean isInput, RendererType rendererType) {
         return getRenderType(rendererType).getVertTextAlignment(isInput);
-    }
-
-    public InputElement createTextInputElement(RendererType rendererType) {
-        InputElement inputElement = getRenderType(rendererType).createTextInputElement();
-        inputElement.addClassName("prop-input");
-        inputElement.addClassName("form-control");
-        return inputElement;
     }
 
     public static ArrayList<GGroupObjectValue> getColumnKeys(GPropertyDraw property, NativeSIDMap<GGroupObject, ArrayList<GGroupObjectValue>> currentGridObjects) {

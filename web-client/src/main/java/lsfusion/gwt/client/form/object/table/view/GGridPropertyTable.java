@@ -25,6 +25,7 @@ import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.form.property.cell.classes.view.InputBasedCellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
@@ -718,7 +719,7 @@ protected Double getUserFlex(int i) {
         Element renderElement = getRenderElement(cell, parent);
 
         form.onPropertyBrowserEvent(new EventHandler(event), renderElement, parent != null, getTableDataFocusElement(),
-                handler -> selectionHandler.onCellBefore(handler, cell, rowChanged -> isChangeOnSingleClick(cell, event, (Boolean) rowChanged, column)),
+                handler -> selectionHandler.onCellBefore(handler, cell, rowChanged -> isChangeOnSingleClick(cell, event, (Boolean) rowChanged, column), () -> InputBasedCellRenderer.getFocusEventTarget(getRenderElement(cell, parent), event)),
                 handler -> column.onEditEvent(handler, cell, renderElement),
                 handler -> selectionHandler.onCellAfter(handler, cell),
                 handler -> CopyPasteUtils.putIntoClipboard(renderElement), handler -> CopyPasteUtils.getFromClipboard(handler, line -> pasteData(cell, renderElement, GwtClientUtils.getClipboardTable(line))),
@@ -821,6 +822,11 @@ protected Double getUserFlex(int i) {
             public RendererType getRendererType() {
                 return RendererType.GRID;
             }
+
+            @Override
+            public boolean isInputRemoveAllPMB() {
+                return true;
+            }
         };
     }
 
@@ -841,8 +847,8 @@ protected Double getUserFlex(int i) {
             }
 
             @Override
-            public void executeContextAction(int action) {
-                form.executeContextAction(getEditContext(cell, renderElement), action);
+            public GFormController getForm() {
+                return form;
             }
 
             @Override
@@ -929,7 +935,7 @@ protected Double getUserFlex(int i) {
 
         super.changeSelectedCell(row, column, reason);
 
-        if(!checkFocusElement(reason)) {
+        if(!checkFocusElement(reason, null)) {
             Element focusElement = getTableDataFocusElement();
             Element focusedChild = GwtClientUtils.getFocusedChild(focusElement);
             if(focusElement != focusedChild) {
@@ -939,21 +945,21 @@ protected Double getUserFlex(int i) {
     }
 
     @Override
-    public void focusedChanged() {
-        super.focusedChanged();
+    public void focusedChanged(Element target, Event focusEvent) {
+        super.focusedChanged(target, focusEvent);
 
         if(isFocused) {
-            FocusUtils.Reason focusReason = FocusUtils.getFocusReason(getTableDataFocusElement());
-            checkFocusElement(focusReason != null ? focusReason : FocusUtils.Reason.OTHER);
+            FocusUtils.Reason focusReason = FocusUtils.getFocusReason(target);
+            checkFocusElement(focusReason != null ? focusReason : FocusUtils.Reason.OTHER, target);
         }
     }
 
-    private boolean checkFocusElement(FocusUtils.Reason reason) {
+    private boolean checkFocusElement(FocusUtils.Reason reason, Element focusedElement) {
         if(getSelectedRow() >= 0 && getSelectedColumn() >= 0) {
             Element selectedRenderElement = getSelectedRenderElement(getSelectedColumn());
             if(selectedRenderElement != null) {
                 Object focusElement = CellRenderer.getFocusElement(selectedRenderElement);
-                if (focusElement != null && focusElement != CellRenderer.NULL) {
+                if (focusElement != null && focusElement != CellRenderer.NULL && focusElement != focusedElement) { // last check - optimization
                     FocusUtils.focus((Element) focusElement, reason);
                     return true;
                 }

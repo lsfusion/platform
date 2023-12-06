@@ -11,6 +11,7 @@ import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.TextBasedClass;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.stat.print.design.ReportDrawField;
 import lsfusion.server.logics.form.stat.struct.export.plain.xls.ExportXLSWriter;
 import lsfusion.server.logics.form.stat.struct.imports.plain.dbf.CustomDbfRecord;
@@ -204,5 +205,12 @@ public abstract class IntegralClass<T extends Number> extends TextBasedClass<T> 
 
     protected boolean isEmptyString(String s) {
         return s.trim().isEmpty();
+    }
+
+    @Override
+    public String getInputType(FormInstanceContext context) {
+        if(context.isMobile)
+            return "number";
+        return super.getInputType(context);
     }
 }

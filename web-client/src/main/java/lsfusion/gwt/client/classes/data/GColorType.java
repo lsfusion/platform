@@ -2,6 +2,7 @@ package lsfusion.gwt.client.classes.data;
 
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.size.GSize;
+import lsfusion.gwt.client.classes.GInputType;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
@@ -21,12 +22,18 @@ public class GColorType extends GDataType {
 
     @Override
     public RequestValueCellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, GInputListAction[] inputListActions, EditContext editContext) {
-        return new ColorCellEditor(editManager);
+        return new ColorCellEditor(editManager, editProperty);
     }
 
     @Override
     public CellRenderer createCellRenderer(GPropertyDraw property) {
         return new ColorCellRenderer(property);
+    }
+
+    private final static GInputType inputType = new GInputType("color");
+    @Override
+    public GInputType getValueInputType() {
+        return inputType;
     }
 
     @Override

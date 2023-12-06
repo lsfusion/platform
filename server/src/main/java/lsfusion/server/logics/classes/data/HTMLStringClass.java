@@ -2,6 +2,7 @@ package lsfusion.server.logics.classes.data;
 
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.property.ExtInt;
+import lsfusion.server.data.type.Type;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -35,7 +36,7 @@ public class HTMLStringClass extends StringClass {
     }
 
     @Override
-    public boolean useInputTag(boolean isPanel, boolean useBootstrap, boolean hasBackground) {
+    public boolean useInputTag(boolean isPanel, boolean useBootstrap, Type changeType) {
         return false;
     }
 

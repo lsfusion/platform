@@ -37,16 +37,10 @@
     overflow-y: clip;
 }
 
-.prop-input {
-    /*background-color:transparent;*/
-    /*var(--component-background-color);*/
-    /*color: var(--text-color);*/
-}
-
-.text-based-prop-value:not(.prop-input) {
+.text-based-prop-value {
     cursor: default; /* need this since text by default gets "editing" cursor, however it overrides for example resize cursor, but it's not clear what to do with it */
 }
-a.text-based-prop-value:not(.prop-input) { /* we have to set cursor pointer for a since we don't set href and thus UA doesn't set cursor pointer */
+a.text-based-prop-value { /* we have to set cursor pointer for a since we don't set href and thus UA doesn't set cursor pointer */
     cursor: pointer;
 }
 

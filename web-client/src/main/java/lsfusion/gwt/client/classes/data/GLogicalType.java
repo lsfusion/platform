@@ -3,6 +3,7 @@ package lsfusion.gwt.client.classes.data;
 import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.size.GSize;
+import lsfusion.gwt.client.classes.GInputType;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
@@ -70,5 +71,11 @@ public class GLogicalType extends GDataType {
     @Override
     public Style.TextAlign getHorzTextAlignment() {
         return Style.TextAlign.CENTER;
+    }
+
+    private final static GInputType inputType = new GInputType("checkbox");
+    @Override
+    public GInputType getValueInputType() {
+        return inputType;
     }
 }

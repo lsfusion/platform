@@ -7,8 +7,10 @@ import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.type.DBType;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.stat.print.design.ReportDrawField;
 import lsfusion.server.logics.form.stat.struct.export.plain.dbf.OverJDBField;
 import lsfusion.server.logics.form.stat.struct.export.plain.xls.ExportXLSWriter;
@@ -108,8 +110,8 @@ public class LogicalClass extends DataClass<Boolean> {
     }
 
     @Override
-    public boolean useInputTag(boolean isPanel, boolean useBootstrap, boolean hasBackground) {
-        return Settings.get().isUseInputTagForBoolean() && !hasBackground;
+    public boolean useInputTag(boolean isPanel, boolean useBootstrap, Type changeType) {
+        return true; // see LogicalCellRenderer constructor assertion (isTagInput)
     }
 
     @Override
@@ -240,5 +242,10 @@ public class LogicalClass extends DataClass<Boolean> {
 
     public boolean calculateStat() {
         return false;
+    }
+
+    @Override
+    public String getInputType(FormInstanceContext context) {
+        return "checkbox";
     }
 }

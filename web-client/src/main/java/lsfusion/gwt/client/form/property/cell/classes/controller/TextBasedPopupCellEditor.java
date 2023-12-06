@@ -11,9 +11,11 @@ import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 
-public abstract class TextBasedPopupCellEditor extends SimpleTextBasedCellEditor {
+import java.text.ParseException;
 
-    protected final PopupDialogPanel popup = new PopupDialogPanel();
+public abstract class TextBasedPopupCellEditor extends TextBasedCellEditor {
+
+    protected PopupDialogPanel popup;
     protected InputElement editBox;
     public TextBasedPopupCellEditor(EditManager editManager, GPropertyDraw property) {
         super(editManager, property);
@@ -21,24 +23,56 @@ public abstract class TextBasedPopupCellEditor extends SimpleTextBasedCellEditor
 
     @Override
     public void onBlur(Event event, Element parent) {
-        if (!popup.isShowing())
+        if (popup == null || !popup.isShowing())
             super.onBlur(event, parent);
     }
 
     // it seems that it's needed only for editBox.click() and selectAll
     @Override
     protected void onInputReady(Element parent, PValue oldValue) {
+        super.onInputReady(parent, oldValue);
+
         editBox = inputElement;
 
-        GwtClientUtils.showPopupInWindow(popup, createPopupComponent(parent, oldValue), parent.getAbsoluteLeft(), parent.getAbsoluteBottom());
-        popup.addAutoHidePartner(editBox);
+        if(!inputElementType.hasNativePopup()) {
+            popup = new PopupDialogPanel();
+            GwtClientUtils.showPopupInWindow(popup, createPopupComponent(parent, oldValue), parent.getAbsoluteLeft(), parent.getAbsoluteBottom());
+            popup.addAutoHidePartner(editBox);
+        }
     }
 
     protected abstract Widget createPopupComponent(Element parent, PValue oldValue);
+    protected abstract void removePopupComponent(Element parent);
+    protected abstract PValue getPopupValue();
 
     @Override
     public void clearRender(Element cellParent, RenderContext renderContext, boolean cancel) {
         super.clearRender(cellParent, renderContext, cancel);
-        popup.hide();
+
+        if(popup != null)
+            popup.hide();
+    }
+
+    @Override
+    public void stop(Element parent, boolean cancel, boolean blurred) {
+        if(popup != null)
+            removePopupComponent(parent);
+        super.stop(parent, cancel, blurred);
+    }
+
+    protected PValue tryParseInputText(String inputText, boolean onCommit) throws ParseException {
+        //to be able to enter the date from keyboard
+        if (onCommit) {
+            try {
+                return super.tryParseInputText(inputText, true);
+            } catch (ParseException e) {
+                if(popup != null)
+                    return getPopupValue();
+                else
+                    throw e;
+            }
+        }
+
+        return PValue.getPValue(inputText);
     }
 }

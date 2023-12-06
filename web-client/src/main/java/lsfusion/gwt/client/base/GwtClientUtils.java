@@ -27,6 +27,7 @@ import java.util.function.Predicate;
 
 import static java.lang.Math.max;
 import static lsfusion.gwt.client.base.GwtSharedUtils.isRedundantString;
+import static lsfusion.gwt.client.base.GwtSharedUtils.replicate;
 import static lsfusion.gwt.client.view.MainFrame.colorTheme;
 
 public class GwtClientUtils {
@@ -59,12 +60,6 @@ public class GwtClientUtils {
     // GWT utility methods
     public native static void init() /*-{
         $wnd.lsfUtils = {
-            isInputKeyEvent: function (event, multiLine) {
-                return @lsfusion.gwt.client.form.event.GKeyStroke::isInputKeyEventBoolean(*)(event, multiLine);
-            },
-            isCharNavigateKeyEvent: function (event) {
-                return @lsfusion.gwt.client.form.event.GKeyStroke::isCharNavigateKeyEvent(*)(event);
-            },
             setFocusElement: function (element, focusElement) {
                 return @lsfusion.gwt.client.form.property.cell.view.CellRenderer::setFocusElement(*)(element, focusElement);
             },
@@ -86,11 +81,6 @@ public class GwtClientUtils {
         }
     }-*/;
 
-    public static InputElement createCheckInputElement() {
-        InputElement input = createInputElement("checkbox");
-        input.setAttribute("value", "on");
-        return input;
-    };
     public static InputElement createInputElement(String type) {
         InputElement input = (InputElement) createFocusElement("input");
         input.setAttribute("type", type);
@@ -962,6 +952,12 @@ public class GwtClientUtils {
         Long epochFrom = parseFunction.apply(dates[0]);
         Long epochTo = parseFunction.apply(dates[1]);
         return epochFrom <= epochTo ? PValue.getPValue(epochFrom, epochTo) : null;
+    }
+
+    public static String getStep(int precision) {
+        if(precision == 0)
+            return "1";
+        return "0." + replicate('0', precision <= 5 ? precision - 1 : 4) + "1";
     }
 
     public static String formatInterval(PValue obj, Function<Long, String> formatFunction) {

@@ -34,11 +34,13 @@ public class FocusUtils {
     }
 
     public static void focus(Element element, Reason reason) {
+        Object prevReason = element.getPropertyObject(focusReason); // just in case when there are nested focuses
+        assert prevReason == null || prevReason == reason;
         element.setPropertyObject(focusReason, reason);
         try {
             focus(element, reason.preventScroll());
         } finally {
-            element.setPropertyObject(focusReason, null);
+            element.setPropertyObject(focusReason, prevReason);
         }
     }
 

@@ -1,8 +1,7 @@
 package lsfusion.gwt.client.classes.data;
 
-import com.google.gwt.dom.client.InputElement;
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.classes.GInputType;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.property.GExtInt;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -58,8 +57,9 @@ public class GTextType extends GStringType {
         return "top";
     }
 
+    private final static GInputType inputType = new GInputType("textarea");
     @Override
-    public InputElement createTextInputElement() {
-        return (InputElement) GwtClientUtils.createFocusElement("textarea");
+    public GInputType getValueInputType() {
+        return inputType;
     }
 }

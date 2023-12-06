@@ -2764,7 +2764,6 @@ public class Settings implements Cloneable {
     // 1 - use only in bootstrap theme
     // 2 - never use
     private int useInputTagForTextBasedInPanel = 1;
-    private boolean useInputTagForBoolean = true;
     private boolean noToolbarForInputTagInPanel = false;
     private boolean noToolbarForSelectDropdownInPanel = false;
     private boolean noToolbarForBoolean = true;
@@ -2775,14 +2774,6 @@ public class Settings implements Cloneable {
 
     public void setUseInputTagForTextBasedInPanel(int useInputTagForTextBasedInPanel) {
         this.useInputTagForTextBasedInPanel = useInputTagForTextBasedInPanel;
-    }
-
-    public boolean isUseInputTagForBoolean() {
-        return useInputTagForBoolean;
-    }
-
-    public void setUseInputTagForBoolean(boolean useInputTagForBoolean) {
-        this.useInputTagForBoolean = useInputTagForBoolean;
     }
 
     public boolean isNoToolbarForInputTagInPanel() {

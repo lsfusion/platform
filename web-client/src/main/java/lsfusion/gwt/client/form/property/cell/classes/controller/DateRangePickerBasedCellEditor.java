@@ -11,8 +11,6 @@ import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
 
-import java.text.ParseException;
-
 public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellEditor implements FormatCellEditor {
 
     public DateRangePickerBasedCellEditor(EditManager editManager, GPropertyDraw property) {
@@ -20,9 +18,13 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
     }
 
     @Override
-    public void stop(Element parent, boolean cancel, boolean blurred) {
+    protected PValue getPopupValue() {
+        return getDateInputValue();
+    }
+
+    @Override
+    protected void removePopupComponent(Element parent) {
         removePicker();
-        super.stop(parent, cancel, blurred);
     }
 
     protected void pickerApply(Element parent) {
@@ -31,19 +33,6 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
             if (editManager.isThisCellEditing(this))
                 commitValue(parent, getDateInputValue());
         });
-    }
-
-    protected PValue tryParseInputText(String inputText, boolean onCommit) throws ParseException {
-        //to be able to enter the date from keyboard
-        if (onCommit) {
-            try {
-                return super.tryParseInputText(inputText, true);
-            } catch (ParseException e) {
-                return getDateInputValue();
-            }
-        }
-
-        return PValue.getPValue(inputText);
     }
 
     @Override
@@ -67,7 +56,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
     protected abstract boolean isSinglePicker();
 
     private void setInputValue(Element parent) {
-        setInputValue(parent, tryFormatInputText(getDateInputValue()));
+        setTextInputValue(parent, tryFormatInputText(getDateInputValue()));
     }
 
     protected native void removePicker()/*-{

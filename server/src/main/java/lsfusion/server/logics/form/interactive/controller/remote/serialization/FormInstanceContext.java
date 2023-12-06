@@ -27,10 +27,11 @@ public class FormInstanceContext extends ConnectionContext {
     // dynamic part
     public final SecurityPolicy securityPolicy;
     public final boolean isNative;
+    public final boolean isMobile;
     public final DBManager dbManager;
     public final QueryEnvironment env;
 
-    public FormInstanceContext(FormEntity entity, FormView view, SecurityPolicy securityPolicy, boolean useBootstrap, boolean isNative, DBManager dbManager, QueryEnvironment env) {
+    public FormInstanceContext(FormEntity entity, FormView view, SecurityPolicy securityPolicy, boolean useBootstrap, boolean isNative, boolean isMobile, DBManager dbManager, QueryEnvironment env) {
         super(useBootstrap);
 
         this.entity = entity;
@@ -38,6 +39,7 @@ public class FormInstanceContext extends ConnectionContext {
 
         this.securityPolicy = securityPolicy;
         this.isNative = isNative;
+        this.isMobile = isMobile;
         this.dbManager = dbManager;
         this.env = env;
     }

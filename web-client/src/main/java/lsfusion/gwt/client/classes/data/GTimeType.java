@@ -38,6 +38,11 @@ public class GTimeType extends GADateType {
     }
 
     @Override
+    public DateTimeFormat getISOFormat() {
+        return DateTimeFormat.getFormat("HH:mm");
+    }
+
+    @Override
     public PValue fromDate(Date date) {
         return PValue.getPValue(GTimeDTO.fromDate(date));
     }

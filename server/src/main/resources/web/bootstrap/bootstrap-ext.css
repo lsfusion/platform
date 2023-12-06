@@ -309,6 +309,10 @@ table.pvtTable thead tr th {
 .cell-with-background {
     background-color: var(--bs-table-bg);
 }
+/* background won't work for the input checkbox so we outline it with that color */
+input.cell-with-background[type=checkbox] {
+    outline: var(--bs-table-bg) solid 5px;
+}
 
 /* we want for the non-form-control placeholder to have the same behaviour look as the form-control placeholder */
 .text-based-value-null:not(a),
@@ -321,6 +325,9 @@ table.pvtTable thead tr th {
 a.text-based-value-null,
 a.text-based-value-empty {
     --bs-link-opacity: 0.5;
+}
+.text-based-value-null > input[type="color"] {
+    opacity: 0.5;
 }
 .form-select > option {
     color: var(--bs-body-color)

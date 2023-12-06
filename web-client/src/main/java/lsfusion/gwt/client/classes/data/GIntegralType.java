@@ -1,8 +1,8 @@
 package lsfusion.gwt.client.classes.data;
 
-import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.i18n.client.NumberFormat;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.classes.GInputType;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
@@ -24,6 +24,10 @@ public abstract class GIntegralType extends GFormatType {
     }
 
     protected abstract int getPrecision();
+
+    public String getStep() {
+        return GwtClientUtils.getStep(getPrecision());
+    }
 
     @Override
     public int getDefaultCharWidth() {
@@ -67,13 +71,11 @@ public abstract class GIntegralType extends GFormatType {
         return NumberFormat.getDecimalFormat();
     }
 
+    private final static GInputType inputType = new GInputType("number");
     @Override
-    public InputElement createTextInputElement() {
-        InputElement element = super.createTextInputElement();
-        if(MainFrame.mobile) {
-            element.setAttribute("type", "number");
-            element.setAttribute("step", "0.01");
-        }
-        return element;
+    public GInputType getValueInputType() {
+        if(MainFrame.mobile)
+            return inputType;
+        return super.getValueInputType();
     }
 }

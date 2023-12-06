@@ -116,7 +116,7 @@ public class TableContainer extends ResizableSimplePanel implements HasMaxPrefer
     private boolean propagateFocusToGrid(Element target, Event focusEvent) {
         if (tableComponent instanceof DataGrid) { // we have to propagate focus to grid, since GWT proceeds the FOCUS event for the first widget that have eventListener (i.e initSinkEvents is called)
             DataGrid<?> grid = (DataGrid<?>) tableComponent;
-            grid.onFocus();
+            grid.onFocus(target, focusEvent);
             grid.onGridBrowserEvent(target, focusEvent);
             return true;
         }
@@ -167,7 +167,7 @@ public class TableContainer extends ResizableSimplePanel implements HasMaxPrefer
         // should be before isFakeBlur check to propagate the event to the cell editor
         if(tableComponent instanceof DataGrid) {
             DataGrid<?> grid = (DataGrid<?>) tableComponent;
-            grid.onBlur(event);
+            grid.onBlur(target, event);
             grid.onGridBrowserEvent(target, event);
         }
 

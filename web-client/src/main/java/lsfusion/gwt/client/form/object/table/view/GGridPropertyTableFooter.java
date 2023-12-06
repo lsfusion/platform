@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.object.table.view;
 
 import com.google.gwt.dom.client.TableCellElement;
 import lsfusion.gwt.client.base.view.grid.Header;
+import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
@@ -14,18 +15,26 @@ import static lsfusion.gwt.client.base.GwtSharedUtils.nullEquals;
 
 public class GGridPropertyTableFooter extends Header<String> implements RenderContext, UpdateContext {
 
-    private GGridPropertyTable table;
-    protected GPropertyDraw property;
+    private final GGridPropertyTable table;
+    protected final GPropertyDraw property;
 
     protected PValue prevValue;
     protected PValue value;
-    private boolean sticky;
+    private final boolean sticky;
 
-    public GGridPropertyTableFooter(GGridPropertyTable table, GPropertyDraw property, PValue value, String tooltip, boolean sticky) {
+    private final GFormController form;
+
+    public GGridPropertyTableFooter(GGridPropertyTable table, GPropertyDraw property, PValue value, String tooltip, boolean sticky, GFormController form) {
         this.table = table;
         this.property = property;
         this.value = value;
         this.sticky = sticky;
+        this.form = form;
+    }
+
+    @Override
+    public GFormController getForm() {
+        return form;
     }
 
     public void setValue(PValue value) {
@@ -74,5 +83,10 @@ public class GGridPropertyTableFooter extends Header<String> implements RenderCo
     @Override
     public RendererType getRendererType() {
         return RendererType.FOOTER;
+    }
+
+    @Override
+    public boolean isInputRemoveAllPMB() {
+        return true;
     }
 }

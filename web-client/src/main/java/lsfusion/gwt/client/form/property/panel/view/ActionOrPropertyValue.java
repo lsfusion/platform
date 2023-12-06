@@ -17,7 +17,7 @@ import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
-import lsfusion.gwt.client.form.property.cell.classes.view.SimpleTextBasedCellRenderer;
+import lsfusion.gwt.client.form.property.cell.classes.view.InputBasedCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
@@ -75,6 +75,11 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
     @Override
     public boolean isTabFocusable() {
         return isFocusable();
+    }
+
+    @Override
+    public boolean isNavigateInput() {
+        return true;
     }
 
     @Override
@@ -174,7 +179,7 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
         GSize valueHeight = property.getValueHeight(font, false, globalCaptionIsDrawn, rendererType);
 
         Element renderElement = getRenderElement();
-        Element sizeElement = SimpleTextBasedCellRenderer.getSizeElement(renderElement);
+        Element sizeElement = InputBasedCellRenderer.getSizeElement(renderElement);
         sizeElement.addClassName("prop-size-value");
         if(!property.isShrinkOverflowVisible())
             sizeElement.addClassName("prop-value-shrink");
@@ -318,6 +323,11 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
     @Override
     public void colorThemeChanged() {
         update();
+    }
+
+    @Override
+    public GFormController getForm() {
+        return form;
     }
 
     protected void update() {

@@ -5,10 +5,13 @@ import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.form.property.cell.classes.view.InputBasedCellRenderer;
+import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
+import lsfusion.gwt.client.form.property.cell.controller.KeepCellEditor;
 import lsfusion.gwt.client.view.MainFrame;
 
-public class LogicalCellEditor extends TypeInputBasedCellEditor {
+public class LogicalCellEditor extends ARequestValueCellEditor implements KeepCellEditor {
 
     private boolean threeState;
 
@@ -27,10 +30,24 @@ public class LogicalCellEditor extends TypeInputBasedCellEditor {
         // pointer-events:none, but in that case mouse events won't work without a wrapper
         // commit changes after change in the control is done (CHANGE event) that
         if(!( // it's important to delay only that events that will lead to the CHANGE event (otherwise there will be no CHANGE event to wait)
-            TypeInputBasedCellRenderer.getInputElement(parent) == handler.event.getEventTarget().cast() &&
+            InputBasedCellRenderer.getInputEventTarget(parent, handler.event) != null &&
             (GMouseStroke.isChangeEvent(handler.event)
-            || GKeyStroke.isLogicalInputChangeEvent(handler.event))))
+            || GKeyStroke.isLogicalInputChangeEvent(handler.event)))) {
+            assert InputBasedCellRenderer.getInputElementType(parent).isLogical();
             commit(parent);
+        }
+    }
+
+    @Override
+    public void onBrowserEvent(Element parent, EventHandler handler) {
+        if(GKeyStroke.isChangeEvent(handler.event)) {
+            commit(parent);
+            handler.consume();
+        }
+    }
+
+    private void commit(Element parent) {
+        commit(parent, CommitReason.FORCED);
     }
 
     private PValue value;

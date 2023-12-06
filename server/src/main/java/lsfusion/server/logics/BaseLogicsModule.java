@@ -32,6 +32,7 @@ import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
+import lsfusion.server.logics.action.session.LocalNestedType;
 import lsfusion.server.logics.action.session.changed.IncrementType;
 import lsfusion.server.logics.classes.StaticClass;
 import lsfusion.server.logics.classes.ValueClass;
@@ -562,7 +563,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
         addedObject = findProperty("addedObject[]");
         beforeCanceled = findProperty("beforeCanceled[]");
-        requestCanceled = findProperty("requestCanceled[]");
+//        requestCanceled = findProperty("requestCanceled[]");
         requestPushed = findProperty("requestPushed[]");
         isActiveForm = findProperty("isActiveForm[]");
         formPageCount = findProperty("formPageCount[]");
@@ -631,6 +632,10 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         makePropertyPublic(objectClass, "objectClass", Collections.nCopies(1, null));
         random = addRMProp(LocalizedString.create("Random"));
         makePropertyPublic(random, "random", Collections.emptyList());
+        SessionDataProperty requestCanceledProp = new SessionDataProperty(LocalizedString.NONAME, LogicalClass.instance);
+        requestCanceledProp.nestedType = LocalNestedType.ALL;
+        requestCanceled = addProperty(null, new LP<>(requestCanceledProp));
+        makePropertyPublic(requestCanceled, "requestCanceled", Collections.emptyList());
     }
 
     private void initNativeGroups() {

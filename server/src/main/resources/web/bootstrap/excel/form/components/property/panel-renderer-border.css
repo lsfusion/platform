@@ -11,6 +11,10 @@
 .cell-with-background.prop-input-w-toolbar .background-inherit {
     background-color: var(--bs-table-bg);
 }
+/* background won't work for the input checkbox so we outline it with that color */
+input.cell-with-background[type=checkbox] {
+    outline: var(--bs-table-bg) solid 5px;
+}
 
 .form-control,
 .form-control .background-inherit,

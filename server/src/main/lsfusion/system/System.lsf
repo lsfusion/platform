@@ -320,7 +320,8 @@ loadFont '{system.load.font}' (path)   {
 }
 
 beforeCanceled() = DATA LOCAL NESTED BOOLEAN ();
-requestCanceled() = DATA LOCAL NESTED BOOLEAN ();
+//requestCanceled() = DATA LOCAL NESTED BOOLEAN ();
+requestCanceled() = NATIVE BOOLEAN ();
 requestPushed() = DATA LOCAL NESTED BOOLEAN ();
 
 requestedObject = DATA LOCAL NESTED Object ();
