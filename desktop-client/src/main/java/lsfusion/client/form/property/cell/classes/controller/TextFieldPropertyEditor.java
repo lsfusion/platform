@@ -81,7 +81,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
         ClientInputList inputList = asyncChange != null ? asyncChange.getCurrentInputList() : null;
         this.hasList = inputList != null && !disableSuggest() && !property.echoSymbols;
         this.completionType = inputList != null ? inputList.completionType : CompletionType.NON_STRICT;
-        this.actions = inputList != null ? inputList.actions : null;
+        this.actions = asyncChange != null ? asyncChange.getCurrentInputListActions() : null;
         this.compare = inputList != null ? inputList.compare : null;
 
         if (hasList) {

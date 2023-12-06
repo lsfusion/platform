@@ -139,6 +139,11 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return asyncExec instanceof GAsyncInput ? ((GAsyncInput) asyncExec).inputList : null;
     }
 
+    public GInputListAction[] getInputListActions() {
+        GAsyncEventExec asyncExec = getAsyncEventExec(ServerResponse.CHANGE);
+        return asyncExec instanceof GAsyncInput ? ((GAsyncInput) asyncExec).inputListActions : null;
+    }
+
     public GGroupObjectValue filterColumnKeys(GGroupObjectValue fullCurrentKey) {
         return fullCurrentKey.filter(columnGroupObjects != null ? columnGroupObjects : Collections.emptyList());
     }
@@ -219,12 +224,12 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     private QuickAccessAction[] calculateQuickAccessActions(boolean isSelected, boolean isFocused) {
-        GInputList inputList = getInputList();
+        GInputListAction[] inputListActions = getInputListActions();
 
         List<QuickAccessAction> actions = new ArrayList<>();
-        if(inputList != null) {
-            for (int i = 0; i < inputList.actions.length; i++) {
-                List<GQuickAccess> quickAccessList = inputList.actions[i].quickAccessList;
+        if(inputListActions != null) {
+            for (int i = 0; i < inputListActions.length; i++) {
+                List<GQuickAccess> quickAccessList = inputListActions[i].quickAccessList;
 
                 boolean enable = false;
                 boolean hover = true;
@@ -254,7 +259,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
                     }
                 }
 
-                GInputListAction action = inputList.actions[i];
+                GInputListAction action = inputListActions[i];
                 if (enable) {
                     actions.add(new QuickAccessAction(action.action, action.keyStroke, action.index, hover));
                 }
@@ -477,11 +482,11 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     public Integer getInputActionIndex(Event editEvent, boolean isEditing) {
-        GInputList inputList;
-        if (KEYDOWN.equals(editEvent.getType()) && (inputList = getInputList()) != null) {
+        GInputListAction[] inputListActions;
+        if (KEYDOWN.equals(editEvent.getType()) && (inputListActions = getInputListActions()) != null) {
             GKeyStroke keyStroke = null;
-            for (int i = 0; i < inputList.actions.length; i++) {
-                GInputListAction action = inputList.actions[i];
+            for (int i = 0; i < inputListActions.length; i++) {
+                GInputListAction action = inputListActions[i];
                 if (action.keyStroke != null) {
                     if (keyStroke == null)
                         keyStroke = getKeyStroke(editEvent);
@@ -495,9 +500,9 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     public Integer getDialogInputActionIndex() {
-        GInputList inputList = getInputList();
-        if (inputList != null) {
-            return getDialogInputActionIndex(inputList.actions);
+        GInputListAction[] inputListActions = getInputListActions();
+        if (inputListActions != null) {
+            return getDialogInputActionIndex(inputListActions);
         }
         return null;
     }

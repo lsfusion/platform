@@ -33,7 +33,8 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     private final Consumer<CancelReason> onCancel;
     
     private GInputList inputList;
-    
+    private GInputListAction[] inputListActions;
+
     public boolean enterPressed;
 
     public GDataFilterPropertyValue(GPropertyFilter condition, GFormController form, Consumer<PValue> afterCommit, Consumer<CancelReason> onCancel) {
@@ -124,6 +125,7 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
                 false,
                 null,
                 inputList,
+                inputListActions,
                 (result, commitReason) -> setValue(getValue(result)),
                 (result, commitReason) -> acceptCommit(getValue(result), commitReason.equals(CommitReason.ENTERPRESSED)),
                 onCancel,
@@ -170,10 +172,10 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     }
 
     public void changeInputList(GCompare compare) {
-        inputList = new GInputList(new GInputListAction[]{new GInputListAction(StaticImage.RESET, AppStaticImage.INPUT_RESET, null, null, null, null, 0)},
-                compare == GCompare.EQUALS || compare == GCompare.NOT_EQUALS ? GCompletionType.SEMI_STRICT :
+        inputList = new GInputList(compare == GCompare.EQUALS || compare == GCompare.NOT_EQUALS ? GCompletionType.SEMI_STRICT :
                 GCompletionType.NON_STRICT,
                 compare);
+        inputListActions = new GInputListAction[]{new GInputListAction(StaticImage.RESET, AppStaticImage.INPUT_RESET, null, null, null, null, 0)};
     }
 
     private static final CellRenderer.ToolbarAction dropAction = new CellRenderer.ToolbarAction() {

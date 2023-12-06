@@ -1095,8 +1095,9 @@ public class GFormController implements EditManager {
 
     public void asyncInput(EventHandler handler, EditContext editContext, String actionSID, GAsyncInput asyncChange, Consumer<Long> onExec) {
         GInputList inputList = asyncChange.inputList;
-        edit(asyncChange.changeType, handler, false, null, inputList, (value, onRequestExec) ->
-            executePropertyEventAction(handler, editContext, inputList, value, actionSID, false, requestIndex -> {
+        GInputListAction[] inputListActions = asyncChange.inputListActions;
+        edit(asyncChange.changeType, handler, false, null, inputList, inputListActions, (value, onRequestExec) ->
+            executePropertyEventAction(handler, editContext, inputListActions, value, actionSID, false, requestIndex -> {
                 onExec.accept(requestIndex); // setLoading
 
                 // doing that after to set the last value (onExec recursively can also set value)
@@ -1106,16 +1107,16 @@ public class GFormController implements EditManager {
 
     private final static GAsyncNoWaitExec asyncExec = new GAsyncNoWaitExec();
 
-    private void executePropertyEventAction(EventHandler handler, EditContext editContext, GInputList inputList, GUserInputResult value, String actionSID, boolean externalChange, Consumer<Long> onExec) {
-        GInputListAction contextAction = getContextAction(inputList, value);
+    private void executePropertyEventAction(EventHandler handler, EditContext editContext, GInputListAction[] inputListActions, GUserInputResult value, String actionSID, boolean externalChange, Consumer<Long> onExec) {
+        GInputListAction contextAction = getContextAction(inputListActions, value);
         executePropertyEventAction(contextAction != null ? contextAction.asyncExec : asyncExec,
                 handler, editContext, editContext, actionSID, value != null ? new GPushAsyncInput(value) : null, externalChange, onExec);
     }
 
-    private GInputListAction getContextAction(GInputList inputList, GUserInputResult value) {
+    private GInputListAction getContextAction(GInputListAction[] inputListActions, GUserInputResult value) {
         Integer contextActionIndex = value != null ? value.getContextAction() : null;
         if (contextActionIndex != null) {
-            for (GInputListAction action : inputList.actions) {
+            for (GInputListAction action : inputListActions) {
                 if (action.index == contextActionIndex)
                     return action;
             }
@@ -1225,7 +1226,7 @@ public class GFormController implements EditManager {
 
     // for custom renderer, paste, quick access actions (in toolbar and keypress)
     private void executePropertyEventAction(EventHandler handler, ExecuteEditContext editContext, GUserInputResult value, Consumer<Long> onExec) {
-        executePropertyEventAction(handler, editContext, editContext.getProperty().getInputList(), value, GEditBindingMap.changeOrGroupChange(), true, requestIndex -> {
+        executePropertyEventAction(handler, editContext, editContext.getProperty().getInputListActions(), value, GEditBindingMap.changeOrGroupChange(), true, requestIndex -> {
             onExec.accept(requestIndex);
 
             setLoading(editContext, requestIndex);
@@ -2152,16 +2153,16 @@ public class GFormController implements EditManager {
         return new GAsyncResult(values, needMoreSymbols, moreResults);
     }
 
-    public void edit(GType type, EventHandler handler, boolean hasOldValue, PValue setOldValue, GInputList inputList, BiConsumer<GUserInputResult, Consumer<Long>> afterCommit, Consumer<CancelReason> cancel, EditContext editContext, String actionSID, String customChangeFunction) {
+    public void edit(GType type, EventHandler handler, boolean hasOldValue, PValue setOldValue, GInputList inputList, GInputListAction[] inputListActions, BiConsumer<GUserInputResult, Consumer<Long>> afterCommit, Consumer<CancelReason> cancel, EditContext editContext, String actionSID, String customChangeFunction) {
         assert type != null;
         lsfusion.gwt.client.base.Result<ChangedRenderValue> changedRenderValue = new lsfusion.gwt.client.base.Result<>();
-        edit(type, handler, hasOldValue, setOldValue, inputList, // actually it's assumed that actionAsyncs is used only here, in all subsequent calls it should not be referenced
+        edit(type, handler, hasOldValue, setOldValue, inputList, inputListActions, // actually it's assumed that actionAsyncs is used only here, in all subsequent calls it should not be referenced
                 (inputResult, commitReason) -> changedRenderValue.set(setLocalValue(editContext, type, inputResult.getPValue(), null)),
                 (inputResult, commitReason) -> afterCommit.accept(inputResult, requestIndex -> setRemoteValue(editContext, changedRenderValue.result, requestIndex)),
                 cancel, editContext, actionSID, customChangeFunction);
     }
 
-    public void edit(GType type, EventHandler handler, boolean hasOldValue, PValue oldValue, GInputList inputList, BiConsumer<GUserInputResult, CommitReason> beforeCommit, BiConsumer<GUserInputResult, CommitReason> afterCommit,
+    public void edit(GType type, EventHandler handler, boolean hasOldValue, PValue oldValue, GInputList inputList, GInputListAction[] inputListActions, BiConsumer<GUserInputResult, CommitReason> beforeCommit, BiConsumer<GUserInputResult, CommitReason> afterCommit,
                      Consumer<CancelReason> cancel, EditContext editContext, String editAsyncValuesSID, String customChangeFunction) {
         GPropertyDraw property = editContext.getProperty();
 
@@ -2173,7 +2174,7 @@ public class GFormController implements EditManager {
             if(property.echoSymbols) // disabling dropdown if echo
                 inputList = null;
 
-            cellEditor = type.createCellEditor(this, property, inputList, editContext);
+            cellEditor = type.createCellEditor(this, property, inputList, inputListActions, editContext);
         }
 
         if (cellEditor != null) {

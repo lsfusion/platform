@@ -17,7 +17,6 @@ import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.view.CopyPasteUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.FlexPanel;
-import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.base.view.popup.PopupMenuItemValue;
 import lsfusion.gwt.client.classes.data.GFormatType;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -62,14 +61,14 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
     protected SuggestBox suggestBox = null;
 
     public SimpleTextBasedCellEditor(EditManager editManager, GPropertyDraw property) {
-        this(editManager, property, null);
+        this(editManager, property, null, null);
     }
     
-    public SimpleTextBasedCellEditor(EditManager editManager, GPropertyDraw property, GInputList inputList) {
-        this(editManager, property, inputList, null);
+    public SimpleTextBasedCellEditor(EditManager editManager, GPropertyDraw property, GInputList inputList, GInputListAction[] inputListActions) {
+        this(editManager, property, inputList, inputListActions, null);
     }
 
-    public SimpleTextBasedCellEditor(EditManager editManager, GPropertyDraw property, GInputList inputList, EditContext editContext) {
+    public SimpleTextBasedCellEditor(EditManager editManager, GPropertyDraw property, GInputList inputList, GInputListAction[] inputListActions, EditContext editContext) {
         super(editManager);
         this.property = property;
         this.editContext = editContext;
@@ -77,7 +76,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
         if(inputList != null) {
             this.hasList = true;
             this.completionType = inputList.completionType;
-            this.actions = inputList.actions;
+            this.actions = inputListActions;
             this.compare = inputList.compare;
         }
     }

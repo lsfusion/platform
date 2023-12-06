@@ -16,6 +16,7 @@ import lsfusion.gwt.client.action.*;
 import lsfusion.gwt.client.classes.GObjectClass;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.property.async.GInputList;
+import lsfusion.gwt.client.form.property.async.GInputListAction;
 import lsfusion.gwt.client.navigator.window.GContainerShowFormType;
 import lsfusion.gwt.client.navigator.window.GModalityShowFormType;
 import lsfusion.gwt.client.navigator.window.GShowFormType;
@@ -180,8 +181,9 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         ClientAsyncToGwtConverter asyncConverter = new ClientAsyncToGwtConverter(servlet, formSessionObject.navigatorID);
 
         GInputList inputList = asyncConverter.convertOrCast(ClientAsyncSerializer.deserializeInputList(action.inputList));
+        GInputListAction[] inputListActions = asyncConverter.convertOrCast(ClientAsyncSerializer.deserializeInputListActions(action.inputListActions));
 
-        return new GRequestUserInputAction(type, value, action.hasOldValue, action.customChangeFunction, inputList);
+        return new GRequestUserInputAction(type, value, action.hasOldValue, action.customChangeFunction, inputList, inputListActions);
     }
 
     private Object deserializeServerValue(byte[] valueBytes) throws IOException {

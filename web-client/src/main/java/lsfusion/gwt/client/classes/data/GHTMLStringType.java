@@ -4,6 +4,7 @@ import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.property.GExtInt;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.async.GInputList;
+import lsfusion.gwt.client.form.property.async.GInputListAction;
 import lsfusion.gwt.client.form.property.cell.classes.controller.HTMLStringCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.controller.RequestValueCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.view.HTMLTextCellRenderer;
@@ -35,7 +36,7 @@ public class GHTMLStringType extends GStringType {
 //    }
 //
     @Override
-    public RequestValueCellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, EditContext editContext) {
-        return new HTMLStringCellEditor(editManager, editProperty, inputList);
+    public RequestValueCellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, GInputListAction[] inputListActions, EditContext editContext) {
+        return new HTMLStringCellEditor(editManager, editProperty, inputList, inputListActions);
     }
 }

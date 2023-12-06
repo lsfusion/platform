@@ -5,12 +5,10 @@ import lsfusion.interop.form.property.Compare;
 
 public class ClientInputList {
 
-    public final ClientInputListAction[] actions;
     public final CompletionType completionType;
     public final Compare compare;
 
-    public ClientInputList(ClientInputListAction[] actions, CompletionType completionType, Compare compare) {
-        this.actions = actions;
+    public ClientInputList(CompletionType completionType, Compare compare) {
         this.completionType = completionType;
         this.compare = compare;
     }
