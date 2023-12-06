@@ -189,7 +189,9 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
                         if (actionResult != FlowResult.BREAK) {
                             result = actionResult;
                         }
-                        break RECURSIVE;
+                        if(actionResult != FlowResult.CONTINUE) {
+                            break RECURSIVE;
+                        }
                     }
                 }
             } finally {
@@ -344,7 +346,7 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
             }
         }
 
-        if (action.hasFlow(ChangeFlowType.BREAK, ChangeFlowType.RETURN, ChangeFlowType.APPLY, ChangeFlowType.CANCEL, ChangeFlowType.SYNC))
+        if (action.hasFlow(ChangeFlowType.BREAK, ChangeFlowType.CONTINUE, ChangeFlowType.RETURN, ChangeFlowType.APPLY, ChangeFlowType.CANCEL, ChangeFlowType.SYNC))
             return null;
 
         if(addObject != null) {
@@ -466,7 +468,7 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
 
     @Override
     public boolean hasFlow(ChangeFlowType type) {
-        if (type == ChangeFlowType.BREAK)
+        if (type == ChangeFlowType.BREAK || type == ChangeFlowType.RETURN)
             return false;
         if (addObject != null) {
             if (type.isChange())
