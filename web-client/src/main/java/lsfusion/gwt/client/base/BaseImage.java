@@ -65,35 +65,38 @@ public interface BaseImage extends Serializable {
     static void updateClasses(Widget widget, String classes, PropagateClasses propagateClasses) {
         updateClasses(widget, buildClassesChanges(widget.getElement(), classes, emptyPostfix), propagateClasses);
     }
-    static void updateClasses(Widget widget, NativeStringMap<Boolean> classChanges, PropagateClasses propagateClasses) {
+    static void updateClasses(Widget widget, NativeStringMap<Object> classChanges, PropagateClasses propagateClasses) {
         Widget parent = widget.getParent();
 
-        NativeStringMap<Boolean> propagateClassChanges = new NativeStringMap<>();
-        classChanges.foreachEntry((aclass, add) -> {
-            boolean propagated = false;
-            // in mobile forms window is added directly into RootLayoutPanel
-            if (parent instanceof FlexPanel && propagateClasses.is(widget, parent, aclass)) {
-                int prevAggrClasses = parent.getElement().getPropertyInt("PROPAGATE_CLASS_" + aclass);
-                int newAggrClasses = prevAggrClasses + (add ? 1 : -1);
-                parent.getElement().setPropertyInt("PROPAGATE_CLASS_" + aclass, newAggrClasses);
+        NativeStringMap<Object> propagateClassChanges = new NativeStringMap<>();
+        classChanges.foreachEntry((aclass, value) -> {
+            if(value instanceof Boolean) {
+                boolean propagated = false;
+                boolean add = (boolean) value;
+                // in mobile forms window is added directly into RootLayoutPanel
+                if (parent instanceof FlexPanel && propagateClasses.is(widget, parent, aclass)) {
+                    int prevAggrClasses = parent.getElement().getPropertyInt("PROPAGATE_CLASS_" + aclass);
+                    int newAggrClasses = prevAggrClasses + (add ? 1 : -1);
+                    parent.getElement().setPropertyInt("PROPAGATE_CLASS_" + aclass, newAggrClasses);
 
-                int childCount = ((FlexPanel) parent).getWidgetCount(); // parentElement.getChildCount
-                boolean prevNeedOnHover = prevAggrClasses == childCount;
-                boolean newNeedOnHover = newAggrClasses == childCount;
-                if (prevNeedOnHover != newNeedOnHover) { // changed status
-                    assert newNeedOnHover == add;
-                    propagated = true;
-                    for (int i = 0; i < childCount; i++) { // updating siblings
-                        Widget siblingWidget = ((FlexPanel) parent).getWidget(i); // parentElement.getChild()
-                        if (!widget.equals(siblingWidget))
-                            applyClassChange(siblingWidget.getElement(), aclass, !add);
+                    int childCount = ((FlexPanel) parent).getWidgetCount(); // parentElement.getChildCount
+                    boolean prevNeedOnHover = prevAggrClasses == childCount;
+                    boolean newNeedOnHover = newAggrClasses == childCount;
+                    if (prevNeedOnHover != newNeedOnHover) { // changed status
+                        assert newNeedOnHover == add;
+                        propagated = true;
+                        for (int i = 0; i < childCount; i++) { // updating siblings
+                            Widget siblingWidget = ((FlexPanel) parent).getWidget(i); // parentElement.getChild()
+                            if (!widget.equals(siblingWidget))
+                                applyClassChange(siblingWidget.getElement(), aclass, !add);
+                        }
                     }
                 }
-            }
-            if (propagated) {
-                propagateClassChanges.put(aclass, add);
-            } else {
-                applyClassChange(widget.getElement(), aclass, add);
+                if (propagated) {
+                    propagateClassChanges.put(aclass, add);
+                } else {
+                    applyClassChange(widget.getElement(), aclass, add);
+                }
             }
         });
 
@@ -107,39 +110,45 @@ public interface BaseImage extends Serializable {
     String emptyPostfix = "";
 
     //use postfix to avoid intersection valueElementClass with GComponent.elementClass
-    static NativeStringMap<Boolean> buildClassesChanges(Element element, String newClasses, String postfix) {
+    static NativeStringMap<Object> buildClassesChanges(Element element, String newClasses, String postfix) {
         String[] prevClasses = (String[]) element.getPropertyObject(GwtClientUtils.LSF_CLASSES_ATTRIBUTE + postfix);
         if(prevClasses == null)
             prevClasses = new String[0];
 
-        NativeStringMap<Boolean> changes = new NativeStringMap<>();
+        NativeStringMap<Object> changes = new NativeStringMap<>();
         for(String prevClass : prevClasses) {
-            changes.put(prevClass, false);
+            String[] keyValue = prevClass.split("=");
+            boolean isAttr = keyValue.length > 1 || prevClass.endsWith("=");
+            String key = isAttr ? keyValue[0] : prevClass;
+            changes.put(key, isAttr ? null : false);
         }
 
         String[] classes = newClasses != null ? newClasses.split(" ") : new String[0];
         for(String newClass : classes) {
-            if(changes.remove(newClass) == null)
-                changes.put(newClass, true);
+            String[] keyValue = newClass.split("=");
+            boolean isAttr = keyValue.length > 1 || newClass.endsWith("=");
+            String key = isAttr ? keyValue[0] : newClass;
+            if(changes.remove(key) == null)
+                changes.put(key, isAttr ? (keyValue.length > 1 ? keyValue[1] : "") : true);
         }
         element.setPropertyObject(GwtClientUtils.LSF_CLASSES_ATTRIBUTE + postfix, classes);
 
         return changes;
     }
 
-    static void applyClassChange(Element element, String aclass, Boolean add) {
+    static void applyClassChange(Element element, String aclass, Object value) {
         if (!GwtSharedUtils.isRedundantString(aclass)) {
-            String[] keyValue = aclass.split("=");
-            if(keyValue.length > 1 || aclass.endsWith("=")) {
-                if (add)
-                    element.setAttribute(keyValue[0], keyValue.length > 1 ? keyValue[1] : "");
-                else
-                    element.removeAttribute(keyValue[0]);
-            } else {
-                if (add)
+            if(value instanceof Boolean) { //class
+                if ((boolean) value)
                     element.addClassName(aclass);
                 else
                     element.removeClassName(aclass);
+
+            } else { //attr
+                if (value != null)
+                    element.setAttribute(aclass, value instanceof String ? (String) value : "");
+                else
+                    element.removeAttribute(aclass);
             }
         }
     }
@@ -148,8 +157,8 @@ public interface BaseImage extends Serializable {
         updateClasses(element, classes, emptyPostfix);
     }
     static void updateClasses(Element element, String classes, String postfix) {
-        buildClassesChanges(element, classes, postfix).foreachEntry((aclass, add) -> {
-            applyClassChange(element, aclass, add);
+        buildClassesChanges(element, classes, postfix).foreachEntry((aclass, value) -> {
+            applyClassChange(element, aclass, value);
         });
     }
 
