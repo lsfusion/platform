@@ -52,7 +52,7 @@ public class AsyncMapInput<T extends PropertyInterface> extends AsyncMapValue<T>
     }
 
     public AsyncMapInput<T> override(String action, AsyncMapEventExec<T> asyncExec) {
-        return new AsyncMapInput<>(type, list, actions.mapListValues(a -> a.replace(action, asyncExec)), strict, hasOldValue, oldValue, customEditorFunction);
+        return new AsyncMapInput<>(type, list, actions != null ? actions.mapListValues(a -> a.replace(action, asyncExec)) : null, strict, hasOldValue, oldValue, customEditorFunction);
     }
 
     private <P extends PropertyInterface> AsyncMapInput<P> override(InputListEntity<?, P> list, ImList<AsyncMapInputListAction<P>> actions, boolean hasOldValue, PropertyInterfaceImplement<P> oldValue) {
@@ -65,17 +65,17 @@ public class AsyncMapInput<T extends PropertyInterface> extends AsyncMapValue<T>
 
     @Override
     public <P extends PropertyInterface> AsyncMapFormExec<P> map(ImRevMap<T, P> mapping) {
-        return override(list != null ? list.map(mapping) : null, actions.mapListValues(action -> action.map(mapping)), hasOldValue, oldValue != null ? oldValue.map(mapping) : null);
+        return override(list != null ? list.map(mapping) : null, actions != null ? actions.mapListValues(action -> action.map(mapping)) : null, hasOldValue, oldValue != null ? oldValue.map(mapping) : null);
     }
 
     @Override
     public <P extends PropertyInterface> AsyncMapFormExec<P> mapInner(ImRevMap<T, P> mapping) {
-        return override(list != null ? list.mapInner(mapping) : null, actions.mapListValues(action -> action.mapInner(mapping)), hasOldValue, oldValue != null ? oldValue.map(mapping) : null);
+        return override(list != null ? list.mapInner(mapping) : null, actions != null ? actions.mapListValues(action -> action.mapInner(mapping)) : null, hasOldValue, oldValue != null ? oldValue.map(mapping) : null);
     }
 
     @Override
     public <P extends PropertyInterface> AsyncMapFormExec<P> mapJoin(ImMap<T, PropertyInterfaceImplement<P>> mapping) {
-        return override(list != null ? list.mapJoin(mapping) : null, actions.mapListValues(action -> action.mapJoin(mapping)), hasOldValue, oldValue instanceof PropertyInterface ? mapping.get((T)oldValue) : null);
+        return override(list != null ? list.mapJoin(mapping) : null, actions != null ? actions.mapListValues(action -> action.mapJoin(mapping)) : null, hasOldValue, oldValue instanceof PropertyInterface ? mapping.get((T)oldValue) : null);
     }
 
     @Override
@@ -85,11 +85,11 @@ public class AsyncMapInput<T extends PropertyInterface> extends AsyncMapValue<T>
                 ((PropertyMapImplement<?, T>) oldValue).mapEntityObjects(mapObjects).equalsMap(drawProperty.getAssertCellProperty((FormInstanceContext) context))))
             return null;
         return new AsyncInput(type, list != null ? new InputList(strict) : null,
-                filter(((FormInstanceContext) context).securityPolicy, securityProperty, actions.mapListValues(action -> action.map(mapObjects, (FormInstanceContext) context, securityProperty, drawProperty, toDraw)).toArray(new InputListAction[actions.size()])), customEditorFunction);
+                filter(((FormInstanceContext) context).securityPolicy, securityProperty, actions != null ? actions.mapListValues(action -> action.map(mapObjects, (FormInstanceContext) context, securityProperty, drawProperty, toDraw)).toArray(new InputListAction[actions.size()]) : null), customEditorFunction);
     }
 
     public static InputListAction[] filter(SecurityPolicy policy, ActionOrProperty securityProperty, InputListAction[] actions) {
-        if (policy != null) {
+        if (policy != null && actions != null) {
             for (int i = 0; i < actions.length; i++) {
                 if (actions[i].id.equals(AppImage.INPUT_NEW)) {
                     if (!policy.checkPropertyEditObjectsPermission(securityProperty)) {
