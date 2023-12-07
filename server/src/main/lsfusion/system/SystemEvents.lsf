@@ -113,8 +113,9 @@ designEnvNavigatorPinMode '{navigator.pin.mode}' = DATA TBOOLEAN (DesignEnv);
 serverNavigatorPinMode '{navigator.pin.mode}' = DATA TBOOLEAN ();
 navigatorPinMode '{navigator.pin.mode}' (DesignEnv d) = IF useClientNavigatorPinMode(d) THEN designEnvNavigatorPinMode(d) ELSE serverNavigatorPinMode();
 navigatorPinMode() = navigatorPinMode(currentDesignEnv());
-suppressOnFocusChange '{service.suppress.on.focus.change}' = DATA TBOOLEAN(DesignEnv);
-contentWordWrap '{service.content.word.wrap}' = DATA TBOOLEAN(DesignEnv);
+
+suppressOnFocusChange '{service.suppress.on.focus.change}' = DATA TBOOLEAN(CustomUser);
+contentWordWrap '{service.content.word.wrap}' = DATA TBOOLEAN(CustomUser);
 userFiltersManualApplyMode '{service.user.filters.manual.apply.mode}' = DATA TBOOLEAN (CustomUser);
 
 navigatorPinModeCaption = (IF navigatorPinMode()
@@ -143,10 +144,13 @@ needReloadText = '{system.events.design.need.reload}';
 
 FORM design '{system.events.design}'
     OBJECTS de = DesignEnv PANEL
-    PROPERTIES(de) captionTheme, captionSize SHOWIF useBootstrap(de), captionNavbar, suppressOnFocusChange, contentWordWrap, userFiltersManualApplyMode
+    PROPERTIES(de) captionTheme, captionSize SHOWIF useBootstrap(de), captionNavbar
 
     FILTERS de = currentDesignEnv()
     FILTERS IF storeNavigatorSettingsForComputer() THEN de IS Computer ELSE de IS CustomUser
+
+    OBJECTS cu = CustomUser PANEL
+    PROPERTIES(cu) suppressOnFocusChange, contentWordWrap, userFiltersManualApplyMode
     
     PROPERTIES() needReloadText HEADER NULL SHOWIF needReload()
 
@@ -159,11 +163,11 @@ DESIGN design {
     MOVE PROPERTY(captionTheme(de));
     MOVE PROPERTY(captionSize(de));
     MOVE PROPERTY(captionNavbar(de));
-    MOVE PROPERTY(suppressOnFocusChange(de)) {
+    MOVE PROPERTY(suppressOnFocusChange(cu)) {
         class = NULL; // Without "class = NULL", the suppressOnFocusChange property has the css-class "form-switch" because the heuristic mechanism is triggered by the "on" letters in the property name.
     };
-    MOVE PROPERTY(contentWordWrap(de));
-    MOVE PROPERTY(userFiltersManualApplyMode(de));
+    MOVE PROPERTY(contentWordWrap(cu));
+    MOVE PROPERTY(userFiltersManualApplyMode(cu));
     MOVE PROPERTY(needReloadText()) {
         class = 'alert alert-secondary';
         autoSize = TRUE;
