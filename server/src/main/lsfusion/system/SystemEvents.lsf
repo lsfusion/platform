@@ -159,7 +159,9 @@ DESIGN design {
     MOVE PROPERTY(captionTheme(de));
     MOVE PROPERTY(captionSize(de));
     MOVE PROPERTY(captionNavbar(de));
-    MOVE PROPERTY(suppressOnFocusChange(de));
+    MOVE PROPERTY(suppressOnFocusChange(de)) {
+        class = NULL; // Without "class = NULL", the suppressOnFocusChange property has the css-class "form-switch" because the heuristic mechanism is triggered by the "on" letters in the property name.
+    };
     MOVE PROPERTY(contentWordWrap(de));
     MOVE PROPERTY(userFiltersManualApplyMode(de));
     MOVE PROPERTY(needReloadText()) {

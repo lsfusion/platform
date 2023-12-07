@@ -433,7 +433,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             }
         }
 
-        return MainFrame.suppressOnFocusChange;
+        return !MainFrame.suppressOnFocusChange;
     }
 
     // eventually gets to PropertyDrawEntity.getEventAction (which is symmetrical to this)
