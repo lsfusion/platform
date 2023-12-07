@@ -719,7 +719,7 @@ protected Double getUserFlex(int i) {
         Element renderElement = getRenderElement(cell, parent);
 
         form.onPropertyBrowserEvent(new EventHandler(event), renderElement, parent != null, getTableDataFocusElement(),
-                handler -> selectionHandler.onCellBefore(handler, cell, rowChanged -> isChangeOnSingleClick(cell, event, (Boolean) rowChanged, column), () -> InputBasedCellRenderer.getFocusEventTarget(getRenderElement(cell, parent), event)),
+                handler -> selectionHandler.onCellBefore(handler, cell, rowChanged -> isChangeOnSingleClick(cell, event, (Boolean) rowChanged, column), () -> renderElement != null ? InputBasedCellRenderer.getFocusEventTarget(renderElement, event) : null),
                 handler -> column.onEditEvent(handler, cell, renderElement),
                 handler -> selectionHandler.onCellAfter(handler, cell),
                 handler -> CopyPasteUtils.putIntoClipboard(renderElement), handler -> CopyPasteUtils.getFromClipboard(handler, line -> pasteData(cell, renderElement, GwtClientUtils.getClipboardTable(line))),
