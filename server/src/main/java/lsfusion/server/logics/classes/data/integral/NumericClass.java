@@ -188,7 +188,8 @@ public class NumericClass extends IntegralClass<BigDecimal> {
 
     @Override
     public OverJDBField formatDBF(String fieldName) throws JDBFException {
-        return OverJDBField.createField(fieldName, 'N', Math.min(getPrecision(), 253), Math.min(getScale(), 253));
+        //values below zero need +1 for minus sign
+        return OverJDBField.createField(fieldName, 'N', Math.min(getPrecision() + 1, 20), Math.min(getScale(), 19));
     }
 
     @Override
