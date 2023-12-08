@@ -561,7 +561,7 @@ public class MainFrame implements EntryPoint {
 
         formsController.executeNotificationAction("SystemEvents.onClientStarted[]", 0, formsController.new ServerResponseCallback(false) {
             @Override
-            protected Runnable getOnRequestFinished() {
+            protected Runnable getOnRequestFinished(boolean failure) {
                 return () -> {
                     if (formsController.getFormsCount() == 0) {
                         openNavigatorMenu();

@@ -536,7 +536,7 @@ public class GFormController implements EditManager {
 
         executeFormEventAction(eventClose, new ServerResponseCallback() {
             @Override
-            protected Runnable getOnRequestFinished() {
+            protected Runnable getOnRequestFinished(boolean failure) {
                 return () -> {
                     actionDispatcher.editFormCloseReason = null;
                 };
@@ -1063,11 +1063,19 @@ public class GFormController implements EditManager {
             fullCurrentKeys[i] = getFullCurrentKey(property, fullKeys[i]);
         }
 
+        lsfusion.gwt.client.base.Result<Long> requestIndex = new lsfusion.gwt.client.base.Result<>();
+        
         ExecuteEventAction executeEventAction = new ExecuteEventAction(IDs, fullCurrentKeys, actionSID, externalChanges, pushAsyncResults);
         ServerResponseCallback serverResponseCallback = new ServerResponseCallback() {
             @Override
-            protected Runnable getOnRequestFinished() {
+            protected Runnable getOnRequestFinished(boolean failure) {
                 return () -> {
+                    if(failure) {
+                        FormContainer asyncForm = getAsyncFormController(requestIndex.result).removeAsyncForm();
+                        if (asyncForm != null)
+                            asyncForm.hide(CancelReason.OTHER);
+                    }
+
                     actionDispatcher.editContext = null;
                     actionDispatcher.editEventHandler = null;
                 };
@@ -1082,9 +1090,10 @@ public class GFormController implements EditManager {
         };
 
         if(sync)
-            return syncDispatch(executeEventAction, serverResponseCallback);
+            requestIndex.result = syncDispatch(executeEventAction, serverResponseCallback);
         else
-            return asyncDispatch(executeEventAction, serverResponseCallback);
+            requestIndex.result = asyncDispatch(executeEventAction, serverResponseCallback);
+        return requestIndex.result;
     }
 
     public long asyncResponseDispatch(final FormRequestCountingAction<ServerResponseResult> action) {

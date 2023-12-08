@@ -57,7 +57,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
         protected abstract GwtActionDispatcher getDispatcher();
 
-        protected Runnable getOnRequestFinished() {
+        protected Runnable getOnRequestFinished(boolean failure) {
             return null;
         }
 
@@ -68,12 +68,12 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                     if (action instanceof GFormAction)
                         ((GFormAction) action).forbidDuplicate = false;
             }
-            getDispatcher().dispatchServerResponse(result, onDispatchFinished, getOnRequestFinished());
+            getDispatcher().dispatchServerResponse(result, onDispatchFinished, getOnRequestFinished(false));
         }
 
         @Override
         public void onFailure(Throwable caught) {
-            Runnable onRequestFinished = getOnRequestFinished();
+            Runnable onRequestFinished = getOnRequestFinished(true);
             if(onRequestFinished != null)
                 onRequestFinished.run();
 

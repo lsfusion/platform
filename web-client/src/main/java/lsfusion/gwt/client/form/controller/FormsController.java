@@ -473,8 +473,9 @@ public abstract class FormsController {
                     BaseImage.initImageText(captionWidget, openForm.caption, openForm.appImage, false);
 
                 formContainer.setContentLoading();
-                formContainer.show(asyncFormController);
+
                 asyncFormController.putAsyncForm(formContainer);
+                formContainer.show(asyncFormController);
             };
             // this types because for them size is unknown, so there'll be blinking
             if(isAutoSized(editContext, windowType))
