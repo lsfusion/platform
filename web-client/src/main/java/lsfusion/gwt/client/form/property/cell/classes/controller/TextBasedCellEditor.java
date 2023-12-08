@@ -469,23 +469,25 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
                     }
                 });
 
-                for (GInputListAction action : actions) {
-                    SuggestPopupButton actionButton = new SuggestPopupButton(action.action) {
-                        @Override
-                        public ClickHandler getClickHandler() {
-                            return event -> validateAndCommit(parent, action.index, true, CommitReason.FORCED);
-                        }
-                    };
-                    buttonsPanel.add(actionButton);
-
-                    String tooltip = property.getQuickActionTooltipText(action.keyStroke);
-                    if (tooltip != null) {
-                        TooltipManager.initTooltip(actionButton.getElement(), new TooltipManager.TooltipHelper() {
+                if(actions != null) {
+                    for (GInputListAction action : actions) {
+                        SuggestPopupButton actionButton = new SuggestPopupButton(action.action) {
                             @Override
-                            public String getTooltip(String dynamicTooltip) {
-                                return nvl(dynamicTooltip, tooltip);
+                            public ClickHandler getClickHandler() {
+                                return event -> validateAndCommit(parent, action.index, true, CommitReason.FORCED);
                             }
-                        });
+                        };
+                        buttonsPanel.add(actionButton);
+
+                        String tooltip = property.getQuickActionTooltipText(action.keyStroke);
+                        if (tooltip != null) {
+                            TooltipManager.initTooltip(actionButton.getElement(), new TooltipManager.TooltipHelper() {
+                                @Override
+                                public String getTooltip(String dynamicTooltip) {
+                                    return nvl(dynamicTooltip, tooltip);
+                                }
+                            });
+                        }
                     }
                 }
 

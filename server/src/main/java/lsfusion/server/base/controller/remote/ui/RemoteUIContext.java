@@ -87,7 +87,7 @@ public abstract class RemoteUIContext extends AbstractContext {
             UserInputResult result = (UserInputResult) requestUserInteraction(new RequestUserInputClientAction(serializeType(dataClass), serializeObject(oldValue), hasOldValue,
                     customChangeFunction,
                     inputContext != null ? AsyncSerializer.serializeInputList(inputList, getConnectionContext()) : null,
-                    inputContext != null ? AsyncSerializer.serializeInputListActions(AsyncMapInput.filter(getSecurityPolicy(), securityProperty, actions), getConnectionContext()) : null));
+                    inputContext != null && actions != null ? AsyncSerializer.serializeInputListActions(AsyncMapInput.filter(getSecurityPolicy(), securityProperty, actions), getConnectionContext()) : null));
             if (result.isCanceled()) {
                 return null;
             }
