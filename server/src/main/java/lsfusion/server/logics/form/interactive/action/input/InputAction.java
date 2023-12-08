@@ -15,9 +15,11 @@ import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.form.interactive.action.async.InputList;
+import lsfusion.server.logics.form.interactive.action.async.InputListAction;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInput;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInputListAction;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
@@ -111,7 +113,7 @@ public class InputAction extends SystemExplicitAction {
         Object oldValue = hasOldValue ? context.getKeyObject(oldValueInterface) : null;
 
         InputListEntity<?, ClassPropertyInterface> fullContextList = getFullContextList();
-        InputResult userValue = context.inputUserData(getInputClass(fullContextList), oldValue, hasOldValue, fullContextList, customChangeFunction, getInputList(), null);
+        InputResult userValue = context.inputUserData(getInputClass(fullContextList), oldValue, hasOldValue, fullContextList, customChangeFunction, getInputList(), getInputListActions());
 
         Integer contextAction;
         if(userValue != null && (contextAction = userValue.contextAction) != null)
@@ -131,6 +133,12 @@ public class InputAction extends SystemExplicitAction {
     @IdentityInstanceLazy
     private InputList getInputList() {
         return new InputList(isStrict());
+    }
+
+    @IdentityInstanceLazy
+    private InputListAction[] getInputListActions() {
+        ImList<AsyncMapInputListAction<ClassPropertyInterface>> actions = getActions();
+        return actions.mapListValues(action -> action.map(new ConnectionContext(true))).toArray(new InputListAction[actions.size()]);
     }
 
     @Override
