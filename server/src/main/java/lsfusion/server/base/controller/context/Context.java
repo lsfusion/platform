@@ -16,6 +16,7 @@ import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.action.async.InputList;
+import lsfusion.server.logics.form.interactive.action.async.InputListAction;
 import lsfusion.server.logics.form.interactive.action.input.InputContext;
 import lsfusion.server.logics.form.interactive.action.input.InputResult;
 import lsfusion.server.logics.form.interactive.controller.remote.RemoteForm;
@@ -45,7 +46,7 @@ public interface Context {
 
     InputContext lockInputContext();
     void unlockInputContext();
-    InputResult inputUserData(ActionOrProperty securityProperty, DataClass dataClass, Object oldValue, boolean hasOldValue, InputContext inputContext, String customChangeFunction, InputList inputList);
+    InputResult inputUserData(ActionOrProperty securityProperty, DataClass dataClass, Object oldValue, boolean hasOldValue, InputContext inputContext, String customChangeFunction, InputList inputList, InputListAction[] actions);
     ObjectValue requestUserClass(CustomClass baseClass, CustomClass defaultValue, boolean concrete);
 
     void pushLogMessage();

@@ -111,7 +111,7 @@ public class InputAction extends SystemExplicitAction {
         Object oldValue = hasOldValue ? context.getKeyObject(oldValueInterface) : null;
 
         InputListEntity<?, ClassPropertyInterface> fullContextList = getFullContextList();
-        InputResult userValue = context.inputUserData(getInputClass(fullContextList), oldValue, hasOldValue, fullContextList, customChangeFunction, getInputList());
+        InputResult userValue = context.inputUserData(getInputClass(fullContextList), oldValue, hasOldValue, fullContextList, customChangeFunction, getInputList(), null);
 
         Integer contextAction;
         if(userValue != null && (contextAction = userValue.contextAction) != null)

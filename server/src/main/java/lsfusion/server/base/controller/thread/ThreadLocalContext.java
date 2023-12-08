@@ -32,6 +32,7 @@ import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.controller.manager.RestartManager;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.action.async.InputList;
+import lsfusion.server.logics.form.interactive.action.async.InputListAction;
 import lsfusion.server.logics.form.interactive.action.input.InputContext;
 import lsfusion.server.logics.form.interactive.action.input.InputResult;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
@@ -229,8 +230,8 @@ public class ThreadLocalContext {
     public static void unlockInputContext() {
         get().unlockInputContext();
     }
-    public static InputResult inputUserData(ActionOrProperty securityProperty, DataClass dataClass, Object oldValue, boolean hasOldValue, InputContext inputContext, String customChangeFunction, InputList inputList) {
-        return get().inputUserData(securityProperty, dataClass, oldValue, hasOldValue, inputContext, customChangeFunction, inputList);
+    public static InputResult inputUserData(ActionOrProperty securityProperty, DataClass dataClass, Object oldValue, boolean hasOldValue, InputContext inputContext, String customChangeFunction, InputList inputList, InputListAction[] actions) {
+        return get().inputUserData(securityProperty, dataClass, oldValue, hasOldValue, inputContext, customChangeFunction, inputList, actions);
     }
 
     public static ObjectValue requestUserClass(CustomClass baseClass, CustomClass defaultValue, boolean concrete) {

@@ -80,6 +80,7 @@ public abstract class RemoteUIContext extends AbstractContext {
 
     protected abstract ConnectionContext getConnectionContext();
 
+    @Override
     public InputResult inputUserData(ActionOrProperty securityProperty, DataClass dataClass, Object oldValue, boolean hasOldValue, InputContext inputContext, String customChangeFunction, InputList inputList, InputListAction[] actions) {
         this.inputContext = inputContext; // we don't have to lock here since thread-safety will be ok anyway
         try {

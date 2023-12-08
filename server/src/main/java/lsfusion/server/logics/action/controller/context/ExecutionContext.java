@@ -644,7 +644,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     public ObjectValue requestUserData(final DataClass dataClass, final Object oldValue) {
         try {
             return requestUser(dataClass, () -> {
-                InputResult inputResult = inputUserData(dataClass, oldValue, true, null, null, null);
+                InputResult inputResult = inputUserData(dataClass, oldValue, true, null, null, null, null);
                 return inputResult != null ? inputResult.value : null;
             });
         } catch (SQLException | SQLHandledException e) {
@@ -660,7 +660,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return null;
     }
 
-    public <T extends PropertyInterface> InputResult inputUserData(DataClass dataClass, Object oldValue, boolean hasOldValue, InputListEntity<T, P> list, String customChangeFunction, InputList inputList) {
+    public <T extends PropertyInterface> InputResult inputUserData(DataClass dataClass, Object oldValue, boolean hasOldValue, InputListEntity<T, P> list, String customChangeFunction, InputList inputList, InputListAction[] actions) {
         assertNotUserInteractionInTransaction();
 
         InputResult pushedInput = getPushedInput(dataClass);
@@ -670,7 +670,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         InputContext<T> inputContext = null;
         if(list != null)
             inputContext = new InputContext<>(list.map(getKeys()), list.newSession, getSession(), getModifier(), inputList.strict);
-        return ThreadLocalContext.inputUserData(getSecurityProperty(), dataClass, oldValue, hasOldValue, inputContext, customChangeFunction, inputList);
+        return ThreadLocalContext.inputUserData(getSecurityProperty(), dataClass, oldValue, hasOldValue, inputContext, customChangeFunction, inputList, actions);
     }
 
     @Deprecated
