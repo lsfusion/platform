@@ -70,7 +70,7 @@ public interface BaseImage extends Serializable {
 
         NativeStringMap<Object> propagateClassChanges = new NativeStringMap<>();
         classChanges.foreachEntry((aclass, value) -> {
-            if(value instanceof Boolean) {
+            if(value instanceof Boolean) { // need only classes
                 boolean propagated = false;
                 boolean add = (boolean) value;
                 // in mobile forms window is added directly into RootLayoutPanel
@@ -97,7 +97,8 @@ public interface BaseImage extends Serializable {
                 } else {
                     applyClassChange(widget.getElement(), aclass, add);
                 }
-            }
+            } else
+                applyClassChange(widget.getElement(), aclass, value);
         });
 
         if(!propagateClassChanges.isEmpty()) { // optimization
@@ -117,19 +118,15 @@ public interface BaseImage extends Serializable {
 
         NativeStringMap<Object> changes = new NativeStringMap<>();
         for(String prevClass : prevClasses) {
-            String[] keyValue = prevClass.split("=");
-            boolean isAttr = keyValue.length > 1 || prevClass.endsWith("=");
-            String key = isAttr ? keyValue[0] : prevClass;
-            changes.put(key, isAttr ? null : false);
+            String[] values = prevClass.split("=");
+            changes.put(values[0], values.length > 1 || prevClass.endsWith("=") ? null : false);
         }
 
         String[] classes = newClasses != null ? newClasses.split(" ") : new String[0];
         for(String newClass : classes) {
-            String[] keyValue = newClass.split("=");
-            boolean isAttr = keyValue.length > 1 || newClass.endsWith("=");
-            String key = isAttr ? keyValue[0] : newClass;
-            if(changes.remove(key) == null)
-                changes.put(key, isAttr ? (keyValue.length > 1 ? keyValue[1] : "") : true);
+            String[] values = newClass.split("=");
+            if(changes.remove(values[0]) == null)
+                changes.put(values[0], values.length > 1 ? values[1] : (newClass.endsWith("=") ? "" : true));
         }
         element.setPropertyObject(GwtClientUtils.LSF_CLASSES_ATTRIBUTE + postfix, classes);
 
@@ -146,7 +143,7 @@ public interface BaseImage extends Serializable {
 
             } else { //attr
                 if (value != null)
-                    element.setAttribute(aclass, value instanceof String ? (String) value : "");
+                    element.setAttribute(aclass, (String) value);
                 else
                     element.removeAttribute(aclass);
             }

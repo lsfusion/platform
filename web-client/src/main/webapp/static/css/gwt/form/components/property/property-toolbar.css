@@ -58,7 +58,8 @@
     justify-content: start;
 }
 
-.property-toolbar-item {
+.property-toolbar-item,
+.property-toolbar-item.btn {
     /*overflow: hidden;*/
 
     /*we can't use border transparent, because it doesn't respect box-shadow, which is used for the background color in the table rows / cells*/
