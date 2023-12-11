@@ -34,7 +34,6 @@ import lsfusion.server.logics.navigator.controller.env.*;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.physics.admin.Settings;
-import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
 import lsfusion.server.physics.admin.log.LogInfo;
 import lsfusion.server.physics.admin.log.ServerLoggers;
@@ -421,7 +420,9 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
             ExternalHTTPAction.writePropertyValues(session, env, businessLogics.LM.headers, request.headerNames, request.headerValues);
         }
         if (action.uses(businessLogics.LM.cookies.property)) {
-            ExternalHTTPAction.writePropertyValues(session, env, businessLogics.LM.cookies, request.cookieNames, request.cookieValues);
+            String[] cookieNames = request.cookieNames;
+            String[] cookieValues = request.cookieValues;
+            ExternalHTTPAction.writePropertyValues(session, env, businessLogics.LM.cookies, cookieNames == null ? new String[0] : cookieNames, cookieValues == null ? new String[0] : cookieValues);
         }
         if (action.uses(businessLogics.LM.query.property)) {
             businessLogics.LM.query.change(request.query, session);
