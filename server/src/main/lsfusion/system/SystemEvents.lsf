@@ -94,7 +94,7 @@ verticalNavbar = navbar(currentDesignEnv()) == Navbar.vertical;
 colorThemeCaption = (CASE
     WHEN currentColorTheme() == ColorTheme.light THEN '{system.events.light.mode}'
     WHEN currentColorTheme() == ColorTheme.dark THEN '{system.events.dark.mode}'
-    ELSE '{system.events.light.auto}') IF NOT noSystemToolbarCaptions();
+    ELSE '{system.events.auto.mode}') IF NOT noSystemToolbarCaptions();
 colorThemeImage = CASE 
     WHEN currentColorTheme() == ColorTheme.light THEN 'lightMode.png' 
     WHEN currentColorTheme() == ColorTheme.dark THEN 'darkMode.png' 
