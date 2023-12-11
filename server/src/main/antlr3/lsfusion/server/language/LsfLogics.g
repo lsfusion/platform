@@ -2289,13 +2289,15 @@ jsonPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [L
 	List<TypedParameter> newContext = new ArrayList<>(context);
     List<LPWithParams> orderProperties = new ArrayList<>();
     List<Boolean> orderDirections = new ArrayList<>();
+    boolean returnString = false;
 }
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedJSONProperty(context, $plist.aliases, $plist.literals, $plist.properties, $plist.propUsages, $whereExpr.property, orderProperties, orderDirections);
+		$property = self.addScriptedJSONProperty(context, $plist.aliases, $plist.literals, $plist.properties, $plist.propUsages,
+		 $whereExpr.property, orderProperties, orderDirections, returnString);
 	}
 }
-	:	'JSON'
+	:	'JSON' ('STRING' { returnString = true; })?
 		'FROM' plist=nonEmptyAliasedPropertyExpressionList[newContext, true]
 		('WHERE' whereExpr=propertyExpression[newContext, true])?
 		('ORDER' orderedProp=propertyExpressionWithOrder[newContext, true] { orderProperties.add($orderedProp.property); orderDirections.add($orderedProp.order); }
@@ -5637,7 +5639,7 @@ stringLiteral returns [String val]
 	;
 
 primitiveType returns [String val]
-	:	p=PRIMITIVE_TYPE | JSON_TYPE | HTML_TYPE { $val = $p.text; }
+	:	p=PRIMITIVE_TYPE | JSON_TYPE | STRING_TYPE | HTML_TYPE { $val = $p.text; }
 	;
 
 // there are some rules where ID is not desirable (see usages), where there is an ID
@@ -5792,10 +5794,11 @@ PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'TBOOLEAN' | 'DATE
 				|   'WORDLINK' | 'IMAGELINK' | 'PDFLINK' | 'DBFLINK'
 				|   'RAWLINK' | 'LINK' | 'EXCELLINK' | 'TEXTLINK' | 'CSVLINK' | 'HTMLLINK' | 'JSONLINK' | 'XMLLINK' | 'TABLELINK'
 				|   ('BPSTRING' ('[' DIGITS ']')?) | ('BPISTRING' ('[' DIGITS ']')?)
-				|	('STRING' ('[' DIGITS ']')?) | ('ISTRING' ('[' DIGITS ']')?) | 'NUMERIC' ('[' DIGITS ',' DIGITS ']')? | 'COLOR'
+				|	('STRING' '[' DIGITS ']') | ('ISTRING' ('[' DIGITS ']')?) | 'NUMERIC' ('[' DIGITS ',' DIGITS ']')? | 'COLOR'
 				|   ('INTERVAL' ('[' INTERVAL_TYPE ']'))
 				|   'TSVECTOR' | 'TSQUERY';
 JSON_TYPE       :   'JSON';
+STRING_TYPE     :   'STRING';
 HTML_TYPE       :   'HTML';
 LOGICAL_LITERAL :	'TRUE' | 'FALSE';
 T_LOGICAL_LITERAL:	'TTRUE' | 'TFALSE';

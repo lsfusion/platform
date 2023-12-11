@@ -3995,7 +3995,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         CFEWithParams<O> contextEntities = getContextFilterEntities(params.size(), contextObjects, ListFact.fromJavaList(contextFilters));
 
         LP property = addJSONFormProp(null, LocalizedString.NONAME, mapped.form, mappedObjects, mNulls.immutableList(),
-                contextEntities.orderInterfaces, contextEntities.filters);
+                contextEntities.orderInterfaces, contextEntities.filters, false);
 
         for (int usedParam : contextEntities.usedParams) {
             mapping.add(new LPWithParams(usedParam));
@@ -4264,7 +4264,8 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LPWithParams addScriptedJSONProperty(List<TypedParameter> oldContext, final List<String> ids, List<Boolean> literals,
                                                 List<LPWithParams> exprs, List<LPTrivialLA> propUsages, LPWithParams whereProperty,
-                                                List<LPWithParams> orderProperties, List<Boolean> orderDirections) throws ScriptingErrorLog.SemanticErrorException {
+                                                List<LPWithParams> orderProperties, List<Boolean> orderDirections, boolean returnString)
+            throws ScriptingErrorLog.SemanticErrorException {
 
         List<LPWithParams> exExprs = new ArrayList<>(exprs);
         MList<IntegrationPropUsage> mExPropUsages = ListFact.mList();
@@ -4312,7 +4313,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         LP result = null;
         try {
             result = addJSONProp(LocalizedString.NONAME, resultInterfaces.size(), exPropUsages, orders,
-                    whereProperty != null, resultParams.toArray());
+                    whereProperty != null, returnString, resultParams.toArray());
         } catch (FormEntity.AlreadyDefined alreadyDefined) {
             throwAlreadyDefinePropertyDraw(alreadyDefined);
         }

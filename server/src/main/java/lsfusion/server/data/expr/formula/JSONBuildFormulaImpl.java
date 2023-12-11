@@ -10,9 +10,11 @@ import static lsfusion.base.BaseUtils.nullHash;
 public class JSONBuildFormulaImpl extends AbstractFormulaImpl implements FormulaUnionImpl {
 
     private final ImList<String> fieldNames;
+    private final boolean returnString;
 
-    public JSONBuildFormulaImpl(ImList<String> fieldNames) {
+    public JSONBuildFormulaImpl(ImList<String> fieldNames, boolean returnString) {
         this.fieldNames = fieldNames;
+        this.returnString = returnString;
     }
 
     @Override
@@ -32,18 +34,21 @@ public class JSONBuildFormulaImpl extends AbstractFormulaImpl implements Formula
 
     @Override
     public String getSource(ExprSource source) {
-        return "notEmpty(jsonb_strip_nulls(jsonb_build_object(" + fieldNames.toString((i, value) -> {
+        String fields = fieldNames.toString((i, value) -> {
             String valueSource = source.getSource(i);
             Type type = source.getType(i);
             if(type != null)
                 valueSource = type.formatJSONSource(valueSource, source.getSyntax());
             return "'" + value + "'," + valueSource;
-        }, ",") + ")))";
+        }, ",");
+
+        return returnString ? "text(notEmpty(json_strip_nulls( json_build_object(" + fields + "))))" :
+                "notEmpty(jsonb_strip_nulls( jsonb_build_object(" + fields + ")))";
     }
 
     @Override
     public int hashCode() {
-        return fieldNames.hashCode();
+        return fieldNames.hashCode() + (returnString ? 1 : 0);
     }
 
     @Override

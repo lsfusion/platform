@@ -708,7 +708,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     public LP addFinalJSONFormProp(LocalizedString caption, IntegrationForm integrationForm) {
-        LP jsonFormProp = addJSONFormProp(caption, integrationForm);
+        LP jsonFormProp = addJSONFormProp(caption, integrationForm, false);
 //        jsonFormProp.property.finalizeInit();
         ((LazyProperty)jsonFormProp.property).finalizeLazyInit();
         return jsonFormProp;

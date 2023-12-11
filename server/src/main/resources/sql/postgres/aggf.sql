@@ -198,6 +198,11 @@ $$
 SELECT CASE WHEN $1 = jsonb_build_object() THEN NULL ELSE $1 END;
 $$ LANGUAGE 'sql' IMMUTABLE;
 
+CREATE OR REPLACE FUNCTION notEmpty(json) RETURNS json AS
+$$
+SELECT CASE WHEN $1::text = json_build_object()::text THEN NULL ELSE $1 END;
+$$ LANGUAGE 'sql' IMMUTABLE;
+
 CREATE OR REPLACE FUNCTION first_agg ( anyelement, anyelement )
 RETURNS anyelement LANGUAGE sql IMMUTABLE AS $$
         SELECT $1;

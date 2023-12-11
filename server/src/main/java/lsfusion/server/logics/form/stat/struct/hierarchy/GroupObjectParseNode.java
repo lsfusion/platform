@@ -109,7 +109,7 @@ public class GroupObjectParseNode extends GroupParseNode implements ChildParseNo
     }
 
     @Override
-    public <X extends PropertyInterface, P extends PropertyInterface> PropertyMapImplement<?, X> getJSONProperty(FormPropertyDataInterface<P> form, ImRevMap<P, X> mapValues, ImRevMap<ObjectEntity, X> mapObjects) {
+    public <X extends PropertyInterface, P extends PropertyInterface> PropertyMapImplement<?, X> getJSONProperty(FormPropertyDataInterface<P> form, ImRevMap<P, X> mapValues, ImRevMap<ObjectEntity, X> mapObjects, boolean returnString) {
         ImRevMap<ObjectEntity, PropertyInterface> mapGroupObjects = group.getObjects().mapRevValues(() -> new PropertyInterface());
 
         // we could generate new interfaces here, but not sure that it makes sense, so we'll use the existing ones
@@ -117,7 +117,7 @@ public class GroupObjectParseNode extends GroupParseNode implements ChildParseNo
 
         ImRevMap<ObjectEntity, PropertyInterface> mapInnerObjects = MapFact.addRevExcl(mapObjects, mapGroupObjects);
 
-        PropertyMapImplement<?, PropertyInterface> group = PropertyFact.createAnd(getChildrenJSONProperties(form, BaseUtils.immutableCast(mapValues), mapInnerObjects, true), form.getWhere(this.group, BaseUtils.immutableCast(mapValues), mapInnerObjects));
+        PropertyMapImplement<?, PropertyInterface> group = PropertyFact.createAnd(getChildrenJSONProperties(form, BaseUtils.immutableCast(mapValues), mapInnerObjects, true, returnString), form.getWhere(this.group, BaseUtils.immutableCast(mapValues), mapInnerObjects));
 
         ImOrderMap<PropertyInterfaceImplement<PropertyInterface>, Boolean> orders = form.getOrders(this.group, mapInnerObjects);
 
