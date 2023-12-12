@@ -9,7 +9,6 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.design.ContainerFactory;
-import lsfusion.interop.form.design.ContainerType;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.Version;
@@ -333,8 +332,6 @@ public class DefaultFormView extends FormView {
         if (propertyDraw.entity.isToolbar(entity)) {
             propertyContainer = getToolbarPropsContainer(drawEntity, version);
         } else {
-            // иерархическая структура контейнеров групп: каждый контейнер группы - это CONTAINERH,
-            // в который сначала добавляется COLUMNS для свойств этой группы, а затем - контейнеры подгрупп
             propertyContainer = getPropGroupContainer(drawEntity, propertyDraw.entity.getNFGroup(version), version);
         }
 

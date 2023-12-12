@@ -3,12 +3,17 @@
 .cell-with-background,
 .cell-with-background .background-inherit,
 /*hack to increase selectivity*/
+.cell-with-background.btn,
 .cell-with-background.form-control,
 .cell-with-background.form-control .background-inherit,
 .cell-with-background > .form-control,
 .cell-with-background > .form-control .background-inherit,
 .cell-with-background.prop-input-w-toolbar .background-inherit {
     background-color: var(--bs-table-bg);
+}
+/* background won't work for the input checkbox so we outline it with that color */
+input.cell-with-background[type=checkbox] {
+    outline: var(--bs-table-bg) solid 5px;
 }
 
 .form-control,

@@ -1,8 +1,6 @@
 package lsfusion.gwt.client.classes;
 
-import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.Style;
-import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.size.GSize;
@@ -15,6 +13,7 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.async.GInputList;
+import lsfusion.gwt.client.form.property.async.GInputListAction;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.controller.RequestValueCellEditor;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
@@ -34,7 +33,7 @@ public abstract class GType implements Serializable {
 
     public abstract CellRenderer createCellRenderer(GPropertyDraw property);
 
-    public RequestValueCellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, EditContext editContext) {
+    public RequestValueCellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, GInputListAction[] inputListActions, EditContext editContext) {
         return null;
     }
 
@@ -50,7 +49,7 @@ public abstract class GType implements Serializable {
     }
 
     private GSize getDefaultCharWidth(GFont font, GPropertyDraw propertyDraw) {
-        String widthString = getDefaultWidthString(propertyDraw);
+        String widthString = propertyDraw.charWidth != 0 ? replicateZero(propertyDraw.charWidth) : getDefaultWidthString(propertyDraw);
 
         return GFontMetrics.getStringWidth(font, widthString);
     }
@@ -76,8 +75,11 @@ public abstract class GType implements Serializable {
     }
 
     protected String getDefaultWidthString(GPropertyDraw propertyDraw) {
-        int defaultCharWidth = propertyDraw.charWidth != 0 ? propertyDraw.charWidth : getDefaultCharWidth();
-        return GwtSharedUtils.replicate('0', defaultCharWidth);
+        return replicateZero(getDefaultCharWidth());
+    }
+
+    private String replicateZero(int length) {
+        return GwtSharedUtils.replicate('0', length);
     }
 
     protected String getDefaultHeightString(GPropertyDraw propertyDraw) {
@@ -115,7 +117,8 @@ public abstract class GType implements Serializable {
         return "center";
     }
 
-    public InputElement createTextInputElement() {
-        return GwtClientUtils.createInputElement("text");
+    private final static GInputType inputType = new GInputType("text");
+    public GInputType getValueInputType() {
+        return inputType;
     }
 }

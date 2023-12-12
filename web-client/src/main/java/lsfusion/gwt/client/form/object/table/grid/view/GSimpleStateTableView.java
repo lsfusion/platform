@@ -32,6 +32,7 @@ import lsfusion.gwt.client.form.property.cell.classes.GDateDTO;
 import lsfusion.gwt.client.form.property.cell.classes.GDateTimeDTO;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
+import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.form.view.Column;
 import lsfusion.interop.action.ServerResponse;
 
@@ -342,7 +343,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                 }
             }
         };
-        String actionSID = GEditBindingMap.CHANGE;
+        String actionSID = GEditBindingMap.changeOrGroupChange();
         if(length == 1 && newValues[0] == PValue.UNDEFINED)
             form.executePropertyEventAction(properties[0], fullKeys[0], actionSID, (GPushAsyncInput) pushAsyncResults[0], externalChanges[0], onExec);
         else
@@ -843,7 +844,20 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             },
             isList: function () {
                 return true;
+            },
+            isRenderInputKeyEvent: function (event, multiLine) {
+                return false;
+            },
+            isEditInputKeyEvent: function (event, multiLine) {
+                return false;
+            },
+            previewEvent: function (element, event) {
+                return thisObj.@GSimpleStateTableView::previewEvent(*)(element, event);
             }
         };
     }-*/;
+
+    protected boolean previewEvent(Element element, Event event) {
+        return form.previewEvent(element, event);
+    }
 }

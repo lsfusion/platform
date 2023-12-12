@@ -279,6 +279,10 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             securityProperty = eventAction;
         }
 
+        if(GROUP_CHANGE.equals(eventActionSID) && !securityPolicy.checkPropertyGroupChangePermission(securityProperty)) {
+            return false;
+        }
+
         return securityPolicy.checkPropertyChangePermission(securityProperty, eventAction);
     }
 

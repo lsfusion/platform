@@ -791,8 +791,11 @@ getClientSettings(User user) + WHEN TRUE AND user IS User THEN {
     LOCAL webClientLoadedResources = RAWFILE(STRING);
     LOCAL webClientLoadedResourcesOrder = INTEGER(STRING);
     IF isWeb() THEN {
+        onWebClientLoad();
+
         LOCAL onWebLoad = INTEGER(STRING);
         onWebLoad (STRING s) <- onWebClientLoad(s);
+
         FOR onWebLoad(STRING s) ORDER onWebLoad(s) DO {
             readResource(s);
             webClientLoadedResources(resourcePath()) <- RAWFILE (resource());
@@ -812,6 +815,8 @@ getClientSettings(User user) + WHEN TRUE AND user IS User THEN {
         autoReconnectOnConnectionLost = (GROUP MAX autoReconnectOnConnectionLost(UserRole ur) IF has(user, ur)),
         showDetailedInfo = (GROUP MAX showDetailedInfo(UserRole ur) IF has(user, ur)),
         showDetailedInfoDelay = valueSetting('tooltipDelay'),
+        suppressOnFocusChange = IF suppressOnFocusChange(user) THEN (IF suppressOnFocusChange(user) == TTRUE THEN TRUE ELSE NULL) ELSE valueSettingBoolean('suppressOnFocusChange'),
+        contentWordWrap = IF contentWordWrap(user) THEN (IF contentWordWrap(user) == TTRUE THEN TRUE ELSE NULL) ELSE valueSettingBoolean('contentWordWrap'),
         devMode = inDevMode() OR (devMode(user)),
         projectLSFDir = projectLSFDir(),
         colorThemeString = IF (colorThemeStaticName()) THEN substrFrom(colorThemeStaticName(), strpos(colorThemeStaticName(), '.') + 1),

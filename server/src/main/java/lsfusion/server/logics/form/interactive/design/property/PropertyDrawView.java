@@ -17,6 +17,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeSerializer;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.classes.data.ColorClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
@@ -95,6 +96,7 @@ public class PropertyDrawView extends BaseComponentView {
     private Boolean valueFlex;
 
     public String tag;
+    public String inputType;
     public String valueElementClass;
     public String captionElementClass;
 
@@ -334,14 +336,14 @@ public class PropertyDrawView extends BaseComponentView {
     // we return to the client null, if we're sure that caption is always empty (so we don't need to draw label)
     public String getDrawCaption() {
         LocalizedString caption = getCaption();
-        if(hasNoCaption(caption, entity.getPropertyExtra(CAPTION)))
+        if(hasNoCaption(caption, entity.getPropertyExtra(CAPTION), elementClass))
             return null;
 
         return ThreadLocalContext.localize(caption);
     }
 
-    public static boolean hasNoCaption(LocalizedString caption, PropertyObjectEntity<?> propertyCaption) {
-        return ((caption == null || caption.isEmpty()) && propertyCaption == null) || (propertyCaption != null && propertyCaption.property.isExplicitNull()); // isEmpty can be better, but we just want to emulate NULL to be like NULL caption
+    public static boolean hasNoCaption(LocalizedString caption, PropertyObjectEntity<?> propertyCaption, String elementClass) {
+        return ((caption == null || (caption.isEmpty() && elementClass == null)) && propertyCaption == null) || (propertyCaption != null && propertyCaption.property.isExplicitNull()); // isEmpty can be better, but we just want to emulate NULL to be like NULL caption
     }
 
     public boolean isNotNull() {
@@ -525,6 +527,7 @@ public class PropertyDrawView extends BaseComponentView {
             TypeSerializer.serializeType(outStream, getAssertValueType(pool.context));
 
         pool.writeString(outStream, getTag(pool.context));
+        pool.writeString(outStream, getInputType(pool.context));
         pool.writeString(outStream, getValueElementClass(pool.context));
         pool.writeString(outStream, getCaptionElementClass(pool.context));
         pool.writeBoolean(outStream, hasToolbar(pool.context));
@@ -907,6 +910,19 @@ public class PropertyDrawView extends BaseComponentView {
         return valueAlignment;
     }
 
+    public String getInputType(FormInstanceContext context) {
+        if(inputType != null)
+            return inputType;
+
+        if(isProperty(context)) {
+            Type type = getAssertCellType(context);
+            if(type != null)
+                return type.getInputType(context);
+        }
+
+        return null;
+    }
+
     public String getTag(FormInstanceContext context) {
         if(tag != null)
             return tag.isEmpty() ? null : tag;
@@ -923,8 +939,7 @@ public class PropertyDrawView extends BaseComponentView {
             Type type = getAssertCellType(context);
             if(type instanceof LinkClass)
                 return "a";
-            if((type != null && changeType != null && type.getCompatible(changeType) != null &&
-                    type.useInputTag(!entity.isList(context), context.useBootstrap, hasBackground())))
+            if((type != null && type.useInputTag(!entity.isList(context), context.useBootstrap, changeType)))
                 return "input";
 
             if(isLink(context) && !hasFlow(context, ChangeFlowType.INPUT))
@@ -955,7 +970,7 @@ public class PropertyDrawView extends BaseComponentView {
             if(valueElementClass != null && valueElementClass.contains("btn-check"))
                 return "btn btn-outline-primary";
 
-            if (valueElementClass == null && isSimpleText(context))
+            if (valueElementClass == null && isSimplePanelText(context))
                 return "text-secondary";
         }
 
@@ -978,9 +993,24 @@ public class PropertyDrawView extends BaseComponentView {
             return valueElementClass;
 
         if (isProperty(context)) {
-            if(isSimpleText(context)) {
+            if(isTagInput(context)) {
+                Type type = getAssertCellType(context);
+                if(type instanceof LogicalClass)
+                    return "form-check-input";
+
+                String inputType = getInputType(context);
+                if(inputType.equals("range"))
+                    return "form-range";
+
+                if(!entity.isList(context)) {
+                    if(type instanceof ColorClass)
+                        return "form-control form-control-color";
+
+                    return "form-control";
+                }
+            } else if (isSimplePanelText(context)) {
                 // if we're in panel and there is no decoration, nor other styling, nor custom view, making label gray to distinguish it from the value
-                if(!context.useBootstrap)
+                if (!context.useBootstrap)
                     return "form-control";
 
                 if (hasFlow(context, ChangeFlowType.INPUT) || hasBackground())
@@ -1010,7 +1040,7 @@ public class PropertyDrawView extends BaseComponentView {
         return "form-text";
     }
 
-    private boolean isSimpleText(FormInstanceContext context) {
+    private boolean isSimplePanelText(FormInstanceContext context) {
         return getTag(context) == null && !entity.isList(context) && !isCustom(context);
     }
 

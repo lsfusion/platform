@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.property.cell.view;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
@@ -136,6 +137,10 @@ public class CustomCellRenderer extends CellRenderer {
         return getController(property, updateContext, element, updateContext.isPropertyReadOnly(), updateContext.isTabFocusable());
     }
 
+    protected static boolean previewEvent(Element element, Event event, UpdateContext updateContext) {
+        return updateContext.previewEvent(element, event);
+    }
+
     private static native JavaScriptObject getController(GPropertyDraw property, UpdateContext updateContext, Element element, Boolean isReadOnly, boolean isTabFocusable)/*-{
         return {
             change: function (value, renderValueSupplier) {
@@ -198,6 +203,15 @@ public class CustomCellRenderer extends CellRenderer {
             },
             createObject: function (object, objects) {
                 return $wnd.replaceField(object, "objects", objects);
+            },
+            isRenderInputKeyEvent: function (event, multiLine) {
+                return @lsfusion.gwt.client.form.property.cell.classes.view.InputBasedCellRenderer::isInputKeyEvent(*)(event, updateContext, multiLine);
+            },
+            isEditInputKeyEvent: function (event, multiLine) {
+                return @lsfusion.gwt.client.form.property.cell.classes.controller.InputBasedCellEditor::isInputKeyEvent(*)(event, multiLine);
+            },
+            previewEvent: function (element, event) {
+                return @CustomCellRenderer::previewEvent(*)(element, event, updateContext);
             }
         }
     }-*/;

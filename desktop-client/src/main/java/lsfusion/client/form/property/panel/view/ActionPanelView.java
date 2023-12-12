@@ -18,6 +18,7 @@ import lsfusion.client.form.design.view.widget.Widget;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.async.ClientInputList;
+import lsfusion.client.form.property.async.ClientInputListAction;
 import lsfusion.client.form.property.cell.classes.controller.DialogBasedPropertyEditor;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.cell.controller.EditPropertyHandler;
@@ -258,7 +259,7 @@ public class ActionPanelView extends ButtonWidget implements PanelView, EditProp
     }
 
     @Override
-    public boolean requestValue(ClientType valueType, Object oldValue, ClientInputList inputList, String actionSID) {
+    public boolean requestValue(ClientType valueType, Object oldValue, ClientInputList inputList, ClientInputListAction[] inputListActions, String actionSID) {
         PropertyEditor propertyEditor = valueType.getChangeEditorComponent(ActionPanelView.this, form, property, null, null);
 
         assert propertyEditor != null;

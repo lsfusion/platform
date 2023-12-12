@@ -11,6 +11,8 @@ onWebClientLoad ABSTRACT LIST ();
 
 onLoginLoad = ABSTRACT CASE INTEGER(STRING);
 onWebClientLoad = ABSTRACT CASE INTEGER(STRING);
+onWebClientLoadData = DATA LOCAL INTEGER (STRING);
+onWebClientLoad(STRING s) += WHEN onWebClientLoadData(s) THEN onWebClientLoadData(s);
 
 onStartedApply() {
     onStarted();
@@ -88,13 +90,13 @@ navbar '{system.events.navbar}' (DesignEnv d) = OVERRIDE designEnvNavbar(d), ser
 verticalNavbar = navbar(currentDesignEnv()) == Navbar.vertical;
 
 colorThemeCaption = (CASE
-    WHEN currentColorTheme() == ColorTheme.light THEN '{system.events.dark.mode}'
-    WHEN currentColorTheme() == ColorTheme.dark THEN '{system.events.auto.mode}'
-    ELSE '{system.events.light.mode}') IF NOT noSystemToolbarCaptions();
+    WHEN currentColorTheme() == ColorTheme.light THEN '{system.events.light.mode}'
+    WHEN currentColorTheme() == ColorTheme.dark THEN '{system.events.dark.mode}'
+    ELSE '{system.events.auto.mode}') IF NOT noSystemToolbarCaptions();
 colorThemeImage = CASE 
-    WHEN currentColorTheme() == ColorTheme.light THEN 'darkMode.png' 
-    WHEN currentColorTheme() == ColorTheme.dark THEN 'autoMode.png' 
-    ELSE 'lightMode.png';
+    WHEN currentColorTheme() == ColorTheme.light THEN 'lightMode.png' 
+    WHEN currentColorTheme() == ColorTheme.dark THEN 'darkMode.png' 
+    ELSE 'autoMode.png';
 toggleColorTheme() {
     designEnvColorTheme(currentDesignEnv()) <- CASE
         WHEN currentColorTheme() == ColorTheme.light THEN ColorTheme.dark
@@ -110,16 +112,20 @@ serverNavigatorPinMode '{navigator.pin.mode}' = DATA TBOOLEAN ();
 navigatorPinMode '{navigator.pin.mode}' (DesignEnv d) = IF useClientNavigatorPinMode(d) THEN designEnvNavigatorPinMode(d) ELSE serverNavigatorPinMode();
 navigatorPinMode() = navigatorPinMode(currentDesignEnv());
 
+suppressOnFocusChange '{service.suppress.on.focus.change}' = DATA TBOOLEAN(CustomUser);
+contentWordWrap '{service.content.word.wrap}' = DATA TBOOLEAN(CustomUser);
+userFiltersManualApplyMode '{service.user.filters.manual.apply.mode}' = DATA TBOOLEAN (CustomUser);
+
 navigatorPinModeCaption = (IF navigatorPinMode()
     THEN (IF navigatorPinMode() == TFALSE
-        THEN '{system.events.navigator.pin.all}'
-        ELSE '{system.events.navigator.pin.none}')
-    ELSE '{system.events.navigator.pin.navbar}') IF NOT noSystemToolbarCaptions();
+        THEN '{system.events.navigator.pin.navbar}'
+        ELSE '{system.events.navigator.pin.all}')
+    ELSE '{system.events.navigator.pin.none}') IF NOT noSystemToolbarCaptions();
 navigatorPinModeImage = IF navigatorPinMode() 
     THEN (IF navigatorPinMode() == TFALSE 
-        THEN iconIfAvailable('navigatorPinAll.png','fa-solid fa-thumbtack fa-rotate-90') 
-        ELSE iconIfAvailable('navigatorPinNone.png','fa-solid fa-thumbtack')) 
-    ELSE iconIfAvailable('navigatorPinNavbar.png','fa-solid fa-thumbtack fa-rotate-45');
+        THEN iconIfAvailable('navigatorPinNavbar.png','fa-solid fa-thumbtack fa-rotate-90') 
+        ELSE iconIfAvailable('navigatorPinAll.png','fa-solid fa-thumbtack')) 
+    ELSE iconIfAvailable('navigatorPinNone.png','fa-solid fa-thumbtack fa-rotate-45');
 toggleNavigatorPinMode () {
     designEnvNavigatorPinMode(currentDesignEnv()) <- IF navigatorPinMode() THEN (IF navigatorPinMode() == TFALSE THEN TTRUE ELSE NULL) ELSE TFALSE;
     useClientNavigatorPinMode(currentDesignEnv()) <- TRUE;
@@ -128,7 +134,8 @@ toggleNavigatorPinMode () {
 navigatorPinModeClass = ABSTRACT STRING();
 
 needReload = DATA LOCAL BOOLEAN();
-WHEN LOCAL CHANGED (captionTheme(DesignEnv de)) OR CHANGED (captionSize(de)) OR CHANGED (captionNavbar(de)) DO {
+WHEN LOCAL CHANGED (captionTheme(DesignEnv de)) OR CHANGED (captionSize(de)) OR CHANGED (captionNavbar(de))
+    OR CHANGED (suppressOnFocusChange(de))  OR CHANGED (contentWordWrap(de))  OR CHANGED (userFiltersManualApplyMode(de)) DO {
     needReload() <- TRUE;
 } 
 needReloadText = '{system.events.design.need.reload}';
@@ -139,6 +146,9 @@ FORM design '{system.events.design}'
 
     FILTERS de = currentDesignEnv()
     FILTERS IF storeNavigatorSettingsForComputer() THEN de IS Computer ELSE de IS CustomUser
+
+    OBJECTS cu = CustomUser PANEL
+    PROPERTIES(cu) suppressOnFocusChange, contentWordWrap, userFiltersManualApplyMode
     
     PROPERTIES() needReloadText HEADER NULL SHOWIF needReload()
 
@@ -151,7 +161,13 @@ DESIGN design {
     MOVE PROPERTY(captionTheme(de));
     MOVE PROPERTY(captionSize(de));
     MOVE PROPERTY(captionNavbar(de));
+    MOVE PROPERTY(suppressOnFocusChange(cu)) {
+        class = NULL; // Without "class = NULL", the suppressOnFocusChange property has the css-class "form-switch" because the heuristic mechanism is triggered by the "on" letters in the property name.
+    };
+    MOVE PROPERTY(contentWordWrap(cu));
+    MOVE PROPERTY(userFiltersManualApplyMode(cu));
     MOVE PROPERTY(needReloadText()) {
+        class = 'alert alert-secondary';
         autoSize = TRUE;
     }
     REMOVE PROPERTY(formApply());
@@ -172,55 +188,58 @@ NAVIGATOR {
     NEW toggleColorTheme WINDOW system PARENT BEFORE toggleNavigatorPinMode HEADER colorThemeCaption() IMAGE colorThemeImage();
 }
 
-onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = nameTheme() + '/bootstrap.min.css' THEN 1;
-onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = nameTheme() + '/bootstrap-adapter.css' THEN 2;
-onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap.min.js' THEN 3;
-onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap-background-inherit.css' THEN 4;
-onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap-ext.css' THEN 5;
-onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap-dark.css' THEN 6;
-onWebClientLoad(STRING s) += WHEN useBootstrap() AND isMini() AND s = 'mini-padding.css' THEN 7;
-onWebClientLoad(STRING s) += WHEN useBootstrap() AND isMini() AND s = 'mini-font.css' THEN 8;
+onWebClientLoad() + {
+    IF useBootstrap() THEN {
+        onWebClientLoadData(nameTheme() + '/bootstrap.min.css') <- 1;
+        onWebClientLoadData(nameTheme() + '/bootstrap-adapter.css') <- 2;
+        onWebClientLoadData('bootstrap.min.js') <- 3; 
+        onWebClientLoadData('bootstrap-background-inherit.css') <- 4; 
+        onWebClientLoadData('bootstrap-ext.css') <- 5; 
+        onWebClientLoadData('bootstrap-dark.css') <- 6;
+        
+        IF isMini() THEN {
+            onWebClientLoadData('mini-padding.css') <- 7;
+            onWebClientLoadData('mini-font.css') <- 8;
+        }
+        
+        onWebClientLoadData('selectize.bootstrap5.min.css') <- 9;
+        onWebClientLoadData('bootstrap-select.min.js') <- 10; 
+        onWebClientLoadData('bootstrap-select.min.css') <- 11;
+    } ELSE {
+        onWebClientLoadData('table.css') <- 1;
+        onWebClientLoadData('table-border.css') <- 2;
+        onWebClientLoadData('table-sticky.css') <- 3;
+        onWebClientLoadData('table-container-border.css') <- 4;
+        onWebClientLoadData('caption-panel-border.css') <- 5;
+        onWebClientLoadData('tab-panel.css') <- 6;
+        onWebClientLoadData('navigator.css') <- 7;
+        onWebClientLoadData('split-window-border.css') <- 8;
+        onWebClientLoadData('layout.css') <- 9;
+        onWebClientLoadData('panel-renderer-border.css') <- 10;
+        onWebClientLoadData('property-toolbar-border.css') <- 11;
+        onWebClientLoadData('main.css') <- 12;
+        onWebClientLoadData('main-border.css') <- 13;
+        onWebClientLoadData('popup-menu.css') <- 14;
+        onWebClientLoadData('resizable-window.css') <- 15;
+        onWebClientLoadData('property.css') <- 16;
+        onWebClientLoadData('button.css') <- 17;
+        onWebClientLoadData('filter.css') <- 18;
+        onWebClientLoadData('toolbar.css') <- 19;
+        onWebClientLoadData('pivot.css') <- 20;
+        onWebClientLoadData('option.css') <- 21;
+        onWebClientLoadData('selectize.css') <- 22;
+        onWebClientLoadData('select.css') <- 23;
+        //todo use v1.14.0-beta2 there is a bug in beta-3 https://github.com/snapappointments/bootstrap-select/issues/2738
+        onWebClientLoadData('multiple-select.min.js') <- 24;
+        onWebClientLoadData('multiple-select.min.css') <- 25;
+    }
 
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'table.css' THEN 1;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'table-border.css' THEN 2;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'table-sticky.css' THEN 3;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'table-container-border.css' THEN 4;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'caption-panel-border.css' THEN 5;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'tab-panel.css' THEN 6;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'navigator.css' THEN 7;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'split-window-border.css' THEN 8;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'layout.css' THEN 9;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'panel-renderer-border.css' THEN 10;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'property-toolbar-border.css' THEN 11;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'main.css' THEN 12;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'main-border.css' THEN 13;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'popup-menu.css' THEN 14;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'resizable-window.css' THEN 15;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'property.css' THEN 16;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'button.css' THEN 17;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'filter.css' THEN 18;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'toolbar.css' THEN 19;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'pivot.css' THEN 20;
-
-onWebClientLoad(STRING s) += WHEN s = 'scrollbar.css' THEN 21; //for bootstrap and excel themes
-onWebClientLoad(STRING s) += WHEN s = 'input-quill.js' THEN 22; //for bootstrap and excel themes
-onWebClientLoad(STRING s) += WHEN s = 'input-quill.css' THEN 23; //for bootstrap and excel themes
-onWebClientLoad(STRING s) += WHEN s = 'select.js' THEN 24; //for bootstrap and excell themes
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'option.css' THEN 25;
-onWebClientLoad(STRING s) += WHEN s = 'selectize.min.js' THEN 26;
-onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'selectize.bootstrap5.min.css' THEN 27;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'selectize.css' THEN 28;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'select.css' THEN 29;
-//todo use v1.14.0-beta2 there is a bug in beta-3 https://github.com/snapappointments/bootstrap-select/issues/2738
-onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap-select.min.js' THEN 29;
-onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap-select.min.css' THEN 30;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'multiple-select.min.js' THEN 31;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'multiple-select.min.css' THEN 32;
-
-onWebClientStarted () +{ 
-    onWebClientLoad();
-    
-    INTERNAL CLIENT WAIT 'input.js';
+    onWebClientLoadData('scrollbar.css') <- 26;
+    onWebClientLoadData('input-quill.js') <- 27;
+    onWebClientLoadData('input-quill.css') <- 28;
+    onWebClientLoadData('select.js') <- 29;
+    onWebClientLoadData('selectize.min.js') <- 30;
+    onWebClientLoadData('input.js') <- 31;
 }
 
 readDBNames INTERNAL 'lsfusion.server.logics.action.ReadDBNamesAction' ();
@@ -248,10 +267,9 @@ onWebClientLoad() + {
     readResourcePaths('/onStarted/.*');
     FOR STRING s = resourcePaths(s) DO {
         IF NOT endsWith(resourcePaths(s), '.sql') THEN {
-            INTERNAL CLIENT resourcePaths(s);
+            onWebClientLoadData(resourcePaths(s)) <- 1;
         }
     }
-    INTERNAL CLIENT WAIT 'empty.js'; //Needed for the synchronized execution js files from /onStarted dir
 }
 
 CLASS ABSTRACT Exception '{system.events.exception}';
@@ -448,7 +466,6 @@ noSystemToolbarCaptions() += isNativeDesktop();
 dontShowCloseButtonOnInactiveTab '{service.dont.show.close.button.on.inactive.tab}' = DATA BOOLEAN(CustomUser);
 dontShowCloseButtonOnInactiveTab = dontShowCloseButtonOnInactiveTab(currentUser());
 
-userFiltersManualApplyMode '{service.user.filters.manual.apply.mode}' = DATA TBOOLEAN (CustomUser);
 userFiltersManualApplyMode = userFiltersManualApplyMode(currentUser());
 
 onClientStarted () + {

@@ -1,5 +1,7 @@
 package lsfusion.gwt.client.form.property.cell.view;
 
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import lsfusion.gwt.client.base.AppBaseImage;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -9,11 +11,15 @@ public interface UpdateContext {
     
     default void getAsyncValues(String value, String actionSID, AsyncCallback<GFormController.GAsyncResult> callback) {}
     default void changeProperty(PValue result, GFormController.ChangedRenderValueSupplier renderValueSupplier) {}
-    default void executeContextAction(int action) {}
+
+    GFormController getForm();
+    default boolean previewEvent(Element element, Event event) { return getForm().previewEvent(event, element); }
 
     default Boolean isPropertyReadOnly() { return false; }
 
     default boolean isTabFocusable() { return false; }
+
+    default boolean isNavigateInput() { return false; }
 
     boolean globalCaptionIsDrawn();
 

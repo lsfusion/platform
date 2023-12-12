@@ -11,4 +11,6 @@ public interface RenderContext {
     GFont getFont();
 
     RendererType getRendererType();
+
+    boolean isInputRemoveAllPMB();
 }

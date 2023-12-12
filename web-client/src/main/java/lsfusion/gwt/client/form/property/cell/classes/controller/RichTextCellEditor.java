@@ -20,7 +20,7 @@ public class RichTextCellEditor extends ARequestValueCellEditor implements Reque
     public void start(EventHandler handler, Element parent, PValue oldValue) {
         this.oldValue = getEditorValue(parent);
 
-        String value = handler != null ? checkStartEvent(handler.event, parent, null) : null;
+        String value = handler != null ? TextBasedCellEditor.checkStartEvent(handler.event, parent, null) : null;
         boolean selectAll = value == null;
 
         if(value == null) {

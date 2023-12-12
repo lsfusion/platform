@@ -1,7 +1,7 @@
 package lsfusion.server.physics.admin.interpreter.action;
 
 import com.google.common.base.Throwables;
-import lsfusion.interop.action.MessageClientAction;
+import lsfusion.interop.action.RunCommandActionResult;
 import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
@@ -15,6 +15,7 @@ public class RunCommandAction extends InternalAction {
     private final ClassPropertyInterface commandInterface;
     private final ClassPropertyInterface directoryInterface;
     private final ClassPropertyInterface isClientInterface;
+    private final ClassPropertyInterface waitInterface;
 
     public RunCommandAction(UtilsLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
@@ -23,6 +24,7 @@ public class RunCommandAction extends InternalAction {
         commandInterface = i.next();
         directoryInterface = i.next();
         isClientInterface = i.next();
+        waitInterface = i.next();
     }
 
     @Override
@@ -30,21 +32,22 @@ public class RunCommandAction extends InternalAction {
         String command = (String) context.getKeyValue(commandInterface).getValue();
         String directory = (String) context.getKeyValue(directoryInterface).getValue();
         boolean isClient = context.getKeyValue(isClientInterface).getValue() != null;
+        boolean wait = context.getKeyValue(waitInterface).getValue() != null;
         if(command != null) {
-            if (isClient) {
-                String result = (String) context.requestUserInteraction(new RunCommandClientAction(command, directory));
+            try {
+                RunCommandActionResult result = isClient
+                        ? (RunCommandActionResult) context.requestUserInteraction(new RunCommandClientAction(command, directory, wait))
+                        : FileUtils.runCmd(command, directory, wait);
+
                 if (result != null) {
-                    context.requestUserInteraction(new MessageClientAction(result, "Ошибка"));
+                    findProperty("cmdOut[]").change(result.getCmdOut(), context);
+                    findProperty("cmdErr[]").change(result.getCmdErr(), context);
+
+                    if (!result.isCompletedSuccessfully())
+                        throw new RuntimeException(result.getErrorMessage());
                 }
-            } else {
-                try {
-                    String result = FileUtils.runCmd(command, directory);
-                    if (result != null) {
-                        throw new RuntimeException(result);
-                    }
-                } catch (Exception e) {
-                    throw Throwables.propagate(e);
-                }
+            } catch (Exception e) {
+                throw Throwables.propagate(e);
             }
         }
     }

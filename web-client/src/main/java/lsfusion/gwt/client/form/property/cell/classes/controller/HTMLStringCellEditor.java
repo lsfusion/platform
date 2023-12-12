@@ -5,13 +5,14 @@ import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.async.GInputList;
+import lsfusion.gwt.client.form.property.async.GInputListAction;
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.GCompletionType;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 
-public class HTMLStringCellEditor extends SimpleTextBasedCellEditor {
+public class HTMLStringCellEditor extends TextBasedCellEditor {
 
-    public HTMLStringCellEditor(EditManager editManager, GPropertyDraw property, GInputList inputList) {
-        super(editManager, property, inputList);
+    public HTMLStringCellEditor(EditManager editManager, GPropertyDraw property, GInputList inputList, GInputListAction[] inputListActions) {
+        super(editManager, property, inputList, inputListActions);
 
         if(compare == GCompare.MATCH || compare == GCompare.CONTAINS)
             completionType = GCompletionType.SEMI_ULTRA_NON_STRICT;

@@ -91,9 +91,13 @@ properties = DATA LOCAL STRING (STRING);
 readProperties INTERNAL 'lsfusion.server.physics.dev.integration.external.to.file.ReadPropertiesAction' (RAWFILE);
 
 // ---------------------------------- Console  ---------------------------------- //
-cmd '{utils.cmd}' (TEXT command, TEXT directory, BOOLEAN isClient)  INTERNAL  'lsfusion.server.physics.admin.interpreter.action.RunCommandAction';
-cmd '{utils.cmd}' (TEXT command)  {cmd(command, NULL, NULL); }
-cmdClient '{utils.cmd.client}' (TEXT command)  {cmd(command, NULL, TRUE); }
+cmdOut '{utils.cmd.std.out}' = DATA LOCAL STRING ();
+cmdErr '{utils.cmd.std.err}' = DATA LOCAL STRING ();
+cmd '{utils.cmd}' (TEXT command, TEXT directory, BOOLEAN isClient, BOOLEAN wait)  INTERNAL  'lsfusion.server.physics.admin.interpreter.action.RunCommandAction';
+cmd '{utils.cmd}' (TEXT command, BOOLEAN wait)  {cmd(command, NULL, NULL, wait); }
+cmd '{utils.cmd}' (TEXT command)  {cmd(command, NULL, NULL, NULL ); }
+cmdClient '{utils.cmd.client}' (TEXT command, BOOLEAN wait)  {cmd(command, NULL, TRUE, wait); }
+cmdClient '{utils.cmd.client}' (TEXT command)  {cmdClient(command, NULL); }
 
 pingError '{utils.ping.error}' = DATA LOCAL BOOLEAN ();
 ping '{utils.ping}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.net.PingAction' (TEXT, BOOLEAN);
@@ -199,6 +203,8 @@ generateUUID  INTERNAL 'lsfusion.server.logics.classes.data.utils.string.Generat
 
 escapeJSONValue (TEXT t) = replace(replace(replace(replace(replace(t, '\\', '\\\\'), '"', '\\"'), '\n', ''), '\r', ''), '\t', '');
 escapeXMLValue(TEXT t) = replace(replace(replace(replace(replace(t, '&', '&amp;'), '<', '&lt;'), '>', '&gt;'), '"', '&quot;'), '\'', '&apos;');
+
+copyToClipboard INTERNAL 'lsfusion.server.logics.classes.data.utils.string.CopyToClipboardAction' (TEXT);
 
 // --------------------------------------------- Numeric operations --------------------------------- //
 floor = FORMULA 'floor($1)';

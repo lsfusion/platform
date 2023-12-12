@@ -12,12 +12,14 @@ public class AsyncInput extends AsyncFormExec {
     public final DataClass changeType;
 
     public final InputList inputList;
+    public final InputListAction[] inputListActions;
 
     public final String customEditorFunction;
 
-    public AsyncInput(DataClass changeType, InputList inputList, String customEditorFunction) {
+    public AsyncInput(DataClass changeType, InputList inputList, InputListAction[] inputListActions, String customEditorFunction) {
         this.changeType = changeType;
         this.inputList = inputList;
+        this.inputListActions = inputListActions;
         this.customEditorFunction = customEditorFunction;
     }
 
@@ -33,7 +35,11 @@ public class AsyncInput extends AsyncFormExec {
         TypeSerializer.serializeType(dataOutputStream, changeType);
         dataOutputStream.writeBoolean(inputList != null);
         if(inputList != null)
-            AsyncSerializer.serializeInputList(inputList, context, dataOutputStream);
+            AsyncSerializer.serializeInputList(inputList, dataOutputStream);
+
+        dataOutputStream.writeBoolean(inputListActions != null);
+        if(inputListActions != null)
+            AsyncSerializer.serializeInputListActions(inputListActions, context, dataOutputStream);
 
         dataOutputStream.writeBoolean(customEditorFunction != null);
         if (customEditorFunction != null)

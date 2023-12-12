@@ -1,6 +1,7 @@
 package lsfusion.server.logics.classes.data;
 
 import lsfusion.interop.classes.DataType;
+import lsfusion.server.data.type.Type;
 
 public class RichTextClass extends TextClass {
 
@@ -26,7 +27,7 @@ public class RichTextClass extends TextClass {
     }
 
     @Override
-    public boolean useInputTag(boolean isPanel, boolean useBootstrap, boolean hasBackground) {
+    public boolean useInputTag(boolean isPanel, boolean useBootstrap, Type changeType) {
         return false;
     }
 }

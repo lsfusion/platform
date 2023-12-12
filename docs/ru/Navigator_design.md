@@ -90,8 +90,8 @@ WINDOW root 'Корень' TOOLBAR HIDETITLE HIDESCROLLBARS HORIZONTAL POSITION(
 WINDOW toolbar 'Тулбар' TOOLBAR HIDETITLE VERTICAL POSITION(0, 6, 20, 64);
 WINDOW tree 'Дерево' TOOLBAR HIDETITLE POSITION(0, 6, 20, 64);
 
-// меню без скроллбаров под окном root
-WINDOW menu MENU HIDESCROLLBARS DRAWROOT POSITION(20, 6, 80, 4);
+// меню без скроллбаров
+WINDOW menu MENU HIDESCROLLBARS POSITION(20, 6, 80, 4);
 
 // горизонтальный тулбар внизу рабочего стола, в котором все кнопки будут выравниваться по центру, а текст выравниваться вверх
 // в этот тулбар можно, например, помещать формы для быстрого открытия

@@ -56,7 +56,7 @@ public class BaseUtils {
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 258;
+        return 260;
     }
 
     public static String getPlatformVersion() {
@@ -2067,5 +2067,9 @@ public class BaseUtils {
 
     public static boolean endsWithIgnoreCase(String s, String suffix) {
         return s != null && suffix != null && s.toLowerCase().endsWith(suffix.toLowerCase());
+    }
+
+    public static String[] getNotNullStringArray(String[] array) {
+        return array == null ? new String[0] : array;
     }
 }

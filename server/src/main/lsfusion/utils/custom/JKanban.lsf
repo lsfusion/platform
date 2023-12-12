@@ -5,9 +5,9 @@ REQUIRE SystemEvents;
 NAMESPACE Utils;
 
 onWebClientLoad() + {
-    INTERNAL CLIENT 'custom_jkanban.css';
-    INTERNAL CLIENT 'custom_jkanban.js';
-
-    INTERNAL CLIENT 'jkanban.css';
-    INTERNAL CLIENT 'jkanban.js';
+    onWebClientLoadData('custom_jkanban.css') <- 1;
+    onWebClientLoadData('custom_jkanban.js') <- 1;
+    
+    onWebClientLoadData('jkanban.css') <- 1;
+    onWebClientLoadData('jkanban.js') <- 1;
 }

@@ -18,7 +18,7 @@ import lsfusion.gwt.client.base.view.popup.PopupMenuItemValue;
 import lsfusion.gwt.client.base.view.popup.PopupMenuPanel;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
-import lsfusion.gwt.client.form.property.cell.classes.controller.SimpleTextBasedCellEditor;
+import lsfusion.gwt.client.form.property.cell.classes.controller.TextBasedCellEditor;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 
 import java.util.ArrayList;
@@ -205,7 +205,7 @@ public abstract class SuggestBox {
     }
 
     public String getCurrentText() {
-        return SimpleTextBasedCellEditor.getInputValue(inputElement);
+        return TextBasedCellEditor.getTextInputValue(inputElement);
     }
 
     public void onBrowserEvent(EventHandler handler) {
@@ -273,7 +273,7 @@ public abstract class SuggestBox {
 
     public void setInput(PopupMenuItemValue suggestion) {
         currentText = suggestion != null ? suggestion.getReplacementString() : null;
-        SimpleTextBasedCellEditor.setInputValue(inputElement, currentText);
+        TextBasedCellEditor.setTextInputValue(inputElement, currentText);
     }
 
     public static abstract class SuggestOracle {

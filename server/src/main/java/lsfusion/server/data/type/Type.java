@@ -17,6 +17,7 @@ import lsfusion.server.logics.classes.ConcreteClass;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.stat.print.design.ReportDrawField;
 import lsfusion.server.logics.form.stat.struct.export.plain.dbf.OverJDBField;
 import lsfusion.server.logics.form.stat.struct.export.plain.xls.ExportXLSWriter;
@@ -157,12 +158,16 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
 
     T read(Object value);
 
-    default boolean useInputTag(boolean isPanel, boolean useBootstrap, boolean hasBackground) {
+    default boolean useInputTag(boolean isPanel, boolean useBootstrap, Type changeType) {
         return false;
     }
     default boolean hasToolbar(boolean isInputPanel) {
         if(isInputPanel)
             return !Settings.get().isNoToolbarForInputTagInPanel();
         return true;
+    }
+
+    default String getInputType(FormInstanceContext context) {
+        return "text";
     }
 }

@@ -7,6 +7,7 @@ import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.async.GInputList;
+import lsfusion.gwt.client.form.property.async.GInputListAction;
 import lsfusion.gwt.client.form.property.cell.classes.GTimeDTO;
 import lsfusion.gwt.client.form.property.cell.classes.controller.RequestValueCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.controller.TimeCellEditor;
@@ -27,13 +28,18 @@ public class GTimeType extends GADateType {
     }
 
     @Override
-    public RequestValueCellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, EditContext editContext) {
+    public RequestValueCellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, GInputListAction[] inputListActions, EditContext editContext) {
         return new TimeCellEditor(this, editManager, editProperty);
     }
 
     @Override
     protected DateTimeFormat[] getFormats(String pattern) {
         return GwtClientUtils.add(super.getFormats(pattern), new DateTimeFormat[] { getDefaultTimeShortFormat(), getDefaultTimeFormat() }, DateTimeFormat[]::new);
+    }
+
+    @Override
+    public DateTimeFormat getISOFormat() {
+        return DateTimeFormat.getFormat("HH:mm");
     }
 
     @Override

@@ -1,48 +1,22 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
 import com.google.gwt.dom.client.*;
-import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.SizedFlexPanel;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
-import lsfusion.gwt.client.form.property.cell.classes.controller.TypeInputBasedCellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
-import lsfusion.gwt.client.view.MainFrame;
 
-public class LogicalCellRenderer extends TypeInputBasedCellRenderer {
+public class LogicalCellRenderer extends InputBasedCellRenderer {
 
     private boolean threeState;
 
     public LogicalCellRenderer(GPropertyDraw property, boolean threeState) {
         super(property);
         this.threeState = threeState;
-    }
-
-    public static InputElement getInputEventTarget(Element parent, Event event) {
-        InputElement inputElement = getInputElement(parent);
-        if(inputElement == event.getEventTarget().cast())
-            return inputElement;
-        return null;
-    }
-
-    public InputElement renderInputElement(Element element) {
-        InputElement inputElement = createCheckInput();
-        element.appendChild(inputElement);
-        return inputElement;
-    }
-
-    public InputElement createCheckInput() {
-        InputElement input = GwtClientUtils.createCheckInputElement();
-        input.addClassName("logicalRendererCheckBox");
-
-        if (!MainFrame.useBootstrap)
-            input.addClassName("checkbox-outline");
-
-        input.addClassName("form-check-input"); // bootstrap
-        return input;
+        assert isTagInput();
     }
 
     @Override
@@ -68,7 +42,8 @@ public class LogicalCellRenderer extends TypeInputBasedCellRenderer {
         } else
             newValue = getBooleanValue(value);
 
-        setChecked(input, newValue);
+        input.setChecked(newValue);
+        input.setDefaultChecked(newValue);
 
         return false;
     }
@@ -77,18 +52,8 @@ public class LogicalCellRenderer extends TypeInputBasedCellRenderer {
         element.indeterminate = indeterminate;
     }-*/;
 
-    public static void setChecked(InputElement input, boolean newValue) {
-        input.setChecked(newValue);
-        input.setDefaultChecked(newValue);
-    }
-
     public static void cancelChecked(InputElement input) {
         input.setChecked(input.isDefaultChecked());
-    }
-
-    @Override
-    protected InputElement createInput(GPropertyDraw property, RendererType rendererType) {
-        return createCheckInput();
     }
 
     //    private String getCBImagePath(Object value) {

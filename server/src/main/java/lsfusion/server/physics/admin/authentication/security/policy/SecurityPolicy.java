@@ -41,6 +41,10 @@ public class SecurityPolicy {
         return checkPermission(policy -> policy.checkPropertyEditObjectsPermission(property));
     }
 
+    public boolean checkPropertyGroupChangePermission(ActionOrProperty property) {
+        return checkPermission(policy -> policy.checkPropertyGroupChangePermission(property));
+    }
+
     public Boolean checkPermission(Function<RoleSecurityPolicy, Boolean> checkPermission) {
         boolean result = true;
         for(RoleSecurityPolicy policy : policies) {

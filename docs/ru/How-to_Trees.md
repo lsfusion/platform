@@ -76,7 +76,7 @@ FORM categoryBooks 'Книги по категориям'
 DESIGN categoryBooks {
     NEW pane FIRST {
         fill = 1;
-        type = SPLITH;
+        horizontal = TRUE;
         MOVE BOX(TREE categories);
         MOVE BOX(b);
     }

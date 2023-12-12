@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.JsDate;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.Style;
@@ -17,7 +18,6 @@ import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.view.CopyPasteUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.FlexPanel;
-import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.base.view.popup.PopupMenuItemValue;
 import lsfusion.gwt.client.classes.data.GFormatType;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -30,29 +30,27 @@ import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.async.GInputListAction;
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.GCompletionType;
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.SuggestBox;
-import lsfusion.gwt.client.form.property.cell.classes.view.SimpleTextBasedCellRenderer;
+import lsfusion.gwt.client.form.property.cell.classes.view.TextBasedCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
-import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
-import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.view.MainFrame;
 
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiFunction;
 
 import static com.google.gwt.user.client.Event.ONPASTE;
 import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
 import static lsfusion.gwt.client.form.filter.user.GCompare.CONTAINS;
 
-// now it's a sort of mix of RequestKeepValueCellEditor and RequestReplaceValueCellEditor (depending on isInputAsRenderElement)
-public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellEditor {
+// now it's a sort of mix of RequestKeepValueCellEditor and RequestReplaceValueCellEditor (depending on needReplace)
+public abstract class TextBasedCellEditor extends InputBasedCellEditor {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     private static final TextBoxImpl textBoxImpl = GWT.create(TextBoxImpl.class);
 
-    protected final GPropertyDraw property;
     protected final EditContext editContext;
 
     private boolean hasList;
@@ -61,46 +59,38 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
     protected GCompare compare;
     protected SuggestBox suggestBox = null;
 
-    public SimpleTextBasedCellEditor(EditManager editManager, GPropertyDraw property) {
-        this(editManager, property, null);
+    public TextBasedCellEditor(EditManager editManager, GPropertyDraw property) {
+        this(editManager, property, null, null);
     }
     
-    public SimpleTextBasedCellEditor(EditManager editManager, GPropertyDraw property, GInputList inputList) {
-        this(editManager, property, inputList, null);
+    public TextBasedCellEditor(EditManager editManager, GPropertyDraw property, GInputList inputList, GInputListAction[] inputListActions) {
+        this(editManager, property, inputList, inputListActions, null);
     }
 
-    public SimpleTextBasedCellEditor(EditManager editManager, GPropertyDraw property, GInputList inputList, EditContext editContext) {
-        super(editManager);
-        this.property = property;
+    public TextBasedCellEditor(EditManager editManager, GPropertyDraw property, GInputList inputList, GInputListAction[] inputListActions, EditContext editContext) {
+        super(editManager, property);
         this.editContext = editContext;
 
         if(inputList != null) {
             this.hasList = true;
             this.completionType = inputList.completionType;
-            this.actions = inputList.actions;
+            this.actions = inputListActions;
             this.compare = inputList.compare;
         }
     }
 
-    private boolean isRenderInputElement(Element cellParent) {
-        return getRenderInputElement(cellParent) != null;
-    }
-    private InputElement getRenderInputElement(Element cellParent) {
-        return SimpleTextBasedCellRenderer.getSimpleInputElement(cellParent);
-    }
-
-    @Override
-    public boolean needReplace(Element cellParent, RenderContext renderContext) {
-        return !isRenderInputElement(cellParent);
-    }
-
-    protected InputElement inputElement;
-    private String oldStringValue;
-
-    protected void onInputReady(Element parent, PValue oldValue) {
+    public static String checkStartEvent(Event event, Element parent, BiFunction<Element, String, Boolean> checkInputValidity) {
+        String value = null;
+        if (GKeyStroke.isCharDeleteKeyEvent(event)) {
+            value = "";
+        } else if (GKeyStroke.isCharAddKeyEvent(event)) {
+            String input = String.valueOf((char) event.getCharCode());
+            value = (checkInputValidity == null || checkInputValidity.apply(parent, input)) ? input : "";
+        }
+        return value;
     }
 
-    private boolean started;
+    protected boolean started;
 
     @Override
     public void start(EventHandler handler, Element parent, PValue oldValue) {
@@ -114,28 +104,10 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
         }
         started = true;
 
+        super.start(handler, parent, oldValue);
+
         boolean allSuggestions = true;
-        if(inputElement == null) {
-            inputElement = getRenderInputElement(parent);
-
-            //getInputValue() must be before onInputReady as it affects daterangepicker behaviour. onInputReady trigger the creation dateTimePicker, if the date was null
-            //then getInputElementValue saves today's date instead of null, and when you press clear, it calls stop, which takes the oldStringValue
-            // and returns it back and we get today's date instead of null
-            oldStringValue = getInputValue();
-
-            onInputReady(parent, oldValue);
-
-            //need for start editing by CHANGEKEY
-            FocusUtils.focus(inputElement, FocusUtils.Reason.OTHER);
-
-            parent.addClassName("property-hide-toolbar");
-
-            handler.consume(true, false);
-        } else {
-            onInputReady(parent, oldValue);
-
-            //we need this order (focus before setValue) for single click editing IntegralCellEditor (type=number)
-            FocusUtils.focus(inputElement, FocusUtils.Reason.OTHER);
+        if(needReplace(parent)) {
             boolean selectAll = !GKeyStroke.isChangeAppendKeyEvent(handler.event);
 
             String value = checkStartEvent(handler.event, parent, this::checkInputValidity);
@@ -145,13 +117,13 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
             } else
                 value = (property.clearText ? "" : tryFormatInputText(oldValue));
 
-            setInputValue(parent, value);
+            setTextInputValue(parent, value);
 
             if (selectAll)
                 inputElement.select();
         }
 
-        if (hasList) {
+        if (hasList && !inputElementType.hasNativePopup()) {
             suggestBox = createSuggestBox(inputElement, parent);
 
             // don't update suggestions if editing started with char key event. as editor text is empty on init - request is being sent twice
@@ -163,35 +135,34 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
         }
     }
 
+    private boolean hasList() {
+//        return hasList;
+        return suggestBox != null;
+    }
+
     @Override
     public void stop(Element parent, boolean cancel, boolean blurred) {
-        if (started) {
-            if (hasList) {
+        if(started) {
+            if (hasList()) {
                 suggestBox.hideSuggestions();
                 suggestBox = null;
             }
 
-            if (isRenderInputElement(parent)) {
-                parent.removeClassName("property-hide-toolbar");
-
-                setInputValue(parent, oldStringValue);
-            }
-
-            inputElement = null;
-            started = false;
+            super.stop(parent, cancel, blurred);
         }
     }
 
-    protected void setInputValue(Element parent, String value) {
-        setInputValue(inputElement, value);
+    protected void setTextInputValue(Element parent, String value) {
+        setTextInputValue(inputElement, value);
     }
-    public static void setInputValue(InputElement element, String value) {
+    public static void setTextInputValue(InputElement element, String value) {
         element.setValue(value);
     }
-    private String getInputValue() {
-        return getInputValue(inputElement);
+    private String getTextInputValue() {
+        return getTextInputValue(inputElement);
     }
-    public static String getInputValue(InputElement element) {
+
+    public static String getTextInputValue(InputElement element) {
         return element.getValue();
     }
 
@@ -215,7 +186,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
         var cursorPosEnd = eventTarget.selectionEnd;
         var v = eventTarget.value;
         var mergedText = v.substring(0, cursorPosStart) + pastedText + v.substring(cursorPosEnd, v.length);
-        if (this.@SimpleTextBasedCellEditor::isStringValid(*)(mergedText)) {
+        if (this.@lsfusion.gwt.client.form.property.cell.classes.controller.TextBasedCellEditor::isStringValid(*)(mergedText)) {
             event.stopPropagation();
             event.preventDefault();
             eventTarget.value = mergedText;
@@ -227,14 +198,14 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
 
     @Override
     public void onBrowserEvent(Element parent, EventHandler handler) {
-        if(hasList && isThisCellEditor()) {
+        if(hasList() && isThisCellEditor()) {
             suggestBox.onBrowserEvent(handler);
             if(handler.consumed)
                 return;
         }
 
         Event event = handler.event;
-        if (GKeyStroke.isInputKeyEvent(event, this::isMultiLine) || GMouseStroke.isEvent(event) || GMouseStroke.isContextMenuEvent(event)) {
+        if (InputBasedCellEditor.isInputKeyEvent(event, isMultiLine()) || GMouseStroke.isEvent(event) || GMouseStroke.isContextMenuEvent(event)) {
             boolean isCorrect = true;
 
             String stringToAdd = null;
@@ -249,7 +220,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
         } else if (GKeyStroke.isPlainPasteEvent(event)) {
             plainPaste = true;
         } else {
-            Integer inputActionIndex = property.getInputActionIndex(event, true);
+            Integer inputActionIndex = property.getKeyInputActionIndex(actions, event, true);
             if(inputActionIndex != null) {
                 validateAndCommit(parent, inputActionIndex, true, CommitReason.FORCED);
                 return;
@@ -262,7 +233,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
     protected boolean checkInputValidity(Element parent, String stringToAdd) {
         int cursorPosition = textBoxImpl.getCursorPos(inputElement);
         int selectionLength = textBoxImpl.getSelectionLength(inputElement);
-        String currentValue = getInputValue();
+        String currentValue = getTextInputValue();
         String firstPart = currentValue == null ? "" : currentValue.substring(0, cursorPosition);
         String secondPart = currentValue == null ? "" : currentValue.substring(cursorPosition + selectionLength);
 
@@ -278,55 +249,17 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
         }
     }
 
-    public static InputElement renderInputElement(Element cellParent, GPropertyDraw property, boolean multiLine, RenderContext renderContext, boolean removeAllPMB) {
-        RendererType rendererType = renderContext.getRendererType();
-        InputElement inputElement = SimpleTextBasedCellRenderer.createInputElement(property, rendererType);
-
-        CellRenderer.renderTextAlignment(property, inputElement, true, rendererType);
-
-        SimpleTextBasedCellRenderer.render(property, inputElement, renderContext, multiLine);
-
-        if(removeAllPMB)
-            inputElement.addClassName("remove-all-pmb");
-        cellParent.appendChild(inputElement);
-
-        // the problem of the height:100% is that: when it is set for the input element, line-height is ignored (and line-height is used for example in bootstrap, so when the data is drawn with the regular div, but input with the input element, they have different sizes, which is odd)
-        // but flex works fine for the input element, but we cannot set display flex for the table cell element
-        // so we'll use 100% for table cells (it's not that big deal for table cells, because usually there are a lot of cells without input in a row, and they will respect line-height)
-        if(GwtClientUtils.isTDorTH(cellParent))
-            GwtClientUtils.setupPercentParent(inputElement);
-        else
-            GwtClientUtils.setupFlexParent(inputElement);
-
-        return inputElement;
-    }
-
-    public static void clearInputElement(Element cellParent) {
-        if(!GwtClientUtils.isTDorTH(cellParent))
-            GwtClientUtils.clearFlexParentElement(cellParent);
-    }
-
     @Override
     public void render(Element cellParent, RenderContext renderContext, PValue oldValue, Integer renderedWidth, Integer renderedHeight) {
-        assert !isRenderInputElement(cellParent);
+        super.render(cellParent, renderContext, oldValue, renderedWidth, renderedHeight);
 
-        SimpleTextBasedCellRenderer.setPadding(cellParent); // paddings should be for the element itself (and in general do not change), because the size is set for this element and reducing paddings will lead to changing element size
+        if(renderedHeight != null && isMultiLine())
+            // https://stackoverflow.com/questions/7144843/extra-space-under-textarea-differs-along-browsers
+            inputElement.getStyle().setVerticalAlign(Style.VerticalAlign.TOP);
 
-        boolean multiLine = isMultiLine();
+        TextBasedCellRenderer.setTextPadding(cellParent); // paddings should be for the element itself (and in general do not change), because the size is set for this element and reducing paddings will lead to changing element size
 
-        inputElement = renderInputElement(cellParent, property, multiLine, renderContext, true);
         addPasteListener(inputElement);
-
-        // input doesn't respect justify-content, stretch, plus we want to include paddings in input (to avoid having "selection border")
-        // we have to set sizes that were rendered, since input elements have really unpredicatble content sizes
-        if(renderedWidth != null)
-            inputElement.getStyle().setWidth(renderedWidth, Style.Unit.PX);
-        if(renderedHeight != null) {
-            inputElement.getStyle().setHeight(renderedHeight, Style.Unit.PX);
-            if(multiLine)
-                // https://stackoverflow.com/questions/7144843/extra-space-under-textarea-differs-along-browsers
-                inputElement.getStyle().setVerticalAlign(Style.VerticalAlign.TOP);
-        }
     }
 
     protected boolean isMultiLine() {
@@ -335,20 +268,13 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
 
     @Override
     public void clearRender(Element cellParent, RenderContext renderContext, boolean cancel) {
-        assert !isRenderInputElement(cellParent);
-
-        SimpleTextBasedCellRenderer.clearPadding(cellParent);
-
-//        TextBasedCellRenderer.clearBasedTextFonts(property, element.getStyle(), renderContext);
-
-//        TextBasedCellRenderer.clearRender(property, element.getStyle(), renderContext);
-
-        clearInputElement(cellParent);
+        TextBasedCellRenderer.clearTextPadding(cellParent);
 
         super.clearRender(cellParent, renderContext, cancel);
     }
 
     public PValue getCommitValue(Element parent, Integer contextAction) throws InvalidEditException {
+        boolean hasList = hasList();
         if (hasList) {
             PopupMenuItemValue selectedItem = suggestBox.selectedItem;
             if (selectedItem != null)
@@ -358,7 +284,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
                 throw new InvalidEditException();
         }
 
-        String stringValue = getInputValue();
+        String stringValue = getTextInputValue();
         if (hasList && contextAction == null && completionType.isCheckCommitInputInList() && !suggestBox.isValidValue(stringValue)) {
             throw new InvalidEditException();
         }
@@ -370,7 +296,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
     }
 
     protected boolean isThisCellEditor() {
-        assert hasList;
+        assert hasList();
         return suggestBox != null;
     }
 
@@ -543,23 +469,25 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
                     }
                 });
 
-                for (GInputListAction action : actions) {
-                    SuggestPopupButton actionButton = new SuggestPopupButton(action.action) {
-                        @Override
-                        public ClickHandler getClickHandler() {
-                            return event -> validateAndCommit(parent, action.index, true, CommitReason.FORCED);
-                        }
-                    };
-                    buttonsPanel.add(actionButton);
-
-                    String tooltip = property.getQuickActionTooltipText(action.keyStroke);
-                    if (tooltip != null) {
-                        TooltipManager.initTooltip(actionButton.getElement(), new TooltipManager.TooltipHelper() {
+                if(actions != null) {
+                    for (GInputListAction action : actions) {
+                        SuggestPopupButton actionButton = new SuggestPopupButton(action.action) {
                             @Override
-                            public String getTooltip(String dynamicTooltip) {
-                                return nvl(dynamicTooltip, tooltip);
+                            public ClickHandler getClickHandler() {
+                                return event -> validateAndCommit(parent, action.index, true, CommitReason.FORCED);
                             }
-                        });
+                        };
+                        buttonsPanel.add(actionButton);
+
+                        String tooltip = property.getQuickActionTooltipText(action.keyStroke);
+                        if (tooltip != null) {
+                            TooltipManager.initTooltip(actionButton.getElement(), new TooltipManager.TooltipHelper() {
+                                @Override
+                                public String getTooltip(String dynamicTooltip) {
+                                    return nvl(dynamicTooltip, tooltip);
+                                }
+                            });
+                        }
                     }
                 }
 

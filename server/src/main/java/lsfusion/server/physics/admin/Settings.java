@@ -2764,7 +2764,6 @@ public class Settings implements Cloneable {
     // 1 - use only in bootstrap theme
     // 2 - never use
     private int useInputTagForTextBasedInPanel = 1;
-    private boolean useInputTagForBoolean = true;
     private boolean noToolbarForInputTagInPanel = false;
     private boolean noToolbarForSelectDropdownInPanel = false;
     private boolean noToolbarForBoolean = true;
@@ -2775,14 +2774,6 @@ public class Settings implements Cloneable {
 
     public void setUseInputTagForTextBasedInPanel(int useInputTagForTextBasedInPanel) {
         this.useInputTagForTextBasedInPanel = useInputTagForTextBasedInPanel;
-    }
-
-    public boolean isUseInputTagForBoolean() {
-        return useInputTagForBoolean;
-    }
-
-    public void setUseInputTagForBoolean(boolean useInputTagForBoolean) {
-        this.useInputTagForBoolean = useInputTagForBoolean;
     }
 
     public boolean isNoToolbarForInputTagInPanel() {
@@ -3240,5 +3231,25 @@ public class Settings implements Cloneable {
 
     public void setTooltipDelay(int tooltipDelay) {
         this.tooltipDelay = tooltipDelay;
+    }
+
+    private boolean suppressOnFocusChange = false;
+
+    public boolean isSuppressOnFocusChange() {
+        return suppressOnFocusChange;
+    }
+
+    public void setSuppressOnFocusChange(boolean suppressOnFocusChange) {
+        this.suppressOnFocusChange = suppressOnFocusChange;
+    }
+
+    private boolean contentWordWrap = false;
+
+    public boolean isContentWordWrap() {
+        return contentWordWrap;
+    }
+
+    public void setContentWordWrap(boolean contentWordWrap) {
+        this.contentWordWrap = contentWordWrap;
     }
 }

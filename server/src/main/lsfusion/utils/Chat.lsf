@@ -11,8 +11,8 @@ TABLE chatCustomUser(Chat, CustomUser);
 EXTEND CLASS UserRole : Chat;
 
 onWebClientLoad() + {
-    INTERNAL CLIENT 'chat.js';
-    INTERNAL CLIENT 'chat.css';
+    onWebClientLoadData('chat.js') <- 1;
+    onWebClientLoadData('chat.css') <- 1;
 }
 
 @defineExternalizable(chat, STRING[100]);

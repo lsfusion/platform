@@ -8,7 +8,7 @@ import lsfusion.gwt.client.form.property.cell.view.RendererType;
 
 import static lsfusion.gwt.client.base.GwtSharedUtils.multiplyString;
 
-public abstract class StringBasedCellRenderer extends SimpleTextBasedCellRenderer {
+public abstract class StringBasedCellRenderer extends TextBasedCellRenderer {
 
     private boolean echoSymbols;
     private boolean isVarString;

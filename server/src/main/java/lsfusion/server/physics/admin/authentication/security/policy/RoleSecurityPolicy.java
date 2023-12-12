@@ -10,6 +10,7 @@ public class RoleSecurityPolicy {
     public ElementSecurityPolicy propertyView = new ElementSecurityPolicy<ActionOrProperty>();
     public ElementSecurityPolicy propertyChange = new ElementSecurityPolicy<ActionOrProperty>();
     public ElementSecurityPolicy propertyEditObjects = new ElementSecurityPolicy<ActionOrProperty>();
+    public ElementSecurityPolicy propertyGroupChange = new ElementSecurityPolicy<ActionOrProperty>();
 
     public final boolean isReadOnlyPolicy;
 
@@ -38,5 +39,9 @@ public class RoleSecurityPolicy {
 
     public Boolean checkPropertyEditObjectsPermission(ActionOrProperty property) {
         return this.propertyEditObjects.checkPermission(property);
+    }
+
+    public Boolean checkPropertyGroupChangePermission(ActionOrProperty property) {
+        return this.propertyGroupChange.checkPermission(property);
     }
 }

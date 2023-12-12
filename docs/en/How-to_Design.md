@@ -58,7 +58,6 @@ DESIGN orders {
     // adding a new container to the very beginning of the form
     NEW orderList FIRST {
         fill = 1; // marking that this container should "stretch" in the upper container
-        type = SPLITV; // vertical splitter - that is, there can only be 2 children
         MOVE BOX(o); // the first container will be the list of orders
         NEW orderDetails {
             // Specifying that the specification will take up 2 times more space than the o.box container 
@@ -119,7 +118,7 @@ DESIGN orders {
         NEW orderHeader FIRST { 
             // it is necessary to make it "stretched" inside the orderList, as it will have a list of orders
             fill = 1; 
-            // by default, the type of the new container is CONTAINERV, that is, all the components in it are
+            // by default, new container is vertical, that is, all the components in it are
             // arranged from top to bottom creating a container in which all the components that are responsible 
             // for filtering will be placed
             NEW filters { 

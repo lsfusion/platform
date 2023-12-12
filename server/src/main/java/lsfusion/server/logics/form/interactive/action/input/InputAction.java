@@ -4,7 +4,6 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.file.AppImage;
-import lsfusion.server.base.AppServerImage;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
@@ -16,9 +15,9 @@ import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.form.interactive.action.async.InputList;
-import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInput;
+import lsfusion.server.logics.form.interactive.action.async.InputListAction;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
-import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInputList;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInput;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInputListAction;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.property.Property;
@@ -100,10 +99,12 @@ public class InputAction extends SystemExplicitAction {
         return valueClass instanceof DataClass ? (DataClass) valueClass : fullContextList.getDataClass();
     }
 
-    private AsyncMapInputList<ClassPropertyInterface> getMapInputList() {
-        return new AsyncMapInputList<>(
-                contextActions.mapListValues((i, value) -> new AsyncMapInputListAction<>(value.image, value.id, value.getAsyncEventExec(), value.keyStroke, value.bindingModesMap, value.priority, value.quickAccessList, i)),
-                !(valueClass instanceof DataClass));
+    private ImList<AsyncMapInputListAction<ClassPropertyInterface>> getActions() {
+        return contextActions.mapListValues((i, value) -> new AsyncMapInputListAction<>(value.image, value.id, value.getAsyncEventExec(), value.keyStroke, value.bindingModesMap, value.priority, value.quickAccessList, i));
+    }
+
+    private boolean isStrict() {
+        return !(valueClass instanceof DataClass);
     }
 
     @Override
@@ -112,7 +113,7 @@ public class InputAction extends SystemExplicitAction {
         Object oldValue = hasOldValue ? context.getKeyObject(oldValueInterface) : null;
 
         InputListEntity<?, ClassPropertyInterface> fullContextList = getFullContextList();
-        InputResult userValue = context.inputUserData(getInputClass(fullContextList), oldValue, hasOldValue, fullContextList, customChangeFunction, getInputList());
+        InputResult userValue = context.inputUserData(getInputClass(fullContextList), oldValue, hasOldValue, fullContextList, customChangeFunction, getInputList(), getInputListActions());
 
         Integer contextAction;
         if(userValue != null && (contextAction = userValue.contextAction) != null)
@@ -131,14 +132,20 @@ public class InputAction extends SystemExplicitAction {
 
     @IdentityInstanceLazy
     private InputList getInputList() {
-        return getMapInputList().map(new ConnectionContext(true));
+        return new InputList(isStrict());
+    }
+
+    @IdentityInstanceLazy
+    private InputListAction[] getInputListActions() {
+        ImList<AsyncMapInputListAction<ClassPropertyInterface>> actions = getActions();
+        return actions.mapListValues(action -> action.map(new ConnectionContext(true))).toArray(new InputListAction[actions.size()]);
     }
 
     @Override
     public AsyncMapEventExec<ClassPropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
         InputListEntity<?, ClassPropertyInterface> fullContextList = getFullContextList();
         boolean hasOldValue = !optimistic && oldValueInterface != null;
-        return new AsyncMapInput<>(getInputClass(fullContextList), fullContextList, getMapInputList(), hasOldValue, hasOldValue ? oldValueInterface : null, customChangeFunction);
+        return new AsyncMapInput<>(getInputClass(fullContextList), fullContextList, getActions(), isStrict(), hasOldValue, hasOldValue ? oldValueInterface : null, customChangeFunction);
     }
 
 //    FormInteractiveAction doesn't include contextFilters, so not sure that InputAction should

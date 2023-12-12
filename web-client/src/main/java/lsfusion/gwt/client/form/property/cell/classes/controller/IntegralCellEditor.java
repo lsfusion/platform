@@ -9,7 +9,7 @@ import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 
 import java.text.ParseException;
 
-public class IntegralCellEditor extends SimpleTextBasedCellEditor implements FormatCellEditor {
+public class IntegralCellEditor extends TextBasedCellEditor implements FormatCellEditor {
     protected final GIntegralType type;
 
     public IntegralCellEditor(GIntegralType type, EditManager editManager, GPropertyDraw property) {

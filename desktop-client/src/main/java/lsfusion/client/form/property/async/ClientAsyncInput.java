@@ -14,6 +14,7 @@ public class ClientAsyncInput extends ClientAsyncFormExec {
     public ClientType changeType;
 
     public ClientInputList inputList;
+    public ClientInputListAction[] inputListActions;
 
     public String customEditorFunction;
 
@@ -27,6 +28,8 @@ public class ClientAsyncInput extends ClientAsyncFormExec {
         this.changeType = ClientTypeSerializer.deserializeClientType(inStream);
         if(inStream.readBoolean())
             this.inputList = ClientAsyncSerializer.deserializeInputList(inStream);
+        if(inStream.readBoolean())
+            this.inputListActions = ClientAsyncSerializer.deserializeInputListActions(inStream);
 
         if (inStream.readBoolean())
             customEditorFunction = inStream.readUTF();

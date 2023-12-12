@@ -1,10 +1,12 @@
 package lsfusion.server.logics.classes.data;
 
+import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.classes.DataType;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.DBType;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.awt.*;
@@ -128,5 +130,14 @@ public class ColorClass extends DataClass<Color> {
         if(set.wasNull())
             return null;
         return read(anInt);
+    }
+
+    public String getInputType(FormInstanceContext context) {
+        return "color";
+    }
+
+    @Override
+    public FlexAlignment getValueAlignment() {
+        return FlexAlignment.CENTER;
     }
 }

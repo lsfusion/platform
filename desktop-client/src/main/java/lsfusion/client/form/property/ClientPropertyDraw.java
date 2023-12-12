@@ -93,6 +93,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public ClientClass returnClass;
 
     public String tag;
+    public String inputType;
     public String valueElementClass;
     public String captionElementClass;
     public boolean toolbar;
@@ -485,11 +486,11 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public Integer getInputActionIndex(KeyEvent editEvent) {
-        ClientInputList inputList = getInputList();
-        if (inputList != null) {
+        ClientInputListAction[] inputListActions = getInputListActions();
+        if (inputListActions != null) {
             KeyStroke eventKeyStroke = KeyStroke.getKeyStrokeForEvent(editEvent);
-            for (int i = 0; i < inputList.actions.length; i++) {
-                ClientInputListAction action = inputList.actions[i];
+            for (int i = 0; i < inputListActions.length; i++) {
+                ClientInputListAction action = inputListActions[i];
                 if (eventKeyStroke.equals(action.keyStroke)) {
                     return action.index;
                 }
@@ -499,9 +500,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public Integer getDialogInputActionIndex() {
-        ClientInputList inputList = getInputList();
-        if (inputList != null) {
-            return getDialogInputActionIndex(inputList.actions);
+        ClientInputListAction[] inputListActions = getInputListActions();
+        if (inputListActions != null) {
+            return getDialogInputActionIndex(inputListActions);
         }
         return null;
     }
@@ -636,6 +637,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             valueType = ClientTypeSerializer.deserializeClientType(inStream);
 
         tag = pool.readString(inStream);
+        inputType = pool.readString(inStream);
         valueElementClass = pool.readString(inStream);
         captionElementClass = pool.readString(inStream);
         toolbar = pool.readBoolean(inStream);
@@ -770,6 +772,12 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         ClientAsyncEventExec asyncExec = asyncExecMap.get(ServerResponse.CHANGE);
         ClientAsyncInput changeType = asyncExec instanceof ClientAsyncInput ? (ClientAsyncInput) asyncExec : null;
         return changeType != null ? changeType.inputList : null;
+    }
+
+    public ClientInputListAction[] getInputListActions() {
+        ClientAsyncEventExec asyncExec = asyncExecMap.get(ServerResponse.CHANGE);
+        ClientAsyncInput changeType = asyncExec instanceof ClientAsyncInput ? (ClientAsyncInput) asyncExec : null;
+        return changeType != null ? changeType.inputListActions : null;
     }
 
     private void initEditBindingMap() {

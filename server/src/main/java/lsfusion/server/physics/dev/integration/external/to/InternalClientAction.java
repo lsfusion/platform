@@ -96,6 +96,6 @@ public class InternalClientAction extends CallAction {
         if (type == ChangeFlowType.INTERNALASYNC)
             return !syncType;
 
-        return true;
+        return super.hasFlow(type);
     }
 }

@@ -29,6 +29,7 @@ import java.util.function.Predicate;
 
 import static java.lang.Math.max;
 import static lsfusion.gwt.client.base.GwtSharedUtils.isRedundantString;
+import static lsfusion.gwt.client.base.GwtSharedUtils.replicate;
 import static lsfusion.gwt.client.view.MainFrame.colorTheme;
 
 public class GwtClientUtils {
@@ -61,12 +62,6 @@ public class GwtClientUtils {
     // GWT utility methods
     public native static void init() /*-{
         $wnd.lsfUtils = {
-            isInputKeyEvent: function (event, multiLine) {
-                return @lsfusion.gwt.client.form.event.GKeyStroke::isInputKeyEventBoolean(*)(event, multiLine);
-            },
-            isCharNavigateKeyEvent: function (event) {
-                return @lsfusion.gwt.client.form.event.GKeyStroke::isCharNavigateKeyEvent(*)(event);
-            },
             setFocusElement: function (element, focusElement) {
                 return @lsfusion.gwt.client.form.property.cell.view.CellRenderer::setFocusElement(*)(element, focusElement);
             },
@@ -88,15 +83,15 @@ public class GwtClientUtils {
         }
     }-*/;
 
-    public static InputElement createCheckInputElement() {
-        InputElement input = createInputElement("checkbox");
-        input.setAttribute("value", "on");
-        return input;
-    };
     public static InputElement createInputElement(String type) {
-        InputElement input = (InputElement) createFocusElement("input");
-        input.setAttribute("type", type);
-        return input;
+        Element input;
+        if(type.equals("textarea")) {
+            input = createFocusElement("textarea");
+        } else {
+            input = createFocusElement("input");
+            input.setAttribute("type", type);
+        }
+        return (InputElement) input;
     };
 
     public native static Element createFocusElement(String tag) /*-{
@@ -984,6 +979,12 @@ public class GwtClientUtils {
         return epochFrom <= epochTo ? PValue.getPValue(epochFrom, epochTo) : null;
     }
 
+    public static String getStep(int precision) {
+        if(precision == 0)
+            return "1";
+        return "0." + replicate('0', precision <= 5 ? precision - 1 : 4) + "1";
+    }
+
     public static String formatInterval(PValue obj, Function<Long, String> formatFunction) {
         return formatFunction.apply(PValue.getIntervalValue(obj, true)) + " - " + formatFunction.apply(PValue.getIntervalValue(obj, false));
     }
@@ -1327,7 +1328,7 @@ public class GwtClientUtils {
     }-*/;
 
     public static native boolean containsLineBreak(String value) /*-{
-        return $wnd.containsLineBreak(value) != null;
+        return $wnd.containsLineBreak(value);
     }-*/;
     public static native boolean containsHtmlTag(String value) /*-{
         return $wnd.containsHtmlTag(value) != null;

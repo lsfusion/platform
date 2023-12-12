@@ -12,7 +12,6 @@ The `options` that go at the end of the statement has the following syntax (the 
 
     HIDETITLE 
     HIDESCROLLBARS 
-    DRAWROOT 
     VERTICAL | HORIZONTAL
     POSITION(x, y, width, height)
     LEFT | RIGHT | TOP | BOTTOM
@@ -48,10 +47,6 @@ The `WINDOW` statement declares a new window and adds it to the current [module]
     - `HIDESCROLLBARS`
 
         Specifying that no scrollbars should be displayed for this window.
-
-    - `DRAWROOT`
-
-        Specifying that the [navigator elements](Navigator.md) whose descendants will be added to this window will also be added to it.
 
     - `VERTICAL` | `HORIZONTAL`
 
@@ -138,8 +133,8 @@ WINDOW root 'Root' TOOLBAR HIDETITLE HIDESCROLLBARS HORIZONTAL POSITION(0, 0, 10
 WINDOW toolbar 'Toolbar' TOOLBAR HIDETITLE VERTICAL POSITION(0, 6, 20, 64);
 WINDOW tree 'Tree' TOOLBAR HIDETITLE POSITION(0, 6, 20, 64);
 
-// menu without scrollbars under the root window
-WINDOW menu MENU HIDESCROLLBARS DRAWROOT POSITION(20, 6, 80, 4);
+// menu without scrollbars
+WINDOW menu MENU HIDESCROLLBARS POSITION(20, 6, 80, 4);
 
 // a horizontal toolbar at the bottom of the desktop, in which all buttons will be centered and text will be aligned up
 // in this toolbar, for example, it is possible to place forms for quick opening

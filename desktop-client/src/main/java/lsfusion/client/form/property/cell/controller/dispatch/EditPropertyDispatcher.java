@@ -40,6 +40,7 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
     private Object oldValue;
     private boolean hasOldValue;
     private ClientInputList readInputList;
+    private ClientInputListAction[] readInputListActions;
     private Callback<Object> updateEditValueCallback;
 
     public EditPropertyDispatcher(EditPropertyHandler handler, DispatcherListener dispatcherListener) {
@@ -59,6 +60,7 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
         hasOldValue = false;
 
         readInputList = null;
+        readInputListActions = null;
         readType = null;
         simpleChangeProperty = null;
         editColumnKey = null;
@@ -69,7 +71,7 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
             ClientFormController form = getFormController();
 
             //async actions
-            ClientAsyncEventExec asyncEventExec = contextAction != null ? property.getInputList().actions[contextAction].asyncExec : property.getAsyncEventExec(actionSID);
+            ClientAsyncEventExec asyncEventExec = contextAction != null ? property.getInputListActions()[contextAction].asyncExec : property.getAsyncEventExec(actionSID);
             if (asyncEventExec != null && asyncEventExec.isDesktopEnabled(canShowDockedModal()))
                 return showConfirmDialog(property) || asyncEventExec.exec(form, this, property, columnKey, actionSID);
             else if (showConfirmDialog(property)) return true;
@@ -97,7 +99,7 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
         this.editColumnKey = columnKey;
         this.simpleChangeProperty = property;
         this.actionSID = actionSID;
-        return internalRequestValue(asyncChange.changeType, asyncChange.inputList, actionSID);
+        return internalRequestValue(asyncChange.changeType, asyncChange.inputList, asyncChange.inputListActions, actionSID);
     }
 
     public boolean internalDispatchServerResponse(ServerResponse response) throws IOException {
@@ -121,7 +123,7 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
         if (readType != null) {
             ClientType editType = readType;
             readType = null;
-            if (!internalRequestValue(editType, readInputList, ServerResponse.INPUT)) {
+            if (!internalRequestValue(editType, readInputList, readInputListActions, ServerResponse.INPUT)) {
                 cancelEdit();
             }
             return true;
@@ -130,10 +132,10 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
         return response.resumeInvocation || editPerformed;
     }
 
-    private boolean internalRequestValue(ClientType readType, ClientInputList inputList, String actionSID) throws IOException {
+    private boolean internalRequestValue(ClientType readType, ClientInputList inputList, ClientInputListAction[] inputListActions, String actionSID) throws IOException {
         valueRequested = true;
         oldValueRequested = handler.getEditValue();
-        return handler.requestValue(readType, hasOldValue ? oldValue : oldValueRequested, inputList, actionSID);
+        return handler.requestValue(readType, hasOldValue ? oldValue : oldValueRequested, inputList, inputListActions, actionSID);
     }
 
     private void internalCommitValue(UserInputResult inputResult) {
@@ -182,6 +184,7 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
             oldValue = deserializeObject(action.oldValue);
             hasOldValue = action.hasOldValue;
             readInputList = ClientAsyncSerializer.deserializeInputList(action.inputList);
+            readInputListActions = ClientAsyncSerializer.deserializeInputListActions(action.inputListActions);
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }

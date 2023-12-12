@@ -73,6 +73,7 @@ import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.controller.CustomReplaceCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.controller.RequestCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.controller.RequestValueCellEditor;
+import lsfusion.gwt.client.form.property.cell.classes.view.InputBasedCellRenderer;
 import lsfusion.gwt.client.form.property.cell.classes.view.LogicalCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.*;
 import lsfusion.gwt.client.form.property.cell.view.*;
@@ -970,7 +971,7 @@ public class GFormController implements EditManager {
             if(isBinding) {
                 if(GKeyStroke.isKeyEvent(event)) // we don't want to set focus on mouse binding (it's pretty unexpected behaviour)
                     editContext.trySetFocusOnBinding(); // we want element to be focused on key binding (if it's possible)
-                actionSID = GEditBindingMap.CHANGE;
+                actionSID = GEditBindingMap.changeOrGroupChange();
             } else {
                 actionSID = property.getEventSID(event, editContext, contextAction);
                 if(actionSID == null)
@@ -1095,8 +1096,9 @@ public class GFormController implements EditManager {
 
     public void asyncInput(EventHandler handler, EditContext editContext, String actionSID, GAsyncInput asyncChange, Consumer<Long> onExec) {
         GInputList inputList = asyncChange.inputList;
-        edit(asyncChange.changeType, handler, false, null, inputList, (value, onRequestExec) ->
-            executePropertyEventAction(handler, editContext, inputList, value, actionSID, false, requestIndex -> {
+        GInputListAction[] inputListActions = asyncChange.inputListActions;
+        edit(asyncChange.changeType, handler, false, null, inputList, inputListActions, (value, onRequestExec) ->
+            executePropertyEventAction(handler, editContext, inputListActions, value, actionSID, false, requestIndex -> {
                 onExec.accept(requestIndex); // setLoading
 
                 // doing that after to set the last value (onExec recursively can also set value)
@@ -1106,16 +1108,16 @@ public class GFormController implements EditManager {
 
     private final static GAsyncNoWaitExec asyncExec = new GAsyncNoWaitExec();
 
-    private void executePropertyEventAction(EventHandler handler, EditContext editContext, GInputList inputList, GUserInputResult value, String actionSID, boolean externalChange, Consumer<Long> onExec) {
-        GInputListAction contextAction = getContextAction(inputList, value);
+    private void executePropertyEventAction(EventHandler handler, EditContext editContext, GInputListAction[] inputListActions, GUserInputResult value, String actionSID, boolean externalChange, Consumer<Long> onExec) {
+        GInputListAction contextAction = getContextAction(inputListActions, value);
         executePropertyEventAction(contextAction != null ? contextAction.asyncExec : asyncExec,
                 handler, editContext, editContext, actionSID, value != null ? new GPushAsyncInput(value) : null, externalChange, onExec);
     }
 
-    private GInputListAction getContextAction(GInputList inputList, GUserInputResult value) {
+    private GInputListAction getContextAction(GInputListAction[] inputListActions, GUserInputResult value) {
         Integer contextActionIndex = value != null ? value.getContextAction() : null;
         if (contextActionIndex != null) {
-            for (GInputListAction action : inputList.actions) {
+            for (GInputListAction action : inputListActions) {
                 if (action.index == contextActionIndex)
                     return action;
             }
@@ -1214,10 +1216,6 @@ public class GFormController implements EditManager {
         });
     }
 
-    // for quick access actions (in toolbar)
-    public void executeContextAction(ExecuteEditContext editContext, int contextAction) {
-        executeContextAction(null, editContext, contextAction);
-    }
     // for quick access actions (in toolbar and keypress)
     public void executeContextAction(EventHandler handler, ExecuteEditContext editContext, int contextAction) {
         executePropertyEventAction(handler, editContext, new GUserInputResult(null, contextAction), requestIndex -> {});
@@ -1225,7 +1223,7 @@ public class GFormController implements EditManager {
 
     // for custom renderer, paste, quick access actions (in toolbar and keypress)
     private void executePropertyEventAction(EventHandler handler, ExecuteEditContext editContext, GUserInputResult value, Consumer<Long> onExec) {
-        executePropertyEventAction(handler, editContext, editContext.getProperty().getInputList(), value, GEditBindingMap.CHANGE, true, requestIndex -> {
+        executePropertyEventAction(handler, editContext, editContext.getProperty().getInputListActions(), value, GEditBindingMap.changeOrGroupChange(), true, requestIndex -> {
             onExec.accept(requestIndex);
 
             setLoading(editContext, requestIndex);
@@ -1600,6 +1598,13 @@ public class GFormController implements EditManager {
             MainFrame.setLastBlurredElement(Element.as(event.getEventTarget()));
         formsController.checkEditModeEvents(event);
         return previewLoadingManagerSinkEvents(event) && MainFrame.previewEvent(target, event, isEditing());
+    }
+
+    public boolean previewEvent(Event event, Element element) {
+        Element target = DataGrid.getBrowserTargetAndCheck(element, event);
+        if(target == null)
+            return false;
+        return previewEvent(target, event);
     }
 
     public GFormController contextEditForm;
@@ -2152,16 +2157,16 @@ public class GFormController implements EditManager {
         return new GAsyncResult(values, needMoreSymbols, moreResults);
     }
 
-    public void edit(GType type, EventHandler handler, boolean hasOldValue, PValue setOldValue, GInputList inputList, BiConsumer<GUserInputResult, Consumer<Long>> afterCommit, Consumer<CancelReason> cancel, EditContext editContext, String actionSID, String customChangeFunction) {
+    public void edit(GType type, EventHandler handler, boolean hasOldValue, PValue setOldValue, GInputList inputList, GInputListAction[] inputListActions, BiConsumer<GUserInputResult, Consumer<Long>> afterCommit, Consumer<CancelReason> cancel, EditContext editContext, String actionSID, String customChangeFunction) {
         assert type != null;
         lsfusion.gwt.client.base.Result<ChangedRenderValue> changedRenderValue = new lsfusion.gwt.client.base.Result<>();
-        edit(type, handler, hasOldValue, setOldValue, inputList, // actually it's assumed that actionAsyncs is used only here, in all subsequent calls it should not be referenced
+        edit(type, handler, hasOldValue, setOldValue, inputList, inputListActions, // actually it's assumed that actionAsyncs is used only here, in all subsequent calls it should not be referenced
                 (inputResult, commitReason) -> changedRenderValue.set(setLocalValue(editContext, type, inputResult.getPValue(), null)),
                 (inputResult, commitReason) -> afterCommit.accept(inputResult, requestIndex -> setRemoteValue(editContext, changedRenderValue.result, requestIndex)),
                 cancel, editContext, actionSID, customChangeFunction);
     }
 
-    public void edit(GType type, EventHandler handler, boolean hasOldValue, PValue oldValue, GInputList inputList, BiConsumer<GUserInputResult, CommitReason> beforeCommit, BiConsumer<GUserInputResult, CommitReason> afterCommit,
+    public void edit(GType type, EventHandler handler, boolean hasOldValue, PValue oldValue, GInputList inputList, GInputListAction[] inputListActions, BiConsumer<GUserInputResult, CommitReason> beforeCommit, BiConsumer<GUserInputResult, CommitReason> afterCommit,
                      Consumer<CancelReason> cancel, EditContext editContext, String editAsyncValuesSID, String customChangeFunction) {
         GPropertyDraw property = editContext.getProperty();
 
@@ -2173,7 +2178,7 @@ public class GFormController implements EditManager {
             if(property.echoSymbols) // disabling dropdown if echo
                 inputList = null;
 
-            cellEditor = type.createCellEditor(this, property, inputList, editContext);
+            cellEditor = type.createCellEditor(this, property, inputList, inputListActions, editContext);
         }
 
         if (cellEditor != null) {
@@ -2395,7 +2400,29 @@ public class GFormController implements EditManager {
         return editContext != null && editContext.getEditElement() == element;
     }
 
-    public static void setBackgroundColor(Element element, String color) {
+
+    // we want to set the colors for the td (not the sized element), since we usually want the background color to include td paddings
+    // it's not pretty, but other solutions also are not (for example pulling td all over the stack, or including it in the update contexts, however later this might change)
+    private static Element getColorElement(Element element) {
+        Element parentElement = element.getParentElement();
+        if(isTDorTH(parentElement))
+            return parentElement;
+        return element;
+    }
+
+    public static void updateColors(Element element, String backgroundColor, String foregroundColor) {
+        setBackgroundColor(element, backgroundColor);
+        setForegroundColor(element, foregroundColor);
+    }
+
+    public static void clearColors(Element element) {
+        setBackgroundColor(element, null);
+        setForegroundColor(element, null);
+    }
+
+    private static void setBackgroundColor(Element element, String color) {
+        element = getColorElement(element);
+
         if(color != null) {
             element.addClassName("cell-with-background");
         } else {
@@ -2409,7 +2436,7 @@ public class GFormController implements EditManager {
         element.style.setProperty("--bs-body-bg", background);
     }-*/;
 
-    public static void setForegroundColor(Element element, String color) {
+    private static void setForegroundColor(Element element, String color) {
         if (color != null) {
             element.getStyle().setColor(color);
         } else {
@@ -2486,7 +2513,9 @@ public class GFormController implements EditManager {
         // there can be the CHANGE event that wasn't started with regular edit mechanism (for example if !isChangeOnSingleClick and user clicks on the input)
         // in this case we have to "cancel" the change
         // probably the same should be done for SimpleTextBasedRenderer but there are no such scenarios for now
-        if(BrowserEvents.CHANGE.equals(handler.event.getType()) && (inputElement = LogicalCellRenderer.getInputEventTarget(renderElement, handler.event)) != null) {
+        if(GKeyStroke.isChangeEvent(handler.event) &&
+                (inputElement = InputBasedCellRenderer.getInputEventTarget(renderElement, handler.event)) != null &&
+                InputBasedCellRenderer.getInputElementType(renderElement).isLogical()) {
             LogicalCellRenderer.cancelChecked(inputElement);
             handler.consume();
         }

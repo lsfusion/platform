@@ -2,16 +2,14 @@ package lsfusion.server.logics.form.interactive.design;
 
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
-import lsfusion.server.base.AppServerImage;
 import lsfusion.interop.base.view.FlexAlignment;
-import lsfusion.interop.form.design.ContainerType;
+import lsfusion.server.base.AppServerImage;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.NeighbourComplexLocation;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFComplexOrderSet;
-import lsfusion.server.language.ScriptParsingException;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
@@ -25,8 +23,6 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-
-import static lsfusion.interop.form.design.ContainerType.*;
 
 public class ContainerView extends ComponentView {
 
@@ -68,7 +64,6 @@ public class ContainerView extends ComponentView {
 
     public boolean collapsed;
 
-    private ContainerType type;
     private DebugInfo.DebugPoint debugPoint;
     private boolean horizontal;
     private boolean tabbed;
@@ -191,7 +186,7 @@ public class ContainerView extends ComponentView {
     }
 
     private boolean hasCaption() {
-        return !PropertyDrawView.hasNoCaption(caption, propertyCaption);
+        return !PropertyDrawView.hasNoCaption(caption, propertyCaption, null);
     }
 
     public void setBorder(boolean border) {
@@ -203,27 +198,11 @@ public class ContainerView extends ComponentView {
     }
 
     public boolean isTabbed() {
-        return type == ContainerType.TABBED_PANE || tabbed;
-    }
-    
-    public boolean isScroll() {
-        return type == ContainerType.SCROLL;
-    }
-
-    public boolean isSplitVertical() {
-        return type == VERTICAL_SPLIT_PANE;
-    }
-
-    public boolean isSplitHorizontal() {
-        return type == HORIZONTAL_SPLIT_PANE;
-    }
-
-    public boolean isSplit() {
-        return isSplitHorizontal() || isSplitVertical();
+        return tabbed;
     }
     
     public boolean isHorizontal() {
-        return type == CONTAINERH || type == HORIZONTAL_SPLIT_PANE || horizontal;
+        return horizontal;
     }
 
     public boolean isGrid() {
@@ -333,15 +312,6 @@ public class ContainerView extends ComponentView {
     // we use Boolean since in desktop and in web there is a different default behaviour
     public Boolean isAlignCaptions() {
         return alignCaptions;
-    }
-
-    public void setType(ContainerType type) {
-        if(type != COLUMNS && this.type == COLUMNS && lines > 1) { // temp check
-//            Supplier<DebugInfo.DebugPoint> debugPoint = ViewProxyUtil.setDebugPoint.get();
-//            ServerLoggers.startLogger.info("WARNING! Now container " + this + "  will have " + lines + " lines. Debug point : " + (debugPoint != null ? debugPoint.get() : "unknown"));
-            lines = 1;
-        }
-        this.type = type;
     }
 
     public void setDebugPoint(DebugInfo.DebugPoint debugPoint) {
@@ -548,20 +518,6 @@ public class ContainerView extends ComponentView {
         
         for(ComponentView child : getChildrenIt())
             child.finalizeAroundInit();
-
-        ImList<ComponentView> childrenList = getChildrenList();
-        if (isSplit() && childrenList.size() != 2) {
-            StringBuilder childrenString = new StringBuilder("");
-            for (int i = 0; i < childrenList.size(); i++) {
-                childrenString.append(childrenList.get(i).getSID());
-                if (i != childrenList.size() - 1) {
-                    childrenString.append(", ");
-                }
-            }
-            throw new ScriptParsingException("Split container is allowed to have exactly two children:\n" +
-                    "\tcontainer: " + getSID() + "\n" +
-                    "\tchildren: " + childrenString.toString());
-        }
     }
 
     @Override

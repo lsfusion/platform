@@ -96,6 +96,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
     private boolean useBootstrap;
     private boolean isNative;
+    private boolean isMobile;
 
     private DataObject connection;
 
@@ -125,6 +126,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         this.client = new ClientCallBackController(port, toString(), this::updateLastUsedTime);
         ClientType clientType = navigatorInfo.clientType;
         this.isNative = clientType == ClientType.NATIVE_DESKTOP || clientType == ClientType.NATIVE_MOBILE;
+        this.isMobile = clientType == ClientType.NATIVE_MOBILE || clientType == ClientType.WEB_MOBILE;
 
         createPausablesExecutor();
 
@@ -205,6 +207,10 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
     public boolean isNative() {
         return isNative;
+    }
+
+    public boolean isMobile() {
+        return isMobile;
     }
 
     public long getLastUsedTime() {

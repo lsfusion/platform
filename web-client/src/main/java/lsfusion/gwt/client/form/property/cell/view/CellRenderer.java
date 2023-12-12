@@ -7,7 +7,7 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.view.ColorUtils;
 import lsfusion.gwt.client.base.view.SizedFlexPanel;
-import lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder;
+import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
@@ -104,7 +104,8 @@ public abstract class CellRenderer {
 //        SimpleTextBasedCellRenderer.getSizeElement(element).addClassName("prop-value-shrink");
 
         if(!renderedAlignment) {
-            assert !GwtClientUtils.isTDorTH(element) && !InputBasedCellRenderer.isToolbarContainer(element);
+            assert !GwtClientUtils.isTDorTH(element);
+//            assert !InputBasedCellRenderer.isToolbarContainer(element); // broken when isInputStretchText
             renderFlexAlignment(property, element, renderContext.getRendererType());
         }
     }
@@ -178,7 +179,7 @@ public abstract class CellRenderer {
 
     public static void renderTextAlignment(GPropertyDraw property, Element element, boolean isInput, RendererType rendererType) {
 //        assert GwtClientUtils.isTDorTH(element) || GwtClientUtils.isInput(element);
-        assert isInput == GwtClientUtils.isInput(element);
+//        assert isInput == GwtClientUtils.isInput(element);
 
         Style.TextAlign horzTextAlignment = property.getHorzTextAlignment(rendererType);
         switch(horzTextAlignment) {
@@ -222,7 +223,7 @@ public abstract class CellRenderer {
             clearRenderFlexAlignment(property, element, renderContext.getRendererType());
 
         // update
-        AbstractDataGridBuilder.clearColors(element);
+        GFormController.clearColors(element);
 
         clearEditSelected(element, property);
 
@@ -387,7 +388,7 @@ public abstract class CellRenderer {
         if(isNew || !equalsValueElementClassState(renderedState, valueElementClass)) {
             renderedState.valueElementClass = valueElementClass;
 
-            BaseImage.updateClasses(element, valueElementClass);
+            BaseImage.updateClasses(InputBasedCellRenderer.getMainElement(element), valueElementClass, "value");
         }
 
         if(valueTooltipHelper != null) {
@@ -396,12 +397,12 @@ public abstract class CellRenderer {
                 renderedState.valueTooltip = valueTooltip;
                 JavaScriptObject valueTippy;
                 if (isNew) {
-                    valueTippy = TooltipManager.initTooltip(element, valueTooltipHelper);
+                    valueTippy = TooltipManager.initTooltip(InputBasedCellRenderer.getMainElement(element), valueTooltipHelper);
                     element.setPropertyObject("valueTippy", valueTippy);
                 } else {
                     valueTippy = (JavaScriptObject) element.getPropertyObject("valueTippy");
                 }
-                TooltipManager.updateContent(valueTippy, element, valueTooltipHelper, valueTooltip);
+                TooltipManager.updateContent(valueTippy, valueTooltipHelper, valueTooltip);
             }
         }
 
@@ -412,7 +413,7 @@ public abstract class CellRenderer {
             renderedState.background = background;
             renderedState.foreground = foreground;
 
-            AbstractDataGridBuilder.updateColors(element, background, foreground);
+            GFormController.updateColors(InputBasedCellRenderer.getMainElement(element), background, foreground);
         }
 
         boolean cleared = false;

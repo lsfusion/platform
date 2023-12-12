@@ -5,7 +5,7 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
 
-public abstract class FormatCellRenderer<T> extends SimpleTextBasedCellRenderer {
+public abstract class FormatCellRenderer<T> extends TextBasedCellRenderer {
 
     protected GFormatType getFormatType(RendererType rendererType) {
         return property.getFormatType(rendererType);

@@ -164,7 +164,7 @@ public class GKeyStroke implements Serializable {
         return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_F2;
     }
 
-    public static boolean isGroupChangeKeyEvent(Event event) {
+    public static boolean isGroupChangeKeyEvent(NativeEvent event) {
         return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_F12;
     }
 
@@ -188,15 +188,9 @@ public class GKeyStroke implements Serializable {
         return ((isCharAddKeyEvent(event) && (editEventFilter == null || editEventFilter.accept(event))) || isCharDeleteKeyEvent(event));
     }
 
-    public static boolean isInputKeyEventBoolean(Event event, boolean isMultiLine) {
-        return isInputKeyEvent(event, () -> isMultiLine);
-    }
-    public static boolean isCharNavigateKeyEvent(Event event) {
-        return isCharNavigateHorzKeyEvent(event) || isCharNavigateVertKeyEvent(event);
-    }
-    public static boolean isInputKeyEvent(Event event, BooleanSupplier isMultiLine) {
+    public static boolean isInputKeyEvent(Event event, boolean isNavigateInput, boolean isMultiLine) {
         return isCharModifyKeyEvent(event, null) || isMobileKeyEvent(event) ||
-                isCharNavigateHorzKeyEvent(event) || (isCharNavigateVertKeyEvent(event) && isMultiLine.getAsBoolean()) || isPasteFromClipboardEvent(event);
+                (isNavigateInput && (isCharNavigateHorzKeyEvent(event) || (isCharNavigateVertKeyEvent(event) && isMultiLine))) || isPasteFromClipboardEvent(event);
     }
 
     //https://stackoverflow.com/questions/65453381/android-keyboard-keypress-not-returning-anything-keydown-returning-229

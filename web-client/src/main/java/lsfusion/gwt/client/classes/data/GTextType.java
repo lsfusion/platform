@@ -1,12 +1,12 @@
 package lsfusion.gwt.client.classes.data;
 
-import com.google.gwt.dom.client.InputElement;
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.classes.GInputType;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.property.GExtInt;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.async.GInputList;
+import lsfusion.gwt.client.form.property.async.GInputListAction;
 import lsfusion.gwt.client.form.property.cell.classes.controller.RequestValueCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.controller.TextCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.view.TextCellRenderer;
@@ -38,7 +38,7 @@ public class GTextType extends GStringType {
     }
 
     @Override
-    public RequestValueCellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, EditContext editContext) {
+    public RequestValueCellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, GInputListAction[] inputListActions, EditContext editContext) {
         return new TextCellEditor(editManager, editProperty, inputList, editContext);
     }
 
@@ -57,8 +57,9 @@ public class GTextType extends GStringType {
         return "top";
     }
 
+    private final static GInputType inputType = new GInputType("textarea");
     @Override
-    public InputElement createTextInputElement() {
-        return (InputElement) GwtClientUtils.createFocusElement("textarea");
+    public GInputType getValueInputType() {
+        return inputType;
     }
 }

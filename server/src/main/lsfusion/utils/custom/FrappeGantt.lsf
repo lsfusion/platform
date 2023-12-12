@@ -5,9 +5,9 @@ REQUIRE SystemEvents;
 NAMESPACE Utils;
 
 onWebClientLoad() + {
-    INTERNAL CLIENT 'custom_frappe-gantt.css';
-    INTERNAL CLIENT 'custom_frappe-gantt.js';
-
-    INTERNAL CLIENT 'frappe-gantt.css';
-    INTERNAL CLIENT 'frappe-gantt.js';
+    onWebClientLoadData('custom_frappe-gantt.css') <- 1;
+    onWebClientLoadData('custom_frappe-gantt.js') <- 1;
+    
+    onWebClientLoadData('frappe-gantt.css') <- 1;
+    onWebClientLoadData('frappe-gantt.js') <- 1;
 }

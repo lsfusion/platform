@@ -13,6 +13,7 @@ import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.async.ClientInputList;
+import lsfusion.client.form.property.async.ClientInputListAction;
 import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.client.form.property.cell.controller.ClientAbstractCellEditor;
 import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispatcher;
@@ -55,6 +56,7 @@ public abstract class ClientPropertyTable extends TableWidget implements TableTr
     protected ClientType currentEditType;
     protected Object currentEditValue;
     protected ClientInputList currentInputList;
+    protected ClientInputListAction[] currentInputListActions;
     protected String currentActionSID;
     protected boolean editPerformed;
     protected boolean commitingValue;
@@ -130,6 +132,10 @@ public abstract class ClientPropertyTable extends TableWidget implements TableTr
         return currentInputList;
     }
 
+    public ClientInputListAction[] getCurrentInputListActions() {
+        return currentInputListActions;
+    }
+
     public String getCurrentActionSID() {
         return currentActionSID;
     }
@@ -202,7 +208,7 @@ public abstract class ClientPropertyTable extends TableWidget implements TableTr
         return editRow < getRowCount() && editCol < getColumnCount();
     }
 
-    public boolean requestValue(ClientType valueType, Object oldValue, ClientInputList inputList, String actionSID) {
+    public boolean requestValue(ClientType valueType, Object oldValue, ClientInputList inputList, ClientInputListAction[] inputListActions, String actionSID) {
         quickLog("formTable.requestValue: " + valueType);
 
         //пока чтение значения можно вызывать только один раз в одном изменении...
@@ -213,6 +219,7 @@ public abstract class ClientPropertyTable extends TableWidget implements TableTr
         currentEditType = valueType;
         currentEditValue = oldValue;
         currentInputList = inputList;
+        currentInputListActions = inputListActions;
         currentActionSID = actionSID;
 
         if (!super.editCellAt(editRow, editCol, editEvent)) {

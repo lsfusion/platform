@@ -21,6 +21,7 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public LP<?> permissionViewUserRoleActionOrProperty;
     public LP<?> permissionChangeUserRoleActionOrProperty;
     public LP<?> permissionEditObjectsUserRoleActionOrProperty;
+    public LP<?> permissionGroupChangeUserRoleActionOrProperty;
 
     public LP userRoleSID;
     public LP firstRoleUser;
@@ -68,6 +69,7 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         permissionViewUserRoleActionOrProperty = findProperty("namePermissionView[UserRole,ActionOrProperty]");
         permissionChangeUserRoleActionOrProperty = findProperty("namePermissionChange[UserRole,ActionOrProperty]");
         permissionEditObjectsUserRoleActionOrProperty = findProperty("namePermissionEditObjects[UserRole,ActionOrProperty]");
+        permissionGroupChangeUserRoleActionOrProperty = findProperty("namePermissionGroupChange[UserRole,ActionOrProperty]");
 
         propertyPolicyForm = findForm("propertyPolicy");
         actionPolicyForm = findForm("actionPolicy");

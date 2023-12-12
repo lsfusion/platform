@@ -24,6 +24,7 @@ import lsfusion.gwt.client.form.ContainerForm;
 import lsfusion.gwt.client.form.EmbeddedForm;
 import lsfusion.gwt.client.form.PopupForm;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
+import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.object.table.view.GToolbarView;
 import lsfusion.gwt.client.form.property.async.GAsyncExecutor;
@@ -193,9 +194,10 @@ public abstract class FormsController {
         Boolean ctrlKey = eventGetCtrlKey(event);
         Boolean shiftKey = eventGetShiftKey(event);
         Boolean altKey = eventGetAltKey(event);
+        boolean f12 = GKeyStroke.isGroupChangeKeyEvent(event);
         boolean tab = isTabEvent(event);
         if(ctrlKey != null) {
-            boolean onlyCtrl = ctrlKey && (shiftKey == null || !shiftKey) && (altKey == null || !altKey);
+            boolean onlyCtrl = ctrlKey && (shiftKey == null || !shiftKey) && (altKey == null || !altKey) && !f12;
             pressedCtrl = onlyCtrl;
             if (onlyCtrl && !isLinkMode())
                 setForceEditMode(EditMode.LINK);
@@ -203,12 +205,23 @@ public abstract class FormsController {
                 removeForceEditMode();
         }
         if(shiftKey != null) {
-            boolean onlyShift = shiftKey && (ctrlKey == null || !ctrlKey) && (altKey == null || !altKey) && !tab;
+            boolean onlyShift = shiftKey && (ctrlKey == null || !ctrlKey) && (altKey == null || !altKey) && !f12 && !tab;
             pressedShift = onlyShift;
             if (onlyShift && !isDialogMode())
                 setForceEditMode(EditMode.DIALOG);
             if (!onlyShift && isForceDialogMode())
                 removeForceEditMode();
+        }
+        if (f12) {
+            groupChangeMode = true;
+            GwtClientUtils.stopPropagation(event); //prevent running browser debugger
+        } else if (groupChangeMode) {
+            new Timer() {
+                @Override
+                public void run() {
+                    groupChangeMode = false;
+                }
+            }.schedule(250);
         }
     }
 
@@ -229,6 +242,8 @@ public abstract class FormsController {
     private static EditMode prevEditMode;
     private static EditMode forceEditMode;
 
+    private static boolean groupChangeMode;
+
     private static boolean isForceLinkMode() {
         return forceEditMode == EditMode.LINK;
     }
@@ -241,6 +256,10 @@ public abstract class FormsController {
     }
     public static boolean isDialogMode() {
         return editMode == EditMode.DIALOG;
+    }
+
+    public static boolean isGroupChangeMode() {
+        return groupChangeMode;
     }
 
     public static int getEditModeIndex() {

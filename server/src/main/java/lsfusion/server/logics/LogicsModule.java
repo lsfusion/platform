@@ -1011,7 +1011,7 @@ public abstract class LogicsModule {
                                                                                               ImList<InputContextAction<?, T>> contextActions, String customEditorFunction, boolean notNull) {
         InputContextSelector<T> contextSelector = null;
         if(contextList == null && contextFilter == null && valueProperty != null) {
-            if((Property.isDefaultWYSInput(valueClass) || valueClass instanceof ColorClass) && !valueProperty.disableInputList) { // && // if string and not disabled
+            if((Property.isDefaultWYSInput(valueClass)) && !valueProperty.disableInputList) { // && // if string and not disabled
                 contextList = new InputListEntity<>(valueProperty, MapFact.EMPTYREV());
 
                 // we're doing this with a "selector", because at this point not stats is available (synchronizeDB has not been run yet)
@@ -1038,15 +1038,15 @@ public abstract class LogicsModule {
                                                              ImOrderSet<T> orderInterfaces, InputListEntity<?, T> contextList,
                                                              FormSessionScope contextScope, InputContextSelector<T> contextSelector,
                                                              ImList<InputContextAction<?, T>> contextActions, String customEditorFunction, boolean notNull) {
+        // adding reset action
+        if (!notNull && targetProp != null) {
+            contextActions = ListFact.add(contextActions, InputListEntity.getResetAction(baseLM, targetProp));
+        }
+
         if(contextList != null) {
 
             if (contextScope == FormSessionScope.NEWSESSION) {
                 contextList = contextList.newSession();
-            }
-
-            // adding reset action
-            if (!notNull) {
-                contextActions = ListFact.add(contextActions, InputListEntity.getResetAction(baseLM, targetProp));
             }
 
             if (valueClass instanceof ConcreteCustomClass) {
@@ -1054,7 +1054,7 @@ public abstract class LogicsModule {
                 contextActions = ListFact.add(contextList.getNewEditAction(baseLM, (ConcreteCustomClass) valueClass, targetProp, contextScope), contextActions);
             }
         }
-        
+
         return addAction(null, new LA(new InputAction(LocalizedString.create("Input"), valueClass, targetProp, hasOldValue, orderInterfaces, contextList, contextSelector, contextActions, customEditorFunction)));
     }
 

@@ -1,8 +1,10 @@
 package lsfusion.gwt.client.base.exception;
 
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.Widget;
@@ -28,6 +30,11 @@ public class ErrorDialog extends DialogModalWindow {
 
         Widget message = new HTML(messageHTML);
         body.add(message);
+
+        Style messageStyle = message.getElement().getStyle();
+        messageStyle.setProperty("overflow", "auto");
+        messageStyle.setProperty("maxWidth", (Window.getClientWidth() * 0.9) + "px");
+        messageStyle.setProperty("maxHeight", (Window.getClientHeight() * 0.3) + "px");
 
         if (javaStack != null || lsfStack != null) {
             stacks = new FlexTabbedPanel();

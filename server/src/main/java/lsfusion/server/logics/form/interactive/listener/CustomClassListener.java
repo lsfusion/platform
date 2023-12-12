@@ -14,4 +14,5 @@ public interface CustomClassListener {
 
     boolean isUseBootstrap(); // temporary - later some separate interface should be used
     boolean isNative(); // temporary - later some separate interface should be used
+    boolean isMobile(); // temporary - later some separate interface should be used
 }

@@ -827,7 +827,7 @@ public class ScriptingFormEntity {
         MappedActionOrProperty prop = LM.getPropertyWithMapping(form, property, null);
         return form.addPropertyObject((LA)prop.property, prop.mapping);
     }
-    
+
     public void addScriptedUserFilters(List<PropertyDrawEntity> properties, Version version) {
         for (PropertyDrawEntity property : properties) {
             form.addUserFilter(property, version);

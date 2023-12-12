@@ -141,7 +141,6 @@ To access design components, you can use their names or address property compone
 |`wrap`|todo|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`resizeOverflow`|todo|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`custom`|todo|String literal|NULL|todo|
-|`columns`|Number of columns in a `COLUMNS` type container<br/>**deprecated since version 5, use `lines`**|Integer literal|`1`|`3`|
 |`lines`|Number of lines (rows or columns) in container|Integer literal|`1`|`3`|
 |`lineSize`|todo|Integer literal|NULL|todo|
 |`captionLineSize`|todo|Integer literal|NULL|todo|
@@ -275,11 +274,10 @@ To access design components, you can use their names or address property compone
     The type of an object group / tree container.
 
     - All types of containers of the `noGroupObjectTreeContainerType` form (identical semantics)
-    - `GRIDBOX` - a table container<br/>**deprecated since version 5, use `GRID`**
     - `GRID` - a table component
     - `TOOLBARSYSTEM` - a system toolbar (number of records, group adjustment, etc.).
     - `FILTERGROUPS` - contains filter group components
-    - `USERFILTER` - a component that displays custom filters<br/>**deprecated since version 5, use `FILTERS`**
+    - `FILTERS` - a component that displays custom filters<br/>**deprecated since version 5, use `FILTERS`**
 
 ## Examples
 
@@ -290,7 +288,6 @@ DESIGN order { // customizing the design of the form, starting with the default 
     // in which we put two containers - header and specifications
     NEW orderPane FIRST { 
         fill = 1; // specifying that the container should occupy all the space available to it
-        type = SPLITV; // specifying that the container will be a vertical splitter
         MOVE BOX(o) { // moving everything related to the object o to the new container
             PANEL(o) { // configuring how properties are displayed in the object o panel
                 horizontal = FALSE; // making all descendants go from top to bottom
@@ -300,7 +297,7 @@ DESIGN order { // customizing the design of the form, starting with the default 
                         // "override" the property caption in the form design (instead of the standard one)
                         caption = 'Date of the edited order'; 
                         // setting a hint for the order date property
-                        toolTip = 'Input here the date the order was made'; 
+                        tooltip = 'Input here the date the order was made'; 
                         background = #00FFFF; // making the background red
                     }
                     MOVE PROPERTY(time(o)) { // moving the order time property

@@ -108,7 +108,8 @@ public class IntegerClass extends IntClass<Integer> {
 
     @Override
     public OverJDBField formatDBF(String fieldName) throws JDBFException {
-        return OverJDBField.createField(fieldName, 'N', Math.min(getWhole(), 253), getScale());
+        //values below zero need +1 for minus sign
+        return OverJDBField.createField(fieldName, 'N', getWhole() + 1, getScale());
     }
 
     @Override
