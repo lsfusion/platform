@@ -8,8 +8,13 @@ onDesktopClientStarted  ABSTRACT LIST ( );
 onWebClientStarted  ABSTRACT LIST ( );
 
 onWebClientLoad ABSTRACT LIST ();
+onWebClientLoadData = DATA LOCAL INTEGER (STRING);
 onWebClientStarted () +{ 
     onWebClientLoad();
+
+    FOR onWebClientLoadData(STRING s) ORDER onWebClientLoadData(s) DO {
+        INTERNAL CLIENT s;
+    }
 
     INTERNAL CLIENT 'input-quill.js';
     INTERNAL CLIENT 'input-quill.css';
