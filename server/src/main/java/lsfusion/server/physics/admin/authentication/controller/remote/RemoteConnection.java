@@ -443,7 +443,8 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
             businessLogics.LM.contentType.change(request.contentType, session);
         }
         if (action.uses(businessLogics.LM.body.property)) {
-            businessLogics.LM.body.change(new RawFileData(request.body), session);
+            byte[] body = request.body;
+            businessLogics.LM.body.change(body != null ? new RawFileData(body) : null, session);
         }
         if (action.uses(businessLogics.LM.appHost.property)) {
             businessLogics.LM.appHost.change(request.appHost, session);

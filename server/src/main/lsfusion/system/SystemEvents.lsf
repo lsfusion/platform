@@ -12,6 +12,7 @@ onWebClientLoad ABSTRACT LIST ();
 onLoginLoad = ABSTRACT CASE INTEGER(STRING);
 onWebClientLoad = ABSTRACT CASE INTEGER(STRING);
 onWebClientLoadData = DATA LOCAL INTEGER (STRING);
+onWebClientLoad(STRING s) += WHEN onWebClientLoadData(s) THEN onWebClientLoadData(s);
 
 onStartedApply() {
     onStarted();
@@ -240,8 +241,6 @@ onWebClientLoad() + {
     onWebClientLoadData('selectize.min.js') <- 30;
     onWebClientLoadData('input.js') <- 31;
 }
-
-onWebClientLoad(STRING s) += WHEN onWebClientLoadData(s) THEN onWebClientLoadData(s);
 
 readDBNames INTERNAL 'lsfusion.server.logics.action.ReadDBNamesAction' ();
 currentDBName = DATA LOCAL STRING ();
