@@ -277,13 +277,15 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                 if ((webClientAuthSecret == null || !webClientAuthSecret.equals(getWebClientSecret())))
                     throw new AuthenticationException(getString("exceptions.incorrect.web.client.auth.token"));
 
+                List<String> userRoles = null;
                 userObject = readUser(oauth2.getUserName(), session);
-                if (userObject == null)
+                if (userObject == null) {
                     userObject = addUser(oauth2.getUserName(), BaseUtils.generatePassword(20, false, true), session);
+                    userRoles = Collections.singletonList("selfRegister");
+                }
 
                 // Because user data can change on the oauth2 provider side - we will update userParameters on each authentication.
-                setUserParameters(userObject, oauth2.getFirstName(), oauth2.getLastName(), oauth2.getEmail(),
-                        Collections.singletonList("selfRegister"), oauth2.getAttributes(),  session);
+                setUserParameters(userObject, oauth2.getFirstName(), oauth2.getLastName(), oauth2.getEmail(), userRoles, oauth2.getAttributes(),  session);
                 apply(session, stack);
             }
             if (authenticationLM.isLockedCustomUser.read(session, userObject) != null) {
