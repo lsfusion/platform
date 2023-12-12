@@ -82,9 +82,14 @@ public class GwtClientUtils {
     }-*/;
 
     public static InputElement createInputElement(String type) {
-        InputElement input = (InputElement) createFocusElement("input");
-        input.setAttribute("type", type);
-        return input;
+        Element input;
+        if(type.equals("textarea")) {
+            input = createFocusElement("textarea");
+        } else {
+            input = createFocusElement("input");
+            input.setAttribute("type", type);
+        }
+        return (InputElement) input;
     };
 
     public native static Element createFocusElement(String tag) /*-{
