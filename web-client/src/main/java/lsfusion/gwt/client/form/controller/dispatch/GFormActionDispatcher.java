@@ -72,6 +72,11 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     }
 
     @Override
+    protected void onServerInvocationFailed(ExceptionResult exceptionResult) {
+        form.onServerInvocationFailed(exceptionResult);
+    }
+
+    @Override
     public Object execute(GChooseClassAction action) {
         pauseDispatching();
         Result<Object> result = new Result<>();

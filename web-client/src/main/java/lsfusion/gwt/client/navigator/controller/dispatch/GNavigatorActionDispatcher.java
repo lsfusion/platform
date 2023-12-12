@@ -7,6 +7,7 @@ import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.ContinueNavigatorAction;
 import lsfusion.gwt.client.controller.remote.action.navigator.ThrowInNavigatorAction;
 import lsfusion.gwt.client.form.controller.FormsController;
+import lsfusion.gwt.client.form.controller.dispatch.ExceptionResult;
 import lsfusion.gwt.client.navigator.controller.GNavigatorController;
 import lsfusion.gwt.client.navigator.window.view.WindowsController;
 import lsfusion.gwt.client.view.MainFrame;
@@ -56,6 +57,11 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
     @Override
     protected void onServerInvocationResponse(ServerResponseResult response) {
         formsController.onServerInvocationResponse(response, getAsyncFormController(response.requestIndex));
+    }
+
+    @Override
+    protected void onServerInvocationFailed(ExceptionResult exceptionResult) {
+        formsController.onServerInvocationFailed(getAsyncFormController(exceptionResult.requestIndex));
     }
 
     @Override

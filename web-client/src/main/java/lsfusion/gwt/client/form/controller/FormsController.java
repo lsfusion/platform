@@ -52,6 +52,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.function.Supplier;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.findInList;
 import static lsfusion.gwt.client.form.event.GKeyStroke.isTabEvent;
@@ -177,13 +178,24 @@ public abstract class FormsController {
     }
 
     public void onServerInvocationResponse(ServerResponseResult response, GAsyncFormController asyncFormController) {
+        onServerInvocation(asyncFormController,
+                () -> Arrays.stream(response.actions).noneMatch(a -> a instanceof GFormAction),
+                () -> Arrays.stream(response.actions).noneMatch(a -> a instanceof GHideFormAction));
+    }
+
+    public void onServerInvocationFailed(GAsyncFormController asyncFormController) {
+        onServerInvocation(asyncFormController, () -> true, () -> true);
+    }
+
+    public void onServerInvocation(GAsyncFormController asyncFormController,
+                                   Supplier<Boolean> checkOpenForm, Supplier<Boolean> checkHideForm) {
         if (asyncFormController.onServerInvocationOpenResponse()) {
-            if (Arrays.stream(response.actions).noneMatch(a -> a instanceof GFormAction)) {
+            if (checkOpenForm.get()) {
                 asyncFormController.removeAsyncForm().queryHide(CancelReason.OTHER);
             }
         }
         if (asyncFormController.onServerInvocationCloseResponse()) {
-            if (Arrays.stream(response.actions).noneMatch(a -> a instanceof GHideFormAction)) {
+            if (checkHideForm.get()) {
                 Pair<FormDockable, Integer> asyncClosedForm = asyncFormController.removeAsyncClosedForm();
                 asyncClosedForm.first.showDockable(asyncClosedForm.second);
             }
@@ -473,9 +485,8 @@ public abstract class FormsController {
                     BaseImage.initImageText(captionWidget, openForm.caption, openForm.appImage, false);
 
                 formContainer.setContentLoading();
-
-                asyncFormController.putAsyncForm(formContainer);
                 formContainer.show(asyncFormController);
+                asyncFormController.putAsyncForm(formContainer);
             };
             // this types because for them size is unknown, so there'll be blinking
             if(isAutoSized(editContext, windowType))
