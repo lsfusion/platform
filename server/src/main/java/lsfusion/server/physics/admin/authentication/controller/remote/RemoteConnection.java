@@ -56,6 +56,8 @@ import java.util.Locale;
 import java.util.TimeZone;
 import java.util.concurrent.Callable;
 
+import static lsfusion.base.BaseUtils.getNotNullStringArray;
+
 public abstract class RemoteConnection extends RemoteRequestObject implements RemoteConnectionInterface {
 
     protected SQLSession sql;
@@ -417,12 +419,10 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     public void writeRequestInfo(DataSession session, Action<?> action, ExternalRequest request) throws SQLException, SQLHandledException {
         ExecutionEnvironment env = session;
         if (action.uses(businessLogics.LM.headers.property)) {
-            ExternalHTTPAction.writePropertyValues(session, env, businessLogics.LM.headers, request.headerNames, request.headerValues);
+            ExternalHTTPAction.writePropertyValues(session, env, businessLogics.LM.headers, getNotNullStringArray(request.headerNames), getNotNullStringArray(request.headerValues));
         }
         if (action.uses(businessLogics.LM.cookies.property)) {
-            String[] cookieNames = request.cookieNames;
-            String[] cookieValues = request.cookieValues;
-            ExternalHTTPAction.writePropertyValues(session, env, businessLogics.LM.cookies, cookieNames == null ? new String[0] : cookieNames, cookieValues == null ? new String[0] : cookieValues);
+            ExternalHTTPAction.writePropertyValues(session, env, businessLogics.LM.cookies, getNotNullStringArray(request.cookieNames), getNotNullStringArray(request.cookieValues));
         }
         if (action.uses(businessLogics.LM.query.property)) {
             businessLogics.LM.query.change(request.query, session);

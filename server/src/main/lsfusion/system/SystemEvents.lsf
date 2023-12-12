@@ -241,6 +241,8 @@ onWebClientLoad() + {
     onWebClientLoadData('input.js') <- 31;
 }
 
+onWebClientLoad(STRING s) += WHEN onWebClientLoadData(s) THEN onWebClientLoadData(s);
+
 readDBNames INTERNAL 'lsfusion.server.logics.action.ReadDBNamesAction' ();
 currentDBName = DATA LOCAL STRING ();
 unusedDBNames = DATA LOCAL STRING (STRING);
