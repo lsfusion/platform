@@ -164,8 +164,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
                         @Override
                         public void onFailure(ExceptionResult exceptionResult) {
-                            if(fOnRequestFinished != null)
-                                fOnRequestFinished.run();
+                            dispatchServerFailed(exceptionResult, fOnRequestFinished);
                             super.onFailure(exceptionResult);
                         }
                     };
