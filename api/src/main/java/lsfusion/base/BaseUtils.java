@@ -2068,4 +2068,8 @@ public class BaseUtils {
     public static boolean endsWithIgnoreCase(String s, String suffix) {
         return s != null && suffix != null && s.toLowerCase().endsWith(suffix.toLowerCase());
     }
+
+    public static String[] getNotNullStringArray(String[] array) {
+        return array == null ? new String[0] : array;
+    }
 }

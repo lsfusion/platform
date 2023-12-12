@@ -791,14 +791,11 @@ getClientSettings(User user) + WHEN TRUE AND user IS User THEN {
     LOCAL webClientLoadedResources = RAWFILE(STRING);
     LOCAL webClientLoadedResourcesOrder = INTEGER(STRING);
     IF isWeb() THEN {
+        onWebClientLoad();
+
         LOCAL onWebLoad = INTEGER(STRING);
         onWebLoad (STRING s) <- onWebClientLoad(s);
 
-        IF useBootstrap() THEN
-            onWebLoad (STRING s) <- onWebClientLoadBootstrap(s) WHERE onWebClientLoadBootstrap(s);
-        ELSE
-            onWebLoad (STRING s) <- onWebClientLoadNotBootstrap(s) WHERE onWebClientLoadNotBootstrap(s);
-            
         FOR onWebLoad(STRING s) ORDER onWebLoad(s) DO {
             readResource(s);
             webClientLoadedResources(resourcePath()) <- RAWFILE (resource());

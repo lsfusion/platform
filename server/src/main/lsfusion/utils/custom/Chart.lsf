@@ -5,7 +5,6 @@ REQUIRE SystemEvents;
 NAMESPACE Utils;
 
 onWebClientLoad() + {
-    INTERNAL CLIENT 'custom_chart.js';
-
-    INTERNAL CLIENT 'chart.js';
+    onWebClientLoadData('custom_chart.js') <- 1;
+    onWebClientLoadData('chart.js') <- 1;
 }

@@ -34,7 +34,6 @@ import lsfusion.server.logics.navigator.controller.env.*;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.physics.admin.Settings;
-import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
 import lsfusion.server.physics.admin.log.LogInfo;
 import lsfusion.server.physics.admin.log.ServerLoggers;
@@ -56,6 +55,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.concurrent.Callable;
+
+import static lsfusion.base.BaseUtils.getNotNullStringArray;
 
 public abstract class RemoteConnection extends RemoteRequestObject implements RemoteConnectionInterface {
 
@@ -418,10 +419,10 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     public void writeRequestInfo(DataSession session, Action<?> action, ExternalRequest request) throws SQLException, SQLHandledException {
         ExecutionEnvironment env = session;
         if (action.uses(businessLogics.LM.headers.property)) {
-            ExternalHTTPAction.writePropertyValues(session, env, businessLogics.LM.headers, request.headerNames, request.headerValues);
+            ExternalHTTPAction.writePropertyValues(session, env, businessLogics.LM.headers, getNotNullStringArray(request.headerNames), getNotNullStringArray(request.headerValues));
         }
         if (action.uses(businessLogics.LM.cookies.property)) {
-            ExternalHTTPAction.writePropertyValues(session, env, businessLogics.LM.cookies, request.cookieNames, request.cookieValues);
+            ExternalHTTPAction.writePropertyValues(session, env, businessLogics.LM.cookies, getNotNullStringArray(request.cookieNames), getNotNullStringArray(request.cookieValues));
         }
         if (action.uses(businessLogics.LM.query.property)) {
             businessLogics.LM.query.change(request.query, session);
@@ -442,7 +443,8 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
             businessLogics.LM.contentType.change(request.contentType, session);
         }
         if (action.uses(businessLogics.LM.body.property)) {
-            businessLogics.LM.body.change(new RawFileData(request.body), session);
+            byte[] body = request.body;
+            businessLogics.LM.body.change(body != null ? new RawFileData(body) : null, session);
         }
         if (action.uses(businessLogics.LM.appHost.property)) {
             businessLogics.LM.appHost.change(request.appHost, session);
