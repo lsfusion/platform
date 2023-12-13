@@ -87,6 +87,12 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         );
     }
 
+    @Override
+    protected void onDetach() {
+        hidePopup(popupObject);
+        super.onDetach();
+    }
+
     public Element getTableDataFocusElement() {
         return tableContainer.getFocusElement();
     }

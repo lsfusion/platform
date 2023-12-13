@@ -813,6 +813,12 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         }
     }
 
+    @Override
+    protected void onDetach() {
+        super.onDetach();
+        GwtClientUtils.hideTippyPopup(popup.result);
+    }
+
     private static class Record extends JavaScriptObject {
 
         protected Record() {
@@ -1929,8 +1935,8 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
 
     }-*/;
 
+    final Result<JavaScriptObject> popup = new Result<>();
     private void cellDblClickAction(JsArrayMixed rowKeyValues, JsArrayMixed colKeyValues, Element td) {
-        final Result<JavaScriptObject> popup = new Result<>();
         List<String> menuItems = new ArrayList<>();
         JsArrayString cols = config.getArrayString("cols");
         JsArrayString rows = config.getArrayString("rows");

@@ -18,14 +18,14 @@ public class GPropertyContextMenuPopup {
         void onMenuItemSelected(String actionSID);
     }
 
-    public static void show(GPropertyDraw property, Element element, final ItemSelectionListener selectionListener) {
+    public static JavaScriptObject show(GPropertyDraw property, Element element, final ItemSelectionListener selectionListener) {
         if (property == null) {
-            return;
+            return null;
         }
 
         LinkedHashMap<String, String> contextMenuItems = property.getContextMenuItems();
         if (contextMenuItems == null || contextMenuItems.isEmpty()) {
-            return;
+            return null;
         }
 
         final Result<JavaScriptObject> popup = new Result<>();
@@ -52,6 +52,7 @@ public class GPropertyContextMenuPopup {
         }
 
         popup.result = GwtClientUtils.showTippyPopup(element, menuBar);
+        return popup.result;
     }
     
     private static String ensureMenuItemCaption(String caption) {

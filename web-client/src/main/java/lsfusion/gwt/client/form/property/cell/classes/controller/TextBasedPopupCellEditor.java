@@ -15,7 +15,7 @@ import java.text.ParseException;
 
 public abstract class TextBasedPopupCellEditor extends TextBasedCellEditor {
 
-    private JavaScriptObject popup;
+    protected JavaScriptObject popup;
     protected InputElement editBox;
     public TextBasedPopupCellEditor(EditManager editManager, GPropertyDraw property) {
         super(editManager, property);

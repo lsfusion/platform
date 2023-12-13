@@ -33,6 +33,7 @@ public final class FormDockable extends WidgetForm {
         return contentWidget.getElement();
     }
 
+    Result<JavaScriptObject> popup = new Result<>();
     public FormDockable(FormsController formsController, String canonicalName, boolean async, Event editEvent) {
         super(formsController, async, editEvent, GFormLayout.createTabCaptionWidget());
 
@@ -41,7 +42,6 @@ public final class FormDockable extends WidgetForm {
         captionWidget.addDomHandler(event -> {
             GwtClientUtils.stopPropagation(event);
 
-            Result<JavaScriptObject> popup = new Result<>();
             final MenuBar menuBar = new MenuBar(true);
             menuBar.addItem(new MenuItem(ClientMessages.Instance.get().closeAllTabs(), () -> {
                 GwtClientUtils.hideTippyPopup(popup.result);
@@ -65,6 +65,7 @@ public final class FormDockable extends WidgetForm {
 
     @Override
     public void hide(EndReason editFormCloseReason) {
+        GwtClientUtils.hideTippyPopup(popup.result);
         formsController.removeDockable(this);
     }
 
