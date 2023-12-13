@@ -12,6 +12,12 @@ onWebClientInit = DATA LOCAL INTEGER (STRING);
 
 onLoginLoad = ABSTRACT CASE INTEGER(STRING);
 
+// todo onWebClientLoad DEPECATED! DO NOT USE! Only for backward compatibility
+onWebClientLoad ABSTRACT LIST ();
+onWebClientStarted () +{
+    onWebClientLoad();
+}
+
 onStartedApply() {
     onStarted();
     APPLY;
