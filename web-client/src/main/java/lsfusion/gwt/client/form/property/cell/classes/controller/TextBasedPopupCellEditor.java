@@ -29,7 +29,7 @@ public abstract class TextBasedPopupCellEditor extends TextBasedCellEditor {
         editBox = inputElement;
 
         if(!inputElementType.hasNativePopup()) {
-            popup = GwtClientUtils.showTippyPopup(RootPanel.get().getElement(), parent, createPopupComponent(parent, oldValue).getElement(), false);
+            popup = GwtClientUtils.showTippyPopup(RootPanel.get().getElement(), parent, createPopupComponent(parent, oldValue).getElement(), null, false);
         }
     }
 

@@ -1,9 +1,6 @@
 package lsfusion.gwt.client.base;
 
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.client.JsArray;
-import com.google.gwt.core.client.JsDate;
+import com.google.gwt.core.client.*;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.DomEvent;
 import com.google.gwt.i18n.client.Dictionary;
@@ -501,21 +498,30 @@ public class GwtClientUtils {
     }
 
     public static JavaScriptObject showTippyPopup(Element popupElementClicked, Widget popupWidget) {
+        return showTippyPopup(popupElementClicked, popupWidget, null);
+    };
+
+    public static JavaScriptObject showTippyPopup(Element popupElementClicked, Widget popupWidget, Runnable onHideAction) {
         RootPanel.get().add(popupWidget);
-        return showTippyPopup(popupElementClicked, popupWidget.getElement());
+        return showTippyPopup(RootPanel.get().getElement(), popupElementClicked, popupWidget.getElement(), onHideAction, true);
     };
 
     public static JavaScriptObject showTippyPopup(Element popupElementClicked, Element popupElement) {
-        return showTippyPopup(RootPanel.get().getElement(), popupElementClicked, popupElement, true);
+        return showTippyPopup(RootPanel.get().getElement(), popupElementClicked, popupElement, null, true);
     };
 
-    public static native JavaScriptObject showTippyPopup(Element appendToElement, Element popupElementClicked, Element popupElement, boolean show)/*-{
+    public static native JavaScriptObject showTippyPopup(Element appendToElement, Element popupElementClicked, Element popupElement, Runnable onHideAction, boolean show)/*-{
         var popup = $wnd.tippy(popupElementClicked, {
             appendTo : appendToElement,
             content : popupElement,
             trigger : 'manual',
             interactive : true,
-            allowHTML : true
+            allowHTML : true,
+            onHide: function() {
+                if(onHideAction != null) {
+                    onHideAction.@java.lang.Runnable::run()();
+                }
+            }
         });
         if(show) {
             popup.show();

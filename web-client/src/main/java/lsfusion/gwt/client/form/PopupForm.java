@@ -12,6 +12,7 @@ import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
@@ -21,7 +22,7 @@ import lsfusion.gwt.client.view.MainFrame;
 
 public class PopupForm extends EditingForm {
 
-    public class PopupFormCellEditor extends CellEditor {
+    private class PopupFormCellEditor extends CellEditor {
 
         @Override
         public void start(EventHandler handler, Element parent, PValue oldValue) {
@@ -52,15 +53,13 @@ public class PopupForm extends EditingForm {
 
     private FormContainer prevForm;
 
-    private JavaScriptObject popup = null;
-
     @Override
     public void show(GAsyncFormController asyncFormController) {
         prevForm = MainFrame.getAssertCurrentForm();
         if(prevForm != null) // if there were no currentForm
             prevForm.onBlur(false);
 
-        popup = GwtClientUtils.showTippyPopup(parentElement, formWidget);
+        GwtClientUtils.showTippyPopup(parentElement, formWidget, () -> cellEditor.commit(parentElement, CommitReason.FORCED));
 
         onFocus(true);
     }
@@ -72,12 +71,14 @@ public class PopupForm extends EditingForm {
 
     @Override
     protected void removeFormContent(Widget widget) {
-        GwtClientUtils.hideTippyPopup(popup);
+        this.formWidget = null;
     }
 
+    private PopupFormCellEditor cellEditor;
     @Override
     protected CellEditor createCellEditor() {
-        return new PopupFormCellEditor();
+        cellEditor = new PopupFormCellEditor();
+        return cellEditor;
     }
 
     @Override
