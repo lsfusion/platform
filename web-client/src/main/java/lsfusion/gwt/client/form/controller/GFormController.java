@@ -36,6 +36,7 @@ import lsfusion.gwt.client.form.ContainerForm;
 import lsfusion.gwt.client.form.GUpdateMode;
 import lsfusion.gwt.client.form.classes.view.ClassChosenHandler;
 import lsfusion.gwt.client.form.classes.view.GClassDialog;
+import lsfusion.gwt.client.form.controller.dispatch.ExceptionResult;
 import lsfusion.gwt.client.form.controller.dispatch.FormDispatchAsync;
 import lsfusion.gwt.client.form.controller.dispatch.GFormActionDispatcher;
 import lsfusion.gwt.client.form.design.GComponent;
@@ -846,6 +847,10 @@ public class GFormController implements EditManager {
         formsController.onServerInvocationResponse(response, getAsyncFormController(response.requestIndex));
     }
 
+    public void onServerInvocationFailed(ExceptionResult exceptionResult) {
+        formsController.onServerInvocationFailed(getAsyncFormController(exceptionResult.requestIndex));
+    }
+
     public void showClassDialog(GObjectClass baseClass, GObjectClass defaultClass, boolean concreate, final ClassChosenHandler classChosenHandler) {
         GClassDialog.showDialog(baseClass, defaultClass, concreate, classChosenHandler);
     }
@@ -1568,10 +1573,10 @@ public class GFormController implements EditManager {
             }
 
             @Override
-            public void onFailure(Throwable caught) {
-                callback.onFailure(caught);
+            public void onFailure(ExceptionResult exceptionResult) {
+                callback.onFailure(exceptionResult.throwable);
 
-                super.onFailure(caught);
+                super.onFailure(exceptionResult);
             }
         });
     }
@@ -2077,8 +2082,8 @@ public class GFormController implements EditManager {
     private void getPessimisticValues(int propertyID, GGroupObjectValue columnKey, String actionSID, String value, int index, AsyncCallback<GAsyncResult> callback) {
         asyncDispatch(new GetAsyncValues(propertyID, columnKey, actionSID, value, index), new CustomCallback<ListResult>() {
             @Override
-            public void onFailure(Throwable caught) {
-                callback.onFailure(caught);
+            public void onFailure(ExceptionResult exceptionResult) {
+                callback.onFailure(exceptionResult.throwable);
             }
 
             @Override

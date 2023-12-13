@@ -26,6 +26,7 @@ import lsfusion.gwt.client.controller.remote.action.RequestCountingErrorHandling
 import lsfusion.gwt.client.controller.remote.action.RequestErrorHandlingCallback;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.LogClientExceptionAction;
+import lsfusion.gwt.client.form.controller.dispatch.ExceptionResult;
 import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.view.FormContainer;
@@ -46,6 +47,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     private Runnable currentOnRequestFinished = null;
 
     protected abstract void onServerInvocationResponse(ServerResponseResult response);
+    protected abstract void onServerInvocationFailed(ExceptionResult exceptionResult);
 
     public static abstract class ServerResponseCallback extends RequestCountingErrorHandlingCallback<ServerResponseResult> {
 
@@ -72,12 +74,9 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         }
 
         @Override
-        public void onFailure(Throwable caught) {
-            Runnable onRequestFinished = getOnRequestFinished();
-            if(onRequestFinished != null)
-                onRequestFinished.run();
-
-            super.onFailure(caught);
+        public void onFailure(ExceptionResult exceptionResult) {
+            getDispatcher().dispatchServerFailed(exceptionResult, getOnRequestFinished());
+            super.onFailure(exceptionResult);
         }
     }
 
@@ -164,10 +163,9 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                         }
 
                         @Override
-                        public void onFailure(Throwable caught) {
-                            if(fOnRequestFinished != null)
-                                fOnRequestFinished.run();
-                            super.onFailure(caught);
+                        public void onFailure(ExceptionResult exceptionResult) {
+                            dispatchServerFailed(exceptionResult, fOnRequestFinished);
+                            super.onFailure(exceptionResult);
                         }
                     };
             if (actionThrowable == null) {
@@ -182,6 +180,17 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             if (actionThrowable != null)
                 throw GExceptionManager.propagate(actionThrowable);
         }
+    }
+
+    public void dispatchServerFailed(ExceptionResult exceptionResult, Runnable onRequestFinished) {
+        onServerInvocationFailed(exceptionResult);
+
+        dispatchFailed(onRequestFinished);
+    }
+
+    public void dispatchFailed(Runnable onRequestFinished) {
+        if (onRequestFinished != null)
+            onRequestFinished.run();
     }
 
     protected abstract void throwInServerInvocation(long requestIndex, Throwable t, int continueIndex, RequestAsyncCallback<ServerResponseResult> callback);
