@@ -41,8 +41,8 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
         Element tippyParent = GwtClientUtils.getTippyParent(parent);
         createPicker(tippyParent, parent, getStartDate(oldValue), getEndDate(oldValue), getPattern(), isSinglePicker(), isTimeEditor(), isDateEditor());
 
-        popup.setVisible(false);
-        popup.addAutoHidePartner(getPickerElement());
+        //popup.setVisible(false);
+        //popup.addAutoHidePartner(getPickerElement());
         editBox.click(); // need to dateRangePicker opens immediately. because we use an editBox
         return new SimplePanel();
     }

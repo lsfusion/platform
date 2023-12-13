@@ -14,7 +14,6 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.lambda.EFunction;
 import lsfusion.gwt.client.base.size.GSize;
-import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.base.view.popup.PopupPanel;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.property.PValue;
@@ -498,18 +497,45 @@ public class GwtClientUtils {
 //        element.getStyle().clearProperty("boxSizing");
     }
 
-    public static void showPopupInWindow(PopupDialogPanel popup, Widget widget, int mouseX, int mouseY) {
-        popup.setWidget(widget);
+    public static JavaScriptObject showTippyPopup(Element popupElementClicked, Widget popupWidget) {
+        return showTippyPopup(popupElementClicked, popupWidget, null);
+    };
 
-        showPopup(popup, mouseX, mouseY);
+    public static JavaScriptObject showTippyPopup(Element popupElementClicked, Widget popupWidget, Runnable onHideAction) {
+        RootPanel.get().add(popupWidget);
+        return showTippyPopup(RootPanel.get().getElement(), popupElementClicked, popupWidget.getElement(), onHideAction, true);
+    };
 
-        Scheduler.get().scheduleDeferred(() -> FocusUtils.focus(widget.getElement(), FocusUtils.Reason.SHOW));
-    }
+    public static JavaScriptObject showTippyPopup(Element popupElementClicked, Element popupElement) {
+        return showTippyPopup(RootPanel.get().getElement(), popupElementClicked, popupElement, null, true);
+    };
 
-    public static void showPopup(PopupDialogPanel popup, int mouseX, int mouseY) {
-        popup.show();
-        setPopupPosition(popup, mouseX, mouseY);
-    }
+    public static native JavaScriptObject showTippyPopup(Element appendToElement, Element popupElementClicked, Element popupElement, Runnable onHideAction, boolean show)/*-{
+        var popup = $wnd.tippy(popupElementClicked, {
+            appendTo : appendToElement,
+            content : popupElement,
+            trigger : 'manual',
+            interactive : true,
+            allowHTML : true,
+            onHide: function() {
+                if(onHideAction != null) {
+                    onHideAction.@java.lang.Runnable::run()();
+                }
+            }
+        });
+        if(show) {
+            popup.show();
+        }
+        return popup;
+    }-*/;
+
+    public static native void hideTippyPopup(JavaScriptObject popup)/*-{
+        if(popup != null) {
+            // probably it should be checked if popup's already hidden, but it seems, that there is no such method
+            popup.hide();
+            popup.destroy();
+        }
+    }-*/;
 
     public static void setPopupPosition(PopupPanel popup, int mouseX, int mouseY) {
         int popupWidth = popup.getOffsetWidth();

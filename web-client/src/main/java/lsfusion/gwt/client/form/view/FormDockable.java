@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.view;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ContextMenuEvent;
 import com.google.gwt.user.client.Event;
@@ -32,6 +33,7 @@ public final class FormDockable extends WidgetForm {
         return contentWidget.getElement();
     }
 
+    Result<JavaScriptObject> popup = new Result<>();
     public FormDockable(FormsController formsController, String canonicalName, boolean async, Event editEvent) {
         super(formsController, async, editEvent, GFormLayout.createTabCaptionWidget());
 
@@ -40,13 +42,13 @@ public final class FormDockable extends WidgetForm {
         captionWidget.addDomHandler(event -> {
             GwtClientUtils.stopPropagation(event);
 
-            PopupDialogPanel popup = new PopupDialogPanel();
             final MenuBar menuBar = new MenuBar(true);
             menuBar.addItem(new MenuItem(ClientMessages.Instance.get().closeAllTabs(), () -> {
-                popup.hide();
+                GwtClientUtils.hideTippyPopup(popup.result);
                 formsController.closeAllTabs();
             }));
-            GwtClientUtils.showPopupInWindow(popup, menuBar, event.getNativeEvent().getClientX(), event.getNativeEvent().getClientY());
+
+            popup.result = GwtClientUtils.showTippyPopup(Element.as(event.getNativeEvent().getEventTarget()), menuBar);
         }, ContextMenuEvent.getType());
 
         closeButton = new WidgetForm.CloseButton();
@@ -63,6 +65,7 @@ public final class FormDockable extends WidgetForm {
 
     @Override
     public void hide(EndReason editFormCloseReason) {
+        GwtClientUtils.hideTippyPopup(popup.result);
         formsController.removeDockable(this);
     }
 

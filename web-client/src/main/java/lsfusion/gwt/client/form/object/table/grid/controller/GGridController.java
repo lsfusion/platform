@@ -319,7 +319,7 @@ public class GGridController extends GAbstractTableController {
                 quantityButton = new GCountQuantityButton() {
                     @Override
                     public ClickHandler getClickHandler() {
-                        return event -> formController.countRecords(groupObject, event.getClientX(), event.getClientY());
+                        return event -> formController.countRecords(groupObject);
                     }
                 };
                 calculateButtonGroup.add(quantityButton);
@@ -332,13 +332,10 @@ public class GGridController extends GAbstractTableController {
                         return event -> {
                             GPropertyDraw property = getSelectedProperty();
                             if (property != null) {
-                                int clientX = event.getClientX();
-                                int clientY = event.getClientY();
-
                                 if (property.getValueType() instanceof GIntegralType)
-                                    formController.calculateSum(groupObject, property, table.getCurrentColumnKey(), clientX, clientY);
+                                    formController.calculateSum(groupObject, property, table.getCurrentColumnKey());
                                 else
-                                    showSum(null, property, clientX, clientY);
+                                    showSum(null, property);
                             }
                         };
                     }
@@ -389,14 +386,14 @@ public class GGridController extends GAbstractTableController {
         addToToolbar(updateButtonGroup);
     }
 
-    public void showRecordQuantity(int quantity, int clientX, int clientY) {
+    public void showRecordQuantity(int quantity) {
         assert isList();
-        quantityButton.showPopup(quantity, clientX, clientY);
+        quantityButton.showPopup(quantity);
     }
 
-    public void showSum(Number sum, GPropertyDraw property, int clientX, int clientY) {
+    public void showSum(Number sum, GPropertyDraw property) {
         assert isList();
-        sumButton.showPopup(sum, property, clientX, clientY);
+        sumButton.showPopup(sum, property);
     }
 
     public void updateKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, GFormChanges fc, int requestIndex) {

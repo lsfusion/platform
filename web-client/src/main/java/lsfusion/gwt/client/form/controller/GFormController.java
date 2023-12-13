@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.controller;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.*;
@@ -959,6 +960,7 @@ public class GFormController implements EditManager {
         syncResponseDispatch(new ScrollToEnd(group.ID, toEnd));
     }
 
+    JavaScriptObject popup = null;
     public void executePropertyEventAction(EventHandler handler, boolean isBinding, ExecuteEditContext editContext) {
         Event event = handler.event;
         GPropertyDraw property = editContext.getProperty();
@@ -967,7 +969,7 @@ public class GFormController implements EditManager {
 
         if(BrowserEvents.CONTEXTMENU.equals(event.getType())) {
             handler.consume();
-            GPropertyContextMenuPopup.show(property, event.getClientX(), event.getClientY(), actionSID -> {
+            popup = GPropertyContextMenuPopup.show(property, Element.as(event.getEventTarget()), actionSID -> {
                 executePropertyEventAction(editContext, actionSID, handler);
             });
         } else {
@@ -1500,20 +1502,20 @@ public class GFormController implements EditManager {
         }
     }
 
-    public void countRecords(final GGroupObject groupObject, int clientX, int clientY) {
+    public void countRecords(final GGroupObject groupObject) {
         asyncDispatch(new CountRecords(groupObject.ID), new CustomErrorHandlingCallback<NumberResult>() {
             @Override
             public void onSuccess(NumberResult result) {
-                controllers.get(groupObject).showRecordQuantity((Integer) result.value, clientX, clientY);
+                controllers.get(groupObject).showRecordQuantity((Integer) result.value);
             }
         });
     }
 
-    public void calculateSum(final GGroupObject groupObject, final GPropertyDraw propertyDraw, GGroupObjectValue columnKey, int clientX, int clientY) {
+    public void calculateSum(final GGroupObject groupObject, final GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
         asyncDispatch(new CalculateSum(propertyDraw.ID, columnKey), new CustomErrorHandlingCallback<NumberResult>() {
             @Override
             public void onSuccess(NumberResult result) {
-                controllers.get(groupObject).showSum(result.value, propertyDraw, clientX, clientY);
+                controllers.get(groupObject).showSum(result.value, propertyDraw);
             }
         });
     }
@@ -1626,6 +1628,7 @@ public class GFormController implements EditManager {
     }
 
     protected void onFormHidden(GAsyncFormController asyncFormController, int closeDelay, EndReason editFormCloseReason) {
+        GwtClientUtils.hideTippyPopup(popup);
         formsController.removeFormContainer(formContainer);
         for(ContainerForm containerForm : containerForms) {
             containerForm.getForm().closePressed(editFormCloseReason);

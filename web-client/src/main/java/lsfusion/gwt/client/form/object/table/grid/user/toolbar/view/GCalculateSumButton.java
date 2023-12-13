@@ -1,11 +1,12 @@
 package lsfusion.gwt.client.form.object.table.grid.user.toolbar.view;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.RootPanel;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.StaticImage;
-import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import java.math.BigDecimal;
@@ -17,7 +18,8 @@ public abstract class GCalculateSumButton extends GToolbarButton {
         super(StaticImage.SUM, messages.formQueriesCalculateSum());
     }
 
-    public void showPopup(Number result, GPropertyDraw property, int clientX, int clientY) {
+    JavaScriptObject popup;
+    public void showPopup(Number result, GPropertyDraw property) {
         String caption = property.getNotEmptyCaption();
         String text = result == null
                 ? messages.formQueriesUnableToCalculateSum() + " [" + caption + "]"
@@ -30,6 +32,12 @@ public abstract class GCalculateSumButton extends GToolbarButton {
             text = text + format.format(result);
         }
 
-        GwtClientUtils.showPopupInWindow(new PopupDialogPanel(), new HTML(text).asWidget(), clientX, clientY);
+        popup = GwtClientUtils.showTippyPopup(getElement(), new HTML(text));
+    }
+
+    @Override
+    protected void onDetach() {
+        super.onDetach();
+        GwtClientUtils.hideTippyPopup(popup);
     }
 }

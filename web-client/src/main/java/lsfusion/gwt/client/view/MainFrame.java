@@ -326,12 +326,12 @@ public class MainFrame implements EntryPoint {
         final Linker<GNavigatorActionDispatcher> actionDispatcherLink = new Linker<>();
         final FormsController formsController = new FormsController(windowsController) {
             @Override
-            public <T extends Result> long syncDispatch(ExecuteNavigatorAction action, RequestCountingAsyncCallback<ServerResponseResult> callback) {
+            public long syncDispatch(ExecuteNavigatorAction action, RequestCountingAsyncCallback<ServerResponseResult> callback) {
                 return MainFrame.this.syncDispatch(action, callback);
             }
 
             @Override
-            public <T extends Result> long asyncDispatch(ExecuteNavigatorAction action, RequestCountingAsyncCallback<ServerResponseResult> callback) {
+            public long asyncDispatch(ExecuteNavigatorAction action, RequestCountingAsyncCallback<ServerResponseResult> callback) {
                 return MainFrame.this.asyncDispatch(action, callback);
             }
 
