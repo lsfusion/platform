@@ -791,15 +791,15 @@ getClientSettings(User user) + WHEN TRUE AND user IS User THEN {
     LOCAL webClientLoadedResources = RAWFILE(STRING);
     LOCAL webClientLoadedResourcesOrder = INTEGER(STRING);
     IF isWeb() THEN {
-        onWebClientLoad();
+        onWebClientInit();
 
-        LOCAL onWebLoad = INTEGER(STRING);
-        onWebLoad (STRING s) <- onWebClientLoad(s);
+        LOCAL onWebInit = INTEGER(STRING);
+        onWebInit (STRING s) <- onWebClientInit(s);
 
-        FOR onWebLoad(STRING s) ORDER onWebLoad(s) DO {
+        FOR INTEGER order = onWebInit(STRING s) ORDER order DO {
             readResource(s);
             webClientLoadedResources(resourcePath()) <- RAWFILE (resource());
-            webClientLoadedResourcesOrder(resourcePath()) <- onWebLoad(s);
+            webClientLoadedResourcesOrder(resourcePath()) <- onWebInit(s);
         }
     }
     

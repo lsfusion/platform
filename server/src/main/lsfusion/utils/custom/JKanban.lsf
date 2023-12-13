@@ -4,10 +4,10 @@ REQUIRE SystemEvents;
 
 NAMESPACE Utils;
 
-onWebClientLoad() + {
-    onWebClientLoadData('custom_jkanban.css') <- 1;
-    onWebClientLoadData('custom_jkanban.js') <- 1;
-    
-    onWebClientLoadData('jkanban.css') <- 1;
-    onWebClientLoadData('jkanban.js') <- 1;
+onWebClientInit() + {
+    onWebClientInit('custom_jkanban.css') <- 1;
+    onWebClientInit('custom_jkanban.js') <- 1;
+
+    onWebClientInit('jkanban.css') <- 1;
+    onWebClientInit('jkanban.js') <- 1;
 }

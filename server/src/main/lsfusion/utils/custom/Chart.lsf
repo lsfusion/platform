@@ -4,7 +4,7 @@ REQUIRE SystemEvents;
 
 NAMESPACE Utils;
 
-onWebClientLoad() + {
-    onWebClientLoadData('custom_chart.js') <- 1;
-    onWebClientLoadData('chart.js') <- 1;
+onWebClientInit() + {
+    onWebClientInit('custom_chart.js') <- 1;
+    onWebClientInit('chart.js') <- 1;
 }
