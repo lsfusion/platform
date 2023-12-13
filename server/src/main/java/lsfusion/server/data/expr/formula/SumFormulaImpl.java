@@ -9,7 +9,7 @@ import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.data.type.reader.ClassReader;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.StringClass;
-import lsfusion.server.logics.classes.data.file.JSONClass;
+import lsfusion.server.logics.classes.data.file.AJSONClass;
 
 public class SumFormulaImpl extends ArithmeticFormulaImpl {
     public final static CompoundTypeConversion sumConversion = new CompoundTypeConversion(
@@ -60,7 +60,7 @@ public class SumFormulaImpl extends ArithmeticFormulaImpl {
         return exprs.mapListValues((i, value) -> {
             ClassReader reader = readers.get(i);
             if(reader instanceof Type) {
-                if(resultType instanceof JSONClass)
+                if(resultType instanceof AJSONClass)
                     value = resultType.getCast(value, syntax, typeEnv, (Type) reader);
                 else
                     value = castToVarString(value, ((StringClass) resultType), (Type) reader, syntax, typeEnv);

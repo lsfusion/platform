@@ -198,6 +198,18 @@ $$
 SELECT CASE WHEN $1 = jsonb_build_object() THEN NULL ELSE $1 END;
 $$ LANGUAGE 'sql' IMMUTABLE;
 
+CREATE OR REPLACE FUNCTION json_recursive_merge(a json, b json) RETURNS json AS
+$$
+SELECT json_object_agg(
+               COALESCE(ka, kb), CASE
+                                     WHEN va ISNULL THEN vb
+                                     WHEN vb ISNULL THEN va
+                                     WHEN json_typeof(va) <> 'object' or json_typeof(vb) <> 'object' THEN vb
+                                     ELSE json_recursive_merge(va, vb) END)
+FROM json_each(a) e1(ka, va)
+         FULL JOIN json_each(b) e2(kb, vb) ON ka = kb
+    $$ LANGUAGE 'sql' IMMUTABLE;
+
 CREATE OR REPLACE FUNCTION notEmpty(json) RETURNS json AS
 $$
 SELECT CASE WHEN $1::text = json_build_object()::text THEN NULL ELSE $1 END;

@@ -201,6 +201,10 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
         return "jsonb";
     }
 
+    public String getJSONString() {
+        return "json";
+    }
+
     public String getTSVector() {
         return "tsvector";
     }

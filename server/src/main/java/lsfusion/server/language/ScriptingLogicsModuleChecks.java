@@ -18,8 +18,8 @@ import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.flow.ListCaseAction;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.DataClass;
+import lsfusion.server.logics.classes.data.file.AJSONClass;
 import lsfusion.server.logics.classes.data.file.FileClass;
-import lsfusion.server.logics.classes.data.file.JSONClass;
 import lsfusion.server.logics.classes.data.integral.IntegralClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.CustomClass;
@@ -331,7 +331,7 @@ public class ScriptingLogicsModuleChecks {
         if (type != GroupingType.CONCAT && aggrParamsCnt > 1) {
             errLog.emitMultipleAggrGPropError(parser, type);
         }
-        if (type == GroupingType.CONCAT && aggrParamsCnt != 2 && !(mainProps.get(0).getLP().property.getType() instanceof JSONClass)) {
+        if (type == GroupingType.CONCAT && aggrParamsCnt != 2 && !(mainProps.get(0).getLP().property.getType() instanceof AJSONClass)) {
             errLog.emitConcatAggrGPropError(parser);
         }
     }
@@ -462,7 +462,7 @@ public class ScriptingLogicsModuleChecks {
     public void checkConcatenate(List<LPWithParams> params) throws ScriptingErrorLog.SemanticErrorException {
         for(LPWithParams param : params) {
             Type<?> propType = param.getLP().property.getType();
-            if (!(propType instanceof JSONClass)) {
+            if (!(propType instanceof AJSONClass)) {
                 errLog.emitConcatError(parser);
             }
         }
@@ -625,7 +625,7 @@ public class ScriptingLogicsModuleChecks {
     public void checkImportFromFileExpression(LPWithParams params) throws ScriptingErrorLog.SemanticErrorException {
         if (params.getLP() != null) {
             Type type = params.getLP().property.getType();
-            if (!(type instanceof FileClass || type instanceof JSONClass)) {
+            if (!(type instanceof FileClass || type instanceof AJSONClass)) {
                 errLog.emitImportFromWrongClassError(parser);
             }
         }
@@ -634,7 +634,7 @@ public class ScriptingLogicsModuleChecks {
     public void checkExportFromFileExpression(LP prop) throws ScriptingErrorLog.SemanticErrorException {
         if (prop != null) {
             Type type = prop.property.getType();
-            if (!(type instanceof FileClass || type instanceof JSONClass)) {
+            if (!(type instanceof FileClass || type instanceof AJSONClass)) {
                 errLog.emitExportFromWrongClassError(parser);
             }
         }

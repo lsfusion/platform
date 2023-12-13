@@ -54,6 +54,8 @@ public abstract class StaticFormatFileClass extends FileClass<RawFileData> {
             return "cast_dynamic_file_to_static_file(" + value + ")";
         }else if (typeFrom instanceof JSONClass) {
             return "cast_json_to_static_file(" + value + ")";
+        }else if (typeFrom instanceof JSONStringClass) {
+            return "cast_json_string_to_static_file(" + value + ")";
         }
         return super.getCast(value, syntax, typeEnv, typeFrom, isArith);
     }

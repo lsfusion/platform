@@ -23,6 +23,7 @@ import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.classes.data.file.JSONClass;
+import lsfusion.server.logics.classes.data.file.JSONStringClass;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncInput;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
@@ -97,7 +98,7 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
 
     @Override
     protected ExClassSet calcInferValueClass(ImMap<ClassPropertyInterface, ExClassSet> inferred, InferType inferType) {
-        return ExClassSet.toExValue(JSONClass.instance);
+        return ExClassSet.toExValue(returnString ? JSONStringClass.instance : JSONClass.instance);
     }
 
     @Override
@@ -190,7 +191,7 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
             public final ImRevMap<PropertyInterface, C> map;
 
             public AsyncMapJSONChange(ImRevMap<PropertyInterface, C> map) {
-                super(JSONClass.instance);
+                super(returnString ? JSONStringClass.instance : JSONClass.instance);
 
                 this.map = map;
             }
@@ -266,7 +267,7 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
 
         @Override
         protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
-            InputResult pushedInput = context.getPushedInput(JSONClass.instance);
+            InputResult pushedInput = context.getPushedInput(returnString ? JSONStringClass.instance : JSONClass.instance);
             if(pushedInput != null) {
                 String charset = ExternalUtils.defaultXMLJSONCharset;
                 try {

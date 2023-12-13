@@ -3,9 +3,7 @@ package lsfusion.server.data.expr.formula;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.classes.data.file.JSONClass;
-
-import static lsfusion.base.BaseUtils.nullEquals;
-import static lsfusion.base.BaseUtils.nullHash;
+import lsfusion.server.logics.classes.data.file.JSONStringClass;
 
 public class JSONBuildFormulaImpl extends AbstractFormulaImpl implements FormulaUnionImpl {
 
@@ -42,7 +40,7 @@ public class JSONBuildFormulaImpl extends AbstractFormulaImpl implements Formula
             return "'" + value + "'," + valueSource;
         }, ",");
 
-        return returnString ? "text(notEmpty(json_strip_nulls( json_build_object(" + fields + "))))" :
+        return returnString ? "notEmpty(json_strip_nulls( json_build_object(" + fields + ")))" :
                 "notEmpty(jsonb_strip_nulls( jsonb_build_object(" + fields + ")))";
     }
 
@@ -57,6 +55,6 @@ public class JSONBuildFormulaImpl extends AbstractFormulaImpl implements Formula
     }
 
     public Type getType(ExprType source) {
-        return JSONClass.instance;
+        return returnString ? JSONStringClass.instance : JSONClass.instance;
     }
 }

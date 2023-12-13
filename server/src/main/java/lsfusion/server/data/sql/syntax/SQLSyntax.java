@@ -107,6 +107,8 @@ public interface SQLSyntax {
 
     String getJSON();
 
+    String getJSONString();
+
     String getTSVector();
 
     String getTSQuery();

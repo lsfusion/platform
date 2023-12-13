@@ -61,8 +61,8 @@ import lsfusion.server.logics.classes.data.ColorClass;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.data.StringClass;
+import lsfusion.server.logics.classes.data.file.AJSONClass;
 import lsfusion.server.logics.classes.data.file.FileClass;
-import lsfusion.server.logics.classes.data.file.JSONClass;
 import lsfusion.server.logics.classes.data.file.StaticFormatFileClass;
 import lsfusion.server.logics.classes.data.integral.DoubleClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
@@ -4558,7 +4558,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             Type type = getTypeByParamProperty(fileProp, context);
             if(type instanceof StaticFormatFileClass)
                 return ((StaticFormatFileClass) type).getIntegrationType();
-            else if (type instanceof JSONClass)
+            else if (type instanceof AJSONClass)
                 return FormIntegrationType.JSON;
         }
         return format;
