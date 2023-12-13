@@ -4,10 +4,10 @@ REQUIRE SystemEvents;
 
 NAMESPACE Utils;
 
-onWebClientLoad() + {
-    onWebClientLoadData('custom_frappe-gantt.css') <- 1;
-    onWebClientLoadData('custom_frappe-gantt.js') <- 1;
-    
-    onWebClientLoadData('frappe-gantt.css') <- 1;
-    onWebClientLoadData('frappe-gantt.js') <- 1;
+onWebClientInit() + {
+    onWebClientInit('custom_frappe-gantt.css') <- 1;
+    onWebClientInit('custom_frappe-gantt.js') <- 1;
+
+    onWebClientInit('frappe-gantt.css') <- 1;
+    onWebClientInit('frappe-gantt.js') <- 1;
 }

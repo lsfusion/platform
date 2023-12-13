@@ -159,7 +159,7 @@ changeScript(Script sc) {
     }
 }
 
-onWebClientLoad() +{ onWebClientLoadData('interpreter.js') <- 1; }
+onWebClientInit() +{ onWebClientInit('interpreter.js') <- 1; }
 
 FORM interpreter '{eval.script.form.interpreter}'
     OBJECTS s = Script PANEL

@@ -7,12 +7,16 @@ onClientStarted ABSTRACT LIST ();
 onDesktopClientStarted  ABSTRACT LIST ( );
 onWebClientStarted  ABSTRACT LIST ( );
 
-onWebClientLoad ABSTRACT LIST ();
+onWebClientInit ABSTRACT LIST ();
+onWebClientInit = DATA LOCAL INTEGER (STRING);
 
 onLoginLoad = ABSTRACT CASE INTEGER(STRING);
-onWebClientLoad = ABSTRACT CASE INTEGER(STRING);
-onWebClientLoadData = DATA LOCAL INTEGER (STRING);
-onWebClientLoad(STRING s) += WHEN onWebClientLoadData(s) THEN onWebClientLoadData(s);
+
+// todo onWebClientLoad DEPECATED! DO NOT USE! Only for backward compatibility
+onWebClientLoad ABSTRACT LIST ();
+onWebClientStarted () +{
+    onWebClientLoad();
+}
 
 onStartedApply() {
     onStarted();
@@ -188,58 +192,58 @@ NAVIGATOR {
     NEW toggleColorTheme WINDOW system PARENT BEFORE toggleNavigatorPinMode HEADER colorThemeCaption() IMAGE colorThemeImage();
 }
 
-onWebClientLoad() + {
+onWebClientInit() + {
     IF useBootstrap() THEN {
-        onWebClientLoadData(nameTheme() + '/bootstrap.min.css') <- 1;
-        onWebClientLoadData(nameTheme() + '/bootstrap-adapter.css') <- 2;
-        onWebClientLoadData('bootstrap.min.js') <- 3; 
-        onWebClientLoadData('bootstrap-background-inherit.css') <- 4; 
-        onWebClientLoadData('bootstrap-ext.css') <- 5; 
-        onWebClientLoadData('bootstrap-dark.css') <- 6;
+        onWebClientInit(nameTheme() + '/bootstrap.min.css') <- 1;
+        onWebClientInit(nameTheme() + '/bootstrap-adapter.css') <- 2;
+        onWebClientInit('bootstrap.min.js') <- 3; 
+        onWebClientInit('bootstrap-background-inherit.css') <- 4; 
+        onWebClientInit('bootstrap-ext.css') <- 5; 
+        onWebClientInit('bootstrap-dark.css') <- 6;
         
         IF isMini() THEN {
-            onWebClientLoadData('mini-padding.css') <- 7;
-            onWebClientLoadData('mini-font.css') <- 8;
+            onWebClientInit('mini-padding.css') <- 7;
+            onWebClientInit('mini-font.css') <- 8;
         }
         
-        onWebClientLoadData('selectize.bootstrap5.min.css') <- 9;
-        onWebClientLoadData('bootstrap-select.min.js') <- 10; 
-        onWebClientLoadData('bootstrap-select.min.css') <- 11;
+        onWebClientInit('selectize.bootstrap5.min.css') <- 9;
+        onWebClientInit('bootstrap-select.min.js') <- 10; 
+        onWebClientInit('bootstrap-select.min.css') <- 11;
     } ELSE {
-        onWebClientLoadData('table.css') <- 1;
-        onWebClientLoadData('table-border.css') <- 2;
-        onWebClientLoadData('table-sticky.css') <- 3;
-        onWebClientLoadData('table-container-border.css') <- 4;
-        onWebClientLoadData('caption-panel-border.css') <- 5;
-        onWebClientLoadData('tab-panel.css') <- 6;
-        onWebClientLoadData('navigator.css') <- 7;
-        onWebClientLoadData('split-window-border.css') <- 8;
-        onWebClientLoadData('layout.css') <- 9;
-        onWebClientLoadData('panel-renderer-border.css') <- 10;
-        onWebClientLoadData('property-toolbar-border.css') <- 11;
-        onWebClientLoadData('main.css') <- 12;
-        onWebClientLoadData('main-border.css') <- 13;
-        onWebClientLoadData('popup-menu.css') <- 14;
-        onWebClientLoadData('resizable-window.css') <- 15;
-        onWebClientLoadData('property.css') <- 16;
-        onWebClientLoadData('button.css') <- 17;
-        onWebClientLoadData('filter.css') <- 18;
-        onWebClientLoadData('toolbar.css') <- 19;
-        onWebClientLoadData('pivot.css') <- 20;
-        onWebClientLoadData('option.css') <- 21;
-        onWebClientLoadData('selectize.css') <- 22;
-        onWebClientLoadData('select.css') <- 23;
+        onWebClientInit('table.css') <- 1;
+        onWebClientInit('table-border.css') <- 2;
+        onWebClientInit('table-sticky.css') <- 3;
+        onWebClientInit('table-container-border.css') <- 4;
+        onWebClientInit('caption-panel-border.css') <- 5;
+        onWebClientInit('tab-panel.css') <- 6;
+        onWebClientInit('navigator.css') <- 7;
+        onWebClientInit('split-window-border.css') <- 8;
+        onWebClientInit('layout.css') <- 9;
+        onWebClientInit('panel-renderer-border.css') <- 10;
+        onWebClientInit('property-toolbar-border.css') <- 11;
+        onWebClientInit('main.css') <- 12;
+        onWebClientInit('main-border.css') <- 13;
+        onWebClientInit('popup-menu.css') <- 14;
+        onWebClientInit('resizable-window.css') <- 15;
+        onWebClientInit('property.css') <- 16;
+        onWebClientInit('button.css') <- 17;
+        onWebClientInit('filter.css') <- 18;
+        onWebClientInit('toolbar.css') <- 19;
+        onWebClientInit('pivot.css') <- 20;
+        onWebClientInit('option.css') <- 21;
+        onWebClientInit('selectize.css') <- 22;
+        onWebClientInit('select.css') <- 23;
         //todo use v1.14.0-beta2 there is a bug in beta-3 https://github.com/snapappointments/bootstrap-select/issues/2738
-        onWebClientLoadData('multiple-select.min.js') <- 24;
-        onWebClientLoadData('multiple-select.min.css') <- 25;
+        onWebClientInit('multiple-select.min.js') <- 24;
+        onWebClientInit('multiple-select.min.css') <- 25;
     }
 
-    onWebClientLoadData('scrollbar.css') <- 26;
-    onWebClientLoadData('input-quill.js') <- 27;
-    onWebClientLoadData('input-quill.css') <- 28;
-    onWebClientLoadData('select.js') <- 29;
-    onWebClientLoadData('selectize.min.js') <- 30;
-    onWebClientLoadData('input.js') <- 31;
+    onWebClientInit('scrollbar.css') <- 26;
+    onWebClientInit('input-quill.js') <- 27;
+    onWebClientInit('input-quill.css') <- 28;
+    onWebClientInit('select.js') <- 29;
+    onWebClientInit('selectize.min.js') <- 30;
+    onWebClientInit('input.js') <- 31;
 }
 
 readDBNames INTERNAL 'lsfusion.server.logics.action.ReadDBNamesAction' ();
@@ -263,11 +267,11 @@ onStarted() + {
     }
 }
 
-onWebClientLoad() + {
+onWebClientInit() + {
     readResourcePaths('/onStarted/.*');
     FOR STRING s = resourcePaths(s) DO {
         IF NOT endsWith(resourcePaths(s), '.sql') THEN {
-            onWebClientLoadData(resourcePaths(s)) <- 1;
+            onWebClientInit(resourcePaths(s)) <- 1;
         }
     }
 }

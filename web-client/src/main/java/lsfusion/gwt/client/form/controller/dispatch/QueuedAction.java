@@ -40,7 +40,7 @@ public class QueuedAction<R extends Result> {
         if (succeeded) {
             callback.onSuccess(result, onDispatchFinished);
         } else {
-            callback.onFailure(throwable);
+            callback.onFailure(new ExceptionResult(requestIndex, throwable));
             if(onDispatchFinished != null)
                 onDispatchFinished.run();
         }
