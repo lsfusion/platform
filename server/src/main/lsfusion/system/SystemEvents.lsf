@@ -7,14 +7,12 @@ onClientStarted ABSTRACT LIST ();
 onDesktopClientStarted  ABSTRACT LIST ( );
 onWebClientStarted  ABSTRACT LIST ( );
 
+onWebClientInit = DATA LOCAL INTEGER(STRING);
+onWebClientInit ABSTRACT LIST ();
+
 onWebClientLoad ABSTRACT LIST ();
-onWebClientLoadData = DATA LOCAL INTEGER (STRING);
 onWebClientStarted () +{ 
     onWebClientLoad();
-
-    FOR onWebClientLoadData(STRING s) ORDER onWebClientLoadData(s) DO {
-        INTERNAL CLIENT s;
-    }
 
     INTERNAL CLIENT 'input-quill.js';
     INTERNAL CLIENT 'input-quill.css';
@@ -26,7 +24,6 @@ onWebClientStarted () +{
 }
 
 onLoginLoad = ABSTRACT CASE INTEGER(STRING);
-onWebClientLoad = ABSTRACT CASE INTEGER(STRING);
 
 readDBNames INTERNAL 'lsfusion.server.logics.action.ReadDBNamesAction' ();
 currentDBName = DATA LOCAL STRING ();

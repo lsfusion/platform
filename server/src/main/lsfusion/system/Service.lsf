@@ -425,9 +425,10 @@ getServerSettings() + WHEN TRUE THEN {
         loginLoadedResourcesOrder(resourcePath()) <- order; 
     }
      
+    onWebClientInit();
     LOCAL webClientLoadedResources = RAWFILE(STRING);
     LOCAL webClientLoadedResourcesOrder = INTEGER(STRING);
-    FOR INTEGER order = onWebClientLoad(STRING s) ORDER order DO {
+    FOR INTEGER order = onWebClientInit(STRING s) ORDER order DO {
         readResource(s);
         webClientLoadedResources(resourcePath()) <- RAWFILE (resource());
         webClientLoadedResourcesOrder(resourcePath()) <- order;
