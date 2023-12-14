@@ -238,11 +238,11 @@ function chatMessageRender() {
 }
 ```
 
-Для того, чтобы при открытии страницы в браузере, загрузились созданные js и css файлы, нужно добавить их инициализацию в действии _onWebClientLoad_ при помощи оператора [INTERNAL](INTERNAL_operator.md) :
+Для того, чтобы при открытии страницы в браузере, загрузились созданные js и css файлы, нужно добавить их инициализацию в действии _onWebClientInit_ путем добавления имени файла в свойство _onWebClientInit(STRING)_. Числовое значение необходимо для задания порядка загрузки:
 ```lsf
-onWebClientLoad() + {
-    INTERNAL CLIENT 'chat.js';
-    INTERNAL CLIENT 'chat.css';
+onWebClientInit() + {
+    onWebClientInit('chat.js') <- 1;
+    onWebClientInit('chat.css') <- 2;
 }
 ```
 

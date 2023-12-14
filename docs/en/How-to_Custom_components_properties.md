@@ -240,11 +240,11 @@ function chatMessageRender() {
 }
 ```
 
-In order to load created js and css files when the page opens in the browser, you must add their initialization to the action _onWebClientLoad_ using the operator [INTERNAL](INTERNAL_operator.md) :
+In order to load created js and css files when the page opens in the browser, you must add their initialization to the action _onWebClientInit_  by adding the file name to the _onWebClientInit(STRING)_ property. A numeric value is needed to specify the order of loading:
 ```lsf
-onWebClientLoad() + {
-    INTERNAL CLIENT 'chat.js';
-    INTERNAL CLIENT 'chat.css';
+onWebClientInit() + {
+    onWebClientInit('chat.js') <- 1;
+    onWebClientInit('chat.css') <- 2;
 }
 ```
 
