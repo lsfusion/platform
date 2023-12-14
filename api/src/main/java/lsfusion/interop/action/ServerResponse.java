@@ -18,7 +18,7 @@ public class ServerResponse implements Serializable {
     public static final ImList<String> events = ListFact.add(EDIT_OBJECT, changeEvents);
 
     public static boolean isChangeEvent(String event) {
-        return changeEvents.indexOf(event) > 0;
+        return changeEvents.indexOf(event) >= 0;
     }
 
     public static final String INPUT = "input";

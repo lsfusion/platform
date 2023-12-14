@@ -24,6 +24,7 @@ import java.util.EventObject;
 
 import static lsfusion.base.BaseUtils.deserializeObject;
 import static lsfusion.client.classes.ClientTypeSerializer.deserializeClientType;
+import static lsfusion.client.form.property.cell.EditBindingMap.isChangeEvent;
 
 public class EditPropertyDispatcher extends ClientFormActionDispatcher {
     protected final EditPropertyHandler handler;
@@ -73,8 +74,8 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
             //async actions
             ClientAsyncEventExec asyncEventExec = contextAction != null ? property.getInputListActions()[contextAction].asyncExec : property.getAsyncEventExec(actionSID);
             if (asyncEventExec != null && asyncEventExec.isDesktopEnabled(canShowDockedModal()))
-                return showConfirmDialog(property) || asyncEventExec.exec(form, this, property, columnKey, actionSID);
-            else if (showConfirmDialog(property)) return true;
+                return showConfirmDialog(property, actionSID) || asyncEventExec.exec(form, this, property, columnKey, actionSID);
+            else if (showConfirmDialog(property, actionSID)) return true;
 
             editPerformed = true;
             ServerResponse response = form.executeEventAction(property, columnKey, actionSID, contextAction != null ? new ClientPushAsyncInput(null, contextAction) : null);
@@ -91,8 +92,8 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
         }
     }
 
-    private boolean showConfirmDialog(ClientPropertyDraw property) {
-        return property.askConfirm && SwingUtils.showConfirmDialog(getDialogParentContainer(), property.askConfirmMessage, "lsFusion", JOptionPane.QUESTION_MESSAGE, false) != JOptionPane.YES_OPTION;
+    private boolean showConfirmDialog(ClientPropertyDraw property, String actionSID) {
+        return isChangeEvent(actionSID)  && property.askConfirm && SwingUtils.showConfirmDialog(getDialogParentContainer(), property.askConfirmMessage, "lsFusion", JOptionPane.QUESTION_MESSAGE, false) != JOptionPane.YES_OPTION;
     }
 
     public boolean asyncChange(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String actionSID, ClientAsyncInput asyncChange) throws IOException {
