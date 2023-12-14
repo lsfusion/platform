@@ -4,7 +4,7 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.classes.data.file.JSONClass;
-import lsfusion.server.logics.classes.data.file.JSONStringClass;
+import lsfusion.server.logics.classes.data.file.JSONTextClass;
 
 public class JSONBuildSingleArrayFormulaImpl implements FormulaJoinImpl {
 
@@ -26,7 +26,7 @@ public class JSONBuildSingleArrayFormulaImpl implements FormulaJoinImpl {
 //            valueSource = type.formatJSONSource(valueSource, source.getSyntax());
         Type type = source.getType(0);
         return "CASE WHEN " + valueSource + " IS NOT NULL THEN "
-                + (type instanceof JSONStringClass ? "json_build_array" : "jsonb_build_array")
+                + (type instanceof JSONTextClass ? "json_build_array" : "jsonb_build_array")
                 + "(" + valueSource + ") ELSE NULL END";
 //        return "jsonb_build_array(" + valueSource + ")";
     }

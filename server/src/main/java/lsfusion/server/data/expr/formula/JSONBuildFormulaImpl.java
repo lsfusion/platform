@@ -3,7 +3,7 @@ package lsfusion.server.data.expr.formula;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.classes.data.file.JSONClass;
-import lsfusion.server.logics.classes.data.file.JSONStringClass;
+import lsfusion.server.logics.classes.data.file.JSONTextClass;
 
 public class JSONBuildFormulaImpl extends AbstractFormulaImpl implements FormulaUnionImpl {
 
@@ -55,6 +55,6 @@ public class JSONBuildFormulaImpl extends AbstractFormulaImpl implements Formula
     }
 
     public Type getType(ExprType source) {
-        return returnString ? JSONStringClass.instance : JSONClass.instance;
+        return returnString ? JSONTextClass.instance : JSONClass.instance;
     }
 }

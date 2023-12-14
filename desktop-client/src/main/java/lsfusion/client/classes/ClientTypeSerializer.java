@@ -86,7 +86,7 @@ public class ClientTypeSerializer {
         if (type == DataType.TIME) return ClientTimeClass.instance;
         if (type == DataType.COLOR) return ClientColorClass.instance;
         if (type == DataType.JSON) return ClientJSONClass.instance;
-        if (type == DataType.JSONSTRING) return ClientJSONStringClass.instance;
+        if (type == DataType.JSONTEXT) return ClientJSONTextClass.instance;
         if (type == DataType.TSVECTOR) return ClientTSVectorClass.instance;
         if (type == DataType.HTMLSTRING) return ClientHTMLStringClass.instance;
 

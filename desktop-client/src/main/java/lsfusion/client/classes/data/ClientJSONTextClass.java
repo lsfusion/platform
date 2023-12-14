@@ -3,13 +3,13 @@ package lsfusion.client.classes.data;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.interop.classes.DataType;
 
-public class ClientJSONStringClass extends ClientAJSONClass {
+public class ClientJSONTextClass extends ClientAJSONClass {
 
     public byte getTypeId() {
-        return DataType.JSONSTRING;
+        return DataType.JSONTEXT;
     }
 
-    public final static ClientJSONStringClass instance = new ClientJSONStringClass();
+    public final static ClientJSONTextClass instance = new ClientJSONTextClass();
 
     public String toString() {
         return ClientResourceBundle.getString("logics.classes.json.string");
