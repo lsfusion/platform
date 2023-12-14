@@ -191,7 +191,7 @@ function selectMultiInput() {
                 }
             }, true, true);
 
-            selectizeInstance.settings.placeholder = extraValue.placeholder;
+            selectizeInstance.settings.placeholder = extraValue != null ? extraValue.placeholder : null;
             selectizeInstance.updatePlaceholder();
 
             element.silent = false;
@@ -753,7 +753,7 @@ function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBo
                 }
             });
 
-            let placeholder = extraValue.placeholder;
+            let placeholder = extraValue != null ? extraValue.placeholder : null;
             if (!multi) {
                 let hasSelected = false;
                 for (let i = 0; i < list.length; i++) {
