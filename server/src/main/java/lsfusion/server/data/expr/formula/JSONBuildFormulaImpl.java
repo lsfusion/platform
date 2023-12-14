@@ -51,7 +51,7 @@ public class JSONBuildFormulaImpl extends AbstractFormulaImpl implements Formula
 
     @Override
     public boolean equals(Object o) {
-        return this == o || o instanceof JSONBuildFormulaImpl && fieldNames.equals(((JSONBuildFormulaImpl) o).fieldNames);
+        return this == o || o instanceof JSONBuildFormulaImpl && fieldNames.equals(((JSONBuildFormulaImpl) o).fieldNames) && returnString == ((JSONBuildFormulaImpl) o).returnString;
     }
 
     public Type getType(ExprType source) {
