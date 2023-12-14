@@ -31,13 +31,13 @@ public abstract class GroupParseNode implements ParseNode {
         return hasNotEmptyChild;
     }
 
-    public <X extends PropertyInterface, P extends PropertyInterface> PropertyMapImplement<?, X> getChildrenJSONProperties(FormPropertyDataInterface<P> form, ImRevMap<P, X> mapValues, ImRevMap<ObjectEntity, X> mapObjects, boolean convertValue) {
+    public <X extends PropertyInterface, P extends PropertyInterface> PropertyMapImplement<?, X> getChildrenJSONProperties(FormPropertyDataInterface<P> form, ImRevMap<P, X> mapValues, ImRevMap<ObjectEntity, X> mapObjects, boolean convertValue, boolean returnString) {
         // value unwrapping
-        ImOrderSet<PropertyMapImplement<?, X>> childrenProps = children.mapOrderSetValues(child -> child.getJSONProperty(form, mapValues, mapObjects));
+        ImOrderSet<PropertyMapImplement<?, X>> childrenProps = children.mapOrderSetValues(child -> child.getJSONProperty(form, mapValues, mapObjects, returnString));
         if(convertValue && children.size() == 1 && children.single().getKey().equals("value"))
             return childrenProps.single();
 
         // json_build_object - getKey() + getProperty
-        return PropertyFact.createFormulaUnion(new JSONBuildFormulaImpl(children.mapOrderSetValues(ChildParseNode::getKey)), childrenProps);
+        return PropertyFact.createFormulaUnion(new JSONBuildFormulaImpl(children.mapOrderSetValues(ChildParseNode::getKey), returnString), childrenProps);
     }
 }

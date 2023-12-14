@@ -61,8 +61,8 @@ import lsfusion.server.logics.classes.data.ColorClass;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.data.StringClass;
+import lsfusion.server.logics.classes.data.file.AJSONClass;
 import lsfusion.server.logics.classes.data.file.FileClass;
-import lsfusion.server.logics.classes.data.file.JSONClass;
 import lsfusion.server.logics.classes.data.file.StaticFormatFileClass;
 import lsfusion.server.logics.classes.data.integral.DoubleClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
@@ -3976,7 +3976,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public <O extends ObjectSelector> LPWithParams addScriptedJSONFormProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps, List<TypedParameter> objectsContext,
-                                                                           List<LPWithParams> contextFilters, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
+                                                                           List<LPWithParams> contextFilters, List<TypedParameter> params, boolean returnString) throws ScriptingErrorLog.SemanticErrorException {
 
         ImList<O> mappedObjects = mapped.objects;
         ImOrderSet<O> contextObjects = getMappingObjectsArray(mapped, objectsContext);
@@ -3995,7 +3995,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         CFEWithParams<O> contextEntities = getContextFilterEntities(params.size(), contextObjects, ListFact.fromJavaList(contextFilters));
 
         LP property = addJSONFormProp(null, LocalizedString.NONAME, mapped.form, mappedObjects, mNulls.immutableList(),
-                contextEntities.orderInterfaces, contextEntities.filters);
+                contextEntities.orderInterfaces, contextEntities.filters, returnString);
 
         for (int usedParam : contextEntities.usedParams) {
             mapping.add(new LPWithParams(usedParam));
@@ -4264,7 +4264,8 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LPWithParams addScriptedJSONProperty(List<TypedParameter> oldContext, final List<String> ids, List<Boolean> literals,
                                                 List<LPWithParams> exprs, List<LPTrivialLA> propUsages, LPWithParams whereProperty,
-                                                List<LPWithParams> orderProperties, List<Boolean> orderDirections) throws ScriptingErrorLog.SemanticErrorException {
+                                                List<LPWithParams> orderProperties, List<Boolean> orderDirections, boolean returnString)
+            throws ScriptingErrorLog.SemanticErrorException {
 
         List<LPWithParams> exExprs = new ArrayList<>(exprs);
         MList<IntegrationPropUsage> mExPropUsages = ListFact.mList();
@@ -4312,7 +4313,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         LP result = null;
         try {
             result = addJSONProp(LocalizedString.NONAME, resultInterfaces.size(), exPropUsages, orders,
-                    whereProperty != null, resultParams.toArray());
+                    whereProperty != null, returnString, resultParams.toArray());
         } catch (FormEntity.AlreadyDefined alreadyDefined) {
             throwAlreadyDefinePropertyDraw(alreadyDefined);
         }
@@ -4557,7 +4558,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             Type type = getTypeByParamProperty(fileProp, context);
             if(type instanceof StaticFormatFileClass)
                 return ((StaticFormatFileClass) type).getIntegrationType();
-            else if (type instanceof JSONClass)
+            else if (type instanceof AJSONClass)
                 return FormIntegrationType.JSON;
         }
         return format;

@@ -7,20 +7,20 @@ import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
-public class JSONClass extends AJSONClass {
+public class JSONTextClass extends AJSONClass {
 
-    public JSONClass() {
-        super(LocalizedString.create("{classes.json}"));
+    public JSONTextClass() {
+        super(LocalizedString.create("{classes.json.string}"));
     }
 
-    public final static JSONClass instance = new JSONClass();
+    public final static JSONTextClass instance = new JSONTextClass();
 
     @Override
     public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom, boolean isArith) {
         if (typeFrom instanceof StaticFormatFileClass) {
-            return "cast_static_file_to_json(" + value + ")";
+            return "cast_static_file_to_json_text(" + value + ")";
         } else if (typeFrom instanceof DynamicFormatFileClass) {
-            return "cast_dynamic_file_to_json(" + value + ")";
+            return "cast_dynamic_file_to_json_text(" + value + ")";
         }
         return super.getCast(value, syntax, typeEnv, typeFrom, isArith);
     }
@@ -31,21 +31,21 @@ public class JSONClass extends AJSONClass {
 
     @Override
     public String getDBString(SQLSyntax syntax, TypeEnvironment typeEnv) {
-        return syntax.getJSON();
+        return syntax.getJSONText();
     }
 
     @Override
     public String getSID() {
-        return "JSON";
+        return "JSONTEXT";
     }
 
     @Override
     public DataClass getCompatible(DataClass compClass, boolean or) {
-        return compClass instanceof JSONClass ? this : null;
+        return compClass instanceof JSONTextClass ? this : null;
     }
 
     @Override
     public byte getTypeID() {
-        return DataType.JSON;
+        return DataType.JSONTEXT;
     }
 }

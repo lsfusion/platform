@@ -102,6 +102,7 @@ public final class ClassCanonicalNameUtils {
         put("LINK", DynamicFormatLinkClass.get(false));
         put("COLOR", ColorClass.instance);
         put("JSON", JSONClass.instance);
+        put("JSONTEXT", JSONTextClass.instance);
         put("RAWLINK", defaultRawLinkClassObj);
         put("RAWFILE", defaultRawFileClassObj);
         put("STRING", defaultStringClassObj);
@@ -193,6 +194,7 @@ public final class ClassCanonicalNameUtils {
         put("TABLELINK", TableLinkClass.get(false));
         put("COLOR", ColorClass.instance);
         put("JSON", JSONClass.instance);
+        put("JSONTEXT", JSONTextClass.instance);
         put("TEXT", TextClass.instance);
         put("RICHTEXT", RichTextClass.instance);
         put("HTMLTEXT", HTMLTextClass.instance);

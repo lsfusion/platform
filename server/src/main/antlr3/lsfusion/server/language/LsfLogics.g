@@ -2269,13 +2269,14 @@ jsonFormPropertyDefinition[List<TypedParameter> context, boolean dynamic] return
 @init {
     List<TypedParameter> objectsContext = null;
     List<LPWithParams> contextFilters = new ArrayList<>();
+    boolean returnString = false;
 }
 @after {
 	if (inMainParseState()) {
-	    $property = self.addScriptedJSONFormProp($mf.mapped, $mf.props, objectsContext, contextFilters, context);
+	    $property = self.addScriptedJSONFormProp($mf.mapped, $mf.props, objectsContext, contextFilters, context, returnString);
 	}
 }
-	:   'JSON' '(' mf=mappedForm[context, null, dynamic] {
+	:   ('JSON' | 'JSONTEXT' { returnString = true; }) '(' mf=mappedForm[context, null, dynamic] {
                 if(inMainParseState())
                     objectsContext = self.getTypedObjectsNames($mf.mapped);
             }
@@ -2289,13 +2290,15 @@ jsonPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [L
 	List<TypedParameter> newContext = new ArrayList<>(context);
     List<LPWithParams> orderProperties = new ArrayList<>();
     List<Boolean> orderDirections = new ArrayList<>();
+    boolean returnString = false;
 }
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedJSONProperty(context, $plist.aliases, $plist.literals, $plist.properties, $plist.propUsages, $whereExpr.property, orderProperties, orderDirections);
+		$property = self.addScriptedJSONProperty(context, $plist.aliases, $plist.literals, $plist.properties, $plist.propUsages,
+		 $whereExpr.property, orderProperties, orderDirections, returnString);
 	}
 }
-	:	'JSON'
+	:	('JSON' | 'JSONTEXT' { returnString = true; })
 		'FROM' plist=nonEmptyAliasedPropertyExpressionList[newContext, true]
 		('WHERE' whereExpr=propertyExpression[newContext, true])?
 		('ORDER' orderedProp=propertyExpressionWithOrder[newContext, true] { orderProperties.add($orderedProp.property); orderDirections.add($orderedProp.order); }
@@ -5637,7 +5640,7 @@ stringLiteral returns [String val]
 	;
 
 primitiveType returns [String val]
-	:	p=PRIMITIVE_TYPE | JSON_TYPE | HTML_TYPE { $val = $p.text; }
+	:	p=PRIMITIVE_TYPE | JSON_TYPE | JSON_TEXT_TYPE | HTML_TYPE { $val = $p.text; }
 	;
 
 // there are some rules where ID is not desirable (see usages), where there is an ID
@@ -5796,6 +5799,7 @@ PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'TBOOLEAN' | 'DATE
 				|   ('INTERVAL' ('[' INTERVAL_TYPE ']'))
 				|   'TSVECTOR' | 'TSQUERY';
 JSON_TYPE       :   'JSON';
+JSON_TEXT_TYPE  :   'JSONTEXT';
 HTML_TYPE       :   'HTML';
 LOGICAL_LITERAL :	'TRUE' | 'FALSE';
 T_LOGICAL_LITERAL:	'TTRUE' | 'TFALSE';

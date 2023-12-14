@@ -23,6 +23,7 @@ import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.classes.data.file.JSONClass;
+import lsfusion.server.logics.classes.data.file.JSONTextClass;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncInput;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
@@ -73,8 +74,11 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
     protected final ImSet<ClassPropertyInterface> contextInterfaces;
     protected final ImSet<ContextFilterSelector<ClassPropertyInterface, O>> contextFilters;
 
+    private boolean returnString;
+
     public JSONProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
-                            ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters) {
+                            ImOrderSet<PropertyInterface> orderContextInterfaces,
+                        ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters, boolean returnString) {
         super(caption, FormAction.getValueClasses(form, objectsToSet, orderContextInterfaces.size(), new ValueClass[0]));
 
         this.form = form;
@@ -88,11 +92,13 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
         ImRevMap<PropertyInterface, ClassPropertyInterface> mapContextInterfaces = orderContextInterfaces.mapSet(orderInterfaces.subOrder(objectsToSet.size(), objectsToSet.size() + orderContextInterfaces.size()));
         this.contextInterfaces = mapContextInterfaces.valuesSet();
         this.contextFilters = contextFilters.mapSetValues(filter -> filter.map(mapContextInterfaces));
+
+        this.returnString = returnString;
     }
 
     @Override
     protected ExClassSet calcInferValueClass(ImMap<ClassPropertyInterface, ExClassSet> inferred, InferType inferType) {
-        return ExClassSet.toExValue(JSONClass.instance);
+        return ExClassSet.toExValue(returnString ? JSONTextClass.instance : JSONClass.instance);
     }
 
     @Override
@@ -108,7 +114,7 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
 
         FormPropertyDataInterface<ClassPropertyInterface> formInterface = new FormPropertyDataInterface<>(staticForm.first, valueGroups, ContextFilterSelector.getEntities(contextFilters).mapSetValues(entity -> entity.mapObjects(staticForm.second.reverse())));
 
-        return parseNode.getJSONProperty(formInterface, contextInterfaces.toRevMap(), mappedObjects);
+        return parseNode.getJSONProperty(formInterface, contextInterfaces.toRevMap(), mappedObjects, returnString);
     }
 
     private static ObjectValue fromJSON(ValueClass valueClass, Object jsonValue, DataSession session) throws SQLException, SQLHandledException {
@@ -185,7 +191,7 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
             public final ImRevMap<PropertyInterface, C> map;
 
             public AsyncMapJSONChange(ImRevMap<PropertyInterface, C> map) {
-                super(JSONClass.instance);
+                super(returnString ? JSONTextClass.instance : JSONClass.instance);
 
                 this.map = map;
             }
@@ -261,7 +267,7 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
 
         @Override
         protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
-            InputResult pushedInput = context.getPushedInput(JSONClass.instance);
+            InputResult pushedInput = context.getPushedInput(returnString ? JSONTextClass.instance : JSONClass.instance);
             if(pushedInput != null) {
                 String charset = ExternalUtils.defaultXMLJSONCharset;
                 try {

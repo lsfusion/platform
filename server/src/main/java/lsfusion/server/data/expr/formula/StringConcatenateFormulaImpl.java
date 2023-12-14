@@ -5,7 +5,7 @@ import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.TextClass;
-import lsfusion.server.logics.classes.data.file.JSONClass;
+import lsfusion.server.logics.classes.data.file.AJSONClass;
 import lsfusion.server.physics.admin.Settings;
 
 public class StringConcatenateFormulaImpl extends AbstractFormulaImpl implements FormulaUnionImpl {
@@ -42,7 +42,7 @@ public class StringConcatenateFormulaImpl extends AbstractFormulaImpl implements
                     isText = true;
                     sid = exprType.getSID();
                 }
-            } else if (exprType instanceof JSONClass) {
+            } else if (exprType instanceof AJSONClass) {
                 isText = true;
                 sid = TextClass.instance.getSID();
             }

@@ -579,8 +579,9 @@ public abstract class LogicsModule {
                 staticType, server, syncType, autoPrint, new SelectTop(selectTop), targetProp, baseLM.formPageCount, removeNullsAndDuplicates, printer, sheetName, password)));
     }
     protected <O extends ObjectSelector> LP addJSONFormProp(Group group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
-                                                       ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters) {
-        JSONProperty<O> property = new JSONProperty<O>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters);
+                                                       ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
+                                                            boolean returnString) {
+        JSONProperty<O> property = new JSONProperty<O>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, returnString);
 
         return addProperty(group, new LP<>(property));
     }
@@ -731,15 +732,16 @@ public abstract class LogicsModule {
     }
 
     protected LP addJSONProp(LocalizedString caption, int resInterfaces, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders,
-                             boolean hasWhere, Object... params) throws FormEntity.AlreadyDefined {
+                             boolean hasWhere, boolean returnString, Object... params) throws FormEntity.AlreadyDefined {
         IntegrationForm integrationForm = addIntegrationForm(resInterfaces, propUsages, orders, hasWhere, params);
 
-        return addJSONFormProp(caption, integrationForm);
+        return addJSONFormProp(caption, integrationForm, returnString);
     }
 
-    protected LP addJSONFormProp(LocalizedString caption, IntegrationForm integrationForm) {
+    protected LP addJSONFormProp(LocalizedString caption, IntegrationForm integrationForm, boolean returnString) {
         // creating action
-        return addJSONFormProp(null, caption, integrationForm.form, integrationForm.objectsToSet, integrationForm.nulls, SetFact.EMPTYORDER(), SetFact.EMPTY());
+        return addJSONFormProp(null, caption, integrationForm.form, integrationForm.objectsToSet, integrationForm.nulls,
+                SetFact.EMPTYORDER(), SetFact.EMPTY(), returnString);
     }
 
     // ------------------- Export property action ----------------- //
