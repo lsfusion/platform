@@ -20,6 +20,8 @@ import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.data.type.reader.ClassReader;
 import lsfusion.server.data.type.reader.NullReader;
 import lsfusion.server.logics.classes.data.ArrayClass;
+import lsfusion.server.logics.classes.data.file.JSONClass;
+import lsfusion.server.logics.classes.data.file.JSONStringClass;
 
 import java.sql.*;
 
@@ -488,7 +490,7 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
                 exprs = SumFormulaImpl.castToVarStrings(exprs, readers, resultType, this, typeEnv);
                 break;
             case JSON_CONCAT:
-                fnc = "JSONB_AGG";
+                fnc = resultType instanceof JSONStringClass ? "JSON_AGG" : "JSONB_AGG";
                 break;
             case LAST:
                 fnc = getLastFunc();
