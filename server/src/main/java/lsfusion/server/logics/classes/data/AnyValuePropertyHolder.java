@@ -50,6 +50,7 @@ public class AnyValuePropertyHolder {
     private final LP timeProperty;
     private final LP colorProperty;
     private final LP jsonProperty;
+    private final LP jsonTextProperty;
     private final LP wordFileProperty;
     private final LP imageFileProperty;
     private final LP pdfFileProperty;
@@ -81,7 +82,7 @@ public class AnyValuePropertyHolder {
     public AnyValuePropertyHolder(LP<?> objectProperty, LP<?> stringProperty, LP<?> bpStringProperty, LP<?> textProperty, LP<?> richTextProperty, LP<?> htmlTextProperty,
                                   LP<?> intProperty, LP<?> longProperty, LP<?> doubleProperty, LP<?> numericProperty, LP<?> yearProperty, LP<?> dateTimeProperty,
                                   LP<?> zDateTimeProperty, LP<?> intervalDateProperty, LP<?> intervalDateTimeProperty, LP<?> intervalTimeProperty, LP<?> intervalZDateTimeProperty,
-                                  LP<?> logicalProperty, LP<?> tLogicalProperty, LP<?> dateProperty, LP<?> timeProperty, LP<?> colorProperty, LP<?> jsonProperty,
+                                  LP<?> logicalProperty, LP<?> tLogicalProperty, LP<?> dateProperty, LP<?> timeProperty, LP<?> colorProperty, LP<?> jsonProperty, LP<?> jsonTextProperty,
                                   LP<?> wordFileProperty, LP<?> imageFileProperty, LP<?> pdfFileProperty, LP<?> dbfFileProperty,
                                   LP<?> rawFileProperty, LP<?> customFileProperty, LP<?> excelFileProperty, LP<?> textFileProperty, LP<?> csvFileProperty,
                                   LP<?> htmlFileProperty, LP<?> jsonFileProperty, LP<?> xmlFileProperty, LP<?> tableFileProperty, LP<?> namedFileProperty,
@@ -111,6 +112,7 @@ public class AnyValuePropertyHolder {
                 && timeProperty.property.getType() == TimeClass.instance
                 && colorProperty.property.getType() == ColorClass.instance
                 && jsonProperty.property.getType() == JSONClass.instance
+                && jsonTextProperty.property.getType() == JSONTextClass.instance
                 && wordFileProperty.property.getType() == WordClass.get()
                 && imageFileProperty.property.getType() == ImageClass.get()
                 && pdfFileProperty.property.getType() == PDFClass.get()
@@ -163,6 +165,7 @@ public class AnyValuePropertyHolder {
         this.timeProperty = timeProperty;
         this.colorProperty = colorProperty;
         this.jsonProperty = jsonProperty;
+        this.jsonTextProperty = jsonTextProperty;
         this.wordFileProperty = wordFileProperty;
         this.imageFileProperty = imageFileProperty;
         this.pdfFileProperty = pdfFileProperty;
@@ -236,6 +239,8 @@ public class AnyValuePropertyHolder {
             return colorProperty;
         } else if (valueType instanceof JSONClass) {
             return jsonProperty;
+        } else if (valueType instanceof JSONTextClass) {
+            return jsonTextProperty;
         } else if (valueType instanceof WordClass) {
             return wordFileProperty;
         } else if (valueType instanceof ImageClass) {
@@ -316,7 +321,7 @@ public class AnyValuePropertyHolder {
                 customLinkProperty, rawLinkProperty, wordLinkProperty, imageLinkProperty, pdfLinkProperty, dbfLinkProperty, excelLinkProperty,
                 textLinkProperty, csvLinkProperty, htmlLinkProperty, jsonLinkProperty, xmlLinkProperty, tableLinkProperty,
                 // others
-                logicalProperty, tLogicalProperty, colorProperty, jsonProperty, objectProperty
+                logicalProperty, tLogicalProperty, colorProperty, jsonProperty, jsonTextProperty, objectProperty
         ).mapOrderSetValues(value -> (SessionDataProperty) value.property);
     }
 

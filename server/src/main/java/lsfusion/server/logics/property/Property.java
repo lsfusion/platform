@@ -76,7 +76,7 @@ import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.OrderClass;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.TextClass;
-import lsfusion.server.logics.classes.data.file.JSONClass;
+import lsfusion.server.logics.classes.data.file.AJSONClass;
 import lsfusion.server.logics.classes.struct.ConcatenateValueClass;
 import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.CustomClass;
@@ -1649,7 +1649,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
         //to avoid edit on dblclick
         ValueClass viewValueClass = property.getValueClass(ClassType.editValuePolicy);
-        if(viewValueClass instanceof TextClass || viewValueClass instanceof JSONClass)
+        if(viewValueClass instanceof TextClass || viewValueClass instanceof AJSONClass)
             return false;
 
         if(!Settings.get().isOnlyUniqueObjectEvents())

@@ -86,6 +86,7 @@ public class ClientTypeSerializer {
         if (type == DataType.TIME) return ClientTimeClass.instance;
         if (type == DataType.COLOR) return ClientColorClass.instance;
         if (type == DataType.JSON) return ClientJSONClass.instance;
+        if (type == DataType.JSONTEXT) return ClientJSONTextClass.instance;
 
         if (type == DataType.PDF) return new ClientPDFClass(inStream.readBoolean(), inStream.readBoolean());
         if (type == DataType.DBF) return new ClientDBFClass(inStream.readBoolean(), inStream.readBoolean());

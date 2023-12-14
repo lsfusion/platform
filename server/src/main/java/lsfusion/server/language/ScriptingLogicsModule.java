@@ -3904,7 +3904,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public <O extends ObjectSelector> LPWithParams addScriptedJSONFormProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps, List<TypedParameter> objectsContext,
-                                                                           List<LPWithParams> contextFilters, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
+                                                                           List<LPWithParams> contextFilters, List<TypedParameter> params, boolean returnString) throws ScriptingErrorLog.SemanticErrorException {
 
         ImList<O> mappedObjects = mapped.objects;
         ImOrderSet<O> contextObjects = getMappingObjectsArray(mapped, objectsContext);
@@ -3923,7 +3923,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         CFEWithParams<O> contextEntities = getContextFilterEntities(params.size(), contextObjects, ListFact.fromJavaList(contextFilters));
 
         LP property = addJSONFormProp(null, LocalizedString.NONAME, mapped.form, mappedObjects, mNulls.immutableList(),
-                contextEntities.orderInterfaces, contextEntities.filters);
+                contextEntities.orderInterfaces, contextEntities.filters, returnString);
 
         for (int usedParam : contextEntities.usedParams) {
             mapping.add(new LPWithParams(usedParam));
@@ -4155,7 +4155,8 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LPWithParams addScriptedJSONProperty(List<TypedParameter> oldContext, final List<String> ids, List<Boolean> literals,
                                                 List<LPWithParams> exprs, LPWithParams whereProperty,
-                                                List<LPWithParams> orderProperties, List<Boolean> orderDirections) throws ScriptingErrorLog.SemanticErrorException {
+                                                List<LPWithParams> orderProperties, List<Boolean> orderDirections, boolean returnString)
+            throws ScriptingErrorLog.SemanticErrorException {
 
         List<String> exIds = new ArrayList<>(ids);
         List<Boolean> exLiterals = new ArrayList<>(literals);
@@ -4194,7 +4195,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         LP result = null;
         try {
             result = addJSONProp(LocalizedString.NONAME, resultInterfaces.size(), exIds, exLiterals, orders,
-                    whereProperty != null, resultParams.toArray());
+                    whereProperty != null, returnString, resultParams.toArray());
         } catch (FormEntity.AlreadyDefined alreadyDefined) {
             throwAlreadyDefinePropertyDraw(alreadyDefined);
         }

@@ -72,6 +72,8 @@ public class DynamicFormatFileClass extends AbstractDynamicFormatFileClass<FileD
             return "cast_static_file_to_dynamic_file(" + value + ", " + (extension != null ? ("'" + extension + "'") : "null") + ")";
         } else if (typeFrom instanceof JSONClass) { // important to make auto import work (it uses extension(FILE()))
             return "cast_json_to_dynamic_file(" + value + ")";
+        } else if (typeFrom instanceof JSONTextClass) { // important to make auto import work (it uses extension(FILE()))
+            return "cast_json_text_to_dynamic_file(" + value + ")";
         }
         return super.getCast(value, syntax, typeEnv, typeFrom);
     }
