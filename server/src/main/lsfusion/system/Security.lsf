@@ -302,6 +302,12 @@ TABLE userRolePolicy (UserRole, Policy);
 order '{security.order.policy}' = DATA INTEGER (UserRole, Policy);
 
 createSystemUserRoles() {
+    IF NOT propertyGroup('System_root') THEN
+        NEW p = PropertyGroup { SID(p) <- 'System_root'; }
+
+    IF NOT navigatorElementCanonicalName('System.root') THEN
+        NEW f = NavigatorFolder { canonicalName(f) <- 'System.root'; }
+
     IF NOT userRoleSID('admin') THEN {
         NEW ur = UserRole {
             sid(ur) <- 'admin';
@@ -327,7 +333,10 @@ createSystemUserRoles() {
             sid(ur) <- 'default';
             name(ur) <- ISTRING[100] ('{security.user.role.default}');
         }
-     }   
+     }
+
+    IF NOT navigatorElementCanonicalName('Authentication.account') THEN
+        NEW f = NavigatorFolder { canonicalName(f) <- 'Authentication.account'; }
     
      IF NOT userRoleSID('selfRegister') THEN {
         NEW ur = UserRole {
