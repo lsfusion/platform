@@ -151,7 +151,8 @@ public class ExternalHTTPAction extends CallAction {
 
                 ContentType contentType = response.contentType != null ? ContentType.parse(response.contentType) : ExternalUtils.APPLICATION_OCTET_STREAM;
                 ImList<Object> requestParams = response.responseBytes != null ? ExternalUtils.getListFromInputStream(response.responseBytes, contentType) : ListFact.EMPTY();
-                fillResults(context, targetPropList, requestParams, ExternalUtils.getCharsetFromContentType(contentType)); // важно игнорировать параметры, так как иначе при общении с LSF пришлось бы всегда TO писать (так как он по умолчанию exportFile возвращает)
+                Charset charset = ExternalUtils.getCharsetFromContentType(contentType);
+                fillResults(context, targetPropList, requestParams, charset); // важно игнорировать параметры, так как иначе при общении с LSF пришлось бы всегда TO писать (так как он по умолчанию exportFile возвращает)
 
                 if(headersToProperty != null) {
                     Map<String, List<String>> responseHeaders = response.responseHeaders;
@@ -169,7 +170,10 @@ public class ExternalHTTPAction extends CallAction {
                 }
                 context.getBL().LM.statusHttp.change(response.statusCode, context);
                 if (response.statusCode < 200 || response.statusCode >= 300) {
-                    throw new RuntimeException(response.statusCode + " " + response.statusText);
+                    String message = response.statusCode + " " + response.statusText;
+                    if (response.responseBytes != null)
+                        message += "\n" + StringUtils.left(new String(response.responseBytes, charset), 4096);
+                    throw new RuntimeException(message);
                 }
             } else {
                 throw new RuntimeException("connectionString not specified");
