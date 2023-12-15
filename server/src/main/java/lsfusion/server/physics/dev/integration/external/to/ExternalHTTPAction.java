@@ -171,7 +171,7 @@ public class ExternalHTTPAction extends CallAction {
                 if (response.statusCode < 200 || response.statusCode >= 300) {
                     String message = response.statusCode + " " + response.statusText;
                     if (response.responseBytes != null)
-                        message += "\n" + StringUtils.left(new String(response.responseBytes, charset), 4096);
+                        message += "\n" + new String(response.responseBytes, charset);
                     throw new RuntimeException(message);
                 }
             } else {
