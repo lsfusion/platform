@@ -388,7 +388,8 @@ public abstract class WindowsController {
     // rotates navbar and returns new root node
     private WindowNode rotateNavbar(WindowNode rootNode) {
         WindowNode navbarNode = findNavbarWindow(rootNode);
-        assert navbarNode != null;
+        if(navbarNode == null)
+            return rootNode;
 
         navbarNode.vertical = true;
         navbarNode.x = -1; // to be sure it goes first (left), as children are ordered by x/y coordinates

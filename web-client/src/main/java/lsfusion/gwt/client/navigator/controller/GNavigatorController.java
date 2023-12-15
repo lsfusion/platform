@@ -64,8 +64,10 @@ public abstract class GNavigatorController implements GINavigatorController {
         }
 
         // looking for "active" (selected) elements
-        for (GNavigatorElement element : root.children)
-            fillSelectedElements(element, root.window, drawWindow -> false, selectedElements);
+        if(root != null) {
+            for (GNavigatorElement element : root.children)
+                fillSelectedElements(element, root.window, drawWindow -> false, selectedElements);
+        }
 
         Map<GAbstractWindow, Boolean> visibleElements = new HashMap<>();
         for (Map.Entry<GNavigatorWindow, LinkedHashSet<GNavigatorElement>> entry : selectedElements.entrySet()) {

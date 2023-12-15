@@ -40,7 +40,9 @@ public class NavigatorController implements INavigatorController {
             result.put(wind, new LinkedHashSet<>());
         }
 
-        dfsAddElements(mainNavigator.rootElement, null, result);
+        if(mainNavigator.rootElement != null) {
+            dfsAddElements(mainNavigator.rootElement, null, result);
+        }
 
         for (Map.Entry<ClientNavigatorWindow, LinkedHashSet<ClientNavigatorElement>> entry : result.entrySet()) {
             NavigatorView view = views.get(entry.getKey());
