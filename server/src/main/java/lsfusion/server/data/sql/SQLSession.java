@@ -72,6 +72,7 @@ import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.change.modifier.SessionModifier;
 import lsfusion.server.logics.classes.data.ArrayClass;
 import lsfusion.server.logics.classes.data.TSVectorClass;
+import lsfusion.server.logics.classes.data.file.AJSONClass;
 import lsfusion.server.logics.form.stat.struct.plain.JDBCTable;
 import lsfusion.server.logics.navigator.controller.env.SQLSessionContextProvider;
 import lsfusion.server.physics.admin.Settings;
@@ -938,12 +939,22 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         if (indexOptions.type.isDefault()) {
             createDefaultIndex(table, fields, indexOptions.dbName, columns, null, ifNotExists);
         } else if (indexOptions.type.isLike()) {
+            checkIndexFieldTypes(fields);
             createLikeIndex(table, fields, indexOptions.dbName, columns, null, ifNotExists);
         } else if (indexOptions.type.isMatch()) {
+            checkIndexFieldTypes(fields);
             if (fields.size() == 1 && fields.singleKey().type instanceof TSVectorClass) {
                 createMatchIndexForTsVector(table, indexOptions.dbName, fields, columns, indexOptions, null, ifNotExists);
             } else {
                 createMatchIndex(table, fields, indexOptions.dbName, columns, indexOptions, null, ifNotExists);
+            }
+        }
+    }
+    
+    private void checkIndexFieldTypes(ImOrderMap<Field, Boolean> fields) {
+        for(Field field : fields.keys()) {
+            if(field.type instanceof AJSONClass) {
+                throw new UnsupportedOperationException("Indexes for JSON / JSONTEXT properties are not supported");
             }
         }
     }
