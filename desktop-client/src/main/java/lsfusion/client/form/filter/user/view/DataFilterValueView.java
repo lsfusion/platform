@@ -83,7 +83,7 @@ public abstract class DataFilterValueView extends FlexPanel {
         valueTable.changeInputList(compare);
     }
 
-    private void setValue(Object value) {
+    public void setValue(Object value) {
         if(value instanceof String && ((String)value).isEmpty())
             value = null;
         valueTable.setValue(value);

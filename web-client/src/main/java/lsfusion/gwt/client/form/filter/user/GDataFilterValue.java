@@ -21,4 +21,8 @@ public class GDataFilterValue {
     public GFilterValueDTO getDTO() {
         return new GFilterValueDTO(0, PValue.remapValueBack(value));
     }
+
+    public void setValue(PValue value) {
+        this.value = value;
+    }
 }

@@ -1,4 +1,4 @@
-package lsfusion.server.logics.form.interactive.action.activity;
+package lsfusion.server.logics.form.interactive.action.userevent;
 
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.language.property.LP;
@@ -13,11 +13,11 @@ import org.json.JSONObject;
 import java.sql.SQLException;
 import java.util.List;
 
-public abstract class ReadUserActivityAction<T> extends SystemExplicitAction {
+public abstract class ReadUserEventsAction<T> extends SystemExplicitAction {
     protected final GroupObjectEntity groupObject;
     protected final LP<?> toProperty;
 
-    public ReadUserActivityAction(GroupObjectEntity groupObject, LP<?> toProperty) {
+    public ReadUserEventsAction(GroupObjectEntity groupObject, LP<?> toProperty) {
         this.groupObject = groupObject;
         this.toProperty = toProperty;
     }

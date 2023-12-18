@@ -94,6 +94,10 @@ public abstract class GFilterCompareSelector extends GFilterOptionSelector<GComp
         setText(currentValue.toString());
         setTitle((negation ? NOT_STRING + " " : "") + currentValue.getTooltipText());
     }
+    
+    public void setNegation(boolean negation) {
+        negationCB.setValue(negation);
+    }
 
     public abstract void negationChanged(boolean value);
     public abstract void allowNullChanged(boolean value);

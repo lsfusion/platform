@@ -1,5 +1,7 @@
 package lsfusion.client.form.filter.user;
 
+import lsfusion.base.BaseUtils;
+import lsfusion.base.Pair;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
@@ -56,5 +58,20 @@ public class ClientPropertyFilter {
 
     public boolean isFixed() {
         return filter.fixed;
+    }
+    
+    public boolean columnEquals(ClientPropertyFilter obj) {
+        return property.equals(obj.property) && BaseUtils.nullEquals(columnKey, obj.columnKey);
+    }
+    
+    public boolean columnEquals(Pair<ClientPropertyDraw, ClientGroupObjectValue> column) {
+        return property.equals(column.first) && BaseUtils.nullEquals(columnKey, column.second);
+    }
+    
+    public void override(ClientPropertyFilter filter) {
+        compare = filter.compare;
+        junction = filter.junction;
+        negation = filter.negation;
+        value.setValue(filter.value.value);
     }
 }

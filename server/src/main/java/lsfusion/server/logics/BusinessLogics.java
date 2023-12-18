@@ -90,6 +90,7 @@ import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.SystemProperties;
+import lsfusion.server.physics.admin.activity.UserEventsLogicsModule;
 import lsfusion.server.physics.admin.authentication.AuthenticationLogicsModule;
 import lsfusion.server.physics.admin.authentication.security.SecurityLogicsModule;
 import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
@@ -171,6 +172,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     public SchedulerLogicsModule schedulerLM;
     public TimeLogicsModule timeLM;
     public UtilsLogicsModule utilsLM;
+    public UserEventsLogicsModule userEventsLM;
 
     public String topModule;
 
@@ -340,6 +342,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         schedulerLM = addModule(new SchedulerLogicsModule(this, LM));
         timeLM = addModule(new TimeLogicsModule(this, LM));
         utilsLM = addModule(new UtilsLogicsModule(this, LM));
+        userEventsLM = addModule(new UserEventsLogicsModule(this, LM));
     }
 
     protected void addModulesFromResource(List<String> includePaths, List<String> excludePaths) throws IOException {

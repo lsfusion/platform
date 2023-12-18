@@ -98,7 +98,7 @@ import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
-import lsfusion.server.logics.form.interactive.event.UserActivityEvent;
+import lsfusion.server.logics.form.interactive.event.UserEventObject;
 import lsfusion.server.logics.form.interactive.instance.design.BaseComponentViewInstance;
 import lsfusion.server.logics.form.interactive.instance.design.ComponentViewInstance;
 import lsfusion.server.logics.form.interactive.instance.design.ContainerViewInstance;
@@ -2712,7 +2712,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         fireEvent(FormEventType.DROP, stack);
     }
 
-    public void fireOnUserActivity(ExecutionStack stack, UserActivityEvent event) throws SQLException, SQLHandledException {
+    public void fireOnUserActivity(ExecutionStack stack, UserEventObject event) throws SQLException, SQLHandledException {
         fireEvent(event, stack);
     }
 

@@ -1538,7 +1538,7 @@ public class ClientFormController implements AsyncListener {
                         } catch (ParseException ignored) {
                         }
                     }
-                    props.add(FilterController.createNewCondition(gridController, new ClientFilter(propertyDraw), null, value, filter.negation, compare, filter.junction));
+                    props.add(FilterController.createNewCondition(gridController, new ClientFilter(propertyDraw), ClientGroupObjectValue.EMPTY, value, filter.negation, compare, filter.junction));
                 }
             }
             

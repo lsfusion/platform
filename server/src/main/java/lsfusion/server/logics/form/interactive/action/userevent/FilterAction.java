@@ -1,4 +1,4 @@
-package lsfusion.server.logics.form.interactive.action.activity;
+package lsfusion.server.logics.form.interactive.action.userevent;
 
 import lsfusion.interop.action.FilterClientAction;
 import lsfusion.interop.form.property.Compare;
@@ -17,7 +17,7 @@ import java.util.List;
 
 import static lsfusion.base.BaseUtils.isRedundantString;
 
-public class FilterAction extends UserActivityAction {
+public class FilterAction extends UserEventAction {
     public static final String COMPARE_KEY = "compare";
     public static final String NEGATION_KEY = "negation";
     public static final String VALUE_KEY = "value";
@@ -30,7 +30,7 @@ public class FilterAction extends UserActivityAction {
     @Override
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         FormInstance formInstance = context.getFormInstance(true, true);
-        List<JSONObject> objectList = readJSON(context, formInstance.BL.LM.filters);
+        List<JSONObject> objectList = readJSON(context, formInstance.BL.userEventsLM.filters);
 
         List<FilterClientAction.FilterItem> filters = new ArrayList<>();
         if (objectList != null) {

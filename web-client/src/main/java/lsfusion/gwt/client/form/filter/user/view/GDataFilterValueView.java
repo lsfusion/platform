@@ -83,6 +83,11 @@ public class GDataFilterValueView extends SizedFlexPanel {
         cell.updateValue(filterValue.value);
     }
     
+    public void setValue(PValue value) {
+        filterValue.value = value;
+        cell.updateValue(value);
+    }
+    
     public void startEditing(Event keyEvent) {
         if (GwtClientUtils.isShowing(cell) && !logicsSupplier.getForm().isEditing()) { // suggest box may appear in (0,0) if filter is already gone (as it's called in scheduleDeferred)
             GPropertyDraw gPropertyDraw = cell.getProperty();

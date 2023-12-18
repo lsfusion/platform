@@ -10,6 +10,7 @@ import lsfusion.client.form.design.view.flex.LinearCaptionContainer;
 import lsfusion.client.form.design.view.widget.LabelWidget;
 import lsfusion.client.form.design.view.widget.SeparatorWidget;
 import lsfusion.client.form.design.view.widget.Widget;
+import lsfusion.client.form.filter.user.ClientDataFilterValue;
 import lsfusion.client.form.filter.user.ClientPropertyFilter;
 import lsfusion.client.form.filter.user.controller.FilterController;
 import lsfusion.client.form.object.table.controller.TableController;
@@ -54,7 +55,8 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
     private DataFilterValueView valueView;
     
     private FlexPanel deleteButtonWrapper;
-    
+
+    private ToolbarGridButton junctionView;
     private FlexPanel junctionSeparator;
     private FlexPanel junctionViewWrapper;
 
@@ -205,7 +207,8 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
         rightPanel.add(junctionSeparator, FlexAlignment.STRETCH, 0.0);
 
         junctionViewWrapper = new FlexPanel(false, FlexAlignment.START);
-        ToolbarGridButton junctionView = new ToolbarGridButton(
+        
+        junctionView = new ToolbarGridButton(
                 MainController.useTextAsFilterSeparator ? getString("form.queries.and") : null,
                 MainController.useTextAsFilterSeparator ? null : SEPARATOR_ICON_PATH,
                 getString("form.queries.and"), null) {
@@ -304,8 +307,6 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
         if (isFixed()) {
             compareLabel.setVisible(!controlsVisible);
             compareView.setVisible(controlsVisible);
-            
-            deleteButtonWrapper.setVisible(visible);
         }
 
         updateJunctionVisibility();
@@ -335,6 +336,24 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
         enableApplyButton();
 
         logicsSupplier.getFormController().revalidate();
+    }
+    
+    public void applyCondition(ClientPropertyFilter condition) {
+        setCompare(condition.compare != null ? condition.compare : condition.property.getDefaultCompare());
+        setNegation(condition.negation);
+        setValue(condition.value);
+    }
+    
+    public void setCompare(Compare value) {
+        compareView.setSelectedValue(value != null ? value : condition.property.getDefaultCompare());
+    }
+    
+    public void setNegation(boolean negation) {
+        compareView.setNegation(negation);
+    }
+    
+    public void setValue(ClientDataFilterValue value) {
+        valueView.setValue(value.value);
     }
     
     public void putSelectedValue() {

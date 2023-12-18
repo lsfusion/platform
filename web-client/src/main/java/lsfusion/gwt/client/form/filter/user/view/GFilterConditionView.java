@@ -15,6 +15,7 @@ import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.design.view.ComponentWidget;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.filter.user.GCompare;
+import lsfusion.gwt.client.form.filter.user.GDataFilterValue;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
@@ -296,8 +297,6 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
         if (isFixed()) {
             compareLabel.setVisible(!controlsVisible);
             compareView.setVisible(controlsVisible);
-
-            deleteButton.setVisible(visible);
         }
 
         updateJunctionVisibility();
@@ -325,6 +324,24 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
         }
         
         enableApplyButton();
+    }
+
+    public void applyCondition(GPropertyFilter condition) {
+        setCompare(condition.compare != null ? condition.compare : condition.property.getDefaultCompare());
+        setNegation(condition.negation);
+        setValue(condition.value);
+    }
+
+    public void setCompare(GCompare value) {
+        compareView.setSelectedValue(value != null ? value : condition.property.getDefaultCompare());
+    }
+
+    public void setNegation(boolean negation) {
+        compareView.setNegation(negation);
+    }
+
+    public void setValue(GDataFilterValue value) {
+        valueView.setValue(value.value);
     }
 
     public void onAdd(boolean focusValueView) {

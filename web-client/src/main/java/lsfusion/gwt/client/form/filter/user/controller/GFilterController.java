@@ -7,7 +7,6 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -243,15 +242,43 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
     private GFilterConditionView findExistingFilter(GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
         Pair<GPropertyDraw, GGroupObjectValue> column = getActualColumn(logicsSupplier, propertyDraw, columnKey);
 
-        if (!conditionViews.isEmpty()) {
-            for (GPropertyFilter filter : conditionViews.keySet()) {
-                if (filter.property.equals(column.first) && GwtSharedUtils.nullEquals(filter.columnKey, column.second)) {
-                    return conditionViews.get(filter);
-                }
+        for (GPropertyFilter filter : conditionViews.keySet()) {
+            if (filter.columnEquals(column)) {
+                return conditionViews.get(filter);
             }
         }
         
         return null;
+    }
+
+    public void changeFilters(List<GPropertyFilter> filters) {
+        if (hasFiltersContainer()) {
+            // hide controls only if no filters are expected. otherwise leave controls visibility unchanged
+            removeAllConditionsWithoutApply(filters.isEmpty());
+
+            Set<GPropertyFilter> fixedFilters = new LinkedHashSet<>(conditionViews.keySet());
+
+            for (GPropertyFilter filter : filters) {
+                boolean filterExists = false;
+                for (GPropertyFilter fixedFilter : fixedFilters) {
+                    if (filter.columnEquals(fixedFilter)) {
+                        fixedFilter.override(filter);
+                        conditionViews.get(fixedFilter).applyCondition(filter);
+                        filterExists = true;
+                        fixedFilters.remove(fixedFilter);
+                        break;
+                    }
+                }
+
+                if (!filterExists) {
+                    addCondition(filter, null, false, false, false);
+                }
+            }
+
+            // the only changeFilters() call is made when filters are initiated by server via FilterClientAction
+            // in this case we don't want focus to appear on some unexpected grid
+            applyFilters(false, null);
+        }
     }
 
     private void removeConditionView(GPropertyFilter condition) {

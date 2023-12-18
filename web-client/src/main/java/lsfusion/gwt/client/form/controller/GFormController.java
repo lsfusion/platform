@@ -1353,7 +1353,7 @@ public class GFormController implements EditManager {
                     } else {
                         value = PValue.remapValue(filter.value);
                     }
-                    uFilters.add(GFilterController.createNewCondition(gGridController, new GFilter(propertyDraw), null, value, filter.negation, GCompare.get(filter.compare), filter.junction));
+                    uFilters.add(GFilterController.createNewCondition(gGridController, new GFilter(propertyDraw), GGroupObjectValue.EMPTY, value, filter.negation, GCompare.get(filter.compare), filter.junction));
                 }
             }
 

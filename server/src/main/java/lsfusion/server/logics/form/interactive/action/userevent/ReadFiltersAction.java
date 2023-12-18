@@ -1,4 +1,4 @@
-package lsfusion.server.logics.form.interactive.action.activity;
+package lsfusion.server.logics.form.interactive.action.userevent;
 
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ReadFiltersAction extends ReadUserActivityAction<List<FilterInstance>> {
+public class ReadFiltersAction extends ReadUserEventsAction<List<FilterInstance>> {
     public ReadFiltersAction(GroupObjectEntity groupObject, LP<?> toProperty) {
         super(groupObject, toProperty);
     }
@@ -45,7 +45,7 @@ public class ReadFiltersAction extends ReadUserActivityAction<List<FilterInstanc
                 }
             }
             if (propertyDraw != null) {
-                filterMap.put(UserActivityAction.PROPERTY_KEY, propertyDraw.getSID());
+                filterMap.put(UserEventAction.PROPERTY_KEY, propertyDraw.getSID());
                 if (filter instanceof CompareFilterInstance) {
                     CompareFilterInstance<?> cFilter = (CompareFilterInstance<?>) filter;
                     filterMap.put(FilterAction.COMPARE_KEY, cFilter.compare.toString());
@@ -79,6 +79,6 @@ public class ReadFiltersAction extends ReadUserActivityAction<List<FilterInstanc
 
     @Override
     public LP<?> getDefaultToProperty(BusinessLogics BL) {
-        return BL.LM.filters;
+        return BL.userEventsLM.filters;
     }
 }

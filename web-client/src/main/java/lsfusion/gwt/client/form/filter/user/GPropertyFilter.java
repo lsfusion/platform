@@ -1,5 +1,7 @@
 package lsfusion.gwt.client.form.filter.user;
 
+import lsfusion.gwt.client.base.GwtSharedUtils;
+import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -54,5 +56,20 @@ public class GPropertyFilter {
 
     public boolean isFixed() {
         return filter.fixed;
+    }
+
+    public boolean columnEquals(GPropertyFilter obj) {
+        return property.equals(obj.property) && GwtSharedUtils.nullEquals(columnKey, obj.columnKey);
+    }
+
+    public boolean columnEquals(Pair<GPropertyDraw, GGroupObjectValue> column) {
+        return property.equals(column.first) && GwtSharedUtils.nullEquals(columnKey, column.second);
+    }
+
+    public void override(GPropertyFilter filter) {
+        compare = filter.compare;
+        junction = filter.junction;
+        negation = filter.negation;
+        value.setValue(filter.value.value);
     }
 }

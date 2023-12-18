@@ -52,7 +52,7 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.F
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
-import lsfusion.server.logics.form.interactive.event.UserActivityEvent;
+import lsfusion.server.logics.form.interactive.event.UserEventObject;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.InteractiveFormReportManager;
 import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
@@ -480,7 +480,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 PropertyObjectInstance<?> propertyObject = propertyDraw.getOrderProperty().getRemappedPropertyObject(keys, false);
                 propertyDraw.toDraw.changeOrder(propertyObject, propertyDraw, order);
                 
-                form.fireOnUserActivity(stack, new UserActivityEvent(propertyDraw.toDraw.getSID(), UserActivityEvent.Type.ORDER));
+                form.fireOnUserActivity(stack, new UserEventObject(propertyDraw.toDraw.getSID(), UserEventObject.Type.ORDER));
             }
         });
     }
@@ -511,7 +511,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 }
             }
 
-            form.fireOnUserActivity(stack, new UserActivityEvent(groupObject.getSID(), UserActivityEvent.Type.ORDER));
+            form.fireOnUserActivity(stack, new UserEventObject(groupObject.getSID(), UserEventObject.Type.ORDER));
         });
     }
 
@@ -632,7 +632,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                     }
                 }
 
-                form.fireOnUserActivity(stack, new UserActivityEvent(goi.getSID(), UserActivityEvent.Type.FILTER));
+                form.fireOnUserActivity(stack, new UserEventObject(goi.getSID(), UserEventObject.Type.FILTER));
             }
         });
     }

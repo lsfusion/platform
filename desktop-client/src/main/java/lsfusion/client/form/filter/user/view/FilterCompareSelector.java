@@ -106,6 +106,10 @@ public abstract class FilterCompareSelector extends FilterOptionSelector<Compare
     public String getToolTipText(MouseEvent event) {
         return (negation ? NOT_STRING + " " : "") + currentValue.getTooltipText();
     }
+    
+    public void setNegation(boolean negation) {
+        negationCB.setSelected(negation);
+    }
 
     public abstract void negationChanged(boolean value);
     public abstract void allowNullChanged(boolean value);

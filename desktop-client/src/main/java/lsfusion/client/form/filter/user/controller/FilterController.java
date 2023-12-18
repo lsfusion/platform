@@ -1,6 +1,5 @@
 package lsfusion.client.form.filter.user.controller;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.controller.MainController;
@@ -195,7 +194,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
                 if (readSelectedValue) {
                     existingFilter.putSelectedValue();
                 }
-                existingFilter.startEditing(keyEvent);
+                SwingUtilities.invokeLater(() -> existingFilter.startEditing(keyEvent));
                 return true;
             }
         }
@@ -245,15 +244,43 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
     private FilterConditionView findExistingFilter(ClientPropertyDraw propertyDraw, ClientGroupObjectValue columnKey) {
         Pair<ClientPropertyDraw, ClientGroupObjectValue> column = logicsSupplier.getFilterColumn(propertyDraw, columnKey);
 
-        if (!conditionViews.isEmpty()) {
-            for (ClientPropertyFilter filter : conditionViews.keySet()) {
-                if (filter.property.equals(column.first) && BaseUtils.nullEquals(filter.columnKey, column.second)) {
-                    return conditionViews.get(filter);
-                }
+        for (ClientPropertyFilter filter : conditionViews.keySet()) {
+            if (filter.columnEquals(column)) {
+                return conditionViews.get(filter);
             }
         }
         
         return null;
+    }
+    
+    public void changeFilters(List<ClientPropertyFilter> filters) {
+        if (hasFiltersContainer()) {
+            // hide controls only if no filters are expected. otherwise leave controls visibility unchanged
+            removeAllConditionsWithoutApply(filters.isEmpty());
+
+            Set<ClientPropertyFilter> fixedFilters = new LinkedHashSet<>(conditionViews.keySet());
+            
+            for (ClientPropertyFilter filter : filters) {
+                boolean filterExists = false;
+                for (ClientPropertyFilter fixedFilter : fixedFilters) {
+                    if (filter.columnEquals(fixedFilter)) {
+                        fixedFilter.override(filter);
+                        conditionViews.get(fixedFilter).applyCondition(filter);
+                        filterExists = true;
+                        fixedFilters.remove(fixedFilter);
+                        break;
+                    }
+                }
+                
+                if (!filterExists) {
+                    addCondition(filter, logicsSupplier, null, false);
+                }
+            }
+
+            // the only changeFilters() call is made when filters are initiated by server via FilterClientAction
+            // in this case we don't want focus to appear on some unexpected grid
+            applyFilters(false);
+        }
     }
 
     private void removeConditionView(ClientPropertyFilter condition) {

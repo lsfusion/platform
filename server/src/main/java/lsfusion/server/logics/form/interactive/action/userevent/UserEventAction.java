@@ -1,4 +1,4 @@
-package lsfusion.server.logics.form.interactive.action.activity;
+package lsfusion.server.logics.form.interactive.action.userevent;
 
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.language.property.LP;
@@ -15,13 +15,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public abstract class UserActivityAction extends SystemExplicitAction {
+public abstract class UserEventAction extends SystemExplicitAction {
     public static final String PROPERTY_KEY = "property";
     
     protected final GroupObjectEntity groupObject;
     protected final LP<?> fromProperty;
 
-    public UserActivityAction(GroupObjectEntity groupObject, LP<?> fromProperty) {
+    public UserEventAction(GroupObjectEntity groupObject, LP<?> fromProperty) {
         this.groupObject = groupObject;
         this.fromProperty = fromProperty;
     }

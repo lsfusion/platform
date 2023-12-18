@@ -1,4 +1,4 @@
-package lsfusion.server.logics.form.interactive.action.activity;
+package lsfusion.server.logics.form.interactive.action.userevent;
 
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ReadOrdersAction extends ReadUserActivityAction<ImOrderMap<PropertyDrawInstance, Boolean>> {
+public class ReadOrdersAction extends ReadUserEventsAction<ImOrderMap<PropertyDrawInstance, Boolean>> {
     public ReadOrdersAction(GroupObjectEntity groupObject, LP<?> toProperty) {
         super(groupObject, toProperty);
     }
@@ -52,7 +52,7 @@ public class ReadOrdersAction extends ReadUserActivityAction<ImOrderMap<Property
             if (order != null) {
                 Map<String, Object> orderMap = new HashMap<>();
 
-                orderMap.put(UserActivityAction.PROPERTY_KEY, propertyDraw.getSID());
+                orderMap.put(UserEventAction.PROPERTY_KEY, propertyDraw.getSID());
                 orderMap.put(OrderAction.DESC_KEY, order); // true is for desc on server
 
                 JSONObject json = new JSONObject(orderMap);
@@ -66,6 +66,6 @@ public class ReadOrdersAction extends ReadUserActivityAction<ImOrderMap<Property
 
     @Override
     public LP<?> getDefaultToProperty(BusinessLogics BL) {
-        return BL.LM.orders;
+        return BL.userEventsLM.orders;
     }
 }
