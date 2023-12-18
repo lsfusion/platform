@@ -110,7 +110,7 @@ public abstract class FormsController {
                         });
                     }
 
-                    popup.result = GwtClientUtils.showTippyPopup(editModeButton.getElement(), panel);
+                    popup.result = GwtClientUtils.showTippyPopup(null, editModeButton.getElement(), panel);
                 };
             }
         };
