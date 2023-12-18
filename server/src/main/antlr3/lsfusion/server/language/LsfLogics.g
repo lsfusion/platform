@@ -67,7 +67,7 @@ grammar LsfLogics;
     import lsfusion.server.logics.form.interactive.design.ComponentView;
     import lsfusion.server.logics.form.interactive.design.filter.FilterView;
     import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
-    import lsfusion.server.logics.form.interactive.event.UserActivityEvent;
+    import lsfusion.server.logics.form.interactive.event.UserEventObject;
     import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
     import lsfusion.server.logics.form.open.MappedForm;
     import lsfusion.server.logics.form.stat.SelectTop;
@@ -1252,25 +1252,25 @@ scheduleFormEventDeclaration returns [int period, boolean fixed]
 	:   'SCHEDULE' 'PERIOD' periodLiteral=intLiteral { $period = $periodLiteral.val; } ('FIXED' { $fixed = true; })?
 	;
 	
-orderEventDeclaration returns [UserActivityEvent type]
+orderEventDeclaration returns [UserEventObject type]
 @init {
 	String object = null;
 }
 @after {
 	if (inMainParseState()) {
-		$type = new UserActivityEvent(object, UserActivityEvent.Type.ORDER);
+		$type = new UserEventObject(object, UserEventObject.Type.ORDER);
 	}
 }
     :   'ORDER' objectId=ID { object = $objectId.text; }
     ;
     
-filterEventDeclaration returns [UserActivityEvent type]
+filterEventDeclaration returns [UserEventObject type]
 @init {
 	String object = null;
 }
 @after {
 	if (inMainParseState()) {
-		$type = new UserActivityEvent(object, UserActivityEvent.Type.FILTER);
+		$type = new UserEventObject(object, UserEventObject.Type.FILTER);
 	}
 }
     :   'FILTER' objectId=ID { object = $objectId.text; }
