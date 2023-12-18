@@ -1,5 +1,7 @@
 package lsfusion.server.data.expr.formula;
 
+import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.classes.data.file.JSONClass;
 import lsfusion.server.logics.classes.data.file.JSONTextClass;
