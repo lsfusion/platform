@@ -48,7 +48,7 @@ public final class FormDockable extends WidgetForm {
                 formsController.closeAllTabs();
             }));
 
-            popup.result = GwtClientUtils.showTippyPopup(Element.as(event.getNativeEvent().getEventTarget()), menuBar);
+            popup.result = GwtClientUtils.showTippyPopup(getTabWidget(), getTabWidget().getElement(), menuBar);
         }, ContextMenuEvent.getType());
 
         closeButton = new WidgetForm.CloseButton();
@@ -65,7 +65,6 @@ public final class FormDockable extends WidgetForm {
 
     @Override
     public void hide(EndReason editFormCloseReason) {
-        GwtClientUtils.hideTippyPopup(popup.result);
         formsController.removeDockable(this);
     }
 

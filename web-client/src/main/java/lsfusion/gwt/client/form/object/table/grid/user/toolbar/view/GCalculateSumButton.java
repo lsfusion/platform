@@ -1,9 +1,7 @@
 package lsfusion.gwt.client.form.object.table.grid.user.toolbar.view;
 
-import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.RootPanel;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.StaticImage;
@@ -18,7 +16,6 @@ public abstract class GCalculateSumButton extends GToolbarButton {
         super(StaticImage.SUM, messages.formQueriesCalculateSum());
     }
 
-    JavaScriptObject popup;
     public void showPopup(Number result, GPropertyDraw property) {
         String caption = property.getNotEmptyCaption();
         String text = result == null
@@ -32,12 +29,6 @@ public abstract class GCalculateSumButton extends GToolbarButton {
             text = text + format.format(result);
         }
 
-        popup = GwtClientUtils.showTippyPopup(getElement(), new HTML(text));
-    }
-
-    @Override
-    protected void onDetach() {
-        super.onDetach();
-        GwtClientUtils.hideTippyPopup(popup);
+        GwtClientUtils.showTippyPopup(this, getElement(), new HTML(text));
     }
 }

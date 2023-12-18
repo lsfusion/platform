@@ -813,12 +813,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         }
     }
 
-    @Override
-    protected void onDetach() {
-        super.onDetach();
-        GwtClientUtils.hideTippyPopup(popup.result);
-    }
-
     private static class Record extends JavaScriptObject {
 
         protected Record() {
@@ -1965,7 +1959,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             menuBar.getElement().getStyle().setOverflowY(Style.Overflow.SCROLL);
         }
 
-        popup.result = GwtClientUtils.showTippyPopup(td, menuBar);
+        popup.result = GwtClientUtils.showTippyPopup(this, td, menuBar);
     }
 
 

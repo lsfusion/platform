@@ -960,7 +960,6 @@ public class GFormController implements EditManager {
         syncResponseDispatch(new ScrollToEnd(group.ID, toEnd));
     }
 
-    JavaScriptObject popup = null;
     public void executePropertyEventAction(EventHandler handler, boolean isBinding, ExecuteEditContext editContext) {
         Event event = handler.event;
         GPropertyDraw property = editContext.getProperty();
@@ -969,7 +968,7 @@ public class GFormController implements EditManager {
 
         if(BrowserEvents.CONTEXTMENU.equals(event.getType())) {
             handler.consume();
-            popup = GPropertyContextMenuPopup.show(property, Element.as(event.getEventTarget()), actionSID -> {
+            GPropertyContextMenuPopup.show(getWidget(), property, Element.as(event.getEventTarget()), actionSID -> {
                 executePropertyEventAction(editContext, actionSID, handler);
             });
         } else {
@@ -1628,7 +1627,6 @@ public class GFormController implements EditManager {
     }
 
     protected void onFormHidden(GAsyncFormController asyncFormController, int closeDelay, EndReason editFormCloseReason) {
-        GwtClientUtils.hideTippyPopup(popup);
         formsController.removeFormContainer(formContainer);
         for(ContainerForm containerForm : containerForms) {
             containerForm.getForm().closePressed(editFormCloseReason);

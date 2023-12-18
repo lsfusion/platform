@@ -32,7 +32,6 @@ import lsfusion.gwt.client.form.property.cell.classes.GDateDTO;
 import lsfusion.gwt.client.form.property.cell.classes.GDateTimeDTO;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
-import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.form.view.Column;
 import lsfusion.interop.action.ServerResponse;
 
@@ -85,12 +84,6 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                 handler -> {}, handler -> {}, // no copy / paste for now
                 false, true
         );
-    }
-
-    @Override
-    protected void onDetach() {
-        hidePopup(popupObject);
-        super.onDetach();
     }
 
     public Element getTableDataFocusElement() {
@@ -269,7 +262,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     }
 
     private void showPopup() {
-        popupObject = showPopup(popupElementClicked, getPopupElement());
+        popupObject = showPopup(getWidget(), getPopupElement(), popupElementClicked);
 
         popupRequestIndex = -2; // we are no longer waiting for popup
         popupElementClicked = null; // in theory it's better to do it on popupObject close, but this way is also ok
@@ -286,7 +279,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         popupKey = null;
     }
 
-    protected abstract JavaScriptObject showPopup(P popupElementClicked, Element popupElement);
+    protected abstract JavaScriptObject showPopup(Widget ownerWidget, Element popupElement, P popupElementClicked);
 
     protected abstract void hidePopup(JavaScriptObject popup);
 
