@@ -497,18 +497,30 @@ public class GwtClientUtils {
 //        element.getStyle().clearProperty("boxSizing");
     }
 
-    public static JavaScriptObject showTippyPopup(Element popupElementClicked, Widget popupWidget) {
-        return showTippyPopup(popupElementClicked, popupWidget, null);
-    };
+    public static JavaScriptObject showTippyPopup(Widget ownerWidget, Element popupElementClicked, Widget popupWidget) {
+        return showTippyPopup(ownerWidget, popupElementClicked, popupWidget, null);
+    }
 
-    public static JavaScriptObject showTippyPopup(Element popupElementClicked, Widget popupWidget, Runnable onHideAction) {
+    public static JavaScriptObject showTippyPopup(Widget ownerWidget, Element popupElementClicked, Widget popupWidget, Runnable onHideAction) {
         RootPanel.get().add(popupWidget);
-        return showTippyPopup(RootPanel.get().getElement(), popupElementClicked, popupWidget.getElement(), onHideAction, true);
+        return showTippyPopup(ownerWidget, RootPanel.get().getElement(), popupElementClicked, popupWidget.getElement(), onHideAction);
     };
 
-    public static JavaScriptObject showTippyPopup(Element popupElementClicked, Element popupElement) {
-        return showTippyPopup(RootPanel.get().getElement(), popupElementClicked, popupElement, null, true);
+    public static JavaScriptObject showTippyPopup(Widget ownerWidget, Element popupElementClicked, Element popupElement) {
+        return showTippyPopup(ownerWidget, RootPanel.get().getElement(), popupElementClicked, popupElement, null);
     };
+
+    public static JavaScriptObject showTippyPopup(Widget ownerWidget, Element appendToElement, Element popupElementClicked, Element popupElement, Runnable onHideAction) {
+        JavaScriptObject popup = showTippyPopup(appendToElement, popupElementClicked, popupElement, onHideAction, true);
+        if(ownerWidget != null) {
+            ownerWidget.addAttachHandler(attachEvent -> {
+                if(!attachEvent.isAttached()) {
+                    GwtClientUtils.hideTippyPopup(popup);
+                }
+            });
+        }
+        return popup;
+    }
 
     public static native JavaScriptObject showTippyPopup(Element appendToElement, Element popupElementClicked, Element popupElement, Runnable onHideAction, boolean show)/*-{
         var popup = $wnd.tippy(popupElementClicked, {

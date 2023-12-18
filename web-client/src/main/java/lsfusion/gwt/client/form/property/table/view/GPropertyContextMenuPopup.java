@@ -4,6 +4,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
@@ -18,14 +19,14 @@ public class GPropertyContextMenuPopup {
         void onMenuItemSelected(String actionSID);
     }
 
-    public static JavaScriptObject show(GPropertyDraw property, Element element, final ItemSelectionListener selectionListener) {
+    public static void show(Widget ownerWidget, GPropertyDraw property, Element element, final ItemSelectionListener selectionListener) {
         if (property == null) {
-            return null;
+            return;
         }
 
         LinkedHashMap<String, String> contextMenuItems = property.getContextMenuItems();
         if (contextMenuItems == null || contextMenuItems.isEmpty()) {
-            return null;
+            return;
         }
 
         final Result<JavaScriptObject> popup = new Result<>();
@@ -51,8 +52,7 @@ public class GPropertyContextMenuPopup {
             menuBar.addItem(menuItem);
         }
 
-        popup.result = GwtClientUtils.showTippyPopup(element, menuBar);
-        return popup.result;
+        popup.result = GwtClientUtils.showTippyPopup(ownerWidget, element, menuBar);
     }
     
     private static String ensureMenuItemCaption(String caption) {

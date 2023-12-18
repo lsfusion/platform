@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.object.table.grid.view;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.table.TableContainer;
@@ -15,8 +16,8 @@ public abstract class GTippySimpleStateTableView extends GSimpleStateTableView<E
     }
 
     @Override
-    protected JavaScriptObject showPopup(Element popupElementClicked, Element popupElement) {
-        return GwtClientUtils.showTippyPopup(popupElementClicked, popupElement);
+    protected JavaScriptObject showPopup(Widget ownerWidget, Element popupElement, Element popupElementClicked) {
+        return GwtClientUtils.showTippyPopup(ownerWidget, popupElementClicked, popupElement);
     }
 
     @Override

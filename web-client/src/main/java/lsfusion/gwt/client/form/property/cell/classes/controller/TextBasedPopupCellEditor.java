@@ -9,7 +9,6 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
-import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 
 import java.text.ParseException;
 
@@ -36,12 +35,6 @@ public abstract class TextBasedPopupCellEditor extends TextBasedCellEditor {
     protected abstract Widget createPopupComponent(Element parent, PValue oldValue);
     protected abstract void removePopupComponent(Element parent);
     protected abstract PValue getPopupValue();
-
-    @Override
-    public void clearRender(Element cellParent, RenderContext renderContext, boolean cancel) {
-        super.clearRender(cellParent, renderContext, cancel);
-        GwtClientUtils.hideTippyPopup(popup);
-    }
 
     @Override
     public void stop(Element parent, boolean cancel, boolean blurred) {
