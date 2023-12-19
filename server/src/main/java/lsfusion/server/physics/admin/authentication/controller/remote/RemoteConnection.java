@@ -307,7 +307,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
 
     @Override
     public ExternalResponse exec(String actionName, ExternalRequest request) {
-            return logRequest(() -> {
+            return logIncomingRequest(() -> {
                 ExternalResponse result;
                 try {
                     if(actionName != null) {
@@ -343,7 +343,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     public ExternalResponse eval(boolean action, Object paramScript, ExternalRequest request) {
         String script = parseScript(paramScript, request.charsetName);
 
-        return logRequest(() -> {
+        return logIncomingRequest(() -> {
             ExternalResponse result;
             if (script != null) {
                 try {
@@ -529,7 +529,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         }
     }
 
-    public static String getRequestLog(ExternalRequest request, LogInfo logInfo, boolean exec, String action) {
+    public String getIncomingRequestLog(ExternalRequest request, LogInfo logInfo, boolean exec, String action) {
         return "\nREQUEST:\n" +
                 "\tREQUEST_USER_INFO: " + logInfo.toString() + "\n" +
                 "\tREQUEST_PATH: " + request.servletPath + "\n" +
@@ -538,7 +538,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
                 "\t" + (exec ? "ACTION" : "SCRIPT") + ":\n\t\t " + action + "\n";
     }
 
-    public static String getRequestLogDetail(ExternalRequest request, ExternalResponse response) {
+    public String getIncomingRequestLogDetail(ExternalRequest request, ExternalResponse response) {
         Charset charset = ExternalUtils.getCharsetFromContentType(request.contentType == null ? null : ContentType.parse(request.contentType));
         List<NameValuePair> queryParams = URLEncodedUtils.parse(request.query, charset);
         String returnMultiType = ExternalUtils.getParameterValue(queryParams, ExternalUtils.RETURNMULTITYPE_PARAM);
@@ -576,23 +576,23 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         return cookies.toString();
     }
 
-    private ExternalResponse logRequest(Callable<ExternalResponse> responseCallable, boolean exec, String action, ExternalRequest request) {
-        String requestLogMessage = Settings.get().isLogExternalRequests() ? getRequestLog(request, logInfo, exec, action) : null;
+    private ExternalResponse logIncomingRequest(Callable<ExternalResponse> responseCallable, boolean exec, String action, ExternalRequest request) {
+        String requestLogMessage = Settings.get().isLogIncomingRequests() ? getIncomingRequestLog(request, logInfo, exec, action) : null;
         try {
             ExternalResponse response = responseCallable.call();
             if (requestLogMessage != null) {
 
-                if (Settings.get().isLogExternalRequestsDetail())
-                    requestLogMessage += getRequestLogDetail(request, response);
+                if (Settings.get().isLogIncomingRequestsDetail())
+                    requestLogMessage += getIncomingRequestLogDetail(request, response);
 
-                ServerLoggers.httpServerLogger.info(requestLogMessage);
+                ServerLoggers.httpIncomingRequestsLogger.info(requestLogMessage);
             }
 
             return response;
         } catch (Throwable t) {
             if (requestLogMessage != null) {
                 requestLogMessage += "\n\tERROR: " + t.getMessage() + "\n";
-                ServerLoggers.httpServerLogger.error(requestLogMessage);
+                ServerLoggers.httpIncomingRequestsLogger.error(requestLogMessage);
             }
 
             throw Throwables.propagate(t);

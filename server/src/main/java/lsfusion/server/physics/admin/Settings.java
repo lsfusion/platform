@@ -3054,24 +3054,44 @@ public class Settings implements Cloneable {
         this.jasperReportsGovernorTimeout = jasperReportsGovernorTimeout;
     }
 
-    private boolean logExternalRequestsDetail = false;
+    private boolean logIncomingRequestsDetail = false;
 
-    public boolean isLogExternalRequestsDetail() {
-        return logExternalRequestsDetail;
+    public boolean isLogIncomingRequestsDetail() {
+        return logIncomingRequestsDetail;
     }
 
-    public void setLogExternalRequestsDetail(boolean logExternalRequestsDetail) {
-        this.logExternalRequestsDetail = logExternalRequestsDetail;
+    public void setLogIncomingRequestsDetail(boolean logIncomingRequestsDetail) {
+        this.logIncomingRequestsDetail = logIncomingRequestsDetail;
     }
 
-    private boolean logExternalRequests = false;
+    private boolean logIncomingRequests = false;
 
-    public boolean isLogExternalRequests() {
-        return logExternalRequests;
+    public boolean isLogIncomingRequests() {
+        return logIncomingRequests;
     }
 
-    public void setLogExternalRequests(boolean logExternalRequests) {
-        this.logExternalRequests = logExternalRequests;
+    public void setLogIncomingRequests(boolean logIncomingRequests) {
+        this.logIncomingRequests = logIncomingRequests;
+    }
+
+    private boolean logOutgoingRequestsDetail = false;
+
+    public boolean isLogOutgoingRequestsDetail() {
+        return logOutgoingRequestsDetail;
+    }
+
+    public void setLogOutgoingRequestsDetail(boolean logOutgoingRequestsDetail) {
+        this.logOutgoingRequestsDetail = logOutgoingRequestsDetail;
+    }
+
+    private boolean logOutgoingRequests = false;
+
+    public boolean isLogOutgoingRequests() {
+        return logOutgoingRequests;
+    }
+
+    public void setLogOutgoingRequests(boolean logOutgoingRequests) {
+        this.logOutgoingRequests = logOutgoingRequests;
     }
 
     private boolean disableAsyncValuesInterrupt = false;
