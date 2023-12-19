@@ -58,6 +58,11 @@ public abstract class AJSONClass extends DataClass<String> {
     }
 
     @Override
+    public boolean isSafeType() {
+        return false;
+    }
+
+    @Override
     public String parseString(String s) {
         return s;
     }
