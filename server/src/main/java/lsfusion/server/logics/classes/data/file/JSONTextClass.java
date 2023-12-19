@@ -10,7 +10,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 public class JSONTextClass extends AJSONClass {
 
     public JSONTextClass() {
-        super(LocalizedString.create("{classes.json.string}"));
+        super(LocalizedString.create("{classes.json.text}"));
     }
 
     public final static JSONTextClass instance = new JSONTextClass();
