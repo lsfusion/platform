@@ -2,8 +2,10 @@ package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.core.client.JsDate;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.controller.SmartScheduler;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -11,20 +13,33 @@ import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
 
-public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellEditor implements FormatCellEditor {
+import java.text.ParseException;
+
+public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor implements FormatCellEditor {
+
+    private InputElement editBox;
+    protected Widget popup;
 
     public DateRangePickerBasedCellEditor(EditManager editManager, GPropertyDraw property) {
         super(editManager, property);
     }
 
     @Override
-    protected PValue getPopupValue() {
-        return getDateInputValue();
+    protected void onInputReady(Element parent, PValue oldValue) {
+        super.onInputReady(parent, oldValue);
+
+        editBox = inputElement;
+
+        if(!inputElementType.hasNativePopup()) {
+            popup = createPopupComponent(parent, oldValue);
+        }
     }
 
     @Override
-    protected void removePopupComponent(Element parent) {
-        removePicker();
+    public void stop(Element parent, boolean cancel, boolean blurred) {
+        if(popup != null)
+            removePicker();
+        super.stop(parent, cancel, blurred);
     }
 
     protected void pickerApply(Element parent) {
@@ -35,16 +50,33 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
         });
     }
 
-    @Override
     public SimplePanel createPopupComponent(Element parent, PValue oldValue) {
         assert oldValue != null;
         Element tippyParent = GwtClientUtils.getTippyParent(parent);
         createPicker(tippyParent, parent, getStartDate(oldValue), getEndDate(oldValue), getPattern(), isSinglePicker(), isTimeEditor(), isDateEditor());
 
-        //popup.setVisible(false);
-        //popup.addAutoHidePartner(getPickerElement());
+        Element pickerElement = getPickerElement();
+        pickerElement.setPropertyObject("autoHidePartner", parent);
+        pickerElement.setTabIndex(-1); // we need this to have related target in isFakeBlur, otherwise it won't work
+
         editBox.click(); // need to dateRangePicker opens immediately. because we use an editBox
         return new SimplePanel();
+    }
+
+    protected PValue tryParseInputText(String inputText, boolean onCommit) throws ParseException {
+        //to be able to enter the date from keyboard
+        if (onCommit) {
+            try {
+                return super.tryParseInputText(inputText, true);
+            } catch (ParseException e) {
+                if(popup != null)
+                    return getDateInputValue();
+                else
+                    throw e;
+            }
+        }
+
+        return PValue.getPValue(inputText);
     }
 
     protected abstract JsDate getStartDate(PValue oldValue);
@@ -60,22 +92,22 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
     }
 
     protected native void removePicker()/*-{
-        $(this.@TextBasedPopupCellEditor::editBox).data('daterangepicker').remove();
+        $(this.@DateRangePickerBasedCellEditor::editBox).data('daterangepicker').remove();
         //we need to remove the keydown listener because it is a global($wnd) listener that is only used when the picker popup opens
         $($wnd).off('keydown.pickerpopup').off('mousedown.pickerpopup');
     }-*/;
 
     protected native Element getPickerElement()/*-{
-        return $(this.@TextBasedPopupCellEditor::editBox).data('daterangepicker').container.get(0);
+        return $(this.@DateRangePickerBasedCellEditor::editBox).data('daterangepicker').container.get(0);
     }-*/;
 
     protected native JsDate getPickerStartDate()/*-{
-        var pickerDate = $(this.@TextBasedPopupCellEditor::editBox).data('daterangepicker').startDate;
+        var pickerDate = $(this.@DateRangePickerBasedCellEditor::editBox).data('daterangepicker').startDate;
         return pickerDate.isValid() ? pickerDate.toDate() : null; // toDate because it is "Moment js" object
     }-*/;
 
     protected native JsDate getPickerEndDate()/*-{
-        var pickerDate = $(this.@TextBasedPopupCellEditor::editBox).data('daterangepicker').endDate;
+        var pickerDate = $(this.@DateRangePickerBasedCellEditor::editBox).data('daterangepicker').endDate;
         // pickerDate may be null because we update the input field and on select 'date_from' - 'date_to' will be null
         return pickerDate == null ? this.@DateRangePickerBasedCellEditor::getPickerStartDate(*)() : pickerDate.isValid() ? pickerDate.toDate() : null; // toDate because it is "Moment js" object
     }-*/;
@@ -87,7 +119,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
     protected native void createPicker(Element tippyParent, Element parent, JsDate startDate, JsDate endDate, String pattern, boolean singleDatePicker, boolean time, boolean date)/*-{
         window.$ = $wnd.jQuery;
         var thisObj = this;
-        var editElement = $(thisObj.@TextBasedPopupCellEditor::editBox);
+        var editElement = $(thisObj.@DateRangePickerBasedCellEditor::editBox);
         var messages = @lsfusion.gwt.client.ClientMessages.Instance::get()();
         applyDateRangePickerPatches(); //Must be called before the picker is initialised
 
