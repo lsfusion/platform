@@ -338,9 +338,6 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
     public static boolean isFakeBlur(Event event, Element blur) {
         EventTarget focus = event.getRelatedEventTarget();
-        if(focus == null) {
-            focus = event.getEventTarget();
-        }
         if(focus == null)
             return false;
 

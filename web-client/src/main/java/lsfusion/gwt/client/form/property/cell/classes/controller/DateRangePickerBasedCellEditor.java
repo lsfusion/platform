@@ -390,6 +390,14 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
                 this.previousRightTime = this.endDate.clone();
 
                 this.updateView();
+
+                //<<<<<
+                //REPLACE mousedown to click
+                this.container.find('.drp-calendar')
+                    .off('mousedown.daterangepicker', 'td.available')
+                    .on('click.daterangepicker', 'td.available', $.proxy(this.clickDate, this));
+                //>>>>>
+
                 //<<<<<
                 //ADD
                 this.element.trigger('show.daterangepicker', this); //MOVED FROM AFTER this.move();
