@@ -11,14 +11,13 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.file.IOUtils;
 import lsfusion.interop.session.*;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.language.property.oraction.LAP;
-import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.flow.FlowResult;
@@ -29,7 +28,7 @@ import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
-import lsfusion.server.physics.admin.log.LogInfo;
+import lsfusion.server.physics.admin.authentication.controller.remote.RemoteConnection;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpEntity;
@@ -56,11 +55,10 @@ public class ExternalHTTPAction extends CallAction {
     private LP<?> cookiesProperty;
     private LP headersToProperty;
     private LP cookiesToProperty;
-    private final BusinessLogics BL;
 
     public ExternalHTTPAction(boolean clientAction, ExternalHttpMethod method, ImList<Type> params, ImList<LP> targetPropList,
                               int bodyParamNamesSize, ImList<LP> bodyParamHeadersPropertyList,
-                              LP headersProperty, LP cookiesProperty, LP headersToProperty, LP cookiesToProperty, boolean hasBodyUrl, BusinessLogics BL) {
+                              LP headersProperty, LP cookiesProperty, LP headersToProperty, LP cookiesToProperty, boolean hasBodyUrl) {
         super((hasBodyUrl ? 2 : 1) + bodyParamNamesSize, params, targetPropList);
 
         this.clientAction = clientAction;
@@ -76,7 +74,6 @@ public class ExternalHTTPAction extends CallAction {
         this.cookiesProperty = cookiesProperty;
         this.headersToProperty = headersToProperty;
         this.cookiesToProperty = cookiesToProperty;
-        this.BL = BL;
     }
 
     private String[] getResponseHeaderValues(Map<String, List<String>> responseHeaders, String[] headerNames) {
@@ -164,9 +161,7 @@ public class ExternalHTTPAction extends CallAction {
                     String[] headerNames = responseHeaders.keySet().toArray(new String[0]);
                     String[] headerValues = getResponseHeaderValues(responseHeaders, headerNames);
 
-                    for (int i = 0; i < headerNames.length; i++) {
-                        responseHeadersMap.put(headerNames[i], headerValues[i]);
-                    }
+                    responseHeadersMap.putAll(BaseUtils.toStringMap(headerNames, headerValues));
 
                     writePropertyValues(context, headersToProperty, headerNames, headerValues);
                 }
@@ -177,15 +172,15 @@ public class ExternalHTTPAction extends CallAction {
 
                     writePropertyValues(context, cookiesToProperty, cookieNames, cookieValues);
                 }
-                context.getBL().LM.statusHttp.change(response.statusCode, context);
+                int statusCode = response.statusCode;
+                context.getBL().LM.statusHttp.change(statusCode, context);
 
                 String responseEntity = responseBytes != null ? new String(responseBytes, charset) : null;
-                String responseStatus = response.statusCode + " " + response.statusText;
+                String responseStatus = statusCode + " " + response.statusText;
+                boolean successfulResponse = RemoteConnection.successfulResponse(statusCode);
 
-                readLogInfo(context.getSession(), BL);
-                logOutgoingRequest(connectionString, method.name(), headers, cookies, bodyUrl, responseEntity, responseHeadersMap, responseCookies, responseStatus);
-
-                if (response.statusCode < 200 || response.statusCode >= 300) {
+                logToExternalSystemRequest(connectionString, method.name(), headers, cookies, bodyUrl, responseEntity, responseHeadersMap, responseCookies, responseStatus, successfulResponse);
+                if (!successfulResponse) {
                     String message = responseStatus;
                     if (responseBytes != null)
                         message += "\n" + responseEntity;
@@ -240,46 +235,23 @@ public class ExternalHTTPAction extends CallAction {
         property.change(session, env, MapFact.toMap(names, values), StringClass.instance, StringClass.instance);
     }
 
-    private LogInfo logInfo = null;
-    public void readLogInfo(DataSession session, BusinessLogics businessLogics) throws SQLException, SQLHandledException {
-        if (logInfo == null) {
-            Long userId = (Long) businessLogics.authenticationLM.currentUser.read(session);
-            DataObject currentUser = session.getDataObject(businessLogics.authenticationLM.user, userId);
+    private void logToExternalSystemRequest(String path, String method, Map<String, String> requestHeaders, Map<String, String> requestCookies, String bodyUrl, String responseBody,
+                                            Map<String, String> responseHeaders, Map<String, String> responseCookies, String responseStatus, boolean successfulResponse) {
+        String requestLogMessage = Settings.get().isLogToExternalSystemRequests() ?
+                RemoteConnection.getExternalSystemRequestsLog(ThreadLocalContext.getLogInfo(Thread.currentThread()), path, method, null) : null;
 
-            String userName = (String) businessLogics.authenticationLM.logNameCustomUser.read(session, currentUser);
-            String userRoles = (String) businessLogics.securityLM.userRolesUser.read(session, currentUser);
-            String currentComputer = (String) businessLogics.authenticationLM.hostnameCurrentComputer.read(session);
-
-            logInfo = new LogInfo(userName, userRoles, currentComputer);
-        }
-    }
-
-    public String getOutgoingRequestLog(String path, String method, Map<String, String> headers, Map<String, String> cookies, String bodyUrl) {
-        return "\nREQUEST:\n" +
-                "\tREQUEST_USER_INFO: " + logInfo.toString() + "\n" +
-                "\tREQUEST_PATH: " + path + "\n" +
-                "\tREQUEST_METHOD: " + method + "\n" +
-                (!headers.isEmpty() ? "\tREQUEST_HEADERS:\n\t\t" + StringUtils.join(headers.entrySet().iterator(), "\n\t\t") + "\n" : "") +
-                (!cookies.isEmpty() ? "\tREQUEST_COOKIES:\n\t\t" + StringUtils.join(cookies.entrySet().iterator(), "\n\t\t") + "\n" : "") +
-                (bodyUrl != null ? "\tREQUEST_BODYURL: " + bodyUrl + "\n" : "");
-    }
-
-    public String getOutgoingRequestLogDetail(String response, Map<String, String> responseHeaders, Map<String, String> responseCookies, String responseStatus) {
-        return "\nRESPONSE:\n" +
-                (response != null ? "\tRESPONSE_BODY: " + response + "\n" : "") +
-                (!responseHeaders.isEmpty() ? "\tRESPONSE_HEADERS:\n\t\t" + StringUtils.join(responseHeaders.entrySet().iterator(), "\n\t\t") + "\n" : "") +
-                (!responseCookies.isEmpty() ? "\tRESPONSE_COOKIES:\n\t\t" + StringUtils.join(responseCookies.entrySet().iterator(), "\n\t\t") + "\n" : "") +
-                "\tRESPONSE_STATUS: " + responseStatus + "\n";
-    }
-
-    private void logOutgoingRequest(String path, String method, Map<String, String> headers, Map<String, String> cookies, String bodyUrl,
-                                    String response, Map<String, String> responseHeaders, Map<String, String> responseCookies, String responseStatus) {
-        String requestLogMessage = Settings.get().isLogOutgoingRequests() ? getOutgoingRequestLog(path, method, headers, cookies, bodyUrl) : null;
         if (requestLogMessage != null) {
-            if (Settings.get().isLogOutgoingRequestsDetail())
-                requestLogMessage += getOutgoingRequestLogDetail(response, responseHeaders, responseCookies, responseStatus);
+            if (Settings.get().isLogToExternalSystemRequestsDetail())
+                requestLogMessage += RemoteConnection.getExternalSystemRequestsLogDetail(requestHeaders,
+                        requestCookies,
+                        null,
+                        (bodyUrl != null ? "\tREQUEST_BODYURL: " + bodyUrl : null),
+                        responseHeaders,
+                        responseCookies,
+                        responseStatus,
+                        (responseBody != null ? "\tRESPONSE_BODY:\n" + responseBody + "\n" : null));
 
-            ServerLoggers.httpOutgoingRequestsLogger.info(requestLogMessage);
+            RemoteConnection.logExternalSystemRequest(ServerLoggers.httpToExternalSystemRequestsLogger, requestLogMessage, successfulResponse);
         }
     }
 

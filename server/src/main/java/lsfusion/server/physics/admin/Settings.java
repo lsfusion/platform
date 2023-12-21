@@ -3054,44 +3054,44 @@ public class Settings implements Cloneable {
         this.jasperReportsGovernorTimeout = jasperReportsGovernorTimeout;
     }
 
-    private boolean logIncomingRequestsDetail = false;
+    private boolean logFromExternalSystemRequestsDetail = false;
 
-    public boolean isLogIncomingRequestsDetail() {
-        return logIncomingRequestsDetail;
+    public boolean isLogFromExternalSystemRequestsDetail() {
+        return logFromExternalSystemRequestsDetail;
     }
 
-    public void setLogIncomingRequestsDetail(boolean logIncomingRequestsDetail) {
-        this.logIncomingRequestsDetail = logIncomingRequestsDetail;
+    public void setLogFromExternalSystemRequestsDetail(boolean logFromExternalSystemRequestsDetail) {
+        this.logFromExternalSystemRequestsDetail = logFromExternalSystemRequestsDetail;
     }
 
-    private boolean logIncomingRequests = false;
+    private boolean logFromExternalSystemRequests = false;
 
-    public boolean isLogIncomingRequests() {
-        return logIncomingRequests;
+    public boolean isLogFromExternalSystemRequests() {
+        return logFromExternalSystemRequests;
     }
 
-    public void setLogIncomingRequests(boolean logIncomingRequests) {
-        this.logIncomingRequests = logIncomingRequests;
+    public void setLogFromExternalSystemRequests(boolean logFromExternalSystemRequests) {
+        this.logFromExternalSystemRequests = logFromExternalSystemRequests;
     }
 
-    private boolean logOutgoingRequestsDetail = false;
+    private boolean logToExternalSystemRequestsDetail = false;
 
-    public boolean isLogOutgoingRequestsDetail() {
-        return logOutgoingRequestsDetail;
+    public boolean isLogToExternalSystemRequestsDetail() {
+        return logToExternalSystemRequestsDetail;
     }
 
-    public void setLogOutgoingRequestsDetail(boolean logOutgoingRequestsDetail) {
-        this.logOutgoingRequestsDetail = logOutgoingRequestsDetail;
+    public void setLogToExternalSystemRequestsDetail(boolean logToExternalSystemRequestsDetail) {
+        this.logToExternalSystemRequestsDetail = logToExternalSystemRequestsDetail;
     }
 
-    private boolean logOutgoingRequests = false;
+    private boolean logToExternalSystemRequests = false;
 
-    public boolean isLogOutgoingRequests() {
-        return logOutgoingRequests;
+    public boolean isLogToExternalSystemRequests() {
+        return logToExternalSystemRequests;
     }
 
-    public void setLogOutgoingRequests(boolean logOutgoingRequests) {
-        this.logOutgoingRequests = logOutgoingRequests;
+    public void setLogToExternalSystemRequests(boolean logToExternalSystemRequests) {
+        this.logToExternalSystemRequests = logToExternalSystemRequests;
     }
 
     private boolean disableAsyncValuesInterrupt = false;

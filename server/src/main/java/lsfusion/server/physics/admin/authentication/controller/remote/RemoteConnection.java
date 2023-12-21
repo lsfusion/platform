@@ -39,10 +39,12 @@ import lsfusion.server.physics.admin.log.LogInfo;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.integration.external.to.ExternalHTTPAction;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.entity.ContentType;
+import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -53,6 +55,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.Callable;
 
@@ -307,7 +310,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
 
     @Override
     public ExternalResponse exec(String actionName, ExternalRequest request) {
-            return logIncomingRequest(() -> {
+            return logFromExternalSystemRequest(() -> {
                 ExternalResponse result;
                 try {
                     if(actionName != null) {
@@ -343,7 +346,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     public ExternalResponse eval(boolean action, Object paramScript, ExternalRequest request) {
         String script = parseScript(paramScript, request.charsetName);
 
-        return logIncomingRequest(() -> {
+        return logFromExternalSystemRequest(() -> {
             ExternalResponse result;
             if (script != null) {
                 try {
@@ -529,73 +532,84 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         }
     }
 
-    public String getIncomingRequestLog(ExternalRequest request, LogInfo logInfo, boolean exec, String action) {
-        return "\nREQUEST:\n" +
-                "\tREQUEST_USER_INFO: " + logInfo.toString() + "\n" +
-                "\tREQUEST_PATH: " + request.servletPath + "\n" +
-                "\tREQUEST_QUERY: " + request.query + "\n" +
-                "\tREQUEST_METHOD: " + request.method + "\n" +
-                "\t" + (exec ? "ACTION" : "SCRIPT") + ":\n\t\t " + action + "\n";
-    }
-
-    public String getIncomingRequestLogDetail(ExternalRequest request, ExternalResponse response) {
-        Charset charset = ExternalUtils.getCharsetFromContentType(request.contentType == null ? null : ContentType.parse(request.contentType));
-        List<NameValuePair> queryParams = URLEncodedUtils.parse(request.query, charset);
-        String returnMultiType = ExternalUtils.getParameterValue(queryParams, ExternalUtils.RETURNMULTITYPE_PARAM);
-        boolean returnBodyUrl = returnMultiType != null && returnMultiType.equals("bodyurl");
-        HttpEntity httpEntity = ExternalUtils.getInputStreamFromList(response.results, ExternalUtils.getBodyUrl(response.results, returnBodyUrl), null, new ArrayList<>(), null, null);
-
-        return "\n" + getHeadersString(request.headerNames, request.headerValues) +
-                getCookiesString(request.cookieNames, request.cookieValues) +
-                "\tBODY:\n\t\t" +
-                (request.body != null ? new String(request.body, Charset.forName(request.charsetName)) : "") +
-                "\n\nRESPONSE:\n" +
-                "\tOBJECTS:\n\t\t" + httpEntity + "\n" +
-                getHeadersString(response.headerNames, response.headerValues) +
-                getCookiesString(response.cookieNames, response.cookieValues) +
-                "\n\tRESPONSE_STATUS_HTTP: " + BaseUtils.nvl(response.statusHttp, HttpServletResponse.SC_OK) + "\n";
-    }
-
-    private static String getHeadersString(String[] headerNames, String[] headerValues) {
-        StringBuilder headers = new StringBuilder().append("\tHEADERS:\n");
-        if (headerNames != null) {
-            for (int i = 0; i < headerNames.length; i++) {
-                headers.append("\t\t").append(headerNames[i]).append(": ").append(headerValues[i]).append("\n");
-            }
-        }
-        return headers.toString();
-    }
-
-    private static String getCookiesString(String[] cookieNames, String[] cookieValues) {
-        StringBuilder cookies = new StringBuilder().append("\tCOOKIES:\n");
-        if (cookieNames != null) {
-            for (int i = 0; i < cookieNames.length; i++) {
-                cookies.append("\t\t").append(cookieNames[i]).append(": ").append(cookieValues[i]).append("\n");
-            }
-        }
-        return cookies.toString();
-    }
-
-    private ExternalResponse logIncomingRequest(Callable<ExternalResponse> responseCallable, boolean exec, String action, ExternalRequest request) {
-        String requestLogMessage = Settings.get().isLogIncomingRequests() ? getIncomingRequestLog(request, logInfo, exec, action) : null;
+    private ExternalResponse logFromExternalSystemRequest(Callable<ExternalResponse> responseCallable, boolean exec, String action, ExternalRequest request) {
+        String requestLogMessage = Settings.get().isLogFromExternalSystemRequests() ? getExternalSystemRequestsLog(logInfo, request.servletPath, request.method,
+                "\tREQUEST_QUERY: " + request.query + "\n" + "\t" + (exec ? "ACTION" : "SCRIPT") + ":\n\t\t " + action) : null;
+        Logger logger = ServerLoggers.httpFromExternalSystemRequestsLogger;
         try {
             ExternalResponse response = responseCallable.call();
             if (requestLogMessage != null) {
 
-                if (Settings.get().isLogIncomingRequestsDetail())
-                    requestLogMessage += getIncomingRequestLogDetail(request, response);
 
-                ServerLoggers.httpIncomingRequestsLogger.info(requestLogMessage);
+                Integer statusCode = BaseUtils.nvl(response.statusHttp, HttpServletResponse.SC_OK);
+                String responseStatus = String.valueOf(statusCode);
+
+                if (Settings.get().isLogFromExternalSystemRequestsDetail()) {
+                    Charset charset = ExternalUtils.getCharsetFromContentType(request.contentType == null ? null : ContentType.parse(request.contentType));
+                    List<NameValuePair> queryParams = URLEncodedUtils.parse(request.query, charset);
+                    String returnMultiType = ExternalUtils.getParameterValue(queryParams, ExternalUtils.RETURNMULTITYPE_PARAM);
+                    boolean returnBodyUrl = returnMultiType != null && returnMultiType.equals("bodyurl");
+                    HttpEntity httpEntity = ExternalUtils.getInputStreamFromList(response.results, ExternalUtils.getBodyUrl(response.results, returnBodyUrl), null, new ArrayList<>(), null, null);
+
+                    requestLogMessage += getExternalSystemRequestsLogDetail(BaseUtils.toStringMap(request.headerNames, request.headerValues),
+                            BaseUtils.toStringMap(request.cookieNames, request.cookieValues),
+                            request.body != null ? new String(request.body, Charset.forName(request.charsetName)) : null,
+                            null,
+                            BaseUtils.toStringMap(response.headerNames, response.headerValues),
+                            BaseUtils.toStringMap(response.cookieNames, response.cookieValues),
+                            responseStatus,
+                            "\tOBJECTS:\n\t\t" + httpEntity);
+                }
+
+                logExternalSystemRequest(logger, requestLogMessage, successfulResponse(statusCode));
             }
 
             return response;
         } catch (Throwable t) {
             if (requestLogMessage != null) {
                 requestLogMessage += "\n\tERROR: " + t.getMessage() + "\n";
-                ServerLoggers.httpIncomingRequestsLogger.error(requestLogMessage);
+                logger.error(requestLogMessage);
             }
 
             throw Throwables.propagate(t);
         }
     }
+
+    public static String getExternalSystemRequestsLog (LogInfo logInfo, String path, String method, String extraValue) {
+        return "\nREQUEST:\n" +
+                (logInfo != null ? "\tREQUEST_USER_INFO: " + logInfo + "\n" : "") +
+                "\tREQUEST_PATH: " + path + "\n" +
+                "\tREQUEST_METHOD: " + method + "\n" +
+                (extraValue != null ? "\n" + extraValue + "\n" : "");
+    }
+
+    public static String getExternalSystemRequestsLogDetail (Map<String, String> requestHeaders, Map<String, String> requestCookies, String requestBody,
+                                                             String requestExtraValue, Map<String, String> responseHeaders, Map<String, String> responseCookies,
+                                                             String responseStatus, String responseExtraValue) {
+        return getLogMapValues("REQUEST_HEADERS:", requestHeaders) + "\n" +
+                getLogMapValues("REQUEST_COOKIES:", requestCookies) + "\n" +
+                (requestBody != null ? "\tBODY:\n\t\t" + requestBody + "\n" : "") +
+                (requestExtraValue != null ? requestExtraValue + "\n" : "") +
+                "RESPONSE:\n" +
+                getLogMapValues("RESPONSE_HEADERS:", responseHeaders) + "\n" +
+                getLogMapValues("RESPONSE_COOKIES:", responseCookies) + "\n" +
+                "\tRESPONSE_STATUS_HTTP: " + responseStatus + "\n" +
+                (responseExtraValue != null ? responseExtraValue : "");
+    }
+
+    private static String getLogMapValues(String caption, Map<String, String> map) {
+        return "\t" + caption + "\n\t\t" + StringUtils.join(map.entrySet().iterator(), "\n\t\t");
+    }
+
+    public static boolean successfulResponse(int responseStatusCode) {
+        return responseStatusCode >= 200 && responseStatusCode < 300;
+    }
+
+    public static void logExternalSystemRequest (Logger logger, String message, boolean successfulResponse) {
+        if (successfulResponse)
+            logger.info(message);
+        else
+            logger.error(message);
+    }
+
 }
