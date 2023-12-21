@@ -208,8 +208,8 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
         }
 
         //update input element
-        $(thisObj.@DateRangePickerBasedCellEditor::getPickerElement()()).on('mouseup keyup change.daterangepicker', function (e) {
-            if (e.target.tagName !== 'SELECT' || e.type !== 'mouseup')
+        $(thisObj.@DateRangePickerBasedCellEditor::getPickerElement()()).on('keyup change.daterangepicker', function (e) {
+            if (e.target.tagName !== 'SELECT')
                 thisObj.@DateRangePickerBasedCellEditor::setInputValue(Lcom/google/gwt/dom/client/Element;)(parent);
         });
 
@@ -385,18 +385,22 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
                 // Reposition the picker if the window is resized while it's open
                 $(window).on('resize.daterangepicker', $.proxy(function(e) { this.move(e); }, this));
 
+                //<<<<<
+                //REPLACE mousedown to click and update input value
+                this.container.find('.drp-calendar')
+                    .off('mousedown.daterangepicker', 'td.available')
+                    .on('click.daterangepicker', 'td.available',
+                        $.proxy(function(e) {
+                            this.clickDate(e);
+                            thisObj.@DateRangePickerBasedCellEditor::setInputValue(Lcom/google/gwt/dom/client/Element;)(parent);
+                        }, this));
+                //>>>>>
+
                 this.oldStartDate = this.startDate.clone();
                 this.oldEndDate = this.endDate.clone();
                 this.previousRightTime = this.endDate.clone();
 
                 this.updateView();
-
-                //<<<<<
-                //REPLACE mousedown to click
-                this.container.find('.drp-calendar')
-                    .off('mousedown.daterangepicker', 'td.available')
-                    .on('click.daterangepicker', 'td.available', $.proxy(this.clickDate, this));
-                //>>>>>
 
                 //<<<<<
                 //ADD
