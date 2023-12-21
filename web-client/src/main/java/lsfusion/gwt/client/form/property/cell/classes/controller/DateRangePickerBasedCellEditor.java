@@ -10,6 +10,7 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.controller.SmartScheduler;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
 
@@ -46,7 +47,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
         //when auto-apply selects a date, at the end a mousedown occurs and takes the focus to a nothing
         SmartScheduler.getInstance().scheduleDeferred(true, () -> {
             if (editManager.isThisCellEditing(this))
-                commitValue(parent, getDateInputValue());
+                commit(parent, CommitReason.FORCED);
         });
     }
 
