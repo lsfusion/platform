@@ -529,6 +529,7 @@ public class GwtClientUtils {
             trigger : 'manual',
             interactive : true,
             allowHTML : true,
+            zIndex: 1070,
             onHide: function() {
                 if(onHideAction != null) {
                     onHideAction.@java.lang.Runnable::run()();
