@@ -93,10 +93,12 @@ public class ExternalHTTPAction extends CallAction {
 
     @Override
     protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) {
+        String connectionString = getTransformedText(context, queryInterface);
+        String requestLogMessage = Settings.get().isLogToExternalSystemRequests() ?
+                RemoteConnection.getExternalSystemRequestsLog(ThreadLocalContext.getLogInfo(Thread.currentThread()), connectionString, method.name(), null) : null;
+        boolean successfulResponse = false;
         try {
-
             Result<ImOrderSet<PropertyInterface>> rNotUsedParams = new Result<>();
-            String connectionString = getTransformedText(context, queryInterface);
             String bodyUrl = bodyUrlInterface != null ? getTransformedText(context, bodyUrlInterface) : null;
             if(connectionString != null) {
                 connectionString = replaceParams(context, connectionString, rNotUsedParams, ExternalUtils.getCharsetFromContentType(ExternalUtils.TEXT_PLAIN));
@@ -155,21 +157,16 @@ public class ExternalHTTPAction extends CallAction {
                 Charset charset = ExternalUtils.getCharsetFromContentType(contentType);
                 fillResults(context, targetPropList, requestParams, charset); // важно игнорировать параметры, так как иначе при общении с LSF пришлось бы всегда TO писать (так как он по умолчанию exportFile возвращает)
 
-                Map<String, String> responseHeadersMap = new HashMap<>();
+                Map<String, List<String>> responseHeaders = response.responseHeaders;
+                String[] headerNames = responseHeaders.keySet().toArray(new String[0]);
+                String[] headerValues = getResponseHeaderValues(responseHeaders, headerNames);
                 if(headersToProperty != null) {
-                    Map<String, List<String>> responseHeaders = response.responseHeaders;
-                    String[] headerNames = responseHeaders.keySet().toArray(new String[0]);
-                    String[] headerValues = getResponseHeaderValues(responseHeaders, headerNames);
-
-                    responseHeadersMap.putAll(BaseUtils.toStringMap(headerNames, headerValues));
-
                     writePropertyValues(context, headersToProperty, headerNames, headerValues);
                 }
                 Map<String, String> responseCookies = getResponseCookies(cookieStore);
                 if(cookiesToProperty != null) {
                     String[] cookieNames = responseCookies.keySet().toArray(new String[0]);
                     String[] cookieValues = responseCookies.values().toArray(new String[0]);
-
                     writePropertyValues(context, cookiesToProperty, cookieNames, cookieValues);
                 }
                 int statusCode = response.statusCode;
@@ -177,20 +174,30 @@ public class ExternalHTTPAction extends CallAction {
 
                 String responseEntity = responseBytes != null ? new String(responseBytes, charset) : null;
                 String responseStatus = statusCode + " " + response.statusText;
-                boolean successfulResponse = RemoteConnection.successfulResponse(statusCode);
+                successfulResponse = RemoteConnection.successfulResponse(statusCode);
 
-                logToExternalSystemRequest(connectionString, method.name(), headers, cookies, bodyUrl, responseEntity, responseHeadersMap, responseCookies, responseStatus, successfulResponse);
-                if (!successfulResponse) {
-                    String message = responseStatus;
-                    if (responseBytes != null)
-                        message += "\n" + responseEntity;
-                    throw new RuntimeException(message);
+                if (requestLogMessage != null && Settings.get().isLogToExternalSystemRequestsDetail()) {
+                    requestLogMessage += RemoteConnection.getExternalSystemRequestsLogDetail(headers,
+                            cookies,
+                            null,
+                            (bodyUrl != null ? "\tREQUEST_BODYURL: " + bodyUrl : null),
+                            BaseUtils.toStringMap(headerNames, headerValues),
+                            responseCookies,
+                            responseStatus,
+                            (responseEntity != null ? "\tRESPONSE_BODY:\n" + responseEntity : null));
                 }
+                if (!successfulResponse)
+                    throw new RuntimeException(responseStatus + (responseEntity == null ? "" : "\n" + responseEntity));
             } else {
                 throw new RuntimeException("connectionString not specified");
             }
         } catch (Exception e) {
+            if (requestLogMessage != null)
+                requestLogMessage += "\n\tERROR: " + e.getMessage() + "\n";
+
             throw Throwables.propagate(e);
+        } finally {
+            RemoteConnection.logExternalSystemRequest(ServerLoggers.httpToExternalSystemRequestsLogger, requestLogMessage, successfulResponse);
         }
 
         return FlowResult.FINISH;
@@ -233,26 +240,6 @@ public class ExternalHTTPAction extends CallAction {
     }
     public static <P extends PropertyInterface> void writePropertyValues(DataSession session, ExecutionEnvironment env, LP<P> property, String[] names, String[] values) throws SQLException, SQLHandledException {
         property.change(session, env, MapFact.toMap(names, values), StringClass.instance, StringClass.instance);
-    }
-
-    private void logToExternalSystemRequest(String path, String method, Map<String, String> requestHeaders, Map<String, String> requestCookies, String bodyUrl, String responseBody,
-                                            Map<String, String> responseHeaders, Map<String, String> responseCookies, String responseStatus, boolean successfulResponse) {
-        String requestLogMessage = Settings.get().isLogToExternalSystemRequests() ?
-                RemoteConnection.getExternalSystemRequestsLog(ThreadLocalContext.getLogInfo(Thread.currentThread()), path, method, null) : null;
-
-        if (requestLogMessage != null) {
-            if (Settings.get().isLogToExternalSystemRequestsDetail())
-                requestLogMessage += RemoteConnection.getExternalSystemRequestsLogDetail(requestHeaders,
-                        requestCookies,
-                        null,
-                        (bodyUrl != null ? "\tREQUEST_BODYURL: " + bodyUrl : null),
-                        responseHeaders,
-                        responseCookies,
-                        responseStatus,
-                        (responseBody != null ? "\tRESPONSE_BODY:\n" + responseBody + "\n" : null));
-
-            RemoteConnection.logExternalSystemRequest(ServerLoggers.httpToExternalSystemRequestsLogger, requestLogMessage, successfulResponse);
-        }
     }
 
 }

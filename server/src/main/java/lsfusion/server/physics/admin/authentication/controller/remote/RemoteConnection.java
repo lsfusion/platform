@@ -330,7 +330,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
                         if (action != null) {
                             result = executeExternal(action, request);
                         } else {
-                            throw new RuntimeException("Action %s was not found");
+                            throw new RuntimeException(String.format("Action %s was not found", actionName));
                         }
                     } else {
                         throw new RuntimeException("Action was not specified");
@@ -535,43 +535,37 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     private ExternalResponse logFromExternalSystemRequest(Callable<ExternalResponse> responseCallable, boolean exec, String action, ExternalRequest request) {
         String requestLogMessage = Settings.get().isLogFromExternalSystemRequests() ? getExternalSystemRequestsLog(logInfo, request.servletPath, request.method,
                 "\tREQUEST_QUERY: " + request.query + "\n" + "\t" + (exec ? "ACTION" : "SCRIPT") + ":\n\t\t " + action) : null;
-        Logger logger = ServerLoggers.httpFromExternalSystemRequestsLogger;
+        boolean successfulResponse = false;
         try {
             ExternalResponse response = responseCallable.call();
-            if (requestLogMessage != null) {
 
+            Integer statusCode = BaseUtils.nvl(response.statusHttp, HttpServletResponse.SC_OK);
+            successfulResponse = successfulResponse(statusCode);
 
-                Integer statusCode = BaseUtils.nvl(response.statusHttp, HttpServletResponse.SC_OK);
-                String responseStatus = String.valueOf(statusCode);
+            if (requestLogMessage != null && Settings.get().isLogFromExternalSystemRequestsDetail()) {
+                Charset charset = ExternalUtils.getCharsetFromContentType(request.contentType == null ? null : ContentType.parse(request.contentType));
+                List<NameValuePair> queryParams = URLEncodedUtils.parse(request.query, charset);
+                String returnMultiType = ExternalUtils.getParameterValue(queryParams, ExternalUtils.RETURNMULTITYPE_PARAM);
+                boolean returnBodyUrl = returnMultiType != null && returnMultiType.equals("bodyurl");
+                HttpEntity httpEntity = ExternalUtils.getInputStreamFromList(response.results, ExternalUtils.getBodyUrl(response.results, returnBodyUrl), null, new ArrayList<>(), null, null);
 
-                if (Settings.get().isLogFromExternalSystemRequestsDetail()) {
-                    Charset charset = ExternalUtils.getCharsetFromContentType(request.contentType == null ? null : ContentType.parse(request.contentType));
-                    List<NameValuePair> queryParams = URLEncodedUtils.parse(request.query, charset);
-                    String returnMultiType = ExternalUtils.getParameterValue(queryParams, ExternalUtils.RETURNMULTITYPE_PARAM);
-                    boolean returnBodyUrl = returnMultiType != null && returnMultiType.equals("bodyurl");
-                    HttpEntity httpEntity = ExternalUtils.getInputStreamFromList(response.results, ExternalUtils.getBodyUrl(response.results, returnBodyUrl), null, new ArrayList<>(), null, null);
-
-                    requestLogMessage += getExternalSystemRequestsLogDetail(BaseUtils.toStringMap(request.headerNames, request.headerValues),
-                            BaseUtils.toStringMap(request.cookieNames, request.cookieValues),
-                            request.body != null ? new String(request.body, Charset.forName(request.charsetName)) : null,
-                            null,
-                            BaseUtils.toStringMap(response.headerNames, response.headerValues),
-                            BaseUtils.toStringMap(response.cookieNames, response.cookieValues),
-                            responseStatus,
-                            "\tOBJECTS:\n\t\t" + httpEntity);
-                }
-
-                logExternalSystemRequest(logger, requestLogMessage, successfulResponse(statusCode));
+                requestLogMessage += getExternalSystemRequestsLogDetail(BaseUtils.toStringMap(request.headerNames, request.headerValues),
+                        BaseUtils.toStringMap(request.cookieNames, request.cookieValues),
+                        request.body != null ? new String(request.body, Charset.forName(request.charsetName)) : null,
+                        null,
+                        BaseUtils.toStringMap(response.headerNames, response.headerValues),
+                        BaseUtils.toStringMap(response.cookieNames, response.cookieValues),
+                        String.valueOf(statusCode),
+                        "\tOBJECTS:\n\t\t" + httpEntity);
             }
-
             return response;
         } catch (Throwable t) {
-            if (requestLogMessage != null) {
+            if (requestLogMessage != null)
                 requestLogMessage += "\n\tERROR: " + t.getMessage() + "\n";
-                logger.error(requestLogMessage);
-            }
 
             throw Throwables.propagate(t);
+        } finally {
+            logExternalSystemRequest(ServerLoggers.httpFromExternalSystemRequestsLogger, requestLogMessage, successfulResponse);
         }
     }
 
@@ -606,10 +600,12 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     }
 
     public static void logExternalSystemRequest (Logger logger, String message, boolean successfulResponse) {
-        if (successfulResponse)
-            logger.info(message);
-        else
-            logger.error(message);
+        if (message != null) {
+            if (successfulResponse)
+                logger.info(message);
+            else
+                logger.error(message);
+        }
     }
 
 }

@@ -207,8 +207,10 @@ public class BaseUtils {
 
     public static Map<String, String> toStringMap(String[] keys, String[] values) {
         Map<String, String> result = new HashMap<>();
-        for (int i = 0; i < keys.length; i++) {
-            result.put(keys[i], values[i]);
+        if (keys != null && values != null) {
+            for (int i = 0; i < keys.length; i++) {
+                result.put(keys[i], values[i]);
+            }
         }
         return result;
     }
