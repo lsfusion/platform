@@ -71,7 +71,7 @@ function selectMultiInput() {
             let selectizeElement = _wrapElementDiv(element, !isList); // it seems that selectize uses parent (because it creates sibling) so for custom cell renderer we need extra div
 
             element.selectizeInstance = $(selectizeElement).selectize({
-                dropdownParent: 'body',
+                dropdownParent: document.getElementsByClassName('tippy-box').length > 0 ? '.tippy-box' : 'body',
 
                 onInitialize: function() {
                     _removeAllPMBInTD(element, this.$control[0]);
