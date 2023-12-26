@@ -242,7 +242,7 @@ onWebClientInit() + {
     onWebClientInit('input-quill.js') <- 27;
     onWebClientInit('input-quill.css') <- 28;
     onWebClientInit('select.js') <- 29;
-    onWebClientInit('selectize.min.js') <- 30;
+    onWebClientInit('selectize.js') <- 30;
     onWebClientInit('input.js') <- 31;
 }
 
