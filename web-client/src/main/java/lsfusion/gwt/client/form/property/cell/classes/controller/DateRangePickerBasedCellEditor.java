@@ -398,7 +398,6 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
                 this.previousRightTime = this.endDate.clone();
 
                 this.updateView();
-
                 //<<<<<
                 //ADD
                 this.element.trigger('show.daterangepicker', this); //MOVED FROM AFTER this.move();
