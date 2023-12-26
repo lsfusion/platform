@@ -1016,17 +1016,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             result = asyncResult.apply(asyncEventExec);
 //            if(result == null) // in case of paste can be null
 //                return;
-        } else {
-            if (ServerResponse.isChangeEvent(CHANGE)) { //ask confirm logics... it is assumed that async logics checks confirm logics itself
-                PropertyDrawEntity propertyDraw = property.getEntity();
-                if (propertyDraw.askConfirm) {
-                    int confirmResult = (Integer) ThreadLocalContext.requestUserInteraction(new ConfirmClientAction("lsFusion",
-                            entity.getRichDesign().get(propertyDraw).getAskConfirmMessage(context)));
-                    if (confirmResult != JOptionPane.YES_OPTION) {
-                        return;
-                    }
-                }
-            }
         }
 
         final ActionObjectInstance remappedEventAction = eventAction.getRemappedPropertyObject(keys, true);
