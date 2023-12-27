@@ -5,7 +5,6 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.SimplePanel;
-import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.controller.SmartScheduler;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -19,7 +18,7 @@ import java.text.ParseException;
 public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor implements FormatCellEditor {
 
     private InputElement editBox;
-    protected Widget popup;
+    protected boolean useNativePopup;
 
     public DateRangePickerBasedCellEditor(EditManager editManager, GPropertyDraw property) {
         super(editManager, property);
@@ -29,16 +28,26 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
     protected void onInputReady(Element parent, PValue oldValue) {
         super.onInputReady(parent, oldValue);
 
-        editBox = inputElement;
+        if (inputElementType.hasNativePopup()) {
+            useNativePopup = true;
+        } else {
+            editBox = inputElement;
 
-        if(!inputElementType.hasNativePopup()) {
-            popup = createPopupComponent(parent, oldValue);
+            assert oldValue != null;
+            Element tippyParent = GwtClientUtils.getTippyParent(parent);
+            createPicker(tippyParent, parent, getStartDate(oldValue), getEndDate(oldValue), getPattern(), isSinglePicker(), isTimeEditor(), isDateEditor());
+
+            Element pickerElement = getPickerElement();
+            pickerElement.setPropertyObject("autoHidePartner", parent);
+            pickerElement.setTabIndex(-1); // we need this to have related target in isFakeBlur, otherwise it won't work
+
+            editBox.click(); // need to dateRangePicker opens immediately. because we use an editBox
         }
     }
 
     @Override
     public void stop(Element parent, boolean cancel, boolean blurred) {
-        if(popup != null)
+        if(!useNativePopup)
             removePicker();
         super.stop(parent, cancel, blurred);
     }
@@ -51,29 +60,16 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
         });
     }
 
-    public SimplePanel createPopupComponent(Element parent, PValue oldValue) {
-        assert oldValue != null;
-        Element tippyParent = GwtClientUtils.getTippyParent(parent);
-        createPicker(tippyParent, parent, getStartDate(oldValue), getEndDate(oldValue), getPattern(), isSinglePicker(), isTimeEditor(), isDateEditor());
-
-        Element pickerElement = getPickerElement();
-        pickerElement.setPropertyObject("autoHidePartner", parent);
-        pickerElement.setTabIndex(-1); // we need this to have related target in isFakeBlur, otherwise it won't work
-
-        editBox.click(); // need to dateRangePicker opens immediately. because we use an editBox
-        return new SimplePanel();
-    }
-
     protected PValue tryParseInputText(String inputText, boolean onCommit) throws ParseException {
         //to be able to enter the date from keyboard
         if (onCommit) {
             try {
                 return super.tryParseInputText(inputText, true);
             } catch (ParseException e) {
-                if(popup != null)
-                    return getDateInputValue();
-                else
+                if (useNativePopup)
                     throw e;
+                else
+                    return getDateInputValue();
             }
         }
 

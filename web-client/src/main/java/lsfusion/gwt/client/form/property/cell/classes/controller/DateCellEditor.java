@@ -80,7 +80,7 @@ public class DateCellEditor extends DateRangePickerBasedCellEditor {
 
     @Override
     protected String tryFormatInputText(PValue value) {
-        if(popup == null) {
+        if(useNativePopup) {
             if (value == null)
                 return "";
 
@@ -92,7 +92,7 @@ public class DateCellEditor extends DateRangePickerBasedCellEditor {
 
     @Override
     protected PValue tryParseInputText(String inputText, boolean onCommit) throws ParseException {
-        if(popup == null) {
+        if(useNativePopup) {
             if (inputText == null || inputText.isEmpty())
                 return null;
 
