@@ -2,49 +2,78 @@ package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.core.client.JsDate;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.SimplePanel;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.controller.SmartScheduler;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
 
-public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellEditor implements FormatCellEditor {
+import java.text.ParseException;
+
+public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor implements FormatCellEditor {
+
+    private InputElement editBox;
+    protected boolean useNativePopup;
 
     public DateRangePickerBasedCellEditor(EditManager editManager, GPropertyDraw property) {
         super(editManager, property);
     }
 
     @Override
-    protected PValue getPopupValue() {
-        return getDateInputValue();
+    protected void onInputReady(Element parent, PValue oldValue) {
+        super.onInputReady(parent, oldValue);
+
+        if (inputElementType.hasNativePopup()) {
+            useNativePopup = true;
+        } else {
+            editBox = inputElement;
+
+            assert oldValue != null;
+            Element tippyParent = GwtClientUtils.getTippyParent(parent);
+            createPicker(tippyParent, parent, getStartDate(oldValue), getEndDate(oldValue), getPattern(), isSinglePicker(), isTimeEditor(), isDateEditor());
+
+            Element pickerElement = getPickerElement();
+            pickerElement.setPropertyObject("autoHidePartner", parent);
+            pickerElement.setTabIndex(-1); // we need this to have related target in isFakeBlur, otherwise it won't work
+
+            editBox.click(); // need to dateRangePicker opens immediately. because we use an editBox
+        }
     }
 
     @Override
-    protected void removePopupComponent(Element parent) {
-        removePicker();
+    public void stop(Element parent, boolean cancel, boolean blurred) {
+        if(!useNativePopup)
+            removePicker();
+        super.stop(parent, cancel, blurred);
     }
 
     protected void pickerApply(Element parent) {
         //when auto-apply selects a date, at the end a mousedown occurs and takes the focus to a nothing
         SmartScheduler.getInstance().scheduleDeferred(true, () -> {
             if (editManager.isThisCellEditing(this))
-                commitValue(parent, getDateInputValue());
+                commit(parent, CommitReason.FORCED);
         });
     }
 
-    @Override
-    public SimplePanel createPopupComponent(Element parent, PValue oldValue) {
-        assert oldValue != null;
-        Element tippyParent = GwtClientUtils.getTippyParent(parent);
-        createPicker(tippyParent, parent, getStartDate(oldValue), getEndDate(oldValue), getPattern(), isSinglePicker(), isTimeEditor(), isDateEditor());
+    protected PValue tryParseInputText(String inputText, boolean onCommit) throws ParseException {
+        //to be able to enter the date from keyboard
+        if (onCommit) {
+            try {
+                return super.tryParseInputText(inputText, true);
+            } catch (ParseException e) {
+                if (useNativePopup)
+                    throw e;
+                else
+                    return getDateInputValue();
+            }
+        }
 
-        //popup.setVisible(false);
-        //popup.addAutoHidePartner(getPickerElement());
-        editBox.click(); // need to dateRangePicker opens immediately. because we use an editBox
-        return new SimplePanel();
+        return PValue.getPValue(inputText);
     }
 
     protected abstract JsDate getStartDate(PValue oldValue);
@@ -60,22 +89,22 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
     }
 
     protected native void removePicker()/*-{
-        $(this.@TextBasedPopupCellEditor::editBox).data('daterangepicker').remove();
+        $(this.@DateRangePickerBasedCellEditor::editBox).data('daterangepicker').remove();
         //we need to remove the keydown listener because it is a global($wnd) listener that is only used when the picker popup opens
         $($wnd).off('keydown.pickerpopup').off('mousedown.pickerpopup');
     }-*/;
 
     protected native Element getPickerElement()/*-{
-        return $(this.@TextBasedPopupCellEditor::editBox).data('daterangepicker').container.get(0);
+        return $(this.@DateRangePickerBasedCellEditor::editBox).data('daterangepicker').container.get(0);
     }-*/;
 
     protected native JsDate getPickerStartDate()/*-{
-        var pickerDate = $(this.@TextBasedPopupCellEditor::editBox).data('daterangepicker').startDate;
+        var pickerDate = $(this.@DateRangePickerBasedCellEditor::editBox).data('daterangepicker').startDate;
         return pickerDate.isValid() ? pickerDate.toDate() : null; // toDate because it is "Moment js" object
     }-*/;
 
     protected native JsDate getPickerEndDate()/*-{
-        var pickerDate = $(this.@TextBasedPopupCellEditor::editBox).data('daterangepicker').endDate;
+        var pickerDate = $(this.@DateRangePickerBasedCellEditor::editBox).data('daterangepicker').endDate;
         // pickerDate may be null because we update the input field and on select 'date_from' - 'date_to' will be null
         return pickerDate == null ? this.@DateRangePickerBasedCellEditor::getPickerStartDate(*)() : pickerDate.isValid() ? pickerDate.toDate() : null; // toDate because it is "Moment js" object
     }-*/;
@@ -87,7 +116,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
     protected native void createPicker(Element tippyParent, Element parent, JsDate startDate, JsDate endDate, String pattern, boolean singleDatePicker, boolean time, boolean date)/*-{
         window.$ = $wnd.jQuery;
         var thisObj = this;
-        var editElement = $(thisObj.@TextBasedPopupCellEditor::editBox);
+        var editElement = $(thisObj.@DateRangePickerBasedCellEditor::editBox);
         var messages = @lsfusion.gwt.client.ClientMessages.Instance::get()();
         applyDateRangePickerPatches(); //Must be called before the picker is initialised
 
@@ -176,8 +205,8 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
         }
 
         //update input element
-        $(thisObj.@DateRangePickerBasedCellEditor::getPickerElement()()).on('mouseup keyup change.daterangepicker', function (e) {
-            if (e.target.tagName !== 'SELECT' || e.type !== 'mouseup')
+        $(thisObj.@DateRangePickerBasedCellEditor::getPickerElement()()).on('keyup change.daterangepicker', function (e) {
+            if (e.target.tagName !== 'SELECT')
                 thisObj.@DateRangePickerBasedCellEditor::setInputValue(Lcom/google/gwt/dom/client/Element;)(parent);
         });
 
@@ -352,6 +381,17 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
 
                 // Reposition the picker if the window is resized while it's open
                 $(window).on('resize.daterangepicker', $.proxy(function(e) { this.move(e); }, this));
+
+                //<<<<<
+                //REPLACE mousedown to click and update input value
+                this.container.find('.drp-calendar')
+                    .off('mousedown.daterangepicker', 'td.available')
+                    .on('click.daterangepicker', 'td.available',
+                        $.proxy(function(e) {
+                            this.clickDate(e);
+                            thisObj.@DateRangePickerBasedCellEditor::setInputValue(Lcom/google/gwt/dom/client/Element;)(parent);
+                        }, this));
+                //>>>>>
 
                 this.oldStartDate = this.startDate.clone();
                 this.oldEndDate = this.endDate.clone();
