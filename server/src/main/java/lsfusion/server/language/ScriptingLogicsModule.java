@@ -2019,7 +2019,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LAWithParams addScriptedExternalLSFAction(LPWithParams connectionString, LPWithParams actionLCP, boolean eval, boolean action, List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
-        String request = eval ? (action ? "eval/action" : "eval") : "/exec?action=$" + (params.size()+1);
+        String request = eval ? (action ? "/eval/action" : "/eval") : "/exec?action=$" + (params.size()+1);
         return addScriptedExternalHTTPAction(false, ExternalHttpMethod.POST,
                 addScriptedJProp(getArithProp("+"), Arrays.asList(connectionString, new LPWithParams(addCProp(StringClass.text, LocalizedString.create(request, false))))),
                 null, Collections.emptyList(), null, null, null, null, null, BaseUtils.add(params, actionLCP), context, toPropertyUsageList);
