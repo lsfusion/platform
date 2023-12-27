@@ -56,7 +56,7 @@ public class BaseUtils {
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 260;
+        return 261;
     }
 
     public static String getPlatformVersion() {
@@ -202,6 +202,16 @@ public class BaseUtils {
         Map<K, V> result = new HashMap<>();
         for (K object : collection)
             result.put(object, value);
+        return result;
+    }
+
+    public static Map<String, String> toStringMap(String[] keys, String[] values) {
+        Map<String, String> result = new HashMap<>();
+        if (keys != null && values != null) {
+            for (int i = 0; i < keys.length; i++) {
+                result.put(keys[i], values[i]);
+            }
+        }
         return result;
     }
 

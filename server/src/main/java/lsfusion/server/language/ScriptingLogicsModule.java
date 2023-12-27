@@ -2022,8 +2022,9 @@ public class ScriptingLogicsModule extends LogicsModule {
                 mergeLists(singletonList(connectionString), bodyParamNames, params);
 
         return addScriptedJoinAProp(addAProp(new ExternalHTTPAction(clientAction, method != null ? method : ExternalHttpMethod.POST,
-                        getTypesForExternalAction(params, context), findLPsNoParamsByPropertyUsage(toPropertyUsageList),
-                        bodyParamNames.size(), findLPsStringParamByPropertyUsage(bodyParamHeadersList), headersProperty, cookiesProperty, headersToProperty, cookiesToProperty, hasBodyUrl)),
+                        getTypesForExternalAction(params, context), findLPsNoParamsByPropertyUsage(toPropertyUsageList), bodyParamNames.size(),
+                        findLPsStringParamByPropertyUsage(bodyParamHeadersList), headersProperty, cookiesProperty, headersToProperty, cookiesToProperty,
+                        hasBodyUrl)),
                 properties);
     }
 

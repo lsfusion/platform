@@ -1,7 +1,7 @@
 package lsfusion.server.physics.admin.log;
 
 public class LogInfo {
-    public boolean allowExcessAllocatedBytes;
+    public Boolean allowExcessAllocatedBytes;
     public String userName;
     public String userRoles;
     public String hostnameComputer;
@@ -9,7 +9,7 @@ public class LogInfo {
     
     public static LogInfo system = new LogInfo(true, "system", "system", "system", "system");
 
-    public LogInfo(boolean allowExcessAllocatedBytes, String userName, String userRoles, String hostnameComputer, String remoteAddress) {
+    public LogInfo(Boolean allowExcessAllocatedBytes, String userName, String userRoles, String hostnameComputer, String remoteAddress) {
         this.allowExcessAllocatedBytes = allowExcessAllocatedBytes;
         this.userName = userName;
         this.userRoles = userRoles;
@@ -17,8 +17,24 @@ public class LogInfo {
         this.remoteAddress = remoteAddress;
     }
 
+    public LogInfo(String userName, String userRoles, String hostnameComputer) {
+        this(null, userName, userRoles, hostnameComputer, null);
+    }
+
     @Override
     public String toString() {
-        return "User : " + userName + ", Role: " + userRoles + ", Allow Excess: " + allowExcessAllocatedBytes + ", Host : " + hostnameComputer + ", Remote : " + remoteAddress;
+        StringBuilder stringBuilder = new StringBuilder();
+        if (userName != null)
+            stringBuilder.append("User : ").append(userName);
+        if (userRoles != null)
+            stringBuilder.append(", Role: ").append(userRoles);
+        if (allowExcessAllocatedBytes != null)
+            stringBuilder.append(", Allow Excess: ").append(allowExcessAllocatedBytes);
+        if (hostnameComputer != null)
+            stringBuilder.append(", Host : ").append(hostnameComputer);
+        if (remoteAddress != null)
+            stringBuilder.append(", Remote : ").append(remoteAddress);
+
+        return stringBuilder.toString();
     }
 }

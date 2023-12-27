@@ -69,6 +69,10 @@ public class ServerLoggers {
 
     public static final Logger httpServerLogger = Logger.getLogger("HttpServerLogger");
 
+    public static final Logger httpFromExternalSystemRequestsLogger = Logger.getLogger("HttpFromExternalSystemRequestsLogger");
+
+    public static final Logger httpToExternalSystemRequestsLogger = Logger.getLogger("HttpToExternalSystemRequestsLogger");
+
     private static final int FORCE_FLUSH_DELAY = 60;
 
     static {

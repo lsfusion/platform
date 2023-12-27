@@ -9,12 +9,11 @@ import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.file.IOUtils;
 import lsfusion.interop.session.*;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.property.LP;
@@ -23,13 +22,14 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.action.session.DataSession;
-import lsfusion.server.logics.action.session.table.SingleKeyPropertyUsage;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.classes.data.StringClass;
-import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.admin.Settings;
+import lsfusion.server.physics.admin.authentication.controller.remote.RemoteConnection;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.CookieStore;
@@ -93,10 +93,12 @@ public class ExternalHTTPAction extends CallAction {
 
     @Override
     protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) {
+        String connectionString = getTransformedText(context, queryInterface);
+        String requestLogMessage = Settings.get().isLogToExternalSystemRequests() ?
+                RemoteConnection.getExternalSystemRequestsLog(ThreadLocalContext.getLogInfo(Thread.currentThread()), connectionString, method.name(), null) : null;
+        boolean successfulResponse = false;
         try {
-
             Result<ImOrderSet<PropertyInterface>> rNotUsedParams = new Result<>();
-            String connectionString = getTransformedText(context, queryInterface);
             String bodyUrl = bodyUrlInterface != null ? getTransformedText(context, bodyUrlInterface) : null;
             if(connectionString != null) {
                 connectionString = replaceParams(context, connectionString, rNotUsedParams, ExternalUtils.getCharsetFromContentType(ExternalUtils.TEXT_PLAIN));
@@ -150,36 +152,52 @@ public class ExternalHTTPAction extends CallAction {
                 }
 
                 ContentType contentType = response.contentType != null ? ContentType.parse(response.contentType) : ExternalUtils.APPLICATION_OCTET_STREAM;
-                ImList<Object> requestParams = response.responseBytes != null ? ExternalUtils.getListFromInputStream(response.responseBytes, contentType) : ListFact.EMPTY();
+                byte[] responseBytes = response.responseBytes;
+                ImList<Object> requestParams = responseBytes != null ? ExternalUtils.getListFromInputStream(responseBytes, contentType) : ListFact.EMPTY();
                 Charset charset = ExternalUtils.getCharsetFromContentType(contentType);
                 fillResults(context, targetPropList, requestParams, charset); // важно игнорировать параметры, так как иначе при общении с LSF пришлось бы всегда TO писать (так как он по умолчанию exportFile возвращает)
 
+                Map<String, List<String>> responseHeaders = response.responseHeaders;
+                String[] headerNames = responseHeaders.keySet().toArray(new String[0]);
+                String[] headerValues = getResponseHeaderValues(responseHeaders, headerNames);
                 if(headersToProperty != null) {
-                    Map<String, List<String>> responseHeaders = response.responseHeaders;
-                    String[] headerNames = responseHeaders.keySet().toArray(new String[0]);
-                    String[] headerValues = getResponseHeaderValues(responseHeaders, headerNames);
-
                     writePropertyValues(context, headersToProperty, headerNames, headerValues);
                 }
+                Map<String, String> responseCookies = getResponseCookies(cookieStore);
                 if(cookiesToProperty != null) {
-                    Map<String, String> responseCookies = getResponseCookies(cookieStore);
                     String[] cookieNames = responseCookies.keySet().toArray(new String[0]);
                     String[] cookieValues = responseCookies.values().toArray(new String[0]);
-
                     writePropertyValues(context, cookiesToProperty, cookieNames, cookieValues);
                 }
-                context.getBL().LM.statusHttp.change(response.statusCode, context);
-                if (response.statusCode < 200 || response.statusCode >= 300) {
-                    String message = response.statusCode + " " + response.statusText;
-                    if (response.responseBytes != null)
-                        message += "\n" + new String(response.responseBytes, charset);
-                    throw new RuntimeException(message);
+                int statusCode = response.statusCode;
+                context.getBL().LM.statusHttp.change(statusCode, context);
+
+                String responseEntity = responseBytes != null ? new String(responseBytes, charset) : null;
+                String responseStatus = statusCode + " " + response.statusText;
+                successfulResponse = RemoteConnection.successfulResponse(statusCode);
+
+                if (requestLogMessage != null && Settings.get().isLogToExternalSystemRequestsDetail()) {
+                    requestLogMessage += RemoteConnection.getExternalSystemRequestsLogDetail(headers,
+                            cookies,
+                            null,
+                            (bodyUrl != null ? "\tREQUEST_BODYURL: " + bodyUrl : null),
+                            BaseUtils.toStringMap(headerNames, headerValues),
+                            responseCookies,
+                            responseStatus,
+                            (responseEntity != null ? "\tRESPONSE_BODY:\n" + responseEntity : null));
                 }
+                if (!successfulResponse)
+                    throw new RuntimeException(responseStatus + (responseEntity == null ? "" : "\n" + responseEntity));
             } else {
                 throw new RuntimeException("connectionString not specified");
             }
         } catch (Exception e) {
+            if (requestLogMessage != null)
+                requestLogMessage += "\n\tERROR: " + e.getMessage() + "\n";
+
             throw Throwables.propagate(e);
+        } finally {
+            RemoteConnection.logExternalSystemRequest(ServerLoggers.httpToExternalSystemRequestsLogger, requestLogMessage, successfulResponse);
         }
 
         return FlowResult.FINISH;

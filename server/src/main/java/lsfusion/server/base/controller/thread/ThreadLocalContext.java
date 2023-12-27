@@ -98,6 +98,10 @@ public class ThreadLocalContext {
             activeMap.put(Thread.currentThread(), false);
     }
 
+    public static LogInfo getLogInfo(Thread thread) {
+        return logInfoMap.get(thread);
+    }
+
     public static void setSettings() {
         try {
             settings.set(getRoleSettings(getCurrentRole(), true));
