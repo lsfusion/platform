@@ -1483,7 +1483,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                             } else { // надо проверить что тип не изменился
                                 //temp log to find bug
                                 if(oldTable == null) {
-                                    startLogger.error("Old table " + oldProperty.tableName + " not found");
+                                    startLogger.error("Old table " + oldProperty.tableName + " for property " + oldProperty.getCanonicalName() + " not found");
                                 }
                                 Type oldType = oldTable.findProperty(oldProperty.getDBName()).type;
                                 if (!oldType.equals(newProperty.property.field.type)) {
