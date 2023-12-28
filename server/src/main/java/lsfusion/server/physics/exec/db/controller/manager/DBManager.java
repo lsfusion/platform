@@ -1481,6 +1481,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
                                 moved = true;
                                 recalculateStatProperties.add(newProperty.property);
                             } else { // надо проверить что тип не изменился
+                                //temp log to find bug
+                                if(oldTable == null) {
+                                    startLogger.error("Old table " + oldProperty.tableName + " not found");
+                                }
                                 Type oldType = oldTable.findProperty(oldProperty.getDBName()).type;
                                 if (!oldType.equals(newProperty.property.field.type)) {
                                     startLogger.info("Prepare changing type of property column " + newProperty.property.field + " in table " + newProperty.tableName + " from " + oldType + " to " + newProperty.property.field.type);
