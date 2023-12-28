@@ -35,7 +35,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
 
             assert oldValue != null;
             Element tippyParent = GwtClientUtils.getTippyParent(parent);
-            createPicker(tippyParent, parent, getStartDate(oldValue), getEndDate(oldValue), getPattern(), isSinglePicker(), isTimeEditor(), isDateEditor());
+            createPicker(tippyParent, parent, getStartDate(oldValue), getEndDate(oldValue), getPattern().replace("a", "A"), isSinglePicker(), isTimeEditor(), isDateEditor());
 
             Element pickerElement = getPickerElement();
             pickerElement.setPropertyObject("autoHidePartner", parent);
