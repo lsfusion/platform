@@ -296,7 +296,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
     }
 
     protected boolean isThisCellEditor() {
-        assert hasList();
+//        assert hasList();
         return suggestBox != null;
     }
 
