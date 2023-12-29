@@ -50,6 +50,7 @@ import static lsfusion.gwt.client.base.view.grid.DataGrid.initSinkEvents;
 public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
     protected final JavaScriptObject controller;
+    protected final JavaScriptObject renderController;
     private final TableContainer tableContainer;
 
     public GSimpleStateTableView(GFormController form, GGridController grid, TableContainer tableContainer) {
@@ -57,6 +58,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
         Element drawElement = getDrawElement();
         this.controller = getController(drawElement);
+        this.renderController = getRenderController(drawElement);
         this.tableContainer = tableContainer;
         GwtClientUtils.setZeroZIndex(drawElement);
 
@@ -855,6 +857,26 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             }
         };
     }-*/;
+
+    protected native JavaScriptObject getRenderController(Element element)/*-{
+        var thisObj = this;
+        return {
+            isList: function () {
+                return thisObj.@GSimpleStateTableView::isList(*)();
+            },
+            getFormElement: function() {
+                return thisObj.@GSimpleStateTableView::getFormElement(*)();
+            }
+        };
+    }-*/;
+
+    protected boolean isList() {
+        return true;
+    }
+
+    protected Element getFormElement() {
+        return GwtClientUtils.getTippyParent(form.getFormElement());
+    }
 
     protected boolean previewEvent(Element element, Event event) {
         return form.previewEvent(element, event);

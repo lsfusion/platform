@@ -3166,13 +3166,13 @@
      */
     positionDropdown: function() {
       var $control = this.$control;
-      // PATCHED: added if tippy-box
-      var offset;
-      if(this.settings.dropdownParent == '.tippy-box') {
+      // PATCHED: added if instanceof HTMLElement
+      let offset;
+      if(this.settings.dropdownParent instanceof HTMLElement) {
         offset = $control.offset();
-        const tippyOffset = $control.closest('.tippy-box').offset();
-        offset.top -= tippyOffset.top;
-        offset.left -= tippyOffset.left;
+        const parentOffset = $(this.settings.dropdownParent).offset();
+        offset.top -= parentOffset.top;
+        offset.left -= parentOffset.left;
       } else {
         offset = this.settings.dropdownParent === 'body' ? $control.offset() : $control.position();
       }
@@ -3917,13 +3917,13 @@
     self.positionDropdown = (function() {
       return function() {
         const $control = this.$control;
-        // PATCHED: added if tippy-box
-        var offset;
-        if(this.settings.dropdownParent == '.tippy-box') {
+        // PATCHED: added if instanceof HTMLElement
+        let offset;
+        if(this.settings.dropdownParent instanceof HTMLElement) {
           offset = $control.offset();
-          const tippyOffset = $control.closest('.tippy-box').offset();
-          offset.top -= tippyOffset.top;
-          offset.left -= tippyOffset.left;
+          const parentOffset = $(this.settings.dropdownParent).offset();
+          offset.top -= parentOffset.top;
+          offset.left -= parentOffset.left;
         } else {
           offset = this.settings.dropdownParent === 'body' ? $control.offset() : $control.position();
         }
@@ -3942,8 +3942,8 @@
         if (position === POSITION.top) {
           const styleToAdd = { bottom: offset.top, top: 'unset' };
 
-          //PATCHED: added || tippy-box
-          if (this.settings.dropdownParent === 'body' || this.settings.dropdownParent == '.tippy-box') {
+          //PATCHED: added if instanceof HTMLElement
+          if (this.settings.dropdownParent instanceof HTMLElement || this.settings.dropdownParent === 'body') {
             styleToAdd.top = offset.top - this.$dropdown.outerHeight(true) - $control.outerHeight(true);
             styleToAdd.bottom = 'unset';
           }
