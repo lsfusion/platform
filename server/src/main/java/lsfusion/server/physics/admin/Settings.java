@@ -164,9 +164,7 @@ public class Settings implements Cloneable {
 
     private int limitHintNoUpdateComplexity = 10000;
 
-    // we'll make it pretty low, since WrapComplexityAspect uses isComplex (not isOrDependsCmplex) and thus complexity can grow significantly with properties using that complex property
-    // however maybe later it makes sense to change isComplex to isDependsOrComplex and make it 200 again (but it seems that in that case it's better to make 2 branches, one (the current) with low limit, the other with high)
-    private int limitWrapComplexity = 20;
+    private int limitWrapComplexity = 100;
 
     private int limitMaterializeComplexity = 20;
 
@@ -192,7 +190,7 @@ public class Settings implements Cloneable {
 
     private boolean disableAutoHintCaches = true;
 
-    private boolean disableWrapComplexity = true;
+    private boolean disableWrapComplexity = false;
 
     private boolean enablePrevWrapComplexity = false;
 
