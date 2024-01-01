@@ -231,8 +231,11 @@ public class PropertyDrawView extends BaseComponentView {
     @Override
     public double getDefaultFlex(FormInstanceContext context) {
         ContainerView container = getLayoutParamContainer();
-        if(((container != null && container.isHorizontal()) || entity.isList(context)) && isHorizontalValueFlex(context))
+        boolean isList = entity.isList(context);
+        if(((container != null && container.isHorizontal()) || isList) && isHorizontalValueFlex(context))
             return -2; // flex = width
+        if(isList && Settings.get().isDefaultFlexInGrid())
+            return 0.001;
         return super.getDefaultFlex(context);
     }
 

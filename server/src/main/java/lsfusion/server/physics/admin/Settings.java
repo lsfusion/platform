@@ -2765,6 +2765,7 @@ public class Settings implements Cloneable {
     private boolean noToolbarForInputTagInPanel = false;
     private boolean noToolbarForSelectDropdownInPanel = false;
     private boolean noToolbarForBoolean = true;
+    private boolean defaultFlexInGrid = true;
 
     public int getUseInputTagForTextBasedInPanel() {
         return useInputTagForTextBasedInPanel;
@@ -2796,6 +2797,14 @@ public class Settings implements Cloneable {
 
     public void setNoToolbarForBoolean(boolean noToolbarForBoolean) {
         this.noToolbarForBoolean = noToolbarForBoolean;
+    }
+
+    public boolean isDefaultFlexInGrid() {
+        return defaultFlexInGrid;
+    }
+
+    public void setDefaultFlexInGrid(boolean defaultFlexInGrid) {
+        this.defaultFlexInGrid = defaultFlexInGrid;
     }
 
     private int authTokenExpiration = 60 * 24; // in minutes
