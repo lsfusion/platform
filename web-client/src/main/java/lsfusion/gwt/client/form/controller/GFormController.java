@@ -2530,4 +2530,8 @@ public class GFormController implements EditManager {
     public void resetWindowsLayout() {
         formsController.resetWindowsLayout();
     }
+
+    public Element getFormElement() {
+        return formContainer.getFocusedElement();
+    }
 }

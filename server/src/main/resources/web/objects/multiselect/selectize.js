@@ -3166,7 +3166,16 @@
      */
     positionDropdown: function() {
       var $control = this.$control;
-      var offset = this.settings.dropdownParent === 'body' ? $control.offset() : $control.position();
+      // PATCHED: added if instanceof HTMLElement
+      let offset;
+      if(this.settings.dropdownParent instanceof HTMLElement) {
+        offset = $control.offset();
+        const parentOffset = $(this.settings.dropdownParent).offset();
+        offset.top -= parentOffset.top;
+        offset.left -= parentOffset.left;
+      } else {
+        offset = this.settings.dropdownParent === 'body' ? $control.offset() : $control.position();
+      }
       offset.top += $control.outerHeight(true);
       var w = $control[0].getBoundingClientRect().width;
       if (this.settings.minWidth && this.settings.minWidth > w)
@@ -3908,7 +3917,17 @@
     self.positionDropdown = (function() {
       return function() {
         const $control = this.$control;
-        const offset = this.settings.dropdownParent === 'body' ? $control.offset() : $control.position();
+        // PATCHED: added if instanceof HTMLElement
+        let offset;
+        if(this.settings.dropdownParent instanceof HTMLElement) {
+          offset = $control.offset();
+          const parentOffset = $(this.settings.dropdownParent).offset();
+          offset.top -= parentOffset.top;
+          offset.left -= parentOffset.left;
+        } else {
+          offset = this.settings.dropdownParent === 'body' ? $control.offset() : $control.position();
+        }
+
         offset.top += $control.outerHeight(true);
 
         const dropdownHeight = this.$dropdown.prop('scrollHeight') + 5; // 5 - padding value;
@@ -3923,7 +3942,8 @@
         if (position === POSITION.top) {
           const styleToAdd = { bottom: offset.top, top: 'unset' };
 
-          if (this.settings.dropdownParent === 'body') {
+          //PATCHED: added if instanceof HTMLElement
+          if (this.settings.dropdownParent instanceof HTMLElement || this.settings.dropdownParent === 'body') {
             styleToAdd.top = offset.top - this.$dropdown.outerHeight(true) - $control.outerHeight(true);
             styleToAdd.bottom = 'unset';
           }
