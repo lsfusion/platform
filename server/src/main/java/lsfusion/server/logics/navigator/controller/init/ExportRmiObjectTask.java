@@ -37,7 +37,7 @@ public class ExportRmiObjectTask extends SimpleBLTask {
 
     @Override
     public String getCaption() {
-        return "Exporting RMI Logics object (port: " + remoteLogicsLoader.getPort() + ")";
+        return "Exporting RMI logics object (port: " + remoteLogicsLoader.getPort() + ")";
     }
 
     @Override

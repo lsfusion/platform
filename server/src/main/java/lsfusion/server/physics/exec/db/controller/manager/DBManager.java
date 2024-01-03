@@ -1825,7 +1825,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             dropClassObjects.addProperty(oldField, Expr.NULL());
             dropClassObjects.and(moveWhere);
 
-            startLog(localize(LocalizedString.createFormatted("{logics.info.objects.are.removed.from.table}", classProp.tableName)));
+            startLog(localize(LocalizedString.createFormatted("{logics.info.objects.removing.from.table}", classProp.tableName)));
             sql.updateRecords(new ModifyQuery(table, dropClassObjects.getQuery(), OperationOwner.unknown, TableOwner.global));
         }
     }
@@ -1894,7 +1894,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             copyObjects.addProperty(table.findProperty(classProp.getDBName()), mExpr.getFinal());
             copyObjects.and(moveWhere);
 
-            startLog(localize(LocalizedString.createFormatted("{logics.info.objects.are.transferred.from.tables.to.table}", classProp.tableName, mCopyFromTables.immutable().toString())));
+            startLog(localize(LocalizedString.createFormatted("{logics.info.objects.transferring.from.tables.to.table}", classProp.tableName, mCopyFromTables.immutable().toString())));
             sql.modifyRecords(new ModifyQuery(table, copyObjects.getQuery(), OperationOwner.unknown, TableOwner.global));
 //            return null;
 //        });

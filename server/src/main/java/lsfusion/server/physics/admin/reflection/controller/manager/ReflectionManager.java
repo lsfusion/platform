@@ -408,7 +408,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
             } catch (Exception e) {
                 Throwables.propagate(e);
             }
-        }, "Migrating propertyDraws");
+        }, "Migrating property draws");
     }
     
     public void synchronizePropertyDraws() {
@@ -466,7 +466,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
             } catch (Exception e) {
                 throw Throwables.propagate(e);
             }
-        }, "Synchronizing propertyDraws");
+        }, "Synchronizing property draws");
     }
 
     public void synchronizeGroupObjects() {
@@ -511,7 +511,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
             } catch (Exception e) {
                 throw Throwables.propagate(e);
             }
-        }, "Synchronizing groupObjects");
+        }, "Synchronizing group objects");
     }
 
     private boolean needsToBeSynchronized(ActionOrProperty property) {
@@ -710,7 +710,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
             } catch (Exception e) {
                 throw Throwables.propagate(e);
             }
-        }, "Synchronizing groupProperties");
+        }, "Synchronizing group properties");
     }
 
     private Integer getNumberInListOfChildren(AbstractNode abstractNode) {

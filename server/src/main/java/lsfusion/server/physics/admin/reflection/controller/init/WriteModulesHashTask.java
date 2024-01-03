@@ -6,7 +6,7 @@ public class WriteModulesHashTask extends ReflectionTask {
 
     @Override
     public String getCaption() {
-        return "Writing modules hash";
+        return null;
     }
 
     @Override

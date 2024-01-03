@@ -8,7 +8,7 @@ import lsfusion.server.physics.admin.SystemProperties;
 public class SetupDrillDownTask extends GroupPropertiesTask {
 
     public String getCaption() {
-        return "Setup drill-down";
+        return "Setting up drill-down";
     }
 
     protected void runTask(ActionOrProperty property) {

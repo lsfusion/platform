@@ -104,12 +104,12 @@ public class RemoteLogicsLoader extends LogicsManager implements RemoteLogicsLoa
     @Override
     protected void onStopping(LifecycleEvent event) {
         if (started) {
-            startLog("Stopping Remote Logics Loader");
+            startLog("Stopping remote logics loader");
             try {
                 rmiManager.unexport(remoteLogics);
                 rmiManager.unbindAndUnexport(EXPORT_NAME, this);
             } catch (Exception e) {
-                throw new RuntimeException("Error stopping Remote Logics Loader: ", e);
+                throw new RuntimeException("Error stopping remote logics loader: ", e);
             }
         }
     }

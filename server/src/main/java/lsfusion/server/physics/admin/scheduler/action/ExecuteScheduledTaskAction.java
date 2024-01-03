@@ -28,7 +28,7 @@ public class ExecuteScheduledTaskAction extends InternalAction {
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         DataObject scheduledTaskObject = context.getDataKeyValue(scheduledTask);
         String nameScheduledTask = (String) context.getBL().schedulerLM.nameScheduledTask.read(context, scheduledTaskObject);
-        startLog("Execute Scheduled Task: " + nameScheduledTask);
+        startLog("Executing Scheduled Task: " + nameScheduledTask);
         Scheduler scheduler = context.getLogicsInstance().getCustomObject(Scheduler.class);
         if(!scheduler.executeScheduledTask(context.getSession(), scheduledTaskObject, nameScheduledTask))
             context.delayUserInteraction(new MessageClientAction("Scheduler disabled, change serverComputer() to enable", "Scheduler disabled"));

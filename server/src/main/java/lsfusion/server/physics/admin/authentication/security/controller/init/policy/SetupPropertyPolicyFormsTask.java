@@ -8,7 +8,7 @@ import lsfusion.server.logics.property.oraction.ActionOrProperty;
 public class SetupPropertyPolicyFormsTask extends SetupActionOrPropertyPolicyFormsTask {
 
     public String getCaption() {
-        return "Setup property policy";
+        return "Setting up property policy";
     }
 
     @Override

@@ -31,7 +31,7 @@ public class SetupScheduledTaskAction extends InternalAction {
         try {
             DataObject scheduledTaskObject = context.getDataKeyValue(scheduledTask);
             String nameScheduledTask = (String) context.getBL().schedulerLM.nameScheduledTask.read(context, scheduledTaskObject);
-            startLog("Setup Scheduled Task: " + nameScheduledTask);
+            startLog("Setting up Scheduled Task: " + nameScheduledTask);
             Scheduler scheduler = context.getLogicsInstance().getCustomObject(Scheduler.class);
             if(!scheduler.setupScheduledTask(context.getSession(), scheduledTaskObject, nameScheduledTask))
                 context.delayUserInteraction(new MessageClientAction("Scheduler disabled, change serverComputer() to enable", "Scheduler disabled"));

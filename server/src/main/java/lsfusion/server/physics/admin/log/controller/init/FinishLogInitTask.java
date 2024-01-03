@@ -6,7 +6,7 @@ import lsfusion.server.logics.property.oraction.ActionOrProperty;
 
 public class FinishLogInitTask extends GroupPropertiesTask {
     public String getCaption() {
-        return "Setup loggables";
+        return "Setting up loggables";
     }
 
     protected void runTask(ActionOrProperty property) {

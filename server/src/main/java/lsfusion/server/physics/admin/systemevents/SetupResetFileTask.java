@@ -7,7 +7,7 @@ import lsfusion.server.logics.property.oraction.ActionOrProperty;
 public class SetupResetFileTask extends GroupPropertiesTask {
 
     public String getCaption() {
-        return "Setup reset files";
+        return "Setting up reset files";
     }
 
     protected void runTask(ActionOrProperty property) {

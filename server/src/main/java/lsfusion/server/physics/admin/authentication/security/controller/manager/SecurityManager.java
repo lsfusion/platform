@@ -103,7 +103,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
 
     @Override
     protected void onInit(LifecycleEvent event) {
-        startLog("Initializing Security Manager");
+        startLog("Initializing security manager");
         this.LM = businessLogics.LM;
         this.authenticationLM = businessLogics.authenticationLM;
         this.securityLM = businessLogics.securityLM;
@@ -117,11 +117,11 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
 
     @Override
     protected void onStarted(LifecycleEvent event) {
-        startLog("Starting Security Manager");
+        startLog("Starting security manager");
         try {
             businessLogics.initAuthentication(this);
         } catch (SQLException | SQLHandledException e) {
-            throw new RuntimeException("Error starting Security Manager: ", e);
+            throw new RuntimeException("Error starting security manager: ", e);
         }
     }
 
