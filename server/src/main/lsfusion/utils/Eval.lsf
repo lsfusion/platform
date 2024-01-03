@@ -29,7 +29,7 @@ FORM exception '{eval.script.form.exception}'
 ;
 
 DESIGN exception {
-    size = (500, 400);
+    size = (800, 600);
     OBJECTS {
         NEW pane {
             fill = 1;

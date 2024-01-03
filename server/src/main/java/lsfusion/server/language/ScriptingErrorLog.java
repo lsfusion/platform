@@ -57,7 +57,7 @@ public class ScriptingErrorLog {
         String module = moduleId.isEmpty() ? getModulePath(parser) : moduleId;
         String path = parser.getCurrentScriptPath(module, e.line - lineNumberShift, "\n\t\t\t");
         String hdr = path + ":" + (e.charPositionInLine + 1);
-        return "[" + errorType + "]:\t" + hdr + " " + msg;
+        return "[" + errorType + "]:\n\t" + hdr + " " + msg;
     }
 
     //If the error occurs in the moduleHeader rule, moduleId is not yet set
