@@ -581,7 +581,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         // свойства, но пока реализовано как для всех
         private String regexp;
         private String regexpMessage;
-        private String mask;
+        private Boolean patternWYS;
         private Boolean echoSymbols;
 
         // действия, но пока реализовано как для всех
@@ -653,8 +653,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
                 propertyView.regexp = regexp;
             if (propertyView.regexpMessage == null)
                 propertyView.regexpMessage = regexpMessage;
-            if (propertyView.mask == null)
-                propertyView.mask = mask;
+            if (propertyView.patternWYS == null)
+                propertyView.patternWYS = BaseUtils.nvl(patternWYS, false);
             if (propertyView.echoSymbols == null)
                 propertyView.echoSymbols = BaseUtils.nvl(echoSymbols, false);
             
@@ -681,8 +681,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
                 setRegexp(options.regexp);
             if(regexpMessage == null)
                 setRegexpMessage(options.regexpMessage);
-            if(mask == null)
-                setMask(options.mask);
+            if(patternWYS == null)
+                setPatternWYS(options.patternWYS);
             if(echoSymbols == null)
                 setEchoSymbols(options.echoSymbols);
             
@@ -756,8 +756,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             this.regexpMessage = regexpMessage;
         }
 
-        public void setMask(String mask) {
-            this.mask = mask;
+        public void setPatternWYS(Boolean patternWYS) {
+            this.patternWYS = patternWYS;
         }
 
         public void setEchoSymbols(Boolean echoSymbols) {

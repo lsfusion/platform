@@ -317,8 +317,6 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
         propertyDraw.editType = convertOrCast(clientPropertyDraw.editType);
 
-        propertyDraw.mask = clientPropertyDraw.mask;
-
         propertyDraw.echoSymbols = clientPropertyDraw.echoSymbols;
 
         propertyDraw.noSort = clientPropertyDraw.noSort;
@@ -337,6 +335,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
         propertyDraw.pattern = clientPropertyDraw.getFormatPattern();
         propertyDraw.defaultPattern = propertyDraw.pattern;
+        propertyDraw.patternWYS = clientPropertyDraw.patternWYS;
 
         propertyDraw.focusable = clientPropertyDraw.focusable;
         propertyDraw.checkEquals = clientPropertyDraw.checkEquals;

@@ -33,6 +33,7 @@ import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.interop.form.property.PropertyReadType;
+import org.apache.commons.lang3.text.ExtendedMessageFormat;
 
 import javax.swing.*;
 import java.awt.*;
@@ -115,7 +116,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public AppImage image;
     public String regexp;
     public String regexpMessage;
-    public String mask;
+    public Boolean patternWYS;
     public Long maxValue;
     public boolean echoSymbols;
     public boolean noSort;
@@ -387,6 +388,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
                 return ((DecimalFormat) format).toPattern();
             else if (format instanceof SimpleDateFormat)
                 return ((SimpleDateFormat) format).toPattern();
+            else if (format instanceof ExtendedMessageFormat)
+                return ((ExtendedMessageFormat) format).toPattern();
         }
         return null;
     }
@@ -527,7 +530,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         pool.writeString(outStream, caption);
         pool.writeString(outStream, regexp);
         pool.writeString(outStream, regexpMessage);
-        pool.writeString(outStream, mask);
+        outStream.writeBoolean(patternWYS);
         pool.writeLong(outStream, maxValue);
         outStream.writeBoolean(echoSymbols);
         outStream.writeBoolean(noSort);
@@ -583,7 +586,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         regexp = pool.readString(inStream);
         regexpMessage = pool.readString(inStream);
-        mask = pool.readString(inStream);
+        patternWYS = inStream.readBoolean();
         maxValue = pool.readLong(inStream);
         echoSymbols = inStream.readBoolean();
         noSort = inStream.readBoolean();

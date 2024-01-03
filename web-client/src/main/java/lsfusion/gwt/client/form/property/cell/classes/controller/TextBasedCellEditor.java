@@ -134,8 +134,9 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
             }
         }
 
-        if(property.mask != null) {
-            setMask(inputElement, property.mask);
+        String mask = property.getMaskFromPattern();
+        if(mask != null) {
+            setMask(inputElement, mask, !property.patternWYS);
         }
 
     }
@@ -288,7 +289,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
             if(contextAction == null && completionType.isOnlyCommitSelection())
                 throw new InvalidEditException();
 
-            if(property.mask != null && !isCompleteMask(inputElement))
+            if(property.getMaskFromPattern() != null && !isCompleteMask(inputElement))
                 throw new InvalidEditException();
         }
 
@@ -303,8 +304,8 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
         }
     }
 
-    private native void setMask(Element element, String mask)/*-{
-        $wnd.$(element).inputmask(mask);
+    private native void setMask(Element element, String mask, boolean autoUnmask)/*-{
+        $wnd.$(element).inputmask({"mask": mask, "autoUnmask": autoUnmask});
     }-*/;
 
     private native boolean isCompleteMask(Element element)/*-{

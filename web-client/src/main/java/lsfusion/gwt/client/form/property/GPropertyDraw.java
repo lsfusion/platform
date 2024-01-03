@@ -102,6 +102,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GType valueType;
     public boolean differentValue;
     public String pattern;
+    public boolean patternWYS;
     public String defaultPattern;
     public GClass returnClass;
 
@@ -294,7 +295,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public boolean checkEquals;
     public GPropertyEditType editType = GPropertyEditType.EDITABLE;
 
-    public String mask;
     public boolean echoSymbols;
     public boolean noSort;
     public GCompare defaultCompare;
@@ -589,6 +589,18 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public void setUserPattern(String pattern) {
 //        if(baseType instanceof GFormatType)
         this.pattern = pattern != null ? pattern : defaultPattern;
+    }
+
+    public String getMaskFromPattern() {
+        if(pattern != null) {
+            switch (pattern) {
+                case "dd-MM": return "99-99";
+                case "HH:mm": return "9[9]:99";
+                case "#,##0.##": return "9{1,5}[,9{1,2}]";
+                default: return pattern;
+            }
+        }
+        return null;
     }
 
     public PValue parsePaste(String s, GType parseType) {
