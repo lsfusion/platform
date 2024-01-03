@@ -1666,7 +1666,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
             sql.addColumn(newTable, newProperty.property.field);
             runWithStartLog(() -> newTable.moveColumn(sql, newProperty.property.field, oldTable, move.mapKeys, oldTable.findProperty(oldProperty.getDBName())),
-                    localize(LocalizedString.createFormatted("{logics.info.property.is.transferred.from.table.to.table}", newProperty.property.field, newProperty.property.caption, oldProperty.tableName, newProperty.tableName)));
+                    localize(LocalizedString.createFormatted("{logics.info.property.transferring.from.table.to.table}", newProperty.property.field, newProperty.property.caption, oldProperty.tableName, newProperty.tableName)));
 
             sql.dropColumn(oldProperty.getTableName(sql.syntax), oldProperty.getDBName(), Settings.get().isStartServerAnyWay());
         }
@@ -1991,7 +1991,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             table.recalculateStat(reflectionLM, session, fields, skipRecalculateFields, false);
             propsStat.result = table.recalculateStat(reflectionLM, session, fields, skipRecalculateFields, true);
             apply(session);
-        }, String.format("Update Aggregation Stats: %s", table));
+        }, String.format("Updating aggregation stats: %s", table));
             
         table.updateStat(propsStat.result, fields.keys(), false);
     }

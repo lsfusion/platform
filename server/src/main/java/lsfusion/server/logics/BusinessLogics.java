@@ -313,7 +313,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             MapCacheAspect.cleanClassCaches();
             AbstractNode.cleanPropCaches();
             cleanPropCaches();
-        }, "Cleaning Obsolete caches");
+        }, "Cleaning obsolete caches");
 
     }
     

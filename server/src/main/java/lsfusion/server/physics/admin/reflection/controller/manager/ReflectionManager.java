@@ -162,11 +162,11 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
     }
 
     public void synchronizeNavigatorElements() {
-        runWithStartLog(this::migrateNavigatorElements, "MigrateNavigatorElements integration service");
+        runWithStartLog(this::migrateNavigatorElements, "Migrating navigator elements");
         runWithStartLog(()-> synchronizeNavigatorElements(reflectionLM.navigatorFolder, false, reflectionLM.isNavigatorFolder),
-                "SynchronizeNavigatorElements property integration service");
+                "Synchronizing navigator elements properties");
         runWithStartLog(() -> synchronizeNavigatorElements(reflectionLM.navigatorAction, true, reflectionLM.isNavigatorAction),
-                "SynchronizeNavigatorElements action integration service");
+                "Synchronizing navigator elements actions");
     }
 
     private void synchronizeNavigatorElements(ConcreteCustomClass elementCustomClass, boolean actions, LP deleteLP) {
@@ -302,7 +302,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
             } catch (Exception e) {
                 throw Throwables.propagate(e);
             }
-        }, "SynchronizeForms integration service");
+        }, "Synchronizing forms");
     }
     
     
@@ -331,7 +331,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
             } catch (Exception e) {
                 throw Throwables.propagate(e);
             }
-        }, "SynchronizeParents integration service");
+        }, "Synchronizing navigator elements parents");
     }
 
     private Set<String> getElementWithChildren(NavigatorElement element) {
@@ -408,7 +408,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
             } catch (Exception e) {
                 Throwables.propagate(e);
             }
-        }, "MigratePropertyDraws integration service");
+        }, "Migrating propertyDraws");
     }
     
     public void synchronizePropertyDraws() {
@@ -466,7 +466,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
             } catch (Exception e) {
                 throw Throwables.propagate(e);
             }
-        }, "SynchronizePropertyDraws integration service");
+        }, "Synchronizing propertyDraws");
     }
 
     public void synchronizeGroupObjects() {
@@ -511,7 +511,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
             } catch (Exception e) {
                 throw Throwables.propagate(e);
             }
-        }, "SynchronizeGroupObjects integration service");
+        }, "Synchronizing groupObjects");
     }
 
     private boolean needsToBeSynchronized(ActionOrProperty property) {
@@ -519,8 +519,8 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
     }
 
     public void synchronizePropertyEntities() {
-        runWithStartLog(()-> synchronizePropertyEntities(true), "SynchronizeActionEntities integration service");
-        runWithStartLog(()-> synchronizePropertyEntities(false), "SynchronizePropertyEntities integration service");
+        runWithStartLog(()-> synchronizePropertyEntities(true), "Synchronizing actions");
+        runWithStartLog(()-> synchronizePropertyEntities(false), "Synchronizing properties");
     }
     public void synchronizePropertyEntities(boolean actions) {
         ImportField canonicalNamePropertyField = new ImportField(reflectionLM.propertyCanonicalNameValueClass);
@@ -619,8 +619,8 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
     }
 
     public void synchronizePropertyParents() {
-        runWithStartLog(()-> synchronizePropertyParents(true), "SynchronizeActionParents integration service");
-        runWithStartLog(()-> synchronizePropertyParents(false), "SynchronizePropertyParents integration service");
+        runWithStartLog(()-> synchronizePropertyParents(true), "Synchronizing actions parents");
+        runWithStartLog(()-> synchronizePropertyParents(false), "Synchronizing properties parents");
     }
     public void synchronizePropertyParents(boolean actions) {
         ImportField canonicalNamePropertyField = new ImportField(reflectionLM.propertyCanonicalNameValueClass);
@@ -710,7 +710,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
             } catch (Exception e) {
                 throw Throwables.propagate(e);
             }
-        }, "SynchronizeGroupProperties integration service");
+        }, "Synchronizing groupProperties");
     }
 
     private Integer getNumberInListOfChildren(AbstractNode abstractNode) {
@@ -811,6 +811,6 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
             } catch (Exception e) {
                 throw Throwables.propagate(e);
             }
-        }, "SynchronizeTables integration service");
+        }, "Synchronizing tables");
     }
 }
