@@ -4,7 +4,6 @@ import com.google.gwt.core.client.JsDate;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.Style;
-import com.google.gwt.user.client.ui.SimplePanel;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.controller.SmartScheduler;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -18,7 +17,10 @@ import java.text.ParseException;
 public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor implements FormatCellEditor {
 
     private InputElement editBox;
-    protected boolean useNativePopup;
+
+    protected boolean isNative() {
+        return inputElementType.hasNativePopup();
+    }
 
     public DateRangePickerBasedCellEditor(EditManager editManager, GPropertyDraw property) {
         super(editManager, property);
@@ -28,9 +30,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
     protected void onInputReady(Element parent, PValue oldValue) {
         super.onInputReady(parent, oldValue);
 
-        if (inputElementType.hasNativePopup()) {
-            useNativePopup = true;
-        } else {
+        if (!isNative()) {
             editBox = inputElement;
 
             assert oldValue != null;
@@ -47,7 +47,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
 
     @Override
     public void stop(Element parent, boolean cancel, boolean blurred) {
-        if(!useNativePopup)
+        if(!isNative())
             removePicker();
         super.stop(parent, cancel, blurred);
     }
@@ -66,7 +66,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
             try {
                 return super.tryParseInputText(inputText, true);
             } catch (ParseException e) {
-                if (useNativePopup)
+                if (isNative())
                     throw e;
                 else
                     return getDateInputValue();

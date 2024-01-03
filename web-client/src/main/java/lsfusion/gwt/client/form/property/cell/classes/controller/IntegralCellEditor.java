@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
+import com.google.gwt.i18n.client.LocaleInfo;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.classes.data.GFormatType;
 import lsfusion.gwt.client.classes.data.GIntegralType;
@@ -22,21 +23,43 @@ public class IntegralCellEditor extends TextBasedCellEditor implements FormatCel
         return type;
     }
 
+    protected boolean isNative() {
+        return inputElementType.isNumber();
+    }
+
     @Override
     protected PValue tryParseInputText(String inputText, boolean onCommit) throws ParseException {
-        if (inputText.isEmpty() || (onCommit && "-".equals(inputText))) {
-            return null;
-        } else {
-            inputText = inputText.replace(" ", "").replace(GIntegralType.UNBREAKABLE_SPACE, "");
-            return (!onCommit && "-".equals(inputText)) ? PValue.getPValue(0) : super.tryParseInputText(inputText, onCommit);
+        if(isNative()) {
+            if (inputText.isEmpty())
+                return null;
+
+            return type.parseISOString(inputText);
         }
+
+        if (inputText.isEmpty() || (onCommit && "-".equals(inputText)))
+            return null;
+
+        inputText = inputText.replace(" ", "").replace(GIntegralType.UNBREAKABLE_SPACE, "");
+        if (!onCommit && "-".equals(inputText))
+            return PValue.getPValue(0);
+
+        return super.tryParseInputText(inputText, onCommit);
     }
 
     @Override
     protected String tryFormatInputText(PValue value) {
+        if(isNative()) {
+            if (value == null)
+                return "";
+
+            return type.formatISOString(value);
+        }
+
         String result = super.tryFormatInputText(value);
-        if(result != null)
-            result = GwtClientUtils.editFormat(result);
+
+        String groupingSeparator = LocaleInfo.getCurrentLocale().getNumberConstants().groupingSeparator();
+        result = result.replace(groupingSeparator, "");
+
         return result;
     }
 }

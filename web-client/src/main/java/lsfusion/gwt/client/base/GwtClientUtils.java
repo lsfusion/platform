@@ -885,15 +885,6 @@ public class GwtClientUtils {
         return replaceSeparators(value, decimalSeparator, groupingSeparator);
     }
 
-    public static String editFormat(String value) {
-        String groupingSeparator = LocaleInfo.getCurrentLocale().getNumberConstants().groupingSeparator();
-        value = value.replace(groupingSeparator, "");
-        //need because of IntegralCellEditor.createInputElement
-        if(MainFrame.mobile)
-            value = GwtClientUtils.replaceCommaSeparator(value);
-        return value;
-    }
-
     public static String getCurrentLocaleName() {
         return LocaleInfo.getCurrentLocale().getLocaleName();
     } 

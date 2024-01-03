@@ -78,4 +78,12 @@ public abstract class GIntegralType extends GFormatType {
             return inputType;
         return super.getValueInputType();
     }
+
+    public PValue parseISOString(String value) throws ParseException {
+        return value.isEmpty() ? null : convertDouble(Double.valueOf(value));
+    }
+
+    public String formatISOString(PValue value) {
+        return Double.toString(PValue.getNumberValue(value).doubleValue());
+    }
 }

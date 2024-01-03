@@ -1,8 +1,6 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.core.client.JsDate;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.InputElement;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.classes.data.GADateType;
 import lsfusion.gwt.client.classes.data.GFormatType;
@@ -80,7 +78,7 @@ public class DateCellEditor extends DateRangePickerBasedCellEditor {
 
     @Override
     protected String tryFormatInputText(PValue value) {
-        if(useNativePopup) {
+        if(isNative()) {
             if (value == null)
                 return "";
 
@@ -92,8 +90,8 @@ public class DateCellEditor extends DateRangePickerBasedCellEditor {
 
     @Override
     protected PValue tryParseInputText(String inputText, boolean onCommit) throws ParseException {
-        if(useNativePopup) {
-            if (inputText == null || inputText.isEmpty())
+        if(isNative()) {
+            if (inputText.isEmpty())
                 return null;
 
             return type.parseISOString(inputText);
