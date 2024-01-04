@@ -184,7 +184,7 @@ public class SubQueryExpr extends QueryExpr<KeyExpr, SubQueryExpr.Query, SubQuer
     }
 
     public static Expr create(final Expr expr, final ImMap<KeyExpr, ? extends Expr> group, final PullExpr noPull, boolean noInnerFollows, int top) {
-        ImMap<KeyExpr, KeyExpr> pullKeys = BaseUtils.<ImSet<KeyExpr>>immutableCast(getOuterKeys(expr)).filterFn(key -> key instanceof PullExpr && !group.containsKey(key) && !key.equals(noPull)).toMap();
+        ImMap<PullExpr, PullExpr> pullKeys = BaseUtils.<ImSet<PullExpr>>immutableCast(getOuterKeys(expr).filterFn(key -> key instanceof PullExpr && !group.containsKey((PullExpr)key) && !key.equals(noPull))).toMap();
         return create(new Query(expr, noInnerFollows, top), MapFact.addExcl(group, pullKeys));
     }
 

@@ -40,6 +40,11 @@ public interface ImSet<T> extends FunctionSet<T>, ImCol<T> {
         return filterFn((FunctionSet<T>) filter);    
     }
 
+    boolean containsFn(FunctionSet<T> filter);
+    default boolean containsFn(SFunctionSet<T> filter) {
+        return containsFn((FunctionSet<T>) filter);
+    }
+
     ImSet<T> split(FunctionSet<T> filter, Result<ImSet<T>> rest);
     default ImSet<T> split(SFunctionSet<T> filter, Result<ImSet<T>> rest) {
         return split((FunctionSet<T>) filter, rest);

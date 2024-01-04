@@ -74,6 +74,11 @@ public interface ImMap<K, V> {
         return filterFnValues((FunctionSet<V>) filter);
     }
 
+    boolean containsFnValue(FunctionSet<V> filter);
+    default boolean containsFnValue(SFunctionSet<V> filter) {
+        return containsFnValue((FunctionSet<V>) filter);
+    }
+
     ImMap<K, V> filterFn(BiFunction<K, V, Boolean> filter);
     
     ImMap<K, V> splitKeys(BiFunction<K, V, Boolean> keys, Result<ImMap<K, V>> rest);

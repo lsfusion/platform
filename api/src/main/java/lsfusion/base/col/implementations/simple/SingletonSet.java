@@ -546,6 +546,10 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
         return SetFact.EMPTY();
     }
 
+    public boolean containsFn(FunctionSet<K> filter) {
+        return filter.contains(key);
+    }
+
     @Override
     public <E1 extends Exception, E2 extends Exception> ImSet<K> filterFnEx(ThrowingPredicate<K, E1, E2> filter) throws E1, E2 {
         if(filter.test(key))

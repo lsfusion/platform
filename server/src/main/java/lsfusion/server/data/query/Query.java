@@ -207,7 +207,7 @@ public class Query<K,V> extends IQuery<K,V> {
         MAddSet<KeyExpr> checked = SetFact.mAddSet();
         for(int i=0,size=joinImplement.size();i<size;i++) {
             Expr joinExpr = joinImplement.getValue(i);
-            if(!(joinExpr instanceof KeyExpr && !(joinExpr instanceof PullExpr)) || checked.contains((KeyExpr) joinExpr))
+            if(!(joinExpr instanceof KeyExpr) || joinExpr instanceof PullExpr || checked.contains((KeyExpr) joinExpr))
                 return null;
             checked.add((KeyExpr) joinExpr);
         }

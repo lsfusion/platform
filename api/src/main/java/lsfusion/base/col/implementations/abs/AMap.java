@@ -309,6 +309,15 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
         return MapFact.imFilter(mResult, this);
     }
 
+    public boolean containsFnValue(FunctionSet<V> filter) {
+        for(int i=0,size=size();i<size;i++) {
+            V value = getValue(i);
+            if(filter.contains(value))
+                return true;
+        }
+        return false;
+    }
+
     public ImMap<K, V> splitKeys(BiFunction<K, V, Boolean> filter, Result<ImMap<K, V>> rest) {
         MFilterMap<K, V> mResult = MapFact.mFilter(this);
         MFilterMap<K, V> mRest = MapFact.mFilter(this);

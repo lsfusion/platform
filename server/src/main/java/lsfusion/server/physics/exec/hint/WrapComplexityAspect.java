@@ -44,7 +44,7 @@ public class WrapComplexityAspect {
     }
 
     public <T extends PropertyInterface> Expr getJoinExpr(ProceedingJoinPoint thisJoinPoint, Property<T> property, ImMap<T, ? extends Expr> joinExprs, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) throws Throwable {
-        if(isDisable(property, calcType))
+        if(isDisable(property, calcType) || joinExprs.containsFnValue(expr -> expr.getOuterKeys().containsFn(key -> !(key instanceof KeyExpr)))) // SubQueryExpr doesn't support nullable KeyExpr, so we have to disable wrap complexity for them
             return (Expr) thisJoinPoint.proceed();
         WhereBuilder cascadeWhere = Property.cascadeWhere(changedWhere);
         return wrapComplexity((Expr) thisJoinPoint.proceed(new Object[]{property, joinExprs, calcType, propChanges, cascadeWhere}),

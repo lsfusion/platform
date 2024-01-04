@@ -314,7 +314,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     private <X extends PropertyInterface> ActionObjectEntity<? extends PropertyInterface> getDefaultEventAction(String actionId, FormInstanceContext context) {
-        ActionOrPropertyObjectEntity<X, ?> eventPropertyObject = (ActionOrPropertyObjectEntity<X, ?>) getEventActionOrProperty(context);
+        ActionOrPropertyObjectEntity<X, ?> eventPropertyObject = (ActionOrPropertyObjectEntity<X, ?>) getEventActionOrProperty(context, isChange(actionId, context));
         ActionOrProperty<X> eventProperty = eventPropertyObject.property;
         ImRevMap<X, ObjectEntity> eventMapping = eventPropertyObject.mapping;
 
@@ -443,11 +443,11 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     // should be the same property that is used in getEventAction (because eventActions should be synchronized with the contextMenuBindings)
     public ActionOrProperty<?> getBindingProperty(FormInstanceContext context) {
 //        return getInheritedProperty();
-        return getEventActionOrProperty(context).property;
+        return getEventActionOrProperty(context, false).property;
     }
 
-    public ActionOrPropertyObjectEntity<?, ?> getEventActionOrProperty(FormInstanceContext context) {
-        return getCellActionOrProperty(context);
+    public ActionOrPropertyObjectEntity<?, ?> getEventActionOrProperty(FormInstanceContext context, boolean isChange) {
+        return isChange ? getCellActionOrProperty(context) : actionOrProperty;
     }
 
     public Iterable<String> getAllPropertyEventActions(FormInstanceContext context) {

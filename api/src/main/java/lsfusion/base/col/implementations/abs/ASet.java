@@ -151,6 +151,17 @@ public abstract class ASet<K> extends ACol<K> implements ImSet<K> {
         return SetFact.imFilter(mResult, this);
     }
 
+    public boolean containsFn(FunctionSet<K> filter) {
+        if(filter.isEmpty()) return false;
+
+        for(int i=0,size=size();i<size;i++) {
+            K element = get(i);
+            if(filter.contains(element))
+                return true;
+        }
+        return false;
+    }
+
     @Override
     public <E1 extends Exception, E2 extends Exception> ImSet<K> filterFnEx(ThrowingPredicate<K, E1, E2> filter) throws E1, E2 {
         MFilterSet<K> mResult = SetFact.mFilter(this);
