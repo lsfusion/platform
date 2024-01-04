@@ -2973,7 +2973,7 @@ public class Settings implements Cloneable {
     }
 
     public int minInterfaceStatForValueUnique = 100;
-    public int maxInterfaceStatForValueList = 5;
+    public int maxInterfaceStatForValueList = 3;
     public int maxInterfaceStatForValueDropdown = 20;
     public int maxLengthForValueButton = 40;
     public int maxLengthForValueButtonGrid = 10;
