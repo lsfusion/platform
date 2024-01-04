@@ -133,12 +133,6 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
                 suggestBox.showSuggestionList(allSuggestions);
             }
         }
-
-        String mask = property.getMaskFromPattern();
-        if(mask != null) {
-            setMask(inputElement, mask, !property.patternWYS);
-        }
-
     }
 
     private boolean hasList() {
@@ -288,8 +282,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
 
             if(contextAction == null && completionType.isOnlyCommitSelection())
                 throw new InvalidEditException();
-
-            if(property.getMaskFromPattern() != null && !isCompleteMask(inputElement))
+            if(property.getMaskFromPattern(property.getPattern()) != null && !isCompleteMask(inputElement))
                 throw new InvalidEditException();
         }
 
@@ -303,10 +296,6 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
             throw new InvalidEditException();
         }
     }
-
-    private native void setMask(Element element, String mask, boolean autoUnmask)/*-{
-        $wnd.$(element).inputmask({"mask": mask, "autoUnmask": autoUnmask});
-    }-*/;
 
     private native boolean isCompleteMask(Element element)/*-{
         return $wnd.$(element).inputmask("isComplete");
@@ -552,7 +541,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
 
         if(this instanceof FormatCellEditor) {
             GFormatType formatType = ((FormatCellEditor) this).getFormatType();
-            return formatType.parseString(inputText, property.pattern);
+            return formatType.parseString(inputText, property.getPattern());
         }
         return PValue.getPValue(inputText);
     }
@@ -563,7 +552,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
 
         if(this instanceof FormatCellEditor) {
             GFormatType formatType = ((FormatCellEditor) this).getFormatType();
-            return formatType.formatString(value, property.pattern);
+            return formatType.formatString(value, property.getPattern());
         }
         return PValue.getStringValue(value);
     }

@@ -59,8 +59,8 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     }
 
     private void updateValue(PValue value, boolean loading) {
-        update(value, loading, null, property.valueElementClass, property.getBackground(), property.getForeground(), null, null,
-                property.valueTooltip);
+        update(value, loading, null, property.valueElementClass, property.getBackground(), property.getForeground(), null,
+                null, property.getPattern(), property.valueTooltip);
     }
 
     public void updateValue(PValue value) {

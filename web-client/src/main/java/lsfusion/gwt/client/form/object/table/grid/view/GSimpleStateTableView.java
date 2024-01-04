@@ -404,6 +404,13 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return getPlaceholder(column.property, object, column.columnKey);
     }
 
+    protected String getPattern(String property, GGroupObjectValue object) {
+        Column column = getColumn(property);
+        if(column == null)
+            return null;
+        return getPattern(column.property, object, column.columnKey);
+    }
+
     protected String getTooltip(String property, GGroupObjectValue object) {
         Column column = getColumn(property);
         if(column == null)
@@ -431,6 +438,10 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
     protected String getPlaceholder(String property, JavaScriptObject object) {
         return getPlaceholder(property, getJsObjects(object));
+    }
+
+    protected String getPattern(String property, JavaScriptObject object) {
+        return getPattern(property, getJsObjects(object));
     }
 
     protected String getTooltip(String property, JavaScriptObject object) {
@@ -780,6 +791,9 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             },
             getPlaceholder: function (property, object) {
                 return thisObj.@GSimpleStateTableView::getPlaceholder(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
+            },
+            getPattern: function (property, object) {
+                return thisObj.@GSimpleStateTableView::getPattern(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
             },
             getTooltip: function (property, object) {
                 return thisObj.@GSimpleStateTableView::getTooltip(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);

@@ -6,10 +6,7 @@ import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.view.ClientImages;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.*;
-import lsfusion.client.classes.data.ClientFormatClass;
-import lsfusion.client.classes.data.ClientIntegralClass;
-import lsfusion.client.classes.data.ClientLogicalClass;
-import lsfusion.client.classes.data.ClientLongClass;
+import lsfusion.client.classes.data.*;
 import lsfusion.client.controller.MainController;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.controller.remote.serialization.ClientIdentitySerializable;
@@ -33,7 +30,6 @@ import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.interop.form.property.PropertyReadType;
-import org.apache.commons.lang3.text.ExtendedMessageFormat;
 
 import javax.swing.*;
 import java.awt.*;
@@ -45,10 +41,10 @@ import java.text.*;
 import java.util.List;
 import java.util.*;
 
-import static lsfusion.base.BaseUtils.isRedundantString;
-import static lsfusion.base.BaseUtils.nullTrim;
+import static lsfusion.base.BaseUtils.*;
 import static lsfusion.base.EscapeUtils.escapeLineBreakHTML;
 import static lsfusion.client.ClientResourceBundle.getString;
+import static lsfusion.interop.form.property.PropertyReadType.*;
 
 @SuppressWarnings({"UnusedDeclaration"})
 public class ClientPropertyDraw extends ClientComponent implements ClientPropertyReader, ClientIdentitySerializable {
@@ -64,12 +60,12 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public ImageReader imageReader = new ImageReader();
     public boolean hasDynamicImage;
 
-    public CommentReader commentReader = new CommentReader();
-    public CommentElementClassReader commentElementClassReader = new CommentElementClassReader();
-    public PlaceholderReader placeholderReader = new PlaceholderReader();
-
-    public TooltipReader tooltipReader = new TooltipReader();
-    public ValueTooltipReader valueTooltipReader = new ValueTooltipReader();
+    public ExtraPropReader commentReader = new ExtraPropReader(COMMENT);
+    public ExtraPropReader commentElementClassReader = new ExtraPropReader(COMMENTELEMENTCLASS);
+    public ExtraPropReader placeholderReader = new ExtraPropReader(PLACEHOLDER);
+    public ExtraPropReader patternReader = new ExtraPropReader(PATTERN);
+    public ExtraPropReader tooltipReader = new ExtraPropReader(TOOLTIP);
+    public ExtraPropReader valueTooltipReader = new ExtraPropReader(VALUETOOLTIP);
 
     public boolean boxed;
 
@@ -116,7 +112,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public AppImage image;
     public String regexp;
     public String regexpMessage;
-    public Boolean patternWYS;
     public Long maxValue;
     public boolean echoSymbols;
     public boolean noSort;
@@ -149,6 +144,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public String placeholder;
 
+    public String pattern;
+    public String userPattern;
+
     public String tooltip;
     public String valueTooltip;
 
@@ -163,9 +161,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public transient EditBindingMap editBindingMap;
     private transient PropertyRenderer renderer;
-
-    protected Format format;
-    private Format defaultFormat;
 
     public boolean checkEquals;
 
@@ -364,7 +359,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         if(formatType instanceof ClientObjectType)
             formatType = ClientLongClass.instance;
 
-        Format result = format;
+        Format result = getPatternFormat();
         if(formatType instanceof ClientFormatClass) {
             Format defaultFormat = ((ClientFormatClass) formatType).getDefaultFormat();
             if (result == null)
@@ -382,27 +377,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return format != null;
     }
 
-    public String getFormatPattern() {
-        if (format != null) {
-            if (format instanceof DecimalFormat)
-                return ((DecimalFormat) format).toPattern();
-            else if (format instanceof SimpleDateFormat)
-                return ((SimpleDateFormat) format).toPattern();
-            else if (format instanceof ExtendedMessageFormat)
-                return ((ExtendedMessageFormat) format).toPattern();
-        }
-        return null;
-    }
-
-    public void setUserFormat(String pattern) {
+    public void setUserPattern(String userPattern) {
         if(baseType instanceof ClientFormatClass) {
-            Format setFormat = null;
-            if (pattern != null && !pattern.isEmpty())
-                setFormat = ((ClientFormatClass) baseType).createUserFormat(pattern);
-            else
-                setFormat = defaultFormat;
-
-            format = setFormat;
+            this.userPattern = userPattern;
             PropertyRenderer renderer = getRendererComponent();
             if (renderer instanceof FormatPropertyRenderer) {
                 ((FormatPropertyRenderer) renderer).updateFormat();
@@ -485,6 +462,21 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return "";
     }
 
+    private Format format;
+    private String prevPattern;
+    private Format getPatternFormat() {
+        String curPattern = nvl(userPattern, pattern);
+        if(curPattern != null) {
+            if (baseType instanceof ClientFormatClass && (prevPattern == null || !prevPattern.equals(curPattern))) {
+                prevPattern = curPattern;
+                format = ((ClientFormatClass) baseType).createUserFormat(curPattern);
+            }
+        } else {
+            format = null;
+        }
+        return format;
+    }
+
     public byte getType() {
         return PropertyReadType.DRAW;
     }
@@ -530,7 +522,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         pool.writeString(outStream, caption);
         pool.writeString(outStream, regexp);
         pool.writeString(outStream, regexpMessage);
-        outStream.writeBoolean(patternWYS);
         pool.writeLong(outStream, maxValue);
         outStream.writeBoolean(echoSymbols);
         outStream.writeBoolean(noSort);
@@ -551,7 +542,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         pool.writeObject(outStream, changeMouse);
         pool.writeInt(outStream, changeMousePriority);
 
-        pool.writeObject(outStream, format);
         pool.writeObject(outStream, focusable);
 
         outStream.writeBoolean(panelCaptionVertical);
@@ -568,6 +558,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         pool.writeObject(outStream, panelCommentAlignment);
 
         pool.writeString(outStream, placeholder);
+        pool.writeString(outStream, pattern);
 
         pool.writeString(outStream, tooltip);
         pool.writeString(outStream, valueTooltip);
@@ -586,7 +577,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         regexp = pool.readString(inStream);
         regexpMessage = pool.readString(inStream);
-        patternWYS = inStream.readBoolean();
         maxValue = pool.readLong(inStream);
         echoSymbols = inStream.readBoolean();
         noSort = inStream.readBoolean();
@@ -608,9 +598,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         drawAsync = inStream.readBoolean();
 
-        format = pool.readObject(inStream);
-        defaultFormat = format;
-
         isList = inStream.readBoolean();
 
         focusable = pool.readObject(inStream);
@@ -631,6 +618,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         panelCommentAlignment = pool.readObject(inStream);
 
         placeholder = pool.readString(inStream);
+        pattern = pool.readString(inStream);
 
         tooltip = pool.readString(inStream);
         valueTooltip = pool.readString(inStream);
@@ -1099,7 +1087,13 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         }
     }
 
-    public class CommentReader implements ClientPropertyReader {
+    public class ExtraPropReader implements ClientPropertyReader {
+        final byte type;
+
+        public ExtraPropReader(byte type) {
+            this.type = type;
+        }
+
         public ClientGroupObject getGroupObject() {
             return ClientPropertyDraw.this.getGroupObject();
         }
@@ -1112,75 +1106,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         }
 
         public byte getType() {
-            return PropertyReadType.COMMENT;
-        }
-    }
-
-    public class CommentElementClassReader implements ClientPropertyReader {
-        public ClientGroupObject getGroupObject() {
-            return ClientPropertyDraw.this.getGroupObject();
-        }
-
-        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
-        }
-
-        public int getID() {
-            return ClientPropertyDraw.this.getID();
-        }
-
-        public byte getType() {
-            return PropertyReadType.COMMENTELEMENTCLASS;
-        }
-    }
-
-    public class PlaceholderReader implements ClientPropertyReader {
-        public ClientGroupObject getGroupObject() {
-            return ClientPropertyDraw.this.getGroupObject();
-        }
-
-        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
-        }
-
-        public int getID() {
-            return ClientPropertyDraw.this.getID();
-        }
-
-        public byte getType() {
-            return PropertyReadType.PLACEHOLDER;
-        }
-    }
-
-    public class TooltipReader implements ClientPropertyReader {
-        public ClientGroupObject getGroupObject() {
-            return ClientPropertyDraw.this.getGroupObject();
-        }
-
-        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
-        }
-
-        public int getID() {
-            return ClientPropertyDraw.this.getID();
-        }
-
-        public byte getType() {
-            return PropertyReadType.TOOLTIP;
-        }
-    }
-
-    public class ValueTooltipReader implements ClientPropertyReader {
-        public ClientGroupObject getGroupObject() {
-            return ClientPropertyDraw.this.getGroupObject();
-        }
-
-        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
-        }
-
-        public int getID() {
-            return ClientPropertyDraw.this.getID();
-        }
-
-        public byte getType() {
-            return PropertyReadType.VALUETOOLTIP;
+            return type;
         }
     }
 }

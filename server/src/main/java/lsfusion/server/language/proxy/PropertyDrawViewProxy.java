@@ -64,14 +64,6 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.regexpMessage = regexpMessage.getSourceString();
     }
 
-    public void setPatternWYS(boolean patternWYS) {
-        target.patternWYS = patternWYS;
-    }
-
-    public void setPattern(LocalizedString lPattern) {
-        target.pattern = lPattern.getSourceString();
-    }
-
     public void setMaxValue(long maxValue) {
         target.maxValue = maxValue;
     }
@@ -218,6 +210,13 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
             target.placeholder = (LocalizedString) placeholder;
         else
             target.entity.setPropertyExtra((PropertyObjectEntity<?>) placeholder, PropertyDrawExtraType.PLACEHOLDER, getVersion());
+    }
+
+    public void setPattern(Object pattern) {
+        if(pattern instanceof LocalizedString)
+            target.pattern = (LocalizedString) pattern;
+        else
+            target.entity.setPropertyExtra((PropertyObjectEntity<?>) pattern, PropertyDrawExtraType.PATTERN, getVersion());
     }
 
     //backward compatibility

@@ -13,7 +13,7 @@ public abstract class FormatCellRenderer<T> extends TextBasedCellRenderer {
 
     @Override
     public String format(PValue value, RendererType rendererType) {
-        return getFormatType(rendererType).formatString(value, property.pattern);
+        return getFormatType(rendererType).formatString(value, property.getPattern());
     }
 
     public FormatCellRenderer(GPropertyDraw property) {

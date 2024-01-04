@@ -10,7 +10,7 @@ public abstract class GFormatType extends GTextBasedType {
     public String getDefaultWidthString(GPropertyDraw propertyDraw) {
         PValue defaultWidthValue = getDefaultWidthValue();
         if(defaultWidthValue != null)
-            return formatString(defaultWidthValue, propertyDraw.pattern);
+            return formatString(defaultWidthValue, propertyDraw.getPattern());
         return super.getDefaultWidthString(propertyDraw);
     }
 

@@ -185,6 +185,8 @@ public class ClientFormChanges {
                 return clientForm.getProperty(inStream.readInt()).tooltipReader;
             case PropertyReadType.VALUETOOLTIP:
                 return clientForm.getProperty(inStream.readInt()).valueTooltipReader;
+            case PropertyReadType.PATTERN:
+                return clientForm.getProperty(inStream.readInt()).patternReader;
             default:
                 throw new IOException();
         }

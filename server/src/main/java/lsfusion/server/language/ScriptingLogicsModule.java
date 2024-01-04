@@ -1481,10 +1481,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void setPatternWYS(LAP property, boolean patternWYS) {
-        property.setPatternWYS(patternWYS);
-    }
-
     public void setEchoSymbols(LAP property) {
         property.setEchoSymbols(true);
     }

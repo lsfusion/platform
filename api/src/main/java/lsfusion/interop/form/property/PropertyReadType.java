@@ -48,4 +48,6 @@ public class PropertyReadType {
     public final static byte TOOLTIP = 22;
 
     public final static byte VALUETOOLTIP = 23;
+
+    public final static byte PATTERN = 24;
 }

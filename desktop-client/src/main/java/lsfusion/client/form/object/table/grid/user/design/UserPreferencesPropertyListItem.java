@@ -30,8 +30,8 @@ public class UserPreferencesPropertyListItem {
         this.userCaption = userCaption;
     }
 
-    public String getUserPattern(boolean ignoreDefault) {
-        return userPattern != null ? userPattern : (ignoreDefault ? null : property.getFormatPattern());
+    public String getUserPattern() {
+        return userPattern;
     }
 
     public void setUserPattern(String userPattern) {

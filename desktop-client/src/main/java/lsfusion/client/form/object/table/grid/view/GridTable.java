@@ -593,7 +593,7 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
             column.setHeaderValue(getColumnCaption(i));
 
             // устанавливаем user pattern
-            property.setUserFormat(getColumnUserPattern(i));
+            property.setUserPattern(getColumnUserPattern(i));
 
             rowHeight = max(rowHeight, property.getValueHeight(this, currentGridPreferences.fontInfo != null ? currentGridPreferences.fontInfo.fontSize : null));
 

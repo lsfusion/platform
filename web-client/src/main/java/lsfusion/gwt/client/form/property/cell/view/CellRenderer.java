@@ -324,6 +324,8 @@ public abstract class CellRenderer {
 
         public String valueElementClass;
 
+        public String pattern;
+
         public String valueTooltip;
 
         public boolean rerender;
@@ -341,6 +343,9 @@ public abstract class CellRenderer {
     }
     private static boolean equalsValueElementClassState(RenderedState state, String elementClass) {
         return GwtClientUtils.nullEquals(state.valueElementClass, elementClass);
+    }
+    private static boolean equalsPatternState(RenderedState state, String pattern) {
+        return GwtClientUtils.nullEquals(state.pattern, pattern);
     }
     private static boolean equalsValueTooltipState(RenderedState state, String valueTooltip) {
         return GwtClientUtils.nullEquals(state.valueTooltip, valueTooltip);
@@ -391,6 +396,19 @@ public abstract class CellRenderer {
             BaseImage.updateClasses(InputBasedCellRenderer.getMainElement(element), valueElementClass, "value");
         }
 
+        String pattern = updateContext.getPattern();
+        if(isNew || !equalsPatternState(renderedState, pattern)) {
+            renderedState.pattern = pattern;
+            property.dynamicPattern = pattern;
+
+            String mask = property.getMaskFromPattern(pattern);
+            if(mask != null) {
+                setMask(InputBasedCellRenderer.getMainElement(element), mask);
+
+                updateContent(element, value, extraValue, updateContext);
+            }
+        }
+
         if(valueTooltipHelper != null) {
             String valueTooltip = updateContext.getValueTooltip();
             if (isNew || !equalsValueTooltipState(renderedState, valueTooltip)) {
@@ -431,6 +449,10 @@ public abstract class CellRenderer {
         if(needToRenderToolbarContent())
             renderToolbarContent(element, updateContext, renderedState, cleared);
     }
+
+    private native void setMask(Element element, String mask)/*-{
+        $wnd.$(element).inputmask({"mask": mask, "autoUnmask": false});
+    }-*/;
 
     private void updateReadonly(Element element, Boolean readonly) {
         Object readonlyFnc = getReadonlyFnc(element);

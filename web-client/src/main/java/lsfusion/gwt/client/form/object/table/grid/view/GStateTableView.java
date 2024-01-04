@@ -60,6 +60,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     protected List<NativeHashMap<GGroupObjectValue, PValue>> cellBackgroundValues = new ArrayList<>();
     protected List<NativeHashMap<GGroupObjectValue, PValue>> cellForegroundValues = new ArrayList<>();
     protected List<NativeHashMap<GGroupObjectValue, PValue>> placeholders = new ArrayList<>();
+    protected List<NativeHashMap<GGroupObjectValue, PValue>> patterns = new ArrayList<>();
     protected List<NativeHashMap<GGroupObjectValue, PValue>> tooltips = new ArrayList<>();
     protected List<NativeHashMap<GGroupObjectValue, PValue>> valueTooltips = new ArrayList<>();
 
@@ -189,6 +190,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
                 this.cellBackgroundValues.add(index, null);
                 this.cellForegroundValues.add(index, null);
                 this.placeholders.add(index, null);
+                this.patterns.add(index, null);
                 this.tooltips.add(index, null);
                 this.valueTooltips.add(index, null);
 
@@ -383,6 +385,13 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     }
 
     @Override
+    public void updatePatternValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        this.patterns.set(properties.indexOf(propertyDraw), values);
+
+        this.dataUpdated = true;
+    }
+
+    @Override
     public void updateTooltipValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
         this.tooltips.set(properties.indexOf(propertyDraw), values);
 
@@ -551,6 +560,14 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         return placeholder.get(GGroupObjectValue.getFullKey(rowKey, columnKey));
     }
 
+    protected PValue getCellPattern(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
+        NativeHashMap<GGroupObjectValue, PValue> pattern = patterns.get(properties.indexOf(property));
+        if(pattern == null)
+            return null;
+
+        return pattern.get(GGroupObjectValue.getFullKey(rowKey, columnKey));
+    }
+
     protected PValue getCellTooltip(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
         NativeHashMap<GGroupObjectValue, PValue> tooltip = tooltips.get(properties.indexOf(property));
         if(tooltip == null)
@@ -579,6 +596,11 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     protected String getPlaceholder(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
         PValue placeholder = getCellPlaceholder(property, rowKey, columnKey);
         return placeholder == null ? property.placeholder : PValue.getStringValue(placeholder);
+    }
+
+    protected String getPattern(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
+        PValue pattern = getCellPattern(property, rowKey, columnKey);
+        return pattern == null ? property.getPattern() : PValue.getStringValue(pattern);
     }
 
     protected String getTooltip(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {

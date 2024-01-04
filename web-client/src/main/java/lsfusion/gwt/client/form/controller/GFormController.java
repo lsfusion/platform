@@ -1346,7 +1346,7 @@ public class GFormController implements EditManager {
                     PValue value = null;
                     if (filter.value instanceof String) {
                         try {
-                            value = propertyDraw.getFilterBaseType().parseString((String) filter.value, propertyDraw.pattern);
+                            value = propertyDraw.getFilterBaseType().parseString((String) filter.value, propertyDraw.getPattern());
                         } catch (ParseException ignored) {
                         }
                     } else {
@@ -2198,7 +2198,7 @@ public class GFormController implements EditManager {
                     oldValue = cellEditor.getDefaultNullValue();
                 else if(!canUseChangeValueForRendering && !hasCustomEditor) {
                     try {
-                        oldValue = type.parseString(PValue.getStringValue(oldValue), property.pattern);
+                        oldValue = type.parseString(PValue.getStringValue(oldValue), property.getPattern());
                     } catch (ParseException e) {
                         oldValue = null;
                     }
