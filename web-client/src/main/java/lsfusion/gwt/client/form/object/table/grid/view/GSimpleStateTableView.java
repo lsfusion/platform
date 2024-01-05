@@ -41,8 +41,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static lsfusion.gwt.client.base.view.grid.DataGrid.initSinkEvents;
@@ -214,12 +214,10 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return convertToJSValue(property.getRenderType(rendererType), value);
     }
 
-    protected JsArray<JavaScriptObject> getCaptions(NativeHashMap<String, Column> columnMap, Predicate<GPropertyDraw> filter) {
+    protected JsArray<JavaScriptObject> getCaptions(NativeHashMap<String, Column> columnMap, BiPredicate<GPropertyDraw, String> filter) {
         JsArray<JavaScriptObject> columns = JavaScriptObject.createArray().cast();
         for (int i = 0, size = properties.size() ; i < size; i++) {
             GPropertyDraw property = properties.get(i);
-            if (filter!= null && !filter.test(property))
-                continue;
 
             List<GGroupObjectValue> propColumnKeys = columnKeys.get(i);
             for (int c = 0; c < propColumnKeys.size(); c++) {
@@ -228,6 +226,9 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                     continue;
 
                 String columnName = getColumnSID(property, c, columnKey);
+                if (filter != null && !filter.test(property, columnName))
+                    continue;
+
                 columnMap.put(columnName, new Column(property, columnKey));
                 columns.push(fromString(columnName));
             }
@@ -633,11 +634,11 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                     diff.add(new Change<>("update", i1, s1.get(i1)));
             }
         }
-        
+
         Collections.reverse(diff);
         return removeFirst ? removeFirstOrder(diff) : diff;
     }
-    
+
     private static <V extends JavaScriptObject> ArrayList<Change<V>> removeFirstOrder(ArrayList<Change<V>> diff) {
         ArrayList<Change<V>> removeFirstDiff = new ArrayList<>();
         int addCount = 0;
@@ -655,7 +656,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         }
         return removeFirstDiff;
     }
-    
+
     // fnc - method with params:
     //  type - remove, add, update
     //  index - current location
