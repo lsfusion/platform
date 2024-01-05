@@ -166,7 +166,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
         public Event(JavaScriptObject object, int index) {
             String endEventFieldName = calendarDateType.contains("From") ? calendarDateType.replace("From", "To") : null;
 
-            title = getTitle(object, getCaptions(new NativeHashMap<>(), gPropertyDraw -> gPropertyDraw.baseType.isId()));
+            title = getTitle(object);
             start = getStart(object, calendarDateType);
             end = endEventFieldName != null ? getEnd(object, endEventFieldName): null;
             editable = isEditable(object, controller, calendarDateType, endEventFieldName);
@@ -305,6 +305,11 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
     }-*/;
 
     protected native void addSingleCalendarEvent(JavaScriptObject calendar, JavaScriptObject event)/*-{
+        // Necessary to add at least one eventSource if there was none.
+        // Otherwise, on the first adding of a single event it will not be linked to any eventSource and after updating (going to previous / next month) the events will be duplicated
+        if (calendar.getEventSources().length === 0)
+            calendar.addEventSource([]);
+
         calendar.addEvent(event, true); //true, assign event to the first event source
     }-*/;
 
@@ -332,7 +337,15 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
     }-*/;
 
     protected native void setCalendarEvents(JavaScriptObject calendar, JsArray<JavaScriptObject> events)/*-{
-        calendar.setOption('events', events);
+        // Fullcalendar documentation describes that it is necessary to work eventSources(full update of events, such as deletion of all old events and addition of new ones)
+        // and setting eventSources in setOption-method is not allowed!
+        // https://fullcalendar.io/docs/dynamic-options
+
+        var eventSources = calendar.getEventSources();
+        for (var i = 0; i < eventSources.length; i++ ) {
+            eventSources[i].remove();
+        }
+        calendar.addEventSource( events );
     }-*/;
 
     protected native void updateCalendarProperty(String propertyName, Object property, JavaScriptObject event)/*-{
@@ -391,13 +404,23 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
         };
     }-*/;
 
-    protected native String getTitle(JavaScriptObject object, JsArray<JavaScriptObject> columns)/*-{
-        var title = '';
-        for (var i = 0; i < columns.length; i++) {
-            if (title !== '')
-                continue;
-            title = columns[i] === 'name' ? object[columns[i]] : '';
+    private String getTitle(JavaScriptObject object) {
+        String title = getTitle(object, getCaptions(new NativeHashMap<>(), (gPropertyDraw, columnName) -> gPropertyDraw.sticky || columnName.equals("name")));
+
+        //if sticky columns less than two and there is no column with the name "name" in the list of columns then look for columns with "Id" valueType and use the first of them as a title.
+        if (title != null && title.isEmpty()) {
+            JsArray<JavaScriptObject> captions = getCaptions(new NativeHashMap<>(), (gPropertyDraw, columnName) -> gPropertyDraw.baseType.isId());
+            if (captions.length() > 0)
+                title = String.valueOf(GwtClientUtils.getField(object, captions.get(0).toString()));
         }
+
+        // to display null values as an empty string
+        return title == null ? "" : title;
+    }
+
+    protected native String getTitle(JavaScriptObject object, JsArray<JavaScriptObject> columns)/*-{
+        var title = columns.includes('name') ? object['name'] : '';
+
         if (title === '' && columns.length >= 2) {
             for (var k = 0; k <= 2; k++) {
                 var value = object[columns[k]];

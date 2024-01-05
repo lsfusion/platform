@@ -39,8 +39,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.BiPredicate;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static lsfusion.gwt.client.base.view.grid.DataGrid.initSinkEvents;
@@ -181,12 +181,10 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return convertToJSValue(property.baseType, value);
     }
 
-    protected JsArray<JavaScriptObject> getCaptions(NativeHashMap<String, Column> columnMap, Predicate<GPropertyDraw> filter) {
+    protected JsArray<JavaScriptObject> getCaptions(NativeHashMap<String, Column> columnMap, BiPredicate<GPropertyDraw, String> filter) {
         JsArray<JavaScriptObject> columns = JavaScriptObject.createArray().cast();
         for (int i = 0, size = properties.size() ; i < size; i++) {
             GPropertyDraw property = properties.get(i);
-            if (filter!= null && !filter.test(property))
-                continue;
 
             List<GGroupObjectValue> propColumnKeys = columnKeys.get(i);
             for (int c = 0; c < propColumnKeys.size(); c++) {
@@ -195,6 +193,9 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                     continue;
 
                 String columnName = property.integrationSID + (columnKey.isEmpty() ? "" : "_" + c);
+                if (filter != null && !filter.test(property, columnName))
+                    continue;
+
                 columnMap.put(columnName, new Column(property, columnKey));
                 columns.push(fromString(columnName));
             }
