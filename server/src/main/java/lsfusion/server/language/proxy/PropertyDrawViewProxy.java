@@ -56,14 +56,6 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.hide = hide;
     }
 
-    public void setRegexp(LocalizedString regexp) {
-        target.regexp = regexp.getSourceString();
-    }
-
-    public void setRegexpMessage(LocalizedString regexpMessage) {
-        target.regexpMessage = regexpMessage.getSourceString();
-    }
-
     public void setMaxValue(long maxValue) {
         target.maxValue = maxValue;
     }
@@ -215,8 +207,28 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
     public void setPattern(Object pattern) {
         if(pattern instanceof LocalizedString)
             target.pattern = (LocalizedString) pattern;
-        else
+        else {
+            if (target.pattern == null)
+                target.pattern = LocalizedString.NONAME;
             target.entity.setPropertyExtra((PropertyObjectEntity<?>) pattern, PropertyDrawExtraType.PATTERN, getVersion());
+        }
+    }
+
+    public void setRegexp(Object regexp) {
+        if(regexp instanceof LocalizedString)
+            target.regexp = (LocalizedString) regexp;
+        else {
+            if (target.regexp == null)
+                target.regexp = LocalizedString.NONAME;
+            target.entity.setPropertyExtra((PropertyObjectEntity<?>) regexp, PropertyDrawExtraType.REGEXP, getVersion());
+        }
+    }
+
+    public void setRegexpMessage(Object regexpMessage) {
+        if(regexpMessage instanceof LocalizedString)
+            target.regexpMessage = (LocalizedString) regexpMessage;
+        else
+            target.entity.setPropertyExtra((PropertyObjectEntity<?>) regexpMessage, PropertyDrawExtraType.REGEXPMESSAGE, getVersion());
     }
 
     //backward compatibility

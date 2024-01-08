@@ -351,6 +351,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GExtraPropReader commentElementClassReader;
     public GExtraPropReader placeholderReader;
     public GExtraPropReader patternReader;
+    public GExtraPropReader regexpReader;
+    public GExtraPropReader regexpMessageReader;
     public GExtraPropReader tooltipReader;
     public GExtraPropReader valueTooltipReader;
 
@@ -392,6 +394,9 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public String pattern;
     public String userPattern;
     public String dynamicPattern;
+
+    public String regexp;
+    public String regexpMessage;
 
     public String tooltip;
     public String valueTooltip;

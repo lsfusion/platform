@@ -411,6 +411,20 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return getPattern(column.property, object, column.columnKey);
     }
 
+    protected String getRegexp(String regexp, GGroupObjectValue object) {
+        Column column = getColumn(regexp);
+        if(column == null)
+            return null;
+        return getRegexp(column.property, object, column.columnKey);
+    }
+
+    protected String getRegexpMessage(String regexpMessage, GGroupObjectValue object) {
+        Column column = getColumn(regexpMessage);
+        if(column == null)
+            return null;
+        return getRegexpMessage(column.property, object, column.columnKey);
+    }
+
     protected String getTooltip(String property, GGroupObjectValue object) {
         Column column = getColumn(property);
         if(column == null)
@@ -442,6 +456,14 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
     protected String getPattern(String property, JavaScriptObject object) {
         return getPattern(property, getJsObjects(object));
+    }
+
+    protected String getRegexp(String property, JavaScriptObject object) {
+        return getRegexp(property, getJsObjects(object));
+    }
+
+    protected String getRegexpMessage(String property, JavaScriptObject object) {
+        return getRegexpMessage(property, getJsObjects(object));
     }
 
     protected String getTooltip(String property, JavaScriptObject object) {
@@ -794,6 +816,12 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             },
             getPattern: function (property, object) {
                 return thisObj.@GSimpleStateTableView::getPattern(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
+            },
+            getRegexp: function (property, object) {
+                return thisObj.@GSimpleStateTableView::getRegexp(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
+            },
+            getRegexpMessage: function (property, object) {
+                return thisObj.@GSimpleStateTableView::getRegexpMessage(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
             },
             getTooltip: function (property, object) {
                 return thisObj.@GSimpleStateTableView::getTooltip(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);

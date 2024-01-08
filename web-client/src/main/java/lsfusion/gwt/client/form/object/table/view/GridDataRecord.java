@@ -93,6 +93,22 @@ public class GridDataRecord implements RowIndexHolder {
         return (String) getAttribute(column + "_pattern");
     }
 
+    public void setRegexp(String column, String regexp) {
+        setAttribute(column + "_regexp", regexp);
+    }
+
+    public String getRegexp(String column) {
+        return (String) getAttribute(column + "_regexp");
+    }
+
+    public void setRegexpMessage(String column, String regexpMessage) {
+        setAttribute(column + "_regexpmessage", regexpMessage);
+    }
+
+    public String getRegexpMessage(String column) {
+        return (String) getAttribute(column + "_regexpmessage");
+    }
+
     public void setValueTooltip(String column, String valueTooltip) {
         setAttribute(column + "_valueTooltip", valueTooltip);
     }

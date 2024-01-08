@@ -20,6 +20,7 @@ import lsfusion.gwt.client.view.GColorTheme;
 import lsfusion.gwt.client.view.MainFrame;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
+import static lsfusion.gwt.client.form.property.cell.classes.view.InputBasedCellRenderer.getInputElement;
 
 public abstract class CellRenderer {
 
@@ -326,6 +327,9 @@ public abstract class CellRenderer {
 
         public String pattern;
 
+        public String regexp;
+        public String regexpMessage;
+
         public String valueTooltip;
 
         public boolean rerender;
@@ -346,6 +350,12 @@ public abstract class CellRenderer {
     }
     private static boolean equalsPatternState(RenderedState state, String pattern) {
         return GwtClientUtils.nullEquals(state.pattern, pattern);
+    }
+    private static boolean equalsRegexpState(RenderedState state, String regexp) {
+        return GwtClientUtils.nullEquals(state.regexp, regexp);
+    }
+    private static boolean equalsRegexpMessageState(RenderedState state, String regexpMessage) {
+        return GwtClientUtils.nullEquals(state.regexpMessage, regexpMessage);
     }
     private static boolean equalsValueTooltipState(RenderedState state, String valueTooltip) {
         return GwtClientUtils.nullEquals(state.valueTooltip, valueTooltip);
@@ -401,11 +411,32 @@ public abstract class CellRenderer {
             renderedState.pattern = pattern;
             property.dynamicPattern = pattern;
 
+            InputElement inputElement = getInputElement(element);
             String mask = property.getMaskFromPattern(pattern);
-            if(mask != null) {
-                setMask(InputBasedCellRenderer.getMainElement(element), mask);
+            if(inputElement != null && mask != null) {
+                setMask(inputElement, mask);
 
                 updateContent(element, value, extraValue, updateContext);
+            }
+        }
+
+        String regexp = updateContext.getRegexp();
+        if(isNew || !equalsRegexpState(renderedState, regexp)) {
+            renderedState.regexp = regexp;
+
+            InputElement inputElement = getInputElement(element);
+            if(inputElement != null) {
+                updateRegexp(inputElement, regexp);
+            }
+        }
+
+        String regexpMessage = updateContext.getRegexpMessage();
+        if(isNew || !equalsRegexpMessageState(renderedState, regexpMessage)) {
+            renderedState.regexpMessage = regexpMessage;
+
+            InputElement inputElement = getInputElement(element);
+            if(inputElement != null) {
+                updateRegexpMessage(inputElement, regexpMessage);
             }
         }
 
@@ -453,6 +484,24 @@ public abstract class CellRenderer {
     private native void setMask(Element element, String mask)/*-{
         $wnd.$(element).inputmask({"mask": mask, "autoUnmask": false});
     }-*/;
+
+    public static String REGEXP_ATTR = "pattern"; //default attribute for validity.patternMismatch
+    private void updateRegexp(Element element, String regexp) {
+        if(regexp != null) {
+            element.setAttribute(REGEXP_ATTR, regexp);
+        } else {
+            element.removeAttribute(REGEXP_ATTR);
+        }
+    }
+
+    public static String REGEXP_MESSAGE_ATTR = "title"; //default attribute for validity.patternMismatch
+    private void updateRegexpMessage(Element element, String regexpMessage) {
+        if(regexpMessage != null) {
+            element.setAttribute(REGEXP_MESSAGE_ATTR, regexpMessage);
+        } else {
+            element.removeAttribute(REGEXP_MESSAGE_ATTR);
+        }
+    }
 
     private void updateReadonly(Element element, Boolean readonly) {
         Object readonlyFnc = getReadonlyFnc(element);

@@ -61,6 +61,8 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     protected List<NativeHashMap<GGroupObjectValue, PValue>> cellForegroundValues = new ArrayList<>();
     protected List<NativeHashMap<GGroupObjectValue, PValue>> placeholders = new ArrayList<>();
     protected List<NativeHashMap<GGroupObjectValue, PValue>> patterns = new ArrayList<>();
+    protected List<NativeHashMap<GGroupObjectValue, PValue>> regexps = new ArrayList<>();
+    protected List<NativeHashMap<GGroupObjectValue, PValue>> regexpMessages = new ArrayList<>();
     protected List<NativeHashMap<GGroupObjectValue, PValue>> tooltips = new ArrayList<>();
     protected List<NativeHashMap<GGroupObjectValue, PValue>> valueTooltips = new ArrayList<>();
 
@@ -191,6 +193,8 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
                 this.cellForegroundValues.add(index, null);
                 this.placeholders.add(index, null);
                 this.patterns.add(index, null);
+                this.regexps.add(index, null);
+                this.regexpMessages.add(index, null);
                 this.tooltips.add(index, null);
                 this.valueTooltips.add(index, null);
 
@@ -392,6 +396,20 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     }
 
     @Override
+    public void updateRegexpValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        this.regexps.set(properties.indexOf(propertyDraw), values);
+
+        this.dataUpdated = true;
+    }
+
+    @Override
+    public void updateRegexpMessageValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        this.regexpMessages.set(properties.indexOf(propertyDraw), values);
+
+        this.dataUpdated = true;
+    }
+
+    @Override
     public void updateTooltipValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
         this.tooltips.set(properties.indexOf(propertyDraw), values);
 
@@ -568,6 +586,22 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         return pattern.get(GGroupObjectValue.getFullKey(rowKey, columnKey));
     }
 
+    protected PValue getCellRegexp(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
+        NativeHashMap<GGroupObjectValue, PValue> regexp = regexps.get(properties.indexOf(property));
+        if(regexp == null)
+            return null;
+
+        return regexp.get(GGroupObjectValue.getFullKey(rowKey, columnKey));
+    }
+
+    protected PValue getCellRegexpMessage(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
+        NativeHashMap<GGroupObjectValue, PValue> regexpMessage = regexpMessages.get(properties.indexOf(property));
+        if(regexpMessage == null)
+            return null;
+
+        return regexpMessage.get(GGroupObjectValue.getFullKey(rowKey, columnKey));
+    }
+
     protected PValue getCellTooltip(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
         NativeHashMap<GGroupObjectValue, PValue> tooltip = tooltips.get(properties.indexOf(property));
         if(tooltip == null)
@@ -601,6 +635,16 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     protected String getPattern(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
         PValue pattern = getCellPattern(property, rowKey, columnKey);
         return pattern == null ? property.getPattern() : PValue.getStringValue(pattern);
+    }
+
+    protected String getRegexp(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
+        PValue regexp = getCellRegexp(property, rowKey, columnKey);
+        return regexp == null ? property.regexp : PValue.getStringValue(regexp);
+    }
+
+    protected String getRegexpMessage(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
+        PValue regexpMessage = getCellRegexpMessage(property, rowKey, columnKey);
+        return regexpMessage == null ? property.regexpMessage : PValue.getStringValue(regexpMessage);
     }
 
     protected String getTooltip(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {

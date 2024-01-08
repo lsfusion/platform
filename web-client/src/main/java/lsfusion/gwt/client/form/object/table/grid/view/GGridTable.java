@@ -435,6 +435,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                     NativeHashMap<GGroupObjectValue, PValue> propertyForegrounds = cellForegroundValues.get(property);
                     NativeHashMap<GGroupObjectValue, PValue> propertyPlaceholders = placeholders.get(property);
                     NativeHashMap<GGroupObjectValue, PValue> propertyPatterns = patterns.get(property);
+                    NativeHashMap<GGroupObjectValue, PValue> propertyRegexps = regexps.get(property);
+                    NativeHashMap<GGroupObjectValue, PValue> propertyRegexpMessages = regexpMessages.get(property);
                     NativeHashMap<GGroupObjectValue, PValue> propertyValueTooltips = valueTooltips.get(property);
                     NativeHashMap<GGroupObjectValue, PValue> actionImages = property.isAction() ? cellImages.get(property) : null;
 
@@ -460,6 +462,10 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                             record.setPlaceholder(column.columnSID, placeholder == null ? property.placeholder : PValue.getStringValue(placeholder));
                             PValue pattern = propertyPatterns == null ? null : propertyPatterns.get(fullKey);
                             record.setPattern(column.columnSID, pattern == null ? property.getPattern() : PValue.getStringValue(pattern));
+                            PValue regexp = propertyRegexps == null ? null : propertyRegexps.get(fullKey);
+                            record.setRegexp(column.columnSID, regexp == null ? property.regexp : PValue.getStringValue(regexp));
+                            PValue regexpMessage = propertyRegexpMessages == null ? null : propertyRegexps.get(fullKey);
+                            record.setRegexpMessage(column.columnSID, regexpMessage == null ? property.regexpMessage : PValue.getStringValue(regexpMessage));
                             PValue valueTooltip = propertyValueTooltips == null ? null : propertyValueTooltips.get(fullKey);
                             record.setValueTooltip(column.columnSID, valueTooltip == null ? property.valueTooltip : PValue.getStringValue(valueTooltip));
                             record.setImage(column.columnSID, actionImages == null ? null : PValue.getImageValue(actionImages.get(fullKey)));
@@ -1270,6 +1276,14 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         @Override
         protected String getPattern(GPropertyDraw property, GridDataRecord record) {
             return record.getPattern(columnSID);
+        }
+        @Override
+        protected String getRegexp(GPropertyDraw property, GridDataRecord record) {
+            return record.getRegexp(columnSID);
+        }
+        @Override
+        protected String getRegexpMessage(GPropertyDraw property, GridDataRecord record) {
+            return record.getRegexpMessage(columnSID);
         }
         @Override
         protected String getValueTooltip(GPropertyDraw property, GridDataRecord record) {

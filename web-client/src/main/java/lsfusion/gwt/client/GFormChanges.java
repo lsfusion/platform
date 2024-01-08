@@ -148,6 +148,10 @@ public class GFormChanges {
                 return form.getProperty(readerId).placeholderReader;
             case GPropertyReadType.PATTERN:
                 return form.getProperty(readerId).patternReader;
+            case GPropertyReadType.REGEXP:
+                return form.getProperty(readerId).regexpReader;
+            case GPropertyReadType.REGEXPMESSAGE:
+                return form.getProperty(readerId).regexpMessageReader;
             case GPropertyReadType.TOOLTIP:
                 return form.getProperty(readerId).tooltipReader;
             case GPropertyReadType.VALUETOOLTIP:
@@ -191,5 +195,7 @@ public class GFormChanges {
         public final static byte TOOLTIP = 22;
         public final static byte VALUETOOLTIP = 23;
         public final static byte PATTERN = 24;
+        public final static byte REGEXP = 25;
+        public final static byte REGEXPMESSAGE = 26;
     }
 }

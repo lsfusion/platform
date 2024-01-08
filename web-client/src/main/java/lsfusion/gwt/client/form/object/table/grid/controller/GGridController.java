@@ -441,6 +441,16 @@ public class GGridController extends GAbstractTableController {
     }
 
     @Override
+    public void updateRegexpValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+        table.updateRegexpValues(formController.getProperty(reader.propertyID), values);
+    }
+
+    @Override
+    public void updateRegexpMessageValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+        table.updateRegexpMessageValues(formController.getProperty(reader.propertyID), values);
+    }
+
+    @Override
     public void updateTooltipValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         table.updateTooltipValues(formController.getProperty(reader.propertyID), values);
     }

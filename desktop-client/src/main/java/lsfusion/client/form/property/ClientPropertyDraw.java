@@ -64,6 +64,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public ExtraPropReader commentElementClassReader = new ExtraPropReader(COMMENTELEMENTCLASS);
     public ExtraPropReader placeholderReader = new ExtraPropReader(PLACEHOLDER);
     public ExtraPropReader patternReader = new ExtraPropReader(PATTERN);
+    public ExtraPropReader regexpReader = new ExtraPropReader(REGEXP);
+    public ExtraPropReader regexpMessageReader = new ExtraPropReader(REGEXPMESSAGE);
     public ExtraPropReader tooltipReader = new ExtraPropReader(TOOLTIP);
     public ExtraPropReader valueTooltipReader = new ExtraPropReader(VALUETOOLTIP);
 
@@ -110,8 +112,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public String caption;
     public AppImage image;
-    public String regexp;
-    public String regexpMessage;
     public Long maxValue;
     public boolean echoSymbols;
     public boolean noSort;
@@ -146,6 +146,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public String pattern;
     public String userPattern;
+
+    public String regexp;
+    public String regexpMessage;
 
     public String tooltip;
     public String valueTooltip;
@@ -520,8 +523,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         super.customSerialize(pool, outStream);
 
         pool.writeString(outStream, caption);
-        pool.writeString(outStream, regexp);
-        pool.writeString(outStream, regexpMessage);
         pool.writeLong(outStream, maxValue);
         outStream.writeBoolean(echoSymbols);
         outStream.writeBoolean(noSort);
@@ -559,6 +560,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         pool.writeString(outStream, placeholder);
         pool.writeString(outStream, pattern);
+        pool.writeString(outStream, regexp);
+        pool.writeString(outStream, regexpMessage);
 
         pool.writeString(outStream, tooltip);
         pool.writeString(outStream, valueTooltip);
@@ -575,8 +578,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         caption = pool.readString(inStream);
         image = pool.readImageIcon(inStream);
 
-        regexp = pool.readString(inStream);
-        regexpMessage = pool.readString(inStream);
         maxValue = pool.readLong(inStream);
         echoSymbols = inStream.readBoolean();
         noSort = inStream.readBoolean();
@@ -619,6 +620,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         placeholder = pool.readString(inStream);
         pattern = pool.readString(inStream);
+        regexp = pool.readString(inStream);
+        regexpMessage = pool.readString(inStream);
 
         tooltip = pool.readString(inStream);
         valueTooltip = pool.readString(inStream);

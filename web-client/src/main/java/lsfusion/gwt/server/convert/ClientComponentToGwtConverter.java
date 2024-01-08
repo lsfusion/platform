@@ -351,6 +351,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.commentElementClassReader = convertExtraPropReader(clientPropertyDraw.commentElementClassReader);
         propertyDraw.placeholderReader = convertExtraPropReader(clientPropertyDraw.placeholderReader);
         propertyDraw.patternReader = convertExtraPropReader(clientPropertyDraw.patternReader);
+        propertyDraw.regexpReader = convertExtraPropReader(clientPropertyDraw.regexpReader);
+        propertyDraw.regexpMessageReader = convertExtraPropReader(clientPropertyDraw.regexpMessageReader);
         propertyDraw.tooltipReader = convertExtraPropReader(clientPropertyDraw.tooltipReader);
         propertyDraw.valueTooltipReader = convertExtraPropReader(clientPropertyDraw.valueTooltipReader);
 
@@ -395,6 +397,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
         propertyDraw.placeholder = clientPropertyDraw.placeholder;
         propertyDraw.pattern = clientPropertyDraw.pattern;
+        propertyDraw.regexp = clientPropertyDraw.regexp;
+        propertyDraw.regexpMessage = clientPropertyDraw.regexpMessage;
 
         propertyDraw.tooltip = clientPropertyDraw.tooltip;
         propertyDraw.valueTooltip = clientPropertyDraw.valueTooltip;

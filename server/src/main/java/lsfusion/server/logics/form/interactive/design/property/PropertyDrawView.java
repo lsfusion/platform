@@ -68,8 +68,6 @@ public class PropertyDrawView extends BaseComponentView {
 
     public Boolean changeOnSingleClick;
     public boolean hide;
-    public String regexp;
-    public String regexpMessage;
     public Long maxValue;
     public Boolean echoSymbols;
     public boolean noSort;
@@ -118,6 +116,8 @@ public class PropertyDrawView extends BaseComponentView {
 
     public LocalizedString placeholder;
     public LocalizedString pattern;
+    public LocalizedString regexp;
+    public LocalizedString regexpMessage;
 
     public LocalizedString tooltip;
     public LocalizedString valueTooltip;
@@ -444,8 +444,6 @@ public class PropertyDrawView extends BaseComponentView {
 
         pool.writeString(outStream, getDrawCaption());
         AppServerImage.serialize(getImage(pool.context), outStream, pool);
-        pool.writeString(outStream, regexp);
-        pool.writeString(outStream, regexpMessage);
         pool.writeLong(outStream, maxValue);
         outStream.writeBoolean(echoSymbols);
         outStream.writeBoolean(noSort);
@@ -494,6 +492,8 @@ public class PropertyDrawView extends BaseComponentView {
 
         pool.writeString(outStream, ThreadLocalContext.localize(getPlaceholder(pool.context)));
         pool.writeString(outStream, ThreadLocalContext.localize(pattern));
+        pool.writeString(outStream, ThreadLocalContext.localize(regexp));
+        pool.writeString(outStream, ThreadLocalContext.localize(regexpMessage));
 
         pool.writeString(outStream, ThreadLocalContext.localize(tooltip));
         pool.writeString(outStream, ThreadLocalContext.localize(valueTooltip));
@@ -676,8 +676,6 @@ public class PropertyDrawView extends BaseComponentView {
         boxed = inStream.readBoolean();
 
         caption = LocalizedString.create(pool.readString(inStream));
-        regexp = pool.readString(inStream);
-        regexpMessage = pool.readString(inStream);
         maxValue = pool.readLong(inStream);
         echoSymbols = inStream.readBoolean();
         noSort = inStream.readBoolean();
@@ -907,7 +905,7 @@ public class PropertyDrawView extends BaseComponentView {
             Type type = getAssertCellType(context);
             if(type instanceof LinkClass)
                 return "a";
-            if((type != null && type.useInputTag(!entity.isList(context), context.useBootstrap, changeType)))
+            if((type != null && (pattern != null || regexp != null || type.useInputTag(!entity.isList(context), context.useBootstrap, changeType))))
                 return "input";
 
             if(isLink(context) && !hasFlow(context, ChangeFlowType.INPUT))

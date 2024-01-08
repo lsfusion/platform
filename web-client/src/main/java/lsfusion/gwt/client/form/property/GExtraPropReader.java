@@ -27,6 +27,10 @@ public class GExtraPropReader extends GExtraPropertyReader {
             controller.updatePlaceholderValues(this, values);
         } else if (readerType == PATTERN) {
             controller.updatePatternValues(this, values);
+        } else if (readerType == REGEXP) {
+            controller.updateRegexpValues(this, values);
+        } else if (readerType == REGEXPMESSAGE) {
+            controller.updateRegexpMessageValues(this, values);
         } else if (readerType == TOOLTIP) {
             controller.updateTooltipValues(this, values);
         }else if (readerType == VALUETOOLTIP) {
@@ -43,6 +47,10 @@ public class GExtraPropReader extends GExtraPropertyReader {
             return "PLACEHOLDER";
         } else if (readerType == PATTERN) {
             return "PATTERN";
+        } else if (readerType == REGEXP) {
+            return "REGEXP";
+        } else if (readerType == REGEXPMESSAGE) {
+            return "REGEXPMESSAGE";
         } else if (readerType == TOOLTIP) {
             return "TOOLTIP";
         } else if (readerType == VALUETOOLTIP) {

@@ -35,6 +35,8 @@ public abstract class GPropertyController {
     public abstract void updateCellCommentElementClasses(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
     public abstract void updatePlaceholderValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
     public abstract void updatePatternValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
+    public abstract void updateRegexpValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
+    public abstract void updateRegexpMessageValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
     public abstract void updateTooltipValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
     public abstract void updateValueTooltipValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
     public abstract void updateLastValues(GLastReader reader, NativeHashMap<GGroupObjectValue, PValue> values);

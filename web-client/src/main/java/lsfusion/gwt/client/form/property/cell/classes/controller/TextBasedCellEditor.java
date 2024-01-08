@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.JsDate;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.Style;
@@ -45,6 +44,7 @@ import java.util.function.BiFunction;
 import static com.google.gwt.user.client.Event.ONPASTE;
 import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
 import static lsfusion.gwt.client.form.filter.user.GCompare.CONTAINS;
+import static lsfusion.gwt.client.form.property.cell.classes.view.InputBasedCellRenderer.*;
 
 // now it's a sort of mix of RequestKeepValueCellEditor and RequestReplaceValueCellEditor (depending on needReplace)
 public abstract class TextBasedCellEditor extends InputBasedCellEditor {
@@ -556,4 +556,24 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
         }
         return PValue.getStringValue(value);
     }
+
+    @Override
+    protected boolean checkRegexp(Element parent, PValue value) {
+        Element inputElement = getInputElement(parent);
+        if(inputElement != null) {
+            boolean patternMismatch = isPatternMismatch(inputElement);
+            if (patternMismatch)
+                reportValidity(inputElement);
+            return !patternMismatch;
+        }
+        return true;
+    }
+
+    private native void reportValidity(Element element)/*-{
+        element.reportValidity();
+    }-*/;
+
+    private native boolean isPatternMismatch(Element element)/*-{
+        return element.validity.patternMismatch;
+    }-*/;
 }
