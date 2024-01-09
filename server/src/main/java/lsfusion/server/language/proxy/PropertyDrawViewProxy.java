@@ -208,8 +208,6 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         if(pattern instanceof LocalizedString)
             target.pattern = (LocalizedString) pattern;
         else {
-            if (target.pattern == null)
-                target.pattern = LocalizedString.NONAME;
             target.entity.setPropertyExtra((PropertyObjectEntity<?>) pattern, PropertyDrawExtraType.PATTERN, getVersion());
         }
     }
@@ -218,8 +216,6 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         if(regexp instanceof LocalizedString)
             target.regexp = (LocalizedString) regexp;
         else {
-            if (target.regexp == null)
-                target.regexp = LocalizedString.NONAME;
             target.entity.setPropertyExtra((PropertyObjectEntity<?>) regexp, PropertyDrawExtraType.REGEXP, getVersion());
         }
     }

@@ -64,25 +64,18 @@ public abstract class ARequestValueCellEditor implements RequestValueCellEditor 
         cancelTheSameValueOnBlurOldValue = oldValue;
     }
 
-    protected boolean checkRegexp(Element parent, PValue value) {
-        return true;
-    }
-
     public void validateAndCommit(Element parent, Integer contextAction, boolean cancelIfInvalid, CommitReason commitReason) {
         boolean blurred = commitReason.isBlurred();
         SmartScheduler.getInstance().scheduleDeferred(blurred && isDeferredCommitOnBlur(), () -> {
             if (editManager.isThisCellEditing(this)) {
                 try {
                     PValue value = getCommitValue(parent, contextAction);
-
-                    if(checkRegexp(parent, value)) {
-                        if (cancelTheSameValueOnBlur && (blurred || commitReason.isForcedBlurred()) && GwtClientUtils.nullEquals(value, cancelTheSameValueOnBlurOldValue)) {
-                            cancel(parent);
-                        } else
-                            commitFinish(parent, value, contextAction, commitReason);
-                    }
+                    if (cancelTheSameValueOnBlur && (blurred || commitReason.isForcedBlurred()) && GwtClientUtils.nullEquals(value, cancelTheSameValueOnBlurOldValue)) {
+                        cancel(parent);
+                    } else
+                        commitFinish(parent, value, contextAction, commitReason);
                 } catch (InvalidEditException e) {
-                    if (cancelIfInvalid)
+                    if (cancelIfInvalid && !e.patternMismatch)
                         cancel(parent);
                 }
             }

@@ -1,6 +1,8 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
-import com.google.gwt.dom.client.*;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.InputElement;
+import com.google.gwt.dom.client.TextAreaElement;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -9,6 +11,9 @@ import lsfusion.gwt.client.form.property.cell.classes.controller.TextBasedCellEd
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
+
+import java.util.Arrays;
+import java.util.List;
 
 import static lsfusion.gwt.client.view.StyleDefaults.CELL_HORIZONTAL_PADDING;
 
@@ -55,7 +60,7 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
 
     @Override
     protected Object getExtraValue(UpdateContext updateContext) {
-        return updateContext.getPlaceholder();
+        return Arrays.asList(updateContext.getPlaceholder(), updateContext.getPattern(), updateContext.getRegexp(), updateContext.getRegexpMessage());
     }
 
     @Override
@@ -118,6 +123,14 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
     public boolean updateContent(Element element, PValue value, Object extraValue, UpdateContext updateContext) {
         boolean isNull = value == null;
 
+        List<String> extraValues = (List<String>) extraValue;
+
+        String placeholder = extraValues != null ? extraValues.get(0) : null;
+
+        property.dynamicPattern = extraValues != null ? extraValues.get(1) : null;
+        property.dynamicRegexp = extraValues != null ? extraValues.get(2) : null;
+        property.dynamicRegexpMessage = extraValues != null ? extraValues.get(3) : null;
+
         RendererType rendererType = updateContext.getRendererType();
         String innerText = isNull ? "" : format(value, rendererType);
         if(isNull) {
@@ -131,8 +144,6 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
                 element.removeClassName("text-based-value-empty");
         }
         element.setTitle(property.echoSymbols ? "" : innerText);
-
-        String placeholder = extraValue != null ? ((String) extraValue) : null;
 
         Element inputElement = getInputElement(element);
         if(inputElement != null) {

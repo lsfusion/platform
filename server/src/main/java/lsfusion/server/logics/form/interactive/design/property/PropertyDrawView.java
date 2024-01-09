@@ -905,7 +905,7 @@ public class PropertyDrawView extends BaseComponentView {
             Type type = getAssertCellType(context);
             if(type instanceof LinkClass)
                 return "a";
-            if((type != null && (pattern != null || regexp != null || type.useInputTag(!entity.isList(context), context.useBootstrap, changeType))))
+            if((type != null && type.useInputTag(!entity.isList(context), context.useBootstrap, changeType)))
                 return "input";
 
             if(isLink(context) && !hasFlow(context, ChangeFlowType.INPUT))

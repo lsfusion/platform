@@ -396,7 +396,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public String dynamicPattern;
 
     public String regexp;
+    public String dynamicRegexp;
+
     public String regexpMessage;
+    public String dynamicRegexpMessage;
 
     public String tooltip;
     public String valueTooltip;
@@ -599,7 +602,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         this.userPattern = userPattern;
     }
 
-    public String getMaskFromPattern(String pattern) {
+    public String getMaskFromPattern() {
+        String pattern = getPattern();
         if(pattern != null) {
             if(valueType instanceof GADateType || valueType instanceof GIntervalType) {
                 return pattern.replaceAll("[dMyHms]", "9");
@@ -627,6 +631,14 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public String getPattern() {
         return nvl(dynamicPattern, nvl(userPattern, pattern));
+    }
+
+    public String getRegexp() {
+        return nvl(dynamicRegexp, regexp);
+    }
+
+    public String getRegexpMessage() {
+        return nvl(dynamicRegexpMessage, regexpMessage);
     }
 
     public boolean canUseChangeValueForRendering(GType type, RendererType rendererType) {

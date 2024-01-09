@@ -42,7 +42,7 @@ import java.util.List;
 import java.util.function.BiFunction;
 
 import static com.google.gwt.user.client.Event.ONPASTE;
-import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
+import static lsfusion.gwt.client.base.GwtClientUtils.*;
 import static lsfusion.gwt.client.form.filter.user.GCompare.CONTAINS;
 import static lsfusion.gwt.client.form.property.cell.classes.view.InputBasedCellRenderer.*;
 
@@ -76,6 +76,24 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
             this.completionType = inputList.completionType;
             this.actions = inputListActions;
             this.compare = inputList.compare;
+        }
+    }
+
+    private static String REGEXP_ATTR = "pattern"; //attribute for validity.patternMismatch
+    private void updateRegexp(Element element, String regexp) {
+        if(regexp != null) {
+            element.setAttribute(REGEXP_ATTR, regexp);
+        } else {
+            element.removeAttribute(REGEXP_ATTR);
+        }
+    }
+
+    private static String REGEXP_MESSAGE_ATTR = "title"; //attribute for validity.patternMismatch
+    private void updateRegexpMessage(Element element, String regexpMessage) {
+        if(regexpMessage != null) {
+            element.setAttribute(REGEXP_MESSAGE_ATTR, regexpMessage);
+        } else {
+            element.removeAttribute(REGEXP_MESSAGE_ATTR);
         }
     }
 
@@ -133,6 +151,21 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
                 suggestBox.showSuggestionList(allSuggestions);
             }
         }
+
+        String mask = property.getMaskFromPattern();
+        if(mask != null) {
+            GwtClientUtils.setMask(inputElement, mask);
+        }
+
+        String regexp = property.getRegexp();
+        if (regexp != null) {
+            updateRegexp(inputElement, regexp);
+        }
+
+        String regexpMessage = property.getRegexpMessage();
+        if (regexpMessage != null) {
+            updateRegexpMessage(inputElement, regexpMessage);
+        }
     }
 
     private boolean hasList() {
@@ -146,6 +179,11 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
             if (hasList()) {
                 suggestBox.hideSuggestions();
                 suggestBox = null;
+            }
+
+            String mask = property.getMaskFromPattern();
+            if(mask != null) {
+                GwtClientUtils.removeMask(inputElement);
             }
 
             super.stop(parent, cancel, blurred);
@@ -282,8 +320,15 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
 
             if(contextAction == null && completionType.isOnlyCommitSelection())
                 throw new InvalidEditException();
-            if(property.getMaskFromPattern(property.getPattern()) != null && !isCompleteMask(inputElement))
-                throw new InvalidEditException();
+        }
+
+        if(property.getMaskFromPattern() != null && !GwtClientUtils.isCompleteMask(inputElement))
+            throw new InvalidEditException();
+
+        boolean patternMismatch = isPatternMismatch(inputElement);
+        if (patternMismatch) {
+            reportValidity(inputElement);
+            throw new InvalidEditException(true);
         }
 
         String stringValue = getTextInputValue();
@@ -297,8 +342,12 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
         }
     }
 
-    private native boolean isCompleteMask(Element element)/*-{
-        return $wnd.$(element).inputmask("isComplete");
+    private native void reportValidity(Element element)/*-{
+        element.reportValidity();
+    }-*/;
+
+    private native boolean isPatternMismatch(Element element)/*-{
+        return element.validity.patternMismatch;
     }-*/;
 
     protected boolean isThisCellEditor() {
@@ -556,24 +605,4 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
         }
         return PValue.getStringValue(value);
     }
-
-    @Override
-    protected boolean checkRegexp(Element parent, PValue value) {
-        Element inputElement = getInputElement(parent);
-        if(inputElement != null) {
-            boolean patternMismatch = isPatternMismatch(inputElement);
-            if (patternMismatch)
-                reportValidity(inputElement);
-            return !patternMismatch;
-        }
-        return true;
-    }
-
-    private native void reportValidity(Element element)/*-{
-        element.reportValidity();
-    }-*/;
-
-    private native boolean isPatternMismatch(Element element)/*-{
-        return element.validity.patternMismatch;
-    }-*/;
 }
