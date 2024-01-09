@@ -6,7 +6,6 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.classes.GFullInputType;
 import lsfusion.gwt.client.classes.GInputType;
@@ -19,8 +18,6 @@ import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
-
-import java.util.function.BooleanSupplier;
 
 public abstract class InputBasedCellRenderer extends CellRenderer {
 
@@ -51,15 +48,6 @@ public abstract class InputBasedCellRenderer extends CellRenderer {
             else
                 GwtClientUtils.setupFlexParent(inputElement);
         }
-    }
-
-    @Override
-    public void renderPanelLabel(Widget label) {
-        // we're not setting form-label since it's mostly used only for layouting, which we do ourselves
-//        if(property.panelCaptionVertical)
-//            label.addStyleName("form-label");
-//        else
-//            label.addStyleName("col-form-label");
     }
 
     private final static String inputElementProp = "inputElement";

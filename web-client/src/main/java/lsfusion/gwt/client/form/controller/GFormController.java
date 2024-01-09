@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.controller;
 
-import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.*;
@@ -107,7 +106,7 @@ public class GFormController implements EditManager {
 
     private static final ClientMessages messages = ClientMessages.Instance.get();
 
-    private FormDispatchAsync dispatcher;
+    private final FormDispatchAsync dispatcher;
 
     public int getDispatchPriority() {
         return dispatcher.dispatchPriority;
@@ -153,7 +152,7 @@ public class GFormController implements EditManager {
         return formsController;
     }
 
-    private Set<ContainerForm> containerForms = new HashSet<>();
+    private final Set<ContainerForm> containerForms = new HashSet<>();
 
     public void addContainerForm(ContainerForm containerForm) {
         containerForms.add(containerForm);
@@ -2443,12 +2442,18 @@ public class GFormController implements EditManager {
     }-*/;
 
     private static void setForegroundColor(Element element, String color) {
-        if (color != null) {
-            element.getStyle().setColor(color);
-        } else {
-            element.getStyle().clearColor();
-        }
+        if(color != null)
+            element.addClassName("cell-with-foreground");
+        else
+            element.removeClassName("cell-with-foreground");
+
+        setCellForegroundColor(element, color);
     }
+
+    private static native void setCellForegroundColor(Element element, String color) /*-{
+        element.style.setProperty("--foreground-color", color);
+        element.style.color = "var(--foreground-color)";
+    }-*/;
 
     public void onPropertyBrowserEvent(EventHandler handler, Element renderElement, boolean isCell, Element focusElement, Consumer<EventHandler> onOuterEditBefore,
                                        Consumer<EventHandler> onEdit, Consumer<EventHandler> onOuterEditAfter, Consumer<EventHandler> onCut,

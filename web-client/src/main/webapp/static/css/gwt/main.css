@@ -60,3 +60,27 @@
 .errorLogMessage {
     color: #ff4500;
 }
+
+.cell-with-background .btn,
+.cell-with-background .ms-choice{
+    background-color: var(--bs-table-bg);
+    --component-background-color: var(--bs-table-bg);
+}
+
+.cell-with-foreground,
+.cell-with-foreground .btn,
+.cell-with-foreground .btn-check:checked+.btn {
+    color: var(--foreground-color);
+    --disabled-text-color: var(--foreground-color);
+    --text-color: var(--foreground-color);
+}
+
+.custom-renderer-font .form-select,
+.custom-renderer-font .btn,
+.custom-renderer-font .form-check,
+.custom-renderer-font .ms-parent {
+    font-size: var(--custom-element-font-size);
+    font-family: var(--custom-element-font-family);
+    font-style: var(--custom-element-font-style);
+    font-weight: var(--custom-element-font-weight);
+}

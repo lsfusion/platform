@@ -2,11 +2,9 @@ package lsfusion.gwt.client.form.property.cell.view;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.*;
-import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.view.ColorUtils;
-import lsfusion.gwt.client.base.view.SizedFlexPanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.event.GKeyStroke;
@@ -43,7 +41,6 @@ public abstract class CellRenderer {
 
     private static final ClientMessages messages = ClientMessages.Instance.get();
     protected final String EMPTY_VALUE = messages.formRendererEmpty();
-    protected final String NOT_DEFINED_VALUE = messages.formRendererNotDefined();
     protected final String REQUIRED_VALUE = messages.formRendererRequired();
 
     private final static String focusElementProp = "focusElement";
@@ -110,16 +107,25 @@ public abstract class CellRenderer {
         }
     }
 
-    public void renderPanelLabel(Widget label) {
+    private static GFont getFont(GPropertyDraw property, RenderContext renderContext) {
+        return property.font != null ? property.font : renderContext.getFont();
     }
 
-    public void renderPanelContainer(SizedFlexPanel panel) {
-//        was removed in bootstrap 5
-//        panel.addStyleName("form-group");
+    public static void setCustomBasedTextFonts(GPropertyDraw property, Element element, RenderContext renderContext) {
+        GFont font = getFont(property, renderContext);
+        if (font != null)
+            font.applyCustom(element);
+    }
+
+    public static void clearCustomBasedTextFonts(GPropertyDraw property, Element element, RenderContext renderContext) {
+        GFont font = getFont(property, renderContext);
+
+        if (font != null)
+            font.clearCustom(element);
     }
 
     public static void setBasedTextFonts(GPropertyDraw property, Element element, RenderContext renderContext) {
-        GFont font = property.font != null ? property.font : renderContext.getFont();
+        GFont font = getFont(property, renderContext);
 
         if (font != null) {
             font.apply(element.getStyle());
@@ -127,7 +133,7 @@ public abstract class CellRenderer {
     }
 
     public static void clearBasedTextFonts(GPropertyDraw property, Element element, RenderContext renderContext) {
-        GFont font = property.font != null ? property.font : renderContext.getFont();
+        GFont font = getFont(property, renderContext);
 
         if (font != null) {
             font.clear(element.getStyle());

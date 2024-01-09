@@ -21,6 +21,9 @@ public class CustomCellRenderer extends CellRenderer {
 
     @Override
     public boolean renderContent(Element element, RenderContext renderContext) {
+        element.addClassName("cell-with-custom-element");
+        setCustomBasedTextFonts(property, element, renderContext);
+
         render(customRenderer, element);
 
         return true;
@@ -89,6 +92,9 @@ public class CustomCellRenderer extends CellRenderer {
 
     @Override
     public boolean clearRenderContent(Element element, RenderContext renderContext) {
+        element.removeClassName("cell-with-custom-element");
+        clearCustomBasedTextFonts(property, element, renderContext);
+
         clear(customRenderer, element);
 
         return false;
