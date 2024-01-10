@@ -598,9 +598,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         this.userPattern = userPattern;
     }
 
-    public String getMaskFromPattern() {
-        return getMaskFromPattern(null);
-    }
     public String getMaskFromPattern(String pattern) {
         pattern = nvl(pattern, getPattern());
         if(pattern != null) {

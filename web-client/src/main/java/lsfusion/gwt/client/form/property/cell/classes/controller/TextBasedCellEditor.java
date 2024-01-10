@@ -108,6 +108,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
     }
 
     protected boolean started;
+    RenderContext renderContext;
 
     @Override
     public void start(EventHandler handler, Element parent, RenderContext renderContext, PValue oldValue) {
@@ -120,6 +121,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
             }
         }
         started = true;
+        this.renderContext = renderContext;
 
         super.start(handler, parent, renderContext, oldValue);
 
@@ -180,7 +182,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
                 suggestBox = null;
             }
 
-            String mask = property.getMaskFromPattern();
+            String mask = property.getMaskFromPattern(renderContext.getPattern());
             if(mask != null) {
                 GwtClientUtils.removeMask(inputElement);
             }
@@ -321,7 +323,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
                 throw new InvalidEditException();
         }
 
-        if(property.getMaskFromPattern() != null && !GwtClientUtils.isCompleteMask(inputElement))
+        if(property.getMaskFromPattern(renderContext.getPattern()) != null && !GwtClientUtils.isCompleteMask(inputElement))
             throw new InvalidEditException();
 
         boolean patternMismatch = isPatternMismatch(inputElement);
