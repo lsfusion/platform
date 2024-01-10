@@ -206,10 +206,9 @@ public abstract class FormsController {
         Boolean ctrlKey = eventGetCtrlKey(event);
         Boolean shiftKey = eventGetShiftKey(event);
         Boolean altKey = eventGetAltKey(event);
-        boolean f12 = GKeyStroke.isGroupChangeKeyEvent(event);
         boolean tab = isTabEvent(event);
         if(ctrlKey != null) {
-            boolean onlyCtrl = ctrlKey && (shiftKey == null || !shiftKey) && (altKey == null || !altKey) && !f12;
+            boolean onlyCtrl = ctrlKey && (shiftKey == null || !shiftKey) && (altKey == null || !altKey);
             pressedCtrl = onlyCtrl;
             if (onlyCtrl && !isLinkMode())
                 setForceEditMode(EditMode.LINK);
@@ -217,16 +216,18 @@ public abstract class FormsController {
                 removeForceEditMode();
         }
         if(shiftKey != null) {
-            boolean onlyShift = shiftKey && (ctrlKey == null || !ctrlKey) && (altKey == null || !altKey) && !f12 && !tab;
+            boolean onlyShift = shiftKey && (ctrlKey == null || !ctrlKey) && (altKey == null || !altKey) && !tab;
             pressedShift = onlyShift;
             if (onlyShift && !isDialogMode())
                 setForceEditMode(EditMode.DIALOG);
             if (!onlyShift && isForceDialogMode())
                 removeForceEditMode();
         }
-        if (f12) {
-            groupChangeMode = true;
-            GwtClientUtils.stopPropagation(event); //prevent running browser debugger
+        if (altKey != null) {
+            boolean onlyAlt = altKey && (ctrlKey == null || !ctrlKey) && (shiftKey == null || !shiftKey) && !tab;
+            if (onlyAlt) {
+                groupChangeMode = true;
+            }
         } else if (groupChangeMode) {
             new Timer() {
                 @Override

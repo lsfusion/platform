@@ -164,7 +164,7 @@ public class GKeyStroke implements Serializable {
         return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_F2;
     }
 
-    public static boolean isGroupChangeKeyEvent(NativeEvent event) {
+    public static boolean isGroupChangeKeyEvent(Event event) {
         return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_F12;
     }
 

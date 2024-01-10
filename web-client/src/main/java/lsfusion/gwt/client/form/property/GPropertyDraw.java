@@ -484,6 +484,9 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             return GEditBindingMap.changeOrGroupChange();
         }
 
+        if (GKeyStroke.isGroupChangeKeyEvent(editEvent))
+            return GEditBindingMap.GROUP_CHANGE;
+
         GType changeType = getChangeType();
         if (isCharModifyKeyEvent(editEvent, changeType == null ? null : changeType.getEditEventFilter()) ||
                 isDropEvent(editEvent) || isChangeAppendKeyEvent(editEvent))
