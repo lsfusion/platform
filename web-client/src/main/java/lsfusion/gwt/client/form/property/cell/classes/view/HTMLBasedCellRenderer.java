@@ -31,7 +31,8 @@ public abstract class HTMLBasedCellRenderer extends CellRenderer {
         return true;
     }
 
-    public String format(PValue value, RendererType rendererType) {
+    @Override
+    public String format(PValue value, RendererType rendererType, String pattern) {
         return getHTMLValue(value);
     }
 

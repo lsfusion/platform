@@ -13,4 +13,10 @@ public interface RenderContext {
     RendererType getRendererType();
 
     boolean isInputRemoveAllPMB();
+
+    String getPattern();
+
+    String getRegexp();
+
+    String getRegexpMessage();
 }

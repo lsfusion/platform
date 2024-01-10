@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.controller;
 
-import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.*;
@@ -2233,7 +2232,7 @@ public class GFormController implements EditManager {
         if(!editContext.isFocusable()) // assert that otherwise it's already has focus
             forceSetFocus = editContext.forceSetFocus();
 
-        RenderContext renderContext;
+        RenderContext renderContext = null;
         if (cellEditor instanceof ReplaceCellEditor && ((ReplaceCellEditor) cellEditor).needReplace(element, renderContext = editContext.getRenderContext())) {
             focusedElement = GwtClientUtils.getFocusedElement();
 
@@ -2254,7 +2253,7 @@ public class GFormController implements EditManager {
         }
 
         this.cellEditor = cellEditor; // not sure if it should before or after startEditing, but definitely after removeAllChildren, since it leads to blur for example
-        cellEditor.start(handler, element, oldValue); //need to be after this.cellEditor = cellEditor, because there is commitEditing in start in LogicalCellEditor
+        cellEditor.start(handler, element, renderContext, oldValue); //need to be after this.cellEditor = cellEditor, because there is commitEditing in start in LogicalCellEditor
     }
 
     // only request cell editor can be long-living

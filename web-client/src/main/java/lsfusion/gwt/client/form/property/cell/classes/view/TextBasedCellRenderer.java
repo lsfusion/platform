@@ -12,8 +12,7 @@ import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.Objects;
 
 import static lsfusion.gwt.client.view.StyleDefaults.CELL_HORIZONTAL_PADDING;
 
@@ -60,7 +59,7 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
 
     @Override
     protected Object getExtraValue(UpdateContext updateContext) {
-        return Arrays.asList(updateContext.getPlaceholder(), updateContext.getPattern(), updateContext.getRegexp(), updateContext.getRegexpMessage());
+        return new ExtraValue(updateContext.getPlaceholder(), updateContext.getPattern());
     }
 
     @Override
@@ -123,16 +122,14 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
     public boolean updateContent(Element element, PValue value, Object extraValue, UpdateContext updateContext) {
         boolean isNull = value == null;
 
-        List<String> extraValues = (List<String>) extraValue;
+        ExtraValue extraValues = (ExtraValue) extraValue;
 
-        String placeholder = extraValues != null ? extraValues.get(0) : null;
+        String placeholder = extraValues != null ? extraValues.placeholder : null;
 
-        property.dynamicPattern = extraValues != null ? extraValues.get(1) : null;
-        property.dynamicRegexp = extraValues != null ? extraValues.get(2) : null;
-        property.dynamicRegexpMessage = extraValues != null ? extraValues.get(3) : null;
+        String pattern = extraValues != null ? extraValues.pattern : null;
 
         RendererType rendererType = updateContext.getRendererType();
-        String innerText = isNull ? "" : format(value, rendererType);
+        String innerText = isNull ? "" : format(value, rendererType, pattern);
         if(isNull) {
             element.addClassName("text-based-value-null");
         } else {
@@ -175,5 +172,27 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
 
     protected void updateInputContent(InputElement inputElement, String innerText, PValue value, RendererType rendererType) {
         TextBasedCellEditor.setTextInputValue(inputElement, innerText);
+    }
+
+    public static class ExtraValue {
+        public final String placeholder;
+        public final String pattern;
+
+        public ExtraValue(String placeholder, String pattern) {
+            this.placeholder = placeholder;
+            this.pattern = pattern;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return this == o || o instanceof ExtraValue
+                    && GwtClientUtils.nullEquals(placeholder, ((ExtraValue) o).placeholder)
+                    && GwtClientUtils.nullEquals(pattern, ((ExtraValue) o).pattern);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(placeholder, pattern);
+        }
     }
 }

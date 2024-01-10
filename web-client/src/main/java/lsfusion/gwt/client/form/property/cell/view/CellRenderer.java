@@ -650,7 +650,7 @@ public abstract class CellRenderer {
         return 0;
     }
 
-    public abstract String format(PValue value, RendererType rendererType);
+    public abstract String format(PValue value, RendererType rendererType, String pattern);
 
     public boolean isCustomRenderer() {
         return false;

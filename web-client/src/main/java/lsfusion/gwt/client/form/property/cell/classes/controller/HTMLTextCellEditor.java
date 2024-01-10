@@ -27,7 +27,7 @@ public class HTMLTextCellEditor extends RequestReplaceValueCellEditor {
     }
 
     @Override
-    public void start(EventHandler handler, Element parent, PValue oldValue) {
+    public void start(EventHandler handler, Element parent, RenderContext renderContext, PValue oldValue) {
         initAceEditor(parent, PValue.getStringValue(oldValue), colorThemeName);
     }
 

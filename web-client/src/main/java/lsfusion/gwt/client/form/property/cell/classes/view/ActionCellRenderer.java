@@ -101,7 +101,7 @@ public class ActionCellRenderer extends CellRenderer {
     }
 
     @Override
-    public String format(PValue value, RendererType rendererType) {
+    public String format(PValue value, RendererType rendererType, String pattern) {
         return getActionValue(value) ? "..." : "";
     }
 

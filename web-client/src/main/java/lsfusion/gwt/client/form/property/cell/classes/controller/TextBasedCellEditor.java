@@ -44,7 +44,6 @@ import java.util.function.BiFunction;
 import static com.google.gwt.user.client.Event.ONPASTE;
 import static lsfusion.gwt.client.base.GwtClientUtils.*;
 import static lsfusion.gwt.client.form.filter.user.GCompare.CONTAINS;
-import static lsfusion.gwt.client.form.property.cell.classes.view.InputBasedCellRenderer.*;
 
 // now it's a sort of mix of RequestKeepValueCellEditor and RequestReplaceValueCellEditor (depending on needReplace)
 public abstract class TextBasedCellEditor extends InputBasedCellEditor {
@@ -111,7 +110,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
     protected boolean started;
 
     @Override
-    public void start(EventHandler handler, Element parent, PValue oldValue) {
+    public void start(EventHandler handler, Element parent, RenderContext renderContext, PValue oldValue) {
 
         if(GMouseStroke.isChangeEvent(handler.event)) {
             Integer dialogInputActionIndex = property.getDialogInputActionIndex(actions);
@@ -122,7 +121,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
         }
         started = true;
 
-        super.start(handler, parent, oldValue);
+        super.start(handler, parent, renderContext, oldValue);
 
         boolean allSuggestions = true;
         if(needReplace(parent)) {
@@ -152,17 +151,17 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
             }
         }
 
-        String mask = property.getMaskFromPattern();
+        String mask = property.getMaskFromPattern(renderContext.getPattern());
         if(mask != null) {
             GwtClientUtils.setMask(inputElement, mask);
         }
 
-        String regexp = property.getRegexp();
+        String regexp = renderContext.getRegexp();
         if (regexp != null) {
             updateRegexp(inputElement, regexp);
         }
 
-        String regexpMessage = property.getRegexpMessage();
+        String regexpMessage = renderContext.getRegexpMessage();
         if (regexpMessage != null) {
             updateRegexpMessage(inputElement, regexpMessage);
         }

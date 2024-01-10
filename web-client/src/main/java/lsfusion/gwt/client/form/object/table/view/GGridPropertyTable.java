@@ -246,6 +246,21 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     public GFont getFont() {
         return font;
     }
+
+    public String getPattern(Cell cell, GPropertyDraw property, GridPropertyColumn column) {
+        T row = (T) cell.getRow();
+        return column.getPattern(property, row);
+    }
+
+    public String getRegexp(Cell cell, GPropertyDraw property, GridPropertyColumn column) {
+        T row = (T) cell.getRow();
+        return column.getRegexp(property, row);
+    }
+
+    public String getRegexpMessage(Cell cell, GPropertyDraw property, GridPropertyColumn column) {
+        T row = (T) cell.getRow();
+        return column.getRegexpMessage(property, row);
+    }
     
     public GGroupObjectValue getSelectedKey() {
         GridDataRecord selectedRowValue = getSelectedRowValue();
@@ -845,6 +860,21 @@ protected Double getUserFlex(int i) {
             public boolean isInputRemoveAllPMB() {
                 return true;
             }
+
+            @Override
+            public String getPattern() {
+                return GGridPropertyTable.this.getPattern(cell, property, column);
+            }
+
+            @Override
+            public String getRegexp() {
+                return GGridPropertyTable.this.getRegexp(cell, property, column);
+            }
+
+            @Override
+            public String getRegexpMessage() {
+                return GGridPropertyTable.this.getRegexpMessage(cell, property, column);
+            }
         };
     }
 
@@ -936,8 +966,7 @@ protected Double getUserFlex(int i) {
 
             @Override
             public String getPattern() {
-                T row = (T) cell.getRow();
-                return column.getPattern(property, row);
+                return GGridPropertyTable.this.getPattern(cell, property, column);
             }
 
             @Override

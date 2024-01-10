@@ -248,7 +248,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     private void pushValue(JsArrayMixed rowValues, NativeHashMap<GGroupObjectValue, PValue> propValues, GGroupObjectValue fullKey, CellRenderer cellRenderer) {
         PValue value = propValues.get(fullKey);
         // in theory in renderColumn there is the reversed converting
-        rowValues.push(value != null ? fromObject(cellRenderer != null ? cellRenderer.format(value, RendererType.PIVOT) : PValue.getPivotValue(value)) : null);
+        rowValues.push(value != null ? fromObject(cellRenderer != null ? cellRenderer.format(value, RendererType.PIVOT, getPattern()) : PValue.getPivotValue(value)) : null);
     }
 
     public static final String COLUMN = ClientMessages.Instance.get().pivotColumnAttribute();
@@ -2231,4 +2231,20 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     public boolean isInputRemoveAllPMB() {
         return true;
     }
+
+    @Override
+    public String getPattern() {
+        return null;
+    }
+
+    @Override
+    public String getRegexp() {
+        return null;
+    }
+
+    @Override
+    public String getRegexpMessage() {
+        return null;
+    }
+
 }

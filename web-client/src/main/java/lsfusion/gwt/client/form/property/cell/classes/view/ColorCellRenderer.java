@@ -31,7 +31,7 @@ public class ColorCellRenderer extends TextBasedCellRenderer {
     }
 
     @Override
-    public String format(PValue value, RendererType rendererType) {
+    public String format(PValue value, RendererType rendererType, String pattern) {
         return getColorValue(value);
     }
 }

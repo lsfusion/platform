@@ -7,6 +7,7 @@ import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.KeepCellEditor;
+import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 
 public class RichTextCellEditor extends ARequestValueCellEditor implements RequestEmbeddedCellEditor, KeepCellEditor {
 
@@ -17,7 +18,7 @@ public class RichTextCellEditor extends ARequestValueCellEditor implements Reque
     }
 
     @Override
-    public void start(EventHandler handler, Element parent, PValue oldValue) {
+    public void start(EventHandler handler, Element parent, RenderContext renderContext, PValue oldValue) {
         this.oldValue = getEditorValue(parent);
 
         String value = handler != null ? TextBasedCellEditor.checkStartEvent(handler.event, parent, null) : null;

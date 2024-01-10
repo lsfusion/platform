@@ -18,11 +18,11 @@ public class DateCellRenderer extends FormatCellRenderer<Object> {
     }
 
     @Override
-    public String format(PValue value, RendererType rendererType) {
+    public String format(PValue value, RendererType rendererType, String pattern) {
         if(rendererType == RendererType.CELL && isTagInput() && getInputType(rendererType).inputType.hasNativePopup()) {
             return type.formatISOString(value);
         }
-        return super.format(value, rendererType);
+        return super.format(value, rendererType, pattern);
     }
 
     // valueAsDate doesn't work for datetime + hours

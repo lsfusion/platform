@@ -19,8 +19,6 @@ import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
 
-import java.util.function.BooleanSupplier;
-
 // now it's a sort of mix of RequestKeepValueCellEditor and RequestReplaceValueCellEditor (depending on needReplace)
 public abstract class InputBasedCellEditor extends RequestReplaceValueCellEditor {
 
@@ -56,7 +54,7 @@ public abstract class InputBasedCellEditor extends RequestReplaceValueCellEditor
     }
 
     @Override
-    public void start(EventHandler handler, Element parent, PValue oldValue) {
+    public void start(EventHandler handler, Element parent, RenderContext renderContext, PValue oldValue) {
 
         boolean needReplace = needReplace(parent);
         if(!needReplace) { // not replaced

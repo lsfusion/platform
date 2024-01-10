@@ -9,6 +9,7 @@ import lsfusion.gwt.client.form.property.cell.classes.view.InputBasedCellRendere
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.KeepCellEditor;
+import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.view.MainFrame;
 
 public class LogicalCellEditor extends ARequestValueCellEditor implements KeepCellEditor {
@@ -21,7 +22,7 @@ public class LogicalCellEditor extends ARequestValueCellEditor implements KeepCe
     }
 
     @Override
-    public void start(EventHandler handler, Element parent, PValue oldValue) {
+    public void start(EventHandler handler, Element parent, RenderContext renderContext, PValue oldValue) {
         MainFrame.preventDblClickAfterClick(parent);
 
         value = getNextValue(oldValue, threeState);

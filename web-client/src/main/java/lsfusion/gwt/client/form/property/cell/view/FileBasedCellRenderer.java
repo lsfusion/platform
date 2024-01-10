@@ -86,7 +86,8 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
         super(property);
     }
 
-    public String format(PValue value, RendererType rendererType) {
+    @Override
+    public String format(PValue value, RendererType rendererType, String pattern) {
         return value == null ? "" : value.toString();
     }
 }
