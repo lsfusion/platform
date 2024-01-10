@@ -37,7 +37,7 @@ public class DateCellEditor extends DateRangePickerBasedCellEditor {
 
     @Override
     protected String getPattern() {
-        return type.getFormat(property.getPattern()).getPattern();
+        return type.getFormat(renderContext.getPattern()).getPattern();
     }
 
     protected boolean isTimeEditor() {

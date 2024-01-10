@@ -591,7 +591,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
 
         if(this instanceof FormatCellEditor) {
             GFormatType formatType = ((FormatCellEditor) this).getFormatType();
-            return formatType.parseString(inputText, property.getPattern());
+            return formatType.parseString(inputText, renderContext.getPattern());
         }
         return PValue.getPValue(inputText);
     }
@@ -602,7 +602,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
 
         if(this instanceof FormatCellEditor) {
             GFormatType formatType = ((FormatCellEditor) this).getFormatType();
-            return formatType.formatString(value, property.getPattern());
+            return formatType.formatString(value, renderContext.getPattern());
         }
         return PValue.getStringValue(value);
     }
