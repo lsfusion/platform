@@ -42,9 +42,6 @@ public abstract class CalculateSumButton extends ToolbarGridButton {
         NumberFormat nf = NumberFormat.getNumberInstance();
         if(number instanceof BigDecimal)
             nf.setMaximumFractionDigits(((BigDecimal) number).scale());
-        if (StartupProperties.dotSeparator)
-            return nf.format(number).replace(',', '.');
-        else
-            return nf.format(number);
+        return nf.format(number);
     }
 }

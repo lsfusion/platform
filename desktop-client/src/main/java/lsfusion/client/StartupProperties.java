@@ -26,13 +26,9 @@ public class StartupProperties {
 
     public static final String LSFUSION_CLIENT_BLOCKER_ACTIVATION_OFF = "lsfusion.client.blocker.activation.off";
 
-    public static final String LSFUSION_CLIENT_DECIMAL_SEPARATOR = "lsfusion.client.decimal.separator";
-
     public static final String LSFUSION_CLIENT_ASYNC_TIMEOUT = "lsfusion.client.async.timeout";
 
     public static final int pullMessagesPeriod = Integer.parseInt(System.getProperty(LSFUSION_CLIENT_PING_TIME, "1000"));
-
-    public static final boolean dotSeparator = ".".equals(System.getProperty(StartupProperties.LSFUSION_CLIENT_DECIMAL_SEPARATOR));
 
     public final static boolean preventBlockerActivation = System.getProperty(StartupProperties.LSFUSION_CLIENT_BLOCKER_ACTIVATION_OFF) != null;
 

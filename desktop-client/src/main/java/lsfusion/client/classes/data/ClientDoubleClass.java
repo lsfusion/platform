@@ -33,16 +33,6 @@ public class ClientDoubleClass extends ClientIntegralClass implements ClientType
     public NumberFormat getDefaultFormat() {
         NumberFormat format = super.getDefaultFormat();
         format.setMaximumFractionDigits(10);
-
-        if (StartupProperties.dotSeparator) {
-            DecimalFormat decimalFormat = (DecimalFormat) format;
-            DecimalFormatSymbols dfs = decimalFormat.getDecimalFormatSymbols();
-            if (dfs.getGroupingSeparator() != '.') {
-                dfs.setDecimalSeparator('.');
-            }
-            decimalFormat.setDecimalFormatSymbols(dfs);
-        }
-
         return format;
     }
 

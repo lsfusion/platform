@@ -7,7 +7,6 @@ import lsfusion.interop.base.view.FlexAlignment;
 import javax.swing.*;
 
 import static lsfusion.client.ClientResourceBundle.getString;
-import static lsfusion.client.StartupProperties.dotSeparator;
 
 public class CalculationsView extends FlexPanel {
     private LabelWidget averageLabel = new LabelWidget();
@@ -22,8 +21,8 @@ public class CalculationsView extends FlexPanel {
     }
 
     public void updateSelectionInfo(int quantity, String sum, String avg) {
-        String avgString = avg == null ? "" : getString("form.grid.selection.average") + ": " + (dotSeparator ? avg.replace(',', '.') : avg) + "  ";
-        String sumString = sum == null ? "" : getString("form.grid.selection.sum") + ": " + (dotSeparator ? sum.replace(',', '.') : sum) + "  ";
+        String avgString = avg == null ? "" : getString("form.grid.selection.average") + ": " + avg + "  ";
+        String sumString = sum == null ? "" : getString("form.grid.selection.sum") + ": " + sum + "  ";
         String quantityString = quantity <= 1 ? "" : getString("form.grid.selection.quantity") + ": " + quantity;
 
         updateLabel(averageLabel, avgString);
