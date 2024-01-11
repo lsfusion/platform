@@ -143,4 +143,8 @@ public class ActionMapImplement<P extends PropertyInterface, T extends PropertyI
             return asyncMapInputExec.map(mapping);
         return null;
     }
+
+    public PropertyMapImplement<?, T> mapClassProperty() {
+        return mapWhereProperty().mapClassProperty();
+    }
 }

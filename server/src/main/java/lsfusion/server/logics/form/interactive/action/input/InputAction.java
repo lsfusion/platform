@@ -196,6 +196,8 @@ public class InputAction extends SystemExplicitAction {
     public boolean hasFlow(ChangeFlowType type) {
         if(type == ChangeFlowType.INPUT)
             return true;
+        if(type == ChangeFlowType.INTERACTIVEWAIT)
+            return true;
         return super.hasFlow(type);
     }
 }

@@ -109,6 +109,7 @@ import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.ActionOrPropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.value.NullValueProperty;
+import lsfusion.server.logics.property.value.ValueProperty;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.physics.admin.drilldown.form.DrillDownFormEntity;
@@ -2337,6 +2338,10 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
     public boolean isExplicitNull() {
         return this instanceof NullValueProperty; // isEmpty can be better, but we just want to emulate NULL to be like NULL caption
+    }
+
+    public boolean isExplicitTrue() {
+        return this instanceof ValueProperty && ((ValueProperty)this).staticClass instanceof LogicalClass;
     }
 
     @IdentityLazy

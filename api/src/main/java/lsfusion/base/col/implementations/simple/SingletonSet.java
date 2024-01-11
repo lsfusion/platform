@@ -9,6 +9,7 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.*;
 import lsfusion.base.lambda.set.FunctionSet;
+import lsfusion.base.lambda.set.SFunctionSet;
 
 import java.util.*;
 import java.util.function.Function;
@@ -548,6 +549,11 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
 
     public boolean containsFn(FunctionSet<K> filter) {
         return filter.contains(key);
+    }
+
+    @Override
+    public boolean containsFn(SFunctionSet<K> filter) {
+        return ImSet.super.containsFn(filter);
     }
 
     @Override

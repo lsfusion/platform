@@ -50,7 +50,7 @@ public class AsyncMapCloseForm<T extends PropertyInterface> extends AsyncMapExec
     }
 
     @Override
-    public int getMergeOptimisticPriority() {
+    public int getOptimisticPriority() {
         return 1;
     }
 }

@@ -522,7 +522,10 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
 
     @Override
     public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
-        AsyncMapEventExec<I> asyncExec = getBranchAsyncEventExec(ListFact.toList(action, elseAction), optimistic, recursive);
+        ImList<ActionMapImplement<?, I>> list = ListFact.singleton(action);
+        if(elseAction != null)
+            list = list.addList(elseAction);
+        AsyncMapEventExec<I> asyncExec = getBranchAsyncEventExec(list, optimistic, recursive, false, elseAction != null);
         if(asyncExec != null)
             return asyncExec.mapInner(mapInterfaces.reverse());
         return null;

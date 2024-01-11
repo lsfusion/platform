@@ -62,6 +62,7 @@ public interface PropertyInterfaceImplement<P extends PropertyInterface> extends
     boolean mapNameValueUnique();
 
     boolean mapIsDrawNotNull();
+    boolean mapIsExplicitTrue();
     boolean mapHasAlotKeys();
     int mapEstComplexity();
 

@@ -108,6 +108,14 @@ public abstract class AList<K> extends AColObject implements ImList<K> {
         return false;
     }
 
+    @Override
+    public boolean containsFn(FunctionSet<K> filter) {
+        for(int i=0,size=size();i<size;i++)
+            if(filter.contains(get(i)))
+                return true;
+        return false;
+    }
+
     public ImMap<Integer, K> toIndexedMap() {
         return mapListMapValues(i -> i);
     }

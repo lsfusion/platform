@@ -26,4 +26,8 @@ public class ActionCase<P extends PropertyInterface> extends Case<P, PropertyInt
     public <T extends PropertyInterface> ActionCase<T> map(ImRevMap<P, T> map) {
         return new ActionCase<>(where.map(map), implement.map(map));        
     }
+
+    public boolean isClassSimple() { // hack
+        return implement.mapClassProperty().equalsMap(where);
+    }
 }

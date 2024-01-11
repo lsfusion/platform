@@ -93,7 +93,7 @@ public class InternalClientAction extends CallAction {
 
     @Override
     public boolean hasFlow(ChangeFlowType type) {
-        if (type == ChangeFlowType.INTERNALASYNC)
+        if (type == ChangeFlowType.INTERNALASYNC || type == ChangeFlowType.INTERACTIVEWAIT)
             return !syncType;
 
         return super.hasFlow(type);

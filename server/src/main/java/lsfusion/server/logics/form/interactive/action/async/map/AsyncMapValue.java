@@ -17,8 +17,8 @@ public abstract class AsyncMapValue<T extends PropertyInterface> extends AsyncMa
 
 
     @Override
-    public int getMergeOptimisticPriority() {
-        return 1;
+    public int getOptimisticPriority() {
+        return 2;
     }
 
     @Override

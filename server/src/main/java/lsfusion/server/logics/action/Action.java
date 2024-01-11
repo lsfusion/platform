@@ -43,8 +43,7 @@ import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.event.*;
 import lsfusion.server.logics.form.interactive.action.async.AsyncExec;
 import lsfusion.server.logics.form.interactive.action.async.PushAsyncResult;
-import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
-import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapExec;
+import lsfusion.server.logics.form.interactive.action.async.map.*;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
@@ -544,49 +543,137 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         return null;
     }
 
-    protected static <X extends PropertyInterface> AsyncMapEventExec<X> getBranchAsyncEventExec(ImList<ActionMapImplement<?, X>> actions, boolean optimistic, boolean recursive) {
-        return getFlowAsyncEventExec(actions, optimistic, optimistic, recursive);
+    protected static <X extends PropertyInterface> AsyncMapEventExec<X> getBranchAsyncEventExec(ImList<ActionMapImplement<?, X>> actions, boolean optimistic, boolean recursive, boolean isExclusive, boolean lastElse) {
+//        return getPrevBranchAsyncEventExec(actions, optimistic, recursive, isExclusive, lastElse);
+        return getNewBranchAsyncEventExec(actions, optimistic, recursive, lastElse);
+//        AsyncMapEventExec<X> newAsyncEventExec = getNewBranchAsyncEventExec(actions, optimistic, recursive, lastElse);
+//
+////        differentResults(newAsyncEventExec, getPrevBranchAsyncEventExec(actions, optimistic, recursive, isExclusive, lastElse));
+//
+//        return newAsyncEventExec;
     }
-    protected static <X extends PropertyInterface> AsyncMapEventExec<X> getListAsyncEventExec(ImList<ActionMapImplement<?, X>> actions, boolean optimistic, boolean recursive) {
-        return getFlowAsyncEventExec(actions, true, optimistic, recursive);
-    }
-    private static <X extends PropertyInterface> AsyncMapEventExec<X> getFlowAsyncEventExec(ImList<ActionMapImplement<?, X>> actions, boolean flowOptimistic, boolean optimistic, boolean recursive) {
-        AsyncMapEventExec<X> asyncExec = null;
-        int nonAsync = 0;
-        int nonRecursive = 0;
+
+    private static <X extends PropertyInterface> AsyncMapEventExec<X> getNewBranchAsyncEventExec(ImList<ActionMapImplement<?, X>> actions, boolean optimistic, boolean recursive, boolean optimisticCases) {
+        boolean firstNonRecursive = false;
+        AsyncMapEventExec<X> bestAsyncExec = null;
+        AsyncMapEventExec<X> mergedAsyncExec = null;
         for (ActionMapImplement<?, X> action : actions) {
-            if(action != null) {
-                AsyncMapEventExec<X> asyncActionExec = action.mapAsyncEventExec(optimistic, recursive);
-                if (asyncActionExec != null) {
-                    if(asyncActionExec != AsyncMapExec.RECURSIVE())
-                        nonRecursive++;
+            AsyncMapEventExec<X> asyncActionExec = action.mapAsyncEventExec(optimistic, recursive);
+            // first non-recursive we consider the most optimistic
+            if(asyncActionExec != AsyncMapExec.RECURSIVE()) {
+                if(!firstNonRecursive) {
+                    firstNonRecursive = true;
+                    mergedAsyncExec = asyncActionExec;
+                } else {
+                    if(asyncActionExec == null)
+                        mergedAsyncExec = null;
+                    else if (mergedAsyncExec != null)
+                        mergedAsyncExec = mergedAsyncExec.merge(asyncActionExec);
+                }
 
-                    if (asyncExec == null || asyncExec == AsyncMapExec.RECURSIVE()) {
-                        asyncExec = asyncActionExec;
-                    } else {
-                        if(asyncActionExec != AsyncMapExec.RECURSIVE()) {
-                            AsyncMapEventExec<X> mergedAsyncActionExec = asyncExec.merge(asyncActionExec);
-                            if (mergedAsyncActionExec == null) {
-                                if(!flowOptimistic)
-                                    return null;
-
-                                // we want interactive actions (like opening forms) have higher priority
-                                if(asyncActionExec.getMergeOptimisticPriority() > asyncExec.getMergeOptimisticPriority())
-                                    asyncExec = asyncActionExec;
-                            } else
-                                asyncExec = mergedAsyncActionExec;
-                        }
-                    }
-                } else
-                    nonAsync++;
+                if (asyncActionExec != null && !(!optimistic && asyncActionExec instanceof AsyncMapInput) && (bestAsyncExec == null || asyncActionExec.getOptimisticPriority() > bestAsyncExec.getOptimisticPriority()))
+                    bestAsyncExec = asyncActionExec;
             }
         }
 
-        if(!flowOptimistic && nonAsync >= nonRecursive)
-            return null;
+        // we don't want to use Input when it's not in all branches, since it will break the flow
+        if(mergedAsyncExec instanceof AsyncMapInput && !optimistic) {
+            if(optimisticCases)
+                return mergedAsyncExec;
 
-        return asyncExec;
+            return null;
+        }
+
+        if(mergedAsyncExec != null)
+            return mergedAsyncExec;
+
+        return bestAsyncExec;
     }
+    protected static <X extends PropertyInterface> AsyncMapEventExec<X> getListAsyncEventExec(ImList<ActionMapImplement<?, X>> actions, boolean optimistic, boolean recursive) {
+//        return getPrevFlowAsyncEventExec(actions, true, optimistic, recursive);
+        return getNewListAsyncEventExec(actions, optimistic, recursive);
+
+//        AsyncMapEventExec<X> newAsyncEventExec = getNewListAsyncEventExec(actions, optimistic, recursive);
+//        differentResults(newAsyncEventExec, getPrevFlowAsyncEventExec(actions, true, optimistic, recursive));
+//        return newAsyncEventExec;
+    }
+
+    private static <X extends PropertyInterface> AsyncMapEventExec<X> getNewListAsyncEventExec(ImList<ActionMapImplement<?, X>> actions, boolean optimistic, boolean recursive) {
+        boolean wasInteractiveWait = false;
+        AsyncMapEventExec<X> bestAsyncExec = null;
+        for (ActionMapImplement<?, X> action : actions) {
+            AsyncMapEventExec<X> asyncActionExec = action.mapAsyncEventExec(optimistic, recursive);
+            if(asyncActionExec != AsyncMapExec.RECURSIVE()) {
+                 if(asyncActionExec != null && !(wasInteractiveWait && asyncActionExec instanceof AsyncMapInput) && (bestAsyncExec == null || asyncActionExec.getOptimisticPriority() > bestAsyncExec.getOptimisticPriority()))
+                     bestAsyncExec = asyncActionExec;
+
+                if(!optimistic && !wasInteractiveWait && action.hasFlow(ChangeFlowType.INTERACTIVEWAIT)) { // we want to "stop async" once we have an interaction
+                    wasInteractiveWait = true;
+
+                    if(bestAsyncExec != null)
+                        return bestAsyncExec;
+                }
+            }
+        }
+
+        return bestAsyncExec;
+    }
+
+//    private static <X extends PropertyInterface> boolean differentResults(AsyncMapEventExec<X> newAsyncEventExec, AsyncMapEventExec<X> prevAsyncEventExec) {
+//        if(newAsyncEventExec != null) {
+//            if(prevAsyncEventExec == null || !(newAsyncEventExec.getClass().equals(prevAsyncEventExec.getClass())))
+//                return true;
+//        } else {
+//            if(prevAsyncEventExec != null)
+//                return true;
+//        }
+//        return false;
+//    }
+//
+//    protected static <X extends PropertyInterface> AsyncMapEventExec<X> getPrevBranchAsyncEventExec(ImList<ActionMapImplement<?, X>> actions, boolean optimistic, boolean recursive, boolean isExclusive, boolean lastElse) {
+//        AsyncMapEventExec<X> asyncExec = getPrevFlowAsyncEventExec(actions, optimistic, optimistic, recursive);
+//
+//        if((asyncExec instanceof AsyncMapAdd || asyncExec instanceof AsyncMapRemove) && actions.size() > 1 && !isExclusive && Settings.get().isDisableSimpleAddRemoveInNonExclCase())
+//            return null;
+//
+//        return asyncExec;
+//    }
+//
+//    private static <X extends PropertyInterface> AsyncMapEventExec<X> getPrevFlowAsyncEventExec(ImList<ActionMapImplement<?, X>> actions, boolean flowOptimistic, boolean optimistic, boolean recursive) {
+//        AsyncMapEventExec<X> asyncExec = null;
+//        int nonAsync = 0;
+//        int nonRecursive = 0;
+//        for (ActionMapImplement<?, X> action : actions) {
+//            AsyncMapEventExec<X> asyncActionExec = action.mapAsyncEventExec(optimistic, recursive);
+//            if (asyncActionExec != null) {
+//                if(asyncActionExec != AsyncMapExec.RECURSIVE())
+//                    nonRecursive++;
+//
+//                if (asyncExec == null || asyncExec == AsyncMapExec.RECURSIVE()) {
+//                    asyncExec = asyncActionExec;
+//                } else {
+//                    if(asyncActionExec != AsyncMapExec.RECURSIVE()) {
+//                        AsyncMapEventExec<X> mergedAsyncActionExec = asyncExec.merge(asyncActionExec);
+//                        if (mergedAsyncActionExec == null) {
+//                            if(!flowOptimistic)
+//                                return null;
+//
+//                            // we want interactive actions (like opening forms) have higher priority
+//                            if(asyncActionExec.getOptimisticPriority() > asyncExec.getOptimisticPriority())
+//                                asyncExec = asyncActionExec;
+//                        } else
+//                            asyncExec = mergedAsyncActionExec;
+//                    }
+//                }
+//            } else
+//                nonAsync++;
+//        }
+//
+//        if(!flowOptimistic && nonAsync >= nonRecursive)
+//            return null;
+//
+//        return asyncExec;
+//    }
 
     public static <P extends PropertyInterface> AsyncExec getAsyncExec(AsyncMapEventExec<P> asyncExec, ConnectionContext context) {
         if(asyncExec instanceof AsyncMapExec)

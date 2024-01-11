@@ -146,21 +146,4 @@ public abstract class RemoteUIContext extends AbstractContext {
             throw new RuntimeException(e);
         }
     }
-
-    public ObjectValue requestUserClass(CustomClass baseClass, CustomClass defaultValue, boolean concrete) {
-        try {
-            ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-            DataOutputStream dataStream = new DataOutputStream(outStream);
-            baseClass.serialize(dataStream);
-            defaultValue.serialize(dataStream);
-            Long result = (Long) requestUserInteraction(new ChooseClassClientAction(outStream.toByteArray(), concrete));
-            if (result == null) {
-                return null;
-            }
-            return new DataObject(result, baseClass.getBaseClass().objectClass);
-        } catch (IOException e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
 }

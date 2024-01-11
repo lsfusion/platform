@@ -41,6 +41,7 @@ import lsfusion.server.logics.form.interactive.FormEventType;
 import lsfusion.server.logics.form.interactive.action.async.AsyncAddRemove;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncNoWaitExec;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.form.interactive.action.input.InputFilterEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputOrderEntity;
 import lsfusion.server.logics.form.interactive.action.lifecycle.FormToolbarAction;
@@ -328,7 +329,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     // form events
     public AsyncEventExec getAsyncEventExec(FormEvent formEvent, FormInstanceContext context) {
-        AsyncEventExec asyncEventExec = getEventAction(formEvent).getAsyncEventExec(context, null, null, null,  true);
+        AsyncEventExec asyncEventExec = getEventAction(formEvent).getAsyncEventExec(context, null, null, null,  false);
         if (asyncEventExec == null && formEvent instanceof FormScheduler) {
             asyncEventExec = AsyncNoWaitExec.instance;
         }

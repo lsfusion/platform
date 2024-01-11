@@ -15,11 +15,11 @@ public class CalcCase<T extends PropertyInterface> extends Case<T, PropertyInter
         super(aCase.where, aCase.implement);
     }    
 
-    public boolean isSimple() { // дебильновато конечно, но не хочется классы плодить пока
+    public boolean isSimple() { // hack
         return where == implement;
     }
 
-    public boolean isClassSimple() { // дебильновато конечно, но не хочется классы плодить пока
+    public boolean isClassSimple() { // hack
         return implement instanceof PropertyMapImplement && ((PropertyMapImplement) implement).mapClassProperty().equalsMap(where);
     }
 

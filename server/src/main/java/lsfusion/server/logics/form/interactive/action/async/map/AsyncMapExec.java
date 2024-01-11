@@ -54,4 +54,40 @@ public abstract class AsyncMapExec<T extends PropertyInterface> extends AsyncMap
     public static <T extends PropertyInterface> AsyncMapExec<T> RECURSIVE() {
         return RECURSIVE;
     }
+
+    private final static AsyncMapExec INTERACTIVE = new AsyncMapExec<PropertyInterface>() {
+
+        @Override
+        public AsyncMapEventExec<PropertyInterface> newSession() {
+            return this;
+        }
+
+        @Override
+        public <P extends PropertyInterface> AsyncMapEventExec<P> map(ImRevMap<PropertyInterface, P> mapping) {
+            return (AsyncMapEventExec<P>) this;
+        }
+
+        @Override
+        public <P extends PropertyInterface> AsyncMapEventExec<P> mapInner(ImRevMap<PropertyInterface, P> mapping) {
+            return (AsyncMapEventExec<P>) this;
+        }
+
+        @Override
+        public <P extends PropertyInterface> AsyncMapEventExec<P> mapJoin(ImMap<PropertyInterface, PropertyInterfaceImplement<P>> mapping) {
+            return (AsyncMapEventExec<P>) this;
+        }
+
+        @Override
+        public AsyncEventExec map(ImRevMap<PropertyInterface, ObjectEntity> mapObjects, ConnectionContext context, ActionOrProperty securityProperty, PropertyDrawEntity<?> drawProperty, GroupObjectEntity toDraw) {
+            return null;
+        }
+
+        @Override
+        public AsyncMapEventExec<PropertyInterface> merge(AsyncMapEventExec<PropertyInterface> input) {
+            throw new UnsupportedOperationException();
+        }
+    };
+    public static <T extends PropertyInterface> AsyncMapExec<T> INTERACTIVE() {
+        return RECURSIVE;
+    }
 }

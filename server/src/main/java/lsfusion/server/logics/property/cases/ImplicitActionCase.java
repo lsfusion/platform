@@ -11,7 +11,7 @@ public class ImplicitActionCase extends AbstractActionCase<PropertyInterface> {
     private boolean sameNamespace;
 
     public ImplicitActionCase(ActionMapImplement<?, PropertyInterface> action, List<ResolveClassSet> signature, boolean sameNamespace) {
-        super(action.mapWhereProperty().mapClassProperty(), action, signature);
+        super(action.mapClassProperty(), action, signature);
         
         this.sameNamespace = sameNamespace;
     }

@@ -6,7 +6,6 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
@@ -23,9 +22,7 @@ import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
-import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapAdd;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
-import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapRemove;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.cases.*;
@@ -81,12 +78,11 @@ public class CaseAction extends ListCaseAction {
     public void addOperand(ActionMapImplement<?, PropertyInterface> action, List<ResolveClassSet> signature, boolean optimisticAsync, Version version) {
         assert isAbstract();
 
-        PropertyMapImplement<?, PropertyInterface> where =  action.mapWhereProperty();
         ExplicitActionCase<PropertyInterface> addCase;
         if(type == AbstractType.MULTI)
-            addCase = new ExplicitActionCase<>(where.mapClassProperty(), action, signature, optimisticAsync);
+            addCase = new ExplicitActionCase<>(action.mapClassProperty(), action, signature, optimisticAsync);
         else
-            addCase = new ExplicitActionCase<>(where, action, optimisticAsync);
+            addCase = new ExplicitActionCase<>(action.mapWhereProperty(), action, optimisticAsync);
         addAbstractCase(addCase, version);
 
         addWhereOperand(addCase.implement, signature, version);
@@ -117,7 +113,7 @@ public class CaseAction extends ListCaseAction {
     }
 
     public <I extends PropertyInterface> CaseAction(LocalizedString caption, boolean isExclusive, ImList<ActionMapImplement> impls, ImOrderSet<I> innerInterfaces) {
-        this(caption, isExclusive, innerInterfaces, impls.mapListValues((ActionMapImplement value) -> new ActionCase<I>(value.mapWhereProperty().mapClassProperty(), value)));
+        this(caption, isExclusive, innerInterfaces, impls.mapListValues((ActionMapImplement value) -> new ActionCase<I>(value.mapClassProperty(), value)));
     }
 
     // explicit конструктор
@@ -248,21 +244,24 @@ public class CaseAction extends ListCaseAction {
 
     public Graph<ActionCase<PropertyInterface>> abstractGraph; 
 
-    private ImList<ActionMapImplement<?, PropertyInterface>> getAsyncListActions() {
-        ImList<ActionCase<PropertyInterface>> optimisticCases = getCases().filterList(element -> element.optimisticAsync);
-        if(!optimisticCases.isEmpty())
-            return optimisticCases.mapListValues(value -> value.implement);
-        
-        return getListActions();
+    private ImList<ActionMapImplement<?, PropertyInterface>> getAsyncListActions(Result<Boolean> allCases) {
+        ImList<ActionCase<PropertyInterface>> cases = getCases();
+
+        ImList<ActionCase<PropertyInterface>> optimisticCases = cases.filterList(element -> element.optimisticAsync);
+        if(!optimisticCases.isEmpty()) {
+            allCases.set(true);
+            cases = optimisticCases;
+        } else {
+            allCases.set(!cases.isEmpty() &&
+                    (cases.get(cases.size() - 1).where.mapIsExplicitTrue() || !cases.containsFn(aCase -> !aCase.isClassSimple())));
+        }
+
+        return cases.mapListValues(value -> value.implement);
     }
     @Override
     public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
-        AsyncMapEventExec<PropertyInterface> asyncExec = getBranchAsyncEventExec(getAsyncListActions(), optimistic, recursive);
-
-        if((asyncExec instanceof AsyncMapAdd || asyncExec instanceof AsyncMapRemove) && !isExclusive && Settings.get().isDisableSimpleAddRemoveInNonExclCase())
-            return null;
-
-        return asyncExec;
+        Result<Boolean> rLastElse = new Result<>();
+        return getBranchAsyncEventExec(getAsyncListActions(rLastElse), optimistic, recursive, isExclusive, rLastElse.result);
     }
 
     /*

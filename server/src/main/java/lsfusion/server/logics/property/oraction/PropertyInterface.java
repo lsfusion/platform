@@ -174,6 +174,11 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         return true;
     }
 
+    @Override
+    public boolean mapIsExplicitTrue() {
+        return false;
+    }
+
     public boolean mapHasAlotKeys() {
         return true;
     }

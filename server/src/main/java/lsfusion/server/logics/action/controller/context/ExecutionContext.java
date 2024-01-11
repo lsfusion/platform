@@ -673,11 +673,6 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return ThreadLocalContext.inputUserData(getSecurityProperty(), dataClass, oldValue, hasOldValue, inputContext, customChangeFunction, inputList, actions);
     }
 
-    @Deprecated
-    public ObjectValue requestUserClass(final CustomClass baseClass, final CustomClass defaultValue, final boolean concrete) throws SQLException, SQLHandledException {
-        return requestUser(ObjectType.instance, () -> ThreadLocalContext.requestUserClass(baseClass, defaultValue, concrete));
-    }
-
     public FormInstance createFormInstance(FormEntity formEntity, ImSet<ObjectEntity> inputObjects, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, Boolean noCancel, ManageSessionType manageSession, boolean checkOnOk, boolean showDrop, boolean interactive, WindowFormType type, ImSet<ContextFilterInstance> contextFilters, boolean readonly) throws SQLException, SQLHandledException {
         return ThreadLocalContext.createFormInstance(formEntity, inputObjects, mapObjects, stack, session, isModal, noCancel, manageSession, checkOnOk, showDrop, interactive, type, contextFilters, readonly);
     }

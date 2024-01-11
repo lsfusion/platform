@@ -3,6 +3,7 @@ package lsfusion.server.logics.form.interactive.action.lifecycle;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
+import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;

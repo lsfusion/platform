@@ -58,8 +58,9 @@ public class MessageAction extends SystemAction {
 
     @Override
     public boolean hasFlow(ChangeFlowType type) {
-        // потому как важен порядок, в котором выдаются MESSAGE'и, иначе компилятор начнет их переставлять
         if(type == ChangeFlowType.SYNC)
+            return true;
+        if(type == ChangeFlowType.INTERACTIVEWAIT)
             return true;
         return super.hasFlow(type);
     }

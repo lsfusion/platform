@@ -47,7 +47,6 @@ public interface Context {
     InputContext lockInputContext();
     void unlockInputContext();
     InputResult inputUserData(ActionOrProperty securityProperty, DataClass dataClass, Object oldValue, boolean hasOldValue, InputContext inputContext, String customChangeFunction, InputList inputList, InputListAction[] actions);
-    ObjectValue requestUserClass(CustomClass baseClass, CustomClass defaultValue, boolean concrete);
 
     void pushLogMessage();
     ImList<AbstractContext.LogMessage> popLogMessage();

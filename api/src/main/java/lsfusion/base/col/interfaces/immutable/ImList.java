@@ -26,6 +26,10 @@ public interface ImList<K> extends Iterable<K> {
 
     int indexOf(K key);
     boolean containsNull();
+    boolean containsFn(FunctionSet<K> filter);
+    default boolean containsFn(SFunctionSet<K> filter) {
+        return containsFn((FunctionSet<K>) filter);
+    }
     ImMap<Integer, K> toIndexedMap();
 
     ImList<K> addList(ImList<? extends K> list);

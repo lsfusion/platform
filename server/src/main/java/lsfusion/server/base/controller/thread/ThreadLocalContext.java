@@ -238,10 +238,6 @@ public class ThreadLocalContext {
         return get().inputUserData(securityProperty, dataClass, oldValue, hasOldValue, inputContext, customChangeFunction, inputList, actions);
     }
 
-    public static ObjectValue requestUserClass(CustomClass baseClass, CustomClass defaultValue, boolean concrete) {
-        return get().requestUserClass(baseClass, defaultValue, concrete);
-    }
-
     public static void pushLogMessage() {
         get().pushLogMessage();
     }
