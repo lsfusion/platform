@@ -20,6 +20,7 @@ import lsfusion.gwt.client.view.GColorTheme;
 import lsfusion.gwt.client.view.MainFrame;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
+import static lsfusion.gwt.client.form.property.cell.classes.view.InputBasedCellRenderer.getInputElement;
 
 public abstract class CellRenderer {
 
@@ -649,7 +650,7 @@ public abstract class CellRenderer {
         return 0;
     }
 
-    public abstract String format(PValue value, RendererType rendererType);
+    public abstract String format(PValue value, RendererType rendererType, String pattern);
 
     public boolean isCustomRenderer() {
         return false;

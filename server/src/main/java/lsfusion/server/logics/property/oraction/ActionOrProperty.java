@@ -9,9 +9,11 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.implementations.simple.EmptyOrderMap;
 import lsfusion.base.col.implementations.simple.EmptyRevMap;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.*;
+import lsfusion.base.col.interfaces.mutable.LongMutable;
+import lsfusion.base.col.interfaces.mutable.MList;
+import lsfusion.base.col.interfaces.mutable.MMap;
+import lsfusion.base.col.interfaces.mutable.MOrderMap;
 import lsfusion.base.comb.ListPermutations;
-import lsfusion.server.base.AppServerImage;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.event.KeyInputEvent;
@@ -19,6 +21,7 @@ import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.PivotOptions;
+import lsfusion.server.base.AppServerImage;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFLazy;
@@ -48,7 +51,6 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.infer.AlgType;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
-import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameParser;
@@ -648,10 +650,6 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             if (propertyView.changeMousePriority == null)
                 propertyView.changeMousePriority = changeMousePriority;
 
-            if (propertyView.regexp == null)
-                propertyView.regexp = regexp;
-            if (propertyView.regexpMessage == null)
-                propertyView.regexpMessage = regexpMessage;
             if (propertyView.echoSymbols == null)
                 propertyView.echoSymbols = BaseUtils.nvl(echoSymbols, false);
             

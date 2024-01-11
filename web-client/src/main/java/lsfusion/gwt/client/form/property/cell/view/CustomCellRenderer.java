@@ -100,7 +100,7 @@ public class CustomCellRenderer extends CellRenderer {
     }-*/;
 
     @Override
-    public String format(PValue value, RendererType rendererType) {
+    public String format(PValue value, RendererType rendererType, String pattern) {
         return PValue.getStringValue(value);
     }
 

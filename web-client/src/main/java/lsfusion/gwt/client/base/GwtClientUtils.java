@@ -1351,4 +1351,16 @@ public class GwtClientUtils {
     public static native boolean setDataHtmlOrText(Element element, String value, boolean html) /*-{
         $wnd.setDataHtmlOrText(element, value, html);
     }-*/;
+
+    public static native void setMask(Element element, String mask)/*-{
+        $wnd.$(element).inputmask({"mask": mask, "autoUnmask": false});
+    }-*/;
+
+    public static native void removeMask(Element element)/*-{
+        $wnd.$(element).inputmask("remove");
+    }-*/;
+
+    public static native boolean isCompleteMask(Element element)/*-{
+        return $wnd.$(element).inputmask("isComplete");
+    }-*/;
 }

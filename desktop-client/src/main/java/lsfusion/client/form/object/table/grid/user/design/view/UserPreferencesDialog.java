@@ -397,14 +397,14 @@ public abstract class UserPreferencesDialog extends JDialog {
 
     private void okButtonPressed() {
         for (UserPreferencesPropertyListItem propertyItem : visibleListModel.toArray()) {
-            initialTable.setUserColumnSettings(propertyItem.property, propertyItem.getUserCaption(true), propertyItem.getUserPattern(true), visibleListModel.indexOf(propertyItem), false);
+            initialTable.setUserColumnSettings(propertyItem.property, propertyItem.getUserCaption(true), propertyItem.getUserPattern(), visibleListModel.indexOf(propertyItem), false);
         }
         
         String[] hiddenPropSids = new String[invisibleListModel.size()];
         UserPreferencesPropertyListItem[] invisibleItems = invisibleListModel.toArray();
         for (int i = 0; i < invisibleItems.length; i++) {
             UserPreferencesPropertyListItem propertyItem = invisibleItems[i];
-            initialTable.setUserColumnSettings(propertyItem.property, propertyItem.getUserCaption(true), propertyItem.getUserPattern(true), visibleListModel.getSize() + i, true);
+            initialTable.setUserColumnSettings(propertyItem.property, propertyItem.getUserCaption(true), propertyItem.getUserPattern(), visibleListModel.getSize() + i, true);
             if (propertyItem.inGrid == null || propertyItem.inGrid) {
                 hiddenPropSids[i] = propertyItem.property.getPropertyFormName();
             }
@@ -473,7 +473,7 @@ public abstract class UserPreferencesDialog extends JDialog {
                                              Pair<Boolean, Integer> sortDirections) {
         Boolean sortDirection = sortDirections != null ? sortDirections.first : null;
         Integer sortIndex = sortDirections != null ? sortDirections.second : null;
-        initialTable.setUserColumnSettings(propertyItem.property, propertyItem.getUserCaption(true), propertyItem.getUserPattern(true), propertyOrder, hide);
+        initialTable.setUserColumnSettings(propertyItem.property, propertyItem.getUserCaption(true), propertyItem.getUserPattern(), propertyOrder, hide);
         initialTable.setUserSort(propertyItem.property, sortDirection != null ? sortIndex : null);
         initialTable.setUserAscendingSort(propertyItem.property, sortDirection);
         initialTable.setHasUserPreferences(true);
@@ -605,7 +605,7 @@ public abstract class UserPreferencesDialog extends JDialog {
     }
 
     private String getItemPattern(UserPreferencesPropertyListItem item) {
-        return BaseUtils.nullEmpty(item.getUserPattern(true));
+        return BaseUtils.nullEmpty(item.getUserPattern());
     }
     
     public abstract void preferencesChanged();

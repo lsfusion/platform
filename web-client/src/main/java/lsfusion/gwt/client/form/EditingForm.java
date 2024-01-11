@@ -14,6 +14,7 @@ import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.EndReason;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
+import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.navigator.window.GWindowFormType;
 
@@ -43,7 +44,7 @@ public abstract class EditingForm extends FormContainer {
         }
 
         @Override
-        public void start(EventHandler handler, Element parent, PValue oldValue) {
+        public void start(EventHandler handler, Element parent, RenderContext renderContext, PValue oldValue) {
         }
     }
 

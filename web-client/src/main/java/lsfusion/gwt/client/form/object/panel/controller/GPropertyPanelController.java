@@ -51,6 +51,9 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
     private NativeHashMap<GGroupObjectValue, PValue> comments;
     private NativeHashMap<GGroupObjectValue, PValue> cellCommentElementClasses;
     private NativeHashMap<GGroupObjectValue, PValue> placeholders;
+    private NativeHashMap<GGroupObjectValue, PValue> patterns;
+    private NativeHashMap<GGroupObjectValue, PValue> regexps;
+    private NativeHashMap<GGroupObjectValue, PValue> regexpMessages;
     private NativeHashMap<GGroupObjectValue, PValue> tooltips;
     private NativeHashMap<GGroupObjectValue, PValue> valueTooltips;
 
@@ -172,6 +175,18 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
         if(placeholders != null) {
             placeholder = placeholders.get(columnKey);
         }
+        PValue pattern = null;
+        if(patterns != null) {
+            pattern = patterns.get(columnKey);
+        }
+        PValue regexp = null;
+        if(regexps != null) {
+            regexp = regexps.get(columnKey);
+        }
+        PValue regexpMessage = null;
+        if(regexpMessages != null) {
+            regexpMessage = regexpMessages.get(columnKey);
+        }
         PValue valueTooltip = null;
         if(valueTooltips != null) {
             valueTooltip = valueTooltips.get(columnKey);
@@ -184,6 +199,9 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
                 foreground == null ? property.getForeground() : PValue.getColorStringValue(foreground),
                 readOnly == null ? null : PValue.get3SBooleanValue(readOnly.get(columnKey)),
                 placeholder == null ? property.placeholder : PValue.getStringValue(placeholder),
+                pattern == null ? property.getPattern() : PValue.getStringValue(pattern),
+                regexp == null ? property.regexp : PValue.getStringValue(regexp),
+                regexpMessage == null ? property.regexpMessage : PValue.getStringValue(regexpMessage),
                 valueTooltip == null ? property.valueTooltip : PValue.getStringValue(valueTooltip));
 
         if (captions != null)
@@ -303,6 +321,18 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
 
     public void setPropertyPlaceholders(NativeHashMap<GGroupObjectValue, PValue> placeholders) {
         this.placeholders = placeholders;
+    }
+
+    public void setPropertyPatterns(NativeHashMap<GGroupObjectValue, PValue> patterns) {
+        this.patterns = patterns;
+    }
+
+    public void setPropertyRegexps(NativeHashMap<GGroupObjectValue, PValue> regexps) {
+        this.regexps = regexps;
+    }
+
+    public void setPropertyRegexpMessages(NativeHashMap<GGroupObjectValue, PValue> regexpMessages) {
+        this.regexpMessages = regexpMessages;
     }
 
     public void setPropertyTooltips(NativeHashMap<GGroupObjectValue, PValue> tooltips) {

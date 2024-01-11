@@ -146,6 +146,8 @@
                 "static/js/ace/src/theme-chrome.js",
                 "static/js/ace/src/theme-ambiance.js",
 
+                "static/js/external/jquery.inputmask.min.js",
+
                 //MMenuLight
                 "static/js/external/mmenu-light.js", //https://cdn.jsdelivr.net/npm/mmenu-light@3.2.0/dist/mmenu-light.js
                 "static/css/external/mmenu-light.css", //https://cdn.jsdelivr.net/npm/mmenu-light@3.2.0/dist/mmenu-light.css

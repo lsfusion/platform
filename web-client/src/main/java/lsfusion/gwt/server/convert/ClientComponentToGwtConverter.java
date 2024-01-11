@@ -333,9 +333,6 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
         propertyDraw.drawAsync = clientPropertyDraw.drawAsync;
 
-        propertyDraw.pattern = clientPropertyDraw.getFormatPattern();
-        propertyDraw.defaultPattern = propertyDraw.pattern;
-
         propertyDraw.focusable = clientPropertyDraw.focusable;
         propertyDraw.checkEquals = clientPropertyDraw.checkEquals;
 
@@ -350,11 +347,14 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.foregroundReader = convertForegroundReader(clientPropertyDraw.foregroundReader);
         propertyDraw.imageReader = convertImageReader(clientPropertyDraw.imageReader);
         propertyDraw.hasDynamicImage = clientPropertyDraw.hasDynamicImage;
-        propertyDraw.commentReader = convertCommentReader(clientPropertyDraw.commentReader);
-        propertyDraw.commentElementClassReader = convertCommentElementClassReader(clientPropertyDraw.commentElementClassReader);
-        propertyDraw.placeholderReader = convertPlaceholderReader(clientPropertyDraw.placeholderReader);
-        propertyDraw.tooltipReader = convertTooltipReader(clientPropertyDraw.tooltipReader);
-        propertyDraw.valueTooltipReader = convertValueTooltipReader(clientPropertyDraw.valueTooltipReader);
+        propertyDraw.commentReader = convertExtraPropReader(clientPropertyDraw.commentReader);
+        propertyDraw.commentElementClassReader = convertExtraPropReader(clientPropertyDraw.commentElementClassReader);
+        propertyDraw.placeholderReader = convertExtraPropReader(clientPropertyDraw.placeholderReader);
+        propertyDraw.patternReader = convertExtraPropReader(clientPropertyDraw.patternReader);
+        propertyDraw.regexpReader = convertExtraPropReader(clientPropertyDraw.regexpReader);
+        propertyDraw.regexpMessageReader = convertExtraPropReader(clientPropertyDraw.regexpMessageReader);
+        propertyDraw.tooltipReader = convertExtraPropReader(clientPropertyDraw.tooltipReader);
+        propertyDraw.valueTooltipReader = convertExtraPropReader(clientPropertyDraw.valueTooltipReader);
 
         propertyDraw.formula = clientPropertyDraw.formula;
         if(clientPropertyDraw.formula != null) {
@@ -396,6 +396,9 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.panelCommentAlignment = convertFlexAlignment(clientPropertyDraw.panelCommentAlignment);
 
         propertyDraw.placeholder = clientPropertyDraw.placeholder;
+        propertyDraw.pattern = clientPropertyDraw.pattern;
+        propertyDraw.regexp = clientPropertyDraw.regexp;
+        propertyDraw.regexpMessage = clientPropertyDraw.regexpMessage;
 
         propertyDraw.tooltip = clientPropertyDraw.tooltip;
         propertyDraw.valueTooltip = clientPropertyDraw.valueTooltip;
@@ -540,24 +543,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         return reader == null ? null : new GCustomOptionsReader(reader.getID());
     }
 
-    public GCommentReader convertCommentReader(ClientPropertyDraw.CommentReader reader) {
-        return reader == null ? null : new GCommentReader(reader.getID(), reader.getGroupObject() != null ? reader.getGroupObject().ID : -1);
-    }
-
-    public GCommentElementClassReader convertCommentElementClassReader(ClientPropertyDraw.CommentElementClassReader reader) {
-        return reader == null ? null : new GCommentElementClassReader(reader.getID(), reader.getGroupObject() != null ? reader.getGroupObject().ID : -1);
-    }
-
-    public GPlaceholderReader convertPlaceholderReader(ClientPropertyDraw.PlaceholderReader reader) {
-        return reader == null ? null : new GPlaceholderReader(reader.getID(), reader.getGroupObject() != null ? reader.getGroupObject().ID : -1);
-    }
-
-    public GTooltipReader convertTooltipReader(ClientPropertyDraw.TooltipReader reader) {
-        return reader == null ? null : new GTooltipReader(reader.getID(), reader.getGroupObject() != null ? reader.getGroupObject().ID : -1);
-    }
-
-    public GValueTooltipReader convertValueTooltipReader(ClientPropertyDraw.ValueTooltipReader reader) {
-        return reader == null ? null : new GValueTooltipReader(reader.getID(), reader.getGroupObject() != null ? reader.getGroupObject().ID : -1);
+    public GExtraPropReader convertExtraPropReader(ClientPropertyDraw.ExtraPropReader reader) {
+        return reader == null ? null : new GExtraPropReader(reader.getID(), reader.getGroupObject() != null ? reader.getGroupObject().ID : -1, reader.getType());
     }
 
     @Cached

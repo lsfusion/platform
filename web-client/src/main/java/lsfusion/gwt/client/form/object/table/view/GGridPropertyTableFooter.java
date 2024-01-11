@@ -89,4 +89,19 @@ public class GGridPropertyTableFooter extends Header<String> implements RenderCo
     public boolean isInputRemoveAllPMB() {
         return true;
     }
+
+    @Override
+    public String getPattern() {
+        return property.getPattern();
+    }
+
+    @Override
+    public String getRegexp() {
+        return property.regexp;
+    }
+
+    @Override
+    public String getRegexpMessage() {
+        return property.regexpMessage;
+    }
 }

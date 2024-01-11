@@ -4,14 +4,13 @@ import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.server.base.AppServerImage;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.print.ReportFieldExtraType;
 import lsfusion.interop.form.property.Compare;
-import lsfusion.server.base.caches.ManualLazy;
+import lsfusion.server.base.AppServerImage;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeSerializer;
@@ -21,11 +20,7 @@ import lsfusion.server.logics.classes.data.ColorClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
-import lsfusion.server.logics.classes.data.integral.IntegralClass;
 import lsfusion.server.logics.classes.data.link.LinkClass;
-import lsfusion.server.logics.classes.data.time.DateClass;
-import lsfusion.server.logics.classes.data.time.DateTimeClass;
-import lsfusion.server.logics.classes.data.time.TimeClass;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncInput;
 import lsfusion.server.logics.form.interactive.action.async.AsyncNoWaitExec;
@@ -57,9 +52,6 @@ import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.text.DecimalFormat;
-import java.text.Format;
-import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -76,8 +68,6 @@ public class PropertyDrawView extends BaseComponentView {
 
     public Boolean changeOnSingleClick;
     public boolean hide;
-    public String regexp;
-    public String regexpMessage;
     public Long maxValue;
     public Boolean echoSymbols;
     public boolean noSort;
@@ -108,8 +98,6 @@ public class PropertyDrawView extends BaseComponentView {
 
     public boolean drawAsync = false;
 
-    public String pattern;
-
     public Boolean focusable;
 
     public boolean panelCaptionVertical = false;
@@ -127,6 +115,9 @@ public class PropertyDrawView extends BaseComponentView {
     public FlexAlignment panelCommentAlignment;
 
     public LocalizedString placeholder;
+    public LocalizedString pattern;
+    public LocalizedString regexp;
+    public LocalizedString regexpMessage;
 
     public LocalizedString tooltip;
     public LocalizedString valueTooltip;
@@ -453,8 +444,6 @@ public class PropertyDrawView extends BaseComponentView {
 
         pool.writeString(outStream, getDrawCaption());
         AppServerImage.serialize(getImage(pool.context), outStream, pool);
-        pool.writeString(outStream, regexp);
-        pool.writeString(outStream, regexpMessage);
         pool.writeLong(outStream, maxValue);
         outStream.writeBoolean(echoSymbols);
         outStream.writeBoolean(noSort);
@@ -482,8 +471,6 @@ public class PropertyDrawView extends BaseComponentView {
 
         outStream.writeBoolean(drawAsync);
 
-        pool.writeObject(outStream, getFormat(pool.context));
-
         outStream.writeBoolean(entity.isList(pool.context));
 
         pool.writeObject(outStream, focusable);
@@ -504,6 +491,9 @@ public class PropertyDrawView extends BaseComponentView {
         pool.writeObject(outStream, panelCommentAlignment);
 
         pool.writeString(outStream, ThreadLocalContext.localize(getPlaceholder(pool.context)));
+        pool.writeString(outStream, ThreadLocalContext.localize(pattern));
+        pool.writeString(outStream, ThreadLocalContext.localize(regexp));
+        pool.writeString(outStream, ThreadLocalContext.localize(regexpMessage));
 
         pool.writeString(outStream, ThreadLocalContext.localize(tooltip));
         pool.writeString(outStream, ThreadLocalContext.localize(valueTooltip));
@@ -676,7 +666,7 @@ public class PropertyDrawView extends BaseComponentView {
     }
 
     public String getPattern() {
-        return pattern;
+        return pattern.getSourceString();
     }
 
     @Override
@@ -686,8 +676,6 @@ public class PropertyDrawView extends BaseComponentView {
         boxed = inStream.readBoolean();
 
         caption = LocalizedString.create(pool.readString(inStream));
-        regexp = pool.readString(inStream);
-        regexpMessage = pool.readString(inStream);
         maxValue = pool.readLong(inStream);
         echoSymbols = inStream.readBoolean();
         noSort = inStream.readBoolean();
@@ -705,8 +693,6 @@ public class PropertyDrawView extends BaseComponentView {
         showChangeKey = inStream.readBoolean();
         changeMouse = pool.readObject(inStream);
         changeMousePriority = pool.readInt(inStream);
-
-        pattern = pool.readObject(inStream);
 
         focusable = pool.readObject(inStream);
 
@@ -865,29 +851,6 @@ public class PropertyDrawView extends BaseComponentView {
         if(eventAction != null)
             return eventAction.property.hasFlow(type);
         return false;
-    }
-
-
-    private Format format;
-    private boolean formatCalculated;
-    @ManualLazy
-    public Format getFormat(FormInstanceContext context) {
-        if(pattern != null) {
-            if(!formatCalculated) {
-                if(isProperty(context)) {
-                    Type type = getAssertValueType(context);
-                    if (type instanceof IntegralClass) {
-                        format = new DecimalFormat(pattern);
-                    } else if (type instanceof DateClass || type instanceof TimeClass || type instanceof DateTimeClass) {
-                        format = new SimpleDateFormat(pattern);
-                    }
-                }
-                formatCalculated = true;
-            }
-            return format;
-        }
-
-        return null;
     }
 
     public Boolean getChangeOnSingleClick(FormInstanceContext context) {

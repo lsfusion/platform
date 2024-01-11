@@ -18,6 +18,7 @@ import lsfusion.gwt.client.form.property.cell.classes.GFilesDTO;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.KeepCellEditor;
+import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import org.moxieapps.gwt.uploader.client.File;
 import org.moxieapps.gwt.uploader.client.Uploader;
 import org.moxieapps.gwt.uploader.client.events.UploadErrorEvent;
@@ -95,7 +96,7 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
     }
 
     @Override
-    public void start(EventHandler handler, Element parent, PValue oldValue) {
+    public void start(EventHandler handler, Element parent, RenderContext renderContext, PValue oldValue) {
         Event event;
         if(handler != null && GKeyStroke.isDropEvent(event = handler.event)) {
             drop(event, parent);

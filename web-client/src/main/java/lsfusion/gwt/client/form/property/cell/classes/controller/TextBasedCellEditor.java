@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.JsDate;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.Style;
@@ -43,7 +42,7 @@ import java.util.List;
 import java.util.function.BiFunction;
 
 import static com.google.gwt.user.client.Event.ONPASTE;
-import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
+import static lsfusion.gwt.client.base.GwtClientUtils.*;
 import static lsfusion.gwt.client.form.filter.user.GCompare.CONTAINS;
 
 // now it's a sort of mix of RequestKeepValueCellEditor and RequestReplaceValueCellEditor (depending on needReplace)
@@ -79,6 +78,24 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
         }
     }
 
+    private static String REGEXP_ATTR = "pattern"; //attribute for validity.patternMismatch
+    private void updateRegexp(Element element, String regexp) {
+        if(regexp != null) {
+            element.setAttribute(REGEXP_ATTR, regexp);
+        } else {
+            element.removeAttribute(REGEXP_ATTR);
+        }
+    }
+
+    private static String REGEXP_MESSAGE_ATTR = "title"; //attribute for validity.patternMismatch
+    private void updateRegexpMessage(Element element, String regexpMessage) {
+        if(regexpMessage != null) {
+            element.setAttribute(REGEXP_MESSAGE_ATTR, regexpMessage);
+        } else {
+            element.removeAttribute(REGEXP_MESSAGE_ATTR);
+        }
+    }
+
     public static String checkStartEvent(Event event, Element parent, BiFunction<Element, String, Boolean> checkInputValidity) {
         String value = null;
         if (GKeyStroke.isCharDeleteKeyEvent(event)) {
@@ -91,9 +108,10 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
     }
 
     protected boolean started;
+    protected String pattern;
 
     @Override
-    public void start(EventHandler handler, Element parent, PValue oldValue) {
+    public void start(EventHandler handler, Element parent, RenderContext renderContext, PValue oldValue) {
 
         if(GMouseStroke.isChangeEvent(handler.event)) {
             Integer dialogInputActionIndex = property.getDialogInputActionIndex(actions);
@@ -103,8 +121,9 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
             }
         }
         started = true;
+        pattern = renderContext.getPattern();
 
-        super.start(handler, parent, oldValue);
+        super.start(handler, parent, renderContext, oldValue);
 
         boolean allSuggestions = true;
         if(needReplace(parent)) {
@@ -133,6 +152,21 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
                 suggestBox.showSuggestionList(allSuggestions);
             }
         }
+
+        String mask = property.getMaskFromPattern(renderContext.getPattern());
+        if(mask != null) {
+            GwtClientUtils.setMask(inputElement, mask);
+        }
+
+        String regexp = renderContext.getRegexp();
+        if (regexp != null) {
+            updateRegexp(inputElement, regexp);
+        }
+
+        String regexpMessage = renderContext.getRegexpMessage();
+        if (regexpMessage != null) {
+            updateRegexpMessage(inputElement, regexpMessage);
+        }
     }
 
     private boolean hasList() {
@@ -146,6 +180,11 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
             if (hasList()) {
                 suggestBox.hideSuggestions();
                 suggestBox = null;
+            }
+
+            String mask = property.getMaskFromPattern(pattern);
+            if(mask != null) {
+                GwtClientUtils.removeMask(inputElement);
             }
 
             super.stop(parent, cancel, blurred);
@@ -284,6 +323,15 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
                 throw new InvalidEditException();
         }
 
+        if(property.getMaskFromPattern(pattern) != null && !GwtClientUtils.isCompleteMask(inputElement))
+            throw new InvalidEditException();
+
+        boolean patternMismatch = isPatternMismatch(inputElement);
+        if (patternMismatch) {
+            reportValidity(inputElement);
+            throw new InvalidEditException(true);
+        }
+
         String stringValue = getTextInputValue();
         if (hasList && contextAction == null && completionType.isCheckCommitInputInList() && !suggestBox.isValidValue(stringValue)) {
             throw new InvalidEditException();
@@ -294,6 +342,14 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
             throw new InvalidEditException();
         }
     }
+
+    private native void reportValidity(Element element)/*-{
+        element.reportValidity();
+    }-*/;
+
+    private native boolean isPatternMismatch(Element element)/*-{
+        return element.validity.patternMismatch;
+    }-*/;
 
     protected boolean isThisCellEditor() {
 //        assert hasList();
@@ -535,7 +591,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
 
         if(this instanceof FormatCellEditor) {
             GFormatType formatType = ((FormatCellEditor) this).getFormatType();
-            return formatType.parseString(inputText, property.pattern);
+            return formatType.parseString(inputText, pattern);
         }
         return PValue.getPValue(inputText);
     }
@@ -546,7 +602,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
 
         if(this instanceof FormatCellEditor) {
             GFormatType formatType = ((FormatCellEditor) this).getFormatType();
-            return formatType.formatString(value, property.pattern);
+            return formatType.formatString(value, pattern);
         }
         return PValue.getStringValue(value);
     }

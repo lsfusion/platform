@@ -431,17 +431,32 @@ public class GGridController extends GAbstractTableController {
     }
 
     @Override
-    public void updatePlaceholderValues(GPlaceholderReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+    public void updatePlaceholderValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         table.updatePlaceholderValues(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
-    public void updateTooltipValues(GTooltipReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+    public void updatePatternValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+        table.updatePatternValues(formController.getProperty(reader.propertyID), values);
+    }
+
+    @Override
+    public void updateRegexpValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+        table.updateRegexpValues(formController.getProperty(reader.propertyID), values);
+    }
+
+    @Override
+    public void updateRegexpMessageValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+        table.updateRegexpMessageValues(formController.getProperty(reader.propertyID), values);
+    }
+
+    @Override
+    public void updateTooltipValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         table.updateTooltipValues(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
-    public void updateValueTooltipValues(GValueTooltipReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+    public void updateValueTooltipValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         table.updateValueTooltipValues(formController.getProperty(reader.propertyID), values);
     }
 
@@ -481,11 +496,11 @@ public class GGridController extends GAbstractTableController {
     }
 
     @Override
-    public void updatePropertyComments(GCommentReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+    public void updatePropertyComments(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
     }
 
     @Override
-    public void updateCellCommentElementClasses(GCommentElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+    public void updateCellCommentElementClasses(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
     }
 
     @Override

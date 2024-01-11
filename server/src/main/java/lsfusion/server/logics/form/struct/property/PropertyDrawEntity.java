@@ -18,10 +18,7 @@ import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.interop.form.property.PropertyGroupType;
 import lsfusion.interop.form.property.PropertyReadType;
-import lsfusion.server.base.caches.IdentityInstanceLazy;
-import lsfusion.server.base.caches.IdentityStartLazy;
-import lsfusion.server.base.caches.IdentityStrongLazy;
-import lsfusion.server.base.caches.ParamLazy;
+import lsfusion.server.base.caches.*;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
@@ -558,8 +555,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         MAddSet<ActionOrPropertyObjectEntity<?, ?>> propertyObjects = SetFact.mAddSet();
 
         PropertyDrawExtraType[] neededTypes = {CAPTION, FOOTER, SHOWIF, VALUEELEMENTCLASS, CAPTIONELEMENTCLASS,
-                BACKGROUND, FOREGROUND, IMAGE, READONLYIF, COMMENT, COMMENTELEMENTCLASS, PLACEHOLDER,
-                TOOLTIP, VALUETOOLTIP};
+                BACKGROUND, FOREGROUND, IMAGE, READONLYIF, COMMENT, COMMENTELEMENTCLASS, PLACEHOLDER, PATTERN,
+                REGEXP, REGEXPMESSAGE, TOOLTIP, VALUETOOLTIP};
         for (PropertyDrawExtraType type : neededTypes) {
             PropertyObjectEntity<?> prop = getProperty.apply(type);
             if (prop != null) {

@@ -38,7 +38,7 @@ public class IntervalCellEditor  extends DateRangePickerBasedCellEditor {
 
     @Override
     protected String getPattern() {
-        return type.getSingleFormat(property.pattern).getPattern();
+        return type.getSingleFormat(pattern).getPattern();
     }
 
     @Override

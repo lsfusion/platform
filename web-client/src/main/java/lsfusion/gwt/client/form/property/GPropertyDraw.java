@@ -41,6 +41,7 @@ import java.util.*;
 
 import static com.google.gwt.dom.client.BrowserEvents.KEYDOWN;
 import static lsfusion.gwt.client.base.GwtClientUtils.createTooltipHorizontalSeparator;
+import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
 import static lsfusion.gwt.client.form.event.GKeyStroke.*;
 
 public class GPropertyDraw extends GComponent implements GPropertyReader, Serializable {
@@ -101,8 +102,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GType cellType;
     public GType valueType;
     public boolean differentValue;
-    public String pattern;
-    public String defaultPattern;
+
     public GClass returnClass;
 
     public String tag;
@@ -347,11 +347,14 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GForegroundReader foregroundReader;
     public GImageReader imageReader;
 
-    public GCommentReader commentReader;
-    public GCommentElementClassReader commentElementClassReader;
-    public GPlaceholderReader placeholderReader;
-    public GTooltipReader tooltipReader;
-    public GValueTooltipReader valueTooltipReader;
+    public GExtraPropReader commentReader;
+    public GExtraPropReader commentElementClassReader;
+    public GExtraPropReader placeholderReader;
+    public GExtraPropReader patternReader;
+    public GExtraPropReader regexpReader;
+    public GExtraPropReader regexpMessageReader;
+    public GExtraPropReader tooltipReader;
+    public GExtraPropReader valueTooltipReader;
 
     // for pivoting
     public String formula;
@@ -387,6 +390,12 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GFlexAlignment panelCommentAlignment;
 
     public String placeholder;
+
+    public String pattern;
+    public String userPattern;
+
+    public String regexp;
+    public String regexpMessage;
 
     public String tooltip;
     public String valueTooltip;
@@ -588,9 +597,22 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return getRenderType(rendererType).createCellRenderer(this);
     }
 
-    public void setUserPattern(String pattern) {
-//        if(baseType instanceof GFormatType)
-        this.pattern = pattern != null ? pattern : defaultPattern;
+    public void setUserPattern(String userPattern) {
+        this.userPattern = userPattern;
+    }
+
+    public String getMaskFromPattern(String pattern) {
+        if (pattern != null) {
+            if (valueType instanceof GADateType || valueType instanceof GIntervalType) {
+                return pattern.replaceAll("[dMyHms]", "9");
+            } else if (valueType instanceof GIntegralType) {
+                if (pattern.equals("#,##0.##"))
+                    return "9{1,5}[,9{1,2}]";
+                else return null;
+            }
+            return pattern;
+        }
+        return null;
     }
 
     public PValue parsePaste(String s, GType parseType) {
@@ -600,10 +622,14 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         if(parseType == null)
             return null;
         try {
-            return parseType.parseString(s, pattern);
+            return parseType.parseString(s, getPattern());
         } catch (ParseException pe) {
             return null;
         }
+    }
+
+    public String getPattern() {
+        return nvl(userPattern, pattern);
     }
 
     public boolean canUseChangeValueForRendering(GType type, RendererType rendererType) {

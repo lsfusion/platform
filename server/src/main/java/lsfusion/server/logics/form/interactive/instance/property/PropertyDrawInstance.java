@@ -176,6 +176,9 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public final PropertyObjectInstance<?> propertyComment;
     public final PropertyObjectInstance<?> propertyCommentElementClass;
     public final PropertyObjectInstance<?> propertyPlaceholder;
+    public final PropertyObjectInstance<?> propertyPattern;
+    public final PropertyObjectInstance<?> propertyRegexp;
+    public final PropertyObjectInstance<?> propertyRegexpMessage;
     public final PropertyObjectInstance<?> propertyTooltip;
     public final PropertyObjectInstance<?> propertyValueTooltip;
     public final ImList<PropertyObjectInstance<?>> propertiesAggrLast;
@@ -192,6 +195,9 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public ExtraReaderInstance commentReader;
     public ExtraReaderInstance commentElementClassReader;
     public ExtraReaderInstance placeholderReader;
+    public ExtraReaderInstance patternReader;
+    public ExtraReaderInstance regexpReader;
+    public ExtraReaderInstance regexpMessageReader;
     public ExtraReaderInstance tooltipReader;
     public ExtraReaderInstance valueTooltipReader;
     public final ImOrderSet<LastReaderInstance> aggrLastReaders;
@@ -221,6 +227,9 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         propertyComment = propertyExtras.get(PropertyDrawExtraType.COMMENT);
         propertyCommentElementClass = propertyExtras.get(PropertyDrawExtraType.COMMENTELEMENTCLASS);
         propertyPlaceholder = propertyExtras.get(PropertyDrawExtraType.PLACEHOLDER);
+        propertyPattern = propertyExtras.get(PropertyDrawExtraType.PATTERN);
+        propertyRegexp = propertyExtras.get(PropertyDrawExtraType.REGEXP);
+        propertyRegexpMessage = propertyExtras.get(PropertyDrawExtraType.REGEXPMESSAGE);
         propertyTooltip = propertyExtras.get(PropertyDrawExtraType.TOOLTIP);
         propertyValueTooltip = propertyExtras.get(PropertyDrawExtraType.VALUETOOLTIP);
         this.propertiesAggrLast = propertiesAggrLast;
@@ -237,6 +246,9 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         commentReader = new ExtraReaderInstance(PropertyDrawExtraType.COMMENT, propertyComment);
         commentElementClassReader = new ExtraReaderInstance(PropertyDrawExtraType.COMMENTELEMENTCLASS, propertyCommentElementClass);
         placeholderReader = new ExtraReaderInstance(PropertyDrawExtraType.PLACEHOLDER, propertyPlaceholder);
+        patternReader = new ExtraReaderInstance(PropertyDrawExtraType.PATTERN, propertyPattern);
+        regexpReader = new ExtraReaderInstance(PropertyDrawExtraType.REGEXP, propertyRegexp);
+        regexpMessageReader = new ExtraReaderInstance(PropertyDrawExtraType.REGEXPMESSAGE, propertyRegexpMessage);
         tooltipReader = new ExtraReaderInstance(PropertyDrawExtraType.TOOLTIP, propertyTooltip);
         valueTooltipReader = new ExtraReaderInstance(PropertyDrawExtraType.VALUETOOLTIP, propertyValueTooltip);
         aggrLastReaders = SetFact.toOrderExclSet(propertiesAggrLast.size(), LastReaderInstance::new);

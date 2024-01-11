@@ -62,6 +62,24 @@ public abstract class GTreeGridRecord extends GridDataRecord {
     public String getPlaceholder(GPropertyDraw property) {
         return (String) getAttribute(property.sID + "_placeholder");
     }
+    public void setPattern(GPropertyDraw property, String pattern) {
+        setAttribute(property.sID + "_pattern", pattern);
+    }
+    public String getPattern(GPropertyDraw property) {
+        return (String) getAttribute(property.sID + "_pattern");
+    }
+    public void setRegexp(GPropertyDraw property, String regexp) {
+        setAttribute(property.sID + "_regexp", regexp);
+    }
+    public String getRegexp(GPropertyDraw property) {
+        return (String) getAttribute(property.sID + "_regexp");
+    }
+    public void setRegexpMessage(GPropertyDraw property, String regexpMessage) {
+        setAttribute(property.sID + "_regexpmessage", regexpMessage);
+    }
+    public String getRegexpMessage(GPropertyDraw property) {
+        return (String) getAttribute(property.sID + "_regexpmessage");
+    }
     public void setValueTooltip(GPropertyDraw property, String valueTooltip) {
         setAttribute(property.sID + "_valueTooltip", valueTooltip);
     }

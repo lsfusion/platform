@@ -81,6 +81,9 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> cellBackgroundValues = new NativeSIDMap<>();
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> cellForegroundValues = new NativeSIDMap<>();
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> placeholders = new NativeSIDMap<>();
+    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> patterns = new NativeSIDMap<>();
+    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> regexps = new NativeSIDMap<>();
+    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> regexpMessages = new NativeSIDMap<>();
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> tooltips = new NativeSIDMap<>();
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> valueTooltips = new NativeSIDMap<>();
     protected NativeHashMap<GGroupObjectValue, PValue> rowBackgroundValues = new NativeHashMap<>();
@@ -243,6 +246,21 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     public GFont getFont() {
         return font;
     }
+
+    public String getPattern(Cell cell, GPropertyDraw property, GridPropertyColumn column) {
+        T row = (T) cell.getRow();
+        return column.getPattern(property, row);
+    }
+
+    public String getRegexp(Cell cell, GPropertyDraw property, GridPropertyColumn column) {
+        T row = (T) cell.getRow();
+        return column.getRegexp(property, row);
+    }
+
+    public String getRegexpMessage(Cell cell, GPropertyDraw property, GridPropertyColumn column) {
+        T row = (T) cell.getRow();
+        return column.getRegexpMessage(property, row);
+    }
     
     public GGroupObjectValue getSelectedKey() {
         GridDataRecord selectedRowValue = getSelectedRowValue();
@@ -315,6 +333,18 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     public void updatePlaceholderValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
         placeholders.put(propertyDraw, values);
+    }
+
+    public void updatePatternValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        patterns.put(propertyDraw, values);
+    }
+
+    public void updateRegexpValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        regexps.put(propertyDraw, values);
+    }
+
+    public void updateRegexpMessageValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        regexpMessages.put(propertyDraw, values);
     }
 
     public void updateTooltipValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
@@ -746,6 +776,9 @@ protected Double getUserFlex(int i) {
         protected abstract String getBackground(GPropertyDraw property, T record);
         protected abstract String getForeground(GPropertyDraw property, T record);
         protected abstract String getPlaceholder(GPropertyDraw property, T record);
+        protected abstract String getPattern(GPropertyDraw property, T record);
+        protected abstract String getRegexp(GPropertyDraw property, T record);
+        protected abstract String getRegexpMessage(GPropertyDraw property, T record);
         protected abstract String getValueTooltip(GPropertyDraw property, T record);
 
         @Override
@@ -826,6 +859,21 @@ protected Double getUserFlex(int i) {
             @Override
             public boolean isInputRemoveAllPMB() {
                 return true;
+            }
+
+            @Override
+            public String getPattern() {
+                return GGridPropertyTable.this.getPattern(cell, property, column);
+            }
+
+            @Override
+            public String getRegexp() {
+                return GGridPropertyTable.this.getRegexp(cell, property, column);
+            }
+
+            @Override
+            public String getRegexpMessage() {
+                return GGridPropertyTable.this.getRegexpMessage(cell, property, column);
             }
         };
     }
@@ -914,6 +962,23 @@ protected Double getUserFlex(int i) {
             public String getPlaceholder() {
                 T row = (T) cell.getRow();
                 return column.getPlaceholder(property, row);
+            }
+
+            @Override
+            public String getPattern() {
+                return GGridPropertyTable.this.getPattern(cell, property, column);
+            }
+
+            @Override
+            public String getRegexp() {
+                T row = (T) cell.getRow();
+                return column.getRegexp(property, row);
+            }
+
+            @Override
+            public String getRegexpMessage() {
+                T row = (T) cell.getRow();
+                return column.getRegexpMessage(property, row);
             }
 
             @Override

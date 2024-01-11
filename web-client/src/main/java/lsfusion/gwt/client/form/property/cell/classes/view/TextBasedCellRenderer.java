@@ -1,6 +1,8 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
-import com.google.gwt.dom.client.*;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.InputElement;
+import com.google.gwt.dom.client.TextAreaElement;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -9,6 +11,8 @@ import lsfusion.gwt.client.form.property.cell.classes.controller.TextBasedCellEd
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
+
+import java.util.Objects;
 
 import static lsfusion.gwt.client.view.StyleDefaults.CELL_HORIZONTAL_PADDING;
 
@@ -55,7 +59,7 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
 
     @Override
     protected Object getExtraValue(UpdateContext updateContext) {
-        return updateContext.getPlaceholder();
+        return new ExtraValue(updateContext.getPlaceholder(), updateContext.getPattern());
     }
 
     @Override
@@ -118,8 +122,11 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
     public boolean updateContent(Element element, PValue value, Object extraValue, UpdateContext updateContext) {
         boolean isNull = value == null;
 
+        String placeholder = ((ExtraValue) extraValue).placeholder;
+        String pattern = ((ExtraValue) extraValue).pattern;
+
         RendererType rendererType = updateContext.getRendererType();
-        String innerText = isNull ? "" : format(value, rendererType);
+        String innerText = isNull ? "" : format(value, rendererType, pattern);
         if(isNull) {
             element.addClassName("text-based-value-null");
         } else {
@@ -131,8 +138,6 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
                 element.removeClassName("text-based-value-empty");
         }
         element.setTitle(property.echoSymbols ? "" : innerText);
-
-        String placeholder = extraValue != null ? ((String) extraValue) : null;
 
         Element inputElement = getInputElement(element);
         if(inputElement != null) {
@@ -164,5 +169,27 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
 
     protected void updateInputContent(InputElement inputElement, String innerText, PValue value, RendererType rendererType) {
         TextBasedCellEditor.setTextInputValue(inputElement, innerText);
+    }
+
+    public static class ExtraValue {
+        public final String placeholder;
+        public final String pattern;
+
+        public ExtraValue(String placeholder, String pattern) {
+            this.placeholder = placeholder;
+            this.pattern = pattern;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return this == o || o instanceof ExtraValue
+                    && GwtClientUtils.nullEquals(placeholder, ((ExtraValue) o).placeholder)
+                    && GwtClientUtils.nullEquals(pattern, ((ExtraValue) o).pattern);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(placeholder, pattern);
+        }
     }
 }

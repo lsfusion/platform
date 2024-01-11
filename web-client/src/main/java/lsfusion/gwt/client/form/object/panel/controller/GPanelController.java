@@ -160,7 +160,7 @@ public class GPanelController extends GPropertyController {
     }
 
     @Override
-    public void updatePropertyComments(GCommentReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+    public void updatePropertyComments(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         GPropertyDraw property = formController.getProperty(reader.propertyID);
         propertyControllers.get(property).setPropertyComments(values);
 
@@ -168,7 +168,7 @@ public class GPanelController extends GPropertyController {
     }
 
     @Override
-    public void updateCellCommentElementClasses(GCommentElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+    public void updateCellCommentElementClasses(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         GPropertyDraw property = formController.getProperty(reader.propertyID);
         propertyControllers.get(property).setCellCommentElementClasses(values);
 
@@ -176,7 +176,7 @@ public class GPanelController extends GPropertyController {
     }
 
     @Override
-    public void updatePlaceholderValues(GPlaceholderReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+    public void updatePlaceholderValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         GPropertyDraw property = formController.getProperty(reader.propertyID);
         propertyControllers.get(property).setPropertyPlaceholders(values);
 
@@ -184,7 +184,31 @@ public class GPanelController extends GPropertyController {
     }
 
     @Override
-    public void updateTooltipValues(GTooltipReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+    public void updatePatternValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+        GPropertyDraw property = formController.getProperty(reader.propertyID);
+        propertyControllers.get(property).setPropertyPatterns(values);
+
+        updatedProperties.put(property, TRUE);
+    }
+
+    @Override
+    public void updateRegexpValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+        GPropertyDraw property = formController.getProperty(reader.propertyID);
+        propertyControllers.get(property).setPropertyRegexps(values);
+
+        updatedProperties.put(property, TRUE);
+    }
+
+    @Override
+    public void updateRegexpMessageValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+        GPropertyDraw property = formController.getProperty(reader.propertyID);
+        propertyControllers.get(property).setPropertyRegexpMessages(values);
+
+        updatedProperties.put(property, TRUE);
+    }
+
+    @Override
+    public void updateTooltipValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         GPropertyDraw property = formController.getProperty(reader.propertyID);
         propertyControllers.get(property).setPropertyTooltips(values);
 
@@ -192,7 +216,7 @@ public class GPanelController extends GPropertyController {
     }
 
     @Override
-    public void updateValueTooltipValues(GValueTooltipReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+    public void updateValueTooltipValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         GPropertyDraw property = formController.getProperty(reader.propertyID);
         propertyControllers.get(property).setPropertyValueTooltips(values);
 

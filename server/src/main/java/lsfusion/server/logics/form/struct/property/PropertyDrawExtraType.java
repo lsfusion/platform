@@ -198,6 +198,54 @@ public enum PropertyDrawExtraType {
             return "PLACEHOLDER";
         }
     },
+    PATTERN {
+        @Override
+        public ReportFieldExtraType getReportExtraType() {
+            return null;
+        }
+
+        @Override
+        public byte getPropertyReadType() {
+            return PropertyReadType.PATTERN;
+        }
+
+        @Override
+        public String getText() {
+            return "PATTERN";
+        }
+    },
+    REGEXP {
+        @Override
+        public ReportFieldExtraType getReportExtraType() {
+            return null;
+        }
+
+        @Override
+        public byte getPropertyReadType() {
+            return PropertyReadType.REGEXP;
+        }
+
+        @Override
+        public String getText() {
+            return "REGEXP";
+        }
+    },
+    REGEXPMESSAGE {
+        @Override
+        public ReportFieldExtraType getReportExtraType() {
+            return null;
+        }
+
+        @Override
+        public byte getPropertyReadType() {
+            return PropertyReadType.REGEXPMESSAGE;
+        }
+
+        @Override
+        public String getText() {
+            return "REGEXPMESSAGE";
+        }
+    },
     TOOLTIP {
         @Override
         public ReportFieldExtraType getReportExtraType() {

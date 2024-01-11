@@ -62,7 +62,7 @@ public class LogicalCellRenderer extends InputBasedCellRenderer {
 //    }
 
     @Override
-    public String format(PValue value, RendererType rendererType) {
+    public String format(PValue value, RendererType rendererType, String pattern) {
         if(threeState) {
             Boolean value3s = get3sBooleanValue(value);
             return value3s != null ? (value3s ? "TRUE" : "FALSE") : "NULL";

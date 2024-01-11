@@ -503,6 +503,21 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
 
         @Override
+        protected String getPattern(GPropertyDraw property, GTreeGridRecord record) {
+            return record.getPattern(property);
+        }
+
+        @Override
+        protected String getRegexp(GPropertyDraw property, GTreeGridRecord record) {
+            return record.getRegexp(property);
+        }
+
+        @Override
+        protected String getRegexpMessage(GPropertyDraw property, GTreeGridRecord record) {
+            return record.getRegexpMessage(property);
+        }
+
+        @Override
         protected String getValueTooltip(GPropertyDraw property, GTreeGridRecord record) {
             return record.getValueTooltip(property);
         }
@@ -583,6 +598,24 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     @Override
     public void updatePlaceholderValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
         super.updatePlaceholderValues(propertyDraw, values);
+        dataUpdated = true;
+    }
+
+    @Override
+    public void updatePatternValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        super.updatePatternValues(propertyDraw, values);
+        dataUpdated = true;
+    }
+
+    @Override
+    public void updateRegexpValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        super.updateRegexpValues(propertyDraw, values);
+        dataUpdated = true;
+    }
+
+    @Override
+    public void updateRegexpMessageValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        super.updateRegexpMessageValues(propertyDraw, values);
         dataUpdated = true;
     }
 
@@ -835,6 +868,24 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                         if (propPlaceholders != null)
                             placeholder = propPlaceholders.get(key);
                         objectRecord.setPlaceholder(property, placeholder == null ? property.placeholder : PValue.getStringValue(placeholder));
+
+                        PValue pattern = null;
+                        NativeHashMap<GGroupObjectValue, PValue> propPatterns = patterns.get(property);
+                        if (propPatterns != null)
+                            pattern = propPatterns.get(key);
+                        objectRecord.setPattern(property, pattern == null ? property.getPattern() : PValue.getStringValue(pattern));
+
+                        PValue regexp = null;
+                        NativeHashMap<GGroupObjectValue, PValue> propRegexps = regexps.get(property);
+                        if (propRegexps != null)
+                            regexp = propRegexps.get(key);
+                        objectRecord.setRegexp(property, regexp == null ? property.regexp : PValue.getStringValue(regexp));
+
+                        PValue regexpMessage = null;
+                        NativeHashMap<GGroupObjectValue, PValue> propRegexpMessages = regexpMessages.get(property);
+                        if (propRegexpMessages != null)
+                            regexpMessage = propRegexps.get(key);
+                        objectRecord.setRegexpMessage(property, regexp == null ? property.regexpMessage : PValue.getStringValue(regexpMessage));
 
                         PValue valueTooltip = null;
                         NativeHashMap<GGroupObjectValue, PValue> propValueTooltips = valueTooltips.get(property);

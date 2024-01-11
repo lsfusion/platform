@@ -40,6 +40,12 @@ public interface UpdateContext {
 
     default String getPlaceholder() { return null; }
 
+    default String getPattern() { return null; }
+
+    default String getRegexp() { return null; }
+
+    default String getRegexpMessage() { return null; }
+
     default String getTooltip() { return null; }
 
     default String getValueTooltip() { return null; }

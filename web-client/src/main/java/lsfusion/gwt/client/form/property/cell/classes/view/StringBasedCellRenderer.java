@@ -21,7 +21,7 @@ public abstract class StringBasedCellRenderer extends TextBasedCellRenderer {
     }
 
     @Override
-    public String format(PValue value, RendererType rendererType) {
+    public String format(PValue value, RendererType rendererType, String pattern) {
         if (echoSymbols)
             return multiplyString(EscapeUtils.UNICODE_BULLET, 6);
 

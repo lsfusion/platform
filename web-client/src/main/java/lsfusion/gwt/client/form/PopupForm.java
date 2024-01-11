@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form;
 
-import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.Event;
@@ -14,6 +13,7 @@ import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
+import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
 import lsfusion.gwt.client.navigator.window.GModalityWindowFormType;
@@ -25,7 +25,7 @@ public class PopupForm extends EditingForm {
     private class PopupFormCellEditor extends CellEditor {
 
         @Override
-        public void start(EventHandler handler, Element parent, PValue oldValue) {
+        public void start(EventHandler handler, Element parent, RenderContext renderContext, PValue oldValue) {
             Event event;
             if(handler != null && DataGrid.isMouseEvent(event = handler.event)) {
                 parentElement = Element.as(event.getEventTarget());

@@ -14,7 +14,7 @@ public class RichTextCellRenderer extends TextCellRenderer {
 
     @Override
     public boolean updateContent(Element element, PValue value, Object extraValue, UpdateContext updateContext) {
-        String innerText = value != null ? format(value, updateContext.getRendererType()) : null;
+        String innerText = value != null ? format(value, updateContext.getRendererType(), updateContext.getPattern()) : null;
 
         element.setTitle(innerText);
         initQuill(element, innerText);

@@ -39,6 +39,9 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
     private Object foreground;
     protected Boolean readOnly;
     private String placeholder;
+    private String pattern;
+    private String regexp;
+    private String regexpMessage;
     private String valueTooltip;
 
     public PValue getValue() {
@@ -90,6 +93,21 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
     @Override
     public String getPlaceholder() {
         return placeholder;
+    }
+
+    @Override
+    public String getPattern() {
+        return pattern;
+    }
+
+    @Override
+    public String getRegexp() {
+        return regexp;
+    }
+
+    @Override
+    public String getRegexpMessage() {
+        return regexpMessage;
     }
 
     @Override
@@ -306,7 +324,8 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
     public abstract void pasteValue(final String value);
 
     public void update(PValue value, boolean loading, AppBaseImage image, String valueElementClass,
-                       String background, String foreground, Boolean readOnly, String placeholder, String valueTooltip) {
+                       String background, String foreground, Boolean readOnly, String placeholder, String pattern,
+                       String regexp, String regexpMessage, String valueTooltip) {
         this.value = value;
         this.loading = loading;
         this.image = image;
@@ -315,6 +334,9 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
         this.foreground = foreground;
         this.readOnly = readOnly;
         this.placeholder = placeholder;
+        this.pattern = pattern;
+        this.regexp = regexp;
+        this.regexpMessage = regexpMessage;
         this.valueTooltip = valueTooltip;
 
         update();
