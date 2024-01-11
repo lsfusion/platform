@@ -19,7 +19,6 @@ import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.lambda.SQLCallable;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
-import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
@@ -41,7 +40,6 @@ import lsfusion.server.logics.action.session.table.SinglePropertyTableUsage;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.ConcreteObjectClass;
-import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.controller.manager.RestartManager;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
@@ -160,9 +158,21 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
             }
             super.updateCurrentClasses(session);
         }
+
+        @Override
+        public void dropPushAsyncResult() {
+            pushedAsyncResult = null;
+            super.dropPushAsyncResult();
+        }
     }
 
-    private final PushAsyncResult pushedAsyncResult; // чисто для асинхронного добавления объектов
+    private PushAsyncResult pushedAsyncResult;
+
+    private PushAsyncResult dropPushedAsyncResult() {
+        PushAsyncResult pushedAsyncResult = this.pushedAsyncResult;
+        stack.dropPushAsyncResult();
+        return pushedAsyncResult;
+    }
 
     public final boolean hasMoreSessionUsages;
     
@@ -462,11 +472,17 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
 
     private DataObject getPushedAddObject() {
-        return pushedAsyncResult instanceof PushAsyncAdd ? ((PushAsyncAdd) pushedAsyncResult).value : null; 
+        if (pushedAsyncResult instanceof PushAsyncAdd)
+            return ((PushAsyncAdd) dropPushedAsyncResult()).value;
+        return null;
     }
 
     public boolean isPushedConfirmedClose() {
-        return pushedAsyncResult instanceof PushAsyncClose;
+        if(pushedAsyncResult instanceof PushAsyncClose) {
+            dropPushedAsyncResult();
+            return true;
+        }
+        return false;
     }
     
     public DataObject addObject(ConcreteCustomClass cls) throws SQLException, SQLHandledException {
@@ -654,9 +670,9 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 
     public InputResult getPushedInput(DataClass dataClass) {
         if(pushedAsyncResult instanceof PushAsyncInput)
-            return ((PushAsyncInput) pushedAsyncResult).value;
+            return ((PushAsyncInput) dropPushedAsyncResult()).value;
         if(pushedAsyncResult instanceof PushExternalInput)
-            return new InputResult(ObjectValue.getValue(((PushExternalInput) pushedAsyncResult).value.apply(dataClass), dataClass), null);
+            return new InputResult(ObjectValue.getValue(((PushExternalInput) dropPushedAsyncResult()).value.apply(dataClass), dataClass), null);
         return null;
     }
 

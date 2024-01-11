@@ -61,6 +61,12 @@ public abstract class UpExecutionStack implements ExecutionStack {
             upStack.updateCurrentClasses(session);
     }
 
+    @Override
+    public void dropPushAsyncResult() {
+        if(upStack != null)
+            upStack.dropPushAsyncResult();
+    }
+
     // nullable
     protected abstract DataSession getSession();
 

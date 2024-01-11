@@ -27,5 +27,7 @@ public interface ExecutionStack {
 
     void updateCurrentClasses(UpdateCurrentClassesSession session) throws SQLException, SQLHandledException;
 
+    void dropPushAsyncResult();
+
     boolean sameSession(UpdateCurrentClassesSession session);
 }

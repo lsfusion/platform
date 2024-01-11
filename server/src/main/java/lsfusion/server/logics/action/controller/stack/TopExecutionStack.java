@@ -53,6 +53,10 @@ public class TopExecutionStack implements NewThreadExecutionStack {
     }
 
     @Override
+    public void dropPushAsyncResult() {
+    }
+
+    @Override
     public boolean sameSession(UpdateCurrentClassesSession session) {
         return true; // особо не принципиально можно и false
     }
