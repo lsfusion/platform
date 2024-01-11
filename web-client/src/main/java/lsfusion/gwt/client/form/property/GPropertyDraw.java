@@ -599,12 +599,13 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     public String getMaskFromPattern(String pattern) {
-        if(pattern != null) {
-            if(valueType instanceof GADateType || valueType instanceof GIntervalType) {
+        if (pattern != null) {
+            if (valueType instanceof GADateType || valueType instanceof GIntervalType) {
                 return pattern.replaceAll("[dMyHms]", "9");
-            } else if(valueType instanceof GIntegralType) {
-                if(pattern.equals("#,##0.##"))
+            } else if (valueType instanceof GIntegralType) {
+                if (pattern.equals("#,##0.##"))
                     return "9{1,5}[,9{1,2}]";
+                else return null;
             }
             return pattern;
         }
