@@ -2232,8 +2232,8 @@ public class GFormController implements EditManager {
         if(!editContext.isFocusable()) // assert that otherwise it's already has focus
             forceSetFocus = editContext.forceSetFocus();
 
-        RenderContext renderContext = null;
-        if (cellEditor instanceof ReplaceCellEditor && ((ReplaceCellEditor) cellEditor).needReplace(element, renderContext = editContext.getRenderContext())) {
+        RenderContext renderContext = editContext.getRenderContext();
+        if (cellEditor instanceof ReplaceCellEditor && ((ReplaceCellEditor) cellEditor).needReplace(element, renderContext)) {
             focusedElement = GwtClientUtils.getFocusedElement();
 
             GPropertyDraw property = editContext.getProperty();

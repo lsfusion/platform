@@ -122,11 +122,8 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
     public boolean updateContent(Element element, PValue value, Object extraValue, UpdateContext updateContext) {
         boolean isNull = value == null;
 
-        ExtraValue extraValues = (ExtraValue) extraValue;
-
-        String placeholder = extraValues != null ? extraValues.placeholder : null;
-
-        String pattern = extraValues != null ? extraValues.pattern : null;
+        String placeholder = ((ExtraValue) extraValue).placeholder;
+        String pattern = ((ExtraValue) extraValue).pattern;
 
         RendererType rendererType = updateContext.getRendererType();
         String innerText = isNull ? "" : format(value, rendererType, pattern);

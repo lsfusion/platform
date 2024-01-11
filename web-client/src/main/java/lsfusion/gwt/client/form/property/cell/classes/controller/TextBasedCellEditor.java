@@ -108,7 +108,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
     }
 
     protected boolean started;
-    RenderContext renderContext;
+    String pattern;
 
     @Override
     public void start(EventHandler handler, Element parent, RenderContext renderContext, PValue oldValue) {
@@ -121,7 +121,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
             }
         }
         started = true;
-        this.renderContext = renderContext;
+        pattern = renderContext.getPattern();
 
         super.start(handler, parent, renderContext, oldValue);
 
@@ -182,7 +182,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
                 suggestBox = null;
             }
 
-            String mask = property.getMaskFromPattern(renderContext.getPattern());
+            String mask = property.getMaskFromPattern(pattern);
             if(mask != null) {
                 GwtClientUtils.removeMask(inputElement);
             }
@@ -323,7 +323,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
                 throw new InvalidEditException();
         }
 
-        if(property.getMaskFromPattern(renderContext.getPattern()) != null && !GwtClientUtils.isCompleteMask(inputElement))
+        if(property.getMaskFromPattern(pattern) != null && !GwtClientUtils.isCompleteMask(inputElement))
             throw new InvalidEditException();
 
         boolean patternMismatch = isPatternMismatch(inputElement);
@@ -591,7 +591,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
 
         if(this instanceof FormatCellEditor) {
             GFormatType formatType = ((FormatCellEditor) this).getFormatType();
-            return formatType.parseString(inputText, renderContext.getPattern());
+            return formatType.parseString(inputText, pattern);
         }
         return PValue.getPValue(inputText);
     }
@@ -602,7 +602,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
 
         if(this instanceof FormatCellEditor) {
             GFormatType formatType = ((FormatCellEditor) this).getFormatType();
-            return formatType.formatString(value, renderContext.getPattern());
+            return formatType.formatString(value, pattern);
         }
         return PValue.getStringValue(value);
     }
