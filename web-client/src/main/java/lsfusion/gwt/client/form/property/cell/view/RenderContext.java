@@ -1,8 +1,12 @@
 package lsfusion.gwt.client.form.property.cell.view;
 
-public interface RenderContext extends FontContext {
+import lsfusion.gwt.client.form.design.GFont;
+
+public interface RenderContext {
 
     boolean globalCaptionIsDrawn();
+
+    GFont getFont();
 
     RendererType getRendererType();
 

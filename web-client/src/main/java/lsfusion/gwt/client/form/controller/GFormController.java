@@ -2455,6 +2455,40 @@ public class GFormController implements EditManager {
         element.style.color = "var(--foreground-color)";
     }-*/;
 
+    public static void setFont(Element element, GFont font) {
+        if(font != null) {
+            element.addClassName("cell-with-custom-font");
+            setCellFont(element, font.family, font.size, font.italic, font.bold);
+        } else {
+            element.removeClassName("cell-with-custom-font");
+            clearCellFont(element);
+        }
+    }
+
+    public static void clearFont(Element element) {
+        setFont(element, null);
+    }
+
+    private static native void setCellFont(Element element, String family, int size, boolean italic, boolean bold)/*-{
+        if (family != null)
+            element.style.setProperty("--custom-font-family", family);
+        if (size > 0)
+            element.style.setProperty("--custom-font-size", size + "px");
+        element.style.setProperty("--custom-font-style", italic ? "italic" : "normal");
+        element.style.setProperty("--custom-font-weight", bold ? "bold" : "normal");
+    }-*/;
+
+    private static native void clearCellFont(Element element)/*-{
+        element.style.removeProperty("--custom-font-family");
+        element.style.removeProperty("--custom-font-size");
+        element.style.removeProperty("--custom-font-style");
+        element.style.removeProperty("--custom-font-weight");
+    }-*/;
+
+    public static GFont getFont(GPropertyDraw property, RenderContext renderContext) {
+        return property.font != null ? property.font : renderContext.getFont();
+    }
+
     public void onPropertyBrowserEvent(EventHandler handler, Element renderElement, boolean isCell, Element focusElement, Consumer<EventHandler> onOuterEditBefore,
                                        Consumer<EventHandler> onEdit, Consumer<EventHandler> onOuterEditAfter, Consumer<EventHandler> onCut,
                                        Consumer<EventHandler> onPaste, boolean panel, boolean customRenderer) {

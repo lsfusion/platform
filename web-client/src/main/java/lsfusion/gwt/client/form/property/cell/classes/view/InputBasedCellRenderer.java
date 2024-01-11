@@ -11,7 +11,7 @@ import lsfusion.gwt.client.classes.GFullInputType;
 import lsfusion.gwt.client.classes.GInputType;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.classes.data.GIntegralType;
-import lsfusion.gwt.client.form.design.GFont;
+import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.controller.InputBasedCellEditor;
@@ -221,7 +221,7 @@ public abstract class InputBasedCellRenderer extends CellRenderer {
         }
 
         if(!isInput)
-            GFont.clearFont(element);
+            GFormController.clearFont(element);
 
         if(isInput)
             clearInputElement(element);

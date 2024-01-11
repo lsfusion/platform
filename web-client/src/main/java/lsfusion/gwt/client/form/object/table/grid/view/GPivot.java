@@ -1149,11 +1149,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
 
         UpdateContext updateContext = new UpdateContext() {
             @Override
-            public GFont getFont() {
-                return font;
-            }
-
-            @Override
             public boolean globalCaptionIsDrawn() {
                 return true;
             }

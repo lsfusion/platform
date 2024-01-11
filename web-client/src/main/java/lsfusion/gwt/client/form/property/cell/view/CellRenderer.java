@@ -95,6 +95,7 @@ public abstract class CellRenderer {
     // and with TextBasedCellEditor.renderStaticContent
     public void render(Element element, RenderContext renderContext) {
         boolean renderedAlignment = renderContent(element, renderContext);
+        GFormController.setFont(element, GFormController.getFont(property, renderContext));
 
 //        BaseImage.setClasses(element, getValueElementClass());
 
@@ -197,7 +198,7 @@ public abstract class CellRenderer {
 
         // update
         GFormController.clearColors(element);
-        GFont.clearFont(element);
+        GFormController.clearFont(element);
 
         clearEditSelected(element, property);
 
@@ -393,13 +394,6 @@ public abstract class CellRenderer {
             renderedState.foreground = foreground;
 
             GFormController.updateColors(InputBasedCellRenderer.getMainElement(element), background, foreground);
-        }
-
-        GFont font = GFont.getFont(property, updateContext);
-        if(isNew || !equalsFontState(renderedState, font)) {
-            renderedState.font = font;
-
-            GFont.setFont(element, font);
         }
 
         boolean cleared = false;

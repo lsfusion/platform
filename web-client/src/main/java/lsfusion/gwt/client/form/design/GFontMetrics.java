@@ -7,6 +7,7 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.size.GSize;
+import lsfusion.gwt.client.form.controller.GFormController;
 
 import java.util.HashMap;
 import java.util.function.Function;
@@ -150,7 +151,7 @@ public class GFontMetrics {
         GFont font = fontWidth.font;
         if(font != null) {
             fontSize = font.size;
-            GFont.setFont(element, font);
+            GFormController.setFont(element, font);
         }
         if(fontSize <= 0) {
             fontSize = 12;

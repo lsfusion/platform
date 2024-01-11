@@ -2,7 +2,7 @@ package lsfusion.gwt.client.form.property.cell.classes.view;
 
 import com.google.gwt.dom.client.*;
 import lsfusion.gwt.client.base.*;
-import lsfusion.gwt.client.form.design.GFont;
+import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
@@ -56,8 +56,7 @@ public class ActionCellRenderer extends CellRenderer {
             element.removeClassName("btn");
 
         BaseImage.clearImageText(element, property.panelCaptionVertical);
-
-        GFont.clearFont(element);
+        GFormController.clearFont(element);
 //        if(GwtClientUtils.isTDorTH(element)) { // otherwise we'll use flex alignment (however text alignment would also do)
 //            clearRenderTextAlignment(element);
 //            return true;
