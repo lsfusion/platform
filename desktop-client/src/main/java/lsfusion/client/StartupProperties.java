@@ -10,8 +10,6 @@ public class StartupProperties {
 
     public static final String LSFUSION_CLIENT_USER = "lsfusion.client.user";
 
-    public static final String LSFUSION_CLIENT_SAVEPWD = "lsfusion.client.savepwd";
-
     public static final String LSFUSION_CLIENT_PASSWORD = "lsfusion.client.password";
 
     public static final String LSFUSION_CLIENT_AUTOLOGIN = "lsfusion.client.autologin";
@@ -19,8 +17,6 @@ public class StartupProperties {
     public static final String LSFUSION_CLIENT_SINGLEINSTANCE = "lsfusion.client.singleinstance";
 
     public static final String LSFUSION_CLIENT_CONNECTION_LOST_TIMEOUT = "lsfusion.client.connection.lost.timeout";
-
-    public static final String LSFUSION_CLIENT_CONNECTION_LOST_PING_DELAY = "lsfusion.client.connection.lost.ping.delay";
 
     public static final String LSFUSION_CLIENT_LOG_RMI = "lsfusion.client.log.rmi";
 
@@ -35,8 +31,6 @@ public class StartupProperties {
     public static final String LSFUSION_CLIENT_ASYNC_TIMEOUT = "lsfusion.client.async.timeout";
 
     public static final int pullMessagesPeriod = Integer.parseInt(System.getProperty(LSFUSION_CLIENT_PING_TIME, "1000"));
-
-    public static final int pingDelay = Integer.parseInt(System.getProperty(LSFUSION_CLIENT_CONNECTION_LOST_PING_DELAY, "3000"));
 
     public static final boolean dotSeparator = ".".equals(System.getProperty(StartupProperties.LSFUSION_CLIENT_DECIMAL_SEPARATOR));
 
