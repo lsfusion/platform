@@ -7,7 +7,7 @@ import lsfusion.gwt.client.base.AppBaseImage;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.PValue;
 
-public interface UpdateContext {
+public interface UpdateContext extends FontContext {
     
     default void getAsyncValues(String value, String actionSID, AsyncCallback<GFormController.GAsyncResult> callback) {}
     default void changeProperty(PValue result, GFormController.ChangedRenderValueSupplier renderValueSupplier) {}

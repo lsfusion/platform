@@ -75,12 +75,15 @@
     --text-color: var(--foreground-color);
 }
 
-.custom-renderer-font .form-select,
-.custom-renderer-font .btn,
-.custom-renderer-font .form-check,
-.custom-renderer-font .ms-parent {
-    font-size: var(--custom-element-font-size);
-    font-family: var(--custom-element-font-family);
-    font-style: var(--custom-element-font-style);
-    font-weight: var(--custom-element-font-weight);
+.cell-with-custom-font,
+.cell-with-custom-font .form-select, /* dropdown */
+.cell-with-custom-font.btn, /* actionCellRenderer */
+.cell-with-custom-font .btn, /* button / buttonGroups */
+.cell-with-custom-font .form-check, /* check-boxes */
+.cell-with-custom-font .ms-parent /* multiple select */
+{
+    font-size: var(--custom-font-size);
+    font-family: var(--custom-font-family);
+    font-style: var(--custom-font-style);
+    font-weight: var(--custom-font-weight);
 }

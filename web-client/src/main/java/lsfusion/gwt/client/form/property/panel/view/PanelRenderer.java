@@ -10,6 +10,7 @@ import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.base.view.SizedWidget;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
@@ -68,7 +69,7 @@ public abstract class PanelRenderer {
             }
         });
         if (this.property.captionFont != null) {
-            this.property.captionFont.apply(label.getStyle());
+            GFont.setFont(label, this.property.captionFont);
         }
     }
 

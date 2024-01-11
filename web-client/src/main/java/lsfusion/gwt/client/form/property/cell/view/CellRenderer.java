@@ -107,39 +107,6 @@ public abstract class CellRenderer {
         }
     }
 
-    private static GFont getFont(GPropertyDraw property, RenderContext renderContext) {
-        return property.font != null ? property.font : renderContext.getFont();
-    }
-
-    public static void setCustomBasedTextFonts(GPropertyDraw property, Element element, RenderContext renderContext) {
-        GFont font = getFont(property, renderContext);
-        if (font != null)
-            font.applyCustom(element);
-    }
-
-    public static void clearCustomBasedTextFonts(GPropertyDraw property, Element element, RenderContext renderContext) {
-        GFont font = getFont(property, renderContext);
-
-        if (font != null)
-            font.clearCustom(element);
-    }
-
-    public static void setBasedTextFonts(GPropertyDraw property, Element element, RenderContext renderContext) {
-        GFont font = getFont(property, renderContext);
-
-        if (font != null) {
-            font.apply(element.getStyle());
-        }
-    }
-
-    public static void clearBasedTextFonts(GPropertyDraw property, Element element, RenderContext renderContext) {
-        GFont font = getFont(property, renderContext);
-
-        if (font != null) {
-            font.clear(element.getStyle());
-        }
-    }
-
     public static void renderEditSelected(Element element, GPropertyDraw property) {
         if(property.hasEditObjectAction)
             element.addClassName("selectedCellHasEdit");
@@ -230,6 +197,7 @@ public abstract class CellRenderer {
 
         // update
         GFormController.clearColors(element);
+        GFont.clearFont(element);
 
         clearEditSelected(element, property);
 
@@ -326,6 +294,8 @@ public abstract class CellRenderer {
         public String foreground;
         public String background;
 
+        public GFont font;
+
         public Boolean readonly;
 
         public String valueElementClass;
@@ -341,6 +311,9 @@ public abstract class CellRenderer {
     }
     private static boolean equalsColorState(RenderedState state, String background, String foreground) {
         return GwtClientUtils.nullEquals(state.background, background) && GwtClientUtils.nullEquals(state.foreground, foreground);
+    }
+    private static boolean equalsFontState(RenderedState state, GFont font) {
+        return GwtClientUtils.nullEquals(state.font, font);
     }
     private static boolean equalsReadonlyState(RenderedState state, Boolean readonly) {
         return GwtClientUtils.nullEquals(state.readonly, readonly);
@@ -420,6 +393,13 @@ public abstract class CellRenderer {
             renderedState.foreground = foreground;
 
             GFormController.updateColors(InputBasedCellRenderer.getMainElement(element), background, foreground);
+        }
+
+        GFont font = GFont.getFont(property, updateContext);
+        if(isNew || !equalsFontState(renderedState, font)) {
+            renderedState.font = font;
+
+            GFont.setFont(element, font);
         }
 
         boolean cleared = false;

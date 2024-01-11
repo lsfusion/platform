@@ -150,7 +150,7 @@ public class GFontMetrics {
         GFont font = fontWidth.font;
         if(font != null) {
             fontSize = font.size;
-            font.apply(style);
+            GFont.setFont(element, font);
         }
         if(fontSize <= 0) {
             fontSize = 12;

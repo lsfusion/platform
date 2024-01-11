@@ -811,12 +811,6 @@ protected Double getUserFlex(int i) {
             public GFont getFont() {
                 return GGridPropertyTable.this.getFont();
             }
-//
-//            @Override
-//            public boolean isLoading() {
-//                return column.isLoading(property, (T) cell.getRow());
-//            }
-
 
             @Override
             public RendererType getRendererType() {
@@ -836,6 +830,11 @@ protected Double getUserFlex(int i) {
 
     public UpdateContext getUpdateContext(Cell cell, Element renderElement, GPropertyDraw property, GridPropertyColumn column) {
         return new UpdateContext() {
+            @Override
+            public GFont getFont() {
+                return GGridPropertyTable.this.getFont();
+            }
+
             @Override
             public void getAsyncValues(String value, String actionSID, AsyncCallback<GFormController.GAsyncResult> callback) {
                 form.getAsyncValues(value, getEditContext(cell, renderElement), actionSID, callback);
