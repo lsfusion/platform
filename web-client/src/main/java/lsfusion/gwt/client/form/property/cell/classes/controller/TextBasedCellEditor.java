@@ -108,7 +108,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
     }
 
     protected boolean started;
-    String pattern;
+    protected String pattern;
 
     @Override
     public void start(EventHandler handler, Element parent, RenderContext renderContext, PValue oldValue) {
