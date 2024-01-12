@@ -86,8 +86,8 @@ public class PopupForm extends EditingForm {
         return formWidget.getElement();
     }
 
-    public PopupForm(FormsController formsController, long editRequestIndex, boolean async, Event editEvent, EditContext editContext, GFormController contextForm) {
-        super(formsController, editRequestIndex, async, editEvent, editContext, contextForm);
+    public PopupForm(FormsController formsController, GFormController contextForm, long editRequestIndex, boolean async, Event editEvent, EditContext editContext) {
+        super(formsController, contextForm, editRequestIndex, async, editEvent, editContext);
     }
 
     @Override

@@ -10,6 +10,7 @@ import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.form.WidgetForm;
 import lsfusion.gwt.client.form.controller.FormsController;
+import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.form.property.cell.controller.EndReason;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
@@ -34,8 +35,8 @@ public final class FormDockable extends WidgetForm {
     }
 
     Result<JavaScriptObject> popup = new Result<>();
-    public FormDockable(FormsController formsController, String canonicalName, boolean async, Event editEvent) {
-        super(formsController, async, editEvent, GFormLayout.createTabCaptionWidget());
+    public FormDockable(FormsController formsController, GFormController contextForm, String canonicalName, boolean async, Event editEvent) {
+        super(formsController, contextForm, async, editEvent, GFormLayout.createTabCaptionWidget());
 
         this.canonicalName = canonicalName;
 

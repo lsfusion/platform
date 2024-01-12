@@ -453,15 +453,15 @@ public abstract class FormsController {
     private FormContainer createFormContainer(GWindowFormType windowType, boolean async, long editRequestIndex, String formCanonicalName, Event editEvent, EditContext editContext, GFormController formController) {
         FormContainer formContainer;
         if(windowType instanceof GContainerWindowFormType) {
-            formContainer = new ContainerForm(this, async, editEvent, formController, ((GContainerWindowFormType) windowType));
+            formContainer = new ContainerForm(this, formController, async, editEvent, formController, ((GContainerWindowFormType) windowType));
         } else if(windowType.isFloat()) {
-            formContainer =  new ModalForm(this, async, editEvent);
+            formContainer =  new ModalForm(this, formController, async, editEvent);
         } else if(windowType.isDocked()) {
-            formContainer =  new FormDockable(this, formCanonicalName, async, editEvent);
+            formContainer =  new FormDockable(this, formController, formCanonicalName, async, editEvent);
         } else if(windowType.isEmbedded()) {
-            formContainer =  new EmbeddedForm(this, editRequestIndex, async, editEvent, editContext, formController);
+            formContainer =  new EmbeddedForm(this, formController, editRequestIndex, async, editEvent, editContext);
         } else if(windowType.isPopup()) {
-            formContainer =  new PopupForm(this, editRequestIndex, async, editEvent, editContext, formController);
+            formContainer =  new PopupForm(this, formController, editRequestIndex, async, editEvent, editContext);
         } else {
             throw new UnsupportedOperationException();
         }

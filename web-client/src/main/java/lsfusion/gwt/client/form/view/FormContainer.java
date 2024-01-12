@@ -23,6 +23,8 @@ public abstract class FormContainer {
 
     protected final FormsController formsController;
 
+    protected final GFormController contextForm;
+
     protected Event editEvent;
 
     protected GFormController form;
@@ -37,8 +39,9 @@ public abstract class FormContainer {
 
     public String formId;
 
-    public FormContainer(FormsController formsController, boolean async, Event editEvent) {
+    public FormContainer(FormsController formsController, GFormController contextForm, boolean async, Event editEvent) {
         this.formsController = formsController;
+        this.contextForm = contextForm;
         this.async = async;
         this.editEvent = editEvent;
     }
@@ -70,7 +73,11 @@ public abstract class FormContainer {
                 hide(reason);
                 asyncHidden = true;
                 asyncHiddenReason = reason;
-                MainFrame.navigatorDispatchAsync.interrupt(false);
+                if(contextForm != null) {
+                    contextForm.interrupt(false);
+                } else {
+                    MainFrame.navigatorDispatchAsync.interrupt(false);
+                }
             });
         } else {
             form.closePressed(reason);

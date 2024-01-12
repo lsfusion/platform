@@ -20,8 +20,6 @@ import lsfusion.gwt.client.navigator.window.GWindowFormType;
 
 public abstract class EditingForm extends FormContainer {
 
-    protected final GFormController contextForm;
-
     protected class CellEditor implements RequestCellEditor {
 
         public boolean checkEnterEvent(NativeEvent event) {
@@ -50,10 +48,8 @@ public abstract class EditingForm extends FormContainer {
 
     protected abstract CellEditor createCellEditor();
 
-    public EditingForm(FormsController formsController, long editRequestIndex, boolean async, Event editEvent, EditContext editContext, GFormController contextForm) {
-        super(formsController, async, editEvent);
-
-        this.contextForm = contextForm;
+    public EditingForm(FormsController formsController, GFormController contextForm, long editRequestIndex, boolean async, Event editEvent, EditContext editContext) {
+        super(formsController, contextForm, async, editEvent);
 
         contextForm.edit(createCellEditor(), editEvent != null ? new EventHandler(editEvent) : null, null, (result, commitReason) -> {}, (result, commitReason) -> {}, (cancelReason) -> {}, editContext, "", async ? editRequestIndex : -1);
     }

@@ -20,8 +20,8 @@ public class ContainerForm extends WidgetForm {
 
     private final GContainerWindowFormType windowType;
 
-    public ContainerForm(FormsController formsController, boolean async, Event editEvent, GFormController formController, GContainerWindowFormType windowType) {
-        super(formsController, async, editEvent, GFormLayout.createContainerCaptionWidget(getInContainer(formController, windowType), true));
+    public ContainerForm(FormsController formsController, GFormController contextForm, boolean async, Event editEvent, GFormController formController, GContainerWindowFormType windowType) {
+        super(formsController, contextForm, async, editEvent, GFormLayout.createContainerCaptionWidget(getInContainer(formController, windowType), true));
 
         this.formController = formController;
         this.windowType = windowType;

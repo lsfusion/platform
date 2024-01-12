@@ -68,8 +68,8 @@ public class EmbeddedForm extends EditingForm {
 
 //    private boolean autoSize;
 
-    public EmbeddedForm(FormsController formsController, long editRequestIndex, boolean async, Event editEvent, EditContext editContext, GFormController contextForm) {
-        super(formsController, editRequestIndex, async, editEvent, editContext, contextForm);
+    public EmbeddedForm(FormsController formsController, GFormController contextForm, long editRequestIndex, boolean async, Event editEvent, EditContext editContext) {
+        super(formsController, contextForm, editRequestIndex, async, editEvent, editContext);
 
 //        autoSize = editContext.getProperty().autoSize;
     }

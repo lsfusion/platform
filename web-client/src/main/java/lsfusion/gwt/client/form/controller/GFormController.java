@@ -2533,4 +2533,8 @@ public class GFormController implements EditManager {
     public Element getFormElement() {
         return formContainer.getFocusedElement();
     }
+
+    public void interrupt(boolean cancelable) {
+        dispatcher.interrupt(cancelable);
+    }
 }
