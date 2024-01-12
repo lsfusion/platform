@@ -360,3 +360,14 @@ div.selectArrow {
     outline: none !important; /* !important is needed because in bootstrap-select.css rule ".bootstrap-select .dropdown-toggle:focus" used !important too*/
     box-shadow: none; /* because bootstrap.css has rule: .btn:focus-visible */
 }
+
+
+.cell-with-custom-font .form-select, /* dropdown */
+.cell-with-custom-font .btn, /* button / buttonGroups */
+.cell-with-custom-font .form-check /* check-boxes */
+{
+    font-size: var(--custom-font-size);
+    font-family: var(--custom-font-family);
+    font-style: var(--custom-font-style);
+    font-weight: var(--custom-font-weight);
+}

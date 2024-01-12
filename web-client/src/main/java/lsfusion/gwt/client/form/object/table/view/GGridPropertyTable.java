@@ -844,12 +844,6 @@ protected Double getUserFlex(int i) {
             public GFont getFont() {
                 return GGridPropertyTable.this.getFont();
             }
-//
-//            @Override
-//            public boolean isLoading() {
-//                return column.isLoading(property, (T) cell.getRow());
-//            }
-
 
             @Override
             public RendererType getRendererType() {

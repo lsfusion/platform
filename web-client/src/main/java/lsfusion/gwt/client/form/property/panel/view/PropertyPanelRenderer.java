@@ -16,7 +16,7 @@ import lsfusion.gwt.client.form.property.PValue;
 
 public class PropertyPanelRenderer extends PanelRenderer {
 
-    private SizedWidget sizedView;
+    private final SizedWidget sizedView;
 
     private Widget label;
 
@@ -76,9 +76,6 @@ public class PropertyPanelRenderer extends PanelRenderer {
             label.addDomHandler(event -> {
                 GwtClientUtils.fireOnMouseDown(value.getElement());
             }, MouseDownEvent.getType());
-
-            if (this.property.captionFont != null)
-                this.property.captionFont.apply(label.getElement().getStyle());
 
             // mostly it is needed to handle margins / paddings / layouting but we do it ourselves
 //        CellRenderer cellRenderer = property.getCellRenderer();

@@ -1,9 +1,6 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
 import com.google.gwt.dom.client.*;
-import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.view.SizedFlexPanel;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
@@ -11,23 +8,12 @@ import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 public class LogicalCellRenderer extends InputBasedCellRenderer {
 
-    private boolean threeState;
+    private final boolean threeState;
 
     public LogicalCellRenderer(GPropertyDraw property, boolean threeState) {
         super(property);
         this.threeState = threeState;
         assert isTagInput();
-    }
-
-    @Override
-    public void renderPanelLabel(Widget label) {
-//        label.addStyleName("form-check-label");
-    }
-
-    @Override
-    public void renderPanelContainer(SizedFlexPanel panel) {
-        // we're not setting form-check since it's mostly used only for layouting, which we do ourselves
-//        panel.addStyleName("form-check");
     }
 
     @Override

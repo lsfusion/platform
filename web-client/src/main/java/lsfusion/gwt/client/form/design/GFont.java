@@ -1,7 +1,5 @@
 package lsfusion.gwt.client.form.design;
 
-import com.google.gwt.dom.client.Style;
-
 import java.io.Serializable;
 
 import static lsfusion.gwt.client.base.GwtSharedUtils.nullEquals;
@@ -22,38 +20,9 @@ public class GFont implements Serializable {
         this.bold = bold;
         this.italic = italic;
     }
-
-    public void apply(Style style) {
-        if (family != null) {
-            style.setProperty("fontFamily", family);
-        }
-        if (size > 0) {
-            style.setFontSize(size, Style.Unit.PX);
-        }
-        style.setFontStyle(italic ? Style.FontStyle.ITALIC : Style.FontStyle.NORMAL);
-        style.setFontWeight(bold ? Style.FontWeight.BOLD : Style.FontWeight.NORMAL);
-    }
-    public void clear(Style style) {
-        if (family != null) {
-            style.clearProperty("fontFamily");
-        }
-        if (size > 0) {
-            style.clearFontSize();
-        }
-        style.clearFontSize();
-        style.clearFontWeight();
-    }
     
     public GFont deriveFont(boolean bold, boolean italic) {
         return new GFont(family, size, bold, italic);
-    }
-
-    public boolean isBold() {
-        return bold;
-    }
-
-    public boolean isItalic() {
-        return italic;
     }
 
     transient private int hash;

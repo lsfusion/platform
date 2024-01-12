@@ -6,12 +6,12 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.classes.GFullInputType;
 import lsfusion.gwt.client.classes.GInputType;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.classes.data.GIntegralType;
+import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.controller.InputBasedCellEditor;
@@ -19,8 +19,6 @@ import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
-
-import java.util.function.BooleanSupplier;
 
 public abstract class InputBasedCellRenderer extends CellRenderer {
 
@@ -51,15 +49,6 @@ public abstract class InputBasedCellRenderer extends CellRenderer {
             else
                 GwtClientUtils.setupFlexParent(inputElement);
         }
-    }
-
-    @Override
-    public void renderPanelLabel(Widget label) {
-        // we're not setting form-label since it's mostly used only for layouting, which we do ourselves
-//        if(property.panelCaptionVertical)
-//            label.addStyleName("form-label");
-//        else
-//            label.addStyleName("col-form-label");
     }
 
     private final static String inputElementProp = "inputElement";
@@ -203,8 +192,6 @@ public abstract class InputBasedCellRenderer extends CellRenderer {
             renderedAlignment = true;
         }
 
-        CellRenderer.setBasedTextFonts(property, inputElement != null ? inputElement : element, renderContext);
-
         if(inputElement != null)
             setInputElement(element, inputElement, inputType);
 
@@ -234,7 +221,7 @@ public abstract class InputBasedCellRenderer extends CellRenderer {
         }
 
         if(!isInput)
-            CellRenderer.clearBasedTextFonts(property, element, renderContext);
+            GFormController.clearFont(element);
 
         if(isInput)
             clearInputElement(element);

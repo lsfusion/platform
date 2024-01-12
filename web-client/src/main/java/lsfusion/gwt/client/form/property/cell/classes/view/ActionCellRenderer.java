@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.property.cell.classes.view;
 
 import com.google.gwt.dom.client.*;
 import lsfusion.gwt.client.base.*;
+import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
@@ -38,7 +39,6 @@ public class ActionCellRenderer extends CellRenderer {
 
         BaseImage.initImageText(element);
 
-        setBasedTextFonts(property, element, renderContext);
         // we can't use text alignment for several reasons:
         // button does not support vertical-align
         // vertical-align doesn't work properly with images (it works really odd, and has to be aligned manually with margins)
@@ -56,8 +56,7 @@ public class ActionCellRenderer extends CellRenderer {
             element.removeClassName("btn");
 
         BaseImage.clearImageText(element, property.panelCaptionVertical);
-
-        clearBasedTextFonts(property, element, renderContext);
+        GFormController.clearFont(element);
 //        if(GwtClientUtils.isTDorTH(element)) { // otherwise we'll use flex alignment (however text alignment would also do)
 //            clearRenderTextAlignment(element);
 //            return true;

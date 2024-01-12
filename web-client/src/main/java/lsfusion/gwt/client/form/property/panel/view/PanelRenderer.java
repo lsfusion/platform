@@ -67,9 +67,8 @@ public abstract class PanelRenderer {
                 return property.formPath;
             }
         });
-        if (this.property.captionFont != null) {
-            this.property.captionFont.apply(label.getStyle());
-        }
+        if (this.property.captionFont != null)
+            GFormController.setFont(label, this.property.captionFont);
     }
 
     public abstract SizedWidget getSizedWidget();

@@ -2,13 +2,10 @@ package lsfusion.gwt.client.form.property.cell.view;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.*;
-import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.view.ColorUtils;
-import lsfusion.gwt.client.base.view.SizedFlexPanel;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.object.table.view.GToolbarView;
@@ -44,7 +41,6 @@ public abstract class CellRenderer {
 
     private static final ClientMessages messages = ClientMessages.Instance.get();
     protected final String EMPTY_VALUE = messages.formRendererEmpty();
-    protected final String NOT_DEFINED_VALUE = messages.formRendererNotDefined();
     protected final String REQUIRED_VALUE = messages.formRendererRequired();
 
     private final static String focusElementProp = "focusElement";
@@ -99,6 +95,7 @@ public abstract class CellRenderer {
     // and with TextBasedCellEditor.renderStaticContent
     public void render(Element element, RenderContext renderContext) {
         boolean renderedAlignment = renderContent(element, renderContext);
+        GFormController.setFont(element, GFormController.getFont(property, renderContext));
 
 //        BaseImage.setClasses(element, getValueElementClass());
 
@@ -108,30 +105,6 @@ public abstract class CellRenderer {
             assert !GwtClientUtils.isTDorTH(element);
 //            assert !InputBasedCellRenderer.isToolbarContainer(element); // broken when isInputStretchText
             renderFlexAlignment(property, element, renderContext.getRendererType());
-        }
-    }
-
-    public void renderPanelLabel(Widget label) {
-    }
-
-    public void renderPanelContainer(SizedFlexPanel panel) {
-//        was removed in bootstrap 5
-//        panel.addStyleName("form-group");
-    }
-
-    public static void setBasedTextFonts(GPropertyDraw property, Element element, RenderContext renderContext) {
-        GFont font = property.font != null ? property.font : renderContext.getFont();
-
-        if (font != null) {
-            font.apply(element.getStyle());
-        }
-    }
-
-    public static void clearBasedTextFonts(GPropertyDraw property, Element element, RenderContext renderContext) {
-        GFont font = property.font != null ? property.font : renderContext.getFont();
-
-        if (font != null) {
-            font.clear(element.getStyle());
         }
     }
 
@@ -225,6 +198,7 @@ public abstract class CellRenderer {
 
         // update
         GFormController.clearColors(element);
+        GFormController.clearFont(element);
 
         clearEditSelected(element, property);
 
@@ -511,7 +485,7 @@ public abstract class CellRenderer {
 
     public final static GPropertyDraw.QuickAccessAction[] noToolbarActions = new GPropertyDraw.QuickAccessAction[0];
     // cleared - cleared with setInnerText / setInnerHTML
-    protected void renderToolbarContent(Element element, UpdateContext updateContext, RenderedState renderedState, boolean cleared) {
+    private void renderToolbarContent(Element element, UpdateContext updateContext, RenderedState renderedState, boolean cleared) {
         boolean loading = updateContext.isLoading() && !renderedLoadingContent(updateContext);
         ToolbarAction[] toolbarActions = updateContext.getToolbarActions();
 
