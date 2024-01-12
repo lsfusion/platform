@@ -9,6 +9,7 @@ TABLE account (Account);
 name '{email.name.account}' = DATA STRING[50](Account);
 password '{email.password.account}' = DATA STRING[50](Account) ECHO;
 disable '{email.disable.account}' = DATA BOOLEAN(Account);
+insecureSSL '{email.insecure.ssl}' = DATA BOOLEAN(Account); 
 
 // Sending
 smtpHost '{email.smtp.host.account}' = DATA STRING[50](Account);
@@ -77,7 +78,7 @@ ignoreExceptions '{email.ignore.exceptions.account}' = DATA BOOLEAN (Account);
 
 FORM account '{email.form.account}'
     OBJECTS a = Account PANEL
-    PROPERTIES(a) name, password, disable
+    PROPERTIES(a) name, password, disable, insecureSSL
     PROPERTIES(a) smtpHost, smtpPort, nameEncryptedConnectionType, fromAddress, isDefaultInbox 
     PROPERTIES(a) receiveHost, receivePort, nameReceiveAccountType, startTLS,
                   deleteMessages, lastDays, maxMessages, unpack, ignoreExceptions
@@ -93,6 +94,7 @@ DESIGN account {
             MOVE PROPERTY(name(a));
             MOVE PROPERTY(password(a));
             MOVE PROPERTY(disable(a));
+            MOVE PROPERTY(insecureSSL(a));
         }
         NEW email {
             horizontal = TRUE;

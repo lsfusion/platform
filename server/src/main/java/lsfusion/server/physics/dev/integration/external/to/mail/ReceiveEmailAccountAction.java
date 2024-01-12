@@ -56,8 +56,9 @@ public class ReceiveEmailAccountAction extends InternalAction {
                 boolean deleteMessages = emailLM.deleteMessagesAccount.read(context, accountObject) != null;
                 Integer lastDays = (Integer) emailLM.lastDaysAccount.read(context, accountObject);
                 Integer maxMessages = (Integer) emailLM.maxMessagesAccount.read(context, accountObject);
+                boolean insecureSSL = emailLM.insecureSSLAccount.read(context, accountObject) != null;
 
-                EmailReceiver.receiveEmail(context, emailLM, accountObject, receiveHost, receivePort, user, password, accountType, startTLS, deleteMessages, lastDays, maxMessages);
+                EmailReceiver.receiveEmail(context, emailLM, accountObject, receiveHost, receivePort, user, password, accountType, startTLS, deleteMessages, lastDays, maxMessages, insecureSSL);
 
             } catch (Exception e) {
                 logger.error(localize("{mail.failed.to.receive.mail}"), e);

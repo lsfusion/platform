@@ -51,6 +51,7 @@ public class ReceiveEmailAction extends InternalAction {
             accountQuery.addProperty("deleteMessagesAccount", emailLM.deleteMessagesAccount.getExpr(accountExpr));
             accountQuery.addProperty("lastDaysAccount", emailLM.lastDaysAccount.getExpr(accountExpr));
             accountQuery.addProperty("maxMessagesAccount", emailLM.maxMessagesAccount.getExpr(accountExpr));
+            accountQuery.addProperty("insecureSSLAccount", emailLM.insecureSSLAccount.getExpr(accountExpr));
             accountQuery.and(emailLM.receiveHostAccount.getExpr(accountExpr).getWhere());
             accountQuery.and(emailLM.disableAccount.getExpr(accountExpr).getWhere().not());
 
@@ -77,8 +78,9 @@ public class ReceiveEmailAction extends InternalAction {
                     boolean deleteMessages = accountValues.get("deleteMessagesAccount").getValue() != null;
                     Integer lastDays = (Integer) accountValues.get("lastDaysAccount").getValue();
                     Integer maxMessages = (Integer) accountValues.get("maxMessagesAccount").getValue();
+                    boolean insecureSSL = accountValues.get("insecureSSLAccount").getValue() != null;
 
-                    EmailReceiver.receiveEmail(context, emailLM, accountObject, receiveHost, receivePort, user, password, accountType, startTLS, deleteMessages, lastDays, maxMessages);
+                    EmailReceiver.receiveEmail(context, emailLM, accountObject, receiveHost, receivePort, user, password, accountType, startTLS, deleteMessages, lastDays, maxMessages, insecureSSL);
 
                 } catch (Exception e) {
                     String message = localize("{mail.failed.to.receive.mail}") + ", account: " + user;

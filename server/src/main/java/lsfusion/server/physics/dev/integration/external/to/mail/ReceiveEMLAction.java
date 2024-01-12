@@ -58,6 +58,7 @@ public class ReceiveEMLAction extends EmailAction {
                 boolean deleteMessagesAccount = emailLM.deleteMessagesAccount.read(context, accountObject) != null;
                 Integer lastDaysAccount = (Integer) emailLM.lastDaysAccount.read(context, accountObject);
                 Integer maxMessagesAccount = (Integer) emailLM.maxMessagesAccount.read(context, accountObject);
+                boolean insecureSSLAccount = emailLM.insecureSSLAccount.read(context, accountObject) != null;
 
                 if (receiveHostAccount == null) {
                     logError(context, localize("{mail.pop3.host.not.specified.letters.will.not.be.received}"));
@@ -68,7 +69,7 @@ public class ReceiveEMLAction extends EmailAction {
 
                 Set<Long> skipEmails = getSkipEmails(context, nameAccount);
 
-                Map<Long, FileData> emlMap = receiveEML(context, skipEmails, ignoreExceptions, accountType, startTLS, receivePortAccount, nameAccount, passwordAccount, receiveHostAccount, lastDaysAccount, maxMessagesAccount, deleteMessagesAccount);
+                Map<Long, FileData> emlMap = receiveEML(context, skipEmails, ignoreExceptions, accountType, startTLS, receivePortAccount, nameAccount, passwordAccount, receiveHostAccount, lastDaysAccount, maxMessagesAccount, deleteMessagesAccount, insecureSSLAccount);
                 for (Map.Entry<Long, FileData> entry : emlMap.entrySet()) {
                     DataObject entryObject = new DataObject(entry.getKey());
                     LM.findProperty("emlFile[LONG]").change(entry.getValue(), context, entryObject);
@@ -104,11 +105,12 @@ public class ReceiveEMLAction extends EmailAction {
         return skipEmails;
     }
 
-    public Map<Long, FileData> receiveEML(ExecutionContext context, Set<Long> skipEmails, boolean ignoreExceptions, AccountType accountType, boolean startTLS, Integer receivePort, String user, String password, String receiveHost, Integer lastDays, Integer maxMessages, boolean deleteMessages) throws MessagingException, IOException, GeneralSecurityException {
+    public Map<Long, FileData> receiveEML(ExecutionContext context, Set<Long> skipEmails, boolean ignoreExceptions, AccountType accountType, boolean startTLS, Integer receivePort,
+                                          String user, String password, String receiveHost, Integer lastDays, Integer maxMessages, boolean deleteMessages, boolean insecureSSL) throws MessagingException, IOException, GeneralSecurityException {
 
         Map<Long, FileData> emlMap = new HashMap<>();
 
-        Store emailStore = getEmailStore(receiveHost, accountType, startTLS);
+        Store emailStore = getEmailStore(receiveHost, accountType, startTLS, insecureSSL);
         if (receivePort != null) emailStore.connect(receiveHost, receivePort, user, password);
         else emailStore.connect(receiveHost, user, password);
 

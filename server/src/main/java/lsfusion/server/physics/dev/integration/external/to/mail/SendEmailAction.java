@@ -32,6 +32,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -114,6 +115,7 @@ public class SendEmailAction extends SystemExplicitAction {
                 String encryptedConnectionType = trimToEmpty((String) emailLM.nameEncryptedConnectionTypeAccount.read(context, account));
                 String smtpHost = trim((String) emailLM.smtpHostAccount.read(context, account));
                 String smtpPort = trimToEmpty((String) emailLM.smtpPortAccount.read(context, account));
+                boolean insecureSSL = emailLM.insecureSSLAccount.read(context, account) != null;
 
                 if(fromAddress == null) {
                     fromAddress = trimToNull((String) emailLM.fromAddressAccount.read(context, account));
@@ -142,11 +144,11 @@ public class SendEmailAction extends SystemExplicitAction {
                 List<String> inlineFiles = new ArrayList<>();
                 proceedFiles(context, attachFiles, inlineFiles);
 
-                EmailSender.sendMail(context, fromAddress, recipients, subject, inlineFiles, attachFiles, smtpHost, smtpPort, encryptedConnectionType, user, password, syncType);
+                EmailSender.sendMail(context, fromAddress, recipients, subject, inlineFiles, attachFiles, smtpHost, smtpPort, encryptedConnectionType, user, password, syncType, insecureSSL);
             } else {
                 throw new RuntimeException(localize("{mail.failed.email.not.configured}"));
             }
-        } catch (SQLException | SQLHandledException | MessagingException | IOException e) {
+        } catch (SQLException | SQLHandledException | MessagingException | IOException | GeneralSecurityException e) {
             logErrorAndShowMessage(context, localize("{mail.failed.to.send.mail}") + " : " + e);
         }
     }

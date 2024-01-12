@@ -2,6 +2,7 @@ package lsfusion.server.physics.dev.integration.external.to.mail;
 
 
 import com.sun.mail.smtp.SMTPMessage;
+import com.sun.mail.util.MailSSLSocketFactory;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.file.RawFileData;
 import lsfusion.server.base.controller.thread.ExecutorFactory;
@@ -19,6 +20,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
@@ -32,7 +34,8 @@ import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize
 public class EmailSender {
     private final static Logger logger = ServerLoggers.mailLogger;
 
-    public static void sendMail(ExecutionContext context, String fromAddress, Map<String, Message.RecipientType> recipients, final String subject, List<String> inlineFiles, List<AttachmentFile> attachments, String smtpHost, String smtpPort, String encryptedConnectionType, String user, String password, boolean syncType) throws MessagingException, IOException {
+    public static void sendMail(ExecutionContext context, String fromAddress, Map<String, Message.RecipientType> recipients, final String subject, List<String> inlineFiles, List<AttachmentFile> attachments,
+                                String smtpHost, String smtpPort, String encryptedConnectionType, String user, String password, boolean syncType, boolean insecureSSL) throws MessagingException, IOException, GeneralSecurityException {
 
         String protocol = "SSL".equals(encryptedConnectionType) ? "smtps" : "smtp";
 
@@ -51,8 +54,14 @@ public class EmailSender {
         if ("TLS".equals(encryptedConnectionType))
             mailProps.setProperty("mail.smtp.starttls.enable", "true");
         if ("SSL".equals(encryptedConnectionType)) {
-            mailProps.put("mail.smtp.socketFactory.port", smtpPort);
-            mailProps.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+            mailProps.put("mail.smtps.socketFactory.port", smtpPort);
+
+            if (insecureSSL) {
+                MailSSLSocketFactory socketFactory = new MailSSLSocketFactory();
+                socketFactory.setTrustAllHosts(true);
+                mailProps.put("mail.smtps.socketFactory", socketFactory);
+            } else
+                mailProps.put("mail.smtps.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
         }
 
         if (!user.isEmpty() && !password.isEmpty()) {
@@ -166,7 +175,6 @@ public class EmailSender {
 
     private static void sendMessage(SMTPMessage message, String smtpHost, String smtpPort, String protocol,
                                     String user, String password) throws MessagingException {
-        trustAllCerts();
         Integer port = parsePort(smtpPort);
         Transport transport = message.getSession().getTransport(protocol);
         if(port == null)
@@ -174,22 +182,6 @@ public class EmailSender {
         else
             transport.connect(smtpHost, port, user, password);
         transport.sendMessage(message, message.getAllRecipients());
-    }
-
-    private static void trustAllCerts() {
-        SSLContext ctx;
-        TrustManager[] trustAllCerts = new X509TrustManager[]{new X509TrustManager(){
-            public java.security.cert.X509Certificate[] getAcceptedIssuers(){return null;}
-            public void checkClientTrusted(java.security.cert.X509Certificate[] certs, String authType){}
-            public void checkServerTrusted(java.security.cert.X509Certificate[] certs, String authType){}
-        }};
-        try {
-            ctx = SSLContext.getInstance("SSL");
-            ctx.init(null, trustAllCerts, null);
-            SSLContext.setDefault(ctx);
-        } catch (NoSuchAlgorithmException | KeyManagementException e) {
-            logger.info("Error loading ssl context {}", e);
-        }
     }
 
     private static void checkNoAddressTo(Address[] addressesTo, String messageInfo) {

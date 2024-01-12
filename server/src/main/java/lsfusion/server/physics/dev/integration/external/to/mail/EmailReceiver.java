@@ -65,7 +65,7 @@ public class EmailReceiver {
 
     public static void receiveEmail(ExecutionContext context, EmailLogicsModule LM, DataObject accountObject, String receiveHost, Integer receivePort,
                                     String user, String password, AccountType accountType, boolean startTLS, boolean deleteMessages, Integer lastDays,
-                                    Integer maxMessages) throws MessagingException, IOException, SQLException, ScriptingErrorLog.SemanticErrorException, SQLHandledException, GeneralSecurityException {
+                                    Integer maxMessages, boolean insecureSSL) throws MessagingException, IOException, SQLException, ScriptingErrorLog.SemanticErrorException, SQLHandledException, GeneralSecurityException {
 
         boolean unpack = LM.findProperty("unpack[Account]").read(context, accountObject) != null;
         boolean ignoreExceptions = LM.findProperty("ignoreExceptions[Account]").read(context, accountObject) != null;
@@ -73,7 +73,7 @@ public class EmailReceiver {
 
         List<List<List<Object>>> data = downloadEmailList(context, receiveHost, receivePort, user, password, accountType, startTLS, deleteMessages, maxMessages,
                 getSkipEmails(context, LM, accountObject, minDateTime), getOldSkipEmails(context, LM, accountObject, user, minDateTime),
-                minDateTime, unpack, ignoreExceptions);
+                minDateTime, unpack, ignoreExceptions, insecureSSL);
 
         importEmails(context, LM, accountObject, data.get(0));
         importAttachments(context, LM, data.get(1), accountObject);
@@ -81,16 +81,19 @@ public class EmailReceiver {
         LM.findAction("formRefresh[]").execute(context);
     }
 
-    public static Store getEmailStore(String receiveHost, AccountType accountType, boolean startTLS) throws GeneralSecurityException, NoSuchProviderException {
+    public static Store getEmailStore(String receiveHost, AccountType accountType, boolean startTLS, boolean insecureSSL) throws GeneralSecurityException, NoSuchProviderException {
         Properties mailProps = new Properties();
         mailProps.setProperty(accountType.getHost(), receiveHost);
 
         boolean imap = accountType == IMAP;
         boolean imaps = accountType == IMAPS;
         if (imap || imaps) {
-            MailSSLSocketFactory socketFactory = new MailSSLSocketFactory();
-            socketFactory.setTrustAllHosts(true);
-            mailProps.put(imap ? "mail.imap.ssl.socketFactory" : "mail.imaps.ssl.socketFactory", socketFactory);
+            if (insecureSSL) {
+                MailSSLSocketFactory socketFactory = new MailSSLSocketFactory();
+                socketFactory.setTrustAllHosts(true);
+                mailProps.put(imap ? "mail.imap.ssl.socketFactory" : "mail.imaps.ssl.socketFactory", socketFactory);
+            } else
+                mailProps.put(imap ? "mail.imap.ssl.socketFactory.class" : "mail.imaps.ssl.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
             mailProps.setProperty("mail.store.protocol", accountType.getProtocol());
             mailProps.setProperty(imap ? "mail.imap.timeout" : "mail.imaps.timeout", String.valueOf(Settings.get().getMailImapTimeout()));
             if(startTLS) {
@@ -248,14 +251,15 @@ public class EmailReceiver {
 
     private static List<List<List<Object>>> downloadEmailList(ExecutionContext context, String receiveHost, Integer receivePort, String user, String password,
                                                               AccountType accountType, boolean startTLS, boolean deleteMessages, Integer maxMessages,
-                                                              Map<String, EmailData> skipEmails, Set<String> oldSkipEmails, LocalDateTime minDateTime, boolean unpack, boolean ignoreExceptions)
+                                                              Map<String, EmailData> skipEmails, Set<String> oldSkipEmails, LocalDateTime minDateTime,
+                                                              boolean unpack, boolean ignoreExceptions, boolean insecureSSL)
             throws MessagingException, IOException, GeneralSecurityException {
 
         List<List<Object>> dataEmails = new ArrayList<>();
         List<List<Object>> dataAttachments = new ArrayList<>();
         System.setProperty("mail.mime.base64.ignoreerrors", "true"); //ignore errors decoding base64
 
-        Store emailStore = getEmailStore(receiveHost, accountType, startTLS);
+        Store emailStore = getEmailStore(receiveHost, accountType, startTLS, insecureSSL);
         if (receivePort != null)
             emailStore.connect(receiveHost, receivePort, user, password);
         else

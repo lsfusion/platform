@@ -21,6 +21,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
     public LP nameAccount;
     public LP passwordAccount;
     public LP disableAccount;
+    public LP insecureSSLAccount;
 
     public LP smtpHostAccount;
     public LP smtpPortAccount;
@@ -57,6 +58,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
         nameAccount = findProperty("name[Account]");
         passwordAccount = findProperty("password[Account]");
         disableAccount = findProperty("disable[Account]");
+        insecureSSLAccount = findProperty("insecureSSL[Account]");
 
         // Sending
         smtpHostAccount = findProperty("smtpHost[Account]");
