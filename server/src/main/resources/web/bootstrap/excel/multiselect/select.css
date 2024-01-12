@@ -91,3 +91,10 @@ select.ms-offscreen[multiple] + .ms-parent button.ms-choice span {
     top: 50%;
     transform: translateY(-50%);
 }
+
+.cell-with-custom-font .ms-parent {
+    font-size: var(--custom-font-size);
+    font-family: var(--custom-font-family);
+    font-style: var(--custom-font-style);
+    font-weight: var(--custom-font-weight);
+}

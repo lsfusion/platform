@@ -76,11 +76,7 @@
 }
 
 .cell-with-custom-font,
-.cell-with-custom-font .form-select, /* dropdown */
-.cell-with-custom-font.btn, /* actionCellRenderer */
-.cell-with-custom-font .btn, /* button / buttonGroups */
-.cell-with-custom-font .form-check, /* check-boxes */
-.cell-with-custom-font .ms-parent /* multiple select */
+.cell-with-custom-font.btn
 {
     font-size: var(--custom-font-size);
     font-family: var(--custom-font-family);

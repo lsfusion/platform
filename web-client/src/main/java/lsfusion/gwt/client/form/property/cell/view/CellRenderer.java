@@ -6,7 +6,6 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.view.ColorUtils;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.object.table.view.GToolbarView;
@@ -295,8 +294,6 @@ public abstract class CellRenderer {
         public String foreground;
         public String background;
 
-        public GFont font;
-
         public Boolean readonly;
 
         public String valueElementClass;
@@ -312,9 +309,6 @@ public abstract class CellRenderer {
     }
     private static boolean equalsColorState(RenderedState state, String background, String foreground) {
         return GwtClientUtils.nullEquals(state.background, background) && GwtClientUtils.nullEquals(state.foreground, foreground);
-    }
-    private static boolean equalsFontState(RenderedState state, GFont font) {
-        return GwtClientUtils.nullEquals(state.font, font);
     }
     private static boolean equalsReadonlyState(RenderedState state, Boolean readonly) {
         return GwtClientUtils.nullEquals(state.readonly, readonly);
@@ -490,7 +484,7 @@ public abstract class CellRenderer {
 
     public final static GPropertyDraw.QuickAccessAction[] noToolbarActions = new GPropertyDraw.QuickAccessAction[0];
     // cleared - cleared with setInnerText / setInnerHTML
-    protected void renderToolbarContent(Element element, UpdateContext updateContext, RenderedState renderedState, boolean cleared) {
+    private void renderToolbarContent(Element element, UpdateContext updateContext, RenderedState renderedState, boolean cleared) {
         boolean loading = updateContext.isLoading() && !renderedLoadingContent(updateContext);
         ToolbarAction[] toolbarActions = updateContext.getToolbarActions();
 
