@@ -89,7 +89,7 @@ public class GBusyDialog extends DialogModalWindow {
         btnCancel.setEnabled(false);
         addFooterWidget(btnCancel);
 
-        btnInterrupt = new FormButton(messages.busyDialogBreak(), SECONDARY, clickEvent -> interruptAction());
+        btnInterrupt = new FormButton(messages.busyDialogBreak(), SECONDARY, clickEvent -> confirmInterruptAction(() -> needInterrupt = true));
         btnInterrupt.setEnabled(false);
         addFooterWidget(btnInterrupt);
     }
@@ -201,12 +201,12 @@ public class GBusyDialog extends DialogModalWindow {
                 });
     }
 
-    private void interruptAction() {
+    public static void confirmInterruptAction(Runnable action) {
         DialogBoxHelper.showConfirmBox(messages.busyDialogInterruptTransaction(),
                 messages.busyDialogInterruptTransactionConfirm(),
                 false, chosenOption -> {
                     if (chosenOption == DialogBoxHelper.OptionType.YES) {
-                        needInterrupt = true;
+                        action.run();
                     }
                 });
     }

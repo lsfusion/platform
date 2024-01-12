@@ -6,6 +6,7 @@ import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.*;
+import lsfusion.gwt.client.base.busy.GBusyDialog;
 import lsfusion.gwt.client.base.view.StaticImageWidget;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -65,10 +66,12 @@ public abstract class FormContainer {
         if(async) {
             // we shouldn't remove async form here, because it will be removed either in FormAction, or on response noneMatch FormAction check
 //            asyncFormController.removeAsyncForm();
-            hide(reason);
-            asyncHidden = true;
-            asyncHiddenReason = reason;
-            MainFrame.navigatorDispatchAsync.interrupt(false);
+            GBusyDialog.confirmInterruptAction(() -> {
+                hide(reason);
+                asyncHidden = true;
+                asyncHiddenReason = reason;
+                MainFrame.navigatorDispatchAsync.interrupt(false);
+            });
         } else {
             form.closePressed(reason);
         }
