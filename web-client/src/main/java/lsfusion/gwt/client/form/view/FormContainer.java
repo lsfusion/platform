@@ -68,6 +68,7 @@ public abstract class FormContainer {
             hide(reason);
             asyncHidden = true;
             asyncHiddenReason = reason;
+            MainFrame.navigatorDispatchAsync.interrupt(false);
         } else {
             form.closePressed(reason);
         }
