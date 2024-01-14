@@ -2452,7 +2452,6 @@ public class GFormController implements EditManager {
 
     private static native void setCellForegroundColor(Element element, String color) /*-{
         element.style.setProperty("--foreground-color", color);
-        element.style.color = "var(--foreground-color)";
     }-*/;
 
     public static void setFont(Element element, GFont font) {

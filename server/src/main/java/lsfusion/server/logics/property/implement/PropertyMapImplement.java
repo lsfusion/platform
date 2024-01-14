@@ -306,6 +306,10 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
     public boolean mapChangedWhen(boolean toNull, PropertyInterfaceImplement<T> changeProperty) {
          return property.isChangedWhen(toNull, changeProperty.map(mapping.reverse()));
     }
+    @Override
+    public boolean mapIsExplicitNot(PropertyInterfaceImplement<T> where) {
+        return property.isNot(where.map(mapping.reverse()));
+    }
 
     @Override
     public <X extends PropertyInterface> AsyncMapChange<X, T> mapAsyncChange(PropertyMapImplement<X, T> writeTo, ObjectEntity object) {

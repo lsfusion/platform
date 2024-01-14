@@ -227,8 +227,12 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
     public boolean mapChangedWhen(boolean toNull, PropertyInterfaceImplement<P> changeProperty) {
         return BaseUtils.hashEquals(this, changeProperty);
     }
+    @Override
+    public boolean mapIsExplicitNot(PropertyInterfaceImplement<P> where) {
+        return false;
+    }
 
-//    @Override
+    //    @Override
 //    public OrderEntity mapEntityObjects(ImRevMap<P, ObjectEntity> mapObjects) {
 //        return mapObjects.get((P)this);
 //    }

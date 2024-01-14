@@ -16,6 +16,7 @@ import lsfusion.server.data.expr.formula.StringConcatenateFormulaImpl;
 import lsfusion.server.data.expr.formula.SumFormulaImpl;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.value.StaticParamNullableExpr;
+import lsfusion.server.data.where.CheckWhere;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.BaseLogicsModule;
@@ -40,6 +41,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.function.IntFunction;
+import java.util.function.Predicate;
 
 public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementProperty<JoinProperty.Interface> {
     public final PropertyImplement<T, PropertyInterfaceImplement<Interface>> implement;
@@ -83,6 +85,16 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
 
         return super.isChangedWhen(toNull, changeProperty);
     }
+    @Override
+    public boolean isNot(PropertyInterfaceImplement<Interface> map) {
+        if(isIdentity) {
+            ImRevMap<T, Interface> joinMapping = BaseUtils.immutableCast(implement.mapping.toRevExclMap());
+            return implement.property.isNot(map.map(joinMapping.reverse()));
+        }
+        if(implement.property instanceof NotFormulaProperty)
+            return implement.mapping.singleValue().equalsMap(map);
+        return super.isNot(map);
+    }
 
     public <X extends PropertyInterface> PropertyMapImplement<?, X> getIdentityImplement(ImRevMap<Interface, X> mapping) {
         if(isIdentity) {
@@ -111,8 +123,11 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     private ImMap<T, Expr> getJoinImplements(final ImMap<Interface, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges, final WhereBuilder changedWhere) {
         return implement.mapping.mapItValues(value -> value.mapExpr(joinImplement, calcType, propChanges, changedWhere));
     }
-    
-    public static <P extends PropertyInterface> boolean checkPrereadNull(ImMap<P, ? extends Expr> joinImplement, boolean notNull, ImCol<PropertyInterfaceImplement<P>> col, final CalcType calcType, final PropertyChanges propChanges) {
+
+    public static <P extends PropertyInterface> boolean checkPrereadNull(ImMap<P, ? extends Expr> joinImplement, boolean notNull, ImCol<PropertyInterfaceImplement<P>> col, final CalcType calcType, final PropertyChanges propChanges, boolean checkChange) {
+        return checkPrereadNull(joinImplement, notNull, col, calcType, propChanges, checkChange ? CheckWhere::isFalse : null);
+    }
+    public static <P extends PropertyInterface> boolean checkPrereadNull(ImMap<P, ? extends Expr> joinImplement, boolean notNull, ImCol<PropertyInterfaceImplement<P>> col, final CalcType calcType, final PropertyChanges propChanges, Predicate<Where> checkChange) {
         if(!notNull || !calcType.isExpr())
             return false;
 
@@ -121,8 +136,8 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         if(!complexMapping.isEmpty()) {
             // сортируем по сложности
             for(PropertyInterfaceImplement<P> mapImpl : complexMapping.sort(Comparator.comparingLong(PropertyInterfaceImplement::mapSimpleComplexity))) {
-                WhereBuilder changedWhere = new WhereBuilder();
-                if (mapImpl.mapExpr(joinImplement, calcType, propChanges, changedWhere).isNull() && changedWhere.toWhere().isFalse())
+                WhereBuilder changedWhere = checkChange != null ? new WhereBuilder() : null;
+                if (checkPrereadNull(mapImpl.mapExpr(joinImplement, calcType, propChanges, changedWhere)) && (checkChange == null || checkChange.test(changedWhere.toWhere())))
                     return true;
             }
         }
@@ -130,12 +145,20 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         return false;                
     }
 
-    private boolean checkPrereadNull(ImMap<Interface, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges) {
-        return checkPrereadNull(joinImplement, implement.property.isNotNull(calcType.getAlgInfo()), implement.mapping.values(), calcType, propChanges);
+    public static boolean checkPrereadNull(Expr expr) {
+        return expr.isNull();
+    }
+
+    public static boolean checkPrereadTrue(Expr expr) {
+        return expr.isTrue();
+    }
+
+    private boolean checkPrereadNull(ImMap<Interface, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges, WhereBuilder changedWhere) {
+        return checkPrereadNull(joinImplement, implement.property.isNotNull(calcType.getAlgInfo()), implement.mapping.values(), calcType, propChanges, changedWhere != null ? where -> { changedWhere.add(where); return true; } : null);  // the same way it works now in Case / If
     }
     
     public Expr calculateExpr(ImMap<Interface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        if(checkPrereadNull(joinImplement, calcType, propChanges))
+        if(checkPrereadNull(joinImplement, calcType, propChanges, changedWhere))
             return Expr.NULL();
         
         return implement.property.getExpr(getJoinImplements(joinImplement, calcType, propChanges, changedWhere), calcType, propChanges, changedWhere);

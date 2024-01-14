@@ -48,7 +48,7 @@ public abstract class AddGroupProperty<I extends PropertyInterface> extends Grou
         // если нужна инкрементность
         ImMap<I, Expr> mapKeys = getGroupKeys(joinImplement); // изначально чтобы новые и старые группировочные записи в одном контексте были
 
-        if(checkPrereadNull(mapKeys, CalcType.EXPR, propChanges))
+        if(checkPrereadNull(mapKeys, CalcType.EXPR, propChanges, true))
             return Expr.NULL();
 
         // новые группировочные записи
@@ -68,7 +68,7 @@ public abstract class AddGroupProperty<I extends PropertyInterface> extends Grou
     protected Expr calculateNewExpr(ImMap<Interface<I>, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges) {
         ImMap<I, Expr> mapKeys = getGroupKeys(joinImplement);
 
-        if(checkPrereadNull(mapKeys, calcType, propChanges))
+        if(checkPrereadNull(mapKeys, calcType, propChanges, false))
             return Expr.NULL();
 
         return GroupExpr.create(getGroupImplements(mapKeys, calcType, propChanges), groupProperty.mapExpr(mapKeys, calcType, propChanges, null), getGroupType(), joinImplement, calcType instanceof CalcClassType);

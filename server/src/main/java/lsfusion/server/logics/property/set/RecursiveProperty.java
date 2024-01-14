@@ -93,7 +93,7 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
         Result<ImMap<KeyExpr, Expr>> group = new Result<>();
         ImMap<T, Expr> recursiveKeys = getRecursiveKeys(joinImplement, mapIterate, group);
         
-        if(checkPrereadNull(recursiveKeys, CalcType.EXPR, propChanges))
+        if(checkPrereadNull(recursiveKeys, CalcType.EXPR, propChanges, true))
             return Where.FALSE();
 
         PropertyChanges prevPropChanges = getPrevPropChanges(propChanges);
@@ -115,7 +115,7 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
         Result<ImMap<KeyExpr, Expr>> group = new Result<>();
         ImMap<T, Expr> recursiveKeys = getRecursiveKeys(joinImplement, mapIterate, group);
 
-        if(checkPrereadNull(recursiveKeys, CalcType.EXPR, propChanges))
+        if(checkPrereadNull(recursiveKeys, CalcType.EXPR, propChanges, true))
             return Expr.NULL();
 
         PropertyChanges prevPropChanges = getPrevPropChanges(propChanges);
@@ -129,8 +129,8 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
         return RecursiveExpr.create(mapIterate.result, initialChanged.sum(stepChanged), newStep, isCyclePossible(), group.result);
     }
 
-    private boolean checkPrereadNull(ImMap<T, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges) {
-        return JoinProperty.checkPrereadNull(joinImplement, step.property.isNotNull(calcType.getAlgInfo()), SetFact.singleton(initial), calcType, propChanges); // isExclusive ? SetFact.toSet(cCase.where, cCase.property) : SetFact.singleton(cCase.where)
+    private boolean checkPrereadNull(ImMap<T, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges, boolean checkChange) {
+        return JoinProperty.checkPrereadNull(joinImplement, step.property.isNotNull(calcType.getAlgInfo()), SetFact.singleton(initial), calcType, propChanges, checkChange); // isExclusive ? SetFact.toSet(cCase.where, cCase.property) : SetFact.singleton(cCase.where)
     }
 
     protected Expr calculateIncrementExpr(ImMap<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, Expr prevExpr, WhereBuilder changedWhere) {
@@ -149,7 +149,7 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
         Result<ImMap<KeyExpr, Expr>> group = new Result<>();
         ImMap<T, Expr> recursiveKeys = getRecursiveKeys(joinImplement, mapIterate, group);
 
-        if(checkPrereadNull(recursiveKeys, calcType, propChanges))
+        if(checkPrereadNull(recursiveKeys, calcType, propChanges, false))
             return Expr.NULL();
 
         return RecursiveExpr.create(mapIterate.result, initial.mapExpr(recursiveKeys, calcType, propChanges, null),

@@ -93,6 +93,7 @@ public interface PropertyInterfaceImplement<P extends PropertyInterface> extends
     Graph<CalcCase<P>> mapAbstractGraph();
 
     boolean mapChangedWhen(boolean toNull, PropertyInterfaceImplement<P> changeProperty);
+    boolean mapIsExplicitNot(PropertyInterfaceImplement<P> where);
 //    OrderEntity mapEntityObjects(ImRevMap<P, ObjectEntity> mapObjects);
 //
 //    <C extends PropertyInterface> PropertyInterfaceImplement<C> mapInner(ImRevMap<P, C> map);

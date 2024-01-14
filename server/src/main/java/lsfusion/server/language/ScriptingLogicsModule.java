@@ -1793,13 +1793,23 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJProp(and(false), Arrays.asList(new LPWithParams(baseLM.vtrue), property));
     }
 
+    private boolean useExclusiveIfElse = false; // not sure why exclusiveness was used (it doesn't change anything except moving prevExpr to the end of CaseExpr)
+
     public LPWithParams addScriptedIfElseUProp(LPWithParams ifProp, LPWithParams thenProp, LPWithParams elseProp) throws ScriptingErrorLog.SemanticErrorException {
-        List<LPWithParams> lpParams = new ArrayList<>();
-        lpParams.add(addScriptedJProp(and(false), asList(thenProp, ifProp)));
-        if (elseProp != null) {
-            lpParams.add(addScriptedJProp(and(true), asList(elseProp, ifProp)));
-        }
-        return addScriptedUProp(Union.EXCLUSIVE, lpParams, "IF");
+//        List<LPWithParams> lpParams = new ArrayList<>();
+//        lpParams.add(addScriptedJProp(and(false), asList(thenProp, ifProp)));
+//        if (elseProp != null) {
+//            lpParams.add(addScriptedJProp(and(true), asList(elseProp, ifProp)));
+//        }
+//        return addScriptedUProp(Union.EXCLUSIVE, lpParams, "IF");
+
+        if(elseProp == null)
+            return addScriptedIfProp(BaseUtils.toList(thenProp, ifProp));
+
+        if(elseProp != null && useExclusiveIfElse)
+            return addScriptedCaseUProp(BaseUtils.toList(ifProp, addScriptedNotProp(ifProp)), BaseUtils.toList(thenProp, elseProp), null, true);
+        else
+            return addScriptedCaseUProp(Collections.singletonList(ifProp), Collections.singletonList(thenProp), elseProp, false);
     }
 
     public LPWithParams addScriptedCaseUProp(List<LPWithParams> whenProps, List<LPWithParams> thenProps, LPWithParams elseProp, boolean isExclusive) {

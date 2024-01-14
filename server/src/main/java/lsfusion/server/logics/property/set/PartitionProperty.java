@@ -27,8 +27,6 @@ import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
-import java.util.function.Function;
-
 public class PartitionProperty<T extends PropertyInterface> extends SimpleIncrementProperty<PartitionProperty.Interface<T>> {
 
     protected final PartitionType partitionType;
@@ -112,10 +110,10 @@ public class PartitionProperty<T extends PropertyInterface> extends SimpleIncrem
         return props.mapItListValues(value -> value.mapExpr(joinImplement, calcType, propChanges, changedWhere));
     }
 
-    private boolean checkPrereadNull(ImMap<T, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges) {
-        return JoinProperty.checkPrereadNull(joinImplement, true, props.getCol(), calcType, propChanges) ||
-                JoinProperty.checkPrereadNull(joinImplement, true, partitions, calcType, propChanges) ||
-                JoinProperty.checkPrereadNull(joinImplement, ordersNotNull, orders.keys(), calcType, propChanges);
+    private boolean checkPrereadNull(ImMap<T, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges, boolean checkChange) {
+        return JoinProperty.checkPrereadNull(joinImplement, true, props.getCol(), calcType, propChanges, checkChange) ||
+                JoinProperty.checkPrereadNull(joinImplement, true, partitions, calcType, propChanges, checkChange) ||
+                JoinProperty.checkPrereadNull(joinImplement, ordersNotNull, orders.keys(), calcType, propChanges, checkChange);
     }
     
     protected Expr calculateExpr(ImMap<Interface<T>, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
@@ -123,7 +121,7 @@ public class PartitionProperty<T extends PropertyInterface> extends SimpleIncrem
         Result<ImMap<KeyExpr, Expr>> mapExprs = new Result<>();
         ImMap<T, ? extends Expr> mapKeys = getGroupKeys(joinImplement, mapExprs);
         
-        if(checkPrereadNull(mapKeys, calcType, propChanges))
+        if(checkPrereadNull(mapKeys, calcType, propChanges, changedWhere != null))
             return Expr.NULL();
 
         WhereBuilder orderWhere = cascadeWhere(changedWhere);

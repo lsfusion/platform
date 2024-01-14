@@ -569,6 +569,9 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
         return getImplement().equalsMap(changeProperty);
     }
+    public boolean isNot(PropertyInterfaceImplement<T> map) {
+        return false;
+    }
 
     public Pair<PropertyInterfaceImplement<T>, PropertyInterfaceImplement<T>> getIfProp() {
         return null;

@@ -137,7 +137,7 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
         // если нужна инкрементность
         ImMap<I, Expr> mapKeys = getGroupKeys(joinImplement); // изначально чтобы новые и старые группировочные записи в одном контексте были
 
-        if(checkPrereadNull(mapKeys, calcType, propChanges))
+        if(checkPrereadNull(mapKeys, calcType, propChanges, changedWhere != null))
             return Expr.NULL();
 
         WhereBuilder changedGroupWhere = cascadeWhere(changedWhere);

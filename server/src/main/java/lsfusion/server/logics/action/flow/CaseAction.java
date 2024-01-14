@@ -253,14 +253,16 @@ public class CaseAction extends ListCaseAction {
             cases = optimisticCases;
         } else {
             allCases.set(!cases.isEmpty() &&
-                    (cases.get(cases.size() - 1).where.mapIsExplicitTrue() || !cases.containsFn(aCase -> !aCase.isClassSimple())));
+                    (cases.get(cases.size() - 1).where.mapIsExplicitTrue() || // the last is true (if else nonexclusive)
+                    !cases.containsFn(aCase -> !aCase.isClassSimple()) || // it's MULTI
+                    (cases.size() == 2 && cases.get(1).where.mapIsExplicitNot(cases.get(0).where)))); // if else exclusive
         }
 
         return cases.mapListValues(value -> value.implement);
     }
     @Override
     public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
-        Result<Boolean> rLastElse = new Result<>();
+        Result<Boolean> rLastElse = new Result<>(false);
         return getBranchAsyncEventExec(getAsyncListActions(rLastElse), optimistic, recursive, isExclusive, rLastElse.result);
     }
 

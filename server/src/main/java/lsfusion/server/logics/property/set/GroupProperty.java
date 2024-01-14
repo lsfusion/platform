@@ -180,10 +180,10 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
         return classWhere.getCommonParent(innerInterfaces);*/
     }
 
-    protected boolean checkPrereadNull(ImMap<I, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges) {
-        return JoinProperty.checkPrereadNull(joinImplement, true, getProps().getCol(), calcType, propChanges) ||
-                JoinProperty.checkPrereadNull(joinImplement, true, interfaces.mapSetValues(value -> value.implement), calcType, propChanges) ||
-                JoinProperty.checkPrereadNull(joinImplement, getOrdersNotNull(), getOrders().keys(), calcType, propChanges);
+    protected boolean checkPrereadNull(ImMap<I, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges, boolean checkChange) {
+        return JoinProperty.checkPrereadNull(joinImplement, true, getProps().getCol(), calcType, propChanges, checkChange) ||
+                JoinProperty.checkPrereadNull(joinImplement, true, interfaces.mapSetValues(value -> value.implement), calcType, propChanges, checkChange) ||
+                JoinProperty.checkPrereadNull(joinImplement, getOrdersNotNull(), getOrders().keys(), calcType, propChanges, checkChange);
     }
 
     @Override

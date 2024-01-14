@@ -39,6 +39,7 @@ import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.drilldown.form.CaseUnionDrillDownFormEntity;
 import lsfusion.server.physics.admin.drilldown.form.DrillDownFormEntity;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.util.Comparator;
@@ -178,22 +179,22 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         return result;
     }
 
-    private boolean checkPrereadNull(CalcCase<Interface> cCase, ImMap<Interface, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges) {
-       return JoinProperty.checkPrereadNull(joinImplement, true, SetFact.singleton(cCase.where), calcType, propChanges); // isExclusive ? SetFact.toSet(cCase.where, cCase.property) : SetFact.singleton(cCase.where)
-    }
-
     protected Expr calculateNewExpr(final ImMap<Interface, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges, final WhereBuilder changedWhere) {
         ImList<CalcCase<Interface>> cases = getCases();
+        int size = cases.size();
+        MList<Pair<Expr, Expr>> mCaseExprs = ListFact.mListMax(size);
+        for(int i = 0; i < size; i++) {
+            CalcCase<Interface> value = cases.get(i);
 
-        // до непосредственно вычисления, для хинтов
-        ImList<Pair<Expr, Expr>> caseExprs = cases.mapListValues((Function<CalcCase<Interface>, Pair<Expr, Expr>>) value -> {
-            if(checkPrereadNull(value, joinImplement, calcType, propChanges))
-                return new Pair<>(Expr.NULL(), Expr.NULL());
-                
-            return new Pair<>(
-                    value.where.mapExpr(joinImplement, calcType, propChanges, changedWhere),
-                    value.implement.mapExpr(joinImplement, calcType, propChanges, changedWhere));
-        });
+            Expr whereExpr = value.where.mapExpr(joinImplement, calcType, propChanges, changedWhere);
+            if(!JoinProperty.checkPrereadNull(whereExpr)) {
+                mCaseExprs.add(new Pair<>(whereExpr, value.implement.mapExpr(joinImplement, calcType, propChanges, changedWhere)));
+
+                if(JoinProperty.checkPrereadTrue(whereExpr))
+                    break;
+            }
+        }
+        ImList<Pair<Expr, Expr>> caseExprs = mCaseExprs.immutableList();
 
         CaseExprInterface exprCases = Expr.newCases(isExclusive, caseExprs.size());
         for(Pair<Expr, Expr> caseExpr : caseExprs)
@@ -207,19 +208,32 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         // Wi AND (OR(Cwi) OR CЕi) AND !OR(Wi-1) - Ei или вставлять прмежуточные (но у 1-го подхода - не надо отрезать сзади ничего, changed более релевантен)
         ImList<CalcCase<Interface>> cases = getCases();
 
-        // до непосредственно вычисления, для хинтов
-        ImList<Pair<Pair<Expr, Where>, Pair<Expr, Where>>> caseExprs = cases.mapListValues((Function<CalcCase<Interface>, Pair<Pair<Expr, Where>, Pair<Expr, Where>>>) propCase -> {
-            if(checkPrereadNull(propCase, joinImplement, CalcType.EXPR, propChanges))
-                return new Pair<>(new Pair<>(Expr.NULL(), Where.FALSE()), new Pair<>(Expr.NULL(), Where.FALSE()));
+        int casesSize = cases.size();
+        MList<Pair<Pair<Expr, Where>, Pair<Expr, Where>>> mCaseExprs = ListFact.mListMax(casesSize);
+        for(int i = 0; i < casesSize; i++) {
+            CalcCase<Interface> propCase = cases.get(i);
 
             WhereBuilder changedWhereCase = new WhereBuilder();
-            WhereBuilder changedExprCase = new WhereBuilder();
-            return new Pair<>(
-                    new Pair<>(propCase.where.mapExpr(joinImplement, propChanges, changedWhereCase), changedWhereCase.toWhere()),
-                    new Pair<>(propCase.implement.mapExpr(joinImplement, propChanges, changedExprCase), changedExprCase.toWhere()));
-        });
+            Expr whereExpr = propCase.where.mapExpr(joinImplement, propChanges, changedWhereCase);
 
-        int size=cases.size();
+            WhereBuilder changedImplementCase = new WhereBuilder();
+            Expr implementExpr;
+            if(JoinProperty.checkPrereadNull(whereExpr))
+                implementExpr = Expr.NULL();
+            else
+                implementExpr = propCase.implement.mapExpr(joinImplement, propChanges, changedImplementCase);
+
+            mCaseExprs.add(new Pair<>(
+                    new Pair<>(whereExpr, changedWhereCase.toWhere()),
+                    new Pair<>(implementExpr, changedImplementCase.toWhere())));
+
+            if(!isExclusive && JoinProperty.checkPrereadTrue(whereExpr)) { // if this changed to true we don't actually need the rest cases, not sure that !isExclusive check is needed
+                break;
+            }
+        };
+        ImList<Pair<Pair<Expr, Where>, Pair<Expr, Where>>> caseExprs = mCaseExprs.immutableList();
+
+        int size=caseExprs.size();
         CaseExprInterface exprCases = Expr.newCases(isExclusive, isExclusive ? size + 1 : size * 2);
 
         Where changedUpWheres = Where.FALSE(); // для не exclusive
