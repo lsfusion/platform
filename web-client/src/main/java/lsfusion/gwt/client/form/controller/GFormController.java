@@ -2572,4 +2572,8 @@ public class GFormController implements EditManager {
     public Element getFormElement() {
         return formContainer.getFocusedElement();
     }
+
+    public Element getDropdownParent() {
+        return GwtClientUtils.getTippyParent(formContainer.getFocusedElement());
+    }
 }

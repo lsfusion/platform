@@ -846,6 +846,11 @@ protected Double getUserFlex(int i) {
             }
 
             @Override
+            public GFormController getForm() {
+                return form;
+            }
+
+            @Override
             public RendererType getRendererType() {
                 return RendererType.GRID;
             }

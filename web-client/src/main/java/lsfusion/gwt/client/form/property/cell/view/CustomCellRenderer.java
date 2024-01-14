@@ -21,7 +21,7 @@ public class CustomCellRenderer extends CellRenderer {
 
     @Override
     public boolean renderContent(Element element, RenderContext renderContext) {
-        render(customRenderer, element);
+        render(customRenderer, getRenderController(property, renderContext, element), element);
 
         return true;
     }
@@ -71,8 +71,8 @@ public class CustomCellRenderer extends CellRenderer {
         return super.getExtraValue(updateContext);
     }
 
-    protected native void render(JavaScriptObject customRenderer, Element element)/*-{
-        customRenderer.render(element);
+    protected native void render(JavaScriptObject customRenderer, JavaScriptObject controller, Element element)/*-{
+        customRenderer.render(element, controller);
     }-*/;
 
     @Override
@@ -214,6 +214,22 @@ public class CustomCellRenderer extends CellRenderer {
                 return @CustomCellRenderer::previewEvent(*)(element, event, updateContext);
             }
         }
+    }-*/;
+
+    public static JavaScriptObject getRenderController(GPropertyDraw property, RenderContext renderContext, Element element) {
+        return getRenderController(renderContext.getForm().getDropdownParent());
+    }
+
+    private static native JavaScriptObject getRenderController(Element dropdownParent)/*-{
+        var thisObj = this;
+        return {
+            isList: function () {
+                return false;
+            },
+            getDropdownParent: function() {
+                return dropdownParent;
+            }
+        };
     }-*/;
 
     @Override

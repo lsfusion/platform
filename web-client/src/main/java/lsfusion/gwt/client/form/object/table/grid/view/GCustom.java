@@ -33,7 +33,7 @@ public class GCustom extends GTippySimpleStateTableView {
     @Override
     public void onRender(Event editEvent) {
         if (renderFunctionWithoutArguments)
-            render(renderFunction, getDrawElement(), controller, renderController, editEvent);
+            render(renderFunction, getDrawElement(), controller, editEvent);
     }
 
     @Override
@@ -51,11 +51,6 @@ public class GCustom extends GTippySimpleStateTableView {
     }
 
     @Override
-    protected boolean isList() {
-        return false;
-    }
-
-    @Override
     protected Element getCellParent(Element target) {
         return null;
     }
@@ -64,8 +59,8 @@ public class GCustom extends GTippySimpleStateTableView {
         renderFunction(element, list, controller);
     }-*/;
 
-    protected native void render(JavaScriptObject renderFunction, Element element, JavaScriptObject controller, JavaScriptObject renderController, Event event)/*-{
-        renderFunction().render(element, controller, renderController, event);
+    protected native void render(JavaScriptObject renderFunction, Element element, JavaScriptObject controller, Event event)/*-{
+        renderFunction().render(element, controller, event);
     }-*/;
 
     protected native void update(JavaScriptObject renderFunction, Element element, JavaScriptObject controller, JsArray<JavaScriptObject> list, JavaScriptObject customOptions)/*-{

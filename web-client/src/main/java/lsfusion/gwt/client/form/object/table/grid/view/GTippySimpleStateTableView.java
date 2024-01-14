@@ -17,7 +17,7 @@ public abstract class GTippySimpleStateTableView extends GSimpleStateTableView<E
 
     @Override
     protected JavaScriptObject showPopup(Widget ownerWidget, Element popupElement, Element popupElementClicked) {
-        return GwtClientUtils.showTippyPopup(ownerWidget, popupElementClicked, popupElement);
+        return GwtClientUtils.showTippyPopup(ownerWidget, popupElementClicked, popupElement, null);
     }
 
     @Override

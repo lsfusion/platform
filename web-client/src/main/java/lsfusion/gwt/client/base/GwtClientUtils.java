@@ -503,15 +503,11 @@ public class GwtClientUtils {
 
     public static JavaScriptObject showTippyPopup(Widget ownerWidget, Element popupElementClicked, Widget popupWidget, Runnable onHideAction) {
         RootPanel.get().add(popupWidget);
-        return showTippyPopup(ownerWidget, nvl(getTippyParent(popupElementClicked), RootPanel.get().getElement()), popupElementClicked, popupWidget.getElement(), onHideAction);
+        return showTippyPopup(ownerWidget, popupElementClicked, popupWidget.getElement(), onHideAction);
     }
 
-    public static JavaScriptObject showTippyPopup(Widget ownerWidget, Element popupElementClicked, Element popupElement) {
-        return showTippyPopup(ownerWidget, nvl(getTippyParent(popupElementClicked), RootPanel.get().getElement()), popupElementClicked, popupElement, null);
-    }
-
-    public static JavaScriptObject showTippyPopup(Widget ownerWidget, Element appendToElement, Element popupElementClicked, Element popupElement, Runnable onHideAction) {
-        JavaScriptObject popup = showTippyPopup(appendToElement, popupElementClicked, popupElement, onHideAction, true);
+    public static JavaScriptObject showTippyPopup(Widget ownerWidget, Element popupElementClicked, Element popupElement, Runnable onHideAction) {
+        JavaScriptObject popup = showTippyPopup(nvl(getTippyParent(popupElementClicked), RootPanel.get().getElement()), popupElementClicked, popupElement, onHideAction, true);
         if(ownerWidget != null) {
             ownerWidget.addAttachHandler(attachEvent -> {
                 if(!attachEvent.isAttached()) {
