@@ -666,7 +666,7 @@ public class PropertyDrawView extends BaseComponentView {
     }
 
     public String getPattern() {
-        return pattern.getSourceString();
+        return pattern != null ? pattern.getSourceString() : null;
     }
 
     @Override
