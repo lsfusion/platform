@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.Style;
@@ -153,9 +154,9 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
             }
         }
 
-        String mask = property.getMaskFromPattern(renderContext.getPattern());
-        if(mask != null) {
-            GwtClientUtils.setMask(inputElement, mask);
+        JavaScriptObject options = property.getMaskOptionsFromPattern(renderContext.getPattern());
+        if(options != null) {
+            GwtClientUtils.setMask(inputElement, options);
         }
 
         String regexp = renderContext.getRegexp();
@@ -182,8 +183,8 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
                 suggestBox = null;
             }
 
-            String mask = property.getMaskFromPattern(pattern);
-            if(mask != null) {
+            JavaScriptObject options = property.getMaskOptionsFromPattern(pattern);
+            if(options != null) {
                 GwtClientUtils.removeMask(inputElement);
             }
 
@@ -323,7 +324,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
                 throw new InvalidEditException();
         }
 
-        if(property.getMaskFromPattern(pattern) != null && !GwtClientUtils.isCompleteMask(inputElement))
+        if(property.getMaskOptionsFromPattern(pattern) != null && !GwtClientUtils.isCompleteMask(inputElement))
             throw new InvalidEditException();
 
         boolean patternMismatch = isPatternMismatch(inputElement);

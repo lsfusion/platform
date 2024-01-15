@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.property;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
@@ -604,20 +605,19 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         this.userPattern = userPattern;
     }
 
-    public String getMaskFromPattern(String pattern) {
+    public JavaScriptObject getMaskOptionsFromPattern(String pattern) {
         if (pattern != null) {
             if (valueType instanceof GADateType || valueType instanceof GIntervalType) {
-                return pattern.replaceAll("[dMyHms]", "9");
+                return DatePatternConverter.convert(pattern);
             } else if (valueType instanceof GIntegralType) {
-                if (pattern.equals("#,##0.##"))
-                    return "9{1,5}[,9{1,2}]";
-                else return null;
+                return IntegralPatternConverter.convert(pattern);
+            } else {
+                return StringPatternConverter.convert(pattern);
             }
-            return pattern;
         }
         return null;
     }
-
+    
     public PValue parsePaste(String s, GType parseType) {
         if (s == null) {
             return null;
