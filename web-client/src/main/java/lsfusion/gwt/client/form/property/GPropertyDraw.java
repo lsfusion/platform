@@ -615,6 +615,56 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return null;
     }
 
+    private static class DecimalPatternOptions {
+        public boolean isIntegerPattern;
+       
+        public int groupSize;
+        public int minimalIntegerLength;
+        
+        public int minimalFractionalLength;
+        public int maximalFractionalLength;
+        
+        public DecimalPatternOptions(boolean isIP, int groupSize, int minIL, int minFL, int maxFL) {
+            this.isIntegerPattern = isIP;
+            this.groupSize = groupSize;
+            this.minimalIntegerLength = minIL;
+            this.minimalFractionalLength = minFL;
+            this.maximalFractionalLength = maxFL;
+        }
+    }
+    
+    private static DecimalPatternOptions getDecimalPatternOptions(String pattern) {
+        int pointPos = pattern.indexOf('.');
+        if (pointPos == -1) {
+            return getIntegerPatternOptions(pattern);
+        }
+        DecimalPatternOptions options = getIntegerPatternOptions(pattern.substring(0, pointPos));
+        String fractionPart = pattern.substring(pointPos + 1);
+        options.isIntegerPattern = false;
+        options.maximalFractionalLength = fractionPart.length();
+        for (int i = 0; i < fractionPart.length(); ++i) {
+            if (fractionPart.charAt(i) != '0') break;
+            ++options.minimalFractionalLength;
+        }
+        return options;
+    }
+    
+    private static DecimalPatternOptions getIntegerPatternOptions(String pattern) {
+        int groupSize = 0;
+        int commaPos = pattern.lastIndexOf(',');
+        if (commaPos != -1) {
+            groupSize = pattern.length() - commaPos - 1;
+        }
+        int minLength = 0;
+        for (int i = pattern.length() - 1; i >= 0; --i) {
+            char ch = pattern.charAt(i);
+            if (ch == ',') continue;
+            if (ch != '0') break;
+            ++minLength;
+        }
+        return new DecimalPatternOptions(true, groupSize, minLength, 0, 0);
+    }
+    
     public PValue parsePaste(String s, GType parseType) {
         if (s == null) {
             return null;
