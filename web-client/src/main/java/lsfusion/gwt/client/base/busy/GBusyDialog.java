@@ -89,7 +89,7 @@ public class GBusyDialog extends DialogModalWindow {
         btnCancel.setEnabled(false);
         addFooterWidget(btnCancel);
 
-        btnInterrupt = new FormButton(messages.busyDialogBreak(), SECONDARY, clickEvent -> confirmInterruptAction(() -> needInterrupt = true));
+        btnInterrupt = new FormButton(messages.busyDialogBreak(), SECONDARY, clickEvent -> interruptAction());
         btnInterrupt.setEnabled(false);
         addFooterWidget(btnInterrupt);
     }
@@ -98,24 +98,17 @@ public class GBusyDialog extends DialogModalWindow {
         return MainFrame.showDetailedInfo;
     }
 
-    public void scheduleButtonEnabling(boolean asyncOpenForm) {
-        if(asyncOpenForm) {
-            btnExit.setEnabled(true);
-            btnReconnect.setEnabled(true);
-            btnCancel.setEnabled(true);
-            btnInterrupt.setEnabled(true);
-        } else {
-            longActionTimer = new Timer() {
-                @Override
-                public void run() {
-                    btnExit.setEnabled(true);
-                    btnReconnect.setEnabled(true);
-                    btnInterrupt.setEnabled(true);
-                    longAction = true;
-                }
-            };
-            longActionTimer.schedule(inDevMode() ? 5000 : 60000);
-        }
+    public void scheduleButtonEnabling() {
+        longActionTimer = new Timer() {
+            @Override
+            public void run() {
+                btnExit.setEnabled(true);
+                btnReconnect.setEnabled(true);
+                btnInterrupt.setEnabled(true);
+                longAction = true;
+            }
+        };
+        longActionTimer.schedule(inDevMode() ? 5000 : 60000);
     }
 
     public void hideBusyDialog() {
@@ -208,12 +201,12 @@ public class GBusyDialog extends DialogModalWindow {
                 });
     }
 
-    public static void confirmInterruptAction(Runnable action) {
+    private void interruptAction() {
         DialogBoxHelper.showConfirmBox(messages.busyDialogInterruptTransaction(),
                 messages.busyDialogInterruptTransactionConfirm(),
                 false, chosenOption -> {
                     if (chosenOption == DialogBoxHelper.OptionType.YES) {
-                        action.run();
+                        needInterrupt = true;
                     }
                 });
     }

@@ -30,7 +30,7 @@ public class GBusyDialogDisplayer {
                 blockingPanel.hide();
                 busyDialog.show();
 
-                busyDialog.scheduleButtonEnabling(asyncOpenForm);
+                busyDialog.scheduleButtonEnabling();
 
                 updateBusyDialog(messageProvider); // we want immediate update, to avoid leaps
                 Scheduler.get().scheduleFixedPeriod(() -> {

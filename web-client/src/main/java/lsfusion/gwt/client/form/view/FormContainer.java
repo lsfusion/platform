@@ -5,8 +5,9 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GForm;
-import lsfusion.gwt.client.base.*;
-import lsfusion.gwt.client.base.busy.GBusyDialog;
+import lsfusion.gwt.client.base.FocusUtils;
+import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.view.StaticImageWidget;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -30,6 +31,12 @@ public abstract class FormContainer {
     protected GFormController form;
 
     public boolean async;
+
+    private boolean asyncHidden;
+    private EndReason asyncHiddenReason;
+    public boolean isAsyncHidden() {
+        return asyncHidden;
+    }
 
     public String formId;
 
@@ -64,12 +71,9 @@ public abstract class FormContainer {
         if(async) {
             // we shouldn't remove async form here, because it will be removed either in FormAction, or on response noneMatch FormAction check
 //            asyncFormController.removeAsyncForm();
-            if(contextForm != null) {
-                contextForm.showBusyDialog();
-            } else {
-                MainFrame.showBusyDialog();
-            }
-            shownBusyDialog = true;
+            hide(reason);
+            asyncHidden = true;
+            asyncHiddenReason = reason;
         } else {
             form.closePressed(reason);
         }
@@ -79,7 +83,8 @@ public abstract class FormContainer {
 
     // server response reaction - hideFormAction dispatch, and incorrect modalitytype when getting form, or no form at all
     public void queryHide(EndReason editFormCloseReason) {
-        hide(editFormCloseReason);
+        if(!isAsyncHidden())
+            hide(editFormCloseReason);
     }
     public abstract void hide(EndReason editFormCloseReason);
 
@@ -127,13 +132,18 @@ public abstract class FormContainer {
         };
 
         if(shownBusyDialog) {
+            shownBusyDialog = false;
             if(contextForm != null) {
                 contextForm.hideBusyDialog();
             } else {
                 MainFrame.hideBusyDialog();
             }
         }
-        setContent(form.getWidget());
+
+        if(isAsyncHidden())
+            form.closePressed(asyncHiddenReason);
+        else
+            setContent(form.getWidget());
 
         async = false;
 
@@ -159,6 +169,14 @@ public abstract class FormContainer {
 
         StaticImageWidget image = new StaticImageWidget(StaticImage.LOADING_ASYNC);
         image.addStyleName("loading-async-icon");
+        image.addClickHandler(clickEvent -> {
+            if(contextForm != null) {
+                contextForm.showBusyDialog();
+            } else {
+                MainFrame.showBusyDialog();
+            }
+            shownBusyDialog = true;
+        });
 
         topPanel.add(image);
         topPanel.add(new HTML(messages.loading()));
