@@ -31,12 +31,6 @@ public abstract class FormContainer {
 
     public boolean async;
 
-    private boolean asyncHidden;
-    private EndReason asyncHiddenReason;
-    public boolean isAsyncHidden() {
-        return asyncHidden;
-    }
-
     public String formId;
 
     public FormContainer(FormsController formsController, GFormController contextForm, boolean async, Event editEvent) {
@@ -65,20 +59,17 @@ public abstract class FormContainer {
         closePressed(null);
     }
 
+    private boolean shownBusyDialog;
     public void closePressed(EndReason reason) {
         if(async) {
             // we shouldn't remove async form here, because it will be removed either in FormAction, or on response noneMatch FormAction check
 //            asyncFormController.removeAsyncForm();
-            GBusyDialog.confirmInterruptAction(() -> {
-                hide(reason);
-                asyncHidden = true;
-                asyncHiddenReason = reason;
-                if(contextForm != null) {
-                    contextForm.interrupt(false);
-                } else {
-                    MainFrame.navigatorDispatchAsync.interrupt(false);
-                }
-            });
+            if(contextForm != null) {
+                contextForm.showBusyDialog();
+            } else {
+                MainFrame.showBusyDialog();
+            }
+            shownBusyDialog = true;
         } else {
             form.closePressed(reason);
         }
@@ -88,8 +79,7 @@ public abstract class FormContainer {
 
     // server response reaction - hideFormAction dispatch, and incorrect modalitytype when getting form, or no form at all
     public void queryHide(EndReason editFormCloseReason) {
-        if(!isAsyncHidden())
-            hide(editFormCloseReason);
+        hide(editFormCloseReason);
     }
     public abstract void hide(EndReason editFormCloseReason);
 
@@ -136,10 +126,14 @@ public abstract class FormContainer {
             }
         };
 
-        if(isAsyncHidden())
-            form.closePressed(asyncHiddenReason);
-        else
-            setContent(form.getWidget());
+        if(shownBusyDialog) {
+            if(contextForm != null) {
+                contextForm.hideBusyDialog();
+            } else {
+                MainFrame.hideBusyDialog();
+            }
+        }
+        setContent(form.getWidget());
 
         async = false;
 

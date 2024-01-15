@@ -654,4 +654,12 @@ public class MainFrame implements EntryPoint {
         GConnectionLostManager.invalidate();
         System.gc();
     }
+
+    public static void showBusyDialog() {
+        navigatorDispatchAsync.getBusyDialogDisplayer().start(true);
+    }
+
+    public static void hideBusyDialog() {
+        navigatorDispatchAsync.getBusyDialogDisplayer().stop(false);
+    }
 }

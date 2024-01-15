@@ -8,7 +8,7 @@ import lsfusion.gwt.client.controller.remote.action.PriorityErrorHandlingCallbac
 import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.view.ServerMessageProvider;
 
-public class GBusyDialogDisplayer extends LoadingManager {
+public class GBusyDialogDisplayer {
     public static final int MESSAGE_UPDATE_PERIOD = 1000;
 
     private final PopupPanel blockingPanel;
@@ -17,6 +17,8 @@ public class GBusyDialogDisplayer extends LoadingManager {
 
     private final Timer showTimer;
     private final Timer hideTimer;
+
+    private boolean asyncOpenForm;
 
     public GBusyDialogDisplayer(ServerMessageProvider messageProvider) {
         blockingPanel = new BlockingPanel();
@@ -28,13 +30,16 @@ public class GBusyDialogDisplayer extends LoadingManager {
                 blockingPanel.hide();
                 busyDialog.show();
 
-                busyDialog.scheduleButtonEnabling();
+                busyDialog.scheduleButtonEnabling(asyncOpenForm);
 
                 updateBusyDialog(messageProvider); // we want immediate update, to avoid leaps
                 Scheduler.get().scheduleFixedPeriod(() -> {
                     if (busyDialog.needInterrupt != null) {
                         messageProvider.interrupt(!busyDialog.needInterrupt);
                         busyDialog.needInterrupt = null;
+                        if(asyncOpenForm) {
+                            stop(false);
+                        }
                         return true;
                     } else if (visible) {
                         updateBusyDialog(messageProvider);
@@ -70,6 +75,11 @@ public class GBusyDialogDisplayer extends LoadingManager {
     }
 
     public void start() {
+        start(false);
+    }
+
+    public void start(boolean asyncOpenForm) {
+        this.asyncOpenForm = asyncOpenForm;
         if (!visible) {
             blockingPanel.center();
 

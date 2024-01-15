@@ -98,17 +98,24 @@ public class GBusyDialog extends DialogModalWindow {
         return MainFrame.showDetailedInfo;
     }
 
-    public void scheduleButtonEnabling() {
-        longActionTimer = new Timer() {
-            @Override
-            public void run() {
-                btnExit.setEnabled(true);
-                btnReconnect.setEnabled(true);
-                btnInterrupt.setEnabled(true);
-                longAction = true;
-            }
-        };
-        longActionTimer.schedule(inDevMode() ? 5000 : 60000);
+    public void scheduleButtonEnabling(boolean asyncOpenForm) {
+        if(asyncOpenForm) {
+            btnExit.setEnabled(true);
+            btnReconnect.setEnabled(true);
+            btnCancel.setEnabled(true);
+            btnInterrupt.setEnabled(true);
+        } else {
+            longActionTimer = new Timer() {
+                @Override
+                public void run() {
+                    btnExit.setEnabled(true);
+                    btnReconnect.setEnabled(true);
+                    btnInterrupt.setEnabled(true);
+                    longAction = true;
+                }
+            };
+            longActionTimer.schedule(inDevMode() ? 5000 : 60000);
+        }
     }
 
     public void hideBusyDialog() {

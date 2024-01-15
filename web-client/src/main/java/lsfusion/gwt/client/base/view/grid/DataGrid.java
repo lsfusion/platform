@@ -984,7 +984,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     public void onBlur(Element target, Event event) {
         if(!isFocused || isFakeBlur(event, getElement()))
             return;
-        //if !isFocused should be replaced to assert; isFocused must be true, but sometimes is not (related to LoadingManager)
+        //if !isFocused should be replaced to assert; isFocused must be true, but sometimes is not (related to BusyDialogDisplayer)
         //assert isFocused;
         isFocused = false;
         focusedChanged(target, event);
