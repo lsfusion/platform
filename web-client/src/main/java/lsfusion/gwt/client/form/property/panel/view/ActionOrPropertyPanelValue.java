@@ -45,7 +45,7 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
 
     @Override
     public CellRenderer.ToolbarAction[] getToolbarActions() {
-        return this.isPropertyReadOnly() != null ? super.getToolbarActions() : property.getQuickAccessActions(true, isFocused);
+        return this.isPropertyReadOnly() != null || property.isAction() ? super.getToolbarActions() : property.getQuickAccessActions(true, isFocused);
     }
 
     @Override
