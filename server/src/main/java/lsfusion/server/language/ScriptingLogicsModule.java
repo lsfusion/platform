@@ -2090,14 +2090,11 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         Object[] allParams = getParamsPlainList(allProps).toArray();
 
-        ImOrderSet<PropertyInterface> tempContext = genInterfaces(getIntNum(allParams));
-        ValueClass[] eaClasses = Property.getCommonClasses(tempContext, readCalcImplements(tempContext, allParams).getCol());
-
         if (syncType == null) {
             syncType = true;
         }
 
-        LA<PropertyInterface> eaLA = BL.emailLM.addEAProp(null, LocalizedString.NONAME, eaClasses, syncType);
+        LA<PropertyInterface> eaLA = BL.emailLM.addEAProp(null, LocalizedString.NONAME, getIntNum(allParams), syncType);
         SendEmailAction eaProp = (SendEmailAction) eaLA.action;
 
         ImList<PropertyInterfaceImplement<PropertyInterface>> allImplements = readCalcImplements(eaLA.listInterfaces, allParams);

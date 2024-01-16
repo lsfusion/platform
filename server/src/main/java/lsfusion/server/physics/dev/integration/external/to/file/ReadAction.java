@@ -9,6 +9,7 @@ import lsfusion.base.file.ReadClientAction;
 import lsfusion.base.file.ReadUtils;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
+import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.SystemAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
@@ -43,28 +44,30 @@ public class ReadAction extends SystemAction {
 
     @Override
     protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
-        DataObject sourceProp = context.getSingleDataKeyValue();
-        assert sourceProp.getType() instanceof StringClass;
-        String sourcePath = (String) sourceProp.object;
+        ObjectValue sourceProp = context.getSingleKeyValue();
+        if(sourceProp instanceof DataObject) {
+            assert sourceProp.getType() instanceof StringClass;
+            String sourcePath = (String) ((DataObject) sourceProp).object;
 
-        try {
+            try {
 
-            boolean isDynamicFormatFileClass = targetProp.property.getType() instanceof DynamicFormatFileClass;
-            boolean isBlockingFileRead = Settings.get().isBlockingFileRead();
-            ReadUtils.ReadResult readResult;
-            if (clientAction) {
-                readResult = (ReadUtils.ReadResult) context.requestUserInteraction(new ReadClientAction(sourcePath, isDynamicFormatFileClass, isBlockingFileRead, dialog));
-            } else {
-                readResult = ReadUtils.readFile(sourcePath, isDynamicFormatFileClass, isBlockingFileRead, false, extraReadProcessor);
+                boolean isDynamicFormatFileClass = targetProp.property.getType() instanceof DynamicFormatFileClass;
+                boolean isBlockingFileRead = Settings.get().isBlockingFileRead();
+                ReadUtils.ReadResult readResult;
+                if (clientAction) {
+                    readResult = (ReadUtils.ReadResult) context.requestUserInteraction(new ReadClientAction(sourcePath, isDynamicFormatFileClass, isBlockingFileRead, dialog));
+                } else {
+                    readResult = ReadUtils.readFile(sourcePath, isDynamicFormatFileClass, isBlockingFileRead, false, extraReadProcessor);
+                }
+                if (readResult != null) {
+                    if (isDynamicFormatFileClass)
+                        targetProp.change((FileData) readResult.fileBytes, context);
+                    else
+                        targetProp.change((RawFileData) readResult.fileBytes, context);
+                }
+            } catch (Exception e) {
+                throw Throwables.propagate(e);
             }
-            if (readResult != null) {
-                if(isDynamicFormatFileClass)
-                    targetProp.change((FileData)readResult.fileBytes, context);
-                else
-                    targetProp.change((RawFileData)readResult.fileBytes, context);
-            }
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
         }
         return FlowResult.FINISH;
     }

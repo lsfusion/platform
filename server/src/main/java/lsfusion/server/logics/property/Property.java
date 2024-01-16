@@ -2104,23 +2104,6 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return result;
     }
 
-    // костыль для email
-    public static <I extends PropertyInterface> ValueClass[] getCommonClasses(ImList<I> mapInterfaces, ImCol<? extends PropertyInterfaceImplement<I>> props) {
-        ValueClass[] result = new ValueClass[mapInterfaces.size()];
-        for(ActionOrPropertyInterfaceImplement prop : props) {
-            ImMap<I, ValueClass> propClasses;
-            if(prop instanceof PropertyMapImplement) {
-                propClasses = ((PropertyMapImplement<?, I>) prop).mapInterfaceClasses(ClassType.aroundPolicy);
-            } else {
-                propClasses = MapFact.EMPTY();
-            }
-
-            for(int i=0;i<result.length;i++)
-                result[i] = op(result[i], propClasses.get(mapInterfaces.get(i)), true);
-        }
-        return result;
-    }
-
     public ImSet<Property> getSetUsedChanges(PropertyChanges propChanges) {
         return getUsedChanges(propChanges.getStruct());
     }

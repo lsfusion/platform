@@ -67,8 +67,8 @@ public class SendEmailAction extends SystemAction {
         action.setImage(AppServerImage.EMAIL);
     }
 
-    public SendEmailAction(LocalizedString caption, ValueClass[] classes, boolean syncType) {
-        super(caption, SetFact.toOrderExclSet(classes.length, i -> new PropertyInterface()));
+    public SendEmailAction(LocalizedString caption, int paramsCount, boolean syncType) {
+        super(caption, SetFact.toOrderExclSet(paramsCount, i -> new PropertyInterface()));
 
         setDrawOptions(this);
         this.syncType = syncType;

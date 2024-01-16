@@ -9,6 +9,7 @@ import lsfusion.base.file.WriteUtils;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
+import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.SystemAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.FlowResult;
@@ -36,40 +37,44 @@ public class WriteAction extends SystemAction {
 
     @Override
     protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
-        DataObject sourceObject = context.getDataKeys().getValue(0);
+        ObjectValue sourceObject = context.getKeys().getValue(0);
         assert sourceObject.getType() instanceof FileClass;
 
-        DataObject pathObject = context.getDataKeys().getValue(1);
+        ObjectValue pathObject = context.getKeys().getValue(1);
         assert pathObject.getType() instanceof StringClass;
-        String path = (String) pathObject.object;
 
-        String extension = null;
-        RawFileData rawFileData = null;
-        if (sourceObject.object != null) {
-            if (sourcePropertyType instanceof StaticFormatFileClass) {
-                rawFileData = (RawFileData) sourceObject.object;
-                extension = ((StaticFormatFileClass) sourcePropertyType).getOpenExtension(rawFileData);
-            } else {
-                extension = ((FileData) sourceObject.object).getExtension();
-                rawFileData = ((FileData) sourceObject.object).getRawFile();
+        if(sourceObject instanceof DataObject && pathObject instanceof DataObject) {
+
+            String path = (String) ((DataObject) pathObject).object;
+
+            String extension = null;
+            RawFileData rawFileData = null;
+            if (((DataObject) sourceObject).object != null) {
+                if (sourcePropertyType instanceof StaticFormatFileClass) {
+                    rawFileData = (RawFileData) ((DataObject) sourceObject).object;
+                    extension = ((StaticFormatFileClass) sourcePropertyType).getOpenExtension(rawFileData);
+                } else {
+                    extension = ((FileData) ((DataObject) sourceObject).object).getExtension();
+                    rawFileData = ((FileData) ((DataObject) sourceObject).object).getRawFile();
+                }
             }
-        }
-        try {
-            if (rawFileData != null) {
-                if (clientAction) {
-                    if(append && dialog) {
-                        throw new RuntimeException("APPEND is not supported in WRITE CLIENT DIALOG");
+            try {
+                if (rawFileData != null) {
+                    if (clientAction) {
+                        if (append && dialog) {
+                            throw new RuntimeException("APPEND is not supported in WRITE CLIENT DIALOG");
+                        } else {
+                            context.requestUserInteraction(new WriteClientAction(rawFileData, path, extension, append, dialog));
+                        }
                     } else {
-                        context.requestUserInteraction(new WriteClientAction(rawFileData, path, extension, append, dialog));
+                        WriteUtils.write(rawFileData, path, extension, false, append);
                     }
                 } else {
-                    WriteUtils.write(rawFileData, path, extension, false, append);
+                    throw new RuntimeException("File bytes not specified");
                 }
-            } else {
-                throw new RuntimeException("File bytes not specified");
+            } catch (Exception e) {
+                throw Throwables.propagate(e);
             }
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
         }
         return FlowResult.FINISH;
     }
