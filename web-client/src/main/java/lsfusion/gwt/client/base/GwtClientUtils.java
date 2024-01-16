@@ -1352,8 +1352,8 @@ public class GwtClientUtils {
         $wnd.setDataHtmlOrText(element, value, html);
     }-*/;
 
-    public static native void setMask(Element element, String mask)/*-{
-        $wnd.$(element).inputmask({"mask": mask, "autoUnmask": false});
+    public static native void setMask(Element element, JavaScriptObject options)/*-{
+        $wnd.$(element).inputmask(options);
     }-*/;
 
     public static native void removeMask(Element element)/*-{

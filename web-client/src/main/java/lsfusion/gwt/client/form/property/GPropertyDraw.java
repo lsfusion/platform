@@ -1,11 +1,14 @@
 package lsfusion.gwt.client.form.property;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
+import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.*;
+import lsfusion.gwt.client.base.jsni.JSNIHelper;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.size.GSize;
@@ -601,16 +604,31 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         this.userPattern = userPattern;
     }
 
-    public String getMaskFromPattern(String pattern) {
+    public JavaScriptObject getMaskOptionsFromPattern(String pattern) {
         if (pattern != null) {
+            JavaScriptObject options = JSNIHelper.createObject();
             if (valueType instanceof GADateType || valueType instanceof GIntervalType) {
-                return pattern.replaceAll("[dMyHms]", "9");
+                JSNIHelper.setAttribute(options, "mask", pattern.replaceAll("[dMyHms]", "9"));
+                JSNIHelper.setAttribute(options, "autoUnmask", "false");
             } else if (valueType instanceof GIntegralType) {
-                if (pattern.equals("#,##0.##"))
-                    return "9{1,5}[,9{1,2}]";
-                else return null;
+                DecimalPatternOptions pOptions = getDecimalPatternOptions(pattern);
+                
+                if (pOptions.isIntegerPattern) {
+                    JSNIHelper.setAttribute(options, "alias", "integer");
+                } else {
+                    JSNIHelper.setAttribute(options, "alias", "decimal");
+                    JSNIHelper.setAttribute(options, "digits", pOptions.minimalFractionalLength + "," + pOptions.maximalFractionalLength);
+                }
+                
+                if (pOptions.groupSize > 0) {
+                    JSNIHelper.setAttribute(options, "groupSeparator", LocaleInfo.getCurrentLocale().getNumberConstants().groupingSeparator());
+                }
+                JSNIHelper.setAttribute(options, "radixPoint", LocaleInfo.getCurrentLocale().getNumberConstants().decimalSeparator());
+            } else {
+                JSNIHelper.setAttribute(options, "mask", pattern);
+                JSNIHelper.setAttribute(options, "autoUnmask", "false");
             }
-            return pattern;
+            return options;
         }
         return null;
     }
