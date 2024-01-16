@@ -7,7 +7,7 @@ import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 
 public interface CellEditor {
 
-    void start(EventHandler handler, Element parent, RenderContext renderContext, PValue oldValue);
+    void start(EventHandler handler, Element parent, RenderContext renderContext, boolean notFocusable, PValue oldValue);
 
     default PValue getDefaultNullValue() { return null; };
 }

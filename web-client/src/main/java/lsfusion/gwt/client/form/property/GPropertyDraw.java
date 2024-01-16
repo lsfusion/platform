@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.property;
 
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.ClientMessages;
@@ -436,6 +437,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
                 case APPLYFILTER:
                 // because there is a manual startediting
 //                case NEWFILTER:
+                case SUGGEST:
+                case REPLACE:
                 // unknown reason, it's better to suppress
                 case OTHER:
                     return true;
@@ -465,11 +468,11 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         // starting change on focus, or any key pressed when focus is on input
         boolean isFocus = BrowserEvents.FOCUS.equals(editEvent.getType());
         Element editElement = editContext.getEditElement();
-        Element inputElement = InputBasedCellRenderer.getInputEventTarget(editElement, editEvent);
+        InputElement inputElement = InputBasedCellRenderer.getInputEventTarget(editElement, editEvent);
         if (inputElement != null) {
             UpdateContext updateContext = editContext.getUpdateContext();
 
-            GInputType inputType = InputBasedCellRenderer.getInputElementType(editElement);
+            GInputType inputType = InputBasedCellRenderer.getInputElementType(inputElement);
             if(inputType.isStretchText()) {
                 if (isFocus && !isSuppressOnFocusChange(inputElement))
                     return GEditBindingMap.changeOrGroupChange();

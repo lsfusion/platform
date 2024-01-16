@@ -975,7 +975,7 @@ public class GFormController implements EditManager {
             lsfusion.gwt.client.base.Result<Integer> contextAction = new lsfusion.gwt.client.base.Result<>();
             if(isBinding) {
                 if(GKeyStroke.isKeyEvent(event)) // we don't want to set focus on mouse binding (it's pretty unexpected behaviour)
-                    editContext.trySetFocusOnBinding(); // we want element to be focused on key binding (if it's possible)
+                    editContext.trySetFocus(FocusUtils.Reason.BINDING); // we want element to be focused on key binding (if it's possible)
                 actionSID = GEditBindingMap.changeOrGroupChange();
             } else {
                 actionSID = property.getEventSID(event, editContext, contextAction);
@@ -2229,7 +2229,8 @@ public class GFormController implements EditManager {
         element.addClassName("is-editing");
         editContext.startEditing();
 
-        if(!editContext.isFocusable()) // assert that otherwise it's already has focus
+        boolean notFocusable = !editContext.isFocusable();
+        if(notFocusable) // assert that otherwise it's already has focus
             forceSetFocus = editContext.forceSetFocus();
 
         RenderContext renderContext = editContext.getRenderContext();
@@ -2253,7 +2254,7 @@ public class GFormController implements EditManager {
         }
 
         this.cellEditor = cellEditor; // not sure if it should before or after startEditing, but definitely after removeAllChildren, since it leads to blur for example
-        cellEditor.start(handler, element, renderContext, oldValue); //need to be after this.cellEditor = cellEditor, because there is commitEditing in start in LogicalCellEditor
+        cellEditor.start(handler, element, renderContext, notFocusable, oldValue); //need to be after this.cellEditor = cellEditor, because there is commitEditing in start in LogicalCellEditor
     }
 
     // only request cell editor can be long-living
@@ -2504,7 +2505,7 @@ public class GFormController implements EditManager {
 
         if(GMouseStroke.isChangeEvent(handler.event) && focusElement != null &&
                 GwtClientUtils.getFocusedChild(focusElement) == null) // need to check that focus is not on the grid, otherwise when editing for example embedded form, any click will cause moving focus to grid, i.e. stopping the editing
-            FocusUtils.focus(focusElement, FocusUtils.Reason.MOUSECHANGE); // it should be done on CLICK, but also on MOUSEDOWN, since we want to focus even if mousedown is later consumed
+            FocusUtils.focus(focusElement, FocusUtils.Reason.MOUSECHANGE, handler.event); // it should be done on CLICK, but also on MOUSEDOWN, since we want to focus even if mousedown is later consumed
 
         /*if(!previewLoadingManagerSinkEvents(handler.event)) {
             return;
@@ -2559,7 +2560,7 @@ public class GFormController implements EditManager {
         // probably the same should be done for SimpleTextBasedRenderer but there are no such scenarios for now
         if(GKeyStroke.isChangeEvent(handler.event) &&
                 (inputElement = InputBasedCellRenderer.getInputEventTarget(renderElement, handler.event)) != null &&
-                InputBasedCellRenderer.getInputElementType(renderElement).isLogical()) {
+                InputBasedCellRenderer.getInputElementType(inputElement).isLogical()) {
             LogicalCellRenderer.cancelChecked(inputElement);
             handler.consume();
         }

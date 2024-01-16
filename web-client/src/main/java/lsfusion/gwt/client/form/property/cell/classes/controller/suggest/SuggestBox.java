@@ -179,7 +179,7 @@ public abstract class SuggestBox {
     }
 
     public void focus() {
-        FocusUtils.focus(inputElement, FocusUtils.Reason.OTHER);
+        FocusUtils.focus(inputElement, FocusUtils.Reason.SUGGEST);
     }
 
     public void showSuggestionList(boolean all) {

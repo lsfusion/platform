@@ -231,6 +231,7 @@ public class MainFrame implements EntryPoint {
     private static Element beforeLastClickedTarget;
     private static Element lastClickedTarget;
     private static Event lastClickedEvent;
+    private static Event lastUpEvent;
     private static Event lastDownEvent;
     private static boolean previewClickEvent(Element target, Event event) {
         if (GMouseStroke.isClickEvent(event)) {
@@ -239,7 +240,17 @@ public class MainFrame implements EntryPoint {
                 beforeLastClickedTarget = lastClickedTarget;
                 lastClickedTarget = target;
 
-                if(ignoreClickAfterDown(target)) {
+                if(ignoreClickAfterDown(target, true)) {
+                    GwtClientUtils.stopPropagation(event);
+                    return false;
+                }
+            }
+        }
+        if (GMouseStroke.isUpEvent(event)) {
+            if (event != lastUpEvent) { // checking lastClickedEvent since it can be propagated (or not)
+                lastUpEvent = event;
+
+                if(ignoreClickAfterDown(target, false)) {
                     GwtClientUtils.stopPropagation(event);
                     return false;
                 }
@@ -249,7 +260,7 @@ public class MainFrame implements EntryPoint {
             if (event != lastDownEvent) { // checking lastDownEvent since it can be propagated (or not)
                 lastDownEvent = event;
 
-                ignoreClickAfterDown(target); // just in case if we missed click event
+                ignoreClickAfterDown(target, true); // just in case if we missed click event
             }
         }
         if(GMouseStroke.isDblClickEvent(event)) {
@@ -295,9 +306,10 @@ public class MainFrame implements EntryPoint {
         lastDownEvent = event;
     }
 
-    private static boolean ignoreClickAfterDown(Element element) {
+    private static boolean ignoreClickAfterDown(Element element, boolean click) {
         boolean hasAttribute = element.hasAttribute(IGNORE_CLICK_AFTER_DOWN);
-        element.removeAttribute(IGNORE_CLICK_AFTER_DOWN);
+        if(click) // click always goes after up
+            element.removeAttribute(IGNORE_CLICK_AFTER_DOWN);
         return hasAttribute;
     }
 

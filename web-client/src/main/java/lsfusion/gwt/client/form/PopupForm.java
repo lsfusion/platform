@@ -25,7 +25,7 @@ public class PopupForm extends EditingForm {
     private class PopupFormCellEditor extends CellEditor {
 
         @Override
-        public void start(EventHandler handler, Element parent, RenderContext renderContext, PValue oldValue) {
+        public void start(EventHandler handler, Element parent, RenderContext renderContext, boolean notFocusable, PValue oldValue) {
             Event event;
             if(handler != null && DataGrid.isMouseEvent(event = handler.event)) {
                 parentElement = Element.as(event.getEventTarget());

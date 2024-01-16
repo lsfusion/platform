@@ -236,7 +236,7 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
         if(eventHandler.consumed)
             return;
 
-        form.onPropertyBrowserEvent(eventHandler, getRenderElement(), true, getFocusElement(),
+        form.onPropertyBrowserEvent(eventHandler, getRenderElement(), true, isFocusable() ? getFocusElement() : null, // we don't need to focus unfocusable element (because the focus will be returned immediately)
                 handler -> {}, // no outer context
                 this::onEditEvent,
                 handler -> {}, // no outer context

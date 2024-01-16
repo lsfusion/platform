@@ -4,8 +4,7 @@ import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.Event;
 
-import static com.google.gwt.dom.client.BrowserEvents.DBLCLICK;
-import static com.google.gwt.dom.client.BrowserEvents.MOUSEDOWN;
+import static com.google.gwt.dom.client.BrowserEvents.*;
 
 public class GMouseStroke {
 
@@ -23,6 +22,9 @@ public class GMouseStroke {
 
     public static boolean isDownEvent(Event event) {
         return MOUSEDOWN.equals(event.getType()) && event.getButton() == NativeEvent.BUTTON_LEFT;
+    }
+    public static boolean isUpEvent(Event event) {
+        return MOUSEUP.equals(event.getType()) && event.getButton() == NativeEvent.BUTTON_LEFT;
     }
     public static boolean isClickEvent(Event event) {
         return BrowserEvents.CLICK.equals(event.getType()) && event.getButton() == NativeEvent.BUTTON_LEFT;

@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.InputElement;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseStroke;
@@ -22,19 +23,20 @@ public class LogicalCellEditor extends ARequestValueCellEditor implements KeepCe
     }
 
     @Override
-    public void start(EventHandler handler, Element parent, RenderContext renderContext, PValue oldValue) {
+    public void start(EventHandler handler, Element parent, RenderContext renderContext, boolean notFocusable, PValue oldValue) {
         MainFrame.preventDblClickAfterClick(parent);
 
         value = getNextValue(oldValue, threeState);
 
+        InputElement inputElement;
         // there are two ways to make checkbox readonly (and we need this, since we use "different" events as a change events)
         // pointer-events:none, but in that case mouse events won't work without a wrapper
         // commit changes after change in the control is done (CHANGE event) that
         if(!( // it's important to delay only that events that will lead to the CHANGE event (otherwise there will be no CHANGE event to wait)
-            InputBasedCellRenderer.getInputEventTarget(parent, handler.event) != null &&
+            (inputElement = InputBasedCellRenderer.getInputEventTarget(parent, handler.event)) != null &&
             (GMouseStroke.isChangeEvent(handler.event)
             || GKeyStroke.isLogicalInputChangeEvent(handler.event)))) {
-            assert InputBasedCellRenderer.getInputElementType(parent).isLogical();
+            assert InputBasedCellRenderer.getInputElementType(inputElement).isLogical();
             commit(parent);
         }
     }

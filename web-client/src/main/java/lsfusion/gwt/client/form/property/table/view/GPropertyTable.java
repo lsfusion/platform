@@ -158,8 +158,8 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
             }
 
             @Override
-            public void trySetFocusOnBinding() {
-                GPropertyTable.this.focusColumn(editCell.getColumnIndex(), FocusUtils.Reason.BINDING);
+            public void trySetFocus(FocusUtils.Reason reason) {
+                GPropertyTable.this.focusColumn(editCell.getColumnIndex(), reason);
             }
 
             @Override

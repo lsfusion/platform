@@ -55,23 +55,25 @@ public abstract class InputBasedCellEditor extends RequestReplaceValueCellEditor
     }
 
     @Override
-    public void start(EventHandler handler, Element parent, RenderContext renderContext, PValue oldValue) {
+    public void start(EventHandler handler, Element parent, RenderContext renderContext, boolean notFocusable, PValue oldValue) {
 
+        //we need this order (focus before setValue) for single click editing IntegralCellEditor (type=number)
+        // and it's better to do that before input.click, because for input with type color, if not focused it is shown in the upper left corner
         boolean needReplace = needReplace(parent);
-        if(!needReplace) { // not replaced
+        if(needReplace)
+            FocusUtils.focus(inputElement, FocusUtils.Reason.REPLACE);
+        else { // not replaced
             inputElement = getRenderInputElement(parent);
-            inputElementType = InputBasedCellRenderer.getInputElementType(parent);
+            inputElementType = InputBasedCellRenderer.getInputElementType(inputElement);
 
             //getInputValue() must be before onInputReady as it affects daterangepicker behaviour. onInputReady trigger the creation dateTimePicker, if the date was null
             //then getInputElementValue saves today's date instead of null, and when you press clear, it calls stop, which takes the oldValue
             // and returns it back and we get today's date instead of null
             this.oldValue = getInputValue();
-        }
 
-        //need for start editing by CHANGEKEY
-        //we need this order (focus before setValue) for single click editing IntegralCellEditor (type=number)
-        // and it's better to do that before input.click, because for input with type color, if not focused it is shown in the upper left corner
-        FocusUtils.focus(inputElement, FocusUtils.Reason.OTHER);
+            if(notFocusable) // binding or mouse change on not focusable property
+                FocusUtils.focus(inputElement, FocusUtils.Reason.NOTFOCUSABLE);
+        }
 
         onInputReady(parent, oldValue);
 

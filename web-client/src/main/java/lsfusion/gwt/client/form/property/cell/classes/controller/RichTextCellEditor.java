@@ -18,7 +18,7 @@ public class RichTextCellEditor extends ARequestValueCellEditor implements Reque
     }
 
     @Override
-    public void start(EventHandler handler, Element parent, RenderContext renderContext, PValue oldValue) {
+    public void start(EventHandler handler, Element parent, RenderContext renderContext, boolean notFocusable, PValue oldValue) {
         this.oldValue = getEditorValue(parent);
 
         String value = handler != null ? TextBasedCellEditor.checkStartEvent(handler.event, parent, null) : null;

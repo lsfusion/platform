@@ -342,7 +342,7 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
 
     return {
         render: function (element, controller) {
-            let isList = controller != null;
+            let isList = controller.isList();
 
             let options = _wrapElementDiv(element, isButton);
 
@@ -634,7 +634,7 @@ function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBo
     let picker = multi || html;
     return {
         render: function (element, controller) {
-            let isList = controller != null;
+            let isList = controller.isList();
 
             let select = _wrapElement(element, () => createFocusElement('select'), element.tagName.toLowerCase() !== 'select');
 

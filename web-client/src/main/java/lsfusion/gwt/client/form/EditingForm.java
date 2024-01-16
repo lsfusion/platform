@@ -44,7 +44,7 @@ public abstract class EditingForm extends FormContainer {
         }
 
         @Override
-        public void start(EventHandler handler, Element parent, RenderContext renderContext, PValue oldValue) {
+        public void start(EventHandler handler, Element parent, RenderContext renderContext, boolean notFocusable, PValue oldValue) {
         }
     }
 

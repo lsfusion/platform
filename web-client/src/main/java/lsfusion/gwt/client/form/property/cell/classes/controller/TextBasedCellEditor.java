@@ -111,7 +111,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
     protected String pattern;
 
     @Override
-    public void start(EventHandler handler, Element parent, RenderContext renderContext, PValue oldValue) {
+    public void start(EventHandler handler, Element parent, RenderContext renderContext, boolean notFocusable, PValue oldValue) {
 
         if(GMouseStroke.isChangeEvent(handler.event)) {
             Integer dialogInputActionIndex = property.getDialogInputActionIndex(actions);
@@ -123,7 +123,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
         started = true;
         pattern = renderContext.getPattern();
 
-        super.start(handler, parent, renderContext, oldValue);
+        super.start(handler, parent, renderContext, notFocusable, oldValue);
 
         boolean allSuggestions = true;
         if(needReplace(parent)) {

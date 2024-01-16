@@ -51,7 +51,7 @@ public class CustomReplaceCellEditor extends RequestReplaceValueCellEditor imple
     }
 
     @Override
-    public void start(EventHandler handler, Element parent, RenderContext renderContext, PValue oldValue) {
+    public void start(EventHandler handler, Element parent, RenderContext renderContext, boolean notFocusable, PValue oldValue) {
         // we'll assume that everything is done in render method
     }
 

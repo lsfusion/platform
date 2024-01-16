@@ -23,5 +23,7 @@ public abstract class SeekAction extends SystemExplicitAction {
         }
     }
 
+    // todo: getNoClassesInterfaces should be implemented
+
     protected abstract void executeForm(FormInstance form, ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException;
 }

@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.property.cell.controller;
 
+import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.classes.GType;
 
 public interface ExecuteEditContext extends EditContext {
@@ -8,7 +9,7 @@ public interface ExecuteEditContext extends EditContext {
 
     Boolean isReadOnly();
 
-    void trySetFocusOnBinding();
+    void trySetFocus(FocusUtils.Reason reason);
 
     default boolean canUseChangeValueForRendering(GType type) {
         return getProperty().canUseChangeValueForRendering(type, getRenderContext().getRendererType());

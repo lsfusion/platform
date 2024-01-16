@@ -63,14 +63,14 @@ public abstract class InputBasedCellRenderer extends CellRenderer {
 
     public static void setInputElement(Element element, InputElement inputElement, GInputType inputType) {
         element.setPropertyObject(inputElementProp, inputElement);
-        element.setPropertyObject(inputElementTypeProp, inputType);
+        inputElement.setPropertyObject(inputElementTypeProp, inputType);
         setReadonlyFnc(element, getSimpleReadonlyFnc(inputElement));
         setFocusElement(element, inputElement);
     }
 
     public static void clearInputElement(Element element) {
+//        ((InputElement)element.getPropertyObject(inputElementProp)).setPropertyObject(inputElementTypeProp, null);
         element.setPropertyObject(inputElementProp, null);
-        element.setPropertyObject(inputElementTypeProp, null);
         clearReadonlyFnc(element);
         clearFocusElement(element);
     }
