@@ -2097,10 +2097,10 @@ public class ScriptingLogicsModule extends LogicsModule {
             syncType = true;
         }
 
-        LA<ClassPropertyInterface> eaLA = BL.emailLM.addEAProp(null, LocalizedString.NONAME, eaClasses, syncType);
+        LA<PropertyInterface> eaLA = BL.emailLM.addEAProp(null, LocalizedString.NONAME, eaClasses, syncType);
         SendEmailAction eaProp = (SendEmailAction) eaLA.action;
 
-        ImList<PropertyInterfaceImplement<ClassPropertyInterface>> allImplements = readCalcImplements(eaLA.listInterfaces, allParams);
+        ImList<PropertyInterfaceImplement<PropertyInterface>> allImplements = readCalcImplements(eaLA.listInterfaces, allParams);
 
         int i = 0;
         
@@ -4230,13 +4230,13 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LAWithParams addScriptedReadAction(LPWithParams sourcePathProp, NamedPropertyUsage propUsage, List<TypedParameter> params, boolean clientAction, boolean dialog) throws ScriptingErrorLog.SemanticErrorException {
         ValueClass sourceProp = getValueClassByParamProperty(sourcePathProp, params);
         LP<?> targetProp = propUsage == null ? baseLM.readFile : findLPNoParamsByPropertyUsage(propUsage);
-        return addScriptedJoinAProp(addAProp(new ReadAction(sourceProp, targetProp, clientAction, dialog)),
+        return addScriptedJoinAProp(addAProp(new ReadAction(targetProp, clientAction, dialog)),
                 Collections.singletonList(sourcePathProp));
     }
 
     public LAWithParams addScriptedWriteAction(LPWithParams sourceProp, LPWithParams pathProp, List<TypedParameter> params, boolean clientAction, boolean dialog, boolean append) throws ScriptingErrorLog.SemanticErrorException {
         return addScriptedJoinAProp(addAProp(new WriteAction(getTypeByParamProperty(sourceProp, params),
-                clientAction, dialog, append, getValueClassByParamProperty(sourceProp, params), getValueClassByParamProperty(pathProp, params))),
+                clientAction, dialog, append)),
                 Arrays.asList(sourceProp, pathProp));
     }
 
