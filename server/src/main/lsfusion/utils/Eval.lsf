@@ -41,15 +41,22 @@ DESIGN exception {
             NEW stacks {
                 fill = 3;
                 horizontal = TRUE;
-                MOVE PROPERTY(valueJavaStack) {
-                    panelCaptionVertical = TRUE;
+                height = 100;
+                NEW javaStack {
                     fill = 1;
-                    caption = '{eval.script.form.exception.caption.java.stack}';
+                    MOVE PROPERTY(valueJavaStack) {
+                        caption = '{eval.script.form.exception.caption.java.stack}';
+                        panelCaptionVertical = TRUE;
+                        valueHeight = -1;
+                    }
                 }
-                MOVE PROPERTY(valueLsfStack) {
-                    panelCaptionVertical = TRUE;
+                NEW lsfStack {
                     fill = 1;
-                    caption = '{eval.script.form.exception.caption.lsf.stack}';
+                    MOVE PROPERTY(valueLsfStack) {
+                        caption = '{eval.script.form.exception.caption.lsf.stack}';
+                        panelCaptionVertical = TRUE;
+                        valueHeight = -1;
+                    }
                 }
             }        
         }
