@@ -608,46 +608,63 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         if (pattern != null) {
             JavaScriptObject options = JSNIHelper.createObject();
             if (valueType instanceof GADateType || valueType instanceof GIntervalType) {
-                JSNIHelper.setAttribute(options, "mask", pattern.replaceAll("[dMyHms]", "9"));
-                JSNIHelper.setAttribute(options, "autoUnmask", "false");
+                setDateMaskOptions(options, pattern);
             } else if (valueType instanceof GIntegralType) {
-                DecimalPatternOptions pOptions = getDecimalPatternOptions(pattern);
-                
-                if (pOptions.isIntegerPattern) {
-                    JSNIHelper.setAttribute(options, "alias", "integer");
-                } else {
-                    JSNIHelper.setAttribute(options, "alias", "decimal");
-                    JSNIHelper.setAttribute(options, "digits", pOptions.minimalFractionalLength + "," + pOptions.maximalFractionalLength);
-                }
-                
-                if (pOptions.groupSize > 0) {
-                    JSNIHelper.setAttribute(options, "groupSeparator", LocaleInfo.getCurrentLocale().getNumberConstants().groupingSeparator());
-                }
-                JSNIHelper.setAttribute(options, "radixPoint", LocaleInfo.getCurrentLocale().getNumberConstants().decimalSeparator());
+                setIntegralMaskOptions(options, pattern);
             } else {
-                JSNIHelper.setAttribute(options, "mask", pattern);
-                JSNIHelper.setAttribute(options, "autoUnmask", "false");
+                setStringMaskOptions(options, pattern);
             }
             return options;
         }
         return null;
     }
 
+    private void setDateMaskOptions(JavaScriptObject options, String pattern) {
+        JSNIHelper.setAttribute(options, "mask", pattern.replaceAll("[dMyHms]", "9"));
+    }
+    
+    private void setIntegralMaskOptions(JavaScriptObject options, String pattern) {
+        DecimalPatternOptions pOptions = getDecimalPatternOptions(pattern);
+        
+        if (pOptions.isIntegerPattern) {
+            JSNIHelper.setAttribute(options, "alias", "integer");
+        } else {
+            JSNIHelper.setAttribute(options, "alias", "decimal");
+            if (pOptions.minFractionalLength == 0 || pOptions.minIntegerLength == pOptions.maxFractionalLength) { // .### or .000
+                JSNIHelper.setAttribute(options, "digits", String.valueOf(pOptions.maxFractionalLength));
+                if (pOptions.minFractionalLength == pOptions.maxFractionalLength) { // .000
+                    JSNIHelper.setAttribute(options, "digitsOptional", false);
+                }
+            } else { // .00#
+                JSNIHelper.setAttribute(options, "digits", pOptions.minFractionalLength + "," + pOptions.maxFractionalLength);
+            }
+        }
+        
+        if (pOptions.groupSize > 0) {
+            JSNIHelper.setAttribute(options, "groupSeparator", LocaleInfo.getCurrentLocale().getNumberConstants().groupingSeparator());
+        }
+        JSNIHelper.setAttribute(options, "radixPoint", LocaleInfo.getCurrentLocale().getNumberConstants().decimalSeparator());
+    }
+    
+    private void setStringMaskOptions(JavaScriptObject options, String pattern) {
+        JSNIHelper.setAttribute(options, "mask", pattern);
+    }
+    
     private static class DecimalPatternOptions {
         public boolean isIntegerPattern;
        
         public int groupSize;
-        public int minimalIntegerLength;
+        public int minIntegerLength;
         
-        public int minimalFractionalLength;
-        public int maximalFractionalLength;
+        public int minFractionalLength;
+        public int maxFractionalLength;
         
         public DecimalPatternOptions(boolean isIP, int groupSize, int minIL, int minFL, int maxFL) {
             this.isIntegerPattern = isIP;
             this.groupSize = groupSize;
-            this.minimalIntegerLength = minIL;
-            this.minimalFractionalLength = minFL;
-            this.maximalFractionalLength = maxFL;
+            this.minIntegerLength = minIL;
+            this.minFractionalLength = minFL;
+            this.maxFractionalLength = maxFL;
         }
     }
     
@@ -659,10 +676,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         DecimalPatternOptions options = getIntegerPatternOptions(pattern.substring(0, pointPos));
         String fractionPart = pattern.substring(pointPos + 1);
         options.isIntegerPattern = false;
-        options.maximalFractionalLength = fractionPart.length();
+        options.maxFractionalLength = fractionPart.length();
         for (int i = 0; i < fractionPart.length(); ++i) {
             if (fractionPart.charAt(i) != '0') break;
-            ++options.minimalFractionalLength;
+            ++options.minFractionalLength;
         }
         return options;
     }
