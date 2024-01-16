@@ -2,6 +2,7 @@ package lsfusion.server.physics.dev.integration.external.to.mail;
 
 import lsfusion.base.EscapeUtils;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.file.FileData;
@@ -16,16 +17,17 @@ import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.property.LP;
-import lsfusion.server.logics.action.ExplicitAction;
-import lsfusion.server.logics.action.SystemExplicitAction;
+import lsfusion.server.logics.action.BaseAction;
+import lsfusion.server.logics.action.SystemAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
+import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.file.DynamicFormatFileClass;
 import lsfusion.server.logics.classes.data.file.FileClass;
 import lsfusion.server.logics.classes.data.file.StaticFormatFileClass;
-import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
@@ -44,11 +46,11 @@ import static javax.mail.Message.RecipientType.TO;
 import static lsfusion.base.BaseUtils.*;
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 
-public class SendEmailAction extends SystemExplicitAction {
-    private PropertyInterfaceImplement<ClassPropertyInterface> fromAddress;
-    private PropertyInterfaceImplement<ClassPropertyInterface> subject;
+public class SendEmailAction extends SystemAction {
+    private PropertyInterfaceImplement<PropertyInterface> fromAddress;
+    private PropertyInterfaceImplement<PropertyInterface> subject;
 
-    private List<PropertyInterfaceImplement<ClassPropertyInterface>> recipients = new ArrayList<>();
+    private List<PropertyInterfaceImplement<PropertyInterface>> recipients = new ArrayList<>();
     private List<Message.RecipientType> recipientTypes = new ArrayList<>();
 
     private final List<PropertyInterfaceImplement> attachFileNames = new ArrayList<>();
@@ -60,32 +62,27 @@ public class SendEmailAction extends SystemExplicitAction {
     private final List<PropertyInterfaceImplement> inlineFiles = new ArrayList<>();
     private final Boolean syncType;
 
-    public static void setDrawOptions(ExplicitAction action) {
+    public static void setDrawOptions(BaseAction action) {
         action.drawOptions.setAskConfirm(true);
         action.setImage(AppServerImage.EMAIL);
     }
 
-    public SendEmailAction(LocalizedString caption, ValueClass[] classes, boolean syncType) {
-        super(caption, classes);
+    public SendEmailAction(LocalizedString caption, int paramsCount, boolean syncType) {
+        super(caption, SetFact.toOrderExclSet(paramsCount, i -> new PropertyInterface()));
 
         setDrawOptions(this);
         this.syncType = syncType;
     }
 
-    @Override
-    protected boolean isSync() { // формы используются, не определишь getUsedProps
-        return true;
-    }
-
-    public void setFromAddress(PropertyInterfaceImplement<ClassPropertyInterface> fromAddress) {
+    public void setFromAddress(PropertyInterfaceImplement<PropertyInterface> fromAddress) {
         this.fromAddress = fromAddress;
     }
 
-    public void setSubject(PropertyInterfaceImplement<ClassPropertyInterface> subject) {
+    public void setSubject(PropertyInterfaceImplement<PropertyInterface> subject) {
         this.subject = subject;
     }
 
-    public void addRecipient(PropertyInterfaceImplement<ClassPropertyInterface> recipient, Message.RecipientType type) {
+    public void addRecipient(PropertyInterfaceImplement<PropertyInterface> recipient, Message.RecipientType type) {
         this.recipients.add(recipient);
         this.recipientTypes.add(type);
     }
@@ -104,7 +101,8 @@ public class SendEmailAction extends SystemExplicitAction {
         this.inlineFiles.add(file);
     }
 
-    public void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
+    @Override
+    protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) {
         EmailLogicsModule emailLM = context.getBL().emailLM;
         try {
             Map<String, Message.RecipientType> recipients = getRecipientEmails(context);
@@ -127,17 +125,17 @@ public class SendEmailAction extends SystemExplicitAction {
 
                 if (emailLM.disableAccount.read(context, account) != null) {
                     logErrorAndShowMessage(context, localize("{mail.disabled}"));
-                    return;
+                    return FlowResult.FINISH;
                 }
 
                 if (smtpHost == null || fromAddress == null) {
                     logErrorAndShowMessage(context, localize("{mail.smtp.host.or.sender.not.specified.letters.will.not.be.sent}"));
-                    return;
+                    return FlowResult.FINISH;
                 }
 
                 if (recipients.isEmpty()) {
                     logErrorAndShowMessage(context, localize("{mail.recipient.not.specified}"));
-                    return;
+                    return FlowResult.FINISH;
                 }
 
                 List<EmailSender.AttachmentFile> attachFiles = new ArrayList<>();
@@ -151,6 +149,8 @@ public class SendEmailAction extends SystemExplicitAction {
         } catch (SQLException | SQLHandledException | MessagingException | IOException | GeneralSecurityException e) {
             logErrorAndShowMessage(context, localize("{mail.failed.to.send.mail}") + " : " + e);
         }
+
+        return FlowResult.FINISH;
     }
 
     private Map<String, Message.RecipientType> getRecipientEmails(ExecutionContext context) throws SQLException, SQLHandledException {
@@ -160,7 +160,7 @@ public class SendEmailAction extends SystemExplicitAction {
 
         Map<String, Message.RecipientType> recipientEmails = new HashMap<>();
         for (int i = 0; i < recipients.size(); ++i) {
-            PropertyInterfaceImplement<ClassPropertyInterface> recipient = recipients.get(i);
+            PropertyInterfaceImplement<PropertyInterface> recipient = recipients.get(i);
             Message.RecipientType recipientType = recipientTypes.get(i);
 
             String recipientEmailList = (String) recipient.read(context, context.getKeys());
@@ -184,7 +184,7 @@ public class SendEmailAction extends SystemExplicitAction {
         return recipientEmails;
     }
     
-    private void proceedFiles(ExecutionContext<ClassPropertyInterface> context, List<EmailSender.AttachmentFile> attachments, List<String> customInlines) throws SQLException, SQLHandledException {
+    private void proceedFiles(ExecutionContext<PropertyInterface> context, List<EmailSender.AttachmentFile> attachments, List<String> customInlines) throws SQLException, SQLHandledException {
         int attachmentCount = 0;
         for (int i = 0; i < attachFileNames.size(); i++) {
             attachmentCount++;
