@@ -652,13 +652,6 @@ changeInputMessage () {
                 message() <- value;
             }
     
-            IF action = 'upload' THEN {
-                LOCAL extension = STRING ();
-                extension() <- getWord(name, '.', wordCount(name, '.')) IF wordCount(name, '.') > 1;
-                attachmentName() <- left(name, length(name) - OVERRIDE (length(extension()) + 1), 0);
-                attachment() <- file(decode(data, 'base64'), (OVERRIDE extension(), 'dat'));
-            }
-    
             IF action = 'open' THEN {
                 open(attachment(), attachmentName());
             }
@@ -671,9 +664,18 @@ changeInputMessage () {
     }
 }
 
+changeInputFile () {
+    INPUT f = JSON DO
+        IMPORT JSON FROM f FIELDS() STRING name, STRING extension, STRING data DO {
+            attachmentName() <- name;
+            attachment() <- file(decode(data, 'base64'), (OVERRIDE extension IF extension != '', 'dat'));
+        }
+}
+
 EXTEND FORM fullChat
     PROPERTIES jsonInputMessage() CUSTOM 'chatMessageInputRender' SHOWIF isWeb() 
                ON CHANGE changeInputMessage()
+    PROPERTIES inputFile = '' CUSTOM 'inputFile' ON CHANGE changeInputFile()
 ;
 
 DESIGN fullChat {
@@ -685,6 +687,7 @@ DESIGN fullChat {
             caption = ''; 
             fill = 1; 
         }
+        MOVE PROPERTY(inputFile);
     }
 }
 
@@ -698,6 +701,7 @@ activateMessage() + {
 EXTEND FORM shortChat
     PROPERTIES jsonInputMessage() CUSTOM 'chatMessageInputRender' SHOWIF isWeb() 
                ON CHANGE changeInputMessage()
+    PROPERTIES inputFile = '' CUSTOM 'inputFile' ON CHANGE changeInputFile()
 ;
 
 DESIGN shortChat {
@@ -713,6 +717,7 @@ DESIGN shortChat {
                 caption = ''; 
                 fill = 1; 
             }
+            MOVE PROPERTY(inputFile);
         }
     }
 }

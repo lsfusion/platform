@@ -41,7 +41,8 @@ function inputQuill(json) {
             }
 
             inputEditor.onpaste = function(event) {
-                event.stopPropagation();
+                if (!event.clipboardData.files.length > 0)
+                    event.stopPropagation();
             }
 
             element.quill = quill;
@@ -54,60 +55,6 @@ function inputQuill(json) {
                 if (! (event.relatedTarget && element.inputEditor.contains(event.relatedTarget)) &&
                     value !== element.quill.root.innerHTML)
                     controller.change(json ? { action : 'change', value : element.quill.root.innerHTML } : element.quill.root.innerHTML);
-            }
-        }
-    }
-}
-
-function uploadFiles(items, controller, event) {
-    if (!items) return;
-
-    var reader = new FileReader();
-    var files = [];
-    for (var i = 0; i < items.length; i++)
-        if (items[i].kind === 'file')
-            files.push(items[i].getAsFile());
-
-    function readFile(index) {
-        if (index >= files.length) return;
-        var file = files[index];
-        reader.onload = function(e) {
-            let encoded = e.target.result.toString().replace(/^data:(.*,)?/, '');
-            if ((encoded.length % 4) > 0) {
-               encoded += '='.repeat(4 - (encoded.length % 4));
-            }
-
-            if (file.name !== 'image.png')
-                controller.change({ action : 'upload', name : file.name, data : encoded });
-
-            readFile(index+1);
-        }
-        reader.readAsDataURL(file);
-    }
-    readFile(0);
-}
-
-function inputQuillFiles() {
-    var inputQuill = window.inputQuill(true);
-    return {
-        render: function (element) {
-            inputQuill.render(element);
-        },
-        update: function (element, controller, value) {
-            inputQuill.update(element, controller, value);
-
-            element.quill.root.onpaste = function(event) {
-                event.stopPropagation();
-
-                uploadFiles((event.clipboardData || event.originalEvent.clipboardData).items, controller, event);
-            }
-
-            element.quill.root.ondrop = function (event) {
-                if (event.dataTransfer.files.length > 0) {
-                    event.preventDefault();
-
-                    uploadFiles(event.dataTransfer.items, controller, event);
-                }
             }
         }
     }

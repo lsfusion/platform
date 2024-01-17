@@ -120,7 +120,7 @@ function chatMessageRender() {
 }
 
 function chatMessageInputRender() {
-    var inputQuill = window.inputQuillFiles();
+    var inputQuill = window.inputQuill(true);
     return {
         render: function (element) {
             var input = document.createElement("div");

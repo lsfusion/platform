@@ -239,11 +239,12 @@ onWebClientInit() + {
     }
 
     onWebClientInit('scrollbar.css') <- 26;
-    onWebClientInit('input-quill.js') <- 27;
-    onWebClientInit('input-quill.css') <- 28;
-    onWebClientInit('select.js') <- 29;
-    onWebClientInit('selectize.js') <- 30;
-    onWebClientInit('input.js') <- 31;
+    onWebClientInit('input-file.js') <- 27;
+    onWebClientInit('input-quill.js') <- 28;
+    onWebClientInit('input-quill.css') <- 29;
+    onWebClientInit('select.js') <- 30;
+    onWebClientInit('selectize.js') <- 31;
+    onWebClientInit('input.js') <- 32;
 }
 
 readDBNames INTERNAL 'lsfusion.server.logics.action.ReadDBNamesAction' ();
