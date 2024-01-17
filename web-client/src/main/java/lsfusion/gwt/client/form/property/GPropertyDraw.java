@@ -4,11 +4,9 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
-import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.*;
-import lsfusion.gwt.client.base.jsni.JSNIHelper;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.size.GSize;
@@ -606,142 +604,15 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public JavaScriptObject getMaskOptionsFromPattern(String pattern) {
         if (pattern != null) {
-            JavaScriptObject options = JSNIHelper.createObject();
             if (valueType instanceof GADateType || valueType instanceof GIntervalType) {
-                setDateMaskOptions(options, pattern);
+                return DatePatternConverter.convert(pattern);
             } else if (valueType instanceof GIntegralType) {
-                setIntegralMaskOptions(options, pattern);
+                return IntegralPatternConverter.convert(pattern);
             } else {
-                setStringMaskOptions(options, pattern);
+                return StringPatternConverter.convert(pattern);
             }
-            return options;
         }
         return null;
-    }
-
-    private void setDateMaskOptions(JavaScriptObject options, String pattern) {
-        JSNIHelper.setAttribute(options, "alias", "datetime");
-        pattern = pattern + (char)0; // sentinel
-        StringBuilder builder = new StringBuilder();
-        char curCh = 0;
-        int count = 1;
-        for (int i = 0; i < pattern.length(); ++i) {
-            char nextCh = pattern.charAt(i);
-            if (nextCh == curCh) {
-                ++count;
-            } else {
-                builder.append(convert(curCh, count));
-                curCh = nextCh;
-                count = 1;
-            }
-        }
-//        com.allen_sauer.gwt.log.client.Log.error(builder.toString());
-        JSNIHelper.setAttribute(options, "prefillYear", false);
-        JSNIHelper.setAttribute(options, "inputFormat", builder.toString());
-    }
-    
-    private String convert(char symbol, int count) {
-        switch (symbol) {
-            case 'd':
-            case 'h':
-            case 'H':
-            case 's':
-                return repeat(symbol, Math.min(count, 2));
-            case 'M':
-                return repeat('m', Math.min(count, 4));
-            case 'y':
-                return count == 2 ? "yy" : "yyyy";
-            case 'm':
-                return count == 1 ? "M" : "MM";
-            case 'E':
-                return count < 4 ? "ddd" : "dddd";
-            case 'a':
-                return "TT";
-        }
-        return repeat(symbol, count);
-    }
-    
-    private String repeat(char ch, int count) {
-        char[] buf = new char[count];
-        Arrays.fill(buf, ch);
-        return String.valueOf(buf);
-    }
-    
-    private void setIntegralMaskOptions(JavaScriptObject options, String pattern) {
-        DecimalPatternOptions pOptions = getDecimalPatternOptions(pattern);
-        
-        if (pOptions.isIntegerPattern) {
-            JSNIHelper.setAttribute(options, "alias", "integer");
-        } else {
-            JSNIHelper.setAttribute(options, "alias", "decimal");
-            if (pOptions.minFractionalLength == 0 || pOptions.minIntegerLength == pOptions.maxFractionalLength) { // .### or .000
-                JSNIHelper.setAttribute(options, "digits", String.valueOf(pOptions.maxFractionalLength));
-                if (pOptions.minFractionalLength == pOptions.maxFractionalLength) { // .000
-                    JSNIHelper.setAttribute(options, "digitsOptional", false);
-                }
-            } else { // .00#
-                JSNIHelper.setAttribute(options, "digits", pOptions.minFractionalLength + "," + pOptions.maxFractionalLength);
-            }
-        }
-        
-        if (pOptions.groupSize > 0) {
-            JSNIHelper.setAttribute(options, "groupSeparator", LocaleInfo.getCurrentLocale().getNumberConstants().groupingSeparator());
-        }
-        JSNIHelper.setAttribute(options, "radixPoint", LocaleInfo.getCurrentLocale().getNumberConstants().decimalSeparator());
-    }
-    
-    private void setStringMaskOptions(JavaScriptObject options, String pattern) {
-        JSNIHelper.setAttribute(options, "mask", pattern);
-    }
-    
-    private static class DecimalPatternOptions {
-        public boolean isIntegerPattern;
-       
-        public int groupSize;
-        public int minIntegerLength;
-        
-        public int minFractionalLength;
-        public int maxFractionalLength;
-        
-        public DecimalPatternOptions(boolean isIP, int groupSize, int minIL, int minFL, int maxFL) {
-            this.isIntegerPattern = isIP;
-            this.groupSize = groupSize;
-            this.minIntegerLength = minIL;
-            this.minFractionalLength = minFL;
-            this.maxFractionalLength = maxFL;
-        }
-    }
-    
-    private static DecimalPatternOptions getDecimalPatternOptions(String pattern) {
-        int pointPos = pattern.indexOf('.');
-        if (pointPos == -1) {
-            return getIntegerPatternOptions(pattern);
-        }
-        DecimalPatternOptions options = getIntegerPatternOptions(pattern.substring(0, pointPos));
-        String fractionPart = pattern.substring(pointPos + 1);
-        options.isIntegerPattern = false;
-        options.maxFractionalLength = fractionPart.length();
-        for (int i = 0; i < fractionPart.length(); ++i) {
-            if (fractionPart.charAt(i) != '0') break;
-            ++options.minFractionalLength;
-        }
-        return options;
-    }
-    
-    private static DecimalPatternOptions getIntegerPatternOptions(String pattern) {
-        int groupSize = 0;
-        int commaPos = pattern.lastIndexOf(',');
-        if (commaPos != -1) {
-            groupSize = pattern.length() - commaPos - 1;
-        }
-        int minLength = 0;
-        for (int i = pattern.length() - 1; i >= 0; --i) {
-            char ch = pattern.charAt(i);
-            if (ch == ',') continue;
-            if (ch != '0') break;
-            ++minLength;
-        }
-        return new DecimalPatternOptions(true, groupSize, minLength, 0, 0);
     }
     
     public PValue parsePaste(String s, GType parseType) {
