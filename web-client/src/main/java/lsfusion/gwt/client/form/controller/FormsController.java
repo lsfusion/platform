@@ -96,10 +96,10 @@ public abstract class FormsController {
                     final Result<JavaScriptObject> popup = new Result<>();
                     FlexPanel panel = new FlexPanel(true);
                     panel.getElement().addClassName("btn-toolbar");
-                    StaticImage[] buttons = new StaticImage[] { StaticImage.DEFAULTMODE, StaticImage.LINKMODE, StaticImage.DIALOGMODE};
+                    EditMode[] buttons = EditMode.values();
                     for(int i = 0; i < buttons.length; i++) {
                         int index = i;
-                        panel.add(new GToolbarButton(buttons[i]) {
+                        panel.add(new GToolbarButton(EditMode.getImage(buttons[i].getIndex())) {
                             @Override
                             public ClickHandler getClickHandler() {
                                 return event -> {
@@ -225,16 +225,14 @@ public abstract class FormsController {
         }
         if (altKey != null) {
             boolean onlyAlt = altKey && (ctrlKey == null || !ctrlKey) && (shiftKey == null || !shiftKey) && !tab;
-            if (onlyAlt) {
-                groupChangeMode = true;
-            }
-        } else if (groupChangeMode) {
-            new Timer() {
-                @Override
-                public void run() {
-                    groupChangeMode = false;
-                }
-            }.schedule(250);
+            pressedAlt = true;
+            if (onlyAlt && !isGroupChangeMode())
+                setForceEditMode(EditMode.GROUPCHANGE);
+            if (!onlyAlt && isForceGroupChangeMode())
+                removeForceEditMode();
+
+            if(onlyAlt)
+                event.preventDefault();
         }
     }
 
@@ -255,8 +253,6 @@ public abstract class FormsController {
     private static EditMode prevEditMode;
     private static EditMode forceEditMode;
 
-    private static boolean groupChangeMode;
-
     private static boolean isForceLinkMode() {
         return forceEditMode == EditMode.LINK;
     }
@@ -271,8 +267,11 @@ public abstract class FormsController {
         return editMode == EditMode.DIALOG;
     }
 
+    public static boolean isForceGroupChangeMode() {
+        return forceEditMode == EditMode.GROUPCHANGE;
+    }
     public static boolean isGroupChangeMode() {
-        return groupChangeMode;
+        return editMode == EditMode.GROUPCHANGE;
     }
 
     public static int getEditModeIndex() {
@@ -356,6 +355,7 @@ public abstract class FormsController {
     private static Timer editModeTimer;
     public static boolean pressedCtrl = false;
     public static boolean pressedShift = false;
+    public static boolean pressedAlt = false;
     private void initEditModeTimer() {
         if(editModeTimer == null) {
             editModeTimer = new Timer() {
@@ -365,8 +365,10 @@ public abstract class FormsController {
                         pressedCtrl = false;
                     } else if(pressedShift) {
                         pressedShift = false;
+                    } else if(pressedAlt) {
+                        pressedAlt = false;
                     } else {
-                        if (isForceLinkMode() || isForceDialogMode()) {
+                        if (isForceLinkMode() || isForceDialogMode() || isForceGroupChangeMode()) {
                             removeForceEditMode();
                             updateEditMode(EditMode.DEFAULT, null);
                         }

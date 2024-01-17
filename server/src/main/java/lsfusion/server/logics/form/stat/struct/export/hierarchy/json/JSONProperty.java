@@ -267,7 +267,10 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
 
         @Override
         protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
-            InputResult pushedInput = context.getPushedInput(returnString ? JSONTextClass.instance : JSONClass.instance);
+            // in theory all changeAction should be split to input and change, and wrapped into Request, just like in Property.getJoinDefaultEventAction
+            // but it will require too much refactoring, so we'll just use the hack with no drop (since this ChangeAction is also a sort of hack)
+            InputResult pushedInput = context.getPushedInput(returnString ? JSONTextClass.instance : JSONClass.instance, false);
+            context.dropRequestCanceled(); // need this because in group change push request there is a request canceled check
             if(pushedInput != null) {
                 String charset = ExternalUtils.defaultXMLJSONCharset;
                 try {

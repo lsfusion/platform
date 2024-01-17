@@ -3,7 +3,7 @@ package lsfusion.gwt.client.form.controller;
 import lsfusion.gwt.client.base.StaticImage;
 
 public enum EditMode {
-    DEFAULT, LINK, DIALOG;
+    DEFAULT, LINK, DIALOG, GROUPCHANGE;
 
     public static EditMode getMode(int mode) {
         switch (mode) {
@@ -14,6 +14,8 @@ public enum EditMode {
                 return LINK;
             case 2:
                 return DIALOG;
+            case 3:
+                return GROUPCHANGE;
         }
     }
 
@@ -26,6 +28,8 @@ public enum EditMode {
                 return StaticImage.LINKMODE;
             case 2:
                 return StaticImage.DIALOGMODE;
+            case 3:
+                return StaticImage.GROUPCHANGEMODE;
         }
     }
 
@@ -38,6 +42,8 @@ public enum EditMode {
                 return 1;
             case DIALOG:
                 return 2;
+            case GROUPCHANGE:
+                return 3;
         }
     }
 }

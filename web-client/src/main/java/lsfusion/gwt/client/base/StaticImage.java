@@ -29,6 +29,7 @@ public class StaticImage extends BaseStaticImage {
     public final static StaticImage DEFAULTMODE = new StaticImage("bi bi-pencil", "defaultMode.png");
     public final static StaticImage LINKMODE = new StaticImage("bi bi-box-arrow-in-up-right", "linkMode.png");
     public final static StaticImage DIALOGMODE = new StaticImage("bi bi-menu-button-wide", "dialogMode.png");
+    public final static StaticImage GROUPCHANGEMODE = new StaticImage("bi bi-collection", "groupChangeMode.png");
 
     public final static StaticImage MINIMIZE = new StaticImage("fa-solid fa-compress", "minimize.png");
     public final static StaticImage MAXIMIZE = new StaticImage("fa-solid fa-expand", "maximize.png");

@@ -168,9 +168,10 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 
     private PushAsyncResult pushedAsyncResult;
 
-    private PushAsyncResult dropPushedAsyncResult() {
+    private PushAsyncResult dropPushedAsyncResult(boolean drop) {
         PushAsyncResult pushedAsyncResult = this.pushedAsyncResult;
-        stack.dropPushAsyncResult();
+        if(drop)
+            stack.dropPushAsyncResult();
         return pushedAsyncResult;
     }
 
@@ -473,13 +474,13 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 
     private DataObject getPushedAddObject() {
         if (pushedAsyncResult instanceof PushAsyncAdd)
-            return ((PushAsyncAdd) dropPushedAsyncResult()).value;
+            return ((PushAsyncAdd) dropPushedAsyncResult(true)).value;
         return null;
     }
 
     public boolean isPushedConfirmedClose() {
         if(pushedAsyncResult instanceof PushAsyncClose) {
-            dropPushedAsyncResult();
+            dropPushedAsyncResult(true);
             return true;
         }
         return false;
@@ -668,18 +669,18 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         }
     }
 
-    public InputResult getPushedInput(DataClass dataClass) {
+    public InputResult getPushedInput(DataClass dataClass, boolean drop) {
         if(pushedAsyncResult instanceof PushAsyncInput)
-            return ((PushAsyncInput) dropPushedAsyncResult()).value;
+            return ((PushAsyncInput) dropPushedAsyncResult(drop)).value;
         if(pushedAsyncResult instanceof PushExternalInput)
-            return new InputResult(ObjectValue.getValue(((PushExternalInput) dropPushedAsyncResult()).value.apply(dataClass), dataClass), null);
+            return new InputResult(ObjectValue.getValue(((PushExternalInput) dropPushedAsyncResult(drop)).value.apply(dataClass), dataClass), null);
         return null;
     }
 
     public <T extends PropertyInterface> InputResult inputUserData(DataClass dataClass, Object oldValue, boolean hasOldValue, InputListEntity<T, P> list, String customChangeFunction, InputList inputList, InputListAction[] actions) {
         assertNotUserInteractionInTransaction();
 
-        InputResult pushedInput = getPushedInput(dataClass);
+        InputResult pushedInput = getPushedInput(dataClass, true);
         if(pushedInput != null)
             return pushedInput;
 
