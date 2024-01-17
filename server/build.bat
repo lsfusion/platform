@@ -7,11 +7,11 @@ call mvn dependency:purge-local-repository -DsnapshotsOnly=true -DreResolve=fals
 
 rem собираем модули, которые не версионируются, чтобы были актуальные jar'ки
 cd ../build
-call mvn clean install
+call mvn clean install -P assemble
 
-rem erp собирается с платформой версии RC, которая перегружается в профиле assemble. по идее нужно брать версию из профиля assemble, но непонятно, как её оттуда передать
-cd ../erp
-call mvn clean install
+cd ../build
+call mvn clean install -P assemble
+
 
 cd %BUILD_DIR%
 call mvn clean install -P assemble

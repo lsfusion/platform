@@ -107,6 +107,7 @@ public class MainController {
         addUserDataAttributes(model, request);
         if (checkVersionError.result != null) {
             model.addAttribute("error", checkVersionError.result);
+            checkVersionError.set(null);
             return "restricted";
         } else {
             return "login";

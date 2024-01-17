@@ -373,7 +373,9 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LocalizedString transformLocalizedStringLiteral(String s) throws ScriptingErrorLog.SemanticErrorException {
         try {
             return ScriptedStringUtils.transformLocalizedStringLiteral(s, BL.getIdFromReversedI18NDictionaryMethod(), BL::appendEntryToBundle);
-        } catch (ScriptedStringUtils.TransformationError | LocalizedString.FormatError e) {
+        } catch (TransformationError e) {
+            errLog.emitSimpleError(parser, e.getMessage());
+        } catch (LocalizedString.FormatError e) {
             errLog.emitSimpleError(parser, e.getMessage());
         }
         return null;
