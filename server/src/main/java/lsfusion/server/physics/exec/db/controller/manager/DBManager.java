@@ -1594,6 +1594,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 }
                 apply(session);
 
+                startLog("Synchronizing platform versions"); // need to be completed before exporting of RMI logics object
+                businessLogics.systemEventsLM.platformVersion.change(BaseUtils.getPlatformVersion(), session);
+                businessLogics.systemEventsLM.apiVersion.change(BaseUtils.getApiVersion(), session);
+                businessLogics.systemEventsLM.revisionVersion.change(BaseUtils.parseInt(getRevision(SystemProperties.inDevMode)), session);
+                apply(session);
+
                 if (!isFirstStart) { // если все свойства "новые" то ничего перерасчитывать не надо
                     startLog("Recalculating aggregations");
                     List<Property> recalculateProperties = new ArrayList<>();
