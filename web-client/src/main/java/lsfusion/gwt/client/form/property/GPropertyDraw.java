@@ -620,7 +620,51 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     private void setDateMaskOptions(JavaScriptObject options, String pattern) {
-        JSNIHelper.setAttribute(options, "mask", pattern.replaceAll("[dMyHms]", "9"));
+        JSNIHelper.setAttribute(options, "alias", "datetime");
+        pattern = pattern + (char)0; // sentinel
+        StringBuilder builder = new StringBuilder();
+        char curCh = 0;
+        int count = 1;
+        for (int i = 0; i < pattern.length(); ++i) {
+            char nextCh = pattern.charAt(i);
+            if (nextCh == curCh) {
+                ++count;
+            } else {
+                builder.append(convert(curCh, count));
+                curCh = nextCh;
+                count = 1;
+            }
+        }
+//        com.allen_sauer.gwt.log.client.Log.error(builder.toString());
+        JSNIHelper.setAttribute(options, "prefillYear", false);
+        JSNIHelper.setAttribute(options, "inputFormat", builder.toString());
+    }
+    
+    private String convert(char symbol, int count) {
+        switch (symbol) {
+            case 'd':
+            case 'h':
+            case 'H':
+            case 's':
+                return repeat(symbol, Math.min(count, 2));
+            case 'M':
+                return repeat('m', Math.min(count, 4));
+            case 'y':
+                return count == 2 ? "yy" : "yyyy";
+            case 'm':
+                return count == 1 ? "M" : "MM";
+            case 'E':
+                return count < 4 ? "ddd" : "dddd";
+            case 'a':
+                return "TT";
+        }
+        return repeat(symbol, count);
+    }
+    
+    private String repeat(char ch, int count) {
+        char[] buf = new char[count];
+        Arrays.fill(buf, ch);
+        return String.valueOf(buf);
     }
     
     private void setIntegralMaskOptions(JavaScriptObject options, String pattern) {
