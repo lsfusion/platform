@@ -753,7 +753,7 @@ protected Double getUserFlex(int i) {
                 handler -> column.onEditEvent(handler, cell, renderElement),
                 handler -> selectionHandler.onCellAfter(handler, cell),
                 handler -> CopyPasteUtils.putIntoClipboard(renderElement), handler -> CopyPasteUtils.getFromClipboard(handler, line -> pasteData(cell, renderElement, GwtClientUtils.getClipboardTable(line))),
-                false, cell.getColumn().isCustomRenderer(RendererType.GRID));
+                false, cell.getColumn().isCustomRenderer(RendererType.GRID), true);
     }
 
     @Override

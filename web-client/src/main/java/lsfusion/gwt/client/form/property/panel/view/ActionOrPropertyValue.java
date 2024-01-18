@@ -236,13 +236,13 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
         if(eventHandler.consumed)
             return;
 
-        form.onPropertyBrowserEvent(eventHandler, getRenderElement(), true, isFocusable() ? getFocusElement() : null, // we don't need to focus unfocusable element (because the focus will be returned immediately)
+        form.onPropertyBrowserEvent(eventHandler, getRenderElement(), true, getFocusElement(), // we don't need to focus unfocusable element (because the focus will be returned immediately)
                 handler -> {}, // no outer context
                 this::onEditEvent,
                 handler -> {}, // no outer context
                 //ctrl-c ctrl-v from excel adds \n in the end, trim() removes it
                 handler -> CopyPasteUtils.putIntoClipboard(getRenderElement()), handler -> CopyPasteUtils.getFromClipboard(handler, line -> pasteValue(line.trim())),
-                true, property.getCellRenderer(getRendererType()).isCustomRenderer());
+                true, property.getCellRenderer(getRendererType()).isCustomRenderer(), isFocusable());
 
         form.propagateFocusEvent(event);
     }

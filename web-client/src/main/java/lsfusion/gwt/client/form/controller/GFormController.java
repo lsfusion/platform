@@ -310,7 +310,7 @@ public class GFormController implements EditManager {
 
         setBindingGroupObject(filterCheck, filterGroup.groupObject);
         if (filter.key != null)
-            addBinding(new GKeyInputEvent(filter.key), (event) -> filterCheck.setValue(!filterCheck.getValue(), true), filterCheck, filterGroup.groupObject);
+            addRegularFilterBinding(new GKeyInputEvent(filter.key), (event) -> filterCheck.setValue(!filterCheck.getValue(), true), filterCheck, filterGroup.groupObject);
     }
 
     private void createMultipleFilterComponent(final GRegularFilterGroup filterGroup) {
@@ -326,7 +326,7 @@ public class GFormController implements EditManager {
             final int filterIndex = i;
             GFormController.setBindingGroupObject(filterBox, filterGroup.groupObject);
             if (filter.key != null)
-                addBinding(new GKeyInputEvent(filter.key), (event) -> {
+                addRegularFilterBinding(new GKeyInputEvent(filter.key), (event) -> {
                     filterBox.setSelectedIndex(filterIndex + 1);
                     setRegularFilter(filterGroup, filterIndex);
                 }, filterBox, filterGroup.groupObject);
@@ -1801,7 +1801,7 @@ public class GFormController implements EditManager {
             removeBinding(index);
     }
 
-    public int addBinding(GInputEvent event, BindingExec pressed, Widget component, GGroupObject groupObject) {
+    public int addRegularFilterBinding(GInputEvent event, BindingExec pressed, Widget component, GGroupObject groupObject) {
         return addBinding(event, GBindingEnv.AUTO, pressed, component, groupObject);
     }
     public int addBinding(GInputEvent event, GBindingEnv env, BindingExec pressed, Widget component, GGroupObject groupObject) {
@@ -2491,7 +2491,7 @@ public class GFormController implements EditManager {
 
     public void onPropertyBrowserEvent(EventHandler handler, Element renderElement, boolean isCell, Element focusElement, Consumer<EventHandler> onOuterEditBefore,
                                        Consumer<EventHandler> onEdit, Consumer<EventHandler> onOuterEditAfter, Consumer<EventHandler> onCut,
-                                       Consumer<EventHandler> onPaste, boolean panel, boolean customRenderer) {
+                                       Consumer<EventHandler> onPaste, boolean panel, boolean customRenderer, boolean focusable) {
         RequestCellEditor requestCellEditor = getRequestCellEditor();
         boolean isPropertyEditing = requestCellEditor != null && getEditElement() == renderElement;
         if(isPropertyEditing)
@@ -2504,8 +2504,12 @@ public class GFormController implements EditManager {
             return;
 
         if(GMouseStroke.isChangeEvent(handler.event) && focusElement != null &&
-                GwtClientUtils.getFocusedChild(focusElement) == null) // need to check that focus is not on the grid, otherwise when editing for example embedded form, any click will cause moving focus to grid, i.e. stopping the editing
-            FocusUtils.focus(focusElement, FocusUtils.Reason.MOUSECHANGE, handler.event); // it should be done on CLICK, but also on MOUSEDOWN, since we want to focus even if mousedown is later consumed
+                GwtClientUtils.getFocusedChild(focusElement) == null) { // need to check that focus is not on the grid, otherwise when editing for example embedded form, any click will cause moving focus to grid, i.e. stopping the editing
+            if(focusable)
+                FocusUtils.focus(focusElement, FocusUtils.Reason.MOUSECHANGE, handler.event); // it should be done on CLICK, but also on MOUSEDOWN, since we want to focus even if mousedown is later consumed
+            else
+                checkCommitEditing();
+        }
 
         /*if(!previewLoadingManagerSinkEvents(handler.event)) {
             return;
