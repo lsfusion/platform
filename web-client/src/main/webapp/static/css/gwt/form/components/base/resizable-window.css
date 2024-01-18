@@ -2,6 +2,10 @@
     display: block;
 }
 
+.modal-form {
+    white-space: normal;
+}
+
 .modal-dialog.modal-fit-content {
     max-width: none;
     width: fit-content;

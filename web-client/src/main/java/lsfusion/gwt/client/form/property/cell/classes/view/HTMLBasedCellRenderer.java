@@ -17,6 +17,7 @@ public abstract class HTMLBasedCellRenderer extends CellRenderer {
 
     @Override
     public boolean renderContent(Element element, RenderContext renderContext) {
+        element.addClassName("html-based-prop-value");
         return false;
     }
 

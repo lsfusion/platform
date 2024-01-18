@@ -6,6 +6,10 @@
     --tab-bar-vert-padding: var(--border-cont-vert-padding);
 }
 
+.nav-tabs {
+    white-space: normal;
+}
+
 /* main direction */
 
 .nav-tabs-horz.nav-tabs-start {

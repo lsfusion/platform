@@ -32,8 +32,12 @@
     padding: var(--border-comp-vert-padding) var(--border-comp-horz-padding);
 }
 
-.content-word-wrap .nav-log-panel {
+body {
     white-space: nowrap;
+}
+
+.content-word-wrap {
+    white-space: pre-wrap;
 }
 
 .verticalStretchSeparator {

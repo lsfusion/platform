@@ -167,7 +167,7 @@ function setHtmlOrText(element, value, html) {
     if(html)
         element.innerHTML = value;
     else
-        element.innerText = value; // will add linebreaks (maybe optimization of using textContent / nodeValue is possible)
+        element.textContent = value;
 }
 
 function setReadonlyNative(element, readonly) {
