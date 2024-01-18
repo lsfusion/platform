@@ -93,6 +93,8 @@ select '{reflection.select}' = DATA SelectType (Property);
 nameSelect '{reflection.select}' (Property property) = getWord(staticName(select(property)),'.',2);
 staticCaptionSelect '{reflection.select}' (Property property) = staticCaption(select(property));
 
+updateSelect  INTERNAL  'lsfusion.server.physics.admin.service.action.UpdateSelectAction' (Property, STRING);
+
 return '{reflection.return.property}' = DATA STRING[100] (Property);
 complexity '{reflection.complexity.property}' = DATA LONG (Property);
 tableSID '{reflection.table.sid.property}' = DATA STRING[100] (Property);

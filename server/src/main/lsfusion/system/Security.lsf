@@ -568,6 +568,10 @@ DESIGN propertyPolicy {
     }
 }
 
+WHEN LOCAL FORMS propertyPolicy CHANGED(select(Property p)) DO {
+    updateSelect(p, nameSelect(p));
+}
+
 checkCurrentDateDependsAction  INTERNAL  'lsfusion.server.physics.admin.authentication.action.CheckCurrentDateDependsAction' (Property);
 WHEN FORMS propertyPolicy, properties SETCHANGED(userLoggable(Property p)) DO checkCurrentDateDependsAction(p);
 

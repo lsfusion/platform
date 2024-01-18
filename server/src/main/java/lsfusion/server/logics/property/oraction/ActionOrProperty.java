@@ -63,6 +63,8 @@ import java.util.concurrent.Callable;
 import java.util.function.IntFunction;
 
 import static lsfusion.interop.action.ServerResponse.*;
+import static lsfusion.server.logics.form.struct.property.PropertyDrawEntity.NOSELECT;
+import static lsfusion.server.logics.form.struct.property.PropertyDrawEntity.SELECT;
 import static lsfusion.server.physics.admin.log.ServerLoggers.startLog;
 
 public abstract class ActionOrProperty<T extends PropertyInterface> extends AbstractNode {
@@ -94,7 +96,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     }
 
     public void setSelect(String select) {
-        setCustomRenderFunction(select == null || select.equals("No") ? null : ("select" + select));
+        setCustomRenderFunction(select == null ? null : select.equals("No") ? NOSELECT : (SELECT + select));
     }
 
     public LocalizedString localizedToString() {
