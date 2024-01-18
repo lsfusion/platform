@@ -153,7 +153,7 @@ function containsLineBreak(value) {
     return value.indexOf("\n") >= 0;
 }
 function containsHtmlTag(value) {
-    return value.match(".*\\<[^>]+\\>(.|\n|\r)*");
+    return value != null && value.match(".*\\<[^>]+\\>(.|\n|\r)*");
 }
 
 // actually it is also data, however usually it's metadata
