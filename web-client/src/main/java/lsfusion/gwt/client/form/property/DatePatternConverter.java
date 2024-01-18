@@ -34,9 +34,10 @@ public class DatePatternConverter {
         switch (symbol) {
             case 'd':
             case 'h':
-            case 'H':
             case 's':
                 return repeat(symbol, Math.min(count, 2));
+            case 'H':
+                return "HH"; // there is no "H" in library
             case 'M':
                 return repeat('m', Math.min(count, 4));
             case 'y':
