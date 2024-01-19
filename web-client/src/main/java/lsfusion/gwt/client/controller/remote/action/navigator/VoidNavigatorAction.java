@@ -1,6 +1,8 @@
 package lsfusion.gwt.client.controller.remote.action.navigator;
 
-public class VoidNavigatorAction extends NavigatorRequestCountingAction {
+import lsfusion.gwt.client.base.result.VoidResult;
+
+public class VoidNavigatorAction extends NavigatorRequestCountingAction<VoidResult> {
     public long waitRequestIndex;
 
     public VoidNavigatorAction() {}

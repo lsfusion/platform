@@ -56,11 +56,10 @@ public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterfac
         return result;
     }
 
-    public ServerResponse voidFormAction(long requestIndex, long lastReceivedRequestIndex) throws RemoteException {
+    public void voidFormAction(long requestIndex, long lastReceivedRequestIndex) throws RemoteException {
         logRemoteMethodStartVoidCall("voidFormAction");
-        ServerResponse result = target.voidFormAction(requestIndex, lastReceivedRequestIndex);
+        target.voidFormAction(requestIndex, lastReceivedRequestIndex);
         logRemoteMethodEndVoidCall("voidFormAction");
-        return result;
     }
 
     public ServerResponse gainedFocus(long requestIndex, long lastReceivedRequestIndex) throws RemoteException {

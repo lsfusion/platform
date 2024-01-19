@@ -1,8 +1,10 @@
 package lsfusion.gwt.client.controller.remote.action.navigator;
 
+import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
+
 import java.io.Serializable;
 
-public class ContinueNavigatorAction extends NavigatorRequestAction {
+public class ContinueNavigatorAction extends NavigatorRequestAction<ServerResponseResult> {
     public Serializable[] actionResults;
     public int continueIndex;    
 

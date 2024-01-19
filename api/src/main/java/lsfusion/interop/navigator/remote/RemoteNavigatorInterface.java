@@ -15,7 +15,7 @@ public interface RemoteNavigatorInterface extends RemoteConnectionInterface {
 
     // main interface
 
-    ServerResponse voidNavigatorAction(long requestIndex, long lastReceivedRequestIndex, long waitRequestIndex) throws RemoteException;
+    void voidNavigatorAction(long requestIndex, long lastReceivedRequestIndex, long waitRequestIndex) throws RemoteException;
 
     ServerResponse executeNavigatorAction(long requestIndex, long lastReceivedRequestIndex, String script) throws RemoteException;
 

@@ -1,6 +1,8 @@
 package lsfusion.gwt.client.controller.remote.action.navigator;
 
-public class ExecuteNavigatorAction extends NavigatorRequestCountingAction {
+import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
+
+public class ExecuteNavigatorAction extends NavigatorRequestCountingAction<ServerResponseResult> {
     public String actionSID;
     public int type;
 
