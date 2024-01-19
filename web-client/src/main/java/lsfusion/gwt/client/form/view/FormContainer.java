@@ -164,7 +164,7 @@ public abstract class FormContainer {
         image.addStyleName("loading-async-icon");
         image.addClickHandler(clickEvent -> {
             if(contextForm != null) {
-                contextForm.syncDispatch(new VoidFormAction(requestIndex), callback);
+                contextForm.syncDispatch(new VoidFormAction(), callback);
             } else {
                 formsController.syncDispatch(new VoidNavigatorAction(requestIndex), callback);
             }

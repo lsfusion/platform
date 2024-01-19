@@ -15,6 +15,6 @@ public class VoidFormActionHandler extends FormServerResponseActionHandler<VoidF
 
     @Override
     public ServerResponseResult executeEx(VoidFormAction action, ExecutionContext context) throws RemoteException {
-        return getServerResponseResult(action, remoteForm -> remoteForm.voidFormAction(action.requestIndex, action.lastReceivedRequestIndex, action.waitRequestIndex));
+        return getServerResponseResult(action, remoteForm -> remoteForm.voidFormAction(action.requestIndex, action.lastReceivedRequestIndex));
     }
 }
