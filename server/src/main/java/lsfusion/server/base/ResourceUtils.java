@@ -99,7 +99,7 @@ public class ResourceUtils {
         try {
             zf = new ZipFile(file);
         } catch (final IOException e) {
-            throw new Error(e);
+            throw new Error("Read " + file.getName() + "failed", e);
         }
         final Enumeration e = zf.entries();
         while (e.hasMoreElements()) {
@@ -113,7 +113,7 @@ public class ResourceUtils {
         try {
             zf.close();
         } catch (final IOException e1) {
-            throw new Error(e1);
+            throw new Error("Close " + file.getName() + "failed", e1);
         }
         return retval;
     }
