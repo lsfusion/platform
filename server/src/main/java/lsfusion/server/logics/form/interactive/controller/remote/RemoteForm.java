@@ -200,7 +200,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     }
 
     public ServerResponse voidFormAction(long requestIndex, long lastReceivedRequestIndex) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {});
+        return processRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> null);
     }
 
     public ServerResponse gainedFocus(long requestIndex, long lastReceivedRequestIndex) throws RemoteException {

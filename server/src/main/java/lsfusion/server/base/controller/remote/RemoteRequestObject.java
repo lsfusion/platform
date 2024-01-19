@@ -156,9 +156,13 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
         minReceivedRequestIndex = lastReceivedRequestIndex;
     }
 
-    public void waitRecentResults(long waitRequestIndex) throws InterruptedException {
-        while(!recentResults.containsKey(waitRequestIndex)) {
-            Thread.sleep(100);
+    public void waitRecentResults(long waitRequestIndex) {
+        try {
+            while (!recentResults.containsKey(waitRequestIndex)) {
+                Thread.sleep(100);
+            }
+        } catch (InterruptedException e) {
+            throw Throwables.propagate(e);
         }
     }
 

@@ -489,7 +489,8 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
     @Override
     public ServerResponse voidNavigatorAction(long requestIndex, long lastReceivedRequestIndex, final long waitRequestIndex) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> waitRecentResults(waitRequestIndex));
+        waitRecentResults(waitRequestIndex);
+        return ServerResponse.EMPTY;
     }
 
     @Override
