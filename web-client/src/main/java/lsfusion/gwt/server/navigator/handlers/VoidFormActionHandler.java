@@ -18,8 +18,7 @@ public class VoidFormActionHandler extends FormActionHandler<VoidFormAction, Voi
     @Override
     public VoidResult executeEx(VoidFormAction action, ExecutionContext context) throws RemoteException, AppServerNotAvailableDispatchException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
-        if (form != null)
-            form.remoteForm.voidFormAction(action.requestIndex, action.lastReceivedRequestIndex);
+        form.remoteForm.voidFormAction(action.requestIndex, action.lastReceivedRequestIndex);
         return new VoidResult();
     }
 }
