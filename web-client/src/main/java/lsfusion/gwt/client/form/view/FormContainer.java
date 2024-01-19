@@ -9,7 +9,6 @@ import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.view.StaticImageWidget;
-import lsfusion.gwt.client.controller.remote.action.RequestCountingAsyncCallback;
 import lsfusion.gwt.client.controller.remote.action.navigator.VoidFormAction;
 import lsfusion.gwt.client.controller.remote.action.navigator.VoidNavigatorAction;
 import lsfusion.gwt.client.form.controller.FormsController;
@@ -149,7 +148,7 @@ public abstract class FormContainer {
         return form;
     }
 
-    public void setContentLoading(RequestCountingAsyncCallback callback, long requestIndex) {
+    public void setContentLoading(long requestIndex) {
         VerticalPanel loadingWidget = new VerticalPanel();
         loadingWidget.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
         loadingWidget.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
@@ -163,6 +162,10 @@ public abstract class FormContainer {
         StaticImageWidget image = new StaticImageWidget(StaticImage.LOADING_ASYNC);
         image.addStyleName("loading-async-icon");
         image.addClickHandler(clickEvent -> {
+            GFormController.CustomErrorHandlingCallback callback = new GFormController.CustomErrorHandlingCallback<Object>() {
+                @Override
+                protected void onSuccess(Object result) {}
+            };
             if(contextForm != null) {
                 contextForm.syncDispatch(new VoidFormAction(), callback);
             } else {
