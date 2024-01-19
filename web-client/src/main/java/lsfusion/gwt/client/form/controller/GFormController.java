@@ -2533,12 +2533,4 @@ public class GFormController implements EditManager {
     public Element getFormElement() {
         return formContainer.getFocusedElement();
     }
-
-    public void showBusyDialog() {
-        dispatcher.getBusyDialogDisplayer().start(true);
-    }
-
-    public void hideBusyDialog() {
-        dispatcher.getBusyDialogDisplayer().stop(false);
-    }
 }

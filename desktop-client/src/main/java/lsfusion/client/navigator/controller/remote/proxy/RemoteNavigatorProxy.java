@@ -1,16 +1,13 @@
 package lsfusion.client.navigator.controller.remote.proxy;
 
-import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
 import lsfusion.client.connection.RemoteConnectionProxy;
-import lsfusion.client.controller.remote.proxy.RemoteRequestObjectProxy;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.navigator.remote.ClientCallBackInterface;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 
 import java.rmi.RemoteException;
-import java.util.concurrent.Callable;
 
 public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends RemoteConnectionProxy<T> implements RemoteNavigatorInterface {
 
@@ -33,6 +30,11 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends Re
 
     public byte[] getNavigatorTree() throws RemoteException {
         return target.getNavigatorTree();
+    }
+
+    @Override
+    public ServerResponse voidNavigatorAction(long requestIndex, long lastReceivedRequestIndex, long waitRequestIndex) throws RemoteException {
+        return target.voidNavigatorAction(requestIndex, lastReceivedRequestIndex, waitRequestIndex);
     }
 
     @Override

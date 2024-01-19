@@ -102,7 +102,7 @@ public class MainFrame implements EntryPoint {
         return navigatorDispatchAsync.asyncExecute(action, callback);
     }
 
-    public <T extends Result> long syncDispatch(final ExecuteNavigatorAction action, RequestCountingAsyncCallback<ServerResponseResult> callback) {
+    public <T extends Result> long syncDispatch(final NavigatorRequestAction action, RequestCountingAsyncCallback<ServerResponseResult> callback) {
         return syncDispatch(action, callback, false);
     }
 
@@ -326,7 +326,7 @@ public class MainFrame implements EntryPoint {
         final Linker<GNavigatorActionDispatcher> actionDispatcherLink = new Linker<>();
         final FormsController formsController = new FormsController(windowsController) {
             @Override
-            public long syncDispatch(ExecuteNavigatorAction action, RequestCountingAsyncCallback<ServerResponseResult> callback) {
+            public long syncDispatch(NavigatorRequestAction action, RequestCountingAsyncCallback<ServerResponseResult> callback) {
                 return MainFrame.this.syncDispatch(action, callback);
             }
 
@@ -653,13 +653,5 @@ public class MainFrame implements EntryPoint {
         cleanRemote(() -> {}, false);
         GConnectionLostManager.invalidate();
         System.gc();
-    }
-
-    public static void showBusyDialog() {
-        navigatorDispatchAsync.getBusyDialogDisplayer().start(true);
-    }
-
-    public static void hideBusyDialog() {
-        navigatorDispatchAsync.getBusyDialogDisplayer().stop(false);
     }
 }

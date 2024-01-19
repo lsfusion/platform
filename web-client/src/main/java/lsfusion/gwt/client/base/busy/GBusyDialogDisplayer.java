@@ -18,8 +18,6 @@ public class GBusyDialogDisplayer {
     private final Timer showTimer;
     private final Timer hideTimer;
 
-    private boolean asyncOpenForm;
-
     public GBusyDialogDisplayer(ServerMessageProvider messageProvider) {
         blockingPanel = new BlockingPanel();
         busyDialog = new GBusyDialog();
@@ -37,9 +35,6 @@ public class GBusyDialogDisplayer {
                     if (busyDialog.needInterrupt != null) {
                         messageProvider.interrupt(!busyDialog.needInterrupt);
                         busyDialog.needInterrupt = null;
-                        if(asyncOpenForm) {
-                            stop(false);
-                        }
                         return true;
                     } else if (visible) {
                         updateBusyDialog(messageProvider);
@@ -75,11 +70,6 @@ public class GBusyDialogDisplayer {
     }
 
     public void start() {
-        start(false);
-    }
-
-    public void start(boolean asyncOpenForm) {
-        this.asyncOpenForm = asyncOpenForm;
         if (!visible) {
             blockingPanel.center();
 

@@ -9,6 +9,9 @@ import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.view.StaticImageWidget;
+import lsfusion.gwt.client.controller.remote.action.RequestCountingAsyncCallback;
+import lsfusion.gwt.client.controller.remote.action.navigator.VoidFormAction;
+import lsfusion.gwt.client.controller.remote.action.navigator.VoidNavigatorAction;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.cell.controller.EndReason;
@@ -66,7 +69,6 @@ public abstract class FormContainer {
         closePressed(null);
     }
 
-    private boolean shownBusyDialog;
     public void closePressed(EndReason reason) {
         if(async) {
             // we shouldn't remove async form here, because it will be removed either in FormAction, or on response noneMatch FormAction check
@@ -131,15 +133,6 @@ public abstract class FormContainer {
             }
         };
 
-        if(shownBusyDialog) {
-            shownBusyDialog = false;
-            if(contextForm != null) {
-                contextForm.hideBusyDialog();
-            } else {
-                MainFrame.hideBusyDialog();
-            }
-        }
-
         if(isAsyncHidden())
             form.closePressed(asyncHiddenReason);
         else
@@ -156,7 +149,7 @@ public abstract class FormContainer {
         return form;
     }
 
-    public void setContentLoading() {
+    public void setContentLoading(RequestCountingAsyncCallback callback, long requestIndex) {
         VerticalPanel loadingWidget = new VerticalPanel();
         loadingWidget.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
         loadingWidget.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
@@ -171,11 +164,10 @@ public abstract class FormContainer {
         image.addStyleName("loading-async-icon");
         image.addClickHandler(clickEvent -> {
             if(contextForm != null) {
-                contextForm.showBusyDialog();
+                contextForm.syncDispatch(new VoidFormAction(requestIndex), callback);
             } else {
-                MainFrame.showBusyDialog();
+                formsController.syncDispatch(new VoidNavigatorAction(requestIndex), callback);
             }
-            shownBusyDialog = true;
         });
 
         topPanel.add(image);
