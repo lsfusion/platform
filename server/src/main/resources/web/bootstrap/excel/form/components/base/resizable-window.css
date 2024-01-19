@@ -73,6 +73,7 @@
     flex: 1 1 auto;
     padding: 0.5em;
     display: flex;
+    overflow: auto;
 }
 
 .modal-footer {
