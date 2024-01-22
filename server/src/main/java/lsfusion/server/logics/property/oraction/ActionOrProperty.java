@@ -552,6 +552,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         private Boolean valueFlex;
 
         // свойства, но пока реализовано как для всех
+        private String pattern;
         private String regexp;
         private String regexpMessage;
         private Boolean echoSymbols;
@@ -604,7 +605,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
         public void proceedDefaultDesign(PropertyDrawView propertyView) {
             if(propertyView.isProperty()) {
-                if (propertyView.getType() instanceof LogicalClass) 
+                if (propertyView.getType() instanceof LogicalClass)
                     propertyView.changeOnSingleClick = Settings.get().getChangeBooleanOnSingleClick();
             } else
                 propertyView.changeOnSingleClick = Settings.get().getChangeActionOnSingleClick();
@@ -635,6 +636,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             if (propertyView.changeMousePriority == null)
                 propertyView.changeMousePriority = changeMousePriority;
 
+            if (propertyView.pattern == null)
+                propertyView.pattern = pattern;
             if (propertyView.regexp == null)
                 propertyView.regexp = regexp;
             if (propertyView.regexpMessage == null)
@@ -665,6 +668,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             if(defaultCompare == null)
                 setDefaultCompare(options.defaultCompare);
 
+            if(pattern == null)
+                setPattern(options.pattern);
             if(regexp == null)
                 setRegexp(options.regexp);
             if(regexpMessage == null)
@@ -738,6 +743,10 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         }
         public void setValueFlex(Boolean flex) {
             this.valueFlex = flex;
+        }
+
+        public void setPattern(String pattern) {
+            this.pattern = pattern;
         }
 
         public void setRegexp(String regexp) {

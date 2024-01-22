@@ -16,6 +16,10 @@ import lsfusion.server.data.type.TypeSerializer;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
+import lsfusion.server.logics.classes.data.integral.IntegralClass;
+import lsfusion.server.logics.classes.data.time.DateClass;
+import lsfusion.server.logics.classes.data.time.DateTimeClass;
+import lsfusion.server.logics.classes.data.time.TimeClass;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncInput;
 import lsfusion.server.logics.form.interactive.action.async.AsyncNoWaitExec;
@@ -62,6 +66,7 @@ public class PropertyDrawView extends BaseComponentView {
 
     public Boolean changeOnSingleClick;
     public boolean hide;
+    public String pattern;
     public String regexp;
     public String regexpMessage;
     public Long maxValue;
@@ -388,7 +393,7 @@ public class PropertyDrawView extends BaseComponentView {
 
         outStream.writeBoolean(drawAsync);
 
-        pool.writeObject(outStream, format);
+        pool.writeObject(outStream, getFormat());
 
         outStream.writeBoolean(entity.isList(pool.context.view.entity));
 
@@ -553,6 +558,18 @@ public class PropertyDrawView extends BaseComponentView {
             }
         }
         return contextMenuItems;
+    }
+
+    private Format getFormat() {
+        if (isProperty() && pattern != null) {
+            Type type = getType();
+            if (type instanceof IntegralClass) {
+                return new DecimalFormat(pattern);
+            } else if (type instanceof DateClass || type instanceof TimeClass || type instanceof DateTimeClass) {
+                return new SimpleDateFormat(pattern);
+            }
+        }
+        return format;
     }
 
     public String getFormatPattern() {
