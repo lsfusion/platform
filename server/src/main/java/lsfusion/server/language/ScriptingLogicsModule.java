@@ -1476,6 +1476,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         property.setAskConfirm(askConfirm);
     }
 
+    public void setPattern(LAP property, String pattern) {
+        property.setPattern(pattern);
+    }
+
     public void setRegexp(LAP property, String regexp, String regexpMessage) {
         property.setRegexp(regexp);
         if (regexpMessage != null) {

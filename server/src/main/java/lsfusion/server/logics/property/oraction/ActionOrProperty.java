@@ -583,6 +583,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         private Boolean valueFlex;
 
         // свойства, но пока реализовано как для всех
+        private String pattern;
         private String regexp;
         private String regexpMessage;
         private Boolean echoSymbols;
@@ -674,6 +675,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             if(defaultCompare == null)
                 setDefaultCompare(options.defaultCompare);
 
+            if(pattern == null)
+                setPattern(options.pattern);
             if(regexp == null)
                 setRegexp(options.regexp);
             if(regexpMessage == null)
@@ -741,6 +744,10 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         }
         public void setValueFlex(Boolean flex) {
             this.valueFlex = flex;
+        }
+
+        public void setPattern(String pattern) {
+            this.pattern = pattern;
         }
 
         public void setRegexp(String regexp) {

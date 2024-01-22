@@ -2812,6 +2812,7 @@ semiPropertyOption[LP property, String propertyName, LocalizedString caption, Pr
 	|	tableSetting [ps]
 	|   defaultCompareSetting [property]
 	|	autosetSetting [property]
+	|	patternSetting [property]
 	|	regexpSetting [property]
 	|	echoSymbolsSetting [property]
 	|	indexSetting [property]
@@ -3029,6 +3030,15 @@ confirmSetting [LAP property]
 	}
 }
 	:	'CONFIRM' { askConfirm = true; }
+	;
+
+patternSetting [LAP property]
+@after {
+	if (inMainParseState()) {
+		self.setPattern(property, $exp.val);
+	}
+}
+	:	'PATTERN' exp = stringLiteral
 	;
 
 regexpSetting [LAP property]
