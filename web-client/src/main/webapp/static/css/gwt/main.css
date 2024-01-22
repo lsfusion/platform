@@ -60,3 +60,7 @@
 .errorLogMessage {
     color: #ff4500;
 }
+
+.cursor-pointer {
+ cursor: pointer;
+}
