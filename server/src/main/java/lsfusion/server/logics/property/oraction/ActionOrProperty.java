@@ -583,6 +583,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         private Boolean valueFlex;
 
         // свойства, но пока реализовано как для всех
+        private String pattern;
         private LocalizedString pattern;
         private LocalizedString regexp;
         private LocalizedString regexpMessage;

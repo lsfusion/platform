@@ -665,6 +665,18 @@ public class PropertyDrawView extends BaseComponentView {
         return contextMenuItems;
     }
 
+    private Format getFormat() {
+        if (isProperty() && pattern != null) {
+            Type type = getType();
+            if (type instanceof IntegralClass) {
+                return new DecimalFormat(pattern);
+            } else if (type instanceof DateClass || type instanceof TimeClass || type instanceof DateTimeClass) {
+                return new SimpleDateFormat(pattern);
+            }
+        }
+        return format;
+    }
+
     public String getPattern() {
         return pattern != null ? pattern.getSourceString() : null;
     }

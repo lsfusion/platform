@@ -1251,7 +1251,7 @@ formEventDeclaration returns [ActionObjectEntity action, Object type, Boolean re
 scheduleFormEventDeclaration returns [int period, boolean fixed]
 	:   'SCHEDULE' 'PERIOD' periodLiteral=intLiteral { $period = $periodLiteral.val; } ('FIXED' { $fixed = true; })?
 	;
-	
+
 orderEventDeclaration returns [UserEventObject type]
 @init {
 	String object = null;
@@ -1263,7 +1263,7 @@ orderEventDeclaration returns [UserEventObject type]
 }
     :   'ORDER' objectId=ID { object = $objectId.text; }
     ;
-    
+
 filterEventDeclaration returns [UserEventObject type]
 @init {
 	String object = null;
@@ -4021,7 +4021,7 @@ readOrdersActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
          gobj=formGroupObjectID
          ('FROM' pu=propertyUsage)?
      ;
-     
+
 readFiltersActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @after {
 	if (inMainParseState()) {
@@ -4998,7 +4998,7 @@ navigatorElementOptions returns [NavigatorElementOptions options]
 @init {
 	$options = new NavigatorElementOptions();
 }
-	:	
+	:
 	(	('WINDOW' wid=compoundID { $options.windowName = $wid.sid; } ('PARENT' { $options.parentWindow = true; })? )
 	|	pos=navigatorElementRelativePosition { $options.location = $pos.location; }
 	|	('IMAGE' (image=propertyExpressionOrLiteral[null])? {
