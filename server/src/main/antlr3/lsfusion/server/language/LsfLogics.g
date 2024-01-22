@@ -3038,20 +3038,17 @@ patternSetting [LAP property]
 		self.setPattern(property, $exp.val);
 	}
 }
-	:	'PATTERN' exp = stringLiteral
+	:	'PATTERN' exp = localizedStringLiteral
 	;
 
 regexpSetting [LAP property]
-@init {
-	String message = null;
-}
 @after {
 	if (inMainParseState()) {
-		self.setRegexp(property, $exp.val, message);
+		self.setRegexp(property, $exp.val, $mess.val);
 	}
 }
-	:	'REGEXP' exp = stringLiteral
-		(mess = stringLiteral { message = $mess.val; })?
+	:	'REGEXP' exp = localizedStringLiteral
+		(mess = localizedStringLiteral)?
 	;
 
 echoSymbolsSetting [LAP property]

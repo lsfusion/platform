@@ -12,6 +12,7 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.util.List;
 
@@ -92,15 +93,15 @@ public abstract class LAP<T extends PropertyInterface, P extends ActionOrPropert
         getActionOrProperty().drawOptions.setChangeMouse(changeMouse);
     }
 
-    public void setPattern(String pattern) {
+    public void setPattern(LocalizedString pattern) {
         getActionOrProperty().drawOptions.setPattern(pattern);
     }
 
-    public void setRegexp(String regexp) {
+    public void setRegexp(LocalizedString regexp) {
         getActionOrProperty().drawOptions.setRegexp(regexp);
     }
 
-    public void setRegexpMessage(String regexpMessage) {
+    public void setRegexpMessage(LocalizedString regexpMessage) {
         getActionOrProperty().drawOptions.setRegexpMessage(regexpMessage);
     }
 

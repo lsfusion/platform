@@ -583,9 +583,9 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         private Boolean valueFlex;
 
         // свойства, но пока реализовано как для всех
-        private String pattern;
-        private String regexp;
-        private String regexpMessage;
+        private LocalizedString pattern;
+        private LocalizedString regexp;
+        private LocalizedString regexpMessage;
         private Boolean echoSymbols;
 
         // действия, но пока реализовано как для всех
@@ -652,6 +652,13 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
                 propertyView.changeMouse = changeMouse != null ? new MouseInputEvent(changeMouse, mouseBindingsModes) : null;
             if (propertyView.changeMousePriority == null)
                 propertyView.changeMousePriority = changeMousePriority;
+
+            if(propertyView.pattern == null)
+                propertyView.pattern = pattern;
+            if(propertyView.regexp == null)
+                propertyView.regexp = regexp;
+            if(propertyView.regexpMessage == null)
+                propertyView.regexpMessage = regexpMessage;
 
             if (propertyView.echoSymbols == null)
                 propertyView.echoSymbols = BaseUtils.nvl(echoSymbols, false);
@@ -746,15 +753,15 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             this.valueFlex = flex;
         }
 
-        public void setPattern(String pattern) {
+        public void setPattern(LocalizedString pattern) {
             this.pattern = pattern;
         }
 
-        public void setRegexp(String regexp) {
+        public void setRegexp(LocalizedString regexp) {
             this.regexp = regexp;
         }
 
-        public void setRegexpMessage(String regexpMessage) {
+        public void setRegexpMessage(LocalizedString regexpMessage) {
             this.regexpMessage = regexpMessage;
         }
 
