@@ -932,7 +932,7 @@ public class GFormController implements EditManager {
         Scheduler.get().scheduleFixedPeriod(new Scheduler.RepeatingCommand() {
             @Override
             public boolean execute() {
-                if (dispatcher.getLoadingManager().isVisible()) {
+                if (dispatcher.getBusyDialogDisplayer().isVisible()) {
                     return true;
                 } else {
                     changePageSizeLater(groupObject, pageSize);
@@ -1602,7 +1602,7 @@ public class GFormController implements EditManager {
         if(BrowserEvents.BLUR.equals(event.getType()))
             MainFrame.setLastBlurredElement(Element.as(event.getEventTarget()));
         formsController.checkEditModeEvents(event);
-        return previewLoadingManagerSinkEvents(event) && MainFrame.previewEvent(target, event, isEditing());
+        return previewBusyDialogDisplayerSinkEvents(event) && MainFrame.previewEvent(target, event, isEditing());
     }
 
     public boolean previewEvent(Event event, Element element) {
@@ -1619,10 +1619,10 @@ public class GFormController implements EditManager {
 //            contextEditForm.getRequestCellEditor().onBrowserEvent(contextEditForm.getEditElement(), new EventHandler(event));
     }
 
-    private boolean previewLoadingManagerSinkEvents(Event event) {
+    private boolean previewBusyDialogDisplayerSinkEvents(Event event) {
         //focus() can trigger blur event, blur finishes editing. Editing calls syncDispatch.
-        //If isEditing() and loadingManager isVisible() then flushCompletedRequests is not executed and syncDispatch is blocked.
-        return !(dispatcher.getLoadingManager().isVisible() && (DataGrid.checkSinkEvents(event) || DataGrid.checkSinkFocusEvents(event)));
+        //If isEditing() and busyDialogDisplayer isVisible() then flushCompletedRequests is not executed and syncDispatch is blocked.
+        return !(dispatcher.getBusyDialogDisplayer().isVisible() && (DataGrid.checkSinkEvents(event) || DataGrid.checkSinkFocusEvents(event)));
     }
 
     protected void onFormHidden(GAsyncFormController asyncFormController, int closeDelay, EndReason editFormCloseReason) {
@@ -2511,7 +2511,7 @@ public class GFormController implements EditManager {
                 checkCommitEditing();
         }
 
-        /*if(!previewLoadingManagerSinkEvents(handler.event)) {
+        /*if(!previewBusyDialogDisplayerSinkEvents(handler.event)) {
             return;
         }*/
         if (renderElement != null)

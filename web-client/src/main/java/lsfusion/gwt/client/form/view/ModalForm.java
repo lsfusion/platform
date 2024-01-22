@@ -11,6 +11,7 @@ import lsfusion.gwt.client.base.view.FormRequestData;
 import lsfusion.gwt.client.base.view.ResizableModalWindow;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.form.controller.FormsController;
+import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.cell.controller.EndReason;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
 import lsfusion.gwt.client.navigator.window.GModalityWindowFormType;
@@ -31,8 +32,8 @@ public class ModalForm extends FormContainer {
         return contentWidget.getElement();
     }
 
-    public ModalForm(FormsController formsController, boolean async, Event editEvent) {
-        super(formsController, async, editEvent);
+    public ModalForm(FormsController formsController, GFormController contextForm, boolean async, Event editEvent) {
+        super(formsController, contextForm, async, editEvent);
 
         ResizableModalWindow window = new ResizableModalWindow() {
             @Override

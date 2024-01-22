@@ -15,16 +15,19 @@ import lsfusion.gwt.client.RemoteDispatchAsync;
 import lsfusion.gwt.client.action.GFormAction;
 import lsfusion.gwt.client.action.GHideFormAction;
 import lsfusion.gwt.client.base.*;
-import lsfusion.gwt.client.base.view.*;
+import lsfusion.gwt.client.base.view.FlexPanel;
+import lsfusion.gwt.client.base.view.GFlexAlignment;
+import lsfusion.gwt.client.base.view.ResizableSimplePanel;
+import lsfusion.gwt.client.base.view.WindowHiddenHandler;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.controller.remote.action.RequestCountingAsyncCallback;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.ExecuteNavigatorAction;
+import lsfusion.gwt.client.controller.remote.action.navigator.NavigatorRequestAction;
 import lsfusion.gwt.client.form.ContainerForm;
 import lsfusion.gwt.client.form.EmbeddedForm;
 import lsfusion.gwt.client.form.PopupForm;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
-import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.object.table.view.GToolbarView;
 import lsfusion.gwt.client.form.property.async.GAsyncExecutor;
@@ -455,15 +458,15 @@ public abstract class FormsController {
     private FormContainer createFormContainer(GWindowFormType windowType, boolean async, long editRequestIndex, String formCanonicalName, Event editEvent, EditContext editContext, GFormController formController) {
         FormContainer formContainer;
         if(windowType instanceof GContainerWindowFormType) {
-            formContainer = new ContainerForm(this, async, editEvent, formController, ((GContainerWindowFormType) windowType));
+            formContainer = new ContainerForm(this, formController, async, editEvent, formController, ((GContainerWindowFormType) windowType));
         } else if(windowType.isFloat()) {
-            formContainer =  new ModalForm(this, async, editEvent);
+            formContainer =  new ModalForm(this, formController, async, editEvent);
         } else if(windowType.isDocked()) {
-            formContainer =  new FormDockable(this, formCanonicalName, async, editEvent);
+            formContainer =  new FormDockable(this, formController, formCanonicalName, async, editEvent);
         } else if(windowType.isEmbedded()) {
-            formContainer =  new EmbeddedForm(this, editRequestIndex, async, editEvent, editContext, formController);
+            formContainer =  new EmbeddedForm(this, formController, editRequestIndex, async, editEvent, editContext);
         } else if(windowType.isPopup()) {
-            formContainer =  new PopupForm(this, editRequestIndex, async, editEvent, editContext, formController);
+            formContainer =  new PopupForm(this, formController, editRequestIndex, async, editEvent, editContext);
         } else {
             throw new UnsupportedOperationException();
         }
@@ -484,7 +487,7 @@ public abstract class FormsController {
                 if(captionWidget != null)
                     BaseImage.initImageText(captionWidget, openForm.caption, openForm.appImage, false);
 
-                formContainer.setContentLoading();
+                formContainer.setContentLoading(asyncFormController.getEditRequestIndex());
                 formContainer.show(asyncFormController);
                 asyncFormController.putAsyncForm(formContainer);
             };
@@ -651,7 +654,7 @@ public abstract class FormsController {
         windowsController.resetLayout();
     }
 
-    public abstract long syncDispatch(final ExecuteNavigatorAction action, RequestCountingAsyncCallback<ServerResponseResult> callback);
+    public abstract long syncDispatch(final NavigatorRequestAction action, RequestCountingAsyncCallback<ServerResponseResult> callback);
 
     public abstract long asyncDispatch(final ExecuteNavigatorAction action, RequestCountingAsyncCallback<ServerResponseResult> callback);
 

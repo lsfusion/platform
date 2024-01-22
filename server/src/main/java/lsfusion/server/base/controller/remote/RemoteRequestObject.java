@@ -156,6 +156,16 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
         minReceivedRequestIndex = lastReceivedRequestIndex;
     }
 
+    public void waitRecentResults(long waitRequestIndex) {
+        try {
+            while (!recentResults.containsKey(waitRequestIndex)) {
+                Thread.sleep(100);
+            }
+        } catch (InterruptedException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
     protected abstract ServerResponse prepareResponse(long requestIndex, List<ClientAction> pendingActions, ExecutionStack stack, boolean forceLocalEvents);
 
     protected ServerResponse processPausableRMIRequest(final long requestIndex, long lastReceivedRequestIndex, final EExecutionStackRunnable runnable) throws RemoteException {

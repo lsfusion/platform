@@ -8,7 +8,7 @@ import lsfusion.gwt.client.controller.remote.action.PriorityErrorHandlingCallbac
 import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.view.ServerMessageProvider;
 
-public class GBusyDialogDisplayer extends LoadingManager {
+public class GBusyDialogDisplayer {
     public static final int MESSAGE_UPDATE_PERIOD = 1000;
 
     private final PopupPanel blockingPanel;

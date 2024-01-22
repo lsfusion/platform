@@ -6,6 +6,7 @@ import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.form.controller.FormsController;
+import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.view.FormContainer;
 
 public abstract class WidgetForm extends FormContainer {
@@ -18,8 +19,8 @@ public abstract class WidgetForm extends FormContainer {
         return contentWidget.getElement();
     }
 
-    public WidgetForm(FormsController formsController, boolean async, Event editEvent, Widget captionWidget) {
-        super(formsController, async, editEvent);
+    public WidgetForm(FormsController formsController, GFormController contextForm, boolean async, Event editEvent, Widget captionWidget) {
+        super(formsController, contextForm, async, editEvent);
 
         contentWidget = new ContentWidget();
 
