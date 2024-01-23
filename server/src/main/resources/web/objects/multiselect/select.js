@@ -530,7 +530,7 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
 
 // todo --- backward compatibility. option() should be removed in future releases ---
 function option() {
-    return selectButton();
+    return selectNullButton();
 }
 
 function selectNullDropdown() {
