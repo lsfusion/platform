@@ -53,6 +53,17 @@ public abstract class CellRenderer {
     public static void clearFocusElement(Element parent) {
         parent.setPropertyObject(focusElementProp, null);
     }
+    private final static String customElementProp = "customElement";
+    public static boolean isCustomElement(Element parent) {
+        return parent.getPropertyObject(customElementProp) != null;
+    }
+    public static void setCustomElement(Element parent) {
+        parent.setPropertyObject(customElementProp, true);
+    }
+    public static void clearCustomElement(Element parent) {
+        parent.setPropertyObject(customElementProp, null);
+    }
+
     private final static String readonlyFncProp = "readonlyFnc";
     public final static String NULL = "NULL"; // none / manual
     public static Object getReadonlyFnc(Element parent) {

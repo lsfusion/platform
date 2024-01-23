@@ -142,6 +142,9 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
         }
     }
 
+    // here there is a problem: this minReceivedRequestIndex should be used only when requests are synchronized
+    // however it's not clear what to do in the opposite case (because in that, case requests are not synchronized on the client, so we should send all request indexes to understand which one we can dispose)
+    // as a temporary solution, something like simple timer logics can be used (i.e dispose sent requests after some timeout), but for now we'll leave it this way
     private void clearRecentResults(long lastReceivedRequestIndex) {
         //assert: current thread holds the request lock
         if(lastReceivedRequestIndex == -1)

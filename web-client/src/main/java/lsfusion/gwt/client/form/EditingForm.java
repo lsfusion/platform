@@ -51,6 +51,9 @@ public abstract class EditingForm extends FormContainer {
     public EditingForm(FormsController formsController, GFormController contextForm, long editRequestIndex, boolean async, Event editEvent, EditContext editContext) {
         super(formsController, contextForm, async, editEvent);
 
+        // because for example embedded / popup (that use edit) forms are opened with a timer, there can be some pending edit calls so we need to avoid this
+        contextForm.checkCommitEditing();
+
         contextForm.edit(createCellEditor(), editEvent != null ? new EventHandler(editEvent) : null, null, (result, commitReason) -> {}, (result, commitReason) -> {}, (cancelReason) -> {}, editContext, "", async ? editRequestIndex : -1);
     }
 

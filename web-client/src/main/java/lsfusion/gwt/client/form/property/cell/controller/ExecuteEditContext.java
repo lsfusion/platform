@@ -9,7 +9,7 @@ public interface ExecuteEditContext extends EditContext {
 
     Boolean isReadOnly();
 
-    void trySetFocus(FocusUtils.Reason reason);
+    void focus(FocusUtils.Reason reason); // assert is focusable
 
     default boolean canUseChangeValueForRendering(GType type) {
         return getProperty().canUseChangeValueForRendering(type, getRenderContext().getRendererType());

@@ -450,7 +450,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     // eventually gets to PropertyDrawEntity.getEventAction (which is symmetrical to this)
-    public String getEventSID(Event editEvent, ExecuteEditContext editContext, Result<Integer> contextAction) {
+    public String getEventSID(Event editEvent, boolean isBinding, ExecuteEditContext editContext, Result<Integer> contextAction) {
+        if(isBinding)
+            return GEditBindingMap.changeOrGroupChange();
+
         if (editBindingMap != null) { // property bindings
             String actionSID = editBindingMap.getEventSID(editEvent);
             if(actionSID != null)

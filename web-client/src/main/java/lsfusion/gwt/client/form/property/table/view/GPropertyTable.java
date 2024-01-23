@@ -3,7 +3,6 @@ package lsfusion.gwt.client.form.property.table.view;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.FocusUtils;
-import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
@@ -88,10 +87,6 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
 //        CopyPasteUtils.setEmptySelection(getSelectedElement());
 //    }
 
-    public void onEditEvent(EventHandler handler, boolean isBinding, Cell editCell, Element editRenderElement) {
-        form.executePropertyEventAction(handler, isBinding, getEditContext(editCell, editRenderElement));
-    }
-
     protected abstract RenderContext getRenderContext(Cell cell, Element renderElement, GPropertyDraw property, GGridPropertyTable<T>.GridPropertyColumn column);
 
     protected abstract UpdateContext getUpdateContext(Cell cell, Element renderElement, GPropertyDraw property, GGridPropertyTable<T>.GridPropertyColumn column);
@@ -158,7 +153,7 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
             }
 
             @Override
-            public void trySetFocus(FocusUtils.Reason reason) {
+            public void focus(FocusUtils.Reason reason) {
                 GPropertyTable.this.focusColumn(editCell.getColumnIndex(), reason);
             }
 

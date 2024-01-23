@@ -213,6 +213,10 @@ public class GFormController implements EditManager {
         return result;
     }
 
+    public void checkFocusElement(boolean isFocused, Element renderElement) {
+        focusedCustom = isFocused && renderElement != null && CellRenderer.isCustomElement(renderElement) ? renderElement : null;
+    }
+
     private interface CheckEvent {
         void accept(EventHandler handler, boolean preview);
     }
@@ -959,6 +963,17 @@ public class GFormController implements EditManager {
         syncResponseDispatch(new ScrollToEnd(group.ID, toEnd));
     }
 
+    public void onPropertyBinding(Event bindingEvent, ExecuteEditContext editContext) {
+        if(GKeyStroke.isKeyEvent(bindingEvent) && editContext.isFocusable()) // we don't want to set focus on mouse binding (it's pretty unexpected behaviour)
+            editContext.focus(FocusUtils.Reason.BINDING); // we want element to be focused on key binding (if it's possible)
+
+        executePropertyEventAction(new EventHandler(bindingEvent), true, editContext);
+    }
+
+    public void executePropertyEventAction(EventHandler handler, ExecuteEditContext editContext) {
+        executePropertyEventAction(handler, false, editContext);
+    }
+
     public void executePropertyEventAction(EventHandler handler, boolean isBinding, ExecuteEditContext editContext) {
         Event event = handler.event;
         GPropertyDraw property = editContext.getProperty();
@@ -971,17 +986,10 @@ public class GFormController implements EditManager {
                 executePropertyEventAction(editContext, actionSID, handler);
             });
         } else {
-            String actionSID;
             lsfusion.gwt.client.base.Result<Integer> contextAction = new lsfusion.gwt.client.base.Result<>();
-            if(isBinding) {
-                if(GKeyStroke.isKeyEvent(event)) // we don't want to set focus on mouse binding (it's pretty unexpected behaviour)
-                    editContext.trySetFocus(FocusUtils.Reason.BINDING); // we want element to be focused on key binding (if it's possible)
-                actionSID = GEditBindingMap.changeOrGroupChange();
-            } else {
-                actionSID = property.getEventSID(event, editContext, contextAction);
-                if(actionSID == null)
-                    return;
-            }
+            String actionSID = property.getEventSID(event, isBinding, editContext, contextAction);
+            if(actionSID == null)
+                return;
 
             // hasChangeAction check is important for quickfilter not to consume event (however with propertyReadOnly, checkCanBeChanged there will be still some problems)
             if (isChangeEvent(actionSID) && (editContext.isReadOnly() != null || !property.hasUserChangeAction()))
@@ -1911,6 +1919,13 @@ public class GFormController implements EditManager {
         RequestCellEditor requestCellEditor = getRequestCellEditor();
         if(requestCellEditor != null)
             requestCellEditor.commit(getEditElement(), CommitReason.FORCED_BLURRED);
+        else
+            if(focusedCustom != null) {
+                Element focusedElement = getFocusedChild(focusedCustom);
+                if(focusedElement != null) // we do the fake blur to call onBlur, because custom render
+                    FocusUtils.blur(focusedElement);
+            }
+
     }
 
     private boolean bindPreview(GBindingEnv binding, boolean isMouse, boolean preview) {
@@ -2027,6 +2042,7 @@ public class GFormController implements EditManager {
     }
 
     private CellEditor cellEditor;
+    private Element focusedCustom;
 
     public Element getEditElement() {
         return editContext.getEditElement();
@@ -2211,9 +2227,6 @@ public class GFormController implements EditManager {
 
     public void edit(CellEditor cellEditor, EventHandler handler, PValue oldValue, BiConsumer<GUserInputResult, CommitReason> beforeCommit, BiConsumer<GUserInputResult, CommitReason> afterCommit,
                      Consumer<CancelReason> cancel, EditContext editContext, String editAsyncValuesSID, long editRequestIndex) {
-        // because for example embedded / popup (that use edit) forms are opened with a timer, there can be some pending edit calls so we need to avoid this
-        checkCommitEditing();
-
         assert this.editContext == null;
         editBeforeCommit = beforeCommit;
         editAfterCommit = afterCommit;

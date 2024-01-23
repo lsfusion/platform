@@ -860,8 +860,6 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     }
 
     protected void focusColumn(int columnIndex, FocusUtils.Reason reason) {
-        if (columnIndex == -1 || !isFocusable(columnIndex))
-            return;
         focus(reason);
         selectionHandler.changeColumn(columnIndex, reason);
     }

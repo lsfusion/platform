@@ -14,7 +14,6 @@ import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
-import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
@@ -618,8 +617,9 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     public void onBinding(GPropertyDraw property, Event event) {
         int column = getGridColumnIndex(property, null);
-        if(column >= 0 && getSelectedRow() >= 0)
-            onEditEvent(new EventHandler(event), true, getSelectedCell(column), getSelectedRenderElement(column));
+        if(column >= 0 && getSelectedRow() >= 0) {
+            form.onPropertyBinding(event, getSelectedEditContext(column));
+        }
     }
 
     public void setKeys(ArrayList<GGroupObjectValue> keys) {
@@ -941,7 +941,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     public void focusProperty(GPropertyDraw propertyDraw) {
-        focusColumn(getGridColumnIndex(propertyDraw, null), FocusUtils.Reason.ACTIVATE);
+        activateColumn(getGridColumnIndex(propertyDraw, null));
     }
 
     @Override

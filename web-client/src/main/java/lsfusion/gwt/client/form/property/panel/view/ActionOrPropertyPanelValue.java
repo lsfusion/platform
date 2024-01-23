@@ -3,7 +3,6 @@ package lsfusion.gwt.client.form.property.panel.view;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -28,7 +27,7 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
 
     @Override
     protected void onEditEvent(EventHandler handler) {
-        onEditEvent(handler, false);
+        form.executePropertyEventAction(handler, this);
     }
 
     @Override
@@ -48,14 +47,6 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
         return this.isPropertyReadOnly() != null || property.isAction() ? super.getToolbarActions() : property.getQuickAccessActions(true, isFocused);
     }
 
-    @Override
-    public void trySetFocus(FocusUtils.Reason reason) {
-        //it's also checked in onFocus, but there is also focusLastBlurredElement which can return false
-        if(isFocusable()) {
-            focus(reason);
-        }
-    }
-
     public void onBinding(Event event) {
         addStyleName("panelRendererValueBinding");
         Timer t = new Timer() {
@@ -67,10 +58,7 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
         };
         t.schedule(400);
 
-        onEditEvent(new EventHandler(event), true);
-    }
-    public void onEditEvent(EventHandler handler, boolean isBinding) {
-        form.executePropertyEventAction(handler, isBinding, this);
+        form.onPropertyBinding(event, this);
     }
 
     @Override

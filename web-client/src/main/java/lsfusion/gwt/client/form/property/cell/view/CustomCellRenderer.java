@@ -21,6 +21,8 @@ public class CustomCellRenderer extends CellRenderer {
 
     @Override
     public boolean renderContent(Element element, RenderContext renderContext) {
+        CustomCellRenderer.setCustomElement(element);
+
         render(customRenderer, getRenderController(property, renderContext, element), element);
 
         return true;
@@ -90,6 +92,8 @@ public class CustomCellRenderer extends CellRenderer {
     @Override
     public boolean clearRenderContent(Element element, RenderContext renderContext) {
         clear(customRenderer, element);
+
+        CustomCellRenderer.clearCustomElement(element);
 
         return false;
     }

@@ -75,4 +75,9 @@ public class FocusUtils {
             preventScroll: preventScroll
         });
     }-*/;
+
+    public static void blur(Element element) {
+        element.blur();
+        focus(element, FocusUtils.Reason.RESTOREFOCUS);
+    }
 }

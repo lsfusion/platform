@@ -26,6 +26,7 @@ import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.view.InputBasedCellRenderer;
+import lsfusion.gwt.client.form.property.cell.controller.ExecuteEditContext;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
@@ -260,6 +261,11 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     public String getRegexpMessage(Cell cell, GPropertyDraw property, GridPropertyColumn column) {
         T row = (T) cell.getRow();
         return column.getRegexpMessage(property, row);
+    }
+
+    public void activateColumn(int columnIndex) {
+        if(columnIndex >= 0 && isFocusable(columnIndex))
+            focusColumn(columnIndex, FocusUtils.Reason.ACTIVATE);
     }
     
     public GGroupObjectValue getSelectedKey() {
@@ -745,6 +751,10 @@ protected Double getUserFlex(int i) {
         return getRenderElement(getSelectedCell(column), getSelectedElement(column));
     }
 
+    protected ExecuteEditContext getSelectedEditContext(int column) {
+        return getEditContext(getSelectedCell(column), getSelectedRenderElement(column));
+    }
+
     public <C> void onBrowserEvent(Cell cell, Event event, Column<T, C> column, TableCellElement parent) {
         Element renderElement = getRenderElement(cell, parent);
 
@@ -783,7 +793,7 @@ protected Double getUserFlex(int i) {
 
         @Override
         public void onEditEvent(EventHandler handler, Cell editCell, Element editRenderElement) {
-            GGridPropertyTable.this.onEditEvent(handler, false, editCell, editRenderElement);
+            form.executePropertyEventAction(handler, getEditContext(editCell, editRenderElement));
         }
 
         public void renderDom(Cell cell, TableCellElement cellElement) {
@@ -1012,21 +1022,26 @@ protected Double getUserFlex(int i) {
     public void focusedChanged(Element target, Event focusEvent) {
         super.focusedChanged(target, focusEvent);
 
-        if(isFocused) {
-            FocusUtils.Reason focusReason = FocusUtils.getFocusReason(target);
-            checkFocusElement(focusReason != null ? focusReason : FocusUtils.Reason.OTHER, target);
-        }
+        checkFocusElement(null, target);
     }
 
-    private boolean checkFocusElement(FocusUtils.Reason reason, Element focusedElement) {
-        if(getSelectedRow() >= 0 && getSelectedColumn() >= 0) {
-            Element selectedRenderElement = getSelectedRenderElement(getSelectedColumn());
-            if(selectedRenderElement != null) {
-                Object focusElement = CellRenderer.getFocusElement(selectedRenderElement);
-                if (focusElement != null && focusElement != CellRenderer.NULL && focusElement != focusedElement) { // last check - optimization
-                    FocusUtils.focus((Element) focusElement, reason);
-                    return true;
+    private boolean checkFocusElement(FocusUtils.Reason reason, Element target) {
+        int selectedColumn = getSelectedColumn();
+        Element selectedRenderElement = selectedColumn >= 0 && getSelectedRow() >= 0 ? getSelectedRenderElement(selectedColumn) : null;
+
+        form.checkFocusElement(isFocused, selectedRenderElement);
+
+        if(isFocused && selectedRenderElement != null) {
+            Object focusElement = CellRenderer.getFocusElement(selectedRenderElement);
+            if (focusElement != null && focusElement != CellRenderer.NULL && focusElement != target) { // last check - optimization
+                if(target != null) {
+                    assert reason == null;
+                    reason = FocusUtils.getFocusReason(target);
+                    if(reason == null)
+                        reason = FocusUtils.Reason.OTHER;
                 }
+                FocusUtils.focus((Element) focusElement, reason);
+                return true;
             }
         }
         return false;

@@ -73,9 +73,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
         return toolbarButton;
     }
 
-    // similar to GFormController.processBinding
     private void processBinding(NativeEvent event, Runnable action) {
-        logicsSupplier.getForm().checkCommitEditing();
         action.run();
         stopPropagation(event);
     }

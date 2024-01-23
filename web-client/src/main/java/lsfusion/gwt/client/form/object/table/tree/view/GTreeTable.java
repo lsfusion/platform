@@ -151,7 +151,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     public void focusProperty(GPropertyDraw propertyDraw) {
-       focusColumn(tree.getPropertyIndex(propertyDraw), FocusUtils.Reason.ACTIVATE);
+       activateColumn(tree.getPropertyIndex(propertyDraw));
     }
 
     public void updateProperty(GPropertyDraw property, List<GGroupObjectValue> columnKeys, boolean updateKeys, NativeHashMap<GGroupObjectValue, PValue> values) {
