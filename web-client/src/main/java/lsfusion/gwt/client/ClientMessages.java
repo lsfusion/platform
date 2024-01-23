@@ -277,6 +277,8 @@ public interface ClientMessages extends Messages {
 
     String fileNameTooLong();
 
+    String copyToClipboard();
+
     class Instance {
         private static final ClientMessages instance = GWT.create(ClientMessages.class);
 

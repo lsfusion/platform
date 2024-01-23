@@ -20,6 +20,7 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.filechooser.FileSystemView;
 import java.awt.*;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
@@ -853,5 +854,9 @@ public class SwingUtils {
             return value;
         }
         return value;
+    }
+
+    public static void copyToClipboard(String value) {
+        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(value), null);
     }
 }

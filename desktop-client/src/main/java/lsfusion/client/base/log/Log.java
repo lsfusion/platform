@@ -16,14 +16,14 @@ import javax.swing.text.Caret;
 import javax.swing.text.DefaultCaret;
 import java.awt.*;
 import java.awt.event.FocusEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.function.Consumer;
 
+import static lsfusion.base.BaseUtils.isRedundantString;
 import static lsfusion.client.ClientResourceBundle.getString;
 import static lsfusion.client.base.view.SwingDefaults.getRequiredForeground;
 
@@ -205,39 +205,40 @@ public final class Log {
         mainPanel.add(messagePanel);
         mainPanel.add(south);
 
-        String opt[];
-        final String okOption = getString("dialog.ok");
+        List<String> opt = new ArrayList<>();
+        final String copyOption = getString("client.copyToClipboard");
+        final String closeOption = getString("client.close");
         final String moreOption = getString("client.more");
-        if (javaStack.length() > 0) {
-            opt = new String[]{okOption, moreOption};
-        } else {
-            opt = new String[]{okOption};
-        }
+        if (!warning && !javaStack.isEmpty())
+            opt.add(copyOption);
+        opt.add(closeOption);
+        if (!javaStack.isEmpty())
+            opt.add(moreOption);
+
         final JOptionPane optionPane = new JOptionPane(mainPanel, warning ? JOptionPane.WARNING_MESSAGE : JOptionPane.ERROR_MESSAGE,
-                                     JOptionPane.YES_NO_OPTION,
-                                     null,
-                                     opt,
-                okOption);
+                JOptionPane.YES_NO_OPTION, null, opt.toArray(), closeOption);
 
         final JDialog dialog = new JDialog(MainFrame.instance, MainFrame.instance  != null ? MainFrame.instance.getTitle() : "lsfusion", Dialog.ModalityType.APPLICATION_MODAL);
         dialog.setContentPane(optionPane);
         dialog.setMinimumSize(dialog.getPreferredSize());
         dialog.pack();
 
-        optionPane.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent e) {
-                Object value = optionPane.getValue();
-                if (dialog.isVisible() && (value.equals(okOption) || value.equals(-1))) {
-                    dialog.dispose();
-                } else if (value.equals(moreOption)) {
-                    boolean southWasVisible = south.isVisible();
-                    south.setVisible(!southWasVisible);
-                    optionPane.setValue(JOptionPane.UNINITIALIZED_VALUE);
-                    dialog.setMinimumSize(dialog.getPreferredSize());
-                    if (southWasVisible) {
-                        dialog.pack();
-                    }
+        optionPane.addPropertyChangeListener(e -> {
+            Object value = optionPane.getValue();
+            if (dialog.isVisible() && (value.equals(closeOption) || value.equals(-1))) {
+                dialog.dispose();
+            } else if (value.equals(moreOption)) {
+                boolean southWasVisible = south.isVisible();
+                south.setVisible(!southWasVisible);
+                optionPane.setValue(JOptionPane.UNINITIALIZED_VALUE);
+                dialog.setMinimumSize(dialog.getPreferredSize());
+                if (southWasVisible) {
+                    dialog.pack();
                 }
+            } else if(value.equals(copyOption)) {
+                SwingUtils.copyToClipboard(message +
+                        (isRedundantString(javaStack) ? "" : ("\n" + javaStack)) +
+                        (isRedundantString(lsfStack) ? "" : ("\n" + lsfStack)));
             }
         });
 

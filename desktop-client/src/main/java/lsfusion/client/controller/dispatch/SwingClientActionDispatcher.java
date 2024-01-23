@@ -605,7 +605,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     @Override
     public void execute(CopyToClipboardClientAction action) {
         if(action.value != null)
-            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(action.value), null);
+            SwingUtils.copyToClipboard(action.value);
     }
 
     @Override

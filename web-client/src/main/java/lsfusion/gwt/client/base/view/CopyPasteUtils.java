@@ -15,6 +15,36 @@ import lsfusion.gwt.client.base.Result;
 import java.util.function.Consumer;
 
 public class CopyPasteUtils {
+
+    public static native void copyToClipboard(String value)/*-{
+        // navigator clipboard api needs a secure context (https)
+        if (navigator.clipboard && window.isSecureContext) {
+            //writeText work in Firefox
+            navigator.clipboard.writeText(value).then(
+                function () {
+                }, function () { //Fallback for Chrome
+                    @lsfusion.gwt.client.base.view.CopyPasteUtils::copyToClipboardTextArea(*)(value);
+                }
+            );
+        } else {
+            //execCommand for http
+            @lsfusion.gwt.client.base.view.CopyPasteUtils::copyToClipboardTextArea(*)(value);
+        }
+
+    }-*/;
+
+    private static native void copyToClipboardTextArea(String value)/*-{
+        if (document.queryCommandSupported && document.queryCommandSupported("copy")) {
+            var textarea = document.createElement("textarea");
+            textarea.textContent = value;
+            document.body.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
+            document.execCommand("copy");
+            document.body.removeChild(textarea);
+        }
+    }-*/;
+
     private static final Selection selection = Selection.getSelection();
 
     // actually it justs sets selection, since we don't consume event default handler does the rest

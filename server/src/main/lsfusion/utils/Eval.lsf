@@ -21,11 +21,16 @@ preRunScript(Script s)  {
     APPLY;
 }
 
+copyToClipboard '{eval.script.copy.to.clipboard}' (STRING message, STRING javaStack, STRING lsfStack) {
+    copyToClipboard(CONCAT '\n', message, javaStack, lsfStack);
+}
+
 showStack '{eval.script.show.stack}' = DATA LOCAL BOOLEAN ();
 FORM exception '{eval.script.form.exception}'
     OBJECTS message = TEXT PANEL, showStack = BOOLEAN PANEL, javaStack = TEXT PANEL, lsfStack = TEXT PANEL
     PROPERTIES valueMessage= VALUE(message) BACKGROUND RGB(255, 50, 50) READONLY, showStack() TOOLBAR 
     PROPERTIES READONLY SHOWIF showStack() valueJavaStack = VALUE(javaStack), valueLsfStack = VALUE(lsfStack)
+    PROPERTIES copy = copyToClipboard(message, javaStack, lsfStack)
 ;
 
 DESIGN exception {
@@ -58,7 +63,10 @@ DESIGN exception {
                         valueHeight = -1;
                     }
                 }
-            }        
+                TOOLBARBOX {
+                    MOVE PROPERTY(copy) FIRST;
+                }
+            }
         }
     }
 }

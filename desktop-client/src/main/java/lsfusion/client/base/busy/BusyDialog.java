@@ -359,7 +359,7 @@ class BusyDialog extends JDialog {
                 stackMessageText += ((JTextArea) component).getText() + "\n";
         }
         if (!stackMessageText.isEmpty())
-            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(stackMessageText), null);
+            SwingUtils.copyToClipboard(stackMessageText);
     }
 
     private class TopProgressBarPanel extends JPanel {

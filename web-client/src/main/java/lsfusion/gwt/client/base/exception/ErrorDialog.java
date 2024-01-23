@@ -10,10 +10,13 @@ import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.view.CopyPasteUtils;
 import lsfusion.gwt.client.base.view.DialogModalWindow;
 import lsfusion.gwt.client.base.view.FormButton;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
+
+import static lsfusion.gwt.client.base.GwtSharedUtils.isRedundantString;
 
 public class ErrorDialog extends DialogModalWindow {
     private HandlerRegistration nativePreviewHandlerRegistration;
@@ -57,6 +60,15 @@ public class ErrorDialog extends DialogModalWindow {
         }
 
         setBodyWidget(body);
+
+        if(stacks != null) {
+            FormButton copyToClipboardButton = new FormButton(messages.copyToClipboard(), FormButton.ButtonStyle.SECONDARY, event -> {
+                CopyPasteUtils.copyToClipboard(messageHTML +
+                        (isRedundantString(javaStack) ? "" : ("\n" + javaStack)) +
+                        (isRedundantString(lsfStack) ? "" : ("\n" + lsfStack)));
+            });
+            addFooterWidget(copyToClipboardButton);
+        }
 
         closeButton = new FormButton(messages.close(), FormButton.ButtonStyle.PRIMARY, event -> hide());
         addFooterWidget(closeButton);
