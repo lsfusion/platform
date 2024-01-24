@@ -11,6 +11,7 @@ onWebClientInit ABSTRACT LIST ();
 onWebClientInit = DATA LOCAL INTEGER (STRING);
 
 onLoginLoad = ABSTRACT CASE INTEGER(STRING);
+onLoginLoad(STRING s) += WHEN s = 'disable-indexing.html' THEN -1;
 
 // todo onWebClientLoad DEPECATED! DO NOT USE! Only for backward compatibility
 onWebClientLoad ABSTRACT LIST ();

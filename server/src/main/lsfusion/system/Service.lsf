@@ -432,12 +432,12 @@ WHEN CHANGED (logicsName()) OR CHANGED (displayName()) OR CHANGED (logicsLogo())
 getServerSettings() ABSTRACT CASE @@noauth;
 
 getServerSettings() + WHEN TRUE THEN {
-    LOCAL loginLoadedResources = RAWFILE(STRING);
-    LOCAL loginLoadedResourcesOrder = INTEGER(STRING);
+    LOCAL noAuthResources = RAWFILE(STRING);
+    LOCAL noAuthResourcesOrder = INTEGER(STRING);
     FOR INTEGER order = onLoginLoad(STRING s) ORDER order DO {
         readResource(s);
-        loginLoadedResources(resourcePath()) <- RAWFILE (resource());
-        loginLoadedResourcesOrder(resourcePath()) <- order; 
+        noAuthResources(resourcePath()) <- RAWFILE (resource());
+        noAuthResourcesOrder(resourcePath()) <- order; 
     }
     
     generateJnlpUrls();
@@ -446,8 +446,8 @@ getServerSettings() + WHEN TRUE THEN {
     jnlpUrls=exportText(),
     disableRegistration=disableRole('selfRegister'),
     lsfParams= (JSON FROM key = STRING s, value = lsfParams(s) WHERE lsfParams(s)),
-    loginResourcesBeforeSystem = (JSON FROM key = STRING s, value = loginLoadedResources(s) WHERE loginLoadedResourcesOrder(s) < 0 ORDER loginLoadedResourcesOrder(s)),
-    loginResourcesAfterSystem = (JSON FROM key = STRING s, value = loginLoadedResources(s) WHERE loginLoadedResourcesOrder(s) >= 0 ORDER loginLoadedResourcesOrder(s));
+    noAuthResourcesBeforeSystem = (JSON FROM key = STRING s, value = noAuthResources(s) WHERE noAuthResourcesOrder(s) < 0 ORDER noAuthResourcesOrder(s)),
+    noAuthResourcesAfterSystem = (JSON FROM key = STRING s, value = noAuthResources(s) WHERE noAuthResourcesOrder(s) >= 0 ORDER noAuthResourcesOrder(s));
 };
 
 // logging for user

@@ -20,12 +20,12 @@ public class ServerSettings {
     public String jnlpUrls;
     public boolean disableRegistration;
     public Map<String, String> lsfParams;
-    public List<Pair<String, RawFileData>> loginResourcesBeforeSystem;
-    public List<Pair<String, RawFileData>> loginResourcesAfterSystem;
+    public List<Pair<String, RawFileData>> noAuthResourcesBeforeSystem;
+    public List<Pair<String, RawFileData>> noAuthResourcesAfterSystem;
 
     public ServerSettings(String logicsName, String displayName, FileData logicsLogo, FileData logicsIcon, String platformVersion, Integer apiVersion,
                           boolean inDevMode, int sessionConfigTimeout, boolean anonymousUI, String jnlpUrls, boolean disableRegistration, Map<String, String> lsfParams,
-                          List<Pair<String, RawFileData>> loginResourcesBeforeSystem, List<Pair<String, RawFileData>> loginResourcesAfterSystem) {
+                          List<Pair<String, RawFileData>> noAuthResourcesBeforeSystem, List<Pair<String, RawFileData>> noAuthResourcesAfterSystem) {
         this.logicsName = logicsName;
         this.displayName = displayName;
         this.logicsLogo = logicsLogo;
@@ -38,7 +38,7 @@ public class ServerSettings {
         this.jnlpUrls = jnlpUrls;
         this.disableRegistration = disableRegistration;
         this.lsfParams = lsfParams;
-        this.loginResourcesBeforeSystem = loginResourcesBeforeSystem;
-        this.loginResourcesAfterSystem = loginResourcesAfterSystem;
+        this.noAuthResourcesBeforeSystem = noAuthResourcesBeforeSystem;
+        this.noAuthResourcesAfterSystem = noAuthResourcesAfterSystem;
     }
 }
