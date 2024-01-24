@@ -50,16 +50,16 @@ public class MetaCodeFragment {
         if (!token.contains("##")) // optimization;
             return transformParamToken(actualParams, token);
         
-        String[] parts = token.split("##");
+        List<String> parts = splitToken(token);
         boolean isStringLiteral = false;
         StringBuilder result = new StringBuilder();
-        for (int i = 0; i < parts.length; i++) {
-            String part = parts[i];
+        for (int i = 0; i < parts.size(); i++) {
+            String part = parts.get(i);
 
             boolean capitalize = false;
             if (part.startsWith("#")) {
                 assert i > 0;
-                capitalize = (result.length() > 0) || (i == 1 && parts[0].isEmpty()); // when there is ###param, forcing its capitalization
+                capitalize = (result.length() > 0) || (i == 1 && parts.get(0).isEmpty()); // when there is ###param, forcing its capitalization
                 part = part.substring(1);
             }
 
@@ -82,6 +82,48 @@ public class MetaCodeFragment {
         return result.toString();
     }
 
+    // Heuristics, may not work in certain cases when there is string interpolation inside string literal
+    private static List<String> splitToken(String token) {
+        String[] parts = token.split("##");
+        List<String> result = new ArrayList<>();
+        boolean isSplittedStringLiteral = false;
+        String stringLiteral = "";
+        for (String part : parts) {
+            if (!isSplittedStringLiteral) {
+                if (isStartingStringLiteralPart(part)) {
+                    isSplittedStringLiteral = true;
+                    stringLiteral = part;
+                } else {
+                    result.add(part);
+                }
+            } else {
+                stringLiteral += "##" + part;
+                if (part.endsWith("'")) {
+                    result.add(stringLiteral);
+                    isSplittedStringLiteral = false;
+                    stringLiteral = "";
+                }
+            }
+        }
+        return result;
+    }
+    
+    private static boolean isStartingStringLiteralPart(String part) {
+        return part.startsWith("'") && (part.length() == 1 || !endsWithQuote(part)) ||
+               part.startsWith("#'") && (part.length() == 2 || !endsWithQuote(part));
+    }
+    
+    private static boolean endsWithQuote(String part) {
+        if (!part.endsWith("'")) return false;
+        int ind = part.length() - 2;
+        int backSlashes = 0;
+        while (ind >= 0 && part.charAt(ind) == '\\') {
+            ++backSlashes;
+            --ind;
+        }
+        return backSlashes % 2 == 0;
+    }
+    
     // We don't know if the literal is localized or not at the moment. Thus, we transform the literal into the 
     // intermediate format if it can be found in the reverse dictionary.
     // This format is {{ {id}  }literal}, where { {id}  } part is the dictionary id with possible leading and trailing spaces
