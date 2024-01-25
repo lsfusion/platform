@@ -4,6 +4,7 @@ import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.design.ComponentDesign;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.server.language.ElementClassProxy;
+import lsfusion.server.language.converters.FontInfoConverter;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -94,8 +95,12 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> im
         target.design.setCaptionFont(captionFont);
     }
 
-    public void setFont(FontInfo font) {
-        target.design.setFont(font);
+    public void setFont(Object font) {
+        if (font instanceof PropertyObjectEntity) {
+            throw new UnsupportedOperationException("Dynamic font is supported only for propertyDraw");
+        } else {
+            target.design.setFont(FontInfoConverter.convertToFontInfo(font.toString()));
+        }
     }
 
     public void setClass(Object elementClass) {
@@ -141,12 +146,14 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> im
         design.setFont(font);
     }
 
-    public void setBackground(Color background) {
-        target.design.background = background;
+    public void setBackground(Object background) {
+        if(background instanceof Color)
+            target.design.background = (Color) background;
     }
 
-    public void setForeground(Color foreground) {
-        target.design.foreground = foreground;
+    public void setForeground(Object foreground) {
+        if(foreground instanceof Color)
+            target.design.foreground = (Color) foreground;
     }
 
     public void setShowIf(PropertyObjectEntity<?> showIf) {

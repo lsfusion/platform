@@ -8,6 +8,7 @@ import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.SizedFlexPanel;
 import lsfusion.gwt.client.base.view.SizedWidget;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.design.view.CaptionWidget;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -43,7 +44,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
 
     @Override
     public void update(PValue value, boolean loading, AppBaseImage image, String valueElementClass,
-                       String background, String foreground, Boolean readOnly, String placeholder, String pattern,
+                       GFont font, String background, String foreground, Boolean readOnly, String placeholder, String pattern,
                        String regexp, String regexpMessage, String valueTooltip) {
         if(property.hasDynamicImage() && !property.isAction()) {
             BaseImage.updateImage(image, label, property.panelCaptionVertical);
@@ -51,7 +52,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
         }
 
         // we don't need image in value
-        super.update(value, loading, image, valueElementClass, background, foreground, readOnly, placeholder, pattern,
+        super.update(value, loading, image, valueElementClass, font, background, foreground, readOnly, placeholder, pattern,
                 regexp, regexpMessage, valueTooltip);
     }
 

@@ -21,6 +21,12 @@ public enum ReportFieldExtraType {
             return ReportConstants.showIfSuffix;
         }
     },
+    FONT {
+        @Override
+        public String getReportFieldNameSuffix() {
+            return ReportConstants.fontSuffix;
+        }
+    },
     BACKGROUND {
         @Override
         public String getReportFieldNameSuffix() {

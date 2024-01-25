@@ -102,6 +102,22 @@ public enum PropertyDrawExtraType {
             return "CAPTIONELEMENTCLASS";
         }
     },
+    FONT {
+        @Override
+        public ReportFieldExtraType getReportExtraType() {
+            return ReportFieldExtraType.FONT;
+        }
+
+        @Override
+        public byte getPropertyReadType() {
+            return PropertyReadType.CELL_FONT;
+        }
+
+        @Override
+        public String getText() {
+            return "{logics.font}";
+        }
+    },
     BACKGROUND {
         @Override
         public ReportFieldExtraType getReportExtraType() {

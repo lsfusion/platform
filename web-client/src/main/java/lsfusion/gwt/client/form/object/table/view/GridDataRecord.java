@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.object.table.view;
 import lsfusion.gwt.client.base.AppBaseImage;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
 import lsfusion.gwt.client.base.view.grid.RowIndexHolder;
+import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.PValue;
 
@@ -66,6 +67,14 @@ public class GridDataRecord implements RowIndexHolder {
 
     public String getValueElementClass(String column) {
         return (String) getAttribute(column + "_elementClass");
+    }
+
+    public void setFont(String column, GFont font) {
+        setAttribute(column + "_font", font);
+    }
+
+    public GFont getFont(String column) {
+        return (GFont) getAttribute(column + "_font");
     }
 
     public void setBackground(String column, String color) {

@@ -54,4 +54,6 @@ public class PropertyReadType {
     public final static byte REGEXP = 25;
 
     public final static byte REGEXPMESSAGE = 26;
+
+    public final static byte CELL_FONT = 27;
 }

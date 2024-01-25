@@ -41,6 +41,7 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
     private NativeHashMap<GGroupObjectValue, PValue> loadings;
     private NativeHashMap<GGroupObjectValue, PValue> showIfs;
     private NativeHashMap<GGroupObjectValue, PValue> readOnly;
+    private NativeHashMap<GGroupObjectValue, PValue> cellFontValues;
     private NativeHashMap<GGroupObjectValue, PValue> cellBackgroundValues;
     private NativeHashMap<GGroupObjectValue, PValue> cellForegroundValues;
     private NativeHashMap<GGroupObjectValue, PValue> cellValueElementClasses;
@@ -163,6 +164,10 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
         if(cellValueElementClasses != null) {
             valueElementClass = cellValueElementClasses.get(columnKey);
         }
+        PValue font = null;
+        if (cellFontValues != null) {
+            font = cellFontValues.get(columnKey);
+        }
         PValue background = null;
         if (cellBackgroundValues != null) {
             background = cellBackgroundValues.get(columnKey);
@@ -195,6 +200,7 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
                 loadings != null && PValue.getBooleanValue(loadings.get(columnKey)),
                 images != null ? PValue.getImageValue(images.get(columnKey)) : null,
                 valueElementClass == null ? property.valueElementClass : PValue.getClassStringValue(valueElementClass),
+                font == null ? property.font : PValue.getFontValue(font),
                 background == null ? property.getBackground() : PValue.getColorStringValue(background),
                 foreground == null ? property.getForeground() : PValue.getColorStringValue(foreground),
                 readOnly == null ? null : PValue.get3SBooleanValue(readOnly.get(columnKey)),
@@ -287,6 +293,10 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
 
     public void setCellCaptionElementClasses(NativeHashMap<GGroupObjectValue, PValue> cellCaptionElementClasses) {
         this.cellCaptionElementClasses = cellCaptionElementClasses;
+    }
+
+    public void setCellFontValues(NativeHashMap<GGroupObjectValue, PValue> cellFontValues) {
+        this.cellFontValues = cellFontValues;
     }
 
     public void setCellBackgroundValues(NativeHashMap<GGroupObjectValue, PValue> cellBackgroundValues) {

@@ -10,6 +10,7 @@ public class ReportConstants {
     public static final String headerSuffix = ".header";
     public static final String footerSuffix = ".footer";
     public static final String showIfSuffix = ".showif";
+    public static final String fontSuffix = ".font";
     public static final String backgroundSuffix = ".background";
     public static final String foregroundSuffix = ".foreground";
     public static final String imageSuffix = ".image";

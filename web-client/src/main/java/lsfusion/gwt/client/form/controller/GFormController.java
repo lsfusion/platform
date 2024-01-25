@@ -2429,7 +2429,8 @@ public class GFormController implements EditManager {
         return element;
     }
 
-    public static void updateColors(Element element, String backgroundColor, String foregroundColor) {
+    public static void updateFontColors(Element element, GFont font, String backgroundColor, String foregroundColor) {
+        setFont(element, font);
         setBackgroundColor(element, backgroundColor);
         setForegroundColor(element, foregroundColor);
     }

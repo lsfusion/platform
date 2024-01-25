@@ -53,6 +53,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public ShowIfReader showIfReader = new ShowIfReader();
     public ValueElementClassReader valueElementClassReader = new ValueElementClassReader();
     public CaptionElementClassReader captionElementClassReader = new CaptionElementClassReader();
+    public ExtraPropReader fontReader = new ExtraPropReader(CELL_FONT);
     public BackgroundReader backgroundReader = new BackgroundReader();
     public ForegroundReader foregroundReader = new ForegroundReader();
     public FooterReader footerReader = new FooterReader();

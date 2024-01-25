@@ -35,6 +35,7 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
     protected boolean loading;
     private AppBaseImage image;
     private String valueElementClass;
+    private GFont font;
     private String background;
     private Object foreground;
     protected Boolean readOnly;
@@ -83,6 +84,11 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
     @Override
     public boolean isNavigateInput() {
         return true;
+    }
+
+    @Override
+    public GFont getFont() {
+        return font;
     }
 
     @Override
@@ -320,11 +326,6 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
         return globalCaptionIsDrawn;
     }
 
-    @Override
-    public GFont getFont() {
-        return null;
-    }
-
     public UpdateContext getUpdateContext() {
         return this;
     }
@@ -332,12 +333,13 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
     public abstract void pasteValue(final String value);
 
     public void update(PValue value, boolean loading, AppBaseImage image, String valueElementClass,
-                       String background, String foreground, Boolean readOnly, String placeholder, String pattern,
+                       GFont font, String background, String foreground, Boolean readOnly, String placeholder, String pattern,
                        String regexp, String regexpMessage, String valueTooltip) {
         this.value = value;
         this.loading = loading;
         this.image = image;
         this.valueElementClass = valueElementClass;
+        this.font = font;
         this.background = background;
         this.foreground = foreground;
         this.readOnly = readOnly;

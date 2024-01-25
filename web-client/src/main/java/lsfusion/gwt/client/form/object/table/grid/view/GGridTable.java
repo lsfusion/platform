@@ -430,6 +430,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                     NativeHashMap<GGroupObjectValue, PValue> propLoadings = loadings.get(property);
                     NativeHashMap<GGroupObjectValue, PValue> propReadOnly = readOnlyValues.get(property);
                     NativeHashMap<GGroupObjectValue, PValue> propertyValueElementClasses = cellValueElementClasses.get(property);
+                    NativeHashMap<GGroupObjectValue, PValue> propertyFonts = cellFontValues.get(property);
                     NativeHashMap<GGroupObjectValue, PValue> propertyBackgrounds = cellBackgroundValues.get(property);
                     NativeHashMap<GGroupObjectValue, PValue> propertyForegrounds = cellForegroundValues.get(property);
                     NativeHashMap<GGroupObjectValue, PValue> propertyPlaceholders = placeholders.get(property);
@@ -453,6 +454,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                             record.setReadOnly(column.columnSID, propReadOnly == null ? null : PValue.get3SBooleanValue(propReadOnly.get(fullKey)));
                             PValue valueElementClass = propertyValueElementClasses == null ? null : propertyValueElementClasses.get(fullKey);
                             record.setValueElementClass(column.columnSID, valueElementClass == null ? property.valueElementClass : PValue.getClassStringValue(valueElementClass));
+                            PValue font = propertyFonts == null ? null : propertyFonts.get(fullKey);
+                            record.setFont(column.columnSID, font == null ? property.font : PValue.getFontValue(font));
                             PValue background = propertyBackgrounds == null ? null : propertyBackgrounds.get(fullKey);
                             record.setBackground(column.columnSID, background == null ? property.getBackground() : PValue.getColorStringValue(background));
                             PValue foreground = propertyForegrounds == null ? null : propertyForegrounds.get(fullKey);
@@ -649,6 +652,13 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     @Override
     public void updateCellValueElementClasses(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
         super.updateCellValueElementClasses(propertyDraw, values);
+        updatedProperties.put(propertyDraw, TRUE);
+        dataUpdated = true;
+    }
+
+    @Override
+    public void updateCellFontValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        super.updateCellFontValues(propertyDraw, values);
         updatedProperties.put(propertyDraw, TRUE);
         dataUpdated = true;
     }
@@ -1261,6 +1271,10 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             return record.getValueElementClass(columnSID);
         }
 
+        @Override
+        protected GFont getFont(GPropertyDraw property, GridDataRecord record) {
+            return record.getFont(columnSID);
+        }
         @Override
         protected String getBackground(GPropertyDraw property, GridDataRecord record) {
             return record.getBackground(columnSID);
