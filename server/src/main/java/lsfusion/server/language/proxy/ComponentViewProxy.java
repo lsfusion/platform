@@ -147,13 +147,19 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> im
     }
 
     public void setBackground(Object background) {
-        if(background instanceof Color)
+        if (background instanceof PropertyObjectEntity) {
+            throw new UnsupportedOperationException("Dynamic background is supported only for propertyDraw");
+        } else {
             target.design.background = (Color) background;
+        }
     }
 
     public void setForeground(Object foreground) {
-        if(foreground instanceof Color)
+        if (foreground instanceof PropertyObjectEntity) {
+            throw new UnsupportedOperationException("Dynamic foreground is supported only for propertyDraw");
+        } else {
             target.design.foreground = (Color) foreground;
+        }
     }
 
     public void setShowIf(PropertyObjectEntity<?> showIf) {
