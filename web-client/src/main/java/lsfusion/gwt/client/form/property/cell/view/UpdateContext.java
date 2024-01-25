@@ -5,6 +5,7 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import lsfusion.gwt.client.base.AppBaseImage;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.property.PValue;
 
 public interface UpdateContext {
@@ -33,6 +34,8 @@ public interface UpdateContext {
     default boolean isSelectedLink() { return isSelectedRow(); }
 
     default CellRenderer.ToolbarAction[] getToolbarActions() { return CellRenderer.noToolbarActions; } ;
+
+    default GFont getFont() { return null; }
 
     default String getBackground() { return null; }
 

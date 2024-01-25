@@ -227,6 +227,33 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
             target.entity.setPropertyExtra((PropertyObjectEntity<?>) regexpMessage, PropertyDrawExtraType.REGEXPMESSAGE, getVersion());
     }
 
+    @Override
+    public void setFont(Object font) {
+        if(font instanceof PropertyObjectEntity) {
+            target.entity.setPropertyExtra((PropertyObjectEntity<?>) font, PropertyDrawExtraType.FONT, getVersion());
+        } else {
+            super.setFont(font);
+        }
+    }
+
+    @Override
+    public void setBackground(Object background) {
+        if (background instanceof PropertyObjectEntity) {
+            target.entity.setPropertyExtra((PropertyObjectEntity<?>) background, PropertyDrawExtraType.BACKGROUND, getVersion());
+        } else {
+            super.setBackground(background);
+        }
+    }
+
+    @Override
+    public void setForeground(Object foreground) {
+        if (foreground instanceof PropertyObjectEntity) {
+            target.entity.setPropertyExtra((PropertyObjectEntity<?>) foreground, PropertyDrawExtraType.FOREGROUND, getVersion());
+        } else {
+            super.setForeground(foreground);
+        }
+    }
+
     //backward compatibility
     public void setToolTip(Object toolTip) {
         setTooltip(toolTip);

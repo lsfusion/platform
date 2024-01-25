@@ -140,6 +140,11 @@ public class GTreeGroupController extends GAbstractTableController {
     }
 
     @Override
+    public void updateCellFontValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+        tree.updateCellFontValues(formController.getProperty(reader.propertyID), values);
+    }
+
+    @Override
     public void updateCellBackgroundValues(GBackgroundReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         tree.updateCellBackgroundValues(formController.getProperty(reader.propertyID), values);
     }

@@ -170,6 +170,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public final PropertyObjectInstance<?> propertyFooter;
     public final PropertyObjectInstance<?> propertyValueElementClass;
     public final PropertyObjectInstance<?> propertyCaptionElementClass;
+    public final PropertyObjectInstance<?> propertyFont;
     public final PropertyObjectInstance<?> propertyBackground;
     public final PropertyObjectInstance<?> propertyForeground;
     public final PropertyObjectInstance<?> propertyImage;
@@ -189,6 +190,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public ExtraReaderInstance readOnlyReader;
     public ExtraReaderInstance valueElementClassReader;
     public ExtraReaderInstance captionElementClassReader;
+    public ExtraReaderInstance fontReader;
     public ExtraReaderInstance backgroundReader;
     public ExtraReaderInstance foregroundReader;
     public ExtraReaderInstance imageReader;
@@ -221,6 +223,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         propertyFooter = propertyExtras.get(PropertyDrawExtraType.FOOTER);
         propertyValueElementClass = propertyExtras.get(PropertyDrawExtraType.VALUEELEMENTCLASS);
         propertyCaptionElementClass = propertyExtras.get(PropertyDrawExtraType.CAPTIONELEMENTCLASS);
+        propertyFont = propertyExtras.get(PropertyDrawExtraType.FONT);
         propertyBackground = propertyExtras.get(PropertyDrawExtraType.BACKGROUND);
         propertyForeground = propertyExtras.get(PropertyDrawExtraType.FOREGROUND);
         propertyImage = propertyExtras.get(PropertyDrawExtraType.IMAGE);
@@ -240,6 +243,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         readOnlyReader = new ExtraReaderInstance(PropertyDrawExtraType.READONLYIF, propertyReadOnly);
         valueElementClassReader = new ExtraReaderInstance(PropertyDrawExtraType.VALUEELEMENTCLASS, propertyValueElementClass);
         captionElementClassReader = new ExtraReaderInstance(PropertyDrawExtraType.CAPTIONELEMENTCLASS, propertyCaptionElementClass);
+        fontReader = new ExtraReaderInstance(PropertyDrawExtraType.FONT, propertyFont);
         backgroundReader = new ExtraReaderInstance(PropertyDrawExtraType.BACKGROUND, propertyBackground);
         foregroundReader = new ExtraReaderInstance(PropertyDrawExtraType.FOREGROUND, propertyForeground);
         imageReader = new ExtraReaderInstance(PropertyDrawExtraType.IMAGE, propertyImage);

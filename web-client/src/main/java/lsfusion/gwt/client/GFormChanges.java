@@ -114,6 +114,8 @@ public class GFormChanges {
                 return form.getProperty(readerId).valueElementClassReader;
             case GPropertyReadType.CAPTIONELEMENTCLASS:
                 return form.getProperty(readerId).captionElementClassReader;
+            case GPropertyReadType.CELL_FONT:
+                return form.getProperty(readerId).fontReader;
             case GPropertyReadType.CELL_BACKGROUND:
                 return form.getProperty(readerId).backgroundReader;
             case GPropertyReadType.CELL_FOREGROUND:
@@ -197,5 +199,6 @@ public class GFormChanges {
         public final static byte PATTERN = 24;
         public final static byte REGEXP = 25;
         public final static byte REGEXPMESSAGE = 26;
+        public final static byte CELL_FONT = 27;
     }
 }

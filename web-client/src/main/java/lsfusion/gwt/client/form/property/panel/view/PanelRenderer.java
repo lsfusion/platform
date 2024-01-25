@@ -10,6 +10,7 @@ import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.base.view.SizedWidget;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
@@ -77,9 +78,9 @@ public abstract class PanelRenderer {
     }
 
     public void update(PValue value, boolean loading, AppBaseImage image, String valueElementClass,
-                       String background, String foreground, Boolean readOnly, String placeholder, String pattern,
+                       GFont font, String background, String foreground, Boolean readOnly, String placeholder, String pattern,
                        String regexp, String regexpMessage, String valueTooltip) {
-        this.value.update(value, loading, image, valueElementClass, background, foreground, readOnly, placeholder, pattern,
+        this.value.update(value, loading, image, valueElementClass, font, background, foreground, readOnly, placeholder, pattern,
                 regexp, regexpMessage, valueTooltip);
     }
 

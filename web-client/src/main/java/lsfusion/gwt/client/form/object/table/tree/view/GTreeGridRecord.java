@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.object.table.tree.view;
 
 import lsfusion.gwt.client.base.AppBaseImage;
+import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.view.GridDataRecord;
@@ -49,6 +50,12 @@ public abstract class GTreeGridRecord extends GridDataRecord {
     }
     public String getValueElementClass(GPropertyDraw property) {
         return (String) getAttribute(property.sID + "_valueelementclass");
+    }
+    public void setFont(GPropertyDraw property, GFont font) {
+        setAttribute(property.sID + "_font", font);
+    }
+    public GFont getFont(GPropertyDraw property) {
+        return (GFont) getAttribute(property.sID + "_font");
     }
     public void setBackground(GPropertyDraw property, String background) {
         setAttribute(property.sID + "_background", background);
