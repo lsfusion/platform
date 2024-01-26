@@ -609,19 +609,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         this.userPattern = userPattern;
     }
 
-    public JavaScriptObject getMaskOptionsFromPattern(String pattern) {
-        if (pattern != null) {
-            if (valueType instanceof GADateType || valueType instanceof GIntervalType) {
-                return DatePatternConverter.convert(pattern);
-            } else if (valueType instanceof GIntegralType) {
-                return IntegralPatternConverter.convert(pattern);
-            } else {
-                return StringPatternConverter.convert(pattern);
-            }
-        }
-        return null;
-    }
-    
     public PValue parsePaste(String s, GType parseType) {
         if (s == null) {
             return null;

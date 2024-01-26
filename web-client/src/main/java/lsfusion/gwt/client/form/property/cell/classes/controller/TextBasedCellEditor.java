@@ -24,8 +24,7 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.filter.user.GCompare;
-import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.form.property.*;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.async.GInputListAction;
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.GCompletionType;
@@ -110,6 +109,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
 
     protected boolean started;
     protected String pattern;
+    protected JavaScriptObject mask;
 
     @Override
     public void start(EventHandler handler, Element parent, RenderContext renderContext, boolean notFocusable, PValue oldValue) {
@@ -123,6 +123,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
         }
         started = true;
         pattern = renderContext.getPattern();
+        mask = getMaskFromPattern();
 
         super.start(handler, parent, renderContext, notFocusable, oldValue);
 
@@ -154,9 +155,8 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
             }
         }
 
-        JavaScriptObject options = property.getMaskOptionsFromPattern(renderContext.getPattern());
-        if(options != null) {
-            GwtClientUtils.setMask(inputElement, options);
+        if(mask != null) {
+            GwtClientUtils.setMask(inputElement, mask);
         }
 
         String regexp = renderContext.getRegexp();
@@ -168,6 +168,10 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
         if (regexpMessage != null) {
             updateRegexpMessage(inputElement, regexpMessage);
         }
+    }
+
+    protected JavaScriptObject getMaskFromPattern() {
+        return StringPatternConverter.convert(pattern);
     }
 
     private boolean hasList() {
@@ -183,8 +187,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
                 suggestBox = null;
             }
 
-            JavaScriptObject options = property.getMaskOptionsFromPattern(pattern);
-            if(options != null) {
+            if(mask != null) {
                 GwtClientUtils.removeMask(inputElement);
             }
 
@@ -324,7 +327,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
                 throw new InvalidEditException();
         }
 
-        if(property.getMaskOptionsFromPattern(pattern) != null && !GwtClientUtils.isCompleteMask(inputElement))
+        if(mask != null && !GwtClientUtils.isCompleteMask(inputElement))
             throw new InvalidEditException();
 
         boolean patternMismatch = isPatternMismatch(inputElement);

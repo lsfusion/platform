@@ -6,6 +6,9 @@ import lsfusion.gwt.client.base.jsni.JSNIHelper;
 
 public class IntegralPatternConverter {
     public static JavaScriptObject convert(String pattern) {
+        if(pattern == null)
+            return null;
+
         JavaScriptObject options = JSNIHelper.createObject();
         DecimalPatternOptions pOptions = getDecimalPatternOptions(pattern);
         

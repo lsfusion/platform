@@ -1,11 +1,13 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsDate;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.controller.SmartScheduler;
+import lsfusion.gwt.client.form.property.DatePatternConverter;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
@@ -85,6 +87,11 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
 
     private void setInputValue(Element parent) {
         setTextInputValue(parent, tryFormatInputText(getDateInputValue()));
+    }
+
+    @Override
+    protected JavaScriptObject getMaskFromPattern() {
+        return DatePatternConverter.convert(getPattern());
     }
 
     protected native void removePicker()/*-{
