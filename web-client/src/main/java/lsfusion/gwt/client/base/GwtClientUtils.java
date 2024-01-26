@@ -953,6 +953,18 @@ public class GwtClientUtils {
         return $doc.activeElement;
     }-*/;
 
+    public static JsArrayString toArray(List<String> list) {
+        JsArrayString jsArray = JsArrayString.createArray().cast();
+        list.forEach(jsArray::push);
+        return jsArray;
+    }
+    public static List<String> fromArray(JsArrayString array) {
+        List<String> list = new ArrayList<>();
+        for (int i = 0, size = array.length(); i < size; i++)
+            list.add(array.get(i));
+        return list;
+    }
+
     public static native Element log(String i) /*-{
         console.log(i);
     }-*/;

@@ -254,6 +254,12 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         }
     }
 
+    @Override
+    public void setShowIf(PropertyObjectEntity<?> showIf) {
+        target.entity.setPropertyExtra(showIf, PropertyDrawExtraType.SHOWIF, getVersion());
+//        super.setShowIf(showIf);
+    }
+
     //backward compatibility
     public void setToolTip(Object toolTip) {
         setTooltip(toolTip);

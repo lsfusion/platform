@@ -274,12 +274,9 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         config = overrideCallbacks(config, getCallbacks());
         config = overrideRendererOptions(config, getRendererOptions(configFunction, getPropertyCaptionsMap()));
 
-        JsArrayString jsArray = JsArrayString.createArray().cast();
-        aggrCaptions.forEach(jsArray::push);
-
         setStyleName(getDrawElement(), "pivotTable-noSettings", !settings);
 
-        render(getDrawElement(), getPageSizeWidget().getElement(), data, config, jsArray, GwtClientUtils.getCurrentLanguage()); // we need to updateRendererState after it is painted
+        render(getDrawElement(), getPageSizeWidget().getElement(), data, config, GwtClientUtils.toArray(aggrCaptions), GwtClientUtils.getCurrentLanguage()); // we need to updateRendererState after it is painted
     }
 
     public void initDefaultSettings(GGridController gridController) {
@@ -449,20 +446,17 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     private void fillGroupColumns(JsArrayString cols, List<GPropertyDraw> properties, List<GGroupObjectValue> columnKeys, List<GPropertyGroupType> types, List<String> aggrColumns) {
         for (int i = 0, size = cols.length(); i < size; i++) {
             String name = cols.get(i);
-            if (!name.equals(COLUMN)) {
-                Column col = columnMap.get(name);
-                properties.add(col.property);
-                columnKeys.add(col.columnKey);
-                types.add(GPropertyGroupType.GROUP);
+            if (name.equals(COLUMN))
+                continue;
 
-                removeAggrFilters(name, aggrColumns);
+            Column col = columnMap.get(name);
+            properties.add(col.property);
+            columnKeys.add(col.columnKey);
+            types.add(GPropertyGroupType.GROUP);
+
+            if (aggrColumns.remove(name)) { // if there was aggr column in filters -> remove it from aggr columns
+                applyFilter(COLUMN, aggrColumns, this.aggrCaptions);
             }
-        }
-    }
-
-    private void removeAggrFilters(String name, List<String> aggrColumns) {
-        if (aggrColumns.remove(name)) { // if there was aggr column in filters -> remove it from filters
-            applyFilter(COLUMN, aggrColumns, this.aggrCaptions);
         }
     }
 
@@ -540,20 +534,30 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         sortCols.splice(sortCols.indexOf(sortCol), 1);
     }-*/;
 
-    private List<String> createAggrColumns(WrapperObject inclusions) {
-        JsArrayString columnValues = inclusions.getArrayString(COLUMN);
-        if (columnValues == null)
-            return new ArrayList<>(aggrCaptions); // all columns
-
+    private List<String> createAggrColumns(WrapperObject inclusions, WrapperObject exclusions) {
         List<String> result = new ArrayList<>();
-        for (int i = 0, size = columnValues.length(); i < size; i++)
-            result.add(columnValues.get(i));
+        JsArrayString columnValues = inclusions.getArrayString(COLUMN);
+        if (columnValues != null) {
+            for (int i = 0, size = columnValues.length(); i < size; i++)
+                result.add(columnValues.get(i));
+        } else { // no filter - means all columns
+            // when there are no inclusions, pivot library returns no inclusions, but some exclusions
+            JsArrayString exclColumnValuesArray = exclusions.getArrayString(COLUMN);
+            List<String> exclColumnValues = exclColumnValuesArray != null ? GwtClientUtils.fromArray(exclColumnValuesArray) : null;
+
+            List<String> allColumns = aggrCaptions;
+            for (int i = 0, size = allColumns.size(); i < size; i++) {
+                String columnValue = allColumns.get(i);
+                if(exclColumnValues == null || !exclColumnValues.contains(columnValue))
+                    result.add(columnValue);
+            }
+        }
         return result;
     }
 
 //    private boolean isTable = true;
 
-    private void onRefresh(WrapperObject config, JsArrayString rows, JsArrayString cols, WrapperObject inclusions, String aggregatorName, String rendererName) {
+    private void onRefresh(WrapperObject config, JsArrayString rows, JsArrayString cols, WrapperObject inclusions, WrapperObject exclusions, String aggregatorName, String rendererName) {
         updateSortCols(this.config, config);
         this.config = config;
 
@@ -570,7 +574,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         List<GGroupObjectValue> columnKeys = new ArrayList<>();
         List<GPropertyGroupType> types = new ArrayList<>();
 
-        List<String> aggrColumns = createAggrColumns(inclusions);
+        List<String> aggrColumns = createAggrColumns(inclusions, exclusions);
 
         fillGroupColumns(rows, properties, columnKeys, types, aggrColumns);
         fillGroupColumns(cols, properties, columnKeys, types, aggrColumns);
@@ -691,7 +695,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             columnAttributeName:@lsfusion.gwt.client.form.object.table.grid.view.GPivot::COLUMN,
             toImageButtonOptions: instance.@GPivot::getToImageButtonOptions(*)(),
             onRefresh: function (config) {
-                instance.@GPivot::onRefresh(*)(config, config.rows, config.cols, config.inclusions, config.aggregatorName, config.rendererName);
+                instance.@GPivot::onRefresh(*)(config, config.rows, config.cols, config.inclusions, config.exclusions, config.aggregatorName, config.rendererName);
             },
             afterRefresh: function () {
                 instance.@GPivot::afterRefresh(*)();
