@@ -84,12 +84,9 @@ public class MainController {
         ServerSettings serverSettings = getAndCheckServerSettings(request, checkVersionError, false);
 
         model.addAttribute("disableRegistration", getDisableRegistration(serverSettings));
-        model.addAttribute("title", getTitle(serverSettings));
-        model.addAttribute("logicsLogo", getLogicsLogo(serverSettings));
-        model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
         model.addAttribute("registrationPage", getDirectUrl("/registration", null, null, request));
         model.addAttribute("forgotPasswordPage", getDirectUrl("/forgot-password", null, null, request));
-        addNoAuthResourcesAttributes(model, serverSettings);
+        addStandardModelAttributes(model, request, serverSettings, true);
 
         try {
             clientRegistrationRepository.iterator().forEachRemaining(registration -> oauth2AuthenticationUrls.put(registration.getRegistrationId(),
@@ -114,9 +111,8 @@ public class MainController {
     @RequestMapping(value = "/registration", method = RequestMethod.GET)
     public String registration(ModelMap model, HttpServletRequest request) {
         ServerSettings serverSettings = getAndCheckServerSettings(request, checkVersionError, false);
-        addStandardModelAttributes(model, request, serverSettings);
+        addStandardModelAttributes(model, request, serverSettings, true);
         addUserDataAttributes(model, request);
-        addNoAuthResourcesAttributes(model, serverSettings);
         return getDisableRegistration(serverSettings) ? "login" : "registration";
     }
 
@@ -149,9 +145,7 @@ public class MainController {
 
     @RequestMapping(value = "/forgot-password", method = RequestMethod.GET)
     public String forgotPassword(ModelMap model, HttpServletRequest request) {
-        ServerSettings serverSettings = getAndCheckServerSettings(request, checkVersionError, false);
-        addStandardModelAttributes(model, request, serverSettings);
-        addNoAuthResourcesAttributes(model, serverSettings);
+        addStandardModelAttributes(model, request, getAndCheckServerSettings(request, checkVersionError, false), true);
         return "forgot-password";
     }
 
@@ -176,9 +170,7 @@ public class MainController {
 
     @RequestMapping(value = "/change-password", method = RequestMethod.GET)
     public String changePassword(ModelMap model, HttpServletRequest request) {
-        ServerSettings serverSettings = getAndCheckServerSettings(request, checkVersionError, false);
-        addStandardModelAttributes(model, request, serverSettings);
-        addNoAuthResourcesAttributes(model, serverSettings);
+        addStandardModelAttributes(model, request, getAndCheckServerSettings(request, checkVersionError, false), true);
         return "change-password";
     }
 
@@ -223,16 +215,16 @@ public class MainController {
         }
     }
 
-    private void addStandardModelAttributes(ModelMap model, HttpServletRequest request, ServerSettings serverSettings) {
+    private void addStandardModelAttributes(ModelMap model, HttpServletRequest request, ServerSettings serverSettings, boolean noAuth) {
         model.addAttribute("title", getTitle(serverSettings));
         model.addAttribute("logicsLogo", getLogicsLogo(serverSettings));
         model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
         model.addAttribute("loginPage", getDirectUrl("/login", Collections.singletonList("token"), null, request));
-    }
 
-    private void addNoAuthResourcesAttributes(ModelMap model, ServerSettings serverSettings) {
-        model.addAttribute("noAuthResourcesBeforeSystem", getSavedNoAuthResources(serverSettings, true));
-        model.addAttribute("noAuthResourcesAfterSystem", getSavedNoAuthResources(serverSettings, false));
+        if (noAuth){
+            model.addAttribute("noAuthResourcesBeforeSystem", getSavedNoAuthResources(serverSettings, true));
+            model.addAttribute("noAuthResourcesAfterSystem", getSavedNoAuthResources(serverSettings, false));
+        }
     }
 
     private Map<String, String> getSavedNoAuthResources(ServerSettings serverSettings, boolean before) {
@@ -260,7 +252,7 @@ public class MainController {
     public String processMain(ModelMap model, HttpServletRequest request) {
         ServerSettings serverSettings = getServerSettings(request, false);
 
-        addStandardModelAttributes(model, request, serverSettings);
+        addStandardModelAttributes(model, request, serverSettings, false);
         model.addAttribute("logicsName", getLogicsName(serverSettings));
         model.addAttribute("lsfParams", getLsfParams(serverSettings));
 
