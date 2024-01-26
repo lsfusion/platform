@@ -1,0 +1,64 @@
+MODULE WebSocket;
+
+REQUIRE SystemEvents;
+
+CLASS WebSocketServer;
+
+host = DATA STRING(WebSocketServer); //localhost
+port = DATA INTEGER(WebSocketServer); //8025
+path = DATA STRING(WebSocketServer); //echo
+
+started = DATA BOOLEAN (WebSocketServer);
+caption(WebSocketServer s) = IF started(s) THEN 'Stop' ELSE 'Start';
+
+onStarted() + {
+    started(WebSocketServer s) <- NULL;
+}
+
+toggle INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.websocket.ToggleWebSocketServerAction' (WebSocketServer);
+
+CLASS WebSocketClient;
+
+hostname = DATA STRING(WebSocketClient);
+webSocketServer = DATA WebSocketServer (WebSocketClient);
+
+message = DATA TEXT(WebSocketClient);
+
+newWebSocketClient(WebSocketServer webSocketServer, STRING hostname) {
+    NEW c = WebSocketClient {
+        webSocketServer(c) <- webSocketServer;
+        hostname(c) <- hostname;
+    }
+}
+
+deleteWebSocketClient(WebSocketServer server, STRING hostname) {
+    DELETE WebSocketClient c WHERE webSocketServer(c) == server AND hostname(c) == hostname;
+}
+
+//test client, not for production
+runClient 'Run Client' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.websocket.RunClientAction' ();
+
+sendMessage 'Send message to client' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.websocket.SendMessageAction' (WebSocketClient);
+
+FORM webSockets 'WebSockets'
+    PROPERTIES() runClient
+
+    OBJECTS s = WebSocketServer
+    PROPERTIES(s) host, port, path, toggle GRID, NEW
+
+    OBJECTS c = WebSocketClient
+    PROPERTIES(c) id, message PANEL, sendMessage
+    FILTERS server(c) == s
+;
+
+DESIGN webSockets {
+    PROPERTY(toggle(s)) {
+        caption = caption(s);
+    }
+}
+
+NAVIGATOR {
+    system {
+        NEW webSockets;
+    }
+}

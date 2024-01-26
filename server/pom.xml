@@ -322,6 +322,13 @@
             <artifactId>amqp-client</artifactId>
             <version>5.16.0</version>
         </dependency>
+        <!--websocket-->
+        <dependency>
+            <groupId>org.java-websocket</groupId>
+            <artifactId>Java-WebSocket</artifactId>
+            <version>1.5.4</version>
+        </dependency>
+
 
         <!--java 11 dependencies-->
         <dependency>
