@@ -124,7 +124,7 @@ public class ScriptingFormEntity {
         if (groupName == null) {
             groupName = "";
             for (ObjectEntity obj : groupObj.getOrderObjects()) {
-                groupName = (groupName.length() == 0 ? "" : groupName + ".") + obj.getSID();
+                groupName = (groupName.isEmpty() ? "" : groupName + ".") + obj.getSID();
             }
         }
 

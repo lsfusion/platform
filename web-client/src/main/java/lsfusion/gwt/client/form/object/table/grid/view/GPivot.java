@@ -316,7 +316,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         }
         if(measures.length() == 0 && MainFrame.pivotOnlySelectedColumn) {
             for(GPropertyDraw property : properties) {
-                if (property.getRenderType(RendererType.PIVOT) instanceof GIntegralType && (property.sID.equals("PROPERTY(count())") || property.equals(selectedProperty))) {
+                if (property.getRenderType(RendererType.PIVOT) instanceof GIntegralType && (property.sID.startsWith("PROPERTY(COUNT(") || property.equals(selectedProperty))) {
                     measures.push(columnCaptionMap.get(property));
                 }
             }
