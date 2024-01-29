@@ -422,7 +422,7 @@ resetConnections() + {
         AND currentLaunch() != launch(c) AND ((NOT isLightStart()) OR connectTime(c) < subtractSeconds(currentDateTime(), 60));
 }
 
-WHEN CHANGED (onLoginLoad(STRING s)) OR CHANGED (lsfParams(s)) DO {
+WHEN CHANGED (lsfParams(STRING s)) DO {
     resetServerSettingsCacheAction();
 }
 
@@ -434,10 +434,16 @@ getServerSettings() ABSTRACT CASE @@noauth;
 getServerSettings() + WHEN TRUE THEN {
     LOCAL noAuthResources = RAWFILE(STRING);
     LOCAL noAuthResourcesOrder = INTEGER(STRING);
-    FOR INTEGER order = onLoginLoad(STRING s) ORDER order DO {
+    
+    LOCAL loginResources = INTEGER(STRING);
+    loginResources (STRING s) <- onLoginLoad(s);
+    onLoginLoaded();
+    loginResources (STRING s) <- onLoginLoaded(s) WHERE NOT loginResources(s);
+
+    FOR INTEGER order = loginResources(STRING s) ORDER order DO {
         readResource(s);
         noAuthResources(resourcePath()) <- RAWFILE (resource());
-        noAuthResourcesOrder(resourcePath()) <- order; 
+        noAuthResourcesOrder(resourcePath()) <- order;
     }
     
     generateJnlpUrls();
@@ -799,7 +805,7 @@ getClientSettings(User user) + WHEN TRUE AND user IS User THEN {
         FOR INTEGER order = onWebInit(STRING s) ORDER order DO {
             readResource(s);
             webClientLoadedResources(resourcePath()) <- RAWFILE (resource());
-            webClientLoadedResourcesOrder(resourcePath()) <- onWebInit(s);
+            webClientLoadedResourcesOrder(resourcePath()) <- order;
         }
     }
     

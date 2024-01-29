@@ -10,8 +10,12 @@ onWebClientStarted  ABSTRACT LIST ( );
 onWebClientInit ABSTRACT LIST ();
 onWebClientInit = DATA LOCAL INTEGER (STRING);
 
+// todo onLoginLoad = ABSTRACT CASE INTEGER(STRING)  IS DEPECATED! DO NOT USE! Only for backward compatibility 
 onLoginLoad = ABSTRACT CASE INTEGER(STRING);
-onLoginLoad(STRING s) += WHEN s = 'disable-indexing.html' THEN -1;
+onLoginLoaded ABSTRACT LIST( );
+onLoginLoaded = DATA LOCAL INTEGER (STRING);
+
+onLoginLoaded() +{ onLoginLoaded('disable-indexing.html') <- -1;}
 
 // todo onWebClientLoad DEPECATED! DO NOT USE! Only for backward compatibility
 onWebClientLoad ABSTRACT LIST ();
