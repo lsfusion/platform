@@ -2,37 +2,33 @@ MODULE WebSocket;
 
 REQUIRE SystemEvents;
 
-CLASS WebSocketServer;
-
-host = DATA STRING(WebSocketServer); //localhost
-port = DATA INTEGER(WebSocketServer); //8025
-path = DATA STRING(WebSocketServer); //echo
-
-started = DATA BOOLEAN (WebSocketServer);
-caption(WebSocketServer s) = IF started(s) THEN 'Stop' ELSE 'Start';
-
-onStarted() + {
-    started(WebSocketServer s) <- NULL;
-}
-
-toggle INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.websocket.ToggleWebSocketServerAction' (WebSocketServer);
-
 CLASS WebSocketClient;
 
+id = DATA STRING(WebSocketClient);
+webSocketClient = GROUP AGGR WebSocketClient c BY id(c);
 hostname = DATA STRING(WebSocketClient);
-webSocketServer = DATA WebSocketServer (WebSocketClient);
+
+onStarted() + {
+    DELETE WebSocketClient c WHERE c IS WebSocketClient;
+}
 
 message = DATA TEXT(WebSocketClient);
 
-newWebSocketClient(WebSocketServer webSocketServer, STRING hostname) {
-    NEW c = WebSocketClient {
-        webSocketServer(c) <- webSocketServer;
-        hostname(c) <- hostname;
+onOpen(STRING id, STRING hostname) {
+    NEWSESSION {
+        NEW c = WebSocketClient {
+            id(c) <- id;
+            hostname(c) <- hostname;
+        }
+        APPLY;
     }
 }
 
-deleteWebSocketClient(WebSocketServer server, STRING hostname) {
-    DELETE WebSocketClient c WHERE webSocketServer(c) == server AND hostname(c) == hostname;
+onClose(STRING id) {
+    NEWSESSION {
+        DELETE webSocketClient(id);
+        APPLY;
+    }
 }
 
 //test client, not for production
@@ -43,19 +39,9 @@ sendMessage 'Send message to client' INTERNAL 'lsfusion.server.physics.dev.integ
 FORM webSockets 'WebSockets'
     PROPERTIES() runClient
 
-    OBJECTS s = WebSocketServer
-    PROPERTIES(s) host, port, path, toggle GRID, NEW
-
     OBJECTS c = WebSocketClient
-    PROPERTIES(c) id, message PANEL, sendMessage
-    FILTERS server(c) == s
+    PROPERTIES(c) id, hostname, message PANEL, sendMessage
 ;
-
-DESIGN webSockets {
-    PROPERTY(toggle(s)) {
-        caption = caption(s);
-    }
-}
 
 NAVIGATOR {
     system {

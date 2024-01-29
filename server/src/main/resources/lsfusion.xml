@@ -922,6 +922,7 @@
     <bean id="rmiManager" class="lsfusion.server.base.controller.remote.RmiManager">
         <property name="port" value="${rmi.port:7652}"/>
         <property name="httpPort" value="${http.port:7651}"/>
+        <property name="webSocketPort" value="${webSocket.port:8887}"/>
         <property name="debuggerPort" value="${debugger.port:1299}"/>
         <property name="jmxPort" value="${rmi.jmxPort:0}"/>
         <property name="exportName" value="${rmi.exportName:default}"/>
@@ -956,6 +957,11 @@
         <property name="remoteLogics" ref="remoteLogics"/>
     </bean>
 
+    <bean id="webSocketServer" class="lsfusion.server.physics.dev.integration.external.to.net.websocket.WebSocketMonitorServer">
+        <property name="logicsInstance" ref="logicsInstance"/>
+        <property name="remoteLogics" ref="remoteLogics"/>
+    </bean>
+
     <!-- Lifecycle Manager setup -->
     <bean id="lifecycleManager" class="lsfusion.server.base.controller.manager.LifecycleManager">
         <constructor-arg ref="lifecycleListeners"/>
@@ -982,6 +988,7 @@
         <ref bean="reflectionManager"/>
         <ref bean="scheduler"/>
         <ref bean="externalHttpServer"/>
+        <ref bean="webSocketServer"/>
     </util:list>
 
     <util:list id="customLifecycleListeners"/>

@@ -8,12 +8,13 @@ import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 import org.java_websocket.WebSocket;
 
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class SendMessageAction extends WebSocketAction {
+public class SendMessageAction extends InternalAction {
     private final ClassPropertyInterface webSocketClientInterface;
 
     public SendMessageAction(ScriptingLogicsModule LM, ValueClass... classes) {
@@ -28,12 +29,14 @@ public class SendMessageAction extends WebSocketAction {
         DataObject clientObject = context.getDataKeyValue(webSocketClientInterface);
 
         try {
-            String clientHost = (String) findProperty("id[WebSocketClient]").read(context, clientObject);
+            String id = (String) findProperty("id[WebSocketClient]").read(context, clientObject);
             String message = (String) findProperty("message[WebSocketClient]").read(context, clientObject);
 
-            WebSocket connection = getConnection(clientHost);
+            WebSocket connection = WebSocketMonitorServer.getConnection(id);
 
             connection.send(message);
+
+            context.apply();
 
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);
