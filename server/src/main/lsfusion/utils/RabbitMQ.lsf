@@ -32,7 +32,7 @@ start(Channel c) {
     apply();
 }
 
-restartConsumers 'Restart all customers' () {
+restartConsumers 'Restart all consumers' () {
     stopConsumers();
     FOR host(Channel c) AND queue(c) AND isConsumer(c) DO {
         startConsumer(c);
