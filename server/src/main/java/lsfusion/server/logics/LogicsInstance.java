@@ -17,6 +17,7 @@ import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.admin.reflection.controller.manager.ReflectionManager;
+import lsfusion.server.physics.dev.integration.external.to.net.websocket.WebSocketManager;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
@@ -48,6 +49,8 @@ public class LogicsInstance implements InitializingBean {
     private ReflectionManager reflectionManager;
 
     private RmiManager rmiManager;
+
+    private WebSocketManager webSocketManager;
 
     private Settings settings;
 
@@ -119,6 +122,14 @@ public class LogicsInstance implements InitializingBean {
 
     public void setRmiManager(RmiManager rmiManager) {
         this.rmiManager = rmiManager;
+    }
+
+    public WebSocketManager getWebSocketManager() {
+        return webSocketManager;
+    }
+
+    public void setWebSocketManager(WebSocketManager webSocketManager) {
+        this.webSocketManager = webSocketManager;
     }
 
     public Settings getSettings() {

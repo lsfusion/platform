@@ -14,21 +14,25 @@ onStarted() + {
 
 message = DATA TEXT(WebSocketClient);
 
-onOpen(STRING id, STRING hostname) {
-    NEWSESSION {
-        NEW c = WebSocketClient {
-            id(c) <- id;
-            hostname(c) <- hostname;
-        }
-        APPLY;
+connectionId = DATA LOCAL STRING();
+onOpen ABSTRACT LIST (STRING);
+onOpen(STRING hostname) + {
+    NEW c = WebSocketClient {
+        id(c) <- STRING(c);
+        connectionId() <- id(c);
+        hostname(c) <- hostname;
     }
 }
 
-onClose(STRING id) {
-    NEWSESSION {
-        DELETE webSocketClient(id);
-        APPLY;
-    }
+//id, message
+onStringMessage ABSTRACT LIST (STRING, STRING);
+
+//id, message
+onBinaryMessage ABSTRACT LIST (STRING, RAWFILE);
+
+onClose ABSTRACT LIST (STRING);
+onClose(STRING id) + {
+    DELETE webSocketClient(id);
 }
 
 //test client, not for production

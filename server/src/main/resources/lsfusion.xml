@@ -228,6 +228,13 @@
         <property name="initialAdminPassword" value="${logics.initialAdminPassword:}"/>
     </bean>
 
+    <bean id="webSocketManager"
+          class="lsfusion.server.physics.dev.integration.external.to.net.websocket.WebSocketManager"/>
+
+    <bean id="webSocketServer" class="lsfusion.server.physics.dev.integration.external.to.net.websocket.WebSocketMonitorServer">
+        <property name="logicsInstance" ref="logicsInstance"/>
+    </bean>
+
     <bean id="logicsInstance" class="lsfusion.server.logics.LogicsInstance">
         <property name="lifecycle" ref="lifecycleManager"/>
         <property name="businessLogics" ref="businessLogics"/>
@@ -237,6 +244,7 @@
         <property name="securityManager" ref="securityManager"/>
         <property name="dbManager" ref="dbManager"/>
         <property name="reflectionManager" ref="reflectionManager"/>
+        <property name="webSocketManager" ref="webSocketManager"/>
         <property name="settings" ref="settings"/>
         <property name="customObjects" ref="instanceCustomObjects"/>
     </bean>
@@ -953,11 +961,6 @@
     </bean>
 
     <bean id="externalHttpServer" class="lsfusion.server.physics.dev.integration.external.from.http.ExternalHttpServer">
-        <property name="logicsInstance" ref="logicsInstance"/>
-        <property name="remoteLogics" ref="remoteLogics"/>
-    </bean>
-
-    <bean id="webSocketServer" class="lsfusion.server.physics.dev.integration.external.to.net.websocket.WebSocketMonitorServer">
         <property name="logicsInstance" ref="logicsInstance"/>
         <property name="remoteLogics" ref="remoteLogics"/>
     </bean>

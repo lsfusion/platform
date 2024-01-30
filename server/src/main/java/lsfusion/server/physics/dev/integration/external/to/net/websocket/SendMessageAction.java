@@ -27,17 +27,12 @@ public class SendMessageAction extends InternalAction {
     @Override
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         DataObject clientObject = context.getDataKeyValue(webSocketClientInterface);
-
         try {
             String id = (String) findProperty("id[WebSocketClient]").read(context, clientObject);
             String message = (String) findProperty("message[WebSocketClient]").read(context, clientObject);
-
-            WebSocket connection = WebSocketMonitorServer.getConnection(id);
-
+            WebSocket connection = context.getLogicsInstance().getWebSocketManager().getConnection(id);
             connection.send(message);
-
             context.apply();
-
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);
         }
