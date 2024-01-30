@@ -216,6 +216,10 @@
         <property name="initialAdminPassword" value="${logics.initialAdminPassword:}"/>
     </bean>
 
+    <bean id="rabbitMQServer" class="lsfusion.server.physics.dev.integration.external.to.net.rabbitmq.RabbitMQServer">
+        <property name="logicsInstance" ref="logicsInstance"/>
+    </bean>
+
     <bean id="logicsInstance" class="lsfusion.server.logics.LogicsInstance">
         <property name="lifecycle" ref="lifecycleManager"/>
         <property name="businessLogics" ref="businessLogics"/>
@@ -225,6 +229,7 @@
         <property name="securityManager" ref="securityManager"/>
         <property name="dbManager" ref="dbManager"/>
         <property name="reflectionManager" ref="reflectionManager"/>
+        <property name="rabbitMQServer" ref="rabbitMQServer"/>
         <property name="settings" ref="settings"/>
         <property name="customObjects" ref="instanceCustomObjects"/>
     </bean>
@@ -915,6 +920,7 @@
         <ref bean="reflectionManager"/>
         <ref bean="scheduler"/>
         <ref bean="externalHttpServer"/>
+        <ref bean="rabbitMQServer"/>
     </util:list>
 
     <util:list id="customLifecycleListeners"/>
