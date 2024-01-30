@@ -198,7 +198,7 @@ public class BaseClass extends AbstractCustomClass {
     @IdentityInstanceLazy
     public Pair<KeyExpr, Expr> getSubQuery(ImSet<ObjectClassField> classTables, IsClassType type) {
         KeyExpr keyExpr = new KeyExpr("isSetClass");
-        return new Pair<>(keyExpr, IsClassExpr.getTableExpr(keyExpr, classTables, IsClassExpr.subqueryThreshold, type));
+        return new Pair<>(keyExpr, IsClassExpr.getTableExpr(keyExpr, classTables, type));
     }
     @IdentityStrongLazy
     public NamedTable getInconsistentTable(ImplementTable table) {
