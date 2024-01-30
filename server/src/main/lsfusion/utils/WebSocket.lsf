@@ -35,14 +35,9 @@ onClose(STRING id) + {
     DELETE webSocketClient(id);
 }
 
-//test client, not for production
-runClient 'Run Client' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.websocket.RunClientAction' ();
-
 sendMessage 'Send message to client' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.websocket.SendMessageAction' (WebSocketClient);
 
 FORM webSockets 'WebSockets'
-    PROPERTIES() runClient
-
     OBJECTS c = WebSocketClient
     PROPERTIES(c) id, hostname, message PANEL, sendMessage
 ;
