@@ -228,10 +228,7 @@
         <property name="initialAdminPassword" value="${logics.initialAdminPassword:}"/>
     </bean>
 
-    <bean id="webSocketManager"
-          class="lsfusion.server.physics.dev.integration.external.to.net.websocket.WebSocketManager"/>
-
-    <bean id="webSocketServer" class="lsfusion.server.physics.dev.integration.external.to.net.websocket.WebSocketMonitorServer">
+    <bean id="webSocketServer" class="lsfusion.server.physics.dev.integration.external.to.net.websocket.WebSocketServer">
         <property name="logicsInstance" ref="logicsInstance"/>
     </bean>
 
@@ -244,7 +241,7 @@
         <property name="securityManager" ref="securityManager"/>
         <property name="dbManager" ref="dbManager"/>
         <property name="reflectionManager" ref="reflectionManager"/>
-        <property name="webSocketManager" ref="webSocketManager"/>
+        <property name="webSocketServer" ref="webSocketServer"/>
         <property name="settings" ref="settings"/>
         <property name="customObjects" ref="instanceCustomObjects"/>
     </bean>

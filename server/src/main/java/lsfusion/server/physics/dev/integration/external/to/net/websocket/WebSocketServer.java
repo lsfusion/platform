@@ -12,26 +12,52 @@ import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.data.file.CustomStaticFormatFileClass;
+import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
-import org.java_websocket.server.WebSocketServer;
 
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
-public class WebSocketMonitorServer extends MonitorServer {
+public class WebSocketServer extends MonitorServer {
 
     private LogicsInstance logicsInstance;
 
     private ScriptingLogicsModule LM;
 
-    public DataObject getConnectionObject(WebSocket conn) {
-        return new DataObject(logicsInstance.getWebSocketManager().getConnectionId(conn));
+    private HashMap<WebSocket, Long> connectionMap = new HashMap<>();
+
+    public void putConnection(Long id, WebSocket conn) {
+        connectionMap.put(conn, id);
+    }
+
+    public Long getConnectionId(WebSocket conn) {
+        return connectionMap.get(conn);
+    }
+
+    public WebSocket getConnection(Long id) {
+        for (Map.Entry<WebSocket, Long> entry : connectionMap.entrySet()) {
+            if (entry.getValue().equals(id)) {
+                return entry.getKey();
+            }
+        }
+        return null;
+    }
+
+    public void removeConnection(WebSocket conn) {
+        connectionMap.remove(conn);
+    }
+
+
+    public DataObject getConnectionObject(WebSocket conn) throws ScriptingErrorLog.SemanticErrorException {
+        return new DataObject(logicsInstance.getWebSocketServer().getConnectionId(conn), (ConcreteCustomClass) LM.findClass("WebSocketClient"));
     }
 
     @Override
@@ -55,50 +81,38 @@ public class WebSocketMonitorServer extends MonitorServer {
         Server server;
         try {
 
-            server = new Server(new InetSocketAddress(getLogicsInstance().getRmiManager().getWebSocketPort()), conn -> {
-                ThreadLocalContext.aspectBeforeMonitorHTTP(WebSocketMonitorServer.this);
-                try (DataSession session = createSession()) {
+            server = new Server(new InetSocketAddress(getLogicsInstance().getRmiManager().getWebSocketPort()), (session, conn) -> {
+                try {
                     LM.findAction("onOpen[STRING]").execute(session, getStack(),
                             new DataObject(conn.getRemoteSocketAddress().getHostName()));
-                    String connectionId = (String) LM.findProperty("connectionId[]").read(session);
+                    Long connectionId = (Long) LM.findProperty("connectionId[]").read(session);
                     session.applyException(logicsInstance.getBusinessLogics(), getStack());
                     return connectionId;
                 } catch (SQLException | SQLHandledException | ScriptingErrorLog.SemanticErrorException e) {
                     throw Throwables.propagate(e);
-                } finally {
-                    ThreadLocalContext.aspectAfterMonitorHTTP(WebSocketMonitorServer.this);
                 }
-            }, (conn, message) -> {
-                ThreadLocalContext.aspectBeforeMonitorHTTP(WebSocketMonitorServer.this);
-                try (DataSession session = createSession()) {
-                    LM.findAction("onStringMessage[STRING,STRING]").execute(session, getStack(),
+            }, (session, conn, message) -> {
+                try {
+                    LM.findAction("onStringMessage[WebSocketClient,STRING]").execute(session, getStack(),
                             getConnectionObject(conn), new DataObject(message));
                     session.applyException(logicsInstance.getBusinessLogics(), getStack());
                 } catch (SQLException | SQLHandledException | ScriptingErrorLog.SemanticErrorException e) {
                     throw Throwables.propagate(e);
-                } finally {
-                    ThreadLocalContext.aspectAfterMonitorHTTP(WebSocketMonitorServer.this);
                 }
-            }, (conn, message) -> {
-                ThreadLocalContext.aspectBeforeMonitorHTTP(WebSocketMonitorServer.this);
-                try (DataSession session = createSession()) {
-                    LM.findAction("onBinaryMessage[STRING,RAWFILE]").execute(session, getStack(),
+            }, (session, conn, message) -> {
+                try {
+                    LM.findAction("onBinaryMessage[WebSocketClient,RAWFILE]").execute(session, getStack(),
                             getConnectionObject(conn), new DataObject(message, CustomStaticFormatFileClass.get()));
                     session.applyException(logicsInstance.getBusinessLogics(), getStack());
                 } catch (SQLException | SQLHandledException | ScriptingErrorLog.SemanticErrorException e) {
                     throw Throwables.propagate(e);
-                } finally {
-                    ThreadLocalContext.aspectAfterMonitorHTTP(WebSocketMonitorServer.this);
                 }
-            }, conn -> {
-                ThreadLocalContext.aspectBeforeMonitorHTTP(WebSocketMonitorServer.this);
-                try (DataSession session = createSession()) {
-                    LM.findAction("onClose[STRING]").execute(session, getStack(), getConnectionObject(conn));
+            }, (session, conn) -> {
+                try {
+                    LM.findAction("onClose[WebSocketClient]").execute(session, getStack(), getConnectionObject(conn));
                     session.applyException(logicsInstance.getBusinessLogics(), getStack());
                 } catch (SQLException | SQLHandledException | ScriptingErrorLog.SemanticErrorException e) {
                     throw Throwables.propagate(e);
-                } finally {
-                    ThreadLocalContext.aspectAfterMonitorHTTP(WebSocketMonitorServer.this);
                 }
             });
             server.start();
@@ -107,7 +121,7 @@ public class WebSocketMonitorServer extends MonitorServer {
         }
     }
 
-    public WebSocketMonitorServer() {
+    public WebSocketServer() {
         super(DAEMON_ORDER);
     }
 
@@ -115,15 +129,15 @@ public class WebSocketMonitorServer extends MonitorServer {
         this.logicsInstance = logicsInstance;
     }
 
-    public class Server extends WebSocketServer {
+    public class Server extends org.java_websocket.server.WebSocketServer {
 
-        final Function<WebSocket, String> onOpen;
-        final BiConsumer<WebSocket, String> onStringMessage;
-        final BiConsumer<WebSocket, RawFileData> onBinaryMessage;
-        final Consumer<WebSocket> onClose;
+        final BiFunction<DataSession, WebSocket, Long> onOpen;
+        final TriConsumer<DataSession, WebSocket, String> onStringMessage;
+        final TriConsumer<DataSession, WebSocket, RawFileData> onBinaryMessage;
+        final BiConsumer<DataSession, WebSocket> onClose;
 
-        public Server(InetSocketAddress address, Function<WebSocket, String> onOpen, BiConsumer<WebSocket, String> onStringMessage,
-                      BiConsumer<WebSocket, RawFileData> onBinaryMessage, Consumer<WebSocket> onClose) {
+        public Server(InetSocketAddress address, BiFunction<DataSession, WebSocket, Long> onOpen, TriConsumer<DataSession, WebSocket, String> onStringMessage,
+                      TriConsumer<DataSession, WebSocket, RawFileData> onBinaryMessage, BiConsumer<DataSession, WebSocket> onClose) {
             super(address);
             this.onOpen = onOpen;
             this.onStringMessage = onStringMessage;
@@ -133,28 +147,31 @@ public class WebSocketMonitorServer extends MonitorServer {
 
         @Override
         public void onOpen(WebSocket conn, ClientHandshake handshake) {
-            //conn.send("Welcome to the server!"); //this method sends a message to the new client
-            String connectionId = onOpen.apply(conn);
-            logicsInstance.getWebSocketManager().putConnection(connectionId, conn);
-
+            consume((session) -> {
+                //conn.send("Welcome to the server!"); //this method sends a message to the new client
+                Long connectionId = onOpen.apply(session, conn);
+                logicsInstance.getWebSocketServer().putConnection(connectionId, conn);
+            });
         }
 
         @Override
         public void onMessage(WebSocket conn, String message) {
             //accept string messages
-            onStringMessage.accept(conn, message);
+            consume((session) -> onStringMessage.accept(session, conn, message));
         }
 
         @Override
         public void onMessage(WebSocket conn, ByteBuffer message) {
             //accept binary messages
-            onBinaryMessage.accept(conn, new RawFileData(message.array()));
+            consume((session) -> onBinaryMessage.accept(session, conn, new RawFileData(message.array())));
         }
 
         @Override
         public void onClose(WebSocket conn, int code, String reason, boolean remote) {
-            onClose.accept(conn);
-            logicsInstance.getWebSocketManager().removeConnection(conn);
+            consume((session) -> {
+                onClose.accept(session, conn);
+                logicsInstance.getWebSocketServer().removeConnection(conn);
+            });
         }
 
         @Override
@@ -166,5 +183,21 @@ public class WebSocketMonitorServer extends MonitorServer {
         public void onStart() {
             //do nothing
         }
+
+        private void consume(Consumer<DataSession> consumer) {
+            ThreadLocalContext.aspectBeforeMonitorHTTP(WebSocketServer.this);
+            try (DataSession session = createSession()) {
+                consumer.accept(session);
+            } catch (SQLException e) {
+                throw Throwables.propagate(e);
+            } finally {
+                ThreadLocalContext.aspectAfterMonitorHTTP(WebSocketServer.this);
+            }
+        }
+    }
+
+    @FunctionalInterface
+    public interface TriConsumer<T, U, V> {
+        void accept(T k, U v, V s);
     }
 }

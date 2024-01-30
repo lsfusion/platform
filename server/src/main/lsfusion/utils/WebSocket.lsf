@@ -4,8 +4,7 @@ REQUIRE SystemEvents;
 
 CLASS WebSocketClient;
 
-id = DATA STRING(WebSocketClient);
-webSocketClient = GROUP AGGR WebSocketClient c BY id(c);
+webSocketClient = GROUP AGGR WebSocketClient c BY LONG(c) IF c IS WebSocketClient;
 hostname = DATA STRING(WebSocketClient);
 
 onStarted() + {
@@ -14,32 +13,29 @@ onStarted() + {
 
 message = DATA TEXT(WebSocketClient);
 
-connectionId = DATA LOCAL STRING();
+connectionId = DATA LOCAL LONG();
 onOpen ABSTRACT LIST (STRING);
 onOpen(STRING hostname) + {
     NEW c = WebSocketClient {
-        id(c) <- STRING(c);
-        connectionId() <- id(c);
+        connectionId() <- LONG(c);
         hostname(c) <- hostname;
     }
 }
 
-//id, message
-onStringMessage ABSTRACT LIST (STRING, STRING);
+onStringMessage ABSTRACT LIST (WebSocketClient, STRING);
 
-//id, message
-onBinaryMessage ABSTRACT LIST (STRING, RAWFILE);
+onBinaryMessage ABSTRACT LIST (WebSocketClient, RAWFILE);
 
-onClose ABSTRACT LIST (STRING);
-onClose(STRING id) + {
-    DELETE webSocketClient(id);
+onClose ABSTRACT LIST (WebSocketClient);
+onClose(WebSocketClient c) + {
+    DELETE c;
 }
 
 sendMessage 'Send message to client' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.websocket.SendMessageAction' (WebSocketClient);
 
 FORM webSockets 'WebSockets'
     OBJECTS c = WebSocketClient
-    PROPERTIES(c) id, hostname, message PANEL, sendMessage
+    PROPERTIES(c) id 'id' = VALUE, hostname, message PANEL, sendMessage
 ;
 
 NAVIGATOR {
