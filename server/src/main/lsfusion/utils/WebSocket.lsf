@@ -1,0 +1,78 @@
+MODULE WebSocket;
+
+REQUIRE SystemEvents;
+
+CLASS Socket;
+
+hostname = DATA STRING(Socket);
+
+stringMessage = DATA STRING(Socket);
+binaryMessage = DATA RAWFILE(Socket);
+
+onStarted() + {
+    DELETE Socket s WHERE s IS Socket;
+}
+
+socketCreated = DATA LOCAL NESTED Socket();
+onOpen ABSTRACT LIST (STRING);
+onOpen(STRING hostname) + {
+    NEW s = Socket {
+        socketCreated() <- s;
+        hostname(s) <- hostname;
+    }
+}
+
+onStringMessage ABSTRACT LIST (Socket, STRING);
+
+onBinaryMessage ABSTRACT LIST (Socket, RAWFILE);
+
+onClose ABSTRACT LIST (Socket);
+onClose(Socket c) + {
+    DELETE c;
+}
+
+sendStringMessage 'Send string message' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.websocket.SendStringMessageAction' (Socket, STRING);
+sendStringMessage 'Send string message' (Socket s) {
+    sendStringMessage(s, stringMessage(s));
+    stringMessage(s) <- NULL;
+}
+sendBinaryMessage 'Send binary message' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.websocket.SendBinaryMessageAction' (Socket, RAWFILE);
+sendBinaryMessage 'Send binary message' (Socket s) {
+    sendBinaryMessage(s, binaryMessage(s)); 
+    binaryMessage(s) <- NULL;
+}
+
+//test client, not for production
+runClient 'Run Client' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.websocket.RunClientAction' ();
+
+
+FORM webSockets 'WebSockets'
+    PROPERTIES() runClient
+    OBJECTS s = Socket
+    PROPERTIES(s) id 'id' = VALUE, hostname, 
+        stringMessage PANEL, sendStringMessage,
+        binaryMessage PANEL, sendBinaryMessage
+;
+
+DESIGN webSockets {
+    NEW main {
+        fill = 1;
+        MOVE BOX(s) {
+            fill = 1;
+        };
+        NEW messages {
+            lines = 2;
+            MOVE PROPERTY(stringMessage(s)) { caption = NULL; };
+            MOVE PROPERTY(sendStringMessage(s));
+            MOVE PROPERTY(binaryMessage(s))  { caption = NULL; };
+            MOVE PROPERTY(sendBinaryMessage(s));
+        }
+        MOVE TOOLBARBOX;   
+    }
+}
+
+NAVIGATOR {
+    system {
+        NEW webSockets;
+    }
+}
