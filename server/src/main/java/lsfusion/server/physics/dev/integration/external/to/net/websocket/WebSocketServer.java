@@ -29,27 +29,27 @@ public class WebSocketServer extends MonitorServer {
 
     private ScriptingLogicsModule LM;
 
-    private HashMap<WebSocket, DataObject> connectionMap = new HashMap<>();
+    private HashMap<WebSocket, DataObject> socketMap = new HashMap<>();
 
-    public void putConnection(DataObject connectionObject, WebSocket conn) {
-        connectionMap.put(conn, connectionObject);
+    public void putSocket(DataObject socketObject, WebSocket conn) {
+        socketMap.put(conn, socketObject);
     }
 
-    public DataObject getConnectionObject(WebSocket conn) {
-        return connectionMap.get(conn);
+    public DataObject getSocketObject(WebSocket conn) {
+        return socketMap.get(conn);
     }
 
-    public WebSocket getConnection(DataObject connectionObject) {
-        for (Map.Entry<WebSocket, DataObject> entry : connectionMap.entrySet()) {
-            if (entry.getValue().equals(connectionObject)) {
+    public WebSocket getSocket(DataObject socketObject) {
+        for (Map.Entry<WebSocket, DataObject> entry : socketMap.entrySet()) {
+            if (entry.getValue().equals(socketObject)) {
                 return entry.getKey();
             }
         }
         return null;
     }
 
-    public void removeConnection(WebSocket conn) {
-        connectionMap.remove(conn);
+    public void removeSocket(WebSocket conn) {
+        socketMap.remove(conn);
     }
 
     @Override
@@ -95,8 +95,8 @@ public class WebSocketServer extends MonitorServer {
             aspectAccept((session) -> {
                 execute(session, "onOpen[STRING]", new DataObject(conn.getRemoteSocketAddress().getHostName()));
                 try {
-                    DataObject connectionObject = (DataObject) LM.findProperty("connectionCreated[]").readClasses(session);
-                    logicsInstance.getWebSocketServer().putConnection(connectionObject, conn);
+                    DataObject socketObject = (DataObject) LM.findProperty("socketCreated[]").readClasses(session);
+                    logicsInstance.getWebSocketServer().putSocket(socketObject, conn);
                 } catch (SQLException | SQLHandledException | ScriptingErrorLog.SemanticErrorException e) {
                     throw Throwables.propagate(e);
                 }
@@ -106,20 +106,20 @@ public class WebSocketServer extends MonitorServer {
         @Override
         public void onMessage(WebSocket conn, String message) {
             //accept string messages
-            aspectAccept((session) -> execute(session, "onStringMessage[WebSocketClient,STRING]", getConnectionObject(conn), new DataObject(message)));
+            aspectAccept((session) -> execute(session, "onStringMessage[Socket,STRING]", getSocketObject(conn), new DataObject(message)));
         }
 
         @Override
         public void onMessage(WebSocket conn, ByteBuffer message) {
             //accept binary messages
-            aspectAccept((session) -> execute(session, "onBinaryMessage[WebSocketClient,RAWFILE]", getConnectionObject(conn), new DataObject(new RawFileData(message.array()), CustomStaticFormatFileClass.get())));
+            aspectAccept((session) -> execute(session, "onBinaryMessage[Socket,RAWFILE]", getSocketObject(conn), new DataObject(new RawFileData(message.array()), CustomStaticFormatFileClass.get())));
         }
 
         @Override
         public void onClose(WebSocket conn, int code, String reason, boolean remote) {
             aspectAccept((session) -> {
-                execute(session, "onClose[WebSocketClient]", getConnectionObject(conn));
-                logicsInstance.getWebSocketServer().removeConnection(conn);
+                execute(session, "onClose[Socket]", getSocketObject(conn));
+                logicsInstance.getWebSocketServer().removeSocket(conn);
             });
         }
 

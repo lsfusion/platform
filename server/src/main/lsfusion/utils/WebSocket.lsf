@@ -2,49 +2,54 @@ MODULE WebSocket;
 
 REQUIRE SystemEvents;
 
-CLASS WebSocketClient;
+CLASS Socket;
 
-hostname = DATA STRING(WebSocketClient);
+hostname = DATA STRING(Socket);
 
-stringMessage = DATA STRING(WebSocketClient);
-binaryMessage = DATA RAWFILE(WebSocketClient);
+stringMessage = DATA STRING(Socket);
+binaryMessage = DATA RAWFILE(Socket);
 
 onStarted() + {
-    DELETE WebSocketClient c WHERE c IS WebSocketClient;
+    DELETE Socket s WHERE s IS Socket;
 }
 
-connectionCreated = DATA LOCAL NESTED WebSocketClient();
+socketCreated = DATA LOCAL NESTED Socket();
 onOpen ABSTRACT LIST (STRING);
 onOpen(STRING hostname) + {
-    NEW c = WebSocketClient {
-        connectionCreated() <- c;
-        hostname(c) <- hostname;
+    NEW s = Socket {
+        socketCreated() <- s;
+        hostname(s) <- hostname;
     }
 }
 
-onStringMessage ABSTRACT LIST (WebSocketClient, STRING);
+onStringMessage ABSTRACT LIST (Socket, STRING);
 
-onBinaryMessage ABSTRACT LIST (WebSocketClient, RAWFILE);
+onBinaryMessage ABSTRACT LIST (Socket, RAWFILE);
 
-onClose ABSTRACT LIST (WebSocketClient);
-onClose(WebSocketClient c) + {
+onClose ABSTRACT LIST (Socket);
+onClose(Socket c) + {
     DELETE c;
 }
 
-sendStringMessage 'Send string message' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.websocket.SendStringMessageAction' (WebSocketClient, STRING);
-sendStringMessage 'Send string message' (WebSocketClient c) {
-    sendStringMessage(c, stringMessage(c));
-    stringMessage(c) <- NULL;
+sendStringMessage 'Send string message' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.websocket.SendStringMessageAction' (Socket, STRING);
+sendStringMessage 'Send string message' (Socket s) {
+    sendStringMessage(s, stringMessage(s));
+    stringMessage(s) <- NULL;
 }
-sendBinaryMessage 'Send binary message' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.websocket.SendBinaryMessageAction' (WebSocketClient, RAWFILE);
-sendBinaryMessage 'Send binary message' (WebSocketClient c) {
-    sendBinaryMessage(c, binaryMessage(c)); 
-    binaryMessage(c) <- NULL;
+sendBinaryMessage 'Send binary message' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.websocket.SendBinaryMessageAction' (Socket, RAWFILE);
+sendBinaryMessage 'Send binary message' (Socket s) {
+    sendBinaryMessage(s, binaryMessage(s)); 
+    binaryMessage(s) <- NULL;
 }
 
+//test client, not for production
+runClient 'Run Client' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.websocket.RunClientAction' ();
+
+
 FORM webSockets 'WebSockets'
-    OBJECTS c = WebSocketClient
-    PROPERTIES(c) id 'id' = VALUE, hostname, 
+    PROPERTIES() runClient
+    OBJECTS s = Socket
+    PROPERTIES(s) id 'id' = VALUE, hostname, 
         stringMessage PANEL, sendStringMessage,
         binaryMessage PANEL, sendBinaryMessage
 ;
@@ -52,15 +57,15 @@ FORM webSockets 'WebSockets'
 DESIGN webSockets {
     NEW main {
         fill = 1;
-        MOVE BOX(c) {
+        MOVE BOX(s) {
             fill = 1;
         };
         NEW messages {
             lines = 2;
-            MOVE PROPERTY(stringMessage(c)) { caption = NULL; };
-            MOVE PROPERTY(sendStringMessage(c));
-            MOVE PROPERTY(binaryMessage(c))  { caption = NULL; };
-            MOVE PROPERTY(sendBinaryMessage(c));
+            MOVE PROPERTY(stringMessage(s)) { caption = NULL; };
+            MOVE PROPERTY(sendStringMessage(s));
+            MOVE PROPERTY(binaryMessage(s))  { caption = NULL; };
+            MOVE PROPERTY(sendBinaryMessage(s));
         }
         MOVE TOOLBARBOX;   
     }

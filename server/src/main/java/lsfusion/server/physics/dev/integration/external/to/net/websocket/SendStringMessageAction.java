@@ -13,22 +13,22 @@ import java.sql.SQLException;
 import java.util.Iterator;
 
 public class SendStringMessageAction extends InternalAction {
-    private final ClassPropertyInterface webSocketClientInterface;
+    private final ClassPropertyInterface socketInterface;
     private final ClassPropertyInterface messageInterface;
 
     public SendStringMessageAction(ScriptingLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = getOrderInterfaces().iterator();
-        webSocketClientInterface = i.next();
+        socketInterface = i.next();
         messageInterface = i.next();
     }
 
     @Override
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        DataObject clientObject = context.getDataKeyValue(webSocketClientInterface);
+        DataObject socketObject = context.getDataKeyValue(socketInterface);
         DataObject messageObject = context.getDataKeyValue(messageInterface);
-        WebSocket connection = context.getLogicsInstance().getWebSocketServer().getConnection(clientObject);
+        WebSocket connection = context.getLogicsInstance().getWebSocketServer().getSocket(socketObject);
         connection.send((String) messageObject.getValue());
     }
 }
