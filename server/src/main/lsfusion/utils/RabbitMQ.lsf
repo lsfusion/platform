@@ -2,11 +2,11 @@ MODULE RabbitMQ;
 
 REQUIRE SystemEvents;
 
-publish 'Publish' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.rabbitmq.PublishRabbitMQAction' (Channel, STRING);
+sendMessage 'Send message' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.rabbitmq.SendMessageRabbitMQAction' (Channel, STRING);
 startConsumer 'Start' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.rabbitmq.StartConsumerRabbitMQAction' (Channel);
 stopConsumer 'Stop' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.rabbitmq.StopConsumerRabbitMQAction' (Channel);
 //queue, message
-processConsumed ABSTRACT LIST (STRING, STRING);
+onMessage ABSTRACT LIST (Channel, STRING);
 
 stopConsumers INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.rabbitmq.StopConsumersRabbitMQAction' ();
 
@@ -39,17 +39,17 @@ restartConsumers 'Restart all consumers' () {
     }
 }
 
-FORM RabbitMQ
+FORM rabbitMQ
     OBJECTS c = Channel, s = STRING PANEL
     PROPERTIES(c) local, isConsumer, host, queue, user, password, 
         start GRID SHOWIF isConsumer(c) AND NOT started(c),
         stop GRID SHOWIF isConsumer(c) AND started(c),
         NEW, DELETE
-    PROPERTIES restartConsumers(), VALUE(s), publish(c, s)
+    PROPERTIES restartConsumers(), VALUE(s), sendMessage(c, s)
 ;
 
 NAVIGATOR {
     system {
-        NEW RabbitMQ;
+        NEW rabbitMQ;
     }
 }
