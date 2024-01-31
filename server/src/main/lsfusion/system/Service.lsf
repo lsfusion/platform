@@ -434,13 +434,8 @@ getServerSettings() ABSTRACT CASE @@noauth;
 getServerSettings() + WHEN TRUE THEN {
     LOCAL noAuthResources = RAWFILE(STRING);
     LOCAL noAuthResourcesOrder = INTEGER(STRING);
-    
-    LOCAL loginResources = INTEGER(STRING);
-    loginResources (STRING s) <- onLoginLoad(s);
-    onLoginLoaded();
-    loginResources (STRING s) <- onLoginLoaded(s) WHERE NOT loginResources(s);
-
-    FOR INTEGER order = loginResources(STRING s) ORDER order DO {
+    onLoginInit();
+    FOR INTEGER order = onLoginInit(STRING s) ORDER order DO {
         readResource(s);
         noAuthResources(resourcePath()) <- RAWFILE (resource());
         noAuthResourcesOrder(resourcePath()) <- order;
@@ -798,11 +793,7 @@ getClientSettings(User user) + WHEN TRUE AND user IS User THEN {
     LOCAL webClientLoadedResourcesOrder = INTEGER(STRING);
     IF isWeb() THEN {
         onWebClientInit();
-
-        LOCAL onWebInit = INTEGER(STRING);
-        onWebInit (STRING s) <- onWebClientInit(s);
-
-        FOR INTEGER order = onWebInit(STRING s) ORDER order DO {
+        FOR INTEGER order = onWebClientInit(STRING s) ORDER order DO {
             readResource(s);
             webClientLoadedResources(resourcePath()) <- RAWFILE (resource());
             webClientLoadedResourcesOrder(resourcePath()) <- order;
