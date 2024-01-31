@@ -42,12 +42,7 @@ sendBinaryMessage 'Send binary message' (Socket s) {
     binaryMessage(s) <- NULL;
 }
 
-//test client, not for production
-runClient 'Run Client' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.websocket.RunClientAction' ();
-
-
 FORM webSockets 'WebSockets'
-    PROPERTIES() runClient
     OBJECTS s = Socket
     PROPERTIES(s) id 'id' = VALUE, hostname, 
         stringMessage PANEL, sendStringMessage,
