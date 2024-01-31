@@ -11,13 +11,11 @@ onStarted() + {
     DELETE WebSocketClient c WHERE c IS WebSocketClient;
 }
 
-message = DATA TEXT(WebSocketClient);
-
-connectionId = DATA LOCAL LONG();
+connectionCreated = DATA LOCAL NESTED WebSocketClient();
 onOpen ABSTRACT LIST (STRING);
 onOpen(STRING hostname) + {
     NEW c = WebSocketClient {
-        connectionId() <- LONG(c);
+        connectionCreated() <- c;
         hostname(c) <- hostname;
     }
 }
@@ -31,12 +29,30 @@ onClose(WebSocketClient c) + {
     DELETE c;
 }
 
-sendMessage 'Send message to client' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.websocket.SendMessageAction' (WebSocketClient);
+sendStringMessage 'Send string message' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.websocket.SendStringMessageAction' (WebSocketClient, STRING);
+sendBinaryMessage 'Send binary message' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.websocket.SendBinaryMessageAction' (WebSocketClient, RAWFILE);
 
 FORM webSockets 'WebSockets'
     OBJECTS c = WebSocketClient
-    PROPERTIES(c) id 'id' = VALUE, hostname, message PANEL, sendMessage
+    PROPERTIES(c) id 'id' = VALUE, hostname
+    
+    OBJECTS m = STRING PANEL 
+    PROPERTIES(m) stringMessage = VALUE
+    PROPERTIES(c, m) sendStringMessage
+    
+    OBJECTS f = RAWFILE PANEL
+    PROPERTIES(f) binaryMessage = VALUE
+    PROPERTIES(c, f) sendBinaryMessage
 ;
+
+DESIGN webSockets {
+    PROPERTY(stringMessage) {
+        showIf = c;
+    }
+    PROPERTY(binaryMessage) {
+        showIf = c;
+    }
+}
 
 NAVIGATOR {
     system {

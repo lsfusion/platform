@@ -7,12 +7,12 @@ import lsfusion.server.base.controller.manager.MonitorServer;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
+import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.data.file.CustomStaticFormatFileClass;
-import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
@@ -20,8 +20,7 @@ import org.java_websocket.handshake.ClientHandshake;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -32,19 +31,19 @@ public class WebSocketServer extends MonitorServer {
 
     private ScriptingLogicsModule LM;
 
-    private HashMap<WebSocket, Long> connectionMap = new HashMap<>();
+    private HashMap<WebSocket, DataObject> connectionMap = new HashMap<>();
 
-    public void putConnection(Long id, WebSocket conn) {
-        connectionMap.put(conn, id);
+    public void putConnection(DataObject connectionObject, WebSocket conn) {
+        connectionMap.put(conn, connectionObject);
     }
 
-    public Long getConnectionId(WebSocket conn) {
+    public DataObject getConnectionObject(WebSocket conn) {
         return connectionMap.get(conn);
     }
 
-    public WebSocket getConnection(Long id) {
-        for (Map.Entry<WebSocket, Long> entry : connectionMap.entrySet()) {
-            if (entry.getValue().equals(id)) {
+    public WebSocket getConnection(DataObject connectionObject) {
+        for (Map.Entry<WebSocket, DataObject> entry : connectionMap.entrySet()) {
+            if (entry.getValue().equals(connectionObject)) {
                 return entry.getKey();
             }
         }
@@ -53,11 +52,6 @@ public class WebSocketServer extends MonitorServer {
 
     public void removeConnection(WebSocket conn) {
         connectionMap.remove(conn);
-    }
-
-
-    public DataObject getConnectionObject(WebSocket conn) throws ScriptingErrorLog.SemanticErrorException {
-        return new DataObject(logicsInstance.getWebSocketServer().getConnectionId(conn), (ConcreteCustomClass) LM.findClass("WebSocketClient"));
     }
 
     @Override
@@ -82,39 +76,15 @@ public class WebSocketServer extends MonitorServer {
         try {
 
             server = new Server(new InetSocketAddress(getLogicsInstance().getRmiManager().getWebSocketPort()), (session, conn) -> {
+                execute(session, "onOpen[STRING]", Collections.singletonList(new DataObject(conn.getRemoteSocketAddress().getHostName())));
                 try {
-                    LM.findAction("onOpen[STRING]").execute(session, getStack(),
-                            new DataObject(conn.getRemoteSocketAddress().getHostName()));
-                    Long connectionId = (Long) LM.findProperty("connectionId[]").read(session);
-                    session.applyException(logicsInstance.getBusinessLogics(), getStack());
-                    return connectionId;
+                    return (DataObject) LM.findProperty("connectionCreated[]").readClasses(session);
                 } catch (SQLException | SQLHandledException | ScriptingErrorLog.SemanticErrorException e) {
                     throw Throwables.propagate(e);
                 }
-            }, (session, conn, message) -> {
-                try {
-                    LM.findAction("onStringMessage[WebSocketClient,STRING]").execute(session, getStack(),
-                            getConnectionObject(conn), new DataObject(message));
-                    session.applyException(logicsInstance.getBusinessLogics(), getStack());
-                } catch (SQLException | SQLHandledException | ScriptingErrorLog.SemanticErrorException e) {
-                    throw Throwables.propagate(e);
-                }
-            }, (session, conn, message) -> {
-                try {
-                    LM.findAction("onBinaryMessage[WebSocketClient,RAWFILE]").execute(session, getStack(),
-                            getConnectionObject(conn), new DataObject(message, CustomStaticFormatFileClass.get()));
-                    session.applyException(logicsInstance.getBusinessLogics(), getStack());
-                } catch (SQLException | SQLHandledException | ScriptingErrorLog.SemanticErrorException e) {
-                    throw Throwables.propagate(e);
-                }
-            }, (session, conn) -> {
-                try {
-                    LM.findAction("onClose[WebSocketClient]").execute(session, getStack(), getConnectionObject(conn));
-                    session.applyException(logicsInstance.getBusinessLogics(), getStack());
-                } catch (SQLException | SQLHandledException | ScriptingErrorLog.SemanticErrorException e) {
-                    throw Throwables.propagate(e);
-                }
-            });
+            }, (session, conn, message) -> execute(session, "onStringMessage[WebSocketClient,STRING]", Arrays.asList(getConnectionObject(conn), new DataObject(message))),
+                    (session, conn, message) -> execute(session, "onBinaryMessage[WebSocketClient,RAWFILE]", Arrays.asList(getConnectionObject(conn), new DataObject(message, CustomStaticFormatFileClass.get()))),
+                    (session, conn) -> execute(session, "onClose[WebSocketClient]", Collections.singletonList(getConnectionObject(conn))));
             server.start();
         } catch (Exception e) {
             throw Throwables.propagate(e);
@@ -131,12 +101,12 @@ public class WebSocketServer extends MonitorServer {
 
     public class Server extends org.java_websocket.server.WebSocketServer {
 
-        final BiFunction<DataSession, WebSocket, Long> onOpen;
+        final BiFunction<DataSession, WebSocket, DataObject> onOpen;
         final TriConsumer<DataSession, WebSocket, String> onStringMessage;
         final TriConsumer<DataSession, WebSocket, RawFileData> onBinaryMessage;
         final BiConsumer<DataSession, WebSocket> onClose;
 
-        public Server(InetSocketAddress address, BiFunction<DataSession, WebSocket, Long> onOpen, TriConsumer<DataSession, WebSocket, String> onStringMessage,
+        public Server(InetSocketAddress address, BiFunction<DataSession, WebSocket, DataObject> onOpen, TriConsumer<DataSession, WebSocket, String> onStringMessage,
                       TriConsumer<DataSession, WebSocket, RawFileData> onBinaryMessage, BiConsumer<DataSession, WebSocket> onClose) {
             super(address);
             this.onOpen = onOpen;
@@ -147,28 +117,28 @@ public class WebSocketServer extends MonitorServer {
 
         @Override
         public void onOpen(WebSocket conn, ClientHandshake handshake) {
-            consume((session) -> {
+            aspectAccept((session) -> {
                 //conn.send("Welcome to the server!"); //this method sends a message to the new client
-                Long connectionId = onOpen.apply(session, conn);
-                logicsInstance.getWebSocketServer().putConnection(connectionId, conn);
+                DataObject connectionObject = onOpen.apply(session, conn);
+                logicsInstance.getWebSocketServer().putConnection(connectionObject, conn);
             });
         }
 
         @Override
         public void onMessage(WebSocket conn, String message) {
             //accept string messages
-            consume((session) -> onStringMessage.accept(session, conn, message));
+            aspectAccept((session) -> onStringMessage.accept(session, conn, message));
         }
 
         @Override
         public void onMessage(WebSocket conn, ByteBuffer message) {
             //accept binary messages
-            consume((session) -> onBinaryMessage.accept(session, conn, new RawFileData(message.array())));
+            aspectAccept((session) -> onBinaryMessage.accept(session, conn, new RawFileData(message.array())));
         }
 
         @Override
         public void onClose(WebSocket conn, int code, String reason, boolean remote) {
-            consume((session) -> {
+            aspectAccept((session) -> {
                 onClose.accept(session, conn);
                 logicsInstance.getWebSocketServer().removeConnection(conn);
             });
@@ -184,7 +154,7 @@ public class WebSocketServer extends MonitorServer {
             //do nothing
         }
 
-        private void consume(Consumer<DataSession> consumer) {
+        private void aspectAccept(Consumer<DataSession> consumer) {
             ThreadLocalContext.aspectBeforeMonitorHTTP(WebSocketServer.this);
             try (DataSession session = createSession()) {
                 consumer.accept(session);
@@ -193,6 +163,15 @@ public class WebSocketServer extends MonitorServer {
             } finally {
                 ThreadLocalContext.aspectAfterMonitorHTTP(WebSocketServer.this);
             }
+        }
+    }
+
+    private void execute(DataSession session, String action, List<ObjectValue> objectValues) {
+        try {
+            LM.findAction(action).execute(session, getStack(), objectValues.toArray(new ObjectValue[0]));
+            session.applyException(logicsInstance.getBusinessLogics(), getStack());
+        } catch (SQLException | SQLHandledException | ScriptingErrorLog.SemanticErrorException e) {
+            throw Throwables.propagate(e);
         }
     }
 
