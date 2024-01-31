@@ -2,14 +2,6 @@ MODULE RabbitMQ;
 
 REQUIRE SystemEvents;
 
-sendMessage 'Send message' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.rabbitmq.SendMessageRabbitMQAction' (Channel, STRING);
-startConsumer 'Start' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.rabbitmq.StartConsumerRabbitMQAction' (Channel);
-stopConsumer 'Stop' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.rabbitmq.StopConsumerRabbitMQAction' (Channel);
-//queue, message
-onMessage ABSTRACT LIST (Channel, STRING);
-
-stopConsumers INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.rabbitmq.StopConsumersRabbitMQAction' ();
-
 CLASS Channel 'Channel';
 
 host 'Host' = DATA STRING (Channel);
@@ -20,11 +12,7 @@ isConsumer 'Consumer' = DATA BOOLEAN (Channel);
 local 'Local' = DATA BOOLEAN (Channel);
 started 'Started' = DATA BOOLEAN (Channel);
 
-stop(Channel c) {
-    stopConsumer(c);
-    started(c) <- NULL;
-    apply();
-}
+startConsumer 'Start' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.rabbitmq.StartConsumerRabbitMQAction' (Channel);
 
 start(Channel c) {
     startConsumer(c);
@@ -32,16 +20,28 @@ start(Channel c) {
     apply();
 }
 
+sendMessage 'Send message' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.rabbitmq.SendMessageRabbitMQAction' (Channel, STRING);
+
+onMessage ABSTRACT LIST (Channel, STRING);
+
+stopConsumer 'Stop' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.rabbitmq.StopConsumerRabbitMQAction' (Channel);
+
+stop(Channel c) {
+    stopConsumer(c);
+    started(c) <- NULL;
+    apply();
+}
+
 restartConsumers 'Restart all consumers' () {
-    stopConsumers();
     FOR host(Channel c) AND queue(c) AND isConsumer(c) DO {
+        stopConsumer(c);
         startConsumer(c);
     }
 }
 
 FORM rabbitMQ
     OBJECTS c = Channel, s = STRING PANEL
-    PROPERTIES(c) local, isConsumer, host, queue, user, password, 
+    PROPERTIES(c) local, isConsumer, host READONLYIF started(c), queue READONLYIF started(c), user, password, 
         start GRID SHOWIF isConsumer(c) AND NOT started(c),
         stop GRID SHOWIF isConsumer(c) AND started(c),
         NEW, DELETE
