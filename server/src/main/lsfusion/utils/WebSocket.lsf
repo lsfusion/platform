@@ -4,8 +4,10 @@ REQUIRE SystemEvents;
 
 CLASS WebSocketClient;
 
-webSocketClient = GROUP AGGR WebSocketClient c BY LONG(c) IF c IS WebSocketClient;
 hostname = DATA STRING(WebSocketClient);
+
+stringMessage = DATA STRING(WebSocketClient);
+binaryMessage = DATA RAWFILE(WebSocketClient);
 
 onStarted() + {
     DELETE WebSocketClient c WHERE c IS WebSocketClient;
@@ -30,27 +32,37 @@ onClose(WebSocketClient c) + {
 }
 
 sendStringMessage 'Send string message' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.websocket.SendStringMessageAction' (WebSocketClient, STRING);
+sendStringMessage 'Send string message' (WebSocketClient c) {
+    sendStringMessage(c, stringMessage(c));
+    stringMessage(c) <- NULL;
+}
 sendBinaryMessage 'Send binary message' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.websocket.SendBinaryMessageAction' (WebSocketClient, RAWFILE);
+sendBinaryMessage 'Send binary message' (WebSocketClient c) {
+    sendBinaryMessage(c, binaryMessage(c)); 
+    binaryMessage(c) <- NULL;
+}
 
 FORM webSockets 'WebSockets'
     OBJECTS c = WebSocketClient
-    PROPERTIES(c) id 'id' = VALUE, hostname
-    
-    OBJECTS m = STRING PANEL 
-    PROPERTIES(m) stringMessage = VALUE
-    PROPERTIES(c, m) sendStringMessage
-    
-    OBJECTS f = RAWFILE PANEL
-    PROPERTIES(f) binaryMessage = VALUE
-    PROPERTIES(c, f) sendBinaryMessage
+    PROPERTIES(c) id 'id' = VALUE, hostname, 
+        stringMessage PANEL, sendStringMessage,
+        binaryMessage PANEL, sendBinaryMessage
 ;
 
 DESIGN webSockets {
-    PROPERTY(stringMessage) {
-        showIf = c;
-    }
-    PROPERTY(binaryMessage) {
-        showIf = c;
+    NEW main {
+        fill = 1;
+        MOVE BOX(c) {
+            fill = 1;
+        };
+        NEW messages {
+            lines = 2;
+            MOVE PROPERTY(stringMessage(c)) { caption = NULL; };
+            MOVE PROPERTY(sendStringMessage(c));
+            MOVE PROPERTY(binaryMessage(c))  { caption = NULL; };
+            MOVE PROPERTY(sendBinaryMessage(c));
+        }
+        MOVE TOOLBARBOX;   
     }
 }
 
