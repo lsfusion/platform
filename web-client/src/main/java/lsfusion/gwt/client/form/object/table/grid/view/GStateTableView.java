@@ -57,6 +57,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     protected NativeHashMap<GGroupObjectValue, PValue> rowBackgroundValues = new NativeHashMap<>();
     protected NativeHashMap<GGroupObjectValue, PValue> rowForegroundValues = new NativeHashMap<>();
     protected List<NativeHashMap<GGroupObjectValue, PValue>> cellValueElementClasses = new ArrayList<>();
+    protected List<NativeHashMap<GGroupObjectValue, PValue>> cellFontValues = new ArrayList<>();
     protected List<NativeHashMap<GGroupObjectValue, PValue>> cellBackgroundValues = new ArrayList<>();
     protected List<NativeHashMap<GGroupObjectValue, PValue>> cellForegroundValues = new ArrayList<>();
     protected List<NativeHashMap<GGroupObjectValue, PValue>> placeholders = new ArrayList<>();
@@ -189,6 +190,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
                 this.readOnlys.add(index, null);
                 this.showIfs.add(index, null);
                 this.cellValueElementClasses.add(index, null);
+                this.cellFontValues.add(index, null);
                 this.cellBackgroundValues.add(index, null);
                 this.cellForegroundValues.add(index, null);
                 this.placeholders.add(index, null);
@@ -363,6 +365,13 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     @Override
     public void updateCellValueElementClasses(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
         this.cellValueElementClasses.set(properties.indexOf(propertyDraw), values);
+
+        this.dataUpdated = true;
+    }
+
+    @Override
+    public void updateCellFontValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        this.cellFontValues.set(properties.indexOf(propertyDraw), values);
 
         this.dataUpdated = true;
     }
@@ -562,6 +571,14 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         return PValue.getClassStringValue(cellCaptionElementClass.get(columnKey));
     }
 
+    protected PValue getCellFont(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
+        NativeHashMap<GGroupObjectValue, PValue> cellFont = cellFontValues.get(properties.indexOf(property));
+        if(cellFont == null)
+            return null;
+
+        return cellFont.get(GGroupObjectValue.getFullKey(rowKey, columnKey));
+    }
+
     protected PValue getCellBackground(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
         NativeHashMap<GGroupObjectValue, PValue> cellBackground = cellBackgroundValues.get(properties.indexOf(property));
         if(cellBackground == null)
@@ -620,6 +637,11 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
 
     protected String getValueElementClass(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
         return getCellValueElementClass(property, rowKey, columnKey);
+    }
+
+    protected GFont getFont(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
+        PValue cellFont = getCellFont(property, rowKey, columnKey);
+        return cellFont == null ? property.font : PValue.getFontValue(cellFont);
     }
 
     protected String getBackground(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {

@@ -43,6 +43,8 @@ public class RmiManager extends LogicsManager implements InitializingBean {
 
     private int httpPort = 0;
 
+    private int webSocketPort = 0;
+
     private int debuggerPort = 0;
 
     private int jmxPort = 0;
@@ -65,6 +67,14 @@ public class RmiManager extends LogicsManager implements InitializingBean {
 
     public void setHttpPort(int httpPort) {
         this.httpPort = httpPort;
+    }
+
+    public int getWebSocketPort() {
+        return webSocketPort;
+    }
+
+    public void setWebSocketPort(int webSocketPort) {
+        this.webSocketPort = webSocketPort;
     }
 
     public int getDebuggerPort() {

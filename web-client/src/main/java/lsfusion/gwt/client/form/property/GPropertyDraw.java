@@ -345,6 +345,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GValueElementClassReader valueElementClassReader;
 
     public GCaptionElementClassReader captionElementClassReader;
+    public GExtraPropReader fontReader;
     public GBackgroundReader backgroundReader;
     public GForegroundReader foregroundReader;
     public GImageReader imageReader;

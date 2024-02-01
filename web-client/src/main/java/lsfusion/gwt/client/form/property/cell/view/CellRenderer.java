@@ -6,6 +6,7 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.view.ColorUtils;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.object.table.view.GToolbarView;
@@ -17,7 +18,6 @@ import lsfusion.gwt.client.view.GColorTheme;
 import lsfusion.gwt.client.view.MainFrame;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
-import static lsfusion.gwt.client.form.property.cell.classes.view.InputBasedCellRenderer.getInputElement;
 
 public abstract class CellRenderer {
 
@@ -303,6 +303,7 @@ public abstract class CellRenderer {
         public Object extraValue;
         public GColorTheme colorTheme; // for action and color cell renderer
 
+        public GFont font;
         public String foreground;
         public String background;
 
@@ -319,8 +320,8 @@ public abstract class CellRenderer {
     private static boolean equalsDynamicState(RenderedState state, PValue value, Object extraValue, GColorTheme colorTheme) {
         return GwtClientUtils.nullEquals(state.value, value) && GwtClientUtils.nullEquals(state.extraValue, extraValue) && state.colorTheme == colorTheme && !state.rerender;
     }
-    private static boolean equalsColorState(RenderedState state, String background, String foreground) {
-        return GwtClientUtils.nullEquals(state.background, background) && GwtClientUtils.nullEquals(state.foreground, foreground);
+    private static boolean equalsFontColorState(RenderedState state, GFont font, String background, String foreground) {
+        return GwtClientUtils.nullEquals(state.font, font) && GwtClientUtils.nullEquals(state.background, background) && GwtClientUtils.nullEquals(state.foreground, foreground);
     }
     private static boolean equalsReadonlyState(RenderedState state, Boolean readonly) {
         return GwtClientUtils.nullEquals(state.readonly, readonly);
@@ -393,13 +394,15 @@ public abstract class CellRenderer {
         }
 
         // already themed colors expected
+        GFont font = updateContext.getFont();
         String background = getBackground(updateContext);
         String foreground = ColorUtils.getThemedColor(updateContext.getForeground());
-        if(isNew || !equalsColorState(renderedState, background, foreground)) {
+        if(isNew || !equalsFontColorState(renderedState, font, background, foreground)) {
+            renderedState.font = font;
             renderedState.background = background;
             renderedState.foreground = foreground;
 
-            GFormController.updateColors(InputBasedCellRenderer.getMainElement(element), background, foreground);
+            GFormController.updateFontColors(InputBasedCellRenderer.getMainElement(element), font, background, foreground);
         }
 
         boolean cleared = false;

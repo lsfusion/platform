@@ -17,6 +17,7 @@ import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.classes.data.GJSONType;
 import lsfusion.gwt.client.classes.data.GLogicalType;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
@@ -389,6 +390,13 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return getValueElementClass(property, getJsObjects(object));
     }
 
+    protected GFont getFont(String property, GGroupObjectValue object) {
+        Column column = getColumn(property);
+        if(column == null)
+            return null;
+        return getFont(column.property, object, column.columnKey);
+    }
+
     protected String getBackground(String property, GGroupObjectValue object) {
         Column column = getColumn(property);
         if(column == null)
@@ -443,6 +451,10 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         if(column == null)
             return null;
         return convertToJSValue(column.property, getValue(column.property, GGroupObjectValue.getFullKey(groupObjectValue, column.columnKey)), RendererType.SIMPLE);
+    }
+
+    protected GFont getFont(String property, JavaScriptObject object) {
+        return getFont(property, getJsObjects(object));
     }
 
     protected String getBackground(String property, JavaScriptObject object) {
@@ -803,6 +815,9 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             },
             getValueClass: function (property, object) {
                 return thisObj.@GSimpleStateTableView::getValueElementClass(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
+            },
+            getFont: function (property, object) {
+                return thisObj.@GSimpleStateTableView::getFont(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
             },
             getBackground: function (property, object) {
                 return thisObj.@GSimpleStateTableView::getBackground(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);

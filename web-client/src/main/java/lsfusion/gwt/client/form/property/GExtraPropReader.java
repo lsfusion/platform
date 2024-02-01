@@ -19,7 +19,9 @@ public class GExtraPropReader extends GExtraPropertyReader {
     }
 
     public void update(GPropertyController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
-        if (readerType == COMMENT) {
+        if(readerType == CELL_FONT) {
+            controller.updateCellFontValues(this, values);
+        } else if (readerType == COMMENT) {
             controller.updatePropertyComments(this, values);
         } else if (readerType == COMMENTELEMENTCLASS) {
             controller.updateCellCommentElementClasses(this, values);
@@ -39,7 +41,9 @@ public class GExtraPropReader extends GExtraPropertyReader {
     }
 
     private static String getPrefix(int readerType) {
-        if (readerType == COMMENT) {
+        if (readerType == CELL_FONT) {
+            return "CELL_FONT";
+        } else if (readerType == COMMENT) {
             return "COMMENT";
         } else if (readerType == COMMENTELEMENTCLASS) {
             return "COMMENTELEMENTCLASS";

@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.base.view;
 
 import lsfusion.gwt.client.base.GwtSharedUtils;
+import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.view.StyleDefaults;
 
 import static java.lang.Math.max;
@@ -181,4 +182,73 @@ public class ColorUtils {
         int color = toRGB(rgb);
         return "rgba(" + getRed(color) + ", " + getGreen(color) + ", " + getBlue(color) + ", " + a + ")";
     }
+
+    //copy of FontInfoConverter.convertToFontInfo
+    public static GFont convertToFontInfo(String value) {
+        if(value == null)
+            return null;
+
+        String name = null;
+
+        // Название шрифта состоит из нескольких слов
+        if(value.contains("\"")) {
+            int start = value.indexOf('"');
+            int end = value.indexOf('"', start + 1) + 1;
+            name = value.substring(start + 1, end - 1);
+            value = value.substring(0, start) + value.substring(end);
+        }
+
+        int size = 0;
+        boolean bold = false;
+        boolean italic = false;
+        for (String part : value.split(" ")) {
+            if (part.isEmpty()) {
+                continue;
+            }
+
+            if (part.equalsIgnoreCase("italic")) {
+                italic = true;
+            } else if (part.equalsIgnoreCase("bold")) {
+                bold = true;
+            } else {
+                int sz = toInt(part, -1);
+                if (sz != -1) {
+                    //числовой токен
+
+                    if (sz <= 0) {
+                        throw new RuntimeException("Size must be > 0");
+                    }
+                    if (size != 0) {
+                        //уже просетали size
+                        throw new RuntimeException("Incorrect format: several number tokens specified");
+                    }
+
+                    size = sz;
+                } else {
+                    //текстовый токен
+                    if (name != null) {
+                        //уже просетали name
+                        throw new RuntimeException("Incorrect format: several name tokens specified");
+                    }
+
+                    name = part;
+                }
+            }
+        }
+
+        return new GFont(name, size, bold, italic);
+    }
+
+    //copy from NumberUtils that is not available in gwt
+    private static int toInt(final String str, final int defaultValue) {
+        if(str == null) {
+            return defaultValue;
+        }
+        try {
+            return Integer.parseInt(str);
+        } catch (final NumberFormatException nfe) {
+            return defaultValue;
+        }
+    }
+
 }

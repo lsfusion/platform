@@ -22,10 +22,6 @@ public class PrereadPropertyCachesTask extends GroupPropertiesTask {
         return true;
     }
 
-    public String getEndCaption() {
-        return "Prereading caches for properties ended";
-    }
-
     @Override
     protected boolean prerun() {
         if (SystemProperties.lightStart || Settings.get().isDisablePrereadCaches()) {

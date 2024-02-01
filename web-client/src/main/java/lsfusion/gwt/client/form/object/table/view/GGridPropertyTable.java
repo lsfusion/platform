@@ -79,6 +79,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> captionElementClasses = new NativeSIDMap<>();
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> cellValueElementClasses = new NativeSIDMap<>();
+    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> cellFontValues = new NativeSIDMap<>();
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> cellBackgroundValues = new NativeSIDMap<>();
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> cellForegroundValues = new NativeSIDMap<>();
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> placeholders = new NativeSIDMap<>();
@@ -333,6 +334,11 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     public void updateCellValueElementClasses(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
         cellValueElementClasses.put(propertyDraw, values);
     }
+
+    public void updateCellFontValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        cellFontValues.put(propertyDraw, values);
+    }
+
     public void updateCellBackgroundValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
         cellBackgroundValues.put(propertyDraw, values);
     }
@@ -783,6 +789,7 @@ protected Double getUserFlex(int i) {
         protected abstract boolean isLoading(GPropertyDraw property, T record);
         protected abstract AppBaseImage getImage(GPropertyDraw property, T record);
         protected abstract String getValueElementClass(GPropertyDraw property, T record);
+        protected abstract GFont getFont(GPropertyDraw property, T record);
         protected abstract String getBackground(GPropertyDraw property, T record);
         protected abstract String getForeground(GPropertyDraw property, T record);
         protected abstract String getPlaceholder(GPropertyDraw property, T record);
@@ -801,7 +808,7 @@ protected Double getUserFlex(int i) {
             if(property == null) // in tree there can be no property in groups other than last
                 return;
 
-            Element renderElement = GPropertyTableBuilder.renderSized(cellElement, property, getFont(), RendererType.GRID);
+            Element renderElement = GPropertyTableBuilder.renderSized(cellElement, property, font, RendererType.GRID);
             form.render(property, renderElement, getRenderContext(cell, renderElement, property, this));
         }
 
@@ -951,6 +958,12 @@ protected Double getUserFlex(int i) {
             public String getValueElementClass() {
                 T row = (T) cell.getRow();
                 return column.getValueElementClass(property, row);
+            }
+
+            @Override
+            public GFont getFont() {
+                T row = (T) cell.getRow();
+                return column.getFont(property, row);
             }
 
             @Override

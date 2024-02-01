@@ -421,6 +421,11 @@ public class GGridController extends GAbstractTableController {
     }
 
     @Override
+    public void updateCellFontValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+        table.updateCellFontValues(formController.getProperty(reader.propertyID), values);
+    }
+
+    @Override
     public void updateCellBackgroundValues(GBackgroundReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         table.updateCellBackgroundValues(formController.getProperty(reader.propertyID), values);
     }

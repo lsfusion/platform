@@ -3,11 +3,14 @@ package lsfusion.gwt.client.form.property;
 import lsfusion.gwt.client.base.AppBaseImage;
 import lsfusion.gwt.client.base.AppStaticImage;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.property.cell.classes.*;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+
+import static lsfusion.gwt.client.base.view.ColorUtils.convertToFontInfo;
 
 public interface PValue {
 
@@ -128,6 +131,10 @@ public interface PValue {
 
     static AppBaseImage getImageValue(PValue value) {
         return getValue(value); // was converted in convertFileValue
+    }
+
+    static GFont getFontValue(PValue value) {
+        return convertToFontInfo(getValue(value));
     }
 
     static String getColorStringValue(PValue value) {

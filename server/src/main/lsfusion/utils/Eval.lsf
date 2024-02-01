@@ -48,21 +48,23 @@ DESIGN exception {
                 horizontal = TRUE;
                 height = 100;
                 NEW javaStack {
+                    caption = '{eval.script.form.exception.caption.java.stack}';
+                    width = 100;
                     fill = 1;
                     MOVE PROPERTY(valueJavaStack) {
-                        fill = 1;
-                        caption = '{eval.script.form.exception.caption.java.stack}';
-                        panelCaptionVertical = TRUE;
+                        alignShrink = FALSE;
                         valueHeight = -1;
+                        valueWidth = -1;
                     }
                 }
                 NEW lsfStack {
+                    caption = '{eval.script.form.exception.caption.lsf.stack}';
+                    width = 100;
                     fill = 1;
                     MOVE PROPERTY(valueLsfStack) {
-                        fill = 1;
-                        caption = '{eval.script.form.exception.caption.lsf.stack}';
-                        panelCaptionVertical = TRUE;
+                        alignShrink = FALSE;
                         valueHeight = -1;
+                        valueWidth = -1;
                     }
                 }
                 TOOLBARBOX {

@@ -19,6 +19,7 @@ import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.event.GBindingEnv;
 import lsfusion.gwt.client.form.event.GBindingMode;
 import lsfusion.gwt.client.form.event.GMouseInputEvent;
@@ -325,6 +326,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     private static class RenderedState {
         public GTreeColumnValue value;
 
+        public GFont font;
         public String foreground;
         public String background;
     }
@@ -399,11 +401,12 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             GTreeGridRecord rowValue = (GTreeGridRecord) cell.getRow();
             String background = ColorUtils.getThemedColor(rowValue.getRowBackground());
             String foreground = ColorUtils.getThemedColor(rowValue.getRowForeground());
-            if(isNew || !equalsColorState(renderedState, background, foreground)) {
+            if(isNew || !equalsFontColorState(renderedState, font, background, foreground)) {
+                renderedState.font = font;
                 renderedState.background = background;
                 renderedState.foreground = foreground;
 
-                GFormController.updateColors(cellElement, background, foreground);
+                GFormController.updateFontColors(cellElement, font, background, foreground);
             }
 
             GTreeColumnValue treeValue = getTreeValue(cell);
@@ -417,8 +420,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         private boolean equalsDynamicState(RenderedState state, GTreeColumnValue value) {
             return state.value.equalsValue(value);
         }
-        private boolean equalsColorState(RenderedState state, String background, String foreground) {
-            return GwtClientUtils.nullEquals(state.background, background) && GwtClientUtils.nullEquals(state.foreground, foreground);
+        private boolean equalsFontColorState(RenderedState state, GFont font, String background, String foreground) {
+            return GwtClientUtils.nullEquals(state.font, font) && GwtClientUtils.nullEquals(state.background, background) && GwtClientUtils.nullEquals(state.foreground, foreground);
         }
 
         private void renderDynamicContent(TableCellElement cellElement, GTreeColumnValue treeValue) {
@@ -485,6 +488,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         @Override
         protected String getValueElementClass(GPropertyDraw property, GTreeGridRecord record) {
             return record.getValueElementClass(property);
+        }
+
+        @Override
+        protected GFont getFont(GPropertyDraw property, GTreeGridRecord record) {
+            return record.getFont(property);
         }
 
         @Override
@@ -586,6 +594,12 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     public void updateReadOnlyValues(GPropertyDraw property, NativeHashMap<GGroupObjectValue, PValue> readOnlyValues) {
         GwtSharedUtils.putUpdate(readOnly, property, readOnlyValues, false);
 
+        dataUpdated = true;
+    }
+
+    @Override
+    public void updateCellFontValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        super.updateCellFontValues(propertyDraw, values);
         dataUpdated = true;
     }
 
@@ -850,6 +864,12 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                         if (propValueElementClasses != null)
                             valueElementClass = propValueElementClasses.get(key);
                         objectRecord.setValueElementClass(property, valueElementClass == null ? property.valueElementClass : PValue.getClassStringValue(valueElementClass));
+
+                        PValue font = null;
+                        NativeHashMap<GGroupObjectValue, PValue> propFonts = cellFontValues.get(property);
+                        if (propFonts != null)
+                            font = propFonts.get(key);
+                        objectRecord.setFont(property, font == null ? property.font : PValue.getFontValue(font));
 
                         PValue background = null;
                         NativeHashMap<GGroupObjectValue, PValue> propBackgrounds = cellBackgroundValues.get(property);

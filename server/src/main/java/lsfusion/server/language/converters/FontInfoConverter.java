@@ -29,23 +29,28 @@ public class FontInfoConverter extends AbstractConverter {
         if (value instanceof Font) {
             return value;
         }
+        return convertToFontInfo(value.toString());
+    }
+
+    public static FontInfo convertToFontInfo(String value) {
+        if(value == null)
+            return null;
 
         String name = null;
 
         // Название шрифта состоит из нескольких слов
-        String sValue = value.toString();
-        if(sValue.contains("\"")) {
-            int start = sValue.indexOf('"');
-            int end = sValue.indexOf('"', start + 1) + 1;
-            name = sValue.substring(start + 1, end - 1);
-            sValue = sValue.substring(0, start) + sValue.substring(end);
+        if(value.contains("\"")) {
+            int start = value.indexOf('"');
+            int end = value.indexOf('"', start + 1) + 1;
+            name = value.substring(start + 1, end - 1);
+            value = value.substring(0, start) + value.substring(end);
         }
 
         int size = 0;
         boolean bold = false;
         boolean italic = false;
-        for (String part : sValue.split(" ")) {
-            if (part.length() == 0) {
+        for (String part : value.split(" ")) {
+            if (part.isEmpty()) {
                 continue;
             }
 
