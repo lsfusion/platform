@@ -48,11 +48,13 @@ public class RabbitMQServer extends MonitorServer {
 
     @Override
     protected void onStarted(LifecycleEvent event) {
-        ServerLoggers.systemLogger.info("Binding RabbitMQServer");
-        try(DataSession session = createSession()) {
-            LM.findAction("restartConsumers[]").execute(session, getTopStack());
-        } catch (SQLException | ScriptingErrorLog.SemanticErrorException | SQLHandledException e) {
-            throw Throwables.propagate(e);
+        if(LM != null) {
+            ServerLoggers.systemLogger.info("Binding RabbitMQServer");
+            try (DataSession session = createSession()) {
+                LM.findAction("restartConsumers[]").execute(session, getTopStack());
+            } catch (SQLException | ScriptingErrorLog.SemanticErrorException | SQLHandledException e) {
+                throw Throwables.propagate(e);
+            }
         }
     }
 
