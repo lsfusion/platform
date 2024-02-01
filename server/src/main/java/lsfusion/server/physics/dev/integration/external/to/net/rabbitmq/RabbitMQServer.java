@@ -114,13 +114,6 @@ public class RabbitMQServer extends MonitorServer {
         }
     }
 
-    public void stopConsume() throws IOException, TimeoutException {
-        for (Pair<Channel, Connection> consumer : consumers.values()) {
-            stopConsume(consumer);
-        }
-        consumers = new HashMap<>();
-    }
-
     public void stopConsume(Pair<Channel, Connection> consumer) throws IOException, TimeoutException {
         consumer.first.close();
         consumer.second.close();
