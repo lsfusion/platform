@@ -2,14 +2,6 @@ MODULE RabbitMQ;
 
 REQUIRE SystemEvents;
 
-publish 'Publish' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.rabbitmq.PublishRabbitMQAction' (Channel, STRING);
-startConsumer 'Start' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.rabbitmq.StartConsumerRabbitMQAction' (Channel);
-stopConsumer 'Stop' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.rabbitmq.StopConsumerRabbitMQAction' (Channel);
-//queue, message
-processConsumed ABSTRACT LIST (STRING, STRING);
-
-stopConsumers INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.rabbitmq.StopConsumersRabbitMQAction' ();
-
 CLASS Channel 'Channel';
 
 host 'Host' = DATA STRING (Channel);
@@ -20,11 +12,7 @@ isConsumer 'Consumer' = DATA BOOLEAN (Channel);
 local 'Local' = DATA BOOLEAN (Channel);
 started 'Started' = DATA BOOLEAN (Channel);
 
-stop(Channel c) {
-    stopConsumer(c);
-    started(c) <- NULL;
-    apply();
-}
+startConsumer 'Start' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.rabbitmq.StartConsumerRabbitMQAction' (Channel);
 
 start(Channel c) {
     startConsumer(c);
@@ -32,24 +20,40 @@ start(Channel c) {
     apply();
 }
 
-restartConsumers 'Restart all customers' () {
-    stopConsumers();
+sendMessage 'Send message' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.rabbitmq.SendMessageRabbitMQAction' (Channel, STRING);
+
+onMessage ABSTRACT LIST (Channel, STRING);
+
+stopConsumer 'Stop' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.rabbitmq.StopConsumerRabbitMQAction' (Channel);
+
+stop(Channel c) {
+    stopConsumer(c);
+    started(c) <- NULL;
+    apply();
+}
+
+restartConsumers 'Restart all consumers' () {
     FOR host(Channel c) AND queue(c) AND isConsumer(c) DO {
+        stopConsumer(c);
         startConsumer(c);
     }
 }
 
-FORM RabbitMQ
+onStarted() +{
+    TRY restartConsumers();
+}
+
+FORM rabbitMQ
     OBJECTS c = Channel, s = STRING PANEL
-    PROPERTIES(c) local, isConsumer, host, queue, user, password, 
+    PROPERTIES(c) local, isConsumer, host READONLYIF started(c), queue READONLYIF started(c), user, password, 
         start GRID SHOWIF isConsumer(c) AND NOT started(c),
         stop GRID SHOWIF isConsumer(c) AND started(c),
         NEW, DELETE
-    PROPERTIES restartConsumers(), VALUE(s), publish(c, s)
+    PROPERTIES restartConsumers(), VALUE(s), sendMessage(c, s)
 ;
 
 NAVIGATOR {
     system {
-        NEW RabbitMQ;
+        NEW rabbitMQ;
     }
 }
