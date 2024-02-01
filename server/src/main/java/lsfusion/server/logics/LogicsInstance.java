@@ -17,6 +17,7 @@ import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.admin.reflection.controller.manager.ReflectionManager;
+import lsfusion.server.physics.dev.integration.external.to.net.rabbitmq.RabbitMQServer;
 import lsfusion.server.physics.dev.integration.external.to.net.websocket.WebSocketServer;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import org.apache.log4j.Logger;
@@ -49,6 +50,8 @@ public class LogicsInstance implements InitializingBean {
     private ReflectionManager reflectionManager;
 
     private RmiManager rmiManager;
+
+    private RabbitMQServer rabbitMQServer;
 
     private WebSocketServer webSocketServer;
 
@@ -122,6 +125,14 @@ public class LogicsInstance implements InitializingBean {
 
     public void setRmiManager(RmiManager rmiManager) {
         this.rmiManager = rmiManager;
+    }
+
+    public RabbitMQServer getRabbitMQServer() {
+        return rabbitMQServer;
+    }
+
+    public void setRabbitMQServer(RabbitMQServer rabbitMQServer) {
+        this.rabbitMQServer = rabbitMQServer;
     }
 
     public WebSocketServer getWebSocketServer() {
