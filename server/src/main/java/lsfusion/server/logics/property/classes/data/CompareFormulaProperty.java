@@ -16,6 +16,7 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.util.Iterator;
+import java.util.function.IntFunction;
 
 public class CompareFormulaProperty extends ValueFormulaProperty<CompareFormulaProperty.Interface> {
 
@@ -53,7 +54,8 @@ public class CompareFormulaProperty extends ValueFormulaProperty<CompareFormulaP
     public Inferred<Interface> calcInferInterfaceClasses(ExClassSet commonValue, InferType inferType) {
         if(inferSameClassCompare())
             return inferJoinInterfaceClasses(operator1, operator2, inferType);
-        return super.calcInferInterfaceClasses(commonValue, inferType);
+
+        return new Inferred<>(interfaces.mapValues((IntFunction<ExClassSet>) index -> null));
     }
 
     public <T extends PropertyInterface> Inferred<T> inferJoinInterfaceClasses(PropertyInterfaceImplement<T> operator1, PropertyInterfaceImplement<T> operator2, InferType inferType) {

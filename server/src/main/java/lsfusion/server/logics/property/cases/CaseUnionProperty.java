@@ -521,12 +521,14 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     public boolean calcNeedInferredForValueClass(InferType inferType) {
         if(isAbstract())
             return false;
+
         return opNeedInferForValueClass(getProps(), inferType);
     }
 
     public ExClassSet calcInferValueClass(ImMap<Interface, ExClassSet> inferred, InferType inferType) {
         if(isAbstract())
             return classValueWhere.getCommonExClasses(SetFact.singleton("value")).singleValue();
+
         return opInferValueClasses(getProps(), inferred, true, inferType);
     }
 

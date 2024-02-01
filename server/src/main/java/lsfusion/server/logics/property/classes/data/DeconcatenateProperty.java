@@ -14,6 +14,8 @@ import lsfusion.server.logics.property.classes.infer.Inferred;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
+import java.util.function.IntFunction;
+
 public class DeconcatenateProperty extends FormulaProperty<DeconcatenateProperty.Interface> {
     
     public static class Interface extends PropertyInterface {
@@ -44,8 +46,7 @@ public class DeconcatenateProperty extends FormulaProperty<DeconcatenateProperty
 
     @Override
     public Inferred<Interface> calcInferInterfaceClasses(ExClassSet commonValue, InferType inferType) {
-        // так как не знаем соседних типов не можем построить valueclass
-        return super.calcInferInterfaceClasses(commonValue, inferType);
+        return new Inferred<>(interfaces.mapValues((IntFunction<ExClassSet>) index -> null));
     }
     @Override
     public ExClassSet calcInferValueClass(ImMap<Interface, ExClassSet> inferred, InferType inferType) {

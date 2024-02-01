@@ -25,7 +25,6 @@ import lsfusion.server.base.ResourceUtils;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.Version;
-import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.PartitionType;
@@ -116,9 +115,8 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.Union;
 import lsfusion.server.logics.property.cases.CaseUnionProperty;
-import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
-import lsfusion.server.logics.property.classes.data.FormulaImplProperty;
+import lsfusion.server.logics.property.classes.data.FormulaJoinProperty;
 import lsfusion.server.logics.property.classes.infer.AlgType;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.data.DataProperty;
@@ -150,7 +148,6 @@ import lsfusion.server.physics.dev.integration.external.to.*;
 import lsfusion.server.physics.dev.integration.external.to.file.ReadAction;
 import lsfusion.server.physics.dev.integration.external.to.file.WriteAction;
 import lsfusion.server.physics.dev.integration.external.to.mail.SendEmailAction;
-import lsfusion.server.physics.dev.integration.internal.to.StringFormulaProperty;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
 import org.antlr.runtime.ANTLRStringStream;
@@ -1286,7 +1283,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     // it seems that there are a lot more lazy properties (for example AndFormulaProperty instances in BaseLogicsModule - object, and1, etc.)
     // but so far it doesn't seem to be that critical
     private boolean isLazy(LP<?> property) {
-        return property.property instanceof ValueProperty || property.property instanceof IsClassProperty || property.property instanceof FormulaImplProperty || property == baseLM.object; // == baseLM.object since it is used in checkSingleParam
+        return property.property instanceof ValueProperty || property.property instanceof IsClassProperty || property.property instanceof FormulaJoinProperty || property == baseLM.object; // == baseLM.object since it is used in checkSingleParam
     }
 
     protected LP<?> wrapProperty(LP<?> property) {
@@ -3296,21 +3293,19 @@ public class ScriptingLogicsModule extends LogicsModule {
         MExclMap<SQLSyntaxType, String> mSyntaxes = MapFact.mExclMap();
         for (int i = 0; i < types.size(); i++) {
             SQLSyntaxType type = types.get(i);
-            String text = transformFormulaText(implTexts.get(i), StringFormulaProperty.getParamName("$1"));
+            String text = transformFormulaText(implTexts.get(i), FormulaJoinProperty.getParamName("$1"));
             if (type == null) {
                 defaultFormula = text;
             } else {
                 mSyntaxes.exclAdd(type, text);
             }
         }
-        CustomFormulaSyntax formula = new CustomFormulaSyntax(defaultFormula, mSyntaxes.immutable());
+        ValueClass cls = null;
         if (typeName != null) {
-            ValueClass cls = findClass(typeName);
+            cls = findClass(typeName);
             checks.checkFormulaClass(cls);
-            return addSFProp(formula, (DataClass) cls, params.size(), valueNull, paramsNull);
-        } else {
-            return addSFProp(formula, params.size(), valueNull, paramsNull);
         }
+        return addSFProp(defaultFormula, mSyntaxes.immutable(), (DataClass) cls, params.size(), valueNull, paramsNull);
     }
 
     private Set<Integer> findFormulaParameters(String text) {
