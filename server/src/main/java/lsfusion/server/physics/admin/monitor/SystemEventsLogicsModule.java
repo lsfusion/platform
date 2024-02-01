@@ -87,10 +87,6 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
 
     public LP currentLaunch;
 
-    public LP platformVersion;
-    public LP apiVersion;
-    public LP revisionVersion;
-
     public LP messageException;
     public LP dateException;
     public LP erTraceException;
@@ -191,10 +187,6 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         launchConnection = findProperty("launch[Connection]");
 
         currentLaunch = findProperty("currentLaunch[]");
-
-        platformVersion = findProperty("platformVersion[]");
-        apiVersion = findProperty("apiVersion[]");
-        revisionVersion = findProperty("revisionVersion[]");
 
         // Ошибки выполнения
         messageException = findProperty("message[Exception]");

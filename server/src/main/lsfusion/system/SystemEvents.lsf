@@ -425,11 +425,13 @@ shutdown '{system.events.shutdown}' (Connection c)  {
 platformVersion = DATA TEXT();
 apiVersion = DATA INTEGER();
 revisionVersion = DATA INTEGER();
+synchronizeVersions ()  INTERNAL  'lsfusion.server.logics.action.SynchronizeVersionsAction' ();    
 
 resetConnections() ABSTRACT();
 
 onStarted() + { 
     writeDefaultCredentials();
+    synchronizeVersions();
     NEW launch = Launch {
         computer(launch) <- currentComputer();
         time(launch) <- currentDateTime();
