@@ -39,10 +39,6 @@ restartConsumers 'Restart all consumers' () {
     }
 }
 
-onStarted() +{
-    TRY restartConsumers();
-}
-
 FORM rabbitMQ
     OBJECTS c = Channel, s = STRING PANEL
     PROPERTIES(c) local, isConsumer, host READONLYIF started(c), queue READONLYIF started(c), user, password, 
