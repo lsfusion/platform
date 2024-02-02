@@ -170,17 +170,17 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
 
     public LP overQuantityTableColumn;
     public LP notNullQuantityTableColumn;
-    public LA recalculateAggregationTableColumn;
+    public LA recalculateMaterializationsTableColumn;
 
     public LP disableClassesTable;
     public LP disableStatsTable;
-    public LP disableAggregationsTableColumn;
+    public LP disableMaterializationsTableColumn;
     public LP disableClassesTableColumn;
     public LP disableStatsTableColumn;
 
     public LP disableClassesTableSID;
     public LP disableStatsTableSID;
-    public LP disableAggregationsTableColumnSID;
+    public LP disableMaterializationsTableColumnSID;
     public LP disableStatsTableColumnSID;
 
     public LP<?> sidTableDropColumn;
@@ -410,18 +410,18 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         overQuantityTableColumn = findProperty("overQuantity[TableColumn]");
         notNullQuantityTableColumn = findProperty("notNullQuantity[TableColumn]");
 
-        recalculateAggregationTableColumn = findAction("recalculateAggregation[TableColumn]");
+        recalculateMaterializationsTableColumn = findAction("recalculateAggregation[TableColumn]");
 
         //Отключение пересчётов и проверок
         disableClassesTable = findProperty("disableClasses[Table]");
         disableStatsTable = findProperty("disableStatsTable[Table]");
-        disableAggregationsTableColumn = findProperty("disableAggregations[TableColumn]");
+        disableMaterializationsTableColumn = findProperty("disableAggregations[TableColumn]");
         disableClassesTableColumn = findProperty("disableClasses[TableColumn]");
         disableStatsTableColumn = findProperty("disableStatsTableColumn[TableColumn]");
 
         disableClassesTableSID = findProperty("disableClasses[ISTRING[100]]");
         disableStatsTableSID = findProperty("disableStatsTable[ISTRING[100]]");
-        disableAggregationsTableColumnSID = findProperty("disableAggregations[ISTRING[100]]");
+        disableMaterializationsTableColumnSID = findProperty("disableAggregations[ISTRING[100]]");
         disableStatsTableColumnSID = findProperty("disableStatsTableColumn[ISTRING[100]]");
 
         // Удаленные колонки
