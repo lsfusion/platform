@@ -2,6 +2,8 @@ MODULE SystemEvents;
 
 REQUIRE System, Reflection, Time;
 
+// some extracted from onStarted() important things needed for early [anonymous] login on server with lightStart on (first of all for tryonline logics) 
+onInit ABSTRACT LIST ();
 onStarted  ABSTRACT LIST ( );
 onClientStarted ABSTRACT LIST ();
 onDesktopClientStarted  ABSTRACT LIST ( );
@@ -25,6 +27,11 @@ onLoginInit() +{
 onWebClientLoad ABSTRACT LIST ();
 onWebClientStarted () +{
     onWebClientLoad();
+}
+
+onInitApply {
+    onInit();
+    APPLY;
 }
 
 onStartedApply() {
@@ -429,9 +436,12 @@ synchronizeVersions ()  INTERNAL  'lsfusion.server.logics.action.SynchronizeVers
 
 resetConnections() ABSTRACT();
 
+onInit() + {
+    synchronizeVersions();
+}
+
 onStarted() + { 
     writeDefaultCredentials();
-    synchronizeVersions();
     NEW launch = Launch {
         computer(launch) <- currentComputer();
         time(launch) <- currentDateTime();

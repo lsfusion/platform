@@ -376,14 +376,14 @@ updateGlobalSetting(Setting r) {
         updateSetting(r, ur, NULL);    
 }
 
-onStarted() + {  
+onInit() + {
     writeDefaultSettings();
 
-    FOR baseValue(Setting r) DO 
+    FOR baseValue(Setting r) DO
         updateGlobalSetting(r);
 
-    FOR baseValue(Setting r, UserRole ur) DO 
-        updateSetting(r, ur, TRUE); 
+    FOR baseValue(Setting r, UserRole ur) DO
+        updateSetting(r, ur, TRUE);
 }
 
 WHEN CHANGED (baseValue(Setting r)) DO

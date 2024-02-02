@@ -644,6 +644,14 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
+    <bean id="executeOnInitTask" class="lsfusion.server.logics.controller.init.ExecuteOnInitTask">
+        <property name="BL" ref="businessLogics"/>
+        <property name="dependencies">
+            <set>
+            </set>
+        </property>
+    </bean>
+
     <bean id="initDebugTask" class="lsfusion.server.physics.dev.debug.controller.init.InitActionDebuggerTask">
         <property name="logicsInstance" ref="logicsInstance"/>
         <property name="dependencies">
@@ -686,6 +694,7 @@
         <property name="initDevTask" ref="initDevRLTask"/>
         <property name="dependencies">
             <set>
+                <ref bean="executeOnInitTask"/>
                 <ref bean="executeImportIconsTask"/> <!-- icons should be synchronized first -->
             </set>
         </property>

@@ -50,6 +50,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public ConcreteCustomClass connectionStatus;
     public ConcreteCustomClass session;
 
+    public LA<?> onInit;
     public LA<?> onStarted;
 
     public LP useBootstrap;
@@ -151,6 +152,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
 
         super.initMainLogic();
 
+        onInit = findAction("onInitApply[]");
         onStarted = findAction("onStartedApply[]");
 
         useBootstrap = findProperty("useBootstrap[DesignEnv]");
