@@ -23,7 +23,7 @@ public class FormulaUnionProperty extends UnionProperty {
     private final ImList<PropertyInterfaceImplement<Interface>> operands;
 
     // FORMULA
-    // not pretty but otherwise we need more complicated class structure (the same thing is in FormulaJoinProperty now)
+    // not pretty, but otherwise we need more complicated class structure (the same thing is in FormulaJoinProperty now)
     public FormulaUnionProperty(DataClass valueClass, CustomFormulaSyntax formula, int paramCount) {
         this(valueClass, formula, getInterfaces(paramCount));
     }

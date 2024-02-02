@@ -358,8 +358,8 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     public static Element getBrowserTargetAndCheck(Element element, Event event) {
         // there is a problem with non-bubbling events (there are not many such events, see CellBasedWidgetImplStandard.nonBubblingEvents, so basically focus events):
         // handleNonBubblingEvent just looks for the first event listener
-        // but if there are 2 widgets listening to the focus events (for example when in ActionOrPropertyValue there is an embedded form and TableContainer inside)
-        // then the lower widget gets both blur events and the upper widget gets none of them (which leads to the very undesirable behaviour with the "double" finishEditing, etc.)
+        // but if there are 2 widgets listening to the focus events (for example when in ActionOrPropertyValue there is an embedded form and there is a TableContainer inside)
+        // then the lower widget gets both blur events (there 2 of them with different current targets, i.e supposed to be handled by different elements) and the upper widget gets none of them (which leads to the very undesirable behaviour with the "double" finishEditing, etc.)
         if(DataGrid.checkSinkFocusEvents(event)) { // there is a bubble field, but it does
             EventTarget currentEventTarget = event.getCurrentEventTarget();
             if(Element.is(currentEventTarget)) {
