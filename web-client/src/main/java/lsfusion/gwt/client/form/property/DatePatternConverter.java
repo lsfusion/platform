@@ -19,7 +19,9 @@ public class DatePatternConverter {
             if (nextCh == curCh) {
                 ++count;
             } else {
-                builder.append(convert(curCh, count));
+                if (curCh != 0) {
+                    builder.append(convert(curCh, count));
+                }
                 curCh = nextCh;
                 count = 1;
             }
