@@ -1595,11 +1595,14 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 apply(session);
 
                 if (!isFirstStart) { // если все свойства "новые" то ничего перерасчитывать не надо
-                    startLog("Recalculating aggregations");
-                    List<Property> recalculateProperties = new ArrayList<>();
-                    for (DBStoredProperty property : createProperties)
-                        recalculateProperties.add(property.property);
-                    recalculateAggregations(session, getStack(), sql, recalculateProperties, false, ServerLoggers.startLogger);
+                    startLog("Recalculating materializations");
+                    List<AggregateProperty> recalculateProperties = new ArrayList<>();
+                    for (DBStoredProperty property : createProperties) {
+                        if(property.property instanceof AggregateProperty) {
+                            recalculateProperties.add((AggregateProperty) property.property);
+                        }
+                    }
+                    recalculateMaterializations(session, sql, recalculateProperties, false, ServerLoggers.startLogger);
                     apply(session);
 
                     List<Pair<Property, Boolean>> updateStatProperties = new ArrayList<>();
@@ -1607,7 +1610,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                         updateStatProperties.add(new Pair<>(property.property, property.property instanceof StoredDataProperty)); // we don't want to update DATA stats (it is always zero)
                     for (MoveDBProperty move : moveProperties)
                         updateStatProperties.add(new Pair<>(move.newProperty.property, false));
-                    updateAggregationStats(session, updateStatProperties);
+                    updateMaterializationStats(session, updateStatProperties);
                     apply(session);
                 }
 
@@ -1969,19 +1972,21 @@ public class DBManager extends LogicsManager implements InitializingBean {
         serverComputer = (long) getComputer(SystemUtils.getLocalHostName(), session, getStack()).object;
     }
 
-    private void updateAggregationStats(DataSession session, List<Pair<Property, Boolean>> recalculateProperties) throws SQLException, SQLHandledException {
+    private void updateMaterializationStats(DataSession session, List<Pair<Property, Boolean>> recalculateProperties) throws SQLException, SQLHandledException {
         Map<ImplementTable, List<Pair<Property, Boolean>>> propertiesMap;
         if (Settings.get().isGroupByTables()) {
             propertiesMap = new HashMap<>();
             for (Pair<Property, Boolean> property : recalculateProperties)
                 propertiesMap.computeIfAbsent(property.first.mapTable.table, k -> new ArrayList<>()).add(property);
 
+            int count = 1;
+            int total = propertiesMap.size();
             for(Map.Entry<ImplementTable, List<Pair<Property, Boolean>>> entry : propertiesMap.entrySet())
-                recalculateAndUpdateStat(session, entry.getKey(), entry.getValue());
+                recalculateAndUpdateStat(session, entry.getKey(), entry.getValue(), count++, total);
         }
     }
 
-    private void recalculateAndUpdateStat(DataSession session, ImplementTable table, List<Pair<Property, Boolean>> properties) throws SQLException, SQLHandledException {
+    private void recalculateAndUpdateStat(DataSession session, ImplementTable table, List<Pair<Property, Boolean>> properties, int count, int total) throws SQLException, SQLHandledException {
         ImSet<Pair<Property, Boolean>> propertySet = SetFact.fromJavaOrderSet(properties).getSet();
         ImMap<PropertyField, String> fields = propertySet.mapKeyValues(property -> property.first.field, property -> property.first.getCanonicalName());
         ImSet<PropertyField> skipRecalculateFields = propertySet.filterFn(property -> property.second).mapSetValues(property -> property.first.field);
@@ -1991,7 +1996,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             table.recalculateStat(reflectionLM, session, fields, skipRecalculateFields, false);
             propsStat.result = table.recalculateStat(reflectionLM, session, fields, skipRecalculateFields, true);
             apply(session);
-        }, String.format("Updating aggregation stats: %s", table));
+        }, String.format("Updating materialization stats %s of %s: %s", count, total, table));
             
         table.updateStat(propsStat.result, fields.keys(), false);
     }
@@ -2031,7 +2036,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    public String checkAggregations(SQLSession session) throws SQLException, SQLHandledException {
+    public String checkMaterializations(SQLSession session) throws SQLException, SQLHandledException {
         List<AggregateProperty> checkProperties;
         try(DataSession dataSession = createRecalculateSession(session)) {
             checkProperties = businessLogics.getRecalculateAggregateStoredProperties(dataSession, false);
@@ -2040,7 +2045,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         for (int i = 0; i < checkProperties.size(); i++) {
             Property property = checkProperties.get(i);
             if(property != null)
-                message += ((AggregateProperty) property).checkAggregation(session, LM.baseClass, new ProgressBar(localize("{logics.info.checking.aggregated.property}"), i, checkProperties.size(), property.toString()));
+                message += ((AggregateProperty) property).checkMaterialization(session, LM.baseClass, new ProgressBar(localize("{logics.info.checking.materialized.property}"), i, checkProperties.size(), property.toString()));
         }
         return message;
     }
@@ -2094,14 +2099,14 @@ public class DBManager extends LogicsManager implements InitializingBean {
 //        }
 //    }
 //
-    public String checkAggregationTableColumn(SQLSession session, String propertyCanonicalName) throws SQLException, SQLHandledException {
+    public String checkMaterializationTableColumn(SQLSession session, String propertyCanonicalName) throws SQLException, SQLHandledException {
         Property property = businessLogics.getAggregateStoredProperty(propertyCanonicalName);
-        return property != null ? ((AggregateProperty) property).checkAggregation(session, LM.baseClass) : null;
+        return property != null ? ((AggregateProperty) property).checkMaterialization(session, LM.baseClass) : null;
     }
 
-    public String recalculateAggregations(ExecutionStack stack, SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
+    public String recalculateMaterializations(ExecutionStack stack, SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
         try(DataSession dataSession = createRecalculateSession(session)){
-            List<String> messageList = recalculateAggregations(dataSession, stack, session, businessLogics.getRecalculateAggregateStoredProperties(dataSession, false), isolatedTransaction, serviceLogger);
+            List<String> messageList = recalculateMaterializations(dataSession, session, businessLogics.getRecalculateAggregateStoredProperties(dataSession, false), isolatedTransaction, serviceLogger);
             apply(dataSession, stack);
             return businessLogics.formatMessageList(messageList);
         }
@@ -2174,7 +2179,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         if(!dependencies) {
             for (Property prop : businessLogics.getRecalculateAggregateStoredProperties(dataSession, true)) {
                 if (prop != property && !calculated.contains(prop) && Property.depends(prop, property, false)) {
-                    boolean recalculate = reflectionLM.disableAggregationsTableColumn.read(dataSession, reflectionLM.tableColumnSID.readClasses(dataSession, new DataObject(property.getDBName()))) == null;
+                    boolean recalculate = reflectionLM.disableMaterializationsTableColumn.read(dataSession, reflectionLM.tableColumnSID.readClasses(dataSession, new DataObject(property.getDBName()))) == null;
                     if(recalculate) {
                         properties.addAll(getDependentProperties(dataSession, prop, calculated, false));
                     }
@@ -2184,29 +2189,27 @@ public class DBManager extends LogicsManager implements InitializingBean {
         return properties;
     }
 
-    public List<String> recalculateAggregations(DataSession dataSession, ExecutionStack stack, SQLSession session, final List<? extends Property> recalculateProperties, boolean isolatedTransaction, Logger logger) throws SQLException, SQLHandledException {
+    public List<String> recalculateMaterializations(DataSession dataSession, SQLSession session, final List<AggregateProperty> recalculateProperties, boolean isolatedTransaction, Logger logger) throws SQLException, SQLHandledException {
         final List<String> messageList = new ArrayList<>();
         final int total = recalculateProperties.size();
         final long maxRecalculateTime = Settings.get().getMaxRecalculateTime();
         if(total > 0) {
             for (int i = 0; i < recalculateProperties.size(); i++) {
-                Property property = recalculateProperties.get(i);
-                if(property instanceof AggregateProperty)
-                    recalculateAggregation(dataSession, session, isolatedTransaction, new ProgressBar(localize("{logics.recalculation.aggregations}"), i, total), messageList, maxRecalculateTime, (AggregateProperty) property, logger);
+                recalculateMaterialization(dataSession, session, isolatedTransaction, new ProgressBar(localize("{logics.recalculation.materializations}"), i + 1, total), messageList, maxRecalculateTime, recalculateProperties.get(i), logger);
             }
         }
         return messageList;
     }
 
     @StackProgress
-    private void recalculateAggregation(final DataSession dataSession, SQLSession session, boolean isolatedTransaction, @StackProgress final ProgressBar progressBar, final List<String> messageList, final long maxRecalculateTime, @ParamMessage final AggregateProperty property, final Logger logger) throws SQLException, SQLHandledException {
+    private void recalculateMaterialization(final DataSession dataSession, SQLSession session, boolean isolatedTransaction, @StackProgress final ProgressBar progressBar, final List<String> messageList, final long maxRecalculateTime, @ParamMessage final AggregateProperty property, final Logger logger) throws SQLException, SQLHandledException {
         run(session, isolatedTransaction, sql -> {
             long start = System.currentTimeMillis();
-            logger.info(String.format("Recalculate Aggregation started: %s", property.getSID()));
-            property.recalculateAggregation(businessLogics, dataSession, sql, LM.baseClass);
+            logger.info(String.format("Recalculating materialization %s of %s started: %s", progressBar.progress, progressBar.total, property.getSID()));
+            property.recalculateMaterialization(businessLogics, dataSession, sql, LM.baseClass);
 
             long time = System.currentTimeMillis() - start;
-            String message = String.format("Recalculate Aggregation: %s, %sms", property.getSID(), time);
+            String message = String.format("Recalculating materialization: %s, %sms", property.getSID(), time);
             logger.info(message);
             if (time > maxRecalculateTime)
                 messageList.add(message);
@@ -2233,25 +2236,25 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
 
-    public void recalculateAggregationTableColumn(DataSession dataSession, SQLSession session, String propertyCanonicalName, boolean isolatedTransaction) throws SQLException, SQLHandledException {
+    public void recalculateMaterializationTableColumn(DataSession dataSession, SQLSession session, String propertyCanonicalName, boolean isolatedTransaction) throws SQLException, SQLHandledException {
         AggregateProperty property = businessLogics.getAggregateStoredProperty(propertyCanonicalName);
         if (property != null)
-            runAggregationRecalculation(dataSession, session, property, null, isolatedTransaction);
+            runMaterializationRecalculation(dataSession, session, property, null, isolatedTransaction);
     }
 
-    public <P extends PropertyInterface> void runAggregationRecalculation(final DataSession dataSession, SQLSession session, final AggregateProperty<P> aggregateProperty, PropertyChange<P> where, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-        runAggregationRecalculation(dataSession, session, aggregateProperty, where, isolatedTransaction, true);
+    public <P extends PropertyInterface> void runMaterializationRecalculation(final DataSession dataSession, SQLSession session, final AggregateProperty<P> aggregateProperty, PropertyChange<P> where, boolean isolatedTransaction) throws SQLException, SQLHandledException {
+        runMaterializationRecalculation(dataSession, session, aggregateProperty, where, isolatedTransaction, true);
     }
 
-    public <P extends PropertyInterface> void runAggregationRecalculation(final DataSession dataSession, SQLSession session, final AggregateProperty<P> aggregateProperty, PropertyChange<P> where, boolean isolatedTransaction, boolean recalculateClasses) throws SQLException, SQLHandledException {
-        run(session, isolatedTransaction, sql -> aggregateProperty.recalculateAggregation(businessLogics, dataSession, sql, LM.baseClass, where, recalculateClasses));
+    public <P extends PropertyInterface> void runMaterializationRecalculation(final DataSession dataSession, SQLSession session, final AggregateProperty<P> aggregateProperty, PropertyChange<P> where, boolean isolatedTransaction, boolean recalculateClasses) throws SQLException, SQLHandledException {
+        run(session, isolatedTransaction, sql -> aggregateProperty.recalculateMaterialization(businessLogics, dataSession, sql, LM.baseClass, where, recalculateClasses));
     }
 
-    public void recalculateAggregationWithDependenciesTableColumn(SQLSession session, ExecutionStack stack, String propertyCanonicalName, boolean isolatedTransaction, boolean dependencies) throws SQLException, SQLHandledException {
+    public void recalculateMaterializationWithDependenciesTableColumn(SQLSession session, ExecutionStack stack, String propertyCanonicalName, boolean isolatedTransaction, boolean dependencies) throws SQLException, SQLHandledException {
         try(DataSession dataSession = createRecalculateSession(session)) {
             List<AggregateProperty> properties = getDependentProperties(dataSession, businessLogics.findProperty(propertyCanonicalName).property, new HashSet<>(), dependencies);
             for(AggregateProperty prop : properties) {
-                runAggregationRecalculation(dataSession, session, prop, null, isolatedTransaction);
+                runMaterializationRecalculation(dataSession, session, prop, null, isolatedTransaction);
             }
             apply(dataSession, stack);
         }

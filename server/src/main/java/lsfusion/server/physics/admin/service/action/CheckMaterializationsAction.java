@@ -14,20 +14,20 @@ import java.sql.SQLException;
 import static lsfusion.base.BaseUtils.isEmpty;
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 
-public class CheckAggregationsAction extends InternalAction {
-    public CheckAggregationsAction(ServiceLogicsModule LM) {
+public class CheckMaterializationsAction extends InternalAction {
+    public CheckMaterializationsAction(ServiceLogicsModule LM) {
         super(LM);
     }
 
     @Override
     public void executeInternal(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         final Result<String> message = new Result<>();
-        ServiceDBAction.run(context, (session, isolatedTransaction) -> message.set(context.getDbManager().checkAggregations(session)));
+        ServiceDBAction.run(context, (session, isolatedTransaction) -> message.set(context.getDbManager().checkMaterializations(session)));
 
         boolean noErrors = isEmpty(message.result);
 
         context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted(noErrors ? "{logics.check.completed}" : "{logics.check.failed}",
-                localize("{logics.checking.aggregations}"))) + (noErrors ? "" : ("\n\n" + message.result)),
-                localize("{logics.checking.aggregations}"), true));
+                localize("{logics.checking.materializations}"))) + (noErrors ? "" : ("\n\n" + message.result)),
+                localize("{logics.checking.materializations}"), true));
     }
 }

@@ -33,17 +33,17 @@ public class CheckTableColumnAction extends InternalAction {
         DataObject tableColumnObject = context.getDataKeyValue(tableColumnInterface);
         final ObjectValue propertyObject = context.getBL().reflectionLM.propertyTableColumn.readClasses(context, tableColumnObject);
         final String propertyCanonicalName = (String) context.getBL().reflectionLM.canonicalNameProperty.read(context, propertyObject);
-        boolean disableAggregations = context.getBL().reflectionLM.disableAggregationsTableColumn.read(context, tableColumnObject) != null;
-        if (!disableAggregations) {
+        boolean disableMaterializations = context.getBL().reflectionLM.disableMaterializationsTableColumn.read(context, tableColumnObject) != null;
+        if (!disableMaterializations) {
             final Result<String> message = new Result<>();
             ServiceDBAction.run(context, (session, isolatedTransaction) ->
-                    message.set(context.getDbManager().checkAggregationTableColumn(session, propertyCanonicalName.trim())));
+                    message.set(context.getDbManager().checkMaterializationTableColumn(session, propertyCanonicalName.trim())));
 
             boolean noErrors = isEmpty(message.result);
 
             context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted(noErrors ? "{logics.check.completed}" : "{logics.check.failed}",
-                    localize("{logics.checking.aggregations}"))) + (noErrors ? "" : ("\n\n" + message.result)),
-                    localize("{logics.checking.aggregations}"), true));
+                    localize("{logics.checking.materializations}"))) + (noErrors ? "" : ("\n\n" + message.result)),
+                    localize("{logics.checking.materializations}"), true));
         }
     }
 }

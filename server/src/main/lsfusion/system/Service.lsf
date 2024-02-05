@@ -5,7 +5,8 @@ REQUIRE System, Security, SystemEvents;
 NAMESPACE Service;
 
 serviceDBAction '{service.db.action}'  INTERNAL  'lsfusion.server.physics.admin.service.action.ServiceDBAction' ();
-checkAggregationsAction '{service.check.aggregations.action}'  INTERNAL  'lsfusion.server.physics.admin.service.action.CheckAggregationsAction' ();
+//todo: rename to checkMaterializationsAction
+checkAggregationsAction '{service.check.materializations.action}'  INTERNAL 'lsfusion.server.physics.admin.service.action.CheckMaterializationsAction' ();
 checkClassesAction '{service.check.classes.action}'   INTERNAL  'lsfusion.server.physics.admin.service.action.CheckClassesAction' ();
 checkIndicesAction '{service.check.indexes.action}'  INTERNAL 'lsfusion.server.physics.admin.service.action.CheckIndexesAction' ();
 recalculateClassesAction '{service.recalculate.classes.action}'  INTERNAL  'lsfusion.server.physics.admin.service.action.RecalculateClassesAction' ();
@@ -18,7 +19,8 @@ maxQuantityOverCalculate '{service.max.quantity.over.calculate}' = DATA INTEGER 
 makeProcessDumpAction '{service.make.process.dump.action}'  INTERNAL  'lsfusion.server.physics.admin.monitor.action.MakeProcessDumpAction' ();
 
 serviceDBMultiThreadAction '{service.service.db.multi.thread.action}'  INTERNAL  'lsfusion.server.physics.admin.service.action.ServiceDBMultiThreadAction' (INTEGER, INTEGER) NULL;
-checkAggregationsMultiThreadAction '{service.check.aggregations.multi.thread.action}'  INTERNAL  'lsfusion.server.physics.admin.service.action.CheckAggregationsMultiThreadAction' (INTEGER, INTEGER) NULL;
+//todo: rename to checkMaterializationsMultiThreadAction
+checkAggregationsMultiThreadAction '{service.check.materializations.multi.thread.action}'  INTERNAL 'lsfusion.server.physics.admin.service.action.CheckMaterializationsMultiThreadAction' (INTEGER, INTEGER) NULL;
 checkClassesMultiThreadAction '{service.check.classes.multi.thread.action}'  INTERNAL  'lsfusion.server.physics.admin.service.action.CheckClassesMultiThreadAction' (INTEGER, INTEGER) NULL;
 recalculateClassesMultiThreadAction '{service.recalculate.classes.multi.thread.action}'  INTERNAL  'lsfusion.server.physics.admin.service.action.RecalculateClassesMultiThreadAction' (INTEGER, INTEGER) NULL;
 recalculateMultiThreadAction '{service.recalculate.multi.thread.action}'  INTERNAL  'lsfusion.server.physics.admin.service.action.RecalculateMultiThreadAction' (INTEGER, INTEGER) NULL;
@@ -27,7 +29,8 @@ recalculateStatsMultiThreadAction '{service.recalculate.stats.thread.action}'  I
 overCalculateStatsMultiThreadAction '{service.over.calculate.stats.multi.thread.action}'  INTERNAL  'lsfusion.server.physics.admin.service.action.OverCalculateStatsMultiThreadAction' (INTEGER, INTEGER) NULL;
 
 serviceDBMultiThreadAction '{service.service.db.multi.thread.action.timeout}' (INTEGER propertyTimeout)  { serviceDBMultiThreadAction (NULL, propertyTimeout); }
-checkAggregationsMultiThreadAction '{service.check.aggregations.multi.thread.action.timeout}' (INTEGER propertyTimeout) { checkAggregationsMultiThreadAction (NULL, propertyTimeout); }
+//todo: rename to checkMaterializationsMultiThreadAction
+checkAggregationsMultiThreadAction '{service.check.materializations.multi.thread.action.timeout}' (INTEGER propertyTimeout) { checkAggregationsMultiThreadAction (NULL, propertyTimeout); }
 checkClassesMultiThreadAction '{service.check.classes.multi.thread.action.timeout}' (INTEGER propertyTimeout) { checkClassesMultiThreadAction (NULL, propertyTimeout); }
 recalculateClassesMultiThreadAction '{service.recalculate.classes.multi.thread.action.timeout}' (INTEGER propertyTimeout) { recalculateClassesMultiThreadAction (NULL, propertyTimeout); }
 recalculateMultiThreadAction '{service.recalculate.multi.thread.action.timeout}' (INTEGER propertyTimeout) { recalculateMultiThreadAction (NULL, propertyTimeout); }
@@ -37,7 +40,8 @@ overCalculateStatsMultiThreadAction '{service.over.calculate.stats.multi.thread.
 
 threadCountMultiThread '{service.thread.count.multi.thread}' = DATA LOCAL INTEGER (); 
 serviceDBMultiThreadAction '{service.service.db.multi.thread.action.thread.count}'  { serviceDBMultiThreadAction(threadCountMultiThread(), NULL); }
-checkAggregationsMultiThreadAction '{service.check.aggregations.multi.thread.action.thread.count}'  { checkAggregationsMultiThreadAction(threadCountMultiThread(), NULL); }
+//todo: rename to checkMaterializationsMultiThreadAction
+checkAggregationsMultiThreadAction '{service.check.materializations.multi.thread.action.thread.count}'  { checkAggregationsMultiThreadAction(threadCountMultiThread(), NULL); }
 checkClassesMultiThreadAction '{service.check.classes.multi.thread.action.thread.count}'  { checkClassesMultiThreadAction(threadCountMultiThread(), NULL); }
 recalculateClassesMultiThreadAction '{service.recalculate.classes.multi.thread.action.thread.count}'  { recalculateClassesMultiThreadAction(threadCountMultiThread(), NULL); }
 recalculateMultiThreadAction '{service.recalculate.multi.thread.action.thread.count}'  { recalculateMultiThreadAction(threadCountMultiThread(), NULL); }
