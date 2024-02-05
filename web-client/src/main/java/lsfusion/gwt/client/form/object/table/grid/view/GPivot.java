@@ -1173,6 +1173,11 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             }
 
             @Override
+            public String getPattern() {
+                return property.getPattern();
+            }
+
+            @Override
             public GFormController getForm() {
                 return form;
             }
