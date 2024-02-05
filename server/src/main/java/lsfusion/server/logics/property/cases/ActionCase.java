@@ -1,8 +1,10 @@
 package lsfusion.server.logics.property.cases;
 
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public class ActionCase<P extends PropertyInterface> extends Case<P, PropertyInterfaceImplement<P>, ActionMapImplement<?, P>> {
@@ -28,6 +30,12 @@ public class ActionCase<P extends PropertyInterface> extends Case<P, PropertyInt
     }
 
     public boolean isClassSimple() { // hack
-        return implement.mapClassProperty().equalsMap(where);
+        Action.onlyCachedWhereProperty.set(true); // optimization, not to calculate where property too early
+        try {
+            PropertyMapImplement<?, P> classProperty = implement.mapClassProperty();
+            return classProperty != null && classProperty.equalsMap(where);
+        } finally {
+            Action.onlyCachedWhereProperty.set(null);
+        }
     }
 }

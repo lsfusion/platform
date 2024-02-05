@@ -12,10 +12,7 @@ import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.Compare;
-import lsfusion.server.base.caches.IdentityInstanceLazy;
-import lsfusion.server.base.caches.IdentityLazy;
-import lsfusion.server.base.caches.IdentityStartLazy;
-import lsfusion.server.base.caches.IdentityStrongLazy;
+import lsfusion.server.base.caches.*;
 import lsfusion.server.base.controller.stack.StackMessage;
 import lsfusion.server.base.controller.stack.ThisMessage;
 import lsfusion.server.base.controller.thread.ThreadUtils;
@@ -313,8 +310,13 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         return getWhereProperty().mapGetInterfaceClasses(type);
     }
 
-    @IdentityInstanceLazy
+    // optimization hack, but all the isClassSimple mechanism (equalsMap in particular) is a hack
+    public static final ThreadLocal<Boolean> onlyCachedWhereProperty = new ThreadLocal<>();
+    @IdentityStrongNotNullLazy
     public PropertyMapImplement<?, P> getWhereProperty() {
+        if(onlyCachedWhereProperty.get() != null)
+            return null;
+
         return getWhereProperty(false);
     }
     
