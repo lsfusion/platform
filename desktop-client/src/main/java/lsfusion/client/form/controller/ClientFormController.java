@@ -2008,7 +2008,7 @@ public class ClientFormController implements AsyncListener {
             // increasing priority for group object
             ClientGroupObject groupObject = groupObjectSupplier.get();
             for(Binding binding : keyBinding) // descending sorting by priority
-                if((binding.isSuitable == null || binding.isSuitable.apply(ke)) && bindPreview(binding, preview) && bindDialog(binding) && bindGroup(groupObject, binding)
+                if((binding.isSuitable == null || binding.isSuitable.apply(ke)) && bindPreview(binding, ks instanceof MouseInputEvent, preview) && bindDialog(binding) && bindGroup(groupObject, binding)
                         && bindEditing(binding, ke) && bindShowing(binding) && bindPanel(binding, panel))
                         orderedBindings.put(-(binding.priority + (equalGroup(groupObject, binding) ? 100 : 0)), binding);
 
@@ -2026,15 +2026,16 @@ public class ClientFormController implements AsyncListener {
         return false;
     }
 
-    private boolean bindPreview(Binding binding, boolean preview) {
+    private boolean bindPreview(Binding binding, boolean isMouse, boolean preview) {
         switch (binding.bindPreview) {
             case AUTO:
-            case ONLY:
-                return preview;
+                return isMouse || !preview;
             case NO:
                 return !preview;
             case ALL: // actually makes no since if previewed, than will be consumed so equivalent to only
                 return true;
+            case ONLY:
+                return preview;
             default:
                 throw new UnsupportedOperationException("Unsupported bindingMode " + binding.bindDialog);
         }
