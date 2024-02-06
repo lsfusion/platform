@@ -2653,13 +2653,16 @@ newExecutorActionDefinitionBody[List<TypedParameter> context, boolean dynamic] r
 @init {
 	List<LPWithParams> props = new ArrayList<>();
 	List<LP> localProps = new ArrayList<LP>();
+	Boolean syncType = null;
 }
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedNewExecutorAction($aDB.action, $threadsExpr.property);
+		$action = self.addScriptedNewExecutorAction($aDB.action, $threadsExpr.property, syncType);
 	}
 }
-	:	'NEWEXECUTOR' aDB=keepContextFlowActionDefinitionBody[context, dynamic] 'THREADS' threadsExpr=propertyExpression[context, dynamic] ';'
+	:	'NEWEXECUTOR' aDB=keepContextFlowActionDefinitionBody[context, dynamic]
+	        'THREADS' threadsExpr=propertyExpression[context, dynamic]
+	         (sync = syncTypeLiteral { syncType = $sync.val; })? ';'
 	;
 
 newSessionActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
