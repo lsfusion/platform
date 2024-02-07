@@ -34,8 +34,16 @@ onInitApply {
     APPLY;
 }
 
+notFirstStart = DATA BOOLEAN ();
+firstStart () = NOT notFirstStart();
+onFirstStarted ABSTRACT LIST ( );
+
 onStartedApply() {
     onStarted();
+    IF firstStart() THEN {
+        onFirstStarted();
+        notFirstStart() <- TRUE;
+    }
     APPLY;
 }
 
