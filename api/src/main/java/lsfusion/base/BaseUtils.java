@@ -2082,4 +2082,13 @@ public class BaseUtils {
     public static String[] getNotNullStringArray(String[] array) {
         return array == null ? new String[0] : array;
     }
+
+    public static String getLsfusionProtocolLink(String modulePath, Integer moduleLine, String moduleText, boolean tooltip) {
+        //use "**" instead "="
+        String command = "--line**" + moduleLine + "&path**" + modulePath;
+        //replace spaces and slashes because this link going through url
+        return "<a href=\"lsfusion-protocol://" + command.replaceAll(" ", "++").replaceAll("\\\\", "/") +
+                "\" target=\"_blank\">" + moduleText + "</a>" +
+                (tooltip ? (" &ensp; " + "(<a href=\"https://github.com/lsfusion/platform/issues/649\" target=\"_blank\"> ? </a>)") : "");
+    }
 }

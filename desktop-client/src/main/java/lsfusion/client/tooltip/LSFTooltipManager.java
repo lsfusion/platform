@@ -28,6 +28,7 @@ import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.nio.file.Paths;
 
+import static lsfusion.base.BaseUtils.getLsfusionProtocolLink;
 import static lsfusion.base.BaseUtils.isEmpty;
 import static lsfusion.client.ClientResourceBundle.getString;
 
@@ -266,13 +267,9 @@ public class LSFTooltipManager {
         JTextPane showInEditorLink = new JTextPane();
         showInEditorLink.setEditable(false);
         showInEditorLink.setContentType("text/html");
-        //use "**" instead "="
-        String command = "--line**" + Integer.parseInt(creationPath.substring(creationPath.lastIndexOf("(") + 1, creationPath.lastIndexOf(":"))) +
-                "&path**" + Paths.get(projectLSFDir, path);
-        //replace spaces and slashes because this link going through url
-        String link = "<a href=\"lsfusion-protocol://" + command.replaceAll(" ", "++").replaceAll("\\\\", "/") +
-                "\" target=\"_blank\">" + getString("show.in.editor") + "</a> &ensp; " + "(<a href=\"https://github.com/lsfusion/platform/issues/649\" target=\"_blank\"> ? </a>)";
-        showInEditorLink.setText(link);
+        String modulePath = Paths.get(projectLSFDir, path).toString();
+        Integer moduleLine = Integer.parseInt(creationPath.substring(creationPath.lastIndexOf("(") + 1, creationPath.lastIndexOf(":")));
+        showInEditorLink.setText(getLsfusionProtocolLink(modulePath, moduleLine, getString("show.in.editor"), true));
         addDefaultComponentMouseListeners(showInEditorLink);
 
         showInEditorLink.addHyperlinkListener(e -> {

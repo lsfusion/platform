@@ -22,12 +22,18 @@ import lsfusion.server.physics.admin.authentication.property.CurrentConnectionPr
 import org.antlr.runtime.RecognitionException;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static lsfusion.base.BaseUtils.getLsfusionProtocolLink;
+import static lsfusion.server.physics.admin.SystemProperties.projectLSFDir;
 
 public class SystemEventsLogicsModule extends ScriptingLogicsModule {
 
@@ -276,6 +282,17 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
             messageException.change(message, session, exceptionObject);
             typeException.change(errorType, session, exceptionObject);
             erTraceException.change(javaStack, session, exceptionObject);
+
+            if (lsfStack != null) {
+                Matcher m = Pattern.compile("\\[(([a-zA-Z][a-zA-Z_0-9]*)\\((\\d+):(\\d+)\\))\\]").matcher(lsfStack);
+                while (m.find()) {
+                    String moduleText = m.group(1);
+                    String modulePath = Paths.get(projectLSFDir, BL.getModule(m.group(2)).getPath()).toString();
+                    Integer moduleLine = Integer.parseInt(m.group(3));
+                    lsfStack = lsfStack.replace(m.group(), getLsfusionProtocolLink(modulePath, moduleLine, moduleText, false));
+                }
+            }
+
             lsfTraceException.change(lsfStack, session, exceptionObject);
             dateException.change(LocalDateTime.now(), session, exceptionObject);
 

@@ -309,7 +309,7 @@ message '{system.events.message.exception}' = DATA ISTRING (Exception) CHARWIDTH
 date '{system.events.date.exception}' = DATA DATETIME (Exception);
 fromDate '{system.events.from.date.exception}' (Exception d)= DATE(date(d));
 erTrace '{system.events.er.trace.exception}'= DATA TEXT (Exception);
-lsfStackTrace '{system.events.lsf.stack.trace.exception}'= DATA TEXT (Exception);
+lsfStackTrace '{system.events.lsf.stack.trace.exception}'= DATA HTMLTEXT (Exception);
 type '{system.events.type.exception}' = DATA STRING[250] (Exception);
 javaStackTrace '{system.events.er.trace.exception}' (Exception e) = CONCAT '\n', message(e), erTrace(e); 
 
