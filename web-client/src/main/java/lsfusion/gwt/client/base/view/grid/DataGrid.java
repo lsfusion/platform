@@ -336,7 +336,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         CellBasedWidgetImpl.get().sinkEvents(widget, getBrowserDragDropEvents());
     }
 
-    public static boolean isFakeBlur(Event event, Element blur) {
+    public static boolean isFakeBlur(NativeEvent event, Element blur) {
         EventTarget focus = event.getRelatedEventTarget();
         if(focus == null)
             return false;
@@ -344,15 +344,24 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         return isFakeBlur(blur, Element.as(focus));
     }
 
-    private static boolean isFakeBlur(Element blur, Element focusElement) {
-        if(blur.isOrHasChild(focusElement))
+    private static boolean isFakeBlur(Element element, Element focusElement) {
+        if(element.isOrHasChild(focusElement))
             return true;
 
-        Element autoHidePartner = GwtClientUtils.getParentWithProperty(focusElement, "autoHidePartner");
+        Element autoHidePartner = GwtClientUtils.getParentWithProperty(focusElement, "focusPartner");
         if(autoHidePartner != null)
-            return isFakeBlur(blur, (Element) autoHidePartner.getPropertyObject("autoHidePartner"));
+            return isFakeBlur(element, (Element) autoHidePartner.getPropertyObject("focusPartner"));
 
         return false;
+    }
+
+    public static void addFocusPartner(Element element, Element partner) {
+        partner.setPropertyObject("focusPartner", element);
+        partner.setTabIndex(-1); // we need this to have related target in isFakeBlur, otherwise it won't work
+        GwtClientUtils.setOnFocusOut(partner, event -> {
+            if(!isFakeBlur(event, element)) // if the focus is not returned to the element
+                GwtClientUtils.fireOnBlur(element);
+        });
     }
 
     public static Element getBrowserTargetAndCheck(Element element, Event event) {

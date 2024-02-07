@@ -5,6 +5,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.controller.SmartScheduler;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
@@ -36,9 +37,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
             assert oldValue != null;
             createPicker(GwtClientUtils.getTippyParent(parent), parent, getStartDate(oldValue), getEndDate(oldValue), getPattern().replace("a", "A"), isSinglePicker(), isTimeEditor(), isDateEditor());
 
-            Element pickerElement = getPickerElement();
-            pickerElement.setPropertyObject("autoHidePartner", parent);
-            pickerElement.setTabIndex(-1); // we need this to have related target in isFakeBlur, otherwise it won't work
+            DataGrid.addFocusPartner(parent, getPickerElement());
 
             editBox.click(); // need to dateRangePicker opens immediately. because we use an editBox
         }
@@ -223,11 +222,13 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
                     thisObj.@ARequestValueCellEditor::cancel(Lcom/google/gwt/dom/client/Element;Llsfusion/gwt/client/form/property/cell/controller/CancelReason;)(parent, @lsfusion.gwt.client.form.property.cell.controller.CancelReason::ESCAPE_PRESSED);
                 else if ((e.keyCode === 9) || (e.keyCode === 13))
                     thisObj.@lsfusion.gwt.client.form.property.cell.classes.controller.DateRangePickerBasedCellEditor::pickerApply(*)(parent);
-            }).on('mousedown.pickerpopup', function (e) { //daterangepicker for some reason returns focus to $wnd and not to the editelement and the daterangepicker does not hide even if we open another form
-                var container = $(".daterangepicker");
-                if (!container.is(e.target) && container.has(e.target).length === 0)
-                    thisObj.@lsfusion.gwt.client.form.property.cell.classes.controller.DateRangePickerBasedCellEditor::pickerApply(*)(parent);
-            });
+            })
+//                .on('mousedown.pickerpopup', function (e) { //daterangepicker for some reason returns focus to $wnd and not to the editelement and the daterangepicker does not hide even if we open another form
+//                var container = $(".daterangepicker");
+//                if (!container.is(e.target) && container.has(e.target).length === 0)
+//                    thisObj.@lsfusion.gwt.client.form.property.cell.classes.controller.DateRangePickerBasedCellEditor::pickerApply(*)(parent);
+//            })
+            ;
         });
 
         editElement.on('hide.daterangepicker', function () {

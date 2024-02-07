@@ -1295,6 +1295,16 @@ public class GwtClientUtils {
         }
     }-*/;
 
+    public static native void fireOnBlur(Element element)/*-{
+        element.dispatchEvent(new FocusEvent("blur"));
+    }-*/;
+
+    public static native void setOnFocusOut(Element element, Consumer<NativeEvent> run)/*-{
+        element.addEventListener("focusout", function(event) { // have no idea why onfocusout doesn't work
+            run.@Consumer::accept(*)(event);
+        });
+    }-*/;
+
     // should be used only once for elements that don't have widgets
     public static void setEventListener(Element element, int eventID, com.google.gwt.user.client.EventListener listener) {
         DOM.sinkEvents(element, eventID);
