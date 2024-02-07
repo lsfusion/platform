@@ -227,14 +227,14 @@ public abstract class FormsController {
                 removeForceEditMode();
         }
         if (altKey != null) {
-            boolean onlyAlt = altKey && (ctrlKey == null || !ctrlKey) && (shiftKey == null || !shiftKey) && !tab;
+            boolean onlyAlt = altKey && (ctrlKey == null || !ctrlKey) && (shiftKey == null || !shiftKey);
             pressedAlt = true;
             if (onlyAlt && !isGroupChangeMode())
                 setForceEditMode(EditMode.GROUPCHANGE);
             if (!onlyAlt && isForceGroupChangeMode())
                 removeForceEditMode();
 
-            if(onlyAlt)
+            if(onlyAlt) // we want to prevent moving focus in the browser to the menu bar
                 event.preventDefault();
         }
     }

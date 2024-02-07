@@ -998,7 +998,7 @@ public class GFormController implements EditManager {
                 return;
 
             if(contextAction.result != null)
-                executeContextAction(handler, editContext, contextAction.result);
+                executeContextAction(handler, editContext, actionSID, contextAction.result);
             else
                 executePropertyEventAction(editContext, actionSID, handler);
 
@@ -1224,19 +1224,23 @@ public class GFormController implements EditManager {
     // for custom renderer, paste
     public void changeProperty(ExecuteEditContext editContext, PValue changeValue, ChangedRenderValueSupplier renderValueSupplier) {
         ChangedRenderValue changedRenderValue = changeValue != PValue.UNDEFINED ? setLocalValue(editContext, editContext.getProperty().getExternalChangeType(), changeValue, renderValueSupplier) : null;
-        executePropertyEventAction(null, editContext, changeValue == PValue.UNDEFINED ? null : new GUserInputResult(changeValue), requestIndex -> {
+        // noGroupChange is needed for custom renderers that use onBlur to change values:
+        // a) when ALT+TAB pressed there is no keydown previewed to disable group change mode, which is not what we want
+        // b) when binding with ALT calls check commit editing, we don't want it to be treated as the group change
+        String actionSID = GEditBindingMap.changeOrGroupChange(MainFrame.switchedToAnotherWindow || forcedBlurCustom);
+        executePropertyEventAction(null, editContext, actionSID, changeValue == PValue.UNDEFINED ? null : new GUserInputResult(changeValue), requestIndex -> {
             setRemoteValue(editContext, changedRenderValue, requestIndex);
         });
     }
 
     // for quick access actions (in toolbar and keypress)
-    public void executeContextAction(EventHandler handler, ExecuteEditContext editContext, int contextAction) {
-        executePropertyEventAction(handler, editContext, new GUserInputResult(null, contextAction), requestIndex -> {});
+    public void executeContextAction(EventHandler handler, ExecuteEditContext editContext, String actionSID, int contextAction) {
+        executePropertyEventAction(handler, editContext, actionSID, new GUserInputResult(null, contextAction), requestIndex -> {});
     }
 
     // for custom renderer, paste, quick access actions (in toolbar and keypress)
-    private void executePropertyEventAction(EventHandler handler, ExecuteEditContext editContext, GUserInputResult value, Consumer<Long> onExec) {
-        executePropertyEventAction(handler, editContext, editContext.getProperty().getInputListActions(), value, GEditBindingMap.changeOrGroupChange(), true, requestIndex -> {
+    private void executePropertyEventAction(EventHandler handler, ExecuteEditContext editContext, String actionSID, GUserInputResult value, Consumer<Long> onExec) {
+        executePropertyEventAction(handler, editContext, editContext.getProperty().getInputListActions(), value, actionSID, true, requestIndex -> {
             onExec.accept(requestIndex);
 
             setLoading(editContext, requestIndex);
@@ -1609,8 +1613,24 @@ public class GFormController implements EditManager {
     public boolean previewEvent(Element target, Event event) {
         if(BrowserEvents.BLUR.equals(event.getType()))
             MainFrame.setLastBlurredElement(Element.as(event.getEventTarget()));
+
         formsController.checkEditModeEvents(event);
-        return previewBusyDialogDisplayerSinkEvents(event) && MainFrame.previewEvent(target, event, isEditing());
+
+        if(!previewBusyDialogDisplayerSinkEvents(event))
+            return false;
+
+        if(!MainFrame.previewClickEvent(target, event))
+            return false;
+
+        // see GEditBindingMap.changeOrGroupChange
+        boolean isEditing = isEditing();
+        if (isEditing || focusedCustom != null) { // we need switchedToAnotherWindow to be filled - see it's usages
+            boolean switched = MainFrame.previewSwitchToAnotherWindow(event);
+            if(switched && isEditing) // we don't want to stop additing when switching to another window
+                return false;
+        }
+
+        return true;
     }
 
     public boolean previewEvent(Event event, Element element) {
@@ -1810,7 +1830,7 @@ public class GFormController implements EditManager {
     }
 
     public int addRegularFilterBinding(GInputEvent event, BindingExec pressed, Widget component, GGroupObject groupObject) {
-        return addBinding(event, GBindingEnv.AUTO, pressed, component, groupObject);
+        return addBinding(event, new GBindingEnv(null, null, null, null, null, null, null, null), pressed, component, groupObject);
     }
     public int addBinding(GInputEvent event, GBindingEnv env, BindingExec pressed, Widget component, GGroupObject groupObject) {
         return addBinding(event::isEvent, env, null, pressed, component, groupObject);
@@ -1922,8 +1942,14 @@ public class GFormController implements EditManager {
         else
             if(focusedCustom != null) {
                 Element focusedElement = getFocusedChild(focusedCustom);
-                if(focusedElement != null) // we do the fake blur to call onBlur, because custom render
-                    FocusUtils.blur(focusedElement);
+                if(focusedElement != null) { // we do the fake blur to call onBlur, because custom render
+                    forcedBlurCustom = true;
+                    try {
+                        FocusUtils.blur(focusedElement);
+                    } finally {
+                        forcedBlurCustom = false;
+                    }
+                }
             }
 
     }
@@ -1977,7 +2003,7 @@ public class GFormController implements EditManager {
     private boolean bindEditing(GBindingEnv binding, Event event) {
         switch (binding.bindEditing) {
             case AUTO:
-                return !isEditing() || !targetElementIsEditing(event);
+                return !(isEditing() && getEditElement().isOrHasChild(Element.as(event.getEventTarget())));
             case ALL:
                 return true;
             case ONLY:
@@ -1988,10 +2014,6 @@ public class GFormController implements EditManager {
             default:
                 throw new UnsupportedOperationException("Unsupported bindingMode " + binding.bindEditing);
         }
-    }
-
-    private boolean targetElementIsEditing(Event event) {
-        return editContext.getEditElement().isOrHasChild(Element.as(event.getEventTarget()));
     }
 
     private boolean bindShowing(GBindingEnv binding, boolean showing) {
@@ -2043,6 +2065,7 @@ public class GFormController implements EditManager {
 
     private CellEditor cellEditor;
     private Element focusedCustom;
+    private boolean forcedBlurCustom;
 
     public Element getEditElement() {
         return editContext.getEditElement();
@@ -2416,7 +2439,7 @@ public class GFormController implements EditManager {
     }
 
     public boolean isEdited(Element element) {
-        return editContext != null && editContext.getEditElement() == element;
+        return editContext != null && getEditElement() == element;
     }
 
 

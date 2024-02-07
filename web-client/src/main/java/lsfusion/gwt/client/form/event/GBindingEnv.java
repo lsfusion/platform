@@ -13,8 +13,6 @@ public class GBindingEnv implements Serializable {
     public GBindingMode bindPanel;
     public GBindingMode bindCell;
 
-    public static final GBindingEnv AUTO = new GBindingEnv(null, null, null, null, null, null, null, null);
-
     public GBindingEnv() {
     }
 

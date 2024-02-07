@@ -96,7 +96,10 @@ public class GEditBindingMap implements Serializable {
     }
 
     public static String changeOrGroupChange() {
-        if(FormsController.isGroupChangeMode())
+        return changeOrGroupChange(false);
+    }
+    public static String changeOrGroupChange(boolean noGroupChange) {
+        if(FormsController.isGroupChangeMode() && !noGroupChange)
             return GEditBindingMap.GROUP_CHANGE;
         else
             return GEditBindingMap.CHANGE;
