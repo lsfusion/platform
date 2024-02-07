@@ -10,6 +10,7 @@ title: 'Оператор PRINT'
 PRINT name 
 [CLIENT | SERVER]
 [OBJECTS objName1 = expr1, ..., objNameN = exprN]
+FILTERS ...
 [formActionOptions] 
 ```
 
@@ -42,6 +43,10 @@ MESSAGE [syncType] [TOP n]
 - `expr1 ... exprN`
 
     [Выражения](Expression.md), значения которых определяют фильтруемые (фиксированные) значения для объектов формы.
+
+- `FILTERS ...`
+
+  Добавляет фиксированные фильтры на форму. [Синтаксис блока фиксированных фильтров](Filters_and_sortings_block.md#fixedfilters).
 
 #### Дополнительные опции
 
