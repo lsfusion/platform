@@ -88,10 +88,10 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
     public static Expr create(SingleClassExpr expr, ImSet<ObjectClassField> classes, IsClassType type) {
         classes = packTables(Where.TRUE(), expr, classes, type);
 
-        if(classes.size() > Settings.get().getInlineClassThreshold())
-            return BaseExpr.create(new IsClassExpr(expr, classes, type));
-        else if(classes.size() == 1)
+        if(classes.size() == 1 && type.isExclInconsistent())
             return getSingleExpr(type, BaseExpr.create(new IsClassExpr(expr, classes, IsClassType.INCONSISTENT)));
+        else if(classes.size() > Settings.get().getInlineClassThreshold() || classes.size() == 1)
+            return BaseExpr.create(new IsClassExpr(expr, classes, type));
         else
             return getTableExpr(expr, classes, type);
     }
@@ -156,12 +156,13 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
     }
 
     private static Expr getSingleExpr(IsClassType type, Expr classExpr) {
-        if(type==IsClassType.AGGCONSISTENT)
-            classExpr = FormulaExpr.create(new CastFormulaImpl(StringClass.getv(false, ExtInt.UNLIMITED)), ListFact.singleton(classExpr));
-
-        if(type==IsClassType.SUMCONSISTENT)
-            classExpr = ValueExpr.COUNT.and(classExpr.getWhere());
-        return classExpr;
+        switch (type) {
+            case AGGCONSISTENT:
+                return FormulaExpr.create(new CastFormulaImpl(StringClass.getv(false, ExtInt.UNLIMITED)), ListFact.singleton(classExpr));
+            case SUMCONSISTENT:
+                return ValueExpr.COUNT.and(classExpr.getWhere());
+        }
+        throw new UnsupportedOperationException();
     }
 
     /*    public void fillAndJoinWheres(MapWhere<FJData> joins, Where andWhere) {
