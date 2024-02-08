@@ -497,6 +497,8 @@ public class GwtClientUtils {
 //        element.getStyle().clearProperty("boxSizing");
     }
 
+    /*--- tippy methods ---*/
+
     public static JavaScriptObject showTippyPopup(Widget ownerWidget, Element popupElementClicked, Widget popupWidget) {
         return showTippyPopup(ownerWidget, popupElementClicked, popupWidget, null);
     }
@@ -525,6 +527,7 @@ public class GwtClientUtils {
             trigger : 'manual',
             interactive : true,
             allowHTML : true,
+            maxWidth: 'none', // default maxWidth is 350px and content does not fit in tooltip
             zIndex: 1070,
             onHide: function() {
                 if(onHideAction != null) {
@@ -545,6 +548,32 @@ public class GwtClientUtils {
             popup.destroy();
         }
     }-*/;
+`
+    public static native JavaScriptObject initTippy(Element element, int delay)/*-{
+        return $wnd.tippy(element, {
+            appendTo: $wnd.document.body,
+            //content: contentElement,
+            trigger: 'mouseenter',
+            interactive: true,
+            allowHTML: true,
+            placement: 'auto',
+            maxWidth: 'none', // default maxWidth is 350px and content does not fit in tooltip
+            delay: [delay, null]
+        });
+    }-*/;
+
+    private static String tippyAttribute = "data-tippy-root";
+    public static Element getTippyParent(Element element) {
+        while (element != null) {
+            if (element.hasAttribute(tippyAttribute)) {
+                return element;
+            }
+            element = element.getParentElement();
+        }
+        return null;
+    }
+
+    /*--- end of tippy methods ---*/
 
     public static void setPopupPosition(PopupPanel popup, int mouseX, int mouseY) {
         int popupWidth = popup.getOffsetWidth();
@@ -1103,17 +1132,6 @@ public class GwtClientUtils {
     public static Element getParentWithClass(Element element, String className) {
         while (element != null) {
             if (element.hasClassName(className)) {
-                return element;
-            }
-            element = element.getParentElement();
-        }
-        return null;
-    }
-
-    private static String tippyAttribute = "data-tippy-root";
-    public static Element getTippyParent(Element element) {
-        while (element != null) {
-            if (element.hasAttribute(tippyAttribute)) {
                 return element;
             }
             element = element.getParentElement();
