@@ -548,7 +548,7 @@ public class GwtClientUtils {
             popup.destroy();
         }
     }-*/;
-`
+
     public static native JavaScriptObject initTippy(Element element, int delay)/*-{
         return $wnd.tippy(element, {
             appendTo: $wnd.document.body,
