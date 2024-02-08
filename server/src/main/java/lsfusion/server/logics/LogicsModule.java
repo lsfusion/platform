@@ -956,11 +956,11 @@ public abstract class LogicsModule {
         return addAction(group, new LA(new NewThreadAction(caption, listInterfaces, (ActionMapImplement) readImplements.get(0), period, delay, connection)));
     }
 
-    protected LA addNewExecutorAProp(Group group, LocalizedString caption, Object... params) {
+    protected LA addNewExecutorAProp(Group group, LocalizedString caption, Boolean sync, Object... params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
         ImList<ActionOrPropertyInterfaceImplement> readImplements = readImplements(listInterfaces, params);
         return addAction(group, new LA(new NewExecutorAction(caption, listInterfaces,
-                (ActionMapImplement) readImplements.get(0), (PropertyInterfaceImplement) readImplements.get(1))));
+                (ActionMapImplement) readImplements.get(0), (PropertyInterfaceImplement) readImplements.get(1), sync)));
     }
 
     // ------------------- Request action ----------------- //
