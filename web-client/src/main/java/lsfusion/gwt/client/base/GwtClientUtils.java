@@ -528,6 +528,24 @@ public class GwtClientUtils {
             interactive : true,
             allowHTML : true,
             maxWidth: 'none', // default maxWidth is 350px and content does not fit in tooltip
+            popperOptions: {
+                strategy: 'fixed',
+                modifiers: [
+                    {
+                        name: 'flip',
+                        options: {
+                            fallbackPlacements: ['top', 'bottom', 'left', 'right'],
+                        },
+                    },
+                    {
+                        name: 'preventOverflow',
+                        options: {
+                            altAxis: true,
+                            tether: false,
+                        },
+                    },
+                ],
+            },
             zIndex: 1070,
             onHide: function() {
                 if(onHideAction != null) {
@@ -558,6 +576,24 @@ public class GwtClientUtils {
             allowHTML: true,
             placement: 'auto',
             maxWidth: 'none', // default maxWidth is 350px and content does not fit in tooltip
+            popperOptions: {
+                strategy: 'fixed',
+                modifiers: [
+                    {
+                        name: 'flip',
+                        options: {
+                            fallbackPlacements: ['top', 'bottom', 'left', 'right'],
+                        },
+                    },
+                    {
+                        name: 'preventOverflow',
+                        options: {
+                            altAxis: true,
+                            tether: false,
+                        },
+                    },
+                ],
+            },
             delay: [delay, null]
         });
     }-*/;
