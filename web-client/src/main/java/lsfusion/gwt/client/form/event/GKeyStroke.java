@@ -158,9 +158,9 @@ public class GKeyStroke implements Serializable {
         return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_ALT;
     }
 
-    public static boolean isEditObjectEvent(Event event, boolean hasEditObjectAction, boolean hasChangeAction) {
+    public static boolean isEditObjectEvent(Event event, boolean hasEditObjectAction, boolean hasChangeAction, boolean isCustomRenderer) {
         return hasEditObjectAction && (KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_F9
-                || (!hasChangeAction && GMouseStroke.isDblClickEvent(event))
+                || (!hasChangeAction && !isCustomRenderer && GMouseStroke.isDblClickEvent(event))
                 || FormsController.isLinkMode() && GMouseStroke.isChangeEvent(event));
     }
 
