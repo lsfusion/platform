@@ -1957,11 +1957,15 @@ public class ClientFormController implements AsyncListener {
     }
 
     public void addBinding(InputEvent ks, Binding binding) {
+        addBinding(ks, binding, BindingMode.AUTO);
+    }
+
+    public void addBinding(InputEvent ks, Binding binding, BindingMode defaultPreview) {
         List<Binding> groupBindings = bindings.computeIfAbsent(ks, k1 -> new ArrayList<>());
         if(binding.priority == 0)
             binding.priority = groupBindings.size();
         if(binding.bindPreview == null)
-            binding.bindPreview = ks.bindingModes != null ? ks.bindingModes.getOrDefault("preview", BindingMode.AUTO) : BindingMode.AUTO;
+            binding.bindPreview = ks.bindingModes != null ? ks.bindingModes.getOrDefault("preview", defaultPreview) : defaultPreview;
         if(binding.bindDialog == null)
             binding.bindDialog = ks.bindingModes != null ? ks.bindingModes.getOrDefault("dialog", BindingMode.AUTO) : BindingMode.AUTO;
         if(binding.bindGroup == null)
@@ -1990,13 +1994,13 @@ public class ClientFormController implements AsyncListener {
             Binding binding = bindingSupplier.get();
             if(propertyDraw.changeKeyPriority != null)
                 binding.priority = propertyDraw.changeKeyPriority;
-            addBinding(propertyDraw.changeKey, binding);
+            addBinding(propertyDraw.changeKey, binding, BindingMode.ONLY);
         }
         if(propertyDraw.changeMouse != null) {
             Binding binding = bindingSupplier.get();
             if(propertyDraw.changeMousePriority != null)
                 binding.priority = propertyDraw.changeMousePriority;
-            addBinding(propertyDraw.changeMouse, binding);
+            addBinding(propertyDraw.changeMouse, binding, BindingMode.ONLY);
         }
     }
 
