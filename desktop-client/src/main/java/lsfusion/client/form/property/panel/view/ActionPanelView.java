@@ -26,6 +26,7 @@ import lsfusion.client.form.property.cell.controller.dispatch.EditPropertyDispat
 import lsfusion.client.form.property.table.view.ClientPropertyContextMenuPopup;
 import lsfusion.client.tooltip.LSFTooltipManager;
 import lsfusion.interop.action.ServerResponse;
+import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.KeyStrokes;
 
@@ -73,7 +74,7 @@ public class ActionPanelView extends ButtonWidget implements PanelView, EditProp
         }
 
         //we have 'ENTER' binding for tab action, so this 'ENTER' binding should have higher priority
-        form.addBinding(new KeyInputEvent(KeyStrokes.getEnter()), new ClientFormController.Binding(property.groupObject, 0, eventObject -> eventObject.getSource() == ActionPanelView.this) {
+        ClientFormController.Binding binding = new ClientFormController.Binding(property.groupObject, 0, eventObject -> eventObject.getSource() == ActionPanelView.this) {
             @Override
             public boolean pressed(InputEvent ke) {
                 return form.commitCurrentEditing() && executePropertyEventAction(ServerResponse.CHANGE);
@@ -83,7 +84,9 @@ public class ActionPanelView extends ButtonWidget implements PanelView, EditProp
             public boolean showing() {
                 return isVisible();
             }
-        });
+        };
+        binding.bindPreview = BindingMode.NO;
+        form.addBinding(new KeyInputEvent(KeyStrokes.getEnter()), binding);
 
         //listen to mouse press and all other key press events
         addActionListener(new ActionListener() {

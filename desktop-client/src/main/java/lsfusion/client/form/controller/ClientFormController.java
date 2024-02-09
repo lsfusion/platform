@@ -452,7 +452,7 @@ public class ClientFormController implements AsyncListener {
         for (final ClientRegularFilter filter : filterGroup.filters) {
             comboBox.addItem(new ClientRegularFilterWrapper(filter));
             if(filter.key != null) {
-                addBinding(new KeyInputEvent(filter.key), new Binding(filterGroup.groupObject, 0) {
+                Binding binding = new Binding(filterGroup.groupObject, 0) {
                     @Override
                     public boolean pressed(java.awt.event.InputEvent ke) {
                         comboBox.setSelectedItem(new ClientRegularFilterWrapper(filter));
@@ -462,7 +462,9 @@ public class ClientFormController implements AsyncListener {
                     public boolean showing() {
                         return true;
                     }
-                });
+                };
+                binding.bindPreview = BindingMode.NO;
+                addBinding(new KeyInputEvent(filter.key), binding);
             }
         }
 
@@ -507,7 +509,7 @@ public class ClientFormController implements AsyncListener {
         addFilterView(filterGroup, checkBox);
 
         if(singleFilter.key != null) {
-            addBinding(new KeyInputEvent(singleFilter.key), new Binding(filterGroup.groupObject, 0) {
+            Binding binding = new Binding(filterGroup.groupObject, 0) {
                 @Override
                 public boolean pressed(java.awt.event.InputEvent ke) {
                     checkBox.setSelected(!checkBox.isSelected());
@@ -517,7 +519,9 @@ public class ClientFormController implements AsyncListener {
                 public boolean showing() {
                     return true;
                 }
-            });
+            };
+            binding.bindPreview = BindingMode.NO;
+            addBinding(new KeyInputEvent(singleFilter.key), binding);
         }
     }
 
@@ -1976,7 +1980,7 @@ public class ClientFormController implements AsyncListener {
     }
 
     public void addKeySetBinding(Binding binding) {
-        binding.bindPreview = BindingMode.AUTO;
+        binding.bindPreview = BindingMode.NO;
         binding.bindDialog = BindingMode.AUTO;
         binding.bindGroup = BindingMode.AUTO;
         binding.bindEditing = BindingMode.NO;

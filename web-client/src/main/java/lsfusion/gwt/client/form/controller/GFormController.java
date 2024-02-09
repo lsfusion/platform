@@ -1830,7 +1830,7 @@ public class GFormController implements EditManager {
     }
 
     public int addRegularFilterBinding(GInputEvent event, BindingExec pressed, Widget component, GGroupObject groupObject) {
-        return addBinding(event, new GBindingEnv(null, null, null, null, null, null, null, null), pressed, component, groupObject);
+        return addBinding(event, new GBindingEnv(null, GBindingMode.NO, null, null, null, null, null, null), pressed, component, groupObject);
     }
     public int addBinding(GInputEvent event, GBindingEnv env, BindingExec pressed, Widget component, GGroupObject groupObject) {
         return addBinding(event::isEvent, env, null, pressed, component, groupObject);
@@ -1871,7 +1871,7 @@ public class GFormController implements EditManager {
 
     private void addEnterBinding(boolean shiftPressed, GBindingMode bindGroup, Consumer<Boolean> selectNextElement, GGroupObject groupObject) {
         addBinding(new GKeyInputEvent(new GKeyStroke(KeyCodes.KEY_ENTER, false, false, shiftPressed)),
-                new GBindingEnv(-100, null, null, bindGroup, GBindingMode.NO, null, null, null),  // bindEditing - NO, because we don't want for example when editing text in grid to catch enter
+                new GBindingEnv(-100, GBindingMode.NO, null, bindGroup, GBindingMode.NO, null, null, null),  // bindEditing - NO, because we don't want for example when editing text in grid to catch enter
                 event -> selectNextElement.accept(!shiftPressed),
                 null,
                 groupObject);
