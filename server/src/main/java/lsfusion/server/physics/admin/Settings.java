@@ -164,7 +164,9 @@ public class Settings implements Cloneable {
 
     private int limitHintNoUpdateComplexity = 10000;
 
-    private int limitWrapComplexity = 100;
+    // the problem is that now there is no class push down in SubQueryExpr (as well, as in PartitionExpr and RecursionExpr) + no value (and class) push down for expressions like SubQueryExpr = value (which can be crucial for not materialized abstract properties for example)
+    // so now we have to keep limit really high to avoid problems
+    private int limitWrapComplexity = 3000;
 
     private int limitMaterializeComplexity = 20;
 
