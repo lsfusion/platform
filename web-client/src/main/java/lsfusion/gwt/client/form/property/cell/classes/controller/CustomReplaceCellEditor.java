@@ -105,8 +105,8 @@ public class CustomReplaceCellEditor extends RequestReplaceValueCellEditor imple
         cellEditor.commit(parent, CommitReason.FORCED);
     }
 
-    private static void commitJSValue(CustomCellEditor cellEditor, Element parent, JavaScriptObject value) {
-        cellEditor.commitValue(parent, GSimpleStateTableView.convertFromJSValue(cellEditor.getType(), value));
+    private static void commitJSValue(CustomCellEditor cellEditor, JavaScriptObject value) {
+        cellEditor.commitValue(GSimpleStateTableView.convertFromJSValue(cellEditor.getType(), value));
     }
 
     private static void setDeferredCommit(CustomCellEditor cellEditor, boolean deferredCommitOnBlur) {
@@ -120,12 +120,12 @@ public class CustomReplaceCellEditor extends RequestReplaceValueCellEditor imple
             },
             commit: function (value) {
                 if(arguments.length === 1)
-                    @lsfusion.gwt.client.form.property.cell.classes.controller.CustomReplaceCellEditor::commitJSValue(*)(thisObj, cellParent, value);
+                    @lsfusion.gwt.client.form.property.cell.classes.controller.CustomReplaceCellEditor::commitJSValue(*)(thisObj, value);
                 else
                     @CustomReplaceCellEditor::forceCommit(*)(thisObj, cellParent);
             },
             cancel: function () {
-                thisObj.@CustomReplaceCellEditor::cancel(Lcom/google/gwt/dom/client/Element;)(cellParent);
+                thisObj.@CustomReplaceCellEditor::cancel()();
             },
             getColorThemeName: function () {
                 return @lsfusion.gwt.client.view.MainFrame::colorTheme.@java.lang.Enum::name()();

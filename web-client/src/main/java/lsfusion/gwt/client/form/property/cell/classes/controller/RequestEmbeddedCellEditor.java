@@ -24,7 +24,7 @@ public interface RequestEmbeddedCellEditor extends RequestCellEditor {
                 commit(parent,  CommitReason.ENTERPRESSED);
             } else if (keyCode == KeyCodes.KEY_ESCAPE && GKeyStroke.isPlainKeyEvent(handler.event)) {
                 handler.consume();
-                cancel(parent, CancelReason.ESCAPE_PRESSED);
+                cancel(CancelReason.ESCAPE_PRESSED);
             }
         } else if (BLUR.equals(type)) {
             onBlur(event, parent);

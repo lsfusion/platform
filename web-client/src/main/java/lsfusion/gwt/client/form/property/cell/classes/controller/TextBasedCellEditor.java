@@ -117,7 +117,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
         if(GMouseStroke.isChangeEvent(handler.event)) {
             Integer dialogInputActionIndex = property.getDialogInputActionIndex(actions);
             if (dialogInputActionIndex != null) {
-                commitFinish(parent, oldValue, dialogInputActionIndex, CommitReason.FORCED);
+                commitFinish(oldValue, dialogInputActionIndex, CommitReason.FORCED);
                 return;
             }
         }
@@ -137,7 +137,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
             } else
                 value = (property.clearText ? "" : tryFormatInputText(oldValue));
 
-            setTextInputValue(parent, value);
+            setTextInputValue(value);
 
             if (selectAll)
                 inputElement.select();
@@ -192,7 +192,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
         }
     }
 
-    protected void setTextInputValue(Element parent, String value) {
+    protected void setTextInputValue(String value) {
         setTextInputValue(inputElement, value);
     }
     public static void setTextInputValue(InputElement element, String value) {

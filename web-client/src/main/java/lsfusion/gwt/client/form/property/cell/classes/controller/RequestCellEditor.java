@@ -12,10 +12,10 @@ public interface RequestCellEditor extends CellEditor {
     void commit(Element parent, CommitReason commitReason);
 
     // force cancel
-    default void cancel(Element parent) {
-        cancel(parent, CancelReason.FORCED);
+    default void cancel() {
+        cancel(CancelReason.FORCED);
     }
-    void cancel(Element parent, CancelReason cancelReason);
+    void cancel(CancelReason cancelReason);
 
     default void onBrowserEvent(Element parent, EventHandler handler) {
     }

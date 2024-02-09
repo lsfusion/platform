@@ -24,12 +24,12 @@ public abstract class ARequestValueCellEditor implements RequestValueCellEditor 
     }
 
     // force commit with the specified value
-    public void commitValue(Element parent, PValue value) {
-        commitFinish(parent, value, null, CommitReason.FORCED);
+    public void commitValue(PValue value) {
+        commitFinish(value, null, CommitReason.FORCED);
     }
 
     // force cancel
-    public void cancel(Element parent, CancelReason cancelReason) {
+    public void cancel(CancelReason cancelReason) {
         editManager.cancelEditing(cancelReason);
     }
 
@@ -44,7 +44,7 @@ public abstract class ARequestValueCellEditor implements RequestValueCellEditor 
         this.deferredCommitOnBlur = deferredCommitOnBlur;
     }
 
-    protected void commitFinish(Element parent, PValue value, Integer contextAction, CommitReason commitReason) {
+    protected void commitFinish(PValue value, Integer contextAction, CommitReason commitReason) {
         editManager.commitEditing(new GUserInputResult(value, contextAction), commitReason);
     }
 
@@ -71,12 +71,12 @@ public abstract class ARequestValueCellEditor implements RequestValueCellEditor 
                 try {
                     PValue value = getCommitValue(parent, contextAction);
                     if (cancelTheSameValueOnBlur && (blurred || commitReason.isForcedBlurred()) && GwtClientUtils.nullEquals(value, cancelTheSameValueOnBlurOldValue)) {
-                        cancel(parent);
+                        cancel();
                     } else
-                        commitFinish(parent, value, contextAction, commitReason);
+                        commitFinish(value, contextAction, commitReason);
                 } catch (InvalidEditException e) {
                     if (cancelIfInvalid && !e.patternMismatch)
-                        cancel(parent);
+                        cancel();
                 }
             }
         });
