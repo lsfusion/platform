@@ -57,7 +57,6 @@ import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.*;
 
-import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.gwt.server.convert.StaticConverters.convertColor;
 
 @SuppressWarnings("UnusedDeclaration")
@@ -423,7 +422,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
     public GInputBindingEvent convertBinding(lsfusion.interop.form.event.InputEvent event, Integer priority, Map<String, BindingMode> bindingModes) {
         return new GInputBindingEvent((GInputEvent)convertOrCast(event),
                         new GBindingEnv(priority != null && priority.equals(0) ? null : priority,
-                        nvl(convertOrCast(bindingModes != null ? bindingModes.get("preview") : null), GBindingMode.ONLY),
+                        convertOrCast(bindingModes != null ? bindingModes.get("preview") : null),
                         convertOrCast(bindingModes != null ? bindingModes.get("dialog") : null),
                         convertOrCast(bindingModes != null ? bindingModes.get("group") : null),
                         convertOrCast(bindingModes != null ? bindingModes.get("editing") : null),
