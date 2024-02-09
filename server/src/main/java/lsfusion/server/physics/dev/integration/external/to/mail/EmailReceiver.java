@@ -72,8 +72,7 @@ public class EmailReceiver {
         LocalDateTime minDateTime = lastDays != null ? LocalDateTime.now().minusDays(lastDays) : null;
 
         List<List<List<Object>>> data = downloadEmailList(context, receiveHost, receivePort, user, password, accountType, startTLS, deleteMessages, maxMessages,
-                getSkipEmails(context, LM, accountObject, minDateTime), getOldSkipEmails(context, LM, accountObject, user, minDateTime),
-                minDateTime, unpack, ignoreExceptions, insecureSSL);
+                getSkipEmails(context, LM, accountObject, minDateTime), minDateTime, unpack, ignoreExceptions, insecureSSL);
 
         importEmails(context, LM, accountObject, data.get(0));
         importAttachments(context, LM, data.get(1), accountObject);
@@ -126,35 +125,6 @@ public class EmailReceiver {
         ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> emailResult = emailQuery.execute(context);
         for (ImMap<Object, Object> entry : emailResult.values()) {
             skipEmails.put((String) entry.get("id"), new EmailData((LocalDateTime) entry.get("dateTimeSent"), entry.get("skip") != null));
-        }
-        return skipEmails;
-    }
-
-    private static Set<String> getOldSkipEmails(ExecutionContext context, EmailLogicsModule LM, DataObject accountObject, String nameAccount, LocalDateTime minDateTime) {
-        Set<String> skipEmails = new HashSet<>();
-        try {
-            KeyExpr emailExpr = new KeyExpr("email");
-            ImRevMap<Object, KeyExpr> emailKeys = MapFact.singletonRev("email", emailExpr);
-
-            ObjectValue minDateObject = minDateTime != null ?  new DataObject(minDateTime, DateTimeClass.instance) : NullValue.instance;
-
-            QueryBuilder<Object, Object> emailQuery = new QueryBuilder<>(emailKeys);
-            emailQuery.addProperty("fromAddressEmail", LM.findProperty("fromAddress[Email]").getExpr(emailExpr));
-            emailQuery.addProperty("dateTimeSentEmail", LM.findProperty("dateTimeSent[Email]").getExpr(emailExpr));
-            emailQuery.addProperty("subjectEmail", LM.findProperty("subject[Email]").getExpr(emailExpr));
-            emailQuery.and(LM.findProperty("skipFilter[Email,Account,DATETIME]").getExpr(emailExpr, accountObject.getExpr(), minDateObject.getExpr()).getWhere());
-
-            ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> emailResult = emailQuery.execute(context);
-            ServerLoggers.mailLogger.info("reading skip emails:");
-            for(ImMap<Object, Object> entry : emailResult.values()) {
-                String emailId = getEmailId(localDateTimeToSqlTimestamp((LocalDateTime) entry.get("dateTimeSentEmail")), (String) entry.get("fromAddressEmail"),
-                        (String) entry.get("subjectEmail"), null);
-                ServerLoggers.mailLogger.info(emailId);
-                skipEmails.add(emailId);
-            }
-
-        } catch (Exception e) {
-            ServerLoggers.mailLogger.error(String.format("Account %s: read emails from base failed", nameAccount), e);
         }
         return skipEmails;
     }
@@ -251,7 +221,7 @@ public class EmailReceiver {
 
     private static List<List<List<Object>>> downloadEmailList(ExecutionContext context, String receiveHost, Integer receivePort, String user, String password,
                                                               AccountType accountType, boolean startTLS, boolean deleteMessages, Integer maxMessages,
-                                                              Map<String, EmailData> skipEmails, Set<String> oldSkipEmails, LocalDateTime minDateTime,
+                                                              Map<String, EmailData> skipEmails, LocalDateTime minDateTime,
                                                               boolean unpack, boolean ignoreExceptions, boolean insecureSSL)
             throws MessagingException, IOException, GeneralSecurityException {
 
@@ -289,7 +259,7 @@ public class EmailReceiver {
                     LocalDateTime dateTimeSentEmail = emailData != null ? emailData.dateTimeSent : getSentDate(message);
                     boolean skip = emailData != null && emailData.skip;
 
-                    if (!skip && (minDateTime == null || dateTimeSentEmail == null || minDateTime.compareTo(dateTimeSentEmail) <= 0)) {
+                    if (!skip && (minDateTime == null || dateTimeSentEmail == null || minDateTime.isBefore(dateTimeSentEmail))) {
                         String fromAddressEmail = ((InternetAddress) message.getFrom()[0]).getAddress();
                         String subjectEmail = message.getSubject();
 
@@ -297,23 +267,20 @@ public class EmailReceiver {
                         ServerLoggers.mailLogger.info("idEmail: " + idEmail);
                         usedEmails.add(idEmail);
 
-                        //todo: remove backward compatibility with old ids
-                        if(!oldSkipEmails.contains(idEmail)) {
-                            message.setFlag(deleteMessages ? Flags.Flag.DELETED : Flags.Flag.SEEN, true);
-                            Object messageContent = getEmailContent(message);
-                            MultipartBody messageEmail = getEmailMessage(subjectEmail, message, messageContent, unpack);
-                            if (messageEmail == null) {
-                                messageEmail = new MultipartBody(messageContent == null ? null : String.valueOf(messageContent), null);
-                                ServerLoggers.mailLogger.error("Warning: missing attachment '" + messageContent + "' from email '" + subjectEmail + "'");
-                            }
-                            FileData emlFileEmail = new FileData(getEMLByteArray(message), "eml");
-                            dataEmails.add(Arrays.asList(uid, dateTimeSentEmail, dateTimeReceivedEmail, fromAddressEmail, user, subjectEmail, messageEmail.message, emlFileEmail));
-                            int counter = 1;
-                            if (messageEmail.attachments != null) {
-                                for (Map.Entry<String, FileData> entry : messageEmail.attachments.entrySet()) {
-                                    dataAttachments.add(Arrays.asList(uid, String.valueOf(counter), BaseUtils.getFileName(entry.getKey()), entry.getValue()));
-                                    counter++;
-                                }
+                        message.setFlag(deleteMessages ? Flags.Flag.DELETED : Flags.Flag.SEEN, true);
+                        Object messageContent = getEmailContent(message);
+                        MultipartBody messageEmail = getEmailMessage(subjectEmail, message, messageContent, unpack);
+                        if (messageEmail == null) {
+                            messageEmail = new MultipartBody(messageContent == null ? null : String.valueOf(messageContent), null);
+                            ServerLoggers.mailLogger.error("Warning: missing attachment '" + messageContent + "' from email '" + subjectEmail + "'");
+                        }
+                        FileData emlFileEmail = new FileData(getEMLByteArray(message), "eml");
+                        dataEmails.add(Arrays.asList(uid, dateTimeSentEmail, dateTimeReceivedEmail, fromAddressEmail, user, subjectEmail, messageEmail.message, emlFileEmail));
+                        int counter = 1;
+                        if (messageEmail.attachments != null) {
+                            for (Map.Entry<String, FileData> entry : messageEmail.attachments.entrySet()) {
+                                dataAttachments.add(Arrays.asList(uid, String.valueOf(counter), BaseUtils.getFileName(entry.getKey()), entry.getValue()));
+                                counter++;
                             }
                         }
                     } else {
@@ -445,7 +412,6 @@ public class EmailReceiver {
                 String fileName = decodeFileName(bp.getFileName());
                 ServerLoggers.mailLogger.info(String.format("%sattachment name: %s, size: %s", prefix, fileName, bp.getSize()));
 
-                InputStream is = bp.getInputStream();
                 File f = File.createTempFile("attachment", "");
                 try {
                     copyInputStreamToFile(bp.getInputStream(), f);
