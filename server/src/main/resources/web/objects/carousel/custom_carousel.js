@@ -54,7 +54,7 @@ function carousel() {
                 element.carousel.setAttribute("data-bs-theme", options.theme);
 
             if (options.fitContain)
-                carousel.classList.add("carousel-fit-contain");
+                element.carousel.classList.add("carousel-fit-contain");
 
             for (let object of list) {
                 let carouselItem = document.createElement("div");
