@@ -4,6 +4,7 @@ import lsfusion.base.identity.IdentityObject;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.form.controller.remote.serialization.ClientIdentitySerializable;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
+import lsfusion.interop.form.event.KeyInputEvent;
 
 import javax.swing.*;
 import java.io.DataInputStream;
@@ -13,7 +14,8 @@ import java.io.IOException;
 public class ClientRegularFilter extends IdentityObject implements ClientIdentitySerializable {
 
     public String caption = "";
-    public KeyStroke key;
+    public KeyInputEvent keyEvent;
+    public Integer priority;
     public boolean showKey;
 
     public ClientRegularFilter() {
@@ -26,8 +28,8 @@ public class ClientRegularFilter extends IdentityObject implements ClientIdentit
     public String getFullCaption() {
 
         String fullCaption = caption;
-        if (showKey && key != null) {
-            fullCaption += " (" + SwingUtils.getKeyStrokeCaption(key) + ")";
+        if (showKey && keyEvent != null) {
+            fullCaption += " (" + SwingUtils.getKeyStrokeCaption(keyEvent.keyStroke) + ")";
         }
         return fullCaption;
     }
@@ -43,7 +45,8 @@ public class ClientRegularFilter extends IdentityObject implements ClientIdentit
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         caption = pool.readString(inStream);
 
-        key = pool.readObject(inStream);
+        keyEvent = pool.readObject(inStream);
+        priority = pool.readInt(inStream);
         showKey = inStream.readBoolean();
     }
 }

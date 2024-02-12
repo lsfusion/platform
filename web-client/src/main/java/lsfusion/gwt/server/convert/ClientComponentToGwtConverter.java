@@ -185,7 +185,14 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         GRegularFilter filter = new GRegularFilter();
         filter.ID = clientFilter.ID;
         filter.caption = clientFilter.caption;
-        filter.key = convertOrCast(clientFilter.key);
+        filter.keyEvent = convertOrCast(clientFilter.keyEvent);
+        if(clientFilter.keyEvent != null && clientFilter.keyEvent.bindingModes != null) {
+            filter.bindingModes = new HashMap<>();
+            for (Map.Entry<String, BindingMode> entry : clientFilter.keyEvent.bindingModes.entrySet()) {
+                filter.bindingModes.put(entry.getKey(), convertOrCast(entry.getValue()));
+            }
+        }
+        filter.priority = clientFilter.priority;
         filter.showKey = clientFilter.showKey;
         return filter;
     }

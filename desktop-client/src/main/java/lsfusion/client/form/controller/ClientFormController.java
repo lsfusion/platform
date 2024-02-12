@@ -93,6 +93,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.base.BaseUtils.serializeObject;
 import static lsfusion.client.ClientResourceBundle.getString;
 
@@ -451,8 +452,8 @@ public class ClientFormController implements AsyncListener {
         comboBox.addItem(new ClientRegularFilterWrapper(getString("form.all")));
         for (final ClientRegularFilter filter : filterGroup.filters) {
             comboBox.addItem(new ClientRegularFilterWrapper(filter));
-            if(filter.key != null) {
-                Binding binding = new Binding(filterGroup.groupObject, 0) {
+            if(filter.keyEvent != null) {
+                Binding binding = new Binding(filterGroup.groupObject, nvl(filter.priority, 0)) {
                     @Override
                     public boolean pressed(java.awt.event.InputEvent ke) {
                         comboBox.setSelectedItem(new ClientRegularFilterWrapper(filter));
@@ -463,8 +464,7 @@ public class ClientFormController implements AsyncListener {
                         return true;
                     }
                 };
-                binding.bindPreview = BindingMode.NO;
-                addBinding(new KeyInputEvent(filter.key), binding);
+                addBinding(filter.keyEvent, binding, BindingMode.NO);
             }
         }
 
@@ -508,8 +508,8 @@ public class ClientFormController implements AsyncListener {
 
         addFilterView(filterGroup, checkBox);
 
-        if(singleFilter.key != null) {
-            Binding binding = new Binding(filterGroup.groupObject, 0) {
+        if(singleFilter.keyEvent != null) {
+            Binding binding = new Binding(filterGroup.groupObject, nvl(singleFilter.priority, 0)) {
                 @Override
                 public boolean pressed(java.awt.event.InputEvent ke) {
                     checkBox.setSelected(!checkBox.isSelected());
@@ -520,8 +520,8 @@ public class ClientFormController implements AsyncListener {
                     return true;
                 }
             };
-            binding.bindPreview = BindingMode.NO;
-            addBinding(new KeyInputEvent(singleFilter.key), binding);
+
+            addBinding(singleFilter.keyEvent, binding, BindingMode.NO);
         }
     }
 
@@ -1961,11 +1961,15 @@ public class ClientFormController implements AsyncListener {
     }
 
     public void addBinding(InputEvent ks, Binding binding) {
+        addBinding(ks, binding, BindingMode.AUTO);
+    }
+
+    public void addBinding(InputEvent ks, Binding binding, BindingMode defaultPreview) {
         List<Binding> groupBindings = bindings.computeIfAbsent(ks, k1 -> new ArrayList<>());
         if(binding.priority == 0)
             binding.priority = groupBindings.size();
         if(binding.bindPreview == null)
-            binding.bindPreview = ks.bindingModes != null ? ks.bindingModes.getOrDefault("preview", BindingMode.AUTO) : BindingMode.AUTO;
+            binding.bindPreview = ks.bindingModes != null ? ks.bindingModes.getOrDefault("preview", defaultPreview) : defaultPreview;
         if(binding.bindDialog == null)
             binding.bindDialog = ks.bindingModes != null ? ks.bindingModes.getOrDefault("dialog", BindingMode.AUTO) : BindingMode.AUTO;
         if(binding.bindGroup == null)

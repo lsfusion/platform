@@ -1308,11 +1308,11 @@ extendFilterGroupDeclaration
 	
 formRegularFilterDeclaration returns [RegularFilterInfo filter]
 @init {
-	String key = null;
+	String keyStrokeOptions = null;
 }
-    :   'FILTER' caption=localizedStringLiteral fd=formExprDeclaration[null] (keystroke=stringLiteral {key = $keystroke.val;})? setDefault=filterSetDefault
+    :   'FILTER' caption=localizedStringLiteral fd=formExprDeclaration[null] (key=stringLiteral {keyStrokeOptions = $key.val;})? setDefault=filterSetDefault
         {
-            $filter = new RegularFilterInfo($caption.val, key, $fd.property, $fd.mapping, $setDefault.isDefault);
+            $filter = new RegularFilterInfo($caption.val, keyStrokeOptions, $fd.property, $fd.mapping, $setDefault.isDefault);
         }
     ;
 	

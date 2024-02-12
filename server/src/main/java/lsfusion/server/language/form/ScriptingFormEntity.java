@@ -9,6 +9,7 @@ import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.interop.action.ServerResponse;
+import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.server.base.version.ComplexLocation;
@@ -60,6 +61,7 @@ import java.util.List;
 import java.util.Map;
 
 import static lsfusion.base.BaseUtils.nvl;
+import static lsfusion.server.language.ScriptingLogicsModule.parseKeyStrokeOptions;
 import static lsfusion.server.logics.form.interactive.action.edit.FormSessionScope.OLDSESSION;
 import static lsfusion.server.physics.admin.log.ServerLoggers.startLog;
 
@@ -776,11 +778,13 @@ public class ScriptingFormEntity {
     public void addRegularFilters(RegularFilterGroupEntity filterGroup, List<RegularFilterInfo> filters, Version version, boolean extend) throws ScriptingErrorLog.SemanticErrorException {
         for (RegularFilterInfo info : filters) {
             LocalizedString caption = info.caption;
-            KeyStroke keyStroke = (info.keystroke != null ? KeyStroke.getKeyStroke(info.keystroke) : null);
+            ScriptingLogicsModule.KeyStrokeOptions kso = info.keyStrokeOptions != null ? parseKeyStrokeOptions(info.keyStrokeOptions) : null;
+            KeyInputEvent keyEvent = kso != null ? new KeyInputEvent(KeyStroke.getKeyStroke(kso.keyStroke), kso.bindingModesMap) : null;
+            Integer priority = kso != null ? kso.priority : null;
             boolean isDefault = info.isDefault;
 
-            if (info.keystroke != null && keyStroke == null) {
-                LM.getErrLog().emitWrongKeyStrokeFormatError(LM.getParser(), info.keystroke);
+            if (info.keyStrokeOptions != null && keyEvent.keyStroke == null) {
+                LM.getErrLog().emitWrongKeyStrokeFormatError(LM.getParser(), info.keyStrokeOptions);
             }
 
             ImOrderSet<String> mapping = info.mapping;
@@ -789,7 +793,7 @@ public class ScriptingFormEntity {
             ImOrderSet<ObjectEntity> mappingObjects = getMappingObjects(mapping);
             checkPropertyParameters(property, mappingObjects);
 
-            RegularFilterEntity filter = new RegularFilterEntity(form.genID(), new FilterEntity(form.addPropertyObject(property, mappingObjects), true), caption, keyStroke);
+            RegularFilterEntity filter = new RegularFilterEntity(form.genID(), new FilterEntity(form.addPropertyObject(property, mappingObjects), true), caption, keyEvent, priority);
             if (extend) {
                 form.addRegularFilter(filterGroup, filter, isDefault, version);
             } else {
@@ -897,14 +901,14 @@ public class ScriptingFormEntity {
     
     public static class RegularFilterInfo {
         LocalizedString caption;
-        String keystroke;
+        String keyStrokeOptions;
         LP property;
         ImOrderSet<String> mapping;
         boolean isDefault;
 
-        public RegularFilterInfo(LocalizedString caption, String keystroke, LP property, ImOrderSet<String> mapping, boolean isDefault) {
+        public RegularFilterInfo(LocalizedString caption, String keyStrokeOptions, LP property, ImOrderSet<String> mapping, boolean isDefault) {
             this.caption = caption;
-            this.keystroke = keystroke;
+            this.keyStrokeOptions = keyStrokeOptions;
             this.property = property;
             this.mapping = mapping;
             this.isDefault = isDefault;
