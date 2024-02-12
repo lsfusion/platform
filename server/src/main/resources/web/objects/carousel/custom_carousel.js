@@ -91,8 +91,10 @@ function carousel() {
             }
 
             element.carousel.addEventListener('slide.bs.carousel', event => {
-                let object = event.relatedTarget.object;
-                if (!controller.isCurrent(object)) controller.changeObject(object);
+                if (event.relatedTarget) {
+                    let object = event.relatedTarget.object;
+                    if (!controller.isCurrent(object)) controller.changeObject(object);
+                }
             })
         }
     }

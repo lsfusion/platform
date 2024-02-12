@@ -12,3 +12,6 @@ onWebClientInit() + {
 // Usage
 // OBJECTS m = MyFile CUSTOM 'carousel' HEADER JSON FROM id = 'carousel', fitContain = TRUE, theme = 'dark'
 // PROPERTIES caption(m), file(m), tag(m), type(m)
+// GRID(m) {
+//     size = (100, 100);
+// }
