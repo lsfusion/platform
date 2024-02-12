@@ -194,7 +194,8 @@ public class FormChanges {
 
                 Object value = rows.getValue(j).getValue();
 
-                serializeObject(outStream, convertFileValue(needImage, value, context));
+                boolean isCustom = propertyReadInstance instanceof PropertyDrawInstance && ((PropertyDrawInstance) propertyReadInstance).getEntity().isCustom((FormInstanceContext) context);
+                serializeObject(outStream, convertFileValue(needImage, value, context, isCustom));
             }
         }
 
@@ -242,6 +243,9 @@ public class FormChanges {
         }
     }
     public static Object convertFileValue(NeedImage needImage, Object value, ConnectionContext context) throws IOException {
+        return convertFileValue(needImage, value, context, false);
+    }
+    public static Object convertFileValue(NeedImage needImage, Object value, ConnectionContext context, boolean isCustom) throws IOException {
         if(value instanceof FileData && needImage != null && ((FileData)value).getExtension().equals("resourceImage"))
             value = new String(((FileData) value).getRawFile().getBytes());
 
@@ -249,6 +253,8 @@ public class FormChanges {
             if(needImage != null) {
                 if(value instanceof RawFileData && needImage.type instanceof StaticFormatFileClass)
                     value = new FileData((RawFileData) value, ((StaticFormatFileClass) needImage.type).getExtension());
+                return value;
+            } else if(isCustom) {
                 return value;
             }
 

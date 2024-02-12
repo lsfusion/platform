@@ -810,8 +810,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
                     if(getExplicitEventAction(CHANGE) != null)
                         return null;
 
-                    GroupObjectEntity toDraw = getToDraw(context.entity);
-                    if(toDraw != null && toDraw.isCustom())
+                    if(isCustom(context))
                         return null;
                 }
 
@@ -981,5 +980,10 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     @Override
     public String getReportSID() {
         return getSID();
+    }
+
+    public boolean isCustom(FormInstanceContext context) {
+        GroupObjectEntity toDraw = getToDraw(context.entity);
+        return toDraw != null && toDraw.isCustom();
     }
 }
