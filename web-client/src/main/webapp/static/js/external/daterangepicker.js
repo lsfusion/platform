@@ -123,16 +123,16 @@
         // handle all the possible options overriding defaults
         //
 
-        this.cancelFunction = function () {
-            this.hide();
-        }
-        if (typeof  options.cancelFunction === 'function') {
-            this.cancelFunction = options.cancelFunction;
+        // PATCHED: added onKeydown function
+        this.onKeydown = function (e) {}
+        if (typeof  options.onKeydown === 'function') {
+            this.onKeydown = options.onKeydown;
         }
 
-        this.setInputValueFunction = function () {}
-        if (typeof  options.setInputValueFunction === 'function') {
-            this.setInputValueFunction = options.setInputValueFunction;
+        // PATCHED: added onClickDate function
+        this.onClickDate = function () {}
+        if (typeof  options.onClickDate === 'function') {
+            this.onClickDate = options.onClickDate;
         }
 
         if (typeof options.locale === 'object') {
@@ -425,10 +425,8 @@
         this.container.find('.drp-calendar')
             .on('click.daterangepicker', '.prev', $.proxy(this.clickPrev, this))
             .on('click.daterangepicker', '.next', $.proxy(this.clickNext, this))
-            .on('click.daterangepicker', 'td.available', $.proxy(function (e) {
-                this.clickDate(e);
-                this.setInputValueFunction();
-            }, this))
+            // PATCHED: changed 'mousedown.daterangepicker' to 'click.daterangepicker'
+            .on('click.daterangepicker', 'td.available', $.proxy(this.clickDate, this))
             .on('mouseenter.daterangepicker', 'td.available', $.proxy(this.hoverDate, this))
             .on('change.daterangepicker', 'select.yearselect', $.proxy(this.monthOrYearChanged, this))
             .on('change.daterangepicker', 'select.monthselect', $.proxy(this.monthOrYearChanged, this))
@@ -626,12 +624,15 @@
 
             //highlight any predefined range matching the current start and end dates
             this.container.find('.ranges li').removeClass('active');
+            // PATCHED: added !this.singleDatePicker check
             if (!this.singleDatePicker && this.endDate == null) return;
 
             this.calculateChosenLabel();
         },
 
         renderCalendar: function(side) {
+            // PATCHED: added rendering property and set it to true
+            this.container.prop('rendering', true);
 
             //
             // Build the matrix of dates that will populate the calendar
@@ -863,6 +864,8 @@
 
             this.container.find('.drp-calendar.' + side + ' .calendar-table').html(html);
 
+            // PATCHED: set rendering property to false
+            this.container.prop('rendering', false);
         },
 
         renderTimePicker: function(side) {
@@ -1066,6 +1069,7 @@
                 break;
             }
 
+            // PATCHED: added this if block to fix picker position on devices with low-resolution displays
             if (containerTop < 0)
                 containerTop = 10;
 
@@ -1079,6 +1083,7 @@
 
             this.container.toggleClass('drop-up', drops == 'up');
 
+            //PATCHED: swap 'left' to 'right' because this library swap them inexplicably for what
             if (this.opens == 'right') {
                 var containerRight = parentRightEdge - this.element.offset().left - this.element.outerWidth();
                 if (containerWidth + containerRight > $(window).width()) {
@@ -1158,6 +1163,8 @@
             this.previousRightTime = this.endDate.clone();
 
             this.updateView();
+
+            //PATCHED: moved this.element.trigger('show.daterangepicker', this); line from after this.move();
             this.element.trigger('show.daterangepicker', this);
             this.container.show();
             this.move();
@@ -1381,6 +1388,8 @@
             //This is to cancel the blur event handler if the mouse was in one of the inputs
             e.stopPropagation();
 
+            // PATCHED: added this.onClickDate();
+            this.onClickDate();
         },
 
         calculateChosenLabel: function () {
@@ -1388,7 +1397,7 @@
             var i = 0;
             for (var range in this.ranges) {
 
-//              ADDED THIS IF
+                // PATCHED: added this if block
                 if (this.singleDatePicker) {
                     if (this.startDate.format('YYYY-MM-DD') == this.ranges[range][0].format('YYYY-MM-DD')) {
                         customRange = false;
@@ -1554,13 +1563,20 @@
         },
 
         keydown: function(e) {
+            // PATCHED: removed this if block
+            // if ((e.keyCode === 9) || (e.keyCode === 13)) {
+            //     this.hide();
+            // }
+
             //hide on esc and prevent propagation
             if (e.keyCode === 27) {
                 e.preventDefault();
                 e.stopPropagation();
 
-                this.cancelFunction();
+                this.hide();
             }
+            // PATCHED: added this.onKeydown(e);
+            this.onKeydown(e);
         },
 
         updateElement: function() {

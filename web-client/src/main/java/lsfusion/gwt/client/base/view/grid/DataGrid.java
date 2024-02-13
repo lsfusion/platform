@@ -50,6 +50,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import static java.lang.Math.min;
@@ -355,11 +356,11 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         return false;
     }
 
-    public static void addFocusPartner(Element element, Element partner) {
+    public static void addFocusPartner(Element element, Element partner, Predicate<Element> customFakeBlur) {
         partner.setPropertyObject("focusPartner", element);
         partner.setTabIndex(-1); // we need this to have related target in isFakeBlur, otherwise it won't work
         GwtClientUtils.setOnFocusOut(partner, event -> {
-            if(!isFakeBlur(event, element)) // if the focus is not returned to the element
+            if(!isFakeBlur(event, element) && !customFakeBlur.test(partner)) // if the focus is not returned to the element
                 GwtClientUtils.fireOnBlur(element);
         });
     }

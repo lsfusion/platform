@@ -2,7 +2,6 @@ package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.core.client.JsDate;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
@@ -12,12 +11,11 @@ import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
+import lsfusion.gwt.client.view.MainFrame;
 
 import java.text.ParseException;
 
 public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor implements FormatCellEditor {
-
-    private InputElement editBox;
 
     protected boolean isNative() {
         return inputElementType.hasNativePopup();
@@ -32,14 +30,13 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
         super.onInputReady(parent, oldValue);
 
         if (!isNative()) {
-            editBox = inputElement;
-
             assert oldValue != null;
             createPicker(GwtClientUtils.getTippyParent(parent), parent, getStartDate(oldValue), getEndDate(oldValue), getPattern().replace("a", "A"), isSinglePicker(), isTimeEditor(), isDateEditor());
 
-            DataGrid.addFocusPartner(parent, getPickerElement());
+            DataGrid.addFocusPartner(parent, getPickerElement(), element -> element.getPropertyObject("rendering") != null);
 
-            editBox.click(); // need to dateRangePicker opens immediately. because we use an editBox
+            if (!MainFrame.useBootstrap)
+                inputElement.click(); // need to dateRangePicker opens immediately. because we use an editBox
         }
     }
 
@@ -52,10 +49,14 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
 
     protected void pickerApply(Element parent) {
         //when auto-apply selects a date, at the end a mousedown occurs and takes the focus to a nothing
+        //todo try to remove scheduler
         SmartScheduler.getInstance().scheduleDeferred(true, () -> {
             if (editManager.isThisCellEditing(this))
                 commit(parent, CommitReason.FORCED);
         });
+
+        if (MainFrame.useBootstrap)
+            inputElement.focus();
     }
 
     protected PValue tryParseInputText(String inputText, boolean onCommit) throws ParseException {
@@ -87,22 +88,22 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
     }
 
     protected native void removePicker()/*-{
-        $(this.@DateRangePickerBasedCellEditor::editBox).data('daterangepicker').remove();
+        $(this.@InputBasedCellEditor::inputElement).data('daterangepicker').remove();
         //we need to remove the keydown listener because it is a global($wnd) listener that is only used when the picker popup opens
         $($wnd).off('keydown.pickerpopup').off('mousedown.pickerpopup');
     }-*/;
 
     protected native Element getPickerElement()/*-{
-        return $(this.@DateRangePickerBasedCellEditor::editBox).data('daterangepicker').container.get(0);
+        return $(this.@InputBasedCellEditor::inputElement).data('daterangepicker').container.get(0);
     }-*/;
 
     protected native JsDate getPickerStartDate()/*-{
-        var pickerDate = $(this.@DateRangePickerBasedCellEditor::editBox).data('daterangepicker').startDate;
+        var pickerDate = $(this.@InputBasedCellEditor::inputElement).data('daterangepicker').startDate;
         return pickerDate.isValid() ? pickerDate.toDate() : null; // toDate because it is "Moment js" object
     }-*/;
 
     protected native JsDate getPickerEndDate()/*-{
-        var pickerDate = $(this.@DateRangePickerBasedCellEditor::editBox).data('daterangepicker').endDate;
+        var pickerDate = $(this.@InputBasedCellEditor::inputElement).data('daterangepicker').endDate;
         // pickerDate may be null because we update the input field and on select 'date_from' - 'date_to' will be null
         return pickerDate == null ? this.@DateRangePickerBasedCellEditor::getPickerStartDate(*)() : pickerDate.isValid() ? pickerDate.toDate() : null; // toDate because it is "Moment js" object
     }-*/;
@@ -114,7 +115,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
     protected native void createPicker(Element tippyParent, Element parent, JsDate startDate, JsDate endDate, String pattern, boolean singleDatePicker, boolean time, boolean date)/*-{
         window.$ = $wnd.jQuery;
         var thisObj = this;
-        var editElement = $(thisObj.@DateRangePickerBasedCellEditor::editBox);
+        var editElement = $(thisObj.@InputBasedCellEditor::inputElement);
         var messages = @lsfusion.gwt.client.ClientMessages.Instance::get()();
 
         editElement.daterangepicker({
@@ -170,10 +171,11 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
             drops: 'auto',
             opens: thisObj.@DateRangePickerBasedCellEditor::getHorzTextAlignment()().@com.google.gwt.dom.client.Style.TextAlign::getCssName()(),
             alwaysShowCalendars: true, // need to use with ranges
-            cancelFunction: function () {
-                thisObj.@ARequestValueCellEditor::cancel(Llsfusion/gwt/client/form/property/cell/controller/CancelReason;)(@CancelReason::ESCAPE_PRESSED);
+            onKeydown: function (e) {
+                if (e.keyCode === 27)
+                    thisObj.@ARequestValueCellEditor::cancel(Llsfusion/gwt/client/form/property/cell/controller/CancelReason;)(@lsfusion.gwt.client.form.property.cell.controller.CancelReason::ESCAPE_PRESSED);
             },
-            setInputValueFunction: function (value) {
+            onClickDate: function () {
                 thisObj.@DateRangePickerBasedCellEditor::setInputValue()();
             }
         });
