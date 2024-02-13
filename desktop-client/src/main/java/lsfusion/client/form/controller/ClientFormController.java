@@ -464,7 +464,7 @@ public class ClientFormController implements AsyncListener {
                         return true;
                     }
                 };
-                addBinding(filter.keyEvent, binding, BindingMode.NO);
+                addBinding(filter.keyEvent, binding);
             }
         }
 
@@ -521,7 +521,7 @@ public class ClientFormController implements AsyncListener {
                 }
             };
 
-            addBinding(singleFilter.keyEvent, binding, BindingMode.NO);
+            addBinding(singleFilter.keyEvent, binding);
         }
     }
 
@@ -1961,15 +1961,11 @@ public class ClientFormController implements AsyncListener {
     }
 
     public void addBinding(InputEvent ks, Binding binding) {
-        addBinding(ks, binding, BindingMode.AUTO);
-    }
-
-    public void addBinding(InputEvent ks, Binding binding, BindingMode defaultPreview) {
         List<Binding> groupBindings = bindings.computeIfAbsent(ks, k1 -> new ArrayList<>());
         if(binding.priority == 0)
             binding.priority = groupBindings.size();
         if(binding.bindPreview == null)
-            binding.bindPreview = ks.bindingModes != null ? ks.bindingModes.getOrDefault("preview", defaultPreview) : defaultPreview;
+            binding.bindPreview = ks.bindingModes != null ? ks.bindingModes.getOrDefault("preview", BindingMode.AUTO) : BindingMode.AUTO;
         if(binding.bindDialog == null)
             binding.bindDialog = ks.bindingModes != null ? ks.bindingModes.getOrDefault("dialog", BindingMode.AUTO) : BindingMode.AUTO;
         if(binding.bindGroup == null)

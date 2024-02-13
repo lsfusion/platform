@@ -4,12 +4,14 @@ import lsfusion.base.identity.IdentityObject;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.form.controller.remote.serialization.ClientIdentitySerializable;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
+import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.event.KeyInputEvent;
 
 import javax.swing.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
 
 public class ClientRegularFilter extends IdentityObject implements ClientIdentitySerializable {
 
@@ -46,6 +48,13 @@ public class ClientRegularFilter extends IdentityObject implements ClientIdentit
         caption = pool.readString(inStream);
 
         keyEvent = pool.readObject(inStream);
+        if(keyEvent != null) {
+            if(keyEvent.bindingModes == null)
+                keyEvent.bindingModes = new HashMap<>();
+            if(keyEvent.bindingModes.get("preview") == null) {
+                keyEvent.bindingModes.put("preview", BindingMode.NO);
+            }
+        }
         priority = pool.readInt(inStream);
         showKey = inStream.readBoolean();
     }

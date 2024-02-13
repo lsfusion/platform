@@ -313,8 +313,8 @@ public class GFormController implements EditManager {
         }
 
         setBindingGroupObject(filterCheck, filterGroup.groupObject);
-        if (filter.keyEvent != null)
-            addRegularFilterBinding(filter.keyEvent, filter.bindingModes, filter.priority, (event) -> filterCheck.setValue(!filterCheck.getValue(), true), filterCheck, filterGroup.groupObject);
+        if (filter.bindingEvent != null)
+            addRegularFilterBinding(filter.bindingEvent, (event) -> filterCheck.setValue(!filterCheck.getValue(), true), filterCheck, filterGroup.groupObject);
     }
 
     private void createMultipleFilterComponent(final GRegularFilterGroup filterGroup) {
@@ -329,8 +329,8 @@ public class GFormController implements EditManager {
 
             final int filterIndex = i;
             GFormController.setBindingGroupObject(filterBox, filterGroup.groupObject);
-            if (filter.keyEvent != null)
-                addRegularFilterBinding(filter.keyEvent, filter.bindingModes, filter.priority, (event) -> {
+            if (filter.bindingEvent != null)
+                addRegularFilterBinding(filter.bindingEvent, (event) -> {
                     filterBox.setSelectedIndex(filterIndex + 1);
                     setRegularFilter(filterGroup, filterIndex);
                 }, filterBox, filterGroup.groupObject);
@@ -1829,15 +1829,8 @@ public class GFormController implements EditManager {
             removeBinding(index);
     }
 
-    public int addRegularFilterBinding(GKeyInputEvent event, Map<String, GBindingMode> bindingModes, Integer priority, BindingExec pressed, Widget component, GGroupObject groupObject) {
-        GBindingMode preview = nvl(bindingModes != null ? bindingModes.get("preview") : null, GBindingMode.NO);
-        GBindingMode dialog = nvl(bindingModes != null ? bindingModes.get("dialog") : null, GBindingMode.AUTO);
-        GBindingMode group = nvl(bindingModes != null ? bindingModes.get("group") : null, GBindingMode.AUTO);
-        GBindingMode editing = nvl(bindingModes != null ? bindingModes.get("editing") : null, GBindingMode.AUTO);
-        GBindingMode showing = nvl(bindingModes != null ? bindingModes.get("showing") : null, GBindingMode.AUTO);
-        GBindingMode panel = nvl(bindingModes != null ? bindingModes.get("panel") : null, GBindingMode.AUTO);
-        GBindingMode cell = nvl(bindingModes != null ? bindingModes.get("cell") : null, GBindingMode.AUTO);
-        return addBinding(event, new GBindingEnv(priority, preview, dialog, group, editing, showing, panel, cell), pressed, component, groupObject);
+    public int addRegularFilterBinding(GInputBindingEvent event, BindingExec pressed, Widget component, GGroupObject groupObject) {
+        return addBinding(event.inputEvent, event.env, pressed, component, groupObject);
     }
     public int addBinding(GInputEvent event, GBindingEnv env, BindingExec pressed, Widget component, GGroupObject groupObject) {
         return addBinding(event::isEvent, env, null, pressed, component, groupObject);
