@@ -1349,6 +1349,10 @@
                 }
                 this.endDate = null;
                 this.setStartDate(date.clone());
+
+                // PATCHED: added this.onClickDate();
+                // we need to call onClickDate() to update input field BEFORE clickApply() is triggered
+                this.onClickDate();
             } else if (!this.endDate && date.isBefore(this.startDate)) {
                 //special case: clicking the same date for start/end,
                 //but the time of the end date is before the start date
@@ -1371,6 +1375,10 @@
                     date = date.clone().hour(hour).minute(minute).second(second);
                 }
                 this.setEndDate(date.clone());
+
+                // PATCHED: added this.onClickDate();
+                this.onClickDate();
+
                 if (this.autoApply) {
                   this.calculateChosenLabel();
                   this.clickApply();
@@ -1387,9 +1395,6 @@
 
             //This is to cancel the blur event handler if the mouse was in one of the inputs
             e.stopPropagation();
-
-            // PATCHED: added this.onClickDate();
-            this.onClickDate();
         },
 
         calculateChosenLabel: function () {
