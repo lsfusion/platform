@@ -8,8 +8,10 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
 
 import java.text.ParseException;
@@ -50,8 +52,21 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
         if (editManager.isThisCellEditing(this))
             commit(parent, CommitReason.FORCED);
 
-        if (!needReplace(parent))
-            getInputElement().focus();
+        returnFocus(parent);
+    }
+
+    protected void pickerCancel(Element parent, CancelReason cancelReason) {
+        if (cancelReason == null)
+            cancel();
+        else
+            cancel(cancelReason);
+
+        returnFocus(parent);
+    }
+
+    private void returnFocus(Element element) {
+        if (!needReplace(element))
+            ((Element)CellRenderer.getFocusElement(element)).focus();
     }
 
     protected PValue tryParseInputText(String inputText, boolean onCommit) throws ParseException {
@@ -176,7 +191,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
             alwaysShowCalendars: true, // need to use with ranges
             onKeydown: function (e) {
                 if (e.keyCode === 27)
-                    thisObj.@ARequestValueCellEditor::cancel(Llsfusion/gwt/client/form/property/cell/controller/CancelReason;)(@lsfusion.gwt.client.form.property.cell.controller.CancelReason::ESCAPE_PRESSED);
+                    thisObj.@DateRangePickerBasedCellEditor::pickerCancel(*)(parent, @lsfusion.gwt.client.form.property.cell.controller.CancelReason::ESCAPE_PRESSED);
             },
             onClickDate: function () {
                 thisObj.@DateRangePickerBasedCellEditor::setInputValue()();
@@ -211,11 +226,13 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
         });
 
         editElement.on('cancel.daterangepicker', function () {
-            thisObj.@lsfusion.gwt.client.form.property.cell.classes.controller.DateRangePickerBasedCellEditor::cancel()();
+            thisObj.@DateRangePickerBasedCellEditor::pickerCancel(*)(parent);
         });
 
-        editElement.on('apply.daterangepicker', function () {
-            thisObj.@lsfusion.gwt.client.form.property.cell.classes.controller.DateRangePickerBasedCellEditor::pickerApply(*)(parent);
+        // Click outside datePicker in bootstrap theme does not finishing editing.
+        // due to this reason it is necessary to use outsideClick.daterangepicker to apply the changes
+        editElement.on('apply.daterangepicker outsideClick.daterangepicker', function () {
+            thisObj.@DateRangePickerBasedCellEditor::pickerApply(*)(parent);
         });
     }-*/;
 }
