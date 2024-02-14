@@ -1425,4 +1425,8 @@ public class GwtClientUtils {
     public static native boolean isCompleteMask(Element element)/*-{
         return $wnd.$(element).inputmask("isComplete");
     }-*/;
+    
+    public static native String unmaskedValue(Element element)/*-{
+        return $wnd.$(element).inputmask("unmaskedvalue");
+    }-*/;
 }

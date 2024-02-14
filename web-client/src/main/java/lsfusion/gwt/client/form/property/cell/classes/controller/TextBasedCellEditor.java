@@ -323,10 +323,15 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
             if(contextAction == null && completionType.isOnlyCommitSelection())
                 throw new InvalidEditException();
         }
-
-        if(property.getMaskOptionsFromPattern(pattern) != null && !GwtClientUtils.isCompleteMask(inputElement))
-            throw new InvalidEditException();
-
+        
+        if (property.getMaskOptionsFromPattern(pattern) != null) {
+            if (GwtClientUtils.unmaskedValue(inputElement).isEmpty()) {
+                return null;
+            } else if (!GwtClientUtils.isCompleteMask(inputElement)) {
+                throw new InvalidEditException();
+            }
+        }
+        
         boolean patternMismatch = isPatternMismatch(inputElement);
         if (patternMismatch) {
             reportValidity(inputElement);
