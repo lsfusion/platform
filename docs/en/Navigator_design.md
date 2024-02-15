@@ -52,7 +52,7 @@ There are several window *types* that determine which component in the interface
 
 By default, a UI component that displays navigator elements is wrapped into scrollbars. They appear when the component does not fit in the window. If necessary, this behavior can be disabled.
 
-### System windows
+### System windows {#systemwindows}
 
 There are several predefined system windows that are necessary for the client application to work:
 
