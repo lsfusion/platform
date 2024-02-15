@@ -6,7 +6,7 @@ title: 'Оператор NEWEXECUTOR'
 
 ### Синтаксис
 
-    NEWEXECUTOR action THREADS threadExpr
+    NEWEXECUTOR action THREADS threadExpr [syncType]
 
 ### Описание
 
@@ -20,7 +20,14 @@ title: 'Оператор NEWEXECUTOR'
 
 - `threadExpr`
 
-    [Выражение](Expression.md), значение которого определяет количество потоков в пуле. Должно возвращать значение класса `INTEGER`. 
+    [Выражение](Expression.md), значение которого определяет количество потоков в пуле. Должно возвращать значение класса `INTEGER`.
+
+- `syncType`
+
+  Определяет, когда завершить выполнение NEWEXECUTOR:
+
+  - `WAIT` - после завершения выполнения всех потоков. Это значение используется по умолчанию.
+  - `NOWAIT` - сразу после запуска всех потоков.
 
 ### Примеры
 
@@ -35,6 +42,6 @@ testExecutor  {
                 }
             }
         }
-    } THREADS 10;
+    } THREADS 10 NOWAIT;
 }
 ```
