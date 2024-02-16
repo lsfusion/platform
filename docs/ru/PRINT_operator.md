@@ -8,6 +8,7 @@ title: 'Оператор PRINT'
 
 ```
 PRINT name 
+[CLIENT | SERVER]
 [OBJECTS objName1 = expr1, ..., objNameN = exprN]
 [formActionOptions] 
 ```
@@ -29,6 +30,10 @@ MESSAGE [syncType] [TOP n]
 - `name`
 
     Имя формы. [Составной идентификатор](IDs.md#cid).
+
+- `CLIENT` | `SERVER`
+
+  Ключевые слова. Определяют, выполнять действие на клиенте (`CLIENT`) или на сервере (`SERVER`). По умолчанию действие выполняется на клиенте.
 
 - `objName1 ... objNameN`
 
