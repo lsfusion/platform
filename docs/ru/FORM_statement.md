@@ -19,6 +19,7 @@ FORM name [caption] formOptions
 ```
 IMAGE path 
 AUTOREFRESH period 
+LOCALASYNC 
 ```
 
 После опций формы описываются в произвольном порядке блоки формы `formBlock1 ... formBlockN`: 
@@ -68,6 +69,10 @@ LIST className OBJECT objectName
     - `period`
     
         Пeриод времени в секундах. [Целочисленный литерал](IDs.md#intliteral). 
+  
+- `LOCALASYNC`
+    
+    Указание того, что сессионные события будут выполняться асинхронно.
 
 ### Блоки формы (`formBlock1 ... formBlockN`) {#blocks}
 
