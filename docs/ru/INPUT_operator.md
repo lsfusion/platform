@@ -9,8 +9,8 @@ title: 'Оператор INPUT'
 ```
 INPUT inputOptions 
 [CHANGE [= changeExpr]]
-[DO actionOperator [ELSE elseActionOperator]]
-```
+NEWSESSION | NESTEDSESSION | THISSESSION
+[DO actionOperator [ELSE elseActionOperator]]```
 
 `inputOptions` - опции ввода. Задаются одним из следующих синтаксисов:
 
@@ -44,6 +44,10 @@ INPUT inputOptions
 - `changeExpr`
 
     [Выражение](Expression.md), которое определяет свойство, в которое будет записан результат ввода. По умолчанию, для этого используется свойство, указанное в качестве начального значения ввода.
+
+- `NEWSESSION` | `NESTEDSESSION` | `THISSESSION`
+
+    Ключевые слова. Определяют, что ввод значения будет осуществляться в новой (`NEWSESSION`), вложенной (`NESTEDSESSION`) или текущей (`THISSESSION`) сессии. По умолчанию ввод значения осуществлется в текущей сессии.
 
 - `actionOperator`
 

@@ -35,7 +35,7 @@ CHANGE [= changeExpr] [NOCONSTRAINTFILTER] [alias] [NULL]
 windowType
 MANAGESESSION | NOMANAGESESSION
 CANCEL | NOCANCEL
-NEWSESSION | NESTEDSESSION
+NEWSESSION | NESTEDSESSION | THISSESSION
 READONLY
 ```
 
@@ -123,9 +123,9 @@ READONLY
 
     Ключевые слова. Определяют, отображать системное действие Отменить (`System.formCancel`) на форме или нет. По умолчанию, платформа пытается [самостоятельно](Interactive_view.md#sysactions), в зависимости от контекста, определить какой режим использовать.
 
-- `NEWSESSION | NESTEDSESSION`
+- `NEWSESSION` | `NESTEDSESSION` | `THISSESSION`
 
-    Ключевые слова. Определяют, что форма будет открываться в новой (вложенной) сессии. По умолчанию форма, открывается в текущей сессии.
+    Ключевые слова. Определяют, что форма будет открываться в новой (`NEWSESSION`), вложенной (`NESTEDSESSION`) или текущей (`THISSESSION`) сессии. По умолчанию форма открывается в текущей сессии.
 
 - `READONLY`
 

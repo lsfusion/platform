@@ -45,7 +45,7 @@ HEADER propertyExpression
 FOOTER propertyExpression
 COLUMNS [groupid] (groupName1, ..., groupNameM)
 viewType
-NEWSESSION | NESTEDSESSION
+NEWSESSION | NESTEDSESSION | THISSESSION
 DRAW groupObjectName 
 BEFORE formPropertyName
 AFTER formPropertyName
@@ -214,9 +214,9 @@ PROPERTIES(o) d=date, Order.number;
     
   Если не указана, используется соответствующая опция из [опций свойств](Property_options.md). Если и она не указана, используется [тип представления по умолчанию](Interactive_view.md#property) для группы отображения этого свойства или действия.
 
-- `NEWSESSION` | `NESTEDSESSION`
+- `NEWSESSION` | `NESTEDSESSION` | `THISSESSION`
 
-    Модификаторы, указывающие, что операции работы с объектами (`NEW`, `EDIT`, `DELETE`, `NEWEDIT`) должны выполняться в новой (вложенной) сессии.
+    Модификаторы, указывающие, что операции работы с объектами (`NEW`, `EDIT`, `DELETE`, `NEWEDIT`) должны выполняться в новой (`NEWSESSION`), вложенной (`NESTEDSESSION`) или текущей (`THISSESSION`) сессии. По умолчанию операции выполняются в текущей сессии.
 
 - `BEFORE formPropertyName` | `AFTER  formPropertyName`
 
