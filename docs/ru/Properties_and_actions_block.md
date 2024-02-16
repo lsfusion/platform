@@ -49,6 +49,7 @@ NEWSESSION | NESTEDSESSION
 DRAW groupObjectName 
 BEFORE formPropertyName
 AFTER formPropertyName
+FIRST | LAST | DEFAULT
 QUICKFILTER formPropertyName
 ON eventType actionId(param1, ..., paramZ) | { actionOperator }
 ATTR
@@ -224,6 +225,14 @@ PROPERTIES(o) d=date, Order.number;
     - `formPropertyName`
 
         [Имя свойства / действия на форме](#name).
+
+- `FIRST` | `LAST` | `DEFAULT`
+
+  Указание того, что свойство или действие должно быть добавлено в структуру формы на первом месте (ключевое слово `FIRST`), на последнем месте перед (ключевое слово `BEFORE`) или после (ключевое слово `AFTER`) уже добавленного свойства или действия. Чаще всего используется в механизме [расширения форм](Form_extension.md).
+
+    - `formPropertyName`
+
+      [Имя свойства / действия на форме](#name).
 
 - `QUICKFILTER formPropertyName`
 
