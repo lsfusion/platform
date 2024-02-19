@@ -7,7 +7,8 @@ title: 'Инструкция CONSTRAINT'
 ### Синтаксис
 
 ```
-CONSTRAINT eventClause constraintExpr [CHECKED [BY propertyId1, ..., propertyIdN]] MESSAGE messageExpr;
+CONSTRAINT eventClause constraintExpr [CHECKED [BY propertyId1, ..., propertyIdN]] MESSAGE messageExpr
+    [PROPERTIES propId1, ..., propIdM];
 ```
 
 ### Описание
@@ -48,6 +49,10 @@ WHEN eventClause [=GROUP MAX constraintProperty()]() DO {
 - `messageExpr`
 
     Выражение, значение которого выдаётся в качестве сообщения пользователю, когда заданное ограничение нарушается. Может быть [строковым литералом](IDs.md#strliteral) либо свойством без параметров.
+
+- `propId1, ..., propIdM`
+
+    Список идентификаторов свойств, значения которых выдаётся в сообщении пользователю, когда заданное ограничение нарушается. По умолчанию используется список свойств из группы, к которой относится свойство, по которому произошло нарушение ограничения.
 
 ### Примеры
 
