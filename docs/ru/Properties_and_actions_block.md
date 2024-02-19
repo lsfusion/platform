@@ -41,6 +41,7 @@ SHOWIF propertyExpression
 READONLYIF propertyExpression
 BACKGROUND propertyExpression
 FOREGROUND propertyExpression
+IMAGE propertyExpression
 HEADER propertyExpression
 FOOTER propertyExpression
 COLUMNS [groupid] (groupName1, ..., groupNameM)
@@ -55,6 +56,7 @@ ON eventType actionId(param1, ..., paramZ) | { actionOperator }
 ATTR
 EXTID extID
 IN propertyGroup
+STICKY | NOSTICKY
 ```
 
 ### Описание
@@ -167,6 +169,14 @@ PROPERTIES(o) d=date, Order.number;
     - `propertyExpression`
 
         [Выражение](Expression.md).
+  
+- `IMAGE propertyExpression`
+
+  Указание свойства, определяющего иконку добавляемого свойства (действия). Свойство должно иметь строковый тип, его значение - это имя файла изображения, который должен быть в ресурсах.
+
+  - `propertyExpression`
+
+      [Выражение](Expression.md).
 
 - `HEADER propertyExpression`
 
@@ -300,6 +310,10 @@ PROPERTIES(o) d=date, Order.number;
     - `propertyGroup`
     
         имя группы свойств. [Составной идентификатор](IDs.md#cid).
+
+- `STICKY` | `NOSTICKY`
+
+    Ключевые слова. `STICKY` указывает на то, что свойство в таблице будет прикреплено слева и при скроллинге вправо будет оставаться видимым. `NOSTICKY` снимает это закрепление. По умолчанию `STICKY` или `NOSTICKY` вычисляется эвристически.
 
 ### Примеры
 
