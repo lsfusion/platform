@@ -13,12 +13,13 @@ EXTERNAL externalCall [PARAMS paramExpr1, ..., paramExprN] [TO propertyId1. ...,
 `externalCall` - внешний вызов, задается одним из следующих синтаксисов:
 
 ```
-HTTP [requestType] connectionStrExpr [BODYURL bodyStrExpr] [HEADERS headersPropertyId] [COOKIES cookiesPropertyId] [HEADERSTO headersToPropertyId] [COOKIESTO cookiesToPropertyId]
+HTTP [requestType] connectionStrExpr [BODYURL bodyStrExpr] [BODYPARAMNAMES bodyParamNameExpr1, ..., bodyParamNameExprN] [BODYPARAMHEADERS bodyParamHeaderExpr1, ..., bodyParamHeaderExprN] [HEADERS headersPropertyId] [COOKIES cookiesPropertyId] [HEADERSTO headersToPropertyId] [COOKIESTO cookiesToPropertyId]
 TCP [CLIENT] connectionStrExpr
 UDP [CLIENT] connectionStrExpr
 SQL connectionStrExpr EXEC execStrExpr
 DBF connectionStrExpr [APPEND] [CHARSET charsetStr]
-LSF connectionStrExpr lsfExecType execStrExpr```
+LSF connectionStrExpr lsfExecType execStrExpr
+```
 
 ### Описание
 
@@ -73,6 +74,14 @@ LSF connectionStrExpr lsfExecType execStrExpr```
 - `bodyStrExpr`
 
     [Выражение](Expression.md). Продолжение строки http-запроса в BODY. Актуально когда параметров в BODY > 1. Если не задано, параметры передаются в формате multipart.
+
+- `bodyParamNameExpr1, ..., bodyParamNameExprN`
+
+    Список выражений, из значений которых берутся имена параметров. Если имя не задано, оно равняется "param" + i, где i - порядковый номер параметра начиная с 0.
+
+- `bodyParamHeaderExpr1, ..., bodyParamHeaderExprN`
+
+    Список выражений, содержащих заголовки (headers) для вложенных FormBodyPart. Выражение должно иметь ровно один параметр - имя заголовка. Этот параметр должен принадлежать строковому классу.
 
 - `headersPropertyId`
 - `headersToPropertyId`
