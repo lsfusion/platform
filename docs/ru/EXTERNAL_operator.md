@@ -17,8 +17,8 @@ HTTP [requestType] connectionStrExpr [BODYURL bodyStrExpr] [HEADERS headersPrope
 TCP [CLIENT] connectionStrExpr
 UDP [CLIENT] connectionStrExpr
 SQL connectionStrExpr EXEC execStrExpr
-LSF connectionStrExpr lsfExecType execStrExpr
-```
+DBF connectionStrExpr [APPEND] [CHARSET charsetStr]
+LSF connectionStrExpr lsfExecType execStrExpr```
 
 ### Описание
 
@@ -36,6 +36,7 @@ LSF connectionStrExpr lsfExecType execStrExpr
 
     - `POST`
     - `GET`
+    - `PATCH`
     - `PUT`
     - `DELETE`
 
@@ -56,6 +57,10 @@ LSF connectionStrExpr lsfExecType execStrExpr
 - `SQL`
 
     Ключевое слово. Определяет, что оператор выполняет команду(ы) SQL-сервера.
+
+- `DBF`
+
+  Ключевое слово. Определяет, что оператор выполняет обращение к DBF.
 
 - `LSF`
 
@@ -90,6 +95,18 @@ LSF connectionStrExpr lsfExecType execStrExpr
 - `execStrExpr`
 
     Выражение. `SQL`: SQL-команда(ы)запроса. `LSF`: имя действия или код, в зависимости от способа задания действия.
+
+- `APPEND`
+
+  Ключевое слово. Если указывается, то происходит дозапись файла. По умолчанию происходит перезапись файла.
+
+- `CHARSET charsetStr`
+
+  Опция, указывающая кодировку, используемую при обращении к DBF.
+
+  - `charsetStr`
+
+    Cтроковый литерал, определяющий кодировку.
 
 - `paramExpr1, ..., paramExprN`
 
