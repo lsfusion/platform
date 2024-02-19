@@ -15,7 +15,7 @@ IMPORT formName [importFormat] [FROM (fileExpr | (groupId1 = fileExpr1 [, ..., g
 
 ```
 JSON [CHARSET charsetStr]
-XML [ATTR] [CHARSET charsetStr]
+XML [ROOT rootExpr] [ATTR] [CHARSET charsetStr]
 CSV [separator] [HEADER | NOHEADER] [ESCAPE | NOESCAPE] [CHARSET charsetStr]
 XLS [HEADER | NOHEADER] [SHEET (sheetExpr | ALL)]
 DBF [CHARSET charsetStr]
@@ -65,6 +65,10 @@ FIELDS [(objClassId1 objAlias1, objClassId2 objAlias1, ..., objClassIdK objAlias
     Выражения, значения которых являются файлами, которые необходимо импортировать для заданных групп объектов. Значения выражений должны быть объектами файлового класса (`FILE`, `RAWFILE`, `JSONFILE` и т. д.). Используется только для импорта формы из плоских форматов. Для [пустой группы](Static_view.md#empty) объектов используется имя `root`. 
 
 ### Формат импорта
+
+- `rootExpr`
+
+  Выражение, значение которого является тегом, который считается при импорте корневым. По умолчанию корневым считается верхний тег. Применяется только для импорта **XML**.
 
 - `ATTR`
 
