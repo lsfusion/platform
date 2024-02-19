@@ -16,6 +16,7 @@ recipientTypeN recipientExprN
 ATTACH attachFileExpr1 [NAME attachNameExpr1]
 ...
 ATTACH attachFileExprM [NAME attachNameExprM]
+[syncType]
 ```
 
 ### Описание
@@ -58,6 +59,13 @@ ATTACH attachFileExprM [NAME attachNameExprM]
 
     Выражения, значения которых задают имена вложений.
 
+- `syncType`
+
+    Определяет, когда завершить выполнение созданного действия:
+
+  - `WAIT` - отправка письма происходит в основном потоке, действие завершается после успешной или неуспешной отправки письма. Это значение используется по умолчанию.
+  - `NOWAIT` - отправка письма происходит в новом потоке, действие завершается сразу, до получения результата отправки.
+
 ### Пример
 
 ```lsf
@@ -72,7 +80,8 @@ emailUserPassUser 'Напоминание логина' (CustomUser user)  {
     EMAIL
     SUBJECT 'Напоминание логина'
     TO email(user)
-    BODY bodyFile();
+    BODY bodyFile()
+    NOWAIT;
 }
 
 justSendEmail 'Отправить письмо' ()  {
