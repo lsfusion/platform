@@ -13,7 +13,7 @@ Extension of properties allows you to:
 
 ### Polymorphic form {#poly}
 
-Just as [for a selection operator](Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md#poly), for an abstract property there is a *polymorphic form* where the selection condition and the result corresponding to it are set by a single property. Accordingly, as in a selection operator, either belonging to the [signature ](Property_signature_CLASS.md)of this property or the property itself can be a condition.
+Just as [for a selection operator](Selection_CASE_IF_MULTI_OVERRIDE_EXCLUSIVE.md#poly), for an abstract property there is a *polymorphic form* where the selection condition and the result corresponding to it are set by a single property. Accordingly, as in a selection operator, either matching the [signature](Property_signature_ISCLASS.md) of this property or the property itself can be a condition.
 
 ### Mutual exclusion of conditions {#exclusive}
 

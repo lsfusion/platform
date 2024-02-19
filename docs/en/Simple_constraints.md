@@ -19,7 +19,7 @@ The platform currently supports four types of *simple constraints*: *consequence
 
 Just as for a basic [constraint](Constraints.md), for each simple constraint, a base event must be defined, which determines when the specified constraint will be checked. 
 
-Note that the definiteness constraint is a special case of the consequence, in which the consequence is a property that must be defined, and the premise is its signature (a property obtained from it using the corresponding [operator](Property_signature_CLASS.md)).
+Note that the definiteness constraint is a special case of the consequence, in which the consequence is a property that must be defined, and the premise is its signature (a property obtained from it using the corresponding [operator](Property_signature_ISCLASS.md)).
 
 There is also an implicit fifth kind of simple constraint, *uniqueness*, but it is combined with an aggregation operator (which returns this most unique value), and therefore it is not considered here. Together with consequences, this type of constraint allows to implement the [aggregation](Aggregations.md) mechanism. 
 
