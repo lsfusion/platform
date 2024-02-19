@@ -15,7 +15,7 @@ title: 'Операторы-свойства'
 -   [Оператор `ACTIVE TAB`](ACTIVE_TAB_operator.md)
 -   [Оператор `AGGR`](AGGR_operator.md)
 -   [Оператор `CASE`](CASE_operator.md)
--   [Оператор `CLASS`](CLASS_operator.md)
+-   [Оператор `ISCLASS`](ISCLASS_operator)
 -   [Оператор `CONCAT`](CONCAT_operator.md)
 -   [Оператор `EXCLUSIVE`](EXCLUSIVE_operator.md)
 -   [Оператор `IF`](IF_operator.md)
