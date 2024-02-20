@@ -19,6 +19,7 @@ IN groupName
 viewType
 ON eventType { actionOperator }
 CHANGEKEY key [SHOW | HIDE]
+STICKY | NOSTICKY
 MATERIALIZED
 TABLE tableName
 INDEXED [LIKE | MATCH]
@@ -160,6 +161,10 @@ DEFAULTCOMPARE [compare]
     - `HIDE`
 
         Ключевое слово, при указании которого комбинация клавиш не будет отображаться в заголовке свойства. 
+
+- `STICKY` | `NOSTICKY`
+
+    Ключевые слова. `STICKY` указывает на то, что свойство в таблице будет прикреплено слева и при скроллинге вправо будет оставаться видимым. `NOSTICKY` снимает это закрепление. По умолчанию `STICKY` или `NOSTICKY` вычисляется эвристически.
 
 - `DEFAULTCOMPARE [compare]`
 

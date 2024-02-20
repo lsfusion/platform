@@ -19,6 +19,7 @@ IN groupName
 viewType
 ON eventType { actionOperator }
 CHANGEKEY key [SHOW | HIDE]
+STICKY | NOSTICKY
 ASON eventType [ACTION] propertyId
 IMAGE path
 CONFIRM
@@ -105,6 +106,11 @@ CONFIRM
     - `HIDE`
     
         Ключевое слово, при указании которого комбинация клавиш не будет отображаться в заголовке действия. 
+
+- `STICKY` | `NOSTICKY`
+
+    Ключевые слова. `STICKY` указывает на то, что свойство в таблице будет прикреплено слева и при скроллинге вправо будет оставаться видимым. `NOSTICKY` снимает это закрепление. По умолчанию `STICKY` или `NOSTICKY` вычисляется эвристически.
+
 
 - `CONFIRM`
 
