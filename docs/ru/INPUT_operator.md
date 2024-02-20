@@ -8,9 +8,10 @@ title: 'Оператор INPUT'
 
 ```
 INPUT inputOptions 
-[CHANGE [= changeExpr]]
+[CHANGE [= changeExpr]] [NOCONSTRAINTFILTER]
 NEWSESSION | NESTEDSESSION | THISSESSION
-[DO actionOperator [ELSE elseActionOperator]]```
+[DO actionOperator [ELSE elseActionOperator]]
+```
 
 `inputOptions` - опции ввода. Задаются одним из следующих синтаксисов:
 
@@ -44,6 +45,10 @@ NEWSESSION | NESTEDSESSION | THISSESSION
 - `changeExpr`
 
     [Выражение](Expression.md), которое определяет свойство, в которое будет записан результат ввода. По умолчанию, для этого используется свойство, указанное в качестве начального значения ввода.
+
+- `NOCONSTRAINTFILTER`
+
+    Если указана, дополнительный фильтр на соответствие ограничениям не устанавливается.
 
 - `NEWSESSION` | `NESTEDSESSION` | `THISSESSION`
 
