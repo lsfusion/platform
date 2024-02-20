@@ -32,7 +32,7 @@ Note that IDEA remembers the downloaded/specified application server file in its
 
 ### Installing a desktop client
 
--   After the server starts, in the start log one of the last lines will be a line with a link to the JNLP file (for example, <https://download.lsfusion.org/java/lsfusion-client-4.1.jnlp>), which when run will automatically install the client using Java Web Start technology.
+-   After the server starts, in the start log one of the last lines will be a line with a link to the JNLP file (for example, https://download.lsfusion.org/java/lsfusion-client-4.1.jnlp), which when run will automatically install the client using Java Web Start technology.
 
 ## Installation in existing Java projects
 
