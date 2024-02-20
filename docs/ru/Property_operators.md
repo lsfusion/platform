@@ -29,6 +29,7 @@ title: 'Операторы-свойства'
 -   [Оператор `PARTITION`](PARTITION_operator.md)
 -   [Оператор `PREV`](PREV_operator.md)
 -   [Оператор `RECURSION`](RECURSION_operator.md)
+-   [Оператор `ROUND`](ROUND_operator.md)
 -   [Оператор `STRUCT`](STRUCT_operator.md)
 -   [Оператор `UNGROUP`](UNGROUP_operator.md)
 -   [Оператор преобразования типа](Type_conversion_operator.md)

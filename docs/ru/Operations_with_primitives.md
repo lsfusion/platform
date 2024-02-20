@@ -7,6 +7,7 @@ title: 'Операции с примитивами'
 -   [Арифметические операторы (`+`, `-`, `*`, `/`)](Arithmetic_operators_+_-_etc.md)
 -   [Логические операторы (`AND`, `OR`, `NOT`, `XOR`)](Logical_operators_AND_OR_NOT_XOR.md)
 -   [Операторы сравнения (`==`, `>`, `<`, `LIKE`)](Comparison_operators_=_etc.md)
+-   [Оператор округления (`ROUND`)](Rounding_operator_ROUND.md)
 -   [Строковые операторы (`+`, `CONCAT`, `SUBSTRING`)](String_operators_+_CONCAT_SUBSTRING.md)
 -   [Операции со структурами (`STRUCT`, `[]`)](Structure_operators_STRUCT.md)
 -   [Пользовательская формула (`FORMULA`)](Custom_formula_FORMULA.md)
