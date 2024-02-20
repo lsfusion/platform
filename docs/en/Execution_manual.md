@@ -98,7 +98,7 @@ You can also use the method of installing the desktop client for development. To
 
 
 :::info
-The latest versions that are currently under development (snapshots) can be downloaded directly from the maven repository [https://repo.lsfusion.org](https://repo.lsfusion.org/). For example, for the server, the full path is as follows: <https://repo.lsfusion.org/nexus/service/rest/repository/browse/public/lsfusion/platform/server/> (for server and desktop client you need to download jar files with the `-assembly` postfix)
+The latest versions that are currently under development (snapshots) can be downloaded directly from the maven repository [https://repo.lsfusion.org](https://repo.lsfusion.org/). For example, for the server, the full path is as follows: https://repo.lsfusion.org/nexus/service/rest/repository/browse/public/lsfusion/platform/server/ (for server and desktop client you need to download jar files with the `-assembly` postfix)
 :::
 
 ### Installing and running the application server and web client using Docker containers

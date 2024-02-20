@@ -100,7 +100,7 @@ title: 'Для промышленной эксплуатации'
 
 
 :::info
-Последние версии, которые сейчас находятся в разработке (snapshot), можно скачать непосредственно из maven репозитария [https://repo.lsfusion.org](https://repo.lsfusion.org/). Например для сервера полный путь выглядит следующим образом: <https://repo.lsfusion.org/nexus/service/rest/repository/browse/public/lsfusion/platform/server/> (для сервера и десктоп-клиента нужно скачивать jar файлы с постфиксом `-assembly`)
+Последние версии, которые сейчас находятся в разработке (snapshot), можно скачать непосредственно из maven репозитария [https://repo.lsfusion.org](https://repo.lsfusion.org/). Например для сервера полный путь выглядит следующим образом: https://repo.lsfusion.org/nexus/service/rest/repository/browse/public/lsfusion/platform/server/ (для сервера и десктоп-клиента нужно скачивать jar файлы с постфиксом `-assembly`)
 :::
 
 ### Установка и запуск сервера приложений и веб-клиента с помощью Docker-контейнеров
