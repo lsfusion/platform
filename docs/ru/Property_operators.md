@@ -26,6 +26,7 @@ title: 'Операторы-свойства'
 -   [Оператор `MULTI`](MULTI_operator.md)
 -   [Оператор `OVERRIDE`](OVERRIDE_operator.md)
 -   [Оператор `PARTITION`](PARTITION_operator.md)
+-   [Оператор `ROUND`](ROUND_operator.md)
 -   [Оператор `GROUP`](GROUP_operator.md) (без блока `BY`)
 -   [Оператор `PREV`](PREV_operator.md)
 -   [Оператор `RECURSION`](RECURSION_operator.md)
