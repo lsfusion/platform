@@ -17,7 +17,7 @@ HTTP [requestType] connectionStrExpr [BODYURL bodyStrExpr] [HEADERS headersPrope
 TCP [CLIENT] connectionStrExpr
 UDP [CLIENT] connectionStrExpr
 SQL connectionStrExpr EXEC execStrExpr
-LSF connectionStrExpr lsfExecType execStrExpr```
+LSF connectionStrExpr lsfExecType execStrExpr
 ```
 
 ### Description
