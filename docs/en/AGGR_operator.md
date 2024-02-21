@@ -17,7 +17,7 @@ In addition to the property that is the result of this operator and contains the
 :::info
 Creating an aggregation is in many ways similar to the following statements (example for 2 parameters):
 
-```
+```lsf
 prm1 = DATA class1 (aggrClass);
 prm2 = DATA class2 (aggrClass);
 result = GROUP AGGR aggrClass aggrObject BY prm1(aggrObject), prm2(aggrObject);
