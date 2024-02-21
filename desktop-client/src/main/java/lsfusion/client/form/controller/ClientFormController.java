@@ -452,7 +452,7 @@ public class ClientFormController implements AsyncListener {
         comboBox.addItem(new ClientRegularFilterWrapper(getString("form.all")));
         for (final ClientRegularFilter filter : filterGroup.filters) {
             comboBox.addItem(new ClientRegularFilterWrapper(filter));
-            if(filter.keyEvent != null) {
+            if(filter.inputEvent != null) {
                 Binding binding = new Binding(filterGroup.groupObject, nvl(filter.priority, 0)) {
                     @Override
                     public boolean pressed(java.awt.event.InputEvent ke) {
@@ -464,7 +464,7 @@ public class ClientFormController implements AsyncListener {
                         return true;
                     }
                 };
-                addBinding(filter.keyEvent, binding);
+                addBinding(filter.inputEvent, binding);
             }
         }
 
@@ -508,7 +508,7 @@ public class ClientFormController implements AsyncListener {
 
         addFilterView(filterGroup, checkBox);
 
-        if(singleFilter.keyEvent != null) {
+        if(singleFilter.inputEvent != null) {
             Binding binding = new Binding(filterGroup.groupObject, nvl(singleFilter.priority, 0)) {
                 @Override
                 public boolean pressed(java.awt.event.InputEvent ke) {
@@ -521,7 +521,7 @@ public class ClientFormController implements AsyncListener {
                 }
             };
 
-            addBinding(singleFilter.keyEvent, binding);
+            addBinding(singleFilter.inputEvent, binding);
         }
     }
 
