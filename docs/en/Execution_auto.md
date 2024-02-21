@@ -17,7 +17,8 @@ lsFusion **4.1** Server & Client (+ OpenJDK **11.0.9**, PostgreSQL **13.1**(x64)
 
 - [x32](https://download.lsfusion.org/exe/lsfusion-4.1.exe)
 - [x64](https://download.lsfusion.org/exe/lsfusion-4.1-x64.exe)
-- <details><summary>Older versions</summary>
+- <details>
+  <summary>Older versions</summary>
 
     - lsFusion 4.0 Server & Client
         - [x32](https://download.lsfusion.org/exe/lsfusion-4.0.exe)

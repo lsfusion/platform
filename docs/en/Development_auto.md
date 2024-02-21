@@ -13,8 +13,8 @@ On this page you can download installers that install everything needed for deve
 - [x32](https://download.lsfusion.org/exe/lsfusion-dev-4.1.exe)
 - [x64](https://download.lsfusion.org/exe/lsfusion-dev-4.1-x64.exe)
 
-<details><summary><strong>Older versions</strong></summary>
-<br/>
+<details>
+<summary><strong>Older versions</strong></summary>
 
 - lsFusion 4.0 ([x32](https://download.lsfusion.org/exe/lsfusion-dev-4.0.exe) / [x64](https://download.lsfusion.org/exe/lsfusion-dev-4.0-x64.exe))
 - lsFusion 3.1 ([x32](https://download.lsfusion.org/exe/lsfusion-dev-3.1.exe) / [x64](https://download.lsfusion.org/exe/lsfusion-dev-3.1-x64.exe))
