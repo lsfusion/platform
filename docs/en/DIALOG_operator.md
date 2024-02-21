@@ -6,30 +6,38 @@ The `DIALOG` operator creates an [action](Actions.md) that [opens a form](In_an_
 
 ## Syntax
 
-    DIALOG name
-    [OBJECTS objName1 [= expr1] [NULL] [inputOptions1], ..., objNameN [= exprN] [NULL] [inputOptionsN]]
-    [formActionOptions]
-    [DO actionOperator [ELSE elseActionOperator]]
+```
+DIALOG name
+[OBJECTS objName1 [= expr1] [NULL] [inputOptions1], ..., objNameN [= exprN] [NULL] [inputOptionsN]]
+[formActionOptions]
+[DO actionOperator [ELSE elseActionOperator]]
+```
 
 When opening the list/edit form, the syntax is slightly different:
 
-    DIALOG classFormType className
-    [= expr] [NULL] [inputOptions]
-    [formActionOptions]
-    [DO actionOperator [ELSE elseActionOperator]]
+```
+DIALOG classFormType className
+[= expr] [NULL] [inputOptions]
+[formActionOptions]
+[DO actionOperator [ELSE elseActionOperator]]
+```
 
 `inputOptions` – object options that determine whether the last current values of this object should be returned after the form is closed and what to do next with these values (defined with one of the following syntaxes):
 
-    INPUT [alias] [NULL]
-    CHANGE [= changeExpr] [NOCONSTRAINTFILTER] [alias] [NULL]
+```
+INPUT [alias] [NULL]
+CHANGE [= changeExpr] [NOCONSTRAINTFILTER] [alias] [NULL]
+```
 
 `formActionOptions` - additional options for this action. They can be added one by one in any order:
 
-    windowType
-    MANAGESESSION | NOMANAGESESSION
-    CANCEL | NOCANCEL
-    NEWSESSION | NESTEDSESSION
-    READONLY
+```
+windowType
+MANAGESESSION | NOMANAGESESSION
+CANCEL | NOCANCEL
+NEWSESSION | NESTEDSESSION
+READONLY
+```
 
 ## Description
 

@@ -6,10 +6,12 @@ title: 'AND, OR, NOT, XOR operators'
 
 ### Syntax
 
-    expression1 AND expression2
-    expression1 OR expression2
-    expression1 XOR expression2
-    NOT expression1
+```
+expression1 AND expression2
+expression1 OR expression2
+expression1 XOR expression2
+NOT expression1
+```
 
 ### Parameters
 

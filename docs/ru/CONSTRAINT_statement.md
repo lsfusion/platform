@@ -6,7 +6,9 @@ title: 'Инструкция CONSTRAINT'
 
 ### Синтаксис
 
-    CONSTRAINT eventClause constraintExpr [CHECKED [BY propertyId1, ..., propertyIdN]] MESSAGE messageExpr;
+```
+CONSTRAINT eventClause constraintExpr [CHECKED [BY propertyId1, ..., propertyIdN]] MESSAGE messageExpr;
+```
 
 ### Описание
 
@@ -18,11 +20,13 @@ title: 'Инструкция CONSTRAINT'
 :::info
 Создание ограничения во многом аналогично следующей инструкции:
 
-    constraintProperty = constraintExpr;
-    WHEN eventClause [=GROUP MAX constraintProperty()]() DO {
-        PRINT outConstraintPropertyForm MESSAGE NOWAIT;
-        CANCEL;
-    }
+```
+constraintProperty = constraintExpr;
+WHEN eventClause [=GROUP MAX constraintProperty()]() DO {
+    PRINT outConstraintPropertyForm MESSAGE NOWAIT;
+    CANCEL;
+}
+```
 
 но при этом имеет [ряд преимуществ](Constraints.md).
 :::

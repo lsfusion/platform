@@ -6,8 +6,10 @@ The `=` statement creates a new [property](Properties.md).
 
 ### Syntax
 
-    name [caption] [(param1, ..., paramN)] = expression [options];
-    name [caption] [(param1, ..., paramN)] = contextIndependentOperator [options];
+```
+name [caption] [(param1, ..., paramN)] = expression [options];
+name [caption] [(param1, ..., paramN)] = contextIndependentOperator [options];
+```
 
 ### Description
 

@@ -6,9 +6,11 @@ title: 'Оператор ACTIVATE'
 
 ### Синтаксис 
 
-    ACTIVATE FORM formName
-    ACTIVATE TAB formName.componentSelector
-    ACTIVATE PROPERTY formPropertyId
+```
+ACTIVATE FORM formName
+ACTIVATE TAB formName.componentSelector
+ACTIVATE PROPERTY formPropertyId
+```
 
 ### Описание
 

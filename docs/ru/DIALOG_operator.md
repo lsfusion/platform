@@ -6,30 +6,38 @@ title: 'Оператор DIALOG'
 
 ## Синтаксис
 
-    DIALOG name
-    [OBJECTS objName1 [= expr1] [NULL] [inputOptions1], ..., objNameN [= exprN] [NULL] [inputOptionsN]]
-    [formActionOptions]
-    [DO actionOperator [ELSE elseActionOperator]]
+```
+DIALOG name
+[OBJECTS objName1 [= expr1] [NULL] [inputOptions1], ..., objNameN [= exprN] [NULL] [inputOptionsN]]
+[formActionOptions]
+[DO actionOperator [ELSE elseActionOperator]]
+```
 
 При открытии формы выбора / редактирования синтаксис немного отличается:
 
-    DIALOG classFormType className
-    [= expr] [NULL] [inputOptions]
-    [formActionOptions]
-    [DO actionOperator [ELSE elseActionOperator]]
+```
+DIALOG classFormType className
+[= expr] [NULL] [inputOptions]
+[formActionOptions]
+[DO actionOperator [ELSE elseActionOperator]]
+```
 
 `inputOptions` - опции объекта, определяющие нужно ли возвращать последние текущие значения этого объекта после закрытия формы, и что с этими значениями делать дальше (задаются одним из следующих синтаксисов):
 
-    INPUT [alias] [NULL]
-    CHANGE [= changeExpr] [NOCONSTRAINTFILTER] [alias] [NULL]
+```
+INPUT [alias] [NULL]
+CHANGE [= changeExpr] [NOCONSTRAINTFILTER] [alias] [NULL]
+```
 
 `formActionOptions` - дополнительные опции этого действия. Они могут указываться друг за другом в произвольном порядке:
 
-    windowType
-    MANAGESESSION | NOMANAGESESSION
-    CANCEL | NOCANCEL
-    NEWSESSION | NESTEDSESSION
-    READONLY
+```
+windowType
+MANAGESESSION | NOMANAGESESSION
+CANCEL | NOCANCEL
+NEWSESSION | NESTEDSESSION
+READONLY
+```
 
 ## Описание
 

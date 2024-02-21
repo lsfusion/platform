@@ -6,8 +6,10 @@ title: 'Оператор REQUEST'
 
 ### Синтаксис
 
-    REQUEST requestAction 
-    DO doAction [ELSE elseAction]
+```
+REQUEST requestAction 
+DO doAction [ELSE elseAction]
+```
 
 ### Описание
 

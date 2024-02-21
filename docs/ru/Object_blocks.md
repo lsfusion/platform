@@ -8,31 +8,41 @@ title: 'Блоки объектов'
 
 ### Синтаксис
 
-    OBJECTS groupDeclaration1 [groupOptions1], ...., groupDeclarationN [groupOptionsN]
+```
+OBJECTS groupDeclaration1 [groupOptions1], ...., groupDeclarationN [groupOptionsN]
+```
 
 Каждый `groupDeclaration` является объявлением группы объектов из нескольких объектов:
 
-    [groupName =] (objectDeclaration1, ..., objectDeclarationK)
+```
+[groupName =] (objectDeclaration1, ..., objectDeclarationK)
+```
 
  либо группы объектов, состоящей из одиночного объекта:
 
-    objectDeclaration
+```
+objectDeclaration
+```
 
 Каждый `objectDeclaration`, объявляющий объект, имеет следующий синтаксис:
 
-    [[name] [caption] =] classId [ON CHANGE actionId(param1, ..., paramM) | { actionOperator } ]
+```
+[[name] [caption] =] classId [ON CHANGE actionId(param1, ..., paramM) | { actionOperator } ]
+```
 
 После объявления каждой группы объектов может быть указан набор опций `groupOptions`:
 
-    viewType
-    INIT | FIXED
-    PAGESIZE pageSize 
-    AFTER groupName
-    BEFORE groupName
-    defaultObjectsType
-    IN propertyGroup
-    EXTID extID
-    SUBREPORT [subReportExpression]
+```
+viewType
+INIT | FIXED
+PAGESIZE pageSize 
+AFTER groupName
+BEFORE groupName
+defaultObjectsType
+IN propertyGroup
+EXTID extID
+SUBREPORT [subReportExpression]
+```
 
 ### Описание
 
@@ -184,19 +194,25 @@ FORM printLabel 'Печать ценника'
 
 ### Синтаксис
 
-    TREE [name] groupDeclaration1 [parentBlock1], ...., groupDeclarationN [parentBlockN] [treeOptions]
+```
+TREE [name] groupDeclaration1 [parentBlock1], ...., groupDeclarationN [parentBlockN] [treeOptions]
+```
 
 Каждый `groupDeclaration` является объявлением группы объектов, полностью аналогичным объявлению в блоке объектов, описанном выше. Каждый `parentBlock` может быть описан одним из двух вариантов:
 
-    PARENT propertyId
-    (PARENT propertyId1, ..., propertyIdK)
+```
+PARENT propertyId
+(PARENT propertyId1, ..., propertyIdK)
+```
 
 Первый вариант используется если группа объектов, для которой указывается этот блок, состоит из одного объекта, второй - из нескольких.
 
 После объявления каждого дерева объектов может быть указан набор опций `treeOptions`:
 
-    AFTER groupName
-    BEFORE groupName
+```
+AFTER groupName
+BEFORE groupName
+```
 
 ### Описание
 

@@ -6,8 +6,10 @@ The `ACTION+` statement adds an implementation (branching condition) to an [abst
 
 ### Syntax
 
-    [ACTION] actionId(param1, ..., paramN) + { implAction }
-    [ACTION] actionId(param1, ..., paramN) + WHEN whenExpr THEN { implAction }
+```
+[ACTION] actionId(param1, ..., paramN) + { implAction }
+[ACTION] actionId(param1, ..., paramN) + WHEN whenExpr THEN { implAction }
+```
 
 ### Description
 

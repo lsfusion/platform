@@ -6,8 +6,10 @@ title: 'IS, AS operators'
 
 ### Syntax
 
-    expression IS className
-    expression AS className
+```
+expression IS className
+expression AS className
+```
 
 ### Description
 

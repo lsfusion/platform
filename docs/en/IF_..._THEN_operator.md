@@ -6,9 +6,11 @@ The `IF ... THEN` operator creates a [property](Properties.md) that implements [
 
 ### Syntax
 
-    IF condition 
-        THEN value
-        [ELSE alternativeValue]
+```
+IF condition 
+    THEN value
+    [ELSE alternativeValue]
+```
 
 ### Description
 

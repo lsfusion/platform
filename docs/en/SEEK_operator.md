@@ -6,9 +6,11 @@ The `SEEK` operator creates an [action](Actions.md) that [seeks specified object
 
 ### Syntax
 
-    SEEK [FIRST | LAST] formObjectId = expr
-    SEEK [FIRST | LAST] formGroupObjectId [OBJECTS formObject1 = expr1, ..., formObjectK = exprk]
-    SEEK NULL formGroupObjectId
+```
+SEEK [FIRST | LAST] formObjectId = expr
+SEEK [FIRST | LAST] formGroupObjectId [OBJECTS formObject1 = expr1, ..., formObjectK = exprk]
+SEEK NULL formGroupObjectId
+```
 
 ### Description
 

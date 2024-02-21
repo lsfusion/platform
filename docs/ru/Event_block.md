@@ -6,11 +6,15 @@ title: 'Блок событий'
 
 ### Синтаксис
 
-    EVENTS formEventDecl1, ..., formEventDeclN
+```
+EVENTS formEventDecl1, ..., formEventDeclN
+```
 
 Где каждый `formEventDecli` имеет следующий синтаксис:
 
-    ON eventType eventActionId(param1, ..., paramK) | { eventActionOperator }
+```
+ON eventType eventActionId(param1, ..., paramK) | { eventActionOperator }
+```
 
 ### Описание
 

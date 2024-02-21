@@ -6,18 +6,22 @@ title: 'Оператор EXPORT'
 
 ## Синтаксис
 
-    EXPORT [exportFormat] [TOP n] FROM [columnId1 =] propertyExpr1, ..., [columnIdN = ] propertyExprN [WHERE whereExpr] [ORDER orderExpr1 [DESC], ..., orderExprL [DESC]] [TO propertyId]
-    EXPORT formName [OBJECTS objName1 = expr1, ..., objNameK = exprK] [exportFormat] [TOP n] [TO (propertyId | (groupId1 = propertyId1, ..., groupIdN = propertyIdM))]
+```
+EXPORT [exportFormat] [TOP n] FROM [columnId1 =] propertyExpr1, ..., [columnIdN = ] propertyExprN [WHERE whereExpr] [ORDER orderExpr1 [DESC], ..., orderExprL [DESC]] [TO propertyId]
+EXPORT formName [OBJECTS objName1 = expr1, ..., objNameK = exprK] [exportFormat] [TOP n] [TO (propertyId | (groupId1 = propertyId1, ..., groupIdN = propertyIdM))]
+```
 
 `exportFormat` может задаваться одним из следующих вариантов:
 
-    JSON [CHARSET charsetStr]
-    XML [ATTR] [CHARSET charsetStr]
-    CSV [separator] [HEADER | NOHEADER] [ESCAPE | NOESCAPE] [CHARSET charsetStr]
-    XLS [HEADER | NOHEADER]
-    XLSX [HEADER | NOHEADER]
-    DBF [CHARSET charsetStr]
-    TABLE
+```
+JSON [CHARSET charsetStr]
+XML [ATTR] [CHARSET charsetStr]
+CSV [separator] [HEADER | NOHEADER] [ESCAPE | NOESCAPE] [CHARSET charsetStr]
+XLS [HEADER | NOHEADER]
+XLSX [HEADER | NOHEADER]
+DBF [CHARSET charsetStr]
+TABLE
+```
 
  
 ## Описание

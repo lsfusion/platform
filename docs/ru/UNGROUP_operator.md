@@ -10,16 +10,20 @@ title: 'Оператор UNGROUP'
 
 ### Синтаксис
 
-    UNGROUP 
-    propertyId [BY groupExpr1, ..., groupExprM] 
-    distributionType exPropertyId [BY exGroupExpr1, ..., exGroupExprM]
-    [ORDER [DESC] orderExpr1, ..., orderExprK]
-    [WHERE whereExpr]
+```
+UNGROUP 
+propertyId [BY groupExpr1, ..., groupExprM] 
+distributionType exPropertyId [BY exGroupExpr1, ..., exGroupExprM]
+[ORDER [DESC] orderExpr1, ..., orderExprK]
+[WHERE whereExpr]
+```
 
 где `distributionType` может описан несколькими способами:
 
-    PROPORTION [STRICT] ROUND(digits)
-    LIMIT [STRICT]
+```
+PROPORTION [STRICT] ROUND(digits)
+LIMIT [STRICT]
+```
 
 ### Описание
 

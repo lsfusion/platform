@@ -6,14 +6,18 @@ title: 'Оператор INPUT'
 
 ### Синтаксис
 
-    INPUT inputOptions 
-    [CHANGE [= changeExpr]]
-    [DO actionOperator [ELSE elseActionOperator]]
+```
+INPUT inputOptions 
+[CHANGE [= changeExpr]]
+[DO actionOperator [ELSE elseActionOperator]]
+```
 
 `inputOptions` - опции ввода. Задаются одним из следующих синтаксисов:
 
-    [alias =] builtInClassName
-    [alias] = expr
+```
+[alias =] builtInClassName
+[alias] = expr
+```
 
 ### Описание
 

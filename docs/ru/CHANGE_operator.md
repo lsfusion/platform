@@ -6,7 +6,9 @@ title: 'Оператор CHANGE'
 
 ### Синтаксис
 
-    [CHANGE] propertyId(expr1, ..., exprN) <- valueExpr [WHERE whereExpr]
+```
+[CHANGE] propertyId(expr1, ..., exprN) <- valueExpr [WHERE whereExpr]
+```
 
 ### Описание
 

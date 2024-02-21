@@ -6,30 +6,36 @@ title: 'Инструкция FORM'
 
 ## Синтаксис
 
-    FORM name [caption] formOptions
-        formBlock1
-        ...
-        formBlockN
-    ;
+```
+FORM name [caption] formOptions
+    formBlock1
+    ...
+    formBlockN
+;
+```
 
 После указания имени и заголовка формы в произвольном порядке указываются опции формы `formOptions`: 
 
-    IMAGE path 
-    AUTOREFRESH period 
+```
+IMAGE path 
+AUTOREFRESH period 
+```
 
 После опций формы описываются в произвольном порядке блоки формы `formBlock1 ... formBlockN`: 
 
-    OBJECTS ... 
-    TREE ...
-    PROPERTIES ...
-    FILTERS ...
-    [EXTEND] FILTERGROUP ...
-    ORDERS ...
-    EVENTS ...
-    REPORT propertyExpression
-    FORMEXTID extID
-    EDIT className OBJECT objectName
-    LIST className OBJECT objectName 
+```
+OBJECTS ... 
+TREE ...
+PROPERTIES ...
+FILTERS ...
+[EXTEND] FILTERGROUP ...
+ORDERS ...
+EVENTS ...
+REPORT propertyExpression
+FORMEXTID extID
+EDIT className OBJECT objectName
+LIST className OBJECT objectName 
+```
 
 ## Описание
 

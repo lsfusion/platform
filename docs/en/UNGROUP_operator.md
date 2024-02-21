@@ -10,16 +10,20 @@ The `UNGROUP` operator creates a [property](Properties.md) that implements [dist
 
 ### Syntax
 
-    UNGROUP 
-    propertyId [BY groupExpr1, ..., groupExprM] 
-    distributionType exPropertyId [BY exGroupExpr1, ..., exGroupExprM]
-    [ORDER [DESC] orderExpr1, ..., orderExprK]
-    [WHERE whereExpr]
+```
+UNGROUP 
+propertyId [BY groupExpr1, ..., groupExprM] 
+distributionType exPropertyId [BY exGroupExpr1, ..., exGroupExprM]
+[ORDER [DESC] orderExpr1, ..., orderExprK]
+[WHERE whereExpr]
+```
 
 where `distributionType` can be described in several ways:
 
-    PROPORTION [STRICT] ROUND(digits)
-    LIMIT [STRICT]
+```
+PROPORTION [STRICT] ROUND(digits)
+LIMIT [STRICT]
+```
 
 ### Description
 

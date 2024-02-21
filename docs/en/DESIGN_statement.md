@@ -8,19 +8,23 @@ The `DESIGN` statement changes [form design](Form_design.md).
 
 The syntax consists of nested blocks of *design statements*. The outer block, beginning with the keyword `DESIGN`, defines a [form](Forms.md) whose design will change: 
 
-    DESIGN formName [caption] [CUSTOM] {
-        designStatement1
-        ...
-        designStatementN
-    }
+```
+DESIGN formName [caption] [CUSTOM] {
+    designStatement1
+    ...
+    designStatementN
+}
+```
 
 Each `designStatement` describes one design statement. Design statements are of the following types: 
 
-    NEW name [insertPos] [{...}];
-    MOVE selector [insertPos] [{...}];  
-    selector [{...}];   
-    REMOVE selector;
-    propertyName = value;
+```
+NEW name [insertPos] [{...}];
+MOVE selector [insertPos] [{...}];  
+selector [{...}];   
+REMOVE selector;
+propertyName = value;
+```
 
 The first three statements – *create* (`NEW`), *move* (`MOVE`), and *modify* – may in turn contain nested blocks of design statements. The design statements *remove* (`REMOVE`) and *change property value* (`=`) are simple single statements. Each design statement must end with a semicolon if it does not contain a nested statement block.
 
@@ -28,18 +32,22 @@ The first three statements – *create* (`NEW`), *move* (`MOVE`), and *modify* �
 
 Each `selector` can be one of the following types:
 
-    componentName
-    PROPERTY(formPropertyName)
-    FILTERGROUP(filterGroupName)
-    PARENT(selector)
-    GROUP([propertyGroupSelector][,groupObjectTreeSelector])
-    noGroupObjectTreeContainerType
-    groupObjectTreeContainerType(groupObjectTreeSelector)
+```
+componentName
+PROPERTY(formPropertyName)
+FILTERGROUP(filterGroupName)
+PARENT(selector)
+GROUP([propertyGroupSelector][,groupObjectTreeSelector])
+noGroupObjectTreeContainerType
+groupObjectTreeContainerType(groupObjectTreeSelector)
+```
 
 In turn, `groupObjectTreeSelector` can be one of two types:
 
-    groupObjectSelector
-    TREE treeSelector
+```
+groupObjectSelector
+TREE treeSelector
+```
 
 ## Description
 

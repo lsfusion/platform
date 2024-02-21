@@ -6,7 +6,9 @@ title: 'Оператор ACTIVE TAB'
 
 ### Синтаксис 
 
-    ACTIVE TAB formName.componentSelector
+```
+ACTIVE TAB formName.componentSelector
+```
 
 ### Описание
 

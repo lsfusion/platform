@@ -6,8 +6,10 @@ title: 'Инструкция +='
 
 ### Синтаксис
 
-    propertyId (param1, ..., paramN) += implExpr;
-    propertyId (param1, ..., paramN) += WHEN whenExpr THEN implExpr;
+```
+propertyId (param1, ..., paramN) += implExpr;
+propertyId (param1, ..., paramN) += WHEN whenExpr THEN implExpr;
+```
 
 ### Описание
 

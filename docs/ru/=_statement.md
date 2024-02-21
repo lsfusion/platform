@@ -6,8 +6,10 @@ title: 'Инструкция ='
 
 ### Синтаксис
 
-    name [caption] [(param1, ..., paramN)] = expression [options];
-    name [caption] [(param1, ..., paramN)] = contextIndependentOperator [options];
+```
+name [caption] [(param1, ..., paramN)] = expression [options];
+name [caption] [(param1, ..., paramN)] = contextIndependentOperator [options];
+```
 
 ### Описание
 

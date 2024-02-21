@@ -6,7 +6,9 @@ title: 'Оператор RECURSION'
 
 ### Синтаксис 
 
-    RECURSION initialExpr STEP stepExpr [CYCLES YES | CYCLES NO | CYCLES IMPOSSIBLE]
+```
+RECURSION initialExpr STEP stepExpr [CYCLES YES | CYCLES NO | CYCLES IMPOSSIBLE]
+```
 
 ### Описание
 

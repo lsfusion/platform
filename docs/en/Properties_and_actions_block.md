@@ -6,45 +6,55 @@ The property and action block of the [FORM statement](FORM_statement.md) adds [p
 
 ### Syntax
 
-    PROPERTIES [(cparam1, ..., cparamN)] [formPropertyOptions] formPropertyDecl1, ..., formPropertyDeclM
+```
+PROPERTIES [(cparam1, ..., cparamN)] [formPropertyOptions] formPropertyDecl1, ..., formPropertyDeclM
+```
 
 Each `formPropertyDecl` describes the property or action being added to the form structure and has the following syntax:
 
 If the common parameters `(cparam1, ..., cparamN)` have been specified:
 
-    [[alias1] [caption1] =] [ACTION] formPropertyId1 [formPropertyOptions1], ..., [[aliasK] [captionK] =] [ACTION] formPropertyIdK [formPropertyOptionsK] 
+```
+[[alias1] [caption1] =] [ACTION] formPropertyId1 [formPropertyOptions1], ..., [[aliasK] [captionK] =] [ACTION] formPropertyIdK [formPropertyOptionsK] 
+```
 
 If the common parameters of the block have not been specified, then:
 
-    [[alias1] [caption1] =] formMappedProperty1 [formPropertyOptions1], ..., [[aliasK] [captionK] =] formMappedPropertyK [formPropertyOptionsK] 
+```
+[[alias1] [caption1] =] formMappedProperty1 [formPropertyOptions1], ..., [[aliasK] [captionK] =] formMappedPropertyK [formPropertyOptionsK] 
+```
 
 Each `formMappedProperty` describes the implementation of a property or action being added to the form and having one of the following syntaxes
 
-    [ACTION] formPropertyId(param1, ..., paramN1) 
-    formPropertyExpression 
+```
+[ACTION] formPropertyId(param1, ..., paramN1) 
+formPropertyExpression 
 
-    { formActionOperator }
+{ formActionOperator }
+```
 
 Each `formPropertyOptions` specifies options for the property or action being added to the form structure. They can be added one by one in arbitrary order:
 
-    changeType
-    SHOWIF propertyExpression
-    READONLYIF propertyExpression
-    BACKGROUND propertyExpression
-    FOREGROUND propertyExpression
-    HEADER propertyExpression
-    FOOTER propertyExpression
-    COLUMNS [groupid] (groupName1, ..., groupNameM)
-    viewType
-    NEWSESSION | NESTEDSESSION
-    DRAW groupObjectName 
-    BEFORE formPropertyName
-    AFTER formPropertyName
-    QUICKFILTER formPropertyName
-    ON eventType actionId(param1, ..., paramZ) | { actionOperator }
-    ATTR
-    EXTID extID
-    IN propertyGroup
+```
+changeType
+SHOWIF propertyExpression
+READONLYIF propertyExpression
+BACKGROUND propertyExpression
+FOREGROUND propertyExpression
+HEADER propertyExpression
+FOOTER propertyExpression
+COLUMNS [groupid] (groupName1, ..., groupNameM)
+viewType
+NEWSESSION | NESTEDSESSION
+DRAW groupObjectName 
+BEFORE formPropertyName
+AFTER formPropertyName
+QUICKFILTER formPropertyName
+ON eventType actionId(param1, ..., paramZ) | { actionOperator }
+ATTR
+EXTID extID
+IN propertyGroup
+```
 
 ### Description
 
@@ -54,9 +64,11 @@ One `PROPERTIES` block adds properties and actions to the form structure. To add
 
 Each property (action) being added to the form structure must have a *unique name within the form*. This name may be specified either explicitly or based on the name of the property and the passed parameters, i.e. names of objects separated by commas. 
 
-    FORM order
-    OBJECTS o=Order 
-    PROPERTIES(o) d=date, Order.number;
+```
+FORM order
+OBJECTS o=Order 
+PROPERTIES(o) d=date, Order.number;
+```
 
 In the given example, the names of the added properties `date` and `Order.number` will be `d` and `number(o)` respectively.
 

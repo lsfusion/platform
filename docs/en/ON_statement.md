@@ -6,7 +6,9 @@ The `ON` statement adds an [event](Events.md) handler.
 
 ### Syntax 
 
-    ON eventClause eventAction;
+```
+ON eventClause eventAction;
+```
 
 ### Description
 

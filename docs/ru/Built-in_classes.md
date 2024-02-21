@@ -47,9 +47,11 @@ title: 'Встроенные классы'
 
 ### Строки
 
-    result = STRING[blankPadded = s1.blankPadded OR s2.blankPadded, 
-                    caseInsensitive = s1.caseInsensitive OR s2.caseInsensitive, 
-                    length = MAX(s1.length, s2.length)]
+```
+result = STRING[blankPadded = s1.blankPadded OR s2.blankPadded, 
+                caseInsensitive = s1.caseInsensitive OR s2.caseInsensitive, 
+                length = MAX(s1.length, s2.length)]
+```
 
 где `blankPadded`, `caseInsensitive` и `length`, в свою очередь, определяются как:
 
@@ -63,14 +65,16 @@ title: 'Встроенные классы'
 
 ### Числа
 
-    IF p1.integerPart >= p2.integerPart AND p1.precision >= p2.precision
-        result = p1 
-    ELSE IF p1.integerPart <= p2.integerPart AND p1.precision <= p2.precision
-        result = p2 
-    ELSE IF p1.integerPart > p2.integerPart  
-        result = NUMERIC[p1.integerPart+p2.precision, p2.precision]
-    ELSE  
-        result = NUMERIC[p2.integerPart+p1.precision, p1.precision]
+```
+IF p1.integerPart >= p2.integerPart AND p1.precision >= p2.precision
+    result = p1 
+ELSE IF p1.integerPart <= p2.integerPart AND p1.precision <= p2.precision
+    result = p2 
+ELSE IF p1.integerPart > p2.integerPart  
+    result = NUMERIC[p1.integerPart+p2.precision, p2.precision]
+ELSE  
+    result = NUMERIC[p2.integerPart+p1.precision, p1.precision]
+```
 
 где `integerPart` и `precision`, в свою очередь, определяются как:
 
@@ -83,17 +87,21 @@ title: 'Встроенные классы'
 
 ### Файлы конкретного типа
 
-    IF p1 = p2
-        result = p1
-    ELSE
-        result = RAWFILE
+```
+IF p1 = p2
+    result = p1
+ELSE
+    result = RAWFILE
+```
 
 ### Ссылки на файлы конкретного типа
 
-    IF p1 = p2
-        result = p1
-    ELSE
-        result = RAWLINK
+```
+IF p1 = p2
+    result = p1
+ELSE
+    result = RAWLINK
+```
 
 Отметим, что иногда в программировании определение общего родительского класса принято ассоциировать с *неявным приведением типов*.
 

@@ -6,7 +6,9 @@ title: 'Оператор EXEC'
 
 ### Синтаксис
 
-    [EXEC] actionId(expression1, ..., expressionN)
+```
+[EXEC] actionId(expression1, ..., expressionN)
+```
 
 ### Описание
 

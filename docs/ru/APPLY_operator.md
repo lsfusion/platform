@@ -6,12 +6,16 @@ title: 'Оператор APPLY'
 
 ### Синтаксис
 
-    APPLY [nestedBlock] [SERIALIZABLE] [action]
+```
+APPLY [nestedBlock] [SERIALIZABLE] [action]
+```
 
 где `nestedBlock` имеет один из двух вариантов синтаксиса:
 
-    NESTED LOCAL
-    NESTED (propertyId1, ..., propertyIdN)
+```
+NESTED LOCAL
+NESTED (propertyId1, ..., propertyIdN)
+```
 
 ### Описание
 

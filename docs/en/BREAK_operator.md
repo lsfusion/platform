@@ -6,7 +6,9 @@ The `BREAK` operator creates an [action](Actions.md) that implements a [loop int
 
 ### Syntax
 
-    BREAK
+```
+BREAK
+```
 
 ### Description
 

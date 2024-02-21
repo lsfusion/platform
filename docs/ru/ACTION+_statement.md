@@ -6,8 +6,10 @@ title: 'Инструкция ACTION+'
 
 ### Синтаксис
 
-    [ACTION] actionId(param1, ..., paramN) + { implAction }
-    [ACTION] actionId(param1, ..., paramN) + WHEN whenExpr THEN { implAction }
+```
+[ACTION] actionId(param1, ..., paramN) + { implAction }
+[ACTION] actionId(param1, ..., paramN) + WHEN whenExpr THEN { implAction }
+```
 
 ### Описание
 

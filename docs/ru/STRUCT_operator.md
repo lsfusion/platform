@@ -6,7 +6,9 @@ title: 'Оператор STRUCT'
 
 ### Синтаксис
 
-    STRUCT(expr1, ..., exprN)   
+```
+STRUCT(expr1, ..., exprN)   
+```
 
 ### Описание
 

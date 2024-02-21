@@ -6,45 +6,55 @@ title: 'Блок свойств и действий'
 
 ### Синтаксис
 
-    PROPERTIES [(cparam1, ..., cparamN)] [formPropertyOptions] formPropertyDecl1, ..., formPropertyDeclM
+```
+PROPERTIES [(cparam1, ..., cparamN)] [formPropertyOptions] formPropertyDecl1, ..., formPropertyDeclM
+```
 
 Каждый `formPropertyDecl` - это описание свойства или действия, добавляемого в структуру формы, которое имеет следующий синтаксис:
 
 Если были указаны общие параметры блока `(cparam1, ..., cparamN)`:
 
-    [[alias1] [caption1] =] [ACTION] formPropertyId1 [formPropertyOptions1], ..., [[aliasK] [captionK] =] [ACTION] formPropertyIdK [formPropertyOptionsK] 
+```
+[[alias1] [caption1] =] [ACTION] formPropertyId1 [formPropertyOptions1], ..., [[aliasK] [captionK] =] [ACTION] formPropertyIdK [formPropertyOptionsK] 
+```
 
 Если же общие параметры блока указаны не были, то:
 
-    [[alias1] [caption1] =] formMappedProperty1 [formPropertyOptions1], ..., [[aliasK] [captionK] =] formMappedPropertyK [formPropertyOptionsK] 
+```
+[[alias1] [caption1] =] formMappedProperty1 [formPropertyOptions1], ..., [[aliasK] [captionK] =] formMappedPropertyK [formPropertyOptionsK] 
+```
 
 Каждый `formMappedProperty` это описание реализации свойства или действия, добавляемого на форму, которое имеет один из следующих синтаксисов
 
-    [ACTION] formPropertyId(param1, ..., paramN1) 
-    formPropertyExpression 
+```
+[ACTION] formPropertyId(param1, ..., paramN1) 
+formPropertyExpression 
 
-    { formActionOperator }
+{ formActionOperator }
+```
 
 Каждый `formPropertyOptions` - это опции свойства или действия, добавляемого в структуру формы. Они могут указываться друг за другом в произвольном порядке:
 
-    changeType
-    SHOWIF propertyExpression
-    READONLYIF propertyExpression
-    BACKGROUND propertyExpression
-    FOREGROUND propertyExpression
-    HEADER propertyExpression
-    FOOTER propertyExpression
-    COLUMNS [groupid] (groupName1, ..., groupNameM)
-    viewType
-    NEWSESSION | NESTEDSESSION
-    DRAW groupObjectName 
-    BEFORE formPropertyName
-    AFTER formPropertyName
-    QUICKFILTER formPropertyName
-    ON eventType actionId(param1, ..., paramZ) | { actionOperator }
-    ATTR
-    EXTID extID
-    IN propertyGroup
+```
+changeType
+SHOWIF propertyExpression
+READONLYIF propertyExpression
+BACKGROUND propertyExpression
+FOREGROUND propertyExpression
+HEADER propertyExpression
+FOOTER propertyExpression
+COLUMNS [groupid] (groupName1, ..., groupNameM)
+viewType
+NEWSESSION | NESTEDSESSION
+DRAW groupObjectName 
+BEFORE formPropertyName
+AFTER formPropertyName
+QUICKFILTER formPropertyName
+ON eventType actionId(param1, ..., paramZ) | { actionOperator }
+ATTR
+EXTID extID
+IN propertyGroup
+```
 
 ### Описание
 
@@ -54,9 +64,11 @@ title: 'Блок свойств и действий'
 
 Каждое добавляемое в структуру формы свойство (действие) должно иметь *имя на форме*, уникальное в пределах формы. Это имя может задаваться либо явно, либо оно будет формироваться из имени свойства и передаваемых ему параметров - имен объектов, перечисленных через запятую. 
 
-    FORM order
-    OBJECTS o=Order 
-    PROPERTIES(o) d=date, Order.number;
+```
+FORM order
+OBJECTS o=Order 
+PROPERTIES(o) d=date, Order.number;
+```
 
 В приведенном примере именами добавленных свойств `date` и `Order.number` будут `d` и `number(o)`.
 

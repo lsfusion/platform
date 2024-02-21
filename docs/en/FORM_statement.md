@@ -6,30 +6,36 @@ The `FORM` statement creates a [form](Forms.md).
 
 ## Syntax
 
-    FORM name [caption] formOptions
-        formBlock1
-        ...
-        formBlockN
-    ;
+```
+FORM name [caption] formOptions
+    formBlock1
+    ...
+    formBlockN
+;
+```
 
 After specifying the form name and caption, form options `formOptions` are specified in an arbitrary order
 
-    IMAGE path 
-    AUTOREFRESH period 
+```
+IMAGE path 
+AUTOREFRESH period 
+```
 
 After the form options, the blocks of the form `formBlock1 ... formBlockN` are described in the arbitrary order: 
 
-    OBJECTS ... 
-    TREE ...
-    PROPERTIES ...
-    FILTERS ...
-    [EXTEND] FILTERGROUP ...
-    ORDERS ...
-    EVENTS ...
-    REPORT propertyExpression
-    FORMEXTID extID
-    EDIT className OBJECT objectName
-    LIST className OBJECT objectName 
+```
+OBJECTS ... 
+TREE ...
+PROPERTIES ...
+FILTERS ...
+[EXTEND] FILTERGROUP ...
+ORDERS ...
+EVENTS ...
+REPORT propertyExpression
+FORMEXTID extID
+EDIT className OBJECT objectName
+LIST className OBJECT objectName 
+```
 
 ## Description
 

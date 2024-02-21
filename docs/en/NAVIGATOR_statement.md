@@ -8,34 +8,42 @@ The `NAVIGATOR` statement is used to modify the [navigator](Navigator.md).
 
 The syntax consists of nested blocks of *navigator statements*. The outer statement block is described after the keyword `NAVIGATOR`:
 
-    NAVIGATOR {
-        navigatorStatement1 
-        ...
-        navigatorStatementN
-    }
+```
+NAVIGATOR {
+    navigatorStatement1 
+    ...
+    navigatorStatementN
+}
+```
 
 Each `navigatorStatement` describes a single navigator statement, and at the end it may contain a nested block of additional navigator statements. There are three types of navigator statements:  
 
-    NEW elementDescription [options] [{ ... }];
-    MOVE name [caption] [options] [{ ... }];
-    name [caption] [options] [{ ... }];
+```
+NEW elementDescription [options] [{ ... }];
+MOVE name [caption] [options] [{ ... }];
+name [caption] [options] [{ ... }];
+```
 
 where `elementDescription` in the `NEW` statement describes the type of element to be created, and can be in one of three types:
 
-    FOLDER name [caption] 
-    FORM [name [caption] =] formName
-    ACTION [name [caption] =] actionName
-    [name [caption] =] formElseActionName
+```
+FOLDER name [caption] 
+FORM [name [caption] =] formName
+ACTION [name [caption] =] actionName
+[name [caption] =] formElseActionName
+```
 
 A navigator statement must end with a semicolon if it does not contain a nested block of additional statements.
 
 The options for the `options` navigator element can be listed one after the other in arbitrary order. The following set of options is supported:
 
-    WINDOW windowName
-    BEFORE elementName
-    AFTER elementName
-    FIRST 
-    IMAGE fileName
+```
+WINDOW windowName
+BEFORE elementName
+AFTER elementName
+FIRST 
+IMAGE fileName
+```
 
 ### Description
 
