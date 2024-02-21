@@ -6,7 +6,9 @@ The `CONTINUE` operator creates an [action](Actions.md) that implements move to 
 
 ### Syntax
 
-    CONTINUE
+```
+CONTINUE
+```
 
 ### Description
 
