@@ -6,8 +6,10 @@ The `JSON` operator is property that creates JSON from [specified properties](Da
 
 ## Syntax
 
-    JSON ( FROM [columnId1 =] propertyExpr1, ..., [columnIdN = ] propertyExprN [WHERE whereExpr] [ORDER orderExpr1 [DESC], ..., orderExprL [DESC]] )
-    JSON ( formName [OBJECTS objName1 = expr1, ..., objNameK = exprK]
+```
+JSON ( FROM [columnId1 =] propertyExpr1, ..., [columnIdN = ] propertyExprN [WHERE whereExpr] [ORDER orderExpr1 [DESC], ..., orderExprL [DESC]] )
+JSON ( formName [OBJECTS objName1 = expr1, ..., objNameK = exprK]
+```
 
 ## Description
 
