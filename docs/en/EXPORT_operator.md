@@ -6,18 +6,22 @@ The `EXPORT` operator: creates an [action](Actions.md) that exports [specified p
 
 ## Syntax
 
-    EXPORT [exportFormat] [TOP n] FROM [columnId1 =] propertyExpr1, ..., [columnIdN = ] propertyExprN [WHERE whereExpr] [ORDER orderExpr1 [DESC], ..., orderExprL [DESC]] [TO propertyId]
-    EXPORT formName [OBJECTS objName1 = expr1, ..., objNameK = exprK] [exportFormat] [TOP n] [TO (propertyId | (groupId1 = propertyId1, ..., groupIdN = propertyIdM))]
+```
+EXPORT [exportFormat] [TOP n] FROM [columnId1 =] propertyExpr1, ..., [columnIdN = ] propertyExprN [WHERE whereExpr] [ORDER orderExpr1 [DESC], ..., orderExprL [DESC]] [TO propertyId]
+EXPORT formName [OBJECTS objName1 = expr1, ..., objNameK = exprK] [exportFormat] [TOP n] [TO (propertyId | (groupId1 = propertyId1, ..., groupIdN = propertyIdM))]
+```
 
 `exportFormat` can be specified by one of the following options:
 
-    JSON [CHARSET charsetStr]
-    XML [HEADER | NOHEADER] [ATTR] [CHARSET charsetStr]
-    CSV [separator] [HEADER | NOHEADER] [ESCAPE | NOESCAPE] [CHARSET charsetStr]
-    XLS [SHEET sheetProperty] [HEADER | NOHEADER]
-    XLSX [SHEET sheetProperty] [HEADER | NOHEADER]
-    DBF [CHARSET charsetStr]
-    TABLE
+```
+JSON [CHARSET charsetStr]
+XML [HEADER | NOHEADER] [ATTR] [CHARSET charsetStr]
+CSV [separator] [HEADER | NOHEADER] [ESCAPE | NOESCAPE] [CHARSET charsetStr]
+XLS [SHEET sheetProperty] [HEADER | NOHEADER]
+XLSX [SHEET sheetProperty] [HEADER | NOHEADER]
+DBF [CHARSET charsetStr]
+TABLE
+```
 
 ## Description
 

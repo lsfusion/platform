@@ -6,11 +6,13 @@ title: 'Оператор CASE'
 
 ### Синтаксис 
 
-    CASE [exclusionType]
-        WHEN condition1 THEN action1
-        ...
-        WHEN conditionN THEN actionN
-        [ELSE elseAction]
+```
+CASE [exclusionType]
+    WHEN condition1 THEN action1
+    ...
+    WHEN conditionN THEN actionN
+    [ELSE elseAction]
+```
 
 ### Описание
 

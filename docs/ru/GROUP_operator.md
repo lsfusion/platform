@@ -6,11 +6,13 @@ title: 'Оператор GROUP'
 
 ### Синтаксис 
 
-    GROUP 
-    type expr1, ..., exprN
-    [ORDER [DESC] orderExpr1, ..., orderExprK]
-    [WHERE whereExpr]
-    [BY groupExpr1, ..., groupExprM]
+```
+GROUP 
+type expr1, ..., exprN
+[ORDER [DESC] orderExpr1, ..., orderExprK]
+[WHERE whereExpr]
+[BY groupExpr1, ..., groupExprM]
+```
 
 ### Описание
 

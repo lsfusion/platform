@@ -6,7 +6,9 @@ The `NEWEXECUTOR` operator creates an [action](Actions.md) that enables executin
 
 ### Syntax
 
-    NEWEXECUTOR action THREADS threadExpr
+```
+NEWEXECUTOR action THREADS threadExpr
+```
 
 ### Description
 

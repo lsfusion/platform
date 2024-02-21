@@ -6,19 +6,23 @@ title: 'Инструкция WINDOW'
 
 ### Синтаксис
 
-    WINDOW name [caption] type [options]
+```
+WINDOW name [caption] type [options]
+```
 
 Опции, которые идут в конце инструкции, имеют следующий вид (синтаксис каждой опции указан в отдельной строке):
 
-    HIDETITLE 
-    HIDESCROLLBARS 
-    VERTICAL | HORIZONTAL
-    POSITION(x, y, width, height)
-    LEFT | RIGHT | TOP | BOTTOM
-    HALIGN(alignType)
-    VALING(alignType) 
-    TEXTHALIGN(alignType)
-    TEXTVALIGN(alignType)
+```
+HIDETITLE 
+HIDESCROLLBARS 
+VERTICAL | HORIZONTAL
+POSITION(x, y, width, height)
+LEFT | RIGHT | TOP | BOTTOM
+HALIGN(alignType)
+VALING(alignType) 
+TEXTHALIGN(alignType)
+TEXTVALIGN(alignType)
+```
 
 ### Описание
 

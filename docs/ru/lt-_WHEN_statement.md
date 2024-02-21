@@ -6,7 +6,9 @@ title: 'Инструкция <- WHEN'
 
 ### Синтаксис
 
-    propertyId(param1, ..., paramN) <- valueExpr WHEN eventExpr;
+```
+propertyId(param1, ..., paramN) <- valueExpr WHEN eventExpr;
+```
 
 ### Описание
 

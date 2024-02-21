@@ -6,9 +6,11 @@ title: 'Object group operator'
 
 ### Syntax
 
-    FILTER groupObjectId
-    VIEW groupObjectId
-    ORDER groupObjectId
+```
+FILTER groupObjectId
+VIEW groupObjectId
+ORDER groupObjectId
+```
 
 ### Description
 

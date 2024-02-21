@@ -6,7 +6,9 @@ title: 'Инструкция WHEN'
 
 ### Синтаксис 
 
-    WHEN eventClause eventExpr [ORDER [DESC] orderExpr1, ..., orderExprN] DO eventAction;
+```
+WHEN eventClause eventExpr [ORDER [DESC] orderExpr1, ..., orderExprN] DO eventAction;
+```
 
 ### Описание
 
@@ -18,7 +20,9 @@ title: 'Инструкция WHEN'
 :::info
 Использование инструкции `WHEN` во многом аналогично следующей инструкции:
 
-    ON eventClause FOR eventExpr [ORDER [DESC] orderExpr1, ..., orderExprN] DO eventAction;
+```
+ON eventClause FOR eventExpr [ORDER [DESC] orderExpr1, ..., orderExprN] DO eventAction;
+```
 
 но при этом имеет [ряд преимуществ](Simple_event.md).
 :::

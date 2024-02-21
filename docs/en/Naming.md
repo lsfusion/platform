@@ -25,19 +25,23 @@ Elements of the system must be named so that the system does not contain any two
 
 For some elements of the system, string *canonical names* are determined and are unique among all elements of the given type within the system. For most system elements (user-defined classes, property groups, navigator elements, windows, tables) the canonical name is equivalent to the *full name* of that element of the system, which looks as follows:
 
-    <namespace name>.<System element name>
+```
+<namespace name>.<System element name>
 
-    Item.name
-    Sale.Document
+Item.name
+Sale.Document
+```
 
 Since properties and actions can have the same names within the same namespace, the full name of a property may not be unique. Therefore, the canonical name of the properties / actions also includes a signature, that is, a list of the canonical names of the classes of the property / action's parameters, separated by commas. If a parameter's class is not determined, then the question mark character `?` is used instead of the canonical class name:
 
-    <namespace name>.<Property/action name>[<class1>,...,<classN>]
+```
+<namespace name>.<Property/action name>[<class1>,...,<classN>]
 
-    Item.gender[Item.Article]
-    Date.between[DATE,DATE,DATE]
-    Document.addHeader[Document.Document,STRING]
-    Math.sum[?,?]
+Item.gender[Item.Article]
+Date.between[DATE,DATE,DATE]
+Document.addHeader[Document.Document,STRING]
+Math.sum[?,?]
+```
 
 Since the signature of properties/actions do not have to contain only custom classes, canonical names are also determined for [built-in](Built-in_classes.md) classes: 
 

@@ -6,7 +6,9 @@ title: 'Оператор преобразования типа'
 
 ### Синтаксис
 
-    typeName(expression) 
+```
+typeName(expression) 
+```
 
 ### Описание
 

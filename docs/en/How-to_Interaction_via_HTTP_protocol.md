@@ -106,7 +106,9 @@ createCity (FILE f)  {
 
 Since the property is named `createCity` and located in the [module](Modules.md) with the namespace `Location`, the url on which the request will be handled looks like this:
 
-    http://localhost:7651/exec?action=Location.createCity
+```
+http://localhost:7651/exec?action=Location.createCity
+```
 
 Body of the HTTP request will be passed as a parameter of the type `FILE`. The values read from the `countryId` and `name` parameters are written to the local properties `cy` and `ne` respectively.
 

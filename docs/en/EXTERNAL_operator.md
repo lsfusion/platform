@@ -6,15 +6,19 @@ The `EXTERNAL` operator creates an [action](Actions.md) that implements [accessi
 
 ### Syntax
 
-    EXTERNAL externalCall [PARAMS paramExpr1, ..., paramExprN] [TO propertyId1. ..., propertyIdM]
+```
+EXTERNAL externalCall [PARAMS paramExpr1, ..., paramExprN] [TO propertyId1. ..., propertyIdM]
+```
 
 `externalCall` - an external call defined by one of the following syntaxes:
 
-    HTTP [requestType] connectionStrExpr [BODYURL bodyStrExpr] [HEADERS headersPropertyId] [COOKIES cookiesPropertyId] [HEADERSTO headersToPropertyId] [COOKIESTO cookiesToPropertyId]
-    TCP [CLIENT] connectionStrExpr
-    UDP [CLIENT] connectionStrExpr
-    SQL connectionStrExpr EXEC execStrExpr
-    LSF connectionStrExpr lsfExecType execStrExpr
+```
+HTTP [requestType] connectionStrExpr [BODYURL bodyStrExpr] [HEADERS headersPropertyId] [COOKIES cookiesPropertyId] [HEADERSTO headersToPropertyId] [COOKIESTO cookiesToPropertyId]
+TCP [CLIENT] connectionStrExpr
+UDP [CLIENT] connectionStrExpr
+SQL connectionStrExpr EXEC execStrExpr
+LSF connectionStrExpr lsfExecType execStrExpr```
+```
 
 ### Description
 

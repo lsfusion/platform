@@ -6,7 +6,9 @@ The `NESTEDSESSION` operator creates an [action](Actions.md) that executes the o
 
 ### Syntax
 
-    NESTEDSESSION action 
+```
+NESTEDSESSION action 
+```
 
 ### Description
 

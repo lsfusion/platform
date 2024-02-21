@@ -6,7 +6,9 @@ title: 'Инструкция @'
 
 ### Синтаксис
 
-    @name(param1, ..., paramN);
+```
+@name(param1, ..., paramN);
+```
 
 ### Описание
 

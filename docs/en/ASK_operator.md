@@ -6,9 +6,11 @@ The `ASK` operator creates an action that shows the user a message in a [dialog 
 
 ### Syntax
 
-    ASK expression 
-    [[alias =] YESNO]
-    [DO actionOperator [ELSE elseOperator]]
+```
+ASK expression 
+[[alias =] YESNO]
+[DO actionOperator [ELSE elseOperator]]
+```
 
 ### Description
 

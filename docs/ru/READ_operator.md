@@ -6,7 +6,9 @@ title: 'Оператор READ'
 
 ### Синтаксис
 
-    READ [CLIENT [DIALOG]] urlExpr [TO propertyId]
+```
+READ [CLIENT [DIALOG]] urlExpr [TO propertyId]
+```
 
 ### Описание
 
@@ -14,8 +16,10 @@ title: 'Оператор READ'
 
 Поддерживаются следующие типы URL: 
 
-    [file://]path_to_file
-    [s]ftp://username:password[;charset]@host:port[/path_to_file][?passivemode=true|false]
+```
+[file://]path_to_file
+[s]ftp://username:password[;charset]@host:port[/path_to_file][?passivemode=true|false]
+```
 
 Если значение свойства, в которое записывается файл принадлежит классу `FILE`, то в его значение вместе с файлом также записывается расширение файла из URL.
 

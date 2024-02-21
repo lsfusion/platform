@@ -6,7 +6,9 @@ title: 'Оператор DATA'
 
 ### Синтаксис
 
-    DATA [LOCAL [NESTED]] returnClass (argumentClass1, ..., argumentClassN)
+```
+DATA [LOCAL [NESTED]] returnClass (argumentClass1, ..., argumentClassN)
+```
 
 ### Описание
 

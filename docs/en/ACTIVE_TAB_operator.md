@@ -6,7 +6,9 @@ The `ACTIVE TAB` operator creates a [property](Properties.md) that checks if spe
 
 ### Syntax 
 
-    ACTIVE TAB formName.componentSelector
+```
+ACTIVE TAB formName.componentSelector
+```
 
 ### Description
 

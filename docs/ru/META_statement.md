@@ -6,11 +6,13 @@ title: 'Инструкция META'
 
 ### Синтаксис
 
-    META name(param1, ..., paramN)
-        statement1
-        ...
-        statementM
-    END
+```
+META name(param1, ..., paramN)
+    statement1
+    ...
+    statementM
+END
+```
 
 ### Описание
 

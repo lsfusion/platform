@@ -6,8 +6,10 @@ title: 'Операторы IS, AS'
 
 ### Синтаксис
 
-    expression IS className
-    expression AS className
+```
+expression IS className
+expression AS className
+```
 
 ### Описание
 

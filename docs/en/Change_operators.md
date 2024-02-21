@@ -6,7 +6,9 @@ Change operators - a set of operators that determine various types of [property 
 
 ### Syntax
 
-    typeChange(propExpr)
+```
+typeChange(propExpr)
+```
 
 ### Description
 

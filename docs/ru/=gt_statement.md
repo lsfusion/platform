@@ -6,7 +6,9 @@ title: 'Инструкция =>'
 
 ### Синтаксис
 
-    leftPropertyId(param1, ..., paramN) => eventClause rightExpr [RESOLVE resolveType];
+```
+leftPropertyId(param1, ..., paramN) => eventClause rightExpr [RESOLVE resolveType];
+```
 
 ### Описание
 
@@ -14,17 +16,23 @@ title: 'Инструкция =>'
 
 При создании следствия будет создано [ограничение](Constraints.md), которое во многом будет эквивалентно следующей инструкции
 
-    CONSTRAINT eventClause leftPropertyId(param1, ..., paramN) AND NOT rightExpr MESSAGE 'Нарушено следствие';
+```
+CONSTRAINT eventClause leftPropertyId(param1, ..., paramN) AND NOT rightExpr MESSAGE 'Нарушено следствие';
+```
 
 но при этом позволяет автоматически разрешать ситуации нарушения этого ограничения. Так тип разрешения `RESOLVE LEFT` будет эквивалентен созданию [простого события](Simple_event.md):
 
-    WHEN eventClause SET(leftPropertyId(param1, ..., paramN)) DO 
-        SETACTION(rightExpr);
+```
+WHEN eventClause SET(leftPropertyId(param1, ..., paramN)) DO 
+    SETACTION(rightExpr);
+```
 
 А `RESOLVE RIGHT` соответственно:
 
-    WHEN eventClause DROPPED(rightExpr) DO
-        DROPACTION(leftPropertyId(param1, ..., paramN));
+```
+WHEN eventClause DROPPED(rightExpr) DO
+    DROPACTION(leftPropertyId(param1, ..., paramN));
+```
 
 ### Параметры
 

@@ -6,13 +6,15 @@ title: 'Арифметические операторы'
 
 ### Синтаксис
 
-    expression1 + expression2  
-    expression1 - expression2  
-    expression1 / expression2  
-    expression1 * expression2  
-    -expression1
-    expression1 (+) expression2  
-    expression1 (-) expression2  
+```
+expression1 + expression2  
+expression1 - expression2  
+expression1 / expression2  
+expression1 * expression2  
+-expression1
+expression1 (+) expression2  
+expression1 (-) expression2  
+```
 
 ### Параметры
 

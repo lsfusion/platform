@@ -6,12 +6,16 @@ The `CANCEL` operator creates an [action](Actions.md) that [cancels changes](Can
 
 ### Syntax
 
-    CANCEL [nestedBlock]
+```
+CANCEL [nestedBlock]
+```
 
 where `nestedBlock` has one of two possible syntaxes:
 
-    NESTED LOCAL
-    NESTED (propertyId1, ..., propertyIdN)
+```
+NESTED LOCAL
+NESTED (propertyId1, ..., propertyIdN)
+```
 
 ### Description
 

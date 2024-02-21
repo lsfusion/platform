@@ -6,7 +6,9 @@ title: 'Инструкция ON'
 
 ### Синтаксис 
 
-    ON eventClause eventAction;
+```
+ON eventClause eventAction;
+```
 
 ### Описание
 

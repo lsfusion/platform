@@ -6,7 +6,9 @@ The `FORMULA` operator creates a [property](Properties.md) that implements a [cu
 
 ### Syntax
 
-    FORMULA [NULL] [className] [syntaxType1] text1, ..., [syntaxTypeN] textN
+```
+FORMULA [NULL] [className] [syntaxType1] text1, ..., [syntaxTypeN] textN
+```
 
 ### Description
 

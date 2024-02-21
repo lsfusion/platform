@@ -6,7 +6,9 @@ The `@` statement uses [metacode](Metaprogramming.md#metacode).
 
 ### Syntax
 
-    @name(param1, ..., paramN);
+```
+@name(param1, ..., paramN);
+```
 
 ### Description
 

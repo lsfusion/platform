@@ -6,8 +6,10 @@ title: 'Оператор NEWTHREAD'
 
 ### Синтаксис
 
-    NEWTHREAD action [CONNECTION connectionExpr]
-    NEWTHREAD action SCHEDULE [PERIOD periodExpr] [DELAY delayExpr]
+```
+NEWTHREAD action [CONNECTION connectionExpr]
+NEWTHREAD action SCHEDULE [PERIOD periodExpr] [DELAY delayExpr]
+```
 
 ### Описание
 

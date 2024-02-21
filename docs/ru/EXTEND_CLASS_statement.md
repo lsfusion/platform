@@ -6,13 +6,15 @@ title: 'Инструкция EXTEND CLASS'
 
 ### Синтаксис
 
-    EXTEND CLASS name 
-    [{
-        objectName1 [objectCaption1],
-        ...
-        objectNameM [objectCaptionM]
-    }] 
-    [: parent1, ..., parentN];
+```
+EXTEND CLASS name 
+[{
+    objectName1 [objectCaption1],
+    ...
+    objectNameM [objectCaptionM]
+}] 
+[: parent1, ..., parentN];
+```
 
 ### Описание
 

@@ -6,7 +6,9 @@ The `WHEN` statement adds a [simple event](Simple_event.md) handler.
 
 ### Syntax 
 
-    WHEN eventClause eventExpr [ORDER [DESC] orderExpr1, ..., orderExprN] DO eventAction;
+```
+WHEN eventClause eventExpr [ORDER [DESC] orderExpr1, ..., orderExprN] DO eventAction;
+```
 
 ### Description
 
@@ -18,7 +20,9 @@ Also, the `ORDER` block can be used to define the order in which the handler wil
 :::info
 Using the `WHEN` statement is much like the following statement:
 
-    ON eventClause FOR eventExpr [ORDER [DESC] orderExpr1, ..., orderExprN] DO eventAction;
+```
+ON eventClause FOR eventExpr [ORDER [DESC] orderExpr1, ..., orderExprN] DO eventAction;
+```
 
 but it also has [a number of advantages](Simple_event.md).
 :::
