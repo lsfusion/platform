@@ -12,8 +12,8 @@ title: 'Для разработки'
 
 - [x64](https://download.lsfusion.org/exe/lsfusion-dev-5.1-x64.exe)
 
-<details><summary><strong>Предыдущие версии</strong></summary>
-<br/>
+<details>
+<summary><strong>Предыдущие версии</strong></summary>
 
 - lsFusion 5.0 ([x64](https://download.lsfusion.org/exe/lsfusion-dev-5.0-x64.exe))
 - lsFusion 4.1 ([x32](https://download.lsfusion.org/exe/lsfusion-dev-4.1.exe) / [x64](https://download.lsfusion.org/exe/lsfusion-dev-4.1-x64.exe))
