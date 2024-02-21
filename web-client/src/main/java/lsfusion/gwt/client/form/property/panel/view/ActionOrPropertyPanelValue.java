@@ -125,8 +125,8 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
     }
 
     @Override
-    public void getAsyncValues(String value, String actionSID, AsyncCallback<GFormController.GAsyncResult> callback) {
-        form.getAsyncValues(value, this, actionSID, callback);
+    public void getAsyncValues(String value, String actionSID, AsyncCallback<GFormController.GAsyncResult> callback, int increaseValuesNeededCount) {
+        form.getAsyncValues(value, this, actionSID, callback, increaseValuesNeededCount);
     }
 
     @Override

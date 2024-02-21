@@ -901,8 +901,8 @@ protected Double getUserFlex(int i) {
     public UpdateContext getUpdateContext(Cell cell, Element renderElement, GPropertyDraw property, GridPropertyColumn column) {
         return new UpdateContext() {
             @Override
-            public void getAsyncValues(String value, String actionSID, AsyncCallback<GFormController.GAsyncResult> callback) {
-                form.getAsyncValues(value, getEditContext(cell, renderElement), actionSID, callback);
+            public void getAsyncValues(String value, String actionSID, AsyncCallback<GFormController.GAsyncResult> callback, int increaseValuesNeededCount) {
+                form.getAsyncValues(value, getEditContext(cell, renderElement), actionSID, callback, increaseValuesNeededCount);
             }
 
             @Override

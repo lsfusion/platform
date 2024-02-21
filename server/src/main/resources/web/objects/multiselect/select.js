@@ -129,7 +129,7 @@ function selectMultiInput() {
                         for (let dataElement of data.data)
                             options.push(toOption(controller.createObject({selected : false, name : dataElement.rawString}, dataElement.objects), controller, true));
                         callback(options);
-                    }, null);
+                    }, null, this.items.length);
                 },
                 plugins: ['remove_button', 'auto_position', 'lsf_events'],
                 render: {
