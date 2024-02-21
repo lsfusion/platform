@@ -20,7 +20,7 @@ CONSTRAINT eventClause constraintExpr [CHECKED [BY propertyId1, ..., propertyIdN
 :::info
 Создание ограничения во многом аналогично следующей инструкции:
 
-```
+```lsf
 constraintProperty = constraintExpr;
 WHEN eventClause [=GROUP MAX constraintProperty()]() DO {
     PRINT outConstraintPropertyForm MESSAGE NOWAIT;

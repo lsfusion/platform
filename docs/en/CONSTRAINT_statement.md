@@ -20,7 +20,7 @@ Also, by using the `CHECKED` option you can use the constraint when showing dial
 :::info
 Creating a constraint is pretty similar to the following statements:
 
-```
+```lsf
 constraintProperty = constraintExpr;
 WHEN eventClause [=GROUP MAX constraintProperty()]() DO {
     PRINT outConstraintPropertyForm MESSAGE NOWAIT;
