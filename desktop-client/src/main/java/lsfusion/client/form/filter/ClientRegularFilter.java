@@ -48,13 +48,6 @@ public class ClientRegularFilter extends IdentityObject implements ClientIdentit
         caption = pool.readString(inStream);
 
         keyEvent = pool.readObject(inStream);
-        if(keyEvent != null) {
-            if(keyEvent.bindingModes == null)
-                keyEvent.bindingModes = new HashMap<>();
-            if(keyEvent.bindingModes.get("preview") == null) {
-                keyEvent.bindingModes.put("preview", BindingMode.NO);
-            }
-        }
         priority = pool.readInt(inStream);
         showKey = inStream.readBoolean();
     }
