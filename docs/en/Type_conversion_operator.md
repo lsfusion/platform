@@ -6,7 +6,9 @@ The type conversion operator creates a [property](Properties.md) that performs [
 
 ### Syntax
 
-    typeName(expression) 
+```
+typeName(expression) 
+```
 
 ### Description
 

@@ -115,7 +115,9 @@ XML of the object group ::=
 
 When exporting/importing to XML, the special `ATTR` option can be specified for a property on the form. Thus, when exporting/importing that property, its value will be stored not in a separate tag, but in the attribute of the parent tag:
 
-    <parent tag ... property name on the form = "property value" ...>
+```
+<parent tag ... property name on the form = "property value" ...>
+```
 
 When importing from XML, the name of the uppermost tag (in the rule) is ignored (according to the XML specification, there should be only one such tag).
 
@@ -135,7 +137,9 @@ Unlike other formats, XML supports a concept of namespaces for tags and attribut
 
 For example, in **lsFusion** to export a property to a tag with a specified namespace, you must specify the name of this property using a special syntax:
 
-    [namespace[=uri]:]name
+```
+[namespace[=uri]:]name
+```
 
 For example, `h:table` or `h=http://www.w3.org/TR/html4:table`. The namespace name may be empty if necessary. If no URI is specified for the namespace, it is inherited from the namespace with the same name of the parent tags. If there are no namespaces with that name in the parent tags, URI is automatically considered equal to `http://www.w3.org/<name of the namespace>`.
 

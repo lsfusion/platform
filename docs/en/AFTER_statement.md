@@ -6,7 +6,9 @@ The `AFTER` statement calls an [action](Actions.md) after calling another action
 
 ### Syntax
 
-    AFTER action(param1, ..., paramN) DO aspectAction;
+```
+AFTER action(param1, ..., paramN) DO aspectAction;
+```
 
 ### Description
 

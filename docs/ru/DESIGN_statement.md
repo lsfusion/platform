@@ -8,19 +8,23 @@ title: 'Инструкция DESIGN'
 
 Синтаксис представляет собой вложенные друг в друга блоки *инструкций дизайна*. Внешний блок, начинающийся с ключевого слова `DESIGN`, определяет [форму](Forms.md), дизайн которой будет изменяться: 
 
-    DESIGN formName [caption] [CUSTOM] {
-        designStatement1
-        ...
-        designStatementN
-    }
+```
+DESIGN formName [caption] [CUSTOM] {
+    designStatement1
+    ...
+    designStatementN
+}
+```
 
 Каждый `designStatement` описывает одну инструкцию дизайна. Инструкции дизайна бывают следующих типов: 
 
-    NEW name [insertPos] [{...}];
-    MOVE selector [insertPos] [{...}];  
-    selector [{...}];   
-    REMOVE selector;
-    propertyName = value;
+```
+NEW name [insertPos] [{...}];
+MOVE selector [insertPos] [{...}];  
+selector [{...}];   
+REMOVE selector;
+propertyName = value;
+```
 
 Первые три инструкции: *создание* (`NEW`), *перемещение* (`MOVE`) и *редактирование *могут в свою очередь содержать вложенные блоки инструкций дизайна. Инструкции дизайна *удаление* (`REMOVE`) и *изменение значения свойства* (`=`) являются простыми одиночными инструкциями. Каждая инструкция дизайна должна завершаться точкой с запятой, если в ней не содержится вложенный блок инструкций.
 
@@ -28,18 +32,22 @@ title: 'Инструкция DESIGN'
 
 Каждый `selector` может быть одного из следующих типов:
 
-    componentName
-    PROPERTY(formPropertyName)
-    FILTERGROUP(filterGroupName)
-    PARENT(selector)
-    GROUP([propertyGroupSelector][,groupObjectTreeSelector])
-    noGroupObjectTreeContainerType
-    groupObjectTreeContainerType(groupObjectTreeSelector)
+```
+componentName
+PROPERTY(formPropertyName)
+FILTERGROUP(filterGroupName)
+PARENT(selector)
+GROUP([propertyGroupSelector][,groupObjectTreeSelector])
+noGroupObjectTreeContainerType
+groupObjectTreeContainerType(groupObjectTreeSelector)
+```
 
 В свою очередь, `groupObjectTreeSelector` может быть одного из двух видов:
 
-    groupObjectSelector
-    TREE treeSelector
+```
+groupObjectSelector
+TREE treeSelector
+```
 
 ## Описание
 

@@ -6,10 +6,12 @@ title: 'Заголовок модуля'
 
 ### Синтаксис
 
-    MODULE name;
-    [REQUIRE moduleName1, ..., moduleNameN;]
-    [PRIORITY namespaceName1, ..., namespaceNameM;]
-    [NAMESPACE namespaceName;]
+```
+MODULE name;
+[REQUIRE moduleName1, ..., moduleNameN;]
+[PRIORITY namespaceName1, ..., namespaceNameM;]
+[NAMESPACE namespaceName;]
+```
 
 ### Описание
 

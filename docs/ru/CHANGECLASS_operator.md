@@ -6,7 +6,9 @@ title: 'Оператор CHANGECLASS'
 
 ### Синтаксис
 
-    CHANGECLASS expr TO className [WHERE whereExpr]
+```
+CHANGECLASS expr TO className [WHERE whereExpr]
+```
 
 ### Описание
 

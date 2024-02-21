@@ -6,7 +6,9 @@ The `IF` operator - creating a [property](Properties.md) implementing [selection
 
 ### Syntax
 
-    result IF condition 
+```
+result IF condition 
+```
 
 ### Description
 

@@ -6,7 +6,9 @@ The `[]` operator creates a [property](Properties.md) that returns an object fro
 
 ### Syntax
 
-    expr [ number ]
+```
+expr [ number ]
+```
 
 Where `[` and `]` are ordinary square brackets.
 

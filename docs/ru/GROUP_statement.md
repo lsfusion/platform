@@ -6,7 +6,9 @@ title: 'Инструкция GROUP'
 
 ### Синтаксис
 
-    GROUP name [caption] [EXTID extID] [: parentName];
+```
+GROUP name [caption] [EXTID extID] [: parentName];
+```
 
 ### Описание
 

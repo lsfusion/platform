@@ -6,7 +6,9 @@ title: 'Оператор MULTI'
 
 ### Синтаксис
 
-    MULTI expr1, ..., exprN [exclusionType]
+```
+MULTI expr1, ..., exprN [exclusionType]
+```
 
 ### Описание
 

@@ -6,15 +6,19 @@ title: 'Оператор PRINT'
 
 ### Синтаксис
 
-    PRINT name 
-    [OBJECTS objName1 = expr1, ..., objNameN = exprN]
-    [formActionOptions] 
+```
+PRINT name 
+[OBJECTS objName1 = expr1, ..., objNameN = exprN]
+[formActionOptions] 
+```
 
 `formActionOptions` - дополнительные опции этого действия. Существует несколько вариантов синтаксиса опций в этом операторе:
 
-    printFormat [SHEET sheetProperty] [PASSWORD passwordExpr] [TO propertyId]
-    [PREVIEW | NOPREVIEW] [syncType] [TO printerExpr]
-    MESSAGE [syncType] [TOP n]
+```
+printFormat [SHEET sheetProperty] [PASSWORD passwordExpr] [TO propertyId]
+[PREVIEW | NOPREVIEW] [syncType] [TO printerExpr]
+MESSAGE [syncType] [TOP n]
+```
 
 ### Описание
 

@@ -6,7 +6,9 @@ title: 'Empty statement'
 
 ### Syntax
 
-    ;
+```
+;
+```
 
 ### Description
 

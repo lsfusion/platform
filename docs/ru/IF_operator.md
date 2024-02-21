@@ -6,7 +6,9 @@ title: 'Оператор IF'
 
 ### Синтаксис
 
-    result IF condition 
+```
+result IF condition 
+```
 
 ### Описание
 

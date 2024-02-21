@@ -6,9 +6,11 @@ title: 'Операторы групп объектов'
 
 ### Синтаксис
 
-    FILTER groupObjectId
-    VIEW groupObjectId
-    ORDER groupObjectId
+```
+FILTER groupObjectId
+VIEW groupObjectId
+ORDER groupObjectId
+```
 
 ### Описание
 

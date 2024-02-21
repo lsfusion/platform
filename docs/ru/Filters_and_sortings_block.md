@@ -8,7 +8,9 @@ title: 'Блоки фильтров и сортировок'
 
 ### Синтаксис
 
-    FILTERS expression1, ..., expressionN
+```
+FILTERS expression1, ..., expressionN
+```
 
 ### Описание
 
@@ -61,10 +63,12 @@ FORM onStock 'Остатки' // создаем форму, в которой м
 
 ### Синтаксис
 
-    [EXTEND] FILTERGROUP groupName
-        FILTER caption1 expression1 [keystroke1] [DEFAULT]
-        ...
-        FILTER captionN expressionN [keystrokeN] [DEFAULT]
+```
+[EXTEND] FILTERGROUP groupName
+    FILTER caption1 expression1 [keystroke1] [DEFAULT]
+    ...
+    FILTER captionN expressionN [keystrokeN] [DEFAULT]
+```
 
 ### Описание
 
@@ -129,9 +133,11 @@ EXTEND FORM onStock
 
 ### Синтаксис
 
-    ORDERS formPropertyName1 [DESC] 
-           ...
-           formPropertyNameN [DESC]
+```
+ORDERS formPropertyName1 [DESC] 
+       ...
+       formPropertyNameN [DESC]
+```
 
 ### Описание
 

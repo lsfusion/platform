@@ -6,15 +6,21 @@ The `INDEX` statement creates a new [index](Indexes.md).
 
 ### Syntax
 
-    INDEX field1, ..., fieldN;
+```
+INDEX field1, ..., fieldN;
+```
 
 Each field of the `fieldi` [table](Tables.md) that the system should use to build an index can be described either by specifying a [property](Properties.md) stored in this table:
 
-    propertyId(param1, ..., paramN)
+```
+propertyId(param1, ..., paramN)
+```
 
 or by specifying a typed parameter referring to the corresponding key field: 
 
-    param
+```
+param
+```
 
 ### Description
 

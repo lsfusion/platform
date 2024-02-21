@@ -6,8 +6,10 @@ The `NEWTHREAD` operator creates an [action](Actions.md) that executes another a
 
 ### Syntax
 
-    NEWTHREAD action [CONNECTION connectionExpr]
-    NEWTHREAD action SCHEDULE [PERIOD periodExpr] [DELAY delayExpr]
+```
+NEWTHREAD action [CONNECTION connectionExpr]
+NEWTHREAD action SCHEDULE [PERIOD periodExpr] [DELAY delayExpr]
+```
 
 ### Description
 

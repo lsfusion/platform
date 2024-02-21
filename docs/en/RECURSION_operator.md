@@ -6,7 +6,9 @@ The `RECURSION` operator creates a [property](Properties.md) that implements [re
 
 ### Syntax 
 
-    RECURSION initialExpr STEP stepExpr [CYCLES YES | CYCLES NO | CYCLES IMPOSSIBLE]
+```
+RECURSION initialExpr STEP stepExpr [CYCLES YES | CYCLES NO | CYCLES IMPOSSIBLE]
+```
 
 ### Description
 

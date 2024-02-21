@@ -8,23 +8,27 @@ title: 'Опции свойства'
 
 Опции перечесляются друг за другом в произвольном порядке через пробел или переводы строк:
 
-    propertyOption1 ... propertyOptionN
+```
+propertyOption1 ... propertyOptionN
+```
 
 Поддерживается следующий набор опций (синтаксис каждой опции указывается в отдельной строке):
 
-    IN groupName
-    viewType
-    ON eventType { actionOperator }
-    CHANGEKEY key [SHOW | HIDE]
-    MATERIALIZED
-    TABLE tableName
-    INDEXED [LIKE | MATCH]
-    NONULL [DELETE] eventClause
-    AUTOSET
-    CHARWIDTH width [FLEX | NOFLEX]
-    REGEXP rexpr [message] 
-    ECHO
-    DEFAULTCOMPARE [compare]
+```
+IN groupName
+viewType
+ON eventType { actionOperator }
+CHANGEKEY key [SHOW | HIDE]
+MATERIALIZED
+TABLE tableName
+INDEXED [LIKE | MATCH]
+NONULL [DELETE] eventClause
+AUTOSET
+CHARWIDTH width [FLEX | NOFLEX]
+REGEXP rexpr [message] 
+ECHO
+DEFAULTCOMPARE [compare]
+```
 
 ## Описание и параметры
 

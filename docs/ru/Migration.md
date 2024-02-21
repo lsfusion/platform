@@ -6,23 +6,27 @@ title: 'Миграция'
 
 Миграционный файл состоит из блоков, которые описывают изменения, произведенные в указанной версии структуры базы данных. При старте сервера применяются все изменения из миграционного файла, которые имеют версию выше, чем версия, хранящаяся в базе данных. Изменения применяются в соответствии с версией, от меньшей версии к большей. Если изменение структуры БД происходит успешно, то максимальная версия из всех примененных блоков записывается в базу данных в качестве текущей. Синтаксис описания каждого блока выглядит следующим образом:
 
-    V<номер версии> {
-        изменение1
-        ...
-        изменениеN 
-    }
+```
+V<номер версии> {
+    изменение1
+    ...
+    изменениеN 
+}
+```
 
 *Номер версии* представляет собой набор из одного или нескольких чисел разделенных точкой. При сравнении номеров двух версий сравниваются сначала первые числа версий, при их равенстве вторые и т. д. Если в одном номере версии меньше чисел, чем в другом, то при сравнении версия с меньшим количеством чисел дополняется нолями. То есть номер версии `1.3` эквивалентен номеру `1.3.0.0`, а версия `1.2` больше версии `1.1.3`. В миграционном файле номер версии указывается вместе с заглавной буквой `V`: `V1.0`, `V2.0.11`.
 
 Миграционный файл позволяет обрабатывать изменения [канонических имен](Naming.md#canonicalname) элементов системы, которые происходят при переименовании и/или переносе в другое пространство имен. Изменения бывают следующих типов: 
 
-    PROPERTY oldNS.oldName[class1,...,classN] -> newNS.newName[class1,...,classN]
-    STORED PROPERTY oldNS.oldName[class1,...,classN] -> newNS.newName[class1,...,classN]
-    FORM PROPERTY oldNS.oldFormName.oldName(object1,...,objectN) -> newNS.newFormName.newName(object1,...,objectN)  
-    CLASS oldNS.oldName -> newNS.newName
-    OBJECT oldNS.oldClassName.oldName -> newNS.newClassName.newName
-    TABLE oldNS.oldName -> newNS.newName
-    NAVIGATOR oldNS.oldName -> newNS.newName
+```
+PROPERTY oldNS.oldName[class1,...,classN] -> newNS.newName[class1,...,classN]
+STORED PROPERTY oldNS.oldName[class1,...,classN] -> newNS.newName[class1,...,classN]
+FORM PROPERTY oldNS.oldFormName.oldName(object1,...,objectN) -> newNS.newFormName.newName(object1,...,objectN)  
+CLASS oldNS.oldName -> newNS.newName
+OBJECT oldNS.oldClassName.oldName -> newNS.newClassName.newName
+TABLE oldNS.oldName -> newNS.newName
+NAVIGATOR oldNS.oldName -> newNS.newName
+```
 
 ### Изменение имени свойства или действия
 
@@ -66,16 +70,18 @@ title: 'Миграция'
 
 **migration.script**
 
-    V0.3.1 {
-        STORED PROPERTY Item.gender[Item.Article] -> Item.dataGender[Item.Article] // изменение имени DATA свойства
-        PROPERTY System.SIDProperty[Reflection.Property] -> Reflection.dbNameProperty[Reflection.Property] // одновременный перенос в другое пространство имен и изменение имени свойства
-        FORM PROPERTY Item.itemForm.name(i) -> Item.itemForm.itemName(i)
-    }
-     
-    V0.4 {
-        FORM PROPERTY Document.documentForm.name(i) -> Document.itemForm.itemName(i)
-        FORM PROPERTY Item.itemForm.itemName(i) -> Item.itemForm.iname // добавление явного имени для свойства на форме: iname = itemName(i)
-        CLASS Date.DateInterval -> Date.Interval
-        OBJECT Geo.Direction.North -> Geo.Direction.north
-        TABLE User.oldTable -> User.newTable
-    }
+```
+V0.3.1 {
+    STORED PROPERTY Item.gender[Item.Article] -> Item.dataGender[Item.Article] // изменение имени DATA свойства
+    PROPERTY System.SIDProperty[Reflection.Property] -> Reflection.dbNameProperty[Reflection.Property] // одновременный перенос в другое пространство имен и изменение имени свойства
+    FORM PROPERTY Item.itemForm.name(i) -> Item.itemForm.itemName(i)
+}
+ 
+V0.4 {
+    FORM PROPERTY Document.documentForm.name(i) -> Document.itemForm.itemName(i)
+    FORM PROPERTY Item.itemForm.itemName(i) -> Item.itemForm.iname // добавление явного имени для свойства на форме: iname = itemName(i)
+    CLASS Date.DateInterval -> Date.Interval
+    OBJECT Geo.Direction.North -> Geo.Direction.north
+    TABLE User.oldTable -> User.newTable
+}
+```

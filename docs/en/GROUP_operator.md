@@ -6,11 +6,13 @@ The `GROUP` operator creates a [property](Properties.md) implementing [grouping]
 
 ### Syntax 
 
-    GROUP 
-    type expr1, ..., exprN
-    [ORDER [DESC] orderExpr1, ..., orderExprK]
-    [WHERE whereExpr]
-    [BY groupExpr1, ..., groupExprM]
+```
+GROUP 
+type expr1, ..., exprN
+[ORDER [DESC] orderExpr1, ..., orderExprK]
+[WHERE whereExpr]
+[BY groupExpr1, ..., groupExprM]
+```
 
 ### Description
 

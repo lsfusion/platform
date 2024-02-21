@@ -6,7 +6,9 @@ The `PREV` operator creates a [property](Properties.md) using a [previous value 
 
 ### Syntax
 
-    PREV(propExpr)
+```
+PREV(propExpr)
+```
 
 ### Description
 

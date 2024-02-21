@@ -6,7 +6,9 @@ The `EXCLUSIVE` operator creates a [property](Properties.md) that implements a [
 
 ### Syntax
 
-    EXCLUSIVE expr1, ..., exprN
+```
+EXCLUSIVE expr1, ..., exprN
+```
 
 ### Description
 

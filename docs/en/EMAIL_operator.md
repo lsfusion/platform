@@ -6,15 +6,17 @@ The `EMAIL` operator creates an [action](Actions.md) that [sends email](Send_mai
 
 ### Syntax
 
-    EMAIL [FROM fromExpr] 
-    [SUBJECT subjExpr]
-    recipientType1 recipientExpr1
-    ...
-    recipientTypeN recipientExprN
-    [BODY bodyExpr]
-    ATTACH attachFileExpr1 [NAME attachNameExpr1]
-    ...
-    ATTACH attachFileExprM [NAME attachNameExprM]
+```
+EMAIL [FROM fromExpr] 
+[SUBJECT subjExpr]
+recipientType1 recipientExpr1
+...
+recipientTypeN recipientExprN
+[BODY bodyExpr]
+ATTACH attachFileExpr1 [NAME attachNameExpr1]
+...
+ATTACH attachFileExprM [NAME attachNameExprM]
+```
 
 ### Description
 

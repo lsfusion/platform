@@ -6,7 +6,9 @@ title: 'Оператор AGGR'
 
 ### Синтаксис  
 
-    AGGR aggrClass WHERE aggrExpr
+```
+AGGR aggrClass WHERE aggrExpr
+```
 
 ### Описание
 
@@ -15,20 +17,22 @@ title: 'Оператор AGGR'
 :::info
 Создание агрегации во многом аналогично следующим инструкциям (пример для 2 параметров):
 
-    prm1 = DATA class1 (aggrClass);
-    prm2 = DATA class2 (aggrClass);
-    result = GROUP AGGR aggrClass aggrObject BY prm1(aggrObject), prm2(aggrObject);
+```
+prm1 = DATA class1 (aggrClass);
+prm2 = DATA class2 (aggrClass);
+result = GROUP AGGR aggrClass aggrObject BY prm1(aggrObject), prm2(aggrObject);
 
-    // если aggrExpr становится не null, создаем объект класса aggrClass (эквивалентно whereExpr => result(prm1, prm2) RESOLVE LEFT)
-    WHEN SET(aggrExpr) AND NOT result(prm1, prm2)
-        NEW aggrObject = aggrClass {
-            prm1(aggrObject) <- prm1;
-            prm2(aggrObject) <- prm2;
-        }
+// если aggrExpr становится не null, создаем объект класса aggrClass (эквивалентно whereExpr => result(prm1, prm2) RESOLVE LEFT)
+WHEN SET(aggrExpr) AND NOT result(prm1, prm2)
+    NEW aggrObject = aggrClass {
+        prm1(aggrObject) <- prm1;
+        prm2(aggrObject) <- prm2;
+    }
 
-    // если aggrExpr становится null, удаляем объект (эквивалентно aggrClass aggrObject IS aggrClass => result(prm1(aggrObject),prm2(aggrObject)) RESOLVE RIGHT)
-    WHEN aggrClass aggrObject IS aggrClass AND DROPPED(result(prm1(aggrObject),prm2(aggrObject))) DO
-        DELETE aggrObject;
+// если aggrExpr становится null, удаляем объект (эквивалентно aggrClass aggrObject IS aggrClass => result(prm1(aggrObject),prm2(aggrObject)) RESOLVE RIGHT)
+WHEN aggrClass aggrObject IS aggrClass AND DROPPED(result(prm1(aggrObject),prm2(aggrObject))) DO
+    DELETE aggrObject;
+```
 
 но является более декларативной и читабельной инструкцией, поэтому рекомендуется использовать именно ее
 :::

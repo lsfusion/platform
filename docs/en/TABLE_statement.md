@@ -6,7 +6,9 @@ The `TABLE` statement creates an new [table](Tables.md).
 
 ### Syntax
 
-    TABLE name(className1, ..., classNameN) [FULL | NODEFAULT];
+```
+TABLE name(className1, ..., classNameN) [FULL | NODEFAULT];
+```
 
 ### Description
 

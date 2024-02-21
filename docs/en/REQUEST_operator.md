@@ -6,8 +6,10 @@ The `REQUEST` operator creates an [action](Actions.md) that [requests a value](V
 
 ### Syntax
 
-    REQUEST requestAction 
-    DO doAction [ELSE elseAction]
+```
+REQUEST requestAction 
+DO doAction [ELSE elseAction]
+```
 
 ### Description
 

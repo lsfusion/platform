@@ -6,7 +6,9 @@ title: 'Оператор NEWEXECUTOR'
 
 ### Синтаксис
 
-    NEWEXECUTOR action THREADS threadExpr
+```
+NEWEXECUTOR action THREADS threadExpr
+```
 
 ### Описание
 

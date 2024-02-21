@@ -6,8 +6,10 @@ title: 'Инструкция ACTION'
 
 ### Синтаксис
 
-    [ACTION] name [caption] [(param1, ..., paramN)] { operator } [options];
-    [ACTION] name [caption] [(param1, ..., paramN)] contextIndependentOperator [options];
+```
+[ACTION] name [caption] [(param1, ..., paramN)] { operator } [options];
+[ACTION] name [caption] [(param1, ..., paramN)] contextIndependentOperator [options];
+```
 
 ### Описание
 

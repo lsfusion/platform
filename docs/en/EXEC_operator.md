@@ -6,7 +6,9 @@ The `EXEC` operator creates an [action](Actions.md) that [executes](Call_EXEC.md
 
 ### Syntax
 
-    [EXEC] actionId(expression1, ..., expressionN)
+```
+[EXEC] actionId(expression1, ..., expressionN)
+```
 
 ### Description
 

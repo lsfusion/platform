@@ -49,10 +49,12 @@ According to this inheritance mechanism, the common ancestor of two builtin clas
 
 ### Strings
 
-    result = STRING[blankPadded = s1.blankPadded OR s2.blankPadded, 
-                    caseInsensitive = s1.caseInsensitive OR s2.caseInsensitive, 
-                    length = MAX(s1.length, s2.length)]
-                
+```
+result = STRING[blankPadded = s1.blankPadded OR s2.blankPadded, 
+                caseInsensitive = s1.caseInsensitive OR s2.caseInsensitive, 
+                length = MAX(s1.length, s2.length)]
+            
+```
 where `blankPadded`, `caseInsensitive` and `length` are in turn determined as:
 
 |Class name    |blankPadded|caseInsensitive|length|
@@ -65,14 +67,16 @@ where `blankPadded`, `caseInsensitive` and `length` are in turn determined as:
 
 ### Numbers
 
-    IF p1.integerPart >= p2.integerPart AND p1.precision >= p2.precision
-        result = p1 
-    ELSE IF p1.integerPart <= p2.integerPart AND p1.precision <= p2.precision
-        result = p2 
-    ELSE IF p1.integerPart > p2.integerPart  
-        result = NUMERIC[p1.integerPart+p2.precision, p2.precision]
-    ELSE  
-        result = NUMERIC[p2.integerPart+p1.precision, p1.precision]
+```
+IF p1.integerPart >= p2.integerPart AND p1.precision >= p2.precision
+    result = p1 
+ELSE IF p1.integerPart <= p2.integerPart AND p1.precision <= p2.precision
+    result = p2 
+ELSE IF p1.integerPart > p2.integerPart  
+    result = NUMERIC[p1.integerPart+p2.precision, p2.precision]
+ELSE  
+    result = NUMERIC[p2.integerPart+p1.precision, p1.precision]
+```
 
 where `integerPart` and `precision`, in turn, are determined as:
 
@@ -85,17 +89,21 @@ where `integerPart` and `precision`, in turn, are determined as:
 
 ### Files of a specific type
 
-    IF p1 = p2
-        result = p1
-    ELSE
-        result = RAWFILE
+```
+IF p1 = p2
+    result = p1
+ELSE
+    result = RAWFILE
+```
   
 ### Links to files of a specific type
 
-    IF p1 = p2
-        result = p1
-    ELSE
-        result = RAWLINK
+```
+IF p1 = p2
+    result = p1
+ELSE
+    result = RAWLINK
+```
   
 Note that sometimes in programming the definition of a common parent class is associated with *implicit typecasting*.
 

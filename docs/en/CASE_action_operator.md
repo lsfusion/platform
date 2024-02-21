@@ -6,11 +6,13 @@ The `CASE` operator creates an [action](Actions.md) that implements [branching](
 
 ### Syntax 
 
-    CASE [exclusionType]
-        WHEN condition1 THEN action1
-        ...
-        WHEN conditionN THEN actionN
-        [ELSE elseAction]
+```
+CASE [exclusionType]
+    WHEN condition1 THEN action1
+    ...
+    WHEN conditionN THEN actionN
+    [ELSE elseAction]
+```
 
 ### Description
 

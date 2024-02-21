@@ -6,7 +6,9 @@ The `ACTIVATE FORM` operator creates an [action](Actions.md) that checks the [ac
 
 ### Syntax
 
-    ACTIVE FORM formName
+```
+ACTIVE FORM formName
+```
 
 ### Description
 

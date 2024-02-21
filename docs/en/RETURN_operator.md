@@ -6,7 +6,9 @@ The `RETURN` operator creates an [action](Actions.md) that implements [exit](Exi
 
 ### Syntax
 
-    RETURN
+```
+RETURN
+```
 
 ### Description
 
