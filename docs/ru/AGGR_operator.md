@@ -17,7 +17,7 @@ AGGR aggrClass WHERE aggrExpr
 :::info
 Создание агрегации во многом аналогично следующим инструкциям (пример для 2 параметров):
 
-```
+```lsf
 prm1 = DATA class1 (aggrClass);
 prm2 = DATA class2 (aggrClass);
 result = GROUP AGGR aggrClass aggrObject BY prm1(aggrObject), prm2(aggrObject);
