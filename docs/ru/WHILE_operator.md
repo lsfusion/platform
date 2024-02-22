@@ -6,9 +6,11 @@ title: 'Оператор WHILE'
 
 ### Синтаксис
 
-    WHILE expression [ORDER [DESC] orderExpr1, ..., orderExprN]
-    [NEW [alias =] className]
-    DO action
+```
+WHILE expression [ORDER [DESC] orderExpr1, ..., orderExprN]
+[NEW [alias =] className]
+DO action
+```
 
 ### Описание
 

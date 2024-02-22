@@ -6,14 +6,18 @@ The `INPUT` operator creates an [action](Actions.md) that [inputs a primitive](P
 
 ### Syntax
 
-    INPUT inputOptions 
-    [CHANGE [= changeExpr]]
-    [DO actionOperator [ELSE elseActionOperator]]
+```
+INPUT inputOptions 
+[CHANGE [= changeExpr]]
+[DO actionOperator [ELSE elseActionOperator]]
+```
 
 `inputOptions` - input options. Specified by one of the following syntaxes:
 
-    [alias =] builtInClassName
-    [alias] = expr
+```
+[alias =] builtInClassName
+[alias] = expr
+```
 
 ### Description
 

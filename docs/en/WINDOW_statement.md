@@ -6,19 +6,23 @@ The `WINDOW` statement creates a new [window](Navigator_design.md).
 
 ### Syntax
 
-    WINDOW name [caption] type [options]
+```
+WINDOW name [caption] type [options]
+```
 
 The `options` that go at the end of the statement has the following syntax (the syntax for each option is indicated on a separate line):
 
-    HIDETITLE 
-    HIDESCROLLBARS 
-    VERTICAL | HORIZONTAL
-    POSITION(x, y, width, height)
-    LEFT | RIGHT | TOP | BOTTOM
-    HALIGN(alignType)
-    VALING(alignType) 
-    TEXTHALIGN(alignType)
-    TEXTVALIGN(alignType)
+```
+HIDETITLE 
+HIDESCROLLBARS 
+VERTICAL | HORIZONTAL
+POSITION(x, y, width, height)
+LEFT | RIGHT | TOP | BOTTOM
+HALIGN(alignType)
+VALING(alignType) 
+TEXTHALIGN(alignType)
+TEXTVALIGN(alignType)
+```
 
 ### Description
 

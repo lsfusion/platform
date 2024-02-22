@@ -6,9 +6,11 @@ title: 'Оператор ASK'
 
 ### Синтаксис
 
-    ASK expression 
-    [[alias =] YESNO]
-    [DO actionOperator [ELSE elseOperator]]
+```
+ASK expression 
+[[alias =] YESNO]
+[DO actionOperator [ELSE elseOperator]]
+```
 
 ### Описание
 

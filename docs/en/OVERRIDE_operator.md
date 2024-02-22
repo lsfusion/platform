@@ -6,7 +6,9 @@ The `OVERRIDE` operator creates a [property](Properties.md) that implements the 
 
 ### Syntax
 
-    OVERRIDE expr1, ..., exprN
+```
+OVERRIDE expr1, ..., exprN
+```
 
 ### Description
 

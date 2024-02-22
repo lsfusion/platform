@@ -6,7 +6,9 @@ The `GROUP` statement creates a new [property group](Groups_of_properties_and_ac
 
 ### Syntax
 
-    GROUP name [caption] [EXTID extID] [: parentName];
+```
+GROUP name [caption] [EXTID extID] [: parentName];
+```
 
 ### Description
 

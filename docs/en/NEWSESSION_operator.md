@@ -6,12 +6,16 @@ The `NEWSESSION` operator creates an [action](Actions.md) that executes the othe
 
 ### Syntax
 
-    NEWSESSION [NEWSQL] [nestedBlock] action 
+```
+NEWSESSION [NEWSQL] [nestedBlock] action 
+```
 
 where `nestedBlock` has one of two possible syntaxes:
 
-    NESTED LOCAL
-    NESTED (propertyId1, ..., propertyIdN)
+```
+NESTED LOCAL
+NESTED (propertyId1, ..., propertyIdN)
+```
 
 ### Description
 

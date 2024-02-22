@@ -6,7 +6,9 @@ The `TRY` operator creates an [action](Actions.md) that executes another action 
 
 ### Syntax
 
-    TRY action [CATCH catchAction] [FINALLY finallyAction]
+```
+TRY action [CATCH catchAction] [FINALLY finallyAction]
+```
 
 ### Description
 

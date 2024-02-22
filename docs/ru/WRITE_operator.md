@@ -6,7 +6,9 @@ title: 'Оператор WRITE'
 
 ### Синтаксис
 
-    WRITE [CLIENT [DIALOG]] fileExpr TO urlExpr [APPEND]
+```
+WRITE [CLIENT [DIALOG]] fileExpr TO urlExpr [APPEND]
+```
 
 ### Описание
 
@@ -14,8 +16,10 @@ title: 'Оператор WRITE'
 
 Поддерживаются следующие типы URL:
 
-    [file://]path_to_file
-    [s]ftp://username:password[;charset]@host:port[/path_to_file][?passivemode=true|false]
+```
+[file://]path_to_file
+[s]ftp://username:password[;charset]@host:port[/path_to_file][?passivemode=true|false]
+```
 
 Предполагается, что в URL расширение файла не задается (то есть точка `.` также считается частью имени файла). Это расширение определяется автоматически, в зависимости от класса записываемого файла, следующим образом:
 

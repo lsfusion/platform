@@ -6,16 +6,20 @@ title: 'Оператор {...}'
 
 ### Синтаксис
 
-    {
-        operator1
-        ...
-        operatorN
-    }
+```
+{
+    operator1
+    ...
+    operatorN
+}
+```
 
 Операторы могут быть двух видов:
 
-    actionOperator
-    LOCAL [NESTED] name1, ..., nameN = returnClass (paramClass1, ..., paramClassN)
+```
+actionOperator
+LOCAL [NESTED] name1, ..., nameN = returnClass (paramClass1, ..., paramClassN)
+```
 
 ### Описание
 

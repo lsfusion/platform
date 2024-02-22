@@ -452,7 +452,9 @@ change(updateState => this.setState(updateState), { game : { value : 6063 } });
 
 Для изменения значения свойства можно использовать следующий код:
 
-    change(updateState => this.setState(updateState), { game : { value : 6063, hostGoals : 3 } });
+```js
+change(updateState => this.setState(updateState), { game : { value : 6063, hostGoals : 3 } });
+```
 
 Этот вызов изменит текущий объект на игру с идентификатором 6063 и значение голов хозяев на переданное значение (3), Если не передавать тэг `value`, то изменение голов будет сделано для ранее выбранной игры.
 

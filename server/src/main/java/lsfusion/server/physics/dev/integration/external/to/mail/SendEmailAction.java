@@ -20,9 +20,9 @@ import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.BaseAction;
 import lsfusion.server.logics.action.SystemAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
+import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
-import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.file.DynamicFormatFileClass;
 import lsfusion.server.logics.classes.data.file.FileClass;
 import lsfusion.server.logics.classes.data.file.StaticFormatFileClass;
@@ -265,5 +265,12 @@ public class SendEmailAction extends SystemAction {
     private void logErrorAndShowMessage(ExecutionContext context, String errorMessage) {
         ServerLoggers.mailLogger.error(errorMessage);
         context.delayUserInterfaction(new MessageClientAction(errorMessage, localize("{mail.sending}")));
+    }
+
+    @Override
+    public boolean hasFlow(ChangeFlowType type) {
+        if(type == ChangeFlowType.SYNC)
+            return true;
+        return super.hasFlow(type);
     }
 }

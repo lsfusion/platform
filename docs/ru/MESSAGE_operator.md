@@ -6,7 +6,9 @@ title: 'Оператор MESSAGE'
 
 ### Синтаксис
 
-    MESSAGE expression [syncType]
+```
+MESSAGE expression [syncType]
+```
 
 ### Описание
 

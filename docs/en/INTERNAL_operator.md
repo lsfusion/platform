@@ -8,8 +8,10 @@ The `INTERNAL` operator creates an [action](Actions.md) that executes an [intern
 
 The operator has two forms:
 
-    INTERNAL className [(classId1, ..., classIdN)] [NULL]
-    INTERNAL <{anyTokens}> [NULL]
+```
+INTERNAL className [(classId1, ..., classIdN)] [NULL]
+INTERNAL <{anyTokens}> [NULL]
+```
 
 ### Description
 

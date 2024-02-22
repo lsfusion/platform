@@ -6,7 +6,9 @@ The `MAX` operator creates a [property](Properties.md) that implements finding [
 
 ### Syntax 
 
-    MAX expr1, ..., exprN
+```
+MAX expr1, ..., exprN
+```
 
 ### Description
 

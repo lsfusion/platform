@@ -6,7 +6,9 @@ title: 'Инструкция BEFORE'
 
 ### Синтаксис
 
-    BEFORE action(param1, ..., paramN) DO aspectAction;
+```
+BEFORE action(param1, ..., paramN) DO aspectAction;
+```
 
 Описание
 

@@ -6,11 +6,13 @@ The `EXTEND FORM` statement [extends](Form_extension.md) an existing [form](Form
 
 ### Syntax
 
-    EXTEND FORM formName 
-        formBlock1
-        ...
-        formBlockN
-    ;
+```
+EXTEND FORM formName 
+    formBlock1
+    ...
+    formBlockN
+;
+```
 
 ### Description
 

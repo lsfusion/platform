@@ -6,10 +6,12 @@ Each [module](Modules.md) begins with a *header*.
 
 ### Syntax
 
-    MODULE name;
-    [REQUIRE moduleName1, ..., moduleNameN;]
-    [PRIORITY namespaceName1, ..., namespaceNameM;]
-    [NAMESPACE namespaceName;]
+```
+MODULE name;
+[REQUIRE moduleName1, ..., moduleNameN;]
+[PRIORITY namespaceName1, ..., namespaceNameM;]
+[NAMESPACE namespaceName;]
+```
 
 ### Description
 

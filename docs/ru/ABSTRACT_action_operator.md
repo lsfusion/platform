@@ -6,7 +6,9 @@ title: 'Оператор ABSTRACT'
 
 ### Синтаксис
 
-    ABSTRACT [type [exclusionType]] [FIRST | LAST] [CHECKED] (argClassName1, ..., argClassNameN) 
+```
+ABSTRACT [type [exclusionType]] [FIRST | LAST] [CHECKED] (argClassName1, ..., argClassNameN) 
+```
 
 ### Описание
 

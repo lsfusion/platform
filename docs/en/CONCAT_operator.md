@@ -6,7 +6,9 @@ The `CONCAT` operator creates a [property](Properties.md) that implements a stri
 
 ### Syntax
 
-    CONCAT separatorString, concatExpr1, ..., concatExprN
+```
+CONCAT separatorString, concatExpr1, ..., concatExprN
+```
 
 ### Description
 

@@ -6,13 +6,15 @@ title: 'Операторы сравнения'
 
 ### Синтаксис
 
-    expression1 == expression2
-    expression1 = expression2
-    expression1 != expression2
-    expression1 < expression2
-    expression1 > expression2
-    expression1 <= expression2
-    expression1 >= expression2
+```
+expression1 == expression2
+expression1 = expression2
+expression1 != expression2
+expression1 < expression2
+expression1 > expression2
+expression1 <= expression2
+expression1 >= expression2
+```
 
 ### Параметры
 

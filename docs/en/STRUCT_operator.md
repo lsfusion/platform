@@ -6,7 +6,9 @@ The `STRUCT` operator creates a [property](Properties.md) that creates a [struct
 
 ### Syntax
 
-    STRUCT(expr1, ..., exprN)   
+```
+STRUCT(expr1, ..., exprN)   
+```
 
 ### Description
 

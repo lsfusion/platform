@@ -6,7 +6,9 @@ title: 'Оператор CLASS'
 
 ### Синтаксис
 
-    CLASS(expr) 
+```
+CLASS(expr) 
+```
 
 ### Описание
 

@@ -6,7 +6,9 @@ The `DATA` operator creates a [data property](Data_properties_DATA.md).
 
 ### Syntax
 
-    DATA [LOCAL [NESTED]] returnClass (argumentClass1, ..., argumentClassN)
+```
+DATA [LOCAL [NESTED]] returnClass (argumentClass1, ..., argumentClassN)
+```
 
 ### Description
 

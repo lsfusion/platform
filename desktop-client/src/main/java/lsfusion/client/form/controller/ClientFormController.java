@@ -93,6 +93,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.base.BaseUtils.serializeObject;
 import static lsfusion.client.ClientResourceBundle.getString;
 
@@ -451,8 +452,8 @@ public class ClientFormController implements AsyncListener {
         comboBox.addItem(new ClientRegularFilterWrapper(getString("form.all")));
         for (final ClientRegularFilter filter : filterGroup.filters) {
             comboBox.addItem(new ClientRegularFilterWrapper(filter));
-            if(filter.key != null) {
-                addBinding(new KeyInputEvent(filter.key), new Binding(filterGroup.groupObject, 0) {
+            if(filter.inputEvent != null) {
+                Binding binding = new Binding(filterGroup.groupObject, nvl(filter.priority, 0)) {
                     @Override
                     public boolean pressed(java.awt.event.InputEvent ke) {
                         comboBox.setSelectedItem(new ClientRegularFilterWrapper(filter));
@@ -462,7 +463,8 @@ public class ClientFormController implements AsyncListener {
                     public boolean showing() {
                         return true;
                     }
-                });
+                };
+                addBinding(filter.inputEvent, binding);
             }
         }
 
@@ -506,8 +508,8 @@ public class ClientFormController implements AsyncListener {
 
         addFilterView(filterGroup, checkBox);
 
-        if(singleFilter.key != null) {
-            addBinding(new KeyInputEvent(singleFilter.key), new Binding(filterGroup.groupObject, 0) {
+        if(singleFilter.inputEvent != null) {
+            Binding binding = new Binding(filterGroup.groupObject, nvl(singleFilter.priority, 0)) {
                 @Override
                 public boolean pressed(java.awt.event.InputEvent ke) {
                     checkBox.setSelected(!checkBox.isSelected());
@@ -517,7 +519,9 @@ public class ClientFormController implements AsyncListener {
                 public boolean showing() {
                     return true;
                 }
-            });
+            };
+
+            addBinding(singleFilter.inputEvent, binding);
         }
     }
 
@@ -1957,15 +1961,11 @@ public class ClientFormController implements AsyncListener {
     }
 
     public void addBinding(InputEvent ks, Binding binding) {
-        addBinding(ks, binding, BindingMode.AUTO);
-    }
-
-    public void addBinding(InputEvent ks, Binding binding, BindingMode defaultPreview) {
         List<Binding> groupBindings = bindings.computeIfAbsent(ks, k1 -> new ArrayList<>());
         if(binding.priority == 0)
             binding.priority = groupBindings.size();
         if(binding.bindPreview == null)
-            binding.bindPreview = ks.bindingModes != null ? ks.bindingModes.getOrDefault("preview", defaultPreview) : defaultPreview;
+            binding.bindPreview = ks.bindingModes != null ? ks.bindingModes.getOrDefault("preview", BindingMode.AUTO) : BindingMode.AUTO;
         if(binding.bindDialog == null)
             binding.bindDialog = ks.bindingModes != null ? ks.bindingModes.getOrDefault("dialog", BindingMode.AUTO) : BindingMode.AUTO;
         if(binding.bindGroup == null)
@@ -1980,7 +1980,7 @@ public class ClientFormController implements AsyncListener {
     }
 
     public void addKeySetBinding(Binding binding) {
-        binding.bindPreview = BindingMode.AUTO;
+        binding.bindPreview = BindingMode.NO;
         binding.bindDialog = BindingMode.AUTO;
         binding.bindGroup = BindingMode.AUTO;
         binding.bindEditing = BindingMode.NO;
@@ -1994,13 +1994,13 @@ public class ClientFormController implements AsyncListener {
             Binding binding = bindingSupplier.get();
             if(propertyDraw.changeKeyPriority != null)
                 binding.priority = propertyDraw.changeKeyPriority;
-            addBinding(propertyDraw.changeKey, binding, BindingMode.ONLY);
+            addBinding(propertyDraw.changeKey, binding);
         }
         if(propertyDraw.changeMouse != null) {
             Binding binding = bindingSupplier.get();
             if(propertyDraw.changeMousePriority != null)
                 binding.priority = propertyDraw.changeMousePriority;
-            addBinding(propertyDraw.changeMouse, binding, BindingMode.ONLY);
+            addBinding(propertyDraw.changeMouse, binding);
         }
     }
 
@@ -2012,7 +2012,7 @@ public class ClientFormController implements AsyncListener {
             // increasing priority for group object
             ClientGroupObject groupObject = groupObjectSupplier.get();
             for(Binding binding : keyBinding) // descending sorting by priority
-                if((binding.isSuitable == null || binding.isSuitable.apply(ke)) && bindPreview(binding, ks instanceof MouseInputEvent, preview) && bindDialog(binding) && bindGroup(groupObject, binding)
+                if((binding.isSuitable == null || binding.isSuitable.apply(ke)) && bindPreview(binding, preview) && bindDialog(binding) && bindGroup(groupObject, binding)
                         && bindEditing(binding, ke) && bindShowing(binding) && bindPanel(binding, panel))
                         orderedBindings.put(-(binding.priority + (equalGroup(groupObject, binding) ? 100 : 0)), binding);
 
@@ -2030,16 +2030,15 @@ public class ClientFormController implements AsyncListener {
         return false;
     }
 
-    private boolean bindPreview(Binding binding, boolean isMouse, boolean preview) {
+    private boolean bindPreview(Binding binding, boolean preview) {
         switch (binding.bindPreview) {
             case AUTO:
-                return isMouse || !preview;
+            case ONLY:
+                return preview;
             case NO:
                 return !preview;
             case ALL: // actually makes no since if previewed, than will be consumed so equivalent to only
                 return true;
-            case ONLY:
-                return preview;
             default:
                 throw new UnsupportedOperationException("Unsupported bindingMode " + binding.bindDialog);
         }

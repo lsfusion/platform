@@ -6,7 +6,9 @@ The `MULTI` operator creates a [property](Properties.md) that implements [select
 
 ### Syntax
 
-    MULTI expr1, ..., exprN [exclusionType]
+```
+MULTI expr1, ..., exprN [exclusionType]
+```
 
 ### Description
 

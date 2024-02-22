@@ -6,7 +6,9 @@ The `<- WHEN` statement creates a [calculated event](Calculated_events.md).
 
 ### Syntax
 
-    propertyId(param1, ..., paramN) <- valueExpr WHEN eventExpr;
+```
+propertyId(param1, ..., paramN) <- valueExpr WHEN eventExpr;
+```
 
 ### Description
 

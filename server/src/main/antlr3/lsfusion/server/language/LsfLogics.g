@@ -1308,11 +1308,12 @@ extendFilterGroupDeclaration
 	
 formRegularFilterDeclaration returns [RegularFilterInfo filter]
 @init {
-	String key = null;
+	String inputEventOptions = null;
+	boolean isMouseEvent = false;
 }
-    :   'FILTER' caption=localizedStringLiteral fd=formExprDeclaration[null] (keystroke=stringLiteral {key = $keystroke.val;})? setDefault=filterSetDefault
+    :   'FILTER' caption=localizedStringLiteral fd=formExprDeclaration[null] ('KEY' | 'MOUSE' { isMouseEvent = true; }) ? (key=stringLiteral {inputEventOptions = $key.val;})? setDefault=filterSetDefault
         {
-            $filter = new RegularFilterInfo($caption.val, key, $fd.property, $fd.mapping, $setDefault.isDefault);
+            $filter = new RegularFilterInfo($caption.val, inputEventOptions, isMouseEvent, $fd.property, $fd.mapping, $setDefault.isDefault);
         }
     ;
 	

@@ -6,7 +6,9 @@ title: 'Блок описания события'
 
 ### Синтаксис
 
-    [GLOBAL | LOCAL] [FORMS formName1, ..., formNameN] [GOAFTER propertyId1, ..., propertyIdM]
+```
+[GLOBAL | LOCAL] [FORMS formName1, ..., formNameN] [GOAFTER propertyId1, ..., propertyIdM]
+```
 
 ### Параметры
 

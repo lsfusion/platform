@@ -6,7 +6,9 @@ title: 'Оператор MIN'
 
 ### Синтаксис 
 
-    MIN expr1, ..., exprN
+```
+MIN expr1, ..., exprN
+```
 
 ### Описание
 

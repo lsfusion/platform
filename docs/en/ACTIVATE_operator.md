@@ -6,9 +6,11 @@ The `ACTIVATE` operator creates an [action](Actions.md) that [activates](Activat
 
 ### Syntax 
 
-    ACTIVATE FORM formName
-    ACTIVATE TAB formName.componentSelector
-    ACTIVATE PROPERTY formPropertyId
+```
+ACTIVATE FORM formName
+ACTIVATE TAB formName.componentSelector
+ACTIVATE PROPERTY formPropertyId
+```
 
 ### Description
 

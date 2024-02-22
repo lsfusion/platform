@@ -6,7 +6,9 @@ title: 'Оператор CONTINUE'
 
 ### Синтаксис
 
-    CONTINUE
+```
+CONTINUE
+```
 
 ### Описание
 

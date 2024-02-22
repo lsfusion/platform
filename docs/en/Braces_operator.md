@@ -6,16 +6,20 @@ The `{...}` operator creates [actions](Actions.md) that executes a [sequence of 
 
 ### Syntax
 
-    {
-        operator1
-        ...
-        operatorN
-    }
+```
+{
+    operator1
+    ...
+    operatorN
+}
+```
 
 Operators can be of two types:
 
-    actionOperator
-    LOCAL [NESTED] name1, ..., nameN = returnClass (paramClass1, ..., paramClassN)
+```
+actionOperator
+LOCAL [NESTED] name1, ..., nameN = returnClass (paramClass1, ..., paramClassN)
+```
 
 ### Description
 

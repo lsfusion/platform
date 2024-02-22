@@ -93,6 +93,7 @@ public abstract class AbstractTableController implements TableController {
                 return true;
             }
         };
+        binding.bindPreview = BindingMode.NO;
         binding.bindGroup = BindingMode.ONLY;
         binding.bindEditing = BindingMode.NO;
         formController.addBinding(inputEvent, binding);

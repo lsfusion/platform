@@ -6,13 +6,15 @@ The `EXTEND CLASS` statement [extends](Class_extension.md) an existing class.
 
 ### Syntax
 
-    EXTEND CLASS name 
-    [{
-        objectName1 [objectCaption1],
-        ...
-        objectNameM [objectCaptionM]
-    }] 
-    [: parent1, ..., parentN];
+```
+EXTEND CLASS name 
+[{
+    objectName1 [objectCaption1],
+    ...
+    objectNameM [objectCaptionM]
+}] 
+[: parent1, ..., parentN];
+```
 
 ### Description
 

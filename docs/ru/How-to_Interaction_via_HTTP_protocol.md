@@ -107,7 +107,9 @@ createCity (FILE f)  {
 
 Так как свойство имеет название `createCity` и расположено в [модуле](Modules.md) с пространством имен `Location`, то url, на котором будет принят запрос, имеет следующий вид:
 
-    http://localhost:7651/exec?action=Location.createCity
+```
+http://localhost:7651/exec?action=Location.createCity
+```
 
 Body HTTP-запроса будет передан параметром с типом `FILE`. В локальные свойства `cy` и `ne`, считываются значения из параметров `countryId` и `name` соответственно.
 

@@ -6,8 +6,10 @@ The `+=` statement adds an implementation (selection option) to an [abstract pro
 
 ### Syntax
 
-    propertyId (param1, ..., paramN) += implExpr;
-    propertyId (param1, ..., paramN) += WHEN whenExpr THEN implExpr;
+```
+propertyId (param1, ..., paramN) += implExpr;
+propertyId (param1, ..., paramN) += WHEN whenExpr THEN implExpr;
+```
 
 ### Description
 
