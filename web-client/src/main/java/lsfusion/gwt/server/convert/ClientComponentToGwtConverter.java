@@ -57,7 +57,6 @@ import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.*;
 
-import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.gwt.server.convert.StaticConverters.convertColor;
 
 @SuppressWarnings("UnusedDeclaration")
@@ -186,7 +185,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         GRegularFilter filter = new GRegularFilter();
         filter.ID = clientFilter.ID;
         filter.caption = clientFilter.caption;
-        filter.key = convertOrCast(clientFilter.key);
+        filter.bindingEvent = convertBinding(clientFilter.inputEvent, clientFilter.priority);
         filter.showKey = clientFilter.showKey;
         return filter;
     }
@@ -325,9 +324,9 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
             propertyDraw.defaultCompare = GCompare.get(clientPropertyDraw.defaultCompare.ordinal());
 
         if(clientPropertyDraw.changeKey != null)
-            propertyDraw.bindingEvents.add(convertBinding(clientPropertyDraw.changeKey, clientPropertyDraw.changeKeyPriority, clientPropertyDraw.changeKey.bindingModes));
+            propertyDraw.bindingEvents.add(convertBinding(clientPropertyDraw.changeKey, clientPropertyDraw.changeKeyPriority));
         if(clientPropertyDraw.changeMouse != null)
-            propertyDraw.bindingEvents.add(convertBinding(clientPropertyDraw.changeMouse, clientPropertyDraw.changeMousePriority, clientPropertyDraw.changeMouse.bindingModes));
+            propertyDraw.bindingEvents.add(convertBinding(clientPropertyDraw.changeMouse, clientPropertyDraw.changeMousePriority));
         propertyDraw.showChangeKey = clientPropertyDraw.showChangeKey;
 
         propertyDraw.isList = clientPropertyDraw.isList;
@@ -420,16 +419,16 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         return propertyDraw;
     }
 
-    public GInputBindingEvent convertBinding(lsfusion.interop.form.event.InputEvent event, Integer priority, Map<String, BindingMode> bindingModes) {
-        return new GInputBindingEvent((GInputEvent)convertOrCast(event),
+    public GInputBindingEvent convertBinding(lsfusion.interop.form.event.InputEvent event, Integer priority) {
+        return new GInputBindingEvent(convertOrCast(event),
                         new GBindingEnv(priority != null && priority.equals(0) ? null : priority,
-                        nvl(convertOrCast(bindingModes != null ? bindingModes.get("preview") : null), GBindingMode.ONLY),
-                        convertOrCast(bindingModes != null ? bindingModes.get("dialog") : null),
-                        convertOrCast(bindingModes != null ? bindingModes.get("group") : null),
-                        convertOrCast(bindingModes != null ? bindingModes.get("editing") : null),
-                        convertOrCast(bindingModes != null ? bindingModes.get("showing") : null),
-                        convertOrCast(bindingModes != null ? bindingModes.get("panel") : null),
-                        convertOrCast(bindingModes != null ? bindingModes.get("cell") : null)
+                        convertOrCast(event.bindingModes != null ? event.bindingModes.get("preview") : null),
+                        convertOrCast(event.bindingModes != null ? event.bindingModes.get("dialog") : null),
+                        convertOrCast(event.bindingModes != null ? event.bindingModes.get("group") : null),
+                        convertOrCast(event.bindingModes != null ? event.bindingModes.get("editing") : null),
+                        convertOrCast(event.bindingModes != null ? event.bindingModes.get("showing") : null),
+                        convertOrCast(event.bindingModes != null ? event.bindingModes.get("panel") : null),
+                        convertOrCast(event.bindingModes != null ? event.bindingModes.get("cell") : null)
                         ));
     }
 

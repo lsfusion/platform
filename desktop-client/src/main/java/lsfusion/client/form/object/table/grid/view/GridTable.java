@@ -462,6 +462,7 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
                 return true;
             }
         };
+        binding.bindPreview = BindingMode.NO;
         binding.bindEditing = BindingMode.ALL;
         binding.bindGroup = BindingMode.ONLY;
         return binding;

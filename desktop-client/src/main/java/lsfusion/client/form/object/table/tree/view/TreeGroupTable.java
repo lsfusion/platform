@@ -384,6 +384,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
                 return true;
             }
         };
+        binding.bindPreview = BindingMode.NO;
         binding.bindEditing = BindingMode.NO;
         binding.bindGroup = BindingMode.ONLY;
         return binding;
