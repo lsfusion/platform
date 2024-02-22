@@ -759,7 +759,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     }
 
     @Override
-    public byte[] getAsyncValues(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] fullKey, String actionSID, String value, int asyncIndex) throws RemoteException {
+    public byte[] getAsyncValues(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] fullKey, String actionSID, String value, int asyncIndex, int increaseValuesNeededCount) throws RemoteException {
         logger.info("getAsyncValues started: " + Thread.currentThread() + ", indices : (" + requestIndex + "," + lastReceivedRequestIndex + "," + asyncIndex + "), value : " + value);
 
         FormInstanceContext context = getRemoteContext();
@@ -803,10 +803,10 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                             actualValue.set(null);
                     }
 
-                    return getAsyncValues(propertyID, fullKey, actionSID, actualValue.result, false, setCancelableThread);
+                    return getAsyncValues(propertyID, fullKey, actionSID, actualValue.result, false, setCancelableThread, increaseValuesNeededCount);
                 });
             else
-                result = getAsyncValues(propertyID, fullKey, actionSID, actualValue.result, true, setCancelableThread);
+                result = getAsyncValues(propertyID, fullKey, actionSID, actualValue.result, true, setCancelableThread, increaseValuesNeededCount);
 
             if(result == null)
                 return null;
@@ -847,7 +847,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     private int asyncLastIndex = 0;
     private final Object asyncLock = new Object();
 
-    public Async[] getAsyncValues(int propertyID, byte[] fullKey, String actionSID, String value, boolean optimistic, Supplier<Boolean> optimisticRun) throws SQLException, SQLHandledException, IOException {
+    public Async[] getAsyncValues(int propertyID, byte[] fullKey, String actionSID, String value, boolean optimistic, Supplier<Boolean> optimisticRun, int increaseValuesNeededCount) throws SQLException, SQLHandledException, IOException {
         if(value == null)
             return new Async[] {Async.CANCELED};
 
@@ -855,6 +855,10 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         ImMap<ObjectInstance, ? extends ObjectValue> keys = deserializeKeysValues(fullKey);
 
         int neededCount = Settings.get().getAsyncValuesNeededCount();
+
+        if (increaseValuesNeededCount > 0)
+            neededCount += BaseUtils.roundToDegree(3, increaseValuesNeededCount);
+
         Async[] result = form.getAsyncValues(propertyDraw, keys, actionSID, value, neededCount, optimistic, optimisticRun, getRemoteContext());
 
         if (logger.isDebugEnabled()) {

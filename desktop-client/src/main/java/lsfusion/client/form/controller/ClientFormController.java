@@ -139,7 +139,7 @@ public class ClientFormController implements AsyncListener {
     };
 
     private ClientAsync[] getAsyncValues(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] columnKey, String actionSID, String value, int asyncIndex, RemoteFormInterface remoteForm) throws RemoteException {
-        return ClientAsync.deserialize(remoteForm.getAsyncValues(requestIndex, lastReceivedRequestIndex, propertyID, columnKey, actionSID, value, asyncIndex), form);
+        return ClientAsync.deserialize(remoteForm.getAsyncValues(requestIndex, lastReceivedRequestIndex, propertyID, columnKey, actionSID, value, asyncIndex, 0), form);
     }
 
     private final RmiQueue rmiQueue;
