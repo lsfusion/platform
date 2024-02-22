@@ -779,36 +779,33 @@ public class ScriptingFormEntity {
 
     public void addRegularFilters(RegularFilterGroupEntity filterGroup, List<RegularFilterInfo> filters, Version version, boolean extend) throws ScriptingErrorLog.SemanticErrorException {
         for (RegularFilterInfo info : filters) {
-            ScriptingLogicsModule.KeyStrokeOptions kso = info.inputEventOptions != null ? parseKeyStrokeOptions(info.inputEventOptions) : null;
-            InputEvent inputEvent;
-            if(info.isMouseEvent) {
-                inputEvent = kso != null ? new MouseInputEvent(kso.keyStroke, kso.bindingModesMap) : null;
-                if (info.inputEventOptions != null && ((MouseInputEvent) inputEvent).mouseEvent == null) {
-                    LM.getErrLog().emitWrongKeyStrokeFormatError(LM.getParser(), info.inputEventOptions);
+
+            if(info.keyEvent != null) {
+                ScriptingLogicsModule.KeyStrokeOptions kso = parseKeyStrokeOptions(info.keyEvent);
+                KeyInputEvent keyInputEvent = new KeyInputEvent(KeyStroke.getKeyStroke(kso.keyStroke), kso.bindingModesMap);
+                if (keyInputEvent.keyStroke == null) {
+                    LM.getErrLog().emitWrongKeyStrokeFormatError(LM.getParser(), info.keyEvent);
                 }
-            } else {
-                inputEvent = kso != null ? new KeyInputEvent(KeyStroke.getKeyStroke(kso.keyStroke), kso.bindingModesMap) : null;
-                if (info.inputEventOptions != null && ((KeyInputEvent) inputEvent).keyStroke == null) {
-                    LM.getErrLog().emitWrongKeyStrokeFormatError(LM.getParser(), info.inputEventOptions);
-                }
+                addRegularFilter(filterGroup, info, keyInputEvent, kso, version, extend);
             }
 
-            Integer priority = kso != null ? kso.priority : null;
-            LocalizedString caption = info.caption;
-            boolean isDefault = info.isDefault;
-
-            ImOrderSet<String> mapping = info.mapping;
-            LP<?> property = info.property;
-
-            ImOrderSet<ObjectEntity> mappingObjects = getMappingObjects(mapping);
-            checkPropertyParameters(property, mappingObjects);
-
-            RegularFilterEntity filter = new RegularFilterEntity(form.genID(), new FilterEntity(form.addPropertyObject(property, mappingObjects), true), caption, inputEvent, priority);
-            if (extend) {
-                form.addRegularFilter(filterGroup, filter, isDefault, version);
-            } else {
-                filterGroup.addFilter(filter, isDefault, version);
+            if(info.mouseEvent != null) {
+                ScriptingLogicsModule.KeyStrokeOptions mso = parseKeyStrokeOptions(info.mouseEvent);
+                MouseInputEvent mouseInputEvent = new MouseInputEvent(mso.keyStroke, mso.bindingModesMap);
+                addRegularFilter(filterGroup, info, mouseInputEvent, mso, version, extend);
             }
+        }
+    }
+
+    private void addRegularFilter(RegularFilterGroupEntity filterGroup, RegularFilterInfo info, InputEvent inputEvent, ScriptingLogicsModule.KeyStrokeOptions kso, Version version, boolean extend) throws ScriptingErrorLog.SemanticErrorException {
+        ImOrderSet<ObjectEntity> mappingObjects = getMappingObjects(info.mapping);
+        checkPropertyParameters(info.property, mappingObjects);
+
+        RegularFilterEntity mouseFilter = new RegularFilterEntity(form.genID(), new FilterEntity(form.addPropertyObject(info.property, mappingObjects), true), info.caption, inputEvent, kso.priority);
+        if (extend) {
+            form.addRegularFilter(filterGroup, mouseFilter, info.isDefault, version);
+        } else {
+            filterGroup.addFilter(mouseFilter, info.isDefault, version);
         }
     }
 
@@ -911,16 +908,16 @@ public class ScriptingFormEntity {
     
     public static class RegularFilterInfo {
         LocalizedString caption;
-        String inputEventOptions;
-        boolean isMouseEvent;
+        String keyEvent;
+        String mouseEvent;
         LP property;
         ImOrderSet<String> mapping;
         boolean isDefault;
 
-        public RegularFilterInfo(LocalizedString caption, String inputEventOptions, boolean isMouseEvent, LP property, ImOrderSet<String> mapping, boolean isDefault) {
+        public RegularFilterInfo(LocalizedString caption, String keyEvent, String mouseEvent, LP property, ImOrderSet<String> mapping, boolean isDefault) {
             this.caption = caption;
-            this.inputEventOptions = inputEventOptions;
-            this.isMouseEvent = isMouseEvent;
+            this.keyEvent = keyEvent;
+            this.mouseEvent = mouseEvent;
             this.property = property;
             this.mapping = mapping;
             this.isDefault = isDefault;
