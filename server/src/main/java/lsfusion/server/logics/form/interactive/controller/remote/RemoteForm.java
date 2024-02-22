@@ -856,10 +856,8 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
 
         int neededCount = Settings.get().getAsyncValuesNeededCount();
 
-        if (increaseValuesNeededCount > 0) {
-            int base = 3;
-            neededCount += (int) (Math.pow(base, (int) BaseUtils.logarithmize(base, increaseValuesNeededCount)));
-        }
+        if (increaseValuesNeededCount > 0)
+            neededCount += BaseUtils.roundToDegree(3, increaseValuesNeededCount);
 
         Async[] result = form.getAsyncValues(propertyDraw, keys, actionSID, value, neededCount, optimistic, optimisticRun, getRemoteContext());
 

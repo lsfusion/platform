@@ -2083,7 +2083,7 @@ public class BaseUtils {
         return array == null ? new String[0] : array;
     }
 
-    public static double logarithmize(int base, int x) {
-        return Math.log(x) / Math.log(base);
+    public static int roundToDegree(int base, int value) {
+        return (int) (Math.pow(base, Math.log(value) / Math.log(base)));
     }
 }
