@@ -453,7 +453,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     // eventually gets to PropertyDrawEntity.getEventAction (which is symmetrical to this)
     public String getEventSID(Event editEvent, boolean isBinding, ExecuteEditContext editContext, Result<Integer> contextAction) {
         if(isBinding)
-            return GEditBindingMap.changeOrGroupChange();
+            return GEditBindingMap.changeOrGroupChange(GKeyStroke.isKeyEvent(editEvent) && FormsController.isForceGroupChangeMode()); // if binding has alt in it, it doesn't mean that we want group change
 
         if (editBindingMap != null) { // property bindings
             String actionSID = editBindingMap.getEventSID(editEvent);
@@ -467,7 +467,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             return GEditBindingMap.changeOrGroupChange();
         }
 
-        if (isEditObjectEvent(editEvent, hasEditObjectAction, hasUserChangeAction())) // has to be before isChangeEvent, since also handles MOUSE CHANGE event
+        if (isEditObjectEvent(editEvent, hasEditObjectAction, hasUserChangeAction(), customRenderFunction != null)) // has to be before isChangeEvent, since also handles MOUSE CHANGE event
             return GEditBindingMap.EDIT_OBJECT;
 
         // starting change on focus, or any key pressed when focus is on input

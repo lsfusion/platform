@@ -6,12 +6,16 @@ The `ABSTRACT` operator creates an [abstract property](Property_extension.md).
 
 ### Syntax
 
-    ABSTRACT [type [exclusionType]] [CHECKED] returnClassName(argClassName1, ..., argClassNameN)
+```
+ABSTRACT [type [exclusionType]] [CHECKED] returnClassName(argClassName1, ..., argClassNameN)
+```
 
 Where `exclusionType` is of two types:
 
-    EXCLUSIVE
-    OVERRIDE [FIRST | LAST]
+```
+EXCLUSIVE
+OVERRIDE [FIRST | LAST]
+```
 
 ### Description
 

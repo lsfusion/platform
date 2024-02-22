@@ -6,24 +6,30 @@ The `SHOW` operator creates an [action](Actions.md) that [opens a form](In_an_in
 
 ### Syntax
 
-    SHOW name 
-    [OBJECTS objName1 = expr1 [NULL], ..., objNameN = exprN [NULL]]
-    [formActionOptions] 
+```
+SHOW name 
+[OBJECTS objName1 = expr1 [NULL], ..., objNameN = exprN [NULL]]
+[formActionOptions] 
+```
 
 When opening the list/edit form, the syntax is slightly different:
 
-    SHOW classFormType className
-    = expr [NULL]
-    [formActionOptions] 
+```
+SHOW classFormType className
+= expr [NULL]
+[formActionOptions] 
+```
 
 `formActionOptions` is the options for this action. They can be added one by one in any order:
 
-    syncType
-    windowType
-    MANAGESESSION | NOMANAGESESSION
-    NEWSESSION | NESTEDSESSION
-    CANCEL | NOCANCEL
-    READONLY
+```
+syncType
+windowType
+MANAGESESSION | NOMANAGESESSION
+NEWSESSION | NESTEDSESSION
+CANCEL | NOCANCEL
+READONLY
+```
 
 ### Description
 

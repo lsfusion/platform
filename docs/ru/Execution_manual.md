@@ -28,41 +28,43 @@ title: 'Для промышленной эксплуатации'
         ```shell script title="bash"   
         java -cp ".:lsfusion-server-5.1.jar" lsfusion.server.logics.BusinessLogicsBootstrap
         ```
-      <details><summary>Пример скрипта для запуска службы в CentOS</summary>
-      <br/>
-      
-            [Unit]
-            Description=lsFusion
-            After=network.target
+      <details>
+      <summary>Пример скрипта для запуска службы в CentOS</summary>
+
+        ```
+        [Unit]
+        Description=lsFusion
+        After=network.target
+        
+        [Service]
+        Type=forking
+        Environment="PID_FILE=/usr/lsfusion/jsvc-lsfusion.pid"
+        Environment="JAVA_HOME=/usr/java/latest"
+        Environment="LSFUSION_HOME=/usr/lsfusion"
+        Environment="LSFUSION_OPTS=-Xms1g -Xmx4g"
+        Environment="CLASSPATH=.:lsfusion-server-5.1.jar"
+        
+        ExecStart=/usr/bin/jsvc \
+                -home $JAVA_HOME \
+                -jvm server \
+                -cwd $LSFUSION_HOME \
+                -pidfile $PID_FILE \
+                -outfile ${LSFUSION_HOME}/logs/stdout.log \
+                -errfile ${LSFUSION_HOME}/logs/stderr.log \
+                -cp ${LSFUSION_HOME}/${CLASSPATH} \
+                $LSFUSION_OPTS \
+                lsfusion.server.logics.BusinessLogicsBootstrap
+        
+        ExecStop=/usr/bin/jsvc \
+                -home $JAVA_HOME \
+                -stop \
+                -pidfile $PID_FILE \
+                lsfusion.server.logics.BusinessLogicsBootstrap
+        
+        [Install]
+        WantedBy=multi-user.target
+        ```
             
-            [Service]
-            Type=forking
-            Environment="PID_FILE=/usr/lsfusion/jsvc-lsfusion.pid"
-            Environment="JAVA_HOME=/usr/java/latest"
-            Environment="LSFUSION_HOME=/usr/lsfusion"
-            Environment="LSFUSION_OPTS=-Xms1g -Xmx4g"
-            Environment="CLASSPATH=.:lsfusion-server-5.1.jar"
-            
-            ExecStart=/usr/bin/jsvc \
-                    -home $JAVA_HOME \
-                    -jvm server \
-                    -cwd $LSFUSION_HOME \
-                    -pidfile $PID_FILE \
-                    -outfile ${LSFUSION_HOME}/logs/stdout.log \
-                    -errfile ${LSFUSION_HOME}/logs/stderr.log \
-                    -cp ${LSFUSION_HOME}/${CLASSPATH} \
-                    $LSFUSION_OPTS \
-                    lsfusion.server.logics.BusinessLogicsBootstrap
-            
-            ExecStop=/usr/bin/jsvc \
-                    -home $JAVA_HOME \
-                    -stop \
-                    -pidfile $PID_FILE \
-                    lsfusion.server.logics.BusinessLogicsBootstrap
-            
-            [Install]
-            WantedBy=multi-user.target
-      
       </details>
 
     - Windows
@@ -100,7 +102,7 @@ title: 'Для промышленной эксплуатации'
 
 
 :::info
-Последние версии, которые сейчас находятся в разработке (snapshot), можно скачать непосредственно из maven репозитария [https://repo.lsfusion.org](https://repo.lsfusion.org/). Например для сервера полный путь выглядит следующим образом: <https://repo.lsfusion.org/nexus/service/rest/repository/browse/public/lsfusion/platform/server/> (для сервера и десктоп-клиента нужно скачивать jar файлы с постфиксом `-assembly`)
+Последние версии, которые сейчас находятся в разработке (snapshot), можно скачать непосредственно из maven репозитария [https://repo.lsfusion.org](https://repo.lsfusion.org/). Например для сервера полный путь выглядит следующим образом: https://repo.lsfusion.org/nexus/service/rest/repository/browse/public/lsfusion/platform/server/ (для сервера и десктоп-клиента нужно скачивать jar файлы с постфиксом `-assembly`)
 :::
 
 ### Установка и запуск сервера приложений и веб-клиента с помощью Docker-контейнеров

@@ -6,7 +6,9 @@ title: 'Инструкция AFTER'
 
 ### Синтаксис
 
-    AFTER action(param1, ..., paramN) DO aspectAction;
+```
+AFTER action(param1, ..., paramN) DO aspectAction;
+```
 
 ### Описание
 

@@ -26,14 +26,17 @@ import java.util.concurrent.TimeUnit;
 public class NewExecutorAction extends AroundAspectAction {
     private ScheduledExecutorService executor;
     private final PropertyInterfaceImplement<PropertyInterface> threadsProp;
+    Boolean sync;
 
     public <I extends PropertyInterface> NewExecutorAction(LocalizedString caption, ImOrderSet<I> innerInterfaces,
                                                            ActionMapImplement<?, I> action,
-                                                           PropertyInterfaceImplement<I> threadsProp) {
+                                                           PropertyInterfaceImplement<I> threadsProp,
+                                                           Boolean sync) {
         super(caption, innerInterfaces, action);
 
         ImRevMap<I, PropertyInterface> mapInterfaces = getMapInterfaces(innerInterfaces).reverse();
         this.threadsProp = threadsProp.map(mapInterfaces);
+        this.sync = sync;
 
         finalizeInit();
     }
@@ -65,9 +68,12 @@ public class NewExecutorAction extends AroundAspectAction {
         } finally {
             if(executor != null) {
                 executor.shutdown();
-                try {
-                    executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-                } catch (InterruptedException ignored) {
+                if(sync == null || sync) {
+                    try {
+                        executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+                    } catch (InterruptedException ignored) {
+                        executor.shutdownNow();
+                    }
                 }
             }
         }
@@ -80,6 +86,6 @@ public class NewExecutorAction extends AroundAspectAction {
 
     @Override
     protected <T extends PropertyInterface> ActionMapImplement<?, PropertyInterface> createAspectImplement(ImSet<PropertyInterface> interfaces, ActionMapImplement<?, PropertyInterface> action) {
-        return PropertyFact.createNewExecutorAction(interfaces, action, threadsProp);
+        return PropertyFact.createNewExecutorAction(interfaces, action, threadsProp, sync);
     }
 }

@@ -4,7 +4,6 @@ import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
-import lsfusion.server.logics.action.session.controller.init.SessionCreator;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.service.RunService;
 import lsfusion.server.physics.admin.service.RunServiceData;
@@ -30,7 +29,7 @@ public class ServiceDBAction extends InternalAction {
         });
 
         run(context, (session, isolatedTransaction) -> {
-            String result = context.getDbManager().recalculateAggregations(context.stack, session, isolatedTransaction);
+            String result = context.getDbManager().recalculateMaterializations(context.stack, session, isolatedTransaction);
             if(result != null)
                 context.delayUserInterfaction(new MessageClientAction(result, localize("{logics.service.db}")));
         });

@@ -1,6 +1,5 @@
 package lsfusion.server.physics.admin.service.task;
 
-import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.logics.BusinessLogics;
@@ -14,18 +13,18 @@ import java.sql.SQLException;
 
 import static lsfusion.base.BaseUtils.serviceLogger;
 
-public class RecalculateAggregationsTask extends GroupGraphTask<AggregateProperty> {
+public class RecalculateMaterializationsTask extends GroupGraphTask<AggregateProperty> {
 
     @Override
     public String getTaskCaption(AggregateProperty element) {
-        return "Recalculate Aggregation";
+        return "Recalculate materialization";
     }
 
     @Override
     protected void runInnerTask(final AggregateProperty element, ExecutionStack stack) throws SQLException, SQLHandledException {
         try (final DataSession session = createSession()) {
-            serviceLogger.info(String.format("Recalculate Aggregation started: %s", element.getSID()));
-            DBManager.run(session.sql, true, sql -> element.recalculateAggregation(getBL(), session, sql, getBL().LM.baseClass));
+            serviceLogger.info(String.format("Recalculate materialization started: %s", element.getSID()));
+            DBManager.run(session.sql, true, sql -> element.recalculateMaterialization(getBL(), session, sql, getBL().LM.baseClass));
             session.applyException(getBL(), stack);
         }
     }

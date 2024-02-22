@@ -229,8 +229,8 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     }
 
     private static <T extends PropertyInterface> FormulaImpl getFormula(Property<T> property) {
-        if(property instanceof FormulaImplProperty)
-            return ((FormulaImplProperty)property).formula;
+        if(property instanceof FormulaJoinProperty)
+            return ((FormulaJoinProperty)property).formula;
         if(property instanceof FormulaUnionProperty)
             return ((FormulaUnionProperty)property).formula;
         return null;

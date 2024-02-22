@@ -27,40 +27,42 @@ For the application server to work, it must have access to the PostgreSQL databa
         ```shell script title="bash"   
         java -cp ".:lsfusion-server-5.1.jar" lsfusion.server.logics.BusinessLogicsBootstrap
         ```
-      <details><summary>Sample script to start a service on CentOS</summary>
-      <br/>
-      
-            [Unit]
-            Description=lsFusion
-            After=network.target
+      <details>
+      <summary>Sample script to start a service on CentOS</summary>
+
+        ```
+        [Unit]
+        Description=lsFusion
+        After=network.target
+        
+        [Service]
+        Type=forking
+        Environment="PID_FILE=/usr/lsfusion/jsvc-lsfusion.pid"
+        Environment="JAVA_HOME=/usr/java/latest"
+        Environment="LSFUSION_HOME=/usr/lsfusion"
+        Environment="LSFUSION_OPTS=-Xms1g -Xmx4g"
+        Environment="CLASSPATH=.:lsfusion-server-5.1.jar"
+        
+        ExecStart=/usr/bin/jsvc \
+                -home $JAVA_HOME \
+                -jvm server \
+                -cwd $LSFUSION_HOME \
+                -pidfile $PID_FILE \
+                -outfile ${LSFUSION_HOME}/logs/stdout.log \
+                -errfile ${LSFUSION_HOME}/logs/stderr.log \
+                -cp ${LSFUSION_HOME}/${CLASSPATH} \
+                $LSFUSION_OPTS \
+                lsfusion.server.logics.BusinessLogicsBootstrap
             
-            [Service]
-            Type=forking
-            Environment="PID_FILE=/usr/lsfusion/jsvc-lsfusion.pid"
-            Environment="JAVA_HOME=/usr/java/latest"
-            Environment="LSFUSION_HOME=/usr/lsfusion"
-            Environment="LSFUSION_OPTS=-Xms1g -Xmx4g"
-            Environment="CLASSPATH=.:lsfusion-server-5.1.jar"
+        ExecStop=/usr/bin/jsvc \
+                -home $JAVA_HOME \
+                -stop \
+                -pidfile $PID_FILE \
+                lsfusion.server.logics.BusinessLogicsBootstrap
             
-            ExecStart=/usr/bin/jsvc \
-                    -home $JAVA_HOME \
-                    -jvm server \
-                    -cwd $LSFUSION_HOME \
-                    -pidfile $PID_FILE \
-                    -outfile ${LSFUSION_HOME}/logs/stdout.log \
-                    -errfile ${LSFUSION_HOME}/logs/stderr.log \
-                    -cp ${LSFUSION_HOME}/${CLASSPATH} \
-                    $LSFUSION_OPTS \
-                    lsfusion.server.logics.BusinessLogicsBootstrap
-            
-            ExecStop=/usr/bin/jsvc \
-                    -home $JAVA_HOME \
-                    -stop \
-                    -pidfile $PID_FILE \
-                    lsfusion.server.logics.BusinessLogicsBootstrap
-            
-            [Install]
-            WantedBy=multi-user.target
+        [Install]
+        WantedBy=multi-user.target
+        ```
       
       </details>
 
@@ -98,7 +100,7 @@ You can also use the method of installing the desktop client for development. To
 
 
 :::info
-The latest versions that are currently under development (snapshots) can be downloaded directly from the maven repository [https://repo.lsfusion.org](https://repo.lsfusion.org/). For example, for the server, the full path is as follows: <https://repo.lsfusion.org/nexus/service/rest/repository/browse/public/lsfusion/platform/server/> (for server and desktop client you need to download jar files with the `-assembly` postfix)
+The latest versions that are currently under development (snapshots) can be downloaded directly from the maven repository [https://repo.lsfusion.org](https://repo.lsfusion.org/). For example, for the server, the full path is as follows: https://repo.lsfusion.org/nexus/service/rest/repository/browse/public/lsfusion/platform/server/ (for server and desktop client you need to download jar files with the `-assembly` postfix)
 :::
 
 ### Installing and running the application server and web client using Docker containers

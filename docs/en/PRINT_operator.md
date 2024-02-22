@@ -6,15 +6,19 @@ The `PRINT` operator creates an [action](Actions.md) that [opens a form](In_a_pr
 
 ### Syntax
 
-    PRINT name 
-    [OBJECTS objName1 = expr1, ..., objNameN = exprN]
-    [formActionOptions] 
+```
+PRINT name 
+[OBJECTS objName1 = expr1, ..., objNameN = exprN]
+[formActionOptions] 
+```
 
 `formActionOptions` - additional options for this action. There are several possible option syntaxes in this operator:
 
-    printFormat [SHEET sheetProperty] [PASSWORD passwordExpr] [TO propertyId]
-    [PREVIEW | NOPREVIEW] [syncType] [TO printerExpr]
-    MESSAGE [syncType] [TOP n]
+```
+printFormat [SHEET sheetProperty] [PASSWORD passwordExpr] [TO propertyId]
+[PREVIEW | NOPREVIEW] [syncType] [TO printerExpr]
+MESSAGE [syncType] [TOP n]
+```
 
 ### Description
 

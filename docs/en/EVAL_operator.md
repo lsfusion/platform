@@ -6,7 +6,9 @@ The `EVAL` operator: creating an [action](Actions.md) that [executes code](Eval_
 
 ### Syntax
 
-    EVAL [ACTION] expression [PARAMS paramExpr1, ..., paramExprN]
+```
+EVAL [ACTION] expression [PARAMS paramExpr1, ..., paramExprN]
+```
 
 ### Description
 

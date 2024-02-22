@@ -6,7 +6,9 @@ The `CHANGECLASS` operator creates an [action](Actions.md) that [changes objects
 
 ### Syntax
 
-    CHANGECLASS expr TO className [WHERE whereExpr]
+```
+CHANGECLASS expr TO className [WHERE whereExpr]
+```
 
 ### Description
 

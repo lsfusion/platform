@@ -27,6 +27,7 @@ import lsfusion.server.base.version.GlobalVersion;
 import lsfusion.server.base.version.LastVersion;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
+import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.expr.formula.StringConcatenateFormulaImpl;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.PartitionType;
@@ -148,7 +149,6 @@ import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameParser;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
 import lsfusion.server.physics.dev.id.resolve.ResolveManager;
 import lsfusion.server.physics.dev.id.resolve.ResolvingErrors;
-import lsfusion.server.physics.dev.integration.internal.to.StringFormulaProperty;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
 import org.antlr.runtime.RecognitionException;
@@ -984,11 +984,11 @@ public abstract class LogicsModule {
         return addAction(group, new LA(new NewThreadAction(caption, listInterfaces, (ActionMapImplement) readImplements.get(0), period, delay, connection)));
     }
 
-    protected LA addNewExecutorAProp(Group group, LocalizedString caption, Object... params) {
+    protected LA addNewExecutorAProp(Group group, LocalizedString caption, Boolean sync, Object... params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
         ImList<ActionOrPropertyInterfaceImplement> readImplements = readImplements(listInterfaces, params);
         return addAction(group, new LA(new NewExecutorAction(caption, listInterfaces,
-                (ActionMapImplement) readImplements.get(0), (PropertyInterfaceImplement) readImplements.get(1))));
+                (ActionMapImplement) readImplements.get(0), (PropertyInterfaceImplement) readImplements.get(1), sync)));
     }
 
     // ------------------- Request action ----------------- //
@@ -1144,23 +1144,16 @@ public abstract class LogicsModule {
     // ------------------- FORMULA ----------------- //
 
     protected LP addSFProp(String formula, int paramCount) {
-        return addSFProp(formula, null, paramCount);
+        return addSFProp(formula, MapFact.EMPTY(), null, paramCount, false, false);
     }
 
-    protected LP addSFProp(CustomFormulaSyntax formula, int paramCount, boolean valueNull, boolean paramsNull) {
-        return addSFProp(formula, null, paramCount, valueNull, paramsNull);
-    }
-
-    protected LP addSFProp(String formula, DataClass value, int paramCount) {
-        return addSFProp(new CustomFormulaSyntax(formula), value, paramCount, false, false);
-    }
-    
-    protected LP addSFProp(CustomFormulaSyntax formula, DataClass value, int paramCount, boolean valueNull, boolean paramsNull) {
+    protected LP addSFProp(String defaultSyntax, ImMap<SQLSyntaxType, String> customSyntaxes, DataClass value, int paramCount, boolean valueNull, boolean paramsNull) {
         Property property;
+        CustomFormulaSyntax formula = new CustomFormulaSyntax(defaultSyntax, customSyntaxes);
         if(paramsNull)
             property = new FormulaUnionProperty(value, formula, paramCount);
         else
-            property = new StringFormulaProperty(value, formula, paramCount, valueNull);
+            property = new FormulaJoinProperty(value, formula, paramCount, valueNull);
         return addProperty(null, new LP<>(property));
     }
 

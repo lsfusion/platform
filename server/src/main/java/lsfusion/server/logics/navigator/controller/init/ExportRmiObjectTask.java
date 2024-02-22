@@ -6,7 +6,6 @@ import lsfusion.server.base.task.Task;
 import lsfusion.server.logics.controller.init.SimpleBLTask;
 import lsfusion.server.logics.controller.remote.RemoteLogicsLoader;
 import lsfusion.server.physics.admin.SystemProperties;
-import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
 import org.apache.log4j.Logger;
 
 import java.util.Set;
@@ -38,6 +37,11 @@ public class ExportRmiObjectTask extends SimpleBLTask {
     @Override
     public String getCaption() {
         return "Exporting RMI logics object (port: " + remoteLogicsLoader.getPort() + ")";
+    }
+
+    @Override
+    public boolean isEndLoggable() {
+        return true;
     }
 
     @Override

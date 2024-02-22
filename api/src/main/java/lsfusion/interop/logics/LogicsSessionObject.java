@@ -58,11 +58,11 @@ public class LogicsSessionObject {
             boolean disableRegistration = json.optBoolean("disableRegistration");
             Map<String, String> lsfParams = json.has("lsfParams") ? getMapFromJSON(json.opt("lsfParams")) : null;
 
-            List<Pair<String, RawFileData>> loginResourcesBeforeSystem = getFileData(json, "loginResourcesBeforeSystem");
-            List<Pair<String, RawFileData>> loginResourcesAfterSystem = getFileData(json, "loginResourcesAfterSystem");
+            List<Pair<String, RawFileData>> noAuthResourcesBeforeSystem = getFileData(json, "noAuthResourcesBeforeSystem");
+            List<Pair<String, RawFileData>> noAuthResourcesAfterSystem = getFileData(json, "noAuthResourcesAfterSystem");
 
             serverSettings = new ServerSettings(logicsName, displayName, logicsLogo, logicsIcon, platformVersion, apiVersion, inDevMode,
-                    sessionConfigTimeout, anonymousUI, jnlpUrls, disableRegistration, lsfParams, loginResourcesBeforeSystem, loginResourcesAfterSystem);
+                    sessionConfigTimeout, anonymousUI, jnlpUrls, disableRegistration, lsfParams, noAuthResourcesBeforeSystem, noAuthResourcesAfterSystem);
         }
         return serverSettings;
     }

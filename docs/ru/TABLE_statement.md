@@ -6,7 +6,9 @@ title: 'Инструкция TABLE'
 
 ### Синтаксис
 
-    TABLE name(className1, ..., classNameN) [FULL | NODEFAULT];
+```
+TABLE name(className1, ..., classNameN) [FULL | NODEFAULT];
+```
 
 ### Описание
 

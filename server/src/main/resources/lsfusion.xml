@@ -228,6 +228,14 @@
         <property name="initialAdminPassword" value="${logics.initialAdminPassword:}"/>
     </bean>
 
+    <bean id="webSocketServer" class="lsfusion.server.physics.dev.integration.external.to.net.websocket.WebSocketServer">
+        <property name="logicsInstance" ref="logicsInstance"/>
+    </bean>
+
+    <bean id="rabbitMQServer" class="lsfusion.server.physics.dev.integration.external.to.net.rabbitmq.RabbitMQServer">
+        <property name="logicsInstance" ref="logicsInstance"/>
+    </bean>
+
     <bean id="logicsInstance" class="lsfusion.server.logics.LogicsInstance">
         <property name="lifecycle" ref="lifecycleManager"/>
         <property name="businessLogics" ref="businessLogics"/>
@@ -237,6 +245,8 @@
         <property name="securityManager" ref="securityManager"/>
         <property name="dbManager" ref="dbManager"/>
         <property name="reflectionManager" ref="reflectionManager"/>
+        <property name="rabbitMQServer" ref="rabbitMQServer"/>
+        <property name="webSocketServer" ref="webSocketServer"/>
         <property name="settings" ref="settings"/>
         <property name="customObjects" ref="instanceCustomObjects"/>
     </bean>
@@ -634,6 +644,14 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
+    <bean id="executeOnInitTask" class="lsfusion.server.logics.controller.init.ExecuteOnInitTask">
+        <property name="BL" ref="businessLogics"/>
+        <property name="dependencies">
+            <set>
+            </set>
+        </property>
+    </bean>
+
     <bean id="initDebugTask" class="lsfusion.server.physics.dev.debug.controller.init.InitActionDebuggerTask">
         <property name="logicsInstance" ref="logicsInstance"/>
         <property name="dependencies">
@@ -676,6 +694,7 @@
         <property name="initDevTask" ref="initDevRLTask"/>
         <property name="dependencies">
             <set>
+                <ref bean="executeOnInitTask"/>
                 <ref bean="executeImportIconsTask"/> <!-- icons should be synchronized first -->
             </set>
         </property>
@@ -922,6 +941,7 @@
     <bean id="rmiManager" class="lsfusion.server.base.controller.remote.RmiManager">
         <property name="port" value="${rmi.port:7652}"/>
         <property name="httpPort" value="${http.port:7651}"/>
+        <property name="webSocketPort" value="${webSocket.port:8887}"/>
         <property name="debuggerPort" value="${debugger.port:1299}"/>
         <property name="jmxPort" value="${rmi.jmxPort:0}"/>
         <property name="exportName" value="${rmi.exportName:default}"/>
@@ -982,6 +1002,8 @@
         <ref bean="reflectionManager"/>
         <ref bean="scheduler"/>
         <ref bean="externalHttpServer"/>
+        <ref bean="rabbitMQServer"/>
+        <ref bean="webSocketServer"/>
     </util:list>
 
     <util:list id="customLifecycleListeners"/>

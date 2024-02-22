@@ -8,7 +8,7 @@ All demos support the following browsers: *Chrome* (recommended), *Safari*, *Fir
 
 Application from the [Score table](Score_table.md) example.
 
-The demo is located at <https://demo.lsfusion.org/hockeystats>.
+The demo is located at https://demo.lsfusion.org/hockeystats.
 
 Username: **guest**<br/>
 Password: **guest**
@@ -19,7 +19,7 @@ The GitHub source code is located [here](https://github.com/lsfusion/samples/tre
 
 Application from the [Materials Management](Materials_management.md) example.
 
-The demo is located at <https://demo.lsfusion.org/mm>.
+The demo is located at https://demo.lsfusion.org/mm.
 
 Username: **guest**<br/>
 Password: **guest**
@@ -28,6 +28,6 @@ The GitHub source code is located [here](https://github.com/lsfusion/samples/tre
 
 ### MyCompany
 
-The demo is located at <https://demo.lsfusion.org/mycompany>.
+The demo is located at https://demo.lsfusion.org/mycompany.
 
 The GitHub source code is located [here](https://github.com/lsfusion-solutions/mycompany).

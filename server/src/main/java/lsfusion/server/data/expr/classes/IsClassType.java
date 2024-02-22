@@ -4,9 +4,16 @@ package lsfusion.server.data.expr.classes;
 public enum IsClassType {
     CONSISTENT,
     VIRTUAL, // the same as noInnerFollows in joins
-    INCONSISTENT, SUMCONSISTENT, AGGCONSISTENT;
+    INCONSISTENT,
+
+    // inconsistent, but only needed to check exclusiveness
+    SUMCONSISTENT, AGGCONSISTENT;
 
     public boolean isInconsistent() {
-        return this == INCONSISTENT || this == SUMCONSISTENT || this == AGGCONSISTENT;
+        return this == INCONSISTENT || isExclInconsistent();
+    }
+
+    public boolean isExclInconsistent() {
+        return this == SUMCONSISTENT || this == AGGCONSISTENT;
     }
 }

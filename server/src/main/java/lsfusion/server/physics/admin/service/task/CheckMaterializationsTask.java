@@ -13,11 +13,11 @@ import lsfusion.server.logics.property.controller.init.GroupPropertiesSingleTask
 import java.sql.SQLException;
 import java.util.List;
 
-public class CheckAggregationsTask extends GroupPropertiesSingleTask<AggregateProperty> {
+public class CheckMaterializationsTask extends GroupPropertiesSingleTask<AggregateProperty> {
     @Override
     protected void runInnerTask(AggregateProperty element, ExecutionStack stack) throws SQLException, SQLHandledException {
         SQLSession sql = getDbManager().getThreadLocalSql();
-        String result = element.checkAggregation(sql, getBL().LM.baseClass);
+        String result = element.checkMaterialization(sql, getBL().LM.baseClass);
         if (result != null && !result.isEmpty())
             addMessage(result);
     }
@@ -34,7 +34,7 @@ public class CheckAggregationsTask extends GroupPropertiesSingleTask<AggregatePr
 
     @Override
     public String getTaskCaption(AggregateProperty element) {
-        return "Check Aggregations";
+        return "Check Materializations";
     }
 
     @Override

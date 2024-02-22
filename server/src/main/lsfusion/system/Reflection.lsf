@@ -277,12 +277,17 @@ percentNotNull '{reflection.percent.not.null}' (TableColumn tableColumn) = IF ro
                                                           ELSE NUMERIC[15,2](notNullQuantity(tableColumn)) / rows (table(tableColumn)) * 100;
 sparseColumns '{reflection.sparse.columns}' (table) = GROUP SUM 1 BY table(TableColumn tableColumn) IF percentNotNull(tableColumn) < 50;
 
-notRecalculate '{reflection.not.recalculate}' = DATA BOOLEAN (TableColumn);
+//todo: rename to notRecalculateMaterializations
+notRecalculate '{reflection.not.recalculate.materializations}' = DATA BOOLEAN (TableColumn);
 
-recalculateAggregation '{reflection.recalculate.aggregation}'  INTERNAL  'lsfusion.server.physics.admin.service.action.RecalculateTableColumnAction' (TableColumn);
-recalculateAggregationWithDependencies '{reflection.recalculate.aggregation.with.dependencies}'  INTERNAL  'lsfusion.server.physics.admin.service.action.RecalculateTableColumnWithDependenciesAction' (TableColumn);
-recalculateAggregationWithDependents '{reflection.recalculate.aggregation.with.dependents}'  INTERNAL  'lsfusion.server.physics.admin.service.action.RecalculateTableColumnWithDependentsAction' (TableColumn);
-checkAggregation '{reflection.check.aggregation}'  INTERNAL  'lsfusion.server.physics.admin.service.action.CheckTableColumnAction' (TableColumn);
+//todo: rename to recalculateMaterializations
+recalculateAggregation '{reflection.recalculate.materializations}'  INTERNAL  'lsfusion.server.physics.admin.service.action.RecalculateTableColumnAction' (TableColumn);
+//todo: rename to recalculateMaterializationsWithDependencies
+recalculateAggregationWithDependencies '{reflection.recalculate.materializations.with.dependencies}'  INTERNAL  'lsfusion.server.physics.admin.service.action.RecalculateTableColumnWithDependenciesAction' (TableColumn);
+//todo: rename to recalculateMaterializationsWithDependents
+recalculateAggregationWithDependents '{reflection.recalculate.materializations.with.dependents}'  INTERNAL  'lsfusion.server.physics.admin.service.action.RecalculateTableColumnWithDependentsAction' (TableColumn);
+//todo: rename to checkMaterializations
+checkAggregation '{reflection.check.materializations}'  INTERNAL  'lsfusion.server.physics.admin.service.action.CheckTableColumnAction' (TableColumn);
 checkAggregation(ISTRING[100] string)  { checkAggregation(tableColumnSID(string)); }
 dropDB  INTERNAL  'lsfusion.server.physics.admin.service.action.DropColumnAction' (DropColumn);
 drop '{reflection.drop.drop.column}' (DropColumn cl)  { 
@@ -290,7 +295,8 @@ drop '{reflection.drop.drop.column}' (DropColumn cl)  {
     DELETE cl;
 }
 
-recalculateColumnsAggregations '{reflection.recalculate.column.aggregations}' (Table table)  { 
+//todo: rename to recalculateColumnsMaterializations
+recalculateColumnsAggregations '{reflection.recalculate.columns.materializations}' (Table table)  { 
     FOR table == table(TableColumn tableColumn) AND tableColumn IS TableColumn DO {
         recalculateAggregation(tableColumn);    
     }
@@ -305,12 +311,14 @@ pack '{reflection.pack.table}'  INTERNAL  'lsfusion.server.physics.admin.service
 
 disableClasses '{reflection.disable.classes}' = DATA BOOLEAN (Table);
 disableStatsTable '{reflection.disable.stats}' (Table t) = notRecalculateStats(t);
-disableAggregations '{reflection.disable.aggregations}' (TableColumn tc) = notRecalculate(tc);
+//todo: rename to disableMaterializations
+disableAggregations '{reflection.disable.materializations}' (TableColumn tc) = notRecalculate(tc);
 disableClasses '{reflection.disable.classes}' = DATA BOOLEAN (TableColumn);
 disableStatsTableColumn '{reflection.disable.stats}' = DATA BOOLEAN (TableColumn);
 
 disableClasses '{reflection.disable.classes}' (ISTRING[100] sid) = disableClasses(tableSID(sid));
 disableStatsTable '{reflection.disable.stats}' (ISTRING[100] sid) = disableStatsTable(tableSID(sid));
+//todo: rename to disableMaterializations
 disableAggregations (ISTRING[100] sid) = disableAggregations(tableColumnSID(sid));
 disableStatsTableColumn '{reflection.disable.stats}' (ISTRING[100] sid) = disableStatsTableColumn(tableColumnSID(sid));
 

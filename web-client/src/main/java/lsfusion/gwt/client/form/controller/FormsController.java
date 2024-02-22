@@ -55,6 +55,7 @@ import java.util.ListIterator;
 import java.util.function.Supplier;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.findInList;
+import static lsfusion.gwt.client.form.event.GKeyStroke.isAltEvent;
 import static lsfusion.gwt.client.form.event.GKeyStroke.isTabEvent;
 
 public abstract class FormsController {
@@ -227,14 +228,14 @@ public abstract class FormsController {
                 removeForceEditMode();
         }
         if (altKey != null) {
-            boolean onlyAlt = altKey && (ctrlKey == null || !ctrlKey) && (shiftKey == null || !shiftKey) && !tab;
+            boolean onlyAlt = altKey && (ctrlKey == null || !ctrlKey) && (shiftKey == null || !shiftKey);
             pressedAlt = true;
             if (onlyAlt && !isGroupChangeMode())
                 setForceEditMode(EditMode.GROUPCHANGE);
             if (!onlyAlt && isForceGroupChangeMode())
                 removeForceEditMode();
 
-            if(onlyAlt)
+            if(isAltEvent(event)) // we want to prevent moving focus in the browser to the menu bar
                 event.preventDefault();
         }
     }

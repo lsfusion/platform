@@ -26,7 +26,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.util.function.Function;
 
-public class XorUnionProperty extends IncrementUnionProperty {
+public class XorUnionProperty extends IncrementFormulaUnionProperty {
 
     public XorUnionProperty(LocalizedString caption, ImOrderSet<Interface> interfaces, ImList<PropertyInterfaceImplement<Interface>> operands) {
         super(caption, interfaces);
@@ -118,10 +118,5 @@ public class XorUnionProperty extends IncrementUnionProperty {
     public DrillDownFormEntity createDrillDownForm(BaseLogicsModule LM) {
         return new XorUnionDrillDownFormEntity(LocalizedString.create("{logics.property.drilldown.form.xor.union}"), this, LM
         );
-    }
-
-    @Override
-    public ExClassSet calcInferValueClass(ImMap<Interface, ExClassSet> inferred, InferType inferType) {
-        return ExClassSet.removeValues(super.calcInferValueClass(inferred, inferType));
     }
 }

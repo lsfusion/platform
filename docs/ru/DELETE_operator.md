@@ -6,7 +6,9 @@ title: 'Оператор DELETE'
 
 ### Синтаксис
 
-    DELETE expr [WHERE whereExpr]
+```
+DELETE expr [WHERE whereExpr]
+```
 
 ### Описание
 

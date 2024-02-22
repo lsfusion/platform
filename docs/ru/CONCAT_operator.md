@@ -6,7 +6,9 @@ title: 'Оператор CONCAT'
 
 ### Синтаксис
 
-    CONCAT separatorString, concatExpr1, ..., concatExprN
+```
+CONCAT separatorString, concatExpr1, ..., concatExprN
+```
 
 ### Описание
 

@@ -6,7 +6,9 @@ The `MIN` operator creates a [property](Properties.md) that implements finding t
 
 ### Syntax 
 
-    MIN expr1, ..., exprN
+```
+MIN expr1, ..., exprN
+```
 
 ### Description
 

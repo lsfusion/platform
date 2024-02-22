@@ -6,7 +6,9 @@ title: 'Оператор EXCLUSIVE'
 
 ### Синтаксис
 
-    EXCLUSIVE expr1, ..., exprN
+```
+EXCLUSIVE expr1, ..., exprN
+```
 
 ### Описание
 

@@ -6,18 +6,22 @@ The `EXPORT` operator: creates an [action](Actions.md) that exports [specified p
 
 ## Syntax
 
-    EXPORT [exportFormat] [TOP n] FROM [columnId1 =] propertyExpr1, ..., [columnIdN = ] propertyExprN [WHERE whereExpr] [ORDER orderExpr1 [DESC], ..., orderExprL [DESC]] [TO propertyId]
-    EXPORT formName [OBJECTS objName1 = expr1, ..., objNameK = exprK] [exportFormat] [TOP n] [TO (propertyId | (groupId1 = propertyId1, ..., groupIdN = propertyIdM))]
+```
+EXPORT [exportFormat] [TOP n] FROM [columnId1 =] propertyExpr1, ..., [columnIdN = ] propertyExprN [WHERE whereExpr] [ORDER orderExpr1 [DESC], ..., orderExprL [DESC]] [TO propertyId]
+EXPORT formName [OBJECTS objName1 = expr1, ..., objNameK = exprK] [exportFormat] [TOP n] [TO (propertyId | (groupId1 = propertyId1, ..., groupIdN = propertyIdM))]
+```
 
 `exportFormat` can be specified by one of the following options:
 
-    JSON [CHARSET charsetStr]
-    XML [HEADER | NOHEADER] [ATTR] [CHARSET charsetStr]
-    CSV [separator] [HEADER | NOHEADER] [ESCAPE | NOESCAPE] [CHARSET charsetStr]
-    XLS [SHEET sheetProperty] [HEADER | NOHEADER]
-    XLSX [SHEET sheetProperty] [HEADER | NOHEADER]
-    DBF [CHARSET charsetStr]
-    TABLE
+```
+JSON [CHARSET charsetStr]
+XML [HEADER | NOHEADER] [ATTR] [CHARSET charsetStr]
+CSV [separator] [HEADER | NOHEADER] [ESCAPE | NOESCAPE] [CHARSET charsetStr]
+XLS [SHEET sheetProperty] [HEADER | NOHEADER]
+XLSX [SHEET sheetProperty] [HEADER | NOHEADER]
+DBF [CHARSET charsetStr]
+TABLE
+```
 
 ## Description
 
@@ -91,7 +95,7 @@ When exporting a form in an `OBJECTS` block, it is possible to add extra filters
 
     When using the `NOHEADER` option if the column name is one of the predefined names (`A`, `B`, ..., `Z`, `AA`, ..., `AE`), it is exported to the column with the corresponding number, and the following columns are exported to the columns next in order after this column.
 
-    Has other meaning for **XML**: with `HEADER` result file contains first string like <?xml version="1.0" encoding="UTF-8"?>. Export with `NOHEADER` exports without this string. The default is `HEADER`.
+    Has other meaning for **XML**: with `HEADER` result file contains first string like `<?xml version="1.0" encoding="UTF-8"?>`. Export with `NOHEADER` exports without this string. The default is `HEADER`.
 
 - `ESCAPE | NOESCAPE`
 

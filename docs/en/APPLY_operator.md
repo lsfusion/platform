@@ -6,12 +6,16 @@ The `APPLY` operator creates an [action](Actions.md) that [applies changes](Appl
 
 ### Syntax
 
-    APPLY [nestedBlock] [SERIALIZABLE] [action]
+```
+APPLY [nestedBlock] [SERIALIZABLE] [action]
+```
 
 where `nestedBlock` has one of two possible syntaxes:
 
-    NESTED LOCAL
-    NESTED (propertyId1, ..., propertyIdN)
+```
+NESTED LOCAL
+NESTED (propertyId1, ..., propertyIdN)
+```
 
 ### Description
 

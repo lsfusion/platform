@@ -6,7 +6,9 @@ title: 'Оператор TRY'
 
 ### Синтаксис
 
-    TRY action [CATCH catchAction] [FINALLY finallyAction]
+```
+TRY action [CATCH catchAction] [FINALLY finallyAction]
+```
 
 ### Описание
 

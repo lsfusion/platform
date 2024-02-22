@@ -8,31 +8,41 @@ Object block of the [FORM statement](FORM_statement.md)  adds [objects](#objects
 
 ### Syntax
 
-    OBJECTS groupDeclaration1 [groupOptions1], ...., groupDeclarationN [groupOptionsN]
+```
+OBJECTS groupDeclaration1 [groupOptions1], ...., groupDeclarationN [groupOptionsN]
+```
 
 Each `groupDeclaration` is a declaration of an object group consisting of several objects:
 
-    [groupName =] (objectDeclaration1, ..., objectDeclarationK)
+```
+[groupName =] (objectDeclaration1, ..., objectDeclarationK)
+```
 
  or an object group consisting of a single object:
 
-    objectDeclaration
+```
+objectDeclaration
+```
 
 Each `objectDeclaration` declaring an object has the following syntax:
 
-    [[name] [caption] =] classId [ON CHANGE actionId(param1, ..., paramM) | { actionOperator } ]
+```
+[[name] [caption] =] classId [ON CHANGE actionId(param1, ..., paramM) | { actionOperator } ]
+```
 
 The declaration of each object group may be followed by a set of options called `groupOptions`:
 
-    viewType
-    INIT | FIXED
-    PAGESIZE pageSize 
-    AFTER groupName
-    BEFORE groupName
-    defaultObjectsType
-    IN propertyGroup
-    EXTID extID
-    SUBREPORT [subReportExpression]
+```
+viewType
+INIT | FIXED
+PAGESIZE pageSize 
+AFTER groupName
+BEFORE groupName
+defaultObjectsType
+IN propertyGroup
+EXTID extID
+SUBREPORT [subReportExpression]
+```
 
 ### Description
 
@@ -183,19 +193,25 @@ FORM printLabel 'Price tag printing'
 
 ### Syntax
 
-    TREE [name] groupDeclaration1 [parentBlock1], ...., groupDeclarationN [parentBlockN] [treeOptions]
+```
+TREE [name] groupDeclaration1 [parentBlock1], ...., groupDeclarationN [parentBlockN] [treeOptions]
+```
 
 Each `groupDeclaration` is a declaration of an object group that is similar to the declaration in an object block described above. Each `parentBlock` can be described in one of the following ways:
 
-    PARENT propertyId
-    (PARENT propertyId1, ..., propertyIdK)
+```
+PARENT propertyId
+(PARENT propertyId1, ..., propertyIdK)
+```
 
 The first option is used if an object group for which the block is specified consists of a single object, the second one is used for groups of two and more objects.
 
 The `treeOptions` options set may be specified after the declaration of each object tree.
 
-    AFTER groupName
-    BEFORE groupName
+```
+AFTER groupName
+BEFORE groupName
+```
 
 ### Description
 

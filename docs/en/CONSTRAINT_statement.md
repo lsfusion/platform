@@ -6,7 +6,9 @@ The `CONSTRAINT` statement creates a [constraint](Constraints.md).
 
 ### Syntax
 
-    CONSTRAINT eventClause constraintExpr [CHECKED [BY propertyId1, ..., propertyIdN]] MESSAGE messageExpr;
+```
+CONSTRAINT eventClause constraintExpr [CHECKED [BY propertyId1, ..., propertyIdN]] MESSAGE messageExpr;
+```
 
 ### Description
 
@@ -18,11 +20,13 @@ Also, by using the `CHECKED` option you can use the constraint when showing dial
 :::info
 Creating a constraint is pretty similar to the following statements:
 
-    constraintProperty = constraintExpr;
-    WHEN eventClause [=GROUP MAX constraintProperty()]() DO {
-        PRINT outConstraintPropertyForm MESSAGE NOWAIT;
-        CANCEL;
-    }
+```lsf
+constraintProperty = constraintExpr;
+WHEN eventClause [=GROUP MAX constraintProperty()]() DO {
+    PRINT outConstraintPropertyForm MESSAGE NOWAIT;
+    CANCEL;
+}
+```
 
 but it also has [a number of advantages](Constraints.md).
 :::

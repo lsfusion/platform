@@ -11,11 +11,11 @@
 .chat-header {
     display: flex;
     align-content: stretch;
-    justify-content: space-around;
 }
 
 .chat-author {
-    font-weight: bold
+    font-weight: bold;
+    flex: 1;
 }
 
 .chat-reply-action {
@@ -86,11 +86,12 @@ a.chat-message-attachment {
 .chat-footer {
     display: flex;
     align-content: stretch;
-    justify-content: space-around;
 }
 
 .chat-time {
-    color: grey
+    color: grey;
+    flex: 1;
+    text-align: end;
 }
 
 .chat-status {
@@ -104,6 +105,7 @@ div[lsfusion-container="chat"] .dataGridCell {
 
 .chat-message-input {
     display: flex;
+    height: 100%;
     flex-direction: column;
     flex: 1;
     align-self: stretch;

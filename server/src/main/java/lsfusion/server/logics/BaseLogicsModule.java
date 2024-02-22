@@ -71,7 +71,7 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
-import lsfusion.server.logics.property.classes.data.FormulaImplProperty;
+import lsfusion.server.logics.property.classes.data.FormulaJoinProperty;
 import lsfusion.server.logics.property.classes.data.NotFormulaProperty;
 import lsfusion.server.logics.property.classes.infer.AlgType;
 import lsfusion.server.logics.property.classes.user.ClassDataProperty;
@@ -802,37 +802,37 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     @Override
     @IdentityStrongLazy
     public LP addCastProp(DataClass castClass) {
-        return addProperty(null, new LP<>(new FormulaImplProperty(LocalizedString.create("castTo" + castClass.toString()), 1, new CastFormulaImpl(castClass))));
+        return addProperty(null, new LP<>(new FormulaJoinProperty(LocalizedString.create("castTo" + castClass.toString()), 1, new CastFormulaImpl(castClass))));
     }
 
     @Override
     @IdentityStrongLazy
     protected LP addSumProp() {
-        return addProperty(null, new LP<>(new FormulaImplProperty(LocalizedString.create("sum"), 2, SumFormulaImpl.instance)));
+        return addProperty(null, new LP<>(new FormulaJoinProperty(LocalizedString.create("sum"), 2, SumFormulaImpl.instance)));
     }
 
     @Override
     @IdentityStrongLazy
     protected LP addMultProp() {
-        return addProperty(null, new LP<>(new FormulaImplProperty(LocalizedString.create("multiply"), 2, MultiplyFormulaImpl.instance)));
+        return addProperty(null, new LP<>(new FormulaJoinProperty(LocalizedString.create("multiply"), 2, MultiplyFormulaImpl.instance)));
     }
 
     @Override
     @IdentityStrongLazy
     protected LP addSubtractProp() {
-        return addProperty(null, new LP<>(new FormulaImplProperty(LocalizedString.create("subtract"), 2, SubtractFormulaImpl.instance)));
+        return addProperty(null, new LP<>(new FormulaJoinProperty(LocalizedString.create("subtract"), 2, SubtractFormulaImpl.instance)));
     }
 
     @Override
     @IdentityStrongLazy
     protected LP addDivideProp() {
-        return addProperty(null, new LP<>(new FormulaImplProperty(LocalizedString.create("divide"), 2, DivideFormulaImpl.instance)));
+        return addProperty(null, new LP<>(new FormulaJoinProperty(LocalizedString.create("divide"), 2, DivideFormulaImpl.instance)));
     }
 
     @Override
     @IdentityStrongLazy
     protected LP addRoundProp(boolean hasScale) {
-        return addProperty(null, new LP<>(new FormulaImplProperty(LocalizedString.create("round"), hasScale ? 2 : 1, RoundFormulaImpl.instance)));
+        return addProperty(null, new LP<>(new FormulaJoinProperty(LocalizedString.create("round"), hasScale ? 2 : 1, RoundFormulaImpl.instance)));
     }
 
     @Override

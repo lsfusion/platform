@@ -2,6 +2,8 @@ MODULE SystemEvents;
 
 REQUIRE System, Reflection, Time;
 
+// some extracted from onStarted() important things needed for early [anonymous] login on server with lightStart on (first of all for tryonline logics) 
+onInit ABSTRACT LIST ();
 onStarted  ABSTRACT LIST ( );
 onClientStarted ABSTRACT LIST ();
 onDesktopClientStarted  ABSTRACT LIST ( );
@@ -10,7 +12,16 @@ onWebClientStarted  ABSTRACT LIST ( );
 onWebClientInit ABSTRACT LIST ();
 onWebClientInit = DATA LOCAL INTEGER (STRING);
 
+// todo onLoginLoad = ABSTRACT CASE INTEGER(STRING) IS DEPECATED! DO NOT USE! Only for backward compatibility
 onLoginLoad = ABSTRACT CASE INTEGER(STRING);
+onLoginInit ABSTRACT LIST ();
+onLoginInit = DATA LOCAL INTEGER (STRING);
+
+onLoginInit() +{
+    FOR INTEGER order = onLoginLoad(STRING s) DO {onLoginInit(s) <- order; } // for backward compatibility
+    
+    onLoginInit('disable-indexing.html') <- -1;
+}
 
 // todo onWebClientLoad DEPECATED! DO NOT USE! Only for backward compatibility
 onWebClientLoad ABSTRACT LIST ();
@@ -18,8 +29,21 @@ onWebClientStarted () +{
     onWebClientLoad();
 }
 
+onInitApply {
+    onInit();
+    APPLY;
+}
+
+notFirstStart = DATA BOOLEAN ();
+firstStart () = NOT notFirstStart();
+onFirstStarted ABSTRACT LIST ( );
+
 onStartedApply() {
     onStarted();
+    IF firstStart() THEN {
+        onFirstStarted();
+        notFirstStart() <- TRUE;
+    }
     APPLY;
 }
 
@@ -416,8 +440,13 @@ shutdown '{system.events.shutdown}' (Connection c)  {
 platformVersion = DATA TEXT();
 apiVersion = DATA INTEGER();
 revisionVersion = DATA INTEGER();
+synchronizeVersions ()  INTERNAL  'lsfusion.server.logics.action.SynchronizeVersionsAction' ();    
 
 resetConnections() ABSTRACT();
+
+onInit() + {
+    synchronizeVersions();
+}
 
 onStarted() + { 
     writeDefaultCredentials();

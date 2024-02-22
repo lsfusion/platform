@@ -17,12 +17,12 @@ import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class PublishRabbitMQAction extends InternalAction {
+public class SendMessageRabbitMQAction extends InternalAction {
     private final ClassPropertyInterface channelInterface;
     private final ClassPropertyInterface messageInterface;
 
 
-    public PublishRabbitMQAction(ScriptingLogicsModule LM, ValueClass... classes) {
+    public SendMessageRabbitMQAction(ScriptingLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = getOrderInterfaces().iterator();

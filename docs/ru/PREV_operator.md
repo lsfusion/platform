@@ -6,7 +6,9 @@ title: 'Оператор PREV'
 
 ### Синтаксис
 
-    PREV(propExpr)
+```
+PREV(propExpr)
+```
 
 ### Описание
 

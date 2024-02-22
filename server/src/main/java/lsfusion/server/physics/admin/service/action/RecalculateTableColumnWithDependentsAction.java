@@ -30,11 +30,11 @@ public class RecalculateTableColumnWithDependentsAction extends InternalAction {
         DataObject tableColumnObject = context.getDataKeyValue(tableColumnInterface);
         final ObjectValue propertyObject = context.getBL().reflectionLM.propertyTableColumn.readClasses(context, tableColumnObject);
         final String propertyCanonicalName = (String) context.getBL().reflectionLM.canonicalNameProperty.read(context, propertyObject);
-        boolean disableAggregations = context.getBL().reflectionLM.disableAggregationsTableColumn.read(context, tableColumnObject) != null;
-        if (!disableAggregations) {
-            ServiceDBAction.run(context, (session, isolatedTransaction) -> context.getDbManager().recalculateAggregationWithDependenciesTableColumn(session, context.stack, propertyCanonicalName.trim(), isolatedTransaction, false));
+        boolean disableMaterializations = context.getBL().reflectionLM.disableMaterializationsTableColumn.read(context, tableColumnObject) != null;
+        if (!disableMaterializations) {
+            ServiceDBAction.run(context, (session, isolatedTransaction) -> context.getDbManager().recalculateMaterializationWithDependenciesTableColumn(session, context.stack, propertyCanonicalName.trim(), isolatedTransaction, false));
 
-            context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted("{logics.recalculation.completed}", localize("{logics.recalculation.aggregations}"))), localize("{logics.recalculation.aggregations}")));
+            context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted("{logics.recalculation.completed}", localize("{logics.recalculation.materializations}"))), localize("{logics.recalculation.materializations}")));
         }
     }
 }

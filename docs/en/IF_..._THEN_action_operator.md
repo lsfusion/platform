@@ -6,9 +6,11 @@ The `IF ... THEN` operator creates an [action](Actions.md) that implements [bran
 
 ### Syntax
 
-    IF condition 
-    THEN action
-    [ELSE alternativeAction]
+```
+IF condition 
+THEN action
+[ELSE alternativeAction]
+```
 
 ### Description
 

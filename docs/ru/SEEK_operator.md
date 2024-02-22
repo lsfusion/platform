@@ -6,9 +6,11 @@ title: 'Оператор SEEK'
 
 ### Синтаксис
 
-    SEEK [FIRST | LAST] formObjectId = expr
-    SEEK [FIRST | LAST] formGroupObjectId [OBJECTS formObject1 = expr1, ..., formObjectK = exprk]
-    SEEK NULL formGroupObjectId
+```
+SEEK [FIRST | LAST] formObjectId = expr
+SEEK [FIRST | LAST] formGroupObjectId [OBJECTS formObject1 = expr1, ..., formObjectK = exprk]
+SEEK NULL formGroupObjectId
+```
 
 ### Описание
 

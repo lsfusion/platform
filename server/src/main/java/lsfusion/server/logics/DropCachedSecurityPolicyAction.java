@@ -23,6 +23,6 @@ public class DropCachedSecurityPolicyAction extends InternalAction {
     @Override
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
         Long userRole = (Long) context.getDataKeyValue(userRoleInterface).getValue();
-        getLogicsInstance().getSecurityManager().cachedSecurityPolicies.remove(userRole);
+        context.getLogicsInstance().getSecurityManager().cachedSecurityPolicies.remove(userRole);
     }
 }

@@ -11,7 +11,6 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
-import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.physics.admin.SystemProperties;
@@ -105,9 +104,5 @@ public class PrereadIconsTask extends GroupSplitTask<String> {
     @Override
     public boolean isEndLoggable() {
         return true;
-    }
-
-    public String getEndCaption() {
-        return "Prereading auto icons ended";
     }
 }

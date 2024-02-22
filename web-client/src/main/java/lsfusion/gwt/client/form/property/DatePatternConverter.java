@@ -3,7 +3,7 @@ package lsfusion.gwt.client.form.property;
 import com.google.gwt.core.client.JavaScriptObject;
 import lsfusion.gwt.client.base.jsni.JSNIHelper;
 
-import java.util.Arrays;
+import static lsfusion.gwt.client.form.property.SimpleDatePatternConverter.repeat;
 
 public class DatePatternConverter {
     
@@ -12,28 +12,13 @@ public class DatePatternConverter {
             return null;
 
         JavaScriptObject options = JSNIHelper.createObject();
-        JSNIHelper.setAttribute(options, "alias", "datetime");
-        pattern = pattern + (char)0; // sentinel
-        StringBuilder builder = new StringBuilder();
-        char curCh = 0;
-        int count = 1;
-        for (int i = 0; i < pattern.length(); ++i) {
-            char nextCh = pattern.charAt(i);
-            if (nextCh == curCh) {
-                ++count;
-            } else {
-                builder.append(convert(curCh, count));
-                curCh = nextCh;
-                count = 1;
-            }
-        }
-//        com.allen_sauer.gwt.log.client.Log.error(builder.toString());
         JSNIHelper.setAttribute(options, "prefillYear", false);
-        JSNIHelper.setAttribute(options, "inputFormat", builder.toString());
+        String mask = SimpleDatePatternConverter.patternToMask(pattern, DatePatternConverter::convertSymbol);
+        JSNIHelper.setAttribute(options, "inputFormat", mask);
         return options;
     }
     
-    private static String convert(char symbol, int count) {
+    private static String convertSymbol(char symbol, int count) {
         switch (symbol) {
             case 'd':
             case 'h':
@@ -53,11 +38,5 @@ public class DatePatternConverter {
                 return "TT";
         }
         return repeat(symbol, count);
-    }
-    
-    private static String repeat(char ch, int count) {
-        char[] buf = new char[count];
-        Arrays.fill(buf, ch);
-        return String.valueOf(buf);
     }
 }

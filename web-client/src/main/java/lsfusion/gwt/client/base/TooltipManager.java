@@ -22,25 +22,12 @@ public class TooltipManager {
 
     public static JavaScriptObject initTooltip(Element element, final TooltipHelper tooltipHelper) {
         if (!MainFrame.mobile && tooltipHelper.getTooltip(null) != null && MainFrame.showDetailedInfoDelay > 0) {
-            JavaScriptObject tippy = initTippy(element, MainFrame.showDetailedInfoDelay);
+            JavaScriptObject tippy = GwtClientUtils.initTippy(element, MainFrame.showDetailedInfoDelay);
             updateContent(tippy, tooltipHelper, null);
             return tippy;
         }
         return null;
     }
-
-    private static native JavaScriptObject initTippy(Element element, int delay)/*-{
-        return $wnd.tippy(element, {
-            trigger: 'mouseenter',
-//            content: contentElement,
-            appendTo: $wnd.document.body,
-            placement: 'auto',
-            maxWidth: 'none', // default maxWidth is 350px and content does not fit in tooltip
-            interactive: true,
-            allowHTML: true,
-            delay: [delay, null]
-        });
-    }-*/;
 
     public static void updateContent(JavaScriptObject tippy, final TooltipHelper tooltipHelper, String dynamicTooltip) {
         if(tippy != null) {
@@ -54,10 +41,6 @@ public class TooltipManager {
             tippy.disable();
         else
             tippy.enable();
-    }-*/;
-
-    private static native void hide(JavaScriptObject tippy)/*-{
-        tippy.hide();
     }-*/;
 
     private static Element getTooltipContent(TooltipHelper tooltipHelper, String dynamicTooltip, JavaScriptObject tippy) {
@@ -101,7 +84,7 @@ public class TooltipManager {
                         else
                             Cookies.removeCookie("debugPath");
 
-                        hide(tippy);
+                        GwtClientUtils.hideTippyPopup(tippy);
                     }
                 });
 

@@ -6,11 +6,13 @@ The `JOIN` operator creates a [property](Properties.md) that implements a [compo
 
 ### Syntax
 
-    [JOIN] propertyId(expr1, ..., exprN)
-     
-    [JOIN] "[" operator "]" (expr1, ..., exprN)
-     
-    [JOIN] "[" expression "]" (expr1, ..., exprN) 
+```
+[JOIN] propertyId(expr1, ..., exprN)
+ 
+[JOIN] "[" operator "]" (expr1, ..., exprN)
+ 
+[JOIN] "[" expression "]" (expr1, ..., exprN) 
+```
 
 Where `"["` and `"]"` are ordinary brackets.
 

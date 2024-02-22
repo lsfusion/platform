@@ -8,7 +8,9 @@ The filter and order block of the [`FORM` statement](FORM_statement.md) – add 
 
 ### Syntax
 
-    FILTERS expression1, ..., expressionN
+```
+FILTERS expression1, ..., expressionN
+```
 
 ### Description
 
@@ -61,10 +63,12 @@ FORM onStock 'Balances' // creating a form in which the balances of products can
 
 ### Syntax
 
-    [EXTEND] FILTERGROUP groupName
-        FILTER caption1 expression1 [keystroke1] [DEFAULT]
-        ...
-        FILTER captionN expressionN [keystrokeN] [DEFAULT]
+```
+[EXTEND] FILTERGROUP groupName
+    FILTER caption1 expression1 [keystroke1] [DEFAULT]
+    ...
+    FILTER captionN expressionN [keystrokeN] [DEFAULT]
+```
 
 ### Description
 
@@ -128,9 +132,11 @@ EXTEND FORM onStock
 
 ### Syntax
 
-    ORDERS formPropertyName1 [DESC] 
-           ...
-           formPropertyNameN [DESC]
+```
+ORDERS formPropertyName1 [DESC] 
+       ...
+       formPropertyNameN [DESC]
+```
 
 ### Description
 

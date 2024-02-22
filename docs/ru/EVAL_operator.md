@@ -6,7 +6,9 @@ title: 'Оператор EVAL'
 
 ### Синтаксис
 
-    EVAL [ACTION] expression [PARAMS paramExpr1, ..., paramExprN]
+```
+EVAL [ACTION] expression [PARAMS paramExpr1, ..., paramExprN]
+```
 
 ### Описание
 

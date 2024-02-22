@@ -207,7 +207,6 @@ To update the displayed values, the platform will call the _update_ function eac
 as in the _render_ function, as well as the value itself:
 ```js
 update: function (element, controller, value) {
-update: function (element, controller, value) {
     element.author.innerHTML = value.author || '';
 
     element.replyAuthor.innerHTML = value.replyAuthor || '';
@@ -220,7 +219,6 @@ update: function (element, controller, value) {
         element.message.classList.add('chat-message-own');
     else
         element.message.classList.remove('chat-message-own');
-}
 }
 ```
 This function takes as the _value_ parameter the JavaScript object that is calculated from the previously described _json_ property. 

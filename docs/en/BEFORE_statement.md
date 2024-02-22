@@ -6,7 +6,9 @@ The `BEFORE` statement calls an [action](Actions.md) before calling another acti
 
 ### Syntax
 
-    BEFORE action(param1, ..., paramN) DO aspectAction;
+```
+BEFORE action(param1, ..., paramN) DO aspectAction;
+```
 
 ### Description
 

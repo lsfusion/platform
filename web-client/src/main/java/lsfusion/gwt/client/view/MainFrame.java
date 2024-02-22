@@ -195,24 +195,19 @@ public class MainFrame implements EntryPoint {
         return false;
     }
 
-    public static boolean previewEvent(Element target, Event event, boolean isEditing) {
-        return previewFocusEvent(event, isEditing) && previewClickEvent(target, event);
-    }
+    public static boolean switchedToAnotherWindow;
 
-    private static boolean switchedToAnotherWindow;
-    private static boolean previewFocusEvent(Event event, boolean isEditing) {
-        if (isEditing) {
-            if (BrowserEvents.FOCUS.equals(event.getType())) {
-                if (switchedToAnotherWindow) {
-                    switchedToAnotherWindow = false;
-                    return false;
-                }
-            } else if (BrowserEvents.BLUR.equals(event.getType())) {
-                switchedToAnotherWindow = isSwitchedToAnotherWindow(event, Document.get());
-                return !switchedToAnotherWindow;
+    public static boolean previewSwitchToAnotherWindow(Event event) {
+        if (BrowserEvents.FOCUS.equals(event.getType())) {
+            if (switchedToAnotherWindow) {
+                switchedToAnotherWindow = false;
+                return true;
             }
+        } else if (BrowserEvents.BLUR.equals(event.getType())) {
+            switchedToAnotherWindow = isSwitchedToAnotherWindow(event, Document.get());
+            return switchedToAnotherWindow;
         }
-        return true;
+        return false;
     }
 
     //heuristic
@@ -233,7 +228,7 @@ public class MainFrame implements EntryPoint {
     private static Event lastClickedEvent;
     private static Event lastUpEvent;
     private static Event lastDownEvent;
-    private static boolean previewClickEvent(Element target, Event event) {
+    public static boolean previewClickEvent(Element target, Event event) {
         if (GMouseStroke.isClickEvent(event)) {
             if (event != lastClickedEvent) { // checking lastClickedEvent since it can be propagated (or not)
                 lastClickedEvent = event;

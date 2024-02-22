@@ -109,6 +109,7 @@ public abstract class ClientPropertyTable extends TableWidget implements TableTr
                 return true;
             }
         };
+        binding.bindPreview = BindingMode.NO;
         binding.bindEditing = BindingMode.NO;
         binding.bindGroup = BindingMode.ONLY;
         return binding;

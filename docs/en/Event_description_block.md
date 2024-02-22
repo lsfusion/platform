@@ -6,7 +6,9 @@ title: 'Event description block'
 
 ### Syntax
 
-    [GLOBAL | LOCAL] [FORMS formName1, ..., formNameN] [GOAFTER propertyId1, ..., propertyIdM]
+```
+[GLOBAL | LOCAL] [FORMS formName1, ..., formNameN] [GOAFTER propertyId1, ..., propertyIdM]
+```
 
 ### Parameters
 

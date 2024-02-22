@@ -6,7 +6,9 @@ The `MESSAGE` operator creates an [action](Actions.md) that shows the user a [me
 
 ### Syntax
 
-    MESSAGE expression [syncType]
+```
+MESSAGE expression [syncType]
+```
 
 ### Description
 

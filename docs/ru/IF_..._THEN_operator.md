@@ -6,9 +6,11 @@ title: 'Оператор IF ... THEN'
 
 ### Синтаксис
 
-    IF condition 
-        THEN value
-        [ELSE alternativeValue]
+```
+IF condition 
+    THEN value
+    [ELSE alternativeValue]
+```
 
 ### Описание
 

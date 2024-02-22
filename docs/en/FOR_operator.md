@@ -6,15 +6,19 @@ The `FOR` operator creates an [action](Actions.md) that implements [loop](Loop_F
 
 ### Syntax
 
-    FOR expression [ORDER [DESC] orderExpr1, ..., orderExprN]
-    [NEW [alias =] className]
-    DO action
-    [ELSE alternativeAction]
+```
+FOR expression [ORDER [DESC] orderExpr1, ..., orderExprN]
+[NEW [alias =] className]
+DO action
+[ELSE alternativeAction]
+```
 
 It is possible to include a `NEW` block in the operator but not to specify a condition (considered equal to `TRUE`); in this case, the syntax is as follows:
 
-    NEW [alias =] className
-    action
+```
+NEW [alias =] className
+action
+```
 
 ### Description
 

@@ -1368,7 +1368,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     public Graph<AggregateProperty> getRecalculateAggregateStoredGraph(DataSession session) throws SQLException, SQLHandledException {
         QueryBuilder<String, Object> query = new QueryBuilder<>(SetFact.singleton("key"));
 
-        Expr expr = reflectionLM.disableAggregationsTableColumnSID.getExpr(query.getMapExprs().singleValue());
+        Expr expr = reflectionLM.disableMaterializationsTableColumnSID.getExpr(query.getMapExprs().singleValue());
         query.and(expr.getWhere());
         ImSet<String> skipProperties = query.execute(session).keys().mapSetValues(value -> (String)value.singleValue());
 
@@ -1473,7 +1473,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         List<AggregateProperty> result = new ArrayList<>();
         for (Property property : getStoredProperties())
             if (property instanceof AggregateProperty) {
-                boolean recalculate = ignoreCheck || reflectionLM.disableAggregationsTableColumn.read(session, reflectionLM.tableColumnSID.readClasses(session, new DataObject(property.getDBName()))) == null;
+                boolean recalculate = ignoreCheck || reflectionLM.disableMaterializationsTableColumn.read(session, reflectionLM.tableColumnSID.readClasses(session, new DataObject(property.getDBName()))) == null;
                 if(recalculate)
                     result.add((AggregateProperty) property);
             }

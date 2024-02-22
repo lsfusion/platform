@@ -56,7 +56,10 @@ public class ActionMapImplement<P extends PropertyInterface, T extends PropertyI
     }
 
     public PropertyMapImplement<?, T> mapWhereProperty() {
-        return action.getWhereProperty().map(mapping);
+        PropertyMapImplement<?, P> whereProperty = action.getWhereProperty();
+        if(whereProperty != null)
+            return whereProperty.map(mapping);
+        return null;
     }
 
     public PropertyMapImplement<?, T> mapCalcWhereProperty() {
@@ -145,6 +148,9 @@ public class ActionMapImplement<P extends PropertyInterface, T extends PropertyI
     }
 
     public PropertyMapImplement<?, T> mapClassProperty() {
-        return mapWhereProperty().mapClassProperty();
+        PropertyMapImplement<?, T> whereProperty = mapWhereProperty();
+        if(whereProperty != null)
+            return whereProperty.mapClassProperty();
+        return null;
     }
 }

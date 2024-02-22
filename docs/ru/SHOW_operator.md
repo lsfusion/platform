@@ -6,24 +6,30 @@ title: 'Оператор SHOW'
 
 ### Синтаксис
 
-    SHOW name 
-    [OBJECTS objName1 = expr1 [NULL], ..., objNameN = exprN [NULL]]
-    [formActionOptions] 
+```
+SHOW name 
+[OBJECTS objName1 = expr1 [NULL], ..., objNameN = exprN [NULL]]
+[formActionOptions] 
+```
 
 При открытии формы выбора / редактирования синтаксис немного отличается:
 
-    SHOW classFormType className
-    = expr [NULL]
-    [formActionOptions] 
+```
+SHOW classFormType className
+= expr [NULL]
+[formActionOptions] 
+```
 
 `formActionOptions` - это опции этого действия. Они могут указываться друг за другом в произвольном порядке:
 
-    syncType
-    windowType
-    MANAGESESSION | NOMANAGESESSION
-    NEWSESSION | NESTEDSESSION
-    CANCEL | NOCANCEL
-    READONLY
+```
+syncType
+windowType
+MANAGESESSION | NOMANAGESESSION
+NEWSESSION | NESTEDSESSION
+CANCEL | NOCANCEL
+READONLY
+```
 
 ### Описание
 

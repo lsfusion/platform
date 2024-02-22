@@ -6,11 +6,13 @@ The `CASE` operator  creates a [property](Properties.md) that [selects](Selectio
 
 ### Syntax 
 
-    CASE [exclusionType]
-        WHEN condition1 THEN result1
-        ...
-        WHEN conditionN THEN resultN
-        [ELSE elseResult]
+```
+CASE [exclusionType]
+    WHEN condition1 THEN result1
+    ...
+    WHEN conditionN THEN resultN
+    [ELSE elseResult]
+```
 
 ### Description
 

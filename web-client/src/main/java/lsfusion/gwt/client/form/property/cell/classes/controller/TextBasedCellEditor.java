@@ -327,8 +327,13 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
                 throw new InvalidEditException();
         }
 
-        if(mask != null && !GwtClientUtils.isCompleteMask(inputElement))
-            throw new InvalidEditException();
+        if (mask != null) {
+            if (GwtClientUtils.unmaskedValue(inputElement).isEmpty()) {
+                return null;
+            } else if (!GwtClientUtils.isCompleteMask(inputElement)) {
+                throw new InvalidEditException();
+            }
+        }
 
         boolean patternMismatch = isPatternMismatch(inputElement);
         if (patternMismatch) {

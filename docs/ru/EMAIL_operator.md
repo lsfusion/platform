@@ -6,15 +6,17 @@ title: 'Оператор EMAIL'
 
 ### Синтаксис
 
-    EMAIL [FROM fromExpr] 
-    [SUBJECT subjExpr]
-    recipientType1 recipientExpr1
-    ...
-    recipientTypeN recipientExprN
-    [BODY bodyExpr]
-    ATTACH attachFileExpr1 [NAME attachNameExpr1]
-    ...
-    ATTACH attachFileExprM [NAME attachNameExprM]
+```
+EMAIL [FROM fromExpr] 
+[SUBJECT subjExpr]
+recipientType1 recipientExpr1
+...
+recipientTypeN recipientExprN
+[BODY bodyExpr]
+ATTACH attachFileExpr1 [NAME attachNameExpr1]
+...
+ATTACH attachFileExprM [NAME attachNameExprM]
+```
 
 ### Описание
 

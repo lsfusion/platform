@@ -20,7 +20,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.util.function.Function;
 
-public class SumUnionProperty extends IncrementUnionProperty {
+public class SumUnionProperty extends IncrementFormulaUnionProperty {
 
     public SumUnionProperty(LocalizedString caption, ImOrderSet<Interface> interfaces, ImMap<PropertyInterfaceImplement<Interface>, Integer> operands) {
         super(caption, interfaces);
@@ -73,10 +73,5 @@ public class SumUnionProperty extends IncrementUnionProperty {
     public DrillDownFormEntity createDrillDownForm(BaseLogicsModule LM) {
         return new SumUnionDrillDownFormEntity(LocalizedString.create("{logics.property.drilldown.form.sum.union}"), this, LM
         );
-    }
-
-    @Override
-    public ExClassSet calcInferValueClass(ImMap<Interface, ExClassSet> inferred, InferType inferType) {
-        return ExClassSet.removeValues(super.calcInferValueClass(inferred, inferType));
     }
 }

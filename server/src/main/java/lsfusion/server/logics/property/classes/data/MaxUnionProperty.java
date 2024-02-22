@@ -8,13 +8,12 @@ import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.property.CalcType;
-import lsfusion.server.logics.property.IncrementUnionProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.physics.admin.drilldown.form.DrillDownFormEntity;
 import lsfusion.server.physics.admin.drilldown.form.MaxUnionDrillDownFormEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
-public class MaxUnionProperty extends IncrementUnionProperty {
+public class MaxUnionProperty extends IncrementFormulaUnionProperty {
 
     private final ImCol<PropertyInterfaceImplement<Interface>> operands;
     private boolean isMin;

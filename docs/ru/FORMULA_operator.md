@@ -6,7 +6,9 @@ title: 'Оператор FORMULA'
 
 ### Синтаксис
 
-    FORMULA [NULL] [className] [syntaxType1] text1, ..., [syntaxTypeN] textN
+```
+FORMULA [NULL] [className] [syntaxType1] text1, ..., [syntaxTypeN] textN
+```
 
 ### Описание
 

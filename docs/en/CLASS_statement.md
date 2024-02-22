@@ -6,15 +6,17 @@ title: 'CLASS statement'
 
 ### Syntax
 
-    CLASS ABSTRACT name [caption] [: parent1, ..., parentN];
-     
-    CLASS name [caption] 
-    [{
-        objectName1 [objectCaption1],
-        ...
-        objectNameM [objectCaptionM]
-    }] 
-    [: parent1, ..., parentN];
+```
+CLASS ABSTRACT name [caption] [: parent1, ..., parentN];
+ 
+CLASS name [caption] 
+[{
+    objectName1 [objectCaption1],
+    ...
+    objectNameM [objectCaptionM]
+}] 
+[: parent1, ..., parentN];
+```
 
 ### Description
 

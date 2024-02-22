@@ -6,7 +6,9 @@ The `ABSTRACT` operator - creating an [abstract action](Action_extension.md).
 
 ### Syntax
 
-    ABSTRACT [type [exclusionType]] [FIRST | LAST] [CHECKED] (argClassName1, ..., argClassNameN) 
+```
+ABSTRACT [type [exclusionType]] [FIRST | LAST] [CHECKED] (argClassName1, ..., argClassNameN) 
+```
 
 ### Description
 

@@ -6,11 +6,13 @@ The `META` statement creates a new [metacode](Metaprogramming.md#metacode).
 
 ### Syntax
 
-    META name(param1, ..., paramN)
-        statement1
-        ...
-        statementM
-    END
+```
+META name(param1, ..., paramN)
+    statement1
+    ...
+    statementM
+END
+```
 
 ### Description
 

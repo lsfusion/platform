@@ -8,22 +8,28 @@ title: 'Оператор PARTITION'
 
 Существует два разных вида оператора `PARTITION`. Первый из них реализует разбиение / упорядочивание:
 
-    PARTITION 
-    type expr
-    [ORDER [DESC] orderExpr1, ..., orderExprK]
-    [BY groupExpr1, ..., groupExprM]
+```
+PARTITION 
+type expr
+[ORDER [DESC] orderExpr1, ..., orderExprK]
+[BY groupExpr1, ..., groupExprM]
+```
 
 Второй реализует простое распределение:
 
-    PARTITION 
-    UNGROUP propertyId distributionType expr
-    [ORDER [DESC] orderExpr1, ..., orderExprK]
-    [BY groupExpr1, ..., groupExprM]
+```
+PARTITION 
+UNGROUP propertyId distributionType expr
+[ORDER [DESC] orderExpr1, ..., orderExprK]
+[BY groupExpr1, ..., groupExprM]
+```
 
 где `distributionType` может быть описан несколькими способами:
 
-    PROPORTION [STRICT] ROUND(digits)
-    LIMIT [STRICT]
+```
+PROPORTION [STRICT] ROUND(digits)
+LIMIT [STRICT]
+```
 
 ### Описание
 

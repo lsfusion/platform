@@ -6,12 +6,16 @@ title: 'Оператор CANCEL'
 
 ### Синтаксис
 
-    CANCEL [nestedBlock]
+```
+CANCEL [nestedBlock]
+```
 
 где `nestedBlock` имеет один из двух вариантов синтаксиса:
 
-    NESTED LOCAL
-    NESTED (propertyId1, ..., propertyIdN)
+```
+NESTED LOCAL
+NESTED (propertyId1, ..., propertyIdN)
+```
 
 ### Описание
 

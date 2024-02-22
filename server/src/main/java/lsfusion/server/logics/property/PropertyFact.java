@@ -66,7 +66,6 @@ import lsfusion.server.logics.property.value.NullValueProperty;
 import lsfusion.server.logics.property.value.ValueProperty;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.physics.dev.integration.internal.to.StringFormulaProperty;
 
 import java.util.*;
 import java.util.function.BiFunction;
@@ -430,18 +429,14 @@ public class PropertyFact {
         return groupProperty.getImplement();
     }
 
-    private static <T extends PropertyInterface> PropertyMapImplement<?,T> createFormula(ImSet<T> interfaces, String formula, DataClass valueClass, ImList<? extends PropertyInterfaceImplement<T>> params) {
-        return createFormula(LocalizedString.NONAME, interfaces, formula, valueClass, params);
-    }
     private static <T extends PropertyInterface> PropertyMapImplement<?,T> createFormula(LocalizedString caption, ImSet<T> interfaces, String formula, DataClass valueClass, ImList<? extends PropertyInterfaceImplement<T>> params) {
         final ImRevMap<T, JoinProperty.Interface> joinMap = interfaces.mapRevValues(JoinProperty.genInterface);
         ImRevMap<JoinProperty.Interface, T> revJoinMap = joinMap.reverse();
 
-        final StringFormulaProperty implement = new StringFormulaProperty(valueClass,new CustomFormulaSyntax(formula),params.size(), false);
-        ImMap<StringFormulaProperty.Interface, PropertyInterfaceImplement<JoinProperty.Interface>> joinImplement = 
-                ((ImList<PropertyInterfaceImplement<T>>)params).mapListKeyValues((int i) -> implement.findInterface("prm"+(i+1)), mapGetCalcValue(joinMap));
+        final FormulaJoinProperty implement = new FormulaJoinProperty(valueClass, new CustomFormulaSyntax(formula), params.size(), false);
+        ImMap<FormulaJoinProperty.Interface, PropertyInterfaceImplement<JoinProperty.Interface>> joinImplement = implement.getFriendlyOrderInterfaces().mapList(PropertyFact.mapImplements(params, joinMap));
 
-        JoinProperty<StringFormulaProperty.Interface> joinProperty = new JoinProperty<>(caption,
+        JoinProperty<FormulaJoinProperty.Interface> joinProperty = new JoinProperty<>(caption,
                 revJoinMap.keys().toOrderSet(), new PropertyImplement<>(implement, joinImplement));
         return new PropertyMapImplement<>(joinProperty, revJoinMap);
     }
@@ -938,9 +933,9 @@ public class PropertyFact {
         NewThreadAction aggAction = new NewThreadAction(LocalizedString.NONAME, listInterfaces, action, period, delay, connection);
         return aggAction.getImplement(listInterfaces);
     }
-    public static <L extends PropertyInterface, P extends PropertyInterface> ActionMapImplement<?, L> createNewExecutorAction(ImSet<L> innerInterfaces, ActionMapImplement<?, L> action, PropertyInterfaceImplement<L> threads) {
+    public static <L extends PropertyInterface, P extends PropertyInterface> ActionMapImplement<?, L> createNewExecutorAction(ImSet<L> innerInterfaces, ActionMapImplement<?, L> action, PropertyInterfaceImplement<L> threads, Boolean sync) {
         ImOrderSet<L> listInterfaces = innerInterfaces.toOrderSet();
-        NewExecutorAction aggAction = new NewExecutorAction(LocalizedString.NONAME, listInterfaces, action, threads);
+        NewExecutorAction aggAction = new NewExecutorAction(LocalizedString.NONAME, listInterfaces, action, threads, sync);
         return aggAction.getImplement(listInterfaces);
     }
     public static <L extends PropertyInterface, P extends PropertyInterface> ActionMapImplement<?, L> createApplyAction(ImSet<L> innerInterfaces, ActionMapImplement<?, L> action, FunctionSet<SessionDataProperty> keepSessionProperties, boolean serializable, Property canceled, Property applyMessage) {

@@ -28,15 +28,14 @@ public class LogicalCellEditor extends ARequestValueCellEditor implements KeepCe
 
         value = getNextValue(oldValue, threeState);
 
-        InputElement inputElement;
         // there are two ways to make checkbox readonly (and we need this, since we use "different" events as a change events)
         // pointer-events:none, but in that case mouse events won't work without a wrapper
         // commit changes after change in the control is done (CHANGE event) that
         if(!( // it's important to delay only that events that will lead to the CHANGE event (otherwise there will be no CHANGE event to wait)
-            (inputElement = InputBasedCellRenderer.getInputEventTarget(parent, handler.event)) != null &&
+            InputBasedCellRenderer.getInputEventTarget(parent, handler.event) != null &&
             (GMouseStroke.isChangeEvent(handler.event)
             || GKeyStroke.isLogicalInputChangeEvent(handler.event)))) {
-            assert InputBasedCellRenderer.getInputElementType(inputElement).isLogical();
+            assert InputBasedCellRenderer.getInputElementType(InputBasedCellRenderer.getInputElement(parent)).isLogical();
             commit(parent);
         }
     }

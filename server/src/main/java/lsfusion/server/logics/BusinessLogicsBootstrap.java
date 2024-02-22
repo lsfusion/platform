@@ -35,6 +35,9 @@ public class BusinessLogicsBootstrap {
         long startTime = System.currentTimeMillis();
         startLog("Server is starting...");
 
+        String revision = ResourceUtils.getRevision(SystemProperties.inDevMode);
+        startLog("Current version: " + BaseUtils.getPlatformVersion() + " (" + BaseUtils.getApiVersion() + ")" + (revision != null ? (" " + revision) : ""));
+
 //        initLRUCaches();
 
         boolean instanceCreated = false;
@@ -63,8 +66,6 @@ public class BusinessLogicsBootstrap {
                     }
                 }
 
-                String revision = ResourceUtils.getRevision(SystemProperties.inDevMode);
-                startLog("Current version: " + BaseUtils.getPlatformVersion() + " (" + BaseUtils.getApiVersion() + ")" + (revision != null ? (" " + revision) : ""));
                 startLog("Server has successfully started in " + (System.currentTimeMillis() - startTime) + " ms");
             } catch (Throwable e) {
                 startLog("Error starting server, server will be stopped");

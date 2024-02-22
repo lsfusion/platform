@@ -10,8 +10,7 @@ import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.NeighbourComplexLocation;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFComplexOrderSet;
-import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
-import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.object.GridView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
@@ -168,11 +167,11 @@ public class ContainerView extends ComponentView {
     }
     
     public boolean isCollapsible() {
-        if(Settings.get().isDisableCollapsibleContainers())
-            return false;
-
         if(collapsible != null)
             return collapsible;
+
+        if(Settings.get().isDisableCollapsibleContainers())
+            return false;
 
         return isDefaultCollapsible();
     }

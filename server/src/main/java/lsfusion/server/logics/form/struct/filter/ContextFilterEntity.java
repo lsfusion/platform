@@ -9,6 +9,8 @@ import lsfusion.server.logics.form.interactive.action.input.InputFilterEntity;
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.classes.IsClassProperty;
+import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
@@ -42,8 +44,13 @@ public class ContextFilterEntity<P extends PropertyInterface, V extends Property
         return new ContextFilterEntity<>(property, mapValues, mapObjects.join(map));
     }
 
-    public PropertyMapImplement<P, V> getWhereProperty(ImRevMap<O, V> objects) {
-        return new PropertyMapImplement<>(property, mapValues.addRevExcl(mapObjects.join(objects)));
+    public PropertyMapImplement<?, V> getWhereProperty(ImRevMap<O, V> valueObjects) {
+        ImRevMap<P, V> mappedObjects = mapObjects.innerJoin(valueObjects);
+        ImRevMap<P, V> mapAllInterfaces = mapValues.addRevExcl(mappedObjects);
+        if(mappedObjects.size() != mapObjects.size()) // we don't have all the interfaces, so we'll use the ExtendContextAction approach
+            return IsClassProperty.getMapProperty(mapAllInterfaces.innerCrossJoin(property.getInterfaceClasses(ClassType.wherePolicy)));
+
+        return new PropertyMapImplement<>(property, mapAllInterfaces);
     }
 
     public <T extends PropertyInterface> PropertyMapImplement<P, T> getWhereProperty(ImRevMap<V, T> values, ImRevMap<O, T> objects) {

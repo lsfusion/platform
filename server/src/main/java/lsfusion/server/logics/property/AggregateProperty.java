@@ -111,18 +111,18 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
         super(caption,interfaces);
     }
 
-    public String checkAggregation(SQLSession session, BaseClass baseClass) throws SQLException, SQLHandledException {
-        return checkAggregation(session, null, baseClass, null);
+    public String checkMaterialization(SQLSession session, BaseClass baseClass) throws SQLException, SQLHandledException {
+        return checkMaterialization(session, null, baseClass, null);
     }
 
-    public String checkAggregation(SQLSession session, BaseClass baseClass, ProgressBar progressBar) throws SQLException, SQLHandledException {
-        return checkAggregation(session, null, baseClass, progressBar);
+    public String checkMaterialization(SQLSession session, BaseClass baseClass, ProgressBar progressBar) throws SQLException, SQLHandledException {
+        return checkMaterialization(session, null, baseClass, progressBar);
     }
 
     // проверяет агрегацию для отладки
     @ThisMessage
     @StackProgress
-    public String checkAggregation(SQLSession session, QueryEnvironment env, BaseClass baseClass, @StackProgress ProgressBar progressBar) throws SQLException, SQLHandledException {
+    public String checkMaterialization(SQLSession session, QueryEnvironment env, BaseClass baseClass, @StackProgress ProgressBar progressBar) throws SQLException, SQLHandledException {
         session.pushVolatileStats(OperationOwner.unknown);
         
         try {
@@ -137,8 +137,8 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
     
             ImOrderMap<ImMap<T, Object>, ImMap<String, Object>> checkResult = env == null ? getRecalculateQuery(true, baseClass, !useRecalculate).execute(session, OperationOwner.unknown)
                     : getRecalculateQuery(true, baseClass, !useRecalculate).execute(session, env);
-            if(checkResult.size() > 0 || !checkClasses.isEmpty()) {
-                message += "---- Checking Aggregations : " + this + "-----" + '\n';
+            if(!checkResult.isEmpty() || !checkClasses.isEmpty()) {
+                message += "---- Checking Materializations : " + this + "-----" + '\n';
                 message += checkClasses;
                 for(int i=0,size=checkResult.size();i<size;i++)
                     message += "Keys : " + checkResult.getKey(i) + " : " + checkResult.getValue(i) + '\n';
@@ -180,21 +180,21 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
 
     public static AggregateProperty recalculate = null;
 
-    public void recalculateAggregation(BusinessLogics BL, DataSession session, SQLSession sql, BaseClass baseClass) throws SQLException, SQLHandledException {
-        recalculateAggregation(BL, session, sql, baseClass, null, true);
+    public void recalculateMaterialization(BusinessLogics BL, DataSession session, SQLSession sql, BaseClass baseClass) throws SQLException, SQLHandledException {
+        recalculateMaterialization(BL, session, sql, baseClass, null, true);
     }
 
-    public void recalculateAggregation(BusinessLogics BL, DataSession session, SQLSession sql, BaseClass baseClass, PropertyChange<T> where, boolean recalculateClasses) throws SQLException, SQLHandledException {
-        recalculateAggregation(sql, null, baseClass, where, recalculateClasses);
+    public void recalculateMaterialization(BusinessLogics BL, DataSession session, SQLSession sql, BaseClass baseClass, PropertyChange<T> where, boolean recalculateClasses) throws SQLException, SQLHandledException {
+        recalculateMaterialization(sql, null, baseClass, where, recalculateClasses);
 
         ObjectValue propertyObject = BL.reflectionLM.propertyCanonicalName.readClasses(session, new DataObject(getCanonicalName()));
         if (propertyObject instanceof DataObject)
             BL.reflectionLM.lastRecalculateProperty.change(LocalDateTime.now(), session, (DataObject) propertyObject);
     }
 
-    @StackMessage("{logics.info.recalculation.of.aggregated.property}")
+    @StackMessage("{logics.info.recalculation.of.materialized.property}")
     @ThisMessage
-    public void recalculateAggregation(SQLSession session, QueryEnvironment env, BaseClass baseClass, PropertyChange<T> where, boolean recalculateClasses) throws SQLException, SQLHandledException {
+    public void recalculateMaterialization(SQLSession session, QueryEnvironment env, BaseClass baseClass, PropertyChange<T> where, boolean recalculateClasses) throws SQLException, SQLHandledException {
         boolean useRecalculate = recalculateClasses && (Settings.get().isUseRecalculateClassesInsteadOfInconsisentExpr() || where != null);
         if(useRecalculate)
             recalculateClasses(session, env, baseClass);

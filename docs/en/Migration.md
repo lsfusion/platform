@@ -6,23 +6,27 @@ An **lsFusion**-based information system uses a relational database management s
 
 The migration file consists of blocks describing the changes made in the specified version of the database structure. At server startup, all changes from the migration file that have a version higher than the version stored in the database are applied. Changes are applied according to the version, from the lowest version to the highest. If the database structure is changed successfully, the maximum version of all applied blocks is written to the database as the current one. The syntax for the description of each block is as follows:
 
-    V<version number> {
-        change1
-        ...
-        changeN 
-    }
+```
+V<version number> {
+    change1
+    ...
+    changeN 
+}
+```
 
 The *version number* is a set of one or more numbers separated by a dot. When comparing the numbers of two versions, the first numbers of the versions are compared first, then if equal the second are compared, and so on. If one version contains fewer numbers than another, during comparison zeros are added to the a version with fewer numbers. For example, version number `1.3` is equivalent to number `1.3.0.0`, and version `1.2` is higher than version `1.1.3`. In the migration file, the version number is indicated with a capital letter `V`: `V1.0`, `V2.0.11`.
 
 The migration file allows you to handle changes to [canonical names](Naming.md#canonicalname) of system elements, which occur when renaming and/or transferring to another namespace. Changes are of the following types: 
 
-    PROPERTY oldNS.oldName[class1,...,classN] -> newNS.newName[class1,...,classN]
-    STORED PROPERTY oldNS.oldName[class1,...,classN] -> newNS.newName[class1,...,classN]
-    FORM PROPERTY oldNS.oldFormName.oldName(object1,...,objectN) -> newNS.newFormName.newName(object1,...,objectN)  
-    CLASS oldNS.oldName -> newNS.newName
-    OBJECT oldNS.oldClassName.oldName -> newNS.newClassName.newName
-    TABLE oldNS.oldName -> newNS.newName
-    NAVIGATOR oldNS.oldName -> newNS.newName
+```
+PROPERTY oldNS.oldName[class1,...,classN] -> newNS.newName[class1,...,classN]
+STORED PROPERTY oldNS.oldName[class1,...,classN] -> newNS.newName[class1,...,classN]
+FORM PROPERTY oldNS.oldFormName.oldName(object1,...,objectN) -> newNS.newFormName.newName(object1,...,objectN)  
+CLASS oldNS.oldName -> newNS.newName
+OBJECT oldNS.oldClassName.oldName -> newNS.newClassName.newName
+TABLE oldNS.oldName -> newNS.newName
+NAVIGATOR oldNS.oldName -> newNS.newName
+```
 
 ### Changing the name of a property or action
 
@@ -66,16 +70,18 @@ Since the name of a namespace is used in the canonical names of system elements,
 
 **migration.script**
 
-    V0.3.1 {
-        STORED PROPERTY Item.gender[Item.Article] -> Item.dataGender[Item.Article] // change of DATA property 
-        PROPERTY System.SIDProperty[Reflection.Property] -> Reflection.dbNameProperty[Reflection.Property] // parallel transferring to another namespace and changing of the property name
-        FORM PROPERTY Item.itemForm.name(i) -> Item.itemForm.itemName(i)
-    }
-     
-    V0.4 {
-        FORM PROPERTY Document.documentForm.name(i) -> Document.itemForm.itemName(i)
-        FORM PROPERTY Item.itemForm.itemName(i) -> Item.itemForm.iname // adding of an explicit name for a property on a formе: iname = itemName(i)
-        CLASS Date.DateInterval -> Date.Interval
-        OBJECT Geo.Direction.North -> Geo.Direction.north
-        TABLE User.oldTable -> User.newTable
-    }
+```
+V0.3.1 {
+    STORED PROPERTY Item.gender[Item.Article] -> Item.dataGender[Item.Article] // change of DATA property 
+    PROPERTY System.SIDProperty[Reflection.Property] -> Reflection.dbNameProperty[Reflection.Property] // parallel transferring to another namespace and changing of the property name
+    FORM PROPERTY Item.itemForm.name(i) -> Item.itemForm.itemName(i)
+}
+ 
+V0.4 {
+    FORM PROPERTY Document.documentForm.name(i) -> Document.itemForm.itemName(i)
+    FORM PROPERTY Item.itemForm.itemName(i) -> Item.itemForm.iname // adding of an explicit name for a property on a formе: iname = itemName(i)
+    CLASS Date.DateInterval -> Date.Interval
+    OBJECT Geo.Direction.North -> Geo.Direction.north
+    TABLE User.oldTable -> User.newTable
+}
+```
