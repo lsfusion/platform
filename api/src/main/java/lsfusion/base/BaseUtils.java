@@ -2082,4 +2082,8 @@ public class BaseUtils {
     public static String[] getNotNullStringArray(String[] array) {
         return array == null ? new String[0] : array;
     }
+
+    public static double logarithmize(int base, int x) {
+        return Math.log(x) / Math.log(base);
+    }
 }

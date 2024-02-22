@@ -855,7 +855,13 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         ImMap<ObjectInstance, ? extends ObjectValue> keys = deserializeKeysValues(fullKey);
 
         int neededCount = Settings.get().getAsyncValuesNeededCount();
-        Async[] result = form.getAsyncValues(propertyDraw, keys, actionSID, value, increaseValuesNeededCount + neededCount, optimistic, optimisticRun, getRemoteContext());
+
+        if (increaseValuesNeededCount > 0) {
+            int base = 3;
+            neededCount += (int) (Math.pow(base, (int) BaseUtils.logarithmize(base, increaseValuesNeededCount)));
+        }
+
+        Async[] result = form.getAsyncValues(propertyDraw, keys, actionSID, value, neededCount, optimistic, optimisticRun, getRemoteContext());
 
         if (logger.isDebugEnabled()) {
             logger.debug(String.format("getAsyncValues Action. propertyDrawID: %s. Result: %s", propertyDraw.getSID(), result));
