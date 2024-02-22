@@ -95,6 +95,7 @@ public class PropertyDrawView extends BaseComponentView {
     public Boolean showChangeKey;
     public MouseInputEvent changeMouse;
     public Integer changeMousePriority;
+    public Boolean showChangeMouse;
 
     public boolean drawAsync = false;
 
@@ -468,6 +469,7 @@ public class PropertyDrawView extends BaseComponentView {
         outStream.writeBoolean(showChangeKey);
         pool.writeObject(outStream, changeMouse);
         pool.writeInt(outStream, changeMousePriority);
+        outStream.writeBoolean(showChangeMouse);
 
         outStream.writeBoolean(drawAsync);
 
@@ -693,6 +695,7 @@ public class PropertyDrawView extends BaseComponentView {
         showChangeKey = inStream.readBoolean();
         changeMouse = pool.readObject(inStream);
         changeMousePriority = pool.readInt(inStream);
+        showChangeMouse = inStream.readBoolean();
 
         focusable = pool.readObject(inStream);
 

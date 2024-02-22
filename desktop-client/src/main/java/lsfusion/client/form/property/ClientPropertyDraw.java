@@ -123,6 +123,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public boolean showChangeKey;
     public MouseInputEvent changeMouse;
     public Integer changeMousePriority;
+    public boolean showChangeMouse;
 
     public boolean drawAsync; // рисовать асинхронность на этой кнопке
 
@@ -543,6 +544,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         outStream.writeBoolean(showChangeKey);
         pool.writeObject(outStream, changeMouse);
         pool.writeInt(outStream, changeMousePriority);
+        outStream.writeBoolean(showChangeMouse);
 
         pool.writeObject(outStream, focusable);
 
@@ -597,6 +599,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         showChangeKey = inStream.readBoolean();
         changeMouse = pool.readObject(inStream);
         changeMousePriority = pool.readInt(inStream);
+        showChangeMouse = inStream.readBoolean();
 
         drawAsync = inStream.readBoolean();
 
@@ -798,9 +801,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             caption = getCaptionOrEmpty();
         }
 
-        return showChangeKey && changeKey != null
-                ? caption + " (" + getChangeKeyCaption() + ")"
-                : caption;
+        String keyEventCaption = showChangeKey && changeKey != null ? getChangeKeyCaption() : null;
+        String mouseEventCaption = showChangeMouse && changeMouse != null ? changeMouse.mouseEvent : null;
+        String eventCaption = keyEventCaption != null ? (mouseEventCaption != null ? (keyEventCaption + " / " + mouseEventCaption) : keyEventCaption) : mouseEventCaption;
+        return caption + (eventCaption != null ? "(" + eventCaption + ")" : "");
     }
 
     private String getChangeKeyCaption() {

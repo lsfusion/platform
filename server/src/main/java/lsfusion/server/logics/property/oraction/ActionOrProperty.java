@@ -606,6 +606,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         private String changeMouse;
         private Map<String, BindingMode> mouseBindingsModes;
         private Integer changeMousePriority;
+        private Boolean showChangeMouse;
 
         // для всех
         private ClassViewType viewType;
@@ -652,6 +653,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
                 propertyView.changeMouse = changeMouse != null ? new MouseInputEvent(changeMouse, mouseBindingsModes) : null;
             if (propertyView.changeMousePriority == null)
                 propertyView.changeMousePriority = changeMousePriority;
+            if (propertyView.showChangeMouse == null)
+                propertyView.showChangeMouse = BaseUtils.nvl(showChangeMouse, true);
 
             if(propertyView.pattern == null)
                 propertyView.pattern = pattern;
@@ -709,6 +712,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
                 setChangeMouse(options.changeMouse, options.mouseBindingsModes);
             if(changeMousePriority == null)
                 setChangeMousePriority(options.changeMousePriority);
+            if(showChangeMouse == null)
+                setShowChangeMouse(options.showChangeMouse);
 
             if(viewType == null)
                 setViewType(options.viewType);
@@ -809,6 +814,10 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
         public void setChangeMousePriority(Integer changeMousePriority) {
             this.changeMousePriority = changeMousePriority;
+        }
+
+        public void setShowChangeMouse(Boolean showChangeMouse) {
+            this.showChangeMouse = showChangeMouse;
         }
 
         public void setViewType(ClassViewType viewType) {
