@@ -19,7 +19,7 @@ public class GRegularFilter implements Serializable {
 
     public String getFullCaption() {
         String fullCaption = caption;
-        if (showKey && bindingEvent != null) {
+        if (showKey && bindingEvent != null && bindingEvent.inputEvent != null) {
             fullCaption += " (" + (bindingEvent.inputEvent instanceof GMouseInputEvent ? ((GMouseInputEvent) bindingEvent.inputEvent).mouseEvent : ((GKeyInputEvent) bindingEvent.inputEvent).keyStroke) + ")";
         }
         return fullCaption;
