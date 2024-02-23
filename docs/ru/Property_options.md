@@ -25,6 +25,7 @@ TABLE tableName
 INDEXED [LIKE | MATCH]
 NONULL [DELETE] eventClause
 AUTOSET
+PATTERN patternExpr
 CHARWIDTH width [FLEX | NOFLEX]
 REGEXP rexpr [message] 
 ECHO
@@ -129,6 +130,14 @@ DEFAULTCOMPARE [compare]
     - `NOFLEX`
 
         Ключевое слово. Если указано, коэффициент расширения значения свойства автоматически устанавливается равным нулю.
+
+- `PATTERN patternExpr`
+
+    Указание шаблона форматирования значения свойства. Синтаксис задания шаблона аналогичен синтаксису [DecimalFormat](https://docs.oracle.com/javase/8/docs/api/java/text/DecimalFormat.html) либо [SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html) в зависимости от типа значения.
+    
+    - `patternExpr`
+
+      [Выражение](Expression.md), значение которого задает шаблон форматирования.
 
 - `REGEXP rexpr [message]`
 
