@@ -93,10 +93,6 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
     protected abstract PValue getDateInputValue();
     protected abstract boolean isSinglePicker();
 
-    private void setInputValue() {
-        setTextInputValue(tryFormatInputText(getDateInputValue()));
-    }
-
     private InputElement getInputElement() {
         return inputElement;
     }
@@ -192,9 +188,6 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
             onKeydown: function (e) {
                 if (e.keyCode === 27)
                     thisObj.@DateRangePickerBasedCellEditor::pickerCancel(*)(parent, @lsfusion.gwt.client.form.property.cell.controller.CancelReason::ESCAPE_PRESSED);
-            },
-            onClickDate: function () {
-                thisObj.@DateRangePickerBasedCellEditor::setInputValue()();
             }
         });
 
@@ -218,12 +211,6 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
                 }
             });
         }
-
-        //update input element
-        $(thisObj.@DateRangePickerBasedCellEditor::getPickerContainer()()).on('keyup change.daterangepicker', function (e) {
-            if (e.target.tagName !== 'SELECT')
-                thisObj.@DateRangePickerBasedCellEditor::setInputValue()();
-        });
 
         editElement.on('cancel.daterangepicker', function () {
             thisObj.@DateRangePickerBasedCellEditor::pickerCancel(*)(parent);

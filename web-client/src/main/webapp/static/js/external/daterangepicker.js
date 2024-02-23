@@ -129,12 +129,6 @@
             this.onKeydown = options.onKeydown;
         }
 
-        // PATCHED: added onClickDate function
-        this.onClickDate = function () {}
-        if (typeof  options.onClickDate === 'function') {
-            this.onClickDate = options.onClickDate;
-        }
-
         if (typeof options.locale === 'object') {
 
             if (typeof options.locale.direction === 'string')
@@ -1350,9 +1344,8 @@
                 this.endDate = null;
                 this.setStartDate(date.clone());
 
-                // PATCHED: added this.onClickDate();
-                // we need to call onClickDate() to update input field BEFORE clickApply() is triggered
-                this.onClickDate();
+                // PATCHED: added this.updateElement();
+                this.updateElement();
             } else if (!this.endDate && date.isBefore(this.startDate)) {
                 //special case: clicking the same date for start/end,
                 //but the time of the end date is before the start date
@@ -1376,8 +1369,8 @@
                 }
                 this.setEndDate(date.clone());
 
-                // PATCHED: added this.onClickDate();
-                this.onClickDate();
+                // PATCHED: added this.updateElement();
+                this.updateElement();
 
                 if (this.autoApply) {
                   this.calculateChosenLabel();
@@ -1588,7 +1581,9 @@
             if (this.element.is('input') && this.autoUpdateInput) {
                 var newValue = this.startDate.format(this.locale.format);
                 if (!this.singleDatePicker) {
-                    newValue += this.locale.separator + this.endDate.format(this.locale.format);
+                    // PATCHED: added this.endDate != null to use oldEndDate because now updateElement can be called from clickDate function
+                    var endDate = this.endDate != null ? this.endDate : this.oldEndDate;
+                    newValue += this.locale.separator + endDate.format(this.locale.format);
                 }
                 if (newValue !== this.element.val()) {
                     this.element.val(newValue).trigger('change');
