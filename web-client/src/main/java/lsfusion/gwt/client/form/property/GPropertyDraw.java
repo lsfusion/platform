@@ -668,7 +668,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         String keyEventCaption = showChangeKey && hasKeyBinding() ? getKeyBindingText() : null;
         String mouseEventCaption = showChangeMouse && hasMouseBinding() ? getMouseBindingText() : null;
         String eventCaption = keyEventCaption != null ? (mouseEventCaption != null ? (keyEventCaption + " / " + mouseEventCaption) : keyEventCaption) : mouseEventCaption;
-        return caption + (eventCaption != null ? "(" + eventCaption + ")" : "");
+        return caption + (eventCaption != null ? " (" + eventCaption + ")" : "");
     }
 
     public String getNotEmptyCaption(String caption) {

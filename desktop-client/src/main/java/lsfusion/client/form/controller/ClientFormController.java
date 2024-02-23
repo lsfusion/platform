@@ -452,20 +452,8 @@ public class ClientFormController implements AsyncListener {
         comboBox.addItem(new ClientRegularFilterWrapper(getString("form.all")));
         for (final ClientRegularFilter filter : filterGroup.filters) {
             comboBox.addItem(new ClientRegularFilterWrapper(filter));
-            if(filter.inputEvent != null) {
-                Binding binding = new Binding(filterGroup.groupObject, nvl(filter.priority, 0)) {
-                    @Override
-                    public boolean pressed(java.awt.event.InputEvent ke) {
-                        comboBox.setSelectedItem(new ClientRegularFilterWrapper(filter));
-                        return true;
-                    }
-                    @Override
-                    public boolean showing() {
-                        return true;
-                    }
-                };
-                addBinding(filter.inputEvent, binding);
-            }
+            addBinding(filterGroup.groupObject, comboBox, filter, filter.keyInputEvent, filter.keyPriority);
+            addBinding(filterGroup.groupObject, comboBox, filter, filter.mouseInputEvent, filter.mousePriority);
         }
 
         if (filterGroup.defaultFilterIndex >= 0) {
@@ -493,6 +481,22 @@ public class ClientFormController implements AsyncListener {
         addFilterView(filterGroup, comboBox);
     }
 
+    private void addBinding(ClientGroupObject groupObject, ComboBoxWidget comboBox, ClientRegularFilter filter, InputEvent inputEvent, Integer priority) {
+        if(inputEvent != null) {
+            addBinding(inputEvent, new Binding(groupObject, nvl(priority, 0)) {
+                @Override
+                public boolean pressed(java.awt.event.InputEvent ke) {
+                    comboBox.setSelectedItem(new ClientRegularFilterWrapper(filter));
+                    return true;
+                }
+                @Override
+                public boolean showing() {
+                    return true;
+                }
+            });
+        }
+    }
+
     private void createSingleFilterComponent(final ClientRegularFilterGroup filterGroup, final ClientRegularFilter singleFilter) {
         final SingleFilterBox checkBox = new SingleFilterBox(filterGroup, singleFilter) {
             @Override
@@ -508,8 +512,13 @@ public class ClientFormController implements AsyncListener {
 
         addFilterView(filterGroup, checkBox);
 
-        if(singleFilter.inputEvent != null) {
-            Binding binding = new Binding(filterGroup.groupObject, nvl(singleFilter.priority, 0)) {
+        addBinding(filterGroup.groupObject, checkBox, singleFilter.keyInputEvent, singleFilter.keyPriority);
+        addBinding(filterGroup.groupObject, checkBox, singleFilter.mouseInputEvent, singleFilter.mousePriority);
+    }
+
+    private void addBinding(ClientGroupObject groupObject, SingleFilterBox checkBox, InputEvent inputEvent, Integer priority) {
+        if(inputEvent != null) {
+            addBinding(inputEvent, new Binding(groupObject, nvl(priority, 0)) {
                 @Override
                 public boolean pressed(java.awt.event.InputEvent ke) {
                     checkBox.setSelected(!checkBox.isSelected());
@@ -519,9 +528,7 @@ public class ClientFormController implements AsyncListener {
                 public boolean showing() {
                     return true;
                 }
-            };
-
-            addBinding(singleFilter.inputEvent, binding);
+            });
         }
     }
 

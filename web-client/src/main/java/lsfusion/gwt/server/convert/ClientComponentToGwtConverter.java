@@ -185,8 +185,12 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         GRegularFilter filter = new GRegularFilter();
         filter.ID = clientFilter.ID;
         filter.caption = clientFilter.caption;
-        filter.bindingEvent = convertBinding(clientFilter.inputEvent, clientFilter.priority);
+        if (clientFilter.keyInputEvent != null)
+            filter.keyBindingEvent = convertBinding(clientFilter.keyInputEvent, clientFilter.keyPriority);
         filter.showKey = clientFilter.showKey;
+        if (clientFilter.mouseInputEvent != null)
+            filter.mouseBindingEvent = convertBinding(clientFilter.mouseInputEvent, clientFilter.mousePriority);
+        filter.showMouse = clientFilter.showMouse;
         return filter;
     }
 

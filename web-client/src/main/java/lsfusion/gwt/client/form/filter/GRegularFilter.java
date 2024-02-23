@@ -10,18 +10,19 @@ public class GRegularFilter implements Serializable {
     public int ID;
 
     public String caption;
-    public GInputBindingEvent bindingEvent;
+    public GInputBindingEvent keyBindingEvent;
     public boolean showKey;
+    public GInputBindingEvent mouseBindingEvent;
+    public boolean showMouse;
 
     public GRegularFilter() {
         ID = -1;
     }
 
     public String getFullCaption() {
-        String fullCaption = caption;
-        if (showKey && bindingEvent != null) {
-            fullCaption += " (" + (bindingEvent.inputEvent instanceof GMouseInputEvent ? ((GMouseInputEvent) bindingEvent.inputEvent).mouseEvent : ((GKeyInputEvent) bindingEvent.inputEvent).keyStroke) + ")";
-        }
-        return fullCaption;
+        String keyEventCaption = showKey && keyBindingEvent != null ? ((GKeyInputEvent) keyBindingEvent.inputEvent).keyStroke.toString() : null;
+        String mouseEventCaption = showMouse && mouseBindingEvent != null ? ((GMouseInputEvent) mouseBindingEvent.inputEvent).mouseEvent : null;
+        String eventCaption = keyEventCaption != null ? (mouseEventCaption != null ? (keyEventCaption + " / " + mouseEventCaption) : keyEventCaption) : mouseEventCaption;
+        return caption + (eventCaption != null ? " (" + eventCaption + ")" : "");
     }
 }

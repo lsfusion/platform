@@ -1311,10 +1311,16 @@ formRegularFilterDeclaration returns [RegularFilterInfo filter]
 	String keyEvent = null;
 	String mouseEvent = null;
 	boolean isMouseEvent = false;
+	boolean showKey = true;
+	boolean showMouse = true;
 }
-    :   'FILTER' caption=localizedStringLiteral fd=formExprDeclaration[null] ({ isMouseEvent = false; } ('KEY' | 'MOUSE' { isMouseEvent = true; })? key=stringLiteral {if(isMouseEvent) mouseEvent = $key.val; else keyEvent = $key.val;})* setDefault=filterSetDefault
+    :   'FILTER' caption=localizedStringLiteral fd=formExprDeclaration[null] (
+            { isMouseEvent = false; showKey = true; showMouse = true; } ('KEY' | 'MOUSE' { isMouseEvent = true; })?
+            key=stringLiteral {if(isMouseEvent) mouseEvent = $key.val; else keyEvent = $key.val;}
+            ('SHOW' | 'HIDE' { if(isMouseEvent) showMouse = false; else showKey = false; })?
+            )* setDefault=filterSetDefault
         {
-            $filter = new RegularFilterInfo($caption.val, keyEvent, mouseEvent, $fd.property, $fd.mapping, $setDefault.isDefault);
+            $filter = new RegularFilterInfo($caption.val, keyEvent, showKey, mouseEvent, showMouse, $fd.property, $fd.mapping, $setDefault.isDefault);
         }
     ;
 	

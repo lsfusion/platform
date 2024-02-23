@@ -804,7 +804,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         String keyEventCaption = showChangeKey && changeKey != null ? getChangeKeyCaption() : null;
         String mouseEventCaption = showChangeMouse && changeMouse != null ? changeMouse.mouseEvent : null;
         String eventCaption = keyEventCaption != null ? (mouseEventCaption != null ? (keyEventCaption + " / " + mouseEventCaption) : keyEventCaption) : mouseEventCaption;
-        return caption + (eventCaption != null ? "(" + eventCaption + ")" : "");
+        return caption + (eventCaption != null ? " (" + eventCaption + ")" : "");
     }
 
     private String getChangeKeyCaption() {
