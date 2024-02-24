@@ -9,15 +9,17 @@ public class GetPriorityAsyncValues extends FormPriorityAction<ListResult> {
     public String actionSID; // extended SID ServerResponse.events + FILTER + SYNCREQUEST
     public String value;
     public int index;
+    public int increaseValuesNeededCount;
 
     public GetPriorityAsyncValues() {
     }
 
-    public GetPriorityAsyncValues(int propertyID, GGroupObjectValue columnKey, String actionSID, String value, int index) {
+    public GetPriorityAsyncValues(int propertyID, GGroupObjectValue columnKey, String actionSID, String value, int index, int increaseValuesNeededCount) {
         this.propertyID = propertyID;
         this.columnKey = columnKey;
         this.actionSID = actionSID;
         this.value = value;
         this.index = index;
+        this.increaseValuesNeededCount = increaseValuesNeededCount;
     }
 }

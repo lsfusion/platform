@@ -420,15 +420,16 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
     }
 
     public GInputBindingEvent convertBinding(lsfusion.interop.form.event.InputEvent event, Integer priority) {
+        Map<String, BindingMode> bindingModes = event != null ? event.bindingModes : null;
         return new GInputBindingEvent(convertOrCast(event),
                         new GBindingEnv(priority != null && priority.equals(0) ? null : priority,
-                        convertOrCast(event.bindingModes != null ? event.bindingModes.get("preview") : null),
-                        convertOrCast(event.bindingModes != null ? event.bindingModes.get("dialog") : null),
-                        convertOrCast(event.bindingModes != null ? event.bindingModes.get("group") : null),
-                        convertOrCast(event.bindingModes != null ? event.bindingModes.get("editing") : null),
-                        convertOrCast(event.bindingModes != null ? event.bindingModes.get("showing") : null),
-                        convertOrCast(event.bindingModes != null ? event.bindingModes.get("panel") : null),
-                        convertOrCast(event.bindingModes != null ? event.bindingModes.get("cell") : null)
+                        convertOrCast(bindingModes != null ? bindingModes.get("preview") : null),
+                        convertOrCast(bindingModes != null ? bindingModes.get("dialog") : null),
+                        convertOrCast(bindingModes != null ? bindingModes.get("group") : null),
+                        convertOrCast(bindingModes != null ? bindingModes.get("editing") : null),
+                        convertOrCast(bindingModes != null ? bindingModes.get("showing") : null),
+                        convertOrCast(bindingModes != null ? bindingModes.get("panel") : null),
+                        convertOrCast(bindingModes != null ? bindingModes.get("cell") : null)
                         ));
     }
 

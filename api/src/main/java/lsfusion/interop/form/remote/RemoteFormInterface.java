@@ -65,7 +65,7 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
 
     // async events : properties
 
-    byte[] getAsyncValues(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] fullKey, String actionSID, String value, int index) throws RemoteException;
+    byte[] getAsyncValues(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] fullKey, String actionSID, String value, int index, int increaseValuesNeededCount) throws RemoteException;
 
     // events : filters + orders
 
