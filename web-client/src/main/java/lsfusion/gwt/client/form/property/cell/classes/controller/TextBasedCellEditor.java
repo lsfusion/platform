@@ -58,6 +58,10 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
     protected GCompare compare;
     protected SuggestBox suggestBox = null;
 
+    protected boolean isNative() {
+        return inputElementType.hasNativePopup();
+    }
+
     public TextBasedCellEditor(EditManager editManager, GPropertyDraw property) {
         this(editManager, property, null, null);
     }
@@ -122,10 +126,17 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
             }
         }
         started = true;
-        pattern = renderContext.getPattern();
-        mask = getMaskFromPattern();
 
         super.start(handler, parent, renderContext, notFocusable, oldValue);
+
+        if(!isNative()) {
+            pattern = renderContext.getPattern();
+            mask = getMaskFromPattern();
+            if(mask != null) {
+                GwtClientUtils.setMask(inputElement, mask);
+                inputElement.select(); // setting inputmask somewhy drops selection, later should be solved some other way (positionCaretOnClick doesn't work)
+            }
+        }
 
         boolean allSuggestions = true;
         if(needReplace(parent)) {
@@ -142,9 +153,9 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
 
             if (selectAll)
                 inputElement.select();
-        }
+        } // assert !hasOldValue
 
-        if (hasList && !inputElementType.hasNativePopup()) {
+        if (hasList && !isNative()) {
             suggestBox = createSuggestBox(inputElement, parent);
 
             // don't update suggestions if editing started with char key event. as editor text is empty on init - request is being sent twice
@@ -153,10 +164,6 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
             if (!GKeyStroke.isCharAddKeyEvent(handler.event)) {
                 suggestBox.showSuggestionList(allSuggestions);
             }
-        }
-
-        if(mask != null) {
-            GwtClientUtils.setMask(inputElement, mask);
         }
 
         String regexp = renderContext.getRegexp();

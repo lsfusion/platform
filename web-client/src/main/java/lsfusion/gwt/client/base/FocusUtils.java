@@ -49,24 +49,28 @@ public class FocusUtils {
         focus(element, reason, null);
     }
     public static void focus(Element element, Reason reason, Event event) {
+        select(element, reason, event);
+
         Object prevReason = element.getPropertyObject(focusReason); // just in case when there are nested focuses
         assert prevReason == null || prevReason == reason;
         element.setPropertyObject(focusReason, reason);
         try {
-            GInputType inputType;
-            if(reason.selectInputAll() && (inputType = InputBasedCellRenderer.getInputElementType(element)) != null &&
-                    inputType.isSelectAll()) {
-                InputElement inputElement = (InputElement) element;
-                if(event != null) { // we don't want mouse up because it will drop the selection
-                    assert reason == Reason.MOUSECHANGE;
-                    MainFrame.preventClickAfterDown(inputElement, event);
-                }
-                inputElement.select();
-            }
-
             focus(element, reason.preventScroll());
         } finally {
             element.setPropertyObject(focusReason, prevReason);
+        }
+    }
+
+    private static void select(Element element, Reason reason, Event event) {
+        GInputType inputType;
+        if(reason.selectInputAll() && (inputType = InputBasedCellRenderer.getInputElementType(element)) != null &&
+                inputType.isSelectAll()) {
+            InputElement inputElement = (InputElement) element;
+            if(event != null) { // we don't want mouse up because it will drop the selection
+                assert reason == Reason.MOUSECHANGE;
+                MainFrame.preventClickAfterDown(inputElement, event);
+            }
+            inputElement.select();
         }
     }
 

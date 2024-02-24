@@ -2230,10 +2230,9 @@ public class GFormController implements EditManager {
                 cellEditor.setCancelTheSameValueOnBlur(editContext.getValue());
 
             if(!hasOldValue) { // property.baseType.equals(type) actually there should be something like compatible, but there is no such method for now, so we'll do this check in editors
+                assert oldValue == null;
                 oldValue = editContext.getValue();
-                if(oldValue == null)
-                    oldValue = cellEditor.getDefaultNullValue();
-                else if(!canUseChangeValueForRendering && !hasCustomEditor) {
+                if(oldValue != null && !canUseChangeValueForRendering && !hasCustomEditor) {
                     try {
                         oldValue = type.parseString(PValue.getStringValue(oldValue), editContext.getRenderContext().getPattern());
                     } catch (ParseException e) {

@@ -1,15 +1,18 @@
 package lsfusion.gwt.client.form.property;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.JSNIHelper;
 
 import java.util.Arrays;
 import java.util.function.BiFunction;
 
 public class SimpleDatePatternConverter {
-    public static JavaScriptObject convert(String pattern) {
+    public static JavaScriptObject convert(String pattern, boolean interval) {
         JavaScriptObject options = JSNIHelper.createObject();
         String mask = patternToMask(pattern, SimpleDatePatternConverter::convertSymbol);
+        if(interval)
+            mask = GwtClientUtils.formatInterval(mask, mask);
 //        com.allen_sauer.gwt.log.client.Log.error(mask);
         JSNIHelper.setAttribute(options, "insertMode", false);
         JSNIHelper.setAttribute(options, "insertModeVisual", false);

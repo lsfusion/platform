@@ -9,7 +9,7 @@ import java.io.Serializable;
 public class GRequestUserInputAction implements GAction {
     public GType readType;
     public Serializable oldValue;
-    public boolean hasOldValue;
+    public boolean hasOldValue; // assert !hasOldValue => oldValue = null
 
     public String customChangeFunction;
 

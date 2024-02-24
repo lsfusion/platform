@@ -9,7 +9,6 @@ import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 
 import java.text.ParseException;
-import java.util.Date;
 
 public class DateCellEditor extends DateRangePickerBasedCellEditor {
 
@@ -25,18 +24,18 @@ public class DateCellEditor extends DateRangePickerBasedCellEditor {
         return type;
     }
 
-    @Override
-    protected JsDate getStartDate(PValue oldValue) {
-        return GwtClientUtils.toJsDate(type.toDate(oldValue));
-    }
+//    @Override
+//    protected JsDate getStartDate(PValue oldValue) {
+//        return GwtClientUtils.toJsDate(type.toDate(oldValue));
+//    }
+//
+//    @Override
+//    protected JsDate getEndDate(PValue oldValue) {
+//        return GwtClientUtils.toJsDate(type.toDate(oldValue));
+//    }
 
     @Override
-    protected JsDate getEndDate(PValue oldValue) {
-        return GwtClientUtils.toJsDate(type.toDate(oldValue));
-    }
-
-    @Override
-    protected String getPattern() {
+    protected String getSinglePattern() {
         return type.getFormat(pattern).getPattern();
     }
 
@@ -59,10 +58,10 @@ public class DateCellEditor extends DateRangePickerBasedCellEditor {
         return true;
     }
 
-    @Override
-    public PValue getDefaultNullValue() {
-        return type.fromDate(new Date());
-    }
+//    @Override
+//    public PValue getDefaultNullValue() {
+//        return type.fromDate(new Date());
+//    }
 
     // valueAsDate doesn't work for datetime + hours
 //    public native static JsDate getDateInputValue(InputElement element)/*-{

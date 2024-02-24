@@ -1069,7 +1069,11 @@ public class GwtClientUtils {
     }
 
     public static String formatInterval(PValue obj, Function<Long, String> formatFunction) {
-        return formatFunction.apply(PValue.getIntervalValue(obj, true)) + " - " + formatFunction.apply(PValue.getIntervalValue(obj, false));
+        return formatInterval(formatFunction.apply(PValue.getIntervalValue(obj, true)), formatFunction.apply(PValue.getIntervalValue(obj, false)));
+    }
+
+    public static String formatInterval(String left, String right) {
+        return left + " - " + right;
     }
 
     //  will wrap with div, because otherwise other wrappers will add and not remove classes after update
