@@ -100,7 +100,7 @@ We need to create an action that will delete the marked orders and immediately s
 deleteSelectedOrders 'Delete marked orders' ()  {
     NEWSESSION NESTED(selected) {
         DELETE Order o WHERE selected(o);
-        ASK 'You are about to delete ' + (GROUP SUM 1 IF DROPPED (Order o)) + ' orders. Continue?' DO {
+        ASK 'You are about to delete ' + (GROUP SUM 1 IF DROPPED(o IS Order)) + ' orders. Continue?' DO {
             APPLY;
         }
     }

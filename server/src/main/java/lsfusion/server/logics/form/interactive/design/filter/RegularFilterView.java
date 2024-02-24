@@ -27,7 +27,8 @@ public class RegularFilterView extends IdentityObject implements ServerIdentityS
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {
         String name = ThreadLocalContext.localize(entity.name);
         pool.writeString(outStream, name);
-        pool.writeObject(outStream, entity.key);
+        pool.writeObject(outStream, entity.inputEvent);
+        pool.writeInt(outStream, entity.priority);
         outStream.writeBoolean(entity.showKey);
     }
 

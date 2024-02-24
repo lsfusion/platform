@@ -6,8 +6,10 @@ The `ACTION` statement creates an [action](Actions.md).
 
 ### Syntax
 
-    [ACTION] name [caption] [(param1, ..., paramN)] { operator } [options];
-    [ACTION] name [caption] [(param1, ..., paramN)] contextIndependentOperator [options];
+```
+[ACTION] name [caption] [(param1, ..., paramN)] { operator } [options];
+[ACTION] name [caption] [(param1, ..., paramN)] contextIndependentOperator [options];
+```
 
 ### Description
 

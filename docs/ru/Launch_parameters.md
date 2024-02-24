@@ -39,12 +39,14 @@ lsFusion параметры запуска сервера приложений �
 
 **$FUSION\_DIR$/conf/settings.properties**
 
-    db.server=localhost
-    db.name=lsfusion
-    db.user=postgres
-    db.password=pswrd
+```
+db.server=localhost
+db.name=lsfusion
+db.user=postgres
+db.password=pswrd
 
-    rmi.port=7652
+rmi.port=7652
+```
 
 
 :::info

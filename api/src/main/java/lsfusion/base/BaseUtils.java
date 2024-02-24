@@ -56,7 +56,7 @@ public class BaseUtils {
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 265;
+        return 267;
     }
 
     public static String getPlatformVersion() {
@@ -2081,5 +2081,9 @@ public class BaseUtils {
 
     public static String[] getNotNullStringArray(String[] array) {
         return array == null ? new String[0] : array;
+    }
+
+    public static int roundToDegree(int base, int value) {
+        return (int) (Math.pow(base, Math.log(value) / Math.log(base)));
     }
 }

@@ -6,11 +6,13 @@ title: 'Инструкция EXTEND FORM'
 
 ### Синтаксис
 
-    EXTEND FORM formName 
-        formBlock1
-        ...
-        formBlockN
-    ;
+```
+EXTEND FORM formName 
+    formBlock1
+    ...
+    formBlockN
+;
+```
 
 ### Описание
 

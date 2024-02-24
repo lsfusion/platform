@@ -6,7 +6,9 @@ The `CHANGE` operator creates an [action](Actions.md) that [changes properties](
 
 ### Syntax
 
-    [CHANGE] propertyId(expr1, ..., exprN) <- valueExpr [WHERE whereExpr]
+```
+[CHANGE] propertyId(expr1, ..., exprN) <- valueExpr [WHERE whereExpr]
+```
 
 ### Description
 

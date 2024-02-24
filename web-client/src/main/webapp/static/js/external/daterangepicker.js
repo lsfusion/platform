@@ -482,8 +482,10 @@
                     this.startDate.minute(Math.floor(this.startDate.minute() / this.timePickerIncrement) * this.timePickerIncrement);
             }
 
-            if (!this.isShowing)
-                this.updateElement();
+            // PATCHED: it gives the problem that when setting a-b in the constructor, it first sets a then b which leads to unnecessary change and thus dropping selection
+            // and it's not clear what for it is here anyway, because in the end of constructor there is an updateElement
+            // if (!this.isShowing)
+            //     this.updateElement();
 
             this.updateMonthsInView();
         },
@@ -514,8 +516,9 @@
 
             this.container.find('.drp-selected').html(this.startDate.format(this.locale.format) + this.locale.separator + this.endDate.format(this.locale.format));
 
-            if (!this.isShowing)
-                this.updateElement();
+            // PATCHED: see setStartDate
+            // if (!this.isShowing)
+            //     this.updateElement();
 
             this.updateMonthsInView();
         },
@@ -1585,7 +1588,9 @@
                     var endDate = this.endDate != null ? this.endDate : this.oldEndDate;
                     newValue += this.locale.separator + endDate.format(this.locale.format);
                 }
-                if (newValue !== this.element.val()) {
+                var oldValue = this.element.val();
+                if (newValue !== oldValue) {
+                    this.element.val();
                     this.element.val(newValue).trigger('change');
                 }
             }

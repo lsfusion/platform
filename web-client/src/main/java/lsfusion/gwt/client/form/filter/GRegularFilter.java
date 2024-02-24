@@ -1,6 +1,8 @@
 package lsfusion.gwt.client.form.filter;
 
-import lsfusion.gwt.client.form.event.GKeyStroke;
+import lsfusion.gwt.client.form.event.GInputBindingEvent;
+import lsfusion.gwt.client.form.event.GKeyInputEvent;
+import lsfusion.gwt.client.form.event.GMouseInputEvent;
 
 import java.io.Serializable;
 
@@ -8,7 +10,7 @@ public class GRegularFilter implements Serializable {
     public int ID;
 
     public String caption;
-    public GKeyStroke key;
+    public GInputBindingEvent bindingEvent;
     public boolean showKey;
 
     public GRegularFilter() {
@@ -17,8 +19,8 @@ public class GRegularFilter implements Serializable {
 
     public String getFullCaption() {
         String fullCaption = caption;
-        if (showKey && key != null) {
-            fullCaption += " (" + key + ")";
+        if (showKey && bindingEvent != null && bindingEvent.inputEvent != null) {
+            fullCaption += " (" + (bindingEvent.inputEvent instanceof GMouseInputEvent ? ((GMouseInputEvent) bindingEvent.inputEvent).mouseEvent : ((GKeyInputEvent) bindingEvent.inputEvent).keyStroke) + ")";
         }
         return fullCaption;
     }

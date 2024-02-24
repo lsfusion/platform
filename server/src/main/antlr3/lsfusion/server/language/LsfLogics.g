@@ -1308,11 +1308,12 @@ extendFilterGroupDeclaration
 	
 formRegularFilterDeclaration returns [RegularFilterInfo filter]
 @init {
-	String key = null;
+	String inputEventOptions = null;
+	boolean isMouseEvent = false;
 }
-    :   'FILTER' caption=localizedStringLiteral fd=formExprDeclaration[null] (keystroke=stringLiteral {key = $keystroke.val;})? setDefault=filterSetDefault
+    :   'FILTER' caption=localizedStringLiteral fd=formExprDeclaration[null] ('KEY' | 'MOUSE' { isMouseEvent = true; }) ? (key=stringLiteral {inputEventOptions = $key.val;})? setDefault=filterSetDefault
         {
-            $filter = new RegularFilterInfo($caption.val, key, $fd.property, $fd.mapping, $setDefault.isDefault);
+            $filter = new RegularFilterInfo($caption.val, inputEventOptions, isMouseEvent, $fd.property, $fd.mapping, $setDefault.isDefault);
         }
     ;
 	
@@ -2653,13 +2654,16 @@ newExecutorActionDefinitionBody[List<TypedParameter> context, boolean dynamic] r
 @init {
 	List<LPWithParams> props = new ArrayList<>();
 	List<LP> localProps = new ArrayList<LP>();
+	Boolean syncType = null;
 }
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedNewExecutorAction($aDB.action, $threadsExpr.property);
+		$action = self.addScriptedNewExecutorAction($aDB.action, $threadsExpr.property, syncType);
 	}
 }
-	:	'NEWEXECUTOR' aDB=keepContextFlowActionDefinitionBody[context, dynamic] 'THREADS' threadsExpr=propertyExpression[context, dynamic] ';'
+	:	'NEWEXECUTOR' aDB=keepContextFlowActionDefinitionBody[context, dynamic]
+	        'THREADS' threadsExpr=propertyExpression[context, dynamic]
+	         (sync = syncTypeLiteral { syncType = $sync.val; })? ';'
 	;
 
 newSessionActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
@@ -5816,6 +5820,7 @@ STRING_LITERAL	:	STRING_META_FRAGMENT;
 WS				:	(NEWLINE | SPACE) { $channel=HIDDEN; };
 COLOR_LITERAL 	:	'#' HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT;
 COMMENTS		:	('//' .* '\n') { $channel=HIDDEN; };
+MULTILINE_COMMENTS	:	'/*' .* '*/' { $channel=HIDDEN; };	 
 UINT_LITERAL 	:	DIGITS;
 ULONG_LITERAL	:	DIGITS('l'|'L');
 UDOUBLE_LITERAL	:	DIGITS '.' EDIGITS('d'|'D');

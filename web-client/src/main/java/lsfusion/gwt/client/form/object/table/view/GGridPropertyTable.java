@@ -242,7 +242,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         addFilterBinding(event::isEvent, pressed);
     }
     private void addFilterBinding(GFormController.BindingCheck event, GFormController.BindingExec pressed) {
-        form.addBinding(event, new GBindingEnv(null, null, null, GBindingMode.ONLY, GBindingMode.NO, null, null, null), null, pressed, tableContainer, groupObject);
+        form.addBinding(event, new GBindingEnv(null, GBindingMode.NO, null, GBindingMode.ONLY, GBindingMode.NO, null, null, null), null, pressed, tableContainer, groupObject);
     }
 
     public GFont getFont() {
@@ -901,8 +901,8 @@ protected Double getUserFlex(int i) {
     public UpdateContext getUpdateContext(Cell cell, Element renderElement, GPropertyDraw property, GridPropertyColumn column) {
         return new UpdateContext() {
             @Override
-            public void getAsyncValues(String value, String actionSID, AsyncCallback<GFormController.GAsyncResult> callback) {
-                form.getAsyncValues(value, getEditContext(cell, renderElement), actionSID, callback);
+            public void getAsyncValues(String value, String actionSID, AsyncCallback<GFormController.GAsyncResult> callback, int increaseValuesNeededCount) {
+                form.getAsyncValues(value, getEditContext(cell, renderElement), actionSID, callback, increaseValuesNeededCount);
             }
 
             @Override

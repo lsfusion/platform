@@ -16,7 +16,8 @@ Executable exe files:
 **lsFusion 5.1** (OpenJDK **11.0.16**, PostgreSQL **15.1**, Tomcat **9.0.67**, IntelliJ IDEA Community Edition **2022.3.1**)
 
 - [x64](https://download.lsfusion.org/exe/lsfusion-5.1-x64.exe)
-- <details><summary>Older versions</summary>
+- <details>
+  <summary>Older versions</summary>
 
     - lsFusion 5.0 Server & Client
         - [x64](https://download.lsfusion.org/exe/lsfusion-5.0-x64.exe)

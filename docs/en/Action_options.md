@@ -8,17 +8,21 @@ When declaring an [action](Actions.md) in the [`ACTION` statement](ACTION_statem
 
 Options are listed one after another in arbitrary order, separated by spaces or line feeds:
 
-    propertyOption1 ... propertyOptionN
+```
+propertyOption1 ... propertyOptionN
+```
 
 The following set of options is supported (the syntax of each option is indicated on a separate line):
 
-    IN groupName
-    viewType
-    ON eventType { actionOperator }
-    CHANGEKEY key [SHOW | HIDE]
-    ASON eventType [ACTION] propertyId
-    IMAGE path
-    CONFIRM
+```
+IN groupName
+viewType
+ON eventType { actionOperator }
+CHANGEKEY key [SHOW | HIDE]
+ASON eventType [ACTION] propertyId
+IMAGE path
+CONFIRM
+```
 
 ## Description and parameters
 

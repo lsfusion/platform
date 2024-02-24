@@ -9,6 +9,9 @@ import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.interop.action.ServerResponse;
+import lsfusion.interop.form.event.InputEvent;
+import lsfusion.interop.form.event.KeyInputEvent;
+import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.server.base.version.ComplexLocation;
@@ -60,6 +63,7 @@ import java.util.List;
 import java.util.Map;
 
 import static lsfusion.base.BaseUtils.nvl;
+import static lsfusion.server.language.ScriptingLogicsModule.parseKeyStrokeOptions;
 import static lsfusion.server.logics.form.interactive.action.edit.FormSessionScope.OLDSESSION;
 import static lsfusion.server.physics.admin.log.ServerLoggers.startLog;
 
@@ -775,13 +779,23 @@ public class ScriptingFormEntity {
 
     public void addRegularFilters(RegularFilterGroupEntity filterGroup, List<RegularFilterInfo> filters, Version version, boolean extend) throws ScriptingErrorLog.SemanticErrorException {
         for (RegularFilterInfo info : filters) {
-            LocalizedString caption = info.caption;
-            KeyStroke keyStroke = (info.keystroke != null ? KeyStroke.getKeyStroke(info.keystroke) : null);
-            boolean isDefault = info.isDefault;
-
-            if (info.keystroke != null && keyStroke == null) {
-                LM.getErrLog().emitWrongKeyStrokeFormatError(LM.getParser(), info.keystroke);
+            ScriptingLogicsModule.KeyStrokeOptions kso = info.inputEventOptions != null ? parseKeyStrokeOptions(info.inputEventOptions) : null;
+            InputEvent inputEvent;
+            if(info.isMouseEvent) {
+                inputEvent = kso != null ? new MouseInputEvent(kso.keyStroke, kso.bindingModesMap) : null;
+                if (info.inputEventOptions != null && ((MouseInputEvent) inputEvent).mouseEvent == null) {
+                    LM.getErrLog().emitWrongKeyStrokeFormatError(LM.getParser(), info.inputEventOptions);
+                }
+            } else {
+                inputEvent = kso != null ? new KeyInputEvent(KeyStroke.getKeyStroke(kso.keyStroke), kso.bindingModesMap) : null;
+                if (info.inputEventOptions != null && ((KeyInputEvent) inputEvent).keyStroke == null) {
+                    LM.getErrLog().emitWrongKeyStrokeFormatError(LM.getParser(), info.inputEventOptions);
+                }
             }
+
+            Integer priority = kso != null ? kso.priority : null;
+            LocalizedString caption = info.caption;
+            boolean isDefault = info.isDefault;
 
             ImOrderSet<String> mapping = info.mapping;
             LP<?> property = info.property;
@@ -789,7 +803,7 @@ public class ScriptingFormEntity {
             ImOrderSet<ObjectEntity> mappingObjects = getMappingObjects(mapping);
             checkPropertyParameters(property, mappingObjects);
 
-            RegularFilterEntity filter = new RegularFilterEntity(form.genID(), new FilterEntity(form.addPropertyObject(property, mappingObjects), true), caption, keyStroke);
+            RegularFilterEntity filter = new RegularFilterEntity(form.genID(), new FilterEntity(form.addPropertyObject(property, mappingObjects), true), caption, inputEvent, priority);
             if (extend) {
                 form.addRegularFilter(filterGroup, filter, isDefault, version);
             } else {
@@ -897,14 +911,16 @@ public class ScriptingFormEntity {
     
     public static class RegularFilterInfo {
         LocalizedString caption;
-        String keystroke;
+        String inputEventOptions;
+        boolean isMouseEvent;
         LP property;
         ImOrderSet<String> mapping;
         boolean isDefault;
 
-        public RegularFilterInfo(LocalizedString caption, String keystroke, LP property, ImOrderSet<String> mapping, boolean isDefault) {
+        public RegularFilterInfo(LocalizedString caption, String inputEventOptions, boolean isMouseEvent, LP property, ImOrderSet<String> mapping, boolean isDefault) {
             this.caption = caption;
-            this.keystroke = keystroke;
+            this.inputEventOptions = inputEventOptions;
+            this.isMouseEvent = isMouseEvent;
             this.property = property;
             this.mapping = mapping;
             this.isDefault = isDefault;

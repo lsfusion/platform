@@ -6,7 +6,9 @@ The `DELETE` operator creates an [action](Actions.md) that [deletes objects](Cla
 
 ### Syntax
 
-    DELETE expr [WHERE whereExpr]
+```
+DELETE expr [WHERE whereExpr]
+```
 
 ### Description
 

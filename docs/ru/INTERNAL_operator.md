@@ -8,8 +8,10 @@ title: 'Оператор INTERNAL'
 
 Оператор имеет две формы:
 
-    INTERNAL className [(classId1, ..., classIdN)] [NULL]
-    INTERNAL <{anyTokens}> [NULL]
+```
+INTERNAL className [(classId1, ..., classIdN)] [NULL]
+INTERNAL <{anyTokens}> [NULL]
+```
 
 ### Описание
 

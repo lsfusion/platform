@@ -6,10 +6,12 @@ title: 'Операторы AND, OR, NOT, XOR'
 
 ### Синтаксис
 
-    expression1 AND expression2
-    expression1 OR expression2
-    expression1 XOR expression2
-    NOT expression1
+```
+expression1 AND expression2
+expression1 OR expression2
+expression1 XOR expression2
+NOT expression1
+```
 
 ### Параметры
 

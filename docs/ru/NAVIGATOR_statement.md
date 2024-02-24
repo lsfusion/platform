@@ -8,34 +8,42 @@ title: 'Инструкция NAVIGATOR'
 
 Синтаксис представляет собой вложенные друг в друга блоки *инструкций навигатора*. Внешний блок инструкции описывается после ключевого слова `NAVIGATOR`:
 
-    NAVIGATOR {
-        navigatorStatement1 
-        ...
-        navigatorStatementN
-    }
+```
+NAVIGATOR {
+    navigatorStatement1 
+    ...
+    navigatorStatementN
+}
+```
 
 Каждый `navigatorStatementi` описывает одну инструкцию навигатора и может в конце содержать вложенный блок других инструкций навигатора. Инструкции навигатора бывают трех типов:  
 
-    NEW elementDescription [options] [{ ... }];
-    MOVE name [caption] [options] [{ ... }];
-    name [caption] [options] [{ ... }];
+```
+NEW elementDescription [options] [{ ... }];
+MOVE name [caption] [options] [{ ... }];
+name [caption] [options] [{ ... }];
+```
 
 где `elementDescription` в инструкции `NEW` описывает тип элемента, который должен быть создан, и может быть в одном из трех видов:
 
-    FOLDER name [caption] 
-    FORM [name [caption] =] formName
-    ACTION [name [caption] =] actionName
-    [name [caption] =] formElseActionName
+```
+FOLDER name [caption] 
+FORM [name [caption] =] formName
+ACTION [name [caption] =] actionName
+[name [caption] =] formElseActionName
+```
 
 Инструкция навигатора должна завершаться точкой с запятой, если в ней не содержится вложенный блок других инструкций.
 
 Опции элемента навигатора `options` могут перечисляться друг за другом в произвольном порядке. Поддерживается следующий набор опций:
 
-    WINDOW windowName
-    BEFORE elementName
-    AFTER elementName
-    FIRST 
-    IMAGE fileName
+```
+WINDOW windowName
+BEFORE elementName
+AFTER elementName
+FIRST 
+IMAGE fileName
+```
 
 ### Описание
 

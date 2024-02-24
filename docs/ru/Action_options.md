@@ -8,17 +8,21 @@ title: 'Опции действия'
 
 Опции перечисляются друг за другом в произвольном порядке через пробел или переводы строк:
 
-    propertyOption1 ... propertyOptionN
+```
+propertyOption1 ... propertyOptionN
+```
 
 Поддерживается следующий набор опций (синтаксис каждой опции указывается в отдельной строке):
 
-    IN groupName
-    viewType
-    ON eventType { actionOperator }
-    CHANGEKEY key [SHOW | HIDE]
-    ASON eventType [ACTION] propertyId
-    IMAGE path
-    CONFIRM
+```
+IN groupName
+viewType
+ON eventType { actionOperator }
+CHANGEKEY key [SHOW | HIDE]
+ASON eventType [ACTION] propertyId
+IMAGE path
+CONFIRM
+```
 
 ## Описание и параметры
 

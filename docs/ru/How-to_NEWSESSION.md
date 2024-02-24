@@ -100,7 +100,7 @@ EXTEND FORM orders
 deleteSelectedOrders 'Удалить отмеченные заказы' ()  {
     NEWSESSION NESTED(selected) {
         DELETE Order o WHERE selected(o);
-        ASK 'Вы собираетесь удалить ' + (GROUP SUM 1 IF DROPPED(Order o)) + ' заказов. Продолжить ?' DO {
+        ASK 'Вы собираетесь удалить ' + (GROUP SUM 1 IF DROPPED(o IS Order)) + ' заказов. Продолжить ?' DO {
             APPLY;
         }
     }

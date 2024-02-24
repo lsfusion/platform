@@ -6,7 +6,9 @@ The `CLASS` operator creates a property that implements a [matching signature op
 
 ### Syntax
 
-    CLASS(expr) 
+```
+CLASS(expr) 
+```
 
 ### Description
 

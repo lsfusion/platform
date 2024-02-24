@@ -6,12 +6,16 @@ title: 'Оператор ABSTRACT'
 
 ### Синтаксис
 
-    ABSTRACT [type [exclusionType]] [CHECKED] returnClassName(argClassName1, ..., argClassNameN)
+```
+ABSTRACT [type [exclusionType]] [CHECKED] returnClassName(argClassName1, ..., argClassNameN)
+```
 
 Где `exclusionType` бывает двух видов:
 
-    EXCLUSIVE
-    OVERRIDE [FIRST | LAST]
+```
+EXCLUSIVE
+OVERRIDE [FIRST | LAST]
+```
 
 ### Описание
 

@@ -8,22 +8,28 @@ The `PARTITION` operator creates a [property](Properties.md) that implements [pa
 
 There are two different types of `PARTITION` operator. The first implements partition/order:
 
-    PARTITION 
-    type expr
-    [ORDER [DESC] orderExpr1, ..., orderExprK]
-    [BY groupExpr1, ..., groupExprM]
+```
+PARTITION 
+type expr
+[ORDER [DESC] orderExpr1, ..., orderExprK]
+[BY groupExpr1, ..., groupExprM]
+```
 
 The second implements simple distribution:
 
-    PARTITION 
-    UNGROUP propertyId distributionType expr
-    [ORDER [DESC] orderExpr1, ..., orderExprK]
-    [BY groupExpr1, ..., groupExprM]
+```
+PARTITION 
+UNGROUP propertyId distributionType expr
+[ORDER [DESC] orderExpr1, ..., orderExprK]
+[BY groupExpr1, ..., groupExprM]
+```
 
 where `distributionType` can be described in several ways:
 
-    PROPORTION [STRICT] ROUND(digits)
-    LIMIT [STRICT]
+```
+PROPORTION [STRICT] ROUND(digits)
+LIMIT [STRICT]
+```
 
 ### Description
 

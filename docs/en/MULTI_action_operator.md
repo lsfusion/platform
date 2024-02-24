@@ -6,7 +6,9 @@ The `MULTI` operator creates an [action](Actions.md) that implements [branching]
 
 ### Syntax
 
-    MULTI [exclusionType] action1, ..., actionN 
+```
+MULTI [exclusionType] action1, ..., actionN 
+```
 
 ### Description
 

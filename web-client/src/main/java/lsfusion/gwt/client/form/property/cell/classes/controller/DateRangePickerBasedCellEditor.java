@@ -1,16 +1,20 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsDate;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.form.property.SimpleDatePatternConverter;
 import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
+import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
 
@@ -27,23 +31,28 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
     }
 
     @Override
-    protected void onInputReady(Element parent, PValue oldValue) {
-        super.onInputReady(parent, oldValue);
+    public void start(EventHandler handler, Element parent, RenderContext renderContext, boolean notFocusable, PValue oldValue) {
+//        if(!hasOldValue && oldValue == null)
+//            oldValue = getDefaultNullValue();
 
-        if (!isNative()) {
-            assert oldValue != null;
-            createPicker(GwtClientUtils.getTippyParent(parent), parent, getStartDate(oldValue), getEndDate(oldValue), getPattern().replace("a", "A"), isSinglePicker(), isTimeEditor(), isDateEditor());
+        super.start(handler, parent, renderContext, notFocusable, oldValue);
+
+        if (started && !isNative()) {
+//            assert oldValue != null;
+            createPicker(GwtClientUtils.getTippyParent(parent), parent, getSinglePattern().replace("a", "A"), isSinglePicker(), isTimeEditor(), isDateEditor());
+            if(oldValue == null) // if value is null - current date will be set, so we need to select the value, since we want to rewrite data on key input
+                inputElement.select();
 
             DataGrid.addFocusPartner(parent, getPickerContainer(), element -> element.getPropertyObject("rendering") != null);
 
-            if (needReplace(parent))
-                getInputElement().click(); // need to dateRangePicker opens immediately. because we use an editBox
+            openPicker(); // date range picker is opened only on click
+//            getInputElement().click();
         }
     }
 
     @Override
     public void stop(Element parent, boolean cancel, boolean blurred) {
-        if(!isNative())
+        if(started && !isNative())
             removePicker();
         super.stop(parent, cancel, blurred);
     }
@@ -85,9 +94,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
         return PValue.getPValue(inputText);
     }
 
-    protected abstract JsDate getStartDate(PValue oldValue);
-    protected abstract JsDate getEndDate(PValue oldValue);
-    protected abstract String getPattern();
+    protected abstract String getSinglePattern();
     protected abstract boolean isTimeEditor();
     protected abstract boolean isDateEditor();
     protected abstract PValue getDateInputValue();
@@ -97,10 +104,19 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
         return inputElement;
     }
 
+    @Override
+    protected JavaScriptObject getMaskFromPattern() {
+        return SimpleDatePatternConverter.convert(getSinglePattern(), !isSinglePicker());
+    }
+
     protected native void removePicker()/*-{
         this.@DateRangePickerBasedCellEditor::getPickerObject()().remove();
         //we need to remove the keydown listener because it is a global($wnd) listener that is only used when the picker popup opens
         $($wnd).off('keydown.pickerpopup').off('mousedown.pickerpopup');
+    }-*/;
+
+    protected native void openPicker()/*-{
+        this.@DateRangePickerBasedCellEditor::getPickerObject()().toggle();
     }-*/;
 
     protected native Element getPickerObject()/*-{
@@ -126,7 +142,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
         return property.getHorzTextAlignment(RendererType.CELL); // should be taken from RenderContext, but for now this would do
     }
 
-    protected native void createPicker(Element tippyParent, Element parent, JsDate startDate, JsDate endDate, String pattern, boolean singleDatePicker, boolean time, boolean date)/*-{
+    protected native void createPicker(Element tippyParent, Element parent, String pattern, boolean singleDatePicker, boolean time, boolean date)/*-{
         window.$ = $wnd.jQuery;
         var thisObj = this;
         var editElement = $(thisObj.@DateRangePickerBasedCellEditor::getInputElement()());
@@ -164,8 +180,6 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
                 format: $wnd.moment().toMomentFormatString(pattern)
             },
             parentEl: tippyParent,
-            startDate: startDate,
-            endDate: endDate,
             timePicker: !date,
             timePicker24Hour: true,
             showDropdowns: true,

@@ -6,11 +6,15 @@ The event block of the  [`FORM` statement](FORM_statement.md) - a set of constru
 
 ### Syntax
 
-    EVENTS formEventDecl1, ..., formEventDeclN
+```
+EVENTS formEventDecl1, ..., formEventDeclN
+```
 
 Where each `formEventDecli` has the following syntax:
 
-    ON eventType eventActionId(param1, ..., paramK) | { eventActionOperator }
+```
+ON eventType eventActionId(param1, ..., paramK) | { eventActionOperator }
+```
 
 ### Description
 

@@ -1,10 +1,12 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.i18n.client.LocaleInfo;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.classes.data.GFormatType;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.IntegralPatternConverter;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 
@@ -25,6 +27,11 @@ public class IntegralCellEditor extends TextBasedCellEditor implements FormatCel
 
     protected boolean isNative() {
         return inputElementType.isNumber();
+    }
+
+    @Override
+    protected JavaScriptObject getMaskFromPattern() {
+        return IntegralPatternConverter.convert(pattern);
     }
 
     @Override

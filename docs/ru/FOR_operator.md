@@ -6,15 +6,19 @@ title: 'Оператор FOR'
 
 ### Синтаксис
 
-    FOR expression [ORDER [DESC] orderExpr1, ..., orderExprN]
-    [NEW [alias =] className]
-    DO action
-    [ELSE alternativeAction]
+```
+FOR expression [ORDER [DESC] orderExpr1, ..., orderExprN]
+[NEW [alias =] className]
+DO action
+[ELSE alternativeAction]
+```
 
 Возможен вариант, когда в операторе присутствует блок `NEW`, а условие не указывается (считается равным `TRUE`), в этом случае синтаксис выглядит следующим образом:
 
-    NEW [alias =] className
-    action
+```
+NEW [alias =] className
+action
+```
 
 ### Описание
 

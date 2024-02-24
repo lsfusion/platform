@@ -6,18 +6,22 @@ title: 'Оператор EXPORT'
 
 ## Синтаксис
 
-    EXPORT [exportFormat] [TOP n] FROM [columnId1 =] propertyExpr1, ..., [columnIdN = ] propertyExprN [WHERE whereExpr] [ORDER orderExpr1 [DESC], ..., orderExprL [DESC]] [TO propertyId]
-    EXPORT formName [OBJECTS objName1 = expr1, ..., objNameK = exprK] [exportFormat] [TOP n] [TO (propertyId | (groupId1 = propertyId1, ..., groupIdN = propertyIdM))]
+```
+EXPORT [exportFormat] [TOP n] FROM [columnId1 =] propertyExpr1, ..., [columnIdN = ] propertyExprN [WHERE whereExpr] [ORDER orderExpr1 [DESC], ..., orderExprL [DESC]] [TO propertyId]
+EXPORT formName [OBJECTS objName1 = expr1, ..., objNameK = exprK] [exportFormat] [TOP n] [TO (propertyId | (groupId1 = propertyId1, ..., groupIdN = propertyIdM))]
+```
 
 `exportFormat` может задаваться одним из следующих вариантов:
 
-    JSON [CHARSET charsetStr]
-    XML [HEADER | NOHEADER] [ATTR] [CHARSET charsetStr]
-    CSV [separator] [HEADER | NOHEADER] [ESCAPE | NOESCAPE] [CHARSET charsetStr]
-    XLS [SHEET sheetProperty] [HEADER | NOHEADER]
-    XLSX [SHEET sheetProperty] [HEADER | NOHEADER]
-    DBF [CHARSET charsetStr]
-    TABLE
+```
+JSON [CHARSET charsetStr]
+XML [HEADER | NOHEADER] [ATTR] [CHARSET charsetStr]
+CSV [separator] [HEADER | NOHEADER] [ESCAPE | NOESCAPE] [CHARSET charsetStr]
+XLS [SHEET sheetProperty] [HEADER | NOHEADER]
+XLSX [SHEET sheetProperty] [HEADER | NOHEADER]
+DBF [CHARSET charsetStr]
+TABLE
+```
 
  
 ## Описание
@@ -92,7 +96,7 @@ title: 'Оператор EXPORT'
 
     При использовании опции `NOHEADER`, если имя колонки одно из предопределенных (`A`, `B`, ..., `Z`, `AA`, ...,  `AE`), то оно экспортируются в колонку с соответствующем номером, и при этом следующие колонки экспортируются в колонки следующие по порядку за этой колонкой.
 
-    Имеет другое назначение для **XML**: с опцией `HEADER` файл результата содержит первую строку <?xml version="1.0" encoding="UTF-8"?>. С опцией `NOHEADER` экспортируется без этой строки. По умолчанию используется `HEADER`.
+    Имеет другое назначение для **XML**: с опцией `HEADER` файл результата содержит первую строку `<?xml version="1.0" encoding="UTF-8"?>`. С опцией `NOHEADER` экспортируется без этой строки. По умолчанию используется `HEADER`.
 
 - `ESCAPE | NOESCAPE`
 

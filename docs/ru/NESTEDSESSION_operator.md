@@ -6,7 +6,9 @@ title: 'Оператор NESTEDSESSION'
 
 ### Синтаксис
 
-    NESTEDSESSION action 
+```
+NESTEDSESSION action 
+```
 
 ### Описание
 

@@ -8,23 +8,27 @@ When a [property](Properties.md) is declared in the [`=` statement](=_statement.
 
 Options are listed one after another in arbitrary order, separated by spaces or line feeds:
 
-    propertyOption1 ... propertyOptionN
+```
+propertyOption1 ... propertyOptionN
+```
 
 The following set of options is supported (the syntax of each option is indicated on a separate line):
 
-    IN groupName
-    viewType
-    ON eventType { actionOperator }
-    CHANGEKEY key [SHOW | HIDE]
-    MATERIALIZED
-    TABLE tableName
-    INDEXED [LIKE | MATCH]
-    NONULL [DELETE] eventClause
-    AUTOSET
-    CHARWIDTH width [FLEX | NOFLEX]
-    REGEXP rexpr [message] 
-    ECHO
-    DEFAULTCOMPARE [compare]
+```
+IN groupName
+viewType
+ON eventType { actionOperator }
+CHANGEKEY key [SHOW | HIDE]
+MATERIALIZED
+TABLE tableName
+INDEXED [LIKE | MATCH]
+NONULL [DELETE] eventClause
+AUTOSET
+CHARWIDTH width [FLEX | NOFLEX]
+REGEXP rexpr [message] 
+ECHO
+DEFAULTCOMPARE [compare]
+```
 
 ## Description and parameters
 

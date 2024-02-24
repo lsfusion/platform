@@ -6,7 +6,9 @@ title: 'Оператор ACTIVE FORM'
 
 ### Синтаксис
 
-    ACTIVE FORM formName
+```
+ACTIVE FORM formName
+```
 
 ### Описание
 

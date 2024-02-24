@@ -71,6 +71,12 @@ function selectMultiInput() {
             let selectizeElement = _wrapElementDiv(element, !isList); // it seems that selectize uses parent (because it creates sibling) so for custom cell renderer we need extra div
 
             let dropdownParent = controller.getDropdownParent();
+
+            // tabindex = -1 to disable "tab" button in the table.
+            // selectize at initialisation contains a check for the tabindex attribute of the parent element:
+            // if attribute is present, it will be used, if the attribute is not present, then tabindex will be = 0 for all input elements inside selectize component
+            selectizeElement.setAttribute('tabindex', '-1');
+
             element.selectizeInstance = $(selectizeElement).selectize({
                 dropdownParent: dropdownParent != null ? dropdownParent : 'body',
 
@@ -123,7 +129,7 @@ function selectMultiInput() {
                         for (let dataElement of data.data)
                             options.push(toOption(controller.createObject({selected : false, name : dataElement.rawString}, dataElement.objects), controller, true));
                         callback(options);
-                    }, null);
+                    }, null, this.items.length);
                 },
                 plugins: ['remove_button', 'auto_position', 'lsf_events'],
                 render: {

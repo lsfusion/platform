@@ -1,0 +1,17 @@
+MODULE Carousel;
+
+REQUIRE SystemEvents;
+
+NAMESPACE Utils;
+
+onWebClientInit() + {
+    onWebClientInit('custom_carousel.css') <- 1;
+    onWebClientInit('custom_carousel.js') <- 1;
+}
+
+// Usage
+// OBJECTS m = MyFile CUSTOM 'carousel' HEADER JSON FROM id = 'carousel', fitContain = TRUE, theme = 'dark'
+// PROPERTIES caption(m), file(m), tag(m), type(m)
+// GRID(m) {
+//     size = (100, 100);
+// }

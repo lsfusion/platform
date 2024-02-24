@@ -8,7 +8,6 @@ import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.user.AbstractCustomClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
@@ -224,11 +223,6 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         deliveredNotificationAction = findAction("deliveredNotificationAction[CustomUser]");
         
         syncUsers = findAction("syncUsers[ISTRING[100], JSONFILE]");
-    }
-
-    //todo: replace usages to checkPassword without stack param after upgrading erp to version 5
-    public boolean checkPassword(DataSession session, DataObject userObject, String password, ExecutionStack stack) throws SQLException, SQLHandledException {
-        return checkPassword(session, userObject, password);
     }
 
     public boolean checkPassword(DataSession session, DataObject userObject, String password) throws SQLException, SQLHandledException {

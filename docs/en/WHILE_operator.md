@@ -6,9 +6,11 @@ The `WHILE` operator creates an [action](Actions.md) that implements a [recursiv
 
 ### Syntax
 
-    WHILE expression [ORDER [DESC] orderExpr1, ..., orderExprN]
-    [NEW [alias =] className]
-    DO action
+```
+WHILE expression [ORDER [DESC] orderExpr1, ..., orderExprN]
+[NEW [alias =] className]
+DO action
+```
 
 ### Description
 

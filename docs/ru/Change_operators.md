@@ -6,7 +6,9 @@ title: 'Операторы изменений'
 
 ### Синтаксис
 
-    typeChange(propExpr)
+```
+typeChange(propExpr)
+```
 
 ### Описание
 

@@ -497,6 +497,8 @@ public class GwtClientUtils {
 //        element.getStyle().clearProperty("boxSizing");
     }
 
+    /*--- tippy methods ---*/
+
     public static JavaScriptObject showTippyPopup(Widget ownerWidget, Element popupElementClicked, Widget popupWidget) {
         return showTippyPopup(ownerWidget, popupElementClicked, popupWidget, null);
     }
@@ -525,6 +527,25 @@ public class GwtClientUtils {
             trigger : 'manual',
             interactive : true,
             allowHTML : true,
+            maxWidth: 'none', // default maxWidth is 350px and content does not fit in tooltip
+            popperOptions: {
+                strategy: 'fixed',
+                modifiers: [
+                    {
+                        name: 'flip',
+                        options: {
+                            fallbackPlacements: ['top', 'bottom', 'left', 'right'],
+                        },
+                    },
+                    {
+                        name: 'preventOverflow',
+                        options: {
+                            altAxis: true,
+                            tether: false,
+                        },
+                    },
+                ],
+            },
             zIndex: 1070,
             onHide: function() {
                 if(onHideAction != null) {
@@ -545,6 +566,50 @@ public class GwtClientUtils {
             popup.destroy();
         }
     }-*/;
+
+    public static native JavaScriptObject initTippy(Element element, int delay)/*-{
+        return $wnd.tippy(element, {
+            appendTo: $wnd.document.body,
+            //content: contentElement,
+            trigger: 'mouseenter',
+            interactive: true,
+            allowHTML: true,
+            placement: 'auto',
+            maxWidth: 'none', // default maxWidth is 350px and content does not fit in tooltip
+            popperOptions: {
+                strategy: 'fixed',
+                modifiers: [
+                    {
+                        name: 'flip',
+                        options: {
+                            fallbackPlacements: ['top', 'bottom', 'left', 'right'],
+                        },
+                    },
+                    {
+                        name: 'preventOverflow',
+                        options: {
+                            altAxis: true,
+                            tether: false,
+                        },
+                    },
+                ],
+            },
+            delay: [delay, null]
+        });
+    }-*/;
+
+    private static String tippyAttribute = "data-tippy-root";
+    public static Element getTippyParent(Element element) {
+        while (element != null) {
+            if (element.hasAttribute(tippyAttribute)) {
+                return element;
+            }
+            element = element.getParentElement();
+        }
+        return null;
+    }
+
+    /*--- end of tippy methods ---*/
 
     public static void setPopupPosition(PopupPanel popup, int mouseX, int mouseY) {
         int popupWidth = popup.getOffsetWidth();
@@ -1004,7 +1069,11 @@ public class GwtClientUtils {
     }
 
     public static String formatInterval(PValue obj, Function<Long, String> formatFunction) {
-        return formatFunction.apply(PValue.getIntervalValue(obj, true)) + " - " + formatFunction.apply(PValue.getIntervalValue(obj, false));
+        return formatInterval(formatFunction.apply(PValue.getIntervalValue(obj, true)), formatFunction.apply(PValue.getIntervalValue(obj, false)));
+    }
+
+    public static String formatInterval(String left, String right) {
+        return left + " - " + right;
     }
 
     //  will wrap with div, because otherwise other wrappers will add and not remove classes after update
@@ -1103,17 +1172,6 @@ public class GwtClientUtils {
     public static Element getParentWithClass(Element element, String className) {
         while (element != null) {
             if (element.hasClassName(className)) {
-                return element;
-            }
-            element = element.getParentElement();
-        }
-        return null;
-    }
-
-    private static String tippyAttribute = "data-tippy-root";
-    public static Element getTippyParent(Element element) {
-        while (element != null) {
-            if (element.hasAttribute(tippyAttribute)) {
                 return element;
             }
             element = element.getParentElement();
@@ -1380,5 +1438,9 @@ public class GwtClientUtils {
 
     public static native boolean isCompleteMask(Element element)/*-{
         return $wnd.$(element).inputmask("isComplete");
+    }-*/;
+    
+    public static native String unmaskedValue(Element element)/*-{
+        return $wnd.$(element).inputmask("unmaskedvalue");
     }-*/;
 }

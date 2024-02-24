@@ -467,7 +467,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             return GEditBindingMap.changeOrGroupChange();
         }
 
-        if (isEditObjectEvent(editEvent, hasEditObjectAction, hasUserChangeAction())) // has to be before isChangeEvent, since also handles MOUSE CHANGE event
+        if (isEditObjectEvent(editEvent, hasEditObjectAction, hasUserChangeAction(), customRenderFunction != null)) // has to be before isChangeEvent, since also handles MOUSE CHANGE event
             return GEditBindingMap.EDIT_OBJECT;
 
         // starting change on focus, or any key pressed when focus is on input
@@ -609,19 +609,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         this.userPattern = userPattern;
     }
 
-    public JavaScriptObject getMaskOptionsFromPattern(String pattern) {
-        if (pattern != null) {
-            if (valueType instanceof GADateType || valueType instanceof GIntervalType) {
-                return DatePatternConverter.convert(pattern);
-            } else if (valueType instanceof GIntegralType) {
-                return IntegralPatternConverter.convert(pattern);
-            } else {
-                return StringPatternConverter.convert(pattern);
-            }
-        }
-        return null;
-    }
-    
     public PValue parsePaste(String s, GType parseType) {
         if (s == null) {
             return null;

@@ -6,8 +6,10 @@ title: 'Оператор JSON'
 
 ## Синтаксис
 
-    JSON ( FROM [columnId1 =] propertyExpr1, ..., [columnIdN = ] propertyExprN [WHERE whereExpr] [ORDER orderExpr1 [DESC], ..., orderExprL [DESC]] )
-    JSON ( formName [OBJECTS objName1 = expr1, ..., objNameK = exprK] 
+```
+JSON ( FROM [columnId1 =] propertyExpr1, ..., [columnIdN = ] propertyExprN [WHERE whereExpr] [ORDER orderExpr1 [DESC], ..., orderExprL [DESC]] )
+JSON ( formName [OBJECTS objName1 = expr1, ..., objNameK = exprK]
+```
  
 ## Описание
 

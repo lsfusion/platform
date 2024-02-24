@@ -4478,10 +4478,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LAWithParams(newAction, allParams);
     }
 
-    public LAWithParams addScriptedNewExecutorAction(LAWithParams action, LPWithParams threadsProp) {
+    public LAWithParams addScriptedNewExecutorAction(LAWithParams action, LPWithParams threadsProp, Boolean sync) {
         List<LAPWithParams> propParams = Arrays.asList(action, threadsProp);
         List<Integer> allParams = mergeAllParams(propParams);
-        LA<?> newAction = addNewExecutorAProp(null, LocalizedString.NONAME, getParamsPlainList(propParams).toArray());
+        LA<?> newAction = addNewExecutorAProp(null, LocalizedString.NONAME, sync, getParamsPlainList(propParams).toArray());
         return new LAWithParams(newAction, allParams);
     }
 

@@ -6,11 +6,13 @@ title: 'Оператор JOIN'
 
 ### Синтаксис
 
-    [JOIN] propertyId(expr1, ..., exprN)
-     
-    [JOIN] "[" operator "]" (expr1, ..., exprN)
-     
-    [JOIN] "[" expression "]" (expr1, ..., exprN) 
+```
+[JOIN] propertyId(expr1, ..., exprN)
+ 
+[JOIN] "[" operator "]" (expr1, ..., exprN)
+ 
+[JOIN] "[" expression "]" (expr1, ..., exprN) 
+```
 
 Где `"["` и `"]"` - это обычные квадратные скобки.
 

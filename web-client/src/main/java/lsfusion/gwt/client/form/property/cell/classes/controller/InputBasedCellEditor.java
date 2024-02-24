@@ -33,13 +33,10 @@ public abstract class InputBasedCellEditor extends RequestReplaceValueCellEditor
 
     protected InputElement inputElement;
     protected GInputType inputElementType;
-    private String oldValue;
+    protected String oldValue;
 
     public static boolean isInputKeyEvent(Event event, boolean isMultiLine) {
         return GKeyStroke.isInputKeyEvent(event, true, isMultiLine);
-    }
-
-    protected void onInputReady(Element parent, PValue oldValue) {
     }
 
     protected boolean needReplace(Element cellParent) {
@@ -75,8 +72,6 @@ public abstract class InputBasedCellEditor extends RequestReplaceValueCellEditor
                 FocusUtils.focus(inputElement, FocusUtils.Reason.NOTFOCUSABLE);
         }
 
-        onInputReady(parent, oldValue);
-
         if(!needReplace) {
             parent.addClassName("property-hide-toolbar");
 
@@ -93,6 +88,7 @@ public abstract class InputBasedCellEditor extends RequestReplaceValueCellEditor
         }
 
         inputElement = null;
+        inputElementType = null;
     }
 
     protected void setInputValue(Element parent, String value) {

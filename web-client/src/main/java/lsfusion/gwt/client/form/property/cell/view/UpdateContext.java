@@ -10,7 +10,7 @@ import lsfusion.gwt.client.form.property.PValue;
 
 public interface UpdateContext {
     
-    default void getAsyncValues(String value, String actionSID, AsyncCallback<GFormController.GAsyncResult> callback) {}
+    default void getAsyncValues(String value, String actionSID, AsyncCallback<GFormController.GAsyncResult> callback, int increaseValuesNeededCount) {}
     default void changeProperty(PValue result, GFormController.ChangedRenderValueSupplier renderValueSupplier) {}
 
     GFormController getForm();

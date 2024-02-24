@@ -33,11 +33,11 @@ public class GetAsyncValuesHandler extends FormActionHandler<GetAsyncValues, Lis
     @Override
     public ListResult executeEx(GetAsyncValues action, ExecutionContext context) throws RemoteException, AppServerNotAvailableDispatchException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
-        return getAndConvertAsyncValues(form, servlet, action.requestIndex, action.lastReceivedRequestIndex, action.propertyID, (byte[]) gwtConverter.convertOrCast(action.columnKey), action.actionSID, action.value, action.index);
+        return getAndConvertAsyncValues(form, servlet, action.requestIndex, action.lastReceivedRequestIndex, action.propertyID, (byte[]) gwtConverter.convertOrCast(action.columnKey), action.actionSID, action.value, action.index, 0);
     }
 
-    public static ListResult getAndConvertAsyncValues(FormSessionObject form, MainDispatchServlet servlet, long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] fullKey, String actionSID, String value, int index) throws RemoteException {
-        return convertAsyncValues(ClientAsync.deserialize(form.remoteForm.getAsyncValues(requestIndex, lastReceivedRequestIndex, propertyID, fullKey, actionSID, value, index), form.clientForm), form, servlet);
+    public static ListResult getAndConvertAsyncValues(FormSessionObject form, MainDispatchServlet servlet, long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] fullKey, String actionSID, String value, int index, int increaseValuesNeededCount) throws RemoteException {
+        return convertAsyncValues(ClientAsync.deserialize(form.remoteForm.getAsyncValues(requestIndex, lastReceivedRequestIndex, propertyID, fullKey, actionSID, value, index, increaseValuesNeededCount), form.clientForm), form, servlet);
     }
     public static ListResult convertAsyncValues(ClientAsync[] asyncValues, FormSessionObject form, MainDispatchServlet servlet) {
         if(asyncValues == null)

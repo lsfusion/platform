@@ -6,16 +6,14 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.AppBaseImage;
 import lsfusion.gwt.client.base.GAsync;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.classes.GType;
-import lsfusion.gwt.client.classes.data.GImageType;
-import lsfusion.gwt.client.classes.data.GIntegralType;
-import lsfusion.gwt.client.classes.data.GJSONType;
-import lsfusion.gwt.client.classes.data.GLogicalType;
+import lsfusion.gwt.client.classes.data.*;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.filter.user.GCompare;
@@ -196,7 +194,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         if(type instanceof GIntegralType)
             return fromDouble((PValue.getNumberValue(value)).doubleValue());
         if(type instanceof GImageType)
-            return fromString(GwtClientUtils.getAppDownloadURL(PValue.getCustomStringValue(value)));
+            return fromString(PValue.getImageValue(value).getImageElementSrc(true));
         if(type instanceof GJSONType)
             return GwtClientUtils.jsonParse(PValue.getCustomStringValue(value));
 
@@ -571,9 +569,9 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         setPageSize(pageSize);
     }
 
-    protected void getAsyncValues(String property, String value, JavaScriptObject successCallBack, JavaScriptObject failureCallBack) {
+    protected void getAsyncValues(String property, String value, JavaScriptObject successCallBack, JavaScriptObject failureCallBack, int increaseValuesNeededCount) {
         Column column = getColumn(property);
-        form.getAsyncValues(value, column.property, column.columnKey, ServerResponse.OBJECTS, getJSCallback(successCallBack, failureCallBack));
+        form.getAsyncValues(value, column.property, column.columnKey, ServerResponse.OBJECTS, getJSCallback(successCallBack, failureCallBack), increaseValuesNeededCount);
     }
 
     public static AsyncCallback<GFormController.GAsyncResult> getJSCallback(JavaScriptObject successCallBack, JavaScriptObject failureCallBack) {
@@ -877,8 +875,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             getValues: function (property, value, successCallback, failureCallback) {
                 return this.getPropertyValues(property, value, successCallback, failureCallback);
             },
-            getPropertyValues: function (property, value, successCallback, failureCallback) {
-                return thisObj.@GSimpleStateTableView::getAsyncValues(*)(property, value, successCallback, failureCallback);
+            getPropertyValues: function (property, value, successCallback, failureCallback, increaseValuesNeededCount) {
+                return thisObj.@GSimpleStateTableView::getAsyncValues(*)(property, value, successCallback, failureCallback, increaseValuesNeededCount != null ? increaseValuesNeededCount : 0);
             },
             getObjects: function (object) {
                 return thisObj.@GSimpleStateTableView::getObjects(*)(object);

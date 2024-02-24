@@ -8,8 +8,6 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 
-import java.util.Date;
-
 public class IntervalCellEditor  extends DateRangePickerBasedCellEditor {
 
     private final String intervalType;
@@ -26,18 +24,18 @@ public class IntervalCellEditor  extends DateRangePickerBasedCellEditor {
         return type;
     }
 
-    @Override
-    protected JsDate getStartDate(PValue oldValue) {
-        return GwtClientUtils.toJsDate(type.toDate(oldValue, true));
-    }
+//    @Override
+//    protected JsDate getStartDate(PValue oldValue) {
+//        return GwtClientUtils.toJsDate(type.toDate(oldValue, true));
+//    }
+//
+//    @Override
+//    protected JsDate getEndDate(PValue oldValue) {
+//        return GwtClientUtils.toJsDate(type.toDate(oldValue, false));
+//    }
 
     @Override
-    protected JsDate getEndDate(PValue oldValue) {
-        return GwtClientUtils.toJsDate(type.toDate(oldValue, false));
-    }
-
-    @Override
-    protected String getPattern() {
+    protected String getSinglePattern() {
         return type.getSingleFormat(pattern).getPattern();
     }
 
@@ -61,8 +59,8 @@ public class IntervalCellEditor  extends DateRangePickerBasedCellEditor {
         return false;
     }
 
-    @Override
-    public PValue getDefaultNullValue() {
-        return type.fromDate(new Date(), new Date());
-    }
+//    @Override
+//    public PValue getDefaultNullValue() {
+//        return type.fromDate(new Date(), new Date());
+//    }
 }

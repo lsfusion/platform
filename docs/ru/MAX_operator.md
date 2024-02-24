@@ -6,7 +6,9 @@ title: 'Оператор MAX'
 
 ### Синтаксис 
 
-    MAX expr1, ..., exprN
+```
+MAX expr1, ..., exprN
+```
 
 ### Описание
 

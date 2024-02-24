@@ -6,7 +6,9 @@ title: 'Оператор OVERRIDE'
 
 ### Синтаксис
 
-    OVERRIDE expr1, ..., exprN
+```
+OVERRIDE expr1, ..., exprN
+```
 
 ### Описание
 
