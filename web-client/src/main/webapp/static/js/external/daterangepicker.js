@@ -862,7 +862,7 @@
             this.container.find('.drp-calendar.' + side + ' .calendar-table').html(html);
 
             // PATCHED: set rendering property to false
-            this.container.prop('rendering', false);
+            this.container.prop('rendering', null);
         },
 
         renderTimePicker: function(side) {

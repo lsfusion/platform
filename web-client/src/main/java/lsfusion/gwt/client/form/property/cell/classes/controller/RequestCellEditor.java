@@ -9,6 +9,9 @@ import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 public interface RequestCellEditor extends CellEditor {
 
     // force commit with the current value
+    default void commit(Element parent) {
+        commit(parent, CommitReason.FORCED);
+    }
     void commit(Element parent, CommitReason commitReason);
 
     // force cancel

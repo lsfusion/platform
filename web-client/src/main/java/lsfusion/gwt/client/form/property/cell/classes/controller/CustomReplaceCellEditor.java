@@ -102,7 +102,7 @@ public class CustomReplaceCellEditor extends RequestReplaceValueCellEditor imple
     }-*/;
 
     private static void forceCommit(CustomCellEditor cellEditor, Element parent) {
-        cellEditor.commit(parent, CommitReason.FORCED);
+        cellEditor.commit(parent);
     }
 
     private static void commitJSValue(CustomCellEditor cellEditor, JavaScriptObject value) {

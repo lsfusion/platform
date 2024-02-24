@@ -168,7 +168,7 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
                 .setUploadSuccessHandler(uploadSuccessEvent -> {
                     loadingBox.hideLoadingBox(false);
                     uploaded = true;
-                    commit(parent, CommitReason.FORCED);
+                    commit(parent);
                     return true;
                 });
 

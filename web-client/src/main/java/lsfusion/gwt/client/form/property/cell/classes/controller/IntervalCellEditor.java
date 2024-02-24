@@ -49,10 +49,10 @@ public class IntervalCellEditor  extends DateRangePickerBasedCellEditor {
         return intervalType.equals("DATE");
     }
 
-    @Override
-    protected PValue getDateInputValue() {
-        return type.fromDate(GwtClientUtils.fromJsDate(getPickerStartDate()), GwtClientUtils.fromJsDate(getPickerEndDate()));
-    }
+//    @Override
+//    protected PValue getDateInputValue() {
+//        return type.fromDate(GwtClientUtils.fromJsDate(getPickerStartDate()), GwtClientUtils.fromJsDate(getPickerEndDate()));
+//    }
 
     @Override
     protected boolean isSinglePicker() {

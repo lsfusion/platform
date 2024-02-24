@@ -47,10 +47,6 @@ public class LogicalCellEditor extends ARequestValueCellEditor implements KeepCe
         }
     }
 
-    private void commit(Element parent) {
-        commit(parent, CommitReason.FORCED);
-    }
-
     private PValue value;
     @Override
     public PValue getCommitValue(Element parent, Integer contextAction) {

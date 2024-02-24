@@ -40,12 +40,13 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
         if (started && !isNative()) {
 //            assert oldValue != null;
             createPicker(GwtClientUtils.getTippyParent(parent), parent, getSinglePattern().replace("a", "A"), isSinglePicker(), isTimeEditor(), isDateEditor());
+            openPicker(); // date range picker is opened only on click
+
             if(oldValue == null) // if value is null - current date will be set, so we need to select the value, since we want to rewrite data on key input
                 inputElement.select();
 
             DataGrid.addFocusPartner(parent, getPickerContainer(), element -> element.getPropertyObject("rendering") != null);
 
-            openPicker(); // date range picker is opened only on click
 //            getInputElement().click();
         }
     }
@@ -58,17 +59,13 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
     }
 
     protected void pickerApply(Element parent) {
-        if (editManager.isThisCellEditing(this))
-            commit(parent, CommitReason.FORCED);
+        commit(parent);
 
         returnFocus(parent);
     }
 
     protected void pickerCancel(Element parent, CancelReason cancelReason) {
-        if (cancelReason == null)
-            cancel();
-        else
-            cancel(cancelReason);
+        cancel();
 
         returnFocus(parent);
     }
@@ -80,24 +77,16 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
 
     protected PValue tryParseInputText(String inputText, boolean onCommit) throws ParseException {
         //to be able to enter the date from keyboard
-        if (onCommit) {
-            try {
-                return super.tryParseInputText(inputText, true);
-            } catch (ParseException e) {
-                if (isNative())
-                    throw e;
-                else
-                    return getDateInputValue();
-            }
-        }
+        if (!onCommit)
+            return PValue.getPValue(inputText);
 
-        return PValue.getPValue(inputText);
+        return super.tryParseInputText(inputText, onCommit);
+
     }
 
     protected abstract String getSinglePattern();
     protected abstract boolean isTimeEditor();
     protected abstract boolean isDateEditor();
-    protected abstract PValue getDateInputValue();
     protected abstract boolean isSinglePicker();
 
     private InputElement getInputElement() {
@@ -125,17 +114,6 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
 
     protected native Element getPickerContainer()/*-{
         return this.@DateRangePickerBasedCellEditor::getPickerObject()().container.get(0);
-    }-*/;
-
-    protected native JsDate getPickerStartDate()/*-{
-        var pickerDate = this.@DateRangePickerBasedCellEditor::getPickerObject()().startDate;
-        return pickerDate.isValid() ? pickerDate.toDate() : null; // toDate because it is "Moment js" object
-    }-*/;
-
-    protected native JsDate getPickerEndDate()/*-{
-        var pickerDate = this.@DateRangePickerBasedCellEditor::getPickerObject()().endDate;
-        // pickerDate may be null because we update the input field and on select 'date_from' - 'date_to' will be null
-        return pickerDate == null ? this.@DateRangePickerBasedCellEditor::getPickerStartDate(*)() : pickerDate.isValid() ? pickerDate.toDate() : null; // toDate because it is "Moment js" object
     }-*/;
 
     private Style.TextAlign getHorzTextAlignment() {
@@ -198,11 +176,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
             singleDatePicker: singleDatePicker,
             drops: 'auto',
             opens: thisObj.@DateRangePickerBasedCellEditor::getHorzTextAlignment()().@com.google.gwt.dom.client.Style.TextAlign::getCssName()(),
-            alwaysShowCalendars: true, // need to use with ranges
-            onKeydown: function (e) {
-                if (e.keyCode === 27)
-                    thisObj.@DateRangePickerBasedCellEditor::pickerCancel(*)(parent, @lsfusion.gwt.client.form.property.cell.controller.CancelReason::ESCAPE_PRESSED);
-            }
+            alwaysShowCalendars: true // need to use with ranges
         });
 
         //show only time picker
@@ -230,9 +204,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
             thisObj.@DateRangePickerBasedCellEditor::pickerCancel(*)(parent);
         });
 
-        // Click outside datePicker in bootstrap theme does not finishing editing.
-        // due to this reason it is necessary to use outsideClick.daterangepicker to apply the changes
-        editElement.on('apply.daterangepicker outsideClick.daterangepicker', function () {
+        editElement.on('apply.daterangepicker', function () {
             thisObj.@DateRangePickerBasedCellEditor::pickerApply(*)(parent);
         });
     }-*/;

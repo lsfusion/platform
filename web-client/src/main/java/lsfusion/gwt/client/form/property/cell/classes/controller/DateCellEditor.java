@@ -47,11 +47,11 @@ public class DateCellEditor extends DateRangePickerBasedCellEditor {
         return true;
     }
 
-    @Override
-    protected PValue getDateInputValue() {
-        JsDate pickerStartDate = getPickerStartDate();
-        return pickerStartDate != null ? type.fromDate(GwtClientUtils.fromJsDate(pickerStartDate)) : null;
-    }
+//    @Override
+//    protected PValue getDateInputValue() {
+//        JsDate pickerStartDate = getPickerStartDate();
+//        return pickerStartDate != null ? type.fromDate(GwtClientUtils.fromJsDate(pickerStartDate)) : null;
+//    }
 
     @Override
     protected boolean isSinglePicker() {
