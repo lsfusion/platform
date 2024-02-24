@@ -628,7 +628,7 @@
         },
 
         renderCalendar: function(side) {
-            // PATCHED: added rendering property and set it to true
+            // PATCHED: we need rendering to avoid fake blurs during rendering (when elements are recreated)
             this.container.prop('rendering', true);
 
             //
@@ -861,11 +861,13 @@
 
             this.container.find('.drp-calendar.' + side + ' .calendar-table').html(html);
 
-            // PATCHED: set rendering property to false
+            // PATCHED:
             this.container.prop('rendering', null);
         },
 
         renderTimePicker: function(side) {
+            // PATCHED: we need rendering to avoid fake blurs during rendering (when elements are recreated)
+            this.container.prop('rendering', true);
 
             // Don't bother updating the time picker if it's currently disabled
             // because an end date hasn't been clicked yet
@@ -1024,6 +1026,8 @@
 
             this.container.find('.drp-calendar.' + side + ' .calendar-time').html(html);
 
+            // PATCHED:
+            this.container.prop('rendering', null);
         },
 
         updateFormInputs: function() {
@@ -1564,18 +1568,19 @@
         },
 
         keydown: function(e) {
-            // PATCHED: removed this if block
+            // PATCHED: we handle ENTER ourselves
             // if ((e.keyCode === 9) || (e.keyCode === 13)) {
             //     this.hide();
             // }
 
+            // PATCHED: we handle ESCAPE ourselves
             //hide on esc and prevent propagation
-            if (e.keyCode === 27) {
-                e.preventDefault();
-                e.stopPropagation();
-
-                this.hide();
-            }
+            // if (e.keyCode === 27) {
+            //     e.preventDefault();
+            //     e.stopPropagation();
+            //
+            //     this.hide();
+            // }
             // PATCHED: added this.onKeydown(e);
             this.onKeydown(e);
         },
