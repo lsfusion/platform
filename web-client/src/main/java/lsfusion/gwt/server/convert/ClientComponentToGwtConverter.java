@@ -185,9 +185,12 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         GRegularFilter filter = new GRegularFilter();
         filter.ID = clientFilter.ID;
         filter.caption = clientFilter.caption;
-        if(clientFilter.inputEvent != null)
-            filter.bindingEvent = convertBinding(clientFilter.inputEvent, clientFilter.priority);
+        if (clientFilter.keyInputEvent != null)
+            filter.bindingEvents.add(convertBinding(clientFilter.keyInputEvent, clientFilter.keyPriority));
         filter.showKey = clientFilter.showKey;
+        if (clientFilter.mouseInputEvent != null)
+            filter.bindingEvents.add(convertBinding(clientFilter.mouseInputEvent, clientFilter.mousePriority));
+        filter.showMouse = clientFilter.showMouse;
         return filter;
     }
 
@@ -326,9 +329,10 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
         if(clientPropertyDraw.changeKey != null)
             propertyDraw.bindingEvents.add(convertBinding(clientPropertyDraw.changeKey, clientPropertyDraw.changeKeyPriority));
+        propertyDraw.showChangeKey = clientPropertyDraw.showChangeKey;
         if(clientPropertyDraw.changeMouse != null)
             propertyDraw.bindingEvents.add(convertBinding(clientPropertyDraw.changeMouse, clientPropertyDraw.changeMousePriority));
-        propertyDraw.showChangeKey = clientPropertyDraw.showChangeKey;
+        propertyDraw.showChangeMouse = clientPropertyDraw.showChangeMouse;
 
         propertyDraw.isList = clientPropertyDraw.isList;
 

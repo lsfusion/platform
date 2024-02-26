@@ -1405,14 +1405,14 @@ public class ScriptingLogicsModule extends LogicsModule {
             actionOrProperty.drawOptions.setShowChangeKey(showChangeKey);
     }
 
-    public void setChangeMouse(LAP lap, String code, Boolean showChangeKey) {
+    public void setChangeMouse(LAP lap, String code, Boolean showChangeMouse) {
         ActionOrProperty actionOrProperty = lap.getActionOrProperty();
 
         KeyStrokeOptions options = parseKeyStrokeOptions(code);
         actionOrProperty.drawOptions.setChangeMouse(options.keyStroke, options.bindingModesMap);
         actionOrProperty.drawOptions.setChangeMousePriority(options.priority);
-        if (showChangeKey != null)
-            actionOrProperty.drawOptions.setShowChangeKey(showChangeKey);
+        if (showChangeMouse != null)
+            actionOrProperty.drawOptions.setShowChangeMouse(showChangeMouse);
     }
 
     private static List<String> supportedBindings = Arrays.asList("preview", "dialog", "group", "editing", "showing", "panel", "cell");

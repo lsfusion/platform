@@ -15,9 +15,12 @@ import java.io.IOException;
 public class ClientRegularFilter extends IdentityObject implements ClientIdentitySerializable {
 
     public String caption = "";
-    public InputEvent inputEvent;
-    public Integer priority;
+    public KeyInputEvent keyInputEvent;
+    public Integer keyPriority;
     public boolean showKey;
+    public MouseInputEvent mouseInputEvent;
+    public Integer mousePriority;
+    public boolean showMouse;
 
     public ClientRegularFilter() {
     }
@@ -27,12 +30,10 @@ public class ClientRegularFilter extends IdentityObject implements ClientIdentit
     }
 
     public String getFullCaption() {
-
-        String fullCaption = caption;
-        if (showKey && inputEvent != null) {
-            fullCaption += " (" + (inputEvent instanceof MouseInputEvent ? ((MouseInputEvent) inputEvent).mouseEvent : SwingUtils.getKeyStrokeCaption(((KeyInputEvent) inputEvent).keyStroke)) + ")";
-        }
-        return fullCaption;
+        String keyEventCaption = showKey && keyInputEvent != null ? SwingUtils.getKeyStrokeCaption(keyInputEvent.keyStroke) : null;
+        String mouseEventCaption = showMouse && mouseInputEvent != null ? mouseInputEvent.mouseEvent : null;
+        String eventCaption = keyEventCaption != null ? (mouseEventCaption != null ? (keyEventCaption + " / " + mouseEventCaption) : keyEventCaption) : mouseEventCaption;
+        return caption + (eventCaption != null ? " (" + eventCaption + ")" : "");
     }
 
     @Override
@@ -46,8 +47,11 @@ public class ClientRegularFilter extends IdentityObject implements ClientIdentit
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         caption = pool.readString(inStream);
 
-        inputEvent = pool.readObject(inStream);
-        priority = pool.readInt(inStream);
+        keyInputEvent = pool.readObject(inStream);
+        keyPriority = pool.readInt(inStream);
         showKey = inStream.readBoolean();
+        mouseInputEvent = pool.readObject(inStream);
+        mousePriority = pool.readInt(inStream);
+        showMouse = inStream.readBoolean();
     }
 }

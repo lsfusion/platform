@@ -1951,6 +1951,7 @@ public abstract class LogicsModule {
         action.drawOptions.setChangeKey(changeKey, bindingModes);
         action.drawOptions.setShowChangeKey(false);
         action.drawOptions.setChangeMouse(MouseInputEvent.DBLCLK, bindingModes);
+        action.drawOptions.setShowChangeMouse(false);
     }
 
     public LA addProp(Action prop) {

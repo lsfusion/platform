@@ -313,8 +313,9 @@ public class GFormController implements EditManager {
         }
 
         setBindingGroupObject(filterCheck, filterGroup.groupObject);
-        if (filter.bindingEvent != null)
-            addRegularFilterBinding(filter.bindingEvent, (event) -> filterCheck.setValue(!filterCheck.getValue(), true), filterCheck, filterGroup.groupObject);
+        for (GInputBindingEvent bindingEvent : filter.bindingEvents) {
+            addRegularFilterBinding(bindingEvent, (event) -> filterCheck.setValue(!filterCheck.getValue(), true), filterCheck, filterGroup.groupObject);
+        }
     }
 
     private void createMultipleFilterComponent(final GRegularFilterGroup filterGroup) {
@@ -329,11 +330,12 @@ public class GFormController implements EditManager {
 
             final int filterIndex = i;
             GFormController.setBindingGroupObject(filterBox, filterGroup.groupObject);
-            if (filter.bindingEvent != null)
-                addRegularFilterBinding(filter.bindingEvent, (event) -> {
+            for(GInputBindingEvent bindingEvent : filter.bindingEvents) {
+                addRegularFilterBinding(bindingEvent, (event) -> {
                     filterBox.setSelectedIndex(filterIndex + 1);
                     setRegularFilter(filterGroup, filterIndex);
                 }, filterBox, filterGroup.groupObject);
+            }
         }
 
         filterBox.addChangeHandler(new ChangeHandler() {

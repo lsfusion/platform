@@ -318,6 +318,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public ArrayList<GInputBindingEvent> bindingEvents = new ArrayList<>();
     public boolean showChangeKey;
+    public boolean showChangeMouse;
 
     public boolean hasKeyBinding() {
         for(GInputBindingEvent bindingEvent : bindingEvents)
@@ -331,6 +332,22 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         for(GInputBindingEvent bindingEvent : bindingEvents)
             if(bindingEvent.inputEvent instanceof GKeyInputEvent) {
                 result = (result.isEmpty() ? "" : result + ",") + ((GKeyInputEvent) bindingEvent.inputEvent).keyStroke;
+            }
+        return result;
+    }
+
+    public boolean hasMouseBinding() {
+        for(GInputBindingEvent bindingEvent : bindingEvents)
+            if(bindingEvent.inputEvent instanceof GMouseInputEvent)
+                return true;
+        return false;
+    }
+    public String getMouseBindingText() {
+        assert hasMouseBinding();
+        String result = "";
+        for(GInputBindingEvent bindingEvent : bindingEvents)
+            if(bindingEvent.inputEvent instanceof GMouseInputEvent) {
+                result = (result.isEmpty() ? "" : result + ",") + ((GMouseInputEvent) bindingEvent.inputEvent).mouseEvent;
             }
         return result;
     }
@@ -635,9 +652,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         if(caption == null)
             return null;
 
-        if(showChangeKey && hasKeyBinding())
-            caption += " (" + getKeyBindingText() + ")";
-        return caption;
+        String keyEventCaption = showChangeKey && hasKeyBinding() ? getKeyBindingText() : null;
+        String mouseEventCaption = showChangeMouse && hasMouseBinding() ? getMouseBindingText() : null;
+        String eventCaption = keyEventCaption != null ? (mouseEventCaption != null ? (keyEventCaption + " / " + mouseEventCaption) : keyEventCaption) : mouseEventCaption;
+        return caption + (eventCaption != null ? " (" + eventCaption + ")" : "");
     }
 
     public String getNotEmptyCaption(String caption) {

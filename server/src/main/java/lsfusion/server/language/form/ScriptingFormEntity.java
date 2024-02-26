@@ -6,10 +6,12 @@ import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.OrderedMap;
-import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.interop.action.ServerResponse;
-import lsfusion.interop.form.event.InputEvent;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.property.PivotOptions;
@@ -779,35 +781,35 @@ public class ScriptingFormEntity {
 
     public void addRegularFilters(RegularFilterGroupEntity filterGroup, List<RegularFilterInfo> filters, Version version, boolean extend) throws ScriptingErrorLog.SemanticErrorException {
         for (RegularFilterInfo info : filters) {
-            ScriptingLogicsModule.KeyStrokeOptions kso = info.inputEventOptions != null ? parseKeyStrokeOptions(info.inputEventOptions) : null;
-            InputEvent inputEvent;
-            if(info.isMouseEvent) {
-                inputEvent = kso != null ? new MouseInputEvent(kso.keyStroke, kso.bindingModesMap) : null;
-                if (info.inputEventOptions != null && ((MouseInputEvent) inputEvent).mouseEvent == null) {
-                    LM.getErrLog().emitWrongKeyStrokeFormatError(LM.getParser(), info.inputEventOptions);
+
+            KeyInputEvent keyInputEvent = null;
+            Integer keyPriority = null;
+            if (info.keyEvent != null) {
+                ScriptingLogicsModule.KeyStrokeOptions kso = parseKeyStrokeOptions(info.keyEvent);
+                keyInputEvent = new KeyInputEvent(KeyStroke.getKeyStroke(kso.keyStroke), kso.bindingModesMap);
+                if (keyInputEvent.keyStroke == null) {
+                    LM.getErrLog().emitWrongKeyStrokeFormatError(LM.getParser(), info.keyEvent);
                 }
-            } else {
-                inputEvent = kso != null ? new KeyInputEvent(KeyStroke.getKeyStroke(kso.keyStroke), kso.bindingModesMap) : null;
-                if (info.inputEventOptions != null && ((KeyInputEvent) inputEvent).keyStroke == null) {
-                    LM.getErrLog().emitWrongKeyStrokeFormatError(LM.getParser(), info.inputEventOptions);
-                }
+                keyPriority = kso.priority;
             }
 
-            Integer priority = kso != null ? kso.priority : null;
-            LocalizedString caption = info.caption;
-            boolean isDefault = info.isDefault;
+            MouseInputEvent mouseInputEvent = null;
+            Integer mousePriority = null;
+            if (info.mouseEvent != null) {
+                ScriptingLogicsModule.KeyStrokeOptions mso = parseKeyStrokeOptions(info.mouseEvent);
+                mouseInputEvent = new MouseInputEvent(mso.keyStroke, mso.bindingModesMap);
+                mousePriority = mso.priority;
+            }
 
-            ImOrderSet<String> mapping = info.mapping;
-            LP<?> property = info.property;
-
-            ImOrderSet<ObjectEntity> mappingObjects = getMappingObjects(mapping);
-            checkPropertyParameters(property, mappingObjects);
-
-            RegularFilterEntity filter = new RegularFilterEntity(form.genID(), new FilterEntity(form.addPropertyObject(property, mappingObjects), true), caption, inputEvent, priority);
+            ImOrderSet<ObjectEntity> mappingObjects = getMappingObjects(info.mapping);
+            checkPropertyParameters(info.property, mappingObjects);
+            RegularFilterEntity filter = new RegularFilterEntity(form.genID(),
+                    new FilterEntity(form.addPropertyObject(info.property, mappingObjects), true),
+                    info.caption, keyInputEvent, keyPriority, info.showKey, mouseInputEvent, mousePriority, info.showMouse);
             if (extend) {
-                form.addRegularFilter(filterGroup, filter, isDefault, version);
+                form.addRegularFilter(filterGroup, filter, info.isDefault, version);
             } else {
-                filterGroup.addFilter(filter, isDefault, version);
+                filterGroup.addFilter(filter, info.isDefault, version);
             }
         }
     }
@@ -911,16 +913,21 @@ public class ScriptingFormEntity {
     
     public static class RegularFilterInfo {
         LocalizedString caption;
-        String inputEventOptions;
-        boolean isMouseEvent;
+        String keyEvent;
+        boolean showKey;
+        String mouseEvent;
+        boolean showMouse;
         LP property;
         ImOrderSet<String> mapping;
         boolean isDefault;
 
-        public RegularFilterInfo(LocalizedString caption, String inputEventOptions, boolean isMouseEvent, LP property, ImOrderSet<String> mapping, boolean isDefault) {
+        public RegularFilterInfo(LocalizedString caption, String keyEvent, boolean showKey, String mouseEvent, boolean showMouse,
+                                 LP property, ImOrderSet<String> mapping, boolean isDefault) {
             this.caption = caption;
-            this.inputEventOptions = inputEventOptions;
-            this.isMouseEvent = isMouseEvent;
+            this.keyEvent = keyEvent;
+            this.showKey = showKey;
+            this.mouseEvent = mouseEvent;
+            this.showMouse = showMouse;
             this.property = property;
             this.mapping = mapping;
             this.isDefault = isDefault;

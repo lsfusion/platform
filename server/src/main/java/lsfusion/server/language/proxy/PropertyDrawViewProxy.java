@@ -108,6 +108,10 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.changeKeyPriority = priority;
     }
 
+    public void setShowChangeKey(boolean showChangeKey) {
+        target.showChangeKey = showChangeKey;
+    }
+
     public void setChangeMouse(ScriptingLogicsModule.KeyStrokeOptions changeMouse) {
         target.changeMouse = new MouseInputEvent(changeMouse.keyStroke, changeMouse.bindingModesMap);
         target.changeMousePriority = changeMouse.priority;
@@ -116,8 +120,8 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.changeMousePriority = priority;
     }
 
-    public void setShowChangeKey(boolean showChangeKey) {
-        target.showChangeKey = showChangeKey;
+    public void setShowChangeMouse(boolean showChangeMouse) {
+        target.showChangeMouse = showChangeMouse;
     }
 
     public void setFocusable(Boolean focusable) {
