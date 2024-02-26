@@ -801,17 +801,15 @@ public class ScriptingFormEntity {
                 mousePriority = mso.priority;
             }
 
-            if (keyInputEvent != null || mouseInputEvent != null) {
-                ImOrderSet<ObjectEntity> mappingObjects = getMappingObjects(info.mapping);
-                checkPropertyParameters(info.property, mappingObjects);
-                RegularFilterEntity filter = new RegularFilterEntity(form.genID(),
-                        new FilterEntity(form.addPropertyObject(info.property, mappingObjects), true),
-                        info.caption, keyInputEvent, keyPriority, info.showKey, mouseInputEvent, mousePriority, info.showMouse);
-                if (extend) {
-                    form.addRegularFilter(filterGroup, filter, info.isDefault, version);
-                } else {
-                    filterGroup.addFilter(filter, info.isDefault, version);
-                }
+            ImOrderSet<ObjectEntity> mappingObjects = getMappingObjects(info.mapping);
+            checkPropertyParameters(info.property, mappingObjects);
+            RegularFilterEntity filter = new RegularFilterEntity(form.genID(),
+                    new FilterEntity(form.addPropertyObject(info.property, mappingObjects), true),
+                    info.caption, keyInputEvent, keyPriority, info.showKey, mouseInputEvent, mousePriority, info.showMouse);
+            if (extend) {
+                form.addRegularFilter(filterGroup, filter, info.isDefault, version);
+            } else {
+                filterGroup.addFilter(filter, info.isDefault, version);
             }
         }
     }
