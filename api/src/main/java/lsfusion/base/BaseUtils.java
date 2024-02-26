@@ -2082,4 +2082,8 @@ public class BaseUtils {
     public static String[] getNotNullStringArray(String[] array) {
         return array == null ? new String[0] : array;
     }
+
+    public static int roundToDegree(int base, int value) {
+        return (int) (Math.pow(base, Math.log(value) / Math.log(base)));
+    }
 }

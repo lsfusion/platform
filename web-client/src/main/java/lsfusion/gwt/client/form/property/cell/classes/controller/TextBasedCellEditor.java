@@ -24,8 +24,7 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.filter.user.GCompare;
-import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.form.property.*;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.async.GInputListAction;
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.GCompletionType;
@@ -58,6 +57,10 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
     private GInputListAction[] actions;
     protected GCompare compare;
     protected SuggestBox suggestBox = null;
+
+    protected boolean isNative() {
+        return inputElementType.hasNativePopup();
+    }
 
     public TextBasedCellEditor(EditManager editManager, GPropertyDraw property) {
         this(editManager, property, null, null);
@@ -110,6 +113,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
 
     protected boolean started;
     protected String pattern;
+    protected JavaScriptObject mask;
 
     @Override
     public void start(EventHandler handler, Element parent, RenderContext renderContext, boolean notFocusable, PValue oldValue) {
@@ -117,14 +121,22 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
         if(GMouseStroke.isChangeEvent(handler.event)) {
             Integer dialogInputActionIndex = property.getDialogInputActionIndex(actions);
             if (dialogInputActionIndex != null) {
-                commitFinish(parent, oldValue, dialogInputActionIndex, CommitReason.FORCED);
+                commitFinish(oldValue, dialogInputActionIndex, CommitReason.FORCED);
                 return;
             }
         }
         started = true;
-        pattern = renderContext.getPattern();
 
         super.start(handler, parent, renderContext, notFocusable, oldValue);
+
+        if(!isNative()) {
+            pattern = renderContext.getPattern();
+            mask = getMaskFromPattern();
+            if(mask != null) {
+                GwtClientUtils.setMask(inputElement, mask);
+                inputElement.select(); // setting inputmask somewhy drops selection, later should be solved some other way (positionCaretOnClick doesn't work)
+            }
+        }
 
         boolean allSuggestions = true;
         if(needReplace(parent)) {
@@ -137,13 +149,13 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
             } else
                 value = (property.clearText ? "" : tryFormatInputText(oldValue));
 
-            setTextInputValue(parent, value);
+            setTextInputValue(value);
 
             if (selectAll)
                 inputElement.select();
-        }
+        } // assert !hasOldValue
 
-        if (hasList && !inputElementType.hasNativePopup()) {
+        if (hasList && !isNative()) {
             suggestBox = createSuggestBox(inputElement, parent);
 
             // don't update suggestions if editing started with char key event. as editor text is empty on init - request is being sent twice
@@ -152,11 +164,6 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
             if (!GKeyStroke.isCharAddKeyEvent(handler.event)) {
                 suggestBox.showSuggestionList(allSuggestions);
             }
-        }
-
-        JavaScriptObject options = property.getMaskOptionsFromPattern(renderContext.getPattern());
-        if(options != null) {
-            GwtClientUtils.setMask(inputElement, options);
         }
 
         String regexp = renderContext.getRegexp();
@@ -168,6 +175,10 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
         if (regexpMessage != null) {
             updateRegexpMessage(inputElement, regexpMessage);
         }
+    }
+
+    protected JavaScriptObject getMaskFromPattern() {
+        return StringPatternConverter.convert(pattern);
     }
 
     private boolean hasList() {
@@ -183,8 +194,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
                 suggestBox = null;
             }
 
-            JavaScriptObject options = property.getMaskOptionsFromPattern(pattern);
-            if(options != null) {
+            if(mask != null) {
                 GwtClientUtils.removeMask(inputElement);
             }
 
@@ -192,7 +202,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
         }
     }
 
-    protected void setTextInputValue(Element parent, String value) {
+    protected void setTextInputValue(String value) {
         setTextInputValue(inputElement, value);
     }
     public static void setTextInputValue(InputElement element, String value) {
@@ -323,15 +333,15 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
             if(contextAction == null && completionType.isOnlyCommitSelection())
                 throw new InvalidEditException();
         }
-        
-        if (property.getMaskOptionsFromPattern(pattern) != null) {
+
+        if (mask != null) {
             if (GwtClientUtils.unmaskedValue(inputElement).isEmpty()) {
                 return null;
             } else if (!GwtClientUtils.isCompleteMask(inputElement)) {
                 throw new InvalidEditException();
             }
         }
-        
+
         boolean patternMismatch = isPatternMismatch(inputElement);
         if (patternMismatch) {
             reportValidity(inputElement);

@@ -1069,7 +1069,11 @@ public class GwtClientUtils {
     }
 
     public static String formatInterval(PValue obj, Function<Long, String> formatFunction) {
-        return formatFunction.apply(PValue.getIntervalValue(obj, true)) + " - " + formatFunction.apply(PValue.getIntervalValue(obj, false));
+        return formatInterval(formatFunction.apply(PValue.getIntervalValue(obj, true)), formatFunction.apply(PValue.getIntervalValue(obj, false)));
+    }
+
+    public static String formatInterval(String left, String right) {
+        return left + " - " + right;
     }
 
     //  will wrap with div, because otherwise other wrappers will add and not remove classes after update
@@ -1347,6 +1351,16 @@ public class GwtClientUtils {
         element.onclick = function(event) {
             run.@Consumer::accept(*)(event);
         }
+    }-*/;
+
+    public static native void fireOnBlur(Element element)/*-{
+        element.dispatchEvent(new FocusEvent("blur"));
+    }-*/;
+
+    public static native void setOnFocusOut(Element element, Consumer<NativeEvent> run)/*-{
+        element.addEventListener("focusout", function(event) { // have no idea why onfocusout doesn't work
+            run.@Consumer::accept(*)(event);
+        });
     }-*/;
 
     // should be used only once for elements that don't have widgets

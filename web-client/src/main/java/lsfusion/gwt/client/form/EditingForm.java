@@ -35,7 +35,7 @@ public abstract class EditingForm extends FormContainer {
         }
 
         @Override
-        public void cancel(Element parent, CancelReason cancelReason) {
+        public void cancel(CancelReason cancelReason) {
             finishEditing(cancelReason);
 
             closePressed(cancelReason);

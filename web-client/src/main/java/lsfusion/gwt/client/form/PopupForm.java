@@ -59,7 +59,7 @@ public class PopupForm extends EditingForm {
         if(prevForm != null) // if there were no currentForm
             prevForm.onBlur(false);
 
-        GwtClientUtils.showTippyPopup(null, parentElement, formWidget, () -> cellEditor.commit(parentElement, CommitReason.FORCED));
+        GwtClientUtils.showTippyPopup(null, parentElement, formWidget, () -> cellEditor.commit(parentElement));
 
         onFocus(true);
     }

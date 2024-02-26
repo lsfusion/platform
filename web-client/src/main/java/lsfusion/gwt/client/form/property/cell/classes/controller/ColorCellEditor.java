@@ -6,6 +6,7 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.ColorDTO;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
+import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 
 import java.text.ParseException;
 
@@ -21,8 +22,11 @@ public class ColorCellEditor extends TextBasedCellEditor {
     }
 
     @Override
-    protected void onInputReady(Element parent, PValue oldValue) {
-        inputElement.click();
+    public void start(EventHandler handler, Element parent, RenderContext renderContext, boolean notFocusable, PValue oldValue) {
+        super.start(handler, parent, renderContext, notFocusable, oldValue);
+
+        if(started)
+            inputElement.click();
     }
 
     @Override

@@ -131,8 +131,11 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             List<NativeHashMap<GGroupObjectValue, PValue>> propLastAggrs = lastAggrs.get(i);
 
             CellRenderer renderer = null;
-            if(convertDataToStrings)
+            NativeHashMap<GGroupObjectValue, PValue> patternValues = null;
+            if(convertDataToStrings) {
                 renderer = properties.get(i).getCellRenderer(RendererType.PIVOT);
+                patternValues = patterns.get(i);
+            }
 
             for (GGroupObjectValue columnKey : propColumnKeys) {
                 if (checkShowIf(i, columnKey)) // property is hidden
@@ -140,9 +143,9 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
 
                 GGroupObjectValue fullKey = key != null ? GGroupObjectValue.getFullKey(key, columnKey) : GGroupObjectValue.EMPTY;
 
-                pushValue(rowValues, propValues, fullKey, renderer);
+                pushValue(rowValues, propValues, fullKey, renderer, patternValues);
                 for (NativeHashMap<GGroupObjectValue, PValue> propLastAggr : propLastAggrs) {
-                    pushValue(rowValues, propLastAggr, fullKey, renderer);
+                    pushValue(rowValues, propLastAggr, fullKey, renderer, patternValues);
                 }
             }
         }
@@ -245,10 +248,10 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         return null;
     }
 
-    private void pushValue(JsArrayMixed rowValues, NativeHashMap<GGroupObjectValue, PValue> propValues, GGroupObjectValue fullKey, CellRenderer cellRenderer) {
+    private void pushValue(JsArrayMixed rowValues, NativeHashMap<GGroupObjectValue, PValue> propValues, GGroupObjectValue fullKey, CellRenderer cellRenderer, NativeHashMap<GGroupObjectValue, PValue> patterns) {
         PValue value = propValues.get(fullKey);
         // in theory in renderColumn there is the reversed converting
-        rowValues.push(value != null ? fromObject(cellRenderer != null ? cellRenderer.format(value, RendererType.PIVOT, getPattern()) : PValue.getPivotValue(value)) : null);
+        rowValues.push(value != null ? fromObject(cellRenderer != null ? cellRenderer.format(value, RendererType.PIVOT, PValue.getStringValue(patterns.get(fullKey))) : PValue.getPivotValue(value)) : null);
     }
 
     public static final String COLUMN = ClientMessages.Instance.get().pivotColumnAttribute();

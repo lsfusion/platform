@@ -108,8 +108,8 @@ public class CustomCellRenderer extends CellRenderer {
         return PValue.getStringValue(value);
     }
 
-    protected static void getAsyncValues(String value, UpdateContext updateContext, JavaScriptObject successCallBack, JavaScriptObject failureCallBack) {
-        updateContext.getAsyncValues(value, ServerResponse.CHANGE, GSimpleStateTableView.getJSCallback(successCallBack, failureCallBack));
+    protected static void getAsyncValues(String value, UpdateContext updateContext, JavaScriptObject successCallBack, JavaScriptObject failureCallBack, int increaseValuesNeededCount) {
+        updateContext.getAsyncValues(value, ServerResponse.CHANGE, GSimpleStateTableView.getJSCallback(successCallBack, failureCallBack), increaseValuesNeededCount);
     }
 
     protected static void changeValue(Element element, UpdateContext updateContext, JavaScriptObject value, GPropertyDraw property, JavaScriptObject renderValueSupplier) {
@@ -165,8 +165,8 @@ public class CustomCellRenderer extends CellRenderer {
                     return @GSimpleStateTableView::changeJSDiff(*)(element, oldValue != null ? oldValue : [], object, controller, propertyName, newValue, type, index);
                 });
             },
-            getValues: function(value, successCallback, failureCallback) {
-                return @CustomCellRenderer::getAsyncValues(*)(value, updateContext, successCallback, failureCallback);
+            getValues: function(value, successCallback, failureCallback, increaseValuesNeededCount) {
+                return @CustomCellRenderer::getAsyncValues(*)(value, updateContext, successCallback, failureCallback, increaseValuesNeededCount != null ? increaseValuesNeededCount : 0);
             },
             isReadOnly: function () { // extraValue.readonly + customNeedReadonly should be used instead if readonly depends on the data (otherwise it won't be updated)
                 return isReadOnly;
@@ -193,8 +193,8 @@ public class CustomCellRenderer extends CellRenderer {
             isList: function () {
                 return false;
             },
-            getPropertyValues: function(property, value, successCallback, failureCallback) {
-                return this.getValues(property + ":" + value, successCallback, failureCallback); // should be compatible with JSONProperty.AsyncMapJSONChange.getAsyncValueList
+            getPropertyValues: function(property, value, successCallback, failureCallback, increaseValuesNeededCount) {
+                return this.getValues(property + ":" + value, successCallback, failureCallback, increaseValuesNeededCount); // should be compatible with JSONProperty.AsyncMapJSONChange.getAsyncValueList
             },
             getObjects: function (object) {
                 return object.objects;

@@ -8,6 +8,9 @@ import static lsfusion.gwt.client.form.property.SimpleDatePatternConverter.repea
 public class DatePatternConverter {
     
     public static JavaScriptObject convert(String pattern) {
+        if(pattern == null)
+            return null;
+
         JavaScriptObject options = JSNIHelper.createObject();
         JSNIHelper.setAttribute(options, "prefillYear", false);
         String mask = SimpleDatePatternConverter.patternToMask(pattern, DatePatternConverter::convertSymbol);

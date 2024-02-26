@@ -2135,11 +2135,11 @@ public class GFormController implements EditManager {
 
     public void getAsyncValues(String value, AsyncCallback<GAsyncResult> callback) {
         if(editContext != null) // just in case
-            getAsyncValues(value, editContext, editAsyncValuesSID, callback);
+            getAsyncValues(value, editContext, editAsyncValuesSID, callback, 0);
     }
 
-    public void getAsyncValues(String value, EditContext editContext, String actionSID, AsyncCallback<GAsyncResult> callback) {
-        getAsyncValues(value, editContext.getProperty(), editContext.getColumnKey(), actionSID, callback);
+    public void getAsyncValues(String value, EditContext editContext, String actionSID, AsyncCallback<GAsyncResult> callback, int increaseValuesNeededCount) {
+        getAsyncValues(value, editContext.getProperty(), editContext.getColumnKey(), actionSID, callback, increaseValuesNeededCount);
     }
 
     public static class GAsyncResult {
@@ -2153,7 +2153,7 @@ public class GFormController implements EditManager {
             this.moreRequests = moreRequests;
         }
     }
-    public void getAsyncValues(String value, GPropertyDraw property, GGroupObjectValue columnKey, String actionSID, AsyncCallback<GAsyncResult> callback) {
+    public void getAsyncValues(String value, GPropertyDraw property, GGroupObjectValue columnKey, String actionSID, AsyncCallback<GAsyncResult> callback, int increaseValuesNeededCount) {
         int editIndex = editAsyncIndex++;
         AsyncCallback<GAsyncResult> fCallback = checkLast(editIndex, callback);
 
@@ -2161,7 +2161,7 @@ public class GFormController implements EditManager {
 
         Runnable runPessimistic = () -> getPessimisticValues(property.ID, currentKey, actionSID, value, editIndex, fCallback);
         if (!editAsyncUsePessimistic)
-            dispatcher.executePriority(new GetPriorityAsyncValues(property.ID, currentKey, actionSID, value, editIndex), new PriorityAsyncCallback<ListResult>() {
+            dispatcher.executePriority(new GetPriorityAsyncValues(property.ID, currentKey, actionSID, value, editIndex, increaseValuesNeededCount), new PriorityAsyncCallback<ListResult>() {
                 @Override
                 public void onFailure(Throwable caught) {
                     fCallback.onFailure(caught);
@@ -2232,10 +2232,9 @@ public class GFormController implements EditManager {
                 cellEditor.setCancelTheSameValueOnBlur(editContext.getValue());
 
             if(!hasOldValue) { // property.baseType.equals(type) actually there should be something like compatible, but there is no such method for now, so we'll do this check in editors
+                assert oldValue == null;
                 oldValue = editContext.getValue();
-                if(oldValue == null)
-                    oldValue = cellEditor.getDefaultNullValue();
-                else if(!canUseChangeValueForRendering && !hasCustomEditor) {
+                if(oldValue != null && !canUseChangeValueForRendering && !hasCustomEditor) {
                     try {
                         oldValue = type.parseString(PValue.getStringValue(oldValue), editContext.getRenderContext().getPattern());
                     } catch (ParseException e) {
