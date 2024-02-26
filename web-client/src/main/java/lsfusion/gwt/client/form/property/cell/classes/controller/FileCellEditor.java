@@ -108,7 +108,7 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
     private void drop(Event editEvent, Element parent) {
         JsArray droppedFiles = Uploader.getDroppedFiles(editEvent);
         if(!addFilesToUploader(droppedFiles, parent))
-            cancel(parent);
+            cancel();
     }
 
     private native void click(Element parent, Element inputElement) /*-{
@@ -123,7 +123,7 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
         focusedElement.onfocus = function () {
             setTimeout(function () {//onfocus event fires before onchange event, so we need a timeout
                 if (needToCancel) {
-                    instance.@FileCellEditor::cancel(Lcom/google/gwt/dom/client/Element;)(parent);
+                    instance.@FileCellEditor::cancel()();
                     needToCancel = false;
                 }
                 focusedElement.onfocus = null;
@@ -146,7 +146,7 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
     }
     private LoadingBox loadingBox;
     private Uploader createUploader(Element parent) {
-        loadingBox = new LoadingBox(() -> cancel(parent));
+        loadingBox = new LoadingBox(this::cancel);
 
         Uploader newVersionUploader = new Uploader();
         newVersionUploader.setUploadURL(GwtClientUtils.getUploadURL(null)) // not sure that is needed
@@ -168,7 +168,7 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
                 .setUploadSuccessHandler(uploadSuccessEvent -> {
                     loadingBox.hideLoadingBox(false);
                     uploaded = true;
-                    commit(parent, CommitReason.FORCED);
+                    commit(parent);
                     return true;
                 });
 

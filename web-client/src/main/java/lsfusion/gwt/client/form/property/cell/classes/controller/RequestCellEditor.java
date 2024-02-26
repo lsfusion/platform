@@ -9,13 +9,16 @@ import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 public interface RequestCellEditor extends CellEditor {
 
     // force commit with the current value
+    default void commit(Element parent) {
+        commit(parent, CommitReason.FORCED);
+    }
     void commit(Element parent, CommitReason commitReason);
 
     // force cancel
-    default void cancel(Element parent) {
-        cancel(parent, CancelReason.FORCED);
+    default void cancel() {
+        cancel(CancelReason.FORCED);
     }
-    void cancel(Element parent, CancelReason cancelReason);
+    void cancel(CancelReason cancelReason);
 
     default void onBrowserEvent(Element parent, EventHandler handler) {
     }

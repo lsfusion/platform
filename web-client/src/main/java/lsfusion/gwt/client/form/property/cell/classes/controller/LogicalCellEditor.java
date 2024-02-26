@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.InputElement;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseStroke;
@@ -46,10 +45,6 @@ public class LogicalCellEditor extends ARequestValueCellEditor implements KeepCe
             commit(parent);
             handler.consume();
         }
-    }
-
-    private void commit(Element parent) {
-        commit(parent, CommitReason.FORCED);
     }
 
     private PValue value;

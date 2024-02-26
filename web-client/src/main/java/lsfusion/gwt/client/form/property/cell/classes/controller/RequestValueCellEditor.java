@@ -7,7 +7,7 @@ public interface RequestValueCellEditor extends RequestCellEditor {
 
     PValue getCommitValue(Element parent, Integer contextAction) throws InvalidEditException;
 
-    void commitValue(Element parent, PValue value);
+    void commitValue(PValue value);
 
     void setDeferredCommitOnBlur(boolean deferredCommitOnBlur);
 
