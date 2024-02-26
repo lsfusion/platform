@@ -255,6 +255,7 @@ public class DefaultFormView extends FormView {
 
     private void setupFormButton(PropertyDrawView action) {
         action.showChangeKey = false;
+        action.showChangeMouse = false;
         action.focusable = false;
         action.entity.setEditType(PropertyEditType.EDITABLE);
         action.setAlignment(FlexAlignment.STRETCH);
