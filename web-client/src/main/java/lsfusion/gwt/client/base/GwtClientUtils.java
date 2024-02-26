@@ -1401,6 +1401,10 @@ public class GwtClientUtils {
         return value;
     }
 
+    public static String getEventCaption(String keyEventCaption, String mouseEventCaption) {
+        return keyEventCaption != null ? (mouseEventCaption != null ? (keyEventCaption + " / " + mouseEventCaption) : keyEventCaption) : mouseEventCaption;
+    }
+
     public static native void resizable(Element element, String handles)/*-{
         $wnd.$(element).resizable({ handles: handles});
     }-*/;

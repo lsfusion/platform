@@ -42,8 +42,7 @@ import java.text.ParseException;
 import java.util.*;
 
 import static com.google.gwt.dom.client.BrowserEvents.KEYDOWN;
-import static lsfusion.gwt.client.base.GwtClientUtils.createTooltipHorizontalSeparator;
-import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
+import static lsfusion.gwt.client.base.GwtClientUtils.*;
 import static lsfusion.gwt.client.form.event.GKeyStroke.*;
 
 public class GPropertyDraw extends GComponent implements GPropertyReader, Serializable {
@@ -652,9 +651,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         if(caption == null)
             return null;
 
-        String keyEventCaption = showChangeKey && hasKeyBinding() ? getKeyBindingText() : null;
-        String mouseEventCaption = showChangeMouse && hasMouseBinding() ? getMouseBindingText() : null;
-        String eventCaption = keyEventCaption != null ? (mouseEventCaption != null ? (keyEventCaption + " / " + mouseEventCaption) : keyEventCaption) : mouseEventCaption;
+        String eventCaption = getEventCaption(showChangeKey && hasKeyBinding() ? getKeyBindingText() : null,
+                showChangeMouse && hasMouseBinding() ? getMouseBindingText() : null);
         return caption + (eventCaption != null ? " (" + eventCaption + ")" : "");
     }
 
@@ -710,10 +708,12 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public String getTooltip(String caption) {
         String propCaption = GwtSharedUtils.nullTrim(!GwtSharedUtils.isRedundantString(tooltip) ? tooltip : caption);
-        String keyBindingText = hasKeyBinding() ? GwtSharedUtils.stringFormat(getChangeKeyToolTipFormat(), getKeyBindingText()) : "";
+
+        String eventCaption = getEventCaption(hasKeyBinding() ? getKeyBindingText() : null, hasMouseBinding() ? getMouseBindingText() : null);
+        String bindingText = eventCaption != null ? GwtSharedUtils.stringFormat(getChangeKeyToolTipFormat(), eventCaption) : "";
 
         if (!MainFrame.showDetailedInfo) {
-            return propCaption.isEmpty() ? null : GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT, propCaption, keyBindingText);
+            return propCaption.isEmpty() ? null : GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT, propCaption, bindingText);
         } else {
             String ifaceObjects = GwtSharedUtils.toString(", ", interfacesCaptions);
             String scriptPath = creationPath != null ? creationPath : "";
@@ -721,7 +721,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
             if (isAction()) {
                 return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT + getDetailedActionToolTipFormat(),
-                        propCaption, keyBindingText, canonicalName, ifaceObjects, scriptPath, propertyFormName, scriptFormPath);
+                        propCaption, bindingText, canonicalName, ifaceObjects, scriptPath, propertyFormName, scriptFormPath);
             } else {
                 String tableName = this.tableName != null ? this.tableName : "&lt;none&gt;";
                 String returnClass = this.returnClass != null ? this.returnClass.toString() : "";
@@ -729,7 +729,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
                 String script = creationScript != null ? creationScript : "";
 
                 return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT + getDetailedToolTipFormat(),
-                        propCaption, keyBindingText, canonicalName, tableName, ifaceObjects, returnClass, ifaceClasses,
+                        propCaption, bindingText, canonicalName, tableName, ifaceObjects, returnClass, ifaceClasses,
                         script, scriptPath, propertyFormName, scriptFormPath);
             }
         }

@@ -7,6 +7,8 @@ import lsfusion.gwt.client.form.event.GMouseInputEvent;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+import static lsfusion.gwt.client.base.GwtClientUtils.getEventCaption;
+
 public class GRegularFilter implements Serializable {
     public int ID;
 
@@ -20,9 +22,8 @@ public class GRegularFilter implements Serializable {
     }
 
     public String getFullCaption() {
-        String keyEventCaption = showKey && hasKeyBinding() ? getKeyBindingText() : null;
-        String mouseEventCaption = showMouse && hasMouseBinding() ? getMouseBindingText() : null;
-        String eventCaption = keyEventCaption != null ? (mouseEventCaption != null ? (keyEventCaption + " / " + mouseEventCaption) : keyEventCaption) : mouseEventCaption;
+        String eventCaption = getEventCaption(showKey && hasKeyBinding() ? getKeyBindingText() : null,
+                showMouse && hasMouseBinding() ? getMouseBindingText() : null);
         return caption + (eventCaption != null ? " (" + eventCaption + ")" : "");
     }
 

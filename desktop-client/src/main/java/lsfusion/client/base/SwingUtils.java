@@ -859,4 +859,8 @@ public class SwingUtils {
     public static void copyToClipboard(String value) {
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(value), null);
     }
+
+    public static String getEventCaption(String keyEventCaption, String mouseEventCaption) {
+        return keyEventCaption != null ? (mouseEventCaption != null ? (keyEventCaption + " / " + mouseEventCaption) : keyEventCaption) : mouseEventCaption;
+    }
 }

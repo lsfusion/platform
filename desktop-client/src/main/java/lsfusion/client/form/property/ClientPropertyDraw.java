@@ -44,6 +44,7 @@ import java.util.*;
 import static lsfusion.base.BaseUtils.*;
 import static lsfusion.base.EscapeUtils.escapeLineBreakHTML;
 import static lsfusion.client.ClientResourceBundle.getString;
+import static lsfusion.client.base.SwingUtils.getEventCaption;
 import static lsfusion.interop.form.property.PropertyReadType.*;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -801,9 +802,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             caption = getCaptionOrEmpty();
         }
 
-        String keyEventCaption = showChangeKey && changeKey != null ? getChangeKeyCaption() : null;
-        String mouseEventCaption = showChangeMouse && changeMouse != null ? changeMouse.mouseEvent : null;
-        String eventCaption = keyEventCaption != null ? (mouseEventCaption != null ? (keyEventCaption + " / " + mouseEventCaption) : keyEventCaption) : mouseEventCaption;
+        String eventCaption = getEventCaption(showChangeKey && changeKey != null ? getChangeKeyCaption() : null,
+                showChangeMouse && changeMouse != null ? changeMouse.mouseEvent : null);
         return caption + (eventCaption != null ? " (" + eventCaption + ")" : "");
     }
 
@@ -874,10 +874,12 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
     public String getTooltipText(String caption) {
         String propCaption = nullTrim(!isRedundantString(tooltip) ? tooltip : caption);
-        String changeKeyText = changeKey == null ? "" : String.format(EDIT_KEY_TOOL_TIP_FORMAT, getChangeKeyCaption());
+
+        String eventCaption = getEventCaption(changeKey != null ? getChangeKeyCaption() : null, changeMouse != null ? changeMouse.mouseEvent : null);
+        String bindingText = eventCaption != null ? String.format(EDIT_KEY_TOOL_TIP_FORMAT, eventCaption) : "";
 
         if (!MainController.showDetailedInfo) {
-            return propCaption.isEmpty() ? null : String.format(TOOL_TIP_FORMAT, propCaption, changeKeyText);
+            return propCaption.isEmpty() ? null : String.format(TOOL_TIP_FORMAT, propCaption, bindingText);
         } else {
             String ifaceObjects = BaseUtils.toString(", ", interfacesCaptions);
             String scriptPath = creationPath != null ? escapeLineBreakHTML(creationPath) : "";
@@ -885,7 +887,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             
             if (isAction()) {
                 return String.format(TOOL_TIP_FORMAT + DETAILED_ACTION_TOOL_TIP_FORMAT,
-                        propCaption, changeKeyText, canonicalName, ifaceObjects, scriptPath, propertyFormName, scriptFormPath);
+                        propCaption, bindingText, canonicalName, ifaceObjects, scriptPath, propertyFormName, scriptFormPath);
             } else {
                 String tableName = this.tableName != null ? this.tableName : "&lt;none&gt;";
                 String ifaceClasses = BaseUtils.toString(", ", interfacesTypes);
@@ -893,7 +895,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
                 String script = creationScript != null ? escapeLineBreakHTML(escapeHTML(creationScript)) : "";
                 
                 return String.format(TOOL_TIP_FORMAT + DETAILED_TOOL_TIP_FORMAT,
-                        propCaption, changeKeyText, canonicalName, tableName, ifaceObjects, ifaceClasses, returnClass,
+                        propCaption, bindingText, canonicalName, tableName, ifaceObjects, ifaceClasses, returnClass,
                         script, scriptPath, propertyFormName, scriptFormPath);
             }
         }

@@ -4,13 +4,14 @@ import lsfusion.base.identity.IdentityObject;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.form.controller.remote.serialization.ClientIdentitySerializable;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
-import lsfusion.interop.form.event.InputEvent;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+
+import static lsfusion.client.base.SwingUtils.getEventCaption;
 
 public class ClientRegularFilter extends IdentityObject implements ClientIdentitySerializable {
 
@@ -30,9 +31,8 @@ public class ClientRegularFilter extends IdentityObject implements ClientIdentit
     }
 
     public String getFullCaption() {
-        String keyEventCaption = showKey && keyInputEvent != null ? SwingUtils.getKeyStrokeCaption(keyInputEvent.keyStroke) : null;
-        String mouseEventCaption = showMouse && mouseInputEvent != null ? mouseInputEvent.mouseEvent : null;
-        String eventCaption = keyEventCaption != null ? (mouseEventCaption != null ? (keyEventCaption + " / " + mouseEventCaption) : keyEventCaption) : mouseEventCaption;
+        String eventCaption = getEventCaption(showKey && keyInputEvent != null ? SwingUtils.getKeyStrokeCaption(keyInputEvent.keyStroke) : null,
+                showMouse && mouseInputEvent != null ? mouseInputEvent.mouseEvent : null);
         return caption + (eventCaption != null ? " (" + eventCaption + ")" : "");
     }
 
