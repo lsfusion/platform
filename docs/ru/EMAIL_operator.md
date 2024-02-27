@@ -13,9 +13,9 @@ recipientType1 recipientExpr1
 ...
 recipientTypeN recipientExprN
 [BODY bodyExpr]
-ATTACH attachFileExpr1 [NAME attachNameExpr1]
+ATTACH [LIST] attachFileExpr1 [NAME attachNameExpr1]
 ...
-ATTACH attachFileExprM [NAME attachNameExprM]
+ATTACH [LIST] attachFileExprM [NAME attachNameExprM]
 [syncType]
 ```
 
@@ -53,11 +53,11 @@ ATTACH attachFileExprM [NAME attachNameExprM]
 
 - `attachFileExpr1 .... attachFileExprM`
 
-    Выражения, значения которых являются файлами, прикрепляемыми к письму как вложение.
+    Выражения, значения которых являются файлами, прикрепляемыми к письму как вложение. При наличии ключевого слова `LIST` эти выражения должны иметь ровно 1 параметр типа INTEGER, иначе - должны быть без параметров. 
 
 - `attachNameExpr1 ... attachNameExprM`
 
-    Выражения, значения которых задают имена вложений.
+    Выражения, значения которых задают имена вложений. При наличии ключевого слова `LIST` эти выражения должны иметь ровно 1 параметр типа INTEGER, иначе - должны быть без параметров.
 
 - `syncType`
 
