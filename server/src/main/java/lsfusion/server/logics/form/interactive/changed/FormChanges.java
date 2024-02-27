@@ -21,6 +21,7 @@ import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.classes.ConcreteClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.DataClass;
+import lsfusion.server.logics.classes.data.file.FileClass;
 import lsfusion.server.logics.classes.data.file.ImageClass;
 import lsfusion.server.logics.classes.data.file.StaticFormatFileClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
@@ -184,7 +185,7 @@ public class FormChanges {
             if(propertyReadInstance instanceof PropertyDrawInstance.LastReaderInstance)
                 outStream.writeInt(((PropertyDrawInstance.LastReaderInstance) propertyReadInstance).index);
 
-            NeedImage needImage = getNeedImage(propertyReadInstance, context);
+            ConvertData convertData = getConvertData(propertyReadInstance, context);
 
             outStream.writeInt(rows.size());
             for (int j=0,sizeJ=rows.size();j<sizeJ;j++) {
@@ -194,7 +195,7 @@ public class FormChanges {
 
                 Object value = rows.getValue(j).getValue();
 
-                serializeObject(outStream, convertFileValue(needImage, value, context));
+                serializeObject(outStream, convertFileValue(convertData, value, context));
             }
         }
 
@@ -232,31 +233,45 @@ public class FormChanges {
         outStream.writeBoolean(needConfirm);
     }
 
-    public static class NeedImage {
+    public static class ConvertData {
         public final Type type;
+
+        public ConvertData(Type type) {
+            this.type = type;
+        }
+    }
+    public static class NeedImage extends ConvertData {
         public final Function<String, AppServerImage.Reader> imageSupplier;
 
         public NeedImage(Type type, Function<String, AppServerImage.Reader> imageSupplier) {
-            this.type = type;
+            super(type);
             this.imageSupplier = imageSupplier;
         }
     }
-    public static Object convertFileValue(NeedImage needImage, Object value, ConnectionContext context) throws IOException {
-        if(value instanceof FileData && needImage != null && ((FileData)value).getExtension().equals("resourceImage"))
+    public static class NeedFile extends ConvertData {
+        public NeedFile(Type type) {
+            super(type);
+        }
+    }
+
+    public static Object convertFileValue(ConvertData convertData, Object value, ConnectionContext context) throws IOException {
+        if(value instanceof FileData && convertData != null && ((FileData)value).getExtension().equals("resourceImage"))
             value = new String(((FileData) value).getRawFile().getBytes());
 
         if(value instanceof NamedFileData || value instanceof FileData || value instanceof RawFileData) {
-            if(needImage != null) {
-                if(value instanceof RawFileData && needImage.type instanceof StaticFormatFileClass)
-                    value = new FileData((RawFileData) value, ((StaticFormatFileClass) needImage.type).getExtension());
+            if(convertData != null) {
+                if(value instanceof RawFileData && convertData.type instanceof StaticFormatFileClass)
+                    value = new FileData((RawFileData) value, ((StaticFormatFileClass) convertData.type).getExtension());
+                if(convertData instanceof NeedImage)
+                    return new AppFileDataImage((Serializable) value);
                 return value;
             }
 
             return true;
         }
 
-        if(value instanceof String && needImage != null) {
-            return AppServerImage.getAppImage(needImage.imageSupplier.apply((String)value).get(context));
+        if(value instanceof String && convertData instanceof NeedImage) {
+            return AppServerImage.getAppImage(((NeedImage) convertData).imageSupplier.apply((String)value).get(context));
         }
 
         if (value instanceof String && ((String) value).contains(inlineFileSeparator)) {
@@ -285,12 +300,16 @@ public class FormChanges {
         return value;
     }
 
-    private static NeedImage getNeedImage(PropertyReaderInstance reader, FormInstanceContext context) {
+    private static ConvertData getConvertData(PropertyReaderInstance reader, FormInstanceContext context) {
         Supplier<Type> readType = () -> reader.getReaderProperty().getType();
         Type readerType;
-        if ((reader instanceof PropertyDrawInstance && ((PropertyDrawInstance<?>) reader).isProperty(context) && (readerType = readType.get()) instanceof ImageClass)) {
+        if (reader instanceof PropertyDrawInstance && ((PropertyDrawInstance<?>) reader).isProperty(context)) {
             PropertyDrawEntity<?> propertyDraw = ((PropertyDrawInstance<?>) reader).entity;
-            return getNeedImage(readerType, propertyDraw, context);
+            readerType = readType.get();
+            if (readerType instanceof ImageClass || propertyDraw.isPredefinedImage())
+                return getNeedImage(readerType, propertyDraw, context);
+            else if (readerType instanceof FileClass && (propertyDraw.getCustomRenderFunction(context) != null || propertyDraw.isGroupCustom(context))) // if there is a custom function, we want file to be send to web-server as a link
+                return new NeedFile(readerType);
         } else if (reader instanceof PropertyDrawInstance.ExtraReaderInstance && reader.getTypeID() == PropertyDrawExtraType.IMAGE.getPropertyReadType()) {
             return getNeedImage(readType.get(), ((PropertyDrawInstance<?>.ExtraReaderInstance) reader).getPropertyDraw().entity, context);
         } else if (reader instanceof ContainerViewInstance.ExtraReaderInstance && reader.getTypeID() == ContainerViewExtraType.IMAGE.getContainerReadType()) {

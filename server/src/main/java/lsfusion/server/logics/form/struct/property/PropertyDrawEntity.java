@@ -810,8 +810,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
                     if(getExplicitEventAction(CHANGE) != null)
                         return null;
 
-                    GroupObjectEntity toDraw = getToDraw(context.entity);
-                    if(toDraw != null && toDraw.isCustom())
+                    if(isGroupCustom(context))
                         return null;
                 }
 
@@ -982,4 +981,17 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public String getReportSID() {
         return getSID();
     }
+
+    public boolean isGroupCustom(FormInstanceContext context) {
+        GroupObjectEntity toDraw = getToDraw(context.entity);
+        return toDraw != null && toDraw.isCustom();
+    }
+
+    private static ImSet<String> predefinedImageNames = SetFact.toSet("image", "icon");
+
+    public boolean isPredefinedImage() {
+        String sid = getSID();
+        return sid != null && predefinedImageNames.contains(sid);
+    }
+
 }
