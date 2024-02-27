@@ -66,6 +66,10 @@ READONLY
 
 ### Опции оператора SHOW
 
+- `FILTERS ...`
+
+  Добавляет фиксированные фильтры на форму. [Синтаксис блока фиксированных фильтров](Filters_and_sortings_block.md#fixedfilters).
+
 - `syncType`
 
     Определяет, в каком режиме [управления потоком](In_an_interactive_view_SHOW_DIALOG.md#flow) будет работать оператор:

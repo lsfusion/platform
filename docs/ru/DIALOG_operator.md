@@ -9,6 +9,7 @@ title: 'Оператор DIALOG'
 ```
 DIALOG name
 [OBJECTS objName1 [= expr1] [NULL] [inputOptions1], ..., objNameN [= exprN] [NULL] [inputOptionsN]]
+FILTERS ...
 [formActionOptions]
 [DO actionOperator [ELSE elseActionOperator]]
 ```
@@ -18,6 +19,7 @@ DIALOG name
 ```
 DIALOG classFormType className
 [= expr] [NULL] [inputOptions]
+FILTERS ...
 [formActionOptions]
 [DO actionOperator [ELSE elseActionOperator]]
 ```
@@ -28,6 +30,10 @@ DIALOG classFormType className
 INPUT [alias] [NULL]
 CHANGE [= changeExpr] [NOCONSTRAINTFILTER] [alias] [NULL]
 ```
+
+- `FILTERS ...`
+
+  Добавляет фиксированные фильтры на форму. [Синтаксис блока фиксированных фильтров](Filters_and_sortings_block.md#fixedfilters).
 
 `formActionOptions` - дополнительные опции этого действия. Они могут указываться друг за другом в произвольном порядке:
 
