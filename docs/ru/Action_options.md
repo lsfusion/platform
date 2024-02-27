@@ -18,7 +18,7 @@ propertyOption1 ... propertyOptionN
 IN groupName
 viewType
 ON eventType { actionOperator }
-CHANGEKEY key [SHOW | HIDE]
+CHANGEKEY | CHANGEMOUSE key [SHOW | HIDE]
 STICKY | NOSTICKY
 syncType
 ASON eventType [ACTION] propertyId
@@ -92,13 +92,26 @@ CONFIRM
 
 ### Блок значений по умолчанию инструкции `DESIGN`
 
-- `CHANGEKEY key [SHOW | HIDE]`
+- `CHANGEKEY | CHANGEMOUSE keyOptions [SHOW | HIDE]`
 
-    Указание [комбинации клавиш](Form_events.md#keyboard), при нажатии которой будет выполнено это действие. Устанавливает значение для [дизайна по умолчанию](Form_design.md#defaultDesign), может быть переопределено в [инструкции `DESIGN`](DESIGN_statement.md).
+    Указание [комбинации клавиш](Form_events.md#keyboard) или комбинацию кликов мыши, при нажатии которых будет выполнено это действие. Устанавливает значение для [дизайна по умолчанию](Form_design.md#defaultDesign), может быть переопределено в [инструкции `DESIGN`](DESIGN_statement.md).
 
-    - `key`
+    - `keyOptions`
     
-        [Строковый литерал](Literals.md#strliteral), описывающий комбинацию клавиш. Принцип задания аналогичен способу задания параметра в методе Java-класса [Keystroke.getKeystroke(String)](http://docs.oracle.com/javase/7/docs/api/javax/swing/KeyStroke.html#getKeyStroke(java.lang.String)).
+        [Строковый литерал](Literals.md#strliteral), описывающий комбинацию клавиш (`CHANGEKEY`) или комбинацию кликов мыши (`CHANGEMOUSE`). 
+		Синтаксис: `key;(bindingModeKey=bindingModeValue; | priority=priorityValue;)*`
+  
+         - `key`
+             Для `CHANGEKEY` принцип задания аналогичен способу задания параметра в методе Java-класса [Keystroke.getKeystroke(String)](http://docs.oracle.com/javase/7/docs/api/javax/swing/KeyStroke.html#getKeyStroke(java.lang.String))
+			  Для `CHANGEMOUSE` в данный момент поддерживаются значения `CLK` и `DBLCLK`.
+			  
+		 - `bindingModeKey=bindingModeValue`
+		     Условия, которые проверяются при наступлении события. 
+			 Поддерживаются следующие `bindingModeKey`: `preview`, `dialog`, `group`, `editing`, `showing`, `panel`, `cell`.
+             Подерживаются следующие `bindingModeValue`: `auto`, `all`, `only`, `no`, `input`
+			  
+		 - `priority=priorityValue`
+		     `priorityValue` - целое число, приоритет `CHANGEKEY` или `CHANGEMOUSE`, согласно которого определяется, какое действие будет выполнено, если больше одного действия соответствуют условиям выполнения.
 
     - `SHOW`
     
