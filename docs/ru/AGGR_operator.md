@@ -7,7 +7,7 @@ title: 'Оператор AGGR'
 ### Синтаксис  
 
 ```
-AGGR aggrClass WHERE aggrExpr
+AGGR [eventClause] aggrClass WHERE aggrExpr
 ```
 
 ### Описание
@@ -40,6 +40,10 @@ WHEN aggrClass aggrObject IS aggrClass AND DROPPED(result(prm1(aggrObject),prm2(
 В отличии от других контекстно-зависимых операторов, оператор `AGGR` нельзя использовать в [выражениях](Expression.md) внутри других операторов (в этом смысле он больше похож на контекстно-независимые операторы), а также в [операторе `JOIN`](JOIN_operator.md) (внутри `[= ]`)
 
 ### Параметры
+
+- `eventClause`
+
+  [Блок описания события](Event_description_block.md). Описывает [событие](Events.md), при наступлении которого будет проверяться создаваемое следствие и выполняться операции автоматического разрешения.
 
 - `aggrClass`
 

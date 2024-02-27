@@ -7,7 +7,7 @@ title: 'Инструкция CONSTRAINT'
 ### Синтаксис
 
 ```
-CONSTRAINT eventClause constraintExpr [CHECKED [BY propertyId1, ..., propertyIdN]] MESSAGE messageExpr
+CONSTRAINT [eventClause] eventClause constraintExpr [CHECKED [BY propertyId1, ..., propertyIdN]] MESSAGE messageExpr
     [PROPERTIES propId1, ..., propIdM];
 ```
 
@@ -33,6 +33,10 @@ WHEN eventClause [=GROUP MAX constraintProperty()]() DO {
 :::
 
 ### Параметры
+
+- `eventClause`
+
+  [Блок описания события](Event_description_block.md). Описывает [событие](Events.md), при наступлении которого будет проверяться создаваемое следствие и выполняться операции автоматического разрешения.
 
 - `eventClause`
 
