@@ -20,6 +20,7 @@ viewType
 ON eventType { actionOperator }
 CHANGEKEY key [SHOW | HIDE]
 STICKY | NOSTICKY
+syncType
 ASON eventType [ACTION] propertyId
 IMAGE path
 CONFIRM
@@ -111,6 +112,12 @@ CONFIRM
 
     Ключевые слова. `STICKY` указывает на то, что свойство в таблице будет прикреплено слева и при скроллинге вправо будет оставаться видимым. `NOSTICKY` снимает это закрепление. По умолчанию `STICKY` или `NOSTICKY` вычисляется эвристически.
 
+- `syncType`
+
+  Определяет, выполняется действие синхронно или асинхронно:
+
+    - `WAIT` - синхронно.
+    - `NOWAIT` - асинхронно. Это значение используется по умолчанию.
 
 - `CONFIRM`
 
