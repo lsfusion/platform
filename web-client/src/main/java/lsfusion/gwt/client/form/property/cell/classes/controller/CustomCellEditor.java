@@ -20,7 +20,7 @@ public interface CustomCellEditor extends RequestValueCellEditor { // ,RequestVa
     JavaScriptObject getCustomEditor();
 
     default void render(Element cellParent, RenderContext renderContext, PValue oldValue, Integer renderedWidth, Integer renderedHeight) {
-        CustomReplaceCellEditor.render(getRenderFunction(), getCustomEditor(), getCustomElement(cellParent), CustomReplaceCellEditor.getController(this, cellParent), GSimpleStateTableView.convertToJSValue(getType(), oldValue));
+        CustomReplaceCellEditor.render(getRenderFunction(), getCustomEditor(), getCustomElement(cellParent), CustomReplaceCellEditor.getController(this, cellParent), GSimpleStateTableView.convertToJSValue(getType(), null, oldValue));
     }
 
     default void clearRender(Element cellParent, RenderContext renderContext, boolean cancel) {

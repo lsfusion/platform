@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.navigator;
 
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.view.MainFrame;
 
 public class GCaptionElementNavigator extends GElementNavigator {
@@ -13,8 +14,8 @@ public class GCaptionElementNavigator extends GElementNavigator {
     }
 
     @Override
-    public void updateElement(GNavigatorElement result, Object value) {
-        result.caption = value != null ? value.toString() : null;
+    public void updateElement(GNavigatorElement result, PValue value) {
+        result.caption = PValue.getCaptionStringValue(value);
 
         if(MainFrame.mobile) { // not mobile elements are updated in NavigatorController.update()
             MainFrame.mobileNavigatorView.updateText(result);

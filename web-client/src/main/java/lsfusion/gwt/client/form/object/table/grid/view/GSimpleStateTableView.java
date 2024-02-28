@@ -6,7 +6,6 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.AppBaseImage;
 import lsfusion.gwt.client.base.GAsync;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
@@ -181,7 +180,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
         return PValue.getPValue(toString(value));
     }
-    public static JavaScriptObject convertToJSValue(GType type, PValue value) {
+    public static JavaScriptObject convertToJSValue(GType type, GPropertyDraw property, PValue value) {
         if (type instanceof GLogicalType) {
             if(!((GLogicalType) type).threeState)
                 return fromBoolean(PValue.getBooleanValue(value));
@@ -193,8 +192,10 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             return null;
         if(type instanceof GIntegralType)
             return fromDouble((PValue.getNumberValue(value)).doubleValue());
-        if(type instanceof GImageType)
+        if(type instanceof GImageType || (property != null && property.isPredefinedImage()))
             return fromString(PValue.getImageValue(value).getImageElementSrc(true));
+        if(type instanceof GFileType)
+            return fromString(GwtClientUtils.getAppDownloadURL(PValue.getStringValue(value)));
         if(type instanceof GJSONType)
             return GwtClientUtils.jsonParse(PValue.getCustomStringValue(value));
 
@@ -208,7 +209,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     }
 
     public static JavaScriptObject convertToJSValue(GPropertyDraw property, PValue value, RendererType rendererType) {
-        return convertToJSValue(property.getRenderType(rendererType), value);
+        return convertToJSValue(property.getRenderType(rendererType), property, value);
     }
 
     protected JsArray<JavaScriptObject> getCaptions(NativeHashMap<String, Column> columnMap, BiPredicate<GPropertyDraw, String> filter) {

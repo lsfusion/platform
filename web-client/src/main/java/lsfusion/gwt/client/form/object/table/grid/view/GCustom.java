@@ -26,7 +26,7 @@ public class GCustom extends GTippySimpleStateTableView {
     private JavaScriptObject customOptions;
     @Override
     public void updateCustomOptionsValues(NativeHashMap<GGroupObjectValue, PValue> values) {
-        customOptions = GSimpleStateTableView.convertToJSValue(GJSONType.instance, values.firstValue()); // for now we're assuming that custom options is json
+        customOptions = GSimpleStateTableView.convertToJSValue(GJSONType.instance, null, values.firstValue()); // for now we're assuming that custom options is json
         dataUpdated = true;
     }
 

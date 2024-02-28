@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.navigator;
 
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.view.MainFrame;
 
 public class GClassElementNavigator extends GElementNavigator {
@@ -12,8 +13,8 @@ public class GClassElementNavigator extends GElementNavigator {
     }
 
     @Override
-    public void updateElement(GNavigatorElement element, Object value) {
-        element.elementClass = (String) value;
+    public void updateElement(GNavigatorElement element, PValue value) {
+        element.elementClass = PValue.getClassStringValue(value);
 
         if(MainFrame.mobile) { // not mobile elements are updated in NavigatorController.update()
             MainFrame.mobileNavigatorView.updateElementClass(element);

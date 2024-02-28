@@ -123,7 +123,7 @@ public class CustomCellRenderer extends CellRenderer {
         updateContext.changeProperty(GSimpleStateTableView.convertFromJSUndefValue(externalChangeType, value),
                 renderValueSupplier != null ? (oldValue, changeValue) -> {
                     GType renderType = property.getRenderType(rendererType);
-                    return GSimpleStateTableView.convertFromJSValue(renderType, GwtClientUtils.call(renderValueSupplier, GSimpleStateTableView.convertToJSValue(renderType, oldValue)));
+                    return GSimpleStateTableView.convertFromJSValue(renderType, GwtClientUtils.call(renderValueSupplier, GSimpleStateTableView.convertToJSValue(renderType, property, oldValue)));
                 } : null);
 
         // if we don't use change value for rendering, and the renderer is interactive (it's state can be changed without notifying the element)

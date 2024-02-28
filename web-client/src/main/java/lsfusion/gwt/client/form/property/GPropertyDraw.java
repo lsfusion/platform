@@ -923,4 +923,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public boolean isDefautAlignCaption() {
         return caption != null && !hasColumnGroupObjects() && (!isAction() && (!panelCaptionVertical && !isPanelBoolean()) || isTab());
     }
+
+    // should match PropertyDrawEntity.isPredefinedImage
+    public boolean isPredefinedImage() {
+        String sid = integrationSID;
+        return sid != null && sid.equals("image");
+    }
 }

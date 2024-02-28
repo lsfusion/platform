@@ -987,11 +987,14 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return toDraw != null && toDraw.isCustom();
     }
 
-    private static ImSet<String> predefinedImageNames = SetFact.toSet("image", "icon");
+    public boolean isDrawCustom(FormInstanceContext context) {
+        return getCustomRenderFunction(context) != null || isGroupCustom(context);
+    }
 
+    // should match PropertyDrawEntity.isPredefinedImage
     public boolean isPredefinedImage() {
-        String sid = getSID();
-        return sid != null && predefinedImageNames.contains(sid);
+        String sid = getIntegrationSID();
+        return sid != null && sid.equals("image");
     }
 
 }

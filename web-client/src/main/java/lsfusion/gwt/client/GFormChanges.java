@@ -166,7 +166,7 @@ public class GFormChanges {
     public static PValue[] remapValues(Serializable[] values) {
         PValue[] mappedValues = new PValue[values.length];
         for (int i = 0; i < values.length; i++)
-            mappedValues[i] = PValue.remapValue(values[i]);
+            mappedValues[i] = PValue.convertFileValue(values[i]);
         return mappedValues;
     }
 
