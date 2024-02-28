@@ -16,6 +16,7 @@ import org.apache.http.conn.ssl.TrustAllStrategy;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.LaxRedirectStrategy;
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.ssl.SSLContextBuilder;
 
@@ -64,7 +65,7 @@ public class ExternalHttpUtils {
             cookieStore.addCookie(parseACookie(cookieEntry.getKey(), cookieEntry.getValue()));
         }
 
-        HttpClientBuilder requestBuilder = HttpClientBuilder.create().setDefaultCookieStore(cookieStore).useSystemProperties();
+        HttpClientBuilder requestBuilder = HttpClientBuilder.create().setDefaultCookieStore(cookieStore).useSystemProperties().setRedirectStrategy(new LaxRedirectStrategy());
 
         if(timeout != null) {
             RequestConfig.Builder configBuilder = RequestConfig.custom();
