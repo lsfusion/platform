@@ -192,8 +192,10 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             return null;
         if(type instanceof GIntegralType)
             return fromDouble((PValue.getNumberValue(value)).doubleValue());
-        if(type instanceof GImageType || (property != null && property.isPredefinedImage()))
-            return fromString(PValue.getImageValue(value).getImageElementSrc(true));
+        if(property != null && property.isPredefinedImage())
+            return fromString(PValue.getImageValue(value).createImageHTML());
+        if(type instanceof GImageType)
+            return fromString(PValue.getImageValue(value).getImageElementSrc(true)); // assert AppFileImage
         if(type instanceof GFileType)
             return fromString(GwtClientUtils.getAppDownloadURL(PValue.getStringValue(value)));
         if(type instanceof GJSONType)

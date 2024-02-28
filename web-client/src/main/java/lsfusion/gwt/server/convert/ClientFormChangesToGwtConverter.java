@@ -184,7 +184,7 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
     }
 
     public static Serializable convertFileValue(Object value, FormSessionObject sessionObject, MainDispatchServlet servlet, String sessionID) throws IOException {
-        if(value instanceof AppFileDataImage) {
+        if(value instanceof AppFileDataImage) { // dynamic image
             return new AppFileImage(convertFileData(((AppFileDataImage) value).data, sessionObject));
         }
 
