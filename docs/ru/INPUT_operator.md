@@ -9,6 +9,7 @@ title: 'Оператор INPUT'
 ```
 INPUT inputOptions 
 [CHANGE [= changeExpr]] [NOCONSTRAINTFILTER]
+CUSTOM editFun
 NEWSESSION | NESTEDSESSION | THISSESSION
 [DO actionOperator [ELSE elseActionOperator]]
 ```
@@ -49,6 +50,14 @@ NEWSESSION | NESTEDSESSION | THISSESSION
 - `NOCONSTRAINTFILTER`
 
     Если указана, дополнительный фильтр на соответствие ограничениям не устанавливается.
+
+- `CUSTOM`
+
+  Ключевое слово, которое обозначает, для отрисовки будет использоваться js функция.
+
+- `editFun`
+
+  Имя js функции, функция должна быть в одном из js файлов, загруженных с помощью оператора [INTERNAL](Internal_operator.md). Строковый литерал.
 
 - `NEWSESSION` | `NESTEDSESSION` | `THISSESSION`
 
