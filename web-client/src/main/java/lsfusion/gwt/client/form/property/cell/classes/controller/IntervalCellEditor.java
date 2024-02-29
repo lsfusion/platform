@@ -24,16 +24,6 @@ public class IntervalCellEditor  extends DateRangePickerBasedCellEditor {
         return type;
     }
 
-//    @Override
-//    protected JsDate getStartDate(PValue oldValue) {
-//        return GwtClientUtils.toJsDate(type.toDate(oldValue, true));
-//    }
-//
-//    @Override
-//    protected JsDate getEndDate(PValue oldValue) {
-//        return GwtClientUtils.toJsDate(type.toDate(oldValue, false));
-//    }
-
     @Override
     protected String getSinglePattern() {
         return type.getSingleFormat(pattern).getPattern();
@@ -49,10 +39,6 @@ public class IntervalCellEditor  extends DateRangePickerBasedCellEditor {
         return intervalType.equals("DATE");
     }
 
-//    @Override
-//    protected PValue getDateInputValue() {
-//        return type.fromDate(GwtClientUtils.fromJsDate(getPickerStartDate()), GwtClientUtils.fromJsDate(getPickerEndDate()));
-//    }
 
     @Override
     protected boolean isSinglePicker() {
@@ -63,4 +49,20 @@ public class IntervalCellEditor  extends DateRangePickerBasedCellEditor {
 //    public PValue getDefaultNullValue() {
 //        return type.fromDate(new Date(), new Date());
 //    }
+
+    @Override
+    protected JsDate getStartDate(PValue oldValue) {
+        return GwtClientUtils.toJsDate(type.toDate(oldValue, true));
+    }
+
+    @Override
+    protected JsDate getEndDate(PValue oldValue) {
+        return GwtClientUtils.toJsDate(type.toDate(oldValue, false));
+    }
+
+    @Override
+    protected PValue getValue(JsDate startDate, JsDate endDate) {
+        return type.fromDate(GwtClientUtils.fromJsDate(startDate), GwtClientUtils.fromJsDate(endDate));
+    }
+
 }

@@ -12,7 +12,6 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.SimpleDatePatternConverter;
 import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
-import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
@@ -39,7 +38,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
 
         if (started && !isNative()) {
 //            assert oldValue != null;
-            createPicker(GwtClientUtils.getTippyParent(parent), parent, getSinglePattern().replace("a", "A"), isSinglePicker(), isTimeEditor(), isDateEditor());
+            createPicker(GwtClientUtils.getTippyParent(parent), parent, getStartDate(oldValue), getEndDate(oldValue), getSinglePattern().replace("a", "A"), isSinglePicker(), isTimeEditor(), isDateEditor());
             openPicker(); // date range picker is opened only on click
 
             if(oldValue == null) // if value is null - current date will be set, so we need to select the value, since we want to rewrite data on key input
@@ -64,7 +63,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
         returnFocus(parent);
     }
 
-    protected void pickerCancel(Element parent, CancelReason cancelReason) {
+    protected void pickerCancel(Element parent) {
         cancel();
 
         returnFocus(parent);
@@ -100,8 +99,6 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
 
     protected native void removePicker()/*-{
         this.@DateRangePickerBasedCellEditor::getPickerObject()().remove();
-        //we need to remove the keydown listener because it is a global($wnd) listener that is only used when the picker popup opens
-        $($wnd).off('keydown.pickerpopup').off('mousedown.pickerpopup');
     }-*/;
 
     protected native void openPicker()/*-{
@@ -120,7 +117,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
         return property.getHorzTextAlignment(RendererType.CELL); // should be taken from RenderContext, but for now this would do
     }
 
-    protected native void createPicker(Element tippyParent, Element parent, String pattern, boolean singleDatePicker, boolean time, boolean date)/*-{
+    protected native void createPicker(Element tippyParent, Element parent, JsDate startDate, JsDate endDate, String pattern, boolean singleDatePicker, boolean time, boolean date)/*-{
         window.$ = $wnd.jQuery;
         var thisObj = this;
         var editElement = $(thisObj.@DateRangePickerBasedCellEditor::getInputElement()());
@@ -176,7 +173,11 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
             singleDatePicker: singleDatePicker,
             drops: 'auto',
             opens: thisObj.@DateRangePickerBasedCellEditor::getHorzTextAlignment()().@com.google.gwt.dom.client.Style.TextAlign::getCssName()(),
-            alwaysShowCalendars: true // need to use with ranges
+            alwaysShowCalendars: true,
+            // need to use with ranges
+
+            startDate: startDate,
+            endDate: endDate
         });
 
         //show only time picker
@@ -208,4 +209,25 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
             thisObj.@DateRangePickerBasedCellEditor::pickerApply(*)(parent);
         });
     }-*/;
+
+    // this all needed only for handling 2-year digit dates
+    protected abstract JsDate getStartDate(PValue oldValue);
+    protected abstract JsDate getEndDate(PValue oldValue);
+    protected abstract PValue getValue(JsDate startDate, JsDate endDate);
+    private native JsDate getPickerStartDate()/*-{
+        var pickerDate = this.@DateRangePickerBasedCellEditor::getPickerObject()().startDate;
+        return pickerDate.isValid() ? pickerDate.toDate() : null; // toDate because it is "Moment js" object
+    }-*/;
+    private native JsDate getPickerEndDate()/*-{
+        var pickerDate = this.@DateRangePickerBasedCellEditor::getPickerObject()().endDate;
+        return pickerDate.isValid() ? pickerDate.toDate() : null; // toDate because it is "Moment js" object
+    }-*/;
+
+    @Override
+    public PValue getCommitValue(Element parent, Integer contextAction) throws InvalidEditException {
+        if(!isNative())
+            return getValue(getPickerStartDate(), getPickerEndDate());
+
+        return super.getCommitValue(parent, contextAction);
+    }
 }

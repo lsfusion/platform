@@ -1271,6 +1271,24 @@ public class GwtClientUtils {
     public static native JsDate getUTCDate(int year, int month, int date, int hours, int minutes, int seconds)/*-{
         return new Date(Date.UTC(year, month, date, hours, minutes, seconds));
     }-*/;
+    public static native int getUTCYear(JsDate date)/*-{
+        return date.getUTCFullYear();
+    }-*/;
+    public static native int getUTCMonth(JsDate date)/*-{
+        return date.getUTCMonth();
+    }-*/;
+    public static native int getUTCDate(JsDate date)/*-{
+        return date.getUTCDate();
+    }-*/;
+    public static native int getUTCHours(JsDate date)/*-{
+        return date.getUTCHours();
+    }-*/;
+    public static native int getUTCMinutes(JsDate date)/*-{
+        return date.getUTCMinutes();
+    }-*/;
+    public static native int getUTCSeconds(JsDate date)/*-{
+        return date.getUTCSeconds();
+    }-*/;
 
 
     public static native JavaScriptObject sortArray(JavaScriptObject array, String sortField, boolean reverseOrder)/*-{

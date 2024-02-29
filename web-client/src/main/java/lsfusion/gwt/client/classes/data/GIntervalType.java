@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.classes.data;
 
+import com.google.gwt.core.client.JsDate;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.TimeZone;
 import lsfusion.gwt.client.base.GwtClientUtils;
@@ -102,8 +103,10 @@ public abstract class GIntervalType extends GFormatType {
         Date date = new Date(epoch);
         boolean local = isSingleLocal();
         if(local) { // here is tricky for local dates we convert to string (to get "absolute" params, and then parsing back)
-            DateTimeFormat format = getSingleFormat(null);// we don't care about the pattern
-            return format.parse(format.format(date, UTCZone));
+//            DateTimeFormat format = getSingleFormat(null);// we don't care about the pattern
+//            return format.parse(format.format(date, UTCZone));
+            JsDate jsDate = GwtClientUtils.toJsDate(date);
+            date = new Date(GwtClientUtils.getUTCYear(jsDate) - 1900, GwtClientUtils.getUTCMonth(jsDate), GwtClientUtils.getUTCMonth(jsDate), GwtClientUtils.getUTCHours(jsDate), GwtClientUtils.getUTCMinutes(jsDate), GwtClientUtils.getUTCSeconds(jsDate));
         }
 
         return date;

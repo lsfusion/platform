@@ -24,16 +24,6 @@ public class DateCellEditor extends DateRangePickerBasedCellEditor {
         return type;
     }
 
-//    @Override
-//    protected JsDate getStartDate(PValue oldValue) {
-//        return GwtClientUtils.toJsDate(type.toDate(oldValue));
-//    }
-//
-//    @Override
-//    protected JsDate getEndDate(PValue oldValue) {
-//        return GwtClientUtils.toJsDate(type.toDate(oldValue));
-//    }
-
     @Override
     protected String getSinglePattern() {
         return type.getFormat(pattern).getPattern();
@@ -47,12 +37,6 @@ public class DateCellEditor extends DateRangePickerBasedCellEditor {
         return true;
     }
 
-//    @Override
-//    protected PValue getDateInputValue() {
-//        JsDate pickerStartDate = getPickerStartDate();
-//        return pickerStartDate != null ? type.fromDate(GwtClientUtils.fromJsDate(pickerStartDate)) : null;
-//    }
-
     @Override
     protected boolean isSinglePicker() {
         return true;
@@ -61,18 +45,6 @@ public class DateCellEditor extends DateRangePickerBasedCellEditor {
 //    @Override
 //    public PValue getDefaultNullValue() {
 //        return type.fromDate(new Date());
-//    }
-
-    // valueAsDate doesn't work for datetime + hours
-//    public native static JsDate getDateInputValue(InputElement element)/*-{
-//        return element.valueAsDate;
-//    }-*/;
-//
-//    @Override
-//    public PValue getCommitValue(Element parent, Integer contextAction) throws InvalidEditException {
-//        if(popup == null) // if we have nativePopup (ie date, datetime-local, time)
-//            return type.fromDate(GwtClientUtils.fromJsDate(getDateInputValue(inputElement)));
-//        return super.getCommitValue(parent, contextAction);
 //    }
 
     @Override
@@ -97,5 +69,20 @@ public class DateCellEditor extends DateRangePickerBasedCellEditor {
         }
 
         return super.tryParseInputText(inputText, onCommit);
+    }
+
+    @Override
+    protected JsDate getStartDate(PValue oldValue) {
+        return GwtClientUtils.toJsDate(type.toDate(oldValue));
+    }
+
+    @Override
+    protected JsDate getEndDate(PValue oldValue) {
+        return GwtClientUtils.toJsDate(type.toDate(oldValue));
+    }
+
+    @Override
+    protected PValue getValue(JsDate startDate, JsDate endDate) {
+        return startDate != null ? type.fromDate(GwtClientUtils.fromJsDate(startDate)) : null;
     }
 }
