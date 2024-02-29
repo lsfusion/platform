@@ -36,6 +36,7 @@ propertyName = value;
 componentName
 PROPERTY(formPropertyName)
 FILTERGROUP(filterGroupName)
+FILTER(userFilterName)
 PARENT(selector)
 GROUP([propertyGroupSelector][,groupObjectTreeSelector])
 noGroupObjectTreeContainerType
@@ -239,6 +240,10 @@ TREE treeSelector
 - `filterGroupName`
 
     Имя [группы фильтров](Filters_and_sortings_block.md#filterName). [Простой идентификатор](IDs.md#id).
+
+- `userFilterName`
+
+  [Имя свойства / действия на форме](Properties_and_actions_block.md#name), добавленного в пользовательский фильтр с помощью [FILTER](Properties_and_actions_block.md) или `USERFILTERS`.
 
 - `propertyGroupSelector`
 
