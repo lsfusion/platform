@@ -288,27 +288,24 @@ public class GGridController extends GAbstractTableController {
 
         addToToolbar(viewButtonGroup);
 
-        if(showFilter() || groupObject.toolbar.showGridSettings) {
+        if (showFilter()) {
+            initFilters();
+        }
 
-            if (showFilter()) {
-                initFilters();
-            }
+        if (groupObject.toolbar.showGridSettings) {
+            GToolbarButtonGroup settingsButtonGroup = new GToolbarButtonGroup();
 
-            if (groupObject.toolbar.showGridSettings) {
-                GToolbarButtonGroup settingsButtonGroup = new GToolbarButtonGroup();
+            settingsButton = new GToolbarButton(StaticImage.USERPREFERENCES, messages.formGridPreferences()) {
+                @Override
+                public ClickHandler getClickHandler() {
+                    return event -> {
+                        changeSettings();
+                    };
+                }
+            };
 
-                settingsButton = new GToolbarButton(StaticImage.USERPREFERENCES, messages.formGridPreferences()) {
-                    @Override
-                    public ClickHandler getClickHandler() {
-                        return event -> {
-                            changeSettings();
-                        };
-                    }
-                };
-
-                settingsButtonGroup.add(settingsButton);
-                addToToolbar(settingsButtonGroup);
-            }
+            settingsButtonGroup.add(settingsButton);
+            addToToolbar(settingsButtonGroup);
         }
 
         if(groupObject.toolbar.showCountQuantity || groupObject.toolbar.showCalculateSum) {

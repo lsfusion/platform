@@ -135,12 +135,12 @@ public class GridController extends AbstractTableController {
             addToolbarSeparator();
         }
 
-        boolean showSettings = groupObject.toolbar.showSettings && table instanceof GridTable;
-        if(showSettings) {
+        if (table instanceof GridTable) {
             initFilterButtons();
-
             addToolbarSeparator();
+        }
 
+        if(groupObject.toolbar.showSettings) {
             if (((GridTable) table).hasHeader) {
                 ((GridTable) table).getTableHeader().addMouseListener(new MouseAdapter() {
                     @Override
