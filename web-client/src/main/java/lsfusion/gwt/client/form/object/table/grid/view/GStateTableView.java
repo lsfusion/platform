@@ -549,6 +549,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         if(property.isReadOnly())
             return true;
 
+        // when result is rendered, it's important to have property pending change mechanism to cancel changes when server ignores this changes
         if(rendered && !property.hasExternalChangeActionForRendering(RendererType.SIMPLE))
             return true;
 
