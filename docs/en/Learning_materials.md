@@ -11,7 +11,7 @@ A guide to **lsFusion** programming for beginners, based on the author's experie
 ### [Video Tutorials](https://www.youtube.com/playlist?list=PL8FG-RmfUn1Oc30Vaw1Em3DeSzV5ElQ43)
 A series of videos that demonstrate techniques for working with the **lsFusion** platform in real time.
 
-### [Examles](Examples.md) 
+### [Examples](Examples.md) 
 Examples of simple application development designed to demonstrate the features of the platform.
 ### [Typical tasks](How-to.md) 
 Categorized examples of solutions to typical tasks.
