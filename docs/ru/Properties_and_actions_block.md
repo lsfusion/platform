@@ -56,6 +56,8 @@ ON eventType actionId(param1, ..., paramZ) | { actionOperator }
 ATTR
 EXTID extID
 IN propertyGroup
+ORDER
+FILTER
 STICKY | NOSTICKY
 syncType
 ```
@@ -311,6 +313,18 @@ PROPERTIES(o) d=date, Order.number;
     - `propertyGroup`
     
         имя группы свойств. [Составной идентификатор](IDs.md#cid).
+
+- `ORDER [DESC]`
+
+  Ключевое слово, добавляющее для данного свойства сортировку, которая будет автоматически применяться при чтении любых данных на форме. Аналогично заданию сортировки с помощью [блока сортировок](Filters_and_sortings_block#sort).
+
+    - `DESC`
+
+      Ключевое слово. Указывает на обратный порядок сортировки. По умолчанию используется сортировка по возрастанию.
+
+- `FILTER`
+
+  Ключевое слово, указывающее на то, что для свойства на форме будет создан пользовательский фильтр, аналогичный тому, который пользователь может добавить сам по нажатию F3, а также тому, который создаётся с помощью [USERFILTERS](Filters_and_sortings_block.md#userfilters).
 
 - `STICKY` | `NOSTICKY`
 
