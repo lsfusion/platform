@@ -6,13 +6,13 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.GwtSharedUtils;
+import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.TableContainer;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.view.StyleDefaults;
 
 import java.util.ArrayList;
@@ -22,8 +22,6 @@ import java.util.Map;
 import static lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder.COLUMN_ATTRIBUTE;
 
 public class GMap extends GSimpleStateTableView<JavaScriptObject> implements RequiresResize {
-    // No need to support color themes here as we apply svg filters to the icon anyway.
-    private final String DEFAULT_MARKER_ICON = "map_marker.png";
 
     public GMap(GFormController form, GGridController grid, TableContainer tableContainer) {
         super(form, grid, tableContainer);
@@ -34,7 +32,8 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
         public final String name;
         public String color;
         public final Object line;
-        public final String icon;
+        public final String caption;
+        public final BaseImage image;
 
         // should be polymorphed later
         public final Double latitude;
@@ -52,7 +51,8 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
             name = getName(object);
             color = getMarkerColor(object);
             line = getLine(object);
-            icon = getIcon(object);
+            caption = getCaption(object);
+            image = getImage(object);
 
             latitude = getLatitude(object);
             longitude = getLongitude(object);
@@ -164,7 +164,11 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
             if (refreshMarkers)
                 markersToRefresh.push(marker);
 
-            if(!isPoly && (oldGroupMarker == null || !(GwtClientUtils.nullEquals(groupMarker.icon, oldGroupMarker.icon) && GwtClientUtils.nullEquals(groupMarker.color, oldGroupMarker.color) && groupMarker.isCurrent == oldGroupMarker.isCurrent)))
+            if(!isPoly && (oldGroupMarker == null || !(
+                    GwtClientUtils.nullEquals(groupMarker.image, oldGroupMarker.image) &&
+                    GwtClientUtils.nullEquals(groupMarker.caption, oldGroupMarker.caption) &&
+                    GwtClientUtils.nullEquals(groupMarker.color, oldGroupMarker.color) &&
+                    groupMarker.isCurrent == oldGroupMarker.isCurrent)))
                 updateIcon(groupMarker, marker);
 
             if(groupMarker.isEditing())
@@ -402,12 +406,22 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
         return element.polygon;
     }-*/;
 
-    protected static native String getIcon(JavaScriptObject element)/*-{
-        return element.icon;
+    public static BaseImage createImage(String url) {
+        return new AppLinkImage(url);
+    }
+
+    protected static native String getCaption(JavaScriptObject element)/*-{
+        return element.caption;
     }-*/;
 
+    // icon - deprecated
+    protected static native BaseImage getImage(JavaScriptObject element)/*-{
+        return element.image ? element.image : (element.icon ? @GMap::createImage(*)(element.icon) : null);
+    }-*/;
+
+    // name - deprecated
     protected native static String getName(JavaScriptObject element)/*-{
-        return element.name ? element.name.toString() : null;
+        return element.tooltip ? element.tooltip.toString() : (element.name ? element.name.toString() : null);
     }-*/;
 
     protected native JavaScriptObject createLine(JavaScriptObject map, JsArray<JavaScriptObject> markers)/*-{
@@ -456,24 +470,36 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
         return GwtClientUtils.getParentWithAttribute(target, COLUMN_ATTRIBUTE);
     }
 
+    private static native void setMarkerColor(Element element, String color) /*-{
+        element.style.setProperty("--marker-color", color);
+    }-*/;
+
     protected void updateIcon(GroupMarker groupMarker, JavaScriptObject marker) {
-        updateJsIcon(marker, groupMarker.icon != null ? groupMarker.icon : GwtClientUtils.getStaticImageURL(DEFAULT_MARKER_ICON),
-                groupMarker.color, groupMarker.isCurrent);
+
+        BaseImage image = groupMarker.image;
+        String caption = groupMarker.caption;
+        if(image == null && caption == null)
+            image = StaticImage.MARKER;
+        String color = groupMarker.color;
+
+        Element element = GwtClientUtils.createFocusElement("div");
+        BaseImage.initImageText(element);
+        BaseImage.updateText(element, caption, false);
+        BaseImage.updateImage(image, element, true);
+
+        if(color != null)
+            setMarkerColor(element, color);
+        element.setAttribute(COLUMN_ATTRIBUTE, "");
+        element.setAttribute(MainFrame.IGNORE_DBLCLICK_CHECK, "");
+
+        updateJsIcon(marker, element, groupMarker.isCurrent ? "focused-marker" : "");
     }
 
-    protected native void updateJsIcon(JavaScriptObject marker, String iconUrl, String backgroundColor, boolean isCurrent)/*-{
-        var L = $wnd.L;
-        var myIcon = L.divIcon({
-            html: "<img " + (isCurrent ? "class=\"marker-background-focused\"" : "") +
-                " style=\"background-image:" +
-                (backgroundColor ? "linear-gradient(" + backgroundColor + "," + backgroundColor + "), " : "") +
-                "url(" + iconUrl + "); -webkit-mask-image:url(" + iconUrl + "); height:42px; width:42px;\"" +
-                " alt=\"\" tabindex=\"0\" " +
-                @lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder::COLUMN_ATTRIBUTE + " " +
-                @lsfusion.gwt.client.view.MainFrame::IGNORE_DBLCLICK_CHECK + ">",
-            className: ''
-        });
-        marker.setIcon(myIcon);
+    protected native void updateJsIcon(JavaScriptObject marker, Element element, String className)/*-{
+        marker.setIcon($wnd.L.divIcon({
+            html: element,
+            className: className
+        }));
     }-*/;
 
     protected native void updateColor(JavaScriptObject marker, String color, String clusterColor)/*-{

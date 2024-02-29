@@ -6,6 +6,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.AppBaseImage;
 import lsfusion.gwt.client.base.GAsync;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
@@ -151,7 +152,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
                 GGroupObjectValue fullKey = key != null ? GGroupObjectValue.getFullKey(key, columnKey) : GGroupObjectValue.EMPTY;
 
-                rowValues.push(convertToJSValue(property, propValues.get(fullKey), RendererType.SIMPLE));
+                rowValues.push(convertToJSValue(property, propValues.get(fullKey), RendererType.SIMPLE, !(this instanceof GMap))); // we want images in map
             }
         }
         rowValues.push(fromObject(key));
@@ -180,7 +181,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
         return PValue.getPValue(toString(value));
     }
-    public static JavaScriptObject convertToJSValue(GType type, GPropertyDraw property, PValue value) {
+    public static JavaScriptObject convertToJSValue(GType type, GPropertyDraw property, boolean imageToHTML, PValue value) {
         if (type instanceof GLogicalType) {
             if(!((GLogicalType) type).threeState)
                 return fromBoolean(PValue.getBooleanValue(value));
@@ -192,8 +193,13 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             return null;
         if(type instanceof GIntegralType)
             return fromDouble((PValue.getNumberValue(value)).doubleValue());
-        if(property != null && property.isPredefinedImage())
-            return fromString(PValue.getImageValue(value).createImageHTML());
+        if(property != null && property.isPredefinedImage()) {
+            AppBaseImage imageValue = PValue.getImageValue(value);
+            if(imageToHTML)
+                return fromString(imageValue.createImageHTML());
+
+            return fromObject(imageValue);
+        }
         if(type instanceof GImageType)
             return fromString(PValue.getImageValue(value).getImageElementSrc(true)); // assert AppFileImage
         if(type instanceof GFileType)
@@ -210,8 +216,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return GwtClientUtils.jsonParse((String)key);
     }
 
-    public static JavaScriptObject convertToJSValue(GPropertyDraw property, PValue value, RendererType rendererType) {
-        return convertToJSValue(property.getRenderType(rendererType), property, value);
+    public static JavaScriptObject convertToJSValue(GPropertyDraw property, PValue value, RendererType rendererType, boolean imageToHTML) {
+        return convertToJSValue(property.getRenderType(rendererType), property, imageToHTML, value);
     }
 
     protected JsArray<JavaScriptObject> getCaptions(NativeHashMap<String, Column> columnMap, BiPredicate<GPropertyDraw, String> filter) {
@@ -451,7 +457,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         Column column = getColumn(property);
         if(column == null)
             return null;
-        return convertToJSValue(column.property, getValue(column.property, GGroupObjectValue.getFullKey(groupObjectValue, column.columnKey)), RendererType.SIMPLE);
+        return convertToJSValue(column.property, getValue(column.property, GGroupObjectValue.getFullKey(groupObjectValue, column.columnKey)), RendererType.SIMPLE, !(this instanceof GMap));
     }
 
     protected GFont getFont(String property, JavaScriptObject object) {

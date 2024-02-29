@@ -39,4 +39,14 @@ public class ImageDescription implements Serializable {
     public String toString() {
         return url;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o || o instanceof ImageDescription && width == ((ImageDescription) o).width && height == ((ImageDescription) o).height && url.equals(((ImageDescription) o).url) && disabledUrl.equals(((ImageDescription) o).disabledUrl);
+    }
+
+    @Override
+    public int hashCode() {
+        return 31 * (31 * (31 * url.hashCode() + disabledUrl.hashCode()) + width) + height;
+    }
 }

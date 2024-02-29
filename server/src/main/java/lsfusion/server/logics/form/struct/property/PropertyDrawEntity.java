@@ -987,8 +987,17 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return toDraw != null && toDraw.isCustom();
     }
 
-    public boolean isDrawCustom(FormInstanceContext context) {
+    public boolean isGroupSimpleState(FormInstanceContext context) {
+        GroupObjectEntity toDraw = getToDraw(context.entity);
+        return toDraw != null && toDraw.isSimpleState();
+    }
+
+    public boolean needFile(FormInstanceContext context) {
         return getCustomRenderFunction(context) != null || isGroupCustom(context);
+    }
+
+    public boolean needImage(FormInstanceContext context) {
+        return getCustomRenderFunction(context) != null || isGroupSimpleState(context);
     }
 
     // should match PropertyDrawEntity.isPredefinedImage

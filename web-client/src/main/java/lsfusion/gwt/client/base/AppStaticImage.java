@@ -56,4 +56,14 @@ public class AppStaticImage extends BaseStaticImage implements AppBaseImage {
     public String getImageElementSrc(boolean enabled) {
         return GwtClientUtils.getAppStaticImageURL(getUrl(enabled));
     }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o || o instanceof AppStaticImage && GwtClientUtils.nullEquals(images, ((AppStaticImage) o).images);
+    }
+
+    @Override
+    public int hashCode() {
+        return GwtClientUtils.nullHash(images);
+    }
 }

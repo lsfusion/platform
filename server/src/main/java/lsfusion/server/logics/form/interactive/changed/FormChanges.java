@@ -306,9 +306,9 @@ public class FormChanges {
         if (reader instanceof PropertyDrawInstance && ((PropertyDrawInstance<?>) reader).isProperty(context)) {
             PropertyDrawEntity<?> propertyDraw = ((PropertyDrawInstance<?>) reader).entity;
             readerType = readType.get();
-            if (readerType instanceof ImageClass || (propertyDraw.isPredefinedImage() && propertyDraw.isDrawCustom(context)))
+            if (readerType instanceof ImageClass || (propertyDraw.isPredefinedImage() && propertyDraw.needImage(context)))
                 return getNeedImage(readerType, propertyDraw, context);
-            else if (readerType instanceof FileClass && propertyDraw.isDrawCustom(context)) // if there is a custom function, we want file to be send to web-server as a link
+            else if (readerType instanceof FileClass && propertyDraw.needFile(context)) // if there is a custom function, we want file to be send to web-server as a link
                 return new NeedFile(readerType);
         } else if (reader instanceof PropertyDrawInstance.ExtraReaderInstance && reader.getTypeID() == PropertyDrawExtraType.IMAGE.getPropertyReadType()) {
             return getNeedImage(readType.get(), ((PropertyDrawInstance<?>.ExtraReaderInstance) reader).getPropertyDraw().entity, context);
