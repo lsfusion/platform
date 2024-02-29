@@ -113,14 +113,13 @@ public class CustomCellRenderer extends CellRenderer {
     }
 
     protected static void changeValue(Element element, UpdateContext updateContext, JavaScriptObject value, GPropertyDraw property, JavaScriptObject renderValueSupplier) {
-        GType externalChangeType = property.getExternalChangeType();
         RendererType rendererType = updateContext.getRendererType();
 
-        boolean canUseChangeValueForRendering = renderValueSupplier != null || property.canUseChangeValueForRendering(externalChangeType, rendererType);
+        boolean canUseChangeValueForRendering = renderValueSupplier != null || property.hasExternalChangeActionForRendering(rendererType);
         if(!canUseChangeValueForRendering) // to break a recursion when there are several changes in update
             rerenderState(element, false);
 
-        updateContext.changeProperty(GSimpleStateTableView.convertFromJSUndefValue(externalChangeType, value),
+        updateContext.changeProperty(GSimpleStateTableView.convertFromJSUndefValue(property.getExternalChangeType(), value),
                 renderValueSupplier != null ? (oldValue, changeValue) -> {
                     GType renderType = property.getRenderType(rendererType);
                     return GSimpleStateTableView.convertFromJSValue(renderType, GwtClientUtils.call(renderValueSupplier, GSimpleStateTableView.convertToJSValue(renderType, property, true, oldValue)));

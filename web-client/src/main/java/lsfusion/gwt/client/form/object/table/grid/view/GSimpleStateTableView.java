@@ -345,7 +345,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         Consumer<Long> onExec = changeRequestIndex -> {
             for (int i = 0; i < length; i++) {
                 GPropertyDraw property = properties[i];
-                if(newValues[i] != PValue.UNDEFINED && property.canUseChangeValueForRendering(property.getExternalChangeType(), RendererType.SIMPLE)) { // or use the old value instead of the new value in that case
+                if(newValues[i] != PValue.UNDEFINED && property.hasExternalChangeActionForRendering(RendererType.SIMPLE)) { // or use the old value instead of the new value in that case
                     GGroupObjectValue fullKey = fullKeys[i];
                     form.pendingChangeProperty(property, fullKey, newValues[i], getValue(property, fullKey), changeRequestIndex);
                 }
@@ -375,15 +375,15 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return getCaptionElementClass(column.property, column.columnKey);
     }
 
-    protected boolean isReadOnly(String property, GGroupObjectValue object) {
+    protected boolean isReadOnly(String property, GGroupObjectValue object, boolean rendered) {
         Column column = getColumn(property);
         if(column == null)
             return false;
-        return isReadOnly(column.property, object, column.columnKey);
+        return isReadOnly(column.property, object, column.columnKey, rendered);
     }
 
     protected Boolean isReadOnly(String property, JavaScriptObject object) {
-        return isReadOnly(property, getJsObjects(object)) ? false : null;
+        return isReadOnly(property, getJsObjects(object), true) ? false : null;
     }
 
     protected String getValueElementClass(String property, GGroupObjectValue object) {

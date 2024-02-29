@@ -36,9 +36,9 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
         public final BaseImage image;
 
         // should be polymorphed later
-        public final Double latitude;
-        public final Double longitude;
-        public final String polygon;
+        public Double latitude;
+        public Double longitude;
+        public String polygon;
 
         public boolean isCurrent;
         public boolean isReadOnly;
@@ -60,12 +60,16 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
         }
     }
 
-    protected void changePointProperty(JavaScriptObject object, Double lat, Double lng) {
+    protected void changePointProperty(JavaScriptObject object, Double lat, Double lng, GroupMarker groupMarker) {
+        groupMarker.latitude = lat;
+        groupMarker.longitude = lng;
         changeProperties(new String[]{"latitude", "longitude"}, new JavaScriptObject[]{object, object}, new PValue[]{PValue.getPValue(lat), PValue.getPValue(lng)});
     }
 
-    protected void changePolygonProperty(JavaScriptObject object, JsArray<WrapperObject> latlngs) {
-        changeProperty("polygon", object, PValue.getPValue(getPolygon(latlngs)));
+    protected void changePolygonProperty(JavaScriptObject object, JsArray<WrapperObject> latlngs, GroupMarker groupMarker) {
+        String polygon = getPolygon(latlngs);
+        groupMarker.polygon = polygon;
+        changeProperty("polygon", object, PValue.getPValue(polygon));
     }
 
     private static String getPolygon(JsArray<WrapperObject> latlngs) {
@@ -140,6 +144,7 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
                 markers.put(key, marker);
                 fitBounds = true;
             }
+            setGroupMarker(marker, groupMarker); // we need to update model in the coordinates change
 
             boolean isPoly = groupMarker.polygon != null;
 
@@ -202,9 +207,9 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
 
     private boolean getReadOnly(GGroupObjectValue key, GroupMarker groupMarker) {
         if (groupMarker.polygon != null)
-            return isReadOnly("polygon", key);
+            return isReadOnly("polygon", key, true);
         else
-            return isReadOnly("latitude", key) && isReadOnly("longitude", key);
+            return isReadOnly("latitude", key, true) && isReadOnly("longitude", key, true);
     }
 
     protected native boolean hasFitBoundsProperty(JavaScriptObject object)/*-{
@@ -308,6 +313,9 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
     }-*/;
 
 
+    protected native JavaScriptObject setGroupMarker(JavaScriptObject marker, GroupMarker groupMarker)/*-{
+        marker.groupMarker = groupMarker;
+    }-*/;
     protected native JavaScriptObject createMarker(JavaScriptObject map, boolean polygon, JavaScriptObject markerClusters, JavaScriptObject object)/*-{
         var L = $wnd.L;
 
@@ -318,7 +326,7 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
             marker = L.polygon([L.latLng(0, 1), L.latLng(1, -1), L.latLng(-1, -1)]);
 
             marker.on('edit', function (e) {
-                thisObject.@GMap::changePolygonProperty(*)(object, marker.getLatLngs()[0]); // https://github.com/Leaflet/Leaflet/issues/5212
+                thisObject.@GMap::changePolygonProperty(*)(object, marker.getLatLngs()[0], marker.groupMarker); // https://github.com/Leaflet/Leaflet/issues/5212
             });
         } else {
             marker = L.marker([0, 0],{
@@ -333,7 +341,7 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
 
             marker.on('dragend', function (e) {
                 var latlng = marker.getLatLng();
-                thisObject.@GMap::changePointProperty(*)(object, latlng.lat, latlng.lng);
+                thisObject.@GMap::changePointProperty(*)(object, latlng.lat, latlng.lng, marker.groupMarker);
             });
         }
 

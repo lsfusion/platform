@@ -287,6 +287,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return customRenderFunction == null || externalChangeType == null;
     }
 
+    public boolean hasExternalChangeActionForRendering(RendererType rendererType) {
+        return canUseChangeValueForRendering(externalChangeType, rendererType);
+    }
+
     public boolean disableInputList;
 
     public GEditBindingMap editBindingMap;
