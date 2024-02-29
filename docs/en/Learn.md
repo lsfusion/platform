@@ -20,9 +20,9 @@ This section describes the syntax of the **lsFusion** language used in the platf
 
 This section describes the basic actions in the **lsFusion** platform development environment.
 
-### [Examples](Examples.md)
+### [Learning materials](Learning_materials.md)
 
-This section contains examples of tasks and their solutions on the **lsFusion** platform.
+This section contains additional resources that demonstrate the features of the **lsFusion** platform and help you learn how to use them.
 
 ### [Online demo](Online_demo.md)
 
