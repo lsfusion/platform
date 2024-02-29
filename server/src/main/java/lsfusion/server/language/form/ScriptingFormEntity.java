@@ -645,7 +645,7 @@ public class ScriptingFormEntity {
 
         Boolean filter = options.getFilter();
         if(filter != null && filter)
-            form.addFixedFilter(new FilterEntity(property.getPropertyObjectEntity()), version);
+            form.addUserFilter(property, version);
 
         Boolean pivotColumn = options.getPivotColumn();
         if(pivotColumn != null && pivotColumn)
