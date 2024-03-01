@@ -2,7 +2,7 @@
 title: 'Оператор UNGROUP'
 ---
 
-:::warning
+:::danger
 На данный момент оператор `UNGROUP` не реализован
 :::
 

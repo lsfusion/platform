@@ -13,7 +13,7 @@ title: 'Change operators (SET, CHANGED, ...)'
 |`DROPCHANGED`|`CHANGED(f) AND NOT SET(f)`                                      |Value is either reset or changed from one non-`NULL` to another non-`NULL`|
 |`SETDROPPED` |`SET(f) OR DROPPED(f)`                                           |Value is either reset or changed from `NULL` to non-`NULL`|
 
-:::caution
+:::warning
 These operators are computed differently inside the [event](Events.md#change) handler: in this case, they return changes from the point of the previous occurrence of this event, or rather, from the point at which all its handlers are completed.
 :::
 
