@@ -2,7 +2,7 @@
 title: 'UNGROUP operator'
 ---
 
-:::warning
+:::danger
 At the moment, the `UNGROUP` operator is not implemented.
 :::
 

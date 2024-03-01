@@ -24,7 +24,7 @@ All children of any container make an ordered list. It is necessary to determine
 -   *Scrollable container* (`SCROLL`): can be used only if the container has exactly one child component. This single component occupies all the space it needs in the container, and if there is not enough a scroll bar appears.
 
 
-:::caution
+:::warning
 In future versions, the last three types of containers (`SPLITV`, `SPLITH`, `SCROLL`) will be deprecated and [replaced](https://github.com/lsfusion/platform/issues/22) with the corresponding `split` and `scroll` options in vertical and horizontal containers.
 :::
 

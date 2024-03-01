@@ -95,7 +95,7 @@ Send users a link to `http://<web address of the web server (Client)>:8080`. Whe
 Under Windows, you can also use desktop client [installers](https://download.lsfusion.org/exe/) (`lsfusion-desktop-*` files with the correct OS version and bit width). However, unlike installing with Java Web Start, a desktop client installed in this way will not be automatically updated. Therefore, you will need to update it manually by downloading the file of the new version of the desktop client (`lsfusion-client-4.<new version>.jar`) from [the central server](https://download.lsfusion.org/java) and replacing the `$INSTALL_DIR$/client.jar` file with it.
 :::
 
-:::caution
+:::warning
 All paths and commands are given below for the major version 4 of the platform (for other versions just replace 4 with the required number, for example `lsfusion4-server` → `lsfusion11-server`)
 
 
