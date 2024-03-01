@@ -1214,7 +1214,8 @@
                 target.closest(this.container).length ||
                 target.closest('.calendar-table').length
                 ) return;
-            this.hide();
+            // PATCHED: we don't need it since we handle blur ourselves, and this hide calls updateElement which changes the input (and we don't want this when user for example clears the input)
+            // this.hide();
             this.element.trigger('outsideClick.daterangepicker', this);
         },
 

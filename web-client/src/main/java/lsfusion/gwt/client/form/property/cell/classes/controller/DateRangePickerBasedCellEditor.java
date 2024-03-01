@@ -38,7 +38,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
 
         if (started && !isNative()) {
 //            assert oldValue != null;
-            createPicker(GwtClientUtils.getTippyParent(parent), parent, getStartDate(oldValue), getEndDate(oldValue), getSinglePattern().replace("a", "A"), isSinglePicker(), isTimeEditor(), isDateEditor());
+            createPicker(GwtClientUtils.getTippyParent(parent), parent, oldValue != null ? getStartDate(oldValue) : null, oldValue != null ? getEndDate(oldValue) : null, getSinglePattern().replace("a", "A"), isSinglePicker(), isTimeEditor(), isDateEditor());
             openPicker(); // date range picker is opened only on click
 
             if(oldValue == null) // if value is null - current date will be set, so we need to select the value, since we want to rewrite data on key input
@@ -79,7 +79,12 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
         if (!onCommit)
             return PValue.getPValue(inputText);
 
-        return super.tryParseInputText(inputText, onCommit);
+        PValue result = super.tryParseInputText(inputText, onCommit);
+
+        if(!isNative() && result != null) // needed for the 2-year digit dates
+            return getValue(getPickerStartDate(), getPickerEndDate());
+
+        return result;
 
     }
 
@@ -123,7 +128,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
         var editElement = $(thisObj.@DateRangePickerBasedCellEditor::getInputElement()());
         var messages = @lsfusion.gwt.client.ClientMessages.Instance::get()();
 
-        editElement.daterangepicker({
+        var options = {
             locale: {
                 applyLabel: messages.@lsfusion.gwt.client.ClientMessages::applyLabel()(),
                 cancelLabel: messages.@lsfusion.gwt.client.ClientMessages::cancelLabel()(),
@@ -174,11 +179,12 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
             drops: 'auto',
             opens: thisObj.@DateRangePickerBasedCellEditor::getHorzTextAlignment()().@com.google.gwt.dom.client.Style.TextAlign::getCssName()(),
             alwaysShowCalendars: true,
-            // need to use with ranges
-
-            startDate: startDate,
-            endDate: endDate
-        });
+        };
+        if(startDate != null) { // needed for the 2-year digit dates
+            options.startDate = startDate;
+            options.endDate = endDate;
+        }
+        editElement.daterangepicker(options);
 
         //show only time picker
         if (time) {
@@ -222,12 +228,4 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
         var pickerDate = this.@DateRangePickerBasedCellEditor::getPickerObject()().endDate;
         return pickerDate.isValid() ? pickerDate.toDate() : null; // toDate because it is "Moment js" object
     }-*/;
-
-    @Override
-    public PValue getCommitValue(Element parent, Integer contextAction) throws InvalidEditException {
-        if(!isNative())
-            return getValue(getPickerStartDate(), getPickerEndDate());
-
-        return super.getCommitValue(parent, contextAction);
-    }
 }
