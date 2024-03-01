@@ -40,4 +40,11 @@ public class ReversedI18NDictionary {
     }
     
     private Map<String, String> literalsMap = null;
+
+    @Override
+    public String toString() {
+        return "ReversedI18NDictionary{" +
+                "literalsMap=" + literalsMap +
+                '}';
+    }
 }
