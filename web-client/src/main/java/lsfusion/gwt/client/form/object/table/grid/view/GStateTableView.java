@@ -23,6 +23,7 @@ import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.view.Column;
 import lsfusion.gwt.client.view.MainFrame;
 
@@ -544,8 +545,12 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         return values.get(properties.indexOf(property)).get(fullKey);
     }
 
-    protected boolean isReadOnly(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
+    protected boolean isReadOnly(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey, boolean rendered) {
         if(property.isReadOnly())
+            return true;
+
+        // when result is rendered, it's important to have property pending change mechanism to cancel changes when server ignores this changes
+        if(rendered && !property.hasExternalChangeActionForRendering(RendererType.SIMPLE))
             return true;
 
         NativeHashMap<GGroupObjectValue, PValue> readOnlyValues = readOnlys.get(properties.indexOf(property));

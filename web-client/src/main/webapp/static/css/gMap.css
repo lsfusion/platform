@@ -65,12 +65,23 @@
     border-radius: unset !important;
 }
 
-.leaflet-marker-icon img {
+.leaflet-marker-icon > * {
     position: absolute;
     bottom: 0;
     left: 50%;
     -webkit-transform: translateX(-50%);
     transform: translateX(-50%);
+
+    color: var(--marker-color);
+}
+.leaflet-marker-icon i.wrap-text-img {
+    font-size: 3em;
+}
+.focused-marker * { /* similar to focused-cell */
+    text-shadow: var(--focus-color) 0 0 10px !important;
+}
+.focused-marker .wrap-text-div > * { /* similar to focused-cell */
+    box-shadow: 0 0 10px var(--focus-color) !important;
 }
 
 .leaflet-edit-marker-selected {
@@ -99,9 +110,4 @@
 :root {
     /*override in StyleDefaults init*/
     --focused-cell-background-color: var(--selection-color-rgba);
-}
-
-.marker-background-focused {
-    background-blend-mode: multiply;
-    background-color: var(--focused-cell-background-color);
 }

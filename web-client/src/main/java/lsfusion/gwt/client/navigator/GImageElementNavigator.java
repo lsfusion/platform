@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.navigator;
 
 import lsfusion.gwt.client.base.AppBaseImage;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.view.MainFrame;
 
 public class GImageElementNavigator extends GElementNavigator {
@@ -14,8 +15,8 @@ public class GImageElementNavigator extends GElementNavigator {
     }
 
     @Override
-    public void updateElement(GNavigatorElement result, Object value) {
-        result.image = (AppBaseImage) value; // was converted in convertFileValue
+    public void updateElement(GNavigatorElement result, PValue value) {
+        result.image = PValue.getImageValue(value); // was converted in convertFileValue
 
         if(MainFrame.mobile) { // not mobile elements are updated in NavigatorController.update()
             MainFrame.mobileNavigatorView.updateImage(result);

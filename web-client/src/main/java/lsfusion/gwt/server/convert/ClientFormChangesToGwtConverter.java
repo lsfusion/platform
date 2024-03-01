@@ -184,19 +184,12 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
     }
 
     public static Serializable convertFileValue(Object value, FormSessionObject sessionObject, MainDispatchServlet servlet, String sessionID) throws IOException {
-        if (value instanceof FileData || value instanceof NamedFileData || value instanceof RawFileData) {
-            String displayName = null;
-            FileData fileData;
-            if(value instanceof NamedFileData) {
-                displayName = ((NamedFileData) value).getName();
-                fileData = ((NamedFileData) value).getFileData();
-            } else if(value instanceof FileData) {
-                fileData = (FileData) value;
-            } else { // it's a really rare case see FormChanges.convertFileValue - when there is no static file class, but still we get rawFileData
-                fileData = new FileData((RawFileData) value, "");
-            }
+        if(value instanceof AppFileDataImage) { // dynamic image
+            return new AppFileImage(convertFileData(((AppFileDataImage) value).data, sessionObject));
+        }
 
-            return new AppFileImage(FileUtils.saveFormFile(fileData, displayName, sessionObject != null ? sessionObject.savedTempFiles : null));
+        if (value instanceof FileData || value instanceof NamedFileData || value instanceof RawFileData) {
+            return convertFileData(value, sessionObject);
         }
 
         if (value instanceof StringWithFiles) {
@@ -218,6 +211,21 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
         }
 
         return (Serializable) value;
+    }
+
+    private static String convertFileData(Object value, FormSessionObject sessionObject) {
+        String displayName = null;
+        FileData fileData;
+        if(value instanceof NamedFileData) {
+            displayName = ((NamedFileData) value).getName();
+            fileData = ((NamedFileData) value).getFileData();
+        } else if(value instanceof FileData) {
+            fileData = (FileData) value;
+        } else { // it's a really rare case see FormChanges.convertFileValue - when there is no static file class, but still we get rawFileData
+            fileData = new FileData((RawFileData) value, "");
+        }
+
+        return FileUtils.saveFormFile(fileData, displayName, sessionObject != null ? sessionObject.savedTempFiles : null);
     }
 
     @Converter(from = Color.class)

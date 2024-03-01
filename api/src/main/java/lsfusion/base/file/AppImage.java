@@ -7,8 +7,6 @@ import java.io.Serializable;
 import java.util.Map;
 
 public class AppImage implements Serializable {
-    public static final long serialVersionUID = 42L;
-
     public AppImage() {
     }
 

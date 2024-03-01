@@ -280,6 +280,10 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         return !isPanel() && listViewType == ListViewType.CUSTOM;
     }
 
+    public boolean isSimpleState() {
+        return !isPanel() && (listViewType == ListViewType.CUSTOM || listViewType == ListViewType.MAP || listViewType == ListViewType.CALENDAR);
+    }
+
     public Pair<Integer, Integer> getScriptIndex() {
         return scriptIndex;
     }

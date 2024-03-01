@@ -286,6 +286,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return customRenderFunction == null || externalChangeType == null;
     }
 
+    public boolean hasExternalChangeActionForRendering(RendererType rendererType) {
+        return canUseChangeValueForRendering(externalChangeType, rendererType);
+    }
+
     public boolean disableInputList;
 
     public GEditBindingMap editBindingMap;
@@ -927,5 +931,11 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     @Override
     public boolean isDefautAlignCaption() {
         return caption != null && !hasColumnGroupObjects() && (!isAction() && (!panelCaptionVertical && !isPanelBoolean()) || isTab());
+    }
+
+    // should match PropertyDrawEntity.isPredefinedImage
+    public boolean isPredefinedImage() {
+        String sid = integrationSID;
+        return sid != null && sid.equals("image");
     }
 }

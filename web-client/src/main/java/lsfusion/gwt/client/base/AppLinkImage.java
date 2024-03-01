@@ -15,4 +15,14 @@ public class AppLinkImage implements BaseImage {
     public String getImageElementSrc(boolean enabled) {
         return url;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o || o instanceof AppLinkImage && url.equals(((AppLinkImage) o).url);
+    }
+
+    @Override
+    public int hashCode() {
+        return url.hashCode();
+    }
 }

@@ -1253,9 +1253,13 @@ public class GwtClientUtils {
         return $wnd.replaceField(object, field, value);
     }-*/;
 
-    public static native void removeField(JavaScriptObject object, String field)/*-{
-        if (object[field])
+    public static native JavaScriptObject removeField(JavaScriptObject object, String field)/*-{
+        if (object[field]) {
+            value = object[field];
             delete object[field];
+            return value;
+        }
+        return null;
     }-*/;
 
     public static JsDate toJsDate(Date date) {

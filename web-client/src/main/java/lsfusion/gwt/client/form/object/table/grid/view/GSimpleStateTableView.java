@@ -152,7 +152,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
                 GGroupObjectValue fullKey = key != null ? GGroupObjectValue.getFullKey(key, columnKey) : GGroupObjectValue.EMPTY;
 
-                rowValues.push(convertToJSValue(property, propValues.get(fullKey), RendererType.SIMPLE));
+                rowValues.push(convertToJSValue(property, propValues.get(fullKey), RendererType.SIMPLE, !(this instanceof GMap))); // we want images in map
             }
         }
         rowValues.push(fromObject(key));
@@ -181,7 +181,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
         return PValue.getPValue(toString(value));
     }
-    public static JavaScriptObject convertToJSValue(GType type, PValue value) {
+    public static JavaScriptObject convertToJSValue(GType type, GPropertyDraw property, boolean imageToHTML, PValue value) {
         if (type instanceof GLogicalType) {
             if(!((GLogicalType) type).threeState)
                 return fromBoolean(PValue.getBooleanValue(value));
@@ -193,8 +193,17 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             return null;
         if(type instanceof GIntegralType)
             return fromDouble((PValue.getNumberValue(value)).doubleValue());
+        if(property != null && property.isPredefinedImage()) {
+            AppBaseImage imageValue = PValue.getImageValue(value);
+            if(imageToHTML)
+                return fromString(imageValue.createImageHTML());
+
+            return fromObject(imageValue);
+        }
         if(type instanceof GImageType)
-            return fromString(PValue.getImageValue(value).getImageElementSrc(true));
+            return fromString(PValue.getImageValue(value).getImageElementSrc(true)); // assert AppFileImage
+        if(type instanceof GFileType)
+            return fromString(GwtClientUtils.getAppDownloadURL(PValue.getStringValue(value)));
         if(type instanceof GJSONType)
             return GwtClientUtils.jsonParse(PValue.getCustomStringValue(value));
 
@@ -207,8 +216,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return GwtClientUtils.jsonParse((String)key);
     }
 
-    public static JavaScriptObject convertToJSValue(GPropertyDraw property, PValue value, RendererType rendererType) {
-        return convertToJSValue(property.getRenderType(rendererType), value);
+    public static JavaScriptObject convertToJSValue(GPropertyDraw property, PValue value, RendererType rendererType, boolean imageToHTML) {
+        return convertToJSValue(property.getRenderType(rendererType), property, imageToHTML, value);
     }
 
     protected JsArray<JavaScriptObject> getCaptions(NativeHashMap<String, Column> columnMap, BiPredicate<GPropertyDraw, String> filter) {
@@ -336,7 +345,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         Consumer<Long> onExec = changeRequestIndex -> {
             for (int i = 0; i < length; i++) {
                 GPropertyDraw property = properties[i];
-                if(newValues[i] != PValue.UNDEFINED && property.canUseChangeValueForRendering(property.getExternalChangeType(), RendererType.SIMPLE)) { // or use the old value instead of the new value in that case
+                if(newValues[i] != PValue.UNDEFINED && property.hasExternalChangeActionForRendering(RendererType.SIMPLE)) { // or use the old value instead of the new value in that case
                     GGroupObjectValue fullKey = fullKeys[i];
                     form.pendingChangeProperty(property, fullKey, newValues[i], getValue(property, fullKey), changeRequestIndex);
                 }
@@ -366,15 +375,15 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return getCaptionElementClass(column.property, column.columnKey);
     }
 
-    protected boolean isReadOnly(String property, GGroupObjectValue object) {
+    protected boolean isReadOnly(String property, GGroupObjectValue object, boolean rendered) {
         Column column = getColumn(property);
         if(column == null)
             return false;
-        return isReadOnly(column.property, object, column.columnKey);
+        return isReadOnly(column.property, object, column.columnKey, rendered);
     }
 
     protected Boolean isReadOnly(String property, JavaScriptObject object) {
-        return isReadOnly(property, getJsObjects(object)) ? false : null;
+        return isReadOnly(property, getJsObjects(object), true) ? false : null;
     }
 
     protected String getValueElementClass(String property, GGroupObjectValue object) {
@@ -448,7 +457,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         Column column = getColumn(property);
         if(column == null)
             return null;
-        return convertToJSValue(column.property, getValue(column.property, GGroupObjectValue.getFullKey(groupObjectValue, column.columnKey)), RendererType.SIMPLE);
+        return convertToJSValue(column.property, getValue(column.property, GGroupObjectValue.getFullKey(groupObjectValue, column.columnKey)), RendererType.SIMPLE, !(this instanceof GMap));
     }
 
     protected GFont getFont(String property, JavaScriptObject object) {

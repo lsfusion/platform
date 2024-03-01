@@ -33,6 +33,7 @@ import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GColorPreferences;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.navigator.controller.GNavigatorController;
 import lsfusion.gwt.client.navigator.controller.dispatch.GNavigatorActionDispatcher;
@@ -584,7 +585,7 @@ public class MainFrame implements EntryPoint {
         }
 
         for(int i = 0; i < navigatorChangesDTO.properties.length; i++) {
-            navigatorChangesDTO.properties[i].update(navigatorController, windowsController, navigatorChangesDTO.values[i]);
+            navigatorChangesDTO.properties[i].update(navigatorController, windowsController, PValue.convertFileValue(navigatorChangesDTO.values[i]));
         }
 
         // here we do not do incremental update, but global "refresh" (as we use the same mechanism for selected mechanism)

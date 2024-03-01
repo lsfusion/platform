@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.base;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
-import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.PValue;
 
 import java.io.Serializable;
@@ -27,11 +26,11 @@ public class GAsync implements IsSerializable, Serializable {
     }
 
     public PValue getDisplayValue() {
-        return PValue.remapValue(displayValue);
+        return PValue.convertFileValue(displayValue);
     }
 
     public PValue getRawValue() {
-        return PValue.remapValue(rawValue);
+        return PValue.convertFileValue(rawValue);
     }
 
     @Override

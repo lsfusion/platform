@@ -251,6 +251,9 @@ public interface PValue {
         }
     }
 
+    static PValue convertFileValue(Serializable value) {
+        return remapValue(value);
+    }
     static PValue remapValue(Serializable value) {
         if (value instanceof GStringWithFiles) {
             GStringWithFiles stringWithFiles = (GStringWithFiles) value;

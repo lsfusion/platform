@@ -810,8 +810,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
                     if(getExplicitEventAction(CHANGE) != null)
                         return null;
 
-                    GroupObjectEntity toDraw = getToDraw(context.entity);
-                    if(toDraw != null && toDraw.isCustom())
+                    if(isGroupCustom(context))
                         return null;
                 }
 
@@ -982,4 +981,29 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public String getReportSID() {
         return getSID();
     }
+
+    public boolean isGroupCustom(FormInstanceContext context) {
+        GroupObjectEntity toDraw = getToDraw(context.entity);
+        return toDraw != null && toDraw.isCustom();
+    }
+
+    public boolean isGroupSimpleState(FormInstanceContext context) {
+        GroupObjectEntity toDraw = getToDraw(context.entity);
+        return toDraw != null && toDraw.isSimpleState();
+    }
+
+    public boolean needFile(FormInstanceContext context) {
+        return getCustomRenderFunction(context) != null || isGroupCustom(context);
+    }
+
+    public boolean needImage(FormInstanceContext context) {
+        return getCustomRenderFunction(context) != null || isGroupSimpleState(context);
+    }
+
+    // should match PropertyDrawEntity.isPredefinedImage
+    public boolean isPredefinedImage() {
+        String sid = getIntegrationSID();
+        return sid != null && sid.equals("image");
+    }
+
 }
