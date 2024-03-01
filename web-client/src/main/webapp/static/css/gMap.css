@@ -80,7 +80,8 @@
 .focused-marker * { /* similar to focused-cell */
     text-shadow: var(--focus-color) 0 0 10px !important;
 }
-.focused-marker .wrap-text-div > * { /* similar to focused-cell */
+.focused-marker .wrap-text-div > *,
+.focused-marker img.wrap-text-img { /* similar to focused-cell */
     box-shadow: 0 0 10px var(--focus-color) !important;
 }
 
