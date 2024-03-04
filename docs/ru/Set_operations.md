@@ -19,8 +19,8 @@ title: 'Операции с множествами'
 |`SUM`                   |`NULL`            |operand        |result = result (+) operand|result|+|число|
 |`MAX`                   |`NULL`            |operand        |result = max(result, operand)|result|+|любой сравнимый|
 |`MIN`                   |`NULL`            |operand        |result = min(result, operand)|result|+|любой сравнимый|
-|`CONCAT`                |`NULL`            |separator, operand|<p>result = CONCAT separator, result, operand</p>|result|-|строковый|
-|`LAST / PREV`           |`NULL`            |where, operand |result = IF where THEN operand ELSE result|result|-|<p>любой</p>|
+|`CONCAT`                |`NULL`            |separator, operand|result = CONCAT separator, result, operand|result|-|строковый|
+|`LAST / PREV`           |`NULL`            |where, operand |result = IF where THEN operand ELSE result|result|-|любой|
 
 С точки зрения определения множества наборов объектов, а также способа представления результата, можно выделить четыре основных оператора работы с множествами:
 
