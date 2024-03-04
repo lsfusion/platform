@@ -105,6 +105,10 @@ LIST className OBJECT objectName
 
     Добавляет сортировки на форму. [Синтаксис блока сортировок](Filters_and_sortings_block.md#sort).
 
+- `PIVOT ...`
+
+  Добавляет опции [вида отображения `PIVOT`](Interactive_view.md#property). [Синтаксис блока `PIVOT`](Pivot_block.md).
+
 - `EVENTS ...`
 
     Устанавливает действия, выполняемые при определенных событиях. [Синтаксис блока событий](Event_block.md).
