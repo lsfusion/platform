@@ -11,7 +11,6 @@ import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.SimpleDatePatternConverter;
-import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
@@ -227,5 +226,13 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
     private native JsDate getPickerEndDate()/*-{
         var pickerDate = this.@DateRangePickerBasedCellEditor::getPickerObject()().endDate;
         return pickerDate.isValid() ? pickerDate.toDate() : null; // toDate because it is "Moment js" object
+    }-*/;
+
+    public static native void setPickerTwoDigitYearStart(Integer twoDigitYearStart)/*-{
+        if (twoDigitYearStart != null) {
+            $wnd.moment.parseTwoDigitYear = function (yearString) {
+                return parseInt(yearString) + (parseInt(yearString) > twoDigitYearStart ? 1900 : 2000);
+            }
+        }
     }-*/;
 }

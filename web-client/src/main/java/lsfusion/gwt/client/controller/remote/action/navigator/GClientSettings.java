@@ -24,6 +24,7 @@ public class GClientSettings implements Serializable {
     public GColorPreferences colorPreferences;
     public String dateFormat;
     public String timeFormat;
+    public Integer twoDigitYearStart;
     public String staticImagesURL;
     public String[] preDefinedDateRangesNames;
     public boolean useTextAsFilterSeparator;
@@ -38,8 +39,8 @@ public class GClientSettings implements Serializable {
     public GClientSettings(long busyDialogTimeout, boolean devMode, String projectLSFDir, boolean showDetailedInfo, int showDetailedInfoDelay, boolean suppressOnFocusChange,
                            boolean contentWordWrap, boolean autoReconnectOnConnectionLost, boolean forbidDuplicateForms, boolean pivotOnlySelectedColumn,
                            String matchSearchSeparator, GColorTheme colorTheme, boolean useBootstrap, Map<String, String> versionedColorThemesCss,
-                           GColorPreferences colorPreferences, String dateFormat, String timeFormat, String staticImagesURL, String[] preDefinedDateRangesNames,
-                           boolean useTextAsFilterSeparator, boolean verticalNavbar, boolean userFiltersManualApplyMode) {
+                           GColorPreferences colorPreferences, String dateFormat, String timeFormat, Integer twoDigitYearStart, String staticImagesURL,
+                           String[] preDefinedDateRangesNames, boolean useTextAsFilterSeparator, boolean verticalNavbar, boolean userFiltersManualApplyMode) {
         this.busyDialogTimeout = busyDialogTimeout;
         this.devMode = devMode;
         this.projectLSFDir = projectLSFDir;
@@ -57,6 +58,7 @@ public class GClientSettings implements Serializable {
         this.colorPreferences = colorPreferences;
         this.dateFormat = dateFormat;
         this.timeFormat = timeFormat;
+        this.twoDigitYearStart = twoDigitYearStart;
         this.staticImagesURL = staticImagesURL;
         this.preDefinedDateRangesNames = preDefinedDateRangesNames;
         this.useTextAsFilterSeparator = useTextAsFilterSeparator;
