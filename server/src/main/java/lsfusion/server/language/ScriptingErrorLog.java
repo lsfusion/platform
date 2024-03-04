@@ -55,8 +55,7 @@ public class ScriptingErrorLog {
 
     private String getRecognitionErrorText(ScriptParser parser, String errorType, String msg, RecognitionException e) {
         String module = moduleId.isEmpty() ? getModulePath(parser) : moduleId;
-        String path = parser.getCurrentScriptPath(module, e.line - lineNumberShift, "\n\t\t\t");
-        String hdr = path + ":" + (e.charPositionInLine + 1);
+        String hdr = parser.getLsfConsoleLink(module, e.line - lineNumberShift, e.charPositionInLine + 1);
         return "[" + errorType + "]:\n\t" + hdr + " " + msg;
     }
 

@@ -61,11 +61,16 @@ public class ScriptParser {
                 parser.script();
             }
         } catch (Throwable t) {
-            ExecutionStackAspect.setExceptionStackString("Error during parsing at : " + parser.getCurrentDebugPoint());
+            DebugInfo.DebugPoint cdg = parser.getCurrentDebugPoint();
+            ExecutionStackAspect.setExceptionStackString("Error during parsing at " + getLsfConsoleLink(cdg.moduleName, cdg.line, cdg.offset));
             throw ExceptionUtils.propagate(t, RecognitionException.class);
         }
         parsers.pop();
         currentState = null;
+    }
+
+    public String getLsfConsoleLink(String moduleId, int line, int position) {
+        return getCurrentScriptPath(moduleId, line, "\n\t\t\t") + ":" + position;
     }
 
     public void runMetaCode(ScriptingLogicsModule LM, String code, int metaLineNumber, String metaModuleName, String callString, 
