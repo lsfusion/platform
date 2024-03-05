@@ -32,7 +32,7 @@ public class ClientAsyncOpenForm extends ClientAsyncExec {
 
         this.canonicalName = SerializationUtil.readString(inStream);
         this.caption = SerializationUtil.readString(inStream);
-        appImage = IOUtils.readImageIcon(inStream);
+        appImage = IOUtils.readAppImage(inStream);
         this.forbidDuplicate = inStream.readBoolean();
         this.modal = inStream.readBoolean();
         this.type = WindowFormType.deserialize(inStream);

@@ -431,7 +431,7 @@ public class AppServerImage {
     }
 
     public static void serialize(AppServerImage image, DataOutputStream dataOutputStream) throws IOException {
-        IOUtils.writeImageIcon(dataOutputStream, getAppImage(image));
+        IOUtils.writeAppImage(dataOutputStream, getAppImage(image));
     }
     public static void serialize(AppServerImage image, DataOutputStream outStream, ServerSerializationPool pool) throws IOException {
         pool.writeImageIcon(outStream, getAppImage(image));

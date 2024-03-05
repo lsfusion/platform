@@ -302,7 +302,7 @@ public class BaseUtils {
                     int fileLength = inStream.readInt();
                     files[i] = new StringWithFiles.File(new RawFileData(IOUtils.readBytesFromStream(inStream, fileLength)), name);
                 } else
-                    files[i] = IOUtils.readImageIcon(inStream);
+                    files[i] = IOUtils.readAppImage(inStream);
             }
             String rawString = inStream.readUTF();
 
@@ -310,11 +310,15 @@ public class BaseUtils {
         }
 
         if (objectType == 16) {
-            return IOUtils.readImageIcon(inStream);
+            return IOUtils.readAppImage(inStream);
         }
 
         if (objectType == 17) {
             return deserializeString(inStream);
+        }
+
+        if (objectType == 18) {
+            return IOUtils.readAppFileDataImage(inStream);
         }
 
         throw new IOException();
@@ -487,7 +491,7 @@ public class BaseUtils {
                 } else { // it's an image
                     outStream.writeBoolean(false);
 
-                    IOUtils.writeImageIcon(outStream, (AppImage) data);
+                    IOUtils.writeAppImage(outStream, (AppImage) data);
                 }
             }
             outStream.writeUTF(stringWithFiles.rawString);
@@ -496,13 +500,19 @@ public class BaseUtils {
 
         if (object instanceof AppImage) {
             outStream.writeByte(16);
-            IOUtils.writeImageIcon(outStream, (AppImage) object);
+            IOUtils.writeAppImage(outStream, (AppImage) object);
             return;
         }
 
         if (object instanceof java.sql.Array) {
             outStream.writeByte(17);
             serializeString(outStream, object.toString());
+            return;
+        }
+
+        if (object instanceof AppFileDataImage) {
+            outStream.writeByte(18);
+            IOUtils.writeAppFileDataImage(outStream, (AppFileDataImage) object);
             return;
         }
 

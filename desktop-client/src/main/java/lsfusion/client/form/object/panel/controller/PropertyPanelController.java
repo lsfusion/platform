@@ -1,7 +1,7 @@
 package lsfusion.client.form.object.panel.controller;
 
 import lsfusion.base.Pair;
-import lsfusion.base.file.RawFileData;
+import lsfusion.base.file.AppFileDataImage;
 import lsfusion.client.base.focus.FocusComponentProvider;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.view.ClientFormLayout;
@@ -257,10 +257,9 @@ public class PropertyPanelController {
         view.setForegroundColor(foreground == null ? property.design.foreground : foreground);
 
         if(imageValues != null) {
-            RawFileData image = (RawFileData) imageValues.get(columnKey);
-            if(image != null) {
-                view.setImage(ImagePropertyRenderer.convertValue(image));
-            }
+            Object image = imageValues.get(columnKey);
+            if(image instanceof AppFileDataImage)
+                view.setImage(ImagePropertyRenderer.convertValue(ImagePropertyRenderer.getAppFileDataImageData((AppFileDataImage) image)));
         }
 
         if (captions != null) {

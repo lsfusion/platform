@@ -1,6 +1,7 @@
 package lsfusion.client.form.property.cell.classes.view;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.file.AppFileDataImage;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.client.form.property.ClientPropertyDraw;
@@ -27,13 +28,17 @@ public class ImagePropertyRenderer extends FilePropertyRenderer {
         
         icon = null; // сбрасываем
         if (value != null) {
-            Image image = convertValue(((FileData) value).getRawFile());
+            Image image = convertValue(getAppFileDataImageData((AppFileDataImage) value));
             if (image != null) {
                 icon = new ImageIcon(image);
             }
         }
     }
-    
+
+    public static RawFileData getAppFileDataImageData(AppFileDataImage appFileDataImage) {
+        return ((FileData) appFileDataImage.data).getRawFile();
+    }
+
     public static Image convertValue(RawFileData value) {
         try {
             ImageInputStream iis = ImageIO.createImageInputStream(value.getInputStream());
