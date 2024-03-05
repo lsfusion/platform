@@ -10,9 +10,8 @@ import lsfusion.interop.base.exception.RemoteMessageException;
 import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.session.ExternalHttpUtils;
 import lsfusion.interop.session.ExternalUtils;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.entity.StringEntity;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.springframework.web.HttpRequestHandler;
 
 import javax.servlet.http.HttpServletRequest;
@@ -84,7 +83,7 @@ public abstract class ExternalRequestHandler extends LogicsRequestHandler implem
     // copy of ExternalHTTPServer.sendResponse
     protected void sendResponse(HttpServletResponse response, ExternalUtils.ExternalResponse responseHttpEntity) throws IOException {
         HttpEntity responseEntity = responseHttpEntity.response;
-        Header contentType = responseEntity.getContentType();
+        String contentType = responseEntity.getContentType();
         String contentDisposition = responseHttpEntity.contentDisposition;
         String[] headerNames = responseHttpEntity.headerNames;
         String[] headerValues = responseHttpEntity.headerValues;
@@ -113,7 +112,7 @@ public abstract class ExternalRequestHandler extends LogicsRequestHandler implem
         }
 
         if(contentType != null && !hasContentType)
-            response.setContentType(contentType.getValue());
+            response.setContentType(contentType);
         if(contentDisposition != null && !hasContentDisposition)
             response.addHeader("Content-Disposition", contentDisposition);
         response.setStatus(statusHttp);

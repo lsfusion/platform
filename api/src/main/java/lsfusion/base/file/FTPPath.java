@@ -1,7 +1,7 @@
 package lsfusion.base.file;
 
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.net.URLEncodedUtils;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;

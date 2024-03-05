@@ -7,8 +7,8 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.dev.integration.external.to.ExternalHTTPAction;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
-import org.apache.http.client.utils.URLEncodedUtils;
-import org.apache.http.message.BasicNameValuePair;
+import org.apache.hc.core5.http.message.BasicNameValuePair;
+import org.apache.hc.core5.net.URLEncodedUtils;
 
 import java.nio.charset.StandardCharsets;
 

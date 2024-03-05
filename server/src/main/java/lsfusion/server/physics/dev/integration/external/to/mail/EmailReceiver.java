@@ -34,7 +34,7 @@ import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.integration.service.*;
-import org.apache.http.entity.ContentType;
+import org.apache.hc.core5.http.ContentType;
 import org.apache.poi.hmef.Attachment;
 import org.apache.poi.hmef.HMEFMessage;
 

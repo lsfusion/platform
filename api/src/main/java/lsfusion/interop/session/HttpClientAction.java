@@ -2,7 +2,7 @@ package lsfusion.interop.session;
 
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ClientActionDispatcher;
-import org.apache.http.client.CookieStore;
+import org.apache.hc.client5.http.cookie.CookieStore;
 
 import java.io.IOException;
 import java.util.Map;

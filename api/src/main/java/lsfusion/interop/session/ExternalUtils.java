@@ -12,19 +12,13 @@ import lsfusion.base.file.IOUtils;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
-import org.apache.http.Consts;
-import org.apache.http.HttpEntity;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URLEncodedUtils;
-import org.apache.http.entity.ByteArrayEntity;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.entity.mime.FormBodyPart;
-import org.apache.http.entity.mime.FormBodyPartBuilder;
-import org.apache.http.entity.mime.HttpMultipartMode;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.entity.mime.content.ByteArrayBody;
-import org.apache.http.entity.mime.content.StringBody;
+import org.apache.hc.client5.http.entity.mime.*;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.http.io.entity.ByteArrayEntity;
+import org.apache.hc.core5.http.io.entity.StringEntity;
+import org.apache.hc.core5.net.URLEncodedUtils;
 
 import javax.mail.BodyPart;
 import javax.mail.MessagingException;
@@ -33,6 +27,7 @@ import javax.mail.util.ByteArrayDataSource;
 import java.io.*;
 import java.net.*;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +36,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static lsfusion.base.BaseUtils.*;
-import static org.apache.http.entity.ContentType.APPLICATION_FORM_URLENCODED;
+import static org.apache.hc.core5.http.ContentType.APPLICATION_FORM_URLENCODED;
 
 public class ExternalUtils {
 
@@ -50,7 +45,7 @@ public class ExternalUtils {
     public static final String defaultXMLJSONCharset = "UTF-8";
     public static final String defaultDBFCharset = "CP1251";
 
-    public static final Charset stringCharset = Consts.UTF_8;
+    public static final Charset stringCharset = StandardCharsets.UTF_8;
     public static final ContentType TEXT_PLAIN = ContentType.create(
             "text/plain", stringCharset);
     public static final ContentType MULTIPART_MIXED = ContentType.create(
@@ -231,7 +226,7 @@ public class ExternalUtils {
         if(contentType != null)
             charset = contentType.getCharset();
         if(charset == null)
-            charset = Consts.ISO_8859_1; // HTTP spec, хотя тут может быть нюанс что по спецификации некоторых content-type'ов (например application/json) может быть другая default кодировка         
+            charset = StandardCharsets.ISO_8859_1; // HTTP spec, хотя тут может быть нюанс что по спецификации некоторых content-type'ов (например application/json) может быть другая default кодировка
         return charset;
     }
 
@@ -273,8 +268,8 @@ public class ExternalUtils {
         Charset charset = forceContentType != null ? forceContentType.getCharset() : null;
         if (paramCount > 1 || (bodyParamNames != null && !bodyParamNames.isEmpty())) {
             MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-            //Default mode is STRICT, which uses only US-ASCII. BROWSER_COMPATIBLE mode uses charset from ContentType headers if defined or US-ASCII by default.
-            builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
+            //Default mode is STRICT, which uses only US-ASCII. EXTENDED mode allows UTF-8.
+            builder.setMode(HttpMultipartMode.EXTENDED);
             builder.setContentType(nvl(forceContentType, ExternalUtils.MULTIPART_MIXED));
             for (int i = 0; i < paramCount; i++) {
                 Object value = results[i];

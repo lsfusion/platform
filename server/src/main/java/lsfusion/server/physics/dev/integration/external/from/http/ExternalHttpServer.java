@@ -18,8 +18,8 @@ import lsfusion.server.logics.controller.remote.RemoteLogics;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.commons.lang.StringUtils;
-import org.apache.http.HttpEntity;
-import org.apache.http.entity.ContentType;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpEntity;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -198,7 +198,7 @@ public class ExternalHttpServer extends MonitorServer {
         // copy of ExternalRequestHandler.sendResponse
         private void sendResponse(HttpExchange response, ExternalUtils.ExternalResponse responseHttpEntity) throws IOException {
             HttpEntity responseEntity = responseHttpEntity.response;
-            String contentType = responseEntity.getContentType().getValue();
+            String contentType = responseEntity.getContentType();
             String contentDisposition = responseHttpEntity.contentDisposition;
             String[] headerNames = responseHttpEntity.headerNames;
             String[] headerValues = responseHttpEntity.headerValues;

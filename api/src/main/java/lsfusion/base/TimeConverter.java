@@ -1,7 +1,5 @@
 package lsfusion.base;
 
-import org.apache.http.ParseException;
-
 import java.sql.Time;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -26,7 +24,7 @@ public class TimeConverter {
                 return parseTime(TIME_FORMAT_REGEXPS.get(regexp), timeString);
             }
         }
-        throw new ParseException("error parsing time: " + timeString);
+        throw new RuntimeException("Error parsing time: " + timeString);
     }
 
     public static Time getWriteTime(Object value) {

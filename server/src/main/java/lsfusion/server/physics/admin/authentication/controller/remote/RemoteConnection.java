@@ -40,10 +40,10 @@ import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.integration.external.to.ExternalHTTPAction;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import org.apache.commons.lang.StringUtils;
-import org.apache.http.HttpEntity;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URLEncodedUtils;
-import org.apache.http.entity.ContentType;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.net.URLEncodedUtils;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletResponse;

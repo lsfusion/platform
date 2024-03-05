@@ -4,8 +4,7 @@ import com.google.common.base.Throwables;
 import com.jcraft.jsch.*;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
+import org.apache.hc.core5.http.HttpEntity;
 
 import java.io.*;
 import java.util.Properties;
@@ -17,8 +16,8 @@ public class IOUtils {
 
     public static byte[] readBytesFromHttpEntity(HttpEntity entity) throws IOException {
         //there is restriction in MultipartFormEntity: max contentLength = 25 * 1024 bytes
-        Header contentType = entity.getContentType();
-        if(contentType != null && contentType.getValue() != null && contentType.getValue().startsWith("multipart/")) {
+        String contentType = entity.getContentType();
+        if(contentType != null && contentType.startsWith("multipart/")) {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             entity.writeTo(out);
             return out.toByteArray();

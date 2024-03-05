@@ -31,11 +31,11 @@ import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.controller.remote.RemoteConnection;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.commons.lang.StringUtils;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.CookieStore;
-import org.apache.http.cookie.Cookie;
-import org.apache.http.entity.ContentType;
-import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.hc.client5.http.cookie.BasicCookieStore;
+import org.apache.hc.client5.http.cookie.Cookie;
+import org.apache.hc.client5.http.cookie.CookieStore;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpEntity;
 
 import java.nio.charset.Charset;
 import java.sql.SQLException;
@@ -137,7 +137,7 @@ public class ExternalHTTPAction extends CallAction {
                     HttpEntity entity = ExternalUtils.getInputStreamFromList(paramList, bodyUrl, bodyParamNames, bodyParamHeadersList, null, contentType != null ? ContentType.parse(contentType) : null);
                     if (entity != null) {
                         body = IOUtils.readBytesFromHttpEntity(entity);
-                        headers.put("Content-Type", entity.getContentType().getValue());
+                        headers.put("Content-Type", entity.getContentType());
                     }
                 }
 

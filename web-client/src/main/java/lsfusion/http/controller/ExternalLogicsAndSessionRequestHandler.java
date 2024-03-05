@@ -11,10 +11,10 @@ import lsfusion.interop.session.ExecInterface;
 import lsfusion.interop.session.ExternalHttpUtils;
 import lsfusion.interop.session.ExternalUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URLEncodedUtils;
-import org.apache.http.entity.ContentType;
-import org.apache.http.message.BasicNameValuePair;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.http.message.BasicNameValuePair;
+import org.apache.hc.core5.net.URLEncodedUtils;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -26,7 +26,6 @@ import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 
@@ -52,7 +51,7 @@ public class ExternalLogicsAndSessionRequestHandler extends ExternalRequestHandl
             String contentTypeString = request.getContentType();
             ContentType contentType = contentTypeString != null ? ContentType.parse(contentTypeString) : null;
 
-            String[] headerNames = list((Enumeration<String>)request.getHeaderNames()).toArray(new String[0]);
+            String[] headerNames = list(request.getHeaderNames()).toArray(new String[0]);
             String[] headerValues = getRequestHeaderValues(request, headerNames);
 
             OrderedMap<String, String> cookiesMap = getRequestCookies(request);

@@ -26,7 +26,7 @@ import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 import lsfusion.interop.session.ExternalRequest;
 import lsfusion.interop.session.ExternalResponse;
 import net.customware.gwt.dispatch.shared.general.StringResult;
-import org.apache.http.entity.ContentType;
+import org.apache.hc.core5.http.ContentType;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;

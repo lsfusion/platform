@@ -11,7 +11,7 @@ import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.logics.LogicsRunnable;
 import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.session.ExternalUtils;
-import org.apache.http.entity.ContentType;
+import org.apache.hc.core5.http.ContentType;
 import org.json.JSONArray;
 import org.json.JSONObject;
 

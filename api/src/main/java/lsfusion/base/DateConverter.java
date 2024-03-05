@@ -1,7 +1,6 @@
 package lsfusion.base;
 
 import lsfusion.base.lambda.EFunction;
-import org.apache.http.ParseException;
 
 import java.math.BigDecimal;
 import java.sql.Time;
@@ -174,7 +173,7 @@ public class DateConverter {
         if(dateString.isEmpty())
             return null;
 
-        throw new ParseException();
+        throw new RuntimeException("Error parsing date: " + dateString);
     }
 
     public static Instant smartParseInstant(String dateString) {
@@ -197,7 +196,7 @@ public class DateConverter {
         if(dateString.isEmpty())
             return null;
 
-        throw new ParseException();
+        throw new RuntimeException("Error parsing date: " + dateString);
     }
 
     public static LocalDate sqlDateToLocalDate(java.sql.Date value) {

@@ -1,23 +1,21 @@
 package lsfusion.server.physics.dev.i18n.action;
 
 import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
-import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.message.BasicNameValuePair;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -25,6 +23,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -71,17 +70,17 @@ public class TranslateAction extends InternalAction {
                     if (apiKey != null)
                         params.add(new BasicNameValuePair("key", (String) apiKey));
 
-                    httppost.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
+                    httppost.setEntity(new UrlEncodedFormEntity(params, StandardCharsets.UTF_8));
 
-                    HttpResponse response = httpclient.execute(httppost);
-                    findProperty("translationCode[]").change(response.getStatusLine().getStatusCode(), context);
+                    CloseableHttpResponse response = httpclient.execute(httppost);
+                    findProperty("translationCode[]").change(response.getCode(), context);
 
                     HttpEntity entity = response.getEntity();
 
                     String result = null;
                     if (entity != null) {
                         try (InputStream instream = entity.getContent()) {
-                            BufferedReader streamReader = new BufferedReader(new InputStreamReader(instream, "UTF-8"));
+                            BufferedReader streamReader = new BufferedReader(new InputStreamReader(instream, StandardCharsets.UTF_8));
                             StringBuilder responseStrBuilder = new StringBuilder();
 
                             String inputStr;
