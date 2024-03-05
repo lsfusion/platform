@@ -234,20 +234,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         obj[key] = value;
     }-*/;
 
-    private String getAggregationName(GPropertyGroupType aggregation) {
-        if(aggregation != null) {
-            switch (aggregation) {
-                case SUM:
-                    return "Sum";
-                case MAX:
-                    return "Max";
-                case MIN:
-                    return "Min";
-            }
-        }
-        return null;
-    }
-
     private void pushValue(JsArrayMixed rowValues, NativeHashMap<GGroupObjectValue, PValue> propValues, GGroupObjectValue fullKey, CellRenderer cellRenderer, NativeHashMap<GGroupObjectValue, PValue> patterns) {
         PValue value = propValues.get(fullKey);
         // in theory in renderColumn there is the reversed converting
@@ -290,7 +276,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     private void initDefaultConfig(GGridController gridController) {
         GPivotOptions pivotOptions = gridController.getPivotOptions();
         String rendererName = pivotOptions != null ? pivotOptions.getLocalizedType() : null;
-        String aggregationName = pivotOptions != null ? getAggregationName(pivotOptions.getAggregation()) : null;
+        String aggregatorName = pivotOptions != null ? getAggregatorName(pivotOptions.getAggregation()) : null;
         configFunction = pivotOptions != null ? pivotOptions.getConfigFunction() : null;
 
         Map<GPropertyDraw, String> columnCaptionMap = new HashMap<>();
@@ -340,7 +326,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             }
         }
 
-        config = getDefaultConfig(columns, splitCols, rows, splitRows, inclusions, sortCols, rendererName, aggregationName, settings);
+        config = getDefaultConfig(columns, splitCols, rows, splitRows, inclusions, sortCols, rendererName, aggregatorName, settings);
     }
 
     private Object[] getPivotCaptions( Map<GPropertyDraw, String> columnCaptionMap, List<List<GPropertyDraw>> propertiesList, String defaultElement) {
@@ -984,6 +970,18 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         for (String aggregatorName : aggregatorNames)
             aggregators.putValue(getAggregatorName(aggregatorName), getAggregator(aggregatorName, aggregator));
         return aggregators;
+    }
+
+    private String getAggregatorName(GPropertyGroupType aggregation) {
+        String aggregatorName = null;
+        if (aggregation != null) {
+            switch (aggregation) {
+                case SUM: aggregatorName = "SUM"; break;
+                case MAX: aggregatorName = "MAX"; break;
+                case MIN: aggregatorName = "MIN"; break;
+            }
+        }
+        return aggregatorName != null ? getAggregatorName(aggregatorName) : null;
     }
 
     private String getAggregatorName(String aggregatorName) {
