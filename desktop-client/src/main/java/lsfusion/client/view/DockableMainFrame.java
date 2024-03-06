@@ -565,9 +565,13 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         LinkedHashMap<ClientAbstractWindow, JComponent> windows = new LinkedHashMap<>();
 
         try {
-            windows.put(navigatorData.logs, Log.recreateLogPanel(aBoolean -> {
-                if (aBoolean != null) {
-                    setLogsDockableVisible(aBoolean);
+            windows.put(navigatorData.logs, Log.recreateLogPanel(visible -> {
+                if (visible != null) {
+                    setLogsDockableVisible(visible);
+                    if(!visible) {
+                        //logs dockable lost focus, need to restore focus for currentForm
+                        ((DockableMainFrame) MainFrame.instance).focusCurrentForm();
+                    }
                 }
             }));
 
@@ -624,6 +628,17 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
     public void setLogsDockableVisible(boolean visible) {
         if (logsDockable != null) {
             logsDockable.setVisible(visible);
+        }
+    }
+
+    public void focusCurrentForm() {
+        if(currentForm != null) {
+            for (ClientDockable openedForm : formsController.openedForms) {
+                if (openedForm.getCanonicalName() != null && openedForm.getCanonicalName().equals(currentForm.form.canonicalName)) {
+                    openedForm.requestFocusInWindow();
+                    break;
+                }
+            }
         }
     }
 
