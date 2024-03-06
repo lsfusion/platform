@@ -137,14 +137,52 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
 
         setComponentPopupMenu(new EditorContextMenu(this));
 
+        //hack for scanner input: replace F8 -> GS
+        addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_F8 && isScannerEventProperty()) {
+                    try {
+                        Robot robot = new Robot();
+
+                        robot.keyPress(0x12);//Alt
+
+                        robot.keyPress(0x60);//num 0
+                        robot.keyRelease(0x60);
+
+                        robot.keyPress(0x60);//num 0
+                        robot.keyRelease(0x60);
+
+                        robot.keyPress(0x62);//num 2
+                        robot.keyRelease(0x62);
+
+                        robot.keyPress(0x69);//num 9
+                        robot.keyRelease(0x69);
+
+                        robot.keyRelease(0x12);
+
+                        Thread.sleep(100);
+
+                    } catch (AWTException ignore) {
+                    } catch (InterruptedException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+            }
+        });
+
         //hack for scanner input
-        if(property != null && property.eventID != null && property.eventID.equals("SCANNER")) {
+        if(isScannerEventProperty()) {
             try {
                 Thread.sleep(300);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    private boolean isScannerEventProperty() {
+        return property != null && property.eventID != null && property.eventID.equals("SCANNER");
     }
 
     protected boolean disableSuggest() {
@@ -604,6 +642,13 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                         comboBoxEditorComponent.paste(); // editor doesn't recognize ctrl+shift+V as paste event by default
                         plainPaste = false;
                         e.consume();
+                    } else if (e.getKeyCode() == KeyEvent.VK_F8/* && isScannerEventProperty()*/) {
+                        try {
+                            Robot robot = new Robot();
+                            robot.keyPress(0x1D);
+                            robot.keyRelease(0x1D);
+                        } catch (AWTException ignore) {
+                        }
                     } else {
                         Integer inputActionIndex = property.getInputActionIndex(e);
                         if(inputActionIndex != null) {
