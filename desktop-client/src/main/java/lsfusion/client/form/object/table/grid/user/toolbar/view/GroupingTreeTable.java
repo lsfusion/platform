@@ -2,6 +2,7 @@ package lsfusion.client.form.object.table.grid.user.toolbar.view;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.heavy.OrderedMap;
+import lsfusion.base.file.AppFileDataImage;
 import lsfusion.base.file.RawFileData;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.data.*;
@@ -87,7 +88,7 @@ public class GroupingTreeTable extends JXTreeTable {
                     int columnClicked = columnAtPoint(e.getPoint());
                     ClientPropertyDraw columnProperty = treeTableModel.getColumnProperty(columnClicked);
                     if (columnProperty != null && (columnProperty.baseType instanceof ClientImageClass || columnProperty.baseType instanceof ClientImageLinkClass)) {
-                        ImagePropertyRenderer.expandImage((RawFileData) getValueAt(rowAtPoint(e.getPoint()), columnClicked));
+                        ImagePropertyRenderer.expandImage((AppFileDataImage) getValueAt(rowAtPoint(e.getPoint()), columnClicked));
                     }
                 }
             }

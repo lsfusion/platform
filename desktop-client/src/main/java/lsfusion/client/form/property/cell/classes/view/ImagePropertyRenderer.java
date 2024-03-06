@@ -8,13 +8,11 @@ import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.view.MainFrame;
 
 import javax.imageio.ImageIO;
-import javax.imageio.stream.ImageInputStream;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
+import java.io.Serializable;
 
 public class ImagePropertyRenderer extends FilePropertyRenderer {
     private ImageIcon icon;
@@ -28,21 +26,17 @@ public class ImagePropertyRenderer extends FilePropertyRenderer {
         
         icon = null; // сбрасываем
         if (value != null) {
-            Image image = convertValue(getAppFileDataImageData((AppFileDataImage) value));
-            if (image != null) {
+            Image image = convertValue(((AppFileDataImage) value));
+            if (image != null)
                 icon = new ImageIcon(image);
-            }
         }
     }
 
-    public static RawFileData getAppFileDataImageData(AppFileDataImage appFileDataImage) {
-        return ((FileData) appFileDataImage.data).getRawFile();
-    }
-
-    public static Image convertValue(RawFileData value) {
+    public static Image convertValue(AppFileDataImage value) {
         try {
-            ImageInputStream iis = ImageIO.createImageInputStream(value.getInputStream());
-            return ImageIO.read(iis);
+            Serializable data = value.data;
+            RawFileData fileData = data instanceof FileData ? ((FileData)data).getRawFile() : (RawFileData)data;
+            return ImageIO.read(ImageIO.createImageInputStream(fileData.getInputStream()));
         } catch (IOException e) {
             Throwables.propagate(e);
         }
@@ -110,19 +104,13 @@ public class ImagePropertyRenderer extends FilePropertyRenderer {
         }
     } 
 
-    public static void expandImage(final RawFileData value) {
+    public static void expandImage(final AppFileDataImage value) {
         if (value != null) {
             Image image = convertValue(value); 
             if (image != null) {
                 final JDialog dialog = new JDialog(MainFrame.instance, true);
-
-                ActionListener escListener = new ActionListener() {
-                    public void actionPerformed(ActionEvent actionEvent) {
-                        dialog.setVisible(false);
-                    }
-                };
-                KeyStroke stroke = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
-                dialog.getRootPane().registerKeyboardAction(escListener, stroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
+                dialog.getRootPane().registerKeyboardAction(actionEvent -> dialog.setVisible(false),
+                        KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_IN_FOCUSED_WINDOW);
 
                 final Rectangle bounds = MainFrame.instance.getBounds();
                 bounds.x += 30;

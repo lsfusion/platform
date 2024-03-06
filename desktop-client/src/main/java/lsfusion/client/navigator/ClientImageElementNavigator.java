@@ -12,10 +12,9 @@ public class ClientImageElementNavigator extends ClientElementNavigator {
 
     public void update(ClientNavigatorElement rootElement, Object value) {
         ClientNavigatorElement navigatorElement = rootElement.findElementByCanonicalName(canonicalName);
-        if(value instanceof AppFileDataImage) {
-            navigatorElement.fileImage = ImagePropertyRenderer.convertValue(ImagePropertyRenderer.getAppFileDataImageData((AppFileDataImage) value));
-        } else {
+        if(value instanceof AppFileDataImage)
+            navigatorElement.fileImage = ImagePropertyRenderer.convertValue((AppFileDataImage) value);
+        else
             navigatorElement.appImage = (AppImage) value;
-        }
     }
 }

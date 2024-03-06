@@ -70,11 +70,8 @@ public class GridTableModel extends AbstractTableModel {
                 Color foreground = foregroundValues != null ? (Color) foregroundValues.get(cellKey) : null;
                 foregroundColor[i][j] = foreground != null ? foreground : (Color) rowForeground;
 
-                if(imageValues != null) {
-                    Object image = imageValues.get(cellKey);
-                    if (image instanceof AppFileDataImage)
-                        images[i][j] = ImagePropertyRenderer.convertValue(ImagePropertyRenderer.getAppFileDataImageData((AppFileDataImage) image));
-                }
+                if(imageValues != null)
+                    images[i][j] = ImagePropertyRenderer.convertValue((AppFileDataImage) imageValues.get(cellKey));
             }
         }
     }
