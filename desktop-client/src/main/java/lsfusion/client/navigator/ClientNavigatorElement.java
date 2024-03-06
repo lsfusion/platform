@@ -61,7 +61,7 @@ public abstract class ClientNavigatorElement {
             parentWindow = inStream.readBoolean();
         }
 
-        appImage = IOUtils.readImageIcon(inStream);
+        appImage = IOUtils.readAppImage(inStream);
 
         asyncExec = (ClientAsyncExec) ClientAsyncSerializer.deserializeEventExec(inStream);
     }

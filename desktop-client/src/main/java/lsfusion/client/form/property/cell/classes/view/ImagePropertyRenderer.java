@@ -1,17 +1,14 @@
 package lsfusion.client.form.property.cell.classes.view;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.file.FileData;
+import lsfusion.base.file.AppFileDataImage;
 import lsfusion.base.file.RawFileData;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.view.MainFrame;
 
 import javax.imageio.ImageIO;
-import javax.imageio.stream.ImageInputStream;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 
@@ -27,17 +24,15 @@ public class ImagePropertyRenderer extends FilePropertyRenderer {
         
         icon = null; // сбрасываем
         if (value != null) {
-            Image image = convertValue(((FileData) value).getRawFile());
-            if (image != null) {
+            Image image = convertValue(((AppFileDataImage) value));
+            if (image != null)
                 icon = new ImageIcon(image);
-            }
         }
     }
-    
-    public static Image convertValue(RawFileData value) {
+
+    public static Image convertValue(AppFileDataImage value) {
         try {
-            ImageInputStream iis = ImageIO.createImageInputStream(value.getInputStream());
-            return ImageIO.read(iis);
+            return ImageIO.read(ImageIO.createImageInputStream(RawFileData.toRawFileData(value.data).getInputStream()));
         } catch (IOException e) {
             Throwables.propagate(e);
         }
@@ -105,19 +100,13 @@ public class ImagePropertyRenderer extends FilePropertyRenderer {
         }
     } 
 
-    public static void expandImage(final RawFileData value) {
+    public static void expandImage(final AppFileDataImage value) {
         if (value != null) {
             Image image = convertValue(value); 
             if (image != null) {
                 final JDialog dialog = new JDialog(MainFrame.instance, true);
-
-                ActionListener escListener = new ActionListener() {
-                    public void actionPerformed(ActionEvent actionEvent) {
-                        dialog.setVisible(false);
-                    }
-                };
-                KeyStroke stroke = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
-                dialog.getRootPane().registerKeyboardAction(escListener, stroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
+                dialog.getRootPane().registerKeyboardAction(actionEvent -> dialog.setVisible(false),
+                        KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_IN_FOCUSED_WINDOW);
 
                 final Rectangle bounds = MainFrame.instance.getBounds();
                 bounds.x += 30;

@@ -2,7 +2,7 @@ package lsfusion.client.form.object.table.grid;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
-import lsfusion.base.file.RawFileData;
+import lsfusion.base.file.AppFileDataImage;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
@@ -70,9 +70,8 @@ public class GridTableModel extends AbstractTableModel {
                 Color foreground = foregroundValues != null ? (Color) foregroundValues.get(cellKey) : null;
                 foregroundColor[i][j] = foreground != null ? foreground : (Color) rowForeground;
 
-                if(imageValues != null) {
-                    images[i][j] = ImagePropertyRenderer.convertValue((RawFileData) imageValues.get(cellKey));
-                }
+                if(imageValues != null)
+                    images[i][j] = ImagePropertyRenderer.convertValue((AppFileDataImage) imageValues.get(cellKey));
             }
         }
     }

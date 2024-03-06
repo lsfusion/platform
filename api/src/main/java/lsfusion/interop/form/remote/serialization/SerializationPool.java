@@ -210,7 +210,7 @@ public abstract class SerializationPool<C> {
     }
 
     public void writeImageIcon(DataOutputStream outStream, AppImage appImage) throws IOException {
-        IOUtils.writeImageIcon(outStream, appImage);
+        IOUtils.writeAppImage(outStream, appImage);
     }
 
     public <T> T readObject(DataInputStream inStream) throws IOException {
@@ -221,7 +221,7 @@ public abstract class SerializationPool<C> {
     }
 
     public AppImage readImageIcon(DataInputStream inStream) throws IOException {
-        return IOUtils.readImageIcon(inStream);
+        return IOUtils.readAppImage(inStream);
     }
 
     public void writeString(DataOutputStream outStream, String str) throws IOException {

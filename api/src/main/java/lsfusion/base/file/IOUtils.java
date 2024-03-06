@@ -9,6 +9,7 @@ import org.apache.hc.core5.http.HttpEntity;
 import java.io.*;
 import java.util.Properties;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public class IOUtils {
     public static final int BUFFER_SIZE = 16384;
@@ -102,24 +103,39 @@ public class IOUtils {
         return strBuf.toString();
     }
 
-    public static void writeImageIcon(DataOutputStream outStream, AppImage imageHolder) throws IOException {
+    private static void writeImage(DataOutputStream outStream, Object imageHolder) throws IOException {
         outStream.writeBoolean(imageHolder != null);
-        if (imageHolder != null) {
+        if (imageHolder != null)
             new ObjectOutputStream(outStream).writeObject(imageHolder);
-        }
     }
 
-    public static AppImage readImageIcon(DataInputStream inStream) throws IOException {
+    public static void writeAppImage(DataOutputStream outStream, AppImage imageHolder) throws IOException {
+        writeImage(outStream, imageHolder);
+    }
+
+    public static void writeAppFileDataImage(DataOutputStream outStream, AppFileDataImage imageHolder) throws IOException {
+        writeImage(outStream, imageHolder);
+    }
+
+    private static <T> T readImage(DataInputStream inStream, Function<Object, T> imageType) throws IOException {
         if (inStream.readBoolean()) {
             ObjectInputStream in = new ObjectInputStream(inStream);
             try {
-                return ((AppImage) in.readObject());
+                return imageType.apply(in.readObject());
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException(e);
             }
         } else {
             return null;
         }
+    }
+
+    public static AppImage readAppImage(DataInputStream inStream) throws IOException {
+        return readImage(inStream, object -> (AppImage) object);
+    }
+
+    public static AppFileDataImage readAppFileDataImage(DataInputStream inStream) throws IOException {
+        return readImage(inStream, object -> (AppFileDataImage)object);
     }
 
     public static File createTempDirectory(String prefix) throws IOException {

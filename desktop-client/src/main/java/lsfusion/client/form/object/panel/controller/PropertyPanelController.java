@@ -1,14 +1,13 @@
 package lsfusion.client.form.object.panel.controller;
 
 import lsfusion.base.Pair;
-import lsfusion.base.file.RawFileData;
+import lsfusion.base.file.AppFileDataImage;
 import lsfusion.client.base.focus.FocusComponentProvider;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.view.ClientFormLayout;
 import lsfusion.client.form.design.view.FlexPanel;
 import lsfusion.client.form.design.view.flex.CaptionContainerHolder;
 import lsfusion.client.form.design.view.flex.LinearCaptionContainer;
-import lsfusion.client.form.design.view.widget.Widget;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.classes.view.ImagePropertyRenderer;
@@ -38,7 +37,7 @@ public class PropertyPanelController {
     private Map<ClientGroupObjectValue, Object> imageValues;
 
     private Map<ClientGroupObjectValue, Integer> renderedColumnKeys;
-    private Map<ClientGroupObjectValue, PanelView> views;
+    private final Map<ClientGroupObjectValue, PanelView> views;
 
     private final Panel renderersPanel;
 
@@ -135,10 +134,6 @@ public class PropertyPanelController {
 
     public void setImageValues(Map<ClientGroupObjectValue, Object> imageValues) {
         this.imageValues = imageValues;
-    }
-
-    public interface CaptionContainer {
-        void put(Widget widget, Pair<Integer, Integer> valueSizes, FlexAlignment alignment);
     }
 
     public static class Panel extends FlexPanel implements CaptionContainerHolder {
@@ -257,10 +252,9 @@ public class PropertyPanelController {
         view.setForegroundColor(foreground == null ? property.design.foreground : foreground);
 
         if(imageValues != null) {
-            RawFileData image = (RawFileData) imageValues.get(columnKey);
-            if(image != null) {
+            AppFileDataImage image = (AppFileDataImage) imageValues.get(columnKey);
+            if(image != null)
                 view.setImage(ImagePropertyRenderer.convertValue(image));
-            }
         }
 
         if (captions != null) {

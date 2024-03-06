@@ -92,4 +92,8 @@ public class RawFileData extends TwinImmutableObject<RawFileData> implements Ser
     }
 
     public static RawFileData impossible = new RawFileData(BaseUtils.impossibleString.getBytes());
+
+    public static RawFileData toRawFileData(Object fileData) {
+        return fileData instanceof RawFileData ? (RawFileData)fileData : fileData instanceof FileData ? ((FileData)fileData).getRawFile() : ((NamedFileData) fileData).getRawFile();
+    }
 }

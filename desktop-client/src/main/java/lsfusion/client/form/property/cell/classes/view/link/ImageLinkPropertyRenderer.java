@@ -1,5 +1,6 @@
 package lsfusion.client.form.property.cell.classes.view.link;
 
+import lsfusion.base.file.AppFileDataImage;
 import lsfusion.base.file.RawFileData;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.classes.view.ImagePropertyRenderer;
@@ -24,11 +25,11 @@ public class ImageLinkPropertyRenderer extends LinkPropertyRenderer {
     }
 
     public void setValue(Object value) {
-        RawFileData iconBytes = readImage(property, (String) value);
+        AppFileDataImage dataImage = readImage(property, (String) value);
         
         icon = null; // сбрасываем
-        if (iconBytes != null) {
-            Image image = ImagePropertyRenderer.convertValue(iconBytes);
+        if (dataImage != null) {
+            Image image = ImagePropertyRenderer.convertValue(dataImage);
             if (image != null) {
                 icon = new ImageIcon(image);
             }
@@ -73,7 +74,7 @@ public class ImageLinkPropertyRenderer extends LinkPropertyRenderer {
         imageMap.put(url, image);
     }
 
-    public static RawFileData readImage(ClientPropertyDraw property, String link) {
+    public static AppFileDataImage readImage(ClientPropertyDraw property, String link) {
         try {
             RawFileData result = getFromCache(property, link);
             if (result == null && !isCached(property, link)) {
@@ -88,7 +89,7 @@ public class ImageLinkPropertyRenderer extends LinkPropertyRenderer {
                 
                 putIntoCache(property, link, result);
             }
-            return result;
+            return result != null ? new AppFileDataImage(result) : null;
         } catch (IOException e) {
             putIntoCache(property, link, null);
             return null;
