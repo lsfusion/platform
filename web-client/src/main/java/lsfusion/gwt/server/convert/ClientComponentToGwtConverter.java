@@ -580,6 +580,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         treeGroup.toolbar = convertOrCast(clientTreeGroup.toolbar);
         
         treeGroup.expandOnClick = clientTreeGroup.expandOnClick;
+        treeGroup.hierarchicalWidth = clientTreeGroup.hierarchicalWidth;
 
         treeGroup.resizeOverflow = clientTreeGroup.resizeOverflow;
 

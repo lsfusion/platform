@@ -230,6 +230,7 @@ To access design components, you can use their names or address property compone
 |`tabVertical`|Specifying that focus will be moved from top to bottom (not from left to right)|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
 |`quickSearch`|Specifying that the table will support quick element search|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
 |`headerHeight`|Header height in pixels|Integer literal|NULL|`60`|
+|`hierarchicalWidth`|Width of first tree column|Integer literal|NULL|`100`|
 |`resizeOverflow`|todo|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`lineWidth`|todo|Integer literal|NULL|`60`|
 |`lineHeight`|todo|Integer literal|NULL|`60`|

@@ -47,6 +47,7 @@ public class TreeGroupView extends GridPropertyView implements ServerIdentitySer
     public FilterControlsView filterControls;
     
     public boolean expandOnClick = true;
+    public int hierarchicalWidth;
 
     IDGenerator idGenerator;
 
@@ -129,6 +130,7 @@ public class TreeGroupView extends GridPropertyView implements ServerIdentitySer
         outStream.writeBoolean(entity.plainTreeMode);
         
         outStream.writeBoolean(expandOnClick);
+        outStream.writeInt(hierarchicalWidth);
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -142,6 +144,7 @@ public class TreeGroupView extends GridPropertyView implements ServerIdentitySer
         filters = NFFact.finalSet(pool.deserializeSet(inStream));
 
         expandOnClick = inStream.readBoolean();
+        hierarchicalWidth = inStream.readInt();
 
         headerHeight = inStream.readInt();
 

@@ -24,6 +24,7 @@ public class GTreeGroup extends GComponent {
     public GToolbar toolbar;
     
     public boolean expandOnClick;
+    public int hierarchicalWidth;
 
     public Boolean resizeOverflow;
 
@@ -36,6 +37,10 @@ public class GTreeGroup extends GComponent {
     }
 
     public GSize getExpandWidth() {
+        if(hierarchicalWidth > 0) {
+            return GSize.CONST(hierarchicalWidth);
+        }
+
         GSize size = GSize.ZERO;
         for (GGroupObject groupObject : groups) {
             GSize groupSize = GSize.CONST(20);

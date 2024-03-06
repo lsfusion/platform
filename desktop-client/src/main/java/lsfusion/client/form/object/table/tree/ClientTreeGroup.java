@@ -32,6 +32,7 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
     public boolean plainTreeMode;
     
     public boolean expandOnClick;
+    public int hierarchicalWidth;
 
     public Boolean resizeOverflow;
 
@@ -76,6 +77,7 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
         pool.serializeCollection(outStream, filters);
         
         outStream.writeBoolean(expandOnClick);
+        outStream.writeInt(hierarchicalWidth);
 
         outStream.writeInt(headerHeight);
 
@@ -108,6 +110,7 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
         plainTreeMode = inStream.readBoolean();
         
         expandOnClick = inStream.readBoolean();
+        hierarchicalWidth = inStream.readInt();
 
         List<ClientGroupObject> upGroups = new ArrayList<>();
         for (ClientGroupObject group : groups) {
@@ -134,6 +137,10 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
     }
 
     public int getExpandWidth() {
+        if(hierarchicalWidth > 0) {
+            return hierarchicalWidth;
+        }
+
         int size = 0;
         for (ClientGroupObject groupObject : groups) {
             size += groupObject.isRecursive ? 20 * 4 : 20;
