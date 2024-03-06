@@ -99,6 +99,12 @@ public class ClientFormLayout extends PanelWidget {
         enableEvents(AWTEvent.MOUSE_EVENT_MASK);
     }
 
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        MainFrame.instance.setCurrentForm(null);
+    }
+
     public void focusGained() {
         containerFocusListener.focusGained(this, focusListener);
     }
