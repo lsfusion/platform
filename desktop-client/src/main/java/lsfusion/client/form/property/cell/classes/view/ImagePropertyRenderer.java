@@ -2,7 +2,6 @@ package lsfusion.client.form.property.cell.classes.view;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.file.AppFileDataImage;
-import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.view.MainFrame;
@@ -12,7 +11,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
-import java.io.Serializable;
 
 public class ImagePropertyRenderer extends FilePropertyRenderer {
     private ImageIcon icon;
@@ -34,9 +32,7 @@ public class ImagePropertyRenderer extends FilePropertyRenderer {
 
     public static Image convertValue(AppFileDataImage value) {
         try {
-            Serializable data = value.data;
-            RawFileData fileData = data instanceof FileData ? ((FileData)data).getRawFile() : (RawFileData)data;
-            return ImageIO.read(ImageIO.createImageInputStream(fileData.getInputStream()));
+            return ImageIO.read(ImageIO.createImageInputStream(RawFileData.toRawFileData(value.data).getInputStream()));
         } catch (IOException e) {
             Throwables.propagate(e);
         }

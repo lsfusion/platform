@@ -1039,14 +1039,13 @@ public abstract class GroupingDialog extends JDialog {
                     length = value.toString().length();
                     sheet.addCell(new jxl.write.Boolean(column, currentRow, (Boolean) value, createCellFormat(null, false)));
                 } else if (value instanceof RawFileData || value instanceof FileData || value instanceof NamedFileData) { // здесь ожидается изображение
-                    RawFileData rawFile = value instanceof RawFileData ? (RawFileData)value : value instanceof FileData ? ((FileData)value).getRawFile() : ((NamedFileData) value).getRawFile();
                     WritableCellFormat format = new WritableCellFormat();
                     format.setBorder(jxl.format.Border.ALL, BorderLineStyle.THIN);
                     sheet.getWritableCell(column, currentRow).setCellFormat(format);
                     sheet.addCell(new Blank(column, currentRow, format));
                     sheet.setRowView(currentRow, 500);
 
-                    WritableImage image = new WritableImage(column, currentRow, 1, 1, rawFile.getBytes());
+                    WritableImage image = new WritableImage(column, currentRow, 1, 1, RawFileData.toRawFileData(value).getBytes());
                     image.setImageAnchor(WritableImage.MOVE_AND_SIZE_WITH_CELLS);
                     sheet.addImage(image);
                 } else {

@@ -100,12 +100,11 @@ final class ClientPropertyTableUIHandler extends MouseAdapter {
                         repostEvent(e);
                         table.prepareTextEditor();
                     } else {
-                        Object tableValue = table.getValueAt(pressedRow, pressedCol);
                         if (property.baseType instanceof ClientImageClass) {
                             ImagePropertyRenderer.expandImage(((AppFileDataImage) table.getValueAt(pressedRow, pressedCol)));
                             e.consume();
                         } else if (property.baseType instanceof ClientImageLinkClass) {
-                            AppFileDataImage fileDataImage = ImageLinkPropertyRenderer.readImage(property, (String) tableValue);
+                            AppFileDataImage fileDataImage = ImageLinkPropertyRenderer.readImage(property, (String) table.getValueAt(pressedRow, pressedCol));
                             if (fileDataImage != null) {
                                 ImagePropertyRenderer.expandImage(fileDataImage);
                                 e.consume();

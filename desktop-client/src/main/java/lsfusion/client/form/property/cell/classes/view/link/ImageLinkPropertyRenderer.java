@@ -28,7 +28,7 @@ public class ImageLinkPropertyRenderer extends LinkPropertyRenderer {
         AppFileDataImage dataImage = readImage(property, (String) value);
         
         icon = null; // сбрасываем
-        if (dataImage != null && dataImage.data != null) {
+        if (dataImage != null) {
             Image image = ImagePropertyRenderer.convertValue(dataImage);
             if (image != null) {
                 icon = new ImageIcon(image);
@@ -89,7 +89,7 @@ public class ImageLinkPropertyRenderer extends LinkPropertyRenderer {
                 
                 putIntoCache(property, link, result);
             }
-            return new AppFileDataImage(result);
+            return result != null ? new AppFileDataImage(result) : null;
         } catch (IOException e) {
             putIntoCache(property, link, null);
             return null;
