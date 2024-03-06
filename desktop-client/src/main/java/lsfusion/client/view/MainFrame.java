@@ -283,11 +283,6 @@ public abstract class MainFrame extends JFrame {
         this.currentForm = currentForm;
     }
 
-    public void dropCurrentForm(ClientFormController form) {
-        if(currentForm != null && currentForm.equals(form))
-            currentForm = null;
-    }
-
     public void executeNotificationAction(final Integer idNotification) {
         try {
             if (currentForm != null)
