@@ -20,10 +20,6 @@ import java.text.ParseException;
 
 public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor implements FormatCellEditor {
 
-    protected boolean isNative() {
-        return inputElementType.hasNativePopup();
-    }
-
     public DateRangePickerBasedCellEditor(EditManager editManager, GPropertyDraw property) {
         super(editManager, property);
     }
@@ -43,7 +39,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
             if(oldValue == null) // if value is null - current date will be set, so we need to select the value, since we want to rewrite data on key input
                 inputElement.select();
 
-            DataGrid.addFocusPartner(parent, getPickerContainer(), element -> element.getPropertyObject("rendering") != null);
+            DataGrid.addFocusPartner(parent, getPickerContainer(), element -> false);
 
 //            getInputElement().click();
         }

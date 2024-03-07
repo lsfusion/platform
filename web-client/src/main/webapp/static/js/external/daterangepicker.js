@@ -628,8 +628,13 @@
         },
 
         renderCalendar: function(side) {
-            // PATCHED: we need rendering to avoid fake blurs during rendering (when elements are recreated)
-            this.container.prop('rendering', true);
+            // PATCHED:
+            // - added this.container.focus() to prevent the month and time selection drop-down lists from taking focus and finishing editing.
+            this.container.focus();
+
+            // todo - should be removed if the "this.container.focus()" patch works correctly
+            //  PATCHED: we need rendering to avoid fake blurs during rendering (when elements are recreated)
+            //  this.container.prop('rendering', true);
 
             //
             // Build the matrix of dates that will populate the calendar
@@ -861,13 +866,19 @@
 
             this.container.find('.drp-calendar.' + side + ' .calendar-table').html(html);
 
-            // PATCHED:
-            this.container.prop('rendering', null);
+            // todo - should be removed if the "this.container.focus()" patch works correctly
+            //  PATCHED:
+            //  this.container.prop('rendering', null);
         },
 
         renderTimePicker: function(side) {
-            // PATCHED: we need rendering to avoid fake blurs during rendering (when elements are recreated)
-            this.container.prop('rendering', true);
+            // PATCHED:
+            // - added this.container.focus() to prevent the month and time selection drop-down lists from taking focus and finishing editing.
+            this.container.focus();
+
+            // todo - should be removed if the "this.container.focus()" patch works correctly
+            //  PATCHED: we need rendering to avoid fake blurs during rendering (when elements are recreated)
+            //  this.container.prop('rendering', true);
 
             // Don't bother updating the time picker if it's currently disabled
             // because an end date hasn't been clicked yet
@@ -1026,8 +1037,9 @@
 
             this.container.find('.drp-calendar.' + side + ' .calendar-time').html(html);
 
-            // PATCHED:
-            this.container.prop('rendering', null);
+            // todo should be removed if the "this.container.focus()" patch works correctly
+            //  PATCHED:
+            //  this.container.prop('rendering', null);
         },
 
         updateFormInputs: function() {
@@ -1541,6 +1553,7 @@
             this.renderTimePicker('left');
             this.renderTimePicker('right');
 
+            this.updateElement();
         },
 
         elementChanged: function() {

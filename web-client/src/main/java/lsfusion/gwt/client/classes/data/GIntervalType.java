@@ -2,7 +2,6 @@ package lsfusion.gwt.client.classes.data;
 
 import com.google.gwt.core.client.JsDate;
 import com.google.gwt.i18n.client.DateTimeFormat;
-import com.google.gwt.i18n.client.TimeZone;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
@@ -98,7 +97,7 @@ public abstract class GIntervalType extends GFormatType {
         return toDate(PValue.getIntervalValue(value, from));
     }
 
-    private static transient TimeZone UTCZone = TimeZone.createTimeZone(0);
+//    private static transient TimeZone UTCZone = TimeZone.createTimeZone(0);
     protected Date toDate(long epoch) {
         Date date = new Date(epoch);
         boolean local = isSingleLocal();
@@ -106,7 +105,7 @@ public abstract class GIntervalType extends GFormatType {
 //            DateTimeFormat format = getSingleFormat(null);// we don't care about the pattern
 //            return format.parse(format.format(date, UTCZone));
             JsDate jsDate = GwtClientUtils.toJsDate(date);
-            date = new Date(GwtClientUtils.getUTCYear(jsDate) - 1900, GwtClientUtils.getUTCMonth(jsDate), GwtClientUtils.getUTCMonth(jsDate), GwtClientUtils.getUTCHours(jsDate), GwtClientUtils.getUTCMinutes(jsDate), GwtClientUtils.getUTCSeconds(jsDate));
+            date = new Date(GwtClientUtils.getUTCYear(jsDate) - 1900, GwtClientUtils.getUTCMonth(jsDate), GwtClientUtils.getUTCDate(jsDate), GwtClientUtils.getUTCHours(jsDate), GwtClientUtils.getUTCMinutes(jsDate), GwtClientUtils.getUTCSeconds(jsDate));
         }
 
         return date;
