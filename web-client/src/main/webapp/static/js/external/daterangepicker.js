@@ -630,7 +630,8 @@
         renderCalendar: function(side) {
             // PATCHED:
             // - added this.container.focus() to prevent the month and time selection drop-down lists from taking focus and finishing editing.
-            this.container.focus();
+            if (this.container.has(document.activeElement).length) // check if focus inside picker element. if focus is outside picker e.g. on input-element don't need to force the focus back to the picker.
+                this.container.focus();
 
             // todo - should be removed if the "this.container.focus()" patch works correctly
             //  PATCHED: we need rendering to avoid fake blurs during rendering (when elements are recreated)
@@ -874,7 +875,8 @@
         renderTimePicker: function(side) {
             // PATCHED:
             // - added this.container.focus() to prevent the month and time selection drop-down lists from taking focus and finishing editing.
-            this.container.focus();
+            if (this.container.has(document.activeElement).length) // check if focus inside picker element. if focus is outside picker e.g. on input-element don't need to force the focus back to the picker.
+                this.container.focus();
 
             // todo - should be removed if the "this.container.focus()" patch works correctly
             //  PATCHED: we need rendering to avoid fake blurs during rendering (when elements are recreated)
