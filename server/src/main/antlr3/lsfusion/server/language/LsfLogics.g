@@ -2816,7 +2816,8 @@ semiActionOrPropertyOption[LAP property, String propertyName, LocalizedString ca
 
 semiPropertyOption[LP property, String propertyName, LocalizedString caption, PropertySettings ps, List<TypedParameter> context]
     :	semiActionOrPropertyOption[property, propertyName, caption, ps, context]
-    |   persistentSetting [ps]
+    |   materializedSetting [ps]
+    |	indexedSetting [ps]
 	|	complexSetting [ps]
 	|	prereadSetting [ps]
 	|	hintSettings [ps]
@@ -2826,7 +2827,6 @@ semiPropertyOption[LP property, String propertyName, LocalizedString caption, Pr
 	|	patternSetting [property]
 	|	regexpSetting [property]
 	|	echoSymbolsSetting [property]
-	|	indexSetting [property]
 	|	setNotNullSetting [ps]
 	|	aggrSetting [property]
 	|	eventIdSetting [property]
@@ -2857,8 +2857,13 @@ inSetting [ActionOrPropertySettings ps]
 	:	'IN' name=compoundID { ps.groupName = $name.sid; }
 	;
 
-persistentSetting [PropertySettings ps]
-	:	'MATERIALIZED' (name=stringLiteral)? { ps.isPersistent = true; ps.field = $name.val; }
+materializedSetting [PropertySettings ps]
+	:	'MATERIALIZED' (name=stringLiteral)? { ps.isMaterialized = true; ps.field = $name.val; }
+	;
+
+indexedSetting [PropertySettings ps]
+	:	'INDEXED' { ps.isIndexed = true; ps.indexType = IndexType.DEFAULT; } (dbName=stringLiteral { ps.indexName = $dbName.val; })?
+	        (('LIKE' { ps.indexType = IndexType.LIKE; }) | ('MATCH' { ps.indexType = IndexType.MATCH; }))?
 	;
 
 complexSetting [PropertySettings ps]
@@ -3069,18 +3074,6 @@ echoSymbolsSetting [LAP property]
 	}
 }
 	:	'ECHO'
-	;
-
-indexSetting [LP property]
-@init {
-	IndexType indexType = IndexType.DEFAULT;
-}
-@after {
-	if (inMainParseState()) {
-		self.addScriptedIndex(property, $dbName.val, indexType);
-	}
-}
-	:	'INDEXED' (dbName=stringLiteral)? (('LIKE' { indexType = IndexType.LIKE; }) | ('MATCH' { indexType = IndexType.MATCH; }))?
 	;
 
 notNullDeleteSetting returns [DebugInfo.DebugPoint debugPoint, Event event]

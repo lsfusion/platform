@@ -1225,10 +1225,14 @@ public class ScriptingLogicsModule extends LogicsModule {
                 errLog.emitWrongClassesForTableError(parser, name, tableName);
             }
         }
-        if (property.property instanceof StoredDataProperty || (ps.isPersistent && (property.property instanceof AggregateProperty))) {
+        if (property.property instanceof StoredDataProperty || (ps.isMaterialized && (property.property instanceof AggregateProperty))) {
             property.property.markStored(targetTable);
         }
         property.property.mapDbName = ps.field;
+
+        if(ps.isIndexed) {
+            addScriptedIndex(property, ps.indexName, ps.indexType);
+        }
 
         if(ps.isComplex != null)
             property.property.setComplex(ps.isComplex);
@@ -4913,7 +4917,9 @@ public class ScriptingLogicsModule extends LogicsModule {
     private List<IndexType> indexTypes = new ArrayList<>();
     private List<TemporaryIndexInfo> tempIndexes = new ArrayList<>();
             
-    public void addScriptedIndex(LP lp, String dbName, IndexType indexType) {
+    public void addScriptedIndex(LP lp, String dbName, IndexType indexType) throws ScriptingErrorLog.SemanticErrorException {
+        checks.checkMarkStoredProperty(lp);
+
         indexedProperties.add(lp);
         indexNames.add(dbName);
         indexTypes.add(indexType);

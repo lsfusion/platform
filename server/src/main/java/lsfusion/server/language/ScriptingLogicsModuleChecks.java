@@ -428,11 +428,7 @@ public class ScriptingLogicsModuleChecks {
 //        String firstPropertyName = null;
         for (ScriptingLogicsModule.LPWithParams lp : lps) {
             if (lp.getLP() != null) {
-                Property<?> property = lp.getLP().property;
-                String name = property.getName();
-                if (!property.isMarkedStored()) {
-                    errLog.emitShouldBeStoredError(parser, name);
-                }
+                checkMarkStoredProperty(lp.getLP());
 //                if (table == null) {
 //                    table = property.mapTable.table;
 //                    firstPropertyName = name;
@@ -440,6 +436,13 @@ public class ScriptingLogicsModuleChecks {
 //                    errLog.emitIndexPropertiesDifferentTablesError(parser, firstPropertyName, name);
 //                }
             }
+        }
+    }
+
+    public void checkMarkStoredProperty(LP lp) throws ScriptingErrorLog.SemanticErrorException {
+        Property<?> property = lp.property;
+        if (!property.isMarkedStored()) {
+            errLog.emitShouldBeStoredError(parser, property.getName());
         }
     }
 

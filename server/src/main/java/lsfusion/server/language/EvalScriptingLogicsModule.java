@@ -113,7 +113,7 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
     @Override
     public <K extends PropertyInterface> void addSettingsToProperty(LP<K> property, String name, LocalizedString caption, List<TypedParameter> params,
                                       List<ResolveClassSet> signature, PropertySettings ps) throws ScriptingErrorLog.SemanticErrorException {
-        if (ps.isPersistent) {
+        if (ps.isMaterialized) {
             emitEvalError("MATERIALIZED property option");
         } else if (ps.table != null) {
             emitEvalError("TABLE property option");
