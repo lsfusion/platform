@@ -10,6 +10,7 @@ import java.io.*;
 import java.util.Properties;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class IOUtils {
     public static final int BUFFER_SIZE = 16384;
@@ -86,21 +87,38 @@ public class IOUtils {
     }
 
     public static String readStreamToString(InputStream inStream, String charsetName) throws IOException {
-        StringBuilder strBuf = new StringBuilder();
+        ByteArrayOutputStream tmpByteStream = new ByteArrayOutputStream();
+        byte last = getLastByteAndCopyStream(inStream, tmpByteStream);
+        boolean endsWithNewLine = last == '\n';
+        
+        InputStream newInStream = new ByteArrayInputStream(tmpByteStream.toByteArray());
+        String result;
+        try (BufferedReader reader = new BufferedReader(charsetName == null
+                                                            ? new InputStreamReader(newInStream)
+                                                            : new InputStreamReader(newInStream, charsetName))) {
+            result = reader.lines().collect(Collectors.joining(lineSeparator));
+        }
+        
+        if (endsWithNewLine) {
+            result += lineSeparator;
+        }
+        
+        return result;
+    }
 
-        BufferedReader in = new BufferedReader(charsetName == null
-                                               ? new InputStreamReader(inStream)
-                                               : new InputStreamReader(inStream, charsetName));
+    private static byte getLastByteAndCopyStream(InputStream inStream, ByteArrayOutputStream outStream) throws IOException {
         try {
-            String line;
-            while ((line = in.readLine()) != null) {
-                strBuf.append(line).append(lineSeparator);
+            byte[] buffer = new byte[1024];
+            byte lastByte = 0;
+            int bytesRead;
+            while ((bytesRead = inStream.read(buffer, 0, buffer.length)) != -1) {
+                outStream.write(buffer, 0, bytesRead);
+                lastByte = buffer[bytesRead - 1];
             }
+            return lastByte;
         } finally {
             inStream.close();
         }
-
-        return strBuf.toString();
     }
 
     private static void writeImage(DataOutputStream outStream, Object imageHolder) throws IOException {
