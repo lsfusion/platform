@@ -1,7 +1,6 @@
 .gwt-Tree .gwt-TreeItem {
     padding: 0.0625rem 0px;
     margin: 0px;
-    white-space: nowrap;
     cursor: hand;
     cursor: pointer;
 }

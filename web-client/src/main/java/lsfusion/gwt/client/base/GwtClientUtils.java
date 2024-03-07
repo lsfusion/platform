@@ -1446,12 +1446,34 @@ public class GwtClientUtils {
         return $wnd.containsHtmlTag(value) != null;
     }-*/;
 
-    // Popup??
+
+    public static void initCaptionHtmlOrText(Element element, CaptionHtmlOrTextType type) {
+        initCaptionHtmlOrText(element, type.getCssClass());
+    }
+    public static void initDataHtmlOrText(Element element, DataHtmlOrTextType type) {
+        initDataHtmlOrText(element, type.getCssClass());
+    }
+    private static native void initCaptionHtmlOrText(Element element, String cssClass) /*-{
+        $wnd.initCaptionHtmlOrText(element, cssClass);
+    }-*/;
+    public static native void initDataHtmlOrText(Element element, String cssClass) /*-{
+        $wnd.initDataHtmlOrText(element, cssClass);
+    }-*/;
+    // elements used in this set method should be created with initCaptionHtmlOrText
     public static native boolean setCaptionHtmlOrText(Element element, String value) /*-{
         $wnd.setCaptionHtmlOrText(element, value);
     }-*/;
-    public static native boolean setDataHtmlOrText(Element element, String value, boolean html) /*-{
+    public static native boolean setCaptionNodeText(Node node, String value) /*-{
+        $wnd.setCaptionNodeText(node, value);
+    }-*/;
+    public static native void setDataHtmlOrText(Element element, String value, boolean html) /*-{
         $wnd.setDataHtmlOrText(element, value, html);
+    }-*/;
+    public static void clearDataHtmlOrText(Element element, DataHtmlOrTextType type) {
+        clearDataHtmlOrText(element, type.getCssClass());
+    }
+    private static native void clearDataHtmlOrText(Element element, String cssClass) /*-{
+        $wnd.clearDataHtmlOrText(element, cssClass);
     }-*/;
 
     public static native void setMask(Element element, JavaScriptObject options)/*-{

@@ -13,8 +13,12 @@ import java.io.Serializable;
 public interface BaseImage extends Serializable {
 
     String TEXT = "lsf-text-caption";
+    String TYPE = "lsf-image-text-type";
+    String IMAGE_VERTICAL = "lsf-image-text-vertical";
     String DIV = "lsf-div-caption";
     String IMAGE = "lsf-image-caption";
+
+    String BASE_STATIC_IMAGE = "lsf-base-static-image";
 
     String getImageElementSrc(boolean enabled);
 
@@ -171,56 +175,70 @@ public interface BaseImage extends Serializable {
 //        return false;
 //    }
 
-    static void initImageText(Widget widget, String caption, BaseImage appImage, boolean vertical) {
+    static void initImageText(Widget widget, String caption, BaseImage appImage, ImageHtmlOrTextType type) {
         Element element = widget.getElement();
         // others image texts handle color themes changes with the explicit colorThemeChanged (rerendering the whole view)
         element.addClassName("img-text-widget");
-        initImageText(element);
-        updateText(widget, caption, vertical);
-        updateImage(appImage, widget, vertical);
+        initImageText(element, type);
+        updateText(widget, caption);
+        updateImage(appImage, widget);
     }
 
-    static void initImageText(Element element) {
+    static void initImageText(Element element, ImageHtmlOrTextType type) {
         element.setInnerText("..."); // need this to make getLastChild work
+
+        GwtClientUtils.initCaptionHtmlOrText(element, type); // actually only text can be here (because of containHTMLTag check)
+        element.setPropertyObject(TYPE, type);
+
+        element.setPropertyBoolean(IMAGE_VERTICAL, type.isImageVertical());
+
         Node node = element.getLastChild();
         element.setPropertyObject(TEXT, node);
         node.setNodeValue(""); // to remove "..."
     }
 
-    static void clearImageText(Element element, boolean vertical) {
+    static void clearImageText(Element element) {
         element.setPropertyObject(TEXT, null);
         element.setPropertyObject(DIV, null);
         element.setPropertyObject(IMAGE, null);
 
+        element.setPropertyObject(BASE_STATIC_IMAGE, null);
+
+        element.setPropertyObject(TYPE, null);
+
         element.removeClassName("wrap-text-not-empty");
-        if(vertical)
+        if(element.getPropertyBoolean(IMAGE_VERTICAL))
             element.removeClassName("wrap-img-vert");
         else
             element.removeClassName("wrap-img-horz");
         element.removeClassName("wrap-img-start");
+
+        element.setPropertyObject(IMAGE_VERTICAL, null);
     }
 
-    static void updateText(Widget widget, String text, boolean vertical) {
-        updateText(widget, text, vertical, false);
+    static void updateText(Widget widget, String text) {
+        updateText(widget, text, false);
     }
-    static void updateText(Widget widget, String text, boolean vertical, boolean forceDiv) {
-        updateText(widget.getElement(), text, vertical, forceDiv);
+    static void updateText(Widget widget, String text, boolean forceDiv) {
+        updateText(widget.getElement(), text, forceDiv);
     }
-    static void updateText(Element element, String text, boolean vertical) {
-        updateText(element, text, vertical, false);
+    static void updateText(Element element, String text) {
+        updateText(element, text, false);
     }
-    static void updateText(Element element, String text, boolean vertical, boolean forceDiv) {
+    static void updateText(Element element, String text, boolean forceDiv) {
         Node textNode = (Node) element.getPropertyObject(TEXT); // always present, since it is initialized in initImageText
         Element textElement = (Element) element.getPropertyObject(DIV);
 
         // using node for optimization purposes (to save extra element in DOM)
         text = text == null ? "" : text;
-        if ((forceDiv && !text.isEmpty()) || GwtClientUtils.containsHtmlTag(text) || GwtClientUtils.containsLineBreak(text)) { // nodeValue doesn't support line breaks
+        if ((forceDiv && !text.isEmpty()) || GwtClientUtils.containsHtmlTag(text)) { // nodeValue doesn't support line breaks
             if(textElement == null) {
                 textElement = Document.get().createDivElement();
+                ImageHtmlOrTextType type = (ImageHtmlOrTextType) element.getPropertyObject(TYPE);
+                GwtClientUtils.initCaptionHtmlOrText(textElement, type);
                 textElement.addClassName("wrap-text-div");
 
-                if(vertical) {
+                if(element.getPropertyBoolean(IMAGE_VERTICAL)) {
                     element.addClassName("wrap-div-vert");
                 } else {
                     element.addClassName("wrap-div-horz");
@@ -234,14 +252,14 @@ public interface BaseImage extends Serializable {
         } else {
             if(textElement != null) {
                 element.removeChild(textElement);
-                if(vertical)
+                if(element.getPropertyBoolean(IMAGE_VERTICAL))
                     element.removeClassName("wrap-div-vert");
                 else
                     element.removeClassName("wrap-div-horz");
 
                 element.setPropertyObject(DIV, null);
             }
-            textNode.setNodeValue(text);
+            GwtClientUtils.setCaptionNodeText(textNode, text);
         }
 
         if (!text.isEmpty()) {
@@ -251,19 +269,18 @@ public interface BaseImage extends Serializable {
         }
     }
 
-    String IMAGE_WIDGET = "lsf-image-widget-caption";
-
     // updating element with text
-    static void updateImage(BaseImage image, Widget widget, boolean vertical) {
+    static void updateImage(BaseImage image, Widget widget) {
         Element element = widget.getElement();
-        element.setPropertyObject(IMAGE_WIDGET, new Pair<>(image, vertical));
-        updateImage(image, element, vertical);
+        updateImage(image, element);
     }
-    static void updateImage(BaseImage image, Element element, boolean vertical) {
+    static void updateImage(BaseImage image, Element element) {
+        element.setPropertyObject(BASE_STATIC_IMAGE, image instanceof BaseStaticImage ? image : null);
+
         Element imageElement = (Element) element.getPropertyObject(IMAGE);
         if(imageElement != null && (image == null || !image.updateImageSrc(imageElement))) {
             element.removeChild(imageElement); // dropping image to create one after
-            if(vertical)
+            if(element.getPropertyBoolean(IMAGE_VERTICAL))
                 element.removeClassName("wrap-img-vert");
             else
                 element.removeClassName("wrap-img-horz");
@@ -276,7 +293,7 @@ public interface BaseImage extends Serializable {
                 imageElement = image.createImage();
                 imageElement.addClassName("wrap-text-img");
 
-                if(vertical) {
+                if(element.getPropertyBoolean(IMAGE_VERTICAL)) {
                     element.addClassName("wrap-img-vert");
                 } else {
                     element.addClassName("wrap-img-horz");

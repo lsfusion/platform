@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.base;
 
 import com.google.gwt.user.client.Element;
-import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.view.DivWidget;
 
@@ -12,7 +11,9 @@ public class EscapeUtils {
     // MESSAGE, CONFIRM, ASK, tooltip
     public static Widget toHTML(String plainString) {
         DivWidget widget = new DivWidget();
-        GwtClientUtils.setCaptionHtmlOrText(widget.getElement(), plainString);
+        Element element = widget.getElement();
+        GwtClientUtils.initCaptionHtmlOrText(element, CaptionHtmlOrTextType.MESSAGE);
+        GwtClientUtils.setCaptionHtmlOrText(element, plainString);
         return widget;
     }
 }

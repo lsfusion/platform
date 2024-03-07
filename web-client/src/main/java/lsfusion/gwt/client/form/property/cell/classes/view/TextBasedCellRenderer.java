@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.property.cell.classes.view;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.TextAreaElement;
+import lsfusion.gwt.client.base.DataHtmlOrTextType;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -25,14 +26,10 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
 
     private static void renderText(Element element, boolean multiLine) {
         element.addClassName("text-based-prop-value");
-        if(multiLine)
-            element.addClassName("text-based-prop-wrap");
     }
 
     private static void clearRenderText(Element element, boolean multiLine) {
         element.removeClassName("text-based-prop-value");
-        if(multiLine)
-            element.removeClassName("text-based-prop-wrap");
     }
 
     public static void setTextPadding(Element element) {
@@ -80,6 +77,9 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
     public boolean renderContent(Element element, RenderContext renderContext) {
         boolean renderedAlignment = super.renderContent(element, renderContext);
 
+        boolean multiLine = isMultiLine();
+        GwtClientUtils.initDataHtmlOrText(element, multiLine ? DataHtmlOrTextType.TEXT : DataHtmlOrTextType.TEXTBASED);
+
         // TEXT PART
         setTextPadding(getSizeElement(element));
 
@@ -87,7 +87,7 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
             element.addClassName("text-based-value-required");
 
         if(getInputElement(element) == null)
-            renderText(element, isMultiLine());
+            renderText(element, multiLine);
 
         return renderedAlignment;
     }
@@ -111,10 +111,11 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
             }
         }
 
-        element.removeClassName("text-based-value-multi-line");
-
+        boolean multiLine = isMultiLine();
         if(inputElement == null) // !isTagInput()
-            clearRenderText(element, isMultiLine());
+            clearRenderText(element, multiLine);
+
+        GwtClientUtils.clearDataHtmlOrText(element, multiLine ? DataHtmlOrTextType.TEXT : DataHtmlOrTextType.TEXTBASED);
 
         return super.clearRenderContent(element, renderContext);
     }
@@ -156,11 +157,6 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
                 inputElement.removeAttribute("placeholder");
             return false;
         }
-
-        if(innerText.contains("\n"))
-            element.addClassName("text-based-value-multi-line");
-        else
-            element.removeClassName("text-based-value-multi-line");
 
         // important to make paste work (otherwise DataGrid.sinkPasteEvent cannot put empty selection), plus for sizing
         GwtClientUtils.setDataHtmlOrText(element, isNull ? (placeholder != null ? placeholder : EscapeUtils.UNICODE_NBSP) : innerText, false);

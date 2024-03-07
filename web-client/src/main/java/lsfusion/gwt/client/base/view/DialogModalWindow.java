@@ -4,6 +4,7 @@ import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.BaseImage;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.ImageHtmlOrTextType;
 import lsfusion.gwt.client.view.MainFrame;
 
 // twin of a PopupDialogPanel
@@ -12,7 +13,7 @@ public class DialogModalWindow extends ModalWindow {
     public DialogModalWindow(String caption, boolean resizable, ModalWindowSize size) {
         super(resizable, size);
 
-        BaseImage.initImageText(getTitleWidget(), caption, null, false);
+        BaseImage.initImageText(getTitleWidget(), caption, null, ImageHtmlOrTextType.FORM);
     }
 
     private Element focusedElement;

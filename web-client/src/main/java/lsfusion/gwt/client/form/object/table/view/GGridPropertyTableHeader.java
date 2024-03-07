@@ -162,9 +162,9 @@ public class GGridPropertyTableHeader extends Header<String> {
         th = wrapSortImg(th, sortDir);
 //            th = wrapAlignedFlexImg(th, imgProcessor);
 
-        th.addClassName("dataGridHeaderCell-caption"); // wrap normal to have multi-line headers
+        th.addClassName("grid-property-label"); // wrap normal to have multi-line headers
 
-        BaseImage.initImageText(th);
+        BaseImage.initImageText(th, ImageHtmlOrTextType.GRID_CAPTION);
         renderCaption(th, caption);
         renderCaptionElementClass(th, captionElementClass);
         renderImage(th, image);
@@ -205,13 +205,13 @@ public class GGridPropertyTableHeader extends Header<String> {
     }
 
     private static void renderCaption(Element captionElement, String caption) {
-        BaseImage.updateText(captionElement, caption, false);
+        BaseImage.updateText(captionElement, caption);
     }
     private static void renderCaptionElementClass(Element captionElement, String classes) {
         BaseImage.updateClasses(captionElement, classes);
     }
     private static void renderImage(Element captionElement, AppBaseImage image) {
-        BaseImage.updateImage(image, captionElement, false);
+        BaseImage.updateImage(image, captionElement);
     }
 
     @Override

@@ -37,7 +37,7 @@ public class ActionCellRenderer extends CellRenderer {
         if(property.hasChangeAction)
             element.addClassName("btn");
 
-        BaseImage.initImageText(element);
+        BaseImage.initImageText(element, property.panelCaptionVertical ? ImageHtmlOrTextType.ACTION_VERT : ImageHtmlOrTextType.ACTION_HORZ);
 
         // we can't use text alignment for several reasons:
         // button does not support vertical-align
@@ -55,7 +55,7 @@ public class ActionCellRenderer extends CellRenderer {
         if(property.hasChangeAction)
             element.removeClassName("btn");
 
-        BaseImage.clearImageText(element, property.panelCaptionVertical);
+        BaseImage.clearImageText(element);
         GFormController.clearFont(element);
 //        if(GwtClientUtils.isTDorTH(element)) { // otherwise we'll use flex alignment (however text alignment would also do)
 //            clearRenderTextAlignment(element);
@@ -91,7 +91,7 @@ public class ActionCellRenderer extends CellRenderer {
     @Override
     public boolean updateContent(Element element, PValue value, Object extraValue, UpdateContext updateContext) {
         if(extraValue != null)
-            BaseImage.updateImage((BaseImage) extraValue, element, property.panelCaptionVertical);
+            BaseImage.updateImage((BaseImage) extraValue, element);
 
 //        boolean enabled = !updateContext.isPropertyReadOnly() && getActionValue(value);
 //        element.setPropertyBoolean("disabled", !enabled);

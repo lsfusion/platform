@@ -74,11 +74,6 @@ it's not the perfect solution, but maybe sometime firefox will fix this bug and 
     align-items: center;
 }
 
-.dataGridHeaderCell-caption {
-    white-space: normal;
-    word-break: break-word;
-}
-
 .sort-img {
     /*overflow: hidden;*/
 }

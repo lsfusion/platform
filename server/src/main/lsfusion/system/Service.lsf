@@ -791,6 +791,8 @@ DESIGN editProfile {
 inTestMode = NATIVE BOOLEAN ();
 projectLSFDir = NATIVE STRING();
 
+contentWordWrap() += IF contentWordWrap(currentUser()) THEN (IF contentWordWrap(currentUser()) == TTRUE THEN TRUE ELSE NULL) ELSE valueSettingBoolean('contentWordWrap');
+
 getClientSettings(User user) ABSTRACT CASE;
 getClientSettings(User user) + WHEN TRUE AND user IS User THEN {
     LOCAL webClientLoadedResources = RAWFILE(STRING);

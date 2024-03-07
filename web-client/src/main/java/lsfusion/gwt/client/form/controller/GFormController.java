@@ -1731,12 +1731,12 @@ public class GFormController implements EditManager {
     public void updateCaption(GContainer container) {
         Widget captionWidget = getCaptionWidget(container);
         if(captionWidget != null)
-            BaseImage.updateText(captionWidget, container.caption, false);
+            BaseImage.updateText(captionWidget, container.caption);
     }
     public void updateImage(GContainer container) {
         Widget captionWidget = getCaptionWidget(container);
         if(captionWidget != null)
-            BaseImage.updateImage(container.image, captionWidget, false);
+            BaseImage.updateImage(container.image, captionWidget);
     }
 
     public void setContainerCustomDesign(GContainer container, String customDesign) {

@@ -486,7 +486,7 @@ public abstract class FormsController {
 
                 Widget captionWidget = formContainer.getCaptionWidget();
                 if(captionWidget != null)
-                    BaseImage.initImageText(captionWidget, openForm.caption, openForm.appImage, false);
+                    BaseImage.initImageText(captionWidget, openForm.caption, openForm.appImage, ImageHtmlOrTextType.FORM);
 
                 formContainer.setContentLoading(asyncFormController.getEditRequestIndex());
                 formContainer.show(asyncFormController);

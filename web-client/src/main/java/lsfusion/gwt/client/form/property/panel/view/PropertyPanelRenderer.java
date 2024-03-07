@@ -47,7 +47,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
                        GFont font, String background, String foreground, Boolean readOnly, String placeholder, String pattern,
                        String regexp, String regexpMessage, String valueTooltip) {
         if(property.hasDynamicImage() && !property.isAction()) {
-            BaseImage.updateImage(image, label, property.panelCaptionVertical);
+            BaseImage.updateImage(image, label);
             image = null;
         }
 
@@ -70,8 +70,8 @@ public class PropertyPanelRenderer extends PanelRenderer {
         SizedWidget sizedLabel = null;
         if(property.caption != null) {
             label = GFormLayout.createLabelCaptionWidget();
-            BaseImage.initImageText(label, null, property.appImage, property.panelCaptionVertical);
-            label.addStyleName("panel-label");
+            BaseImage.initImageText(label, null, property.appImage, property.panelCaptionVertical ? ImageHtmlOrTextType.PANEL_CAPTION_VERT : ImageHtmlOrTextType.PANEL_CAPTION_HORZ);
+            label.addStyleName("panel-property-label");
 
             label.getElement().setAttribute("for", globalID);
             label.addDomHandler(event -> {
@@ -100,6 +100,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
         SizedWidget sizedComment = null;
         if(property.comment != null) {
             comment = GFormLayout.createLabelCaptionWidget();
+            GwtClientUtils.initCaptionHtmlOrText(comment.getElement(), property.panelCommentVertical ? CaptionHtmlOrTextType.COMMENT_VERT : CaptionHtmlOrTextType.COMMENT_HORZ);
             comment.addStyleName("panel-comment");
 
             //            setCommentText(property.comment);
@@ -168,7 +169,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
             return;
         }
 
-        BaseImage.updateText(label, text, property.panelCaptionVertical);
+        BaseImage.updateText(label, text);
     }
 
     protected void setLabelClasses(String classes) {

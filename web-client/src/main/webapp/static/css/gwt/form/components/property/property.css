@@ -44,18 +44,6 @@ a.text-based-prop-value { /* we have to set cursor pointer for a since we don't 
     cursor: pointer;
 }
 
-/* we set pre to preserve white spaces and line breaks in prop data*/
-body:not(.content-word-wrap) .text-based-prop-value { /* :not() selector without the "body" does not work because looks for any ancestor that is not an ".content-word-wrap" which is always true and css doesn't know which ancestor is the right ancestor */
-    white-space: pre;
-}
-.text-based-prop-value.text-based-prop-wrap {
-    white-space: pre-wrap;
-}
-/* when we have string and \n inside we still don't want it to wrap, so we have to set nowrap for that (we loose pre, but there is no pre-nowrap for now)*/
-.text-based-prop-value.text-based-value-multi-line:not(.text-based-prop-wrap) {
-    white-space: nowrap;
-}
-
 .prop-display-flex, .prop-display-flex.btn {
     display: flex;
 }

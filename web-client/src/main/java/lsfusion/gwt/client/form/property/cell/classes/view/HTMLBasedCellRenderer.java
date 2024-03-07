@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
 import com.google.gwt.dom.client.Element;
+import lsfusion.gwt.client.base.DataHtmlOrTextType;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
@@ -17,11 +18,13 @@ public abstract class HTMLBasedCellRenderer extends CellRenderer {
 
     @Override
     public boolean renderContent(Element element, RenderContext renderContext) {
+        GwtClientUtils.initDataHtmlOrText(element, DataHtmlOrTextType.HTML);
         return false;
     }
 
     @Override
     public boolean clearRenderContent(Element element, RenderContext renderContext) {
+        GwtClientUtils.clearDataHtmlOrText(element, DataHtmlOrTextType.HTML);
         return false;
     }
 

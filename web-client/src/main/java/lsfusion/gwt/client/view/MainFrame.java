@@ -51,7 +51,7 @@ import net.customware.gwt.dispatch.shared.Result;
 import java.io.IOException;
 import java.util.*;
 
-import static lsfusion.gwt.client.base.BaseImage.IMAGE_WIDGET;
+import static lsfusion.gwt.client.base.BaseImage.BASE_STATIC_IMAGE;
 
 // scope - every single tab (not browser) even for static
 public class MainFrame implements EntryPoint {
@@ -452,9 +452,9 @@ public class MainFrame implements EntryPoint {
             NodeList<Element> imgTextElements = GwtClientUtils.getElementsByClassName("img-text-widget");
             for(int i = 0, size = imgTextElements.getLength(); i < size; i++) {
                 Element imgTextElement = imgTextElements.getItem(i);
-                Pair<BaseImage, Boolean> baseImage = (Pair<BaseImage, Boolean>) imgTextElement.getPropertyObject(IMAGE_WIDGET);
-                if(baseImage != null && baseImage.first instanceof BaseStaticImage) // if it uses themed image
-                    BaseImage.updateImage(baseImage.first, imgTextElement, baseImage.second);
+                BaseStaticImage baseImage = (BaseStaticImage) imgTextElement.getPropertyObject(BASE_STATIC_IMAGE);
+                if(baseImage != null) // if it uses themed image
+                    BaseImage.updateImage(baseImage, imgTextElement);
             }
 
             for (ColorThemeChangeListener colorThemeChangeListener : colorThemeChangeListeners) {
@@ -528,7 +528,7 @@ public class MainFrame implements EntryPoint {
 
         FormsController.setGlobalClassName(true, useBootstrap ? "nav-bootstrap" : "nav-excel");
         FormsController.setGlobalClassName(true, mobile ? "nav-mobile" : "nav-desktop");
-        FormsController.setGlobalClassName(contentWordWrap, "content-word-wrap");
+//        FormsController.setGlobalClassName(contentWordWrap, "content-word-wrap");
 
         if (mobile) {
             if (useBootstrap) {

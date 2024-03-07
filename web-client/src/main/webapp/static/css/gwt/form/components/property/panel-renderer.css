@@ -2,18 +2,14 @@
 .propertyContainerPanel {
 }
 
-.panel-label.wrap-text-not-empty {
+.panel-property-label.wrap-text-not-empty {
     margin-left: var(--border-label-horz-padding);
     margin-right: var(--border-label-horz-padding);
 }
 
-.panel-label {
+.panel-property-label {
     margin-top: var(--border-label-vert-padding);
     margin-bottom: var(--border-label-vert-padding);
-}
-
-body:not(.content-word-wrap) .panel-label { /* :not() selector without the "body" does not work because looks for any ancestor that is not an ".content-word-wrap" which is always true and css doesn't know which ancestor is the right ancestor */
-    white-space: nowrap;
 }
 
 .panelRendererValue {

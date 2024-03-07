@@ -388,7 +388,7 @@ public abstract class GUserPreferencesDialog extends DialogModalWindow {
 
     private Label createLabel(String text) {
         Label label = new Label(text + ":");
-        label.addStyleName("panel-label wrap-text-not-empty grid-vert-center");
+        label.addStyleName("panel-property-label wrap-text-not-empty grid-vert-center");
         return label;
     }
 

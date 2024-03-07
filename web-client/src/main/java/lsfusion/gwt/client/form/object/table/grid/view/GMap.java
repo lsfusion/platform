@@ -491,9 +491,9 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
         String color = groupMarker.color;
 
         Element element = GwtClientUtils.createFocusElement("div");
-        BaseImage.initImageText(element);
-        BaseImage.updateText(element, caption, false);
-        BaseImage.updateImage(image, element, true);
+        BaseImage.initImageText(element, ImageHtmlOrTextType.MAP);
+        BaseImage.updateText(element, caption);
+        BaseImage.updateImage(image, element);
 
         if(color != null)
             setMarkerColor(element, color);

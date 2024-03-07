@@ -32,7 +32,7 @@
     padding: var(--border-comp-vert-padding) var(--border-comp-horz-padding);
 }
 
-.content-word-wrap .nav-log-panel {
+.nav-log-panel {
     white-space: nowrap;
 }
 

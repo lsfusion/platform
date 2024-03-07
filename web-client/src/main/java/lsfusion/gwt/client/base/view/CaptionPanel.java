@@ -1,13 +1,10 @@
 package lsfusion.gwt.client.base.view;
 
-import com.google.gwt.dom.client.DivElement;
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.BaseImage;
-import lsfusion.gwt.client.base.Pair;
+import lsfusion.gwt.client.base.ImageHtmlOrTextType;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
-import lsfusion.gwt.client.view.MainFrame;
 
 public class CaptionPanel extends FlexPanel {
     public final boolean border;
@@ -59,7 +56,7 @@ public class CaptionPanel extends FlexPanel {
     // custom caption panels (navigator + system dialogs)
     private static Widget createCaptionWidget(String caption, BaseImage image) {
         Widget captionWidget = GFormLayout.createLabelCaptionWidget();
-        BaseImage.initImageText(captionWidget, caption, image, false);
+        BaseImage.initImageText(captionWidget, caption, image, ImageHtmlOrTextType.OTHER);
         return captionWidget;
     }
 

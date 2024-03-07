@@ -3,12 +3,11 @@ package lsfusion.gwt.client.base.view.popup;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.HRElement;
 import com.google.gwt.dom.client.LIElement;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.CaptionHtmlOrTextType;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.view.MainFrame;
 
 public class PopupMenuItem extends SimplePanel {
@@ -56,6 +55,7 @@ public class PopupMenuItem extends SimplePanel {
         LIElement element = Document.get().createLIElement();
         // actually here should be setDataHtmlOrText with html coming from SimpleTextBasedCellEditor (in getDisplayString),
         // but a) displayString is always html, because it uses bold styling b) it needs some more refactoring, so we'll leave it this way for now
+        GwtClientUtils.initCaptionHtmlOrText(element, CaptionHtmlOrTextType.ASYNCVALUES);
         GwtClientUtils.setCaptionHtmlOrText(element, text);
         element.addClassName(interactive ? "dropdown-item" : "dropdown-item-text");
         return element;

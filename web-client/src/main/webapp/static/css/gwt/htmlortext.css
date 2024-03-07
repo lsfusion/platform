@@ -1,0 +1,34 @@
+/* all these classes are also implicitly used in imaged.html */
+
+/* collapse fallback: no collapse (white-space preserve) is gives pretty awkward behaviour in custom htmls, so we fallback it to collapse ones */
+.html-or-text-wrap,
+.html-or-text-wrap-collapse, /* optimization fallback */
+.html-or-text-wrap-wordbreak {
+    white-space: pre-wrap;
+}
+
+.html-or-text-wrap-wordbreak {
+    word-break: break-word;
+}
+
+.html-or-text,
+.html-or-text-collapse /* optimization fallback */
+{
+    white-space: pre;
+}
+
+/* optimization fallback: html-or-text-no-multi-line - optimization to prevent collapsing spaces and tabs in not multi-lines */
+/* so if we have html-or-text-no-multi-line we just fallback to the class without collapse */
+.html-or-text-wrap-collapse:not(.html-or-text-no-multi-line),
+.html-or-text-wrap-collapse.html-or-text-is-html, /* optimization collapse fallback */
+.html-or-text-wrap.html-or-text-is-html /* collapse fallback */
+{
+    white-space: normal;
+}
+
+.html-or-text-collapse:not(.html-or-text-no-multi-line),
+.html-or-text-collapse.html-or-text-is-html, /* optimization collapse fallback */
+.html-or-text.html-or-text-is-html /* collapse fallback */
+{
+    white-space: nowrap;
+}

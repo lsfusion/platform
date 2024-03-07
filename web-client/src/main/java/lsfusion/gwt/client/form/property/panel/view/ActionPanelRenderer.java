@@ -31,7 +31,7 @@ public class ActionPanelRenderer extends PanelRenderer {
     // hack, assert that render element is rendered with ActionCellRenderer
     @Override
     protected void setLabelText(String text) {
-        BaseImage.updateText(value.getRenderElement(), text, property.panelCaptionVertical);
+        BaseImage.updateText(value.getRenderElement(), text);
     }
 
     @Override

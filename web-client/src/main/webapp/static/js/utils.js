@@ -157,17 +157,54 @@ function containsHtmlTag(value) {
 }
 
 // actually it is also data, however usually it's metadata
+function initCaptionHtmlOrText(element, cssClass) {
+    initHtmlOrText(element, cssClass);
+}
+function initDataHtmlOrText(element, cssClass) {
+    initHtmlOrText(element, cssClass);
+}
+function clearDataHtmlOrText(element, cssClass) {
+    clearHtmlOrText(element, cssClass);
+}
 function setCaptionHtmlOrText(element, value) {
     setHtmlOrText(element, value, containsHtmlTag(value));
+}
+function setCaptionNodeText(node, value) {
+    setNodeText(node, value);
 }
 function setDataHtmlOrText(element, value, html) {
     setHtmlOrText(element, value, html)
 }
+
+function initHtmlOrText(element, cssClass) {
+    element.classList.add(cssClass);
+}
+function clearHtmlOrText(element, cssClass) {
+    element.classList.remove("html-or-text-no-multi-line");
+
+    element.classList.remove("html-or-text-is-html");
+
+    element.classList.remove(cssClass);
+}
+
 function setHtmlOrText(element, value, html) {
+    if(!html && value.indexOf("\n") == -1) // optimization
+        element.classList.add("html-or-text-no-multi-line");
+    else
+        element.classList.remove("html-or-text-no-multi-line");
+
+    if(html)
+        element.classList.add("html-or-text-is-html");
+    else
+        element.classList.remove("html-or-text-is-html");
+
     if(html)
         element.innerHTML = value;
     else
-        element.innerText = value; // will add linebreaks (maybe optimization of using textContent / nodeValue is possible)
+        element.textContent = value; // will add linebreaks (maybe optimization of using textContent / nodeValue is possible)
+}
+function setNodeText(node, value) {
+    node.nodeValue = value;
 }
 
 function setReadonlyNative(element, readonly) {

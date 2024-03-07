@@ -2,6 +2,7 @@ package lsfusion.gwt.client.base.view;
 
 import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.BaseImage;
+import lsfusion.gwt.client.base.ImageHtmlOrTextType;
 import lsfusion.gwt.client.form.object.table.view.GToolbarView;
 
 public abstract class ImageButton extends FormButton {
@@ -18,7 +19,7 @@ public abstract class ImageButton extends FormButton {
 
         this.vertical = vertical;
 
-        BaseImage.initImageText(this, caption, image, vertical);
+        BaseImage.initImageText(this, caption, image, this.vertical ? ImageHtmlOrTextType.BUTTON_VERT : ImageHtmlOrTextType.BUTTON_HORZ);
     }
 
     protected abstract BaseImage getImage();
@@ -26,11 +27,11 @@ public abstract class ImageButton extends FormButton {
     protected abstract boolean forceDiv();
 
     public void updateImage() {
-        BaseImage.updateImage(getImage(), this, vertical);
+        BaseImage.updateImage(getImage(), this);
     }
 
     public void updateText() {
-        BaseImage.updateText(this, getCaption(), vertical, forceDiv());
+        BaseImage.updateText(this, getCaption(), forceDiv());
     }
 
     // call before attach

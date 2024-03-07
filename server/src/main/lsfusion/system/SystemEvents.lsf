@@ -142,6 +142,7 @@ navigatorPinMode() = navigatorPinMode(currentDesignEnv());
 
 suppressOnFocusChange '{service.suppress.on.focus.change}' = DATA TBOOLEAN(CustomUser);
 contentWordWrap '{service.content.word.wrap}' = DATA TBOOLEAN(CustomUser);
+contentWordWrap = ABSTRACT BOOLEAN ();
 userFiltersManualApplyMode '{service.user.filters.manual.apply.mode}' = DATA TBOOLEAN (CustomUser);
 
 navigatorPinModeCaption = (IF navigatorPinMode()

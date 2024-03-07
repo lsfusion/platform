@@ -259,11 +259,14 @@ FORM icons_test
 
 badge(STRING badgeText) = HTML('$I{badge.html}');
 // usage example: imaged($M{myimage},'mytext', TRUE, TRUE)
-imaged(STRING imageHTML, STRING text, BOOLEAN vertical, BOOLEAN start, BOOLEAN noWrap) = HTML('$I{imaged.html}');
-badged(STRING badgeText, STRING text, BOOLEAN vertical, BOOLEAN start, BOOLEAN noWrap) = imaged(badge(badgeText), text, vertical, start, noWrap);
+imaged(STRING imageHTML, STRING text, BOOLEAN vertical, BOOLEAN start, BOOLEAN wrap, BOOLEAN collapse) = HTML('$I{imaged.html}');
+badged(STRING badgeText, STRING text, BOOLEAN vertical, BOOLEAN start, BOOLEAN wrap, BOOLEAN collapse) = imaged(badge(badgeText), text, vertical, start, wrap, collapse);
 
-imaged(STRING imageHTML, STRING text) = imaged(imageHTML, text, NULL, TRUE, TRUE);
-badged(STRING text, STRING badgeText) = badged(badgeText, text, NULL, NULL, TRUE);
+imaged(STRING imageHTML, STRING text, BOOLEAN vertical, BOOLEAN start, BOOLEAN collapse) = imaged(imageHTML, text, vertical, start, contentWordWrap(), collapse);
+badged(STRING badgeText, STRING text, BOOLEAN vertical, BOOLEAN start, BOOLEAN collapse) = badged(badgeText, text, vertical, start, contentWordWrap(), collapse);
+
+imaged(STRING imageHTML, STRING text) = imaged(imageHTML, text, NULL, TRUE, NULL);
+badged(STRING text, STRING badgeText) = badged(badgeText, text, NULL, NULL, NULL);
 
 badged(STRING text, INTEGER badgeNumber) = badged(text, STRING(badgeNumber));
 
