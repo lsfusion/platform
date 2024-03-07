@@ -1230,7 +1230,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         property.property.mapDbName = ps.field;
 
-        if(ps.isIndexed) {
+        if(ps.indexType != null) {
             addScriptedIndex(property, ps.indexName, ps.indexType);
         }
 

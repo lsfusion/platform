@@ -9,9 +9,8 @@ public class PropertySettings extends ActionOrPropertySettings {
     public String table = null;
     public String field = null;
     public boolean isMaterialized = false;
-    public boolean isIndexed = false;
-    public String indexName = null;
     public IndexType indexType = null;
+    public String indexName = null;
     public Boolean isComplex = null;
     public boolean isPreread = false;
     public Boolean isHint = null;

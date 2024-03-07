@@ -2862,7 +2862,7 @@ materializedSetting [PropertySettings ps]
 	;
 
 indexedSetting [PropertySettings ps]
-	:	'INDEXED' { ps.isIndexed = true; ps.indexType = IndexType.DEFAULT; } (dbName=stringLiteral { ps.indexName = $dbName.val; })?
+	:	'INDEXED' { ps.indexType = IndexType.DEFAULT; } (dbName=stringLiteral { ps.indexName = $dbName.val; })?
 	        (('LIKE' { ps.indexType = IndexType.LIKE; }) | ('MATCH' { ps.indexType = IndexType.MATCH; }))?
 	;
 
