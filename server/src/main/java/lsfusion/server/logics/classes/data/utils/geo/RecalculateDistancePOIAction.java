@@ -7,6 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.query.build.QueryBuilder;
+import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.ScriptingLogicsModule;
@@ -16,6 +17,7 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -34,6 +36,7 @@ public class RecalculateDistancePOIAction extends DistanceGeoAction {
         try {
 
             DataObject poiObject = context.getDataKeyValue(POIInterface);
+            boolean useTor = findProperty("useTor[]").read(context) != null;
 
             KeyExpr poiExpr = new KeyExpr("poi");
             ImRevMap<String, KeyExpr> keys = MapFact.singletonRev("poi", poiExpr);
@@ -76,14 +79,14 @@ public class RecalculateDistancePOIAction extends DistanceGeoAction {
                         count++;
                         if(count % partSize == 0) {
                             ServerLoggers.systemLogger.info(String.format("Getting distance between point %s and %s others", latLong, partSize));
-                            int[] partDistances = readDistances(partSize, latLong, destinations, 0);
+                            int[] partDistances = readDistances(partSize, latLong, destinations, useTor, 0);
                             System.arraycopy(partDistances, 0, localDistances, count - partSize, partDistances.length);
                             destinations = "";
                         }
                     }
                     if(!destinations.isEmpty()) {
                         ServerLoggers.systemLogger.info(String.format("Getting distance between point %s and %s others", latLong, count % partSize));
-                        int[] partDistances = readDistances(count % partSize, latLong, destinations, 0);
+                        int[] partDistances = readDistances(count % partSize, latLong, destinations, useTor, 0);
                         System.arraycopy(partDistances, 0, localDistances, (int) Math.floor((double) count / partSize) * partSize, partDistances.length);
                     }
                     for (int i = 0; i < points.size(); i++) {

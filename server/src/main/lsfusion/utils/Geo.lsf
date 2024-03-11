@@ -16,6 +16,7 @@ calculateUserMapProvider = DATA MapProvider ();
 calculateMapProvider = OVERRIDE calculateUserMapProvider(), MapProvider.yandex;
 showUserMapProvider = DATA MapProvider ();
 showMapProvider = OVERRIDE showUserMapProvider(), MapProvider.yandex;
+useTor '{geo.use.tor}' = DATA BOOLEAN ();
 
 nameCalculateUserMapProvider '{geo.name.calculate.user.map.provider}' () = staticCaption(calculateUserMapProvider());
 nameShowUserMapProvider '{geo.name.show.user.map.provider}' () = staticCaption(showUserMapProvider());
@@ -117,7 +118,7 @@ startPathPOI '{geo.start.path.poi}'= DATA LOCAL POI();
 calculatePath '{geo.calculate.path.poi}' INTERNAL  'lsfusion.server.logics.classes.data.utils.geo.CalculatePathAction' ();
 
 EXTEND FORM options
-    PROPERTIES() googleAutocompleteCountry, autoSynchronizeCoordinates, nameShowUserMapProvider
+    PROPERTIES() googleAutocompleteCountry, autoSynchronizeCoordinates, nameShowUserMapProvider, useTor
     OBJECTS m = MapProvider
     PROPERTIES(m) provider READONLY, apiKey READONLY, isDefault
 ;
@@ -153,6 +154,7 @@ DESIGN options {
             MOVE PROPERTY(googleAutocompleteCountry());
             MOVE PROPERTY(autoSynchronizeCoordinates());
             MOVE PROPERTY(nameShowUserMapProvider());
+            MOVE PROPERTY(useTor());
         }
     }
 }
