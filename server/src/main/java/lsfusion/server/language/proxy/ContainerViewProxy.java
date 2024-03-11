@@ -42,6 +42,10 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
         target.setCollapsible(collapsible);
     }
 
+    public void setPopup(boolean popup) {
+        target.setPopup(popup);
+    }
+
     public void setBorder(boolean border) {
         target.setBorder(border);
     }

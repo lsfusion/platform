@@ -35,6 +35,8 @@ public class GContainer extends GComponent implements HasNativeSID {
 
     public boolean collapsible;
 
+    public boolean popup;
+
     public boolean border;
 
     public boolean hasBorder() {

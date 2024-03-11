@@ -39,17 +39,21 @@ public abstract class LayoutContainerView extends GAbstractContainerView {
         super.updateLayout(requestIndex, childrenVisible);
     }
 
-    protected FlexPanel wrapBorderImpl(int index) {
+    protected Widget wrapBorderImpl(int index) {
         CaptionWidget childCaption;
         GComponent child = children.get(index);
         boolean border = child instanceof GContainer && ((GContainer) child).hasBorder();
         if(!(alignCaptions && child.isAlignCaption()) && ((childCaption = childrenCaptions.get(index)) != null || border)) {
             Widget childCaptionWidget = childCaption != null ? childCaption.widget.widget : null;
 
-            if (child instanceof GContainer && ((GContainer) child).collapsible)
-                return new CollapsiblePanel(childCaptionWidget, border, collapsed -> formController.setContainerCollapsed(container, collapsed));
-            else
-                return new CaptionPanel(childCaptionWidget, border);
+            if (child instanceof GContainer) {
+                if (((GContainer) child).popup) {
+                    return new PopupImageButton(((GContainer) child).caption, ((GContainer) child).image);
+                } else if (((GContainer) child).collapsible) {
+                    return new CollapsiblePanel(childCaptionWidget, border, collapsed -> formController.setContainerCollapsed(container, collapsed));
+                }
+            }
+            return new CaptionPanel(childCaptionWidget, border);
         }
         return null;
     }

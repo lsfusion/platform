@@ -59,6 +59,8 @@ public class ContainerView extends ComponentView {
 
     private Boolean collapsible;
 
+    private boolean popup;
+
     public boolean border;
 
     public boolean collapsed;
@@ -174,6 +176,10 @@ public class ContainerView extends ComponentView {
             return false;
 
         return isDefaultCollapsible();
+    }
+
+    public void setPopup(boolean popup) {
+        this.popup = popup;
     }
 
     public boolean getBorder() {
@@ -448,6 +454,7 @@ public class ContainerView extends ComponentView {
         AppServerImage.serialize(getImage(pool.context.view, pool.context), outStream, pool);
 
         outStream.writeBoolean(isCollapsible());
+        outStream.writeBoolean(popup);
 
         pool.writeBoolean(outStream, getBorder());
 
@@ -490,6 +497,7 @@ public class ContainerView extends ComponentView {
         caption = LocalizedString.create(pool.readString(inStream));
         
         collapsible = inStream.readBoolean();
+        popup = inStream.readBoolean();
 
 //        main = pool.readBoolean(inStream); // пока не будем делать, так как надо клиента обновлять
 

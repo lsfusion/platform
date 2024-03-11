@@ -26,7 +26,7 @@ public abstract class FormContainer {
 
     protected final FormsController formsController;
 
-    protected final GFormController contextForm;
+    public final GFormController contextForm;
 
     protected Event editEvent;
 

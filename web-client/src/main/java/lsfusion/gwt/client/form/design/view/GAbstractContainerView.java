@@ -6,6 +6,7 @@ import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
+import lsfusion.gwt.client.form.design.view.flex.PopupImageButton;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
 
 import java.util.ArrayList;
@@ -121,11 +122,16 @@ public abstract class GAbstractContainerView {
 
         // plus it's important to have auto for the view and not the flexcaptionPanel (since we don't want it to be scrolled), so there is one option left, with the same direction and 0 (or auto basis)
 
-        FlexPanel wrapPanel = wrapBorderImpl(index);
+        Widget wrapPanel = wrapBorderImpl(index);
 
         if(wrapPanel != null) {
-            // 1 1 auto
-            wrapPanel.addFillShrink(view);
+            if(wrapPanel instanceof FlexPanel) {
+                // 1 1 auto
+                ((FlexPanel)wrapPanel).addFillShrink(view);
+            } else {
+                //popup
+                ((PopupImageButton) wrapPanel).setClickHandler(view);
+            }
             view = wrapPanel;
         }
 
@@ -186,7 +192,7 @@ public abstract class GAbstractContainerView {
     }
 
     protected abstract void addImpl(int index);
-    protected abstract FlexPanel wrapBorderImpl(int index);
+    protected abstract Widget wrapBorderImpl(int index);
     protected abstract void removeImpl(int index, GComponent child);
     public abstract Widget getView();
 }

@@ -24,6 +24,7 @@ public class ClientContainer extends ClientComponent {
     public String name;
     public AppImage image;
     public boolean collapsible;
+    public boolean popup;
 
     public boolean border;
 
@@ -61,6 +62,7 @@ public class ClientContainer extends ClientComponent {
         pool.writeString(outStream, caption);
         
         outStream.writeBoolean(collapsible);
+        outStream.writeBoolean(popup);
 
         pool.writeBoolean(outStream, horizontal);
         pool.writeBoolean(outStream, tabbed);
@@ -92,6 +94,7 @@ public class ClientContainer extends ClientComponent {
         image = pool.readImageIcon(inStream);
 
         collapsible = inStream.readBoolean();
+        popup = inStream.readBoolean();
 
         border = inStream.readBoolean();
 

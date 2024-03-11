@@ -155,7 +155,7 @@ public class GFormLayout extends ResizableComplexPanel {
             alreadyInitialized = formCaptionWidgetAsync.second;
         } else
             captionWidget = createContainerCaptionWidget(container.container,
-                    container.caption != null || container.collapsible);
+                    container.caption != null || container.popup || container.collapsible);
 
         if (captionWidget != null) {
             addTooltip(captionWidget, container);
