@@ -366,6 +366,11 @@ evalServer(TEXT code) {
 showError = DATA LOCAL BOOLEAN();
 openedFormId = DATA STRING();
 
+userChanged(CustomUser user) {
+    user(currentConnection()) <- user;
+    userChanged() <- TRUE;
+}
+
 evalInAllCurrentConnections(TEXT code, TEXT param) {
     FOR connectionStatus(Connection connection) == ConnectionStatus.connectedConnection DO {
         NEWSESSION {

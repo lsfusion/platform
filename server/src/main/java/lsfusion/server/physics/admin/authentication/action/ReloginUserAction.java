@@ -6,7 +6,6 @@ import lsfusion.interop.action.UserChangedClientAction;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.language.ScriptingErrorLog;
-import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
@@ -27,9 +26,8 @@ public class ReloginUserAction extends InternalAction {
         DataObject user = context.getSingleDataKeyValue();
         if (context.getSession().user.changeCurrentUser(user, context.stack)) {
             context.delayUserInterfaction(new UserChangedClientAction());
-            ScriptingLogicsModule authenticationLM = context.getBL().getModule("Authentication");
             try {
-                authenticationLM.findProperty("userChanged[]").change(true, context);
+                context.getBL().systemEventsLM.findAction("userChanged[CustomUser]").execute(context, user);
             } catch (ScriptingErrorLog.SemanticErrorException e) {
                 throw ExceptionUtils.propagate(e, SQLException.class);
             }
