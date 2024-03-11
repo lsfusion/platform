@@ -636,7 +636,7 @@ evalServer(TEXT code) {
 showError = DATA LOCAL BOOLEAN();
 openedFormId = DATA STRING();
 
-changeUser(CustomUser user) {
+userChanged(CustomUser user) {
     user(currentConnection()) <- user;
     userChanged() <- TRUE;
 }

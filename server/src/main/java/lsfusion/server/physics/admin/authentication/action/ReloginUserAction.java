@@ -27,7 +27,7 @@ public class ReloginUserAction extends InternalAction {
         if (context.getSession().user.changeCurrentUser(user, context.stack)) {
             context.delayUserInterfaction(new UserChangedClientAction());
             try {
-                context.getBL().systemEventsLM.findAction("changeUser[CustomUser]").execute(context, user);
+                context.getBL().systemEventsLM.findAction("userChanged[CustomUser]").execute(context, user);
             } catch (ScriptingErrorLog.SemanticErrorException e) {
                 throw ExceptionUtils.propagate(e, SQLException.class);
             }
