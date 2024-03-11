@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.Event;
@@ -11,8 +12,8 @@ import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.property.PValue;
-import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
+import lsfusion.gwt.client.form.property.cell.controller.EndReason;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
@@ -53,15 +54,22 @@ public class PopupForm extends EditingForm {
 
     private FormContainer prevForm;
 
+    JavaScriptObject tippy;
+
     @Override
     public void show(GAsyncFormController asyncFormController) {
         prevForm = MainFrame.getAssertCurrentForm();
         if(prevForm != null) // if there were no currentForm
             prevForm.onBlur(false);
 
-        GwtClientUtils.showTippyPopup(null, parentElement, formWidget, () -> cellEditor.commit(parentElement));
+        tippy = GwtClientUtils.showTippyPopup(null, parentElement, formWidget, () -> cellEditor.commit(parentElement));
 
         onFocus(true);
+    }
+
+    @Override
+    public void hide(EndReason editFormCloseReason) {
+        GwtClientUtils.hideTippyPopup(tippy);
     }
 
     @Override
