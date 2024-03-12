@@ -180,6 +180,7 @@ public class ContainerView extends ComponentView {
 
     public void setPopup(boolean popup) {
         this.popup = popup;
+        this.collapsed = popup;
     }
 
     public boolean getBorder() {

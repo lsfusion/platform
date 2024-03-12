@@ -1,17 +1,13 @@
 package lsfusion.gwt.client.form.design.view.flex;
 
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.BaseImage;
 import lsfusion.gwt.client.base.view.CaptionPanel;
 import lsfusion.gwt.client.base.view.CollapsiblePanel;
-import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.CaptionWidget;
 import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
-import lsfusion.gwt.client.form.design.view.TabbedContainerView;
-import lsfusion.gwt.client.view.MainFrame;
 
 public abstract class LayoutContainerView extends GAbstractContainerView {
     protected final GFormController formController;
@@ -48,7 +44,7 @@ public abstract class LayoutContainerView extends GAbstractContainerView {
 
             if (child instanceof GContainer) {
                 if (((GContainer) child).popup) {
-                    return new PopupImageButton(((GContainer) child).caption, ((GContainer) child).image);
+                    return childCaptionWidget;
                 } else if (((GContainer) child).collapsible) {
                     return new CollapsiblePanel(childCaptionWidget, border, collapsed -> formController.setContainerCollapsed(container, collapsed));
                 }

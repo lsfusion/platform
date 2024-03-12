@@ -118,12 +118,15 @@ public class GFormLayout extends ResizableComplexPanel {
     }
 
 
-    public static Widget createContainerCaptionWidget(GContainer parentContainer, boolean hasBorder) {
+    public static Widget createContainerCaptionWidget(GFormController form, GContainer parentContainer, boolean isPopup, boolean hasBorder) {
         if (parentContainer != null && parentContainer.tabbed) {
             return createTabCaptionWidget();
         } else {
-            if (hasBorder)
+            if (isPopup) {
+                return new PopupButton(form);
+            } else if (hasBorder) {
                 return MainFrame.useBootstrap ? new SimpleWidget("h6") : new LabelWidget();
+            }
         }
         return null;
     }
@@ -154,8 +157,8 @@ public class GFormLayout extends ResizableComplexPanel {
             captionWidget = formCaptionWidgetAsync.first;
             alreadyInitialized = formCaptionWidgetAsync.second;
         } else
-            captionWidget = createContainerCaptionWidget(container.container,
-                    container.caption != null || container.popup || container.collapsible);
+            captionWidget = createContainerCaptionWidget(form, container.container,
+                    container.popup, container.caption != null || container.collapsible);
 
         if (captionWidget != null) {
             addTooltip(captionWidget, container);

@@ -6,7 +6,6 @@ import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
-import lsfusion.gwt.client.form.design.view.flex.PopupImageButton;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
 
 import java.util.ArrayList;
@@ -130,7 +129,7 @@ public abstract class GAbstractContainerView {
                 ((FlexPanel)wrapPanel).addFillShrink(view);
             } else {
                 //popup
-                ((PopupImageButton) wrapPanel).setClickHandler(view);
+                ((PopupButton) wrapPanel).setClickHandler(container, view);
             }
             view = wrapPanel;
         }
