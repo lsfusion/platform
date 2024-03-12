@@ -58,13 +58,15 @@ public class PopupForm extends EditingForm {
 
     @Override
     public void show(GAsyncFormController asyncFormController) {
-        prevForm = MainFrame.getAssertCurrentForm();
-        if(prevForm != null) // if there were no currentForm
-            prevForm.onBlur(false);
+        if (contextForm == null || contextForm.isVisible()) {
+            prevForm = MainFrame.getAssertCurrentForm();
+            if (prevForm != null) // if there were no currentForm
+                prevForm.onBlur(false);
 
-        tippy = GwtClientUtils.showTippyPopup(null, parentElement, formWidget, () -> cellEditor.commit(parentElement));
+            tippy = GwtClientUtils.showTippyPopup(null, parentElement, formWidget, () -> cellEditor.commit(parentElement));
 
-        onFocus(true);
+            onFocus(true);
+        }
     }
 
     @Override
