@@ -11,10 +11,10 @@ public class PopupButton extends FormButton {
 
     private GFormController formController;
     public PopupButton(GFormController formController) {
-        super(Document.get().createAnchorElement());
+        super(Document.get().createPushButtonElement());
         this.formController = formController;
 
-        addStyleName("nav-link navbar-text");
+        addStyleName("btn popup-panel-button");
     }
 
     public void setClickHandler(GContainer container, Widget widget) {
