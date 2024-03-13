@@ -4,6 +4,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.i18n.client.LocaleInfo;
+import lsfusion.gwt.client.base.BaseImage;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -85,6 +86,15 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
                     changeDateProperties(info);
                 }
             },
+            eventContent: function (arg) {
+                var image = arg.event.extendedProps.image;
+                var caption = arg.event.extendedProps.caption;
+
+                var html = image != null ? image : '';
+                html += caption != null ? caption : '';
+
+                return html.trim().length > 0 ? {html: html} : arg.event.title;
+            },
             datesSet: function () {
                 var filterLeftBorder = parseCalendarDateElement(calendar.view.activeStart);
                 var filterRightBorder = parseCalendarDateElement(calendar.view.activeEnd);
@@ -151,6 +161,8 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
     private class Event {
 
         public final String title;
+        public final String caption;
+        public final BaseImage image;
         public final String start;
         public final String end;
         public final boolean editable;
@@ -168,6 +180,8 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
             String endEventFieldName = calendarDateType.contains("From") ? calendarDateType.replace("From", "To") : null;
 
             title = getTitle(object);
+            caption = getCaption(object);
+            image = getImage(object);
             start = getStart(object, calendarDateType);
             end = endEventFieldName != null ? getEnd(object, endEventFieldName): null;
             editable = isEditable(object, controller, calendarDateType, endEventFieldName);
@@ -366,7 +380,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
     }-*/;
 
     private JavaScriptObject createJsEvent(Event event, boolean isCurrentKey){
-        return createEventAsJs(event.title, event.start, event.end, event.editable, event.durationEditable,
+        return createEventAsJs(event.title, event.caption, event.image, event.start, event.end, event.editable, event.durationEditable,
                 event.allDay, event.key, event.startFieldName, event.endFieldName, event.index, event.object, isCurrentKey, event.backgroundColor, event.foregroundColor);
     }
 
@@ -378,11 +392,13 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
         return COLUMN_CLASS + (isCurrentKey ? " event-highlight" : "");
     }
 
-    protected native JavaScriptObject createEventAsJs(String title, String start, String end, boolean editable, boolean durationEditable, boolean allDay, GGroupObjectValue key,
-                                                      String startFieldName, String endFieldName, int index, JavaScriptObject object, boolean  isCurrentKey,
-                                                      String backgroundColor, String foregroundColor)/*-{
+    protected native JavaScriptObject createEventAsJs(String title, String caption, BaseImage image, String start, String end, boolean editable, boolean durationEditable,
+                                                      boolean allDay, GGroupObjectValue key, String startFieldName, String endFieldName, int index, JavaScriptObject object,
+                                                      boolean  isCurrentKey, String backgroundColor, String foregroundColor)/*-{
         return {
             title: title,
+            caption: caption,
+            image: image,
             start: start,
             end: end,
             editable: editable,

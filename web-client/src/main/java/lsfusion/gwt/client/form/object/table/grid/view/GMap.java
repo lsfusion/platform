@@ -414,19 +414,6 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
         return element.polygon;
     }-*/;
 
-    public static BaseImage createImage(String url) {
-        return new AppLinkImage(url);
-    }
-
-    protected static native String getCaption(JavaScriptObject element)/*-{
-        return element.caption;
-    }-*/;
-
-    // icon - deprecated
-    protected static native BaseImage getImage(JavaScriptObject element)/*-{
-        return element.image ? element.image : (element.icon ? @GMap::createImage(*)(element.icon) : null);
-    }-*/;
-
     // name - deprecated
     protected native static String getName(JavaScriptObject element)/*-{
         return element.tooltip ? element.tooltip.toString() : (element.name ? element.name.toString() : null);

@@ -7,6 +7,8 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.AppBaseImage;
+import lsfusion.gwt.client.base.AppLinkImage;
+import lsfusion.gwt.client.base.BaseImage;
 import lsfusion.gwt.client.base.GAsync;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
@@ -922,6 +924,15 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                 return thisObj.@GSimpleStateTableView::getDropdownParent(*)();
             }
         };
+    }-*/;
+
+    protected static native String getCaption(JavaScriptObject element)/*-{
+        return element.caption;
+    }-*/;
+
+    // icon - deprecated
+    protected static native BaseImage getImage(JavaScriptObject element)/*-{
+        return element.image ? element.image : (element.icon ? @AppLinkImage::new(Ljava/lang/String;)(element.icon) : null);
     }-*/;
 
     protected Element getDropdownParent() {
