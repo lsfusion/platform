@@ -29,7 +29,7 @@ public abstract class GAbstractContainerView {
         vertical = container.isVertical();
     }
 
-    public void add(GComponent child, final ComponentWidget view) {
+    public void add(GComponent child, final ComponentWidget view, ResizableComplexPanel attachContainer) {
         assert child != null && view != null && container.children.contains(child);
 
         int index = relativePosition(child, container.children, children);
@@ -50,12 +50,12 @@ public abstract class GAbstractContainerView {
 
         children.add(index, child);
         childrenCaptions.add(index, view.caption);
-        childrenViews.add(index, view.widget.override(wrapAndOverflowView(index, widget, fixFlexBasis)));
+        childrenViews.add(index, view.widget.override(wrapAndOverflowView(index, widget, attachContainer, fixFlexBasis)));
 
         addImpl(index);
     }
 
-    private Widget wrapAndOverflowView(int index, Widget view, boolean fixFlexBasis) {
+    private Widget wrapAndOverflowView(int index, Widget view, ResizableComplexPanel attachContainer, boolean fixFlexBasis) {
         // border should be used by linear container (just like tab does)
 
         // stretch means flex : 1, with basis either 0 (default in css - 1 1 0), either auto (1 0 auto, what we want to get if we want to "push scroll" to the upper container)
@@ -129,7 +129,7 @@ public abstract class GAbstractContainerView {
                 ((FlexPanel)wrapPanel).addFillShrink(view);
             } else {
                 //popup
-                ((PopupButton) wrapPanel).setClickHandler(container, view);
+                ((PopupButton) wrapPanel).setClickHandler(container, view, attachContainer);
             }
             view = wrapPanel;
         }

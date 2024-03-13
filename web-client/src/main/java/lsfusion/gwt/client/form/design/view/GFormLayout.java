@@ -220,7 +220,7 @@ public class GFormLayout extends ResizableComplexPanel {
 
         GAbstractContainerView containerView;
         if(key.container != null && (containerView = containerViews.get(key.container)) != null) { // container can be null when component should be layouted manually, containerView can be null when it is removed 
-            containerView.add(key, view);
+            containerView.add(key, view, attachContainer);
 
             maybeAddDefaultFocusReceiver(key, focusReceiver);
         }

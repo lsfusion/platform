@@ -4,6 +4,7 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.FormButton;
+import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GContainer;
 
@@ -17,9 +18,9 @@ public class PopupButton extends FormButton {
         addStyleName("btn popup-panel-button");
     }
 
-    public void setClickHandler(GContainer container, Widget widget) {
+    public void setClickHandler(GContainer container, Widget widget, ResizableComplexPanel attachContainer) {
+        attachContainer.add(widget);
         addClickHandler(clickEvent -> {
-            formController.getFormLayout().attachContainer.add(widget);
             GwtClientUtils.showTippyPopup(formController.getWidget(), getElement(), widget.getElement(), () -> {
                 formController.setContainerCollapsed(container, true);
             });
