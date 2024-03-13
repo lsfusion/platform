@@ -26,7 +26,7 @@ public abstract class FormContainer {
 
     protected final FormsController formsController;
 
-    public final GFormController contextForm;
+    protected final GFormController contextForm;
 
     protected Event editEvent;
 
@@ -55,6 +55,10 @@ public abstract class FormContainer {
 
     protected FormContainer getContainerForm() { // hack
         return this;
+    }
+
+    public GFormController getContextForm() {
+        return contextForm;
     }
 
     public void onAsyncInitialized() {

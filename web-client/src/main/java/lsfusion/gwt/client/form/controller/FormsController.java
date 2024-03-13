@@ -553,6 +553,20 @@ public abstract class FormsController {
         }
     }
 
+    public void hidePopupForms(GFormController contextForm) {
+        if(contextForm != null) {
+            ListIterator<FormContainer> iterator = formContainers.listIterator();
+            while (iterator.hasNext()) {
+                FormContainer formContainer = iterator.next();
+                if (contextForm.equals(formContainer.getContextForm())) {
+                    hidePopupForms(formContainer.getForm());
+                    formContainer.hide(null);
+                    iterator.remove();
+                }
+            }
+        }
+    }
+
     public FormDockable findForm(String formCanonicalName) {
         return findInList(forms, dockable -> dockable.getCanonicalName() != null && dockable.getCanonicalName().equals(formCanonicalName));
     }
