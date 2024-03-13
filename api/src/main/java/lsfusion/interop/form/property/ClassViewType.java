@@ -1,7 +1,7 @@
 package lsfusion.interop.form.property;
 
 public enum ClassViewType {
-    PANEL, TOOLBAR, LIST;
+    PANEL, TOOLBAR, POPUP, LIST;
 
     public static ClassViewType DEFAULT = LIST;
     
@@ -11,6 +11,10 @@ public enum ClassViewType {
 
     public boolean isToolbar() {
         return this == TOOLBAR;
+    }
+
+    public boolean isPopup() {
+        return this == POPUP;
     }
 
     public boolean isList() {

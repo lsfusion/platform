@@ -595,6 +595,14 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return toDraw != null && toDraw.viewType.isToolbar();
     }
 
+    public boolean isPopup(FormEntity formEntity) {
+        if (viewType != null)
+            return viewType.isPopup();
+
+        GroupObjectEntity toDraw = getToDraw(formEntity);
+        return toDraw != null && toDraw.viewType.isPopup();
+    }
+
     public boolean isList(FormInstanceContext context) {
         return isList(context.entity);
     }

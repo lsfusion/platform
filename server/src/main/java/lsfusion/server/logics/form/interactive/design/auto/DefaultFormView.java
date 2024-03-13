@@ -75,6 +75,9 @@ public class DefaultFormView extends FormView {
     protected final Map<PropertyGroupContainerView, ContainerView> toolbarContainers = synchronizedMap(new HashMap<>());
     public ContainerView getToolbarPropsContainer(PropertyDrawEntity property, Version version) { return toolbarContainers.get(getPropertyContainer(property, version)); }
 
+    protected final Map<PropertyGroupContainerView, ContainerView> popupContainers = synchronizedMap(new HashMap<>());
+    public ContainerView getPopupPropsContainer(PropertyDrawEntity property, Version version) { return popupContainers.get(getPropertyContainer(property, version)); }
+
     protected transient final Map<PropertyGroupContainerView, ContainerView> toolbarLeftContainers = synchronizedMap(new HashMap<>());
     protected transient final Map<PropertyGroupContainerView, ContainerView> toolbarRightContainers = synchronizedMap(new HashMap<>());
 
@@ -90,6 +93,7 @@ public class DefaultFormView extends FormView {
     public ContainerView toolbarLeftContainer;
     public ContainerView toolbarRightContainer;
     public ContainerView toolbarContainer;
+    public ContainerView popupContainer;
 
     private ContainerFactory<ContainerView> containerFactory = () -> new ContainerView(idGenerator.idShift());
 
@@ -121,6 +125,9 @@ public class DefaultFormView extends FormView {
 
         toolbarContainer = formSet.getToolbarContainer();
         registerComponent(toolbarContainers, toolbarContainer, null, version);
+
+        popupContainer = formSet.getPopupContainer();
+        registerComponent(popupContainers, popupContainer, null, version);
 
         panelContainer = formSet.getPanelContainer();
         registerComponent(panelContainers, panelContainer, null, version);
@@ -185,6 +192,10 @@ public class DefaultFormView extends FormView {
         return GroupObjectContainerSet.TOOLBAR_CONTAINER + "(" + goName + ")";
     }
 
+    public static String getPopupContainerSID(String goName) {
+        return GroupObjectContainerSet.POPUP_CONTAINER + "(" + goName + ")";
+    }
+
     public static String getGOGroupContainerSID(String goName) {
         return GroupObjectContainerSet.GROUP_CONTAINER + "(" + goName + ")";
     }
@@ -215,6 +226,10 @@ public class DefaultFormView extends FormView {
 
     public static String getToolbarContainerSID() {
         return FormContainerSet.TOOLBAR_CONTAINER;
+    }
+
+    public static String getPopupContainerSID() {
+        return FormContainerSet.POPUP_CONTAINER;
     }
 
     private void initFormButtons(Version version) {
@@ -280,6 +295,7 @@ public class DefaultFormView extends FormView {
             registerComponent(toolbarRightContainers, groupSet.getToolbarRightContainer(), groupObject, version);
             registerComponent(filterGroupsContainers, groupSet.getFilterGroupsContainer(), groupObject, version);
             registerComponent(toolbarContainers, groupSet.getToolbarContainer(), groupObject, version);
+            registerComponent(popupContainers, groupSet.getPopupContainer(), groupObject, version);
 
             if (groupObject.entity.isPanel()) { // если groupObject идет в панель, то grid'а быть не может, и если box не выставить не 0, он не будет брать весь размер
                 groupSet.getBoxContainer().setFlex(0);
@@ -312,6 +328,7 @@ public class DefaultFormView extends FormView {
         registerComponent(toolbarRightContainers, treeSet.getToolbarRightContainer(), treeGroup, version);
         registerComponent(filterGroupsContainers, treeSet.getFilterGroupsContainer(), treeGroup, version);
         registerComponent(toolbarContainers, treeSet.getToolbarContainer(), treeGroup, version);
+        registerComponent(popupContainers, treeSet.getPopupContainer(), treeGroup, version);
 
 //        for (GroupObjectEntity group : treeGroup.entity.getGroups()) {
 //            ContainerView groupContainer = boxContainers.get(mgroupObjects.get(group));
@@ -332,6 +349,8 @@ public class DefaultFormView extends FormView {
         ContainerView propertyContainer;
         if (propertyDraw.entity.isToolbar(entity)) {
             propertyContainer = getToolbarPropsContainer(drawEntity, version);
+        } else if (propertyDraw.entity.isPopup(entity)) {
+            propertyContainer = getPopupPropsContainer(drawEntity, version);
         } else {
             propertyContainer = getPropGroupContainer(drawEntity, propertyDraw.entity.getNFGroup(version), version);
         }
