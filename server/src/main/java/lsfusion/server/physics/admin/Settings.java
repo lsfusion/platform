@@ -3059,4 +3059,14 @@ public class Settings implements Cloneable {
     public void setTooltipDelay(int tooltipDelay) {
         this.tooltipDelay = tooltipDelay;
     }
+
+    private int maxColumnsInPlainImportExport = 256;
+
+    public int getMaxColumnsInPlainImportExport() {
+        return maxColumnsInPlainImportExport;
+    }
+
+    public void setMaxColumnsInPlainImportExport(int maxColumnsInPlainImportExport) {
+        this.maxColumnsInPlainImportExport = maxColumnsInPlainImportExport;
+    }
 }
