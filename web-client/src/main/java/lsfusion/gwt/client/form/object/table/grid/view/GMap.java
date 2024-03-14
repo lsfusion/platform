@@ -51,8 +51,8 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
             name = getName(object);
             color = getMarkerColor(object);
             line = getLine(object);
-            caption = getCaption(object);
-            image = getImage(object);
+            caption = getCaption(object, javaScriptObject -> null);
+            image = getImage(object, () -> StaticImage.MARKER);
 
             latitude = getLatitude(object);
             longitude = getLongitude(object);
@@ -470,18 +470,9 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
     }-*/;
 
     protected void updateIcon(GroupMarker groupMarker, JavaScriptObject marker) {
+        Element element = createImageCaptionElement(groupMarker.image, groupMarker.caption, ImageHtmlOrTextType.MAP);
 
-        BaseImage image = groupMarker.image;
-        String caption = groupMarker.caption;
-        if(image == null && caption == null)
-            image = StaticImage.MARKER;
         String color = groupMarker.color;
-
-        Element element = GwtClientUtils.createFocusElement("div");
-        BaseImage.initImageText(element, ImageHtmlOrTextType.MAP);
-        BaseImage.updateText(element, caption);
-        BaseImage.updateImage(image, element);
-
         if(color != null)
             setMarkerColor(element, color);
         element.setAttribute(COLUMN_ATTRIBUTE, "");

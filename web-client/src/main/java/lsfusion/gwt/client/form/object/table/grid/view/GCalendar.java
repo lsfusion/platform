@@ -64,6 +64,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
     }-*/;
 
     protected native JavaScriptObject createCalendar(Element element, JavaScriptObject controller, String calendarDateType, String locale)/*-{
+        var thisObj = this;
         var calendar = new $wnd.FullCalendar.Calendar(element, {
             initialView: 'dayGridMonth',
             height: 'parent',
@@ -87,13 +88,9 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
                 }
             },
             eventContent: function (arg) {
-                var image = arg.event.extendedProps.image;
-                var caption = arg.event.extendedProps.caption;
-
-                var html = image != null ? image : '';
-                html += caption != null ? caption : '';
-
-                return html.trim().length > 0 ? {html: html} : arg.event.title;
+                return {
+                    domNodes: [thisObj.@GCalendar::createImageCaptionElement(*)(arg.event.extendedProps.image, arg.event.extendedProps.caption, @lsfusion.gwt.client.base.ImageHtmlOrTextType::OTHER)]
+                };
             },
             datesSet: function () {
                 var filterLeftBorder = parseCalendarDateElement(calendar.view.activeStart);
@@ -180,8 +177,8 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
             String endEventFieldName = calendarDateType.contains("From") ? calendarDateType.replace("From", "To") : null;
 
             title = getTitle(object);
-            caption = getCaption(object);
-            image = getImage(object);
+            caption = getCaption(object, GCalendar.this::getTitle);
+            image = getImage(object, () -> null);
             start = getStart(object, calendarDateType);
             end = endEventFieldName != null ? getEnd(object, endEventFieldName): null;
             editable = isEditable(object, controller, calendarDateType, endEventFieldName);
