@@ -89,7 +89,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
             },
             eventContent: function (arg) {
                 return {
-                    domNodes: [thisObj.@GCalendar::createImageCaptionElement(*)(arg.event.extendedProps.image, arg.event.extendedProps.caption, @lsfusion.gwt.client.base.ImageHtmlOrTextType::OTHER)]
+                    domNodes: [thisObj.@GCalendar::createImageCaptionElement(*)(arg.event.extendedProps.image, arg.event.extendedProps.caption, @lsfusion.gwt.client.base.ImageHtmlOrTextType::CALENDAR)]
                 };
             },
             datesSet: function () {
