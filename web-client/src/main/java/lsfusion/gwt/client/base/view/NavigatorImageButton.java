@@ -1,8 +1,10 @@
 package lsfusion.gwt.client.base.view;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.NativeEvent;
 import lsfusion.gwt.client.base.BaseImage;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
@@ -35,6 +37,8 @@ public class NavigatorImageButton extends ImageButton {
         update();
     }
 
+    private JavaScriptObject tippy;
+
     private void update() {
         addStyleName((vertical ? "nav-link-vert" : "nav-link-horz") + "-" + level);
         if(active)
@@ -61,7 +65,11 @@ public class NavigatorImageButton extends ImageButton {
                 return element.creationPath;
             }
         };
-        TooltipManager.initTooltip(this.getElement(), tooltipHelper);
+        tippy = TooltipManager.initTooltip(this.getElement(), tooltipHelper);
+    }
+
+    public void destroyTooltip() {
+        GwtClientUtils.hideTippyPopup(tippy);
     }
 
     private final boolean vertical;

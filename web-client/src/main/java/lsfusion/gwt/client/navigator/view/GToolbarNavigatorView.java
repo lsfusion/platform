@@ -33,6 +33,10 @@ public class GToolbarNavigatorView extends GNavigatorView<GToolbarNavigatorWindo
 
     @Override
     public void refresh(LinkedHashSet<GNavigatorElement> newElements) {
+        for(int i = 0, size = panel.getWidgetCount(); i < size; i++) {
+            ((NavigatorImageButton) panel.getWidget(i)).destroyTooltip();
+        }
+
         Result<Integer> index = new Result<>(0);
         for (GNavigatorElement newElement : newElements) {
             if (!newElements.contains(newElement.parent)) { // only root components, since children are added recursively
