@@ -4,6 +4,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.design.view.flex.FlexTabbedPanel;
+import lsfusion.client.form.design.view.widget.PopupButton;
 import lsfusion.client.form.design.view.widget.ScrollPaneWidget;
 import lsfusion.client.form.design.view.widget.Widget;
 
@@ -67,13 +68,17 @@ public abstract class AbstractClientContainerView implements ClientContainerView
         if((!(isOppositeAutoSized && isAutoSized) || child.shrink || child.alignShrink || fixFlexBasis)) // child is tab, since basis is fixed, strictly speaking this all check is an optimization
             view = wrapOverflowAuto(view, vertical ? !isOppositeAutoSized : !isAutoSized, vertical ? !isAutoSized : !isOppositeAutoSized);
 
-        FlexPanel wrapPanel = wrapBorderImpl(child);
+        Widget wrapPanel = wrapBorderImpl(child);
         if(wrapPanel != null) {
-            wrapPanel.setDebugContainer(wrapDebugContainer("BORDER", view));
-            // one of the main problem is that stretch (opposite direction) can give you flex-basis 0, and "appropriate" auto size, but with flex (main direction) you can not obtain this effect (actually we can by setting shrink !!!!), so we have to look at size
-            // now since we have auto size we'll use the option without shrink
-            wrapPanel.addFillFlex(view, isAutoSized ? null : 0); // we need zero basis, because overflow:auto is set for a view (not for this panel), and with auto size view will overflow this captionpanel
-            // wrapPanel.addFillStretch could also be used in theory
+            if(wrapPanel instanceof FlexPanel) {
+                wrapPanel.setDebugContainer(wrapDebugContainer("BORDER", view));
+                // one of the main problem is that stretch (opposite direction) can give you flex-basis 0, and "appropriate" auto size, but with flex (main direction) you can not obtain this effect (actually we can by setting shrink !!!!), so we have to look at size
+                // now since we have auto size we'll use the option without shrink
+                ((FlexPanel) wrapPanel).addFillFlex(view, isAutoSized ? null : 0); // we need zero basis, because overflow:auto is set for a view (not for this panel), and with auto size view will overflow this captionpanel
+                // wrapPanel.addFillStretch could also be used in theory
+            } else {
+                ((PopupButton) wrapPanel).setClickHandler(container, view);
+            }
             view = wrapPanel;
         }
 
@@ -156,7 +161,7 @@ public abstract class AbstractClientContainerView implements ClientContainerView
     @Override
     public abstract Widget getView();
     protected abstract void addImpl(int index, ClientComponent child, Widget view);
-    protected abstract FlexPanel wrapBorderImpl(ClientComponent child);
+    protected abstract Widget wrapBorderImpl(ClientComponent child);
     protected abstract void removeImpl(int index, ClientComponent child);
 
     public abstract void updateCaption(ClientContainer clientContainer);
