@@ -581,7 +581,7 @@ pushAction (BOOLEAN system, BOOLEAN notificate)  {
 }
 
 pushNotification (CustomUser user, BOOLEAN system, BOOLEAN notificate) + { 
-    FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection AND conn != currentConnection() DO {
+    FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection AND (NOT currentConnection() OR conn != currentConnection()) DO {
         NEWSESSION { 
             NEWTHREAD pushAction(system AS BOOLEAN, notificate AS BOOLEAN); 
                       CONNECTION conn; 
