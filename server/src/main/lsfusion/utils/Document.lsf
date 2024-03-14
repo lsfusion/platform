@@ -777,10 +777,10 @@ END
 
 // -- Price
 META defineDocumentDetailPriceCustomPrefix (detail, prefix, caption)
-    prefix###price '{document.price}'###caption = DATA NUMERIC[16,4] (###detail) CHARWIDTH 7;
+    prefix###price '{document.price}'###caption = DATA NUMERIC[16,4] (###detail) CHARWIDTH 7 PATTERN '#,##0.00##';
 END
 META defineDocumentAbstractDetailPriceCustomPrefix (detail, prefix, caption)
-    prefix###price '{document.price}'###caption = ABSTRACT NUMERIC[16,4] (###detail) CHARWIDTH 7 MATERIALIZED;
+    prefix###price '{document.price}'###caption = ABSTRACT NUMERIC[16,4] (###detail) CHARWIDTH 7 MATERIALIZED PATTERN '#,##0.00##';
 END
 META defineDocumentInterfaceDetailPriceCustomPrefix (detail, prefix, caption)
     @defineDocumentAbstractDetailPriceCustomPrefix(detail, prefix, caption);
@@ -820,10 +820,10 @@ END
 
 // -- Sum
 META defineDocumentDetailSumCustom (detail, currencyProp)
-    sum '{document.sum.detail}' (###detail detail) = NUMERIC[18,4](round((quantity(detail) * price(detail)), currencyProp(detail))) CHARWIDTH 9;
+    sum '{document.sum.detail}' (###detail detail) = NUMERIC[18,4](round((quantity(detail) * price(detail)), currencyProp(detail))) CHARWIDTH 9 PATTERN '#,##0.00##';
 END
 META defineDocumentDetailSumCustomRound (detail, roundProp)
-    sum###detail '{document.sum.detail}' (detail) = NUMERIC[18,4](round((quantity###detail(detail) * price###detail(detail)), roundProp###detail(detail))) CHARWIDTH 9;
+    sum###detail '{document.sum.detail}' (detail) = NUMERIC[18,4](round((quantity###detail(detail) * price###detail(detail)), roundProp###detail(detail))) CHARWIDTH 9 PATTERN '#,##0.00##';
 END
 META defineDocumentDetailSumCustom (detail)
     @defineDocumentDetailSumCustom(detail, currency);
@@ -856,10 +856,10 @@ END
 
 //--
 META defineDocumentDetailDataSumCustomPrefix (detail, prefix, caption)
-    prefix###sum '{document.sum.of}'###caption = DATA NUMERIC[18,4] (###detail) CHARWIDTH 9;
+    prefix###sum '{document.sum.of}'###caption = DATA NUMERIC[18,4] (###detail) CHARWIDTH 9 PATTERN '#,##0.00##';
 END
 META defineDocumentAbstractDetailDataSumCustomPrefix (detail, prefix, caption)
-    prefix###sum '{document.sum.of}'###caption = ABSTRACT NUMERIC[18,4] (###detail) CHARWIDTH 9 MATERIALIZED;
+    prefix###sum '{document.sum.of}'###caption = ABSTRACT NUMERIC[18,4] (###detail) CHARWIDTH 9 MATERIALIZED PATTERN '#,##0.00##';
 END
 
 META defineDocumentInterfaceDetailDataSumCustomPrefix (detail, prefix, caption)
@@ -905,7 +905,7 @@ END
 
 // Header total
 META defineDocumentHeaderSumCustom (object, detail, caption)
-    sum###detail '{document.sum.of}'###caption (object) = GROUP SUM sum(###detail idetail) BY object(idetail) CHARWIDTH 10 IN documentSum;
+    sum###detail '{document.sum.of}'###caption (object) = GROUP SUM sum(###detail idetail) BY object(idetail) CHARWIDTH 10 IN documentSum PATTERN '#,##0.00##';
 END
 META defineDocumentInterfaceHeaderSumCustom (object, detail, caption)
     @defineDocumentHeaderSumCustom (object, detail, caption);
@@ -929,7 +929,7 @@ META defineDocumentInterfaceHeaderSum (object)
 END
 
 META defineDocumentHeaderSumCustomPrefix (object, detail, prefix, caption)
-    prefix###sum###detail '{document.sum.of}'###caption (object) = GROUP SUM prefix###sum(###detail idetail) BY object(idetail) CHARWIDTH 10 IN documentSum;
+    prefix###sum###detail '{document.sum.of}'###caption (object) = GROUP SUM prefix###sum(###detail idetail) BY object(idetail) CHARWIDTH 10 IN documentSum PATTERN '#,##0.00##';
 END
 META defineDocumentInterfaceHeaderSumCustomPrefix (object, detail, prefix, caption)
     @defineDocumentHeaderSumCustomPrefix(object, detail, prefix, caption);
@@ -945,7 +945,7 @@ META defineDocumentInterfaceHeaderSumPrefix (object, prefix, caption)
 END
 
 META defineDocumentDetailDiffSumCustomPrefix (detail, prop, prefixA, prefixB, caption)
-    diff###prop '{document.sum.of} '###caption (###detail detail) =  prefixA###prop(detail) (-) prefixB###prop(detail);
+    diff###prop '{document.sum.of} '###caption (###detail detail) =  prefixA###prop(detail) (-) prefixB###prop(detail) PATTERN '#,##0.00##';
 END
 
 META defineDocumentInterfaceDetailDiffSumCustomPrefix (detail, prop, prefixA, prefixB, caption)
