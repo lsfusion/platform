@@ -24,6 +24,7 @@
 
 .fc-h-event .fc-event-main, .fc-v-event .fc-event-main {
     color: var(--text-color);
+    display: flex;
 }
 
 .fc .fc-timegrid .fc-col-header {
