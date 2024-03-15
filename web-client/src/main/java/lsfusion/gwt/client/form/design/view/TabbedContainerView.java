@@ -33,7 +33,7 @@ public class TabbedContainerView extends GAbstractContainerView {
     }
 
     @Override
-    protected FlexPanel wrapBorderImpl(int index) {
+    protected Widget wrapBorderImpl(int index) {
 //      this wrapping is necessary because:
 //          we want border around the container
 //          we want padding (not margin) to be "scrolled"

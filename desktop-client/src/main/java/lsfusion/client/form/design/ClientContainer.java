@@ -23,7 +23,12 @@ public class ClientContainer extends ClientComponent {
     public String caption;
     public String name;
     public AppImage image;
+
+    public String captionClass;
+    public String valueClass;
+
     public boolean collapsible;
+    public boolean popup;
 
     public boolean border;
 
@@ -61,6 +66,7 @@ public class ClientContainer extends ClientComponent {
         pool.writeString(outStream, caption);
         
         outStream.writeBoolean(collapsible);
+        outStream.writeBoolean(popup);
 
         pool.writeBoolean(outStream, horizontal);
         pool.writeBoolean(outStream, tabbed);
@@ -91,7 +97,11 @@ public class ClientContainer extends ClientComponent {
         name = pool.readString(inStream);
         image = pool.readImageIcon(inStream);
 
+        captionClass = pool.readString(inStream);
+        valueClass = pool.readString(inStream);
+
         collapsible = inStream.readBoolean();
+        popup = inStream.readBoolean();
 
         border = inStream.readBoolean();
 
@@ -279,6 +289,46 @@ public class ClientContainer extends ClientComponent {
 
         public byte getType() {
             return PropertyReadType.CONTAINER_IMAGE;
+        }
+    };
+
+    public final ClientPropertyReader captionClassReader = new ClientPropertyReader() {
+        public ClientGroupObject getGroupObject() {
+            return null;
+        }
+
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
+            assert BaseUtils.singleKey(readKeys).isEmpty();
+            Object containerCaption = BaseUtils.singleValue(readKeys);
+//            controller.getFormController().setContainerImage(ClientContainer.this, containerCaption != null ? containerCaption.toString() : null);
+        }
+
+        public int getID() {
+            return ClientContainer.this.getID();
+        }
+
+        public byte getType() {
+            return PropertyReadType.CONTAINER_CAPTIONCLASS;
+        }
+    };
+
+    public final ClientPropertyReader valueClassReader = new ClientPropertyReader() {
+        public ClientGroupObject getGroupObject() {
+            return null;
+        }
+
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
+            assert BaseUtils.singleKey(readKeys).isEmpty();
+            Object containerCaption = BaseUtils.singleValue(readKeys);
+//            controller.getFormController().setContainerImage(ClientContainer.this, containerCaption != null ? containerCaption.toString() : null);
+        }
+
+        public int getID() {
+            return ClientContainer.this.getID();
+        }
+
+        public byte getType() {
+            return PropertyReadType.CONTAINER_VALUECLASS;
         }
     };
 

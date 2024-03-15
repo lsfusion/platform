@@ -31,6 +31,9 @@ public class ContainerView extends ComponentView {
     public String name; // actually used only for icons
     public AppServerImage.Reader image;
 
+    public String captionClass;
+    public String valueClass;
+
     public void setImage(String imagePath, FormView formView) {
         image = AppServerImage.createContainerImage(imagePath, this, formView);
     }
@@ -58,6 +61,8 @@ public class ContainerView extends ComponentView {
     }
 
     private Boolean collapsible;
+
+    private boolean popup;
 
     public boolean border;
 
@@ -127,12 +132,18 @@ public class ContainerView extends ComponentView {
 
     // extras
     public PropertyObjectEntity<?> propertyCaption;
+    public PropertyObjectEntity<?> propertyCaptionClass;
+    public PropertyObjectEntity<?> propertyValueClass;
     public PropertyObjectEntity<?> propertyImage;
     public PropertyObjectEntity<?> propertyCustomDesign;
     public PropertyObjectEntity<?> getExtra(ContainerViewExtraType type) {
         switch (type) {
             case CAPTION:
                 return propertyCaption;
+            case CAPTIONCLASS:
+                return propertyCaptionClass;
+            case VALUECLASS:
+                return propertyValueClass;
             case IMAGE:
                 return propertyImage;
             case CUSTOM:
@@ -174,6 +185,11 @@ public class ContainerView extends ComponentView {
             return false;
 
         return isDefaultCollapsible();
+    }
+
+    public void setPopup(boolean popup) {
+        this.popup = popup;
+        this.collapsed = popup;
     }
 
     public boolean getBorder() {
@@ -395,7 +411,7 @@ public class ContainerView extends ComponentView {
     }
 
     protected boolean hasPropertyComponent() {
-        return super.hasPropertyComponent() || propertyCaption != null || propertyImage != null || propertyCustomDesign != null;
+        return super.hasPropertyComponent() || propertyCaption != null || propertyCaptionClass != null || propertyValueClass != null || propertyImage != null || propertyCustomDesign != null;
     }
     public void fillPropertyComponents(MExclSet<ComponentView> mComponents) {
         super.fillPropertyComponents(mComponents);
@@ -447,7 +463,11 @@ public class ContainerView extends ComponentView {
         pool.writeString(outStream, name); // optimization
         AppServerImage.serialize(getImage(pool.context.view, pool.context), outStream, pool);
 
+        pool.writeString(outStream, captionClass);
+        pool.writeString(outStream, valueClass);
+
         outStream.writeBoolean(isCollapsible());
+        outStream.writeBoolean(popup);
 
         pool.writeBoolean(outStream, getBorder());
 
@@ -490,6 +510,7 @@ public class ContainerView extends ComponentView {
         caption = LocalizedString.create(pool.readString(inStream));
         
         collapsible = inStream.readBoolean();
+        popup = inStream.readBoolean();
 
 //        main = pool.readBoolean(inStream); // пока не будем делать, так как надо клиента обновлять
 

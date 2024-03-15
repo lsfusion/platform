@@ -12,7 +12,7 @@ public class EscapeUtils {
     public static Widget toHTML(String plainString) {
         DivWidget widget = new DivWidget();
         Element element = widget.getElement();
-        GwtClientUtils.initCaptionHtmlOrText(element, CaptionHtmlOrTextType.MESSAGE);
+        GwtClientUtils.initCaptionHtmlOrText(element, CaptionHtmlOrTextType.MESSAGE); // maybe should be treated as Data
         GwtClientUtils.setCaptionHtmlOrText(element, plainString);
         return widget;
     }

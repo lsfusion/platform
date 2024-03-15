@@ -19,6 +19,7 @@ public class TreeGroupContainerSet {
     private ContainerView toolbarRightContainer;
     private ContainerView filterGroupsContainer;
     private ContainerView toolbarContainer;
+    private ContainerView popupContainer;
 
     public ContainerView getBoxContainer() {
         return boxContainer;
@@ -55,6 +56,10 @@ public class TreeGroupContainerSet {
         return toolbarContainer;
     }
 
+    public ContainerView getPopupContainer() {
+        return popupContainer;
+    }
+
     public static TreeGroupContainerSet create(TreeGroupView treeGroup, ContainerFactory<ContainerView> factory, Version version) {
         TreeGroupContainerSet set = new TreeGroupContainerSet();
         String sid = treeGroup.getPropertyGroupContainerSID();
@@ -79,6 +84,11 @@ public class TreeGroupContainerSet {
 
         set.toolbarContainer = factory.createContainer(); // контейнер тулбара
         set.toolbarContainer.setSID(DefaultFormView.getToolbarContainerSID(sid));
+
+        set.popupContainer = factory.createContainer();
+        set.popupContainer.setSID(DefaultFormView.getPopupContainerSID(sid));
+        set.popupContainer.setPopup(true);
+        set.popupContainer.setImage("bi bi-three-dots-vertical", null);
 
         set.filterGroupsContainer = factory.createContainer(); // контейнер фильтров
         set.filterGroupsContainer.setSID(DefaultFormView.getFilterGroupsContainerSID(sid));
@@ -119,6 +129,7 @@ public class TreeGroupContainerSet {
         set.toolbarRightContainer.setChildrenAlignment(FlexAlignment.END);
         set.toolbarRightContainer.add(set.filterGroupsContainer, version);
         set.toolbarRightContainer.add(set.toolbarContainer, version);
+        set.toolbarRightContainer.add(set.popupContainer, version);
 
         set.filterGroupsContainer.setHorizontal(true);
         set.filterGroupsContainer.setAlignment(FlexAlignment.STRETCH);

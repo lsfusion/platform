@@ -652,6 +652,7 @@ formGroupObjectViewType returns [ClassViewType type, ListViewType listType, Pivo
 groupObjectClassViewType returns [ClassViewType type, ListViewType listType, PivotOptions options, String customRenderFunction, FormLPUsage customOptions, String mapTileProvider]
 	:   'PANEL' {$type = ClassViewType.PANEL;}
 	|   'TOOLBAR' {$type = ClassViewType.TOOLBAR;}
+	|   'POPUP' {$type = ClassViewType.POPUP;}
 	|   'GRID' {$type = ClassViewType.LIST;}
     |	lType=listViewType { $listType = $lType.type; $options = $lType.options;
                                           $customRenderFunction = $lType.customRenderFunction; $customOptions = $lType.customOptions;
@@ -662,6 +663,7 @@ propertyClassViewType returns [ClassViewType type]
 	:   'PANEL' {$type = ClassViewType.PANEL;}
 	|   'GRID' {$type = ClassViewType.LIST;}
 	|   'TOOLBAR' {$type = ClassViewType.TOOLBAR;}
+	|   'POPUP' {$type = ClassViewType.POPUP;}
 	;
 
 propertyCustomView returns [String customRenderFunction, String customEditorFunction, String selectFunction]
@@ -5170,7 +5172,7 @@ formContainersComponentSelector returns [String sid]
 
 componentSingleSelectorType
     :
-    	'BOX' | 'OBJECTS' | 'TOOLBARBOX' | 'TOOLBARLEFT' | 'TOOLBARRIGHT' | 'TOOLBAR' | 'PANEL'
+    	'BOX' | 'OBJECTS' | 'TOOLBARBOX' | 'TOOLBARLEFT' | 'TOOLBARRIGHT' | 'TOOLBAR' | 'POPUP' | 'PANEL'
     ;
 
 groupObjectTreeSelector returns [String sid]

@@ -14,6 +14,7 @@ public class FormContainerSet {
             public static final String TOOLBARLEFT_CONTAINER = "TOOLBARLEFT";
             public static final String TOOLBARRIGHT_CONTAINER = "TOOLBARRIGHT";
                 public static final String TOOLBAR_CONTAINER = "TOOLBAR";
+                public static final String POPUP_CONTAINER = "POPUP";
 
     private ContainerView mainContainer;
     private ContainerView objectsContainer;
@@ -23,6 +24,7 @@ public class FormContainerSet {
     private ContainerView toolbarLeftContainer;
     private ContainerView toolbarRightContainer;
     private ContainerView toolbarContainer;
+    private ContainerView popupContainer;
 
     public ContainerView getMainContainer() {
         return mainContainer;
@@ -54,6 +56,10 @@ public class FormContainerSet {
 
     public ContainerView getToolbarContainer() {
         return toolbarContainer;
+    }
+
+    public ContainerView getPopupContainer() {
+        return popupContainer;
     }
 
     public static FormContainerSet fillContainers(ContainerView mainContainer, ContainerFactory<ContainerView> contFactory, Version version) {
@@ -105,6 +111,15 @@ public class FormContainerSet {
         set.toolbarRightContainer.add(set.toolbarContainer, version);
         set.toolbarBoxContainer.add(set.toolbarLeftContainer, version);
         set.toolbarBoxContainer.add(set.toolbarRightContainer, version);
+
+        set.popupContainer = contFactory.createContainer();
+        set.popupContainer.setSID(DefaultFormView.getPopupContainerSID());
+        set.popupContainer.setPopup(true);
+        set.popupContainer.setImage("bi bi-three-dots-vertical", null);
+        set.popupContainer.valueClass = "remove-btn-all-mb";
+
+        set.toolbarRightContainer.add(set.popupContainer, version);
+
         set.mainContainer.add(set.panelContainer, version);
         set.mainContainer.add(set.objectsContainer, version);
         set.mainContainer.add(set.toolbarBoxContainer, version);

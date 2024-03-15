@@ -1,17 +1,13 @@
 package lsfusion.gwt.client.form.design.view.flex;
 
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.BaseImage;
 import lsfusion.gwt.client.base.view.CaptionPanel;
 import lsfusion.gwt.client.base.view.CollapsiblePanel;
-import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.CaptionWidget;
 import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
-import lsfusion.gwt.client.form.design.view.TabbedContainerView;
-import lsfusion.gwt.client.view.MainFrame;
 
 public abstract class LayoutContainerView extends GAbstractContainerView {
     protected final GFormController formController;
@@ -39,17 +35,21 @@ public abstract class LayoutContainerView extends GAbstractContainerView {
         super.updateLayout(requestIndex, childrenVisible);
     }
 
-    protected FlexPanel wrapBorderImpl(int index) {
+    protected Widget wrapBorderImpl(int index) {
         CaptionWidget childCaption;
         GComponent child = children.get(index);
         boolean border = child instanceof GContainer && ((GContainer) child).hasBorder();
         if(!(alignCaptions && child.isAlignCaption()) && ((childCaption = childrenCaptions.get(index)) != null || border)) {
             Widget childCaptionWidget = childCaption != null ? childCaption.widget.widget : null;
 
-            if (child instanceof GContainer && ((GContainer) child).collapsible)
-                return new CollapsiblePanel(childCaptionWidget, border, collapsed -> formController.setContainerCollapsed(container, collapsed));
-            else
-                return new CaptionPanel(childCaptionWidget, border);
+            if (child instanceof GContainer) {
+                if (((GContainer) child).popup) {
+                    return childCaptionWidget;
+                } else if (((GContainer) child).collapsible) {
+                    return new CollapsiblePanel(childCaptionWidget, border, collapsed -> formController.setContainerCollapsed(container, collapsed));
+                }
+            }
+            return new CaptionPanel(childCaptionWidget, border);
         }
         return null;
     }

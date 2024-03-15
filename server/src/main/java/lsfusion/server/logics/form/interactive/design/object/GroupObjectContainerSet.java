@@ -21,6 +21,7 @@ public class GroupObjectContainerSet {
                 public static final String FILTERGROUPS_CONTAINER = "FILTERGROUPS";
                     public static final String FILTERGROUP_COMPONENT = "FILTERGROUP";
                 public static final String TOOLBAR_CONTAINER = "TOOLBAR";
+                public static final String POPUP_CONTAINER = "POPUP";
         public static final String PANEL_CONTAINER = "PANEL";
             public static final String GROUP_CONTAINER = "GROUP";
     
@@ -33,6 +34,7 @@ public class GroupObjectContainerSet {
     private ContainerView toolbarRightContainer;
     private ContainerView filterGroupsContainer;
     private ContainerView toolbarContainer;
+    private ContainerView popupContainer;
 
     public ContainerView getBoxContainer() {
         return boxContainer;
@@ -70,6 +72,10 @@ public class GroupObjectContainerSet {
         return toolbarContainer;
     }
 
+    public ContainerView getPopupContainer() {
+        return popupContainer;
+    }
+
     public static GroupObjectContainerSet create(GroupObjectView group, ContainerFactory<ContainerView> factory, Version version) {
 
         GroupObjectContainerSet set = new GroupObjectContainerSet();
@@ -95,6 +101,11 @@ public class GroupObjectContainerSet {
 
         set.toolbarContainer = factory.createContainer(); // контейнер тулбара
         set.toolbarContainer.setSID(DefaultFormView.getToolbarContainerSID(sid));
+
+        set.popupContainer = factory.createContainer();
+        set.popupContainer.setSID(DefaultFormView.getPopupContainerSID(sid));
+        set.popupContainer.setPopup(true);
+        set.popupContainer.setImage("bi bi-three-dots-vertical", null);
 
         set.filterGroupsContainer = factory.createContainer(); // контейнер фильтров
         set.filterGroupsContainer.setSID(DefaultFormView.getFilterGroupsContainerSID(sid));
@@ -137,6 +148,7 @@ public class GroupObjectContainerSet {
         set.toolbarRightContainer.add(set.filterGroupsContainer, version);
         set.filterGroupsContainer.setAlignment(FlexAlignment.STRETCH);
         set.toolbarRightContainer.add(set.toolbarContainer, version);
+        set.toolbarRightContainer.add(set.popupContainer, version);
         set.toolbarContainer.setAlignment(FlexAlignment.STRETCH);
 
         set.filterGroupsContainer.setHorizontal(true);

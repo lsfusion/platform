@@ -139,7 +139,10 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         container.caption = clientContainer.caption;
         container.name = clientContainer.name;
         container.image = createImage(clientContainer.image, false);
+        container.captionClass = clientContainer.captionClass;
+        container.valueClass = clientContainer.valueClass;
         container.collapsible = clientContainer.collapsible;
+        container.popup = clientContainer.popup;
         container.border = clientContainer.border;
         container.horizontal = clientContainer.horizontal;
         container.tabbed = clientContainer.tabbed;

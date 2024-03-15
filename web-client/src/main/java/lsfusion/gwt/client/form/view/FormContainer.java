@@ -57,6 +57,10 @@ public abstract class FormContainer {
         return this;
     }
 
+    public GFormController getContextForm() {
+        return contextForm;
+    }
+
     public void onAsyncInitialized() {
         assert !async;
         // if it's an active form setting focus

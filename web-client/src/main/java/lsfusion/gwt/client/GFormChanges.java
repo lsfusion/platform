@@ -10,6 +10,7 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyReader;
 import lsfusion.gwt.client.form.property.GPropertyReaderDTO;
 import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.interop.form.property.PropertyReadType;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -134,6 +135,10 @@ public class GFormChanges {
                 return form.findContainerByID(readerId).captionReader;
             case GPropertyReadType.CONTAINER_IMAGE:
                 return form.findContainerByID(readerId).imageReader;
+            case PropertyReadType.CONTAINER_CAPTIONCLASS:
+                return form.findContainerByID(readerId).captionClassReader;
+            case PropertyReadType.CONTAINER_VALUECLASS:
+                return form.findContainerByID(readerId).valueClassReader;
             case GPropertyReadType.CUSTOM:
                 return form.findContainerByID(readerId).customDesignReader;
             case GPropertyReadType.COMPONENT_SHOWIF:
@@ -200,5 +205,7 @@ public class GFormChanges {
         public final static byte REGEXP = 25;
         public final static byte REGEXPMESSAGE = 26;
         public final static byte CELL_FONT = 27;
+        public final static byte CONTAINER_CAPTIONCLASS = 28;
+        public final static byte CONTAINER_VALUECLASS = 29;
     }
 }

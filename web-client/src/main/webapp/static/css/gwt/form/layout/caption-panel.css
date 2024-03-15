@@ -91,3 +91,8 @@
 
 .caption-panel-body {
 }
+
+.popup-panel-button.wrap-text-not-empty,
+.popup-panel-button.wrap-img-start {
+    margin: var(--border-comp-vert-padding) var(--border-comp-horz-padding);
+}

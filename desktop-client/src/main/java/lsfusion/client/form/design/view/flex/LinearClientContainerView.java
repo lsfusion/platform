@@ -4,10 +4,8 @@ import lsfusion.client.base.view.ClientColorUtils;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
-import lsfusion.client.form.design.view.AbstractClientContainerView;
-import lsfusion.client.form.design.view.CaptionPanel;
-import lsfusion.client.form.design.view.CollapsiblePanel;
-import lsfusion.client.form.design.view.FlexPanel;
+import lsfusion.client.form.design.view.*;
+import lsfusion.client.form.design.view.widget.PopupButton;
 import lsfusion.client.form.design.view.widget.Widget;
 import lsfusion.interop.base.view.FlexAlignment;
 
@@ -142,10 +140,12 @@ public class LinearClientContainerView extends AbstractClientContainerView {
     }
 
     @Override
-    protected FlexPanel wrapBorderImpl(ClientComponent child) {
+    protected Widget wrapBorderImpl(ClientComponent child) {
         if (child instanceof ClientContainer) {
             ClientContainer childContainer = (ClientContainer) child;
-            if (childContainer.collapsible) {
+            if(childContainer.popup) {
+                return new PopupButton(formController);
+            } else if (childContainer.collapsible) {
                 return new CollapsiblePanel(formController, childContainer, vertical);
             } else if (childContainer.caption != null) {
                 return new CaptionPanel(childContainer.caption, vertical);

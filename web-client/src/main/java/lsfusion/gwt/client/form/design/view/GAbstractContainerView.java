@@ -29,7 +29,7 @@ public abstract class GAbstractContainerView {
         vertical = container.isVertical();
     }
 
-    public void add(GComponent child, final ComponentWidget view) {
+    public void add(GComponent child, final ComponentWidget view, ResizableComplexPanel attachContainer) {
         assert child != null && view != null && container.children.contains(child);
 
         int index = relativePosition(child, container.children, children);
@@ -50,12 +50,12 @@ public abstract class GAbstractContainerView {
 
         children.add(index, child);
         childrenCaptions.add(index, view.caption);
-        childrenViews.add(index, view.widget.override(wrapAndOverflowView(index, widget, fixFlexBasis)));
+        childrenViews.add(index, view.widget.override(wrapAndOverflowView(index, widget, attachContainer, fixFlexBasis)));
 
         addImpl(index);
     }
 
-    private Widget wrapAndOverflowView(int index, Widget view, boolean fixFlexBasis) {
+    private Widget wrapAndOverflowView(int index, Widget view, ResizableComplexPanel attachContainer, boolean fixFlexBasis) {
         // border should be used by linear container (just like tab does)
 
         // stretch means flex : 1, with basis either 0 (default in css - 1 1 0), either auto (1 0 auto, what we want to get if we want to "push scroll" to the upper container)
@@ -114,6 +114,9 @@ public abstract class GAbstractContainerView {
         if((child.getHeight() != null || (vertical ? shrink : alignShrink) || fixFlexBasis) && !shrinkOverflowVisible)
             view.getElement().addClassName("comp-shrink-vert");
 
+        if(child instanceof GContainer)
+            GFormLayout.updateComponentClass(((GContainer) child).valueClass, view, "value");
+
         // we need to do "caption wrapping" before auto size wrap since we want border to wrap all auto sized container
         // for auto size wrapping (below) - vertical direction and 0 (not auto (!)) flex-basis OR !vertical direction and auto (not 0 !) flex-basis will do for auto size (overflow:auto can be for panel and view itself)
         // for no auto size wrapping - either we need flex-basis 0 (not auto (!)) (any direction) and overflow:auto for a view, or flex-basis any (any direction) and overflow:auto for caption panel (not view)
@@ -121,15 +124,17 @@ public abstract class GAbstractContainerView {
 
         // plus it's important to have auto for the view and not the flexcaptionPanel (since we don't want it to be scrolled), so there is one option left, with the same direction and 0 (or auto basis)
 
-        FlexPanel wrapPanel = wrapBorderImpl(index);
+        Widget wrapPanel = wrapBorderImpl(index);
 
         if(wrapPanel != null) {
-            // 1 1 auto
-            wrapPanel.addFillShrink(view);
+            if(wrapPanel instanceof FlexPanel)
+                ((FlexPanel)wrapPanel).addFillShrink(view);
+            else // popup
+                ((PopupButton) wrapPanel).setContent(container, view, attachContainer);
             view = wrapPanel;
         }
 
-        BaseImage.updateClasses(view, child.elementClass);
+        GFormLayout.updateComponentClass(child.elementClass, view, BaseImage.emptyPostfix);
 
         return view;
     }
@@ -161,6 +166,11 @@ public abstract class GAbstractContainerView {
         return index != -1 ? childrenViews.get(index).widget : null;
     }
 
+    public Widget getCaptionView(GComponent child) {
+        int index = children.indexOf(child);
+        return index != -1 ? childrenCaptions.get(index).widget.widget : null;
+    }
+
     public interface UpdateLayoutListener {
         void updateLayout(long requestIndex);
     }
@@ -186,7 +196,7 @@ public abstract class GAbstractContainerView {
     }
 
     protected abstract void addImpl(int index);
-    protected abstract FlexPanel wrapBorderImpl(int index);
+    protected abstract Widget wrapBorderImpl(int index);
     protected abstract void removeImpl(int index, GComponent child);
     public abstract Widget getView();
 }
