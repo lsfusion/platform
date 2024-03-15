@@ -11,6 +11,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.classes.data.StringClass;
+import lsfusion.server.physics.admin.Settings;
 
 import java.io.IOException;
 
@@ -82,7 +83,7 @@ public abstract class ImportMatrixIterator extends ImportPlainIterator {
 
     protected abstract boolean isLastValue(Integer fieldIndex);
 
-    public final static ImOrderMap<String, Integer> nameToIndexColumnsMapping = ListFact.consecutiveList(256, 0).mapOrderKeys(ImportMatrixIterator::nameToIndex);
+    public final static ImOrderMap<String, Integer> nameToIndexColumnsMapping = ListFact.consecutiveList(Settings.get().getMaxColumnsInPlainImportExport(), 0).mapOrderKeys(ImportMatrixIterator::nameToIndex);
 
     private static String nameToIndex(int index) {
         String columnName = "";
