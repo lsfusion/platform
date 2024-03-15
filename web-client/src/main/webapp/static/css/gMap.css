@@ -28,6 +28,7 @@
 
 .leaflet-popup-content-wrapper {
     border-radius: unset;
+    overflow: auto;
 }
 
 .leaflet-bar {

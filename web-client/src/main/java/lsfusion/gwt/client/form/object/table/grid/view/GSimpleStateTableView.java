@@ -7,8 +7,10 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.AppBaseImage;
+import lsfusion.gwt.client.base.BaseImage;
 import lsfusion.gwt.client.base.GAsync;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.ImageHtmlOrTextType;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
@@ -42,6 +44,8 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static lsfusion.gwt.client.base.view.grid.DataGrid.initSinkEvents;
@@ -152,7 +156,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
                 GGroupObjectValue fullKey = key != null ? GGroupObjectValue.getFullKey(key, columnKey) : GGroupObjectValue.EMPTY;
 
-                rowValues.push(convertToJSValue(property, propValues.get(fullKey), RendererType.SIMPLE, !(this instanceof GMap))); // we want images in map
+                rowValues.push(convertToJSValue(property, propValues.get(fullKey), RendererType.SIMPLE, !(this instanceof GMap) && !(this instanceof GCalendar))); // we want images in map and calendar
             }
         }
         rowValues.push(fromObject(key));
@@ -923,6 +927,33 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             }
         };
     }-*/;
+
+    protected static String getCaption(JavaScriptObject element, Function<JavaScriptObject, String> defaultCaption) {
+        String elementCaption = getElementCaption(element);
+        return elementCaption != null ? elementCaption : defaultCaption.apply(element);
+    }
+
+    protected static BaseImage getImage(JavaScriptObject element, Supplier<BaseImage> defaultImage) {
+        BaseImage elementImage = getElementImage(element);
+        return elementImage != null ? elementImage : defaultImage.get();
+    }
+
+    private static native String getElementCaption(JavaScriptObject element)/*-{
+        return element.caption;
+    }-*/;
+
+    // icon - deprecated
+    private static native BaseImage getElementImage(JavaScriptObject element)/*-{
+        return element.image ? element.image : (element.icon ? @lsfusion.gwt.client.base.AppLinkImage::new(Ljava/lang/String;)(element.icon) : null);
+    }-*/;
+
+    protected Element createImageCaptionElement(BaseImage image, String caption, ImageHtmlOrTextType type) {
+        Element element = GwtClientUtils.createFocusElement("div");
+        BaseImage.initImageText(element, type);
+        BaseImage.updateText(element, caption);
+        BaseImage.updateImage(image, element);
+        return element;
+    }
 
     protected Element getDropdownParent() {
         return form.getDropdownParent();

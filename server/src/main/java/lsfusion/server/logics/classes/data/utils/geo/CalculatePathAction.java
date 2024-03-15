@@ -34,7 +34,6 @@ public class CalculatePathAction extends DistanceGeoAction {
 
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
         try {
-            boolean useTor = findProperty("useTor[]").read(context) != null;
 
             KeyExpr poiExpr = new KeyExpr("poi");
             ImRevMap<String, KeyExpr> keys = MapFact.singletonRev("poi", poiExpr);
@@ -99,7 +98,7 @@ public class CalculatePathAction extends DistanceGeoAction {
                                             count++;
                                             if (count % partSize == 0) {
                                                 ServerLoggers.systemLogger.info(String.format("Getting distance between point %s and %s others", i + 1, partSize));
-                                                int[] partDistances = readDistances(partSize, points.get(i), destinations, useTor, 0);
+                                                int[] partDistances = readDistances(partSize, points.get(i), destinations, 0);
                                                 for (int k = 0; k < partDistances.length; k++) {
                                                     localDistances[queryIndices.get(k)] = partDistances[k]; 
                                                 }
@@ -111,7 +110,7 @@ public class CalculatePathAction extends DistanceGeoAction {
                                 }
                                 if (!destinations.isEmpty()) {
                                     ServerLoggers.systemLogger.info(String.format("Getting distance between point %s and %s, others", i + 1, count % partSize));
-                                    int[] partDistances = readDistances(count % partSize, points.get(i), destinations, useTor, 0);
+                                    int[] partDistances = readDistances(count % partSize, points.get(i), destinations, 0);
                                     for (int k = 0; k < partDistances.length; k++) {
                                         localDistances[queryIndices.get(k)] = partDistances[k];
                                     }

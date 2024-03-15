@@ -9,6 +9,7 @@ public class ImageHtmlOrTextType extends CaptionHtmlOrTextType {
     public static final ImageHtmlOrTextType ACTION_HORZ = new ImageHtmlOrTextType(); // action caption
 
     public static final ImageHtmlOrTextType MAP = new ImageHtmlOrTextType(); // map
+    public static final ImageHtmlOrTextType CALENDAR = new ImageHtmlOrTextType(); // calendar
 
     public static final ImageHtmlOrTextType FORM = new ImageHtmlOrTextType();
     public static final ImageHtmlOrTextType CONTAINER = new ImageHtmlOrTextType();
@@ -24,7 +25,7 @@ public class ImageHtmlOrTextType extends CaptionHtmlOrTextType {
 
     @Override
     protected boolean isWrap() {
-        return super.isWrap() || this == MAP || this == GRID_CAPTION || this == PANEL_CAPTION_VERT;
+        return super.isWrap() || this == MAP || this == CALENDAR || this == GRID_CAPTION || this == PANEL_CAPTION_VERT;
     }
 
     @Override

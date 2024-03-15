@@ -3281,4 +3281,14 @@ public class Settings implements Cloneable {
     public void setContentWordWrap(boolean contentWordWrap) {
         this.contentWordWrap = contentWordWrap;
     }
+
+    private int maxColumnsInPlainImportExport = 256;
+
+    public int getMaxColumnsInPlainImportExport() {
+        return maxColumnsInPlainImportExport;
+    }
+
+    public void setMaxColumnsInPlainImportExport(int maxColumnsInPlainImportExport) {
+        this.maxColumnsInPlainImportExport = maxColumnsInPlainImportExport;
+    }
 }
