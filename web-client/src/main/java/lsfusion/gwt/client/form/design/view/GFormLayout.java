@@ -161,6 +161,8 @@ public class GFormLayout extends ResizableComplexPanel {
                     container.popup, container.caption != null || container.collapsible);
 
         if (captionWidget != null) {
+            updateComponentClass(container.captionClass, captionWidget, "caption");
+
             addTooltip(captionWidget, container);
 
             String caption = container.caption;
@@ -207,10 +209,33 @@ public class GFormLayout extends ResizableComplexPanel {
     public void setElementClass(GComponent component, String elementClass) {
         component.elementClass = elementClass;
 
-        Widget widget = component instanceof GContainer ? containerViews.get((GContainer) component).getView() : baseComponentViews.get(component);
-        if(widget != null) {
-            BaseImage.updateClasses(widget, component.elementClass);
-        }
+        Widget widget = containerViews.get(component.container).getChildView(component);
+//        if(widget != null) {
+            updateComponentClass(elementClass, widget, BaseImage.emptyPostfix);
+//        }
+    }
+
+    public void setCaptionClass(GContainer component, String elementClass) {
+        component.captionClass = elementClass;
+
+        Widget widget = containerViews.get(component.container).getCaptionView(component);
+//        if(widget != null) {
+            updateComponentClass(elementClass, widget, "caption");
+//        }
+    }
+
+    public void setValueClass(GContainer component, String valueClass) {
+        component.valueClass = valueClass;
+
+//        Widget widget = component instanceof GContainer ? containerViews.get((GContainer) component).getView() : baseComponentViews.get(component);
+        Widget widget = containerViews.get(component).getView();
+//        if(widget != null) {
+            updateComponentClass(valueClass, widget, "value");
+//        }
+    }
+
+    public static void updateComponentClass(String elementClass, Widget widget, String postfix) {
+        BaseImage.updateClasses(widget.getElement(), elementClass, postfix);
     }
 
     public void add(GComponent key, ComponentWidget view, DefaultFocusReceiver focusReceiver) {

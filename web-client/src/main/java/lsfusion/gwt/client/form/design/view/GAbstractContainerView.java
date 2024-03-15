@@ -114,6 +114,9 @@ public abstract class GAbstractContainerView {
         if((child.getHeight() != null || (vertical ? shrink : alignShrink) || fixFlexBasis) && !shrinkOverflowVisible)
             view.getElement().addClassName("comp-shrink-vert");
 
+        if(child instanceof GContainer)
+            GFormLayout.updateComponentClass(((GContainer) child).valueClass, view, "value");
+
         // we need to do "caption wrapping" before auto size wrap since we want border to wrap all auto sized container
         // for auto size wrapping (below) - vertical direction and 0 (not auto (!)) flex-basis OR !vertical direction and auto (not 0 !) flex-basis will do for auto size (overflow:auto can be for panel and view itself)
         // for no auto size wrapping - either we need flex-basis 0 (not auto (!)) (any direction) and overflow:auto for a view, or flex-basis any (any direction) and overflow:auto for caption panel (not view)
@@ -124,17 +127,14 @@ public abstract class GAbstractContainerView {
         Widget wrapPanel = wrapBorderImpl(index);
 
         if(wrapPanel != null) {
-            if(wrapPanel instanceof FlexPanel) {
-                // 1 1 auto
+            if(wrapPanel instanceof FlexPanel)
                 ((FlexPanel)wrapPanel).addFillShrink(view);
-            } else {
-                //popup
-                ((PopupButton) wrapPanel).setClickHandler(container, view, attachContainer);
-            }
+            else // popup
+                ((PopupButton) wrapPanel).setContent(container, view, attachContainer);
             view = wrapPanel;
         }
 
-        BaseImage.updateClasses(view, child.elementClass);
+        GFormLayout.updateComponentClass(child.elementClass, view, BaseImage.emptyPostfix);
 
         return view;
     }
@@ -164,6 +164,11 @@ public abstract class GAbstractContainerView {
     public Widget getChildView(GComponent child) {
         int index = children.indexOf(child);
         return index != -1 ? childrenViews.get(index).widget : null;
+    }
+
+    public Widget getCaptionView(GComponent child) {
+        int index = children.indexOf(child);
+        return index != -1 ? childrenCaptions.get(index).widget.widget : null;
     }
 
     public interface UpdateLayoutListener {

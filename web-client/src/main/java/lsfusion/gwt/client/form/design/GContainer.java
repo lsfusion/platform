@@ -26,6 +26,9 @@ public class GContainer extends GComponent implements HasNativeSID {
     public String name;
     public BaseImage image;
 
+    public String captionClass;
+    public String valueClass;
+
     public String nativeSID;
 
     @Override
@@ -291,6 +294,47 @@ public class GContainer extends GComponent implements HasNativeSID {
         }
     }
     public final GPropertyReader imageReader = new GImageReader();
+
+    private class GCaptionClassReader implements GPropertyReader {
+        private String sID;
+
+        public GCaptionClassReader() {
+        }
+
+        @Override
+        public void update(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
+            controller.getFormLayout().setCaptionClass(GContainer.this, PValue.getClassStringValue(values.get(GGroupObjectValue.EMPTY)));
+        }
+
+        @Override
+        public String getNativeSID() {
+            if(sID == null) {
+                sID = "_COMPONENT_" + "CAPTIONCLASS" + "_" + GContainer.this.sID;
+            }
+            return sID;
+        }
+    }
+    public final GPropertyReader captionClassReader = new GCaptionClassReader();
+    private class GValueClassReader implements GPropertyReader {
+        private String sID;
+
+        public GValueClassReader() {
+        }
+
+        @Override
+        public void update(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
+            controller.getFormLayout().setValueClass(GContainer.this, PValue.getClassStringValue(values.get(GGroupObjectValue.EMPTY)));
+        }
+
+        @Override
+        public String getNativeSID() {
+            if(sID == null) {
+                sID = "_CONTAINER_" + "VALUECLASS" + "_" + GContainer.this.sID;
+            }
+            return sID;
+        }
+    }
+    public final GPropertyReader valueClassReader = new GValueClassReader();
 
     private class GCustomDesignReader implements GPropertyReader {
         private String sID;

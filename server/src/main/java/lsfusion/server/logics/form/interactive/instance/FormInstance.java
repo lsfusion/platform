@@ -2514,6 +2514,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
                 ContainerViewInstance containerInstance = instanceFactory.getInstance(container);
                 fillChangedReader(containerInstance.captionReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps, context);
+                fillChangedReader(containerInstance.captionClassReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps, context);
+                fillChangedReader(containerInstance.valueClassReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps, context);
                 fillChangedReader(containerInstance.imageReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps, context);
                 fillChangedReader(containerInstance.customDesignReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps, context);
 

@@ -31,6 +31,9 @@ public class ContainerView extends ComponentView {
     public String name; // actually used only for icons
     public AppServerImage.Reader image;
 
+    public String captionClass;
+    public String valueClass;
+
     public void setImage(String imagePath, FormView formView) {
         image = AppServerImage.createContainerImage(imagePath, this, formView);
     }
@@ -129,12 +132,18 @@ public class ContainerView extends ComponentView {
 
     // extras
     public PropertyObjectEntity<?> propertyCaption;
+    public PropertyObjectEntity<?> propertyCaptionClass;
+    public PropertyObjectEntity<?> propertyValueClass;
     public PropertyObjectEntity<?> propertyImage;
     public PropertyObjectEntity<?> propertyCustomDesign;
     public PropertyObjectEntity<?> getExtra(ContainerViewExtraType type) {
         switch (type) {
             case CAPTION:
                 return propertyCaption;
+            case CAPTIONCLASS:
+                return propertyCaptionClass;
+            case VALUECLASS:
+                return propertyValueClass;
             case IMAGE:
                 return propertyImage;
             case CUSTOM:
@@ -402,7 +411,7 @@ public class ContainerView extends ComponentView {
     }
 
     protected boolean hasPropertyComponent() {
-        return super.hasPropertyComponent() || propertyCaption != null || propertyImage != null || propertyCustomDesign != null;
+        return super.hasPropertyComponent() || propertyCaption != null || propertyCaptionClass != null || propertyValueClass != null || propertyImage != null || propertyCustomDesign != null;
     }
     public void fillPropertyComponents(MExclSet<ComponentView> mComponents) {
         super.fillPropertyComponents(mComponents);
@@ -453,6 +462,9 @@ public class ContainerView extends ComponentView {
         pool.writeString(outStream, hasCaption() ? ThreadLocalContext.localize(caption) : null); // optimization
         pool.writeString(outStream, name); // optimization
         AppServerImage.serialize(getImage(pool.context.view, pool.context), outStream, pool);
+
+        pool.writeString(outStream, captionClass);
+        pool.writeString(outStream, valueClass);
 
         outStream.writeBoolean(isCollapsible());
         outStream.writeBoolean(popup);

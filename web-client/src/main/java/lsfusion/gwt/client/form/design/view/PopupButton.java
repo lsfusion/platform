@@ -18,7 +18,7 @@ public class PopupButton extends FormButton {
         addStyleName("btn popup-panel-button");
     }
 
-    public void setClickHandler(GContainer container, Widget widget, ResizableComplexPanel attachContainer) {
+    public void setContent(GContainer container, Widget widget, ResizableComplexPanel attachContainer) {
         attachContainer.add(widget);
         addClickHandler(clickEvent -> {
             GwtClientUtils.showTippyPopup(formController.getWidget(), getElement(), widget.getElement(), () -> {

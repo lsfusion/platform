@@ -25,6 +25,20 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
         }
     }
 
+    public void setCaptionClass(Object caption) {
+        if(caption instanceof LocalizedString)
+            target.captionClass = ((LocalizedString) caption).getSourceString();
+        else
+            target.propertyCaptionClass = (PropertyObjectEntity<?>) caption;
+    }
+
+    public void setValueClass(Object caption) {
+        if(caption instanceof LocalizedString)
+            target.valueClass = ((LocalizedString) caption).getSourceString();
+        else
+            target.propertyValueClass = (PropertyObjectEntity<?>) caption;
+    }
+
     public void setImage(Object image) {
         if(image instanceof LocalizedString)
             target.setImage(((LocalizedString) image).getSourceString(), null); // should be something else, but for now it's not that important

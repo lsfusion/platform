@@ -116,6 +116,7 @@ public class FormContainerSet {
         set.popupContainer.setSID(DefaultFormView.getPopupContainerSID());
         set.popupContainer.setPopup(true);
         set.popupContainer.setImage("bi bi-three-dots-vertical", null);
+        set.popupContainer.valueClass = "remove-btn-all-mb";
 
         set.toolbarRightContainer.add(set.popupContainer, version);
 

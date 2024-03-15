@@ -167,6 +167,10 @@ public class ClientFormChanges {
                 return clientForm.findContainerByID(inStream.readInt()).captionReader;
             case PropertyReadType.CONTAINER_IMAGE:
                 return clientForm.findContainerByID(inStream.readInt()).imageReader;
+            case PropertyReadType.CONTAINER_CAPTIONCLASS:
+                return clientForm.findContainerByID(inStream.readInt()).captionClassReader;
+            case PropertyReadType.CONTAINER_VALUECLASS:
+                return clientForm.findContainerByID(inStream.readInt()).valueClassReader;
             case PropertyReadType.IMAGE:
                 return clientForm.getProperty(inStream.readInt()).imageReader;
             case PropertyReadType.CUSTOM:
