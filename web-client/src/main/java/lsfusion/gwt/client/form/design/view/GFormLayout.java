@@ -210,28 +210,23 @@ public class GFormLayout extends ResizableComplexPanel {
         component.elementClass = elementClass;
 
         Widget widget = containerViews.get(component.container).getChildView(component);
-//        if(widget != null) {
+        if(widget != null) // if the component is a base component it can be hidden, but the class can be changed anyway (however elementClass will be changed and it will be used when adding view)
             updateComponentClass(elementClass, widget, BaseImage.emptyPostfix);
-//        }
+        else
+            assert !(component instanceof GContainer);
     }
 
     public void setCaptionClass(GContainer component, String elementClass) {
         component.captionClass = elementClass;
 
-        Widget widget = containerViews.get(component.container).getCaptionView(component);
-//        if(widget != null) {
-            updateComponentClass(elementClass, widget, "caption");
-//        }
+        updateComponentClass(elementClass, containerViews.get(component.container).getCaptionView(component), "caption");
     }
 
     public void setValueClass(GContainer component, String valueClass) {
         component.valueClass = valueClass;
 
 //        Widget widget = component instanceof GContainer ? containerViews.get((GContainer) component).getView() : baseComponentViews.get(component);
-        Widget widget = containerViews.get(component).getView();
-//        if(widget != null) {
-            updateComponentClass(valueClass, widget, "value");
-//        }
+        updateComponentClass(valueClass, containerViews.get(component).getView(), "value");
     }
 
     public static void updateComponentClass(String elementClass, Widget widget, String postfix) {
