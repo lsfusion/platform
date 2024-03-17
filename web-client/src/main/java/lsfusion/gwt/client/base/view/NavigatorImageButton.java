@@ -6,6 +6,7 @@ import com.google.gwt.dom.client.NativeEvent;
 import lsfusion.gwt.client.base.BaseImage;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.TooltipManager;
+import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
 import lsfusion.gwt.client.navigator.window.view.WindowsController;
@@ -47,8 +48,7 @@ public class NavigatorImageButton extends ImageButton {
 
         updateElementClass();
 
-        // debug info
-        getElement().setAttribute("lsfusion-container", element.canonicalName);
+        GFormLayout.setDebugInfo(this, element.canonicalName);
     }
 
     private TooltipManager.TooltipHelper getTooltipHelper() {

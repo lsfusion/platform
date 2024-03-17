@@ -4,6 +4,7 @@ import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.view.RecentlyEventClassHandler;
+import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.navigator.GNavigatorAction;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.GNavigatorFolder;
@@ -30,6 +31,8 @@ public abstract class GNavigatorView<T extends GNavigatorWindow> {
 
     public void setComponent(Widget component) {
         this.component = component;
+
+        GFormLayout.setDebugInfo(component, window.canonicalName);
 
         // we want to propagate this classes, since window hover classes are also propagated
         parentRecentlySelected = new RecentlyEventClassHandler(component, true, "parent-was-selected-recently", 2000);

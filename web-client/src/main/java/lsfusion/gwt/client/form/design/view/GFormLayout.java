@@ -233,10 +233,14 @@ public class GFormLayout extends ResizableComplexPanel {
         BaseImage.updateClasses(widget.getElement(), elementClass, postfix);
     }
 
+    public static void setDebugInfo(Widget widget, String debugInfo) {
+        widget.getElement().setAttribute("lsfusion-container", debugInfo);
+    }
+
     public void add(GComponent key, ComponentWidget view, DefaultFocusReceiver focusReceiver) {
         // debug info
         if (key.sID != null)
-            view.getWidget().getElement().setAttribute("lsfusion-container", key.sID);
+            GFormLayout.setDebugInfo(view.getWidget(), key.sID);
 
         GAbstractContainerView containerView;
         if(key.container != null && (containerView = containerViews.get(key.container)) != null) { // container can be null when component should be layouted manually, containerView can be null when it is removed 
