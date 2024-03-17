@@ -133,6 +133,10 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         return drawWidget.getElement();
     }
 
+    protected Widget getPopupOwnerWidget() {
+        return GGridPropertyTable.getPopupOwnerWidget(getWidget());
+    }
+
     private Widget pageSizeWidget;
     protected Widget getPageSizeWidget() {
         return pageSizeWidget;

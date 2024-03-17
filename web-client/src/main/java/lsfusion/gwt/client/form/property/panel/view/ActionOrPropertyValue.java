@@ -317,6 +317,11 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public Widget getPopupOwnerWidget() {
+        return this;
+    }
+
     public RenderContext getRenderContext() {
         return this;
     }

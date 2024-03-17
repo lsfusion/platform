@@ -34,6 +34,7 @@ public class NavigatorImageButton extends ImageButton {
         this.level = level;
         this.active = active;
 
+        tippy = TooltipManager.initTooltip(this, getTooltipHelper());
         update();
     }
 
@@ -48,8 +49,10 @@ public class NavigatorImageButton extends ImageButton {
 
         // debug info
         getElement().setAttribute("lsfusion-container", element.canonicalName);
+    }
 
-        TooltipManager.TooltipHelper tooltipHelper = new TooltipManager.TooltipHelper() {
+    private TooltipManager.TooltipHelper getTooltipHelper() {
+        return new TooltipManager.TooltipHelper() {
             @Override
             public String getTooltip(String dynamicTooltip) {
                 return nvl(dynamicTooltip, element.getTooltipText());
@@ -65,11 +68,6 @@ public class NavigatorImageButton extends ImageButton {
                 return element.creationPath;
             }
         };
-        tippy = TooltipManager.initTooltip(this.getElement(), tooltipHelper);
-    }
-
-    public void destroyTooltip() {
-        GwtClientUtils.hideTippyPopup(tippy);
     }
 
     private final boolean vertical;
@@ -88,8 +86,15 @@ public class NavigatorImageButton extends ImageButton {
 
         updateImage();
         updateText();
+        updateTooltip();
         update();
     }
+
+    private void updateTooltip() {
+        if(tippy != null)
+            TooltipManager.updateContent(tippy, getTooltipHelper(), null);
+    }
+
     public void updateElementClass() {
         BaseImage.updateClasses(this, element.elementClass);
 

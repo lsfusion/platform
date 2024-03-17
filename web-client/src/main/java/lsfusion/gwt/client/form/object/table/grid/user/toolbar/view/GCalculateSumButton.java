@@ -29,6 +29,6 @@ public abstract class GCalculateSumButton extends GToolbarButton {
             text = text + format.format(result);
         }
 
-        GwtClientUtils.showTippyPopup(this, getElement(), new HTML(text));
+        GwtClientUtils.showTippyPopup(this, new HTML(text));
     }
 }

@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.object.table.view;
 
 import com.google.gwt.dom.client.TableCellElement;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.view.grid.Header;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
@@ -98,6 +99,11 @@ public class GGridPropertyTableFooter extends Header<String> implements RenderCo
     @Override
     public String getRegexp() {
         return property.regexp;
+    }
+
+    @Override
+    public Widget getPopupOwnerWidget() {
+        return table.getPopupOwnerWidget();
     }
 
     @Override

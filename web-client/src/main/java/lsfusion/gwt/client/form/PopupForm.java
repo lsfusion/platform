@@ -58,23 +58,22 @@ public class PopupForm extends EditingForm {
 
     @Override
     public void show(GAsyncFormController asyncFormController) {
-        if (contextForm.isVisible()) {
-            prevForm = MainFrame.getAssertCurrentForm();
-            if (prevForm != null) // if there were no currentForm
-                prevForm.onBlur(false);
+        prevForm = MainFrame.getAssertCurrentForm();
+        if (prevForm != null) // if there were no currentForm
+            prevForm.onBlur(false);
 
-            tippy = GwtClientUtils.showTippyPopup(contextForm.getWidget(), parentElement, formWidget, () -> {
-                formsController.hidePopupForms(getForm());
-                cellEditor.commit(parentElement);
-            });
+        tippy = GwtClientUtils.showTippyPopup(popupOwnerWidget, parentElement, formWidget, () -> {
+            cellEditor.commit(parentElement);
+        });
 
-            onFocus(true);
-        }
+        onFocus(true);
     }
 
     @Override
-    public void hide(EndReason editFormCloseReason) {
-        GwtClientUtils.hideTippyPopup(tippy);
+    protected void finishEditing(EndReason editFormCloseReason) {
+        GwtClientUtils.hideTippyPopup(tippy, true);
+
+        super.finishEditing(editFormCloseReason);
     }
 
     @Override
@@ -101,7 +100,11 @@ public class PopupForm extends EditingForm {
 
     public PopupForm(FormsController formsController, GFormController contextForm, long editRequestIndex, boolean async, Event editEvent, EditContext editContext) {
         super(formsController, contextForm, editRequestIndex, async, editEvent, editContext);
+
+        popupOwnerWidget = editContext.getUpdateContext().getPopupOwnerWidget();
     }
+
+    private final Widget popupOwnerWidget;
 
     @Override
     public GWindowFormType getWindowType() {

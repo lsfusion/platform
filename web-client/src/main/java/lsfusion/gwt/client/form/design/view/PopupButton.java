@@ -21,7 +21,7 @@ public class PopupButton extends FormButton {
     public void setContent(GContainer container, Widget widget, ResizableComplexPanel attachContainer) {
         attachContainer.add(widget);
         addClickHandler(clickEvent -> {
-            GwtClientUtils.showTippyPopup(formController.getWidget(), getElement(), widget.getElement(), () -> {
+            GwtClientUtils.showTippyPopup(PopupButton.this, getElement(), widget.getElement(), () -> {
                 formController.setContainerCollapsed(container, true);
             });
             formController.setContainerCollapsed(container, false);

@@ -62,7 +62,7 @@ public class GFormLayout extends ResizableComplexPanel {
 
     public void addTooltip(Widget header, GContainer container) {
         boolean isMain = container.main;
-        TooltipManager.initTooltip(header.getElement(), new TooltipManager.TooltipHelper() {
+        TooltipManager.initTooltip(header, new TooltipManager.TooltipHelper() {
             @Override
             public String getTooltip(String dynamicTooltip) {
                 return nvl(dynamicTooltip, isMain ? form.form.getTooltip() : container.getTooltip());
@@ -112,7 +112,7 @@ public class GFormLayout extends ResizableComplexPanel {
 
     @Override
     public void onResize() {
-        if (form.isVisible()) {
+        if (form.isActive()) {
             super.onResize();
         }
     }

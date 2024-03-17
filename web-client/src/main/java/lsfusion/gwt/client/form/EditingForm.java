@@ -89,9 +89,13 @@ public abstract class EditingForm extends FormContainer {
 //                prevForm.onFocus(false);
 //        }
 
-        assert finishedEditing == (editFormCloseReason != null);
-        if(!finishedEditing)
+        if(!finishedEditing) {
+            assert editFormCloseReason == null;
             finishEditing(editFormCloseReason);
+        }
+//        else
+//        this assertion is broken at least when the hide comes from the scheduler, however it can be solved with the isVisible check (but it's an odd assertion anyway)
+//            assert editFormCloseReason != null;
     }
 
     private boolean finishedEditing;

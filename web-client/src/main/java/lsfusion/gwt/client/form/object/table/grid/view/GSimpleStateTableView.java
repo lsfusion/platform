@@ -275,7 +275,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     }
 
     private void showPopup() {
-        popupObject = showPopup(getWidget(), getPopupElement(), popupElementClicked);
+        popupObject = showPopup(getPopupOwnerWidget(), getPopupElement(), popupElementClicked);
 
         popupRequestIndex = -2; // we are no longer waiting for popup
         popupElementClicked = null; // in theory it's better to do it on popupObject close, but this way is also ok

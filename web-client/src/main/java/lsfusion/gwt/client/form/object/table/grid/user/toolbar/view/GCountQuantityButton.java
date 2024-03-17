@@ -16,6 +16,6 @@ public abstract class GCountQuantityButton extends GToolbarButton {
     }
 
     public void showPopup(int result) {
-        GwtClientUtils.showTippyPopup(this, getElement(), new HTML(messages.formQueriesNumberOfEntries() + ": " + format.format(result)));
+        GwtClientUtils.showTippyPopup(this, new HTML(messages.formQueriesNumberOfEntries() + ": " + format.format(result)));
     }
 }

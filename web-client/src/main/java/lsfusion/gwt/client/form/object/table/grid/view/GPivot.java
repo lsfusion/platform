@@ -7,6 +7,7 @@ import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.i18n.client.constants.NumberConstants;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
@@ -1184,6 +1185,11 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             }
 
             @Override
+            public Widget getPopupOwnerWidget() {
+                return GPivot.this.getPopupOwnerWidget();
+            }
+
+            @Override
             public RendererType getRendererType() {
                 return RendererType.PIVOT;
             }
@@ -1974,7 +1980,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             menuBar.getElement().getStyle().setOverflowY(Style.Overflow.SCROLL);
         }
 
-        popup.result = GwtClientUtils.showTippyPopup(this, td, menuBar);
+        popup.result = GwtClientUtils.showTippyPopup(getPopupOwnerWidget(), td, menuBar);
     }
 
 

@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.base;
 
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.Style;
@@ -20,9 +19,14 @@ import java.util.Date;
 public class TooltipManager {
     private static final ClientMessages messages = ClientMessages.Instance.get();
 
-    public static JavaScriptObject initTooltip(Element element, final TooltipHelper tooltipHelper) {
+    public static JavaScriptObject initTooltip(Widget widget, final TooltipHelper tooltipHelper) {
+        return initTooltip(widget, widget.getElement(), tooltipHelper);
+    }
+    public static JavaScriptObject initTooltip(Widget ownerWidget, Element element, final TooltipHelper tooltipHelper) {
         if (!MainFrame.mobile && tooltipHelper.getTooltip(null) != null && MainFrame.showDetailedInfoDelay > 0) {
-            JavaScriptObject tippy = GwtClientUtils.initTippy(element, MainFrame.showDetailedInfoDelay);
+            // assert that element is "new" and have no tippy (two mouseenter tippies will look odd, however manual tippy can be added)
+            assert !GwtClientUtils.hasProperty(element, "_tippy");
+            JavaScriptObject tippy = GwtClientUtils.initTippy(ownerWidget, element, MainFrame.showDetailedInfoDelay, "mouseenter", null);
             updateContent(tippy, tooltipHelper, null);
             return tippy;
         }
@@ -31,17 +35,9 @@ public class TooltipManager {
 
     public static void updateContent(JavaScriptObject tippy, final TooltipHelper tooltipHelper, String dynamicTooltip) {
         if(tippy != null) {
-            updateContent(tippy, getTooltipContent(tooltipHelper, dynamicTooltip, tippy));
+            GwtClientUtils.updateTippyContent(tippy, getTooltipContent(tooltipHelper, dynamicTooltip, tippy));
         }
     }
-
-    private static native void updateContent(JavaScriptObject tippy, Element content)/*-{
-        tippy.setContent(content);
-        if(content == null)
-            tippy.disable();
-        else
-            tippy.enable();
-    }-*/;
 
     private static Element getTooltipContent(TooltipHelper tooltipHelper, String dynamicTooltip, JavaScriptObject tippy) {
         String tooltip = tooltipHelper.getTooltip(dynamicTooltip);

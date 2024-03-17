@@ -4,6 +4,7 @@ import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
@@ -543,6 +544,13 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return restDelta;
     }
 
+    public static Widget getPopupOwnerWidget(Widget widget) {
+        return widget;
+    }
+    public Widget getPopupOwnerWidget() {
+        return getPopupOwnerWidget(getWidget());
+    }
+
     protected abstract void setUserWidth(GPropertyDraw property, Integer value);
     protected abstract void setUserFlex(GPropertyDraw property, Double value);
     protected abstract Integer getUserWidth(GPropertyDraw property);
@@ -1007,6 +1015,11 @@ protected Double getUserFlex(int i) {
             public String getValueTooltip() {
                 T row = (T) cell.getRow();
                 return column.getValueTooltip(property, row);
+            }
+
+            @Override
+            public Widget getPopupOwnerWidget() {
+                return GGridPropertyTable.this.getPopupOwnerWidget();
             }
 
             @Override

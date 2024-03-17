@@ -499,6 +499,10 @@ public class GwtClientUtils {
 
     /*--- tippy methods ---*/
 
+    public static JavaScriptObject showTippyPopup(Widget widget, Widget popupWidget) {
+        return showTippyPopup(widget, widget.getElement(), popupWidget);
+    }
+
     public static JavaScriptObject showTippyPopup(Widget ownerWidget, Element popupElementClicked, Widget popupWidget) {
         return showTippyPopup(ownerWidget, popupElementClicked, popupWidget, null);
     }
@@ -509,69 +513,55 @@ public class GwtClientUtils {
     }
 
     public static JavaScriptObject showTippyPopup(Widget ownerWidget, Element popupElementClicked, Element popupElement, Runnable onHideAction) {
-        JavaScriptObject popup = showTippyPopup(nvl(getTippyParent(popupElementClicked), RootPanel.get().getElement()), popupElementClicked, popupElement, onHideAction, true);
+        JavaScriptObject tippy = initTippy(ownerWidget, popupElementClicked, 0, "manual", onHideAction);
+
+        updateTippyContent(tippy, popupElement);
+        showTippy(tippy);
+
+        return tippy;
+    }
+
+    public static JavaScriptObject initTippy(Widget ownerWidget, Element tippyElement, int delay, String trigger, Runnable onHideAction) {
+        JavaScriptObject tippy = initTippy(nvl(getTippyParent(tippyElement), RootPanel.get().getElement()), tippyElement, delay, trigger, onHideAction);
         if(ownerWidget != null) {
             ownerWidget.addAttachHandler(attachEvent -> {
                 if(!attachEvent.isAttached()) {
-                    GwtClientUtils.hideTippyPopup(popup);
+                    GwtClientUtils.hideTippyPopup(tippy, true);
                 }
             });
         }
-        return popup;
+        return tippy;
     }
 
-    public static native JavaScriptObject showTippyPopup(Element appendToElement, Element popupElementClicked, Element popupElement, Runnable onHideAction, boolean show)/*-{
-        var popup = $wnd.tippy(popupElementClicked, {
-            appendTo : appendToElement,
-            content : popupElement,
-            trigger : 'manual',
-            interactive : true,
-            allowHTML : true,
-            maxWidth: 'none', // default maxWidth is 350px and content does not fit in tooltip
-            popperOptions: {
-                strategy: 'fixed',
-                modifiers: [
-                    {
-                        name: 'flip',
-                        options: {
-                            fallbackPlacements: ['top', 'bottom', 'left', 'right'],
-                        },
-                    },
-                    {
-                        name: 'preventOverflow',
-                        options: {
-                            altAxis: true,
-                            tether: false,
-                        },
-                    },
-                ],
-            },
-            zIndex: 1070,
-            onHide: function() {
-                if(onHideAction != null) {
-                    onHideAction.@java.lang.Runnable::run()();
-                }
-            }
-        });
-        if(show) {
-            popup.show();
-        }
-        return popup;
-    }-*/;
-
-    public static native void hideTippyPopup(JavaScriptObject popup)/*-{
+    public static void hideTippyPopup(JavaScriptObject popup) {
+        hideTippyPopup(popup, false);
+    }
+    public static native void hideTippyPopup(JavaScriptObject popup, boolean silent)/*-{
         if(popup != null) {
+            popup.props.silent = silent;
             // probably it should be checked if popup's already hidden, but it seems, that there is no such method
             popup.hide();
             popup.destroy();
         }
     }-*/;
 
-    public static native JavaScriptObject initTippy(Element element, int delay)/*-{
+    public static native void updateTippyContent(JavaScriptObject tippy, Element content)/*-{
+        tippy.setContent(content);
+        if(content == null)
+            tippy.disable();
+        else
+            tippy.enable();
+    }-*/;
+
+    private static native void showTippy(JavaScriptObject tippy)/*-{
+        tippy.show();
+    }-*/;
+
+    private static native JavaScriptObject initTippy(Element appendToElement, Element element, int delay, String trigger, Runnable onHideAction)/*-{
         return $wnd.tippy(element, {
-            appendTo: $wnd.document.body,
+            appendTo: appendToElement,
             //content: contentElement,
-            trigger: 'mouseenter',
+            trigger: trigger,
             interactive: true,
             allowHTML: true,
             placement: 'auto',
@@ -593,6 +583,13 @@ public class GwtClientUtils {
                         },
                     },
                 ],
+            },
+            zIndex: 1070,
+            silent: false,
+            onHide: function() {
+                if(onHideAction != null && !this.silent) {
+                    onHideAction.@java.lang.Runnable::run()();
+                }
             },
             delay: [delay, null]
         });
@@ -1490,5 +1487,9 @@ public class GwtClientUtils {
     
     public static native String unmaskedValue(Element element)/*-{
         return $wnd.$(element).inputmask("unmaskedvalue");
+    }-*/;
+
+    public static native boolean hasProperty(JavaScriptObject object, String property)/*-{
+        return !!object[property];
     }-*/;
 }

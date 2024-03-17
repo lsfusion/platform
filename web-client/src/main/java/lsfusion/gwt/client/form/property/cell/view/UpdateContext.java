@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.property.cell.view;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.AppBaseImage;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
@@ -58,4 +59,6 @@ public interface UpdateContext {
     }
 
     RendererType getRendererType();
+
+    Widget getPopupOwnerWidget();
 }

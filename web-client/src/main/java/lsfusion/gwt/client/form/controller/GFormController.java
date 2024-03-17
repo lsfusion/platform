@@ -514,12 +514,12 @@ public class GFormController implements EditManager {
         Scheduler.get().scheduleFixedPeriod(new Scheduler.RepeatingCommand() {
             @Override
             public boolean execute() {
-                if (!formHidden) {
+                if (isVisible()) {
                     if (isShowing(getWidget()) && !MainFrame.isModalPopup()) {
                         executeFormEventAction(formScheduler, new ServerResponseCallback() {
                             public void onSuccess(ServerResponseResult response, Runnable onDispatchFinished) {
                                 super.onSuccess(response, onDispatchFinished);
-                                if (!formHidden && !formScheduler.fixed) {
+                                if (isVisible() && !formScheduler.fixed) {
                                     scheduleFormScheduler(formScheduler);
                                 }
                             }
@@ -593,15 +593,15 @@ public class GFormController implements EditManager {
         asyncResponseDispatch(new GetRemoteChanges(forceLocalEvents));
     }
 
-    private boolean formVisible = true;
+    private boolean formActive = true;
 
     public void gainedFocus() {
         asyncResponseDispatch(new GainedFocus());
-        formVisible = true;
+        formActive = true;
     }
 
     public void lostFocus() {
-        formVisible = false;
+        formActive = false;
     }
 
     public void applyRemoteChanges(GFormChangesDTO changesDTO) {
@@ -984,7 +984,7 @@ public class GFormController implements EditManager {
 
         if(BrowserEvents.CONTEXTMENU.equals(event.getType())) {
             handler.consume();
-            GPropertyContextMenuPopup.show(getWidget(), property, Element.as(event.getEventTarget()), actionSID -> {
+            GPropertyContextMenuPopup.show(editContext.getUpdateContext().getPopupOwnerWidget(), property, Element.as(event.getEventTarget()), actionSID -> {
                 executePropertyEventAction(editContext, actionSID, handler);
             });
         } else {
@@ -1695,7 +1695,11 @@ public class GFormController implements EditManager {
     }
 
     public boolean isVisible() {
-        return !formHidden && formVisible;
+        return !formHidden;
+    }
+
+    public boolean isActive() {
+        return isVisible() && formActive;
     }
 
     public GForm getForm() {

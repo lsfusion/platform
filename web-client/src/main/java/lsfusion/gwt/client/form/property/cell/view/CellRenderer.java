@@ -202,6 +202,14 @@ public abstract class CellRenderer {
 
         boolean renderedAlignment = clearRenderContent(element, renderContext);
 
+        if(valueTooltipHelper != null) {
+            JavaScriptObject valueTippy = (JavaScriptObject) element.getPropertyObject("valueTippy");
+            if(valueTippy != null) {
+                GwtClientUtils.hideTippyPopup(valueTippy);
+            } else
+                assert false;
+        }
+
 //        SimpleTextBasedCellRenderer.getSizeElement(element).removeClassName("prop-value-shrink");
 
         if (!renderedAlignment)
@@ -384,7 +392,7 @@ public abstract class CellRenderer {
                 renderedState.valueTooltip = valueTooltip;
                 JavaScriptObject valueTippy;
                 if (isNew) {
-                    valueTippy = TooltipManager.initTooltip(InputBasedCellRenderer.getMainElement(element), valueTooltipHelper);
+                    valueTippy = TooltipManager.initTooltip(updateContext.getPopupOwnerWidget(), InputBasedCellRenderer.getMainElement(element), valueTooltipHelper);
                     element.setPropertyObject("valueTippy", valueTippy);
                 } else {
                     valueTippy = (JavaScriptObject) element.getPropertyObject("valueTippy");

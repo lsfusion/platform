@@ -114,7 +114,7 @@ public abstract class FormsController {
                         });
                     }
 
-                    popup.result = GwtClientUtils.showTippyPopup(null, editModeButton.getElement(), panel);
+                    popup.result = GwtClientUtils.showTippyPopup(editModeButton, panel);
                 };
             }
         };
@@ -494,7 +494,10 @@ public abstract class FormsController {
             };
             // this types because for them size is unknown, so there'll be blinking
             if(isAutoSized(editContext, windowType))
-                asyncFormController.scheduleOpen(runOpenForm);
+                asyncFormController.scheduleOpen(() -> {
+                    if(formController == null || formController.isVisible()) // form can be hidden before the task will be executed
+                        runOpenForm.execute();
+                });
             else
                 runOpenForm.execute();
         }
@@ -549,20 +552,6 @@ public abstract class FormsController {
             if(formId.equals(formContainer.formId)) {
                 formContainer.closePressed();
                 iterator.remove();
-            }
-        }
-    }
-
-    public void hidePopupForms(GFormController contextForm) {
-        if(contextForm != null) {
-            ListIterator<FormContainer> iterator = formContainers.listIterator();
-            while (iterator.hasNext()) {
-                FormContainer formContainer = iterator.next();
-                if (contextForm.equals(formContainer.getContextForm())) {
-                    hidePopupForms(formContainer.getForm());
-                    formContainer.hide(null);
-                    iterator.remove();
-                }
             }
         }
     }

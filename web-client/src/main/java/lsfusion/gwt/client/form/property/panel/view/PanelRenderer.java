@@ -47,8 +47,8 @@ public abstract class PanelRenderer {
         setComment(property.comment);
         setCommentElementClass(property.commentElementClass);
 
-        Element label = getTooltipWidget().getElement();
-        tippy = TooltipManager.initTooltip(label, tooltipHelper = new TooltipManager.TooltipHelper() {
+        Widget labelWidget = getTooltipWidget();
+        tippy = TooltipManager.initTooltip(labelWidget, tooltipHelper = new TooltipManager.TooltipHelper() {
             public String getTooltip(String dynamicTooltip) {
                 if(value.isEditing)
                     return null;
@@ -69,7 +69,7 @@ public abstract class PanelRenderer {
             }
         });
         if (this.property.captionFont != null)
-            GFormController.setFont(label, this.property.captionFont);
+            GFormController.setFont(labelWidget.getElement(), this.property.captionFont);
     }
 
     public abstract SizedWidget getSizedWidget();
