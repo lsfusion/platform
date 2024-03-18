@@ -99,7 +99,7 @@ cmd '{utils.cmd}' (TEXT command)  {cmd(command, NULL, NULL, NULL ); }
 cmdClient '{utils.cmd.client}' (TEXT command, BOOLEAN wait)  {cmd(command, NULL, TRUE, wait); }
 cmdClient '{utils.cmd.client}' (TEXT command)  {cmdClient(command, NULL); }
 
-pingError '{utils.ping.error}' = DATA LOCAL BOOLEAN ();
+pingError '{utils.ping.error}' = DATA LOCAL STRING ();
 ping '{utils.ping}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.net.PingAction' (TEXT, BOOLEAN);
 ping '{utils.ping}' (TEXT host)  {ping(host, NULL); }
 pingClient '{utils.ping.client}' (TEXT host)  {ping(host, TRUE); }

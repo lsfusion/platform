@@ -5,10 +5,10 @@ import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
+import lsfusion.server.physics.dev.integration.external.to.file.FileUtils;
 import lsfusion.server.physics.dev.integration.external.to.net.client.PingClientAction;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
-import java.net.InetAddress;
 import java.util.Iterator;
 
 public class PingAction extends InternalAction {
@@ -34,7 +34,11 @@ public class PingAction extends InternalAction {
                 if (isClient) {
                     result = (String) context.requestUserInteraction(new PingClientAction(host));
                 } else {
-                    result = InetAddress.getByName(host).isReachable(5000) ? null : "Host is not reachable";
+                    try {
+                        result = FileUtils.ping(host);
+                    } catch (Exception e) {
+                        result = e.getMessage();
+                    }
                 }
             } else {
                 result = "no host";

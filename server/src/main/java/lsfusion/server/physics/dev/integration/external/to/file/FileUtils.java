@@ -12,6 +12,7 @@ import lsfusion.interop.action.RunCommandActionResult;
 import org.apache.commons.net.ftp.FTPFile;
 
 import java.io.*;
+import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.SQLException;
@@ -436,5 +437,9 @@ public class FileUtils {
             }
             return BaseUtils.trimToNull(errS.toString());
         }
+    }
+
+    public static String ping(String host) throws IOException {
+        return InetAddress.getByName(host).isReachable(5000) ? null : "Host is not reachable";
     }
 }
