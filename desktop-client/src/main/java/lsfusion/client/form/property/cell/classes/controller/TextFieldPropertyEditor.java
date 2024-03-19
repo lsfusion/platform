@@ -161,7 +161,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
 
                         robot.keyRelease(0x12);
 
-                        Thread.sleep(100);
+                        Thread.sleep(300);
 
                     } catch (AWTException ignore) {
                     } catch (InterruptedException ex) {
