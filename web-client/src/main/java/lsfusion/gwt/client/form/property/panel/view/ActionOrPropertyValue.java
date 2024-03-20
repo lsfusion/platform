@@ -13,7 +13,9 @@ import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.SizedWidget;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GFont;
+import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
@@ -371,5 +373,14 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
         // RERENDER IF NEEDED : we have the previous state
 
         form.update(property, getRenderElement(), this);
+    }
+
+    protected abstract GComponent getComponent();
+
+    @Override
+    public Element getDropdownParent(Element element) {
+        // the problem that element is not attached yet, so we have to use upper container (which can be in the popup container)
+        GAbstractContainerView containerView = form.formLayout.getContainerView(getComponent().container);
+        return GFormController.getDropdownParent(containerView.getView().getElement());
     }
 }

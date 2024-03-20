@@ -35,7 +35,7 @@ public class GPropertyContextMenuPopup {
         for (final Map.Entry<String, String> item : contextMenuItems.entrySet()) {
             final String actionSID = item.getKey();
             MenuItem menuItem = new MenuItem(ensureMenuItemCaption(item.getValue()), () -> {
-                GwtClientUtils.hideTippyPopup(popup.result);
+                GwtClientUtils.hideAndDestroyTippyPopup(popup.result);
                 selectionListener.onMenuItemSelected(actionSID);
             }) {
                 @Override

@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.object.table.view;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.view.grid.Header;
@@ -36,6 +37,11 @@ public class GGridPropertyTableFooter extends Header<String> implements RenderCo
     @Override
     public GFormController getForm() {
         return form;
+    }
+
+    @Override
+    public Element getDropdownParent(Element element) {
+        return table.getDropdownParent(element);
     }
 
     public void setValue(PValue value) {

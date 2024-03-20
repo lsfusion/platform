@@ -129,8 +129,10 @@ public abstract class GAbstractContainerView {
         if(wrapPanel != null) {
             if(wrapPanel instanceof FlexPanel)
                 ((FlexPanel)wrapPanel).addFillShrink(view);
-            else // popup
-                ((PopupButton) wrapPanel).setContent(container, view, attachContainer);
+            else { // popup
+                attachContainer.add(view);
+                ((PopupButton) wrapPanel).setContent(container, view);
+            }
             view = wrapPanel;
         }
 

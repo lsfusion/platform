@@ -71,7 +71,8 @@ public class PopupForm extends EditingForm {
 
     @Override
     protected void finishEditing(EndReason editFormCloseReason) {
-        GwtClientUtils.hideTippyPopup(tippy, true);
+        if(tippy != null)
+            GwtClientUtils.hideAndDestroyTippyPopup(tippy, true);
 
         super.finishEditing(editFormCloseReason);
     }

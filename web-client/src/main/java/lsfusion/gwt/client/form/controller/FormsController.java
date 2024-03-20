@@ -108,7 +108,7 @@ public abstract class FormsController {
                             public ClickHandler getClickHandler() {
                                 return event -> {
                                     selectEditMode(index);
-                                    GwtClientUtils.hideTippyPopup(popup.result);
+                                    GwtClientUtils.hideAndDestroyTippyPopup(popup.result);
                                 };
                             }
                         });

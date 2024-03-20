@@ -2612,11 +2612,7 @@ public class GFormController implements EditManager {
         formsController.resetWindowsLayout();
     }
 
-    public Element getFormElement() {
-        return formContainer.getFocusedElement();
-    }
-
-    public Element getDropdownParent() {
-        return GwtClientUtils.getTippyParent(formContainer.getFocusedElement());
+    public static Element getDropdownParent(Element element) {
+        return GwtClientUtils.getTippyParent(element);
     }
 }

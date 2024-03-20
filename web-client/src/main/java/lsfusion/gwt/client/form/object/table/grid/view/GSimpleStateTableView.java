@@ -281,7 +281,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         popupElementClicked = null; // in theory it's better to do it on popupObject close, but this way is also ok
     }
 
-    private Element getPopupElement() {
+    protected Element getPopupElement() {
         return grid.recordView.getElement();
     }
 
@@ -923,7 +923,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                 return thisObj.@GSimpleStateTableView::previewEvent(*)(element, event);
             },
             getDropdownParent: function() {
-                return thisObj.@GSimpleStateTableView::getDropdownParent(*)();
+                return thisObj.@GSimpleStateTableView::getDropdownParent(*)(element);
             }
         };
     }-*/;
@@ -953,10 +953,6 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         BaseImage.updateText(element, caption);
         BaseImage.updateImage(image, element);
         return element;
-    }
-
-    protected Element getDropdownParent() {
-        return form.getDropdownParent();
     }
 
     protected boolean previewEvent(Element element, Event event) {

@@ -991,13 +991,13 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public boolean isGroupCustom(FormInstanceContext context) {
-        GroupObjectEntity toDraw = getToDraw(context.entity);
-        return toDraw != null && toDraw.isCustom();
+        GroupObjectEntity toDraw;
+        return isList(context) && (toDraw = getToDraw(context.entity)) != null && toDraw.isCustom();
     }
 
     public boolean isGroupSimpleState(FormInstanceContext context) {
-        GroupObjectEntity toDraw = getToDraw(context.entity);
-        return toDraw != null && toDraw.isSimpleState();
+        GroupObjectEntity toDraw;
+        return isList(context) && (toDraw = getToDraw(context.entity)) != null && toDraw.isSimpleState();
     }
 
     public boolean needFile(FormInstanceContext context) {

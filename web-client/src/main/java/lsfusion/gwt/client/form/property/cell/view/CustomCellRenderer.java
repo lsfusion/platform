@@ -220,17 +220,21 @@ public class CustomCellRenderer extends CellRenderer {
     }-*/;
 
     public static JavaScriptObject getRenderController(GPropertyDraw property, RenderContext renderContext, Element element) {
-        return getRenderController(renderContext.getForm().getDropdownParent());
+        return getRenderController(renderContext, element);
     }
 
-    private static native JavaScriptObject getRenderController(Element dropdownParent)/*-{
+    private static Element getDropdownParent(RenderContext renderContext, Element element) {
+        return renderContext.getDropdownParent(element);
+    }
+
+    private static native JavaScriptObject getRenderController(RenderContext renderContext, Element element)/*-{
         var thisObj = this;
         return {
             isList: function () {
                 return false;
             },
             getDropdownParent: function() {
-                return dropdownParent;
+                return @CustomCellRenderer::getDropdownParent(*)(renderContext, element);
             }
         };
     }-*/;

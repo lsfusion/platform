@@ -217,11 +217,11 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
     protected abstract PValue getValue(JsDate startDate, JsDate endDate);
     private native JsDate getPickerStartDate()/*-{
         var pickerDate = this.@DateRangePickerBasedCellEditor::getPickerObject()().startDate;
-        return pickerDate.isValid() ? pickerDate.toDate() : null; // toDate because it is "Moment js" object
+        return pickerDate != null && pickerDate.isValid() ? pickerDate.toDate() : null; // toDate because it is "Moment js" object
     }-*/;
     private native JsDate getPickerEndDate()/*-{
         var pickerDate = this.@DateRangePickerBasedCellEditor::getPickerObject()().endDate;
-        return pickerDate.isValid() ? pickerDate.toDate() : null; // toDate because it is "Moment js" object
+        return pickerDate != null && pickerDate.isValid() ? pickerDate.toDate() : null; // toDate because it is "Moment js" object
     }-*/;
 
     public static native void setPickerTwoDigitYearStart(Integer twoDigitYearStart)/*-{

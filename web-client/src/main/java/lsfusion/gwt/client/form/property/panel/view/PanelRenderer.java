@@ -117,7 +117,6 @@ public abstract class PanelRenderer {
     public void setTooltip(String tooltip) {
         if (!GwtSharedUtils.nullEquals(this.tooltip, tooltip)) {
             this.tooltip = tooltip;
-            Element label = getTooltipWidget().getElement();
             TooltipManager.updateContent(tippy, tooltipHelper, tooltip);
         }
     }

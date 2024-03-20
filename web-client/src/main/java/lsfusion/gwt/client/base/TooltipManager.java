@@ -26,7 +26,7 @@ public class TooltipManager {
         if (!MainFrame.mobile && tooltipHelper.getTooltip(null) != null && MainFrame.showDetailedInfoDelay > 0) {
             // assert that element is "new" and have no tippy (two mouseenter tippies will look odd, however manual tippy can be added)
             assert !GwtClientUtils.hasProperty(element, "_tippy");
-            JavaScriptObject tippy = GwtClientUtils.initTippy(ownerWidget, element, MainFrame.showDetailedInfoDelay, "mouseenter", null);
+            JavaScriptObject tippy = GwtClientUtils.initTippy(ownerWidget, element, MainFrame.showDetailedInfoDelay, "mouseenter", null, null, null);
             updateContent(tippy, tooltipHelper, null);
             return tippy;
         }
@@ -80,7 +80,7 @@ public class TooltipManager {
                         else
                             Cookies.removeCookie("debugPath");
 
-                        GwtClientUtils.hideTippyPopup(tippy);
+                        GwtClientUtils.hideTippy(tippy);
                     }
                 });
 

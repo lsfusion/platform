@@ -853,6 +853,10 @@ protected Double getUserFlex(int i) {
         }
     }
 
+    public Element getDropdownParent(Element element) {
+        return GFormController.getDropdownParent(element);
+    }
+
     public GridPropertyColumn getGridColumn(int column) {
         return (GridPropertyColumn) getColumn(column);
     }
@@ -871,8 +875,8 @@ protected Double getUserFlex(int i) {
             }
 
             @Override
-            public GFormController getForm() {
-                return form;
+            public Element getDropdownParent(Element element) {
+                return GGridPropertyTable.this.getDropdownParent(element);
             }
 
             @Override

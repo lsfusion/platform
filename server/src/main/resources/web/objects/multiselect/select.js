@@ -70,15 +70,13 @@ function selectMultiInput() {
 
             let selectizeElement = _wrapElementDiv(element, !isList); // it seems that selectize uses parent (because it creates sibling) so for custom cell renderer we need extra div
 
-            let dropdownParent = controller.getDropdownParent();
-
             // tabindex = -1 to disable "tab" button in the table.
             // selectize at initialisation contains a check for the tabindex attribute of the parent element:
             // if attribute is present, it will be used, if the attribute is not present, then tabindex will be = 0 for all input elements inside selectize component
             selectizeElement.setAttribute('tabindex', '-1');
 
             element.selectizeInstance = $(selectizeElement).selectize({
-                dropdownParent: dropdownParent != null ? dropdownParent : 'body',
+                dropdownParent: _getDropdownParent(controller),
 
                 onInitialize: function() {
                     _removeAllPMBInTD(element, this.$control[0]);
@@ -565,10 +563,12 @@ function selectMultiHTMLDropdown() {
 
 function _selectPicker(multi, html, shouldBeSelected) {
     if (lsfUtils.useBootstrap()) { //check if bootstrap loaded
-        return _dropDown(multi ? {'data-container': 'body', 'multiple': ''} : {'data-container': 'body'},
-            (element) => {
+        return _dropDown(multi ? {'multiple': ''} : {},
+            (element, controller) => {
                 let selectElement = $(element.select);
-                selectElement.selectpicker();
+                selectElement.selectpicker({
+                    container: _getDropdownParent(controller)
+                });
                 selectElement.on('changed.bs.select', function (e, clickedIndex, isSelected) {
                     if (clickedIndex != null && isSelected != null) { //documentation:  If the select's value has been changed either via the .selectpicker('val'), .selectpicker('selectAll'), or .selectpicker('deselectAll') methods, clickedIndex and isSelected will be null.
                         let object = this.children[clickedIndex].object;
@@ -588,10 +588,10 @@ function _selectPicker(multi, html, shouldBeSelected) {
             multi, shouldBeSelected, html, true);
     } else {
         return _dropDown(multi ? {'multiple': ''} : {},
-            (element) => {
+            (element, controller) => {
                 let select = element.select;
                 $(select).multipleSelect({
-                    container: 'body',
+                    container: _getDropdownParent(controller),
                     selectAll: false,
                     position: 'bottom', // todo. bottom is default, but at the bottom of the screen dropdown is hidden and need to be 'top'
                     // position: 'top',
@@ -618,7 +618,7 @@ function _selectPicker(multi, html, shouldBeSelected) {
 
 function _selectDropdown(shouldBeSelected) {
     return _dropDown({},
-        (element) => {
+        (element, controller) => {
             element.select.addEventListener('change', function () {
                 _changeSingleDropdownProperty(this.selectedOptions[0].object, element);
             })
@@ -671,7 +671,7 @@ function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBo
                 select.appendChild(option);
             }
 
-            render(element);
+            render(element, controller);
 
             // both for multiple and single
             if (_isInGrid(element)) {
@@ -887,4 +887,9 @@ function _changeSingleDropdownProperty(object, element) {
 
 function _getName(object) {
     return object.name != null ? String(object.name) : '';
+}
+
+function _getDropdownParent(controller) {
+    let dropdownParent = controller.getDropdownParent();
+    return dropdownParent != null ? dropdownParent : 'body'
 }

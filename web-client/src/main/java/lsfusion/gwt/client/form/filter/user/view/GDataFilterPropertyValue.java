@@ -6,6 +6,7 @@ import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.classes.data.GColorType;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
@@ -216,6 +217,11 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     @Override
     public RendererType getRendererType() {
         return RendererType.FILTER;
+    }
+
+    @Override
+    protected GComponent getComponent() {
+        return condition.filter;
     }
 
     @Override

@@ -1198,11 +1198,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     }
 
     @Override
-    public GFormController getForm() {
-        return form;
-    }
-
-    @Override
     public boolean globalCaptionIsDrawn() {
         return true;
     }
@@ -1960,7 +1955,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         final MenuBar menuBar = new MenuBar(true);
         for(String caption : menuItems) {
             MenuItem menuItem = new MenuItem(caption, () -> {
-                GwtClientUtils.hideTippyPopup(popup.result);
+                GwtClientUtils.hideAndDestroyTippyPopup(popup.result);
                 config = reduceRows(config, config.getArrayString("rows"), rowKeyValues.length());
 
                 ArrayList<GPropertyFilter> filters = new ArrayList<>();

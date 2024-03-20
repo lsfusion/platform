@@ -23,6 +23,7 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import static java.lang.Math.max;
 import static lsfusion.gwt.client.base.GwtSharedUtils.isRedundantString;
@@ -516,37 +517,36 @@ public class GwtClientUtils {
     }
 
     public static JavaScriptObject showTippyPopup(Widget ownerWidget, Element popupElementClicked, Element popupElement, Runnable onHideAction) {
-        JavaScriptObject tippy = initTippy(ownerWidget, popupElementClicked, 0, "manual", onHideAction);
-
-        updateTippyContent(tippy, popupElement);
+        JavaScriptObject tippy = initTippyPopup(ownerWidget, popupElementClicked, popupElement, "manual", onHideAction, null, null);
         showTippy(tippy);
-
         return tippy;
     }
 
-    public static JavaScriptObject initTippy(Widget ownerWidget, Element tippyElement, int delay, String trigger, Runnable onHideAction) {
-        JavaScriptObject tippy = initTippy(nvl(getTippyParent(tippyElement), RootPanel.get().getElement()), tippyElement, delay, trigger, onHideAction);
+    public static JavaScriptObject initTippyPopup(Widget ownerWidget, Element popupElementClicked, Element popupElement, String target, Runnable onHideAction, Runnable onShowAction, Supplier<Element> referenceElementSupplier) {
+        JavaScriptObject tippy = initTippy(ownerWidget, popupElementClicked, 0, target, onHideAction, onShowAction, referenceElementSupplier);
+        updateTippyContent(tippy, popupElement);
+        return tippy;
+    }
+
+    public static JavaScriptObject initTippy(Widget ownerWidget, Element tippyElement, int delay, String trigger, Runnable onHideAction, Runnable onShowAction, Supplier<Element> referenceElementSupplier) {
+        JavaScriptObject tippy = initTippy(nvl(getTippyParent(tippyElement), RootPanel.get().getElement()), tippyElement, delay, trigger, onHideAction, onShowAction, referenceElementSupplier);
         if(ownerWidget != null) {
             ownerWidget.addAttachHandler(attachEvent -> {
                 if(!attachEvent.isAttached()) {
-                    GwtClientUtils.hideTippyPopup(tippy, true);
+                    GwtClientUtils.hideAndDestroyTippyPopup(tippy, true);
                 }
             });
         }
         return tippy;
     }
 
-    public static void hideTippyPopup(JavaScriptObject popup) {
-        hideTippyPopup(popup, false);
+    public static void hideAndDestroyTippyPopup(JavaScriptObject popup) {
+        hideAndDestroyTippyPopup(popup, false);
     }
-    public static native void hideTippyPopup(JavaScriptObject popup, boolean silent)/*-{
-        if(popup != null) {
-            popup.props.silent = silent;
-            // probably it should be checked if popup's already hidden, but it seems, that there is no such method
-            popup.hide();
-            popup.destroy();
-        }
-    }-*/;
+    public static void hideAndDestroyTippyPopup(JavaScriptObject popup, boolean silent) {
+        hideTippy(popup, silent);
+        destroyTippy(popup);
+    };
 
     public static native void updateTippyContent(JavaScriptObject tippy, Element content)/*-{
         tippy.setContent(content);
@@ -556,11 +556,21 @@ public class GwtClientUtils {
             tippy.enable();
     }-*/;
 
-    private static native void showTippy(JavaScriptObject tippy)/*-{
+    public static native void showTippy(JavaScriptObject tippy)/*-{
         tippy.show();
     }-*/;
+    public static void hideTippy(JavaScriptObject popup) {
+        hideTippy(popup, false);
+    }
+    public static native void hideTippy(JavaScriptObject tippy, boolean silent)/*-{
+        tippy.props.silent = silent;
+        tippy.hide();
+    }-*/;
+    public static native void destroyTippy(JavaScriptObject tippy)/*-{
+        tippy.destroy();
+    }-*/;
 
-    private static native JavaScriptObject initTippy(Element appendToElement, Element element, int delay, String trigger, Runnable onHideAction)/*-{
+    private static native JavaScriptObject initTippy(Element appendToElement, Element element, int delay, String trigger, Runnable onHideAction, Runnable onShowAction, Supplier<Element> referenceElementSupplier)/*-{
         return $wnd.tippy(element, {
             appendTo: appendToElement,
             //content: contentElement,
@@ -587,9 +597,23 @@ public class GwtClientUtils {
                     },
                 ],
             },
+            getReferenceClientRect: function() {
+                var referenceElement = null;
+                // changing reference element to the inner one if needed (this.contextElement.getBoundingClientRect() seems to be the default implementation)
+                if(referenceElementSupplier != null)
+                    referenceElement = referenceElementSupplier.@Supplier::get()();
+                if(referenceElement == null)
+                    referenceElement = this.contextElement;
+                return referenceElement.getBoundingClientRect();
+            },
             zIndex: 1070,
             silent: false,
-            onHide: function() {
+            onShow: function() {
+                if(onShowAction != null && !this.silent) {
+                    onShowAction.@java.lang.Runnable::run()();
+                }
+            },
+            onHidden: function() {
                 if(onHideAction != null && !this.silent) {
                     onHideAction.@java.lang.Runnable::run()();
                 }

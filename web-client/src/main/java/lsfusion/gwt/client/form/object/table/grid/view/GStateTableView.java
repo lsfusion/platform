@@ -324,6 +324,10 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         return properties.isEmpty();
     }
 
+    public Element getDropdownParent(Element element) {
+        return GFormController.getDropdownParent(element);
+    }
+
     @Override
     public long getSetRequestIndex() {
         return setRequestIndex;

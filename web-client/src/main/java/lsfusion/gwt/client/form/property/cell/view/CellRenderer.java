@@ -205,7 +205,7 @@ public abstract class CellRenderer {
         if(valueTooltipHelper != null) {
             JavaScriptObject valueTippy = (JavaScriptObject) element.getPropertyObject("valueTippy");
             if(valueTippy != null) {
-                GwtClientUtils.hideTippyPopup(valueTippy);
+                GwtClientUtils.hideAndDestroyTippyPopup(valueTippy);
             } else
                 assert false;
         }

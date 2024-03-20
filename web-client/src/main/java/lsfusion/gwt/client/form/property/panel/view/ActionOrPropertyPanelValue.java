@@ -6,6 +6,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
@@ -138,6 +139,11 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
     @Override
     public RendererType getRendererType() {
         return RendererType.PANEL;
+    }
+
+    @Override
+    protected GComponent getComponent() {
+        return property;
     }
 
     @Override
