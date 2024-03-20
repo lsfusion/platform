@@ -62,6 +62,9 @@ public class GwtClientUtils {
             setFocusElement: function (element, focusElement) {
                 return @lsfusion.gwt.client.form.property.cell.view.CellRenderer::setFocusElement(*)(element, focusElement);
             },
+            addFocusPartner: function (element, partner) {
+                return @lsfusion.gwt.client.base.view.grid.DataGrid::addFocusPartner(*)(element, partner, null);
+            },
             clearFocusElement: function (element) {
                 return @lsfusion.gwt.client.form.property.cell.view.CellRenderer::clearFocusElement(*)(element);
             },

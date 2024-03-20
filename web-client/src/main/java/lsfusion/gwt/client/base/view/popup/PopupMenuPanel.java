@@ -582,17 +582,18 @@ public class PopupMenuPanel extends ComplexPanel {
             if (topPosition != -1) {
                 setPopupPosition(leftPosition, topPosition);
             }
+            // !!! PATCHED we need to append child somewhere anyway to attach widget
+            RootPanel.get().add(this);
             if(parent != null) {
                 parent.appendChild(getElement());
-            } else {
-                RootPanel.get().add(this);
             }
         } else {
             if(parent != null) {
-                parent.removeChild(getElement());
-            } else {
-                RootPanel.get().remove(this);
+                RootPanel.get().getElement().appendChild(getElement()); // moving child back to remove after
+//                parent.removeChild(getElement());
             }
+            // !!! PATCHED we need to append child somewhere anyway to attach widget
+            RootPanel.get().remove(this);
         }
         getElement().getStyle().setProperty("overflow", "visible");
 

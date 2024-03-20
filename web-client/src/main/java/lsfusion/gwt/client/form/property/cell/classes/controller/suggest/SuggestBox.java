@@ -81,9 +81,6 @@ public abstract class SuggestBox {
 
         Element tippyParent = GwtClientUtils.getTippyParent(parent);
         this.suggestionPopup = new PopupMenuPanel(tippyParent);
-        if(tippyParent != null) {
-            RootPanel.get().add(suggestionPopup);
-        }
 
         this.completionType = completionType;
         this.commitSelection = commitSelection;

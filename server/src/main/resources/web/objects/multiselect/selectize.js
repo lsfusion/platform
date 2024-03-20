@@ -1257,6 +1257,11 @@
 
   $.extend(Selectize.prototype, {
 
+    // !!! PATCHED !!!!
+    isFakeBlur: function(e) {
+      var self      = this;
+      return self.$dropdown.has(e.relatedTarget).length || self.$control.has(e.relatedTarget).length;
+    },
     /**
      * Creates all elements and sets up event bindings.
      */
@@ -1370,9 +1375,12 @@
         keypress  : function() { return self.onKeyPress.apply(self, arguments); },
         input     : function() { return self.onInput.apply(self, arguments); },
         resize    : function() { self.positionDropdown.apply(self, []); },
-        // blur      : function() { return self.onBlur.apply(self, arguments); },
+        blur      : function() { return self.onBlur.apply(self, arguments); },
         focus     : function() { self.ignoreBlur = false; return self.onFocus.apply(self, arguments); },
         paste     : function() { return self.onPaste.apply(self, arguments); }
+      });
+      $dropdown.on({
+        blur      : function() { return self.onBlur.apply(self, arguments); },
       });
 
       $document.on('keydown' + eventNS, function(e) {
@@ -1387,20 +1395,21 @@
         if (e.keyCode === KEY_CMD) self.isCmdDown = false;
       });
 
-      $document.on('mousedown' + eventNS, function(e) {
-        if (self.isFocused) {
-          // prevent events on the dropdown scrollbar from causing the control to blur
-          if (e.target === self.$dropdown[0] || e.target.parentNode === self.$dropdown[0]) {
-            return false;
-          }
-          // blur on click outside
-          // do not blur if the dropdown is clicked
-          // PATCHED !!! != changed to has, because remove_button plugin adds its own inner elements, and clicking on them will lead to blur
-          if (!self.$dropdown.has(e.target).length && !self.$control.has(e.target).length) {
-            self.blur(e.target);
-          }
-        }
-      });
+      // !!! PATCHED we don't need this because now we rely on the blur event !!!!
+      // $document.on('mousedown' + eventNS, function(e) {
+      //   if (self.isFocused) {
+      //     // prevent events on the dropdown scrollbar from causing the control to blur
+      //     if (e.target === self.$dropdown[0] || e.target.parentNode === self.$dropdown[0]) {
+      //       return false;
+      //     }
+      //     // blur on click outside
+      //     // do not blur if the dropdown is clicked
+      //     // PATCHED !!! != changed to has, because remove_button plugin adds its own inner elements, and clicking on them will lead to blur
+      //     if (!self.$dropdown.has(e.target).length && !self.$control.has(e.target).length) {
+      //       self.blur(e.target);
+      //     }
+      //   }
+      // });
 
       $window.on(['scroll' + eventNS, 'resize' + eventNS].join(' '), function() {
         if (self.isOpen) {
@@ -1840,6 +1849,10 @@
      */
     onBlur: function(e, dest) {
       var self = this;
+
+      if(self.isFakeBlur(e))
+        return;
+
       if (!self.isFocused) return;
       self.isFocused = false;
 

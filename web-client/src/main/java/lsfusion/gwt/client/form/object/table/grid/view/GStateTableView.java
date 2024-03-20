@@ -129,7 +129,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     }
 
     private final Widget drawWidget;
-    protected Element getDrawElement() {
+    public Element getDrawElement() {
         return drawWidget.getElement();
     }
 

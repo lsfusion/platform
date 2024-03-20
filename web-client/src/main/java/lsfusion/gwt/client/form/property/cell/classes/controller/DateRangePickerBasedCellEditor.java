@@ -172,7 +172,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
                 messages.@lsfusion.gwt.client.ClientMessages::clear()(), @lsfusion.gwt.client.view.MainFrame::preDefinedDateRangesNames) : undefined,
             singleDatePicker: singleDatePicker,
             drops: 'auto',
-            opens: thisObj.@DateRangePickerBasedCellEditor::getHorzTextAlignment()().@com.google.gwt.dom.client.Style.TextAlign::getCssName()(),
+            opens: 'left', // thisObj.@DateRangePickerBasedCellEditor::getHorzTextAlignment()().@com.google.gwt.dom.client.Style.TextAlign::getCssName()()
             alwaysShowCalendars: true,
         };
         if(startDate != null) { // needed for the 2-year digit dates

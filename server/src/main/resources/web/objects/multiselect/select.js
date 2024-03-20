@@ -102,14 +102,15 @@ function selectMultiInput() {
                     if(!element.silent) {
                         let originalObject = this.options[value].originalObject;
 
-                        this.removeOption(value, true);
+                        // removing option will make it not possible to select this option once again (it will be removed from the list which is not we want)
+                        // this.removeOption(value, true);
 
                         element.controller.changeProperty('selected', originalObject, null, "remove");
                     }
                 },
                 onDropdownOpen: function (dropdown) {
-                    // setting autoHidePartner to avoid fake blurs
-                    dropdown[0].autoHidePartner = element;
+                    // setting auto hide partner to avoid fake blurs
+                    lsfUtils.addFocusPartner(element, dropdown[0]);
                     this.setCaret(this.items.length);
                     _setIsEditing(this.$control[0], true);
                 },
@@ -144,8 +145,8 @@ function selectMultiInput() {
 
             // we need to do it here, not in update to have relevant focusElement
             let selectizeInstance = element.selectizeInstance[0].selectize;
+            lsfUtils.setFocusElement(element, selectizeInstance.$control_input[0]);
             if(!isList)
-                lsfUtils.setFocusElement(element, selectizeInstance.$control_input[0])
                 lsfUtils.setReadonlyFnc(element, (readonly) => {
                     if(readonly != null) {
                         if (readonly) {
@@ -157,7 +158,7 @@ function selectMultiInput() {
                     } else {
                         selectizeInstance.enable();
                     }
-                })
+                });
         },
         update: function (element, controller, list, extraValue) {
             element.silent = true; // onItemAdd / Remove somewhy is not silenced
@@ -204,7 +205,7 @@ function selectMultiInput() {
             element.silent = false;
         },
         clear: function (element) {
-            lsfUtils.clearFocusElement(element); // !isList check should be here
+            lsfUtils.clearFocusElement(element);
             lsfUtils.clearReadonlyFnc(element); // !isList check should be here
 
             element.selectizeInstance[0].selectize.destroy();
@@ -363,10 +364,9 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
                     divClasses.forEach(divClass => options.classList.add(divClass));
             }
 
-            if(!isList) {
-                lsfUtils.setFocusElement(element, null);
+            lsfUtils.setFocusElement(element, null);
+            if(!isList)
                 lsfUtils.setReadonlyFnc(element, null);
-            }
 
             // allow to navigate in custom button group component in grid cell by pressed shift + left / right or shift + up / down
             // for some reason it doesn't work with ctrl button
@@ -529,7 +529,7 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
             lsfUtils.setFocusElement(element, focusInput);
         },
         clear: function (element) {
-            lsfUtils.clearFocusElement(element); // !isList check should be here
+            lsfUtils.clearFocusElement(element);
         }
     }
 }
@@ -651,8 +651,8 @@ function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBo
 
             _removeAllPMBInTD(element, select);
 
+            lsfUtils.setFocusElement(element, select);
             if(!isList) {
-                lsfUtils.setFocusElement(element, select);
                 lsfUtils.setReadonlyFnc(element, (readonly) => {
                     _setSelectReadonly(select, readonly);
                 });
@@ -828,7 +828,7 @@ function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBo
             }
         },
         clear: function (element) {
-            lsfUtils.clearFocusElement(element); // !isList check should be here
+            lsfUtils.clearFocusElement(element);
             lsfUtils.clearReadonlyFnc(element); // !isList check should be here
         }
     }

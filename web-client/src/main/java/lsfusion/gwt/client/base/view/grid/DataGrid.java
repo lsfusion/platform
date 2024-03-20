@@ -360,7 +360,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         partner.setPropertyObject("focusPartner", element);
         partner.setTabIndex(-1); // we need this to have related target in isFakeBlur, otherwise it won't work
         GwtClientUtils.setOnFocusOut(partner, event -> {
-            if(!isFakeBlur(event, element) && !customFakeBlur.test(partner)) // if the focus is not returned to the element
+            if(!isFakeBlur(event, element) && !(customFakeBlur != null && customFakeBlur.test(partner))) // if the focus is not returned to the element
                 GwtClientUtils.fireOnBlur(element);
         });
     }

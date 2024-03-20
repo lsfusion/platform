@@ -49,12 +49,11 @@ public class FocusUtils {
         focus(element, reason, null);
     }
     public static void focus(Element element, Reason reason, Event event) {
-        select(element, reason, event);
-
         Object prevReason = element.getPropertyObject(focusReason); // just in case when there are nested focuses
         assert prevReason == null || prevReason == reason;
         element.setPropertyObject(focusReason, reason);
         try {
+            select(element, reason, event); // need to be inside to have focusReason, because select can eventually call focus
             focus(element, reason.preventScroll());
         } finally {
             element.setPropertyObject(focusReason, prevReason);

@@ -1096,10 +1096,16 @@
             });
             var containerWidth = this.container.outerWidth();
 
+            // !!! PATCHED: when we have auto size, somewhy auto is limited by the parent element size (for example popup) and that is not what we want
+            if(!this.parentEl.is('body')) {
+                this.container.css({
+                    width: Math.ceil(containerWidth)
+                });
+            }
+
             this.container.toggleClass('drop-up', drops == 'up');
 
-            //PATCHED: swap 'left' to 'right' because this library swap them inexplicably for what
-            if (this.opens == 'right') {
+            if (this.opens == 'left') {
                 var containerRight = parentRightEdge - this.element.offset().left - this.element.outerWidth();
                 if (containerWidth + containerRight > $(window).width()) {
                     this.container.css({

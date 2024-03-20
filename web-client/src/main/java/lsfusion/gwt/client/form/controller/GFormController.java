@@ -91,10 +91,7 @@ import net.customware.gwt.dispatch.shared.Result;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.*;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
+import java.util.function.*;
 import java.util.stream.Collectors;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.*;

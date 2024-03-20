@@ -12,6 +12,7 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.TableContainer;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.form.property.cell.view.CustomCellRenderer;
 
 public class GCustom extends GTippySimpleStateTableView {
     private final JavaScriptObject renderFunction;
@@ -32,8 +33,11 @@ public class GCustom extends GTippySimpleStateTableView {
 
     @Override
     public void onRender(Event editEvent) {
+        Element drawElement = getDrawElement();
+        CustomCellRenderer.setCustomElement(drawElement);
+
         if (renderFunctionWithoutArguments)
-            render(renderFunction, getDrawElement(), controller, editEvent);
+            render(renderFunction, drawElement, controller, editEvent);
     }
 
     @Override

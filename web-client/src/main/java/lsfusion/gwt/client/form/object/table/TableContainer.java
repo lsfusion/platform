@@ -8,12 +8,15 @@ import com.google.gwt.event.dom.client.ScrollEvent;
 import com.google.gwt.event.dom.client.TouchMoveEvent;
 import com.google.gwt.event.shared.EventHandler;
 import com.google.gwt.user.client.Event;
+import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.view.HasMaxPreferredSize;
 import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.object.table.grid.view.GCustom;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
 public class TableContainer extends ResizableSimplePanel implements HasMaxPreferredSize {
 
@@ -108,7 +111,7 @@ public class TableContainer extends ResizableSimplePanel implements HasMaxPrefer
             removeStyleName("tableContainerBoxed");
         
         if (pendingFocusEvent != null) {
-            propagateFocusToGrid(DataGrid.getTargetAndCheck(getFocusElement(), pendingFocusEvent), pendingFocusEvent);
+            propagateFocusToGrid(DataGrid.getTargetAndCheck(getElement(), pendingFocusEvent), pendingFocusEvent);
             pendingFocusEvent = null;
         }
     }
@@ -159,6 +162,23 @@ public class TableContainer extends ResizableSimplePanel implements HasMaxPrefer
             return;
         isFocused = true;
         addStyleName("tableContainerFocused");
+        focusedChanged(target, event);
+    }
+
+    public void focusedChanged(Element target, Event focusEvent) {
+        Element drawElement = null;
+        if(tableComponent instanceof GCustom)
+            drawElement = ((GCustom) tableComponent).getDrawElement();
+        form.checkFocusElement(isFocused, drawElement);
+        if(isFocused && drawElement != null) {
+            Object focusElement = CellRenderer.getFocusElement(drawElement);
+            if (focusElement != null && focusElement != CellRenderer.NULL && focusElement != target) { // last check - optimization
+                FocusUtils.Reason reason = FocusUtils.getFocusReason(target);
+                if (reason == null)
+                    reason = FocusUtils.Reason.OTHER;
+                FocusUtils.focus((Element) focusElement, reason);
+            }
+        }
     }
 
     protected void onBlur(Element target, Event event) {
@@ -171,11 +191,12 @@ public class TableContainer extends ResizableSimplePanel implements HasMaxPrefer
             grid.onGridBrowserEvent(target, event);
         }
 
-        if(!isFocused || DataGrid.isFakeBlur(event, getFocusElement())) {
+        if(!isFocused || DataGrid.isFakeBlur(event, getElement())) {
             return;
         }
         isFocused = false;
         removeStyleName("tableContainerFocused");
+        focusedChanged(target, event);
     }
 
     public void setPreferredSize(boolean set, Result<Integer> grids) {
