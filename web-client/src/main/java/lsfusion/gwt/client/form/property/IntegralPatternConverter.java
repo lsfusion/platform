@@ -18,9 +18,10 @@ public class IntegralPatternConverter {
             JSNIHelper.setAttribute(options, "alias", "decimal");
 //            if (pOptions.minFractionalLength == 0 || pOptions.minFractionalLength == pOptions.maxFractionalLength) { // .### or .000
             JSNIHelper.setAttribute(options, "digits", String.valueOf(pOptions.maxFractionalLength));
-            if (pOptions.minFractionalLength == pOptions.maxFractionalLength) { // .000
-                JSNIHelper.setAttribute(options, "digitsOptional", false);
-            }
+//            temporary disabled due to several issues
+//            if (pOptions.minFractionalLength == pOptions.maxFractionalLength) { // .000
+//                JSNIHelper.setAttribute(options, "digitsOptional", false);
+//            }
 //            } else { // .00#
 //                JSNIHelper.setAttribute(options, "digits", pOptions.minFractionalLength + "," + pOptions.maxFractionalLength);
 //            }
