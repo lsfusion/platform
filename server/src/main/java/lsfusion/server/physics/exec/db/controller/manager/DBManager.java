@@ -1667,7 +1667,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             ImplementTable newTable = newProperty.getTable();
             NamedTable oldTable = oldDBStructure.getTable(oldProperty.tableName);
 
-            sql.addColumn(newTable, newProperty.property.field);
+            sql.addColumn(newTable, newProperty.property.field, false);
             runWithStartLog(() -> newTable.moveColumn(sql, newProperty.property.field, oldTable, move.mapKeys, oldTable.findProperty(oldProperty.getDBName())),
                     localize(LocalizedString.createFormatted("{logics.info.property.transferring.from.table.to.table}", newProperty.property.field, newProperty.property.caption, oldProperty.tableName, newProperty.tableName)));
 
@@ -1729,7 +1729,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     private static void createColumns(SQLSession sql, List<DBStoredProperty> restNewDBStored) throws SQLException {
         for (DBStoredProperty property : restNewDBStored) // добавляем оставшиеся
-            sql.addColumn(property.getTable(), property.property.field);
+            sql.addColumn(property.getTable(), property.property.field, Settings.get().isStartServerAnyWay());
     }
 
     private static void changeKeyTypes(SQLSession sql, OldDBStructure oldDBStructure, NewDBStructure newDBStructure) throws SQLException {
@@ -1754,7 +1754,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         startLog("Creating tables");
         for (NamedTable table : newDBStructure.tables.keySet()) {
             if (oldDBStructure.getTable(table.getName()) == null)
-                sql.createTable(table, table.keys);
+                sql.createTable(table, table.keys, Settings.get().isStartServerAnyWay());
         }
     }
 

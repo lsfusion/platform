@@ -740,9 +740,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             DatabaseMetaData metaData = connection.sql.getMetaData();
             ResultSet tables = metaData.getTables(null, null, syntax.getMetaName(table.getName()), new String[]{"TABLE"});
             if (!tables.next()) {
-                createTable(table, table.keys);
+                createTable(table, table.keys, false);
                 for (PropertyField property : table.properties)
-                    addColumn(table, property);
+                    addColumn(table, property, false);
             }
         } finally {
             try {
@@ -753,9 +753,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
 
-    public void addExtraIndexes(NamedTable table, ImOrderSet<KeyField> keys) throws SQLException {
+    public void addExtraIndexes(NamedTable table, ImOrderSet<KeyField> keys, boolean ifNotExists) throws SQLException {
         for(int i=1;i<keys.size();i++)
-            addIndex(table, BaseUtils.<ImOrderSet<Field>>immutableCast(keys).subOrder(i, keys.size()).toOrderMap(true));
+            addIndex(table, BaseUtils.<ImOrderSet<Field>>immutableCast(keys).subOrder(i, keys.size()).toOrderMap(true), defaultIndexOptions, ifNotExists);
     }
 
     public void checkExtraIndexes(SQLSession threadLocalSQL, NamedTable table, ImOrderSet<KeyField> keys) throws SQLException, SQLHandledException {
@@ -779,7 +779,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         return SetFact.toOrderExclSet(keys.size(), i -> BaseUtils.<ImOrderSet<Field>>immutableCast(keys).subOrder(i, keys.size())).getSet();
     }
 
-    public void createTable(NamedTable table, ImOrderSet<KeyField> keys) throws SQLException {
+    public void createTable(NamedTable table, ImOrderSet<KeyField> keys, boolean ifNotExists) throws SQLException {
         MStaticExecuteEnvironment env = StaticExecuteEnvironmentImpl.mEnv();
 
         if (keys.size() == 0)
@@ -788,8 +788,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         createString = createString + "," + getConstraintDeclare(table.getName(), keys, syntax);
 
 //        System.out.println("CREATE TABLE "+Table.Name+" ("+CreateString+")");
-        executeDDL("CREATE TABLE " + table.getName(syntax) + " (" + createString + ")", env.finish());
-        addExtraIndexes(table, keys);
+        executeDDL("CREATE TABLE " + (ifNotExists ? "IF NOT EXISTS " : "")  + table.getName(syntax) + " (" + createString + ")", env.finish());
+        addExtraIndexes(table, keys, ifNotExists);
     }
 
     public void renameTable(NamedTable table, String newTableName) throws SQLException {
@@ -1083,9 +1083,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 //        executeDerived("CREATE INDEX " + "idx_" + table + "_" + field.name + " ON " + table + " (" + field.name + ")"); //COLUMN
     }*/
 
-    public void addColumn(NamedTable table, PropertyField field) throws SQLException {
+    public void addColumn(NamedTable table, PropertyField field, boolean ifNotExists) throws SQLException {
         MStaticExecuteEnvironment env = StaticExecuteEnvironmentImpl.mEnv();
-        executeDDL("ALTER TABLE " + table.getName(syntax) + " ADD " + field.getDeclare(syntax, env), env.finish()); //COLUMN
+        executeDDL("ALTER TABLE " + table.getName(syntax) + " ADD " + (ifNotExists ? "IF NOT EXISTS " : "") + field.getDeclare(syntax, env), env.finish()); //COLUMN
     }
 
     public void dropColumn(String table, String field, boolean ifExists) throws SQLException {
