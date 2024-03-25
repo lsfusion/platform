@@ -23,7 +23,6 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.MouseWheelHandler;
 import com.google.gwt.event.dom.client.ScrollHandler;
 import com.google.gwt.event.dom.client.TouchMoveHandler;
-import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.AbstractNativeScrollbar;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -50,7 +49,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import static java.lang.Math.min;
@@ -337,51 +335,13 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         CellBasedWidgetImpl.get().sinkEvents(widget, getBrowserDragDropEvents());
     }
 
-    public static boolean isFakeBlur(NativeEvent event, Element blur) {
-        EventTarget focus = event.getRelatedEventTarget();
-        if(focus == null)
-            return false;
-
-        return isFakeBlur(blur, Element.as(focus));
-    }
-
-    private static boolean isFakeBlur(Element element, Element focusElement) {
-        if(element.isOrHasChild(focusElement))
-            return true;
-
-        Element autoHidePartner = GwtClientUtils.getParentWithProperty(focusElement, "focusPartner");
-        if(autoHidePartner != null)
-            return isFakeBlur(element, (Element) autoHidePartner.getPropertyObject("focusPartner"));
-
-        return false;
-    }
-
-    public static void addFocusPartner(Element element, Element partner, Predicate<Element> customFakeBlur) {
-        partner.setPropertyObject("focusPartner", element);
-        partner.setTabIndex(-1); // we need this to have related target in isFakeBlur, otherwise it won't work
-        GwtClientUtils.setOnFocusOut(partner, event -> {
-            if(!isFakeBlur(event, element) && !(customFakeBlur != null && customFakeBlur.test(partner))) // if the focus is not returned to the element
-                GwtClientUtils.fireOnBlur(element); // ??? mayber relatedEventTarget should be preserved
-        });
-    }
-
     public static Element getBrowserTargetAndCheck(Element element, Event event) {
-        // there is a problem with non-bubbling events (there are not many such events, see CellBasedWidgetImplStandard.nonBubblingEvents, so basically focus events):
-        // handleNonBubblingEvent just looks for the first event listener
-        // but if there are 2 widgets listening to the focus events (for example when in ActionOrPropertyValue there is an embedded form and there is a TableContainer inside)
-        // then the lower widget gets both blur events (there 2 of them with different current targets, i.e supposed to be handled by different elements) and the upper widget gets none of them (which leads to the very undesirable behaviour with the "double" finishEditing, etc.)
-        if(DataGrid.checkSinkFocusEvents(event)) { // there is a bubble field, but it does
-            EventTarget currentEventTarget = event.getCurrentEventTarget();
-            if(Element.is(currentEventTarget)) {
-                Element currentTarget = currentEventTarget.cast();
-                // maybe sinked focus events should be checked for the currentTarget
-                if(!currentTarget.equals(element) && DOM.dispatchEvent(event, currentTarget))
-                    return null;
-            }
-        }
+        if (FocusUtils.propagateFocusEvent(element, event))
+            return null;
 
         return getTargetAndCheck(element, event);
     }
+
     public static Element getTargetAndCheck(Element element, Event event) {
         EventTarget eventTarget = event.getEventTarget();
         //it seems that now all this is not needed
@@ -990,7 +950,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     }
 
     public void onBlur(Element target, Event event) {
-        if(!isFocused || isFakeBlur(event, getElement()))
+        if(!isFocused || FocusUtils.isFakeBlur(event, getElement()))
             return;
         //if !isFocused should be replaced to assert; isFocused must be true, but sometimes is not (related to BusyDialogDisplayer)
         //assert isFocused;

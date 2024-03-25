@@ -1944,7 +1944,7 @@ public class GFormController implements EditManager {
             requestCellEditor.commit(getEditElement(), CommitReason.FORCED_BLURRED);
         else
             if(focusedCustom != null) {
-                Element focusedElement = getFocusedChild(focusedCustom);
+                Element focusedElement = FocusUtils.getFocusedChild(focusedCustom);
                 if(focusedElement != null) { // we do the fake blur to call onBlur, because custom render
                     forcedBlurCustom = true;
                     try {
@@ -2246,7 +2246,7 @@ public class GFormController implements EditManager {
 
             edit(cellEditor, handler, oldValue, beforeCommit, afterCommit, cancel, editContext, editAsyncValuesSID, -1);
         } else
-            cancel.accept(CancelReason.OTHER);
+            cancel.accept(CancelReason.FORCED);
     }
 
     public void edit(CellEditor cellEditor, EventHandler handler, PValue oldValue, BiConsumer<GUserInputResult, CommitReason> beforeCommit, BiConsumer<GUserInputResult, CommitReason> afterCommit,
@@ -2261,6 +2261,9 @@ public class GFormController implements EditManager {
         this.editContext = editContext;
         this.editRequestIndex = editRequestIndex;  // we need to force dispatch responses till this index because otherwise we won't
 
+        focusedElement = FocusUtils.getFocusedElement();
+        FocusUtils.startFocusTransaction();
+
         Element element = getEditElement();
 
         element.addClassName("is-editing");
@@ -2272,8 +2275,6 @@ public class GFormController implements EditManager {
 
         RenderContext renderContext = editContext.getRenderContext();
         if (cellEditor instanceof ReplaceCellEditor && ((ReplaceCellEditor) cellEditor).needReplace(element, renderContext)) {
-            focusedElement = GwtClientUtils.getFocusedElement();
-
             GPropertyDraw property = editContext.getProperty();
             CellRenderer cellRenderer = property.getCellRenderer(renderContext.getRendererType());
 
@@ -2292,6 +2293,8 @@ public class GFormController implements EditManager {
 
         this.cellEditor = cellEditor; // not sure if it should before or after startEditing, but definitely after removeAllChildren, since it leads to blur for example
         cellEditor.start(handler, element, renderContext, notFocusable, oldValue); //need to be after this.cellEditor = cellEditor, because there is commitEditing in start in LogicalCellEditor
+
+        FocusUtils.endFocusTransaction();
     }
 
     // only request cell editor can be long-living
@@ -2320,7 +2323,7 @@ public class GFormController implements EditManager {
 
     @Override
     public void cancelEditing(CancelReason cancelReason) {
-        finishEditing(false, true);
+        finishEditing(cancelReason.isBlurred(), true);
 
         editCancel.accept(cancelReason);
         editCancel = null;
@@ -2343,6 +2346,8 @@ public class GFormController implements EditManager {
 //        this.editRequestIndex = -1; //it doesn't matter since it is not used when editContext / cellEditor is null
         this.editAsyncUsePessimistic = false;
         this.editAsyncValuesSID = null;
+
+        FocusUtils.startFocusTransaction();
 
         if(cellEditor instanceof RequestCellEditor)
             ((RequestCellEditor)cellEditor).stop(renderElement, cancel, blurred);
@@ -2367,21 +2372,20 @@ public class GFormController implements EditManager {
             forceSetFocus = null;
         }
 
-        if(isReplace) {
-
-            if(blurred) { // when editing is commited (thus editing element is removed), set last blurred element to main widget to keep focus there
-                if(editContext.isSetLastBlurred()) {
-                    Element focusElement = editContext.getFocusElement();
-                    if(focusElement != null)
-                        MainFrame.setLastBlurredElement(focusElement);
-                }
-            } else {
-                if (focusedElement != null) {
-                    FocusUtils.focus(focusedElement, FocusUtils.Reason.RESTOREFOCUS);
-                    focusedElement = null;
-                }
+        if(blurred) { // when editing is commited (thus editing element is removed), set last blurred element to main widget to keep focus there
+            if(editContext.isSetLastBlurred()) {
+                Element focusElement = editContext.getFocusElement();
+                if(focusElement != null)
+                    MainFrame.setLastBlurredElement(focusElement);
+            }
+        } else {
+            if (focusedElement != null) {
+                FocusUtils.focus(focusedElement, FocusUtils.Reason.RESTOREFOCUS);
+                focusedElement = null;
             }
         }
+
+        FocusUtils.endFocusTransaction();
     }
 
     public void render(EditContext editContext) {
@@ -2542,7 +2546,7 @@ public class GFormController implements EditManager {
             return;
 
         if(GMouseStroke.isChangeEvent(handler.event) && focusElement != null &&
-                GwtClientUtils.getFocusedChild(focusElement) == null) { // need to check that focus is not on the grid, otherwise when editing for example embedded form, any click will cause moving focus to grid, i.e. stopping the editing
+                FocusUtils.getFocusedChild(focusElement) == null) { // need to check that focus is not on the grid, otherwise when editing for example embedded form, any click will cause moving focus to grid, i.e. stopping the editing
             if(focusable)
                 FocusUtils.focus(focusElement, FocusUtils.Reason.MOUSECHANGE, handler.event); // it should be done on CLICK, but also on MOUSEDOWN, since we want to focus even if mousedown is later consumed
             else

@@ -3,8 +3,8 @@ package lsfusion.gwt.client.form.property.cell.classes.controller;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
+import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
-import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
@@ -21,7 +21,7 @@ public interface RequestEmbeddedCellEditor extends RequestCellEditor {
             int keyCode = event.getKeyCode();
             if (keyCode == KeyCodes.KEY_ENTER && checkEnterEvent(handler.event)) {
                 handler.consume();
-                commit(parent,  CommitReason.ENTERPRESSED);
+                commit(parent,  CommitReason.ENTER_PRESSED);
             } else if (keyCode == KeyCodes.KEY_ESCAPE && GKeyStroke.isPlainKeyEvent(handler.event)) {
                 handler.consume();
                 cancel(CancelReason.ESCAPE_PRESSED);
@@ -32,7 +32,7 @@ public interface RequestEmbeddedCellEditor extends RequestCellEditor {
     }
 
     default void onBlur(Event event, Element parent) {
-        if (!DataGrid.isFakeBlur(event, parent))
+        if (!FocusUtils.isFakeBlur(event, parent))
             commit(parent, CommitReason.BLURRED);
     }
 

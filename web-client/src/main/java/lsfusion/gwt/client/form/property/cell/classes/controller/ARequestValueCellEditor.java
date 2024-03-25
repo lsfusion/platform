@@ -20,7 +20,7 @@ public abstract class ARequestValueCellEditor implements RequestValueCellEditor 
 
     // force commit with the current value
     public void commit(Element parent, CommitReason commitReason) {
-        validateAndCommit(parent, null, commitReason != CommitReason.ENTERPRESSED, commitReason);
+        validateAndCommit(parent, null, commitReason);
     }
 
     // force commit with the specified value
@@ -52,8 +52,8 @@ public abstract class ARequestValueCellEditor implements RequestValueCellEditor 
         return editManager.isThisCellEditing(this);
     }
 
-    public void validateAndCommit(Element parent, boolean cancelIfInvalid, CommitReason commitReason) {
-        validateAndCommit(parent, null, cancelIfInvalid, commitReason);
+    public void validateAndCommit(Element parent, CommitReason commitReason) {
+        validateAndCommit(parent, null, commitReason);
     }
 
     private boolean cancelTheSameValueOnBlur;
@@ -64,19 +64,19 @@ public abstract class ARequestValueCellEditor implements RequestValueCellEditor 
         cancelTheSameValueOnBlurOldValue = oldValue;
     }
 
-    public void validateAndCommit(Element parent, Integer contextAction, boolean cancelIfInvalid, CommitReason commitReason) {
+    public void validateAndCommit(Element parent, Integer contextAction, CommitReason commitReason) {
         boolean blurred = commitReason.isBlurred();
         SmartScheduler.getInstance().scheduleDeferred(blurred && isDeferredCommitOnBlur(), () -> {
             if (editManager.isThisCellEditing(this)) {
                 try {
                     PValue value = getCommitValue(parent, contextAction);
                     if (cancelTheSameValueOnBlur && (blurred || commitReason.isForcedBlurred()) && GwtClientUtils.nullEquals(value, cancelTheSameValueOnBlurOldValue)) {
-                        cancel();
+                        cancel(commitReason.cancel());
                     } else
                         commitFinish(value, contextAction, commitReason);
                 } catch (InvalidEditException e) {
-                    if (cancelIfInvalid && !e.patternMismatch)
-                        cancel();
+                    if (commitReason.isCancelIfInvalid() && !e.patternMismatch)
+                        cancel(commitReason.cancel());
                 }
             }
         });

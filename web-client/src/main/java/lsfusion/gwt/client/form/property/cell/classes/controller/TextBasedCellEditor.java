@@ -272,7 +272,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
         } else {
             Integer inputActionIndex = property.getKeyInputActionIndex(actions, event, true);
             if(inputActionIndex != null) {
-                validateAndCommit(parent, inputActionIndex, true, CommitReason.FORCED);
+                validateAndCommit(parent, inputActionIndex, CommitReason.FORCED);
                 return;
             }
         }
@@ -519,7 +519,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
                     item.style.minWidth = minWidth + "px";
                 });
             }-*/;
-        }, element, parent, completionType, (suggestion, commitReason) -> validateAndCommit(parent, true, commitReason)) {
+        }, element, parent, completionType, (suggestion, commitReason) -> validateAndCommit(parent, commitReason)) {
 
             @Override
             protected Widget createButtonsPanel(Element parent) {
@@ -546,7 +546,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
                         SuggestPopupButton actionButton = new SuggestPopupButton(action.action) {
                             @Override
                             public ClickHandler getClickHandler() {
-                                return event -> validateAndCommit(parent, action.index, true, CommitReason.FORCED);
+                                return event -> validateAndCommit(parent, action.index, CommitReason.FORCED);
                             }
                         };
                         buttonsPanel.add(actionButton);

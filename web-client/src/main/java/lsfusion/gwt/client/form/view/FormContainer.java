@@ -6,13 +6,13 @@ import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.FocusUtils;
-import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.view.StaticImageWidget;
 import lsfusion.gwt.client.controller.remote.action.navigator.VoidFormAction;
 import lsfusion.gwt.client.controller.remote.action.navigator.VoidNavigatorAction;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.EndReason;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
 import lsfusion.gwt.client.navigator.window.GWindowFormType;
@@ -69,7 +69,7 @@ public abstract class FormContainer {
     }
 
     public void closePressed() {
-        closePressed(null);
+        closePressed(CancelReason.HIDE);
     }
 
     public void closePressed(EndReason reason) {
@@ -121,7 +121,7 @@ public abstract class FormContainer {
 
     private void onSyncBlur(boolean remove) {
         form.lostFocus();
-        focusedElement = remove ? null : GwtClientUtils.getFocusedChild(getFocusedElement());
+        focusedElement = remove ? null : FocusUtils.getFocusedChild(getFocusedElement());
     }
 
     public abstract Element getFocusedElement();

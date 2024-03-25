@@ -6,6 +6,7 @@ import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.GForm;
+import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.controller.SmartScheduler;
@@ -40,7 +41,7 @@ public class EmbeddedForm extends EditingForm {
             // it seems that later this scheme should be used for all onBlur events
             if(event.getRelatedEventTarget() == null) {
                 SmartScheduler.get().scheduleDeferred(() -> {
-                    if(GwtClientUtils.getFocusedChild(parent) == null)
+                    if(FocusUtils.getFocusedChild(parent) == null)
                         RequestReplaceCellEditor.super.onBlur(event, parent);
                 });
             } else {
@@ -103,7 +104,7 @@ public class EmbeddedForm extends EditingForm {
     protected void onSyncFocus(boolean add) {
         super.onSyncFocus(add);
         if(add && editEvent != null) {
-            Element focusedElement = GwtClientUtils.getFocusedElement();
+            Element focusedElement = FocusUtils.getFocusedElement();
             DOM.dispatchEvent(editEvent, focusedElement);
         }
     }

@@ -280,7 +280,7 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
     }
 
     protected void onBlur(EventHandler handler) {
-        if(!isFocused || DataGrid.isFakeBlur(handler.event, getElement())) {
+        if(!isFocused || FocusUtils.isFakeBlur(handler.event, getElement())) {
             return;
         }
         //if !isFocused should be replaced to assert; isFocused must be true, but sometimes is not (related to BusyDialogDisplayer)

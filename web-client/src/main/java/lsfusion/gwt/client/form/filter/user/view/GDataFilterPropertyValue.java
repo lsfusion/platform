@@ -15,9 +15,7 @@ import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.async.GInputListAction;
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.GCompletionType;
-import lsfusion.gwt.client.form.property.cell.classes.view.InputBasedCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
-import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
@@ -36,8 +34,6 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     
     private GInputList inputList;
     private GInputListAction[] inputListActions;
-
-    public boolean enterPressed;
 
     public GDataFilterPropertyValue(GPropertyFilter condition, GFormController form, Consumer<PValue> afterCommit, Consumer<CancelReason> onCancel) {
         super(condition.property, condition.columnKey, form, false, new ActionOrPropertyValueController() {
@@ -129,7 +125,7 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
                 inputList,
                 inputListActions,
                 (result, commitReason) -> setValue(getValue(result)),
-                (result, commitReason) -> acceptCommit(getValue(result), commitReason.equals(CommitReason.ENTERPRESSED)),
+                (result, commitReason) -> acceptCommit(getValue(result)),
                 onCancel,
                 this,
                 inputList.completionType.isExactMatchNeeded() ? ServerResponse.STRICTVALUES : ServerResponse.VALUES, null);
@@ -140,10 +136,8 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
         return GwtClientUtils.escapeSeparator(pastedText, condition.compare);
     }
 
-    private void acceptCommit(PValue result, boolean enterPressed) {
-        this.enterPressed = enterPressed;
+    private void acceptCommit(PValue result) {
         afterCommit.accept(result);
-        this.enterPressed = false;
     }
 
     @Override

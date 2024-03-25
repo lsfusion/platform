@@ -5,7 +5,6 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.BaseStaticImage;
@@ -80,7 +79,7 @@ public abstract class SuggestBox {
         this.inputElement = inputElement;
 
         Element tippyParent = GwtClientUtils.getTippyParent(parent);
-        this.suggestionPopup = new PopupMenuPanel(tippyParent);
+        this.suggestionPopup = new PopupMenuPanel(tippyParent, false); // we use editors and this focus / blur scheme and not the document mouse down
 
         this.completionType = completionType;
         this.commitSelection = commitSelection;
@@ -249,7 +248,7 @@ public abstract class SuggestBox {
             case KeyCodes.KEY_TAB:
                 PopupMenuItemValue suggestion = getCurrentSelection();
                 if (suggestion != null) { //  && completionType.commitSelectionOnEnter()
-                    onItemSelected(suggestion, CommitReason.ENTERPRESSED);
+                    onItemSelected(suggestion, CommitReason.ENTER_PRESSED);
                 }
                 break;
         }

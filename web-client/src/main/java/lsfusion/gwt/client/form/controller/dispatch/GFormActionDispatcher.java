@@ -14,6 +14,7 @@ import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.form.classes.view.ClassChosenHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.EndReason;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
@@ -110,7 +111,7 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
 
     @Override
     public void execute(GHideFormAction action) {
-        form.hideForm(getAsyncFormController(getDispatchingIndex()), action.closeDelay, editFormCloseReason);
+        form.hideForm(getAsyncFormController(getDispatchingIndex()), action.closeDelay, editFormCloseReason != null ? editFormCloseReason : CancelReason.HIDE);
     }
 
     @Override

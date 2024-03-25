@@ -191,7 +191,7 @@ public class TableContainer extends ResizableSimplePanel implements HasMaxPrefer
             grid.onGridBrowserEvent(target, event);
         }
 
-        if(!isFocused || DataGrid.isFakeBlur(event, getElement())) {
+        if(!isFocused || FocusUtils.isFakeBlur(event, getElement())) {
             return;
         }
         isFocused = false;

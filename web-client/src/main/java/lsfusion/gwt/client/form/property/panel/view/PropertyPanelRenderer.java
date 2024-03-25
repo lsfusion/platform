@@ -76,6 +76,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
             label.getElement().setAttribute("for", globalID);
             label.addDomHandler(event -> {
                 GwtClientUtils.fireOnMouseDown(value.getElement());
+                GwtClientUtils.stopPropagation(event.getNativeEvent()); // need this because otherwise default handler will lead to the blur event
             }, MouseDownEvent.getType());
 
             // mostly it is needed to handle margins / paddings / layouting but we do it ourselves

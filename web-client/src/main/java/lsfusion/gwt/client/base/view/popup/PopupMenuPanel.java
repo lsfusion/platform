@@ -12,6 +12,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.FocusUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,13 +37,12 @@ public class PopupMenuPanel extends ComplexPanel {
     // The top style attribute in pixels
     private int topPosition = -1;
 
-    public PopupMenuPanel() {
-        this(null);
-    }
-
     final Element parent;
-    public PopupMenuPanel(Element parent) {
+
+    private final boolean hideOnClick;
+    public PopupMenuPanel(Element parent, boolean hideOnClick) {
         this.parent = parent;
+        this.hideOnClick = hideOnClick;
 
         setElement(createULElement());
         sinkEvents(Event.ONMOUSEDOWN | Event.ONMOUSEMOVE | Event.ONMOUSEOUT | Event.ONFOCUS | Event.ONKEYDOWN);
@@ -54,6 +54,7 @@ public class PopupMenuPanel extends ComplexPanel {
     }
 
     public void addAutoHidePartner(Element partner) {
+        FocusUtils.addFocusPartner(partner, getElement());
         autoHidePartners.add(partner);
     }
 
@@ -323,7 +324,7 @@ public class PopupMenuPanel extends ComplexPanel {
                     return;
                 }
 
-                if (!eventTargetsPopupOrPartner) {
+                if (hideOnClick && !eventTargetsPopupOrPartner) {
                     hide();
                     return;
                 }

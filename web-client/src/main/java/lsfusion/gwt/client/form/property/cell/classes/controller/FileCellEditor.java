@@ -119,7 +119,7 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
             needToCancel = !instance.@FileCellEditor::addFilesToUploader(*)(this.files, parent);
         }
 
-        var focusedElement = @GwtClientUtils::getFocusedElement()();
+        var focusedElement = @lsfusion.gwt.client.base.FocusUtils::getFocusedElement()();
         focusedElement.onfocus = function () {
             setTimeout(function () {//onfocus event fires before onchange event, so we need a timeout
                 if (needToCancel) {

@@ -1379,6 +1379,7 @@
         focus     : function() { self.ignoreBlur = false; return self.onFocus.apply(self, arguments); },
         paste     : function() { return self.onPaste.apply(self, arguments); }
       });
+      // !!! PATCHED changing mousedown to blur !!!
       $dropdown.on({
         blur      : function() { return self.onBlur.apply(self, arguments); },
       });
@@ -1850,6 +1851,7 @@
     onBlur: function(e, dest) {
       var self = this;
 
+      // !!! PATCHED changing mousedown to blur !!!
       if(self.isFakeBlur(e))
         return;
 

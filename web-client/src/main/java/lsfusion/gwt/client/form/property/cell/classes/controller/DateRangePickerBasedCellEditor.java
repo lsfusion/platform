@@ -5,9 +5,9 @@ import com.google.gwt.core.client.JsDate;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.Style;
+import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
-import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.SimpleDatePatternConverter;
@@ -39,7 +39,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
             if(oldValue == null) // if value is null - current date will be set, so we need to select the value, since we want to rewrite data on key input
                 inputElement.select();
 
-            DataGrid.addFocusPartner(parent, getPickerContainer(), element -> false);
+            FocusUtils.addFocusPartner(parent, getPickerContainer());
 
 //            getInputElement().click();
         }
@@ -54,19 +54,10 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
 
     protected void pickerApply(Element parent) {
         commit(parent);
-
-        returnFocus(parent);
     }
 
     protected void pickerCancel(Element parent) {
         cancel();
-
-        returnFocus(parent);
-    }
-
-    private void returnFocus(Element element) {
-        if (!needReplace(element))
-            ((Element)CellRenderer.getFocusElement(element)).focus();
     }
 
     protected PValue tryParseInputText(String inputText, boolean onCommit) throws ParseException {

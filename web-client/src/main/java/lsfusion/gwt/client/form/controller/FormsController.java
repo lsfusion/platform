@@ -192,7 +192,7 @@ public abstract class FormsController {
                                    Supplier<Boolean> checkOpenForm, Supplier<Boolean> checkHideForm) {
         if (asyncFormController.onServerInvocationOpenResponse()) {
             if (checkOpenForm.get()) {
-                asyncFormController.removeAsyncForm().queryHide(CancelReason.OTHER);
+                asyncFormController.removeAsyncForm().queryHide(CancelReason.HIDE);
             }
         }
         if (asyncFormController.onServerInvocationCloseResponse()) {
@@ -428,7 +428,7 @@ public abstract class FormsController {
         // if form is async opened with different type - close it
         GWindowFormType windowType = showFormType.getWindowType();
         if(asyncOpened && formContainer.getWindowType() != windowType && !formContainer.isAsyncHidden()) {
-            formContainer.hide(CancelReason.OTHER);
+            formContainer.hide(CancelReason.HIDE);
             asyncOpened = false;
         }
 
@@ -510,7 +510,7 @@ public abstract class FormsController {
     public void asyncCloseForm(GAsyncFormController asyncFormController, FormContainer formContainer) {
         if(formContainer instanceof FormDockable) {
             asyncFormController.putAsyncClosedForm(new Pair<>((FormDockable) formContainer, forms.indexOf(formContainer)));
-            formContainer.queryHide(null);
+            formContainer.queryHide(CancelReason.HIDE);
         }
     }
 

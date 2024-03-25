@@ -90,7 +90,7 @@ public abstract class EditingForm extends FormContainer {
 //        }
 
         if(!finishedEditing) {
-            assert editFormCloseReason == null;
+//            assert editFormCloseReason == null; == HIDE should be instead ?
             finishEditing(editFormCloseReason);
         }
 //        else

@@ -64,7 +64,7 @@ public class GwtClientUtils {
                 return @lsfusion.gwt.client.form.property.cell.view.CellRenderer::setFocusElement(*)(element, focusElement);
             },
             addFocusPartner: function (element, partner) {
-                return @lsfusion.gwt.client.base.view.grid.DataGrid::addFocusPartner(*)(element, partner, null);
+                return @lsfusion.gwt.client.base.FocusUtils::addFocusPartner(*)(element, partner);
             },
             clearFocusElement: function (element) {
                 return @lsfusion.gwt.client.form.property.cell.view.CellRenderer::clearFocusElement(*)(element);
@@ -608,7 +608,21 @@ public class GwtClientUtils {
             },
             zIndex: 1070,
             silent: false,
-            onShow: function() {
+
+            // we're changing document mousedown scheme to the focus / blur (as in all the other places)
+            hideOnClick: false,
+            onCreate: function(instance) { // copy of hideOnPopperBlur (with a isFakeBlur emulation)
+                instance.popper.addEventListener('focusout', function (event) { // important to add to the popper (not the first child), because popups attached to the popper
+                    if (!@lsfusion.gwt.client.base.FocusUtils::isFakeBlur(Lcom/google/gwt/dom/client/NativeEvent;Lcom/google/gwt/dom/client/Element;)(event, instance.popper)) {
+                        instance.hide();
+                    }
+                });
+            },
+            onShown: function(instance) {
+                instance.popper.firstChild.focus(); // we need to set focus inside to make focusOut work
+            },
+
+            onShow: function(instance) {
                 if(onShowAction != null && !this.silent) {
                     onShowAction.@java.lang.Runnable::run()();
                 }
@@ -1038,10 +1052,6 @@ public class GwtClientUtils {
         style.setProperty(property, value, priority);
     }-*/;
 
-    public static native Element getFocusedElement() /*-{
-        return $doc.activeElement;
-    }-*/;
-
     public static JsArrayString toArray(List<String> list) {
         JsArrayString jsArray = JsArrayString.createArray().cast();
         list.forEach(jsArray::push);
@@ -1057,13 +1067,6 @@ public class GwtClientUtils {
     public static native Element log(String i) /*-{
         console.log(i);
     }-*/;
-
-    public static Element getFocusedChild(Element containerElement) {
-        Element focusedElement = getFocusedElement();
-        if(containerElement.isOrHasChild(focusedElement))
-            return focusedElement;
-        return null;
-    }
 
     public static boolean isTDorTH(Element element) {
         return TableCellElement.is(element);
@@ -1397,16 +1400,6 @@ public class GwtClientUtils {
         element.onclick = function(event) {
             run.@Consumer::accept(*)(event);
         }
-    }-*/;
-
-    public static native void fireOnBlur(Element element)/*-{
-        element.dispatchEvent(new FocusEvent("blur"));
-    }-*/;
-
-    public static native void setOnFocusOut(Element element, Consumer<NativeEvent> run)/*-{
-        element.addEventListener("focusout", function(event) { // have no idea why onfocusout doesn't work
-            run.@Consumer::accept(*)(event);
-        });
     }-*/;
 
     // should be used only once for elements that don't have widgets

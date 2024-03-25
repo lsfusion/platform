@@ -85,9 +85,6 @@ public class RichTextCellEditor extends ARequestValueCellEditor implements Reque
 
         enableEditing(parent, false);
 
-        if (!blurred)
-            FocusUtils.focus(parent, FocusUtils.Reason.OTHER); //return focus to the parent
-
         if (cancel)
             setEditorValue(parent, oldValue); //to return the previous value after pressing esc
     }

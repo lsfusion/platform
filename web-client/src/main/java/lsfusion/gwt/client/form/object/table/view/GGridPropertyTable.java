@@ -1041,7 +1041,7 @@ protected Double getUserFlex(int i) {
 
         if(!checkFocusElement(reason, null)) {
             Element focusElement = getTableDataFocusElement();
-            Element focusedChild = GwtClientUtils.getFocusedChild(focusElement);
+            Element focusedChild = FocusUtils.getFocusedChild(focusElement);
             if(focusElement != focusedChild) {
                 FocusUtils.focus(focusElement, reason);
             }

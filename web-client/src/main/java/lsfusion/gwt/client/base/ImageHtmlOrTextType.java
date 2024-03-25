@@ -20,7 +20,7 @@ public class ImageHtmlOrTextType extends CaptionHtmlOrTextType {
     public static final ImageHtmlOrTextType BUTTON_HORZ = new ImageHtmlOrTextType();
 
     public boolean isImageVertical() {
-        return this == MAP || this == ACTION_VERT || this == BUTTON_VERT || this == GRID_CAPTION;
+        return this == MAP || this == ACTION_VERT || this == BUTTON_VERT; // || this == GRID_CAPTION;
     }
 
     @Override
