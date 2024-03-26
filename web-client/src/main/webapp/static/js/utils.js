@@ -188,7 +188,7 @@ function clearHtmlOrText(element, cssClass) {
 }
 
 function setHtmlOrText(element, value, html) {
-    if(!html && value.indexOf("\n") == -1) // optimization
+    if(!html && (value == null || value.indexOf("\n") === -1)) // optimization
         element.classList.add("html-or-text-no-multi-line");
     else
         element.classList.remove("html-or-text-no-multi-line");
