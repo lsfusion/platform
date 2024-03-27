@@ -24,6 +24,8 @@ import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.print.ReportGenerator;
 import lsfusion.interop.logics.ServerSettings;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
+import org.apache.commons.httpclient.URIException;
+import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.commons.io.IOUtils;
 
 import javax.imageio.ImageIO;
@@ -395,7 +397,11 @@ public class FileUtils {
         if(rUrl != null)
             rUrl.set(url);
 
-        url += fileName;
+        try {
+            url += URIUtil.encodePath(fileName);
+        } catch (URIException e) {
+            throw Throwables.propagate(e);
+        }
 
         String urlParams = "";
         if(useDownload && ID != null)
