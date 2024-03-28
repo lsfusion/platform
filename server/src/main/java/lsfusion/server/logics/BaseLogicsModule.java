@@ -636,7 +636,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         makePropertyPublic(FormEntity.isDocked, "isDocked");
         makePropertyPublic(FormEntity.isEditing, "isEditing");
         makePropertyPublic(FormEntity.isAdd, "isAdd");
-        //makePropertyPublic(FormEntity.manageSession, "manageSession");
+        makePropertyPublic(FormEntity.isManageSession, "isManageSession");
         makePropertyPublic(FormEntity.isExternal, "isExternal");
         makePropertyPublic(FormEntity.showOk, "showOk");
         makePropertyPublic(FormEntity.showDrop, "showDrop");

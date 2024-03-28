@@ -14,7 +14,7 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import java.sql.SQLException;
 
 public class FormApplyAction extends FormFlowAction {
-    private static LP showIf = createIfProperty(new Property[]{FormEntity.manageSession, FormEntity.isEditing}, new boolean[]{false, true});
+    private static LP showIf = createIfProperty(new Property[]{FormEntity.isManageSession, FormEntity.isEditing}, new boolean[]{false, true});
     private static LP readOnlyIf = createDisableIfNotProperty(DataSession.isDataChanged);
 
 

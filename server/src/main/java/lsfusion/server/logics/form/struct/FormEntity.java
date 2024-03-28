@@ -41,7 +41,6 @@ import lsfusion.server.logics.form.interactive.FormEventType;
 import lsfusion.server.logics.form.interactive.action.async.AsyncAddRemove;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncNoWaitExec;
-import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.form.interactive.action.input.InputFilterEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputOrderEntity;
 import lsfusion.server.logics.form.interactive.action.lifecycle.FormToolbarAction;
@@ -97,7 +96,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public static final SessionDataProperty isEditing = new SessionDataProperty(LocalizedString.create("Is embedded"), LogicalClass.instance);
     public static final SessionDataProperty showOk = new SessionDataProperty(LocalizedString.create("Is modal"), LogicalClass.instance);
     public static final SessionDataProperty isAdd = new SessionDataProperty(LocalizedString.create("Is add"), LogicalClass.instance);
-    public static final SessionDataProperty manageSession = new SessionDataProperty(LocalizedString.create("Manage session"), LogicalClass.instance);
+    public static final SessionDataProperty isManageSession = new SessionDataProperty(LocalizedString.create("Is manage session"), LogicalClass.instance);
     public static final SessionDataProperty isExternal = new SessionDataProperty(LocalizedString.create("Is external"), LogicalClass.instance);
     public static final SessionDataProperty showDrop = new SessionDataProperty(LocalizedString.create("Show drop"), LogicalClass.instance);
 
