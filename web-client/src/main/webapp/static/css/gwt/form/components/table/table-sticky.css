@@ -32,7 +32,8 @@
     /*z-index: 1;*/
 }
 
-.dataGridStickyCell:not(.dataGridStickyOverflow) {
+.dataGridStickyCell:not(.dataGridStickyOverflow),
+.dataGridStickyFooter:not(.dataGridStickyOverflow) {
     position: sticky !important;
 
     z-index: 2; /* z-index: 2 because in bootstrap "btn-group>.btn-check:checked+.btn" rule z-index: 1, and selected button overlaid on sticky column */
