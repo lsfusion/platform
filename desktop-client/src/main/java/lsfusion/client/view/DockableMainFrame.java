@@ -566,9 +566,10 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
 
         try {
             windows.put(navigatorData.logs, Log.recreateLogPanel(visible -> {
-                if (visible != null) {
+                // if forms dockable is in maximized mode showing logs dockable switches mode to normalized 
+                if (!isMaximized() && visible != null) {
                     setLogsDockableVisible(visible);
-                    if(!visible) {
+                    if (!visible) {
                         //logs dockable lost focus, need to restore focus for currentForm
                         ((DockableMainFrame) MainFrame.instance).focusCurrentForm();
                     }
@@ -667,6 +668,10 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         if(!formsController.openedForms.isEmpty()) {
             formsController.openedForms.get(0).setExtendedMode(ExtendedMode.MAXIMIZED);
         }
+    }
+    
+    public boolean isMaximized() {
+        return !formsController.openedForms.isEmpty() && formsController.openedForms.get(0).getExtendedMode() == ExtendedMode.MAXIMIZED;
     }
 
     public NavigatorController getNavigatorController() {
