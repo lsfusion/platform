@@ -499,7 +499,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         environment.add(FormEntity.isDocked, PropertyChange.STATIC(type == ModalityWindowFormType.DOCKED));
         environment.add(FormEntity.isEditing, PropertyChange.STATIC(type.isEditing()));
         environment.add(FormEntity.isAdd, PropertyChange.STATIC(isAdd));
-        environment.add(FormEntity.manageSession, PropertyChange.STATIC(manageSession));
+        environment.add(FormEntity.isManageSession, PropertyChange.STATIC(manageSession));
         environment.add(FormEntity.isExternal, PropertyChange.STATIC(isExternal));
         environment.add(FormEntity.showDrop, PropertyChange.STATIC(showDrop));
         return environment;
