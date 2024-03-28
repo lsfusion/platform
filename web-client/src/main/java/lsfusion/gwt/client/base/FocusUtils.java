@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.base;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.InputElement;
@@ -138,11 +137,8 @@ public class FocusUtils {
         partner.setPropertyObject("focusPartner", element);
         partner.setTabIndex(-1); // we need this to have related target in isFakeBlur, otherwise it won't work
         setOnFocusOut(partner, event -> {
-            GWT.log("FOUT");
-            if(!isFakeBlur(event, element)) { // if the focus is not returned to the element
-                GWT.log("FBLUR");
+            if(!isFakeBlur(event, element)) // if the focus is not returned to the element
                 fireOnBlur(element); // ??? maybe relatedEventTarget should be preserved
-            }
         });
     }
 

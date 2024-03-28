@@ -32,7 +32,7 @@ public class OpenLinkAction extends InternalAction {
             boolean noWait = context.getKeyValue(noWaitInterface).getValue() != null;
             if (sourceObject != null) {
                 for (URI file : ((LinkClass) sourceObject.getType()).getFiles(sourceObject.getValue())) {
-                    OpenUriClientAction action = new OpenUriClientAction(new URI(URIUtil.decode(file.toString())));
+                    OpenUriClientAction action = new OpenUriClientAction(new URI(URIUtil.decode(file.toString()).trim())); // trim is needed because space characters in str cause URISyntaxException
                     if (noWait) {
                         context.delayUserInteraction(action);
                     } else {
