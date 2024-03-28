@@ -30,7 +30,6 @@ Statements are of the following kinds:
 -   [The `INDEX` statement](INDEX_statement.md)
 -   [The `BEFORE` statement](BEFORE_statement.md)
 -   [The `AFTER` statement](AFTER_statement.md)
--   The `LOGGABLE` statement
 -   [Empty statement](Empty_statement.md)
 
 Each statement in **lsFusion** ends with a semicolon, with two exceptions:
