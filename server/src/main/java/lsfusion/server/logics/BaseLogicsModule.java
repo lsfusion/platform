@@ -32,6 +32,7 @@ import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
+import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.LocalNestedType;
 import lsfusion.server.logics.action.session.changed.IncrementType;
 import lsfusion.server.logics.classes.StaticClass;
@@ -631,6 +632,15 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         requestCanceledProp.nestedType = LocalNestedType.ALL;
         requestCanceled = addProperty(null, new LP<>(requestCanceledProp));
         makePropertyPublic(requestCanceled, "requestCanceled", Collections.emptyList());
+
+        makePropertyPublic(FormEntity.isDocked, "isDocked");
+        makePropertyPublic(FormEntity.isEditing, "isEditing");
+        makePropertyPublic(FormEntity.isAdd, "isAdd");
+        //makePropertyPublic(FormEntity.manageSession, "manageSession");
+        makePropertyPublic(FormEntity.isExternal, "isExternal");
+        makePropertyPublic(FormEntity.showOk, "showOk");
+        makePropertyPublic(FormEntity.showDrop, "showDrop");
+        makePropertyPublic(DataSession.isDataChanged, "isDataChanged");
     }
 
     private void initNativeGroups() {

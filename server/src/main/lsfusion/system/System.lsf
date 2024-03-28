@@ -380,6 +380,15 @@ requestedTSVectorLink = DATA LOCAL TSVECTOR ();
 
 isActiveForm = DATA LOCAL BOOLEAN ();
 
+isDocked = NATIVE BOOLEAN();
+isEditing = NATIVE BOOLEAN();
+isAdd = NATIVE BOOLEAN();
+//manageSession = NATIVE BOOLEAN();
+isExternal = NATIVE BOOLEAN();
+showOk = NATIVE BOOLEAN();
+showDrop = NATIVE BOOLEAN();
+isDataChanged = NATIVE BOOLEAN();
+
 edit '{logics.edit}'  ABSTRACT MULTI OVERRIDE FIRST ( Object) TOOLBAR;
 // since now SHOW fills request props, we don't need to do DIALOG, and without dialog there is no REQUEST wrapping, so group change for example will work
 edit(Object o) + {  SHOW EDIT Object =o DOCKED; } OPTIMISTICASYNC; //  

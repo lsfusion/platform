@@ -309,6 +309,10 @@ public abstract class LogicsModule {
         makeActionPublic(la, name, Arrays.asList(signature));
     }
 
+    protected void makePropertyPublic(SessionDataProperty property, String name) {
+        makePropertyPublic(addProperty(null, new LP<>(property)), name, Collections.emptyList());
+    }
+
     protected <P extends PropertyInterface> void makePropertyPublic(LP<P> lp, String name, List<ResolveClassSet> signature) {
         makeActionOrPropertyPublic(lp, name, signature);
     }
