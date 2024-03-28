@@ -13,7 +13,7 @@ import java.util.Collections;
 import java.util.List;
 
 public abstract class GFilterOptionSelector<T> extends FocusWidget {
-    protected PopupMenuPanel popup = new PopupMenuPanel(null, true);
+    protected PopupMenuPanel popup = new PopupMenuPanel( true);
     protected T currentValue;
 
     public GFilterOptionSelector(GFilterConditionView.UIHandler uiHandler) {

@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.classes.view;
 
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.view.DialogModalWindow;
 import lsfusion.gwt.client.base.view.FormButton;
@@ -55,8 +56,8 @@ public class GClassDialog extends DialogModalWindow {
         }
     }
 
-    public static void showDialog(GObjectClass baseClass, GObjectClass defaultClass, boolean concreate, ClassChosenHandler classChosenHandler) {
-        new GClassDialog(baseClass, defaultClass, concreate, classChosenHandler).show();
+    public static void showDialog(GObjectClass baseClass, GObjectClass defaultClass, boolean concreate, ClassChosenHandler classChosenHandler, com.google.gwt.user.client.ui.Widget popupOwnerWidget) {
+        new GClassDialog(baseClass, defaultClass, concreate, classChosenHandler).show(popupOwnerWidget);
     }
 
     @Override

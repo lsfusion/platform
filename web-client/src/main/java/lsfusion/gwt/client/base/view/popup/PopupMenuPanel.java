@@ -13,6 +13,7 @@ import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.FocusUtils;
+import lsfusion.gwt.client.base.GwtClientUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,11 +38,8 @@ public class PopupMenuPanel extends ComplexPanel {
     // The top style attribute in pixels
     private int topPosition = -1;
 
-    final Element parent;
-
     private final boolean hideOnClick;
-    public PopupMenuPanel(Element parent, boolean hideOnClick) {
-        this.parent = parent;
+    public PopupMenuPanel(boolean hideOnClick) {
         this.hideOnClick = hideOnClick;
 
         setElement(createULElement());
@@ -54,7 +52,6 @@ public class PopupMenuPanel extends ComplexPanel {
     }
 
     public void addAutoHidePartner(Element partner) {
-        FocusUtils.addFocusPartner(partner, getElement());
         autoHidePartners.add(partner);
     }
 
@@ -62,7 +59,7 @@ public class PopupMenuPanel extends ComplexPanel {
         if (!isShowing()) {
             return;
         }
-        setState(false);
+        setState(false, null);
     }
 
     public boolean isShowing() {
@@ -105,8 +102,10 @@ public class PopupMenuPanel extends ComplexPanel {
 
     public void setPopupPositionAndShow(final Element target) {
         getElement().getStyle().setVisibility(Style.Visibility.HIDDEN);
-        show();
-        position(target, getOffsetWidth(), getOffsetHeight());
+        Element parent = GwtClientUtils.getTippyParent(target);
+        show(parent);
+        FocusUtils.addFocusPartner(target, getElement());
+        position(target, parent, getOffsetWidth(), getOffsetHeight());
         getElement().getStyle().setVisibility(Style.Visibility.VISIBLE);
     }
 
@@ -114,16 +113,11 @@ public class PopupMenuPanel extends ComplexPanel {
      * Shows the popup and attach it to the page. It must have a child widget
      * before this method is called.
      */
-    public void show() {
+    public void show(Element parent) {
         if (showing) {
             return;
-        } else if (parent == null && isAttached()) {
-            // The popup is attached directly to another panel, so we need to remove
-            // it from its parent before showing it. This is a weird use case, but
-            // since PopupPanel is a Widget, its legal.
-            this.removeFromParent();
         }
-        setState(true);
+        setState(true, parent);
     }
 
     /**
@@ -165,10 +159,11 @@ public class PopupMenuPanel extends ComplexPanel {
      * are known.
      *
      * @param relativeObject the ui object to position relative to
+     * @param parent
      * @param offsetWidth    the drop down's offset width
      * @param offsetHeight   the drop down's offset height
      */
-    private void position(final Element relativeObject, int offsetWidth, int offsetHeight) {
+    private void position(final Element relativeObject, Element parent, int offsetWidth, int offsetHeight) {
         // Calculate left position for the popup. The computation for
         // the left position is bidi-sensitive.
 
@@ -570,7 +565,8 @@ public class PopupMenuPanel extends ComplexPanel {
         return false;
     }
 
-    public void setState(boolean showing) {
+    private Element shownParent;
+    public void setState(boolean showing, Element parent) {
         // Update the logical state.
         this.showing = showing;
         updateHandlers();
@@ -584,17 +580,20 @@ public class PopupMenuPanel extends ComplexPanel {
                 setPopupPosition(leftPosition, topPosition);
             }
             // !!! PATCHED we need to append child somewhere anyway to attach widget
+            shownParent = parent;
             RootPanel.get().add(this);
             if(parent != null) {
                 parent.appendChild(getElement());
             }
         } else {
+            parent = shownParent;
             if(parent != null) {
                 RootPanel.get().getElement().appendChild(getElement()); // moving child back to remove after
 //                parent.removeChild(getElement());
             }
             // !!! PATCHED we need to append child somewhere anyway to attach widget
             RootPanel.get().remove(this);
+            shownParent = null;
         }
         getElement().getStyle().setProperty("overflow", "visible");
 

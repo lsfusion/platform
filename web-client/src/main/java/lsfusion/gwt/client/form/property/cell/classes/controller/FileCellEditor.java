@@ -7,6 +7,7 @@ import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GProgressBar;
 import lsfusion.gwt.client.base.GwtClientUtils;
@@ -15,7 +16,6 @@ import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.GFilesDTO;
-import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.KeepCellEditor;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
@@ -42,7 +42,7 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
         this.named = named;
     }
 
-    private boolean addFilesToUploader(JsArray files, Element parent) {
+    private boolean addFilesToUploader(JsArray files, Element parent, Widget popupOwnerWidget) {
         JsArray validFiles = JsArray.createArray().cast();
         for (int i = 0; i < files.length(); i++) {
             File file = files.get(i).cast();
@@ -54,7 +54,7 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
 
         boolean hasValidFiles = validFiles.length() > 0;
         if(hasValidFiles) {
-            newVersionUploader = createUploader(parent);
+            newVersionUploader = createUploader(parent, popupOwnerWidget);
             newVersionUploader.addFilesToQueue(validFiles);
             newVersionUploader.startUpload();
         }
@@ -99,15 +99,15 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
     public void start(EventHandler handler, Element parent, RenderContext renderContext, boolean notFocusable, PValue oldValue) {
         Event event;
         if(handler != null && GKeyStroke.isDropEvent(event = handler.event)) {
-            drop(event, parent);
+            drop(event, parent, renderContext.getPopupOwnerWidget());
         } else {
             click(parent, createFileInputElement());
         }
     }
 
-    private void drop(Event editEvent, Element parent) {
+    private void drop(Event editEvent, Element parent, Widget popupOwnerWidget) {
         JsArray droppedFiles = Uploader.getDroppedFiles(editEvent);
-        if(!addFilesToUploader(droppedFiles, parent))
+        if(!addFilesToUploader(droppedFiles, parent, popupOwnerWidget))
             cancel();
     }
 
@@ -145,7 +145,7 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
         return inputElement;
     }
     private LoadingBox loadingBox;
-    private Uploader createUploader(Element parent) {
+    private Uploader createUploader(Element parent, Widget popupOwnerWidget) {
         loadingBox = new LoadingBox(this::cancel);
 
         Uploader newVersionUploader = new Uploader();
@@ -154,7 +154,7 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
                     final File file = fileQueuedEvent.getFile();
                     fileInfo.filePrefix = GwtSharedUtils.randomString(15);
                     fileInfo.fileName = file.getName();
-                    loadingBox.showLoadingBox();
+                    loadingBox.showLoadingBox(popupOwnerWidget);
                     return true;
                 })
                 .setUploadProgressHandler(uploadProgressEvent -> {
@@ -199,11 +199,11 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
         }
 
         private boolean isShowing = false;
-        public void showLoadingBox() {
+        public void showLoadingBox(Widget popupOwnerWidget) {
             timer = new Timer() {
                 @Override
                 public void run() {
-                    isShowing = true; show();
+                    isShowing = true; show(popupOwnerWidget);
                 }
             };
             timer.schedule(1000);

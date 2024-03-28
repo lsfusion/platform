@@ -20,7 +20,7 @@ public class LogicsDispatchAsync {
 
     private final GWTDispatch gwtDispatch = GWTDispatch.instance;
 
-    public <A extends LogicsAction<R>, R extends Result> void execute(final A action, final PriorityAsyncCallback<R> callback) {
+    public <A extends LogicsAction<R>, R extends Result> void executePriority(final A action, final PriorityAsyncCallback<R> callback) {
         action.host = host;
         action.port = port;
         action.exportName = exportName;

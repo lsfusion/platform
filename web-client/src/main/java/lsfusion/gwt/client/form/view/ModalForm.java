@@ -21,6 +21,7 @@ import lsfusion.gwt.client.view.MainFrame;
 public class ModalForm extends FormContainer {
 
     protected final ResizableModalWindow contentWidget;
+    protected final Widget popupOwnerWidget;
 
     @Override
     public GWindowFormType getWindowType() {
@@ -32,9 +33,10 @@ public class ModalForm extends FormContainer {
         return contentWidget.getElement();
     }
 
-    public ModalForm(FormsController formsController, GFormController contextForm, boolean async, Event editEvent) {
+    public ModalForm(FormsController formsController, GFormController contextForm, boolean async, Event editEvent, Widget popupOwnerWidget) {
         super(formsController, contextForm, async, editEvent);
 
+        this.popupOwnerWidget = popupOwnerWidget;
         ResizableModalWindow window = new ResizableModalWindow() {
             @Override
             public void onShow() {
@@ -80,10 +82,10 @@ public class ModalForm extends FormContainer {
 
     @Override
     public void show(GAsyncFormController asyncFormController) {
-        GwtActionDispatcher dispatcher = asyncFormController.getDispatcher();
-        long requestIndex = asyncFormController.getEditRequestIndex();
-        FormRequestData formRequestData = new FormRequestData(dispatcher, this, requestIndex);
-        Pair<ModalForm, Integer> formInsertIndex = contentWidget.getFormInsertIndex(formRequestData);
+        FormRequestData formRequestData = new FormRequestData(asyncFormController.getDispatcher(), this, asyncFormController.getEditRequestIndex());
+
+        Widget popupOwnerWidget = this.popupOwnerWidget;
+        Pair<ModalForm, Integer> formInsertIndex = ResizableModalWindow.getFormInsertIndex(formRequestData);
         if(formInsertIndex == null) {
             prevForm = MainFrame.getAssertCurrentForm();
             if (prevForm != null) // if there were no currentForm
@@ -93,7 +95,7 @@ public class ModalForm extends FormContainer {
             formInsertIndex.first.prevForm = this;
         }
 
-        contentWidget.show(formRequestData, formInsertIndex != null ? formInsertIndex.second : null);
+        contentWidget.show(formRequestData, formInsertIndex != null ? formInsertIndex.second : null, popupOwnerWidget);
 
         if(formInsertIndex == null) {
             onFocus(true);

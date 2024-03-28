@@ -25,6 +25,8 @@ public class ModalWindow extends ResizableComplexPanel {
 
     private final boolean resizable;
 
+    public static final Widget GLOBAL = null;
+
     public ModalWindow(boolean resizable, ModalWindowSize size) {
         super();
 
@@ -92,16 +94,17 @@ public class ModalWindow extends ResizableComplexPanel {
         FlexPanel.makeShadowOnScroll(content, header, body, false);
     }
 
-    public void show() {
-        show(null);
+    public void show(Widget popupOwnerWidget) {
+        show(null, popupOwnerWidget);
     }
 
-    public void show(Integer insertIndex) {
+    public void show(Integer insertIndex, Widget popupOwnerWidget) {
         // attaching
+        RootPanel parentWidget = RootPanel.get();
         if(insertIndex != null) {
-            RootPanel.get().insert(this, insertIndex);
+            parentWidget.insert(this, insertIndex);
         } else {
-            RootPanel.get().add(this);
+            parentWidget.add(this);
         }
 
         modal.addStyleName("show");

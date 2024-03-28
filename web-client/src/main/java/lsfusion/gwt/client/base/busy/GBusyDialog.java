@@ -192,23 +192,25 @@ public class GBusyDialog extends DialogModalWindow {
     }
 
     private void cancelAction() {
-        DialogBoxHelper.showConfirmBox(messages.busyDialogCancelTransaction(),
-                messages.busyDialogCancelTransactionConfirm(),
-                false, chosenOption -> {
+        stopAction(messages.busyDialogCancelTransaction(), messages.busyDialogCancelTransactionConfirm(), false);
+    }
+
+    public Widget getPopupOwnerWidget() {
+        return this;
+    }
+
+    private void stopAction(String caption, String message, boolean needInterrupt) {
+        DialogBoxHelper.showConfirmBox(caption,
+                message, getPopupOwnerWidget(),
+                chosenOption -> {
                     if (chosenOption == DialogBoxHelper.OptionType.YES) {
-                        needInterrupt = false;
+                        this.needInterrupt = needInterrupt;
                     }
                 });
     }
 
     private void interruptAction() {
-        DialogBoxHelper.showConfirmBox(messages.busyDialogInterruptTransaction(),
-                messages.busyDialogInterruptTransactionConfirm(),
-                false, chosenOption -> {
-                    if (chosenOption == DialogBoxHelper.OptionType.YES) {
-                        needInterrupt = true;
-                    }
-                });
+        stopAction(messages.busyDialogInterruptTransaction(), messages.busyDialogInterruptTransactionConfirm(), true);
     }
 
     private void createStackPanel(LinkedHashMap<String, Boolean> stackLines) {

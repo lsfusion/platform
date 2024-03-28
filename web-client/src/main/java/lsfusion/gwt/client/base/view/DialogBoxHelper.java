@@ -52,32 +52,32 @@ public class DialogBoxHelper {
         }
     }
 
-    public static void showMessageBox(String caption, String message, final CloseCallback closeCallback) {
-        showMessageBox(caption, new HTML(message), closeCallback);
+    public static void showMessageBox(String caption, String message, Widget popupOwnerWidget, final CloseCallback closeCallback) {
+        showMessageBox(caption, new HTML(message), popupOwnerWidget, closeCallback);
     }
 
-    public static void showMessageBox(String caption, Widget contents, final CloseCallback closeCallback) {
-        new MessageBox(caption, contents, 0, closeCallback, OptionType.CLOSE, OptionType.CLOSE).show();
+    public static void showMessageBox(String caption, Widget contents, Widget popupOwnerWidget, final CloseCallback closeCallback) {
+        new MessageBox(caption, contents, 0, closeCallback, OptionType.CLOSE, OptionType.CLOSE).show(popupOwnerWidget);
     }
 
-    public static void showConfirmBox(String caption, String message, boolean cancel, final CloseCallback closeCallback) {
-        showConfirmBox(caption, message, cancel, 0, 0, closeCallback);
+    public static void showConfirmBox(String caption, String message, Widget popupOwnerWidget, final CloseCallback closeCallback) {
+        showConfirmBox(caption, new HTML(message), popupOwnerWidget, closeCallback);
     }
 
-    public static void showConfirmBox(String caption, String message, boolean cancel, int timeout, int initialValue, final CloseCallback closeCallback) {
-        showConfirmBox(caption, new HTML(message), cancel, timeout, initialValue, closeCallback);
+    public static void showConfirmBox(String caption, Widget widget, Widget popupOwnerWidget, final CloseCallback closeCallback) {
+        showConfirmBox(caption, widget, false, 0, 0, popupOwnerWidget, closeCallback);
     }
 
-    public static void showConfirmBox(String caption, Widget contents, boolean cancel, int timeout, int initialValue, final CloseCallback closeCallback) {
-        showConfirmBox(caption, contents, timeout, cancel ? new OptionType[]{OptionType.YES, OptionType.NO, OptionType.CLOSE} : new OptionType[] {OptionType.YES, OptionType.NO}, initialValue, closeCallback);
+    public static void showConfirmBox(String caption, Widget contents, boolean cancel, int timeout, int initialValue, Widget popupOwnerWidget, final CloseCallback closeCallback) {
+        showConfirmBox(caption, contents, timeout, cancel ? new OptionType[]{OptionType.YES, OptionType.NO, OptionType.CLOSE} : new OptionType[] {OptionType.YES, OptionType.NO}, initialValue, popupOwnerWidget, closeCallback);
     }
     
-    public static MessageBox showConfirmBox(String caption, Widget contents, OptionType[] options, final CloseCallback closeCallback) {
-        return showConfirmBox(caption, contents, 0, options, 0, closeCallback);
+    public static MessageBox showConfirmBox(String caption, Widget contents, OptionType[] options, Widget popupOwnerWidget, final CloseCallback closeCallback) {
+        return showConfirmBox(caption, contents, 0, options, 0, popupOwnerWidget, closeCallback);
     }
-    public static MessageBox showConfirmBox(String caption, Widget contents, int timeout, OptionType[] options, int initialValue, final CloseCallback closeCallback) {
+    public static MessageBox showConfirmBox(String caption, Widget contents, int timeout, OptionType[] options, int initialValue, Widget popupOwnerWidget, final CloseCallback closeCallback) {
         MessageBox messageBox = new MessageBox(caption, contents, timeout, closeCallback, options[initialValue], options);
-        messageBox.show();
+        messageBox.show(popupOwnerWidget);
         return messageBox;
     }
 
@@ -152,8 +152,8 @@ public class DialogBoxHelper {
             }
         }
 
-        public void show() {
-            super.show();
+        public void show(Widget popupOwnerWidget) {
+            super.show(popupOwnerWidget);
             FocusUtils.focus(activeButton.getElement(), FocusUtils.Reason.SHOW);
         }
     }

@@ -89,14 +89,14 @@ public class ErrorDialog extends DialogModalWindow {
     }
 
     @Override
-    public void show() {
-        super.show();
+    public void show(Widget popupOwnerWidget) {
+        super.show(popupOwnerWidget);
 
         closeButton.setFocus(true);
     }
 
-    public static void show(String caption, String message, String javaStack, String lsfStack) {
-        new ErrorDialog(caption, message, javaStack, lsfStack).show();
+    public static void show(String caption, String message, String javaStack, String lsfStack, Widget popupOwnerWidget) {
+        new ErrorDialog(caption, message, javaStack, lsfStack).show(popupOwnerWidget);
     }
 
     @Override

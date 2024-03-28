@@ -3,6 +3,7 @@ package lsfusion.gwt.client.controller.remote.action;
 import com.google.gwt.http.client.RequestTimeoutException;
 import com.google.gwt.user.client.rpc.IncompatibleRemoteServiceException;
 import com.google.gwt.user.client.rpc.StatusCodeException;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.exception.*;
@@ -10,42 +11,40 @@ import lsfusion.gwt.client.base.view.DialogBoxHelper;
 
 public class PriorityErrorHandlingCallback<T> implements PriorityAsyncCallback<T> {
 
-    public PriorityErrorHandlingCallback() {
+    private final Widget popupOwnerWidget;
+
+    public PriorityErrorHandlingCallback(Widget popupOwnerWidget) {
+        this.popupOwnerWidget = popupOwnerWidget;
     }
 
     private static final String TIMEOUT_MESSAGE = "SESSION_TIMED_OUT";
     private static final Integer MAX_REQUEST_TRIES = 30;
     private static final ClientMessages messages = ClientMessages.Instance.get();
 
-    public static void showErrorMessage(final Throwable caught) {
+    public static void showErrorMessage(final Throwable caught, Widget popupOwnerWidget) {
         GwtClientUtils.removeLoaderFromHostedPage();
 
-        GExceptionManager.logClientError(caught);
+        GExceptionManager.logClientError(caught, popupOwnerWidget);
 
         if(getMaxTries(caught) > -1) // if there is a trouble in connection, then we just setting connectionLost in DispatchAsyncWrapper, and showing no message (because there will be connection lost dialog anyway)
             return;
 
         if (caught instanceof RequestTimeoutException) {
-            DialogBoxHelper.showMessageBox(messages.error(), messages.actionTimeoutError(), null);
+            DialogBoxHelper.showMessageBox(messages.error(), messages.actionTimeoutError(), popupOwnerWidget, null);
             return;
         } else if (caught instanceof StatusCodeException) {
             StatusCodeException statusEx = (StatusCodeException) caught;
             if (statusEx.getStatusCode() == 500 && statusEx.getEncodedResponse().contains(TIMEOUT_MESSAGE)) {
-                DialogBoxHelper.showMessageBox(messages.error(), messages.sessionTimeoutError(), new DialogBoxHelper.CloseCallback() {
-                    @Override
-                    public void closed(DialogBoxHelper.OptionType chosenOption) {
-                        GwtClientUtils.logout();
-                    }
-                });
+                DialogBoxHelper.showMessageBox(messages.error(), messages.sessionTimeoutError(), popupOwnerWidget, chosenOption -> GwtClientUtils.logout());
                 return;
             }
         } else if (caught instanceof RemoteMessageDispatchException) {
-            DialogBoxHelper.showMessageBox(messages.error(), caught.getMessage(), null);
+            DialogBoxHelper.showMessageBox(messages.error(), caught.getMessage(), popupOwnerWidget, null);
             return;
         }
         // messages.internalServerError();
         String[] actualStacks = RemoteInternalDispatchException.toString(caught);
-        ErrorDialog.show(messages.error(), actualStacks[0], actualStacks[1], actualStacks[2]);
+        ErrorDialog.show(messages.error(), actualStacks[0], actualStacks[1], actualStacks[2], popupOwnerWidget);
     }
 
     public static boolean isAuthException(Throwable caught) {
@@ -71,6 +70,6 @@ public class PriorityErrorHandlingCallback<T> implements PriorityAsyncCallback<T
 
     @Override
     public void onFailure(Throwable caught) {
-        showErrorMessage(caught);
+        showErrorMessage(caught, popupOwnerWidget);
     }
 }

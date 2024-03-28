@@ -8,8 +8,6 @@ import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.view.StaticImageWidget;
-import lsfusion.gwt.client.controller.remote.action.navigator.VoidFormAction;
-import lsfusion.gwt.client.controller.remote.action.navigator.VoidNavigatorAction;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
@@ -166,14 +164,10 @@ public abstract class FormContainer {
         StaticImageWidget image = new StaticImageWidget(StaticImage.LOADING_ASYNC);
         image.addStyleName("loading-async-icon");
         image.addClickHandler(clickEvent -> {
-            GFormController.CustomErrorHandlingCallback callback = new GFormController.CustomErrorHandlingCallback<Object>() {
-                @Override
-                protected void onSuccess(Object result) {}
-            };
             if(contextForm != null) {
-                contextForm.syncDispatch(new VoidFormAction(), callback);
+                contextForm.executeVoidAction();
             } else {
-                formsController.syncDispatch(new VoidNavigatorAction(requestIndex), callback);
+                formsController.executeVoidNavigatorAction(requestIndex);
             }
         });
 

@@ -15,12 +15,12 @@ public class ResizableModalWindow extends ModalWindow {
     //In this case, the order in which the windows are displayed must be maintained according to the order of request indexes.
     private FormRequestData formRequestData;
 
-    public void show(FormRequestData formRequestData, Integer insertIndex) {
+    public void show(FormRequestData formRequestData, Integer insertIndex, Widget popupOwnerWidget) {
         this.formRequestData = formRequestData;
-        show(insertIndex);
+        show(insertIndex, popupOwnerWidget);
     }
 
-    public Pair<ModalForm, Integer> getFormInsertIndex(FormRequestData formRequestData) {
+    public static Pair<ModalForm, Integer> getFormInsertIndex(FormRequestData formRequestData) {
         AbsolutePanel boundaryPanel = RootPanel.get();
         for (int i = 0; i < boundaryPanel.getWidgetCount(); i++) {
             Widget widget = boundaryPanel.getWidget(i);

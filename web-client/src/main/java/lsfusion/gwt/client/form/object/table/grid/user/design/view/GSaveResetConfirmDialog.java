@@ -26,7 +26,7 @@ public class GSaveResetConfirmDialog {
         this.save = save;
     }
     
-    public void show(final Callback callback) {
+    public void show(Widget popupOwnerWidget, final Callback callback) {
         DialogBoxHelper.OptionType[] options;
         Widget contents;
         FormRadioButton currentUserRB = null;
@@ -73,7 +73,7 @@ public class GSaveResetConfirmDialog {
         }
 
         
-        mb = DialogBoxHelper.showConfirmBox(save ? messages.formGridPreferencesSaving() : messages.formGridPreferencesResetting(), contents, options, chosenOption -> {
+        mb = DialogBoxHelper.showConfirmBox(save ? messages.formGridPreferencesSaving() : messages.formGridPreferencesResetting(), contents, options, popupOwnerWidget, chosenOption -> {
             if (chosenOption.asInteger() == 0) {
                 callback.onSuccess();
             } else {

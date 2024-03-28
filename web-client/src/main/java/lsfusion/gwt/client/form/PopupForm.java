@@ -102,7 +102,7 @@ public class PopupForm extends EditingForm {
     public PopupForm(FormsController formsController, GFormController contextForm, long editRequestIndex, boolean async, Event editEvent, EditContext editContext) {
         super(formsController, contextForm, editRequestIndex, async, editEvent, editContext);
 
-        popupOwnerWidget = editContext.getUpdateContext().getPopupOwnerWidget();
+        popupOwnerWidget = editContext.getPopupOwnerWidget();
     }
 
     private final Widget popupOwnerWidget;

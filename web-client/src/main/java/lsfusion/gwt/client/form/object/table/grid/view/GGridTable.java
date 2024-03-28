@@ -863,7 +863,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         final int tableColumns = getMaxColumnsCount(table);
         final int selectedColumn = getSelectedColumn();
         if (table.size() > 1 || tableColumns > 1) {
-            DialogBoxHelper.showConfirmBox("lsFusion", messages.formGridSureToPasteMultivalue(), false, chosenOption -> {
+            DialogBoxHelper.showConfirmBox("lsFusion", messages.formGridSureToPasteMultivalue(), getPopupOwnerWidget(), chosenOption -> {
                 if (chosenOption == DialogBoxHelper.OptionType.YES) {
                     int columnsToInsert = Math.min(tableColumns, getColumnCount() - selectedColumn);
 

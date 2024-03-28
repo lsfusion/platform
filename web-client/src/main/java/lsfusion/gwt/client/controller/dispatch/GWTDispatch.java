@@ -9,7 +9,7 @@ import com.google.gwt.user.client.rpc.RpcRequestBuilder;
 import com.google.gwt.user.client.rpc.ServiceDefTarget;
 import lsfusion.gwt.client.GRequestAttemptInfo;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.exception.GExceptionManager;
+import lsfusion.gwt.client.base.view.ModalWindow;
 import lsfusion.gwt.client.controller.remote.GConnectionLostManager;
 import lsfusion.gwt.client.controller.remote.action.BaseAction;
 import lsfusion.gwt.client.controller.remote.action.PriorityErrorHandlingCallback;
@@ -117,7 +117,7 @@ public class GWTDispatch {
                         assert !isAuthException; // because maxTries is 0 in that case
                         if (attemptIndex == 1) //first retry
                             GConnectionLostManager.registerFailedRmiRequest();
-                        GExceptionManager.addFailedRmiRequest(caught, action);
+                        GConnectionLostManager.addFailedRmiRequest(caught, action);
 
                         timer = new Timer() { // timer is needed, because server can be unavailable
                             @Override
@@ -164,7 +164,7 @@ public class GWTDispatch {
 
                     if(action.requestAttempt != null) //had retries
                         GConnectionLostManager.unregisterFailedRmiRequest();
-                    GExceptionManager.flushFailedNotFatalRequests(action);
+                    GConnectionLostManager.flushFailedNotFatalRequests(action);
 
                     onSuccess(result, false);
                 }

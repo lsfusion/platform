@@ -16,14 +16,11 @@ import lsfusion.gwt.client.navigator.window.GWindowFormType;
 import lsfusion.gwt.client.view.MainFrame;
 
 public class ContainerForm extends WidgetForm {
-    private final GFormController formController;
-
     private final GContainerWindowFormType windowType;
 
-    public ContainerForm(FormsController formsController, GFormController contextForm, boolean async, Event editEvent, GFormController formController, GContainerWindowFormType windowType) {
-        super(formsController, contextForm, async, editEvent, GFormLayout.createContainerCaptionWidget(null, getInContainer(formController, windowType), false, true));
+    public ContainerForm(FormsController formsController, GFormController contextForm, boolean async, Event editEvent, GContainerWindowFormType windowType) {
+        super(formsController, contextForm, async, editEvent, GFormLayout.createContainerCaptionWidget(null, getInContainer(contextForm, windowType), false, true));
 
-        this.formController = formController;
         this.windowType = windowType;
     }
 
@@ -44,7 +41,7 @@ public class ContainerForm extends WidgetForm {
         FormContainer formContainer = MainFrame.getCurrentForm();
         if(formContainer != null) {
             GFormController formController = formContainer.getForm();
-            assert formController.equals(this.formController); // ?? to remove later
+            assert formController.equals(this.contextForm); // ?? to remove later
 
             formController.removeContainerForm(this);
 
@@ -68,12 +65,12 @@ public class ContainerForm extends WidgetForm {
     public void show(GAsyncFormController asyncFormController) {
         innerComponent = new GFormComponent();
 
-        inContainer = getInContainer(formController, windowType);
+        inContainer = getInContainer(contextForm, windowType);
         inContainer.add(innerComponent);
 
-        formController.addContainerForm(this);
+        contextForm.addContainerForm(this);
 
-        GFormLayout layout = formController.getFormLayout();
+        GFormLayout layout = contextForm.getFormLayout();
         layout.addBaseComponent(innerComponent, new ComponentWidget(contentWidget, captionWidget), null);
         layout.update(-1);
         if(inContainer.tabbed)

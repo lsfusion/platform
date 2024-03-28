@@ -78,8 +78,7 @@ public abstract class SuggestBox {
         this.oracle = oracle;
         this.inputElement = inputElement;
 
-        Element tippyParent = GwtClientUtils.getTippyParent(parent);
-        this.suggestionPopup = new PopupMenuPanel(tippyParent, false); // we use editors and this focus / blur scheme and not the document mouse down
+        this.suggestionPopup = new PopupMenuPanel(false); // we use editors and this focus / blur scheme and not the document mouse down
 
         this.completionType = completionType;
         this.commitSelection = commitSelection;

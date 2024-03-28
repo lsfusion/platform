@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.base.view;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.BaseImage;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.ImageHtmlOrTextType;
@@ -18,13 +19,13 @@ public class DialogModalWindow extends ModalWindow {
     private Element focusedElement;
 
     @Override
-    public void show(Integer insertIndex) {
+    public void show(Integer insertIndex, Widget popupOwnerWidget) {
         MainFrame.closeNavigatorMenu();
 
         focusedElement = FocusUtils.getFocusedElement();
         MainFrame.setModalPopup(true);
 
-        super.show(insertIndex);
+        super.show(insertIndex, popupOwnerWidget);
     }
 
     @Override

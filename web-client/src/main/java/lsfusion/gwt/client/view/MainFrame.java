@@ -21,6 +21,7 @@ import lsfusion.gwt.client.base.log.GLog;
 import lsfusion.gwt.client.base.result.VoidResult;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
 import lsfusion.gwt.client.base.view.EventHandler;
+import lsfusion.gwt.client.base.view.ModalWindow;
 import lsfusion.gwt.client.controller.dispatch.LogicsDispatchAsync;
 import lsfusion.gwt.client.controller.remote.GConnectionLostManager;
 import lsfusion.gwt.client.controller.remote.action.PriorityAsyncCallback;
@@ -137,14 +138,16 @@ public class MainFrame implements EntryPoint {
 
         GwtClientUtils.setZeroZIndex(RootLayoutPanel.get().getElement());
 
+        Widget popupOwnerWidget = ModalWindow.GLOBAL; // actually now is used for error handling
+
         GWT.setUncaughtExceptionHandler(t -> {
             if (!ignoreException(t)) {
-                GExceptionManager.logClientError(t);
-                DialogBoxHelper.showMessageBox("Error", t.getMessage(), null);
+                GExceptionManager.logClientError(t, popupOwnerWidget);
+                DialogBoxHelper.showMessageBox("Error", t.getMessage(), popupOwnerWidget, null);
             }
         });
 
-        initializeLogicsAndNavigator();
+        initializeLogicsAndNavigator(popupOwnerWidget);
     }
 
     private static boolean ignoreException(Throwable exception) {
@@ -310,7 +313,8 @@ public class MainFrame implements EntryPoint {
         return hasAttribute;
     }
 
-    public void initializeFrame(NavigatorInfo result) {
+    public void initializeFrame(NavigatorInfo result, Widget popupOwnerWidget) {
+        assert currentForm == null;
         currentForm = null;
 
         final Linker<GAbstractWindow> formsWindowLink = new Linker<>();
@@ -392,7 +396,7 @@ public class MainFrame implements EntryPoint {
             public boolean execute() {
                 if (shouldRepeatPingRequest && !GConnectionLostManager.shouldBeBlocked()) {
                     setShouldRepeatPingRequest(false);
-                    navigatorDispatchAsync.executePriority(new ClientPushMessage(), new PriorityErrorHandlingCallback<ClientMessageResult>() {
+                    navigatorDispatchAsync.executePriority(new ClientPushMessage(), new PriorityErrorHandlingCallback<ClientMessageResult>(popupOwnerWidget) {
                         @Override
                         public void onSuccess(ClientMessageResult result) {
                             setShouldRepeatPingRequest(true);
@@ -422,7 +426,7 @@ public class MainFrame implements EntryPoint {
             }
         }, 1000);
 
-        GExceptionManager.flushUnreportedThrowables();
+        GExceptionManager.flushUnreportedThrowables(popupOwnerWidget);
     }
 
     public static void setShouldRepeatPingRequest(boolean ishouldRepeatPingRequest) {
@@ -599,7 +603,7 @@ public class MainFrame implements EntryPoint {
         return $wnd.document.body.getAttribute("sessionID");
     }-*/;
 
-    public void initializeLogicsAndNavigator() {
+    public void initializeLogicsAndNavigator(Widget popupOwnerWidget) {
         String portString = Window.Location.getParameter("port");
         Integer screenWidth = Window.getClientWidth();
         Integer screenHeight = Window.getClientHeight();
@@ -610,7 +614,7 @@ public class MainFrame implements EntryPoint {
                 Window.Location.getParameter("exportName"));
 
         navigatorDispatchAsync = new NavigatorDispatchAsync(getSessionId());
-        navigatorDispatchAsync.executePriority(new InitializeNavigator(screenWidth + "x" + screenHeight, mobile), new PriorityErrorHandlingCallback<InitializeNavigatorResult>() {
+        navigatorDispatchAsync.executePriority(new InitializeNavigator(screenWidth + "x" + screenHeight, mobile), new PriorityErrorHandlingCallback<InitializeNavigatorResult>(popupOwnerWidget) {
             @Override
             public void onSuccess(InitializeNavigatorResult result) {
                 GClientSettings gClientSettings = result.gClientSettings;
@@ -641,7 +645,7 @@ public class MainFrame implements EntryPoint {
 
                 verticalNavbar = gClientSettings.verticalNavbar;
 
-                initializeFrame(result.navigatorInfo);
+                initializeFrame(result.navigatorInfo, popupOwnerWidget);
                 DateRangePickerBasedCellEditor.setPickerTwoDigitYearStart(gClientSettings.twoDigitYearStart);
             }
         });

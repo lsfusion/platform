@@ -23,7 +23,6 @@ import lsfusion.gwt.client.base.result.VoidResult;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
-import lsfusion.gwt.client.classes.GObjectClass;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.controller.remote.DeferredRunner;
@@ -32,10 +31,9 @@ import lsfusion.gwt.client.controller.remote.action.form.*;
 import lsfusion.gwt.client.controller.remote.action.logics.GenerateID;
 import lsfusion.gwt.client.controller.remote.action.logics.GenerateIDResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.GainedFocus;
+import lsfusion.gwt.client.controller.remote.action.navigator.VoidFormAction;
 import lsfusion.gwt.client.form.ContainerForm;
 import lsfusion.gwt.client.form.GUpdateMode;
-import lsfusion.gwt.client.form.classes.view.ClassChosenHandler;
-import lsfusion.gwt.client.form.classes.view.GClassDialog;
 import lsfusion.gwt.client.form.controller.dispatch.ExceptionResult;
 import lsfusion.gwt.client.form.controller.dispatch.FormDispatchAsync;
 import lsfusion.gwt.client.form.controller.dispatch.GFormActionDispatcher;
@@ -854,20 +852,8 @@ public class GFormController implements EditManager {
         formsController.onServerInvocationFailed(getAsyncFormController(exceptionResult.requestIndex));
     }
 
-    public void showClassDialog(GObjectClass baseClass, GObjectClass defaultClass, boolean concreate, final ClassChosenHandler classChosenHandler) {
-        GClassDialog.showDialog(baseClass, defaultClass, concreate, classChosenHandler);
-    }
-
     public long changeGroupObject(final GGroupObject group, GGroupObjectValue key) {
-        long requestIndex = asyncDispatch(new ChangeGroupObject(group.ID, key), new ServerResponseCallback() {
-            @Override
-            public void onSuccess(ServerResponseResult response, Runnable onDispatchFinished) {
-                // not sure what for it was used
-                // DeferredRunner.get().commitDelayedGroupObjectChange(group);
-
-                super.onSuccess(response, onDispatchFinished);
-            }
-        });
+        long requestIndex = asyncResponseDispatch(new ChangeGroupObject(group.ID, key));
         pendingChangeCurrentObjectsRequests.put(group, requestIndex);
         return requestIndex;
     }
@@ -981,7 +967,7 @@ public class GFormController implements EditManager {
 
         if(BrowserEvents.CONTEXTMENU.equals(event.getType())) {
             handler.consume();
-            GPropertyContextMenuPopup.show(editContext.getUpdateContext().getPopupOwnerWidget(), property, Element.as(event.getEventTarget()), actionSID -> {
+            GPropertyContextMenuPopup.show(editContext.getPopupOwnerWidget(), property, Element.as(event.getEventTarget()), actionSID -> {
                 executePropertyEventAction(editContext, actionSID, handler);
             });
         } else {
@@ -1009,7 +995,7 @@ public class GFormController implements EditManager {
     public void executePropertyEventAction(ExecuteEditContext editContext, String actionSID, EventHandler handler) {
         GPropertyDraw property = editContext.getProperty();
         if (isChangeEvent(actionSID) && property.askConfirm) {
-            DialogBoxHelper.showConfirmBox("lsFusion", EscapeUtils.toHTML(property.askConfirmMessage), false, 0, 0, chosenOption -> {
+            DialogBoxHelper.showConfirmBox("lsFusion", EscapeUtils.toHTML(property.askConfirmMessage), editContext.getPopupOwnerWidget(), chosenOption -> {
                         if (chosenOption == DialogBoxHelper.OptionType.YES)
                             executePropertyEventActionConfirmed(editContext, actionSID, handler);
                     });
@@ -1091,6 +1077,12 @@ public class GFormController implements EditManager {
                 actionDispatcher.editEventHandler = handler;
                 super.onSuccess(response, onDispatchFinished);
             }
+
+            @Override
+            public void onFailure(ExceptionResult exceptionResult) {
+                actionDispatcher.editContext = editContext;
+                super.onFailure(exceptionResult);
+            }
         };
 
         if(sync)
@@ -1147,28 +1139,27 @@ public class GFormController implements EditManager {
         return actionDispatcher.getAsyncFormController(requestIndex);
     }
 
-    public void asyncCloseForm(GAsyncExecutor asyncExecutor) {
+    public Widget getPopupOwnerWidget() {
+        return getWidget();
+    }
+    public void asyncCloseFormConfirmed(Runnable runnable) {
         if(needConfirm) {
-            DialogBoxHelper.showConfirmBox("lsFusion", messages.doYouReallyWantToCloseForm(), false, chosenOption -> {
+            DialogBoxHelper.showConfirmBox("lsFusion", messages.doYouReallyWantToCloseForm(), getWidget(), chosenOption -> {
                 if(chosenOption == DialogBoxHelper.OptionType.YES) {
-                    formsController.asyncCloseForm(asyncExecutor, formContainer);
+                    runnable.run();
                 }
             });
         } else {
-            formsController.asyncCloseForm(asyncExecutor, formContainer);
+            runnable.run();
         }
     }
 
+    public void asyncCloseForm(GAsyncExecutor asyncExecutor) {
+        asyncCloseFormConfirmed(() -> formsController.asyncCloseForm(asyncExecutor, formContainer));
+    }
+
     public void asyncCloseForm(EditContext editContext, ExecContext execContext, EventHandler handler, String actionSID, GPushAsyncInput pushAsyncResult, boolean externalChange, Consumer<Long> onExec) {
-        if(needConfirm) {
-            DialogBoxHelper.showConfirmBox("lsFusion", messages.doYouReallyWantToCloseForm(), false, chosenOption -> {
-                if(chosenOption == DialogBoxHelper.OptionType.YES) {
-                    asyncCloseForm(editContext, execContext, handler, actionSID, externalChange, onExec);
-                }
-            });
-        } else {
-            asyncCloseForm(editContext, execContext, handler, actionSID, externalChange, onExec);
-        }
+        asyncCloseFormConfirmed(() -> asyncCloseForm(editContext, execContext, handler, actionSID, externalChange, onExec));
     }
 
     private void asyncCloseForm(EditContext editContext, ExecContext execContext, EventHandler handler, String actionSID, boolean externalChange, Consumer<Long> onExec) {
@@ -1300,7 +1291,7 @@ public class GFormController implements EditManager {
         final int position = controller.getSelectedRow();
 
         if (add) {
-            MainFrame.logicsDispatchAsync.execute(new GenerateID(), new PriorityErrorHandlingCallback<GenerateIDResult>() {
+            MainFrame.logicsDispatchAsync.executePriority(new GenerateID(), new PriorityErrorHandlingCallback<GenerateIDResult>(editContext.getPopupOwnerWidget()) {
                 @Override
                 public void onSuccess(GenerateIDResult result) {
                     asyncAddRemove(editContext, execContext, handler, actionSID, object, add, new GPushAsyncAdd(result.ID), new GGroupObjectValue(object.ID, new GCustomObjectValue(result.ID, null)), position, externalChange, onExec);
@@ -1498,21 +1489,19 @@ public class GFormController implements EditManager {
         }
     }
 
-    public abstract static class CustomErrorHandlingCallback<T> extends RequestCountingErrorHandlingCallback<T> {
+    private abstract class SimpleRequestCallback<R> extends lsfusion.gwt.client.form.controller.SimpleRequestCallback<R> {
 
-        protected abstract void onSuccess(T result);
+        public SimpleRequestCallback() {
+        }
 
         @Override
-        public void onSuccess(T result, Runnable onDispatchFinished) {
-            onSuccess(result);
-
-            if(onDispatchFinished != null)
-                onDispatchFinished.run();
+        public Widget getPopupOwnerWidget() {
+            return GFormController.this.getPopupOwnerWidget();
         }
     }
 
     public void countRecords(final GGroupObject groupObject) {
-        asyncDispatch(new CountRecords(groupObject.ID), new CustomErrorHandlingCallback<NumberResult>() {
+        asyncDispatch(new CountRecords(groupObject.ID), new SimpleRequestCallback<NumberResult>() {
             @Override
             public void onSuccess(NumberResult result) {
                 controllers.get(groupObject).showRecordQuantity((Integer) result.value);
@@ -1521,7 +1510,7 @@ public class GFormController implements EditManager {
     }
 
     public void calculateSum(final GGroupObject groupObject, final GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
-        asyncDispatch(new CalculateSum(propertyDraw.ID, columnKey), new CustomErrorHandlingCallback<NumberResult>() {
+        asyncDispatch(new CalculateSum(propertyDraw.ID, columnKey), new SimpleRequestCallback<NumberResult>() {
             @Override
             public void onSuccess(NumberResult result) {
                 controllers.get(groupObject).showSum(result.value, propertyDraw);
@@ -1561,7 +1550,7 @@ public class GFormController implements EditManager {
     }
 
     public void runGroupReport(Integer groupObjectID) {
-        syncDispatch(new GroupReport(groupObjectID, getUserPreferences()), new CustomErrorHandlingCallback<GroupReportResult>() {
+        syncDispatch(new GroupReport(groupObjectID, getUserPreferences()), new SimpleRequestCallback<GroupReportResult>() {
             @Override
             public void onSuccess(GroupReportResult result) {
                 GwtClientUtils.openFile(result.filename, false, null);
@@ -1569,8 +1558,16 @@ public class GFormController implements EditManager {
         });
     }
 
+    public void executeVoidAction() {
+        syncDispatch(new VoidFormAction(), new SimpleRequestCallback<VoidResult>() {
+            @Override
+            public void onSuccess(VoidResult result) {
+            }
+        });
+    }
+
     public void saveUserPreferences(GGridUserPreferences userPreferences, boolean forAllUsers, boolean completeOverride, String[] hiddenProps, final AsyncCallback<ServerResponseResult> callback) {
-        syncDispatch(new SaveUserPreferencesAction(userPreferences.convertPreferences(), forAllUsers, completeOverride, hiddenProps), new CustomErrorHandlingCallback<ServerResponseResult>() {
+        syncDispatch(new SaveUserPreferencesAction(userPreferences.convertPreferences(), forAllUsers, completeOverride, hiddenProps), new SimpleRequestCallback<ServerResponseResult>() {
             @Override
             public void onSuccess(ServerResponseResult response) {
                 for (GAction action : response.actions) {
@@ -1660,7 +1657,7 @@ public class GFormController implements EditManager {
 
         FormDispatchAsync closeDispatcher = dispatcher;
         Scheduler.get().scheduleDeferred(() -> {
-            closeDispatcher.executePriority(new Close(closeDelay), new PriorityErrorHandlingCallback<VoidResult>() {
+            closeDispatcher.executePriority(new Close(closeDelay), new PriorityErrorHandlingCallback<VoidResult>(getPopupOwnerWidget()) {
                 @Override
                 public void onFailure(Throwable caught) { // supressing errors
                 }

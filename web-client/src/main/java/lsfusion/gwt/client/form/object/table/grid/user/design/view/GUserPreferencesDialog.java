@@ -159,7 +159,7 @@ public abstract class GUserPreferencesDialog extends DialogModalWindow {
     }
 
     public void showDialog() {
-        show();
+        show(grid.getPopupOwnerWidget());
         focusPanel.setFocus(true);
     }
 
@@ -242,10 +242,14 @@ public abstract class GUserPreferencesDialog extends DialogModalWindow {
         GFont designFont = grid.getDesignFont();
         return designFont == null ? new GFont(grid.font != null ? grid.font.family : "", 0, false, false) : designFont;
     }
-    
+
+    private Widget getPopupOwnerWidget() {
+        return this;
+    }
+
     private void resetPressed() {
         final GSaveResetConfirmDialog confirmDialog = new GSaveResetConfirmDialog(false);
-        confirmDialog.show(new Callback() {
+        confirmDialog.show(getPopupOwnerWidget(), new Callback() {
             @Override
             public void onSuccess() {
                 columnCaptionBox.setText(null);
@@ -262,7 +266,7 @@ public abstract class GUserPreferencesDialog extends DialogModalWindow {
 
     private void savePressed() {
         final GSaveResetConfirmDialog confirmDialog = new GSaveResetConfirmDialog(true);
-        confirmDialog.show(new Callback() {
+        confirmDialog.show(getPopupOwnerWidget(), new Callback() {
             @Override
             public void onSuccess() {
                 Map<GPropertyDraw, Map<Boolean, Integer>> userSortDirections = new HashMap<>();
@@ -371,7 +375,7 @@ public abstract class GUserPreferencesDialog extends DialogModalWindow {
                 preferencesChanged();
                 String caption = save ? messages.formGridPreferencesSaving() : messages.formGridPreferencesResetting();
                 String message = save ? messages.formGridPreferencesSaveSuccess() : messages.formGridPreferencesResetSuccess();
-                DialogBoxHelper.showMessageBox(caption, message, chosenOption -> focusPanel.setFocus(true));
+                DialogBoxHelper.showMessageBox(caption, message, getPopupOwnerWidget(), chosenOption -> focusPanel.setFocus(true));
             }
 
             @Override

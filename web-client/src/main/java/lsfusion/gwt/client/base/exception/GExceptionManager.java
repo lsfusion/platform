@@ -3,19 +3,15 @@ package lsfusion.gwt.client.base.exception;
 import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptException;
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.shared.SerializableThrowable;
 import com.google.gwt.logging.impl.StackTracePrintStream;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.result.VoidResult;
 import lsfusion.gwt.client.controller.remote.action.PriorityErrorHandlingCallback;
-import lsfusion.gwt.client.controller.remote.action.form.FormRequestAction;
 import lsfusion.gwt.client.controller.remote.action.navigator.LogClientExceptionAction;
-import lsfusion.gwt.client.controller.remote.action.navigator.NavigatorRequestAction;
 import lsfusion.gwt.client.navigator.controller.dispatch.NavigatorDispatchAsync;
 import lsfusion.gwt.client.view.MainFrame;
-import net.customware.gwt.dispatch.shared.Action;
 
 import java.io.PrintStream;
 import java.util.*;
@@ -23,22 +19,15 @@ import java.util.*;
 public class GExceptionManager {
     private final static Set<Throwable> unreportedThrowables = new HashSet<>();
 
-    public static void logClientError(Throwable throwable) {
-        logClientError(new LogClientExceptionAction(throwable), throwable);
-    }
-    
-    public static void logClientError(NonFatalHandledException ex) {
-        logClientError(new LogClientExceptionAction(ex), ex);
-    }
-
-    public static void logClientError(LogClientExceptionAction action, final Throwable throwable) {
+    public static void logClientError(final Throwable throwable, Widget popupOwnerWidget) {
+        LogClientExceptionAction action = new LogClientExceptionAction(throwable);
         GWT.log("", throwable);
         Log.error("", throwable);
 
         try {
             NavigatorDispatchAsync dispatcher = MainFrame.navigatorDispatchAsync;
             if(dispatcher != null) { // dispatcher may be not initialized yet (at first look up logics call)
-                dispatcher.executePriority(action, new PriorityErrorHandlingCallback<VoidResult>() {
+                dispatcher.executePriority(action, new PriorityErrorHandlingCallback<VoidResult>(popupOwnerWidget) {
                     @Override
                     public void onFailure(Throwable caught) {
                         loggingFailed(caught, throwable);
@@ -60,7 +49,7 @@ public class GExceptionManager {
         }
     }
 
-    public static void flushUnreportedThrowables() {
+    public static void flushUnreportedThrowables(Widget popupOwnerWidget) {
         final List<Throwable> stillUnreported;
         synchronized (unreportedThrowables) {
             stillUnreported = new ArrayList<>(unreportedThrowables);
@@ -69,7 +58,7 @@ public class GExceptionManager {
             try {
                 NavigatorDispatchAsync dispatcher = MainFrame.navigatorDispatchAsync;
                 if(dispatcher != null) { // dispatcher may be not initialized yet (at first look up logics call)
-                    dispatcher.executePriority(new LogClientExceptionAction(t), new PriorityErrorHandlingCallback<VoidResult>() {
+                    dispatcher.executePriority(new LogClientExceptionAction(t), new PriorityErrorHandlingCallback<VoidResult>(popupOwnerWidget) {
                         @Override
                         public void onFailure(Throwable caught) {
                             Log.error("Error logging unreported client exception", caught);
@@ -88,61 +77,6 @@ public class GExceptionManager {
             } catch (Throwable caught) {
                 Log.error("Error logging unreported client exception", caught);
             }
-        }
-    }
-
-    private static final HashMap<Action, List<NonFatalHandledException>> failedNotFatalHandledRequests = new LinkedHashMap<>();
-
-    public static void addFailedRmiRequest(Throwable t, Action action) {
-        List<NonFatalHandledException> exceptions = failedNotFatalHandledRequests.get(action);
-        if(exceptions == null) {
-            exceptions = new ArrayList<>();
-            failedNotFatalHandledRequests.put(action, exceptions);
-        }
-
-        long reqId;
-        if (action instanceof FormRequestAction) {
-            reqId = ((FormRequestAction) action).requestIndex;
-        } else if(action instanceof NavigatorRequestAction) {
-            reqId = ((NavigatorRequestAction) action).requestIndex;
-        } else {
-            int ind = -1;
-            for (Map.Entry<Action, List<NonFatalHandledException>> actionListEntry : failedNotFatalHandledRequests.entrySet()) {
-                ind++;
-                if (actionListEntry.getKey() == action) {
-                    break;
-                }
-            }
-            reqId = ind;
-        }
-
-        SerializableThrowable thisStack = new SerializableThrowable("", "");
-        NonFatalHandledException e = new NonFatalHandledException(copyMessage(t), thisStack, reqId);
-        GExceptionManager.copyStackTraces(t, thisStack); // it seems that it is useless because only SerializableThrowable stacks are copied (see StackException)
-        exceptions.add(e);
-    }
-
-    public static void flushFailedNotFatalRequests(Action action) {
-        final List<NonFatalHandledException> flushExceptions = failedNotFatalHandledRequests.remove(action);
-        if(flushExceptions != null) {
-            Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-                @Override
-                public void execute() {
-                    Map<Map, Collection<NonFatalHandledException>> group;
-                    group = GwtSharedUtils.group(new GwtSharedUtils.Group<Map, NonFatalHandledException>() {
-                        public Map group(NonFatalHandledException key) {
-                            return Collections.singletonMap(key.getMessage() + getStackTrace(key), key.reqId);
-                        }
-                    }, flushExceptions);
-
-                    for (Map.Entry<Map, Collection<NonFatalHandledException>> entry : group.entrySet()) {
-                        Collection<NonFatalHandledException> all = entry.getValue();
-                        NonFatalHandledException nonFatal = all.iterator().next();
-                        nonFatal.count = all.size();
-                        logClientError(nonFatal);
-                    }
-                }
-            });
         }
     }
 

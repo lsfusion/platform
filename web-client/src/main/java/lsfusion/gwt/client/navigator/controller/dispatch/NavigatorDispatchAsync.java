@@ -1,8 +1,9 @@
 package lsfusion.gwt.client.navigator.controller.dispatch;
 
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.RemoteDispatchAsync;
 import lsfusion.gwt.client.base.result.ListResult;
-import lsfusion.gwt.client.base.result.VoidResult;
+import lsfusion.gwt.client.base.view.ModalWindow;
 import lsfusion.gwt.client.controller.remote.action.BaseAction;
 import lsfusion.gwt.client.controller.remote.action.PriorityErrorHandlingCallback;
 import lsfusion.gwt.client.controller.remote.action.RequestAction;
@@ -34,8 +35,8 @@ public class NavigatorDispatchAsync extends RemoteDispatchAsync {
     }
 
     @Override
-    public void interrupt(boolean cancelable) {
-        executePriority(new InterruptNavigator(cancelable), new PriorityErrorHandlingCallback<>());
+    public void interrupt(boolean cancelable, Widget popupOwnerWidget) {
+        executePriority(new InterruptNavigator(cancelable), new PriorityErrorHandlingCallback<>(popupOwnerWidget));
     }
 
     @Override
@@ -45,6 +46,11 @@ public class NavigatorDispatchAsync extends RemoteDispatchAsync {
     @Override
     protected boolean synchronizeRequests() {
         return false;
+    }
+
+    @Override
+    public Widget getPopupOwnerWidget() {
+        return ModalWindow.GLOBAL;
     }
 
     @Override

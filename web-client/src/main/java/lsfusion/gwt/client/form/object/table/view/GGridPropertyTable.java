@@ -900,6 +900,11 @@ protected Double getUserFlex(int i) {
             }
 
             @Override
+            public Widget getPopupOwnerWidget() {
+                return GGridPropertyTable.this.getPopupOwnerWidget();
+            }
+
+            @Override
             public String getRegexpMessage() {
                 return GGridPropertyTable.this.getRegexpMessage(cell, property, column);
             }

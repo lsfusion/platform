@@ -1,17 +1,24 @@
 package lsfusion.gwt.client.controller.remote;
 
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.shared.SerializableThrowable;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.AtomicBoolean;
 import lsfusion.gwt.client.base.AtomicLong;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.exception.GExceptionManager;
-import lsfusion.gwt.client.base.view.DialogModalWindow;
-import lsfusion.gwt.client.base.view.DivWidget;
-import lsfusion.gwt.client.base.view.FormButton;
-import lsfusion.gwt.client.base.view.ResizableComplexPanel;
+import lsfusion.gwt.client.base.exception.NonFatalHandledException;
+import lsfusion.gwt.client.base.view.*;
+import lsfusion.gwt.client.controller.remote.action.form.FormRequestAction;
+import lsfusion.gwt.client.controller.remote.action.navigator.NavigatorRequestAction;
 import lsfusion.gwt.client.view.MainFrame;
+import net.customware.gwt.dispatch.shared.Action;
+
+import java.util.*;
 
 import static lsfusion.gwt.client.base.view.FormButton.ButtonStyle.SECONDARY;
 
@@ -20,11 +27,14 @@ public class GConnectionLostManager {
     private static final AtomicLong failedRequests = new AtomicLong();
     private static final AtomicBoolean connectionLost = new AtomicBoolean(false);
     private static final AtomicBoolean authException = new AtomicBoolean(false);
+    private static final HashMap<Action, List<NonFatalHandledException>> failedNotFatalHandledRequests = new LinkedHashMap<>();
 
     private static Timer timerWhenUnblocked;
     private static Timer timerWhenBlocked;
 
     private static GBlockDialog blockDialog;
+
+    private static Widget popupOwnerWidget = ModalWindow.GLOBAL;
 
     public static void start() {
         connectionLost.set(false);
@@ -32,7 +42,7 @@ public class GConnectionLostManager {
         timerWhenUnblocked = new Timer() {
             @Override
             public void run() {
-                GExceptionManager.flushUnreportedThrowables();
+                GExceptionManager.flushUnreportedThrowables(popupOwnerWidget);
                 blockIfHasFailed();
             }
         };
@@ -123,6 +133,56 @@ public class GConnectionLostManager {
         }
     }
 
+    public static void addFailedRmiRequest(Throwable t, Action action) {
+        List<NonFatalHandledException> exceptions = failedNotFatalHandledRequests.get(action);
+        if(exceptions == null) {
+            exceptions = new ArrayList<>();
+            failedNotFatalHandledRequests.put(action, exceptions);
+        }
+
+        long reqId;
+        if (action instanceof FormRequestAction) {
+            reqId = ((FormRequestAction) action).requestIndex;
+        } else if(action instanceof NavigatorRequestAction) {
+            reqId = ((NavigatorRequestAction) action).requestIndex;
+        } else {
+            int ind = -1;
+            for (Map.Entry<Action, List<NonFatalHandledException>> actionListEntry : failedNotFatalHandledRequests.entrySet()) {
+                ind++;
+                if (actionListEntry.getKey() == action) {
+                    break;
+                }
+            }
+            reqId = ind;
+        }
+
+        SerializableThrowable thisStack = new SerializableThrowable("", "");
+        NonFatalHandledException e = new NonFatalHandledException(GExceptionManager.copyMessage(t), thisStack, reqId);
+        GExceptionManager.copyStackTraces(t, thisStack); // it seems that it is useless because only SerializableThrowable stacks are copied (see StackException)
+        exceptions.add(e);
+    }
+
+    public static void flushFailedNotFatalRequests(Action action) {
+        final List<NonFatalHandledException> flushExceptions = failedNotFatalHandledRequests.remove(action);
+        if(flushExceptions != null) {
+            Scheduler.get().scheduleDeferred(() -> {
+                Map<Map, Collection<NonFatalHandledException>> group;
+                group = GwtSharedUtils.group(new GwtSharedUtils.Group<Map, NonFatalHandledException>() {
+                    public Map group(NonFatalHandledException key) {
+                        return Collections.singletonMap(key.getMessage() + GExceptionManager.getStackTrace(key), key.reqId);
+                    }
+                }, flushExceptions);
+
+                for (Map.Entry<Map, Collection<NonFatalHandledException>> entry : group.entrySet()) {
+                    Collection<NonFatalHandledException> all = entry.getValue();
+                    NonFatalHandledException nonFatal = all.iterator().next();
+                    nonFatal.count = all.size();
+                    GExceptionManager.logClientError(nonFatal, popupOwnerWidget);
+                }
+            });
+        }
+    }
+
 
     public static class GBlockDialog extends DialogModalWindow {
 
@@ -192,7 +252,7 @@ public class GConnectionLostManager {
             };
             showButtonsTimer.schedule(5000);
 
-            show();
+            show(popupOwnerWidget);
         }
 
         public void hideDialog() {

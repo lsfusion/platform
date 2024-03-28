@@ -4,6 +4,7 @@ import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.AsyncCallbackEx;
 import lsfusion.gwt.client.base.busy.GBusyDialogDisplayer;
 import lsfusion.gwt.client.controller.dispatch.GWTDispatch;
@@ -100,7 +101,7 @@ public abstract class RemoteDispatchAsync implements ServerMessageProvider {
             //      started = syncCount > 0 && flushCount == 0
             // so all the checks is an incremental when set(started) do start; when dropped(start) do stop
             if (syncCount == 0 && flushCount == 0)
-                getBusyDialogDisplayer().start();
+                startBusyDialog();
             syncCount++;
         } else
             onAsyncStarted();
@@ -115,7 +116,7 @@ public abstract class RemoteDispatchAsync implements ServerMessageProvider {
                 if(sync) {
                     syncCount--;
                     if (syncCount == 0 && flushCount == 0)
-                        getBusyDialogDisplayer().stop(true);
+                        stopBusyDialog(true);
                 } else
                     onAsyncFinished();
             }
@@ -139,6 +140,16 @@ public abstract class RemoteDispatchAsync implements ServerMessageProvider {
         return requestIndex;
     }
 
+    protected abstract Widget getPopupOwnerWidget(); // busy dialog owner
+
+    private void startBusyDialog() {
+        getBusyDialogDisplayer().start(getPopupOwnerWidget());
+    }
+
+    private void stopBusyDialog(boolean immediate) {
+        getBusyDialogDisplayer().stop(immediate);
+    }
+
     public void onEditingFinished() {
         if(pendingFlushCompletedRequests) {
             flushCompletedRequests();
@@ -149,12 +160,12 @@ public abstract class RemoteDispatchAsync implements ServerMessageProvider {
     private void flushCompletedRequests() {
         flushCompletedRequests(() -> {
             if(syncCount > 0 && flushCount == 0)
-                getBusyDialogDisplayer().stop(false);
+                stopBusyDialog(false);
             flushCount++;
         }, () -> {
             flushCount--;
             if(syncCount > 0 && flushCount == 0)
-                getBusyDialogDisplayer().start();
+                startBusyDialog();
         });
     }
 

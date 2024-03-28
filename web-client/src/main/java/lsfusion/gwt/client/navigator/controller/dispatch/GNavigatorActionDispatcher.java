@@ -1,6 +1,8 @@
 package lsfusion.gwt.client.navigator.controller.dispatch;
 
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.action.*;
+import lsfusion.gwt.client.base.view.ModalWindow;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.controller.remote.action.RequestAsyncCallback;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
@@ -74,6 +76,11 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
         if (!MainFrame.mobile) {
             formsController.setFullScreenMode(true);
         }
+    }
+
+    @Override
+    protected Widget getPopupOwnerWidget() {
+        return ModalWindow.GLOBAL;
     }
 
     @Override

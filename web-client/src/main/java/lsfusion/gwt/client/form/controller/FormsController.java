@@ -15,15 +15,13 @@ import lsfusion.gwt.client.RemoteDispatchAsync;
 import lsfusion.gwt.client.action.GFormAction;
 import lsfusion.gwt.client.action.GHideFormAction;
 import lsfusion.gwt.client.base.*;
-import lsfusion.gwt.client.base.view.FlexPanel;
-import lsfusion.gwt.client.base.view.GFlexAlignment;
-import lsfusion.gwt.client.base.view.ResizableSimplePanel;
-import lsfusion.gwt.client.base.view.WindowHiddenHandler;
+import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.controller.remote.action.RequestCountingAsyncCallback;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.ExecuteNavigatorAction;
 import lsfusion.gwt.client.controller.remote.action.navigator.NavigatorRequestAction;
+import lsfusion.gwt.client.controller.remote.action.navigator.VoidNavigatorAction;
 import lsfusion.gwt.client.form.ContainerForm;
 import lsfusion.gwt.client.form.EmbeddedForm;
 import lsfusion.gwt.client.form.PopupForm;
@@ -459,9 +457,9 @@ public abstract class FormsController {
     private FormContainer createFormContainer(GWindowFormType windowType, boolean async, long editRequestIndex, String formCanonicalName, Event editEvent, EditContext editContext, GFormController formController) {
         FormContainer formContainer;
         if(windowType instanceof GContainerWindowFormType) {
-            formContainer = new ContainerForm(this, formController, async, editEvent, formController, ((GContainerWindowFormType) windowType));
+            formContainer = new ContainerForm(this, formController, async, editEvent, ((GContainerWindowFormType) windowType));
         } else if(windowType.isFloat()) {
-            formContainer =  new ModalForm(this, formController, async, editEvent);
+            formContainer =  new ModalForm(this, formController, async, editEvent, editContext.getPopupOwnerWidget());
         } else if(windowType.isDocked()) {
             formContainer =  new FormDockable(this, formController, formCanonicalName, async, editEvent);
         } else if(windowType.isEmbedded()) {
@@ -691,6 +689,18 @@ public abstract class FormsController {
     
     public void executeNotificationAction(String actionSID, int type, RequestCountingAsyncCallback<ServerResponseResult> callback) {
         syncDispatch(new ExecuteNavigatorAction(actionSID, type), callback);
+    }
+
+    public void executeVoidNavigatorAction(long waitRequestIndex) {
+        syncDispatch(new VoidNavigatorAction(waitRequestIndex), new SimpleRequestCallback<ServerResponseResult>() {
+            protected void onSuccess(ServerResponseResult result) {
+            }
+
+            @Override
+            public Widget getPopupOwnerWidget() {
+                return ModalWindow.GLOBAL;
+            }
+        });
     }
 
     public void removeFormContainer(FormContainer formContainer) {
