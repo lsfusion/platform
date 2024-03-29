@@ -459,7 +459,7 @@ public abstract class FormsController {
         if(windowType instanceof GContainerWindowFormType) {
             formContainer = new ContainerForm(this, formController, async, editEvent, ((GContainerWindowFormType) windowType));
         } else if(windowType.isFloat()) {
-            formContainer =  new ModalForm(this, formController, async, editEvent, editContext.getPopupOwnerWidget());
+            formContainer =  new ModalForm(this, formController, async, editEvent, editContext != null ? editContext.getPopupOwnerWidget() : ModalWindow.GLOBAL);
         } else if(windowType.isDocked()) {
             formContainer =  new FormDockable(this, formController, formCanonicalName, async, editEvent);
         } else if(windowType.isEmbedded()) {
