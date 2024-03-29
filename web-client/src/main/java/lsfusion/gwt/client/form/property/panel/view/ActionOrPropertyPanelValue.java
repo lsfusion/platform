@@ -3,7 +3,6 @@ package lsfusion.gwt.client.form.property.panel.view;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
@@ -39,8 +38,9 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
 
     @Override
     public Boolean isPropertyReadOnly() {
-        if(property.isReadOnly())
-            return false;
+        Boolean readonly = property.isReadOnly();
+        if(readonly != null)
+            return readonly;
         return super.isPropertyReadOnly();
     }
 

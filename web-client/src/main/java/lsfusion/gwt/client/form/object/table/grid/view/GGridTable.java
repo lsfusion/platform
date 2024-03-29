@@ -823,7 +823,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     @Override
     public Boolean isReadOnly(Cell cell) {
         GPropertyDraw property = getProperty(cell);
-        if (property != null && !property.isReadOnly()) {
+        if (property != null && property.isReadOnly() == null) {
             GridDataRecord rowRecord = getGridRow(cell);
             GridColumn column = getGridColumn(cell);
             if(column != null && rowRecord != null)
