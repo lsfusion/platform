@@ -172,7 +172,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
                         return goController.filter != null && goController.filter.hasConditions();
                     }
                     return false;
-                }, removeFilters);
+                }, null, removeFilters);
         // AUTO FILTER
         addFilterBinding(GKeyStroke::isPossibleStartFilteringEvent,
                 event -> {
@@ -243,7 +243,10 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         addFilterBinding(event::isEvent, pressed);
     }
     private void addFilterBinding(GFormController.BindingCheck event, GFormController.BindingExec pressed) {
-        form.addBinding(event, new GBindingEnv(null, GBindingMode.NO, null, GBindingMode.ONLY, GBindingMode.NO, null, null, null), null, pressed, tableContainer, groupObject);
+        addFilterBinding(event, GBindingMode.NO, pressed);
+    }
+    private void addFilterBinding(GFormController.BindingCheck event, GBindingMode bindPreview, GFormController.BindingExec pressed) {
+        form.addBinding(event, new GBindingEnv(null, bindPreview, null, GBindingMode.ONLY, GBindingMode.NO, null, null, null), null, pressed, tableContainer, groupObject);
     }
 
     public GFont getFont() {

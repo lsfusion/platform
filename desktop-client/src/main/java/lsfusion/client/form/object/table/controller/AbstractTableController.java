@@ -71,13 +71,17 @@ public abstract class AbstractTableController implements TableController {
     }
     
     public void addFilterBindings(ClientGroupObject groupObject) {
-        addFilterBinding(groupObject, new KeyInputEvent(KeyStrokes.getFilterKeyStroke(0)), () -> addFilter());
-        addFilterBinding(groupObject, new KeyInputEvent(KeyStrokes.getFilterKeyStroke(InputEvent.ALT_DOWN_MASK)), () -> replaceFilter());
-        addFilterBinding(groupObject, new KeyInputEvent(KeyStrokes.getFilterKeyStroke(InputEvent.SHIFT_DOWN_MASK)), () -> resetFilers());
-        addFilterBinding(groupObject, new KeyInputEvent(KeyStrokes.getRemoveFiltersKeyStroke()), () -> resetFilers());
+        addFilterBinding(groupObject, new KeyInputEvent(KeyStrokes.getFilterKeyStroke(0)), this::addFilter);
+        addFilterBinding(groupObject, new KeyInputEvent(KeyStrokes.getFilterKeyStroke(InputEvent.ALT_DOWN_MASK)), this::replaceFilter);
+        addFilterBinding(groupObject, new KeyInputEvent(KeyStrokes.getFilterKeyStroke(InputEvent.SHIFT_DOWN_MASK)), this::resetFilers);
+        addFilterBinding(groupObject, null, new KeyInputEvent(KeyStrokes.getRemoveFiltersKeyStroke()), this::resetFilers);
     }
-    
+
     public void addFilterBinding(ClientGroupObject groupObject, KeyInputEvent inputEvent, Callable<Boolean> pressedCall) {
+        addFilterBinding(groupObject, BindingMode.NO, inputEvent, pressedCall);
+    }
+
+    public void addFilterBinding(ClientGroupObject groupObject, BindingMode bindPreview, KeyInputEvent inputEvent, Callable<Boolean> pressedCall) {
         ClientFormController.Binding binding = new ClientFormController.Binding(groupObject, 0) {
             @Override
             public boolean pressed(InputEvent ke) {
@@ -93,7 +97,7 @@ public abstract class AbstractTableController implements TableController {
                 return true;
             }
         };
-        binding.bindPreview = BindingMode.NO;
+        binding.bindPreview = bindPreview;
         binding.bindGroup = BindingMode.ONLY;
         binding.bindEditing = BindingMode.NO;
         formController.addBinding(inputEvent, binding);
