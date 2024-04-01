@@ -115,6 +115,8 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
             }
         }
 
+
+        //we catch 'backspace' and 'delete' but not 'del', so 'del' is not handled correctly
         ActionMap actionMap = getActionMap();
         actionMap.put("delete-previous", new MoveCaretAction(actionMap.get("delete-previous"), hasMask, false));
         actionMap.put("delete-next", new MoveCaretAction(actionMap.get("delete-next"), hasMask, true));
@@ -136,12 +138,11 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
         public void actionPerformed(ActionEvent e) {
             if (hasMask) {
                 //проверяем, не справа(backspace)/слева(delete) ли мы от decimalSeparator. Если да, смещаемся влево(backspace)/вправо(delete) и игнорируем событие
-                //иначе событие происходит и делаем проверку снова, чтобы перепрыгнуть через decimalSeparator.
+                //иначе событие происходит
                 if (!moveCaret()) {
                     if (defaultAction != null) {
                         defaultAction.actionPerformed(e);
                     }
-                    moveCaret();
                 }
             } else {
                 //проверяем, не пытаемся ли мы удалить decimalSeparator. Если да, то проверяем, не наступит ли в результате удаления переполнения.
