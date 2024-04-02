@@ -196,7 +196,14 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     private static DivElement createIndentElement(Element cellElement) {
         DivElement div = cellElement.appendChild(Document.get().createDivElement());
         div.getStyle().setFloat(Style.Float.LEFT);
-        div.getStyle().setHeight(100, Style.Unit.PCT);
+
+        // in firefox browser there is a problem with rendering first column of TREE and PIVOT (incorrect indentation) if height 100% is set to div
+        // changing height from 100% to 1rem solves the problem
+        if (GwtClientUtils.isFirefoxUserAgent())
+            div.getStyle().setProperty("height", "1rem");
+        else
+            div.getStyle().setHeight(100, Style.Unit.PCT);
+
         div.getStyle().setWidth(16, Style.Unit.PX);
 
         DivElement vert = Document.get().createDivElement();
