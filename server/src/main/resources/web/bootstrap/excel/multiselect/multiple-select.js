@@ -2220,7 +2220,9 @@
       return 'No matches found';
     }
   };
-  var METHODS = ['getOptions', 'refreshOptions', 'getData', 'getSelects', 'setSelects', 'enable', 'disable', 'open', 'close', 'check', 'uncheck', 'checkAll', 'uncheckAll', 'checkInvert', 'focus', 'blur', 'refresh', 'destroy'];
+
+  // !!! PATCHED. Added getDropdown
+  var METHODS = ['getOptions', 'refreshOptions', 'getData', 'getSelects', 'setSelects', 'enable', 'disable', 'open', 'close', 'check', 'uncheck', 'checkAll', 'uncheckAll', 'checkInvert', 'focus', 'blur', 'refresh', 'destroy', 'getDropdown'];
   Object.assign(DEFAULTS, EN);
   var Constants = {
     VERSION: VERSION,
@@ -4376,6 +4378,11 @@
       }
 
       // value html, or text, default: 'value'
+    }, { //   !!! PATCHED. Added getDropdown function
+        key: "getDropdown",
+        value: function getDropdown() {
+          return this.$drop;
+        }
     }, {
       key: "getSelects",
       value: function getSelects() {
