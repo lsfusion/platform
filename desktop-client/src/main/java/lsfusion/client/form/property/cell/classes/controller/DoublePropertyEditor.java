@@ -143,6 +143,7 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
                     if (defaultAction != null) {
                         defaultAction.actionPerformed(e);
                     }
+                    moveCaretAfterZero();
                 }
             } else {
                 //проверяем, не пытаемся ли мы удалить decimalSeparator. Если да, то проверяем, не наступит ли в результате удаления переполнения.
@@ -182,6 +183,20 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
                 }
             }
             return false;
+        }
+
+        //if after deleting a character the value of the integer part is "0" and the cursor is in front of "0", move it to the right.
+        private void moveCaretAfterZero() {
+            String text = getText();
+            if (text != null) {
+                int currentPosition = getCaret().getDot();
+                int separatorPosition = text.indexOf(df.getDecimalFormatSymbols().getDecimalSeparator());
+                if (separatorPosition >= 0) {
+                    String left = text.substring(0, separatorPosition).replace(String.valueOf(df.getDecimalFormatSymbols().getGroupingSeparator()), "");
+                    if(left.equals("0") && currentPosition == 0)
+                        setCaret(1);
+                }
+            }
         }
     }
 
