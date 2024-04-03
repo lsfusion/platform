@@ -102,7 +102,9 @@ public class ClientFormLayout extends PanelWidget {
     @Override
     public void removeNotify() {
         super.removeNotify();
-        MainFrame.instance.setCurrentForm(null);
+        if(MainFrame.instance != null) {
+            MainFrame.instance.setCurrentForm(null);
+        }
     }
 
     public void focusGained() {
