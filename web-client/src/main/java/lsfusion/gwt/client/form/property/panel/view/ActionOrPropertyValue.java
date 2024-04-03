@@ -75,6 +75,8 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
 
     @Override
     public Boolean isPropertyReadOnly() {
+        if(readOnly != null && !readOnly && property.isAction() && MainFrame.disableActionsIfReadonly)
+            return true;
         return readOnly;
     }
 

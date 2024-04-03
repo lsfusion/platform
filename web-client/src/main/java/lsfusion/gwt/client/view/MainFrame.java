@@ -100,6 +100,8 @@ public class MainFrame implements EntryPoint {
 
     public static boolean userFiltersManualApplyMode;
 
+    public static boolean disableActionsIfReadonly;
+
     // async dispatch
     public <T extends Result> long asyncDispatch(final ExecuteNavigatorAction action, RequestCountingAsyncCallback<ServerResponseResult> callback) {
         return navigatorDispatchAsync.asyncExecute(action, callback);
@@ -644,6 +646,8 @@ public class MainFrame implements EntryPoint {
                 userFiltersManualApplyMode = gClientSettings.userFiltersManualApplyMode;
 
                 verticalNavbar = gClientSettings.verticalNavbar;
+
+                disableActionsIfReadonly = gClientSettings.disableActionsIfReadonly;
 
                 initializeFrame(result.navigatorInfo, popupOwnerWidget);
                 DateRangePickerBasedCellEditor.setPickerTwoDigitYearStart(gClientSettings.twoDigitYearStart);
