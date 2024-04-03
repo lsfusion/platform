@@ -187,16 +187,8 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
 
         //if after deleting a character the value of the integer part is "0" and the cursor is in front of "0", move it to the right.
         private void moveCaretAfterZero() {
-            String text = getText();
-            if (text != null) {
-                int currentPosition = getCaret().getDot();
-                int separatorPosition = text.indexOf(df.getDecimalFormatSymbols().getDecimalSeparator());
-                if (separatorPosition >= 0) {
-                    String left = text.substring(0, separatorPosition).replace(String.valueOf(df.getDecimalFormatSymbols().getGroupingSeparator()), "");
-                    if(left.equals("0") && currentPosition == 0)
-                        setCaret(1);
-                }
-            }
+            if (leftIsZero(getText()) && getCaretPosition() == 0)
+                setCaret(1);
         }
     }
 
@@ -247,10 +239,26 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
             if (text != null && getSelectedText().equals(text) && text.startsWith("-") && hasMask)
                 moveCaretBack = true;
         }
-        if(!ignore)
+        if(!ignore) {
+            //after replacing zero with another digit, the cursor moves over the separator, move it to the left
+            boolean prevLeftIsZero = leftIsZero(getText()) && getCaretPosition() == 1 && hasMask;
+            if(prevLeftIsZero)
+                moveCaretBack = true;
             super.replaceSelection(content);
+        }
         if(moveCaretBack && !isMinusZeroText(getText(), separator))
             setCaret(getCaretPosition() - 1);
+    }
+
+    private boolean leftIsZero(String text) {
+        if(text != null) {
+            int separatorPosition = text.indexOf(df.getDecimalFormatSymbols().getDecimalSeparator());
+            if (separatorPosition >= 0) {
+                String left = text.substring(0, separatorPosition).replace(String.valueOf(df.getDecimalFormatSymbols().getGroupingSeparator()), "");
+                return left.equals("0");
+            }
+        }
+        return false;
     }
 
     private void setSingleSelection(int start) {

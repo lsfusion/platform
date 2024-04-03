@@ -114,6 +114,11 @@ public class KeyStrokes {
         return isKeyEvent(event, KeyEvent.VK_BACK_SPACE);
     }
 
+    //hack to start editing on F2
+    public static boolean isF2Event(EventObject event) {
+        return event instanceof ActionEvent && ((ActionEvent) event).getID() == ActionEvent.ACTION_PERFORMED;
+    }
+
     public static boolean isDeleteEvent(EventObject event) {
         return isKeyEvent(event, KeyEvent.VK_DELETE);
     }
@@ -183,12 +188,12 @@ public class KeyStrokes {
     }
 
     public static boolean isSuitableNumberEditEvent(EventObject event) {
-        return isSuitableEditKeyEvent(event) && (
+        return (isSuitableEditKeyEvent(event) && (
                 isDigitKeyEvent(event) ||
                 isMinusKeyEvent(event) ||
                 isDeleteEvent(event) ||
                 isBackSpaceEvent(event)
-        );
+        )) || isF2Event(event);
     }
 
     public static KeyStroke getKeyStrokeForEvent(KeyEvent e) {
