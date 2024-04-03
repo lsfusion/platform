@@ -642,13 +642,6 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                         comboBoxEditorComponent.paste(); // editor doesn't recognize ctrl+shift+V as paste event by default
                         plainPaste = false;
                         e.consume();
-                    } else if (e.getKeyCode() == KeyEvent.VK_F8/* && isScannerEventProperty()*/) {
-                        try {
-                            Robot robot = new Robot();
-                            robot.keyPress(0x1D);
-                            robot.keyRelease(0x1D);
-                        } catch (AWTException ignore) {
-                        }
                     } else {
                         Integer inputActionIndex = property.getInputActionIndex(e);
                         if(inputActionIndex != null) {
