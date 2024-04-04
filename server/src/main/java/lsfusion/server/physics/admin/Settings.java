@@ -3292,6 +3292,17 @@ public class Settings implements Cloneable {
         this.maxColumnsInPlainImportExport = maxColumnsInPlainImportExport;
     }
 
+    //option for upgrading from version 5 to version 6. READONLY actions will look like DISABLE actions
+    private boolean disableActionsIfReadonly;
+
+    public boolean isDisableActionsIfReadonly() {
+        return disableActionsIfReadonly;
+    }
+
+    public void setDisableActionsIfReadonly(boolean disableActionsIfReadonly) {
+        this.disableActionsIfReadonly = disableActionsIfReadonly;
+    }
+
     //option disables showing recently log messages
     private boolean disableShowingRecentlyLogMessages;
 

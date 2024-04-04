@@ -98,7 +98,7 @@ public class InitializeNavigatorHandler extends NavigatorActionHandler<Initializ
                 clientSettings.forbidDuplicateForms, clientSettings.pivotOnlySelectedColumn, clientSettings.matchSearchSeparator, colorTheme, clientSettings.useBootstrap,
                 getVersionedColorThemesCss(servlet), colorPreferences, localePreferences.dateFormat, localePreferences.timeFormat, localePreferences.twoDigitYearStart,
                 servlet.staticImagesURL, clientSettings.preDefinedDateRangesNames, clientSettings.useTextAsFilterSeparator, clientSettings.verticalNavbar,
-                clientSettings.userFiltersManualApplyMode, clientSettings.disableShowingRecentlyLogMessages);
+                clientSettings.userFiltersManualApplyMode, clientSettings.disableActionsIfReadonly, clientSettings.disableShowingRecentlyLogMessages);
     }
 
     private static Map<String, String> getVersionedColorThemesCss(MainDispatchServlet servlet) throws RemoteException {

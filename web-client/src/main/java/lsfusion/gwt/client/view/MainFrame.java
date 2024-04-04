@@ -100,6 +100,7 @@ public class MainFrame implements EntryPoint {
 
     public static boolean userFiltersManualApplyMode;
 
+    public static boolean disableActionsIfReadonly;
     public static boolean disableShowingRecentlyLogMessages;
 
     // async dispatch
@@ -647,6 +648,7 @@ public class MainFrame implements EntryPoint {
 
                 verticalNavbar = gClientSettings.verticalNavbar;
 
+                disableActionsIfReadonly = gClientSettings.disableActionsIfReadonly;
                 disableShowingRecentlyLogMessages = gClientSettings.disableShowingRecentlyLogMessages;
 
                 initializeFrame(result.navigatorInfo, popupOwnerWidget);
