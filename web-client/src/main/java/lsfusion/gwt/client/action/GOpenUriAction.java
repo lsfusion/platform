@@ -1,14 +1,14 @@
 package lsfusion.gwt.client.action;
 
 public class GOpenUriAction extends GExecuteAction {
-    public String uri;
+    public String path;
 
     //needed for it to be gwt-serializable
     @SuppressWarnings("UnusedDeclaration")
     public GOpenUriAction() {}
 
-    public GOpenUriAction(String uri) {
-        this.uri = uri;
+    public GOpenUriAction(String path) {
+        this.path = path;
     }
 
     @Override

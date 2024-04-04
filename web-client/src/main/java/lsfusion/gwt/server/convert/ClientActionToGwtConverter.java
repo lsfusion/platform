@@ -207,7 +207,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = OpenUriClientAction.class)
     public GOpenUriAction convertAction(OpenUriClientAction action) {
-        return new GOpenUriAction(action.uri.toString());
+        return new GOpenUriAction(action.getString());
     }
 
     @Converter(from = EditNotPerformedClientAction.class)

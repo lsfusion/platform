@@ -10,8 +10,6 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.sql.SQLException;
 import java.util.Iterator;
 
@@ -43,9 +41,9 @@ public class ShowOnMapAction extends GeoAction {
                         ("http://maps.yandex.ru/?"+ "text=" + addressMap.object.toString().trim().replace(" ","%20").replace(",", "%2C").replace("\"", "") + "&ll=" + longitude.object + "+%2C" + latitude.object + "&z=17") :
                         ("http://maps.google.com/?q=loc:" + latitude.object + "+" + longitude.object);
 
-                context.requestUserInteraction(new OpenUriClientAction(new URI(url)));
+                context.requestUserInteraction(new OpenUriClientAction(url));
             }
-        } catch (URISyntaxException | SQLException | ScriptingErrorLog.SemanticErrorException e) {
+        } catch (SQLException | ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);
         }
     }

@@ -176,6 +176,14 @@ isServer = DATA LOCAL BOOLEAN ();
 
 lsfParams(STRING s) = ABSTRACT VALUE STRING(STRING);
 
+//get name and extension
+extension(FILE file) = FORMULA TEXT 'get_extension($1)';
+name(NAMEDFILE file) = FORMULA TEXT 'get_named_file_name($1)';
+extension(NAMEDFILE file) = FORMULA TEXT 'get_named_file_extension($1)';
+
+getFileExtension(FILE file) = extension(file); //backward compatibility
+getExtension = getFileExtension(FILE(file)); //backward compatibility
+
 // ----------------------------------- open files ----------------------------------- //
 
 //source path, name, noWait
@@ -183,24 +191,24 @@ open '{system.open.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.ex
 open '{system.open.file}' (ISTRING[255] source, ISTRING[255] name)  { open(source, name, NULL); }
 open '{system.open.file}' (ISTRING[255] source, BOOLEAN noWait)  { open(source, NULL, noWait); }
 open '{system.open.file}' (ISTRING[255] source)  { open(source, NULL, NULL); }
+
+openFile '{system.open.file}'  INTERNAL 'lsfusion.server.physics.dev.integration.external.to.file.open.OpenFileAction' (RAWFILE, STRING, STRING, BOOLEAN);
 //source file, name, noWait
-open '{system.open.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenFileAction' (FILE, ISTRING[255], BOOLEAN);
-open '{system.open.file}' (FILE source, ISTRING[255] name)  { open(source, name, NULL); }
-open '{system.open.file}' (FILE source, BOOLEAN noWait)  { open(source, NULL, noWait); }
-open '{system.open.file}' (FILE source)  { open(source, NULL, NULL); }
+open '{system.open.file}' (FILE source, ISTRING[255] name)  { openFile(RAWFILE(source), name, extension(source), NULL); }
+open '{system.open.file}' (FILE source, BOOLEAN noWait)  { openFile(RAWFILE(source), NULL, extension(source), noWait); }
+open '{system.open.file}' (FILE source)  { openFile(RAWFILE(source), NULL, extension(source), NULL); }
 //source namedFile, noWait
-open '{system.open.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenNamedFileAction' (NAMEDFILE, BOOLEAN);
-open '{system.open.file}' (NAMEDFILE source)  { open(source, NULL); }
+open '{system.open.file}' (NAMEDFILE source, BOOLEAN noWait)  { openFile(RAWFILE(source), name(source), extension(source), noWait); }
+open '{system.open.file}' (NAMEDFILE source)  { openFile(RAWFILE(source), name(source), extension(source), NULL); }
 //source rawFile, name, noWait
-open '{system.open.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenRawFileAction' (RAWFILE, ISTRING[255], BOOLEAN);
-open '{system.open.file}' (RAWFILE source, ISTRING[255] name)  { open(source, name, NULL); }
-open '{system.open.file}' (RAWFILE source, BOOLEAN noWait)  { open(source, NULL, noWait); }
-open '{system.open.file}' (RAWFILE source)  { open(source, NULL, NULL); }
+open '{system.open.file}' (RAWFILE source, ISTRING[255] name)  { openFile(source, name, NULL, NULL); }
+open '{system.open.file}' (RAWFILE source, BOOLEAN noWait)  { openFile(source, NULL, NULL, noWait); }
+open '{system.open.file}' (RAWFILE source)  { openFile(source, NULL, NULL, NULL); }
 //source link, noWait
 open '{system.open.link}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenLinkAction' (LINK, BOOLEAN);
 open '{system.open.file}' (LINK source)  { open(source, NULL); }
 //source rawLink, noWait
-open '{system.open.link}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenRawLinkAction' (RAWLINK, BOOLEAN);
+open '{system.open.link}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenLinkAction' (RAWLINK, BOOLEAN);
 open '{system.open.file}' (RAWLINK source)  { open(source, NULL); }
 
 // ----------------------------------- open html link in tab ----------------------------------- //
@@ -295,14 +303,6 @@ namedFile(FILE file, STRING name) = FORMULA NAMEDFILE 'cast_dynamic_file_to_name
 
 // hashes
 md5(FILE file) = FORMULA STRING 'md5($1)';
-
-//get name and extension
-extension(FILE file) = FORMULA TEXT 'get_extension($1)';
-name(NAMEDFILE file) = FORMULA TEXT 'get_named_file_name($1)';
-extension(NAMEDFILE file) = FORMULA TEXT 'get_named_file_extension($1)';
-
-getFileExtension(FILE file) = extension(file); //backward compatibility
-getExtension = getFileExtension(FILE(file)); //backward compatibility
 
 //change name and extension
 file(FILE file, STRING newExtension) = file(RAWFILE(file), newExtension);

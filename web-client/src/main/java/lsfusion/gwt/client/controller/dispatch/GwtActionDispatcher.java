@@ -312,7 +312,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     @Override
     public void execute(GOpenUriAction action) {
-        Window.open(action.uri, "_blank", "");
+        Window.open(action.path, "_blank", "");
     }
 
     @Override

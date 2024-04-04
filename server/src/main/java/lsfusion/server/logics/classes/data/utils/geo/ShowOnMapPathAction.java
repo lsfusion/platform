@@ -17,8 +17,6 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 
 import java.math.BigDecimal;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.sql.SQLException;
 import java.util.Iterator;
 
@@ -68,11 +66,11 @@ public class ShowOnMapPathAction extends GeoAction {
             if (index <= result.values().size())
                 context.requestUserInteraction(new MessageClientAction("Не все координаты проставлены", "Ошибка"));
             else
-                context.requestUserInteraction(new OpenUriClientAction(new URI((isYandex ?
+                context.requestUserInteraction(new OpenUriClientAction((isYandex ?
                         ("https://maps.yandex.ru/?rtt=auto&rtm=atm&rtext=" + uri + firstLatLong) :
-                        ("https://www.google.com/maps/dir/" + uri + firstLatLong)))));
+                        ("https://www.google.com/maps/dir/" + uri + firstLatLong))));
 
-        } catch (SQLException | URISyntaxException | ScriptingErrorLog.SemanticErrorException ignored) {
+        } catch (SQLException | ScriptingErrorLog.SemanticErrorException ignored) {
         }
 
     }
