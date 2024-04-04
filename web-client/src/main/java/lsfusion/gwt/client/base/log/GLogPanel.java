@@ -9,6 +9,7 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.view.RecentlyEventClassHandler;
 import lsfusion.gwt.client.navigator.view.NavigatorPanel;
+import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.Date;
 
@@ -47,6 +48,8 @@ public class GLogPanel extends NavigatorPanel {
         Element logElement = logPanel.getElement();
         logElement.setScrollTop(logElement.getScrollHeight() - logElement.getClientHeight());
 
-        recentlySelected.onEvent();
+        if (!MainFrame.disableShowingRecentlyLogMessages) {
+            recentlySelected.onEvent();
+        }
     }
 }

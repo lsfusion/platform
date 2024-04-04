@@ -110,6 +110,7 @@ public abstract class MainFrame extends JFrame {
             MainController.colorPreferences = clientSettings.colorPreferences;
             MainController.useTextAsFilterSeparator = clientSettings.useTextAsFilterSeparator;
             MainController.userFiltersManualApplyMode = clientSettings.userFiltersManualApplyMode;
+            MainController.disableShowingRecentlyLogMessages = clientSettings.disableShowingRecentlyLogMessages;
             MainController.maxRequestQueueSize = clientSettings.maxRequestQueueSize;
             SwingDefaults.resetClientSettingsProperties();
             MainController.setClientSettingsDependentUIDefaults();

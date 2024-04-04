@@ -3292,13 +3292,14 @@ public class Settings implements Cloneable {
         this.maxColumnsInPlainImportExport = maxColumnsInPlainImportExport;
     }
 
-    private boolean disableLogMessages;
+    //option disables showing recently log messages
+    private boolean disableShowingRecentlyLogMessages;
 
-    public boolean isDisableLogMessages() {
-        return disableLogMessages;
+    public boolean isDisableShowingRecentlyLogMessages() {
+        return disableShowingRecentlyLogMessages;
     }
 
-    public void setDisableLogMessages(boolean disableLogMessages) {
-        this.disableLogMessages = disableLogMessages;
+    public void setDisableShowingRecentlyLogMessages(boolean disableShowingRecentlyLogMessages) {
+        this.disableShowingRecentlyLogMessages = disableShowingRecentlyLogMessages;
     }
 }

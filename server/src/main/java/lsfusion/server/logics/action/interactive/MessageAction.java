@@ -12,7 +12,6 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
@@ -42,9 +41,6 @@ public class MessageAction extends SystemAction {
     }
 
     protected void showMessage(ExecutionContext<PropertyInterface> context, String message) throws SQLException, SQLHandledException {
-        if(log && Settings.get().isDisableLogMessages())
-            return;
-
         ClientAction action;
         if(message == null)
             message = "";

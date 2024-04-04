@@ -1,6 +1,7 @@
 package lsfusion.client.base.log;
 
 import lsfusion.client.base.SwingUtils;
+import lsfusion.client.controller.MainController;
 
 import javax.swing.*;
 import java.awt.*;
@@ -37,12 +38,14 @@ class LogPanel extends JPanel {
         if (!newText.isEmpty()) {
             logArea.setCaretPosition(newText.length() - 1);
 
-            visibilityConsumer.accept(true);
-            SwingUtils.stopSingleAction("logSetInvisible", false);
-            
-            SwingUtils.invokeLaterSingleAction("logSetInvisible",
-                    e -> visibilityConsumer.accept(false),
-                    HIDE_DELAY);
+            if (!MainController.disableShowingRecentlyLogMessages) {
+                visibilityConsumer.accept(true);
+                SwingUtils.stopSingleAction("logSetInvisible", false);
+
+                SwingUtils.invokeLaterSingleAction("logSetInvisible",
+                        e -> visibilityConsumer.accept(false),
+                        HIDE_DELAY);
+            }
         }
     }
 
