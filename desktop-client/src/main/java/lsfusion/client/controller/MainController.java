@@ -77,6 +77,7 @@ public class MainController {
     public static boolean useTextAsFilterSeparator;
     
     public static boolean userFiltersManualApplyMode;
+    public static boolean disableActionsIfReadonly;
 
     public static int maxRequestQueueSize;
 

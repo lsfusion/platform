@@ -845,6 +845,7 @@ getClientSettings(User user) + WHEN TRUE AND user IS User THEN {
         matchSearchSeparator = valueSetting('matchSearchSeparator'),
         useTextAsFilterSeparator = valueSettingBoolean('useTextAsFilterSeparator'),
         userFiltersManualApplyMode = IF userFiltersManualApplyMode() THEN (IF userFiltersManualApplyMode() == TTRUE THEN TRUE ELSE NULL) ELSE valueSettingBoolean('userFiltersManualApplyMode'),
+        disableActionsIfReadonly = valueSetting('disableActionsIfReadonly'),
         maxRequestQueueSize = valueSetting('maxRequestQueueSize'),
         verticalNavbar = verticalNavbar(),
         navigatorPinMode = navigatorPinMode();
