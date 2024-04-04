@@ -3291,4 +3291,14 @@ public class Settings implements Cloneable {
     public void setMaxColumnsInPlainImportExport(int maxColumnsInPlainImportExport) {
         this.maxColumnsInPlainImportExport = maxColumnsInPlainImportExport;
     }
+
+    private boolean disableLogMessages;
+
+    public boolean isDisableLogMessages() {
+        return disableLogMessages;
+    }
+
+    public void setDisableLogMessages(boolean disableLogMessages) {
+        this.disableLogMessages = disableLogMessages;
+    }
 }
