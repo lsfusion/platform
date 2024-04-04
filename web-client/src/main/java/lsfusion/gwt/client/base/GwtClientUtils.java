@@ -14,6 +14,7 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.lambda.EFunction;
 import lsfusion.gwt.client.base.size.GSize;
+import lsfusion.gwt.client.base.view.PopupOwner;
 import lsfusion.gwt.client.base.view.popup.PopupPanel;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.property.PValue;
@@ -63,8 +64,8 @@ public class GwtClientUtils {
             setFocusElement: function (element, focusElement) {
                 return @lsfusion.gwt.client.form.property.cell.view.CellRenderer::setFocusElement(*)(element, focusElement);
             },
-            addFocusPartner: function (element, partner) {
-                return @lsfusion.gwt.client.base.FocusUtils::addFocusPartner(*)(element, partner);
+            addDropDownPartner: function (element, partner) {
+                return @lsfusion.gwt.client.base.GwtClientUtils::addDropDownPartner(*)(element, partner);
             },
             clearFocusElement: function (element) {
                 return @lsfusion.gwt.client.form.property.cell.view.CellRenderer::clearFocusElement(*)(element);
@@ -504,32 +505,64 @@ public class GwtClientUtils {
     /*--- tippy methods ---*/
 
     public static JavaScriptObject showTippyPopup(Widget widget, Widget popupWidget) {
-        return showTippyPopup(widget, widget.getElement(), popupWidget);
+        return showTippyPopup(new PopupOwner(widget), popupWidget);
     }
 
-    public static JavaScriptObject showTippyPopup(Widget ownerWidget, Element popupElementClicked, Widget popupWidget) {
-        return showTippyPopup(ownerWidget, popupElementClicked, popupWidget, null);
+    public static JavaScriptObject showTippyPopup(PopupOwner popupOwner, Widget popupWidget) {
+        return showTippyPopup(popupOwner, popupWidget, null);
     }
 
-    public static JavaScriptObject showTippyPopup(Widget ownerWidget, Element popupElementClicked, Widget popupWidget, Runnable onHideAction) {
+    public static JavaScriptObject showTippyPopup(PopupOwner popupOwner, Widget popupWidget, Runnable onHideAction) {
         RootPanel.get().add(popupWidget);
-        return showTippyPopup(ownerWidget, popupElementClicked, popupWidget.getElement(), onHideAction);
+        return showTippyPopup(popupOwner, popupWidget.getElement(), onHideAction);
     }
 
-    public static JavaScriptObject showTippyPopup(Widget ownerWidget, Element popupElementClicked, Element popupElement, Runnable onHideAction) {
-        JavaScriptObject tippy = initTippyPopup(ownerWidget, popupElementClicked, popupElement, "manual", onHideAction, null, null);
+    public static JavaScriptObject showTippyPopup(PopupOwner popupOwner, Element popupElement, Runnable onHideAction) {
+        return showTippyPopup(popupOwner, popupElement, onHideAction, null);
+    }
+
+    public static JavaScriptObject showTippyPopup(PopupOwner popupOwner, Element popupElement, Runnable onHideAction, Supplier<Element> referenceElementSupplier) {
+        JavaScriptObject tippy = initTippyPopup(popupOwner, popupElement, "manual", onHideAction, null, referenceElementSupplier);
         showTippy(tippy);
         return tippy;
     }
 
-    public static JavaScriptObject initTippyPopup(Widget ownerWidget, Element popupElementClicked, Element popupElement, String target, Runnable onHideAction, Runnable onShowAction, Supplier<Element> referenceElementSupplier) {
-        JavaScriptObject tippy = initTippy(ownerWidget, popupElementClicked, 0, target, onHideAction, onShowAction, referenceElementSupplier);
+    public static JavaScriptObject initTippyPopup(PopupOwner popupOwner, Element popupElement, String target, Runnable onHideAction, Runnable onShowAction, Supplier<Element> referenceElementSupplier) {
+        JavaScriptObject tippy = initTippy(popupOwner, 0, target, onHideAction, onShowAction, referenceElementSupplier);
         updateTippyContent(tippy, popupElement);
         return tippy;
     }
 
-    public static JavaScriptObject initTippy(Widget ownerWidget, Element tippyElement, int delay, String trigger, Runnable onHideAction, Runnable onShowAction, Supplier<Element> referenceElementSupplier) {
-        JavaScriptObject tippy = initTippy(nvl(getTippyParent(tippyElement), RootPanel.get().getElement()), tippyElement, delay, trigger, onHideAction, onShowAction, referenceElementSupplier);
+    // the partner with other inner lsf components ("recursive" partner)
+    public static void addPopupPartner(PopupOwner owner, Element popup) {
+        popup.addClassName("popup-partner");
+        FocusUtils.addFocusPartner(owner.element, popup);
+    }
+    //  the "deadend" partner
+    // focus problems are handled by edit mechanism or custom elements themselves
+    public static void addDropDownPartner(Element owner, Element dropdown) {
+        dropdown.addClassName("dropdown-partner");
+        FocusUtils.addFocusPartner(owner, dropdown);
+    }
+    public static void removePopupPartner(PopupOwner owner, Element popup, boolean blurred) {
+        if(!blurred)
+            FocusUtils.focusInOut(owner.element, FocusUtils.Reason.RESTOREFOCUS);
+    }
+
+    public static JavaScriptObject initTippy(PopupOwner popupOwner, int delay, String trigger, Runnable onHideAction, Runnable onShowAction, Supplier<Element> referenceElementSupplier) {
+        assert popupOwner.element != null;
+        JavaScriptObject tippy = initTippy(popupOwner.element, delay, trigger,
+        (instance) -> {
+            removePopupPartner(popupOwner, getPopup(instance), blurredTippy);
+            if(onHideAction != null && !silentTippy)
+                onHideAction.run();
+        },
+        (instance) -> {
+            addPopupPartner(popupOwner, getPopup(instance));
+            if(onShowAction != null && !silentTippy)
+                onShowAction.run();
+        }, referenceElementSupplier);
+        Widget ownerWidget = popupOwner.widget;
         if(ownerWidget != null) {
             ownerWidget.addAttachHandler(attachEvent -> {
                 if(!attachEvent.isAttached()) {
@@ -543,9 +576,19 @@ public class GwtClientUtils {
     public static void hideAndDestroyTippyPopup(JavaScriptObject popup) {
         hideAndDestroyTippyPopup(popup, false);
     }
-    public static void hideAndDestroyTippyPopup(JavaScriptObject popup, boolean silent) {
-        hideTippy(popup, silent);
-        destroyTippy(popup);
+    private static boolean silentTippy;
+    private static boolean blurredTippy;
+    public static void hideTippy(JavaScriptObject popup, boolean silent, boolean blurred) {
+        boolean prevSilentTippy = silentTippy;
+        boolean prevBlurredTippy = blurredTippy;
+        silentTippy = silent;
+        blurredTippy = blurred;
+        try {
+            hideTippy(popup);
+        } finally {
+            silentTippy = prevSilentTippy;
+            blurredTippy = prevBlurredTippy;
+        }
     };
 
     public static native void updateTippyContent(JavaScriptObject tippy, Element content)/*-{
@@ -559,20 +602,28 @@ public class GwtClientUtils {
     public static native void showTippy(JavaScriptObject tippy)/*-{
         tippy.show();
     }-*/;
-    public static void hideTippy(JavaScriptObject popup) {
-        hideTippy(popup, false);
-    }
-    public static native void hideTippy(JavaScriptObject tippy, boolean silent)/*-{
-        tippy.props.silent = silent;
+    public static void hideAndDestroyTippyPopup(JavaScriptObject popup, boolean silent) {
+        hideTippy(popup, silent, false);
+        destroyTippy(popup);
+    };
+    private static native void hideTippy(JavaScriptObject tippy)/*-{
         tippy.hide();
     }-*/;
     public static native void destroyTippy(JavaScriptObject tippy)/*-{
         tippy.destroy();
     }-*/;
+    public static native Element getPopup(JavaScriptObject tippy)/*-{
+        return tippy.popper;
+    }-*/;
+    public static void setHideOnBlur(JavaScriptObject tippy) {
+        FocusUtils.setOnFocusOut(getPopup(tippy), nativeEvent -> hideTippy(tippy, false, true));
+    }
 
-    private static native JavaScriptObject initTippy(Element appendToElement, Element element, int delay, String trigger, Runnable onHideAction, Runnable onShowAction, Supplier<Element> referenceElementSupplier)/*-{
+    private static native JavaScriptObject initTippy(Element element, int delay, String trigger, Consumer<JavaScriptObject> onHideAction, Consumer<JavaScriptObject> onShowAction, Supplier<Element> referenceElementSupplier)/*-{
         return $wnd.tippy(element, {
-            appendTo: appendToElement,
+            appendTo: function() {
+                return $doc.body;
+            },
             //content: contentElement,
             trigger: trigger,
             interactive: true,
@@ -606,31 +657,22 @@ public class GwtClientUtils {
                     referenceElement = this.contextElement;
                 return referenceElement.getBoundingClientRect();
             },
-            zIndex: 1070,
             silent: false,
 
             // we're changing document mousedown scheme to the focus / blur (as in all the other places)
             hideOnClick: false,
             onCreate: function(instance) { // copy of hideOnPopperBlur (with a isFakeBlur emulation)
-                instance.popper.addEventListener('focusout', function (event) { // important to add to the popper (not the first child), because popups attached to the popper
-                    if (!@lsfusion.gwt.client.base.FocusUtils::isFakeBlur(Lcom/google/gwt/dom/client/NativeEvent;Lcom/google/gwt/dom/client/Element;)(event, instance.popper)) {
-                        instance.hide();
-                    }
-                });
+                @GwtClientUtils::setHideOnBlur(*)(instance);
             },
             onShown: function(instance) {
                 instance.popper.firstChild.focus(); // we need to set focus inside to make focusOut work
             },
 
             onShow: function(instance) {
-                if(onShowAction != null && !this.silent) {
-                    onShowAction.@java.lang.Runnable::run()();
-                }
+                onShowAction.@java.util.function.Consumer::accept(*)(instance);
             },
-            onHidden: function() {
-                if(onHideAction != null && !this.silent) {
-                    onHideAction.@java.lang.Runnable::run()();
-                }
+            onHide: function(instance) { // we need on hide to have focus on tooltip and thus be able to move it before it goes to the body
+                onHideAction.@java.util.function.Consumer::accept(*)(instance);
             },
             delay: [delay, null]
         });
@@ -1168,6 +1210,10 @@ public class GwtClientUtils {
     public static <T> T nvl(T value1, T value2) {
         return value1 == null ? value2 : value1;
     }
+
+    public static native boolean isConnected(Element element)/*-{
+        return element.isConnected;
+    }-*/;
 
     public static Element getParentWithNonEmptyAttribute(Element element, String property) {
         while (element != null) {

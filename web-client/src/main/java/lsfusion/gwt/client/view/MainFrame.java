@@ -20,8 +20,8 @@ import lsfusion.gwt.client.base.exception.GExceptionManager;
 import lsfusion.gwt.client.base.log.GLog;
 import lsfusion.gwt.client.base.result.VoidResult;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
-import lsfusion.gwt.client.base.view.EventHandler;
-import lsfusion.gwt.client.base.view.ModalWindow;
+import lsfusion.gwt.client.base.view.PopupOwner;
+import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.controller.dispatch.LogicsDispatchAsync;
 import lsfusion.gwt.client.controller.remote.GConnectionLostManager;
 import lsfusion.gwt.client.controller.remote.action.PriorityAsyncCallback;
@@ -139,18 +139,20 @@ public class MainFrame implements EntryPoint {
 
         hackForGwtDnd();
 
-        GwtClientUtils.setZeroZIndex(RootLayoutPanel.get().getElement());
+        RootPanel.getBodyElement().setTabIndex(-1); // we need this because activeElement returns body (under the spec) when there is no active element, and we sometimes need to return focus there
+        RootLayoutPanel.get().getElement().addClassName("root-layout-panel");
+//        GwtClientUtils.setZeroZIndex(element); // ??? move to layout.css
 
-        Widget popupOwnerWidget = ModalWindow.GLOBAL; // actually now is used for error handling
+        PopupOwner popupOwner = PopupOwner.GLOBAL; // actually now is used for error handling
 
         GWT.setUncaughtExceptionHandler(t -> {
             if (!ignoreException(t)) {
-                GExceptionManager.logClientError(t, popupOwnerWidget);
-                DialogBoxHelper.showMessageBox("Error", t.getMessage(), popupOwnerWidget, null);
+                GExceptionManager.logClientError(t, popupOwner);
+                DialogBoxHelper.showMessageBox("Error", t.getMessage(), popupOwner, null);
             }
         });
 
-        initializeLogicsAndNavigator(popupOwnerWidget);
+        initializeLogicsAndNavigator(popupOwner);
     }
 
     private static boolean ignoreException(Throwable exception) {
@@ -184,34 +186,15 @@ public class MainFrame implements EntryPoint {
         private T link;
     }
 
-    private static Element lastBlurredElement;
-    // Event.addNativePreviewHandler(this::previewNativeEvent); doesn't work since only mouse events are propagated see DOM.previewEvent(evt) usages (only mouse and keyboard events are previewed);
-    // this solution is not pretty clean since not all events are previewed, but for now, works pretty good
-    public static void setLastBlurredElement(Element lastBlurredElement) {
-        MainFrame.lastBlurredElement = lastBlurredElement;
-    }
-    public static Element getLastBlurredElement() {
-        return lastBlurredElement;
-    }
-    public static boolean focusLastBlurredElement(EventHandler focusEventHandler, Element focusEventElement) {
-        // in theory we also have to check if focused element still visible, isShowing in GwtClientUtils but now it's assumed that it is always visible
-        if(lastBlurredElement != null && lastBlurredElement != focusEventElement) { // return focus back where it was
-            focusEventHandler.consume();
-            FocusUtils.focus(lastBlurredElement, FocusUtils.Reason.RESTOREFOCUS);
-            return true;
-        }
-        return false;
-    }
-
     public static boolean switchedToAnotherWindow;
 
     public static boolean previewSwitchToAnotherWindow(Event event) {
-        if (BrowserEvents.FOCUS.equals(event.getType())) {
+        if (DataGrid.FOCUSPREVIEWIN.equals(event.getType())) {
             if (switchedToAnotherWindow) {
                 switchedToAnotherWindow = false;
                 return true;
             }
-        } else if (BrowserEvents.BLUR.equals(event.getType())) {
+        } else if (DataGrid.FOCUSPREVIEWOUT.equals(event.getType())) {
             switchedToAnotherWindow = isSwitchedToAnotherWindow(event, Document.get());
             return switchedToAnotherWindow;
         }
@@ -316,7 +299,7 @@ public class MainFrame implements EntryPoint {
         return hasAttribute;
     }
 
-    public void initializeFrame(NavigatorInfo result, Widget popupOwnerWidget) {
+    public void initializeFrame(NavigatorInfo result, PopupOwner popupOwner) {
         assert currentForm == null;
         currentForm = null;
 
@@ -399,7 +382,7 @@ public class MainFrame implements EntryPoint {
             public boolean execute() {
                 if (shouldRepeatPingRequest && !GConnectionLostManager.shouldBeBlocked()) {
                     setShouldRepeatPingRequest(false);
-                    navigatorDispatchAsync.executePriority(new ClientPushMessage(), new PriorityErrorHandlingCallback<ClientMessageResult>(popupOwnerWidget) {
+                    navigatorDispatchAsync.executePriority(new ClientPushMessage(), new PriorityErrorHandlingCallback<ClientMessageResult>(popupOwner) {
                         @Override
                         public void onSuccess(ClientMessageResult result) {
                             setShouldRepeatPingRequest(true);
@@ -429,7 +412,7 @@ public class MainFrame implements EntryPoint {
             }
         }, 1000);
 
-        GExceptionManager.flushUnreportedThrowables(popupOwnerWidget);
+        GExceptionManager.flushUnreportedThrowables(popupOwner);
     }
 
     public static void setShouldRepeatPingRequest(boolean ishouldRepeatPingRequest) {
@@ -606,7 +589,7 @@ public class MainFrame implements EntryPoint {
         return $wnd.document.body.getAttribute("sessionID");
     }-*/;
 
-    public void initializeLogicsAndNavigator(Widget popupOwnerWidget) {
+    public void initializeLogicsAndNavigator(PopupOwner popupOwner) {
         String portString = Window.Location.getParameter("port");
         Integer screenWidth = Window.getClientWidth();
         Integer screenHeight = Window.getClientHeight();
@@ -617,7 +600,7 @@ public class MainFrame implements EntryPoint {
                 Window.Location.getParameter("exportName"));
 
         navigatorDispatchAsync = new NavigatorDispatchAsync(getSessionId());
-        navigatorDispatchAsync.executePriority(new InitializeNavigator(screenWidth + "x" + screenHeight, mobile), new PriorityErrorHandlingCallback<InitializeNavigatorResult>(popupOwnerWidget) {
+        navigatorDispatchAsync.executePriority(new InitializeNavigator(screenWidth + "x" + screenHeight, mobile), new PriorityErrorHandlingCallback<InitializeNavigatorResult>(popupOwner) {
             @Override
             public void onSuccess(InitializeNavigatorResult result) {
                 GClientSettings gClientSettings = result.gClientSettings;
@@ -651,7 +634,7 @@ public class MainFrame implements EntryPoint {
                 disableActionsIfReadonly = gClientSettings.disableActionsIfReadonly;
                 disableShowingRecentlyLogMessages = gClientSettings.disableShowingRecentlyLogMessages;
 
-                initializeFrame(result.navigatorInfo, popupOwnerWidget);
+                initializeFrame(result.navigatorInfo, popupOwner);
                 DateRangePickerBasedCellEditor.setPickerTwoDigitYearStart(gClientSettings.twoDigitYearStart);
             }
         });

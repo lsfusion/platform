@@ -246,14 +246,14 @@
 /*Bootstrap uses a fixed z-index for the some elements, and z-index of the modal-windows(1055) is higher than z-index of dropdown-menu(1000).
     We manually set z-index in lsf-dropdown to 1070*/
 .dropdown-menu.lsf-dropdown {
-    --bs-dropdown-zindex: 1070;
+    /*--bs-dropdown-zindex: 1070;*/
 }
 
 .selectize-dropdown.selectize-dropdown {
     /*in excel theme resizable-window.css .modal-form sets z-index to 1000, in bootstrap theme by default z-index of the modal-windows is 1055
         as the selectize uses its own css-classes which do not overlap with excel and bootstrap css-classes,
         we will use the z-index used for .dropdown-menu.lsf-dropdown in the bootstrap theme - 1070*/
-    z-index: 1070;
+    /*z-index: 1070;*/
 }
 
 /* wrapping is not desirable behaviour for the toolbar, at least in property toolbar (when toolbar is too large and more than a half of the property width) */

@@ -112,8 +112,6 @@ public class GBusyDialog extends DialogModalWindow {
     }
 
     public void hideBusyDialog() {
-//        if(isShowing())
-        hide();
         message.clear();
         btnExit.setEnabled(false);
         btnReconnect.setEnabled(false);
@@ -195,13 +193,13 @@ public class GBusyDialog extends DialogModalWindow {
         stopAction(messages.busyDialogCancelTransaction(), messages.busyDialogCancelTransactionConfirm(), false);
     }
 
-    public Widget getPopupOwnerWidget() {
-        return this;
+    public PopupOwner getPopupOwner() {
+        return new PopupOwner(this);
     }
 
     private void stopAction(String caption, String message, boolean needInterrupt) {
         DialogBoxHelper.showConfirmBox(caption,
-                message, getPopupOwnerWidget(),
+                message, getPopupOwner(),
                 chosenOption -> {
                     if (chosenOption == DialogBoxHelper.OptionType.YES) {
                         this.needInterrupt = needInterrupt;

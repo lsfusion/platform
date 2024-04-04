@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.base.view;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
@@ -24,8 +25,6 @@ public class ModalWindow extends ResizableComplexPanel {
     protected final DivWidget modalBackDrop;
 
     private final boolean resizable;
-
-    public static final Widget GLOBAL = null;
 
     public ModalWindow(boolean resizable, ModalWindowSize size) {
         super();
@@ -94,11 +93,12 @@ public class ModalWindow extends ResizableComplexPanel {
         FlexPanel.makeShadowOnScroll(content, header, body, false);
     }
 
-    public void show(Widget popupOwnerWidget) {
-        show(null, popupOwnerWidget);
+    public void show(PopupOwner popupOwner) {
+        show(null, popupOwner);
     }
 
-    public void show(Integer insertIndex, Widget popupOwnerWidget) {
+    protected PopupOwner showPopupOwner = null;
+    public void show(Integer insertIndex, PopupOwner popupOwner) {
         // attaching
         RootPanel parentWidget = RootPanel.get();
         if(insertIndex != null) {
@@ -106,6 +106,10 @@ public class ModalWindow extends ResizableComplexPanel {
         } else {
             parentWidget.add(this);
         }
+
+        showPopupOwner = popupOwner;
+        if(popupOwner != PopupOwner.GLOBAL)
+            GwtClientUtils.addPopupPartner(popupOwner, getElement());
 
         modal.addStyleName("show");
 
@@ -124,6 +128,12 @@ public class ModalWindow extends ResizableComplexPanel {
 
     public void hide() {
         modal.removeStyleName("show");
+
+        PopupOwner popupOwner = showPopupOwner;
+        if(popupOwner != PopupOwner.GLOBAL)
+            GwtClientUtils.removePopupPartner(popupOwner, getElement(), true); // we rely on DialogModalWindow.hide + ModalForm (prevForm.onFocus) to handle focuses
+        showPopupOwner = null;
+
         RootPanel.get().remove(this);
     }
 

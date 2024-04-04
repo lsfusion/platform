@@ -15,7 +15,6 @@ import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
-import lsfusion.gwt.client.controller.SmartScheduler;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.event.*;
@@ -316,13 +315,6 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         assert getSelectedRow() < getRowCount();
     }
 
-    @Override
-    protected boolean previewEvent(Element target, Event event) {
-        if(!DataGrid.checkSinkFocusEvents(event))
-            SmartScheduler.getInstance().flush();
-        return form.previewEvent(target, event);
-    }
-
     public GPropertyDraw getSelectedProperty() {
         if(getSelectedRow() >= 0 && getSelectedColumn() >= 0)
             return getProperty(getSelectedCell());
@@ -547,11 +539,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return restDelta;
     }
 
-    public static Widget getPopupOwnerWidget(Widget widget) {
-        return widget;
-    }
     public Widget getPopupOwnerWidget() {
-        return getPopupOwnerWidget(getWidget());
+        return getWidget();
     }
 
     protected abstract void setUserWidth(GPropertyDraw property, Integer value);
@@ -772,11 +761,11 @@ protected Double getUserFlex(int i) {
         return getEditContext(getSelectedCell(column), getSelectedRenderElement(column));
     }
 
-    public <C> void onBrowserEvent(Cell cell, Event event, Column<T, C> column, TableCellElement parent) {
+    public <C> void onBrowserEvent(Cell cell, EventHandler eventHandler, Column<T, C> column, TableCellElement parent) {
         Element renderElement = getRenderElement(cell, parent);
 
-        form.onPropertyBrowserEvent(new EventHandler(event), renderElement, parent != null, getTableDataFocusElement(),
-                handler -> selectionHandler.onCellBefore(handler, cell, rowChanged -> isChangeOnSingleClick(cell, event, (Boolean) rowChanged, column), () -> renderElement != null ? InputBasedCellRenderer.getFocusEventTarget(renderElement, event) : null),
+        form.onPropertyBrowserEvent(eventHandler, renderElement, parent != null, getTableDataFocusElement(),
+                handler -> selectionHandler.onCellBefore(handler, cell, rowChanged -> isChangeOnSingleClick(cell, eventHandler.event, (Boolean) rowChanged, column), () -> renderElement != null ? InputBasedCellRenderer.getFocusEventTarget(renderElement, eventHandler.event) : null),
                 handler -> column.onEditEvent(handler, cell, renderElement),
                 handler -> selectionHandler.onCellAfter(handler, cell),
                 handler -> CopyPasteUtils.putIntoClipboard(renderElement), handler -> CopyPasteUtils.getFromClipboard(handler, line -> pasteData(cell, renderElement, GwtClientUtils.getClipboardTable(line))),
@@ -856,10 +845,6 @@ protected Double getUserFlex(int i) {
         }
     }
 
-    public Element getDropdownParent(Element element) {
-        return GFormController.getDropdownParent(element);
-    }
-
     public GridPropertyColumn getGridColumn(int column) {
         return (GridPropertyColumn) getColumn(column);
     }
@@ -875,11 +860,6 @@ protected Double getUserFlex(int i) {
             @Override
             public GFont getFont() {
                 return GGridPropertyTable.this.getFont();
-            }
-
-            @Override
-            public Element getDropdownParent(Element element) {
-                return GGridPropertyTable.this.getDropdownParent(element);
             }
 
             @Override
@@ -1047,13 +1027,12 @@ protected Double getUserFlex(int i) {
 
         super.changeSelectedCell(row, column, reason);
 
-        if(!checkFocusElement(reason, null)) {
-            Element focusElement = getTableDataFocusElement();
-            Element focusedChild = FocusUtils.getFocusedChild(focusElement);
-            if(focusElement != focusedChild) {
-                FocusUtils.focus(focusElement, reason);
-            }
-        }
+        if(!checkFocusElement(reason, null))
+            focus(reason);
+    }
+
+    public void focus(FocusUtils.Reason reason) {
+        FocusUtils.focus(getTableDataFocusElement(), reason);
     }
 
     @Override

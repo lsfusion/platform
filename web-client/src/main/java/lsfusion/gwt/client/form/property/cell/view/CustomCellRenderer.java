@@ -223,18 +223,11 @@ public class CustomCellRenderer extends CellRenderer {
         return getRenderController(renderContext, element);
     }
 
-    private static Element getDropdownParent(RenderContext renderContext, Element element) {
-        return renderContext.getDropdownParent(element);
-    }
-
     private static native JavaScriptObject getRenderController(RenderContext renderContext, Element element)/*-{
         var thisObj = this;
         return {
             isList: function () {
                 return false;
-            },
-            getDropdownParent: function() {
-                return @CustomCellRenderer::getDropdownParent(*)(renderContext, element);
             }
         };
     }-*/;

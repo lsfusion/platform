@@ -137,7 +137,7 @@ public class GGridController extends GAbstractTableController {
             calendarTableButton.showBackground(false);
     }
     private void setPivotTableView() {
-        changeTableView(new GPivot(formController, this, getSelectedProperty()));
+        changeTableView(new GPivot(formController, this, getSelectedProperty(), gridView));
         pivotTableButton.showBackground(true);
         gridTableButton.showBackground(false);
         if(mapTableButton != null)

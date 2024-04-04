@@ -1,7 +1,5 @@
 package lsfusion.gwt.client.form.property;
 
-import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.Style;
@@ -12,6 +10,7 @@ import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
+import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.classes.*;
 import lsfusion.gwt.client.classes.data.*;
 import lsfusion.gwt.client.form.controller.FormsController;
@@ -491,7 +490,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             return GEditBindingMap.EDIT_OBJECT;
 
         // starting change on focus, or any key pressed when focus is on input
-        boolean isFocus = BrowserEvents.FOCUS.equals(editEvent.getType());
         Element editElement = editContext.getEditElement();
         InputElement inputElement = InputBasedCellRenderer.getInputEventTarget(editElement, editEvent);
         if (inputElement != null) {
@@ -499,7 +497,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
             GInputType inputType = InputBasedCellRenderer.getInputElementType(inputElement);
             if(inputType.isStretchText()) {
-                if (isFocus && !isSuppressOnFocusChange(inputElement))
+                if (DataGrid.FOCUSIN.equals(editEvent.getType()) && !isSuppressOnFocusChange(inputElement))
                     return GEditBindingMap.changeOrGroupChange();
 
                 if (InputBasedCellRenderer.isInputKeyEvent(editEvent, updateContext, inputType.isMultilineText()))

@@ -926,6 +926,7 @@
     this.remove = Selectpicker.prototype.remove;
     this.show = Selectpicker.prototype.show;
     this.hide = Selectpicker.prototype.hide;
+    this.getDropdown = () => this.$menu;
 
     this.init();
   };

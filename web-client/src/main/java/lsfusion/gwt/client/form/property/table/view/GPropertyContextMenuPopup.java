@@ -9,6 +9,7 @@ import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.Result;
+import lsfusion.gwt.client.base.view.PopupOwner;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import java.util.LinkedHashMap;
@@ -19,7 +20,7 @@ public class GPropertyContextMenuPopup {
         void onMenuItemSelected(String actionSID);
     }
 
-    public static void show(Widget ownerWidget, GPropertyDraw property, Element element, final ItemSelectionListener selectionListener) {
+    public static void show(PopupOwner popupOwner, GPropertyDraw property, final ItemSelectionListener selectionListener) {
         if (property == null) {
             return;
         }
@@ -52,7 +53,7 @@ public class GPropertyContextMenuPopup {
             menuBar.addItem(menuItem);
         }
 
-        popup.result = GwtClientUtils.showTippyPopup(ownerWidget, element, menuBar);
+        popup.result = GwtClientUtils.showTippyPopup(popupOwner, menuBar);
     }
     
     private static String ensureMenuItemCaption(String caption) {

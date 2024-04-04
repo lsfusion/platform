@@ -7,6 +7,7 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
+import lsfusion.gwt.client.base.view.PopupOwner;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -28,10 +29,11 @@ public class PopupForm extends EditingForm {
         @Override
         public void start(EventHandler handler, Element parent, RenderContext renderContext, boolean notFocusable, PValue oldValue) {
             Event event;
+            parentElement = parent;
             if(handler != null && DataGrid.isMouseEvent(event = handler.event)) {
-                parentElement = Element.as(event.getEventTarget());
+                popupElement = Element.as(event.getEventTarget());
             } else {
-                parentElement = parent;
+                popupElement = parent;
             }
         }
 
@@ -49,8 +51,9 @@ public class PopupForm extends EditingForm {
         }
     }
 
-    protected Widget formWidget;
+    protected Widget contentWidget;
     private Element parentElement;
+    private Element popupElement;
 
     private FormContainer prevForm;
 
@@ -62,7 +65,7 @@ public class PopupForm extends EditingForm {
         if (prevForm != null) // if there were no currentForm
             prevForm.onBlur(false);
 
-        tippy = GwtClientUtils.showTippyPopup(popupOwnerWidget, parentElement, formWidget, () -> {
+        tippy = GwtClientUtils.showTippyPopup(new PopupOwner(popupOwnerWidget, popupElement), contentWidget, () -> {
             cellEditor.commit(parentElement);
         });
 
@@ -79,12 +82,12 @@ public class PopupForm extends EditingForm {
 
     @Override
     protected void setFormContent(Widget widget) {
-        this.formWidget = widget;
+        this.contentWidget = widget;
     }
 
     @Override
     protected void removeFormContent(Widget widget) {
-        this.formWidget = null;
+        this.contentWidget = null;
     }
 
     private PopupFormCellEditor cellEditor;
@@ -95,8 +98,8 @@ public class PopupForm extends EditingForm {
     }
 
     @Override
-    public Element getFocusedElement() {
-        return formWidget.getElement();
+    public Element getContentElement() {
+        return contentWidget.getElement();
     }
 
     public PopupForm(FormsController formsController, GFormController contextForm, long editRequestIndex, boolean async, Event editEvent, EditContext editContext) {

@@ -10,13 +10,11 @@ import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
-import lsfusion.gwt.client.base.view.DivWidget;
-import lsfusion.gwt.client.base.view.FlexPanel;
-import lsfusion.gwt.client.base.view.ResizableSimplePanel;
-import lsfusion.gwt.client.base.view.SimpleImageButton;
+import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.object.table.TableContainer;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
@@ -82,11 +80,15 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         return clone;
     }-*/;
 
-    public GStateTableView(GFormController form, GGridController grid) {
+    private final TableContainer tableContainer;
+
+    public GStateTableView(GFormController form, GGridController grid, TableContainer tableContainer) {
         super(true);
 
         this.form = form;
         this.grid = grid;
+
+        this.tableContainer = tableContainer;
 
 //        setElement(DOM.createDiv());
 
@@ -134,7 +136,11 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     }
 
     public Widget getPopupOwnerWidget() {
-        return GGridPropertyTable.getPopupOwnerWidget(getWidget());
+        return getWidget();
+    }
+
+    public Element getTableDataFocusElement() {
+        return tableContainer.getFocusElement();
     }
 
     private Widget pageSizeWidget;
@@ -322,10 +328,6 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     @Override
     public boolean isNoColumns() {
         return properties.isEmpty();
-    }
-
-    public Element getDropdownParent(Element element) {
-        return GFormController.getDropdownParent(element);
     }
 
     @Override

@@ -64,11 +64,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     private GTreeGroup treeGroup;
 
-    @Override
-    public void focus(FocusUtils.Reason reason) {
-        FocusUtils.focus(getTableDataFocusElement(), reason);
-    }
-
     private GSize hierarchicalWidth;
 
     public GTreeTable(GFormController iformController, GForm iform, GTreeGroupController treeGroupController, GTreeGroup treeGroup, TableContainer tableContainer) {

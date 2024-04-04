@@ -159,7 +159,7 @@ public abstract class GUserPreferencesDialog extends DialogModalWindow {
     }
 
     public void showDialog() {
-        show(grid.getPopupOwnerWidget());
+        show(new PopupOwner(grid.getPopupOwnerWidget()));
         focusPanel.setFocus(true);
     }
 
@@ -243,13 +243,13 @@ public abstract class GUserPreferencesDialog extends DialogModalWindow {
         return designFont == null ? new GFont(grid.font != null ? grid.font.family : "", 0, false, false) : designFont;
     }
 
-    private Widget getPopupOwnerWidget() {
-        return this;
+    private PopupOwner getPopupOwner() {
+        return new PopupOwner(this);
     }
 
     private void resetPressed() {
         final GSaveResetConfirmDialog confirmDialog = new GSaveResetConfirmDialog(false);
-        confirmDialog.show(getPopupOwnerWidget(), new Callback() {
+        confirmDialog.show(getPopupOwner(), new Callback() {
             @Override
             public void onSuccess() {
                 columnCaptionBox.setText(null);
@@ -266,7 +266,7 @@ public abstract class GUserPreferencesDialog extends DialogModalWindow {
 
     private void savePressed() {
         final GSaveResetConfirmDialog confirmDialog = new GSaveResetConfirmDialog(true);
-        confirmDialog.show(getPopupOwnerWidget(), new Callback() {
+        confirmDialog.show(getPopupOwner(), new Callback() {
             @Override
             public void onSuccess() {
                 Map<GPropertyDraw, Map<Boolean, Integer>> userSortDirections = new HashMap<>();
@@ -375,7 +375,7 @@ public abstract class GUserPreferencesDialog extends DialogModalWindow {
                 preferencesChanged();
                 String caption = save ? messages.formGridPreferencesSaving() : messages.formGridPreferencesResetting();
                 String message = save ? messages.formGridPreferencesSaveSuccess() : messages.formGridPreferencesResetSuccess();
-                DialogBoxHelper.showMessageBox(caption, message, getPopupOwnerWidget(), chosenOption -> focusPanel.setFocus(true));
+                DialogBoxHelper.showMessageBox(caption, message, getPopupOwner(), chosenOption -> focusPanel.setFocus(true));
             }
 
             @Override

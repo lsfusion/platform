@@ -4,9 +4,9 @@ import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.AsyncCallbackEx;
 import lsfusion.gwt.client.base.busy.GBusyDialogDisplayer;
+import lsfusion.gwt.client.base.view.PopupOwner;
 import lsfusion.gwt.client.controller.dispatch.GWTDispatch;
 import lsfusion.gwt.client.controller.remote.action.*;
 import lsfusion.gwt.client.controller.remote.action.form.GetAsyncValues;
@@ -140,10 +140,10 @@ public abstract class RemoteDispatchAsync implements ServerMessageProvider {
         return requestIndex;
     }
 
-    protected abstract Widget getPopupOwnerWidget(); // busy dialog owner
+    protected abstract PopupOwner getPopupOwner(); // busy dialog owner
 
     private void startBusyDialog() {
-        getBusyDialogDisplayer().start(getPopupOwnerWidget());
+        getBusyDialogDisplayer().start(getPopupOwner());
     }
 
     private void stopBusyDialog(boolean immediate) {

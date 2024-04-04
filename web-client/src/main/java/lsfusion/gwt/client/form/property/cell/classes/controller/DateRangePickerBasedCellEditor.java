@@ -33,13 +33,13 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
 
         if (started && !isNative()) {
 //            assert oldValue != null;
-            createPicker(GwtClientUtils.getTippyParent(parent), parent, oldValue != null ? getStartDate(oldValue) : null, oldValue != null ? getEndDate(oldValue) : null, getSinglePattern().replace("a", "A"), isSinglePicker(), isTimeEditor(), isDateEditor());
+            createPicker(parent, oldValue != null ? getStartDate(oldValue) : null, oldValue != null ? getEndDate(oldValue) : null, getSinglePattern().replace("a", "A"), isSinglePicker(), isTimeEditor(), isDateEditor());
             openPicker(); // date range picker is opened only on click
 
             if(oldValue == null) // if value is null - current date will be set, so we need to select the value, since we want to rewrite data on key input
                 inputElement.select();
 
-            FocusUtils.addFocusPartner(parent, getPickerContainer());
+            GwtClientUtils.addDropDownPartner(parent, getPickerContainer());
 
 //            getInputElement().click();
         }
@@ -108,7 +108,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
         return property.getHorzTextAlignment(RendererType.CELL); // should be taken from RenderContext, but for now this would do
     }
 
-    protected native void createPicker(Element tippyParent, Element parent, JsDate startDate, JsDate endDate, String pattern, boolean singleDatePicker, boolean time, boolean date)/*-{
+    protected native void createPicker(Element parent, JsDate startDate, JsDate endDate, String pattern, boolean singleDatePicker, boolean time, boolean date)/*-{
         window.$ = $wnd.jQuery;
         var thisObj = this;
         var editElement = $(thisObj.@DateRangePickerBasedCellEditor::getInputElement()());
@@ -145,7 +145,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
                 "firstDay": 1,
                 format: $wnd.moment().toMomentFormatString(pattern)
             },
-            parentEl: tippyParent,
+//            parentEl: parent,
             timePicker: !date,
             timePicker24Hour: true,
             showDropdowns: true,

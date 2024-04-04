@@ -102,9 +102,9 @@ public class PopupMenuPanel extends ComplexPanel {
 
     public void setPopupPositionAndShow(final Element target) {
         getElement().getStyle().setVisibility(Style.Visibility.HIDDEN);
-        Element parent = GwtClientUtils.getTippyParent(target);
+        Element parent = null; // GwtClientUtils.getTippyParent(target);
         show(parent);
-        FocusUtils.addFocusPartner(target, getElement());
+        GwtClientUtils.addDropDownPartner(target, getElement());
         position(target, parent, getOffsetWidth(), getOffsetHeight());
         getElement().getStyle().setVisibility(Style.Visibility.VISIBLE);
     }

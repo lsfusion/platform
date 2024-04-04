@@ -24,6 +24,7 @@ import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.classes.GType;
+import lsfusion.gwt.client.controller.SmartScheduler;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.controller.remote.DeferredRunner;
 import lsfusion.gwt.client.controller.remote.action.*;
@@ -967,7 +968,7 @@ public class GFormController implements EditManager {
 
         if(BrowserEvents.CONTEXTMENU.equals(event.getType())) {
             handler.consume();
-            GPropertyContextMenuPopup.show(editContext.getPopupOwnerWidget(), property, Element.as(event.getEventTarget()), actionSID -> {
+            GPropertyContextMenuPopup.show(new PopupOwner(editContext.getPopupOwnerWidget(), Element.as(event.getEventTarget())), property, actionSID -> {
                 executePropertyEventAction(editContext, actionSID, handler);
             });
         } else {
@@ -995,7 +996,7 @@ public class GFormController implements EditManager {
     public void executePropertyEventAction(ExecuteEditContext editContext, String actionSID, EventHandler handler) {
         GPropertyDraw property = editContext.getProperty();
         if (isChangeEvent(actionSID) && property.askConfirm) {
-            DialogBoxHelper.showConfirmBox("lsFusion", EscapeUtils.toHTML(property.askConfirmMessage), editContext.getPopupOwnerWidget(), chosenOption -> {
+            DialogBoxHelper.showConfirmBox("lsFusion", EscapeUtils.toHTML(property.askConfirmMessage), editContext.getPopupOwner(), chosenOption -> {
                         if (chosenOption == DialogBoxHelper.OptionType.YES)
                             executePropertyEventActionConfirmed(editContext, actionSID, handler);
                     });
@@ -1139,12 +1140,12 @@ public class GFormController implements EditManager {
         return actionDispatcher.getAsyncFormController(requestIndex);
     }
 
-    public Widget getPopupOwnerWidget() {
-        return getWidget();
+    public PopupOwner getPopupOwner() {
+        return new PopupOwner(getWidget());
     }
     public void asyncCloseFormConfirmed(Runnable runnable) {
         if(needConfirm) {
-            DialogBoxHelper.showConfirmBox("lsFusion", messages.doYouReallyWantToCloseForm(), getWidget(), chosenOption -> {
+            DialogBoxHelper.showConfirmBox("lsFusion", messages.doYouReallyWantToCloseForm(), getPopupOwner(), chosenOption -> {
                 if(chosenOption == DialogBoxHelper.OptionType.YES) {
                     runnable.run();
                 }
@@ -1291,7 +1292,7 @@ public class GFormController implements EditManager {
         final int position = controller.getSelectedRow();
 
         if (add) {
-            MainFrame.logicsDispatchAsync.executePriority(new GenerateID(), new PriorityErrorHandlingCallback<GenerateIDResult>(editContext.getPopupOwnerWidget()) {
+            MainFrame.logicsDispatchAsync.executePriority(new GenerateID(), new PriorityErrorHandlingCallback<GenerateIDResult>(editContext.getPopupOwner()) {
                 @Override
                 public void onSuccess(GenerateIDResult result) {
                     asyncAddRemove(editContext, execContext, handler, actionSID, object, add, new GPushAsyncAdd(result.ID), new GGroupObjectValue(object.ID, new GCustomObjectValue(result.ID, null)), position, externalChange, onExec);
@@ -1495,8 +1496,8 @@ public class GFormController implements EditManager {
         }
 
         @Override
-        public Widget getPopupOwnerWidget() {
-            return GFormController.this.getPopupOwnerWidget();
+        public PopupOwner getPopupOwner() {
+            return GFormController.this.getPopupOwner();
         }
     }
 
@@ -1606,47 +1607,55 @@ public class GFormController implements EditManager {
             asyncView.setForceLoading(set);
     }
 
-    public boolean previewEvent(Element target, Event event) {
-        if(BrowserEvents.BLUR.equals(event.getType()))
-            MainFrame.setLastBlurredElement(Element.as(event.getEventTarget()));
+    public Element getTargetAndPreview(Element element, Event event) {
+        // there is a problem with non-bubbling events (there are not many such events, see CellBasedWidgetImplStandard.nonBubblingEvents, so basically focus events):
+        // handleNonBubblingEvent just looks for the first event listener
+        // but if there are 2 widgets listening to the focus events (for example when in ActionOrPropertyValue there is an embedded form and there is a TableContainer inside)
+        // then the lower widget gets both blur events (there 2 of them with different current targets, i.e supposed to be handled by different elements) and the upper widget gets none of them (which leads to the very undesirable behaviour with the "double" finishEditing, etc.)
+        // WE DON'T NEED IT NOW SINCE WE RELY ON FOCUSOUT
+//        if(DataGrid.checkNonBubblingEvents(event)) { // there is a bubble field, but it does
+//            EventTarget currentEventTarget = event.getCurrentEventTarget();
+//            if(Element.is(currentEventTarget)) {
+//                Element currentTarget = currentEventTarget.cast();
+//                 maybe sinked focus events should be checked for the currentTarget
+//                if(!currentTarget.equals(element) && DOM.dispatchEvent(event, currentTarget))
+//                    return null;
+//            }
+//        }
+
+        Element target = Element.as(event.getEventTarget());
+        if(target == null)
+            return null;
+
+        if(DataGrid.FOCUSPREVIEWOUT.equals(event.getType()))
+            FocusUtils.setLastBlurredElement(Element.as(event.getEventTarget()));
 
         formsController.checkEditModeEvents(event);
 
-        if(!previewBusyDialogDisplayerSinkEvents(event))
-            return false;
+        //focus() can trigger blur event, blur finishes editing. Editing calls syncDispatch.
+        //If isEditing() and busyDialogDisplayer isVisible() then flushCompletedRequests is not executed and syncDispatch is blocked.
+        if(dispatcher.getBusyDialogDisplayer().isVisible() && (DataGrid.checkSinkEvents(event) || DataGrid.checkSinkFocusEvents(event)))
+            return null;
+
+        if(!DataGrid.checkSinkFocusEvents(event))
+            SmartScheduler.getInstance().flush();
 
         if(!MainFrame.previewClickEvent(target, event))
-            return false;
+            return null;
 
         // see GEditBindingMap.changeOrGroupChange
         boolean isEditing = isEditing();
         if (isEditing || focusedCustom != null) { // we need switchedToAnotherWindow to be filled - see it's usages
             boolean switched = MainFrame.previewSwitchToAnotherWindow(event);
             if(switched && isEditing) // we don't want to stop additing when switching to another window
-                return false;
+                return null;
         }
 
-        return true;
+        return target;
     }
 
-    public boolean previewEvent(Event event, Element element) {
-        Element target = DataGrid.getBrowserTargetAndCheck(element, event);
-        if(target == null)
-            return false;
-        return previewEvent(target, event);
-    }
-
-    public GFormController contextEditForm;
-    public void propagateFocusEvent(Event event) {
-//        it seems that now we don't need it, because now we have getBrowserTargetAndCheck fix
-//        if(BrowserEvents.BLUR.equals(event.getType()) && contextEditForm != null)
-//            contextEditForm.getRequestCellEditor().onBrowserEvent(contextEditForm.getEditElement(), new EventHandler(event));
-    }
-
-    private boolean previewBusyDialogDisplayerSinkEvents(Event event) {
-        //focus() can trigger blur event, blur finishes editing. Editing calls syncDispatch.
-        //If isEditing() and busyDialogDisplayer isVisible() then flushCompletedRequests is not executed and syncDispatch is blocked.
-        return !(dispatcher.getBusyDialogDisplayer().isVisible() && (DataGrid.checkSinkEvents(event) || DataGrid.checkSinkFocusEvents(event)));
+    public boolean previewCustomEvent(Event event, Element element) {
+        return getTargetAndPreview(element, event) != null;
     }
 
     protected void onFormHidden(GAsyncFormController asyncFormController, int closeDelay, EndReason editFormCloseReason) {
@@ -1657,7 +1666,7 @@ public class GFormController implements EditManager {
 
         FormDispatchAsync closeDispatcher = dispatcher;
         Scheduler.get().scheduleDeferred(() -> {
-            closeDispatcher.executePriority(new Close(closeDelay), new PriorityErrorHandlingCallback<VoidResult>(getPopupOwnerWidget()) {
+            closeDispatcher.executePriority(new Close(closeDelay), new PriorityErrorHandlingCallback<VoidResult>(getPopupOwner()) {
                 @Override
                 public void onFailure(Throwable caught) { // supressing errors
                 }
@@ -1768,18 +1777,22 @@ public class GFormController implements EditManager {
         }
     }
 
-    public void focusFirstWidget(FocusUtils.Reason reason) {
+    public boolean focusDefaultWidget() {
+        FocusUtils.Reason reason = FocusUtils.Reason.SHOW;
         if (formLayout.focusDefaultWidget(reason)) {
-            return;
+            return true;
         }
 
-        Element nextFocusElement = GPanelController.getNextFocusElement(getWidget().getElement(), true);
+        return focusNextElement(reason, true);
+    }
+
+    public boolean focusNextElement(FocusUtils.Reason reason, boolean forward) {
+        Element nextFocusElement = FocusUtils.getNextFocusElement(formLayout.getElement(), forward);
         if(nextFocusElement != null) {
             FocusUtils.focus(nextFocusElement, reason);
-        } else {
-            //focus form container if no one element is focusable
-            FocusUtils.focus(formContainer.getFocusedElement(), reason);
+            return true;
         }
+        return false;
     }
 
     private class ServerResponseCallback extends GwtActionDispatcher.ServerResponseCallback {
@@ -1945,7 +1958,8 @@ public class GFormController implements EditManager {
                 if(focusedElement != null) { // we do the fake blur to call onBlur, because custom render
                     forcedBlurCustom = true;
                     try {
-                        FocusUtils.blur(focusedElement);
+                        // move focus "outside" the element (to the first with tabIndex ???, that what blur actually does) and then return back to the element ???
+                        FocusUtils.triggerFocus(reason -> FocusUtils.focusOut(focusedCustom, reason), focusedElement);
                     } finally {
                         forcedBlurCustom = false;
                     }
@@ -2373,7 +2387,7 @@ public class GFormController implements EditManager {
             if(editContext.isSetLastBlurred()) {
                 Element focusElement = editContext.getFocusElement();
                 if(focusElement != null)
-                    MainFrame.setLastBlurredElement(focusElement);
+                    FocusUtils.setLastBlurredElement(focusElement);
             }
         } else {
             if (focusedElement != null) {
@@ -2611,9 +2625,5 @@ public class GFormController implements EditManager {
 
     public void resetWindowsLayout() {
         formsController.resetWindowsLayout();
-    }
-
-    public static Element getDropdownParent(Element element) {
-        return GwtClientUtils.getTippyParent(element);
     }
 }

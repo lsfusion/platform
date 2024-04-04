@@ -349,11 +349,6 @@
     background: inherit;
 }
 
- /*needed to add extra hover space, it works because navbar-popup-over-selected-hover has overflow: visible*/
-.navbar.navbar-popup-over-selected-hover {
-    position: relative;
-}
-
 /* the problem is that such approach intercepts all mouse events - cursors, clicks, etc. */
 /* so "paddings" should be not more than container + component paddings */
 .navbar.navbar-popup-over-selected-hover::before {
@@ -403,8 +398,20 @@
 }
 
 .navbar.navbar-popup-over-selected-hover {
+    /*needed to add extra hover space, it works because navbar-popup-over-selected-hover has overflow: visible*/
+    /* plus to make z-index work */
+    position: relative;
+    z-index: 1;
+}
+/* needed to make navbar overlap forms-container*/
+.forms-container-window {
+    /* plus to make z-index work */
+    position: relative;
+    z-index: 0;
+}
+
+.navbar.navbar-popup-over-selected-hover {
     overflow: visible;
-    z-index: 1000;
     flex-grow: 0 !important;
     flex-basis: 0 !important;
 }

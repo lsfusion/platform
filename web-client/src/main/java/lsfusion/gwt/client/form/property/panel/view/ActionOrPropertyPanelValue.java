@@ -1,9 +1,10 @@
 package lsfusion.gwt.client.form.property.panel.view;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
@@ -13,7 +14,6 @@ import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.ExecuteEditContext;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
-import lsfusion.gwt.client.view.MainFrame;
 
 public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements ExecuteEditContext {
 
@@ -112,13 +112,13 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
     }
 
     @Override
-    protected void onFocus(EventHandler handler) {
+    protected void onFocus(Element target, EventHandler handler) {
         // prevent focusing
-        if (!isFocusable() && !forceSetFocus && MainFrame.focusLastBlurredElement(handler, getElement())) {
+        if (!isFocusable() && !forceSetFocus && FocusUtils.focusLastBlurredElement(handler, getElement())) {
             return;
         }
 
-        super.onFocus(handler);
+        super.onFocus(target, handler);
     }
 
     @Override

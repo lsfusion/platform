@@ -22,27 +22,12 @@ public class GPanelController extends GPropertyController {
     public GPanelController(GFormController formController) {
         super(formController);
 
-        formController.addEnterBindings(GBindingMode.ALL, this::selectNextElement, null);
+        formController.addEnterBindings(GBindingMode.ALL, this::focusNextElement, null);
     }
 
-    private void selectNextElement(boolean forward) {
-        Element nextFocusElement = getNextFocusElement(formController.getWidget().getElement(), forward);
-        if(nextFocusElement != null) {
-            FocusUtils.focus(nextFocusElement, FocusUtils.Reason.KEYNEXTNAVIGATE);
-        }
+    private void focusNextElement(boolean forward) {
+        formController.focusNextElement(FocusUtils.Reason.KEYNEXTNAVIGATE, forward);
     }
-
-    public static native Element getNextFocusElement(Element formController, boolean forward) /*-{
-        var elements = Array.prototype.filter.call(
-            formController.querySelectorAll('.nav-item,.tableContainer,button,input,.panelRendererValue'), function (item) {
-                //if element or one of its ancestors has display:none, offsetParent is null
-                return item.tabIndex >= "0" && item.offsetParent !== null
-        });
-        if(elements.length === 0)
-            return null;
-        var index = elements.indexOf($doc.activeElement);
-        return forward ? (elements[index + 1] || elements[0]) : (elements[index - 1] || elements[elements.length - 1]);
-    }-*/;
 
     @Override
     public void updateLoadings(GLoadingReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {

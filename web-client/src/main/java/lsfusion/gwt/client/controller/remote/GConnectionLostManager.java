@@ -4,7 +4,6 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.shared.SerializableThrowable;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.AtomicBoolean;
 import lsfusion.gwt.client.base.AtomicLong;
@@ -34,7 +33,7 @@ public class GConnectionLostManager {
 
     private static GBlockDialog blockDialog;
 
-    private static Widget popupOwnerWidget = ModalWindow.GLOBAL;
+    private static PopupOwner popupOwner = PopupOwner.GLOBAL;
 
     public static void start() {
         connectionLost.set(false);
@@ -42,7 +41,7 @@ public class GConnectionLostManager {
         timerWhenUnblocked = new Timer() {
             @Override
             public void run() {
-                GExceptionManager.flushUnreportedThrowables(popupOwnerWidget);
+                GExceptionManager.flushUnreportedThrowables(popupOwner);
                 blockIfHasFailed();
             }
         };
@@ -177,7 +176,7 @@ public class GConnectionLostManager {
                     Collection<NonFatalHandledException> all = entry.getValue();
                     NonFatalHandledException nonFatal = all.iterator().next();
                     nonFatal.count = all.size();
-                    GExceptionManager.logClientError(nonFatal, popupOwnerWidget);
+                    GExceptionManager.logClientError(nonFatal, popupOwner);
                 }
             });
         }
@@ -252,7 +251,7 @@ public class GConnectionLostManager {
             };
             showButtonsTimer.schedule(5000);
 
-            show(popupOwnerWidget);
+            show(popupOwner);
         }
 
         public void hideDialog() {

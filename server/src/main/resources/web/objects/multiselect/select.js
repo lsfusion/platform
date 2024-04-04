@@ -76,7 +76,7 @@ function selectMultiInput() {
             selectizeElement.setAttribute('tabindex', '-1');
 
             element.selectizeInstance = $(selectizeElement).selectize({
-                dropdownParent: _getDropdownParent(controller),
+                dropdownParent: 'body',
 
                 onInitialize: function() {
                     _removeAllPMBInTD(element, this.$control[0]);
@@ -108,7 +108,7 @@ function selectMultiInput() {
                 },
                 onDropdownOpen: function (dropdown) {
                     // setting auto hide partner to avoid fake blurs
-                    lsfUtils.addFocusPartner(element, dropdown[0]);
+                    lsfUtils.addDropDownPartner(element, dropdown[0]);
                     this.setCaret(this.items.length);
                     _setIsEditing(this.$control[0], true);
                 },
@@ -567,7 +567,7 @@ function _selectPicker(multi, html, shouldBeSelected) {
             (element, controller) => {
                 let selectElement = $(element.select);
                 selectElement.selectpicker({
-                    container: _getDropdownParent(controller)
+                    container: 'body'
                 });
                 selectElement.on('changed.bs.select', function (e, clickedIndex, isSelected) {
                     if (clickedIndex != null && isSelected != null) { //documentation:  If the select's value has been changed either via the .selectpicker('val'), .selectpicker('selectAll'), or .selectpicker('deselectAll') methods, clickedIndex and isSelected will be null.
@@ -579,6 +579,7 @@ function _selectPicker(multi, html, shouldBeSelected) {
                     }
                 });
                 selectElement.on('shown.bs.select', function (e) {
+                    lsfUtils.addDropDownPartner(element, selectElement.selectpicker('getDropdown')[0]);
                     _setIsEditing(element, true);
                 });
                 selectElement.on('hidden.bs.select', function (e) {
@@ -590,8 +591,9 @@ function _selectPicker(multi, html, shouldBeSelected) {
         return _dropDown(multi ? {'multiple': ''} : {},
             (element, controller) => {
                 let select = element.select;
-                $(select).multipleSelect({
-                    container: _getDropdownParent(controller),
+                let selectElement = $(select);
+                selectElement.multipleSelect({
+                    container: 'body',
                     selectAll: false,
                     position: 'bottom', // todo. bottom is default, but at the bottom of the screen dropdown is hidden and need to be 'top'
                     // position: 'top',
@@ -604,6 +606,7 @@ function _selectPicker(multi, html, shouldBeSelected) {
                             _changeSingleDropdownProperty(object, element)
                     },
                     onOpen: function () {
+                        lsfUtils.addDropDownPartner(element, selectElement.multipleSelect('getDropdown')[0]);
                         element.silent = true; // Because "refresh" is called after every update, which removes the dropdown
                         _setIsEditing(element, true);
                     },
@@ -887,9 +890,4 @@ function _changeSingleDropdownProperty(object, element) {
 
 function _getName(object) {
     return object.name != null ? String(object.name) : '';
-}
-
-function _getDropdownParent(controller) {
-    let dropdownParent = controller.getDropdownParent();
-    return dropdownParent != null ? dropdownParent : 'body'
 }

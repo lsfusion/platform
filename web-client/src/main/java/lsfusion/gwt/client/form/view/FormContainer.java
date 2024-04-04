@@ -110,19 +110,25 @@ public abstract class FormContainer {
     }
 
     protected void onSyncFocus(boolean add) {
-        if(add || focusedElement == null)
-            form.focusFirstWidget(FocusUtils.Reason.SHOW);
-        else
+        assert !async;
+        if(add || focusedElement == null) {
+            if (!form.focusDefaultWidget())
+                focus();
+        } else
             FocusUtils.focus(focusedElement, FocusUtils.Reason.RESTOREFOCUS);
         form.gainedFocus();
     }
 
-    private void onSyncBlur(boolean remove) {
-        form.lostFocus();
-        focusedElement = remove ? null : FocusUtils.getFocusedChild(getFocusedElement());
+    protected void focus() {
+        FocusUtils.focusInOut(getContentElement(), FocusUtils.Reason.SHOW);
     }
 
-    public abstract Element getFocusedElement();
+    private void onSyncBlur(boolean remove) {
+        form.lostFocus();
+        focusedElement = remove ? null : FocusUtils.getFocusedChild(getContentElement());
+    }
+
+    public abstract Element getContentElement();
 
     public void initForm(FormsController formsController, GForm gForm, BiConsumer<GAsyncFormController, EndReason> hiddenHandler, boolean isDialog, int dispatchPriority, String formId) {
         form = new GFormController(formsController, this, gForm, isDialog, dispatchPriority, editEvent) {

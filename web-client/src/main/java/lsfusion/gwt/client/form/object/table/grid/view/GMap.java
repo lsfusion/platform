@@ -5,7 +5,6 @@ import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.RequiresResize;
-import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -293,7 +292,7 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
         return L.latLng(latitude, longitude);
     }-*/;
 
-    protected JavaScriptObject showPopup(Widget ownerWidget, Element popupElement, JavaScriptObject popupElementClicked) {
+    protected JavaScriptObject showPopup(Element popupElement, JavaScriptObject popupElementClicked) {
         return showMapPopup(popupElementClicked, popupElement);
     }
 

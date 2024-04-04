@@ -40,7 +40,7 @@
     /*in excel theme resizable-window.css .modal-form sets z-index to 1000, in bootstrap theme by default z-index of the modal-windows is 1055
         as the selectize uses its own css-classes which do not overlap with excel and bootstrap css-classes,
         we will use the z-index used for .dropdown-menu.lsf-dropdown in the bootstrap theme - 1070*/
-    z-index: 1070;
+    /*z-index: 1070;*/
 }
 
 /* .fill-parent-perc gives 100% height to element, and in EXCEL-design dropdown stretches to the full height of screen. selectize.bootstrap.css contain this rule and does not have this problem */

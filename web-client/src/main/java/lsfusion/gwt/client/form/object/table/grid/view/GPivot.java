@@ -15,6 +15,8 @@ import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
 import lsfusion.gwt.client.base.size.GSize;
+import lsfusion.gwt.client.base.view.EventHandler;
+import lsfusion.gwt.client.base.view.PopupOwner;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.classes.GObjectType;
 import lsfusion.gwt.client.classes.GType;
@@ -29,6 +31,7 @@ import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.object.table.TableContainer;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.object.table.tree.view.GTreeColumnValue;
 import lsfusion.gwt.client.form.object.table.tree.view.GTreeColumnValueType;
@@ -76,8 +79,8 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
 
     private GPropertyDraw selectedProperty;
 
-    public GPivot(GFormController formController, GGridController gridController, GPropertyDraw selectedProperty) {
-        super(formController, gridController);
+    public GPivot(GFormController formController, GGridController gridController, GPropertyDraw selectedProperty, TableContainer tableContainer) {
+        super(formController, gridController, tableContainer);
         this.selectedProperty = selectedProperty;
 
         setStyleName(getDrawElement(), "pivotTable");
@@ -343,10 +346,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             }
         }
         return captions.toArray();
-    }
-
-    public Element getTableDataFocusElement() {
-        return getWidget().getElement();
     }
 
     private Integer[] getPivotSplits(List<List<GPropertyDraw>> propertiesList, String defaultElement) {
@@ -1975,7 +1974,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             menuBar.getElement().getStyle().setOverflowY(Style.Overflow.SCROLL);
         }
 
-        popup.result = GwtClientUtils.showTippyPopup(getPopupOwnerWidget(), td, menuBar);
+        popup.result = GwtClientUtils.showTippyPopup(new PopupOwner(getPopupOwnerWidget(), td), menuBar);
     }
 
 
@@ -2263,4 +2262,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         return null;
     }
 
+    @Override
+    public void onBrowserEvent(Element target, EventHandler event) {
+    }
 }

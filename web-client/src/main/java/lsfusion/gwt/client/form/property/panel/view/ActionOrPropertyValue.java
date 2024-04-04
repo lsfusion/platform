@@ -1,21 +1,16 @@
 package lsfusion.gwt.client.form.property.panel.view;
 
-import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.AppBaseImage;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.size.GSize;
-import lsfusion.gwt.client.base.view.CopyPasteUtils;
-import lsfusion.gwt.client.base.view.EventHandler;
-import lsfusion.gwt.client.base.view.FlexPanel;
-import lsfusion.gwt.client.base.view.SizedWidget;
+import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
@@ -225,24 +220,14 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
 
     @Override
     public void onBrowserEvent(Event event) {
-        Element target = DataGrid.getBrowserTargetAndCheck(getElement(), event);
+        Element target = form.getTargetAndPreview(getElement(), event);
         if(target == null)
-            return;
-        if(!form.previewEvent(target, event))
             return;
 
         super.onBrowserEvent(event);
 
-        if(!DataGrid.checkSinkEvents(event) && !DataGrid.checkSinkFocusEvents(event))
-            return;
-
         EventHandler eventHandler = new EventHandler(event);
-
-        if(BrowserEvents.FOCUS.equals(event.getType())) {
-            onFocus(eventHandler);
-        } else if(BrowserEvents.BLUR.equals(event.getType())) {
-            onBlur(eventHandler);
-        }
+        DataGrid.dispatchFocusAndCheckSinkEvents(eventHandler, target, getElement(), this::onFocus, this::onBlur);
         if(eventHandler.consumed)
             return;
 
@@ -253,12 +238,10 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
                 //ctrl-c ctrl-v from excel adds \n in the end, trim() removes it
                 handler -> CopyPasteUtils.putIntoClipboard(getRenderElement()), handler -> CopyPasteUtils.getFromClipboard(handler, line -> pasteValue(line.trim())),
                 true, property.getCellRenderer(getRendererType()).isCustomRenderer(), isFocusable());
-
-        form.propagateFocusEvent(event);
     }
 
     protected boolean isFocused;
-    protected void onFocus(EventHandler handler) {
+    protected void onFocus(Element target, EventHandler handler) {
         if(isFocused)
             return;
 
@@ -281,10 +264,9 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
         update();
     }
 
-    protected void onBlur(EventHandler handler) {
-        if(!isFocused || FocusUtils.isFakeBlur(handler.event, getElement())) {
+    protected void onBlur(Element target, EventHandler handler) {
+        if(!isFocused)
             return;
-        }
         //if !isFocused should be replaced to assert; isFocused must be true, but sometimes is not (related to BusyDialogDisplayer)
         //assert isFocused;
         isFocused = false;
@@ -378,11 +360,4 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
     }
 
     protected abstract GComponent getComponent();
-
-    @Override
-    public Element getDropdownParent(Element element) {
-        // the problem that element is not attached yet, so we have to use upper container (which can be in the popup container)
-        GAbstractContainerView containerView = form.formLayout.getContainerView(getComponent().container);
-        return GFormController.getDropdownParent(containerView.getView().getElement());
-    }
 }

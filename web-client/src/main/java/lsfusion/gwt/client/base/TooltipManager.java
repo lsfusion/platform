@@ -11,6 +11,7 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.view.FormButton;
+import lsfusion.gwt.client.base.view.PopupOwner;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.view.MainFrame;
 
@@ -20,13 +21,13 @@ public class TooltipManager {
     private static final ClientMessages messages = ClientMessages.Instance.get();
 
     public static JavaScriptObject initTooltip(Widget widget, final TooltipHelper tooltipHelper) {
-        return initTooltip(widget, widget.getElement(), tooltipHelper);
+        return initTooltip(new PopupOwner(widget), tooltipHelper);
     }
-    public static JavaScriptObject initTooltip(Widget ownerWidget, Element element, final TooltipHelper tooltipHelper) {
+    public static JavaScriptObject initTooltip(PopupOwner popupOwner, final TooltipHelper tooltipHelper) {
         if (!MainFrame.mobile && tooltipHelper.getTooltip(null) != null && MainFrame.showDetailedInfoDelay > 0) {
             // assert that element is "new" and have no tippy (two mouseenter tippies will look odd, however manual tippy can be added)
-            assert !GwtClientUtils.hasProperty(element, "_tippy");
-            JavaScriptObject tippy = GwtClientUtils.initTippy(ownerWidget, element, MainFrame.showDetailedInfoDelay, "mouseenter", null, null, null);
+            assert !GwtClientUtils.hasProperty(popupOwner.element, "_tippy");
+            JavaScriptObject tippy = GwtClientUtils.initTippy(popupOwner, MainFrame.showDetailedInfoDelay, "mouseenter", null, null, null);
             updateContent(tippy, tooltipHelper, null);
             return tippy;
         }
@@ -80,7 +81,7 @@ public class TooltipManager {
                         else
                             Cookies.removeCookie("debugPath");
 
-                        GwtClientUtils.hideTippy(tippy);
+                        GwtClientUtils.hideTippy(tippy, false, false);
                     }
                 });
 
