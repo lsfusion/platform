@@ -3302,4 +3302,15 @@ public class Settings implements Cloneable {
     public void setDisableActionsIfReadonly(boolean disableActionsIfReadonly) {
         this.disableActionsIfReadonly = disableActionsIfReadonly;
     }
+
+    //option disables showing recently log messages
+    private boolean disableShowingRecentlyLogMessages;
+
+    public boolean isDisableShowingRecentlyLogMessages() {
+        return disableShowingRecentlyLogMessages;
+    }
+
+    public void setDisableShowingRecentlyLogMessages(boolean disableShowingRecentlyLogMessages) {
+        this.disableShowingRecentlyLogMessages = disableShowingRecentlyLogMessages;
+    }
 }

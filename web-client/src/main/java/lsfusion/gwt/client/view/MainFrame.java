@@ -101,6 +101,7 @@ public class MainFrame implements EntryPoint {
     public static boolean userFiltersManualApplyMode;
 
     public static boolean disableActionsIfReadonly;
+    public static boolean disableShowingRecentlyLogMessages;
 
     // async dispatch
     public <T extends Result> long asyncDispatch(final ExecuteNavigatorAction action, RequestCountingAsyncCallback<ServerResponseResult> callback) {
@@ -648,6 +649,7 @@ public class MainFrame implements EntryPoint {
                 verticalNavbar = gClientSettings.verticalNavbar;
 
                 disableActionsIfReadonly = gClientSettings.disableActionsIfReadonly;
+                disableShowingRecentlyLogMessages = gClientSettings.disableShowingRecentlyLogMessages;
 
                 initializeFrame(result.navigatorInfo, popupOwnerWidget);
                 DateRangePickerBasedCellEditor.setPickerTwoDigitYearStart(gClientSettings.twoDigitYearStart);

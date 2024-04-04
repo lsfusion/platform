@@ -78,6 +78,7 @@ public class MainController {
     
     public static boolean userFiltersManualApplyMode;
     public static boolean disableActionsIfReadonly;
+    public static boolean disableShowingRecentlyLogMessages;
 
     public static int maxRequestQueueSize;
 
