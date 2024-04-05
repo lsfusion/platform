@@ -550,8 +550,15 @@ public class PopupMenuPanel extends ComplexPanel {
     }
 
     public boolean selectFirstItem() {
+        return selectFirstItem(false);
+    }
+    public boolean selectFirstItem(boolean checkEmpty) {
         if (!items.isEmpty()) {
-            selectItem(items.get(0));
+            PopupMenuItem item = items.get(0);
+            if(checkEmpty && item.getItemValue().getDisplayString().isEmpty()) {
+                item = null;
+            }
+            selectItem(item);
             return true;
         }
         return false;

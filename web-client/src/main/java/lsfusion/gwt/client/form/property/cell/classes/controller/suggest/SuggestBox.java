@@ -132,8 +132,8 @@ public abstract class SuggestBox {
         for(Widget bottomPanel : bottomPanels)
             suggestionPopup.addBottomPanelItem(bottomPanel);
 
-        if (isAutoSelectEnabled && suggestions.size() > 0) {
-            suggestionPopup.selectFirstItem();
+        if (isAutoSelectEnabled && !suggestions.isEmpty()) {
+            suggestionPopup.selectFirstItem(true);
         }
 
         // Link the popup autoHide to the TextBox.
