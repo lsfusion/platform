@@ -27,6 +27,10 @@ public class SizedWidget {
         panel.addSized(widget, beforeIndex, flex, shrink, vertical ? height : width, alignment, alignShrink, vertical ? width : height);
     }
 
+    public void removeFill(SizedFlexPanel panel) {
+        panel.removeSized(widget);
+    }
+
     private void add(SizedFlexPanel panel, int beforeIndex, GFlexAlignment alignment, double flex, boolean shrink) {
         add(panel, beforeIndex, flex, shrink, alignment, alignment == GFlexAlignment.STRETCH);
     }

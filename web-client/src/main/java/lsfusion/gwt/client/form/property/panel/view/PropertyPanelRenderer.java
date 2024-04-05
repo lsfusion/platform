@@ -130,6 +130,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
         }
 
         SizedFlexPanel panel = new SizedFlexPanel(panelVertical);
+        panel.transparentResize = true;
         panel.addStyleName("panel-container");
 
         if (sizedLabel != null && !captionLast)
@@ -138,7 +139,6 @@ public class PropertyPanelRenderer extends PanelRenderer {
         if (sizedComment != null && commentFirst && !verticalDiffers)
             sizedComment.add(panel, panelCommentAlignment);
 
-        panel.transparentResize = true;
         valuePanel.add(panel, panelValueAlignment, 1, true);
 
         if (sizedComment != null && !verticalDiffers && !commentFirst)
@@ -161,7 +161,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
 
     @Override
     protected Widget getTooltipWidget() {
-        return label != null ? label : super.getTooltipWidget();
+        return label != null ? label : (comment != null ? comment : super.getTooltipWidget());
     }
 
     protected void setLabelText(String text) {

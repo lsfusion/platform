@@ -678,17 +678,6 @@ public class GwtClientUtils {
         });
     }-*/;
 
-    private static String tippyAttribute = "data-tippy-root";
-    public static Element getTippyParent(Element element) {
-        while (element != null) {
-            if (element.hasAttribute(tippyAttribute)) {
-                return element;
-            }
-            element = element.getParentElement();
-        }
-        return null;
-    }
-
     /*--- end of tippy methods ---*/
 
     public static void setPopupPosition(PopupPanel popup, int mouseX, int mouseY) {

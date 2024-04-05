@@ -122,10 +122,10 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
 
                 // removing old renderers
                 optionsToRemove.forEach(columnKey -> {
-                    PanelRenderer renderer = removePanelRenderer(columnKey);
+                    SizedWidget component = removePanelRenderer(columnKey);
 
                     if (!hide) {
-                        columnsPanel.removeSized(renderer.getComponent());
+                        component.removeFill(columnsPanel);
                     }
                 });
 
@@ -153,10 +153,10 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
         return component;
     }
 
-    public PanelRenderer removePanelRenderer(GGroupObjectValue columnKey) {
+    public SizedWidget removePanelRenderer(GGroupObjectValue columnKey) {
         PanelRenderer renderer = renderers.remove(columnKey);
         form.removePropertyBindings(renderer.bindingEventIndices);
-        return renderer;
+        return renderer.getSizedWidget();
     }
 
     private void updateRenderer(GGroupObjectValue columnKey, PanelRenderer renderer) {
@@ -230,11 +230,7 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
         }
 
         PanelRenderer toFocus = columnKeys == null ? renderers.firstValue() : renderers.get(columnKeys.get(0));
-        if (isShowing(toFocus.getComponent())) {
-            toFocus.focus(reason);
-            return true;
-        }
-        return false;
+        return toFocus.focus(reason);
     }
 
     @Override
