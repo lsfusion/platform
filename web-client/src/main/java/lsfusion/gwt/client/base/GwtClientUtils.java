@@ -67,6 +67,15 @@ public class GwtClientUtils {
             addDropDownPartner: function (element, partner) {
                 return @lsfusion.gwt.client.base.GwtClientUtils::addDropDownPartner(*)(element, partner);
             },
+            setOnFocusOut: function (element, onFocusOut) {
+                return @lsfusion.gwt.client.base.FocusUtils::setOnFocusOutFnc(*)(element, onFocusOut);
+            },
+            setOnFocusOutWithDropDownPartner: function (element, partner, onFocusOut) {
+                return @lsfusion.gwt.client.base.FocusUtils::setOnFocusOutWithDropDownPartner(*)(element, partner, onFocusOut);
+            },
+            removeOnFocusOut: function (element) {
+                return @lsfusion.gwt.client.base.FocusUtils::removeOnFocusOut(*)(element);
+            },
             clearFocusElement: function (element) {
                 return @lsfusion.gwt.client.form.property.cell.view.CellRenderer::clearFocusElement(*)(element);
             },

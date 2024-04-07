@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.base;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -253,11 +254,23 @@ public class FocusUtils {
         focus(returnElement, focusReason);
     }
 
+    public static void setOnFocusOutWithDropDownPartner(Element element, Element dropdown, JavaScriptObject fnc) {
+        setOnFocusOutFnc(element, fnc);
+        GwtClientUtils.addDropDownPartner(element, dropdown);
+    }
+    public static void setOnFocusOutFnc(Element element, JavaScriptObject fnc) {
+        setOnFocusOut(element, nativeEvent -> GwtClientUtils.call(fnc, nativeEvent));
+    }
     public static native void setOnFocusOut(Element element, Consumer<NativeEvent> run)/*-{
-        element.addEventListener("focusout", function(event) { // have no idea why onfocusout doesn't work
+        element.focusOutHandler = function (event) { // have no idea why onfocusout doesn't work
             if(!@lsfusion.gwt.client.base.FocusUtils::isFakeBlur(*)(event, element)) // if the focus is not returned to the element
                 run.@Consumer::accept(*)(event);
-        });
+        }
+        element.addEventListener("focusout", element.focusOutHandler);
+    }-*/;
+    public static native void removeOnFocusOut(Element element)/*-{
+        element.removeEventListener("focusout", element.focusOutHandler);
+        element.focusOutHandler = null;
     }-*/;
 
     public static Element getFocusedChild(Element containerElement) {

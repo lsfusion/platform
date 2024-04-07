@@ -1257,11 +1257,6 @@
 
   $.extend(Selectize.prototype, {
 
-    // !!! PATCHED !!!!
-    isFakeBlur: function(e) {
-      var self      = this;
-      return self.$dropdown.has(e.relatedTarget).length || self.$control.has(e.relatedTarget).length;
-    },
     /**
      * Creates all elements and sets up event bindings.
      */
@@ -1293,7 +1288,8 @@
       $control          = $('<div>').addClass(settings.inputClass + ' selectize-input items').appendTo($wrapper);
       $control_input    = $('<input type="select-one" autocomplete="new-password" autofill="no" />').appendTo($control).attr('tabindex', $input.is(':disabled') ? '-1' : self.tabIndex);
       $dropdown_parent  = $(settings.dropdownParent || $wrapper);
-      $dropdown         = $('<div>').addClass(settings.dropdownClass).addClass(inputMode + ' selectize-dropdown').hide().appendTo($dropdown_parent);
+      // !!! PATCHED making attach/ope on dropdown open/close to avoid garbage in body element
+      $dropdown         = $('<div>').addClass(settings.dropdownClass).addClass(inputMode + ' selectize-dropdown').hide();
       $dropdown_content = $('<div>').addClass(settings.dropdownContentClass + ' selectize-dropdown-content').attr('tabindex', '-1').appendTo($dropdown);
 
       if(inputId = $input.attr('id')) {
@@ -1351,6 +1347,8 @@
       self.$control          = $control;
       self.$control_input    = $control_input;
       self.$dropdown         = $dropdown;
+      // !!! PATCHED making attach/ope on dropdown open/close to avoid garbage in body element
+      self.$dropdown_parent  = $dropdown_parent;
       self.$dropdown_content = $dropdown_content;
 
       $dropdown.on('mouseenter mousedown mouseup click', '[data-disabled]>[data-selectable]', function(e) { e.stopImmediatePropagation(); });
@@ -1375,13 +1373,10 @@
         keypress  : function() { return self.onKeyPress.apply(self, arguments); },
         input     : function() { return self.onInput.apply(self, arguments); },
         resize    : function() { self.positionDropdown.apply(self, []); },
-        blur      : function() { return self.onBlur.apply(self, arguments); },
+        // !!! PATCHED we don't need it on blur, since we handle it ourselves !!!
+        // blur      : function() { return self.onBlur.apply(self, arguments); },
         focus     : function() { self.ignoreBlur = false; return self.onFocus.apply(self, arguments); },
         paste     : function() { return self.onPaste.apply(self, arguments); }
-      });
-      // !!! PATCHED changing mousedown to blur !!!
-      $dropdown.on({
-        blur      : function() { return self.onBlur.apply(self, arguments); },
       });
 
       $document.on('keydown' + eventNS, function(e) {
@@ -1851,10 +1846,6 @@
     onBlur: function(e, dest) {
       var self = this;
 
-      // !!! PATCHED changing mousedown to blur !!!
-      if(self.isFakeBlur(e))
-        return;
-
       if (!self.isFocused) return;
       self.isFocused = false;
 
@@ -2221,7 +2212,8 @@
      * @param {Element} dest
      */
     blur: function(dest) {
-      this.$control_input[0].blur();
+      // !!!PATCHED we don't need this, because we use only when it's already blurred
+      // this.$control_input[0].blur();
       this.onBlur(null, dest);
       return this;
     },
@@ -3146,6 +3138,8 @@
       self.setupDropdownHeight();
       self.positionDropdown();
       self.$dropdown.css({visibility: 'visible'});
+      // !!! PATCHED making attach/ope on dropdown open/close to avoid garbage in body element
+      self.$dropdown.appendTo(self.$dropdown_parent)
       self.trigger('dropdown_open', self.$dropdown);
     },
 
@@ -3168,6 +3162,8 @@
       }
 
       self.isOpen = false;
+      // !!! PATCHED making attach/ope on dropdown open/close to avoid garbage in body element
+      self.$dropdown.detach();
       self.$dropdown.hide();
       self.setActiveOption(null);
       self.refreshState();

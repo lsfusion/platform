@@ -4,6 +4,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
+import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.classes.data.GJSONType;
@@ -48,10 +49,14 @@ public class GCustom extends GTippySimpleStateTableView {
 
     @Override
     protected void onUpdate(Element element, JsArray<JavaScriptObject> list) {
+        FocusUtils.startFocusTransaction();
+
         if (renderFunctionWithoutArguments)
             update(renderFunction, element, controller, list, customOptions);
         else
             runFunction(element, list, renderFunction, controller);
+
+        FocusUtils.endFocusTransaction();
     }
 
     @Override

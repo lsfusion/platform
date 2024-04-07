@@ -2385,8 +2385,15 @@
       this.$bsContainer = $('<div class="bs-container" />');
 
       var that = this,
-          $container = $(this.options.container),
-          pos,
+          $container = $(this.options.container);
+
+      // !!! PATCHED focus behaves wild in the bootstrap select (sets focus to the menu on click for example), and in that case detach cause blur to the body
+      that.timeoutDetach = null;
+      that.$bsContainer
+          // .appendTo(that.options.container)
+          .append(that.$menu);
+
+      var pos,
           containerPos,
           actualHeight,
           getPlacement = function ($element) {
@@ -2429,10 +2436,23 @@
 
         getPlacement(that.$newElement);
 
+        let toShow = that.$button.hasClass(classNames.SHOW);
+
+        // !!! PATCHED focus behaves wild in the bootstrap select (sets focus to the menu on click for example), and in that case detach cause blur to the body
+        that('focus');
+        if(toShow) {
+          if (that.timeoutDetach != null) {
+            clearTimeout(that.timeoutDetach);
+            that.timeoutDetach = null;
+          } else {
+            that.$bsContainer
+                .appendTo(that.options.container)
+          }
+        }
+
         that.$bsContainer
-          .appendTo(that.options.container)
-          .toggleClass(classNames.SHOW, !that.$button.hasClass(classNames.SHOW))
-          .append(that.$menu);
+  .toggleClass(classNames.SHOW, !toShow)
+         // .append(that.$menu);
       });
 
       $(window)
@@ -2445,7 +2465,12 @@
 
       this.$element.on('hide' + EVENT_KEY, function () {
         that.$menu.data('height', that.$menu.height());
-        that.$bsContainer.detach();
+        // !!! PATCHED focus behaves wild in the bootstrap select (sets focus to the menu on click for example), and in that case detach cause blur to the body
+        console.assert(this.timeOutDetach == null);
+        that.timeoutDetach = setTimeout(() => {
+          that.$bsContainer.detach();
+          that.timeoutDetach = null;
+        }, 1000);
       });
     },
 
@@ -2680,12 +2705,14 @@
         }
       });
 
+      // !!! PATCHED focus behaves wild in the bootstrap select (sets focus to the menu on click for example), and in that case detach cause blur to the body
+      // several clicks on the button leads to this fake blur and thus for example popup closing
       function setFocus () {
-        if (that.options.liveSearch) {
-          that.$searchbox.trigger('focus');
-        } else {
-          that.$menuInner.trigger('focus');
-        }
+        // if (that.options.liveSearch) {
+        //   that.$searchbox.trigger('focus');
+        // } else {
+        //   that.$menuInner.trigger('focus');
+        // }
       }
 
       function checkPopperExists () {

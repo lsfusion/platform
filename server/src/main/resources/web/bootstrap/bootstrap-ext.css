@@ -358,7 +358,7 @@ div.selectArrow {
 /* do not show thick outline on focus in bootstrap-select. because it overlaps with the content. button is need to increase selectivity */
 .bootstrap-select button.dropdown-toggle:focus, .bootstrap-select button.dropdown-toggle:focus-visible {
     outline: none !important; /* !important is needed because in bootstrap-select.css rule ".bootstrap-select .dropdown-toggle:focus" used !important too*/
-    box-shadow: none; /* because bootstrap.css has rule: .btn:focus-visible */
+    /*box-shadow: none; !* because bootstrap.css has rule: .btn:focus-visible *!*/
 }
 
 

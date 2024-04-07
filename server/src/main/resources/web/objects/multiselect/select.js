@@ -108,7 +108,6 @@ function selectMultiInput() {
                 },
                 onDropdownOpen: function (dropdown) {
                     // setting auto hide partner to avoid fake blurs
-                    lsfUtils.addDropDownPartner(element, dropdown[0]);
                     this.setCaret(this.items.length);
                     _setIsEditing(this.$control[0], true);
                 },
@@ -157,6 +156,8 @@ function selectMultiInput() {
                         selectizeInstance.enable();
                     }
                 });
+
+            lsfUtils.setOnFocusOutWithDropDownPartner(element, selectizeInstance.$dropdown[0], function(e) { selectizeInstance.blur(); });
         },
         update: function (element, controller, list, extraValue) {
             element.silent = true; // onItemAdd / Remove somewhy is not silenced
@@ -205,6 +206,8 @@ function selectMultiInput() {
         clear: function (element) {
             lsfUtils.clearFocusElement(element);
             lsfUtils.clearReadonlyFnc(element); // !isList check should be here
+
+            lsfUtils.removeOnFocusOut(element);
 
             element.selectizeInstance[0].selectize.destroy();
         }
@@ -567,7 +570,10 @@ function _selectPicker(multi, html, shouldBeSelected) {
             (element, controller) => {
                 let selectElement = $(element.select);
                 selectElement.selectpicker({
-                    container: 'body'
+                    container: document.body,
+                    style: '',
+                    styleBase: 'form-control',
+                    width: '100%' // we want none to make fill-parent-perc in wrap-div work, but by default 220 px is set
                 });
                 selectElement.on('changed.bs.select', function (e, clickedIndex, isSelected) {
                     if (clickedIndex != null && isSelected != null) { //documentation:  If the select's value has been changed either via the .selectpicker('val'), .selectpicker('selectAll'), or .selectpicker('deselectAll') methods, clickedIndex and isSelected will be null.
@@ -579,12 +585,15 @@ function _selectPicker(multi, html, shouldBeSelected) {
                     }
                 });
                 selectElement.on('shown.bs.select', function (e) {
-                    lsfUtils.addDropDownPartner(element, selectElement.selectpicker('getDropdown')[0]);
                     _setIsEditing(element, true);
                 });
                 selectElement.on('hidden.bs.select', function (e) {
                     _setIsEditing(element, false);
                 })
+                // lsfUtils.addDropDownPartner(element, selectElement.selectpicker('getDropdown')[0]);
+                lsfUtils.setOnFocusOutWithDropDownPartner(element, selectElement.selectpicker('getDropdown')[0], function(e) {
+                    selectElement.selectpicker('close');
+                });
             },
             multi, shouldBeSelected, html, true);
     } else {
@@ -606,6 +615,7 @@ function _selectPicker(multi, html, shouldBeSelected) {
                             _changeSingleDropdownProperty(object, element)
                     },
                     onOpen: function () {
+                        // needed here because refresh recreates dropdown
                         lsfUtils.addDropDownPartner(element, selectElement.multipleSelect('getDropdown')[0]);
                         element.silent = true; // Because "refresh" is called after every update, which removes the dropdown
                         _setIsEditing(element, true);
@@ -614,6 +624,9 @@ function _selectPicker(multi, html, shouldBeSelected) {
                         element.silent = false;// Because "refresh" is called after every update, which removes the dropdown
                         _setIsEditing(element, false);
                     }
+                });
+                lsfUtils.setOnFocusOut(element, function(e) {
+                    selectElement.multipleSelect('close');
                 });
             }, multi, shouldBeSelected, html, false);
     }
@@ -833,6 +846,8 @@ function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBo
         clear: function (element) {
             lsfUtils.clearFocusElement(element);
             lsfUtils.clearReadonlyFnc(element); // !isList check should be here
+
+            lsfUtils.removeOnFocusOut(element);
         }
     }
 }

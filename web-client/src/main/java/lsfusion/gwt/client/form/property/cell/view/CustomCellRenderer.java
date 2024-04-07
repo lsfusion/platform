@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.property.cell.view;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
+import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
@@ -79,13 +80,17 @@ public class CustomCellRenderer extends CellRenderer {
 
     @Override
     public boolean updateContent(Element element, PValue value, Object extraValue, UpdateContext updateContext) {
+        FocusUtils.startFocusTransaction();
+
         JavaScriptObject renderValue = GSimpleStateTableView.convertToJSValue(property, value, updateContext.getRendererType(), true);
-        setRendererValue(customRenderer, element, getController(property, updateContext, element), renderValue, extraValue != null ? ((ExtraValue) extraValue).getJsObject() : null);
+        update(customRenderer, element, getController(property, updateContext, element), renderValue, extraValue != null ? ((ExtraValue) extraValue).getJsObject() : null);
+
+        FocusUtils.endFocusTransaction();
 
         return false;
     }
 
-    protected native void setRendererValue(JavaScriptObject customRenderer, Element element, JavaScriptObject controller, JavaScriptObject value, JavaScriptObject extraValue)/*-{
+    protected native void update(JavaScriptObject customRenderer, Element element, JavaScriptObject controller, JavaScriptObject value, JavaScriptObject extraValue)/*-{
         customRenderer.update(element, controller, value, extraValue);
     }-*/;
 

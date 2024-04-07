@@ -64,7 +64,7 @@ function interpreter() {
                 aceEditor.renderer.hideCursor();
 
                 let editorValue = aceEditor.getValue();
-                if ((e.relatedTarget == null || !e.relatedTarget.contains(aceEditor.container)) && element.currentValue !== editorValue) {
+                if ((e.relatedTarget == null || !aceEditor.container.contains(e.relatedTarget)) && element.currentValue !== editorValue) {
                     element.controller.change(JSON.stringify({"text": editorValue}), oldValue => replaceField(oldValue, "text", editorValue));
 
                     element.currentValue = editorValue;
