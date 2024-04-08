@@ -184,6 +184,12 @@ extension(NAMEDFILE file) = FORMULA TEXT 'get_named_file_extension($1)';
 getFileExtension(FILE file) = extension(file); //backward compatibility
 getExtension = getFileExtension(FILE(file)); //backward compatibility
 
+//cast to FILE and NAMEDFILE
+file(RAWFILE rawFile, STRING extension) = FORMULA FILE 'cast_static_file_to_dynamic_file($1, $2)';
+setExtension(RAWFILE rawFile, STRING extension) = FORMULA FILE 'cast_static_file_to_dynamic_file($1, $2)'; // backward compatibility
+namedFile(RAWFILE rawFile, STRING name, STRING extension) = FORMULA NAMEDFILE 'cast_static_file_to_named_file($1, $2, $3)';
+namedFile(FILE file, STRING name) = FORMULA NAMEDFILE 'cast_dynamic_file_to_named_file($1, $2)';
+
 // ----------------------------------- open files ----------------------------------- //
 
 //source path, name, noWait
@@ -192,18 +198,18 @@ open '{system.open.file}' (ISTRING[255] source, ISTRING[255] name)  { open(sourc
 open '{system.open.file}' (ISTRING[255] source, BOOLEAN noWait)  { open(source, NULL, noWait); }
 open '{system.open.file}' (ISTRING[255] source)  { open(source, NULL, NULL); }
 
-openFile '{system.open.file}'  INTERNAL 'lsfusion.server.physics.dev.integration.external.to.file.open.OpenFileAction' (RAWFILE, STRING, STRING, BOOLEAN);
+openFile '{system.open.file}'  INTERNAL 'lsfusion.server.physics.dev.integration.external.to.file.open.OpenFileAction' (NAMEDFILE, BOOLEAN);
 //source file, name, noWait
-open '{system.open.file}' (FILE source, ISTRING[255] name)  { openFile(RAWFILE(source), name, extension(source), NULL); }
-open '{system.open.file}' (FILE source, BOOLEAN noWait)  { openFile(RAWFILE(source), NULL, extension(source), noWait); }
-open '{system.open.file}' (FILE source)  { openFile(RAWFILE(source), NULL, extension(source), NULL); }
+open '{system.open.file}' (FILE source, ISTRING[255] name)  { openFile(namedFile(source, name), NULL); }
+open '{system.open.file}' (FILE source, BOOLEAN noWait)  { openFile(namedFile(source, 'empty'), noWait); }
+open '{system.open.file}' (FILE source)  { openFile(namedFile(source, 'empty'), NULL); }
 //source namedFile, noWait
-open '{system.open.file}' (NAMEDFILE source, BOOLEAN noWait)  { openFile(RAWFILE(source), name(source), extension(source), noWait); }
-open '{system.open.file}' (NAMEDFILE source)  { openFile(RAWFILE(source), name(source), extension(source), NULL); }
+open '{system.open.file}' (NAMEDFILE source, BOOLEAN noWait)  { openFile(source, noWait); }
+open '{system.open.file}' (NAMEDFILE source)  { openFile(source, NULL); }
 //source rawFile, name, noWait
-open '{system.open.file}' (RAWFILE source, ISTRING[255] name)  { openFile(source, name, NULL, NULL); }
-open '{system.open.file}' (RAWFILE source, BOOLEAN noWait)  { openFile(source, NULL, NULL, noWait); }
-open '{system.open.file}' (RAWFILE source)  { openFile(source, NULL, NULL, NULL); }
+open '{system.open.file}' (RAWFILE source, ISTRING[255] name)  { openFile(namedFile(source, name, 'empty'), NULL); }
+open '{system.open.file}' (RAWFILE source, BOOLEAN noWait)  { openFile(namedFile(source, 'empty', 'empty'), noWait); }
+open '{system.open.file}' (RAWFILE source)  { openFile(namedFile(source, 'empty', 'empty'), NULL); }
 //source link, noWait
 open '{system.open.link}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenLinkAction' (LINK, BOOLEAN);
 open '{system.open.file}' (LINK source)  { open(source, NULL); }
@@ -294,12 +300,6 @@ importedString = DATA LOCAL BOOLEAN (STRING[10]);
 readFile = DATA LOCAL FILE ();
 
 showResult = DATA LOCAL TEXT();
-
-//cast to FILE and NAMEDFILE
-file(RAWFILE rawFile, STRING extension) = FORMULA FILE 'cast_static_file_to_dynamic_file($1, $2)';
-setExtension(RAWFILE rawFile, STRING extension) = FORMULA FILE 'cast_static_file_to_dynamic_file($1, $2)'; // backward compatibility
-namedFile(RAWFILE rawFile, STRING name, STRING extension) = FORMULA NAMEDFILE 'cast_static_file_to_named_file($1, $2, $3)';
-namedFile(FILE file, STRING name) = FORMULA NAMEDFILE 'cast_dynamic_file_to_named_file($1, $2)';
 
 // hashes
 md5(FILE file) = FORMULA STRING 'md5($1)';
