@@ -4,6 +4,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -104,6 +105,9 @@ public abstract class EditingForm extends FormContainer {
 
         if(!async)
             form.checkCommitEditing(); // we need to check commit editing, otherwise form will be in editing mode, and for example ClosePressed won't be flushed
+
+        FocusUtils.startFocusTransaction();
+
         removeContent();
 
         if(editFormCloseReason instanceof CommitReason)
@@ -112,6 +116,8 @@ public abstract class EditingForm extends FormContainer {
             contextForm.cancelEditing((CancelReason) editFormCloseReason);
 
         finishedEditing = true;
+
+        FocusUtils.endFocusTransaction();
     }
 
     @Override
