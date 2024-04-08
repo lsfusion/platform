@@ -32,7 +32,7 @@ function selectMultiInput() {
             }
             let selfKeyPress = this.onKeyPress;
             this.onKeyPress = function (e) {
-                handleKeyEvent(this, e, false);+
+                handleKeyEvent(this, e, false);
                 selfKeyPress.apply(this, arguments);
             }
             this.onItemSelect = function (e) {
@@ -73,7 +73,7 @@ function selectMultiInput() {
             // tabindex = -1 to disable "tab" button in the table.
             // selectize at initialisation contains a check for the tabindex attribute of the parent element:
             // if attribute is present, it will be used, if the attribute is not present, then tabindex will be = 0 for all input elements inside selectize component
-            selectizeElement.setAttribute('tabindex', '-1');
+            selectizeElement.setAttribute('tabindex', controller.isTabFocusable() ? '0' : '-1');
 
             element.selectizeInstance = $(selectizeElement).selectize({
                 dropdownParent: 'body',
@@ -114,8 +114,12 @@ function selectMultiInput() {
                 onDropdownClose: function () {
                     _setIsEditing(this.$control[0], false);
                 },
+                openOnFocus: function () {
+                    return !lsfUtils.isSuppressOnFocusChange(element);
+                },
                 respect_word_boundaries: false, // undocumented feature. But for some reason it includes support for searching by Cyrillic characters
                 preload: 'focus',
+                selectOnTab: false,
                 loadThrottle: 0,
                 load: function (query, callback) {
                     let self = this;
@@ -157,7 +161,9 @@ function selectMultiInput() {
                     }
                 });
 
-            lsfUtils.setOnFocusOutWithDropDownPartner(element, selectizeInstance.$dropdown[0], function(e) { selectizeInstance.blur(); });
+            lsfUtils.setOnFocusOutWithDropDownPartner(!isList ? element : selectizeInstance.$control[0], selectizeInstance.$dropdown[0], function(e) {
+                selectizeInstance.blur();
+            });
         },
         update: function (element, controller, list, extraValue) {
             element.silent = true; // onItemAdd / Remove somewhy is not silenced
@@ -203,11 +209,12 @@ function selectMultiInput() {
 
             element.silent = false;
         },
-        clear: function (element) {
+        clear: function (element, controller) {
             lsfUtils.clearFocusElement(element);
             lsfUtils.clearReadonlyFnc(element); // !isList check should be here
 
-            lsfUtils.removeOnFocusOut(element);
+            if(!controller.isList())
+                lsfUtils.removeOnFocusOut(element);
 
             element.selectizeInstance[0].selectize.destroy();
         }

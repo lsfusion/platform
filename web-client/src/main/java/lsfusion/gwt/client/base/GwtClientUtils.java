@@ -76,6 +76,9 @@ public class GwtClientUtils {
             removeOnFocusOut: function (element) {
                 return @lsfusion.gwt.client.base.FocusUtils::removeOnFocusOut(*)(element);
             },
+            isSuppressOnFocusChange: function (element) {
+                return @lsfusion.gwt.client.base.FocusUtils::isSuppressOnFocusChange(*)(element);
+            },
             clearFocusElement: function (element) {
                 return @lsfusion.gwt.client.form.property.cell.view.CellRenderer::clearFocusElement(*)(element);
             },

@@ -13,6 +13,8 @@ public interface RenderContext {
 
     RendererType getRendererType();
 
+    default boolean isTabFocusable() { return false; }
+
     boolean isInputRemoveAllPMB();
 
     String getPattern();

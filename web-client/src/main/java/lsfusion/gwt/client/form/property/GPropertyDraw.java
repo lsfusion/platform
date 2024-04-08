@@ -435,40 +435,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public boolean hasFooter;
 
-    private boolean isSuppressOnFocusChange(Element element) {
-        FocusUtils.Reason focusReason = FocusUtils.getFocusReason(element);
-
-        if(focusReason != null) { // system (probably navigate), so we will not suppress it
-            switch (focusReason) {
-                // for input setting focus will lead to starting change event handling "in between" (inside focus) with unpredictable consequences, so we'll not do that
-                // we could not set focus at all (it will work because in SimpleTextBasedEditor we consume the event propagating to native (so focus will be set anyway)), but for now we'll do this way
-                case MOUSECHANGE:
-                // we don't focus to be set and rely on mouse event handling
-                case MOUSENAVIGATE:
-                // it's really odd to start editing while scrolling, and other navigating
-                case SCROLLNAVIGATE:
-                case KEYMOVENAVIGATE:
-                // CHANGE will be started anyway
-                case BINDING:
-                // really odd behaviour to start editing (dropdown list) when focus is returned
-                case RESTOREFOCUS:
-                // not sure about SHOW, but it seems that this way is better
-                case SHOW:
-                // after applying filter, start editing does not make much sense
-                case APPLYFILTER:
-                // because there is a manual startediting
-//                case NEWFILTER:
-                case SUGGEST:
-                case REPLACE:
-                // unknown reason, it's better to suppress
-                case OTHER:
-                    return true;
-            }
-        }
-
-        return !MainFrame.suppressOnFocusChange;
-    }
-
     // eventually gets to PropertyDrawEntity.getEventAction (which is symmetrical to this)
     public String getEventSID(Event editEvent, boolean isBinding, ExecuteEditContext editContext, Result<Integer> contextAction) {
         if(isBinding)
@@ -497,7 +463,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
             GInputType inputType = InputBasedCellRenderer.getInputElementType(inputElement);
             if(inputType.isStretchText()) {
-                if (DataGrid.FOCUSIN.equals(editEvent.getType()) && !isSuppressOnFocusChange(inputElement))
+                if (DataGrid.FOCUSIN.equals(editEvent.getType()) && !FocusUtils.isSuppressOnFocusChange(inputElement))
                     return GEditBindingMap.changeOrGroupChange();
 
                 if (InputBasedCellRenderer.isInputKeyEvent(editEvent, updateContext, inputType.isMultilineText()))

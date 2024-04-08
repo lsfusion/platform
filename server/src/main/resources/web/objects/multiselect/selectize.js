@@ -1365,7 +1365,8 @@
 
       $control_input.on({
         mousedown : function(e) {
-          if (self.$control_input.val() !== '' || self.settings.openOnFocus) {
+          // !!! PATCHED to add suppress on focus change (to follow the common scheme)
+          if (self.$control_input.val() !== '' || self.settings.openOnFocus()) {
             e.stopPropagation();
           }
         },
@@ -1596,13 +1597,19 @@
           if (!defaultPrevented) {
             self.setActiveItem(null);
           }
-          if (!self.settings.openOnFocus) {
+          // !!! PATCHED to add suppress on focus change (to follow the common scheme)
+          if (!self.settings.openOnFocus()) {
             if (self.isOpen && e.target === self.lastOpenTarget) {
               self.close();
               self.lastOpenTarget = false;
             } else if (!self.isOpen) {
               self.refreshOptions();
               self.open();
+
+              // !!! PATCHED need this because we return false, and the input is smaller that the whole control, so the focus go wild
+              self.focus();
+              e.preventDefault();
+
               self.lastOpenTarget = e.target;
             } else {
               self.lastOpenTarget = e.target;
@@ -1831,7 +1838,8 @@
       if (!self.$activeItems.length) {
         self.showInput();
         self.setActiveItem(null);
-        self.refreshOptions(!!self.settings.openOnFocus);
+        // !!! PATCHED to add suppress on focus change (to follow the common scheme)
+        self.refreshOptions(self.settings.openOnFocus());
       }
 
       self.refreshState();
@@ -1967,7 +1975,8 @@
         self.loading = Math.max(self.loading - 1, 0);
         if (results && results.length) {
           self.addOption(results);
-          self.refreshOptions(self.isFocused && !self.isInputHidden);
+          // PATCHED open dropdown during load, will lead to unexpected behaviour (probably related to the onSearchChange patch in the focus event)
+          self.refreshOptions(false);
         }
         if (!self.loading) {
           $wrapper.removeClass(self.settings.loadingClass);
@@ -2447,11 +2456,11 @@
           $active = $create;
         }
         self.setActiveOption($active);
-        if (triggerDropdown && !self.isOpen) { self.open(); }
       } else {
         self.setActiveOption(null);
-        if (triggerDropdown && self.isOpen) { self.close(); }
       }
+      // PATCHED we want it always be opened (not to show it on load which complicates everything)
+      if (triggerDropdown && !self.isOpen) { self.open(); }
     },
 
     /**
@@ -3651,7 +3660,8 @@
     createOnBlur: false,
     createFilter: null,
     highlight: true,
-    openOnFocus: true,
+    // !!! PATCHED to add suppress on focus change (to follow the common scheme)
+    openOnFocus: () => { return true; },
     maxOptions: 1000,
     maxItems: null,
     hideSelected: null,

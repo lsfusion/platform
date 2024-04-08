@@ -2439,7 +2439,7 @@
         let toShow = that.$button.hasClass(classNames.SHOW);
 
         // !!! PATCHED focus behaves wild in the bootstrap select (sets focus to the menu on click for example), and in that case detach cause blur to the body
-        that('focus');
+        that.$button.trigger('focus');
         if(toShow) {
           if (that.timeoutDetach != null) {
             clearTimeout(that.timeoutDetach);

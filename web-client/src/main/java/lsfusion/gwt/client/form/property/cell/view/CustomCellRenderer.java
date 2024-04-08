@@ -96,16 +96,16 @@ public class CustomCellRenderer extends CellRenderer {
 
     @Override
     public boolean clearRenderContent(Element element, RenderContext renderContext) {
-        clear(customRenderer, element);
+        clear(customRenderer, element, getRenderController(property, renderContext, element));
 
         CustomCellRenderer.clearCustomElement(element);
 
         return false;
     }
     
-    protected native void clear(JavaScriptObject customRenderer, Element element)/*-{
+    protected native void clear(JavaScriptObject customRenderer, Element element, JavaScriptObject controller)/*-{
         if (customRenderer.clear !== undefined)
-            customRenderer.clear(element);
+            customRenderer.clear(element, controller);
     }-*/;
 
     @Override
@@ -225,14 +225,17 @@ public class CustomCellRenderer extends CellRenderer {
     }-*/;
 
     public static JavaScriptObject getRenderController(GPropertyDraw property, RenderContext renderContext, Element element) {
-        return getRenderController(renderContext, element);
+        return getRenderController(renderContext, element, renderContext.isTabFocusable());
     }
 
-    private static native JavaScriptObject getRenderController(RenderContext renderContext, Element element)/*-{
+    private static native JavaScriptObject getRenderController(RenderContext renderContext, Element element, boolean isTabFocusable)/*-{
         var thisObj = this;
         return {
             isList: function () {
                 return false;
+            },
+            isTabFocusable: function () {
+                return isTabFocusable;
             }
         };
     }-*/;

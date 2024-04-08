@@ -44,7 +44,7 @@ public class GCustom extends GTippySimpleStateTableView {
     @Override
     public void onClear() {
         if (renderFunctionWithoutArguments)
-            clear(renderFunction, getDrawElement());
+            clear(renderFunction, getDrawElement(), controller);
     }
 
     @Override
@@ -76,9 +76,9 @@ public class GCustom extends GTippySimpleStateTableView {
         renderFunction().update(element, controller, list, customOptions);
     }-*/;
 
-    protected native void clear(JavaScriptObject renderFunction, Element element)/*-{
+    protected native void clear(JavaScriptObject renderFunction, Element element, JavaScriptObject controller)/*-{
         if (renderFunction().clear !== undefined)
-            renderFunction().clear(element);
+            renderFunction().clear(element, controller);
     }-*/;
 
 }

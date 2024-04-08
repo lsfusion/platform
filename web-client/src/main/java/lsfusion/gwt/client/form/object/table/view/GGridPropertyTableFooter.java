@@ -25,6 +25,11 @@ public class GGridPropertyTableFooter extends Header<String> implements RenderCo
 
     private final GFormController form;
 
+    @Override
+    public boolean isTabFocusable() {
+        return RenderContext.super.isTabFocusable();
+    }
+
     public GGridPropertyTableFooter(GGridPropertyTable table, GPropertyDraw property, PValue value, String tooltip, boolean sticky, GFormController form) {
         this.table = table;
         this.property = property;
