@@ -1,43 +1,113 @@
 MODULE Whatsapp;
 
+REQUIRE Utils;
+
 accessToken = DATA STRING();
 phoneNumberId = DATA STRING();
 recipientPhoneNumber = DATA STRING();
 
-message = DATA STRING();
-template = DATA STRING();
-
 //works only if user wrote something 
 //https://stackoverflow.com/questions/72484937/message-sent-using-whatsapp-but-not-delivered-to-recipients-using-whatsapp-busin
+message = DATA STRING();
 sendPlainMessage(STRING accessToken, STRING phoneNumberId, STRING recipientPhoneNumber, STRING message) {
     LOCAL headers = STRING(STRING);
     headers('Authorization') <- 'Bearer ' + accessToken;
     headers('Content-Type') <- 'application/json;';
-    headers('Accept') <- 'application/json';
     EXTERNAL HTTP POST 'https://graph.facebook.com/v18.0/' + phoneNumberId + '/messages' HEADERS headers 
         PARAMS '\{ "messaging_product": "whatsapp", "recipient_type": "individual", "to": "' + recipientPhoneNumber + '", "type": "text", "text": \{ "preview_url": false, "body": "' + message + '" \} \}';
-}
-
-//template must be approved
-sendTemplateMessage(STRING accessToken, STRING phoneNumberId, STRING recipientPhoneNumber, STRING templateName) {
-    LOCAL headers = STRING(STRING);
-    headers('Authorization') <- 'Bearer ' + accessToken;
-    headers('Content-Type') <- 'application/json;';
-    headers('Accept') <- 'application/json';
-    EXTERNAL HTTP POST 'https://graph.facebook.com/v18.0/' + phoneNumberId + '/messages' HEADERS headers
-        PARAMS '\{ "messaging_product": "whatsapp", "to": "' + recipientPhoneNumber + '", "type": "template", "template": \{ "name": "' + templateName + '", "language": \{ "code": "en_US" \} \} \}';
 }
 
 sendPlainMessage() {
     sendPlainMessage(accessToken(), phoneNumberId(), recipientPhoneNumber(), message());
 };
 
+uploadedFileId = DATA LOCAL STRING();
+uploadFile(STRING accessToken, STRING phoneNumberId, FILE file) {
+    LOCAL headers = STRING(STRING);
+    headers('Authorization') <- 'Bearer ' + accessToken;
+    headers('Content-Type') <- 'multipart/form-data; charset=UTF-8';
+
+    LOCAL result = STRING();
+    EXTERNAL HTTP POST 'https://graph.facebook.com/v19.0/' + phoneNumberId + '/media'
+        BODYPARAMNAMES 'messaging_product', 'file' HEADERS headers
+        PARAMS 'whatsapp', file TO result;
+
+    LOCAL id = STRING();
+    IMPORT FROM JSONFILE(result()) TO() uploadedFileId = 'id';
+}
+
+//send image
+sendImage(STRING accessToken, STRING phoneNumberId, STRING recipientPhoneNumber) {
+    INPUT file = IMAGEFILE DO {
+        uploadFile(accessToken, phoneNumberId, FILE(file));
+        headers('Authorization') <- 'Bearer ' + accessToken;
+        headers('Content-Type') <- 'application/json;';
+        EXTERNAL HTTP POST 'https://graph.facebook.com/v18.0/' + phoneNumberId + '/messages' HEADERS headers
+            PARAMS '\{ "messaging_product": "whatsapp", "recipient_type": "individual", "to": "' + recipientPhoneNumber + '", "type": "image", "image": \{ "id": "' + uploadedFileId() + '" \} \}';
+    }
+}
+
+sendImage() {
+    sendImage(accessToken(), phoneNumberId(), recipientPhoneNumber());
+}
+
+//send document
+sendDocument(STRING accessToken, STRING phoneNumberId, STRING recipientPhoneNumber) {
+    INPUT file = FILE DO {
+        uploadFile(accessToken, phoneNumberId, file);
+        headers('Authorization') <- 'Bearer ' + accessToken;
+        headers('Content-Type') <- 'application/json;';
+        EXTERNAL HTTP POST 'https://graph.facebook.com/v18.0/' + phoneNumberId + '/messages' HEADERS headers
+            PARAMS '\{ "messaging_product": "whatsapp", "recipient_type": "individual", "to": "' + recipientPhoneNumber + '", "type": "document", "document": \{ "id": "' + uploadedFileId() + '" \} \}';
+    }
+}
+
+sendDocument() {
+    sendDocument(accessToken(), phoneNumberId(), recipientPhoneNumber());
+}
+
+
+
+//template must be approved
+template = DATA STRING();
+sendTemplateMessage(STRING accessToken, STRING phoneNumberId, STRING recipientPhoneNumber, STRING template) {
+    LOCAL headers = STRING(STRING);
+    headers('Authorization') <- 'Bearer ' + accessToken;
+    headers('Content-Type') <- 'application/json;';
+    headers('Accept') <- 'application/json';
+    EXTERNAL HTTP POST 'https://graph.facebook.com/v18.0/' + phoneNumberId + '/messages' HEADERS headers
+        PARAMS '\{ "messaging_product": "whatsapp", "to": "' + recipientPhoneNumber + '", "type": "template", "template": \{ "name": "' + template + '", "language": \{ "code": "en_US" \} \} \}';
+}
+
 sendTemplateMessage() {
     sendTemplateMessage(accessToken(), phoneNumberId(), recipientPhoneNumber(), template());
 };
 
 FORM whatsapp
-PROPERTIES() accessToken, phoneNumberId, recipientPhoneNumber, message, sendPlainMessage, template, sendTemplateMessage;
+PROPERTIES() accessToken, phoneNumberId, recipientPhoneNumber, message, sendPlainMessage,
+    sendImage, sendDocument, template, sendTemplateMessage;
+
+DESIGN whatsapp {
+    MOVE PROPERTY(accessToken());
+    MOVE PROPERTY(phoneNumberId());
+    MOVE PROPERTY(recipientPhoneNumber());
+    NEW plain {
+        caption = 'plain text';
+        MOVE PROPERTY(message());
+        MOVE PROPERTY(sendPlainMessage());
+    }
+    NEW image {
+        caption = 'media';
+        MOVE PROPERTY(sendImage());
+        MOVE PROPERTY(sendDocument());
+    }
+    NEW template {
+        caption = 'template';
+        MOVE PROPERTY(template());
+        MOVE PROPERTY(sendTemplateMessage());
+    }
+    MOVE TOOLBARBOX;
+}
 
 NAVIGATOR {
     NEW whatsapp FIRST;
