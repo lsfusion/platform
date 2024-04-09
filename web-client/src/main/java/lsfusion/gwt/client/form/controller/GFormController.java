@@ -2273,9 +2273,9 @@ public class GFormController implements EditManager {
         this.editRequestIndex = editRequestIndex;  // we need to force dispatch responses till this index because otherwise we won't
 
         focusedElement = FocusUtils.getFocusedElement();
-        FocusUtils.startFocusTransaction();
 
         Element element = getEditElement();
+        FocusUtils.startFocusTransaction(element);
 
         element.addClassName("is-editing");
         editContext.startEditing();
@@ -2349,6 +2349,7 @@ public class GFormController implements EditManager {
 
     private void finishEditing(boolean blurred, boolean cancel) {
         Element renderElement = getEditElement();
+        FocusUtils.startFocusTransaction(renderElement);
 
         CellEditor cellEditor = this.cellEditor;
         this.cellEditor = null;
@@ -2357,8 +2358,6 @@ public class GFormController implements EditManager {
 //        this.editRequestIndex = -1; //it doesn't matter since it is not used when editContext / cellEditor is null
         this.editAsyncUsePessimistic = false;
         this.editAsyncValuesSID = null;
-
-        FocusUtils.startFocusTransaction();
 
         if(cellEditor instanceof RequestCellEditor)
             ((RequestCellEditor)cellEditor).stop(renderElement, cancel, blurred);

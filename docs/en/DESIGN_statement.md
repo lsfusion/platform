@@ -284,7 +284,7 @@ To access design components, you can use their names or address property compone
 
     - All types of containers of the `noGroupObjectTreeContainerType` form (identical semantics)
     - `GRID` - a table component
-    - `TOOLBARSYSTEM` - a system toolbar (number of records, group adjustment, etc.).
+    - `TOOLBARSYSTEM` - a system toolbar (number of records, group change, etc.).
     - `FILTERGROUPS` - contains filter group components
     - `FILTERS` - a component that displays custom filters<br/>**deprecated since version 5, use `FILTERS`**
 

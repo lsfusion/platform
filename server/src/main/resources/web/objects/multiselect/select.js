@@ -146,6 +146,7 @@ function selectMultiInput() {
 
             // we need to do it here, not in update to have relevant focusElement
             let selectizeInstance = element.selectizeInstance[0].selectize;
+            selectizeInstance.controller = controller; // needed for lsf_events
             lsfUtils.setFocusElement(element, selectizeInstance.$control_input[0]);
             if(!isList)
                 lsfUtils.setReadonlyFnc(element, (readonly) => {

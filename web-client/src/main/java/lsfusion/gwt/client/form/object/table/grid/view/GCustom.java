@@ -49,7 +49,7 @@ public class GCustom extends GTippySimpleStateTableView {
 
     @Override
     protected void onUpdate(Element element, JsArray<JavaScriptObject> list) {
-        FocusUtils.startFocusTransaction();
+        FocusUtils.startFocusTransaction(element);
 
         if (renderFunctionWithoutArguments)
             update(renderFunction, element, controller, list, customOptions);

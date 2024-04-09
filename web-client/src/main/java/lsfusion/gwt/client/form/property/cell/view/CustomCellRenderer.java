@@ -80,7 +80,7 @@ public class CustomCellRenderer extends CellRenderer {
 
     @Override
     public boolean updateContent(Element element, PValue value, Object extraValue, UpdateContext updateContext) {
-        FocusUtils.startFocusTransaction();
+        FocusUtils.startFocusTransaction(element);
 
         JavaScriptObject renderValue = GSimpleStateTableView.convertToJSValue(property, value, updateContext.getRendererType(), true);
         update(customRenderer, element, getController(property, updateContext, element), renderValue, extraValue != null ? ((ExtraValue) extraValue).getJsObject() : null);

@@ -26,7 +26,7 @@ NAVIGATOR {
 ```lsf
 changeName(Book b)  {
     // inputting ISTRING[100] "to parameter" s 
-    // (automatically wrapped in REQUEST, that is, group adjustments, PASTE, etc. are available)
+    // (automatically wrapped in REQUEST, that is, group changd, PASTE, etc. are available)
     INPUT s = ISTRING[100] 
         DO // checking for requestCanceled
              name(b) <- s;
@@ -96,7 +96,7 @@ We need to replace the book selection mechanism on the order form so that the ge
 
 ```lsf
 changeNameBook(Genre g, Order o)  {
-    // (automatically wrapped in REQUEST, that is, group adjustments, PASTE, etc. are available)
+    // (automatically wrapped in REQUEST, that is, group changes, PASTE, etc. are available)
     DIALOG booksByGenre OBJECTS 
           g = g NULL, // NULL input allowed
           b = book(o) NULL INPUT bk NULL CONSTRAINTFILTER

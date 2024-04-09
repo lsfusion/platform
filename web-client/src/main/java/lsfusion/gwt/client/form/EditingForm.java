@@ -106,8 +106,7 @@ public abstract class EditingForm extends FormContainer {
         if(!async)
             form.checkCommitEditing(); // we need to check commit editing, otherwise form will be in editing mode, and for example ClosePressed won't be flushed
 
-        FocusUtils.startFocusTransaction();
-
+        FocusUtils.startFocusTransaction(getContentElement());
         removeContent();
 
         if(editFormCloseReason instanceof CommitReason)

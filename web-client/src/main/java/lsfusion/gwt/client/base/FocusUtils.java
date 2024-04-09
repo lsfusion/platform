@@ -228,7 +228,8 @@ public class FocusUtils {
     public static boolean isFakeBlur(NativeEvent event, Element blur) {
         EventTarget focus = event.getRelatedEventTarget();
         if(focus == null) {
-            if(focusTransaction) { // element might be removed
+            // if we're in focus transaction then there are some manipulations in the focusTransaction elements, so we pend all blur events from there
+            if(focusTransaction != null && blur.isOrHasChild(focusTransaction)) { // element might be removed
                 pendingBlurElements.add(blur);
                 return true;
             }
@@ -250,14 +251,14 @@ public class FocusUtils {
         return false;
     }
 
-    private static boolean focusTransaction = false;
+    private static Element focusTransaction;
     private static ArrayList<Element> pendingBlurElements = new ArrayList<>();
 
-    public static void startFocusTransaction() {
-        focusTransaction = true;
+    public static void startFocusTransaction(Element element) {
+        focusTransaction = element;
     }
     public static void endFocusTransaction() {
-        focusTransaction = false;
+        focusTransaction = null;
 
         Element focusedElement = getFocusedElement();
         for(Element pendingBlurElement : pendingBlurElements) {
