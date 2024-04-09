@@ -43,7 +43,7 @@ public class InputAction extends SystemExplicitAction {
 //        return getChangeProps(requestCanceledProperty.property, requestedPropertySet.getLCP(dataClass).property);
 //    }
 
-    private ClassPropertyInterface oldValueInterface;
+    private final ClassPropertyInterface oldValueInterface;
     // CONTEXT
     protected final ImSet<ClassPropertyInterface> contextInterfaces;
     
@@ -67,9 +67,13 @@ public class InputAction extends SystemExplicitAction {
 
         ImOrderSet<ClassPropertyInterface> orderInterfaces = getOrderInterfaces();
 
-        this.oldValueInterface = hasOldValue ? orderInterfaces.get(0) : null;
+        if(hasOldValue) {
+            this.oldValueInterface = orderInterfaces.get(0);
+            orderInterfaces = orderInterfaces.subOrder(1, orderInterfaces.size());
+        } else
+            this.oldValueInterface = null;
 
-        ImRevMap<C, ClassPropertyInterface> mapContextInterfaces = orderContextInterfaces.mapSet(orderInterfaces.subOrder(hasOldValue ? 1 : 0, orderContextInterfaces.size()));
+        ImRevMap<C, ClassPropertyInterface> mapContextInterfaces = orderContextInterfaces.mapSet(orderInterfaces.subOrder(0, orderContextInterfaces.size()));
         this.contextInterfaces = mapContextInterfaces.valuesSet();
         this.contextList = contextList != null ? contextList.map(mapContextInterfaces) : null;
         assert valueClass instanceof DataClass || contextList.singleInterface() != null;

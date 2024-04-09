@@ -2305,6 +2305,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         props.addAll(actions);
 
+        // actually list / where and actions parameters are different (however it's not that important)
         ImOrderSet<Integer> usedParams = SetFact.fromJavaOrderSet(mergeAllParams(props));
         ImOrderSet<Integer> usedContextParams = usedParams.filterOrder(element -> element < contextSize);
         ImOrderSet<PropertyInterface> orderInterfaces = genInterfaces(usedContextParams.size());
@@ -2312,7 +2313,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         return new ScriptingLogicsModule.ILEWithParams(usedContextParams, orderInterfaces,
                 splitParams(list, contextSize, usedInterfaces, value -> 0, (property, mapValues, mapExternal) -> {
-                    assert mapValues.valuesSet().equals(orderInterfaces.getSet()); // all properties are used
+//                    assert mapValues.valuesSet().equals(orderInterfaces.getSet()); // all properties are used
                     return new InputListEntity<>(property, mapValues);
                 }),
                 where != null ? splitParams(where, contextSize, usedInterfaces, value -> 0, (property, mapValues, mapExternal) ->
