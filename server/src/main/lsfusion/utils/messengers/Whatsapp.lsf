@@ -1,0 +1,44 @@
+MODULE Whatsapp;
+
+accessToken = DATA STRING();
+phoneNumberId = DATA STRING();
+recipientPhoneNumber = DATA STRING();
+
+message = DATA STRING();
+template = DATA STRING();
+
+//works only if user wrote something 
+//https://stackoverflow.com/questions/72484937/message-sent-using-whatsapp-but-not-delivered-to-recipients-using-whatsapp-busin
+sendPlainMessage(STRING accessToken, STRING phoneNumberId, STRING recipientPhoneNumber, STRING message) {
+    LOCAL headers = STRING(STRING);
+    headers('Authorization') <- 'Bearer ' + accessToken;
+    headers('Content-Type') <- 'application/json;';
+    headers('Accept') <- 'application/json';
+    EXTERNAL HTTP POST 'https://graph.facebook.com/v18.0/' + phoneNumberId + '/messages' HEADERS headers 
+        PARAMS '\{ "messaging_product": "whatsapp", "recipient_type": "individual", "to": "' + recipientPhoneNumber + '", "type": "text", "text": \{ "preview_url": false, "body": "' + message + '" \} \}';
+}
+
+//template must be approved
+sendTemplateMessage(STRING accessToken, STRING phoneNumberId, STRING recipientPhoneNumber, STRING templateName) {
+    LOCAL headers = STRING(STRING);
+    headers('Authorization') <- 'Bearer ' + accessToken;
+    headers('Content-Type') <- 'application/json;';
+    headers('Accept') <- 'application/json';
+    EXTERNAL HTTP POST 'https://graph.facebook.com/v18.0/' + phoneNumberId + '/messages' HEADERS headers
+        PARAMS '\{ "messaging_product": "whatsapp", "to": "' + recipientPhoneNumber + '", "type": "template", "template": \{ "name": "' + templateName + '", "language": \{ "code": "en_US" \} \} \}';
+}
+
+sendPlainMessage() {
+    sendPlainMessage(accessToken(), phoneNumberId(), recipientPhoneNumber(), message());
+};
+
+sendTemplateMessage() {
+    sendTemplateMessage(accessToken(), phoneNumberId(), recipientPhoneNumber(), template());
+};
+
+FORM whatsapp
+PROPERTIES() accessToken, phoneNumberId, recipientPhoneNumber, message, sendPlainMessage, template, sendTemplateMessage;
+
+NAVIGATOR {
+    NEW whatsapp FIRST;
+}
