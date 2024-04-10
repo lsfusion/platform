@@ -1,28 +1,99 @@
 MODULE Whatsapp;
 
-REQUIRE Utils;
+REQUIRE Messenger;
 
-accessToken = DATA STRING();
-phoneNumberId = DATA STRING();
-recipientPhoneNumber = DATA STRING();
+//When setting up at https://developers.facebook.com/ you have to manually enter webhookUrl and verifyToken,
+//and every 24 hours copy a new accessToken from there. It's possible to generate permanent token, 
+//but 'System Users can only generate access tokens for permissions their app has been granted through App Review.'
+//https://developers.facebook.com/docs/whatsapp/business-management-api/get-started#1--acquire-an-access-token-using-a-system-user-or-facebook-login
 
-//works only if user wrote something 
-//https://stackoverflow.com/questions/72484937/message-sent-using-whatsapp-but-not-delivered-to-recipients-using-whatsapp-busin
-message = DATA STRING();
-sendPlainMessage(STRING accessToken, STRING phoneNumberId, STRING recipientPhoneNumber, STRING message) {
-    LOCAL headers = STRING(STRING);
-    headers('Authorization') <- 'Bearer ' + accessToken;
-    headers('Content-Type') <- 'application/json;';
-    EXTERNAL HTTP POST 'https://graph.facebook.com/v18.0/' + phoneNumberId + '/messages' HEADERS headers 
-        PARAMS '\{ "messaging_product": "whatsapp", "recipient_type": "individual", "to": "' + recipientPhoneNumber + '", "type": "text", "text": \{ "preview_url": false, "body": "' + message + '" \} \}';
-}
+EXTEND CLASS Messenger { whatsapp 'Whatsapp' }
+isWhatsapp(Account a) = messenger(a) == Messenger.whatsapp;
 
-sendPlainMessage() {
-    sendPlainMessage(accessToken(), phoneNumberId(), recipientPhoneNumber(), message());
-};
+//url for configuring webhook
+webhookUrl() = webServerUrl() + '/exec/webHookWhatsapp';
+
+//should be the same as entered while configuring webhook
+verifyToken = DATA STRING();
+
+//temporary 24 hours token for sending messages
+accessToken = DATA STRING(Account);
+
+//id of sender phone number (differs from phone number)
+phoneNumberId = DATA STRING(Account);
+accountPhoneNumberId(STRING phoneNumberId) = GROUP AGGR Account a BY phoneNumberId(a);
+
+//form to import messages
+GROUP value;
+GROUP metadata : value;
+GROUP text;
+GROUP profile;
+
+entryChanges = DATA LOCAL INTEGER(INTEGER);
+phone_number_id = DATA LOCAL STRING(INTEGER);
+changesMessages = DATA LOCAL INTEGER(INTEGER);
+from = DATA LOCAL STRING(INTEGER);
+body = DATA LOCAL STRING(INTEGER);
+changesContacts = DATA LOCAL INTEGER(INTEGER);
+name = DATA LOCAL STRING(INTEGER);
+
+FORM messages
+    OBJECTS entry = INTEGER
+    FILTERS imported(entry)
+
+    OBJECTS changes = INTEGER
+    FILTERS entryChanges(changes) == entry
+
+    OBJECTS value = INTEGER
+    PROPERTIES(changes) IN metadata phone_number_id
+    FILTERS imported(changes)
+
+    OBJECTS messages = INTEGER IN value
+    FILTERS changesMessages(messages) == changes
+    PROPERTIES(messages) from
+    PROPERTIES(messages) IN text body
+    FILTERS imported(messages)
+
+    OBJECTS contacts = INTEGER IN value
+    FILTERS changesContacts(contacts) == changes
+    PROPERTIES(contacts) IN profile name
+    FILTERS imported(contacts);
+
+webHookWhatsapp(JSONFILE f) {
+    IF(f) THEN {
+        IMPORT messages JSON FROM f;
+        FOR from(INTEGER i) DO {
+            LOCAL chat = Chat();
+            chat() <- chatIdAccount(accountPhoneNumberId(phone_number_id(i)), from(i));
+            IF NOT chat() THEN {
+                NEW chat = Chat {
+                    chat() <- chat;
+                    account(chat) <- accountPhoneNumberId(phone_number_id(i));
+                    id(chat()) <- from(i);
+                }
+            }
+            name(chat()) <- name(i);
+            title(chat()) <- name(i);
+            chatType(chat()) <- ChatType.private;
+
+            NEW message = Message {
+                chat(message) <- chat();
+                message(message) <- body(i);
+                dateTime(message) <- currentDateTime();
+                from(message) <- from(i);
+            }
+        }
+        APPLY;
+    } ELSE {
+        //verification request should return hub.challenge if hub.verify_token is valid
+        IF verifyToken() == params('hub.verify_token') THEN {
+            EXPORT FROM INTEGER(params('hub.challenge'));
+        }
+    }
+} @@noauth;
 
 uploadedFileId = DATA LOCAL STRING();
-uploadFile(STRING accessToken, STRING phoneNumberId, FILE file) {
+uploadFile(STRING accessToken, STRING phoneNumberId, NAMEDFILE file) {
     LOCAL headers = STRING(STRING);
     headers('Authorization') <- 'Bearer ' + accessToken;
     headers('Content-Type') <- 'multipart/form-data; charset=UTF-8';
@@ -36,79 +107,60 @@ uploadFile(STRING accessToken, STRING phoneNumberId, FILE file) {
     IMPORT FROM JSONFILE(result()) TO() uploadedFileId = 'id';
 }
 
-//send image
-sendImage(STRING accessToken, STRING phoneNumberId, STRING recipientPhoneNumber) {
-    INPUT file = IMAGEFILE DO {
-        uploadFile(accessToken, phoneNumberId, FILE(file));
-        headers('Authorization') <- 'Bearer ' + accessToken;
-        headers('Content-Type') <- 'application/json;';
-        EXTERNAL HTTP POST 'https://graph.facebook.com/v18.0/' + phoneNumberId + '/messages' HEADERS headers
-            PARAMS '\{ "messaging_product": "whatsapp", "recipient_type": "individual", "to": "' + recipientPhoneNumber + '", "type": "image", "image": \{ "id": "' + uploadedFileId() + '" \} \}';
+processResult(Chat chat, STRING message, NAMEDFILE file) {
+    NEW botMessage = Message {
+        chat(botMessage) <- chat;
+        file(botMessage) <- file;
+        message(botMessage) <- message;
+        dateTime(botMessage) <- currentDateTime();
+        from(botMessage) <- 'YOU';
     }
 }
 
-sendImage() {
-    sendImage(accessToken(), phoneNumberId(), recipientPhoneNumber());
+//available types: audio, video, image, document, should be chosen by extension
+fileType(STRING ext, STRING name) = CASE 
+    WHEN ext == 'jpg' OR ext == 'jpeg' OR ext == 'png' 
+        THEN '"type": "image", "image": \{"id": "' + uploadedFileId() + '"\}'
+    ELSE 
+        '"type": "document", "document": \{"filename": "' + name + '", "caption": "", "id": "' + uploadedFileId() + '"\}';
+
+sendFile(Chat chat, NAMEDFILE attachment) + WHEN isWhatsapp(account(chat)) AND attachment IS NAMEDFILE THEN {
+    uploadFile(accessToken(account(chat)), phoneNumberId(account(chat)), attachment);
+
+    LOCAL headers = STRING(STRING);
+    headers('Authorization') <- 'Bearer ' + accessToken(account(chat));
+    headers('Content-Type') <- 'application/json;';
+    EXTERNAL HTTP POST 'https://graph.facebook.com/v18.0/' + phoneNumberId(account(chat)) + '/messages' HEADERS headers
+        PARAMS '\{"messaging_product": "whatsapp", "recipient_type": "individual", "to":"' + id(chat) + '", ' + fileType(extension(attachment), name(attachment)) + '\}';
+
+    processResult(chat, NULL, attachment);
+    APPLY;
 }
 
-//send document
-sendDocument(STRING accessToken, STRING phoneNumberId, STRING recipientPhoneNumber) {
-    INPUT file = FILE DO {
-        uploadFile(accessToken, phoneNumberId, file);
-        headers('Authorization') <- 'Bearer ' + accessToken;
-        headers('Content-Type') <- 'application/json;';
-        EXTERNAL HTTP POST 'https://graph.facebook.com/v18.0/' + phoneNumberId + '/messages' HEADERS headers
-            PARAMS '\{ "messaging_product": "whatsapp", "recipient_type": "individual", "to": "' + recipientPhoneNumber + '", "type": "document", "document": \{ "id": "' + uploadedFileId() + '" \} \}';
-    }
+sendMessage(Chat chat, STRING message) + WHEN isWhatsapp(account(chat)) AND message IS STRING THEN {
+    LOCAL headers = STRING(STRING);
+    headers('Authorization') <- 'Bearer ' + accessToken(account(chat));
+    headers('Content-Type') <- 'application/json;';
+    EXTERNAL HTTP POST 'https://graph.facebook.com/v18.0/' + phoneNumberId(account(chat)) + '/messages' HEADERS headers
+        PARAMS '\{ "messaging_product": "whatsapp", "recipient_type": "individual", "to": "' + id(chat) + '", "type": "text", "text": \{ "preview_url": false, "body": "' + message + '" \} \}';
+
+    processResult(chat, message, NULL);
+    APPLY;
 }
 
-sendDocument() {
-    sendDocument(accessToken(), phoneNumberId(), recipientPhoneNumber());
-}
-
-
-
-//template must be approved
-template = DATA STRING();
-sendTemplateMessage(STRING accessToken, STRING phoneNumberId, STRING recipientPhoneNumber, STRING template) {
+sendTemplateMessage(STRING accessToken, STRING phoneNumberId, STRING recipient, STRING template) {
     LOCAL headers = STRING(STRING);
     headers('Authorization') <- 'Bearer ' + accessToken;
     headers('Content-Type') <- 'application/json;';
     headers('Accept') <- 'application/json';
     EXTERNAL HTTP POST 'https://graph.facebook.com/v18.0/' + phoneNumberId + '/messages' HEADERS headers
-        PARAMS '\{ "messaging_product": "whatsapp", "to": "' + recipientPhoneNumber + '", "type": "template", "template": \{ "name": "' + template + '", "language": \{ "code": "en_US" \} \} \}';
+        PARAMS '\{ "messaging_product": "whatsapp", "to": "' + recipient + '", "type": "template", "template": \{ "name": "' + template + '", "language": \{ "code": "en_US" \} \} \}';
 }
 
-sendTemplateMessage() {
-    sendTemplateMessage(accessToken(), phoneNumberId(), recipientPhoneNumber(), template());
+//hello_world is default template, other templates must be approved before sending
+sendTemplateMessage(Chat c) {
+    sendTemplateMessage(accessToken(account(c)), phoneNumberId(account(c)), id(c), 'hello_world');
 };
 
-FORM whatsapp
-PROPERTIES() accessToken, phoneNumberId, recipientPhoneNumber, message, sendPlainMessage,
-    sendImage, sendDocument, template, sendTemplateMessage;
-
-DESIGN whatsapp {
-    MOVE PROPERTY(accessToken());
-    MOVE PROPERTY(phoneNumberId());
-    MOVE PROPERTY(recipientPhoneNumber());
-    NEW plain {
-        caption = 'plain text';
-        MOVE PROPERTY(message());
-        MOVE PROPERTY(sendPlainMessage());
-    }
-    NEW image {
-        caption = 'media';
-        MOVE PROPERTY(sendImage());
-        MOVE PROPERTY(sendDocument());
-    }
-    NEW template {
-        caption = 'template';
-        MOVE PROPERTY(template());
-        MOVE PROPERTY(sendTemplateMessage());
-    }
-    MOVE TOOLBARBOX;
-}
-
-NAVIGATOR {
-    NEW whatsapp FIRST;
-}
+EXTEND FORM messengers
+    PROPERTIES PANEL SHOWIF isWhatsapp(a) verifyToken(), accessToken(a), phoneNumberId(a), sendTemplateMessage(c) DRAW a;
