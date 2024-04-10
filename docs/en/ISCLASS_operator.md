@@ -11,13 +11,6 @@ The `ISCLASS` operator creates a property that implements a [signature matching 
 ISCLASS(expr) 
 ```
 
-:::info
-There is an alternative syntax for this operator, which has been deprecated since version 5. It will be removed in future versions:
-```
-CLASS(expr)
-```
-:::
-
 ### Description
 
 The `ISCLASS` operator creates a property that determines, from a class perspective, whether the expression specified in the operator can have a non-`NULL` value for the given arguments.
