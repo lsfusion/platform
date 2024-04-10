@@ -1039,21 +1039,26 @@ public abstract class LogicsModule {
             list = null;
 
         ClassFormEntity dialogForm = customClass.getDialogForm(baseLM);
-        return addDialogInputAProp(dialogForm.form, targetProp, dialogForm.object, true, orderInterfaces, scope, list, BaseUtils.immutableCast(filters.apply(dialogForm.object)), customChangeFunction, notNull);
+        return addDialogInputAProp(dialogForm.form, targetProp, dialogForm.object, true, orderInterfaces, scope, list, BaseUtils.immutableCast(filters.apply(dialogForm.object)), ListFact.EMPTY(), customChangeFunction, notNull);
     }
     
-    public <T extends PropertyInterface, O extends ObjectSelector> LA addDialogInputAProp(FormSelector<O> formSelector, LP targetProp, O object, boolean hasOldValue, ImOrderSet<T> orderInterfaces, FormSessionScope scope, InputListEntity<?, T> list, ImSet<ContextFilterSelector<T, O>> filters, String customChangeFunction, boolean notNull) {
+    public <T extends PropertyInterface, O extends ObjectSelector> LA addDialogInputAProp(FormSelector<O> formSelector, LP targetProp, O object, boolean hasOldValue, ImOrderSet<T> orderInterfaces, FormSessionScope scope, InputListEntity<?, T> list, ImSet<ContextFilterSelector<T, O>> filters, ImList<InputContextAction<?, T>> contextActions, String customChangeFunction, boolean notNull) {
         return addDialogInputAProp(formSelector,
                 hasOldValue ? ListFact.singleton(object) : ListFact.EMPTY(), hasOldValue ? ListFact.singleton(true) : ListFact.EMPTY(),
                 ListFact.singleton(object), ListFact.singleton(targetProp), ListFact.singleton(true), scope, list,
-                ManageSessionType.AUTO, FormEntity.DEFAULT_NOCANCEL, orderInterfaces, filters, true, WindowFormType.FLOAT, false, false, customChangeFunction, notNull);
+                ManageSessionType.AUTO, FormEntity.DEFAULT_NOCANCEL, orderInterfaces, filters, contextActions, true, WindowFormType.FLOAT, false, false, customChangeFunction, notNull);
     }
 
-    public <P extends PropertyInterface, X extends PropertyInterface, O extends ObjectSelector> LA addDialogInputAProp(FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, ImList<O> inputObjects, ImList<LP> inputProps, ImList<Boolean> inputNulls, FormSessionScope scope, InputListEntity<?, P> list, ManageSessionType manageSession, Boolean noCancel, ImOrderSet<P> orderInterfaces, ImSet<ContextFilterSelector<P, O>> contextFilters, boolean syncType, WindowFormType windowType, boolean checkOnOk, boolean readonly, String customChangeFunction, boolean notNull) {
+    public <P extends PropertyInterface, X extends PropertyInterface, O extends ObjectSelector> LA addDialogInputAProp(FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, ImList<O> inputObjects, ImList<LP> inputProps, ImList<Boolean> inputNulls, FormSessionScope scope, InputListEntity<?, P> list, ManageSessionType manageSession, Boolean noCancel, ImOrderSet<P> orderInterfaces, ImSet<ContextFilterSelector<P, O>> contextFilters, ImList<InputContextAction<?, P>> contextActions, boolean syncType, WindowFormType windowType, boolean checkOnOk, boolean readonly, String customChangeFunction, boolean notNull) {
         // objects + contextInterfaces
         Result<InputListEntity<?, ClassPropertyInterface>> mappedList = list != null ? new Result<>() : null;
+        Result<ImList<InputContextAction<?, ClassPropertyInterface>>> mappedContextActions = new Result<>();
         FormInteractiveAction<O> formAction = new FormInteractiveAction<>(LocalizedString.NONAME, form, objectsToSet, nulls, inputObjects, inputProps, inputNulls, orderInterfaces, contextFilters,
-                map -> { if(mappedList != null) mappedList.set(list.map(map)); }, manageSession, noCancel, syncType ? true : null, windowType, false, checkOnOk, readonly, null);
+                map -> {
+                    if(mappedList != null)
+                        mappedList.set(list.map(map));
+                    mappedContextActions.set(contextActions.mapListValues(action -> action.map(map)));
+                },manageSession, noCancel, syncType ? true : null, windowType, false, checkOnOk, readonly, null);
 
         ImOrderSet<ClassPropertyInterface> listInterfaces = formAction.getFriendlyOrderInterfaces();
 
@@ -1079,8 +1084,9 @@ public abstract class LogicsModule {
 
             // the order will / have to be the same as in formAction itself
             return addInputAProp((CustomClass)objectClass, inputProp, false, listInterfaces,
-                    // getting inputList entity with all filters
-                    mappedList.result, scope, inputSelector, ListFact.toList(new InputContextAction<>("dialog", "F8", null, null, QuickAccess.DEFAULT, formImplement.action, formImplement.mapping)), customChangeFunction, notNull); // // adding dialog action (no string parameter, but extra parameters)
+                    mappedList.result, scope, inputSelector,
+                    mappedContextActions.result.addList(new InputContextAction<>("dialog", "F8", null, null, QuickAccess.DEFAULT, formImplement.action, formImplement.mapping)),
+                    customChangeFunction, notNull); // // adding dialog action (no string parameter, but extra parameters)
         }
 
         resultAction = new LA<>(formImplement.action, listInterfaces.mapOrder(formImplement.mapping.reverse()));

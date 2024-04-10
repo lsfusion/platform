@@ -4010,7 +4010,7 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams ac
             ('NOCHANGE' { assign = false; assignDebugPoint = null; } )?
         )?
         {
-            List<TypedParameter> newListContext = new ArrayList<TypedParameter>(context);
+            List<TypedParameter> newListContext;
             boolean listDynamic;
             if($in.valueClass instanceof DataClass) {
                 newListContext = new ArrayList<TypedParameter>(context);
