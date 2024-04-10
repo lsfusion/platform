@@ -15,6 +15,7 @@ import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.action.flow.ForAction;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.classes.data.LogicalClass;
@@ -23,6 +24,7 @@ import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.infer.CalcClassType;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
@@ -122,12 +124,19 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
         if(groupMap != null) {
             BaseLogicsModule baseLM = getBaseLM();
 
+            PropertyMapImplement<ClassPropertyInterface, I> selectProp = ForAction.createForDataProp((PropertyMapImplement<?, I>) whereProp, groupMap, null, null);
+
             // now Object.noClasses doesn't work for interactive forms (so we can return innerClasses to null if it will be fixed)
-            LogicsModule.IntegrationForm<I> selectForm = Property.getSelectForm(baseLM, innerInterfaces, getInnerInterfaceClasses(), groupMap.valuesSet(), (PropertyMapImplement<?, I>) nameProp, whereProp, (PropertyMapImplement<?, I>) nameProp, orders, false);
-
+            LogicsModule.IntegrationForm<I> selectForm = Property.getSelectForm(baseLM, innerInterfaces, getInnerInterfaceClasses(), groupMap.valuesSet(), (PropertyMapImplement<?, I>) nameProp, selectProp, (PropertyMapImplement<?, I>) nameProp, orders, false);
             LA<?> la = baseLM.addIFAProp(null, LocalizedString.NONAME, selectForm.form, selectForm.objectsToSet, BaseUtils.nvl(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_CUSTOMCHANGE_EVENTSCOPE), true, ModalityWindowFormType.EMBEDDED, false);
+            ActionMapImplement<?, Interface<I>> selectFormAction = la.getImplement(selectForm.getOrderInterfaces(groupMap));
 
-            return la.getImplement(selectForm.getOrderInterfaces(groupMap));
+            ActionMapImplement<?, Interface<I>> result = PropertyFact.createRequestAction(interfaces,
+                    PropertyFact.createListAction(interfaces,
+                            PropertyFact.createSetAction(innerInterfaces, groupMap, selectProp, whereProp),
+                            selectFormAction),
+                    PropertyFact.createSetAction(innerInterfaces, groupMap, (PropertyMapImplement<?, I>) whereProp, selectProp), null);
+            return result;
         }
 
         return super.getDefaultEventAction(eventActionSID, defaultChangeEventScope, viewProperties, customChangeFunction);

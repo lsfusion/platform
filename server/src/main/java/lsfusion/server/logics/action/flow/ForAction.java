@@ -10,6 +10,7 @@ import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ThrowingFunction;
 import lsfusion.interop.form.property.Compare;
+import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.controller.stack.ExecutionStackAspect;
 import lsfusion.server.base.controller.stack.ParamMessage;
@@ -37,6 +38,7 @@ import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.data.StoredDataProperty;
@@ -250,13 +252,6 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
         return result;
     }
 
-    private ImMap<I, ValueClass> getExtendClasses() {
-        if(ifProp==null)
-            return MapFact.EMPTY();
-        assert forIsFull();
-        return ifProp.mapInterfaceClasses(ClassType.forPolicy).remove(mapInterfaces.valuesSet()); // вообще тут предполагается ASSERTFULL, но только для extend interfaces, а пока такой возможности нет
-    }
-
     private boolean forIsFull() {
         return ifProp == null || ifProp.mapIsFull(getExtendInterfaces());
     }
@@ -311,7 +306,7 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
             ImSet<I> noInlineInterfaces = extNoInline;
             MSet<SessionDataProperty> mLocals = SetFact.mSet();
             if(Property.depends(ifProp.property, StoredDataProperty.set)) { // нужно создать сначала материалайзить условие for по аналогии с проталкиванием
-                noInlineIfProp = PropertyFact.createForDataProp(getExtendClasses(), ifProp.property.getValueClass(ClassType.forPolicy), mLocals);// делаем SET в session свойство, и подменяем условие на это свойство
+                noInlineIfProp = createForDataProp(mLocals, null);// делаем SET в session свойство, и подменяем условие на это свойство
                 mResult.add(PropertyFact.createSetAction(addObject != null ? innerInterfaces.removeIncl(addObject) : innerInterfaces, context, null, noInlineIfProp, ifProp));
                 noInlineInterfaces = noInline;
             }
@@ -351,7 +346,7 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
 
         if(addObject != null) {
             MSet<SessionDataProperty> mLocals = SetFact.mSet();
-            PropertyMapImplement<?, I> result = PropertyFact.createForDataProp(getExtendClasses(), addClass, mLocals);
+            PropertyMapImplement<?, I> result = createForDataProp(mLocals, addClass);
             return PropertyFact.createListAction(context, ListFact.<ActionMapImplement<?, I>>toList(
                     PropertyFact.createAddAction(addClass, innerInterfaces.removeIncl(addObject), context, ifProp, result, orders, ordersNotNull, autoSet),
                     PropertyFact.createForAction(innerInterfaces, context, PropertyFact.<I>createCompare(
@@ -417,7 +412,7 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
 
             if (Property.depends(ifProp.property, pushChangedProps) || // если есть stored свойства (а не чисто session) или меняет условия
                     Property.depends(ifProp.property, StoredDataProperty.set)) {
-                pushProp = PropertyFact.createForDataProp(getExtendClasses(), ifProp.property.getValueClass(ClassType.forPolicy), mLocals); // делаем SET в session свойство, и подменяем условие на это свойство
+                pushProp = createForDataProp(mLocals, null); // делаем SET в session свойство, и подменяем условие на это свойство
                 mResult.add(PropertyFact.createSetAction(innerInterfaces, context, null, pushProp, ifProp));
             }
         }
@@ -432,6 +427,20 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
                     ordersNotNull, PropertyFact.createListAction(innerInterfaces, rest), elseAction, false, innerInterfaces.remove(context), false));
 
         return PropertyFact.createListAction(context, mResult.immutableList(), mLocals.immutable());
+    }
+
+    @IdentityInstanceLazy
+    private <T extends PropertyInterface> PropertyMapImplement<?, T> getTrueProperty() { // to avoid property leaks
+        return PropertyFact.createTrue();
+    }
+
+    private PropertyMapImplement<ClassPropertyInterface, I> createForDataProp(MSet<SessionDataProperty> mLocals, ValueClass valueClass) {
+        assert forIsFull();
+        return createForDataProp(ifProp != null ? ifProp : getTrueProperty(), mapInterfaces, valueClass, mLocals);
+    }
+
+    public static <I extends PropertyInterface> PropertyMapImplement<ClassPropertyInterface, I> createForDataProp(PropertyMapImplement<?, I> ifProp, ImRevMap<?, I> mapInterfaces, ValueClass valueClass, MSet<SessionDataProperty> mLocals) {
+        return PropertyFact.createForDataProp(ifProp.mapInterfaceClasses(ClassType.forPolicy).remove(mapInterfaces.valuesSet()), valueClass != null ? valueClass : ifProp.property.getValueClass(ClassType.forPolicy), mLocals);
     }
 
     @Override
