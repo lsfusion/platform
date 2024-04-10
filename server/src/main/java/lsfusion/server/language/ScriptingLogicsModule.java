@@ -3611,12 +3611,11 @@ public class ScriptingLogicsModule extends LogicsModule {
             return result;
         }
 
-        if(valueClass instanceof DataClass) {
-            LP requested = getRequestedValueProperty(valueClass);
-            if(usedProps == null || usedProps.add(requested.property))
-                return requested;
-        }
-        // уже был или Object - генерим новое
+        // having the same property for different objects, we make implicit links between DIALOG / INPUT operators in the ACTIONS and INPUT operator itself (so DIALOG in ACTIONS will automatically transfer result to INPUT)
+        LP requested = getRequestedValueProperty(valueClass);
+        if(usedProps == null || usedProps.add(requested.property))
+            return requested;
+
         return new LP<>(PropertyFact.createInputDataProp(valueClass));
     }
 
