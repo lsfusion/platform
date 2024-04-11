@@ -4808,6 +4808,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedRoundProp(LPWithParams expr, LPWithParams scaleExpr) throws ScriptingErrorLog.SemanticErrorException {
+        checks.checkRoundType(expr, scaleExpr);
         List<LPWithParams> propParams = new ArrayList<>();
         propParams.add(expr);
         boolean hasScale = scaleExpr != null;
