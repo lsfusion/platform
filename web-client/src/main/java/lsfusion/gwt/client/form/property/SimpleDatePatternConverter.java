@@ -54,6 +54,11 @@ public class SimpleDatePatternConverter {
                 return count == 2 ? "99" : "9999";
             case 'a':
                 return "AA";
+            case 'E':
+                //EEEE - full day of week
+                if (count == 4) return "a{1,20}";
+                //EEE - short day of week (2 or 3 digits in different locales)
+                if (count == 3) return "a{2,3}";
         }
         return repeat(symbol, count);
     }
