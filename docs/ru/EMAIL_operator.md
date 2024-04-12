@@ -12,9 +12,9 @@ recipientType1 recipientExpr1
 ...
 recipientTypeN recipientExprN
 [BODY bodyExpr]
-ATTACH attachDescription1
+[ATTACH attachDescription1
 ...
-ATTACH attachDescriptionM
+ATTACH attachDescriptionM]
 [syncType]
 ```
 
