@@ -7,6 +7,7 @@ title: 'Operations with primitives'
 -   [Arithmetic operators (`+`, `-`, `*`, `/`)](Arithmetic_operators_+_-_etc.md)
 -   [Logical operators (`AND`, `OR`, `NOT`, `XOR`)](Logical_operators_AND_OR_NOT_XOR.md)
 -   [Comparison operators (`==`, `>`, `<`, `LIKE`)](Comparison_operators_=_etc.md)
+-   [Rounding operator (`ROUND`)](Rounding_operator_ROUND.md)
 -   [String operators (`+`, `CONCAT`, `SUBSTRING`)](String_operators_+_CONCAT_SUBSTRING.md)
 -   [Structure operators (`STRUCT`, `[]`)](Structure_operators_STRUCT.md)
 -   [Custom formula (`FORMULA`)](Custom_formula_FORMULA.md)
