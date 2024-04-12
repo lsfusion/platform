@@ -288,7 +288,7 @@ readFile = DATA LOCAL FILE ();
 showResult = DATA LOCAL TEXT();
 
 //cast to FILE and NAMEDFILE
-file(RAWFILE rawFile, STRING extension) = FORMULA NULL FILE 'cast_static_file_to_dynamic_file($1, $2)' NULL;
+file(RAWFILE rawFile, STRING extension) = FORMULA FILE 'cast_static_file_to_dynamic_file($1, $2)' NULL;
 setExtension(RAWFILE rawFile, STRING extension) = FORMULA FILE 'cast_static_file_to_dynamic_file($1, $2)' NULL; // backward compatibility
 namedFile(RAWFILE rawFile, STRING name, STRING extension) = FORMULA NAMEDFILE 'cast_static_file_to_named_file($1, $2, $3)' NULL;
 namedFile(FILE file, STRING name) = FORMULA NAMEDFILE 'cast_dynamic_file_to_named_file($1, $2)' NULL;
