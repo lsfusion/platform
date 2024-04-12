@@ -65,13 +65,10 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
         if (!onCommit)
             return PValue.getPValue(inputText);
 
-        PValue result = super.tryParseInputText(inputText, onCommit);
-
-        if(!isNative() && result != null) // needed for the 2-year digit dates
+        if(!isNative()) // needed for the 2-year digit dates
             return getValue(getPickerStartDate(), getPickerEndDate());
 
-        return result;
-
+        return super.tryParseInputText(inputText, onCommit);
     }
 
     protected abstract String getSinglePattern();
@@ -81,6 +78,10 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
 
     private InputElement getInputElement() {
         return inputElement;
+    }
+
+    protected String replaceUnsupportedSymbols(String pattern) {
+        return pattern.replaceAll("E{3,4} ", "");
     }
 
     @Override
