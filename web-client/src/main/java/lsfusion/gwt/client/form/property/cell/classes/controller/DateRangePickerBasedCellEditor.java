@@ -109,9 +109,6 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
     }
 
     protected native void createPicker(Element parent, JsDate startDate, JsDate endDate, String pattern, boolean singleDatePicker, boolean time, boolean date)/*-{
-
-        $wnd.moment.locale(@lsfusion.gwt.client.base.GwtClientUtils::getCurrentLanguage(*)());
-
         window.$ = $wnd.jQuery;
         var thisObj = this;
         var editElement = $(thisObj.@DateRangePickerBasedCellEditor::getInputElement()());

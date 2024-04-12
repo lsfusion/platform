@@ -22,6 +22,7 @@ public class GClientSettings implements Serializable {
     public boolean useBootstrap;
     public Map<String, String> versionedColorThemesCss;
     public GColorPreferences colorPreferences;
+    public String language;
     public String dateFormat;
     public String timeFormat;
     public Integer twoDigitYearStart;
@@ -42,7 +43,7 @@ public class GClientSettings implements Serializable {
     public GClientSettings(long busyDialogTimeout, boolean devMode, String projectLSFDir, boolean showDetailedInfo, int showDetailedInfoDelay, boolean suppressOnFocusChange,
                            boolean contentWordWrap, boolean autoReconnectOnConnectionLost, boolean forbidDuplicateForms, boolean pivotOnlySelectedColumn,
                            String matchSearchSeparator, GColorTheme colorTheme, boolean useBootstrap, Map<String, String> versionedColorThemesCss,
-                           GColorPreferences colorPreferences, String dateFormat, String timeFormat, Integer twoDigitYearStart, String staticImagesURL,
+                           GColorPreferences colorPreferences, String language, String dateFormat, String timeFormat, Integer twoDigitYearStart, String staticImagesURL,
                            String[] preDefinedDateRangesNames, boolean useTextAsFilterSeparator, boolean verticalNavbar, boolean userFiltersManualApplyMode,
                            boolean disableActionsIfReadonly, boolean disableShowingRecentlyLogMessages) {
         this.busyDialogTimeout = busyDialogTimeout;
@@ -60,6 +61,7 @@ public class GClientSettings implements Serializable {
         this.versionedColorThemesCss = versionedColorThemesCss;
         this.useBootstrap = useBootstrap;
         this.colorPreferences = colorPreferences;
+        this.language = language;
         this.dateFormat = dateFormat;
         this.timeFormat = timeFormat;
         this.twoDigitYearStart = twoDigitYearStart;

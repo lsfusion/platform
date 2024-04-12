@@ -622,6 +622,7 @@ public class MainFrame implements EntryPoint {
                 changeColorTheme(gClientSettings.colorTheme);
                 colorPreferences = gClientSettings.colorPreferences;
                 StyleDefaults.init();
+                setLocale(gClientSettings.language);
                 dateFormat = gClientSettings.dateFormat;
                 timeFormat = gClientSettings.timeFormat;
                 dateTimeFormat = gClientSettings.dateFormat + " " + gClientSettings.timeFormat;
@@ -639,6 +640,10 @@ public class MainFrame implements EntryPoint {
             }
         });
     }
+
+    private native void setLocale(String language)/*-{
+        $wnd.moment.locale(language);
+    }-*/;
     
     public static void openNavigatorMenu() {
         if (mobile) {
