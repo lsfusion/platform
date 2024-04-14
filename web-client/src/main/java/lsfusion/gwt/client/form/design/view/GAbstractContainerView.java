@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.design.view;
 
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.BaseImage;
+import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
@@ -11,15 +12,13 @@ import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import java.util.ArrayList;
 import java.util.List;
 
-import static lsfusion.gwt.client.base.GwtSharedUtils.relativePosition;
-
 public abstract class GAbstractContainerView {
     protected final GContainer container;
 
     protected final boolean vertical;
 
     protected final List<GComponent> children = new ArrayList<>();
-    protected final List<SizedWidget> childrenViews = new ArrayList<>();
+    protected final List<ComponentViewWidget> childrenViews = new ArrayList<>();
 
     protected List<CaptionWidget> childrenCaptions = new ArrayList<>();
 
@@ -32,25 +31,31 @@ public abstract class GAbstractContainerView {
     public void add(GComponent child, final ComponentWidget view, ResizableComplexPanel attachContainer) {
         assert child != null && view != null && container.children.contains(child);
 
-        int index = relativePosition(child, container.children, children);
+        int index = GwtSharedUtils.relativePosition(child, container.children, children);
 
 //        child.installMargins(view);
 
-        Widget widget = view.getWidget();
-
-        // if panel is inside linear container, and there are several dynamic components fixing tab flex basis to avoid
-        boolean fixFlexBasis = widget instanceof FlexTabbedPanel && child.isFlex() && container.getFlexCount() > 1;
-        if(fixFlexBasis) {
-            FlexTabbedPanel tabbedView = (FlexTabbedPanel) widget;
-            tabbedView.setBeforeSelectionHandler(tabIndex -> {
-                if(tabIndex > 0)
-                    tabbedView.fixFlexBasis(vertical);
-            });
-        }
-
         children.add(index, child);
         childrenCaptions.add(index, view.caption);
-        childrenViews.add(index, view.widget.override(wrapAndOverflowView(index, widget, attachContainer, fixFlexBasis)));
+
+        ComponentViewWidget componentViewWidget = view.widget;
+        SizedWidget singleWidget = componentViewWidget.getSingleWidget();
+        if(singleWidget != null) {
+            Widget widget = singleWidget.widget;
+            // if panel is inside linear container, and there are several dynamic components fixing tab flex basis to avoid
+            boolean fixFlexBasis = widget instanceof FlexTabbedPanel && child.isFlex() && container.getFlexCount() > 1;
+            if (fixFlexBasis) {
+                FlexTabbedPanel tabbedView = (FlexTabbedPanel) widget;
+                tabbedView.setBeforeSelectionHandler(tabIndex -> {
+                    if (tabIndex > 0)
+                        tabbedView.fixFlexBasis(vertical);
+                });
+            }
+
+            componentViewWidget = singleWidget.override(wrapAndOverflowView(index, widget, attachContainer, fixFlexBasis)).view;
+        }
+
+        childrenViews.add(index, componentViewWidget);
 
         addImpl(index);
     }
@@ -144,7 +149,7 @@ public abstract class GAbstractContainerView {
     public void remove(GComponent child) {
         int index = children.indexOf(child);
 
-        removeImpl(index, child);
+        removeImpl(index);
 
         children.remove(index);
         childrenCaptions.remove(index);
@@ -163,9 +168,27 @@ public abstract class GAbstractContainerView {
         return children.get(index);
     }
 
-    public Widget getChildView(GComponent child) {
+    public Widget getChildWidget(GComponent child) {
         int index = children.indexOf(child);
-        return index != -1 ? childrenViews.get(index).widget : null;
+        if(index == -1)
+            return null;
+
+        SizedWidget singleWidget = getChildView(index).getSingleWidget();
+        if(singleWidget != null)
+            return singleWidget.widget;
+        return null;
+    }
+
+    public ComponentViewWidget getChildView(int index) {
+        return childrenViews.get(index);
+    }
+
+    protected int getChildPosition(int index) {
+        int containerIndex;
+        containerIndex = 0;
+        for(int i = 0; i < index; i++)
+            containerIndex += getChildView(i).getWidgetCount();
+        return containerIndex;
     }
 
     public Widget getCaptionView(GComponent child) {
@@ -187,18 +210,23 @@ public abstract class GAbstractContainerView {
     }
 
     protected Widget addChildrenWidget(SizedFlexPanel panel, int i, int beforeIndex) {
-        SizedWidget widget = childrenViews.get(i);
+        ComponentViewWidget viewWidget = getChildView(i);
         GComponent component = children.get(i);
 
-        widget = widget.override(component.getWidth(), component.getHeight());
+        viewWidget.add(panel, beforeIndex, component.getWidth(), component.getHeight(), component.getFlex(RendererType.PANEL), component.isShrink(), component.getAlignment(), component.isAlignShrink());
 
-        widget.add(panel, beforeIndex, component.getFlex(RendererType.PANEL), component.isShrink(), component.getAlignment(), component.isAlignShrink());
+        SizedWidget singleWidget = viewWidget.getSingleWidget();
+        return singleWidget != null ? singleWidget.widget : null;
+    }
 
-        return widget.widget;
+    protected void removeChildrenWidget(SizedFlexPanel panel, int i, int containerIndex) {
+        ComponentViewWidget widget = getChildView(i);
+
+        widget.remove(panel, containerIndex);
     }
 
     protected abstract void addImpl(int index);
     protected abstract Widget wrapBorderImpl(int index);
-    protected abstract void removeImpl(int index, GComponent child);
+    protected abstract void removeImpl(int index);
     public abstract Widget getView();
 }

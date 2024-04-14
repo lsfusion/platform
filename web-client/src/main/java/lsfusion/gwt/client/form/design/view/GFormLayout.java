@@ -32,7 +32,7 @@ public class GFormLayout extends ResizableComplexPanel {
 
     private final NativeSIDMap<GContainer, GAbstractContainerView> containerViews = new NativeSIDMap<>();
     private final NativeSIDMap<GContainer, Widget> containerCaptions = new NativeSIDMap<>();
-    private final Map<GComponent, Widget> baseComponentViews = new HashMap<>();
+    private final Map<GComponent, ComponentViewWidget> baseComponentViews = new HashMap<>();
 
     private final ArrayList<GComponent> defaultComponents = new ArrayList<>();
     private final ArrayList<DefaultFocusReceiver> defaultFocusReceivers = new ArrayList<>();
@@ -192,21 +192,21 @@ public class GFormLayout extends ResizableComplexPanel {
     }
     public void addBaseComponent(GComponent component, ComponentWidget view, DefaultFocusReceiver focusReceiver) {
         assert !(component instanceof GContainer);
-        baseComponentViews.put(component, view.getWidget());
+        baseComponentViews.put(component, view.widget);
         add(component, view, focusReceiver);
     }
 
     public void setShowIfVisible(GComponent component, boolean visible) {
-        Widget widget = baseComponentViews.get(component);
+        ComponentViewWidget widget = baseComponentViews.get(component);
         if(widget != null) {
-            GwtClientUtils.setShowIfVisible(widget, visible);
+            widget.setShowIfVisible(visible);
         }
     }
 
     public void setElementClass(GComponent component, String elementClass) {
         component.elementClass = elementClass;
 
-        Widget widget = containerViews.get(component.container).getChildView(component);
+        Widget widget = containerViews.get(component.container).getChildWidget(component);
         if(widget != null) // if the component is a base component it can be hidden, but the class can be changed anyway (however elementClass will be changed and it will be used when adding view)
             updateComponentClass(elementClass, widget, BaseImage.emptyPostfix);
         else
@@ -237,7 +237,7 @@ public class GFormLayout extends ResizableComplexPanel {
     public void add(GComponent key, ComponentWidget view, DefaultFocusReceiver focusReceiver) {
         // debug info
         if (key.sID != null)
-            GFormLayout.setDebugInfo(view.getWidget(), key.sID);
+            view.widget.setDebugInfo(key.sID);
 
         GAbstractContainerView containerView;
         if(key.container != null && (containerView = containerViews.get(key.container)) != null) { // container can be null when component should be layouted manually, containerView can be null when it is removed 
@@ -319,7 +319,7 @@ public class GFormLayout extends ResizableComplexPanel {
             if (child instanceof GContainer)
                 childVisible = updateContainersVisibility((GContainer) child, requestIndex);
             else {
-                Widget childView = baseComponentViews.get(child); // we have to use baseComponentView (and not a wrapper in getChildView), since it has relevant visible state
+                ComponentViewWidget childView = baseComponentViews.get(child); // we have to use baseComponentView (and not a wrapper in getChildView), since it has relevant visible state
                 childVisible = childView != null && childView.isVisible();
 
                 if (child instanceof GGrid) {

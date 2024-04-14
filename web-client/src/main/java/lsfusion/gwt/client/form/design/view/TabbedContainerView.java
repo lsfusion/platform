@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.design.view;
 
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
@@ -9,8 +10,6 @@ import lsfusion.gwt.client.form.design.GFormComponent;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 
 import java.util.ArrayList;
-
-import static lsfusion.gwt.client.base.GwtSharedUtils.relativePosition;
 
 public class TabbedContainerView extends GAbstractContainerView {
 
@@ -81,11 +80,10 @@ public class TabbedContainerView extends GAbstractContainerView {
     }
 
     @Override
-    protected void removeImpl(int index, GComponent child) {
-        int visibleIndex = visibleChildren.indexOf(child);
+    protected void removeImpl(int index) {
+        int visibleIndex = visibleChildren.indexOf(children.get(index));
         if (visibleIndex != -1) {
-            panel.removeTab(visibleIndex);
-            visibleChildren.remove(visibleIndex);
+            removeTab(visibleIndex);
         }
     }
 
@@ -101,21 +99,27 @@ public class TabbedContainerView extends GAbstractContainerView {
 
             int index = visibleChildren.indexOf(child);
             if (childrenVisible[i]) {
-                if (index == -1) {
-                    index = relativePosition(child, children, visibleChildren);
-                    visibleChildren.add(index, child);
-                    final int fi = i;
-
-                    panel.insertTab(childrenCaptions.get(i).widget.widget, index, (beforeIndex) -> addChildrenWidget(panel, fi, beforeIndex));
-                }
+                if (index == -1)
+                    insertTab(child, i);
             } else if (index != -1) {
-                visibleChildren.remove(index);
-                panel.removeTab(index);
+                removeTab(index);
             }
         }
         ensureTabSelection();
 
         super.updateLayout(requestIndex, childrenVisible);
+    }
+
+    private void insertTab(GComponent child, int i) {
+        int index = GwtSharedUtils.relativePosition(child, children, visibleChildren);
+        visibleChildren.add(index, child);
+        // just like in grid it's not clear how to manage inline elements, so we'll just assert that there are no such elements in the tabbed container
+        panel.insertTab(childrenCaptions.get(i).widget.widget, index, beforeIndex -> addChildrenWidget(panel, i, beforeIndex));
+    }
+
+    private void removeTab(int visibleIndex) {
+        visibleChildren.remove(visibleIndex);
+        panel.removeTab(visibleIndex, index -> removeChildrenWidget(panel, visibleIndex, index));
     }
 
     private void ensureTabSelection() {

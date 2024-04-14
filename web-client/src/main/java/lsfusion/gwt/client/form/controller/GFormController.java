@@ -697,7 +697,7 @@ public class GFormController implements EditManager {
     private void setContainerExtCollapsed(GContainer container, boolean collapsed) {
         if (container.container != null) {
             GAbstractContainerView parentContainerView = formLayout.getContainerView(container.container);
-            Widget childWidget = parentContainerView.getChildView(container);
+            Widget childWidget = parentContainerView.getChildWidget(container);
             if (childWidget instanceof CollapsiblePanel) {
                 ((CollapsiblePanel) childWidget).setCollapsed(collapsed);
             }

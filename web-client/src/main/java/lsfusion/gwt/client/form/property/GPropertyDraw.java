@@ -76,6 +76,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public String columnsName;
     public ArrayList<GGroupObject> columnGroupObjects;
 
+    public Boolean inline;
+
     public boolean isList;
 
     public GType getCellType() {
@@ -894,7 +896,19 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     @Override
     public boolean isDefautAlignCaption() {
-        return caption != null && !hasColumnGroupObjects() && (!isAction() && (!panelCaptionVertical && !isPanelBoolean()) || isTab());
+        return caption != null && !hasColumnGroupObjects() && ((!isAction() && !panelCaptionVertical && !isPanelBoolean()) || isTab());
+    }
+
+    public boolean isInline() {
+        // not supported yet
+        // also there is an alignCaptions check, but it's done above
+        if(hasColumnGroupObjects() || isTab())
+            return false;
+
+        if(inline != null)
+            return inline;
+
+        return isInCustom();
     }
 
     // should match PropertyDrawEntity.isPredefinedImage

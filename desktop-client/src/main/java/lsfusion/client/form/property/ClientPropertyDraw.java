@@ -87,6 +87,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public ClientPropertyDraw quickFilterProperty;
 
+    public Boolean inline;
+
     public boolean isList;
 
     public ClientType baseType; // cellType
@@ -604,6 +606,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         drawAsync = inStream.readBoolean();
 
+        inline = pool.readObject(inStream);
         isList = inStream.readBoolean();
 
         focusable = pool.readObject(inStream);

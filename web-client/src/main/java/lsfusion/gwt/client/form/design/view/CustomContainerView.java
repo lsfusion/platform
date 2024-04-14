@@ -1,10 +1,8 @@
 package lsfusion.gwt.client.form.design.view;
 
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.flex.LayoutContainerView;
 
@@ -13,27 +11,31 @@ public class CustomContainerView extends LayoutContainerView {
     private final ResizableComplexPanel panel;
     private String currentCustomDesign = "";
 
+    private final boolean simpleCustom;
+
     public CustomContainerView(GFormController formController, GContainer container) {
         super(container, formController);
+        simpleCustom = "".equals(container.getCustomDesign());
         panel = new ResizableComplexPanel();
+        panel.addStyleName("panel-custom");
     }
 
     protected void addImpl(int index) {
-        formController.getFormLayout().attachContainer.add(childrenViews.get(index).widget);
+        ComponentViewWidget childView = getCustomChildView(index);
+        if(simpleCustom)
+            childView.add(panel, getChildPosition(index));
+        else // in theory can be attached to the panel
+            childView.attach(formController.getFormLayout().attachContainer);
     }
 
     @Override
     public void updateLayout(long requestIndex, boolean[] childrenVisible) {
-        if (!currentCustomDesign.equals(container.getCustomDesign())) {
+        if (!simpleCustom && !currentCustomDesign.equals(container.getCustomDesign())) {
             currentCustomDesign = container.getCustomDesign();
 
-            Element panelElement = panel.getElement();
-            panelElement.setInnerHTML(getTagCustomDesign(container.getCustomDesign()));
-            for (GComponent child : children) {
-                Element panelChild = panelElement.getElementsByTagName(child.sID).getItem(0);
-                if (panelChild != null)
-                    panelChild.getParentElement().replaceChild(getChildView(child).getElement(), panelChild);
-            }
+            panel.getElement().setInnerHTML(getTagCustomDesign(container.getCustomDesign()));
+            for (int i = 0, childrenSize = children.size(); i < childrenSize; i++)
+                getCustomChildView(i).replace(panel, children.get(i).sID);
         }
         super.updateLayout(requestIndex, childrenVisible);
     }
@@ -58,8 +60,16 @@ public class CustomContainerView extends LayoutContainerView {
     }
 
     @Override
-    protected void removeImpl(int index, GComponent child) {
-        panel.remove(getChildView(child));
+    protected void removeImpl(int index) {
+        ComponentViewWidget childView = getCustomChildView(index);
+        if(simpleCustom)
+            childView.remove(panel, getChildPosition(index));
+        else // really odd method / behaviour (because something else should happen, but not sure what exactly)
+            childView.remove(panel);
+    }
+
+    private ComponentViewWidget getCustomChildView(int index) {
+        return getChildView(index);
     }
 
     @Override

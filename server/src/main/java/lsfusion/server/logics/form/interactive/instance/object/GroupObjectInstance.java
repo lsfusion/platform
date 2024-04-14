@@ -1105,13 +1105,6 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                     updateFilters = true;
                     break;
                 }
-        // we don't need this anymore since filters now include class property
-//        if (!updateFilters) // классы удалились\добавились
-//            for (ObjectInstance object : objects)
-//                if (object.classChanged(changedProps.result)) {  // || object.classUpdated() сомнительный or
-//                    updateFilters = true;
-//                    break;
-//                }
 
         if(updateFilters)
             updateFilterProperty(true, modifier, environmentIncrement, changedProps, reallyChanged);

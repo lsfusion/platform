@@ -6,7 +6,6 @@ import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.CaptionWidget;
 
@@ -96,7 +95,7 @@ public class LinearContainerView extends LayoutContainerView {
     }
 
     @Override
-    protected void removeImpl(int index, GComponent child) {
+    protected void removeImpl(int index) {
         if(isSingleLine())
             removeChildrenView(index, 0);
         else { // collections are not yet updated
@@ -133,7 +132,10 @@ public class LinearContainerView extends LayoutContainerView {
         SizedFlexPanel container;
         if(isSingleLine()) {
             container = panel;
-            containerIndex = index;
+            if(!grid) { // in this case there probably can be "inlined" (multi count) components so we should count them, so it's a sort of optimization
+                containerIndex = getChildPosition(index);
+            } else
+                containerIndex = index;
         } else {
             int lineIndex = index % linesCount;
             container = lines[lineIndex];
@@ -151,8 +153,10 @@ public class LinearContainerView extends LayoutContainerView {
         Widget widget = addChildrenWidget(container, index, containerIndex);
 
         int span = 1;
-        if(grid)
+        if(grid) {
+            assert container.isGrid();
             span = children.get(index).getSpan();
+        }
 
         if(alignCaptions) {
             assert container.isGrid();
@@ -188,7 +192,7 @@ public class LinearContainerView extends LayoutContainerView {
             if(children.get(index).isAlignCaption() && childrenCaptions.get(index) != null)
                 container.removeSized(containerIndex);
 
-        container.removeSized(containerIndex);
+        removeChildrenWidget(container, index, containerIndex);
     }
 
     @Override

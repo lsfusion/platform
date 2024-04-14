@@ -337,6 +337,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
             propertyDraw.bindingEvents.add(convertBinding(clientPropertyDraw.changeMouse, clientPropertyDraw.changeMousePriority));
         propertyDraw.showChangeMouse = clientPropertyDraw.showChangeMouse;
 
+        propertyDraw.inline = clientPropertyDraw.inline;
         propertyDraw.isList = clientPropertyDraw.isList;
 
         propertyDraw.drawAsync = clientPropertyDraw.drawAsync;

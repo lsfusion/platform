@@ -371,7 +371,7 @@ public class ContainerView extends ComponentView {
 
     public void setPropertyCustomDesign(PropertyObjectEntity<?> propertyCustomDesign) {
         this.propertyCustomDesign = propertyCustomDesign;
-        this.customDesign = "";
+        this.customDesign = "<div/>"; // now empty means "simple"
     }
 
     public void setCustomDesign(String customDesign) {

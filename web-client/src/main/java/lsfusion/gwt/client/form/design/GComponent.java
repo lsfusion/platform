@@ -85,6 +85,10 @@ public class GComponent implements Serializable {
         return container != null && container.tabbed;
     }
 
+    public boolean isInCustom() {
+        return container != null && container.isCustomDesign();
+    }
+
     public boolean isFlex() {
         return flex > 0;
     }

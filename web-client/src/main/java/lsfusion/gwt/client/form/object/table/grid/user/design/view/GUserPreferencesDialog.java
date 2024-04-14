@@ -72,7 +72,7 @@ public abstract class GUserPreferencesDialog extends DialogModalWindow {
 
         FlexPanel columnCaptionPanel = new FlexPanel();
         Label columnCaptionLabel = createLabel(messages.formGridPreferencesColumnCaption());
-        columnCaptionPanel.add(columnCaptionLabel, GFlexAlignment.CENTER);
+        columnCaptionPanel.addCentered(columnCaptionLabel);
         columnCaptionPanel.add(columnCaptionBox);
 
         // column pattern settings

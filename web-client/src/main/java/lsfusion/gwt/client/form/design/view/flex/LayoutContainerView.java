@@ -29,7 +29,7 @@ public abstract class LayoutContainerView extends GAbstractContainerView {
         for (int i = 0, size = children.size(); i < size; i++) {
             GComponent child = children.get(i);
             if (child instanceof GContainer) // optimization
-                childrenViews.get(i).widget.setVisible(childrenVisible[i]);
+                getChildView(i).setVisible(childrenVisible[i]);
         }
 
         super.updateLayout(requestIndex, childrenVisible);

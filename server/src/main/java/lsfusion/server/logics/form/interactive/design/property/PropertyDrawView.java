@@ -99,6 +99,8 @@ public class PropertyDrawView extends BaseComponentView {
 
     public boolean drawAsync = false;
 
+    public Boolean inline;
+
     public Boolean focusable;
 
     public boolean panelCaptionVertical = false;
@@ -473,6 +475,7 @@ public class PropertyDrawView extends BaseComponentView {
 
         outStream.writeBoolean(drawAsync);
 
+        pool.writeObject(outStream, inline);
         outStream.writeBoolean(entity.isList(pool.context));
 
         pool.writeObject(outStream, focusable);
