@@ -242,7 +242,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public boolean isReadOnly() {
-        return editType == PropertyEditType.READONLY;
+        return editType == PropertyEditType.READONLY || editType == PropertyEditType.DISABLE;
     }
 
     public ClientGroupObject getGroupObject() {

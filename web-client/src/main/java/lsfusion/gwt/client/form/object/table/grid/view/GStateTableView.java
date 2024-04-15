@@ -556,7 +556,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     }
 
     protected boolean isReadOnly(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey, boolean rendered) {
-        if(property.isReadOnly())
+        if(property.isReadOnly() != null)
             return true;
 
         // when result is rendered, it's important to have property pending change mechanism to cancel changes when server ignores this changes

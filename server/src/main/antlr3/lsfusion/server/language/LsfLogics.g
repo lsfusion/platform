@@ -5733,6 +5733,7 @@ flexAlignmentLiteral returns [FlexAlignment val]
 propertyEditTypeLiteral returns [PropertyEditType val]
 	:	'CHANGEABLE' { $val = PropertyEditType.EDITABLE; }
 	|	'READONLY' { $val = PropertyEditType.READONLY; }
+	|	'DISABLE' { $val = PropertyEditType.DISABLE; }
 	;
 
 emailRecipientTypeLiteral returns [Message.RecipientType val]

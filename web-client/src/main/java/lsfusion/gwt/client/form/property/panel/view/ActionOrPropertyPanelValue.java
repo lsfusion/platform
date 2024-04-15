@@ -39,8 +39,9 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
 
     @Override
     public Boolean isPropertyReadOnly() {
-        if(property.isReadOnly())
-            return false;
+        Boolean readonly = property.isReadOnly();
+        if(readonly != null)
+            return readonly;
         return super.isPropertyReadOnly();
     }
 

@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.property;
 
+import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.Style;
@@ -719,12 +720,12 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return nativeSID;
     }
 
-    public boolean isReadOnly() {
-        return editType == GPropertyEditType.READONLY;
+    public Boolean isReadOnly() {
+        return editType == GPropertyEditType.EDITABLE ? null : editType == GPropertyEditType.DISABLE;
     }
 
     public boolean isEditableNotNull() {
-        return notNull && !isReadOnly();
+        return notNull && isReadOnly() == null;
     }
 
     public boolean isTagInput() {
