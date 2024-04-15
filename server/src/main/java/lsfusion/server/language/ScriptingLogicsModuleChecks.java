@@ -18,6 +18,9 @@ import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.flow.ListCaseAction;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.DataClass;
+import lsfusion.server.logics.classes.data.StringClass;
+import lsfusion.server.logics.classes.data.TSQueryClass;
+import lsfusion.server.logics.classes.data.TSVectorClass;
 import lsfusion.server.logics.classes.data.file.AJSONClass;
 import lsfusion.server.logics.classes.data.file.FileClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
@@ -688,12 +691,42 @@ public class ScriptingLogicsModuleChecks {
 
     public void checkRoundType(LPWithParams prop, LPWithParams scaleProp) throws ScriptingErrorLog.SemanticErrorException {
         Type type = prop.getLP().property.getType();
-        if (type != null && !(prop.getLP().property.getType() instanceof IntegralClass)) {
+        if (type != null && !(type instanceof IntegralClass)) {
             errLog.emitRoundTypeError(parser);
         }
         Type scaleType = scaleProp != null ? scaleProp.getLP().property.getType() : null;
         if (scaleType != null && !(scaleType instanceof IntegerClass)) {
             errLog.emitRoundScaleTypeError(parser);
+        }
+    }
+
+    public void checkMatchLikeType(boolean match, LPWithParams leftProp, LPWithParams rightProp) throws ScriptingErrorLog.SemanticErrorException {
+        if(match) {
+            checkMatchType(leftProp, false);
+            checkMatchType(rightProp, true);
+        } else {
+            checkLikeType(leftProp, false);
+            checkLikeType(rightProp, true);
+        }
+    }
+
+    private void checkMatchType(LPWithParams prop, boolean right) throws ScriptingErrorLog.SemanticErrorException {
+        LP<?> lp = prop.getLP();
+        if (lp != null) {
+            Type type = lp.property.getType();
+            if (!(type instanceof StringClass || type instanceof TSQueryClass || type instanceof TSVectorClass)) {
+                errLog.emitMatchTypeError(parser, right);
+            }
+        }
+    }
+
+    private void checkLikeType(LPWithParams prop, boolean right) throws ScriptingErrorLog.SemanticErrorException {
+        LP<?> lp = prop.getLP();
+        if (lp != null) {
+            Type type = lp.property.getType();
+            if (!(type instanceof StringClass)) {
+                errLog.emitLikeTypeError(parser, right);
+            }
         }
     }
 }

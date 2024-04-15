@@ -673,6 +673,14 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "ROUND scale param should be INTEGER");
     }
 
+    public void emitMatchTypeError(ScriptParser parser, boolean right) throws SemanticErrorException {
+        emitSimpleError(parser, "MATCH" + " " + (right ? "right" : "left") + " param should be string, tsquery or tsvector");
+    }
+
+    public void emitLikeTypeError(ScriptParser parser, boolean right) throws SemanticErrorException {
+        emitSimpleError(parser, "LIKE " + (right ? "right" : "left") + " param should be string");
+    }
+
     public void emitSimpleError(ScriptParser parser, String message) throws SemanticErrorException {
         if (parser.getCurrentParser() != null) {
             SemanticErrorException e = new SemanticErrorException(parser.getCurrentParser().input);

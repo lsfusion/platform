@@ -1738,6 +1738,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedLikeProp(boolean match, LPWithParams leftProp, LPWithParams rightProp) throws ScriptingErrorLog.SemanticErrorException {
+        checks.checkMatchLikeType(match, leftProp, rightProp);
         return addScriptedJProp(match ? baseLM.match2 : baseLM.like2, asList(leftProp, rightProp));
     }
 
