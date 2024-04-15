@@ -10,10 +10,7 @@ import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.view.CopyPasteUtils;
-import lsfusion.gwt.client.base.view.DialogModalWindow;
-import lsfusion.gwt.client.base.view.FormButton;
-import lsfusion.gwt.client.base.view.ResizableComplexPanel;
+import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 
 import static lsfusion.gwt.client.base.GwtSharedUtils.isRedundantString;
@@ -89,14 +86,14 @@ public class ErrorDialog extends DialogModalWindow {
     }
 
     @Override
-    public void show(Widget popupOwnerWidget) {
-        super.show(popupOwnerWidget);
+    public void show(PopupOwner popupOwner) {
+        super.show(popupOwner);
 
         closeButton.setFocus(true);
     }
 
-    public static void show(String caption, String message, String javaStack, String lsfStack, Widget popupOwnerWidget) {
-        new ErrorDialog(caption, message, javaStack, lsfStack).show(popupOwnerWidget);
+    public static void show(String caption, String message, String javaStack, String lsfStack, PopupOwner popupOwner) {
+        new ErrorDialog(caption, message, javaStack, lsfStack).show(popupOwner);
     }
 
     @Override

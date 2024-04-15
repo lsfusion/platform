@@ -15,7 +15,7 @@ public interface UpdateContext {
     default void changeProperty(PValue result, GFormController.ChangedRenderValueSupplier renderValueSupplier) {}
 
     GFormController getForm();
-    default boolean previewEvent(Element element, Event event) { return getForm().previewEvent(event, element); }
+    default boolean previewEvent(Element element, Event event) { return getForm().previewCustomEvent(event, element); }
 
     default Boolean isPropertyReadOnly() { return false; }
 

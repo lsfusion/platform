@@ -5,6 +5,7 @@ import com.google.gwt.dom.client.*;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.view.ColorUtils;
+import lsfusion.gwt.client.base.view.PopupOwner;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.event.GKeyStroke;
@@ -392,7 +393,7 @@ public abstract class CellRenderer {
                 renderedState.valueTooltip = valueTooltip;
                 JavaScriptObject valueTippy;
                 if (isNew) {
-                    valueTippy = TooltipManager.initTooltip(updateContext.getPopupOwnerWidget(), InputBasedCellRenderer.getMainElement(element), valueTooltipHelper);
+                    valueTippy = TooltipManager.initTooltip(new PopupOwner(updateContext.getPopupOwnerWidget(), InputBasedCellRenderer.getMainElement(element)), valueTooltipHelper);
                     element.setPropertyObject("valueTippy", valueTippy);
                 } else {
                     valueTippy = (JavaScriptObject) element.getPropertyObject("valueTippy");

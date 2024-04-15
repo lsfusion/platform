@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -142,8 +143,6 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
         // INITIALIZING FOOTERS
         footerBuilder = new DefaultHeaderBuilder<>(this, true);
-
-        initSinkEvents(tableContainer);
 
         MainFrame.addColorThemeChangeListener(this);
     }
@@ -251,11 +250,37 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     private static Set<String> getBrowserFocusEvents() {
         if(browserFocusEvents == null) {
             Set<String> eventTypes = new HashSet<>();
-            eventTypes.add(BrowserEvents.FOCUS);
+            eventTypes.add(BrowserEvents.FOCUSIN);
+            eventTypes.add(BrowserEvents.FOCUSOUT);
             eventTypes.add(BrowserEvents.BLUR);
+            eventTypes.add(BrowserEvents.FOCUS);
             browserFocusEvents = eventTypes;
         }
         return browserFocusEvents;
+    }
+
+//    public static final String FOCUSEVENT = BrowserEvents.FOCUSIN; // BrowserEvents.FOCUS;
+//    public static final String BLUREVENT = BrowserEvents.FOCUSOUT; // BrowserEvents.BLUR;
+    public static final String FOCUSIN = BrowserEvents.FOCUSIN;
+    public static final String FOCUSOUT = BrowserEvents.FOCUSOUT;
+    // here it might be a problem because the editor can be "inside" of the element that handles focusout, so someone between editor and outside element (for example that element (grid)) can get focus and that won't trigger focus out
+    public static final String FOCUSCHANGEIN = BrowserEvents.FOCUS;
+    public static final String FOCUSCHANGEOUT = BrowserEvents.BLUR;
+    // needed for some "system" features, like getting last blurred + switching to another window
+    public static final String FOCUSPREVIEWIN = BrowserEvents.FOCUS;
+    public static final String FOCUSPREVIEWOUT = BrowserEvents.BLUR;
+
+    private static Set<String> nonBubblingEvents;
+    private static Set<String> getNonBubblingEvents() {
+        if(nonBubblingEvents == null) {
+            Set<String> eventTypes = new HashSet<>();
+            eventTypes.add(BrowserEvents.FOCUS);
+            eventTypes.add(BrowserEvents.BLUR);
+            eventTypes.add(BrowserEvents.LOAD);
+            eventTypes.add(BrowserEvents.ERROR);
+            nonBubblingEvents = eventTypes;
+        }
+        return nonBubblingEvents;
     }
 
     private static Set<String> browserMouseEvents;
@@ -335,25 +360,6 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         CellBasedWidgetImpl.get().sinkEvents(widget, getBrowserDragDropEvents());
     }
 
-    public static Element getBrowserTargetAndCheck(Element element, Event event) {
-        if (FocusUtils.propagateFocusEvent(element, event))
-            return null;
-
-        return getTargetAndCheck(element, event);
-    }
-
-    public static Element getTargetAndCheck(Element element, Event event) {
-        EventTarget eventTarget = event.getEventTarget();
-        //it seems that now all this is not needed
-//        if (!Element.is(eventTarget)) {
-//            return null;
-//        }
-        Element target = Element.as(eventTarget);
-//        if (!element.isOrHasChild(target)) {
-//            return null;
-//        }
-        return target;
-    }
     public static boolean isMouseEvent(Event event) {
         String eventType = event.getType();
         return getBrowserMouseEvents().contains(eventType);
@@ -364,9 +370,41 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
                 getBrowserDragDropEvents().contains(eventType) ||
                 checkSinkGlobalEvents(event);
     }
+    public static boolean checkNonBubblingEvents(Event event) {
+        String eventType = event.getType();
+        return getNonBubblingEvents().contains(eventType);
+    }
     public static boolean checkSinkFocusEvents(Event event) {
         String eventType = event.getType();
         return getBrowserFocusEvents().contains(eventType);
+    }
+
+    public static void dispatchFocusAndCheckSinkEvents(EventHandler eventHandler, Element target, Element element, BiConsumer<Element, EventHandler> onFocus, BiConsumer<Element, EventHandler> onBlur) {
+        Event event = eventHandler.event;
+        String eventType = event.getType();
+        boolean consume = false;
+        // when element is null we want only dispatching
+        // when it is not null, there is an assertion that it is focusable (has tabIndex)
+        if (FOCUSIN.equals(eventType)) {
+            onFocus.accept(target, eventHandler);
+        } else if(FOCUSOUT.equals(eventType)) {
+            if(element == null || !FocusUtils.isFakeBlur(event, element))
+                onBlur.accept(target, eventHandler);
+            else // it's a fake focus out, but we let FOCUSCHANGE through
+                consume = true;
+        } else if(element != null) {
+            if (FOCUSCHANGEOUT.equals(eventType)) {
+                if (!FocusUtils.isFakeBlur(event, element)) // in that case we rely on FOCUSOUT
+                    consume = true;
+            } else if (FOCUSCHANGEIN.equals(eventType)) { // we rely on FOCUSIN
+                consume = true;
+            } else if (!DataGrid.checkSinkEvents(event)) {
+//            assert false; // actually only initFocus and initSinkEvents should be called
+                consume = true;
+            }
+        }
+        if(consume)
+            eventHandler.consume(true, true);
     }
     public static boolean checkSinkGlobalEvents(Event event) {
         return getBrowserKeyEvents().contains(event.getType()) || event.getTypeInt() == Event.ONPASTE || event.getType().equals(BrowserEvents.CONTEXTMENU) || event.getType().equals(BrowserEvents.CHANGE);
@@ -396,32 +434,18 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
     protected abstract ArrayList<T> getRows();
 
-    public final void onBrowserEvent(Event event) {
-        Element target = getTargetAndCheck(getElement(), event);
-        if(target == null)
-            return;
-        if(!previewEvent(target, event))
-            return;
-
-        // here grid handles somewhy other than sink events, so will check it after super
-        if(!checkSinkEvents(event))
-            return;
-
-        onGridBrowserEvent(target, event);
-    }
-
-    public void onGridBrowserEvent(Element target, Event event) {
-        // moved to GridContainerPanel
-//        String eventType = event.getType();
-//        if (BrowserEvents.FOCUS.equals(eventType))
-//            onFocus();
-//        else if (BrowserEvents.BLUR.equals(eventType))
-//            onBlur(event);
+    public final void onBrowserEvent(Element target, EventHandler eventHandler) {
+        Event event = eventHandler.event;
         // Ignore spurious events (such as onblur) while we refresh the table.
         if (isResolvingState) {
-            assert BrowserEvents.BLUR.equals(event.getType());
+            assert DataGrid.FOCUSOUT.equals(event.getType()) || DataGrid.FOCUSCHANGEOUT.equals(event.getType());
             return;
         }
+
+        // with that inner propagation scheme we need only dispatching (otherwise this FOCUSOUT / FOCUSCHANGEOUT will become inconsistent)
+        DataGrid.dispatchFocusAndCheckSinkEvents(eventHandler, target, null, this::onFocus, this::onBlur);
+        if(eventHandler.consumed)
+            return;
 
         // Find the cell where the event occurred.
         TableSectionElement tbody = getTableBodyElement();
@@ -510,14 +534,14 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
                 } catch (IndexOutOfBoundsException e) {
                     throw new RuntimeException("INCORRECT ROW " + row + " " + event.getType() + " " + (this instanceof GTreeTable) + " " + target + " " + (target == getTableDataFocusElement()) + " " + getGridInfo() + " " + (rowIndexHolder == null ? "null" : getRows().indexOf(rowIndexHolder)) + " " + getRows().size() + " " + RootPanel.getBodyElement().isOrHasChild(target));
                 }
-                onBrowserEvent(new Cell(row, getColumnIndex(column), column, rowValue), event, column, columnParent);
+                onBrowserEvent(new Cell(row, getColumnIndex(column), column, rowValue), eventHandler, column, columnParent);
             }
         }
     }
 
     protected abstract String getGridInfo();
 
-    public abstract <C> void onBrowserEvent(Cell cell, Event event, Column<T, C> column, TableCellElement parent);
+    public abstract <C> void onBrowserEvent(Cell cell, EventHandler eventHandler, Column<T, C> column, TableCellElement parent);
 
     /**
      * Checks that the row is within bounds of the view.
@@ -938,24 +962,23 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         return tableWidget.headerElement;
     }
 
-    protected abstract boolean previewEvent(Element target, Event event);
-
-    public void onFocus(Element target, Event focusEvent) {
+    public void onFocus(Element target, EventHandler eventHandler) {
         if(isFocused)
             return;
-        DataGrid.sinkPasteEvent(getTableDataFocusElement());
-
         isFocused = true;
-        focusedChanged(target, focusEvent);
+
+        DataGrid.sinkPasteEvent(getTableDataFocusElement());
+        focusedChanged(target, eventHandler.event);
     }
 
-    public void onBlur(Element target, Event event) {
-        if(!isFocused || FocusUtils.isFakeBlur(event, getElement()))
+    public void onBlur(Element target, EventHandler eventHandler) {
+        if(!isFocused)
             return;
+
         //if !isFocused should be replaced to assert; isFocused must be true, but sometimes is not (related to BusyDialogDisplayer)
         //assert isFocused;
         isFocused = false;
-        focusedChanged(target, event);
+        focusedChanged(target, eventHandler.event);
     }
 
     public Element getTableDataFocusElement() {

@@ -1,10 +1,9 @@
 package lsfusion.gwt.client.form.controller;
 
-import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.view.PopupOwner;
+import lsfusion.gwt.client.controller.remote.action.PriorityErrorHandlingCallback;
 import lsfusion.gwt.client.controller.remote.action.RequestCountingErrorHandlingCallback;
 import lsfusion.gwt.client.form.controller.dispatch.ExceptionResult;
-
-import static lsfusion.gwt.client.controller.remote.action.PriorityErrorHandlingCallback.showErrorMessage;
 
 public abstract class SimpleRequestCallback<T> extends RequestCountingErrorHandlingCallback<T> {
 
@@ -20,8 +19,8 @@ public abstract class SimpleRequestCallback<T> extends RequestCountingErrorHandl
 
     @Override
     public void onFailure(ExceptionResult exceptionResult) {
-        showErrorMessage(exceptionResult.throwable, getPopupOwnerWidget());
+        PriorityErrorHandlingCallback.showErrorMessage(exceptionResult.throwable, getPopupOwner());
     }
 
-    public abstract Widget getPopupOwnerWidget();
+    public abstract PopupOwner getPopupOwner();
 }

@@ -4,6 +4,7 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.FormButton;
+import lsfusion.gwt.client.base.view.PopupOwner;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GContainer;
 
@@ -18,7 +19,7 @@ public class PopupButton extends FormButton {
     }
 
     public void setContent(GContainer container, Widget widget) {
-        GwtClientUtils.initTippyPopup(this, getElement(), widget.getElement(), "click",
+        GwtClientUtils.initTippyPopup(new PopupOwner(this), widget.getElement(), "click",
                 () -> formController.setContainerCollapsed(container, true),
                 () -> formController.setContainerCollapsed(container, false),
                 null);

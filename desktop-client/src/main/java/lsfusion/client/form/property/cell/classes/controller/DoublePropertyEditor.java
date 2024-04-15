@@ -115,6 +115,8 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
             }
         }
 
+
+        //we catch 'backspace' and 'delete' but not 'del', so 'del' is not handled correctly
         ActionMap actionMap = getActionMap();
         actionMap.put("delete-previous", new MoveCaretAction(actionMap.get("delete-previous"), hasMask, false));
         actionMap.put("delete-next", new MoveCaretAction(actionMap.get("delete-next"), hasMask, true));
@@ -136,12 +138,12 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
         public void actionPerformed(ActionEvent e) {
             if (hasMask) {
                 //проверяем, не справа(backspace)/слева(delete) ли мы от decimalSeparator. Если да, смещаемся влево(backspace)/вправо(delete) и игнорируем событие
-                //иначе событие происходит и делаем проверку снова, чтобы перепрыгнуть через decimalSeparator.
+                //иначе событие происходит
                 if (!moveCaret()) {
                     if (defaultAction != null) {
                         defaultAction.actionPerformed(e);
                     }
-                    moveCaret();
+                    moveCaretAfterZero();
                 }
             } else {
                 //проверяем, не пытаемся ли мы удалить decimalSeparator. Если да, то проверяем, не наступит ли в результате удаления переполнения.
@@ -181,6 +183,12 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
                 }
             }
             return false;
+        }
+
+        //if after deleting a character the value of the integer part is "0" and the cursor is in front of "0", move it to the right.
+        private void moveCaretAfterZero() {
+            if (leftIsZero(getText()) && getCaretPosition() == 0)
+                setCaret(1);
         }
     }
 
@@ -231,10 +239,26 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
             if (text != null && getSelectedText().equals(text) && text.startsWith("-") && hasMask)
                 moveCaretBack = true;
         }
-        if(!ignore)
+        if(!ignore) {
+            //after replacing zero with another digit, the cursor moves over the separator, move it to the left
+            boolean prevLeftIsZero = leftIsZero(getText()) && getCaretPosition() == 1 && hasMask;
+            if(prevLeftIsZero)
+                moveCaretBack = true;
             super.replaceSelection(content);
+        }
         if(moveCaretBack && !isMinusZeroText(getText(), separator))
             setCaret(getCaretPosition() - 1);
+    }
+
+    private boolean leftIsZero(String text) {
+        if(text != null) {
+            int separatorPosition = text.indexOf(df.getDecimalFormatSymbols().getDecimalSeparator());
+            if (separatorPosition >= 0) {
+                String left = text.substring(0, separatorPosition).replace(String.valueOf(df.getDecimalFormatSymbols().getGroupingSeparator()), "");
+                return left.equals("0");
+            }
+        }
+        return false;
     }
 
     private void setSingleSelection(int start) {

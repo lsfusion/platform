@@ -29,11 +29,6 @@ public final class FormDockable extends WidgetForm {
         return GModalityWindowFormType.DOCKED;
     }
 
-    @Override
-    public Element getFocusedElement() {
-        return contentWidget.getElement();
-    }
-
     Result<JavaScriptObject> popup = new Result<>();
     public FormDockable(FormsController formsController, GFormController contextForm, String canonicalName, boolean async, Event editEvent) {
         super(formsController, contextForm, async, editEvent, GFormLayout.createTabCaptionWidget());

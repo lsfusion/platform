@@ -1,10 +1,11 @@
 package lsfusion.gwt.client.form.object.table;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.MouseWheelHandler;
 import com.google.gwt.event.dom.client.ScrollHandler;
 import com.google.gwt.event.dom.client.TouchMoveHandler;
-import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.view.EventHandler;
 
 public interface TableComponent {
     Widget getWidget();
@@ -24,5 +25,5 @@ public interface TableComponent {
     default void onTableContainerLoad() {}
     default void onTableContainerUnload() {}
     default void onResize() {}
-    default void onBrowserEvent(Event event) {}
+    void onBrowserEvent(Element target, EventHandler event);
 }

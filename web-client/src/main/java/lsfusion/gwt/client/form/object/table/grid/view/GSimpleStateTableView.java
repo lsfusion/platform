@@ -13,7 +13,6 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.ImageHtmlOrTextType;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.EventHandler;
-import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.classes.data.*;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -48,49 +47,31 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import static lsfusion.gwt.client.base.view.grid.DataGrid.initSinkEvents;
-
 public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
     protected final JavaScriptObject controller;
-    private final TableContainer tableContainer;
 
     public GSimpleStateTableView(GFormController form, GGridController grid, TableContainer tableContainer) {
-        super(form, grid);
+        super(form, grid, tableContainer);
 
         Element drawElement = getDrawElement();
         this.controller = getController(drawElement);
-        this.tableContainer = tableContainer;
         GwtClientUtils.setZeroZIndex(drawElement);
-
-        initSinkEvents(this);
     }
 
     @Override
-    public void onBrowserEvent(Event event) {
-        Element target = DataGrid.getTargetAndCheck(getElement(), event);
-        if(target == null || (popupObject != null && getPopupElement().isOrHasChild(target))) // if there is a popupElement we'll consider it not to be part of this view (otherwise on mouse change event focusElement.focus works, and popup panel elements looses focus)
-            return;
-        if(!form.previewEvent(target, event))
-            return;
-
-        super.onBrowserEvent(event);
-
-        if(!DataGrid.checkSinkEvents(event))
-            return;
+    public void onBrowserEvent(Element target, EventHandler eventHandler) {
+//        if((popupObject != null && getPopupElement().isOrHasChild(target))) // if there is a popupElement we'll consider it not to be part of this view (otherwise on mouse change event focusElement.focus works, and popup panel elements looses focus)
+//            return;
 
         Element cellParent = getCellParent(target);
-        form.onPropertyBrowserEvent(new EventHandler(event), cellParent, cellParent != null, getTableDataFocusElement(),
+        form.onPropertyBrowserEvent(eventHandler, cellParent, cellParent != null, getTableDataFocusElement(),
                 handler -> {}, // no outer context
                 handler -> {}, // no edit
                 handler -> {}, // no outer context
                 handler -> {}, handler -> {}, // no copy / paste for now
                 false, true, true
         );
-    }
-
-    public Element getTableDataFocusElement() {
-        return tableContainer.getFocusElement();
     }
 
     protected abstract Element getCellParent(Element target);
@@ -275,7 +256,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     }
 
     private void showPopup() {
-        popupObject = showPopup(getPopupOwnerWidget(), getPopupElement(), popupElementClicked);
+        popupObject = showPopup(getPopupElement(), popupElementClicked);
 
         popupRequestIndex = -2; // we are no longer waiting for popup
         popupElementClicked = null; // in theory it's better to do it on popupObject close, but this way is also ok
@@ -292,7 +273,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         popupKey = null;
     }
 
-    protected abstract JavaScriptObject showPopup(Widget ownerWidget, Element popupElement, P popupElementClicked);
+    protected abstract JavaScriptObject showPopup(Element popupElement, P popupElementClicked);
 
     protected abstract void hidePopup(JavaScriptObject popup);
 
@@ -921,9 +902,6 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             },
             previewEvent: function (element, event) {
                 return thisObj.@GSimpleStateTableView::previewEvent(*)(element, event);
-            },
-            getDropdownParent: function() {
-                return thisObj.@GSimpleStateTableView::getDropdownParent(*)(element);
             }
         };
     }-*/;
@@ -956,6 +934,6 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     }
 
     protected boolean previewEvent(Element element, Event event) {
-        return form.previewEvent(element, event);
+        return form.previewCustomEvent(event, element);
     }
 }

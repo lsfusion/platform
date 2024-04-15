@@ -65,6 +65,10 @@ public class DatePropertyEditor extends JDateChooser implements PropertyEditor, 
 
     @Override
     public boolean processKeyBinding(KeyStroke ks, KeyEvent ke, int condition, boolean pressed) {
+        //hack to start editing on F2
+        if (ke.getKeyCode() == KeyEvent.VK_F2 && ke.getID() == KeyEvent.KEY_RELEASED) {
+            requestFocusInWindow();
+        }
 
         // передаем вниз нажатую клавишу, чтобы по нажатию кнопки она уже начинала вводить в объект
         if (condition == WHEN_FOCUSED) {
@@ -76,6 +80,9 @@ public class DatePropertyEditor extends JDateChooser implements PropertyEditor, 
             boolean stopped = tableEditor.stopCellEditing();
             tableEditor.postCommit();
             return stopped;
+        } else if (ke.getKeyCode() == KeyEvent.VK_ESCAPE) {
+            tableEditor.cancelCellEditing();
+            return true;
         } else {
             return super.processKeyBinding(ks, ke, condition, pressed);
         }

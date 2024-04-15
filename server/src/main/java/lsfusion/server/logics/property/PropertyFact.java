@@ -754,20 +754,17 @@ public class PropertyFact {
 
     public static <T extends PropertyInterface> PropertyMapImplement<ClassPropertyInterface, T> createForDataProp(ImMap<T, ValueClass> interfaces, ValueClass valueClass, MSet<SessionDataProperty> mLocals) {
         ImOrderMap<T, ValueClass> orderInterfaces = interfaces.toOrderMap();
-        ImOrderSet<T> listInterfaces = orderInterfaces.keyOrderSet();
-        ValueClass[] interfaceClasses = orderInterfaces.valuesList().toArray(new ValueClass[orderInterfaces.size()]);
-        SessionDataProperty dataProperty = new SessionDataProperty(LocalizedString.NONAME, interfaceClasses, valueClass, true);
-        mLocals.add(dataProperty);
-        return dataProperty.getImplement(listInterfaces);
+        SessionDataProperty dataProperty = new SessionDataProperty(LocalizedString.NONAME, orderInterfaces.valuesList().toArray(new ValueClass[orderInterfaces.size()]), valueClass, true);
+        if(mLocals != null)
+            mLocals.add(dataProperty);
+        return dataProperty.getImplement(orderInterfaces.keyOrderSet());
     }
 
     public static <T> PropertyRevImplement<ClassPropertyInterface, T> createDataPropRev(LocalizedString caption, ImMap<T, ValueClass> interfaces, ValueClass valueClass, LocalNestedType nestedType) {
         ImOrderMap<T, ValueClass> orderInterfaces = interfaces.toOrderMap();
-        ImOrderSet<T> listInterfaces = orderInterfaces.keyOrderSet();
-        ValueClass[] interfaceClasses = orderInterfaces.valuesList().toArray(new ValueClass[orderInterfaces.size()]);
-        SessionDataProperty dataProperty = new SessionDataProperty(caption, interfaceClasses, valueClass);
+        SessionDataProperty dataProperty = new SessionDataProperty(caption, orderInterfaces.valuesList().toArray(new ValueClass[orderInterfaces.size()]), valueClass);
         dataProperty.nestedType = nestedType;
-        return dataProperty.getRevImplement(listInterfaces);
+        return dataProperty.getRevImplement(orderInterfaces.keyOrderSet());
     }
 
     public static <L extends PropertyInterface> ActionMapImplement<?, L> createIfAction(ImSet<L> innerInterfaces, PropertyMapImplement<?, L> where, ActionMapImplement<?, L> action, ActionMapImplement<?, L> elseAction) {
@@ -865,11 +862,12 @@ public class PropertyFact {
         return createSetAction(innerInterfaces, context, null, writeToProp, writeFrom);
     }
     public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionMapImplement<?, L> createSetAction(ImSet<L> innerInterfaces, ImSet<L> context, PropertyMapImplement<W, L> whereProp, PropertyMapImplement<P, L> writeToProp, PropertyInterfaceImplement<L> writeFrom) {
-        return createSetAction(innerInterfaces, context.toOrderSet(), whereProp, writeToProp, writeFrom);
-    }
-    public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionMapImplement<?, L> createSetAction(ImSet<L> innerInterfaces, ImOrderSet<L> mapInterfaces, PropertyMapImplement<W, L> whereProp, PropertyMapImplement<P, L> writeToProp, PropertyInterfaceImplement<L> writeFrom) {
-        SetAction<P, W, L> setAction = new SetAction<>(LocalizedString.NONAME, innerInterfaces, mapInterfaces, whereProp, writeToProp, writeFrom);
+        SetAction<P, W, L> setAction = new SetAction<>(LocalizedString.NONAME, innerInterfaces, context.toOrderSet(), whereProp, writeToProp, writeFrom);
         return setAction.getMapImplement();
+    }
+
+    public static <I extends PropertyInterface, M extends PropertyInterface> ActionMapImplement<?, M> createSetAction(ImSet<I> innerInterfaces, ImRevMap<M, I> mapContext, PropertyMapImplement<?, I> writeToProp, PropertyInterfaceImplement<I> writeFromProp) {
+        return createSetAction(innerInterfaces, mapContext.valuesSet(), writeToProp, writeFromProp).map(mapContext.reverse());
     }
 
     public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionMapImplement<?, L> createAddAction(CustomClass cls, ImSet<L> innerInterfaces, ImSet<L> context, PropertyMapImplement<W, L> whereProp, PropertyMapImplement<P, L> resultProp, ImOrderMap<PropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull, boolean autoSet) {

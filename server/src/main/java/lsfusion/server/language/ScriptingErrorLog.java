@@ -665,6 +665,14 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "SHOW IN is supported only for container, not component");
     }
 
+    public void emitRoundTypeError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "ROUND is supported only for NUMERIC, INTEGER, LONG and DOUBLE");
+    }
+
+    public void emitRoundScaleTypeError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "ROUND scale param should be INTEGER");
+    }
+
     public void emitSimpleError(ScriptParser parser, String message) throws SemanticErrorException {
         if (parser.getCurrentParser() != null) {
             SemanticErrorException e = new SemanticErrorException(parser.getCurrentParser().input);

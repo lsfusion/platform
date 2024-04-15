@@ -15,9 +15,9 @@ public class ResizableModalWindow extends ModalWindow {
     //In this case, the order in which the windows are displayed must be maintained according to the order of request indexes.
     private FormRequestData formRequestData;
 
-    public void show(FormRequestData formRequestData, Integer insertIndex, Widget popupOwnerWidget) {
+    public void show(FormRequestData formRequestData, Integer insertIndex, PopupOwner popupOwner) {
         this.formRequestData = formRequestData;
-        show(insertIndex, popupOwnerWidget);
+        show(insertIndex, popupOwner);
     }
 
     public static Pair<ModalForm, Integer> getFormInsertIndex(FormRequestData formRequestData) {
@@ -43,14 +43,5 @@ public class ResizableModalWindow extends ModalWindow {
         Element element = getContentWidget().getElement();
         FlexPanel.setPrefWidth(element, size.width);
         FlexPanel.setPrefHeight(element, size.height);
-    }
-
-    public void focus() {
-        Element element = RootPanel.get().getElement();
-        int tabIndex = element.getTabIndex();
-        if (tabIndex == -1) {
-            element.setTabIndex(0);
-        }
-        FocusUtils.focus(element, FocusUtils.Reason.SHOW);
     }
 }

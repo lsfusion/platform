@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.object.table;
 
-import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.DomEvent;
 import com.google.gwt.event.dom.client.MouseWheelEvent;
@@ -22,8 +21,6 @@ public class TableContainer extends ResizableSimplePanel implements HasMaxPrefer
 
     private final GFormController form;
     private TableComponent tableComponent;
-    
-    private Event pendingFocusEvent;
 
     public TableContainer(GFormController form) {
         setStyleName("tableContainer");
@@ -31,6 +28,7 @@ public class TableContainer extends ResizableSimplePanel implements HasMaxPrefer
         this.form = form;
         getFocusElement().setTabIndex(0);
 
+        DataGrid.initSinkEvents(this);
         DataGrid.initSinkFocusEvents(this);
     }
 
@@ -109,60 +107,31 @@ public class TableContainer extends ResizableSimplePanel implements HasMaxPrefer
             addStyleName("tableContainerBoxed");
         else
             removeStyleName("tableContainerBoxed");
-        
-        if (pendingFocusEvent != null) {
-            propagateFocusToGrid(DataGrid.getTargetAndCheck(getElement(), pendingFocusEvent), pendingFocusEvent);
-            pendingFocusEvent = null;
-        }
-    }
-
-    private boolean propagateFocusToGrid(Element target, Event focusEvent) {
-        if (tableComponent instanceof DataGrid) { // we have to propagate focus to grid, since GWT proceeds the FOCUS event for the first widget that have eventListener (i.e initSinkEvents is called)
-            DataGrid<?> grid = (DataGrid<?>) tableComponent;
-            grid.onFocus(target, focusEvent);
-            grid.onGridBrowserEvent(target, focusEvent);
-            return true;
-        }
-        return false;
     }
 
     @Override
     public void onBrowserEvent(Event event) {
-        Element target = DataGrid.getBrowserTargetAndCheck(getElement(), event);
+        Element target = form.getTargetAndPreview(getElement(), event);
         if(target == null)
             return;
-        if(!form.previewEvent(target, event))
-            return;
-
-        tableComponent.onBrowserEvent(event);
 
         super.onBrowserEvent(event);
 
-        if(!DataGrid.checkSinkFocusEvents(event))
+        lsfusion.gwt.client.base.view.EventHandler eventHandler = new lsfusion.gwt.client.base.view.EventHandler(event);
+        DataGrid.dispatchFocusAndCheckSinkEvents(eventHandler, target, getElement(), this::onFocus, this::onBlur);
+        if(eventHandler.consumed)
             return;
 
-        String eventType = event.getType();
-        if (BrowserEvents.FOCUS.equals(eventType))
-            onFocus(target, event);
-        else if (BrowserEvents.BLUR.equals(eventType))
-            onBlur(target, event);
-
-        form.propagateFocusEvent(event);
+        tableComponent.onBrowserEvent(target, eventHandler);
     }
 
     private boolean isFocused;
-    protected void onFocus(Element target, Event event) {
-        if (!propagateFocusToGrid(target, event)) {
-            // if focus event comes via focusLastBlurredElement() - by switching between table views in toolbar,
-            // it happens before changing of table component (here - from any other to grid). so we postpone propagation until change is finished   
-            pendingFocusEvent = event;
-        }
-
+    protected void onFocus(Element target, lsfusion.gwt.client.base.view.EventHandler eventHandler) {
         if(isFocused)
             return;
         isFocused = true;
         addStyleName("tableContainerFocused");
-        focusedChanged(target, event);
+        focusedChanged(target, eventHandler.event);
     }
 
     public void focusedChanged(Element target, Event focusEvent) {
@@ -181,22 +150,12 @@ public class TableContainer extends ResizableSimplePanel implements HasMaxPrefer
         }
     }
 
-    protected void onBlur(Element target, Event event) {
-        pendingFocusEvent = null;
-        
-        // should be before isFakeBlur check to propagate the event to the cell editor
-        if(tableComponent instanceof DataGrid) {
-            DataGrid<?> grid = (DataGrid<?>) tableComponent;
-            grid.onBlur(target, event);
-            grid.onGridBrowserEvent(target, event);
-        }
-
-        if(!isFocused || FocusUtils.isFakeBlur(event, getElement())) {
+    protected void onBlur(Element target, lsfusion.gwt.client.base.view.EventHandler eventHandler) {
+        if(!isFocused)
             return;
-        }
         isFocused = false;
         removeStyleName("tableContainerFocused");
-        focusedChanged(target, event);
+        focusedChanged(target, eventHandler.event);
     }
 
     public void setPreferredSize(boolean set, Result<Integer> grids) {

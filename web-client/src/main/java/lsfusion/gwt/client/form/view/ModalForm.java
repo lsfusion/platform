@@ -8,8 +8,8 @@ import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.FormRequestData;
+import lsfusion.gwt.client.base.view.PopupOwner;
 import lsfusion.gwt.client.base.view.ResizableModalWindow;
-import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.cell.controller.EndReason;
@@ -21,7 +21,7 @@ import lsfusion.gwt.client.view.MainFrame;
 public class ModalForm extends FormContainer {
 
     protected final ResizableModalWindow contentWidget;
-    protected final Widget popupOwnerWidget;
+    protected final PopupOwner popupOwner;
 
     @Override
     public GWindowFormType getWindowType() {
@@ -29,14 +29,14 @@ public class ModalForm extends FormContainer {
     }
 
     @Override
-    public Element getFocusedElement() {
+    public Element getContentElement() {
         return contentWidget.getElement();
     }
 
-    public ModalForm(FormsController formsController, GFormController contextForm, boolean async, Event editEvent, Widget popupOwnerWidget) {
+    public ModalForm(FormsController formsController, GFormController contextForm, boolean async, Event editEvent, PopupOwner popupOwner) {
         super(formsController, contextForm, async, editEvent);
 
-        this.popupOwnerWidget = popupOwnerWidget;
+        this.popupOwner = popupOwner;
         ResizableModalWindow window = new ResizableModalWindow() {
             @Override
             public void onShow() {
@@ -49,8 +49,6 @@ public class ModalForm extends FormContainer {
         window.makeShadowOnScroll();
 
         contentWidget = window;
-
-        window.addStyleName("lsf-modal-form");
 
         // this is form container, that is shrinked and needs padding
 //        contentWidget.getBody().addStyleName("form-shrink-padded-container");
@@ -84,7 +82,7 @@ public class ModalForm extends FormContainer {
     public void show(GAsyncFormController asyncFormController) {
         FormRequestData formRequestData = new FormRequestData(asyncFormController.getDispatcher(), this, asyncFormController.getEditRequestIndex());
 
-        Widget popupOwnerWidget = this.popupOwnerWidget;
+        PopupOwner popupOwner = this.popupOwner;
         Pair<ModalForm, Integer> formInsertIndex = ResizableModalWindow.getFormInsertIndex(formRequestData);
         if(formInsertIndex == null) {
             prevForm = MainFrame.getAssertCurrentForm();
@@ -95,12 +93,12 @@ public class ModalForm extends FormContainer {
             formInsertIndex.first.prevForm = this;
         }
 
-        contentWidget.show(formRequestData, formInsertIndex != null ? formInsertIndex.second : null, popupOwnerWidget);
+        contentWidget.show(formRequestData, formInsertIndex != null ? formInsertIndex.second : null, popupOwner);
 
         if(formInsertIndex == null) {
             onFocus(true);
             if(async)
-                contentWidget.focus();
+                focus();
         }
     }
 
@@ -108,10 +106,11 @@ public class ModalForm extends FormContainer {
     public void hide(EndReason editFormCloseReason) {
         onBlur(true);
 
-        contentWidget.hide();
-
+        // we need it before to avoid focus going to the body
         if(prevForm != null)
             prevForm.onFocus(false);
+
+        contentWidget.hide();
     }
 
     @Override

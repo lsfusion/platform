@@ -5,6 +5,7 @@ import com.google.gwt.dom.client.*;
 import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.resize.ResizeHandler;
+import lsfusion.gwt.client.base.view.PopupOwner;
 import lsfusion.gwt.client.base.view.grid.Header;
 import lsfusion.gwt.client.form.property.panel.view.PropertyPanelRenderer;
 
@@ -124,7 +125,7 @@ public class GGridPropertyTableHeader extends Header<String> {
         Boolean sortDir = table.getSortDirection(this);
 
         renderedCaptionElement = renderTD(th, headerHeight, sortDir, caption, captionElementClass, image, false);
-        tippy = TooltipManager.initTooltip(table.getPopupOwnerWidget(), renderedCaptionElement, tooltipHelper);
+        tippy = TooltipManager.initTooltip(new PopupOwner(table.getPopupOwnerWidget(), renderedCaptionElement), tooltipHelper);
         renderedSortDir = sortDir;
         renderedCaption = caption;
         renderedCaptionElementClass = captionElementClass;

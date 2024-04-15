@@ -7,22 +7,18 @@ public class ComponentWidget {
 
     public CaptionWidget caption;
 
-    public SizedWidget widget;
+    public ComponentViewWidget widget;
 
     public ComponentWidget(Widget widget, Widget caption) {
-        this(new SizedWidget(widget), caption != null ? new CaptionWidget(caption) : null);
+        this(new SizedWidget(widget).view, caption != null ? new CaptionWidget(caption) : null);
     }
 
-    public ComponentWidget(SizedWidget widget, CaptionWidget caption) {
+    public ComponentWidget(ComponentViewWidget widget, CaptionWidget caption) {
         this.caption = caption;
         this.widget = widget;
     }
 
     public ComponentWidget(Widget widget) {
         this(widget, null);
-    }
-
-    public Widget getWidget() {
-        return widget.widget;
     }
 }

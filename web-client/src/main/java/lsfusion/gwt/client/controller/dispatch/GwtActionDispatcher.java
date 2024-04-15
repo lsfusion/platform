@@ -9,7 +9,6 @@ import com.google.gwt.typedarrays.shared.ArrayBuffer;
 import com.google.gwt.typedarrays.shared.Uint8Array;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xhr.client.XMLHttpRequest;
 import lsfusion.gwt.client.action.*;
 import lsfusion.gwt.client.base.EscapeUtils;
@@ -21,6 +20,7 @@ import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
 import lsfusion.gwt.client.base.log.GLog;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
+import lsfusion.gwt.client.base.view.PopupOwner;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.controller.remote.action.RequestAsyncCallback;
 import lsfusion.gwt.client.controller.remote.action.RequestCountingErrorHandlingCallback;
@@ -186,7 +186,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     public void dispatchServerFailed(ExceptionResult exceptionResult, Runnable onRequestFinished) {
         onServerInvocationFailed(exceptionResult);
 
-        showErrorMessage(exceptionResult.throwable, getPopupOwnerWidget()); // need this before to have editContext filled
+        showErrorMessage(exceptionResult.throwable, getPopupOwner()); // need this before to have editContext filled
 
         dispatchFailed(onRequestFinished);
     }
@@ -233,7 +233,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         }
     }
 
-    protected abstract Widget getPopupOwnerWidget();
+    protected abstract PopupOwner getPopupOwner();
 
     public boolean canShowDockedModal() {
         return true;
@@ -256,7 +256,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     @Override
     public void execute(GMessageAction action) {
         pauseDispatching();
-        DialogBoxHelper.showMessageBox(action.caption, EscapeUtils.toHTML(action.message), getPopupOwnerWidget(), chosenOption -> continueDispatching());
+        DialogBoxHelper.showMessageBox(action.caption, EscapeUtils.toHTML(action.message), getPopupOwner(), chosenOption -> continueDispatching());
     }
 
     @Override
@@ -264,7 +264,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         pauseDispatching();
 
         Result<Object> result = new Result<>();
-        DialogBoxHelper.showConfirmBox(action.caption, EscapeUtils.toHTML(action.message), action.cancel, action.timeout, action.initialValue, getPopupOwnerWidget(),
+        DialogBoxHelper.showConfirmBox(action.caption, EscapeUtils.toHTML(action.message), action.cancel, action.timeout, action.initialValue, getPopupOwner(),
                 chosenOption -> continueDispatching(chosenOption.asInteger(), result));
         return result.result;
     }
@@ -273,7 +273,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     public void execute(GLogMessageAction action) {
         if (action.failed) {
             GLog.error(EscapeUtils.toHTML(action.message));
-            DialogBoxHelper.showMessageBox("lsFusion", GLog.toPrintMessage(action.message, action.data, action.titles), getPopupOwnerWidget(), null);
+            DialogBoxHelper.showMessageBox("lsFusion", GLog.toPrintMessage(action.message, action.data, action.titles), getPopupOwner(), null);
         } else {
             GLog.message(EscapeUtils.toHTML(action.message));
         }

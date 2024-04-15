@@ -1,9 +1,9 @@
 package lsfusion.gwt.client.form.controller.dispatch;
 
-import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.RemoteDispatchAsync;
 import lsfusion.gwt.client.base.result.ListResult;
+import lsfusion.gwt.client.base.view.PopupOwner;
 import lsfusion.gwt.client.controller.remote.action.BaseAction;
 import lsfusion.gwt.client.controller.remote.action.PriorityErrorHandlingCallback;
 import lsfusion.gwt.client.controller.remote.action.RequestAction;
@@ -72,8 +72,8 @@ public class FormDispatchAsync extends RemoteDispatchAsync {
     }
 
     @Override
-    public Widget getPopupOwnerWidget() {
-        return formController.getPopupOwnerWidget();
+    public PopupOwner getPopupOwner() {
+        return formController.getPopupOwner();
     }
 
     @Override
@@ -87,8 +87,8 @@ public class FormDispatchAsync extends RemoteDispatchAsync {
     }
 
     @Override
-    public void interrupt(boolean cancelable, Widget popupOwnerWidget) {
-        executePriority(new Interrupt(cancelable), new PriorityErrorHandlingCallback<>(popupOwnerWidget));
+    public void interrupt(boolean cancelable, PopupOwner popupOwner) {
+        executePriority(new Interrupt(cancelable), new PriorityErrorHandlingCallback<>(popupOwner));
     }
 
 }

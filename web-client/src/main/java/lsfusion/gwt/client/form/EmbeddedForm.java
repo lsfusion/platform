@@ -35,21 +35,6 @@ public class EmbeddedForm extends EditingForm {
         }
 
         @Override
-        public void onBlur(Event event, Element parent) {
-            // the problem is when form is embedded and elements that have focus in DOM are removed (for example clearRender is called) focus moves somewhere, and that causes blur event, which embed cell editor treats as finish editing (which is not what we want)
-            // so we just delay execution, expecting that the one who lost focus will immediately restore it
-            // it seems that later this scheme should be used for all onBlur events
-            if(event.getRelatedEventTarget() == null) {
-                SmartScheduler.get().scheduleDeferred(() -> {
-                    if(FocusUtils.getFocusedChild(parent) == null)
-                        RequestReplaceCellEditor.super.onBlur(event, parent);
-                });
-            } else {
-                RequestReplaceCellEditor.super.onBlur(event, parent);
-            }
-        }
-
-        @Override
         public void render(Element cellParent, RenderContext renderContext, PValue oldValue, Integer renderedWidth, Integer renderedHeight) {
             renderElement = cellParent;
         }
@@ -61,7 +46,7 @@ public class EmbeddedForm extends EditingForm {
     }
 
     @Override
-    public Element getFocusedElement() {
+    public Element getContentElement() {
         return renderElement;
     }
 
@@ -104,8 +89,7 @@ public class EmbeddedForm extends EditingForm {
     protected void onSyncFocus(boolean add) {
         super.onSyncFocus(add);
         if(add && editEvent != null) {
-            Element focusedElement = FocusUtils.getFocusedElement();
-            DOM.dispatchEvent(editEvent, focusedElement);
+            DOM.dispatchEvent(editEvent, FocusUtils.getFocusedElement());
         }
     }
 
@@ -143,15 +127,6 @@ public class EmbeddedForm extends EditingForm {
     public void initForm(FormsController formsController, GForm gForm, BiConsumer<GAsyncFormController, EndReason> hiddenHandler, boolean isDialog, int dispatchPriority, String formId) {
         super.initForm(formsController, gForm, hiddenHandler, isDialog, dispatchPriority, formId);
 
-        form.contextEditForm = contextForm;
         form.getWidget().getElement().setTabIndex(-1); // we need to make form focusable, because otherwise clicking on this form will lead to moving focus to the grid (not the cell), which will cause blur and stop editing
-    }
-
-    @Override
-    protected void finishEditing(EndReason editFormCloseReason) {
-        if(!async)
-            form.contextEditForm = null; // it's important to do before removeContent (to prevent propagateFocusEvent while removing content)
-
-        super.finishEditing(editFormCloseReason);
     }
 }

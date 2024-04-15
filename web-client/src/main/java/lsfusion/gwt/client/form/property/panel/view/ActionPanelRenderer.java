@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.property.panel.view;
 import lsfusion.gwt.client.base.BaseImage;
 import lsfusion.gwt.client.base.view.SizedWidget;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.design.view.ComponentViewWidget;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
@@ -24,8 +25,8 @@ public class ActionPanelRenderer extends PanelRenderer {
     }
 
     @Override
-    public SizedWidget getSizedWidget() {
-        return sizedView;
+    public ComponentViewWidget getComponentViewWidget() {
+        return sizedView.view;
     }
 
     // hack, assert that render element is rendered with ActionCellRenderer

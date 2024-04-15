@@ -15,7 +15,7 @@ public abstract class WidgetForm extends FormContainer {
     protected final ContentWidget contentWidget;
 
     @Override
-    public Element getFocusedElement() {
+    public Element getContentElement() {
         return contentWidget.getElement();
     }
 

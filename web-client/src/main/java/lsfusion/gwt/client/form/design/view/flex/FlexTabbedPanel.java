@@ -85,6 +85,9 @@ public class FlexTabbedPanel extends SizedFlexPanel implements IndexedPanel, Req
     public interface AddToDeck {
         void add(int beforeIndex);
     }
+    public interface RemoveFromDeck {
+        void remove(int index);
+    }
 
     private Label createTab(String tabText, boolean wordWrap) {
         return new Label(tabText, wordWrap);
@@ -112,19 +115,20 @@ public class FlexTabbedPanel extends SizedFlexPanel implements IndexedPanel, Req
         getWidget(tabIndex).setVisible(false);
     }
 
-    public void removeTab(int index) {
-        if (index != -1) {
-            if(index == getSelectedTab() && beforeSelectionHandler != null)
-                beforeSelectionHandler.accept(-1);
-            tabBar.removeTab(index);
+    public void removeTab(int removeIndex) {
+        removeTab(removeIndex, this::removeSized);
+    }
 
-            int tabIndex = getTabIndex(index);
-            Widget tabWidget = getWidget(tabIndex);
-            if (visibleWidget == tabWidget) {
-                visibleWidget = null;
-            }
-            removeSized(tabWidget);
+    public void removeTab(int index, RemoveFromDeck removeFromDeck) {
+        if(index == getSelectedTab() && beforeSelectionHandler != null)
+            beforeSelectionHandler.accept(-1);
+        tabBar.removeTab(index);
+
+        int tabIndex = getTabIndex(index);
+        if (visibleWidget == getWidget(tabIndex)) {
+            visibleWidget = null;
         }
+        removeFromDeck.remove(tabIndex);
     }
 
     private int getTabIndex(int index) {

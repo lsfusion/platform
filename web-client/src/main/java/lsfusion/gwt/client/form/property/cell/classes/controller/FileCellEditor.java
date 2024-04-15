@@ -98,10 +98,11 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
     @Override
     public void start(EventHandler handler, Element parent, RenderContext renderContext, boolean notFocusable, PValue oldValue) {
         Event event;
+        Widget popupOwnerWidget = renderContext.getPopupOwnerWidget();
         if(handler != null && GKeyStroke.isDropEvent(event = handler.event)) {
-            drop(event, parent, renderContext.getPopupOwnerWidget());
+            drop(event, parent, popupOwnerWidget);
         } else {
-            click(parent, createFileInputElement());
+            click(parent, createFileInputElement(), popupOwnerWidget);
         }
     }
 
@@ -111,12 +112,12 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
             cancel();
     }
 
-    private native void click(Element parent, Element inputElement) /*-{
+    private native void click(Element parent, Element inputElement, Widget popupOwnerWidget) /*-{
         var instance = this;
 
         var needToCancel = true;
         inputElement.onchange = function () {
-            needToCancel = !instance.@FileCellEditor::addFilesToUploader(*)(this.files, parent);
+            needToCancel = !instance.@FileCellEditor::addFilesToUploader(*)(this.files, parent, popupOwnerWidget);
         }
 
         var focusedElement = @lsfusion.gwt.client.base.FocusUtils::getFocusedElement()();
@@ -154,7 +155,7 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
                     final File file = fileQueuedEvent.getFile();
                     fileInfo.filePrefix = GwtSharedUtils.randomString(15);
                     fileInfo.fileName = file.getName();
-                    loadingBox.showLoadingBox(popupOwnerWidget);
+                    loadingBox.showLoadingBox(new PopupOwner(popupOwnerWidget, parent));
                     return true;
                 })
                 .setUploadProgressHandler(uploadProgressEvent -> {
@@ -199,11 +200,11 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
         }
 
         private boolean isShowing = false;
-        public void showLoadingBox(Widget popupOwnerWidget) {
+        public void showLoadingBox(PopupOwner popupOwner) {
             timer = new Timer() {
                 @Override
                 public void run() {
-                    isShowing = true; show(popupOwnerWidget);
+                    isShowing = true; show(popupOwner);
                 }
             };
             timer.schedule(1000);

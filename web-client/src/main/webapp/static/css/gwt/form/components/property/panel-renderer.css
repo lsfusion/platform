@@ -2,17 +2,18 @@
 .propertyContainerPanel {
 }
 
-.panel-property-label.wrap-text-not-empty {
+:not(.panel-custom) > .panel-property-label.wrap-text-not-empty {
     margin-left: var(--border-label-horz-padding);
     margin-right: var(--border-label-horz-padding);
 }
 
-.panel-property-label {
+:not(.panel-custom) > .panel-property-label {
     margin-top: var(--border-label-vert-padding);
     margin-bottom: var(--border-label-vert-padding);
 }
 
-.panelRendererValue {
+:not(.panel-custom) >  .panelRendererValue,
+    .panel-custom {
     margin: var(--border-comp-vert-padding) var(--border-comp-horz-padding);
 }
 

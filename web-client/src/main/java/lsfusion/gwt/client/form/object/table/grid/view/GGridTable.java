@@ -14,6 +14,7 @@ import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
+import lsfusion.gwt.client.base.view.PopupOwner;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
@@ -863,7 +864,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         final int tableColumns = getMaxColumnsCount(table);
         final int selectedColumn = getSelectedColumn();
         if (table.size() > 1 || tableColumns > 1) {
-            DialogBoxHelper.showConfirmBox("lsFusion", messages.formGridSureToPasteMultivalue(), getPopupOwnerWidget(), chosenOption -> {
+            DialogBoxHelper.showConfirmBox("lsFusion", messages.formGridSureToPasteMultivalue(), new PopupOwner(getPopupOwnerWidget()), chosenOption -> {
                 if (chosenOption == DialogBoxHelper.OptionType.YES) {
                     int columnsToInsert = Math.min(tableColumns, getColumnCount() - selectedColumn);
 

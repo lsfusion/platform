@@ -1,18 +1,16 @@
 package lsfusion.gwt.client.form.controller.dispatch;
 
-import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.action.*;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.log.GLog;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
 import lsfusion.gwt.client.base.view.EventHandler;
+import lsfusion.gwt.client.base.view.PopupOwner;
 import lsfusion.gwt.client.base.view.WindowHiddenHandler;
-import lsfusion.gwt.client.classes.GObjectClass;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.controller.remote.action.RequestAsyncCallback;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
-import lsfusion.gwt.client.form.classes.view.ClassChosenHandler;
 import lsfusion.gwt.client.form.classes.view.GClassDialog;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.PValue;
@@ -83,7 +81,7 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     public Object execute(GChooseClassAction action) {
         pauseDispatching();
         Result<Object> result = new Result<>();
-        GClassDialog.showDialog(action.baseClass, action.defaultClass, action.concreate, chosenClass -> continueDispatching(chosenClass == null ? null : chosenClass.ID, result), getPopupOwnerWidget());
+        GClassDialog.showDialog(action.baseClass, action.defaultClass, action.concreate, chosenClass -> continueDispatching(chosenClass == null ? null : chosenClass.ID, result), getPopupOwner());
         return result.result;
     }
 
@@ -92,7 +90,7 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
         pauseDispatching();
 
         Result<Object> result = new Result<>();
-        DialogBoxHelper.showConfirmBox(action.caption, EscapeUtils.toHTML(action.message), action.cancel, action.timeout, action.initialValue, getPopupOwnerWidget(), chosenOption -> continueDispatching(chosenOption.asInteger(), result));
+        DialogBoxHelper.showConfirmBox(action.caption, EscapeUtils.toHTML(action.message), action.cancel, action.timeout, action.initialValue, getPopupOwner(), chosenOption -> continueDispatching(chosenOption.asInteger(), result));
         return result.result;
     }
 
@@ -102,13 +100,13 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
             super.execute(action);
         } else {
             pauseDispatching();
-            DialogBoxHelper.showMessageBox("lsFusion", EscapeUtils.toHTML(action.message), getPopupOwnerWidget(), chosenOption -> continueDispatching());
+            DialogBoxHelper.showMessageBox("lsFusion", EscapeUtils.toHTML(action.message), getPopupOwner(), chosenOption -> continueDispatching());
         }
     }
 
     @Override
-    protected Widget getPopupOwnerWidget() {
-        return editContext != null ? editContext.getPopupOwnerWidget() : form.getPopupOwnerWidget();
+    protected PopupOwner getPopupOwner() {
+        return editContext != null ? editContext.getPopupOwner() : form.getPopupOwner();
     }
 
     @Override

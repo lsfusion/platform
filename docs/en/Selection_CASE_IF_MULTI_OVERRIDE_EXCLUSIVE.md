@@ -8,7 +8,7 @@ All conditions and results are defined as some properties and/or parameters. Acc
 
 ### Polymorphic form {#poly}
 
-The platform also allows you to define a condition and the corresponding result with one property. In this case, the condition may be either matching the property's [signature](Property_signature_CLASS.md), or the property itself. We will call this the *polymorphic* form of the operator.
+The platform also allows you to define a condition and the corresponding result with one property. In this case, the condition may be either matching the property's [signature](Property_signature_ISCLASS.md), or the property itself. We will call this the *polymorphic* form of the operator.
 
 
 :::info

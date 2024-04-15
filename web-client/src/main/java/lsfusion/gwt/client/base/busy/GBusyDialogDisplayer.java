@@ -5,6 +5,7 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.result.ListResult;
+import lsfusion.gwt.client.base.view.PopupOwner;
 import lsfusion.gwt.client.controller.remote.action.PriorityErrorHandlingCallback;
 import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.view.ServerMessageProvider;
@@ -15,9 +16,10 @@ public class GBusyDialogDisplayer {
     private final PopupPanel blockingPanel;
     private final GBusyDialog busyDialog;
     private boolean visible;
+    private boolean busyDialogVisible;
 
     private final Timer showTimer;
-    private Widget showPopupOwnerWidget;
+    private PopupOwner showPopupOwner;
     private final Timer hideTimer;
 
     public GBusyDialogDisplayer(ServerMessageProvider messageProvider) {
@@ -28,20 +30,21 @@ public class GBusyDialogDisplayer {
             public void run() {
                 assert visible;
                 blockingPanel.hide();
-                busyDialog.show(showPopupOwnerWidget);
-                showPopupOwnerWidget = null;
+                busyDialog.show(showPopupOwner);
+                busyDialogVisible = true;
+                showPopupOwner = null;
 
                 busyDialog.scheduleButtonEnabling();
 
-                Widget popupOwnerWidget = busyDialog.getPopupOwnerWidget();
-                updateBusyDialog(messageProvider, popupOwnerWidget); // we want immediate update, to avoid leaps
+                PopupOwner popupOwner = busyDialog.getPopupOwner();
+                updateBusyDialog(messageProvider, popupOwner); // we want immediate update, to avoid leaps
                 Scheduler.get().scheduleFixedPeriod(() -> {
                     if (busyDialog.needInterrupt != null) {
-                        messageProvider.interrupt(!busyDialog.needInterrupt, popupOwnerWidget);
+                        messageProvider.interrupt(!busyDialog.needInterrupt, popupOwner);
                         busyDialog.needInterrupt = null;
                         return true;
                     } else if (visible) {
-                        updateBusyDialog(messageProvider, popupOwnerWidget);
+                        updateBusyDialog(messageProvider, popupOwner);
                         return true;
                     } else {
                         return false;
@@ -58,8 +61,8 @@ public class GBusyDialogDisplayer {
         };
     }
 
-    private void updateBusyDialog(ServerMessageProvider messageProvider, Widget popupOwnerWidget) {
-        messageProvider.getServerActionMessageList(new PriorityErrorHandlingCallback<ListResult>(popupOwnerWidget) {
+    private void updateBusyDialog(ServerMessageProvider messageProvider, PopupOwner popupOwner) {
+        messageProvider.getServerActionMessageList(new PriorityErrorHandlingCallback<ListResult>(popupOwner) {
             @Override
             public void onSuccess(ListResult result) {
                 if (visible) {
@@ -73,11 +76,11 @@ public class GBusyDialogDisplayer {
         return visible;
     }
 
-    public void start(Widget popupOwnerWidget) {
+    public void start(PopupOwner popupOwner) {
         if (!visible) {
             blockingPanel.center();
 
-            showPopupOwnerWidget = popupOwnerWidget;
+            showPopupOwner = popupOwner;
             showTimer.schedule((int) MainFrame.busyDialogTimeout);
             visible = true;
         }
@@ -90,10 +93,14 @@ public class GBusyDialogDisplayer {
 
         if(immediate) {
             blockingPanel.hide();
+            if(busyDialogVisible) {
+                busyDialog.hide();
+                busyDialogVisible = false;
+            }
             busyDialog.hideBusyDialog();
 
             showTimer.cancel();
-            showPopupOwnerWidget = null;
+            showPopupOwner = null;
 
             visible = false;
         } else

@@ -6,9 +6,9 @@ import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.SizedFlexPanel;
-import lsfusion.gwt.client.base.view.SizedWidget;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.view.CaptionWidget;
+import lsfusion.gwt.client.form.design.view.ComponentViewWidget;
 import lsfusion.gwt.client.form.design.view.ComponentWidget;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
@@ -122,19 +122,19 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
 
                 // removing old renderers
                 optionsToRemove.forEach(columnKey -> {
-                    PanelRenderer renderer = removePanelRenderer(columnKey);
+                    ComponentViewWidget component = removePanelRenderer(columnKey);
 
                     if (!hide) {
-                        columnsPanel.removeSized(renderer.getComponent());
+                        component.remove(columnsPanel);
                     }
                 });
 
                 //adding new renderers
                 optionsToAdd.forEach(columnKey -> {
-                    SizedWidget component = addPanelRenderer(columnKey, null);
+                    ComponentViewWidget component = addPanelRenderer(columnKey, null);
 
-                    if (!hide) {
-                        component.addFill(columnsPanel, renderedColumnKeys.get(columnKey));
+                    if (!hide) { // something like getChildPosition should be done here, but for now there is a hasColumnGroupObjects check
+                        component.add(columnsPanel, renderedColumnKeys.get(columnKey));
                     }
                 });
             }
@@ -145,18 +145,18 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
         renderers.foreachEntry(this::updateRenderer);
     }
 
-    public SizedWidget addPanelRenderer(GGroupObjectValue columnKey, Result<CaptionWidget> caption) {
+    public ComponentViewWidget addPanelRenderer(GGroupObjectValue columnKey, Result<CaptionWidget> caption) {
         PanelRenderer newRenderer = property.createPanelRenderer(form, GPropertyPanelController.this, columnKey, caption);
-        SizedWidget component = newRenderer.getSizedWidget();
-        newRenderer.bindingEventIndices = form.addPropertyBindings(property, newRenderer::onBinding, component.widget);
+        ComponentViewWidget component = newRenderer.getComponentViewWidget();
+        newRenderer.bindingEventIndices = form.addPropertyBindings(property, newRenderer::onBinding, component.getShowingWidget());
         renderers.put(columnKey, newRenderer);
         return component;
     }
 
-    public PanelRenderer removePanelRenderer(GGroupObjectValue columnKey) {
+    public ComponentViewWidget removePanelRenderer(GGroupObjectValue columnKey) {
         PanelRenderer renderer = renderers.remove(columnKey);
         form.removePropertyBindings(renderer.bindingEventIndices);
-        return renderer;
+        return renderer.getComponentViewWidget();
     }
 
     private void updateRenderer(GGroupObjectValue columnKey, PanelRenderer renderer) {
@@ -230,11 +230,7 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
         }
 
         PanelRenderer toFocus = columnKeys == null ? renderers.firstValue() : renderers.get(columnKeys.get(0));
-        if (isShowing(toFocus.getComponent())) {
-            toFocus.focus(reason);
-            return true;
-        }
-        return false;
+        return toFocus.focus(reason);
     }
 
     @Override

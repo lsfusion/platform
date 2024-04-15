@@ -5,11 +5,11 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
+import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 
-import static com.google.gwt.dom.client.BrowserEvents.BLUR;
 import static com.google.gwt.dom.client.BrowserEvents.KEYDOWN;
 
 public interface RequestEmbeddedCellEditor extends RequestCellEditor {
@@ -26,13 +26,7 @@ public interface RequestEmbeddedCellEditor extends RequestCellEditor {
                 handler.consume();
                 cancel(CancelReason.ESCAPE_PRESSED);
             }
-        } else if (BLUR.equals(type)) {
-            onBlur(event, parent);
-        }
-    }
-
-    default void onBlur(Event event, Element parent) {
-        if (!FocusUtils.isFakeBlur(event, parent))
+        } else if ((DataGrid.FOCUSCHANGEOUT.equals(type) && !FocusUtils.isFakeBlur(event, parent)) || DataGrid.FOCUSOUT.equals(type))
             commit(parent, CommitReason.BLURRED);
     }
 

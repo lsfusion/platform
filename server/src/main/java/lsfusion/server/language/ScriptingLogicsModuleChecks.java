@@ -20,6 +20,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.file.AJSONClass;
 import lsfusion.server.logics.classes.data.file.FileClass;
+import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.classes.data.integral.IntegralClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.CustomClass;
@@ -682,6 +683,17 @@ public class ScriptingLogicsModuleChecks {
     public void checkComponentIsContainer(ComponentView inComponent) throws ScriptingErrorLog.SemanticErrorException {
         if(!(inComponent instanceof ContainerView)) {
             errLog.emitShowInContainerError(parser);
+        }
+    }
+
+    public void checkRoundType(LPWithParams prop, LPWithParams scaleProp) throws ScriptingErrorLog.SemanticErrorException {
+        Type type = prop.getLP().property.getType();
+        if (type != null && !(prop.getLP().property.getType() instanceof IntegralClass)) {
+            errLog.emitRoundTypeError(parser);
+        }
+        Type scaleType = scaleProp != null ? scaleProp.getLP().property.getType() : null;
+        if (scaleType != null && !(scaleType instanceof IntegerClass)) {
+            errLog.emitRoundScaleTypeError(parser);
         }
     }
 }

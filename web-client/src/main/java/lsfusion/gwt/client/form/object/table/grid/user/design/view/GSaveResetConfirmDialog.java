@@ -10,6 +10,7 @@ import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
 import lsfusion.gwt.client.base.view.FormRadioButton;
+import lsfusion.gwt.client.base.view.PopupOwner;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.view.MainFrame;
 
@@ -26,7 +27,7 @@ public class GSaveResetConfirmDialog {
         this.save = save;
     }
     
-    public void show(Widget popupOwnerWidget, final Callback callback) {
+    public void show(PopupOwner popupOwner, final Callback callback) {
         DialogBoxHelper.OptionType[] options;
         Widget contents;
         FormRadioButton currentUserRB = null;
@@ -73,7 +74,7 @@ public class GSaveResetConfirmDialog {
         }
 
         
-        mb = DialogBoxHelper.showConfirmBox(save ? messages.formGridPreferencesSaving() : messages.formGridPreferencesResetting(), contents, options, popupOwnerWidget, chosenOption -> {
+        mb = DialogBoxHelper.showConfirmBox(save ? messages.formGridPreferencesSaving() : messages.formGridPreferencesResetting(), contents, options, popupOwner, chosenOption -> {
             if (chosenOption.asInteger() == 0) {
                 callback.onSuccess();
             } else {

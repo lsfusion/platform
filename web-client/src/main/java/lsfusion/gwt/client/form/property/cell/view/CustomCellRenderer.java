@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.property.cell.view;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
+import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
@@ -79,28 +80,32 @@ public class CustomCellRenderer extends CellRenderer {
 
     @Override
     public boolean updateContent(Element element, PValue value, Object extraValue, UpdateContext updateContext) {
+        FocusUtils.startFocusTransaction(element);
+
         JavaScriptObject renderValue = GSimpleStateTableView.convertToJSValue(property, value, updateContext.getRendererType(), true);
-        setRendererValue(customRenderer, element, getController(property, updateContext, element), renderValue, extraValue != null ? ((ExtraValue) extraValue).getJsObject() : null);
+        update(customRenderer, element, getController(property, updateContext, element), renderValue, extraValue != null ? ((ExtraValue) extraValue).getJsObject() : null);
+
+        FocusUtils.endFocusTransaction();
 
         return false;
     }
 
-    protected native void setRendererValue(JavaScriptObject customRenderer, Element element, JavaScriptObject controller, JavaScriptObject value, JavaScriptObject extraValue)/*-{
+    protected native void update(JavaScriptObject customRenderer, Element element, JavaScriptObject controller, JavaScriptObject value, JavaScriptObject extraValue)/*-{
         customRenderer.update(element, controller, value, extraValue);
     }-*/;
 
     @Override
     public boolean clearRenderContent(Element element, RenderContext renderContext) {
-        clear(customRenderer, element);
+        clear(customRenderer, element, getRenderController(property, renderContext, element));
 
         CustomCellRenderer.clearCustomElement(element);
 
         return false;
     }
     
-    protected native void clear(JavaScriptObject customRenderer, Element element)/*-{
+    protected native void clear(JavaScriptObject customRenderer, Element element, JavaScriptObject controller)/*-{
         if (customRenderer.clear !== undefined)
-            customRenderer.clear(element);
+            customRenderer.clear(element, controller);
     }-*/;
 
     @Override
@@ -220,21 +225,17 @@ public class CustomCellRenderer extends CellRenderer {
     }-*/;
 
     public static JavaScriptObject getRenderController(GPropertyDraw property, RenderContext renderContext, Element element) {
-        return getRenderController(renderContext, element);
+        return getRenderController(renderContext, element, renderContext.isTabFocusable());
     }
 
-    private static Element getDropdownParent(RenderContext renderContext, Element element) {
-        return renderContext.getDropdownParent(element);
-    }
-
-    private static native JavaScriptObject getRenderController(RenderContext renderContext, Element element)/*-{
+    private static native JavaScriptObject getRenderController(RenderContext renderContext, Element element, boolean isTabFocusable)/*-{
         var thisObj = this;
         return {
             isList: function () {
                 return false;
             },
-            getDropdownParent: function() {
-                return @CustomCellRenderer::getDropdownParent(*)(renderContext, element);
+            isTabFocusable: function () {
+                return isTabFocusable;
             }
         };
     }-*/;

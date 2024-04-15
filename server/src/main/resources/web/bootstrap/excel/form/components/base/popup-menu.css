@@ -4,7 +4,7 @@
 
     padding: var(--border-comp-vert-padding) var(--border-comp-horz-padding);
 
-    z-index: 1000;
+    /*z-index: 1000;*/
 }
 
 .dropdown-item-selected {

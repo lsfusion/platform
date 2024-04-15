@@ -1,16 +1,12 @@
 package lsfusion.gwt.client.form.property.panel.view;
 
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.AppBaseImage;
-import lsfusion.gwt.client.base.FocusUtils;
-import lsfusion.gwt.client.base.GwtSharedUtils;
-import lsfusion.gwt.client.base.TooltipManager;
-import lsfusion.gwt.client.base.view.SizedWidget;
+import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
+import lsfusion.gwt.client.form.design.view.ComponentViewWidget;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
@@ -72,10 +68,7 @@ public abstract class PanelRenderer {
             GFormController.setFont(labelWidget.getElement(), this.property.captionFont);
     }
 
-    public abstract SizedWidget getSizedWidget();
-    public Widget getComponent() {
-        return getSizedWidget().widget;
-    }
+    public abstract ComponentViewWidget getComponentViewWidget();
 
     public void update(PValue value, boolean loading, AppBaseImage image, String valueElementClass,
                        GFont font, String background, String foreground, Boolean readOnly, String placeholder, String pattern,
@@ -122,7 +115,7 @@ public abstract class PanelRenderer {
     }
 
     protected Widget getTooltipWidget() {
-        return getComponent();
+        return value;
     }
 
     protected abstract void setLabelText(String text);
@@ -134,8 +127,12 @@ public abstract class PanelRenderer {
         value.onBinding(event);
     }
 
-    public void focus(FocusUtils.Reason reason) {
-        value.focus(reason);
+    public boolean focus(FocusUtils.Reason reason) {
+        if(GwtClientUtils.isShowing(value)) {
+            value.focus(reason);
+            return true;
+        }
+        return false;
     }
 
     public PValue setLoadingValue(PValue value) {

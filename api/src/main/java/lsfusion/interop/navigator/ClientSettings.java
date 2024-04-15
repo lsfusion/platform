@@ -37,6 +37,8 @@ public class ClientSettings implements Serializable {
 
     public boolean verticalNavbar;
     public boolean userFiltersManualApplyMode;
+    public boolean disableActionsIfReadonly;
+    public boolean disableShowingRecentlyLogMessages;
     public int maxRequestQueueSize;
 
 
@@ -46,7 +48,7 @@ public class ClientSettings implements Serializable {
                           boolean showNotDefinedStrings, boolean pivotOnlySelectedColumn, String matchSearchSeparator, ColorTheme colorTheme,
                           boolean useBootstrap, ColorPreferences colorPreferences, String[] preDefinedDateRangesNames, boolean useTextAsFilterSeparator,
                           List<Pair<String, RawFileData>> mainResourcesBeforeSystem, List<Pair<String, RawFileData>> mainResourcesAfterSystem,
-                          boolean verticalNavbar, boolean userFiltersManualApplyMode, int maxRequestQueueSize) {
+                          boolean verticalNavbar, boolean userFiltersManualApplyMode, boolean disableActionsIfReadonly, boolean disableShowingRecentlyLogMessages, int maxRequestQueueSize) {
         this.localePreferences = localePreferences;
         this.currentUserName = currentUserName;
         this.fontSize = fontSize;
@@ -73,6 +75,8 @@ public class ClientSettings implements Serializable {
         this.mainResourcesAfterSystem = mainResourcesAfterSystem;
         this.verticalNavbar = verticalNavbar;
         this.userFiltersManualApplyMode = userFiltersManualApplyMode;
+        this.disableActionsIfReadonly = disableActionsIfReadonly;
+        this.disableShowingRecentlyLogMessages = disableShowingRecentlyLogMessages;
         this.maxRequestQueueSize = maxRequestQueueSize;
     }
 }

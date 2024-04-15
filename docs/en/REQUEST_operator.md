@@ -45,6 +45,6 @@ requestCustomer (Order o)  {
 
 FORM request
     OBJECTS o = Order
-    PROPERTIES(o) customer ON CHANGE requestCustomer(o) // for example, group adjustment will be performed
+    PROPERTIES(o) customer ON CHANGE requestCustomer(o) // for example, group change will be performed
 ;
 ```

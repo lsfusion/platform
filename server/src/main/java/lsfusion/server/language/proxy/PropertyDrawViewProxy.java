@@ -128,6 +128,10 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.focusable = focusable;
     }
 
+    public void setInline(Boolean inline) {
+        target.inline = inline;
+    }
+
     public void setPanelColumnVertical(boolean panelColumnVertical) {
         target.panelColumnVertical = panelColumnVertical;
     }

@@ -8,6 +8,7 @@ import com.google.gwt.logging.impl.StackTracePrintStream;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.result.VoidResult;
+import lsfusion.gwt.client.base.view.PopupOwner;
 import lsfusion.gwt.client.controller.remote.action.PriorityErrorHandlingCallback;
 import lsfusion.gwt.client.controller.remote.action.navigator.LogClientExceptionAction;
 import lsfusion.gwt.client.navigator.controller.dispatch.NavigatorDispatchAsync;
@@ -19,7 +20,7 @@ import java.util.*;
 public class GExceptionManager {
     private final static Set<Throwable> unreportedThrowables = new HashSet<>();
 
-    public static void logClientError(final Throwable throwable, Widget popupOwnerWidget) {
+    public static void logClientError(final Throwable throwable, PopupOwner popupOwner) {
         LogClientExceptionAction action = new LogClientExceptionAction(throwable);
         GWT.log("", throwable);
         Log.error("", throwable);
@@ -27,7 +28,7 @@ public class GExceptionManager {
         try {
             NavigatorDispatchAsync dispatcher = MainFrame.navigatorDispatchAsync;
             if(dispatcher != null) { // dispatcher may be not initialized yet (at first look up logics call)
-                dispatcher.executePriority(action, new PriorityErrorHandlingCallback<VoidResult>(popupOwnerWidget) {
+                dispatcher.executePriority(action, new PriorityErrorHandlingCallback<VoidResult>(popupOwner) {
                     @Override
                     public void onFailure(Throwable caught) {
                         loggingFailed(caught, throwable);
@@ -49,7 +50,7 @@ public class GExceptionManager {
         }
     }
 
-    public static void flushUnreportedThrowables(Widget popupOwnerWidget) {
+    public static void flushUnreportedThrowables(PopupOwner popupOwner) {
         final List<Throwable> stillUnreported;
         synchronized (unreportedThrowables) {
             stillUnreported = new ArrayList<>(unreportedThrowables);
@@ -58,7 +59,7 @@ public class GExceptionManager {
             try {
                 NavigatorDispatchAsync dispatcher = MainFrame.navigatorDispatchAsync;
                 if(dispatcher != null) { // dispatcher may be not initialized yet (at first look up logics call)
-                    dispatcher.executePriority(new LogClientExceptionAction(t), new PriorityErrorHandlingCallback<VoidResult>(popupOwnerWidget) {
+                    dispatcher.executePriority(new LogClientExceptionAction(t), new PriorityErrorHandlingCallback<VoidResult>(popupOwner) {
                         @Override
                         public void onFailure(Throwable caught) {
                             Log.error("Error logging unreported client exception", caught);

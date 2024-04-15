@@ -9,7 +9,6 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.BaseStaticImage;
 import lsfusion.gwt.client.base.FocusUtils;
-import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.popup.PopupMenuCallback;
@@ -24,8 +23,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.BiConsumer;
-
-import static com.google.gwt.dom.client.BrowserEvents.BLUR;
 
 public abstract class SuggestBox {
 
@@ -135,8 +132,8 @@ public abstract class SuggestBox {
         for(Widget bottomPanel : bottomPanels)
             suggestionPopup.addBottomPanelItem(bottomPanel);
 
-        if (isAutoSelectEnabled && suggestions.size() > 0) {
-            suggestionPopup.selectFirstItem();
+        if (isAutoSelectEnabled && !suggestions.isEmpty()) {
+            suggestionPopup.selectFirstItem(true);
         }
 
         // Link the popup autoHide to the TextBox.
@@ -217,14 +214,14 @@ public abstract class SuggestBox {
         if (GKeyStroke.isCharModifyKeyEvent(handler.event, null))
             updateSuggestionList();
 
-        if (!handler.consumed && BLUR.equals(handler.event.getType())) {
-            //restore focus and ignore blur if refresh button pressed
-            if (refreshButtonPressed) {
-                refreshButtonPressed = false;
-                handler.consume();
-                focus();
-            }
-        }
+//        if (!handler.consumed && BLUR.equals(handler.event.getType())) {
+//            //restore focus and ignore blur if refresh button pressed
+//            if (refreshButtonPressed) {
+//                refreshButtonPressed = false;
+//                handler.consume();
+//                focus();
+//            }
+//        }
     }
 
     public void onKeyDown(EventHandler handler) {

@@ -19,23 +19,25 @@ public class DialogModalWindow extends ModalWindow {
     private Element focusedElement;
 
     @Override
-    public void show(Integer insertIndex, Widget popupOwnerWidget) {
+    public void show(Integer insertIndex, PopupOwner popupOwner) {
         MainFrame.closeNavigatorMenu();
 
         focusedElement = FocusUtils.getFocusedElement();
         MainFrame.setModalPopup(true);
 
-        super.show(insertIndex, popupOwnerWidget);
+        super.show(insertIndex, popupOwner);
     }
 
     @Override
     public void hide() {
-        super.hide();
-
-        MainFrame.setModalPopup(false);
+        // for ResizableModalWindow this case is proceeded in ModalForm (using prevForm)
         if(focusedElement != null) {
             FocusUtils.focus(focusedElement, FocusUtils.Reason.RESTOREFOCUS);
             focusedElement = null; // just in case because sometimes hide is called without show (and the same DialogModalBox is used several time)
         }
+
+        super.hide();
+
+        MainFrame.setModalPopup(false);
     }
 }

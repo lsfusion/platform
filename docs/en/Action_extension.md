@@ -13,7 +13,7 @@ Actions extension allows:
 
 ### Polymorphic form {#poly}
 
-As with a branching operator, for an abstract action there is a *polymorphic form*, where it is possible not to define a condition explicitly, but to use as a condition matching the [signature](Property_signature_CLASS.md) of the action that corresponds to this condition.
+As with a branching operator, for an abstract action there is a *polymorphic form*, where it is possible not to define a condition explicitly, but to use as a condition [matching the signature](Property_signature_ISCLASS.md) of the action that corresponds to this condition.
 
 ### Mutual exclusion of conditions {#exclusive}
 

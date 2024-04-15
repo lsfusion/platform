@@ -231,3 +231,18 @@
 .grid-dir-horz {
     grid-auto-flow: column;
 }
+
+.root-layout-panel {
+    z-index: 0 !important;
+}
+.modal-form.popup-partner {
+    /* actually needed only for bootstrap because it has no position, but for z-index position should be different from static */
+    position: fixed;
+}
+.popup-partner {
+    z-index: 1 !important;
+}
+/* actually z-index can be also 1, but some dropdowns, like selectize, create dropdown before showing it, so it's the easiest way to achieve what we want */
+.dropdown-partner {
+    z-index: 2 !important;
+}

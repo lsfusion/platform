@@ -10,14 +10,16 @@ import lsfusion.gwt.client.base.view.SizedWidget;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.design.view.CaptionWidget;
+import lsfusion.gwt.client.form.design.view.ComponentViewWidget;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
+import lsfusion.gwt.client.form.design.view.InlineComponentViewWidget;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 
 public class PropertyPanelRenderer extends PanelRenderer {
 
-    private final SizedWidget sizedView;
+    private final ComponentViewWidget sizedView;
 
     private Widget label;
 
@@ -56,9 +58,9 @@ public class PropertyPanelRenderer extends PanelRenderer {
                 regexp, regexpMessage, valueTooltip);
     }
 
-    private SizedWidget initCaption(SizedWidget valuePanel, GPropertyDraw property, Result<CaptionWidget> captionContainer) {
+    private ComponentViewWidget initCaption(SizedWidget valuePanel, GPropertyDraw property, Result<CaptionWidget> captionContainer) {
         if(property.caption == null && property.comment == null) // if there is no (empty) static caption and no dynamic caption
-            return valuePanel;
+            return valuePanel.view;
 
         // id and for we need to support editing when clicking on the label
         // however only CLICK and CHANGE (for boolean props) are propagated to the input, and not MOUSEDOWN
@@ -95,7 +97,8 @@ public class PropertyPanelRenderer extends PanelRenderer {
         boolean commentFirst = property.isPanelCommentFirst();
 
         boolean isAlignCaption = property.isAlignCaption() && captionContainer != null;
-        boolean verticalDiffers = property.caption != null && property.comment != null && property.panelCaptionVertical != property.panelCommentVertical;
+        boolean inline = !isAlignCaption && property.isInline();
+        boolean verticalDiffers = property.caption != null && property.comment != null && !inline && property.panelCaptionVertical != property.panelCommentVertical;
         boolean panelVertical = property.caption != null ? property.panelCaptionVertical : property.panelCommentVertical;
 
         SizedWidget sizedComment = null;
@@ -126,42 +129,46 @@ public class PropertyPanelRenderer extends PanelRenderer {
                 captionLast = false; // it's odd having caption last for alignments other than END
 
             captionContainer.set(new CaptionWidget(captionLast ? valuePanel : sizedLabel, GFlexAlignment.START, panelCaptionAlignment, panelValueAlignment));
-            return captionLast ? sizedLabel : valuePanel;
+            return (captionLast ? sizedLabel : valuePanel).view;
         }
 
-        SizedFlexPanel panel = new SizedFlexPanel(panelVertical);
-        panel.addStyleName("panel-container");
+        InlineComponentViewWidget componentViewWidget = new InlineComponentViewWidget(panelVertical);
 
         if (sizedLabel != null && !captionLast)
-            sizedLabel.add(panel, panelCaptionAlignment);
+            componentViewWidget.add(sizedLabel, panelCaptionAlignment, false, "caption");
 
         if (sizedComment != null && commentFirst && !verticalDiffers)
-            sizedComment.add(panel, panelCommentAlignment);
+            componentViewWidget.add(sizedComment, panelCommentAlignment, false, "comment");
 
-        panel.transparentResize = true;
-        valuePanel.add(panel, panelValueAlignment, 1, true);
+        componentViewWidget.add(valuePanel, panelValueAlignment, true, "");
 
         if (sizedComment != null && !verticalDiffers && !commentFirst)
-            sizedComment.add(panel, panelCommentAlignment);
+            componentViewWidget.add(sizedComment, panelCommentAlignment, false, "comment");
 
         if (sizedLabel != null && captionLast)
-            sizedLabel.add(panel, panelCaptionAlignment);
+            componentViewWidget.add(sizedLabel, panelCaptionAlignment, false, "caption");
 
+        if(inline)
+            return componentViewWidget;
+
+        SizedFlexPanel panel = new SizedFlexPanel(panelVertical);
+        panel.transparentResize = true;
+        panel.addStyleName("panel-container");
+        componentViewWidget.add(panel, 0);
         // mostly it is needed to handle margins / paddings / layouting but we do it ourselves
-//
 //        cellRenderer.renderPanelContainer(panel);
 
-        return new SizedWidget(panel);
+        return new SizedWidget(panel).view;
     }
 
     @Override
-    public SizedWidget getSizedWidget() {
+    public ComponentViewWidget getComponentViewWidget() {
         return sizedView;
     }
 
     @Override
     protected Widget getTooltipWidget() {
-        return label != null ? label : super.getTooltipWidget();
+        return label != null ? label : (comment != null ? comment : super.getTooltipWidget());
     }
 
     protected void setLabelText(String text) {

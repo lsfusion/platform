@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.property.cell.controller;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.view.PopupOwner;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -14,6 +15,9 @@ public interface EditContext extends ExecContext {
 
     RenderContext getRenderContext();
     UpdateContext getUpdateContext();
+    default PopupOwner getPopupOwner() {
+        return new PopupOwner(getPopupOwnerWidget(), getEditElement());
+    }
     default Widget getPopupOwnerWidget() {
         return getUpdateContext().getPopupOwnerWidget();
     }

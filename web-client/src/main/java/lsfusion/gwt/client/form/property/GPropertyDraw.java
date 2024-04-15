@@ -11,6 +11,7 @@ import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
+import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.classes.*;
 import lsfusion.gwt.client.classes.data.*;
 import lsfusion.gwt.client.form.controller.FormsController;
@@ -75,6 +76,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GGroupObject groupObject;
     public String columnsName;
     public ArrayList<GGroupObject> columnGroupObjects;
+
+    public Boolean inline;
 
     public boolean isList;
 
@@ -435,40 +438,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public boolean hasFooter;
 
-    private boolean isSuppressOnFocusChange(Element element) {
-        FocusUtils.Reason focusReason = FocusUtils.getFocusReason(element);
-
-        if(focusReason != null) { // system (probably navigate), so we will not suppress it
-            switch (focusReason) {
-                // for input setting focus will lead to starting change event handling "in between" (inside focus) with unpredictable consequences, so we'll not do that
-                // we could not set focus at all (it will work because in SimpleTextBasedEditor we consume the event propagating to native (so focus will be set anyway)), but for now we'll do this way
-                case MOUSECHANGE:
-                // we don't focus to be set and rely on mouse event handling
-                case MOUSENAVIGATE:
-                // it's really odd to start editing while scrolling, and other navigating
-                case SCROLLNAVIGATE:
-                case KEYMOVENAVIGATE:
-                // CHANGE will be started anyway
-                case BINDING:
-                // really odd behaviour to start editing (dropdown list) when focus is returned
-                case RESTOREFOCUS:
-                // not sure about SHOW, but it seems that this way is better
-                case SHOW:
-                // after applying filter, start editing does not make much sense
-                case APPLYFILTER:
-                // because there is a manual startediting
-//                case NEWFILTER:
-                case SUGGEST:
-                case REPLACE:
-                // unknown reason, it's better to suppress
-                case OTHER:
-                    return true;
-            }
-        }
-
-        return !MainFrame.suppressOnFocusChange;
-    }
-
     // eventually gets to PropertyDrawEntity.getEventAction (which is symmetrical to this)
     public String getEventSID(Event editEvent, boolean isBinding, ExecuteEditContext editContext, Result<Integer> contextAction) {
         if(isBinding)
@@ -490,7 +459,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             return GEditBindingMap.EDIT_OBJECT;
 
         // starting change on focus, or any key pressed when focus is on input
-        boolean isFocus = BrowserEvents.FOCUS.equals(editEvent.getType());
         Element editElement = editContext.getEditElement();
         InputElement inputElement = InputBasedCellRenderer.getInputEventTarget(editElement, editEvent);
         if (inputElement != null) {
@@ -498,7 +466,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
             GInputType inputType = InputBasedCellRenderer.getInputElementType(inputElement);
             if(inputType.isStretchText()) {
-                if (isFocus && !isSuppressOnFocusChange(inputElement))
+                if (DataGrid.FOCUSIN.equals(editEvent.getType()) && !FocusUtils.isSuppressOnFocusChange(inputElement))
                     return GEditBindingMap.changeOrGroupChange();
 
                 if (InputBasedCellRenderer.isInputKeyEvent(editEvent, updateContext, inputType.isMultilineText()))
@@ -929,7 +897,19 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     @Override
     public boolean isDefautAlignCaption() {
-        return caption != null && !hasColumnGroupObjects() && (!isAction() && (!panelCaptionVertical && !isPanelBoolean()) || isTab());
+        return caption != null && !hasColumnGroupObjects() && ((!isAction() && !panelCaptionVertical && !isPanelBoolean()) || isTab());
+    }
+
+    public boolean isInline() {
+        // not supported yet
+        // also there is an alignCaptions check, but it's done above
+        if(hasColumnGroupObjects() || isTab())
+            return false;
+
+        if(inline != null)
+            return inline;
+
+        return isInCustom();
     }
 
     // should match PropertyDrawEntity.isPredefinedImage
