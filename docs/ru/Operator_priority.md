@@ -12,6 +12,7 @@ title: 'Приоритет операторов'
 |[`*`](Arithmetic_operators.md)<br/>[`/`](Arithmetic_operators.md)|Умножение<br/>Деление|Бинарный<br/>Бинарный|
 |[`+`](Arithmetic_operators.md)<br/>[`-`](Arithmetic_operators.md)|Сложение<br/>Вычитание|Бинарный<br/>Бинарный|
 |[`(+)`](Arithmetic_operators.md)<br/>[`(-)`](Arithmetic_operators.md)|Сложение с учетом `NULL`<br/>Вычитание с учетом `NULL`|Бинарный<br/>Бинарный|
+|[`LIKE`](LIKE_operator.md)|[Сравнение с шаблоном](Comparison_operators_=_etc.md)|Бинарный|
 |[`<`](Comparison_operators.md)<br/>[`<=`](Comparison_operators.md)<br/>[`>`](Comparison_operators.md)<br/>[`>=`](Comparison_operators.md)|Меньше<br/>Меньше или равно<br/>Больше<br/>Больше или равно|Бинарный<br/>Бинарный<br/>Бинарный<br/>Бинарный|
 |[`==`](Comparison_operators.md)<br/>[`!=`](Comparison_operators.md)|Равно<br/>Не равно|Бинарный<br/>Бинарный|
 |[`NOT`](AND_OR_NOT_XOR_operators.md)|[Логическое отрицание](Logical_operators_AND_OR_NOT_XOR.md)|Префиксный|

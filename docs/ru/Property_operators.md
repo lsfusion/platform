@@ -22,6 +22,7 @@ title: 'Операторы-свойства'
 -   [Оператор `IF ... THEN`](IF_..._THEN_operator.md)
 -   [Оператор `ISCLASS`](ISCLASS_operator.md)
 -   [Оператор `JOIN`](JOIN_operator.md)
+-   [Оператор `LIKE`](LIKE_operator.md)
 -   [Оператор `MAX`](MAX_operator.md)
 -   [Оператор `MIN`](MIN_operator.md)
 -   [Оператор `MULTI`](MULTI_operator.md)
