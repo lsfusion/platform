@@ -12,6 +12,7 @@ When evaluating an [expression](Expression.md), [operators](Property_operators_p
 |[`*`](Arithmetic_operators.md)<br/>[`/`](Arithmetic_operators.md)|Multiplication<br/>Division|Binary<br/>Binary|
 |[`+`](Arithmetic_operators.md)<br/>[`-`](Arithmetic_operators.md)|Addition<br/>Subtraction|Binary<br/>Binary|
 |[`(+)`](Arithmetic_operators.md)<br/>[`(-)`](Arithmetic_operators.md)|Addition with `NULL` values<br/>Subtraction with `NULL` values|Binary<br/>Binary|
+|[`LIKE`](LIKE_operator.md)|[Comparison with a pattern](Comparison_operators_=_etc.md)|Binary|
 |[`<`](Comparison_operators.md)<br/>[`<=`](Comparison_operators.md)<br/>[`>`](Comparison_operators.md)<br/>[`>=`](Comparison_operators.md)|Less<br/>Less or equal<br/>Greater<br/>Greater or equal|Binary<br/>Binary<br/>Binary<br/>Binary|
 |[`==`](Comparison_operators.md)<br/>[`!=`](Comparison_operators.md)|Equal<br/>Not equal|Binary<br/>Binary|
 |[`NOT`](AND_OR_NOT_XOR_operators.md)|[Logical negation](Logical_operators_AND_OR_NOT_XOR.md)|Prefix|
