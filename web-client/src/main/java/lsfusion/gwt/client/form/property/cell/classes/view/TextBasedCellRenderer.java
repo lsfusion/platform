@@ -138,7 +138,8 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
             } else
                 element.removeClassName("text-based-value-empty");
         }
-        element.setTitle(property.echoSymbols ? "" : innerText);
+        //title is shown as an embedded tooltip on mouseover
+        element.setTitle(property.echoSymbols || property.valueTooltip != null ? "" : innerText);
 
         Element inputElement = getInputElement(element);
         if(inputElement != null) {
