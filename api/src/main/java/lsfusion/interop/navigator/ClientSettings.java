@@ -32,8 +32,6 @@ public class ClientSettings implements Serializable {
     public ColorPreferences colorPreferences;
     public String[] preDefinedDateRangesNames;
     public boolean useTextAsFilterSeparator;
-    public List<Pair<String, RawFileData>> mainResourcesBeforeSystem;
-    public List<Pair<String, RawFileData>> mainResourcesAfterSystem;
 
     public boolean verticalNavbar;
     public boolean userFiltersManualApplyMode;
@@ -47,7 +45,6 @@ public class ClientSettings implements Serializable {
                           boolean suppressOnFocusChange, boolean contentWordWrap, boolean autoReconnectOnConnectionLost, boolean forbidDuplicateForms,
                           boolean showNotDefinedStrings, boolean pivotOnlySelectedColumn, String matchSearchSeparator, ColorTheme colorTheme,
                           boolean useBootstrap, ColorPreferences colorPreferences, String[] preDefinedDateRangesNames, boolean useTextAsFilterSeparator,
-                          List<Pair<String, RawFileData>> mainResourcesBeforeSystem, List<Pair<String, RawFileData>> mainResourcesAfterSystem,
                           boolean verticalNavbar, boolean userFiltersManualApplyMode, boolean disableActionsIfReadonly, boolean disableShowingRecentlyLogMessages, int maxRequestQueueSize) {
         this.localePreferences = localePreferences;
         this.currentUserName = currentUserName;
@@ -71,8 +68,6 @@ public class ClientSettings implements Serializable {
         this.colorPreferences = colorPreferences;
         this.preDefinedDateRangesNames = preDefinedDateRangesNames;
         this.useTextAsFilterSeparator = useTextAsFilterSeparator;
-        this.mainResourcesBeforeSystem = mainResourcesBeforeSystem;
-        this.mainResourcesAfterSystem = mainResourcesAfterSystem;
         this.verticalNavbar = verticalNavbar;
         this.userFiltersManualApplyMode = userFiltersManualApplyMode;
         this.disableActionsIfReadonly = disableActionsIfReadonly;

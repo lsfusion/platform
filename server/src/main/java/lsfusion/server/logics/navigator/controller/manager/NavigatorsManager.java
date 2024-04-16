@@ -142,11 +142,7 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
             businessLogics.systemEventsLM.freeMemoryConnection.change(navigatorInfo.freeMemory, session, newConnection);
             businessLogics.systemEventsLM.javaVersionConnection.change(navigatorInfo.javaVersion, session, newConnection);
             businessLogics.systemEventsLM.is64JavaConnection.change(navigatorInfo.javaVersion != null && navigatorInfo.javaVersion.endsWith("64 bit"), session, newConnection);
-            String screenSize = navigatorInfo.screenSize;
-            businessLogics.systemEventsLM.screenSizeConnection.change(screenSize == null ? "1366x768" : screenSize, session, newConnection);//1366x768 default???
             businessLogics.systemEventsLM.computerConnection.change(navigator.getComputer(), session, newConnection);
-            ClientType clientType = navigatorInfo.clientType;
-            businessLogics.systemEventsLM.clientTypeConnection.change(businessLogics.systemEventsLM.clientType.getObjectID((clientType == null ? ClientType.WEB_DESKTOP : clientType).toString()), session, newConnection);
             businessLogics.systemEventsLM.connectionStatusConnection.change(businessLogics.systemEventsLM.connectionStatus.getObjectID("connectedConnection"), session, newConnection);
             businessLogics.systemEventsLM.connectTimeConnection.change(businessLogics.timeLM.currentDateTime.readClasses(session), session, newConnection);
             businessLogics.systemEventsLM.remoteAddressConnection.change(navigator.getLogInfo().remoteAddress, session, newConnection);

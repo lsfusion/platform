@@ -100,7 +100,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
 //        String country = clientLocale.getCountry();
 
         return new NavigatorInfo(getSessionInfo(request), osVersion, processor, architecture, cores, physicalMemory, totalMemory,
-                maximumMemory, freeMemory, javaVersion, null, null, BaseUtils.getPlatformVersion(), BaseUtils.getApiVersion());
+                maximumMemory, freeMemory, javaVersion, BaseUtils.getPlatformVersion(), BaseUtils.getApiVersion());
     }
 
     // required for correct Jasper report generation

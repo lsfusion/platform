@@ -21,6 +21,7 @@ import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.ClientType;
 import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.form.remote.RemoteFormInterface;
+import lsfusion.interop.navigator.ClientInfo;
 import lsfusion.interop.navigator.NavigatorInfo;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
@@ -54,7 +55,6 @@ import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.navigator.*;
 import lsfusion.server.logics.navigator.changed.NavigatorChanges;
 import lsfusion.server.logics.navigator.controller.context.RemoteNavigatorContext;
-import lsfusion.server.logics.navigator.controller.env.*;
 import lsfusion.server.logics.navigator.controller.env.*;
 import lsfusion.server.logics.navigator.controller.manager.NavigatorsManager;
 import lsfusion.server.logics.navigator.window.AbstractWindow;
@@ -124,9 +124,6 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         remoteContext = new ConnectionContext(isUseBootstrap());
 
         this.client = new ClientCallBackController(port, toString(), this::updateLastUsedTime);
-        ClientType clientType = navigatorInfo.clientType;
-        this.isNative = clientType == ClientType.NATIVE_DESKTOP || clientType == ClientType.NATIVE_MOBILE;
-        this.isMobile = clientType == ClientType.NATIVE_MOBILE || clientType == ClientType.WEB_MOBILE;
 
         createPausablesExecutor();
 
@@ -380,10 +377,14 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         }
     }
 
-    public void updateNavigatorClientSettings(String screenSize, boolean mobile) {
+    public void updateClientInfo(ClientInfo clientInfo) {
         try (DataSession session = createSession()) {
-            businessLogics.systemEventsLM.screenSizeConnection.change(screenSize, session, getConnection());
-            businessLogics.systemEventsLM.clientTypeConnection.change(businessLogics.systemEventsLM.clientType.getObjectID((mobile ? ClientType.WEB_MOBILE : ClientType.WEB_DESKTOP).toString()), session, getConnection());
+            businessLogics.systemEventsLM.screenSizeConnection.change(clientInfo.screenSize, session, getConnection());
+
+            ClientType clientType = clientInfo.clientType;
+            businessLogics.systemEventsLM.clientTypeConnection.change(businessLogics.systemEventsLM.clientType.getObjectID(clientType.toString()), session, getConnection());
+            this.isNative = clientType == ClientType.NATIVE_DESKTOP || clientType == ClientType.NATIVE_MOBILE;
+            this.isMobile = clientType == ClientType.NATIVE_MOBILE || clientType == ClientType.WEB_MOBILE;
 
             String result = session.applyMessage(businessLogics, getStack());
             if (result != null)
