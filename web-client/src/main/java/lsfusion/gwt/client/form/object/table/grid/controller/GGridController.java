@@ -12,7 +12,6 @@ import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.form.GUpdateMode;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
@@ -22,6 +21,7 @@ import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
+import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGridUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.view.GUserPreferencesDialog;
@@ -683,7 +683,7 @@ public class GGridController extends GAbstractTableController {
     }
 
     @Override
-    public GComponent getGridComponent() {
+    public GGridProperty getGridComponent() {
         return isList() ? groupObject.grid : null;
     }
 

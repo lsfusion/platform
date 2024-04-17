@@ -115,6 +115,10 @@
 .table:not(.table-borderless) .dataGridFooter:not(.empty-footer) .dataGridFooterRow {
     outline: var(--table-outline-width) solid var(--bs-table-border-color);
 }
+/* --- workaround for the dataGridColumnRow which collapses top border */
+.table-bordered .dataGridHeader {
+    border-top: var(--table-outline-width) solid var(--bs-table-border-color);
+}
 
 @supports (-moz-appearance: none) {
     /*Fixes missing line under header */

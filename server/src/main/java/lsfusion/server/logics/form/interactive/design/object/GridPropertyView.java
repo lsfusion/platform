@@ -5,6 +5,7 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.F
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.BaseComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
+import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -14,6 +15,14 @@ public abstract class GridPropertyView extends BaseComponentView {
     public int headerHeight = 54; // actually it is the max height
 
     public Boolean resizeOverflow; // actually it is the max height
+
+    public String valueClass;
+    public PropertyObjectEntity propertyValueClass;
+
+    @Override
+    protected boolean hasPropertyComponent() {
+        return super.hasPropertyComponent() || propertyValueClass != null;
+    }
 
     public GridPropertyView() {
     }
@@ -88,6 +97,8 @@ public abstract class GridPropertyView extends BaseComponentView {
 
         outStream.writeInt(getLineWidth());
         outStream.writeInt(getLineHeight());
+
+        pool.writeString(outStream, valueClass);
     }
 
     public Boolean boxed;

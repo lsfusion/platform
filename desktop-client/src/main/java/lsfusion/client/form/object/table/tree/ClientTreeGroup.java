@@ -9,6 +9,7 @@ import lsfusion.client.form.filter.user.ClientFilter;
 import lsfusion.client.form.filter.user.ClientFilterControls;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.table.ClientToolbar;
+import lsfusion.client.form.object.table.grid.ClientGridProperty;
 import lsfusion.interop.form.object.table.tree.AbstractTreeGroup;
 
 import java.io.DataInputStream;
@@ -17,7 +18,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ClientTreeGroup extends ClientComponent implements ClientIdentitySerializable, AbstractTreeGroup<ClientComponent> {
+public class ClientTreeGroup extends ClientGridProperty implements ClientIdentitySerializable, AbstractTreeGroup<ClientComponent> {
 
     public List<ClientGroupObject> groups = new ArrayList<>();
 
@@ -27,19 +28,11 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
     
     public ClientToolbar toolbar;
 
-    public Boolean boxed;
-
     public boolean plainTreeMode;
     
     public boolean expandOnClick;
     public int hierarchicalWidth;
 
-    public Boolean resizeOverflow;
-
-    public int headerHeight;
-
-    public int lineHeight;
-    public int lineWidth;
 
     public ClientTreeGroup() {
     }
@@ -87,17 +80,6 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, inStream);
-
-        // GridProperty
-
-        boxed = inStream.readBoolean() ? inStream.readBoolean() : null;
-
-        headerHeight = inStream.readInt();
-
-        resizeOverflow = inStream.readBoolean() ? inStream.readBoolean() : null;
-
-        lineWidth = inStream.readInt();
-        lineHeight = inStream.readInt();
 
         // Tree
 

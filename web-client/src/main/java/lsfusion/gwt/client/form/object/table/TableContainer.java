@@ -14,6 +14,8 @@ import lsfusion.gwt.client.base.view.HasMaxPreferredSize;
 import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.design.view.GFormLayout;
+import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
 import lsfusion.gwt.client.form.object.table.grid.view.GCustom;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
@@ -93,6 +95,10 @@ public class TableContainer extends ResizableSimplePanel implements HasMaxPrefer
 
     public TableComponent getTableComponent() {
         return tableComponent;
+    }
+
+    public void updateElementClass(GGridProperty component) {
+        GFormLayout.updateComponentClass(component.valueClass, tableComponent.getWidget(), "value");
     }
 
     public void changeTableComponent(TableComponent tableComponent, boolean boxed) {

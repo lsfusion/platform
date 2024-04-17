@@ -1,11 +1,10 @@
 package lsfusion.server.logics.form.interactive.instance.design;
 
+import lsfusion.interop.form.property.PropertyReadType;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.instance.CellInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyReaderInstance;
-
-import static lsfusion.interop.form.property.PropertyReadType.COMPONENT_ELEMENTCLASS;
 
 public class ComponentViewInstance<T extends ComponentView> extends CellInstance<T> {
 
@@ -28,7 +27,7 @@ public class ComponentViewInstance<T extends ComponentView> extends CellInstance
 
         @Override
         public byte getTypeID() {
-            return COMPONENT_ELEMENTCLASS;
+            return PropertyReadType.COMPONENT_ELEMENTCLASS;
         }
 
         @Override

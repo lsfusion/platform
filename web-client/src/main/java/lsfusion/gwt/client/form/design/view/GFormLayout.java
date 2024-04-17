@@ -15,7 +15,9 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.flex.LinearContainerView;
+import lsfusion.gwt.client.form.object.table.TableContainer;
 import lsfusion.gwt.client.form.object.table.grid.GGrid;
+import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
 import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.ArrayList;
@@ -224,6 +226,13 @@ public class GFormLayout extends ResizableComplexPanel {
 
 //        Widget widget = component instanceof GContainer ? containerViews.get((GContainer) component).getView() : baseComponentViews.get(component);
         updateComponentClass(valueClass, containerViews.get(component).getView(), "value");
+    }
+
+    public void setValueClass(GGridProperty component, String valueClass) {
+        component.valueClass = valueClass;
+
+        TableContainer tableContainer = (TableContainer)baseComponentViews.get(component).getSingleWidget().widget;
+        tableContainer.updateElementClass(component);
     }
 
     public static void updateComponentClass(String elementClass, Widget widget, String postfix) {

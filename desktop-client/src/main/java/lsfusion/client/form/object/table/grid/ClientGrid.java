@@ -10,20 +10,12 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class ClientGrid extends ClientComponent {
+public class ClientGrid extends ClientGridProperty {
 
     public final static int DEFAULT_HEADER_HEIGHT = 34;
 
     public boolean tabVertical = false;
     public boolean quickSearch;
-    public int headerHeight;
-
-    public Boolean resizeOverflow;
-
-    public int lineWidth;
-    public int lineHeight;
-
-    public Boolean boxed;
 
     public ClientGroupObject groupObject;
 
@@ -65,16 +57,6 @@ public class ClientGrid extends ClientComponent {
     @Override
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, inStream);
-
-        // GridProperty
-        boxed = inStream.readBoolean() ? inStream.readBoolean() : null;
-
-        headerHeight = inStream.readInt();
-
-        resizeOverflow = inStream.readBoolean() ? inStream.readBoolean() : null;
-
-        lineWidth = inStream.readInt();
-        lineHeight = inStream.readInt();
 
         // Grid
 
