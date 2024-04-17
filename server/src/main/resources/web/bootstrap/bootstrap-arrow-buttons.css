@@ -1,3 +1,5 @@
+/*copy-paste from https://github.com/shpoont/bootstrap-arrow-buttons*/
+
 .btn-arrow-right,
 .btn-arrow-left {
   position: relative;
@@ -75,10 +77,9 @@
   background-color: white;
 }
 
-/*added*/
+/*end of original code*/
 
-
-/*remove right border, but remain it for before and after*/
+/*remove right border for .btn-arrow-right, but remain it for before and after*/
 .btn-arrow-right:not(:checked) {
   border-right-width: 0;
 }
@@ -87,7 +88,7 @@
   border-right-width: 1px;
 }
 
-/*remove left border, but remain it for before and after*/
+/*remove left border for .btn-arrow-left, but remain it for before and after*/
 .btn-arrow-left:not(:checked) {
   border-left-width: 0;
 }
@@ -96,7 +97,7 @@
   border-left-width: 1px;
 }
 
-/*override white background for 'before' between buttons */
+/*override white background for 'before' rotated squares between buttons */
 .btn-check:checked+.btn-arrow-right+.btn-check+.btn-arrow-right:before,
 .btn-check:checked+.btn-arrow-left+.btn-check+.btn-arrow-left:before {
   background: inherit;
