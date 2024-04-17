@@ -74,3 +74,30 @@
   /* hide arrow tails background */
   background-color: white;
 }
+
+/*added*/
+
+
+/*remove right border, but remain it for before and after*/
+.btn-arrow-right:not(:checked) {
+  border-right-width: 0;
+}
+.btn-arrow-right:not(:checked):before,
+.btn-arrow-right:not(:checked):after {
+  border-right-width: 1px;
+}
+
+/*remove left border, but remain it for before and after*/
+.btn-arrow-left:not(:checked) {
+  border-left-width: 0;
+}
+.btn-arrow-left:not(:checked):before,
+.btn-arrow-left:not(:checked):after {
+  border-left-width: 1px;
+}
+
+/*override white background for 'before' between buttons */
+.btn-check:checked+.btn-arrow-right+.btn-check+.btn-arrow-right:before,
+.btn-check:checked+.btn-arrow-left+.btn-check+.btn-arrow-left:before {
+  background: inherit;
+}
