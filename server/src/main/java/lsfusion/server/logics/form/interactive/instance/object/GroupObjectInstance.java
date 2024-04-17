@@ -739,8 +739,12 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
 
     public void expandCollapseAll(FormInstance form, boolean current, boolean expand) throws SQLException, SQLHandledException {
+        expandCollapseAll(form, null, current, expand);
+    }
+
+    public void expandCollapseAll(FormInstance form, ImMap<ObjectInstance, DataObject> value, boolean current, boolean expand) throws SQLException, SQLHandledException {
         if (current && !isNull()) {
-            expandCollapseAll(form, getGroupObjectValue(), expand);
+            expandCollapseAll(form, value != null ? value : getGroupObjectValue(), expand);
         } else {
             GroupObjectInstance upTreeGroup = getUpTreeGroup();
             expandCollapseAll(form, upTreeGroup == null ? null : upTreeGroup.expandTable, expand);
