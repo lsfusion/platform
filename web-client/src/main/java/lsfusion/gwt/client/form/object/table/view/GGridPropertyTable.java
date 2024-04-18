@@ -664,7 +664,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
         PValue oldValue = column.getValue(property, rowRecord);
 
-        setLoadingAt(cell);
+        setLoadingAt(cell, true);
         setValueAt(cell, value);
 
         column.updateDom(cell, getElement(cell));

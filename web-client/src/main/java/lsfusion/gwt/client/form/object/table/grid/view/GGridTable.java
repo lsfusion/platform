@@ -977,10 +977,10 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     @Override
-    public void setLoadingAt(Cell cell) {
+    public void setLoadingAt(Cell cell, boolean loading) {
         GridColumn column = getGridColumn(cell);
 
-        column.setLoading(getGridRow(cell), true); // updating inner model
+        column.setLoading(getGridRow(cell), loading); // updating inner model
 
         // updating outer model - controller
         NativeHashMap<GGroupObjectValue, PValue> loadingMap = loadings.get(column.property);
@@ -988,7 +988,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             loadingMap = new NativeHashMap<>();
             loadings.put(column.property, loadingMap);
         }
-        loadingMap.put(getRowKey(cell), PValue.getPValue(true));
+        loadingMap.put(getRowKey(cell), PValue.getPValue(loading));
     }
 
     public Map<Map<GPropertyDraw, GGroupObjectValue>, Boolean> getOrderDirections() {

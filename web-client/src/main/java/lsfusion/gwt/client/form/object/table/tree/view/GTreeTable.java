@@ -1111,17 +1111,17 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     @Override
-    public void setLoadingAt(Cell cell) {
+    public void setLoadingAt(Cell cell, boolean loading) {
         GPropertyDraw property = getProperty(cell);
         // assert property is not null since we want get here if property is null
 
-        getTreeGridRow(cell).setLoading(property, true);
+        getTreeGridRow(cell).setLoading(property, loading);
         NativeHashMap<GGroupObjectValue, PValue> loadingMap = loadings.get(property);
         if(loadingMap == null) {
             loadingMap = new NativeHashMap<>();
             loadings.put(property, loadingMap);
         }
-        loadingMap.put(getRowKey(cell), PValue.getPValue(true));
+        loadingMap.put(getRowKey(cell), PValue.getPValue(loading));
     }
 
     public boolean changeOrders(GGroupObject groupObject, LinkedHashMap<GPropertyDraw, Boolean> orders, boolean alreadySet) {

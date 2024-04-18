@@ -1083,6 +1083,11 @@ public class GFormController implements EditManager {
             public void onFailure(ExceptionResult exceptionResult) {
                 actionDispatcher.editContext = editContext;
                 super.onFailure(exceptionResult);
+                RenderContext context = editContext.getRenderContext();
+                if (context instanceof ExecuteEditContext) {
+                    ((ExecuteEditContext) context).setLoading(false);
+                    update(editContext);
+                }
             }
         };
 
@@ -2413,7 +2418,7 @@ public class GFormController implements EditManager {
     // setting loading
     public void setLoading(ExecuteEditContext editContext, long requestIndex) {
         // actually this part we can do before sending request
-        editContext.setLoading();
+        editContext.setLoading(true);
 
         // RERENDER IF NEEDED : we have the previous state
         // but in that case we need to move GridPropertyColumn.renderDom logics to GFormController.render here (or have some callbacks)

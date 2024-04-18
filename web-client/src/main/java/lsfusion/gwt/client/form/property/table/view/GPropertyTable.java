@@ -66,7 +66,7 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
 
     public abstract void setValueAt(Cell cell, PValue value);
 
-    public abstract void setLoadingAt(Cell cell);
+    public abstract void setLoadingAt(Cell cell, boolean loading);
 
     public abstract void pasteData(Cell cell, Element renderElement, List<List<String>> table);
 
@@ -123,8 +123,8 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
             }
 
             @Override
-            public void setLoading() {
-                setLoadingAt(editCell);
+            public void setLoading(boolean loading) {
+                setLoadingAt(editCell, loading);
             }
 
             @Override
