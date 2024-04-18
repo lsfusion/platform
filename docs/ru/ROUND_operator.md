@@ -30,7 +30,7 @@ ROUND(numExpr[, scaleExpr])
 number = DATA NUMERIC[10,3]();  //12345.678
 rounded = ROUND(number());      //12346
 rounded1 = ROUND(number(), 2);  //12345.68
-rounded2 = ROUND(number(), -2); //12300.00
+rounded2 = ROUND(number(), -2); //12300
 
 FORM roundTest
 PROPERTIES() number, rounded, rounded1, rounded2;
