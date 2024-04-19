@@ -639,7 +639,7 @@ public abstract class LogicsModule {
         
         return addForAProp(LocalizedString.create("{logics.add}"), false, false, false, false, paramsCount, null, false, true, 0, false,
                 add(add(getUParams(paramsCount), 
-                        new Object[] {addJProp(baseLM.equals2, 1, baseLM.getExtension, 2), paramsCount + 1, 1}), // FOR x = getExtension(FILE(prm1))  
+                        new Object[] {addJProp(baseLM.equals2, 1, baseLM.extension, 2), paramsCount + 1, 1}), // FOR x = getExtension(FILE(prm1))
                         directLI(addCaseAProp(true, cases))));  // CASE EXCLUSIVE
     }
     
