@@ -574,39 +574,68 @@ function selectMultiHTMLDropdown() {
 
 function _selectPicker(multi, html, shouldBeSelected) {
     if (lsfUtils.useBootstrap()) { //check if bootstrap loaded
-        return _dropDown(multi ? {'multiple': ''} : {},
-            (element, controller) => {
+        function formatState (state) {
+            if (!html) {
+                    let id = state.id;
+                    return id == null ? state.text : id;
+            } else {
+                let element = state.element;
+                if (element != null && element.object != null) {
+                    let name = element.object.name;
+                    let $name = $(name);
+                    return $name.length > 0 ? $name : name
+                }
+                return '';
+            }
+        }
+
+        function changeProperty(e, element, value) {
+            let object = e.params.data.element.object;
+            if (multi)
+                element.controller.changeProperty('selected', object, value);
+            else
+                _changeSingleDropdownProperty(object, element)
+        }
+
+        return _dropDown({}, (element) => {
                 let selectElement = $(element.select);
-                selectElement.selectpicker({
-                    container: document.body,
-                    style: '',
-                    styleBase: 'form-control',
-                    width: '100%' // we want none to make fill-parent-perc in wrap-div work, but by default 220 px is set
+                selectElement.select2({
+                    theme: "bootstrap-5",
+                    multiple: multi,
+                    closeOnSelect: !multi,
+                    width: '100%',
+                    templateResult: formatState, // html support
+                    templateSelection: formatState,
+                    selectionCssClass: ':all:' // move css-classes into select2 :button"
                 });
-                selectElement.on('changed.bs.select', function (e, clickedIndex, isSelected) {
-                    if (clickedIndex != null && isSelected != null) { //documentation:  If the select's value has been changed either via the .selectpicker('val'), .selectpicker('selectAll'), or .selectpicker('deselectAll') methods, clickedIndex and isSelected will be null.
-                        let object = this.children[clickedIndex].object;
-                        if (multi)
-                            element.controller.changeProperty('selected', object, isSelected ? true : null);
-                        else
-                            _changeSingleDropdownProperty(object, element)
-                    }
+
+                if (!_isInGrid(element))
+                    selectElement.data('select2').$container.addClass('form-control');
+
+                selectElement.on('select2:select', function (e) {
+                    changeProperty(e, element, true);
                 });
-                selectElement.on('shown.bs.select', function (e) {
+
+                selectElement.on('select2:unselect', function (e) {
+                    changeProperty(e, element, false);
+                });
+
+                selectElement.on('select2:open', function (e) {
                     _setIsEditing(element, true);
                 });
-                selectElement.on('hidden.bs.select', function (e) {
+
+                selectElement.on('select2:close', function (e) {
                     _setIsEditing(element, false);
-                })
-                // lsfUtils.addDropDownPartner(element, selectElement.selectpicker('getDropdown')[0]);
-                lsfUtils.setOnFocusOutWithDropDownPartner(element, selectElement.selectpicker('getDropdown')[0], function(e) {
-                    selectElement.selectpicker('close');
+                });
+
+                lsfUtils.setOnFocusOutWithDropDownPartner(element, selectElement.data('select2').$results[0], function(e) {
+                    selectElement.select2('close');
                 });
             },
-            multi, shouldBeSelected, html, true);
+            multi, shouldBeSelected, html, true, 'select2');
     } else {
         return _dropDown(multi ? {'multiple': ''} : {},
-            (element, controller) => {
+            (element) => {
                 let select = element.select;
                 let selectElement = $(select);
                 selectElement.multipleSelect({
@@ -642,7 +671,7 @@ function _selectPicker(multi, html, shouldBeSelected) {
 
 function _selectDropdown(shouldBeSelected) {
     return _dropDown({},
-        (element, controller) => {
+        (element) => {
             element.select.addEventListener('change', function () {
                 _changeSingleDropdownProperty(this.selectedOptions[0].object, element);
             })
@@ -660,7 +689,7 @@ function _setSelectName(option, name, html) {
     setDataHtmlOrText(option, name, html);
 }
 
-function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBootstrap) {
+function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBootstrap, pickerType) {
     let picker = multi || html;
     return {
         render: function (element, controller) {
@@ -695,10 +724,10 @@ function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBo
                 select.appendChild(option);
             }
 
-            render(element, controller);
+            render(element);
 
             // both for multiple and single
-            if (_isInGrid(element)) {
+            if (_isInGrid(element) && pickerType !== 'select2') { //select2 не нужны эти все листенеры
                 // press on space button on dropdown element in grid-cell opens dropdown instead of adding a filter.
                 select.addEventListener('keypress', function (e) {
                     if (e.keyCode === 32) {
@@ -847,7 +876,7 @@ function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBo
                     if (!element.silent)
                         $(select).multipleSelect('refresh'); //Because "refresh" is called after every update, which removes the dropdown
                 } else {
-                    $(select).selectpicker('refresh');
+                    $(select).trigger('change.select2');
                 }
             }
         },
