@@ -24,6 +24,7 @@ import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.changed.OldProperty;
+import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapChange;
@@ -33,6 +34,7 @@ import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.cases.CalcCase;
 import lsfusion.server.logics.property.cases.graph.Graph;
+import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.classes.infer.ExClassSet;
 import lsfusion.server.logics.property.classes.infer.InferType;
 import lsfusion.server.logics.property.classes.infer.Inferred;
@@ -160,6 +162,9 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
     public ExClassSet mapInferValueClass(ImMap<P, ExClassSet> inferred, InferType inferType) {
         return inferred.get((P)this);
     }
+    public ValueClass mapValueClass(ClassType classType) {
+        return null;
+    }
 
     public AndClassSet mapValueClassSet(ClassWhere<P> interfaceClasses) {
         return interfaceClasses.getCommonClass((P)this);
@@ -171,6 +176,11 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
 
     @Override
     public boolean mapIsDrawNotNull() {
+        return true;
+    }
+
+    @Override
+    public boolean mapIsNotNull() {
         return true;
     }
 

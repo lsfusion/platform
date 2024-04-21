@@ -302,12 +302,19 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public <X extends PropertyInterface> ActionObjectEntity<?> getEventAction(String actionId, FormInstanceContext context) {
+        ActionObjectEntity<?> explicitEventAction = getExplicitEventActionEntity(actionId, context);
+        if (explicitEventAction != null)
+            return explicitEventAction;
+
+        return getDefaultEventAction(actionId, context);
+    }
+
+    private ActionObjectEntity<?> getExplicitEventActionEntity(String actionId, FormInstanceContext context) {
         ActionObjectSelector explicitEventSelector = getExplicitEventAction(actionId);
         ActionObjectEntity<?> explicitEventAction;
         if (explicitEventSelector != null && (explicitEventAction = explicitEventSelector.getAction(context)) != null)
             return explicitEventAction;
-
-        return getDefaultEventAction(actionId, context);
+        return null;
     }
 
     private <X extends PropertyInterface> ActionObjectEntity<? extends PropertyInterface> getDefaultEventAction(String actionId, FormInstanceContext context) {
@@ -341,7 +348,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public <X extends PropertyInterface> ActionObjectEntity<?> getSelectorAction(FormInstanceContext context) {
-        return getSelectorAction(context.entity, isProperty(context) ? getAssertCellProperty(context) : null);
+        return getSelectorAction(context.entity, isProperty(context) ? (PropertyObjectEntity<? extends PropertyInterface>) getRawCellActionOrProperty() : null);
     }
 
     @IdentityStrongLazy
@@ -761,8 +768,9 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         public final int count;
         public final boolean actual;
         public final boolean html;
+        public final boolean changeValue;
 
-        public Select(PropertyObjectEntity property, String type, String elementType, int length, int count, boolean actual, boolean html) {
+        public Select(PropertyObjectEntity property, String type, String elementType, int length, int count, boolean actual, boolean html, boolean changeValue) {
             this.property = property;
             this.type = type;
             this.elementType = elementType;
@@ -770,6 +778,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             this.count = count;
             this.actual = actual;
             this.html = html;
+            this.changeValue = changeValue;
         }
     }
 
@@ -811,17 +820,21 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
                     return null;
             }
 
-            PropertyObjectEntity.Select select = ((PropertyObjectEntity<?>) actionOrProperty).getSelectProperty(context, forceSelect, forceFilter);
+            if(!forceSelect && isGroupCustom(context))
+                return null;
+
+            PropertyObjectEntity<?> property = (PropertyObjectEntity<?>) actionOrProperty;
+
+            PropertyObjectEntity.Select select;
+            boolean changeValue = false;
+            ActionObjectEntity<?> explicitChange = getExplicitEventActionEntity(CHANGE, context);
+            if(explicitChange != null) {
+                changeValue = true;
+                select = explicitChange.getSelectProperty(context, forceSelect, forceFilter, property);
+            } else
+                select = property.getSelectProperty(context, forceSelect, forceFilter);
 
             if(select != null) {
-                if (!forceSelect) {
-                    if(getExplicitEventAction(CHANGE) != null)
-                        return null;
-
-                    if(isGroupCustom(context))
-                        return null;
-                }
-
                 String selectType = null;
                 if (select.type == PropertyObjectEntity.Select.Type.MULTI) {
                     selectType = "Multi";
@@ -859,7 +872,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
                     }
 
                     if (elementType != null)
-                        return new Select(select.property, selectType, elementType, select.length, select.count, select.actual, select.html);
+                        return new Select(select.property, selectType, elementType, select.length, select.count, select.actual, select.html, changeValue);
                 }
             }
         }
@@ -873,7 +886,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public String getCustomRenderFunction(FormInstanceContext context) {
         Select selectProperty = getCustomSelectProperty(context);
         if(selectProperty != null)
-            return "select" + selectProperty.type + (selectProperty.html ? "HTML" : "") + selectProperty.elementType;
+            return "select" + selectProperty.type + (selectProperty.html ? "HTML" : "") + (selectProperty.changeValue ? "Value" : "") + selectProperty.elementType;
 
         String custom = getCustomRenderFunction();
         if(custom != null) {

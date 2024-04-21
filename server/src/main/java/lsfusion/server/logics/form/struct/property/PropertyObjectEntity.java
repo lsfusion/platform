@@ -101,31 +101,7 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrP
         }
     }
     public Select getSelectProperty(FormInstanceContext context, boolean forceSelect, Boolean forceFilterSelected) { // false - filter selected,
-        Property.Select<P> select = property.getSelectProperty(ListFact.EMPTY(), forceSelect);
-        if(select != null) {
-            Pair<Integer, Integer> stats = select.stat;
-            boolean actualStats = false;
-            if(select.values != null && context.dbManager != null) {
-                stats = getActualSelectStats(context, select);
-                actualStats = true;
-            }
-            PropertyMapImplement<?, P> selectProperty = select.property.get(forceFilterSelected != null ? forceFilterSelected : stats.second > Settings.get().getMaxInterfaceStatForValueDropdown());
-            if(selectProperty == null)
-                return null;
-            boolean multi = select.multi;
-            return new Select(selectProperty.mapEntityObjects(mapping), stats.first, stats.second, actualStats, multi ? Select.Type.MULTI : (select.notNull ? Select.Type.NOTNULL : Select.Type.NULL), select.html);
-        }
-        return null;
-    }
-
-    private static <P extends PropertyInterface> Pair<Integer, Integer> getActualSelectStats(FormInstanceContext context, Property.Select<P> select) {
-        Pair<Integer, Integer> actualStats = new Pair<>(0, 0);
-        for(InputValueList value : select.values) {
-            Pair<Integer, Integer> readValues = context.getValues(value);
-            if(actualStats.second < readValues.second)
-                actualStats = readValues;
-        }
-        return actualStats;
+        return getSelectProperty(context, forceFilterSelected, property.getSelectProperty(ListFact.EMPTY(), forceSelect), mapping);
     }
 
     public boolean isValueUnique(GroupObjectEntity grid, Property.ValueUniqueType uniqueType) {

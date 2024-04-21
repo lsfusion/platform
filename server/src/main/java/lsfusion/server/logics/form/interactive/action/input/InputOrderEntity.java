@@ -26,4 +26,8 @@ public class InputOrderEntity<P extends PropertyInterface, V extends PropertyInt
     public PropertyMapImplement<P, V> getOrderProperty(V objectInterface) {
         return new PropertyMapImplement<>(property, mapValues.addRevExcl(singleInterface(), objectInterface));
     }
+
+    public <C extends PropertyInterface> InputOrderEntity<P, C> map(ImRevMap<V, C> map) {
+        return new InputOrderEntity<>(property, mapValues.join(map));
+    }
 }

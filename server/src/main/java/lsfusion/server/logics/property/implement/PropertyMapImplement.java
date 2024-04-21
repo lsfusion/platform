@@ -180,6 +180,11 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
     }
 
     @Override
+    public boolean mapIsNotNull() {
+        return property.isNotNull();
+    }
+
+    @Override
     public boolean mapIsExplicitTrue() {
         return property.isExplicitTrue();
     }
@@ -254,6 +259,9 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
     }
     public ExClassSet mapInferValueClass(ImMap<T, ExClassSet> inferred, InferType inferType) {
         return property.inferValueClass(mapping.join(inferred), inferType);
+    }
+    public ValueClass mapValueClass(ClassType classType) {
+        return property.getValueClass(classType);
     }
 
     public AndClassSet mapValueClassSet(ClassWhere<T> interfaceClasses) {

@@ -89,12 +89,14 @@ import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.input.*;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.dialogedit.ClassFormEntity;
+import lsfusion.server.logics.form.interactive.dialogedit.ClassFormSelector;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.property.checked.ConstraintCheckChangeProperty;
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.ValueClassWrapper;
 import lsfusion.server.logics.form.struct.filter.ContextFilterEntity;
+import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
 import lsfusion.server.logics.form.struct.property.PropertyClassImplement;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyClassImplement;
@@ -1730,32 +1732,55 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         if(valueClass instanceof CustomClass && !viewProperties.isEmpty() &&
                 ((viewProperty = (Property<V>) PropertyFact.createViewProperty(viewProperties).property).isValueUnique(MapFact.EMPTY(), ValueUniqueType.SELECT) || forceSelect)) {
 
-            // generation this interfaces + object
-            ImRevMap<T, I> mapPropertyInterfaces = interfaces.mapRevValues(() -> (I)new PropertyInterface());
-            ImSet<I> innerMapInterfaces = mapPropertyInterfaces.valuesSet();
+//            viewProperty or listProperty in InputListEntity => viewProperty ???
+//          dialogForm or InputContextSelector
+//          this or oldValue => this ??? this надо
 
-            I objectInterface = (I) new PropertyInterface();
-            ImSet<I> innerInterfaces = innerMapInterfaces.addExcl(objectInterface);
+            ImSet<T> innerInterfaces = interfaces;
+            InputListEntity<V, T> viewListEntity = new InputListEntity<>(viewProperty, MapFact.EMPTYREV());
+            // assert viewListEntity.orders.isEmpty();
+            PropertyMapImplement<T, T> value = getImplement();
 
-            // name = viewProperty(o)
-            PropertyMapImplement<V, I> name = viewProperty.getImplement(SetFact.singletonOrder(objectInterface));
-            // selected = (o = this (x, y, z))
-            PropertyMapImplement<PropertyInterface, I> selected = PropertyFact.<I>createCompare(new PropertyMapImplement<>(this, mapPropertyInterfaces), objectInterface, Compare.EQUALS);
+            ClassFormSelector formSelector = new ClassFormSelector((CustomClass) valueClass, false);
+            Pair<InputFilterEntity<?, T>, ImOrderMap<InputOrderEntity<?, T>, Boolean>> filterAndOrders =
+                    new FormInputContextSelector<>(formSelector, getCheckFilters(formSelector.virtualObject), formSelector.virtualObject, MapFact.EMPTYREV()).getFilterAndOrders();
 
-            // FILTER / ORDER
-            // there are 2 options : add WHERE to the IntegrationFormEntity, add it to JSONProperty context filters
-            // the first option looks "cleaner" (since we need the external context anyway)
-            CustomClass customClass = (CustomClass) valueClass;
-            ClassFormEntity dialogForm = customClass.getDialogForm(baseLM);
-            Pair<InputFilterEntity<?, I>, ImOrderMap<InputOrderEntity<?, I>, Boolean>> filtersAndOrders = dialogForm.form.getInputFilterAndOrderEntities(dialogForm.object, getCheckFilters(dialogForm.object).mapSetValues(filter -> filter.map(mapPropertyInterfaces)), MapFact.EMPTYREV()); // , MapFact.singletonRev(dialogForm.object, objectInterface) - it will be removed
-            PropertyMapImplement<W, I> where = (PropertyMapImplement<W, I>) filtersAndOrders.first.getWhereProperty(objectInterface);
-            ImOrderMap<PropertyMapImplement<?, I>, Boolean> orders = filtersAndOrders.second.mapOrderKeys(order -> order.getOrderProperty(objectInterface));
-
-            // isFull is checked in the isValueUnique
-            return getSelectProperty(baseLM, false, isNotNull(), forceSelect, mapPropertyInterfaces, innerInterfaces, name, selected, customClass, where, orders);
+            return getSelectProperty(forceSelect, innerInterfaces, viewListEntity, filterAndOrders.first, filterAndOrders.second, value, false);
         }
 
         return null;
+    }
+
+    public static <T extends PropertyInterface, I extends PropertyInterface> Select<T> getSelectProperty(boolean forceSelect, ImSet<T> innerInterfaces, InputListEntity<?, T> viewListEntity, InputFilterEntity<?, T> where, ImOrderMap<InputOrderEntity<?, T>, Boolean> orders, PropertyInterfaceImplement<T> value, boolean drawnValue) {
+        BaseLogicsModule baseLM = ThreadLocalContext.getBaseLM();
+
+        boolean isNotNull;
+        CustomClass customClass;
+        if(drawnValue) {
+            isNotNull = value.mapIsDrawNotNull();
+            customClass = null;
+        } else {
+            isNotNull = value.mapIsNotNull();
+            customClass = (CustomClass) value.mapValueClass(ClassType.editValuePolicy);
+        }
+
+        // generation this interfaces + object
+        ImRevMap<T, I> mapPropertyInterfaces = innerInterfaces.mapRevValues(() -> (I)new PropertyInterface());
+        I objectInterface = (I) new PropertyInterface();
+
+        // name = viewProperty(o)
+        PropertyMapImplement<?, I> name = viewListEntity.getProperty(mapPropertyInterfaces, objectInterface);
+        // selected = (o = this (x, y, z))
+        PropertyMapImplement<PropertyInterface, I> selected = PropertyFact.<I>createCompare(value.map(mapPropertyInterfaces), drawnValue ? name : objectInterface, Compare.EQUALS);
+
+        // FILTER / ORDER
+        // there are 2 options : add WHERE to the IntegrationFormEntity, add it to JSONProperty context filters
+        // the first option looks "cleaner" (since we need the external context anyway)
+        PropertyMapImplement<?, I> mappedWhere = where.map(mapPropertyInterfaces).getWhereProperty(objectInterface);
+        ImOrderMap<PropertyMapImplement<?, I>, Boolean> mappedOrders = orders.mapOrderKeys(order -> order.map(mapPropertyInterfaces).getOrderProperty(objectInterface));
+
+        // isFull is checked in the isValueUnique
+        return getSelectProperty(baseLM, false, isNotNull, forceSelect, mapPropertyInterfaces, mapPropertyInterfaces.valuesSet().addExcl(objectInterface), name, selected, customClass, mappedWhere, mappedOrders);
     }
 
     public static <I extends PropertyInterface, T extends PropertyInterface, W extends PropertyInterface>
@@ -1778,7 +1803,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         if(!fallbackToFilterSelected && hasAlotValues) // optimization
             return null;
 
-        InputValueList readValues = null;
+        InputListEntity readEntity = null;
         if(!hasAlotValues) {
             Property readValuesProperty = null;
             if (mapWhereInterfaces.isEmpty())
@@ -1791,12 +1816,11 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             }
 
             if(readValuesProperty != null) {
-                InputListEntity readEntity = new InputListEntity(name.property, MapFact.EMPTYREV());
+                readEntity = new InputListEntity(name.property, MapFact.EMPTYREV());
                 if(!multi)
                     readEntity = readEntity.merge(new Pair<>(new InputFilterEntity<>(readValuesProperty, MapFact.EMPTYREV()), MapFact.EMPTYORDER()));
                 else
                     assert readValuesProperty == name.property;
-                readValues = readEntity.map(MapFact.EMPTY());
             }
         }
 
@@ -1806,7 +1830,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
                 return null;
 
             return getSelectProperty(baseLM, mapPropertyInterfaces, innerInterfaces, name, selected, filterSelected, where, orders);
-        }, new Pair<>(nameType.getAverageCharLength() * whereCount, whereCount), readValues != null ? ListFact.singleton(readValues) : null, multi, nameType instanceof HTMLStringClass || nameType instanceof HTMLTextClass, notNull);
+        }, new Pair<>(nameType.getAverageCharLength() * whereCount, whereCount), readEntity != null ? ListFact.singleton(readEntity.map(MapFact.EMPTY())) : null, multi, nameType instanceof HTMLStringClass || nameType instanceof HTMLTextClass, notNull);
     }
 
     private static <I extends PropertyInterface, T extends PropertyInterface, W extends PropertyInterface> PropertyMapImplement<?, T> getSelectProperty(BaseLogicsModule baseLM, ImRevMap<T, I> mapPropertyInterfaces, ImSet<I> innerInterfaces, PropertyMapImplement<?, I> name, PropertyInterfaceImplement<I> selected, boolean filterSelected, PropertyMapImplement<W, I> where, ImOrderMap<? extends PropertyInterfaceImplement<I>, Boolean> orders) {

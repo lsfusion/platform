@@ -5,10 +5,10 @@ import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
 import lsfusion.base.file.AppImage;
 import lsfusion.server.base.AppServerImage;
 import lsfusion.interop.form.event.BindingMode;
+import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.stat.Stat;
@@ -45,7 +45,7 @@ public class InputListEntity<P extends PropertyInterface, V extends PropertyInte
 
     private final Property<P> property;
 
-    private final ImOrderMap<PropertyInterfaceImplement<P>, Boolean> orders;
+    private final ImOrderMap<InputOrderEntity<?, V>, Boolean> orders;
 
     private final ImRevMap<P, V> mapValues; // external context
 
@@ -54,11 +54,15 @@ public class InputListEntity<P extends PropertyInterface, V extends PropertyInte
     public InputListEntity(Property<P> property, ImRevMap<P, V> mapValues) {
         this(property, MapFact.EMPTYORDER(), mapValues, false);
     }
-    private InputListEntity(Property<P> property, ImOrderMap<PropertyInterfaceImplement<P>, Boolean> orders, ImRevMap<P, V> mapValues, boolean newSession) {
+    private InputListEntity(Property<P> property, ImOrderMap<InputOrderEntity<?, V>, Boolean> orders, ImRevMap<P, V> mapValues, boolean newSession) {
         this.property = property;
-        this.orders = orders;
         this.mapValues = mapValues;
         this.newSession = newSession;
+
+        // we'll have to patch with params if there are some extra params in order - to keep this structure: Property<P> and map to its params
+        // todo: but for now we'll just ignore such orders
+        // otherwise we'll have to do all map operations more complex
+        this.orders = orders.filterOrder(order -> mapValues.valuesSet().containsAll(order.mapValues.valuesSet()));
 
         assert property.interfaces.containsAll(mapValues.keys());
     }
@@ -79,8 +83,12 @@ public class InputListEntity<P extends PropertyInterface, V extends PropertyInte
         return new InputListEntity<>(property, orders, mapValues, true);
     }
 
+    private <C extends PropertyInterface> ImOrderMap<InputOrderEntity<?, C>, Boolean> mapOrders(ImRevMap<V, C> map) {
+        return orders.mapOrderKeys(order -> order.map(map));
+    }
+
     public <C extends PropertyInterface> InputListEntity<P, C> map(ImRevMap<V, C> map) {
-        return new InputListEntity<P, C>(property, orders, mapValues.join(map), newSession);
+        return new InputListEntity<P, C>(property, mapOrders(map), mapValues.join(map), newSession);
     }
 
     public <C extends PropertyInterface> InputListEntity<P, C> mapInner(ImRevMap<V, C> map) {
@@ -89,7 +97,7 @@ public class InputListEntity<P extends PropertyInterface, V extends PropertyInte
         ImRevMap<P, C> joinMapValues = mapValues.innerJoin(map);
         if(joinMapValues.size() != mapValues.size())
             return null;
-        return new InputListEntity<>(property, orders, joinMapValues, newSession);
+        return new InputListEntity<>(property, mapOrders(mapValues.crossJoin(joinMapValues)), joinMapValues, newSession);
     }
 
     public <C extends PropertyInterface> InputListEntity<?, C> mapJoin(ImMap<V, PropertyInterfaceImplement<C>> mapping) {
@@ -97,14 +105,14 @@ public class InputListEntity<P extends PropertyInterface, V extends PropertyInte
 
         ImRevMap<P, C> identityMap = getIdentityMap(mappedValues);
         if(identityMap != null) // optimization + fix of not empty orders
-            return new InputListEntity<P, C>(property, orders, identityMap, newSession);
+            return new InputListEntity<P, C>(property, mapOrders(mapValues.crossJoin(identityMap)), identityMap, newSession);
 
         Pair<Property<JoinProperty.Interface>, ImRevMap<JoinProperty.Interface, C>> joinImplement = PropertyFact.createPartJoin(new PropertyImplement<>(property, mappedValues));
         return new InputListEntity<>(joinImplement.first, MapFact.EMPTYORDER(), joinImplement.second, newSession);
     }
 
     public InputValueList<P> map(ImMap<V, ? extends ObjectValue> map) {
-        return new InputValueList<>(property, orders, BaseUtils.immutableCast(mapValues.join(map)));
+        return new InputValueList<>(property, getOrderImplements(), BaseUtils.immutableCast(mapValues.join(map)));
     }
 
     public <J extends PropertyInterface, X extends PropertyInterface> InputListEntity<?, V> merge(Pair<InputFilterEntity<?, V>, ImOrderMap<InputOrderEntity<?, V>, Boolean>> filterAndOrders) {
@@ -119,35 +127,35 @@ public class InputListEntity<P extends PropertyInterface, V extends PropertyInte
 
         assert singleInterface() != null;
 
-        InputFilterEntity<J, V> mergeFilter = (InputFilterEntity<J, V>) InputFilterEntity.and(new InputFilterEntity<>(property, mapValues), filter);
+        InputFilterEntity<J, V> mergeFilter = (InputFilterEntity<J, V>) InputFilterEntity.and(getInputFilterEntity(), filter);
 
-        return new InputListEntity<>(mergeFilter.property, mergeOrders(mergeFilter, orders), mergeFilter.mapValues, newSession);
+        return new InputListEntity<>(mergeFilter.property, orders, mergeFilter.mapValues, newSession);
     }
 
-    private static <J extends PropertyInterface, X extends PropertyInterface, V extends PropertyInterface> ImOrderMap<PropertyInterfaceImplement<J>, Boolean> mergeOrders(InputFilterEntity<J, V> mergeFilter, ImOrderMap<InputOrderEntity<?, V>, Boolean> orders) {
-        MOrderExclMap<PropertyInterfaceImplement<J>, Boolean> mMergeOrders = MapFact.mOrderExclMapMax(orders.size());
-        for(int i = 0, size = orders.size(); i < size; i++) {
-            InputOrderEntity<X, V> order = (InputOrderEntity<X, V>) orders.getKey(i);
-            ImRevMap<X, J> mappedOrder = order.mapValues.innerCrossValues(mergeFilter.mapValues);
-            // we'll have to patch with params if there are some extra params in order - to keep this structure: Property<P> and map to its params
-            // todo: but for now we'll just ignore such orders
-            if(mappedOrder.size() == order.mapValues.size())
-                mMergeOrders.exclAdd(new PropertyMapImplement<>(order.property, MapFact.addRevExcl(mappedOrder, order.singleInterface(), mergeFilter.singleInterface())), orders.getValue(i));
-        }
-        ImOrderMap<PropertyInterfaceImplement<J>, Boolean> mergeOrders = mMergeOrders.immutableOrder();
+    public InputFilterEntity<P, V> getInputFilterEntity() {
+        return new InputFilterEntity<>(property, mapValues);
+    }
+    public ImOrderMap<InputOrderEntity<?, V>, Boolean> getInputOrderEntities() {
+        return orders;
+    }
 
-        Stat interfaceStat = mergeFilter.property.getInterfaceStat(mergeFilter.mapValues.keys());
+    @IdentityInstanceLazy
+    private <X extends PropertyInterface> ImOrderMap<PropertyInterfaceImplement<P>, Boolean> getOrderImplements() {
+        ImOrderMap<PropertyInterfaceImplement<P>, Boolean> mergeOrders = BaseUtils.<ImOrderMap<InputOrderEntity<X, V>, Boolean>>immutableCast(orders).mapOrderKeys(
+                order -> new PropertyMapImplement<>(order.property, MapFact.addRevExcl(order.mapValues.innerCrossValues(mapValues), order.singleInterface(), singleInterface())));
+
+        Stat interfaceStat = property.getInterfaceStat(mapValues.keys());
         boolean tooManyRows = interfaceStat.getCount() > Settings.get().getAsyncValuesMaxReadOrderCount();
 
         // we could do it in getListExpr (at the bottom stack point),
         // but it seems better to do it here (at the top stack point), to properly handle caches ("global read" caches in particular)
         // the check is that when we have too much rows, we remove the order for the optimization purposes
-        if(!mergeOrders.isEmpty()) {
-            if(tooManyRows)
+        if (!mergeOrders.isEmpty()) {
+            if (tooManyRows)
                 mergeOrders = MapFact.EMPTYORDER();
         } else {
-            if(!tooManyRows)
-                mergeOrders = MapFact.singletonOrder(mergeFilter.singleInterface(), false);
+            if (!tooManyRows)
+                mergeOrders = MapFact.singletonOrder(singleInterface(), false);
         }
         return mergeOrders;
     }
@@ -209,7 +217,11 @@ public class InputListEntity<P extends PropertyInterface, V extends PropertyInte
         ImMap<P, StaticParamNullableExpr> fixedExprs = mapValues.join(listParamExprs);
         return property.isValueUnique(fixedExprs, Property.ValueUniqueType.INPUT);
     }
-    
+
+    public <X extends PropertyInterface> PropertyMapImplement<P, X> getProperty(ImRevMap<V, X> map, X objectInterface) {
+        return new PropertyMapImplement<>(property, mapValues.join(map).addRevExcl(singleInterface(), objectInterface));
+    }
+
     @Override
     public String toString() {
         return property + "(" + mapValues + ")" + (newSession ? " NEW" : "");

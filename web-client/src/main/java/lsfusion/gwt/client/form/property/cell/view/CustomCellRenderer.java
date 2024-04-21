@@ -159,13 +159,13 @@ public class CustomCellRenderer extends CellRenderer {
             changeValue: function (value) { // deprecated
                 return this.change(value);
             },
-            changeProperty: function (propertyName, object, newValue, type, index) { // important that implementation should guarantee that the position of the object should be relevant (match the list)
+            changeProperty: function (propertyName, object, newValue, type, index, changeValue) { // important that implementation should guarantee that the position of the object should be relevant (match the list)
                 var controller = this;
-                return this.change({
+                return this.change((changeValue === undefined ? {
                     property : propertyName,
                     objects : this.getObjects(object),
                     value : newValue
-                }, function(oldValue) {
+                } : changeValue), function(oldValue) {
                     return @GSimpleStateTableView::changeJSDiff(*)(element, oldValue != null ? oldValue : [], object, controller, propertyName, newValue, type, index);
                 });
             },

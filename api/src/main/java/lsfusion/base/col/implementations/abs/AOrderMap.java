@@ -176,6 +176,13 @@ public abstract class AOrderMap<K, V> extends AColObject implements ImOrderMap<K
         return mResult.immutableOrder();
     }
 
+    public <M> ImOrderMap<M, V> mapOrderIntKeys(IntFunction<M> getter) {
+        MOrderExclMap<M, V> mResult = MapFact.mOrderExclMap(size());
+        for(int i=0,size=size();i<size;i++)
+            mResult.exclAdd(getter.apply(i), getValue(i));
+        return mResult.immutableOrder();
+    }
+
     public <M, E1 extends Exception, E2 extends Exception> ImOrderMap<M, V> mapOrderKeysEx(ThrowingFunction<K, M, E1, E2> getter) throws E1, E2 {
         MOrderExclMap<M, V> mResult = MapFact.mOrderExclMap(size());
         for(int i=0,size=size();i<size;i++)

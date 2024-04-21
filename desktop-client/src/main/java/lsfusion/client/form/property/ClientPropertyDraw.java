@@ -100,6 +100,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public String valueElementClass;
     public String captionElementClass;
     public boolean toolbar;
+    public boolean toolbarActions;
 
     public ClientType externalChangeType;
     public Map<String, ClientAsyncEventExec> asyncExecMap;
@@ -646,6 +647,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         valueElementClass = pool.readString(inStream);
         captionElementClass = pool.readString(inStream);
         toolbar = pool.readBoolean(inStream);
+        toolbarActions = pool.readBoolean(inStream);
 
         if (inStream.readBoolean()) {
             externalChangeType = ClientTypeSerializer.deserializeClientType(inStream);
