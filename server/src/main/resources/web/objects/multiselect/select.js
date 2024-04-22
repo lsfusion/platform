@@ -643,15 +643,13 @@ function _selectPicker(multi, html, shouldBeSelected, changeValue) {
     if (lsfUtils.useBootstrap()) { //check if bootstrap loaded
         function formatState (state) {
             if (!html) {
-                    let id = state.id;
-                    return id == null ? state.text : id;
+                let id = state.id;
+                return id == null ? state.text : id;
             } else {
                 let element = state.element;
-                if (element != null && element.object != null) {
-                    let name = element.object.name;
-                    let $name = $(name);
-                    return $name.length > 0 ? $name : name
-                }
+                if (element != null) // element may be null because select2 draws an empty option at the top of options.
+                    return $('<div>').html(element.getAttribute('data-content'));
+
                 return '';
             }
         }

@@ -8,6 +8,10 @@ select + .select2-container--bootstrap-5 {
   z-index: 1;
 }
 
+.select2-container--bootstrap-5.form-control {
+  padding: 0 0 var(--border-padding) 0;
+}
+
 .select2-container--bootstrap-5 *:focus {
   outline: 0;
 }
@@ -179,7 +183,7 @@ select + .select2-container--bootstrap-5 {
   flex-direction: row;
   align-items: center;
   padding: var(--border-padding);
-  margin: var(--border-comp-vert-padding) var(--border-comp-horz-padding);
+  margin: var(--border-comp-vert-padding) var(--border-comp-horz-padding) 0 var(--border-comp-horz-padding);
   cursor: auto;
   border: var(--bs-border-width) solid var(--bs-border-color);
   border-radius: var(--bs-border-radius);
