@@ -19,8 +19,10 @@ import lsfusion.http.provider.navigator.NavigatorProviderImpl;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.base.exception.RemoteMessageException;
 import lsfusion.interop.connection.AuthenticationToken;
+import lsfusion.interop.connection.ClientType;
 import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.logics.ServerSettings;
+import lsfusion.interop.navigator.ClientInfo;
 import lsfusion.interop.navigator.ClientSettings;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 import lsfusion.interop.session.ExternalRequest;
@@ -268,9 +270,9 @@ public class MainController {
                     throw e;
                 }
             }).get();
-            ClientSettings clientSettings = getClientSettings(sessionId, request);
-            mainResourcesBeforeSystem = clientSettings.mainResourcesBeforeSystem;
-            mainResourcesAfterSystem = clientSettings.mainResourcesAfterSystem;
+            LogicsSessionObject.InitSettings initSettings = getInitSettings(navigatorProvider.getNavigatorSessionObject(sessionId).remoteNavigator, request, new ClientInfo("1366x768", ClientType.WEB_DESKTOP));
+            mainResourcesBeforeSystem = initSettings.mainResourcesBeforeSystem;
+            mainResourcesAfterSystem = initSettings.mainResourcesAfterSystem;
         } catch (AuthenticationException authenticationException) {
             return getRedirectUrl("/logout", null, request);
         } catch (Throwable e) {
@@ -300,12 +302,14 @@ public class MainController {
         return logicsProvider.getServerSettings(request, noCache);
     }
 
-    private ClientSettings getClientSettings(String sessionId, HttpServletRequest request) throws RemoteException {
-        return getClientSettings(navigatorProvider.getNavigatorSessionObject(sessionId).remoteNavigator, request);
+    public static ClientSettings getClientSettings(RemoteNavigatorInterface remoteNavigator, HttpServletRequest request, ClientInfo clientInfo) throws RemoteException {
+        remoteNavigator.updateClientInfo(clientInfo);
+        return LogicsSessionObject.getClientSettings(NavigatorProviderImpl.getSessionInfo(request), remoteNavigator);
     }
 
-    public static ClientSettings getClientSettings(RemoteNavigatorInterface remoteNavigator, HttpServletRequest request) throws RemoteException {
-        return LogicsSessionObject.getClientSettings(NavigatorProviderImpl.getSessionInfo(request), remoteNavigator);
+    public static LogicsSessionObject.InitSettings getInitSettings(RemoteNavigatorInterface remoteNavigator, HttpServletRequest request, ClientInfo clientInfo) throws RemoteException {
+        remoteNavigator.updateClientInfo(clientInfo);
+        return LogicsSessionObject.getInitSettings(NavigatorProviderImpl.getSessionInfo(request), remoteNavigator);
     }
 
     private boolean getDisableRegistration(ServerSettings serverSettings) {

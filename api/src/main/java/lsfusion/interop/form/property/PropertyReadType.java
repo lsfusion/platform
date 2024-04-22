@@ -60,4 +60,6 @@ public class PropertyReadType {
     public final static byte CONTAINER_CAPTIONCLASS = 28;
 
     public final static byte CONTAINER_VALUECLASS = 29;
+
+    public final static byte GRID_VALUECLASS = 30;
 }

@@ -6,6 +6,7 @@ import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyReader;
 import lsfusion.gwt.client.form.property.GPropertyReaderDTO;
@@ -135,9 +136,9 @@ public class GFormChanges {
                 return form.findContainerByID(readerId).captionReader;
             case GPropertyReadType.CONTAINER_IMAGE:
                 return form.findContainerByID(readerId).imageReader;
-            case PropertyReadType.CONTAINER_CAPTIONCLASS:
+            case GPropertyReadType.CONTAINER_CAPTIONCLASS:
                 return form.findContainerByID(readerId).captionClassReader;
-            case PropertyReadType.CONTAINER_VALUECLASS:
+            case GPropertyReadType.CONTAINER_VALUECLASS:
                 return form.findContainerByID(readerId).valueClassReader;
             case GPropertyReadType.CUSTOM:
                 return form.findContainerByID(readerId).customDesignReader;
@@ -145,6 +146,8 @@ public class GFormChanges {
                 return form.findComponentByID(readerId).showIfReader;
             case GPropertyReadType.COMPONENT_ELEMENTCLASS:
                 return form.findComponentByID(readerId).elementClassReader;
+            case GPropertyReadType.GRID_VALUECLASS:
+                return ((GGridProperty)form.findComponentByID(readerId)).valueElementClassReader;
             case GPropertyReadType.CUSTOM_OPTIONS:
                 return form.getGroupObject(readerId).customOptionsReader;
             case GPropertyReadType.COMMENT:
@@ -207,5 +210,6 @@ public class GFormChanges {
         public final static byte CELL_FONT = 27;
         public final static byte CONTAINER_CAPTIONCLASS = 28;
         public final static byte CONTAINER_VALUECLASS = 29;
+        public final static byte GRID_VALUECLASS = 30;
     }
 }

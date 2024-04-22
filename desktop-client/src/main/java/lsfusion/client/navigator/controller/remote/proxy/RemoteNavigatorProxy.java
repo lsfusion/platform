@@ -4,6 +4,7 @@ import lsfusion.base.Pair;
 import lsfusion.client.connection.RemoteConnectionProxy;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.remote.RemoteFormInterface;
+import lsfusion.interop.navigator.ClientInfo;
 import lsfusion.interop.navigator.remote.ClientCallBackInterface;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 
@@ -48,7 +49,7 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends Re
     }
     
     @Override
-    public void updateNavigatorClientSettings(String screenSize, boolean mobile) throws RemoteException {
-        target.updateNavigatorClientSettings(screenSize, mobile);
+    public void updateClientInfo(ClientInfo clientInfo) throws RemoteException {
+        target.updateClientInfo(clientInfo);
     }
 }

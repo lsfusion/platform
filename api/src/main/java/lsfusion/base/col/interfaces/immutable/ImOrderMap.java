@@ -85,6 +85,7 @@ public interface ImOrderMap<K,V> {
     <M> ImOrderMap<K,M> mapOrderValues(BiFunction<K, V, M> getter);
     <M> ImOrderMap<K,M> mapOrderValues(Supplier<M> getter);
     <M> ImOrderMap<M, V> mapOrderKeys(Function<K, M> getter);
+    <M> ImOrderMap<M, V> mapOrderIntKeys(IntFunction<M> getter);
     <MK, MV> ImOrderMap<MK,MV> mapOrderKeyValues(BiFunction<K, V, MK> getterKey, Function<V, MV> getterValue);
     <MK, MV> ImOrderMap<MK,MV> mapOrderKeyValues(Function<K, MK> getterKey, Function<V, MV> getterValue);
 

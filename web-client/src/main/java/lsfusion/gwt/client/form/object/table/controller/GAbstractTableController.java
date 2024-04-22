@@ -23,6 +23,7 @@ import lsfusion.gwt.client.form.object.GObject;
 import lsfusion.gwt.client.form.object.table.GToolbar;
 import lsfusion.gwt.client.form.object.table.TableComponent;
 import lsfusion.gwt.client.form.object.table.TableContainer;
+import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButtonGroup;
 import lsfusion.gwt.client.form.object.table.view.GToolbarView;
 import lsfusion.gwt.client.form.property.GFooterReader;
@@ -53,6 +54,7 @@ public abstract class GAbstractTableController extends GPropertyController imple
 
     public void changeGridView(TableComponent tableComponent, boolean boxed) {
         gridView.changeTableComponent(tableComponent, boxed);
+        gridView.updateElementClass(getGridComponent());
     }
 
     public GAbstractTableController(GFormController formController, GToolbar toolbar, boolean isList) {
@@ -160,7 +162,7 @@ public abstract class GAbstractTableController extends GPropertyController imple
     protected abstract long changeFilter(ArrayList<GPropertyFilter> conditions);
     // eventually is called either on form opening / form tab selection / filter dialog close
     public abstract boolean focusFirstWidget(FocusUtils.Reason reason);
-    public abstract GComponent getGridComponent();
+    public abstract GGridProperty getGridComponent();
 
     @Override
     public void updateFooterValues(GFooterReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {

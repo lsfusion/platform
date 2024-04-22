@@ -28,6 +28,7 @@ import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
+import lsfusion.interop.navigator.ClientInfo;
 import lsfusion.interop.navigator.ClientSettings;
 import lsfusion.interop.navigator.NavigatorInfo;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
@@ -73,7 +74,18 @@ public abstract class MainFrame extends JFrame {
                                         RemoteLogicsInterface remoteLogics = sessionObject.remoteLogics;
                                         MainController.remoteLogics = remoteLogics;
                                         MainController.initRmiClassLoader(remoteLogics);
-                                        return MainController.remoteLogics.createNavigator(MainController.authToken, getNavigatorInfo());
+
+                                        RemoteNavigatorInterface remoteNavigator = MainController.remoteLogics.createNavigator(MainController.authToken, getNavigatorInfo());
+
+                                        String screenSize = null;
+                                        Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+                                        if(dimension != null) {
+                                            screenSize = (int) dimension.getWidth() + "x" + (int) dimension.getHeight();
+                                        }
+
+                                        remoteNavigator.updateClientInfo(new ClientInfo(screenSize, ClientType.NATIVE_DESKTOP));
+
+                                        return remoteNavigator;
                                     });
                                 } catch (AppServerNotAvailableException e) { // suppress and try again
                                     return null;
@@ -270,14 +282,8 @@ public abstract class MainFrame extends JFrame {
         Integer freeMemory = (int) (Runtime.getRuntime().freeMemory() / 1048576);
         String javaVersion = SystemUtils.getJavaVersion() + " " + System.getProperty("sun.arch.data.model") + " bit";
 
-        String screenSize = null;
-        Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
-        if(dimension != null) {
-            screenSize = (int) dimension.getWidth() + "x" + (int) dimension.getHeight();
-        }
-
         return new NavigatorInfo(MainController.getSessionInfo(), osVersion, processor, architecture, cores, physicalMemory, totalMemory,
-                maximumMemory, freeMemory, javaVersion, screenSize, ClientType.NATIVE_DESKTOP, BaseUtils.getPlatformVersion(), BaseUtils.getApiVersion());
+                maximumMemory, freeMemory, javaVersion, BaseUtils.getPlatformVersion(), BaseUtils.getApiVersion());
     }
 
     public ClientFormController currentForm;

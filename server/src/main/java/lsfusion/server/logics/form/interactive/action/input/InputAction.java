@@ -75,8 +75,9 @@ public class InputAction extends SystemExplicitAction {
 
         ImRevMap<C, ClassPropertyInterface> mapContextInterfaces = orderContextInterfaces.mapSet(orderInterfaces.subOrder(0, orderContextInterfaces.size()));
         this.contextInterfaces = mapContextInterfaces.valuesSet();
-        this.contextList = contextList != null ? contextList.map(mapContextInterfaces) : null;
         assert valueClass instanceof DataClass || contextList.singleInterface() != null;
+        assert (contextList == null) == (contextSelector == null);
+        this.contextList = contextList != null ? contextList.map(mapContextInterfaces) : null;
         this.contextSelector = contextSelector != null ? contextSelector.map(mapContextInterfaces) : null;
         
         this.contextActions = contextActions.mapListValues((InputContextAction<?, C> value) -> value.map(mapContextInterfaces));
@@ -84,18 +85,15 @@ public class InputAction extends SystemExplicitAction {
 
     @IdentityInstanceLazy
     private InputListEntity<?, ClassPropertyInterface> mergeFullContextList() {
-        InputListEntity<?, ClassPropertyInterface> result = this.contextList;
-        if(contextSelector != null)
-            result = result.merge(contextSelector.getFilterAndOrders());
-        return result;
+        return contextList.merge(contextSelector.getFilterAndOrders());
     }
     private InputListEntity<?, ClassPropertyInterface> getFullContextList() {
-        if(contextList == null)
+        if(contextList == null) {
+            assert contextSelector == null;
             return null;
+        }
 
-        if(contextSelector == null)
-            return contextList;
-
+        assert contextSelector != null;
         return mergeFullContextList();
     }
 

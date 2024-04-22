@@ -639,7 +639,7 @@ public abstract class LogicsModule {
         
         return addForAProp(LocalizedString.create("{logics.add}"), false, false, false, false, paramsCount, null, false, true, 0, false,
                 add(add(getUParams(paramsCount), 
-                        new Object[] {addJProp(baseLM.equals2, 1, baseLM.getExtension, 2), paramsCount + 1, 1}), // FOR x = getExtension(FILE(prm1))  
+                        new Object[] {addJProp(baseLM.equals2, 1, baseLM.extension, 2), paramsCount + 1, 1}), // FOR x = getExtension(FILE(prm1))
                         directLI(addCaseAProp(true, cases))));  // CASE EXCLUSIVE
     }
     
@@ -1015,8 +1015,9 @@ public abstract class LogicsModule {
                                                                                               InputFilterEntity<?, T> contextFilter, FormSessionScope contextScope,
                                                                                               ImList<InputContextAction<?, T>> contextActions, String customEditorFunction, boolean notNull) {
         InputContextSelector<T> contextSelector = null;
-        if(contextList == null && contextFilter == null && valueProperty != null) {
-            if((Property.isDefaultWYSInput(valueClass)) && !valueProperty.disableInputList) { // && // if string and not disabled
+        assert contextList != null || contextFilter == null;
+        if(contextList == null) {
+            if(valueProperty != null && Property.isDefaultWYSInput(valueClass) && !valueProperty.disableInputList) { // && // if string and not disabled
                 contextList = new InputListEntity<>(valueProperty, MapFact.EMPTYREV());
 
                 // we're doing this with a "selector", because at this point not stats is available (synchronizeDB has not been run yet)

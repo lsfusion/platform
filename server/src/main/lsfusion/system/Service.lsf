@@ -793,8 +793,8 @@ projectLSFDir = NATIVE STRING();
 
 contentWordWrap() += IF contentWordWrap(currentUser()) THEN (IF contentWordWrap(currentUser()) == TTRUE THEN TRUE ELSE NULL) ELSE valueSettingBoolean('contentWordWrap');
 
-getClientSettings(User user) ABSTRACT CASE;
-getClientSettings(User user) + WHEN TRUE AND user IS User THEN {
+getInitSettings(User user) ABSTRACT CASE;
+getInitSettings(User user) + WHEN user IS User THEN {
     LOCAL webClientLoadedResources = RAWFILE(STRING);
     LOCAL webClientLoadedResourcesOrder = INTEGER(STRING);
     IF isWeb() THEN {
@@ -805,7 +805,17 @@ getClientSettings(User user) + WHEN TRUE AND user IS User THEN {
             webClientLoadedResourcesOrder(resourcePath()) <- order;
         }
     }
-    
+
+    EXPORT JSON FROM
+        mainResourcesBeforeSystem =(JSON FROM key = STRING s, value = webClientLoadedResources(s) WHERE webClientLoadedResourcesOrder(s) < 0 ORDER webClientLoadedResourcesOrder(s)),
+        mainResourcesAfterSystem = (JSON FROM key = STRING s, value = webClientLoadedResources(s) WHERE webClientLoadedResourcesOrder(s) >= 0 ORDER webClientLoadedResourcesOrder(s));
+}
+getInitSettings() {
+    getInitSettings(currentUser());
+} @@noauth;
+
+getClientSettings(User user) ABSTRACT CASE;
+getClientSettings(User user) + WHEN user IS User THEN {
     LOCAL colorThemeStaticName = STRING();
     colorThemeStaticName() <- staticName(colorTheme(currentDesignEnv()));
     
@@ -831,8 +841,6 @@ getClientSettings(User user) + WHEN TRUE AND user IS User THEN {
         tableGridColor = overrideTableGridColor(),
         dateTimePickerRanges = JSON FROM range = getWord(staticName(DateTimePickerRanges r), '.', 2) WHERE isDateTimeRangeSelected(r, user),
         intervalPickerRanges = JSON FROM range = getWord(staticName(DateTimeIntervalPickerRanges ir), '.', 2) WHERE isIntervalRangeSelected(ir, user),
-        mainResourcesBeforeSystem =(JSON FROM key = STRING s, value = webClientLoadedResources(s) WHERE webClientLoadedResourcesOrder(s) < 0 ORDER webClientLoadedResourcesOrder(s)),
-        mainResourcesAfterSystem = (JSON FROM key = STRING s, value = webClientLoadedResources(s) WHERE webClientLoadedResourcesOrder(s) >= 0 ORDER webClientLoadedResourcesOrder(s)),
         language = language(user),
         country = country(user),
         timeZone = timeZone(user),

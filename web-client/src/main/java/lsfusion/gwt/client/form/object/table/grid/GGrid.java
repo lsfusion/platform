@@ -7,7 +7,7 @@ import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.table.grid.view.GTableView;
 
-public class GGrid extends GComponent {
+public class GGrid extends GGridProperty {
     public GGroupObject groupObject;
     public boolean quickSearch;
     public int headerHeight;

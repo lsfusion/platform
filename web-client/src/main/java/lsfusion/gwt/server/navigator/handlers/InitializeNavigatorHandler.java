@@ -20,7 +20,9 @@ import lsfusion.gwt.server.convert.ClientFormChangesToGwtConverter;
 import lsfusion.gwt.server.convert.ClientNavigatorToGwtConverter;
 import lsfusion.gwt.server.navigator.NavigatorActionHandler;
 import lsfusion.http.controller.MainController;
+import lsfusion.interop.connection.ClientType;
 import lsfusion.interop.connection.LocalePreferences;
+import lsfusion.interop.navigator.ClientInfo;
 import lsfusion.interop.navigator.ClientSettings;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 import net.customware.gwt.dispatch.server.ExecutionContext;
@@ -39,13 +41,7 @@ public class InitializeNavigatorHandler extends NavigatorActionHandler<Initializ
 
     @Override
     public InitializeNavigatorResult executeEx(InitializeNavigator action, ExecutionContext context) throws RemoteException, AppServerNotAvailableDispatchException {
-        RemoteNavigatorInterface remoteNavigator = getRemoteNavigator(action);
-        NavigatorInfo navigatorInfo = getNavigatorInfo(remoteNavigator, servlet, action.sessionID);
-        GClientSettings gClientSettings = getClientSettings(remoteNavigator, servlet);
-
-        remoteNavigator.updateNavigatorClientSettings(action.screenSize, action.mobile);
-
-        return new InitializeNavigatorResult(gClientSettings, navigatorInfo);
+        return new InitializeNavigatorResult(getClientSettings(getRemoteNavigator(action), servlet, new ClientInfo(action.screenSize, action.mobile ? ClientType.WEB_MOBILE : ClientType.WEB_DESKTOP)), getNavigatorInfo(getRemoteNavigator(action), servlet, action.sessionID));
     }
 
     private static NavigatorInfo getNavigatorInfo(RemoteNavigatorInterface remoteNavigator, MainDispatchServlet servlet, String sessionID) throws RemoteException {
@@ -78,8 +74,8 @@ public class InitializeNavigatorHandler extends NavigatorActionHandler<Initializ
         return new NavigatorInfo(root, navigatorWindows, navigatorChanges, windows);
     }
 
-    private static GClientSettings getClientSettings(RemoteNavigatorInterface remoteNavigator, MainDispatchServlet servlet) throws RemoteException {
-        ClientSettings clientSettings = MainController.getClientSettings(remoteNavigator, servlet.getRequest());
+    private static GClientSettings getClientSettings(RemoteNavigatorInterface remoteNavigator, MainDispatchServlet servlet, ClientInfo clientInfo) throws RemoteException {
+        ClientSettings clientSettings = MainController.getClientSettings(remoteNavigator, servlet.getRequest(), clientInfo);
         ClientFormChangesToGwtConverter converter = ClientFormChangesToGwtConverter.getInstance();
 
         GColorTheme colorTheme = GColorTheme.valueOf(clientSettings.colorTheme.name());

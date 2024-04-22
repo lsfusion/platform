@@ -9,10 +9,11 @@ import lsfusion.gwt.client.form.filter.user.GFilterControls;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.GToolbar;
+import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
 
 import java.util.ArrayList;
 
-public class GTreeGroup extends GComponent {
+public class GTreeGroup extends GGridProperty {
     public ArrayList<GGroupObject> groups = new ArrayList<>();
 
     public GContainer filtersContainer;

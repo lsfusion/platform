@@ -237,6 +237,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         grid.groupObject = convertOrCast(clientGrid.groupObject);
         grid.quickSearch = clientGrid.quickSearch;
 
+        grid.valueClass = clientGrid.valueClass;
+
         grid.resizeOverflow = clientGrid.resizeOverflow;
 
         grid.headerHeight = clientGrid.headerHeight;
@@ -302,6 +304,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.valueElementClass = clientPropertyDraw.valueElementClass;
         propertyDraw.captionElementClass = clientPropertyDraw.captionElementClass;
         propertyDraw.toolbar = clientPropertyDraw.toolbar;
+        propertyDraw.toolbarActions = clientPropertyDraw.toolbarActions;
 
         propertyDraw.externalChangeType = typeConverter.convertOrCast(clientPropertyDraw.externalChangeType);
         propertyDraw.asyncExecMap = new HashMap<>();

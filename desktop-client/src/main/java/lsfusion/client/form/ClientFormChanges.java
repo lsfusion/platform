@@ -5,6 +5,7 @@ import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
+import lsfusion.client.form.object.table.grid.ClientGridProperty;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.ClientPropertyReader;
 import lsfusion.interop.form.property.PropertyReadType;
@@ -179,6 +180,8 @@ public class ClientFormChanges {
                 return clientForm.findComponentByID(inStream.readInt()).showIfReader;
             case PropertyReadType.COMPONENT_ELEMENTCLASS:
                 return clientForm.findComponentByID(inStream.readInt()).elementClassReader;
+            case PropertyReadType.GRID_VALUECLASS:
+                return ((ClientGridProperty)clientForm.findComponentByID(inStream.readInt())).valueElementClassReader;
             case PropertyReadType.CUSTOM_OPTIONS:
                 return clientForm.getGroupObject(inStream.readInt()).customOptionsReader;
             case PropertyReadType.COMMENT:

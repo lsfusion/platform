@@ -317,6 +317,10 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.toolbar = toolbar;
     }
 
+    public void setToolbarActions(boolean toolbarActions) {
+        target.toolbarActions = toolbarActions;
+    }
+
     public void setNotNull(boolean notNull) {
         target.notNull = notNull;
     }

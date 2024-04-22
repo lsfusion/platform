@@ -18,6 +18,7 @@ import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.changed.OldProperty;
+import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapChange;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
@@ -26,6 +27,7 @@ import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.cases.CalcCase;
 import lsfusion.server.logics.property.cases.graph.Graph;
+import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.classes.infer.ExClassSet;
 import lsfusion.server.logics.property.classes.infer.InferType;
 import lsfusion.server.logics.property.classes.infer.Inferred;
@@ -62,6 +64,7 @@ public interface PropertyInterfaceImplement<P extends PropertyInterface> extends
     boolean mapNameValueUnique();
 
     boolean mapIsDrawNotNull();
+    boolean mapIsNotNull();
     boolean mapIsExplicitTrue();
     boolean mapHasAlotKeys();
     int mapEstComplexity();
@@ -82,6 +85,7 @@ public interface PropertyInterfaceImplement<P extends PropertyInterface> extends
     Inferred<P> mapInferInterfaceClasses(ExClassSet commonValue, InferType inferType);
     boolean mapNeedInferredForValueClass(InferType inferType);
     ExClassSet mapInferValueClass(ImMap<P, ExClassSet> inferred, InferType inferType);
+    ValueClass mapValueClass(ClassType classType);
 
     boolean mapIsFull(ImSet<P> interfaces);
     boolean mapHasNoGridReadOnly(ImSet<P> gridInterfaces);

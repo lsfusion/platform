@@ -951,7 +951,7 @@ protected Double getUserFlex(int i) {
 
             @Override
             public CellRenderer.ToolbarAction[] getToolbarActions() {
-                return isPropertyReadOnly() != null || property.isAction() ? UpdateContext.super.getToolbarActions() : property.getQuickAccessActions(isSelectedRow(), isFocusedColumn());
+                return !property.toolbarActions || isPropertyReadOnly() != null ? UpdateContext.super.getToolbarActions() : property.getQuickAccessActions(isSelectedRow(), isFocusedColumn());
             }
 
             @Override

@@ -978,7 +978,7 @@ public class GFormController implements EditManager {
                 return;
 
             // hasChangeAction check is important for quickfilter not to consume event (however with propertyReadOnly, checkCanBeChanged there will be still some problems)
-            if (isChangeEvent(actionSID) && (editContext.isReadOnly() != null || !property.hasUserChangeAction()))
+            if (isChangeEvent(actionSID) && (editContext.isReadOnly() != null || (contextAction.result == null && !property.hasUserChangeAction())))
                 return;
             if(GEditBindingMap.EDIT_OBJECT.equals(actionSID) && !property.hasEditObjectAction)
                 return;
@@ -1214,7 +1214,7 @@ public class GFormController implements EditManager {
 
     // for custom renderer, paste
     public void changeProperty(ExecuteEditContext editContext, PValue changeValue, ChangedRenderValueSupplier renderValueSupplier) {
-        ChangedRenderValue changedRenderValue = changeValue != PValue.UNDEFINED ? setLocalValue(editContext, editContext.getProperty().getExternalChangeType(), changeValue, renderValueSupplier) : null;
+        ChangedRenderValue changedRenderValue = changeValue != PValue.UNDEFINED ? setLocalValue(editContext, changeValue, renderValueSupplier) : null;
         // noGroupChange is needed for custom renderers that use onBlur to change values:
         // a) when ALT+TAB pressed there is no keydown previewed to disable group change mode, which is not what we want
         // b) when binding with ALT calls check commit editing, we don't want it to be treated as the group change
@@ -1251,6 +1251,9 @@ public class GFormController implements EditManager {
         }
     }
 
+    public ChangedRenderValue setLocalValue(EditContext editContext, PValue changeValue, ChangedRenderValueSupplier renderValueSupplier) {
+        return setLocalValue(editContext, editContext.getProperty().getExternalChangeType(), changeValue, renderValueSupplier);
+    }
     public ChangedRenderValue setLocalValue(EditContext editContext, GType changeType, PValue changeValue, ChangedRenderValueSupplier renderValueSupplier) {
         if(renderValueSupplier != null || editContext.canUseChangeValueForRendering(changeType)) {
             PValue oldValue = editContext.getValue();
@@ -2439,9 +2442,8 @@ public class GFormController implements EditManager {
     }
     // "external" update - paste + server update edit value
     public void setValue(EditContext editContext, PValue value) {
-        editContext.setValue(value);
-
-        update(editContext);
+        if(setLocalValue(editContext, value, null) != null)
+            update(editContext);
     }
     public void update(EditContext editContext) {
         update(editContext.getProperty(), editContext.getEditElement(), editContext.getUpdateContext());

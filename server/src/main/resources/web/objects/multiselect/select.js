@@ -223,87 +223,135 @@ function selectMultiInput() {
 }
 
 function selectList() {
-    return _defaultRadioCheckBox('radio', true, true, false, false);
+    return _defaultRadioCheckBox('radio', true, true, false, false, false);
+}
+
+function selectValueList() {
+    return _defaultRadioCheckBox('radio', true, true, false, false, true);
 }
 
 function selectHTMLList() {
-    return _defaultRadioCheckBox('radio', true, true, false, true);
+    return _defaultRadioCheckBox('radio', true, true, false, true, false);
+}
+
+function selectHTMLValueList() {
+    return _defaultRadioCheckBox('radio', true, true, false, true, true);
 }
 
 function selectButton() {
-    return _checkBoxRadioButtonToggle('radio', true, true, false, false);
+    return _checkBoxRadioButtonToggle('radio', true, true, false, false, false);
+}
+
+function selectValueButton() {
+    return _checkBoxRadioButtonToggle('radio', true, true, false, false, true);
 }
 
 function selectHTMLButton() {
-    return _checkBoxRadioButtonToggle('radio', true, true, false, true);
+    return _checkBoxRadioButtonToggle('radio', true, true, false, true, false);
+}
+
+function selectHTMLValueButton() {
+    return _checkBoxRadioButtonToggle('radio', true, true, false, true, true);
 }
 
 function selectButtonGroup() {
-    return _checkBoxRadioButtonGroup('radio', true, true, false, false);
+    return _checkBoxRadioButtonGroup('radio', true, true, false, false, false);
+}
+
+function selectValueButtonGroup() {
+    return _checkBoxRadioButtonGroup('radio', true, true, false, false, true);
 }
 
 function selectHTMLButtonGroup() {
-    return _checkBoxRadioButtonGroup('radio', true, true, false, true);
+    return _checkBoxRadioButtonGroup('radio', true, true, false, true, false);
+}
+
+function selectHTMLValueButtonGroup() {
+    return _checkBoxRadioButtonGroup('radio', true, true, false, true, true);
 }
 
 function selectMultiList() {
-    return _defaultRadioCheckBox('checkbox', false, false, true, false);
+    return _defaultRadioCheckBox('checkbox', false, false, true, false, false);
 }
 
 function selectMultiHTMLList() {
-    return _defaultRadioCheckBox('checkbox', false, false, true, true);
+    return _defaultRadioCheckBox('checkbox', false, false, true, true, false);
 }
 
 function selectMultiButton() {
-    return _checkBoxRadioButtonToggle('checkbox', false, false, true, false);
+    return _checkBoxRadioButtonToggle('checkbox', false, false, true, false, false);
 }
 
 function selectMultiHTMLButton() {
-    return _checkBoxRadioButtonToggle('checkbox', false, false, true, true);
+    return _checkBoxRadioButtonToggle('checkbox', false, false, true, true, false);
 }
 
 function selectMultiButtonGroup() {
-    return _checkBoxRadioButtonGroup('checkbox', false, false, true, false);
+    return _checkBoxRadioButtonGroup('checkbox', false, false, true, false, false);
 }
 
 function selectMultiHTMLButtonGroup() {
-    return _checkBoxRadioButtonGroup('checkbox', false, false, true, true);
+    return _checkBoxRadioButtonGroup('checkbox', false, false, true, true, false);
 }
 
 function selectNullList() {
-    return _defaultRadioCheckBox('radio', false, true, false, false);
+    return _defaultRadioCheckBox('radio', false, true, false, false, false);
+}
+
+function selectNullValueList() {
+    return _defaultRadioCheckBox('radio', false, true, false, false, true);
 }
 
 function selectNullHTMLList() {
-    return _defaultRadioCheckBox('radio', false, true, false, true);
+    return _defaultRadioCheckBox('radio', false, true, false, true, false);
+}
+
+function selectNullHTMLValueList() {
+    return _defaultRadioCheckBox('radio', false, true, false, true, true);
 }
 
 function selectNullButton() {
-    return _checkBoxRadioButtonToggle('radio', false, true, false, false);
+    return _checkBoxRadioButtonToggle('radio', false, true, false, false, false);
+}
+
+function selectNullValueButton() {
+    return _checkBoxRadioButtonToggle('radio', false, true, false, false, true);
 }
 
 function selectNullHTMLButton() {
-    return _checkBoxRadioButtonToggle('radio', false, true, false, true);
+    return _checkBoxRadioButtonToggle('radio', false, true, false, true, false);
+}
+
+function selectNullHTMLValueButton() {
+    return _checkBoxRadioButtonToggle('radio', false, true, false, true, true);
 }
 
 function selectNullButtonGroup() {
-    return _checkBoxRadioButtonGroup('radio', false, true, false, false);
+    return _checkBoxRadioButtonGroup('radio', false, true, false, false, false);
+}
+
+function selectNullValueButtonGroup() {
+    return _checkBoxRadioButtonGroup('radio', false, true, false, false, true);
 }
 
 function selectNullHTMLButtonGroup() {
-    return _checkBoxRadioButtonGroup('radio', false, true, false, true);
+    return _checkBoxRadioButtonGroup('radio', false, true, false, true, false);
 }
 
-function _defaultRadioCheckBox(type, shouldBeSelected, hasName, multi, html) {
-    return _option(type, false, ['form-check'], ['form-check-input'], ['form-check-label', 'option-item'], shouldBeSelected, hasName, multi, html);
+function selectNullHTMLValueButtonGroup() {
+    return _checkBoxRadioButtonGroup('radio', false, true, false, true, true);
 }
 
-function _checkBoxRadioButtonToggle(type, shouldBeSelected, hasName, multi, html) {
-    return _option(type, false, null, ['btn-check'], ['btn', 'btn-outline-secondary', 'option-item'], shouldBeSelected, hasName, multi, html);
+function _defaultRadioCheckBox(type, shouldBeSelected, hasName, multi, html, changeValue) {
+    return _option(type, false, ['form-check'], ['form-check-input'], ['form-check-label', 'option-item'], shouldBeSelected, hasName, multi, html, changeValue);
 }
 
-function _checkBoxRadioButtonGroup(type, shouldBeSelected, hasName, multi, html) {
-    return _option(type, true, ['btn-group'], ['btn-check'], ['btn', 'btn-outline-secondary', 'option-item'], shouldBeSelected, hasName, multi, html);
+function _checkBoxRadioButtonToggle(type, shouldBeSelected, hasName, multi, html, changeValue) {
+    return _option(type, false, null, ['btn-check'], ['btn', 'btn-outline-secondary', 'option-item'], shouldBeSelected, hasName, multi, html, changeValue);
+}
+
+function _checkBoxRadioButtonGroup(type, shouldBeSelected, hasName, multi, html, changeValue) {
+    return _option(type, true, ['btn-group'], ['btn-check'], ['btn', 'btn-outline-secondary', 'option-item'], shouldBeSelected, hasName, multi, html, changeValue);
 }
 
 function _wrapElementDiv(element, wrap) {
@@ -338,7 +386,7 @@ function _setIsEditing(element, add) {
 }
 
 // buttons / radios / selects
-function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBeSelected, hasName, multi, html) {
+function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBeSelected, hasName, multi, html, changeValue) {
     let isButton = isGroup || divClasses == null;
 
     function _getRandomId() {
@@ -433,7 +481,10 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
                                     if(!set) // radio button won't uncheck itself
                                         this.checked = false;
                                 }
-                                controller.changeProperty('selected', object, set ? true : null);
+                                if(multi)
+                                    controller.changeProperty('selected', object, set ? true : null);
+                                else
+                                    _changeSingleProperty(controller, object, set, changeValue);
                             });
 
                             let currentOptions = options.children;
@@ -549,30 +600,46 @@ function option() {
 }
 
 function selectNullDropdown() {
-    return _selectDropdown(false);
+    return _selectDropdown(false, false);
+}
+
+function selectNullValueDropdown() {
+    return _selectDropdown(false, true);
 }
 
 function selectDropdown() {
-    return _selectDropdown(true);
+    return _selectDropdown(true, false);
+}
+
+function selectValueDropdown() {
+    return _selectDropdown(true, true);
 }
 
 function selectMultiDropdown() {
-    return _selectPicker(true, false, false);
+    return _selectPicker(true, false, false, false);
 }
 
 function selectNullHTMLDropdown() {
-    return _selectPicker(false, true, false);
+    return _selectPicker(false, true, false, false);
+}
+
+function selectNullHTMLValueDropdown() {
+    return _selectPicker(false, true, false, true);
 }
 
 function selectHTMLDropdown() {
-    return _selectPicker(false, true, true);
+    return _selectPicker(false, true, true, false);
+}
+
+function selectHTMLValueDropdown() {
+    return _selectPicker(false, true, true, true);
 }
 
 function selectMultiHTMLDropdown() {
-    return _selectPicker(true, true, false);
+    return _selectPicker(true, true, false, false);
 }
 
-function _selectPicker(multi, html, shouldBeSelected) {
+function _selectPicker(multi, html, shouldBeSelected, changeValue) {
     if (lsfUtils.useBootstrap()) { //check if bootstrap loaded
         function formatState (state) {
             if (!html) {
@@ -594,7 +661,7 @@ function _selectPicker(multi, html, shouldBeSelected) {
             if (multi)
                 element.controller.changeProperty('selected', object, value);
             else
-                _changeSingleDropdownProperty(object, element)
+                _changeSingleDropdownProperty(object, element, changeValue)
         }
 
         return _dropDown({}, (element) => {
@@ -649,7 +716,7 @@ function _selectPicker(multi, html, shouldBeSelected) {
                         if (multi)
                             element.controller.changeProperty('selected', object, view.selected ? true : null);
                         else
-                            _changeSingleDropdownProperty(object, element)
+                            _changeSingleDropdownProperty(object, element, changeValue)
                     },
                     onOpen: function () {
                         // needed here because refresh recreates dropdown
@@ -669,11 +736,11 @@ function _selectPicker(multi, html, shouldBeSelected) {
     }
 }
 
-function _selectDropdown(shouldBeSelected) {
+function _selectDropdown(shouldBeSelected, changeValue) {
     return _dropDown({},
         (element) => {
             element.select.addEventListener('change', function () {
-                _changeSingleDropdownProperty(this.selectedOptions[0].object, element);
+                _changeSingleDropdownProperty(this.selectedOptions[0].object, element, changeValue);
             })
         }, false, shouldBeSelected);
 }
@@ -923,7 +990,7 @@ function _convertList(isList, list) {
     return list;
 }
 
-function _changeSingleDropdownProperty(object, element) {
+function _changeSingleDropdownProperty(object, element, changeValue) {
     let set;
     if (!object) {
         object = element.prevSelected;
@@ -937,7 +1004,11 @@ function _changeSingleDropdownProperty(object, element) {
         set = true;
 
     element.prevSelected = set ? object : null;
-    element.controller.changeProperty('selected', object, set ? true : null);
+    _changeSingleProperty(element.controller, object, set, changeValue);
+}
+
+function _changeSingleProperty(controller, object, set, changeValue) {
+    controller.changeProperty('selected', object, set ? true : null, undefined, undefined, changeValue ? (set ? _getName(object) : null) : undefined);
 }
 
 function _getName(object) {

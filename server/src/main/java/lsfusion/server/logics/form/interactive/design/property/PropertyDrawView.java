@@ -131,6 +131,7 @@ public class PropertyDrawView extends BaseComponentView {
     public boolean notSelectAll;
 
     public Boolean toolbar;
+    public Boolean toolbarActions;
 
     public boolean notNull;
 
@@ -529,6 +530,7 @@ public class PropertyDrawView extends BaseComponentView {
         pool.writeString(outStream, getValueElementClass(pool.context));
         pool.writeString(outStream, getCaptionElementClass(pool.context));
         pool.writeBoolean(outStream, hasToolbar(pool.context));
+        pool.writeBoolean(outStream, hasToolbarActions(pool.context));
 
         Type externalChangeType = getExternalChangeType(pool.context);
         outStream.writeBoolean(externalChangeType != null);
@@ -1029,6 +1031,16 @@ public class PropertyDrawView extends BaseComponentView {
         Type type = getAssertCellType(context);
         if(type != null)
             return type.hasToolbar(!entity.isList(context) && isTagInput(context));
+
+        return true;
+    }
+
+    public boolean hasToolbarActions(FormInstanceContext context) {
+        if(toolbarActions != null)
+            return toolbarActions;
+
+        if (entity.getSelectProperty(context) != null)
+            return false;
 
         return true;
     }

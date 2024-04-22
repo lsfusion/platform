@@ -9,8 +9,10 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.F
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.ContainerViewExtraType;
+import lsfusion.server.logics.form.interactive.design.object.GridPropertyView;
 import lsfusion.server.logics.form.interactive.instance.design.BaseComponentViewInstance;
 import lsfusion.server.logics.form.interactive.instance.design.ContainerViewInstance;
+import lsfusion.server.logics.form.interactive.instance.design.GridPropertyViewInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.RegularFilterGroupInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.RegularFilterInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
@@ -185,7 +187,12 @@ public class InstanceFactory {
         BaseComponentViewInstance baseComponentViewInstance = baseComponentViewInstances.get(entity);
         if (baseComponentViewInstance == null) {
             PropertyObjectEntity propertyElementClass = entity.propertyElementClass;
-            baseComponentViewInstance = new BaseComponentViewInstance(entity, propertyElementClass != null ? getInstance(propertyElementClass) : null);
+            PropertyObjectInstance propertyElementClassInstance = propertyElementClass != null ? getInstance(propertyElementClass) : null;
+            if(entity instanceof GridPropertyView) {
+                PropertyObjectEntity propertyValueClass = ((GridPropertyView) entity).propertyValueClass;
+                baseComponentViewInstance = new GridPropertyViewInstance(entity, propertyElementClassInstance, propertyValueClass != null ? getInstance(propertyValueClass) : null);
+            } else
+                baseComponentViewInstance = new BaseComponentViewInstance(entity, propertyElementClassInstance);
             baseComponentViewInstances.exclAdd(entity, baseComponentViewInstance);
         }
         return baseComponentViewInstance;

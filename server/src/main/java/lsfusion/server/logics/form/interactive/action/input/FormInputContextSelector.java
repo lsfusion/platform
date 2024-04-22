@@ -19,9 +19,9 @@ public class FormInputContextSelector<O extends ObjectSelector, V extends Proper
     private final O inputObject;
     private final ImRevMap<O, V> mapObjects;
 
-    public FormInputContextSelector(FormSelector<O> form, ImSet<ContextFilterSelector<V, O>> contextFilters, O inputObject, ImRevMap<O, V> mapObjects) {
+    public FormInputContextSelector(FormSelector<O> form, ImSet<? extends ContextFilterSelector<V, O>> contextFilters, O inputObject, ImRevMap<O, V> mapObjects) {
         this.form = form;
-        this.contextFilters = contextFilters;
+        this.contextFilters = (ImSet<ContextFilterSelector<V, O>>) contextFilters;
         this.inputObject = inputObject;
         this.mapObjects = mapObjects;
     }

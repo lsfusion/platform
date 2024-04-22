@@ -136,14 +136,11 @@ public class LogicsSessionObject {
         fillRanges(json.optJSONArray("dateTimePickerRanges"), preDefinedDateRangesNames);
         fillRanges(json.optJSONArray("intervalPickerRanges"), preDefinedDateRangesNames);
 
-        List<Pair<String, RawFileData>> mainResourcesBeforeSystem = getFileData(json,"mainResourcesBeforeSystem");
-        List<Pair<String, RawFileData>> mainResourcesAfterSystem = getFileData(json,"mainResourcesAfterSystem");
-
         String language = json.optString("language");
         String country = json.optString("country");
         Locale locale = LocalePreferences.getLocale(language, country);
 
-            String timeZone = json.optString("timeZone");
+        String timeZone = json.optString("timeZone");
         Integer twoDigitYearStart = !json.has("twoDigitYearStart") ? null : json.optInt("twoDigitYearStart");
         String dateFormat = json.optString("dateFormat");
         String timeFormat = json.optString("timeFormat");
@@ -163,8 +160,28 @@ public class LogicsSessionObject {
         return new ClientSettings(localePreferences, currentUserName, fontSize, useBusyDialog, busyDialogTimeout, useRequestTimeout, devMode,
                 projectLSFDir, showDetailedInfo, showDetailedInfoDelay, suppressOnFocusChange, contentWordWrap, autoReconnectOnConnectionLost, forbidDuplicateForms, showNotDefinedStrings, pivotOnlySelectedColumn, matchSearchSeparator,
                 colorTheme, useBootstrap, colorPreferences, preDefinedDateRangesNames.toArray(new String[0]), useTextAsFilterSeparator, 
-                mainResourcesBeforeSystem, mainResourcesAfterSystem, verticalNavbar, userFiltersManualApplyMode, disableActionsIfReadonly,
+                verticalNavbar, userFiltersManualApplyMode, disableActionsIfReadonly,
                 disableShowingRecentlyLogMessages, maxRequestQueueSize);
+    }
+
+    public static class InitSettings {
+
+        public List<Pair<String, RawFileData>> mainResourcesBeforeSystem;
+        public List<Pair<String, RawFileData>> mainResourcesAfterSystem;
+
+        public InitSettings(List<Pair<String, RawFileData>> mainResourcesBeforeSystem, List<Pair<String, RawFileData>> mainResourcesAfterSystem) {
+            this.mainResourcesBeforeSystem = mainResourcesBeforeSystem;
+            this.mainResourcesAfterSystem = mainResourcesAfterSystem;
+        }
+    }
+
+    public static InitSettings getInitSettings(SessionInfo sessionInfo, RemoteNavigatorInterface remoteNavigator) throws RemoteException {
+        JSONObject json = getJSONResult(remoteNavigator.exec("Service.getInitSettings[]", sessionInfo.externalRequest));
+
+        List<Pair<String, RawFileData>> mainResourcesBeforeSystem = getFileData(json,"mainResourcesBeforeSystem");
+        List<Pair<String, RawFileData>> mainResourcesAfterSystem = getFileData(json,"mainResourcesAfterSystem");
+
+        return new InitSettings(mainResourcesBeforeSystem, mainResourcesAfterSystem);
     }
 
     private static void fillRanges(JSONArray rangesJson, List<String> ranges) {
