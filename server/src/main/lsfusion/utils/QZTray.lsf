@@ -1,0 +1,36 @@
+MODULE QZTray;
+
+REQUIRE SystemEvents;
+
+NAMESPACE Utils;
+
+QZPrintDefault INTERNAL CLIENT 'QZPrintDefault' (JSON, JSON);
+QZPrint INTERNAL CLIENT 'QZPrint' (JSON, JSON, JSON);
+QZFindPrinters INTERNAL CLIENT 'QZFindPrinters' ();
+
+QZPrintDefaultPDF (RAWFILE file) {
+    QZPrintDefault( (JSON FROM copies = 1),
+                    (JSON FROM type = 'pixel', format = 'pdf', flavor = 'base64', data = encode(file, 'base64')));
+}
+
+QZPrintDefaultCommand (STRING command) {
+    QZPrintDefault( (JSON FROM copies = 1),
+                    (JSON FROM data = command));
+}
+
+QZPrintPDF (STRING printerName, RAWFILE file) {
+        QZPrint( (JSON FROM name = printerName),
+                 (JSON FROM copies = 1),
+                 (JSON FROM type = 'pixel', format = 'pdf', flavor = 'base64', data = encode(file, 'base64')));
+}
+
+QZPrintCommand (STRING printerName, STRING command) {
+        QZPrint( (JSON FROM name = printerName),
+                 (JSON FROM copies = 1),
+                 (JSON FROM data = command));
+}
+
+onWebClientLoad() + { 
+    INTERNAL CLIENT 'qz-tray.js';
+    INTERNAL CLIENT 'custom_qz-tray.js';
+}
