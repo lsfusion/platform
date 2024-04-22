@@ -794,7 +794,7 @@ function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBo
             render(element);
 
             // both for multiple and single
-            if (_isInGrid(element) && pickerType !== 'select2') { //select2 не нужны эти все листенеры
+            if (_isInGrid(element) && pickerType !== 'select2') { //select2 doesn't need listeners
                 // press on space button on dropdown element in grid-cell opens dropdown instead of adding a filter.
                 select.addEventListener('keypress', function (e) {
                     if (e.keyCode === 32) {
