@@ -8,10 +8,6 @@ select + .select2-container--bootstrap-5 {
   z-index: 1;
 }
 
-.select2-container--bootstrap-5.form-control {
-  padding: 0 0 var(--border-padding) 0;
-}
-
 .select2-container--bootstrap-5 *:focus {
   outline: 0;
 }
@@ -177,13 +173,14 @@ select + .select2-container--bootstrap-5 {
   padding-left: 0;
   margin: 0;
   list-style: none;
+  column-gap: var(--border-comp-vert-padding);
+  row-gap: var(--border-comp-horz-padding);
 }
 .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__rendered .select2-selection__choice {
   display: flex;
   flex-direction: row;
   align-items: center;
   padding: var(--border-padding);
-  margin: var(--border-comp-vert-padding) var(--border-comp-horz-padding) 0 var(--border-comp-horz-padding);
   cursor: auto;
   border: var(--bs-border-width) solid var(--bs-border-color);
   border-radius: var(--bs-border-radius);

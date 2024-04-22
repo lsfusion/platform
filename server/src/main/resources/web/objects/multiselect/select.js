@@ -647,9 +647,11 @@ function _selectPicker(multi, html, shouldBeSelected, changeValue) {
                 return id == null ? state.text : id;
             } else {
                 let element = state.element;
-                if (element != null) // element may be null because select2 draws an empty option at the top of options.
-                    return $('<div>').html(element.getAttribute('data-content'));
-
+                if (element != null) { // element may be null because select2 draws an empty option at the top of options.
+                    let content = element.getAttribute('data-content');
+                    let $content = $(content);
+                    return $content.length > 0 ? $content : content; //$content.length > 0 is content validity check
+                }
                 return '';
             }
         }
