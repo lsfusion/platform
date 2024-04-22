@@ -601,12 +601,12 @@ public class GFormController implements EditManager {
     }
 
     public void applyRemoteChanges(GFormChangesDTO changesDTO) {
-        GFormChanges fc = GFormChanges.remap(form, changesDTO);
+        applyRemoteChanges(GFormChanges.remap(form, changesDTO), changesDTO.requestIndex);
+    }
 
+    public void applyRemoteChanges(GFormChanges fc, int requestIndex) {
         if (hasColumnGroupObjects) // optimization
             fc.gridObjects.foreachEntry((key, value) -> currentGridObjects.put(key, value));
-
-        int requestIndex = changesDTO.requestIndex;
 
         modifyFormChangesWithModifyObjectAsyncs(requestIndex, fc);
 
@@ -851,6 +851,7 @@ public class GFormController implements EditManager {
 
     public void onServerInvocationFailed(ExceptionResult exceptionResult) {
         formsController.onServerInvocationFailed(getAsyncFormController(exceptionResult.requestIndex));
+        applyRemoteChanges(new GFormChanges(), (int) exceptionResult.requestIndex);
     }
 
     public long changeGroupObject(final GGroupObject group, GGroupObjectValue key) {
