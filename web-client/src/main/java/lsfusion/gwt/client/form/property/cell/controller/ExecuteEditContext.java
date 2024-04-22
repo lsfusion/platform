@@ -5,7 +5,7 @@ import lsfusion.gwt.client.classes.GType;
 
 public interface ExecuteEditContext extends EditContext {
 
-    void setLoading(boolean loading);
+    void setLoading();
 
     Boolean isReadOnly();
 

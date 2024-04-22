@@ -65,16 +65,16 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
     }
 
     @Override
-    public void setLoading(boolean loading) {
-        this.loading = loading;
+    public void setLoading() {
+        this.loading = true;
 
-        controller.setLoading(columnKey, PValue.getPValue(loading));
+        controller.setLoading(columnKey, PValue.getPValue(true));
     }
 
     public PValue setLoadingValue(PValue value) {
         PValue oldValue = getValue();
 
-        setLoading(true);
+        setLoading();
         setValue(value);
 
         update();
