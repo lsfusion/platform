@@ -4131,11 +4131,18 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams ac
                 newListContext = newContext;
                 listDynamic = false;
             }
+
+            List<TypedParameter> newActionsContext = new ArrayList<TypedParameter>(newContext);
         }
         ('CUSTOM' editFun=stringLiteral {customEditorFunction = $editFun.val;})?
-	    ('LIST' listExpr=propertyExpression[newListContext, listDynamic] { listProp = $listExpr.property; })?
+	    ('LIST' listExpr=propertyExpression[newListContext, listDynamic] {
+	        listProp = $listExpr.property;
+	        if(listProp != null) {
+			    newActionsContext.set(newActionsContext.size() - 1, self.new TypedParameter(listProp.getLP().property.getType().getSID(), newActionsContext.get(newContext.size() - 1).paramName));
+	        }
+	    })?
         ('WHERE' whereExpr=propertyExpression[newListContext, listDynamic] { whereProp = $whereExpr.property; })?
-        (acts = contextActions[newContext] { actionImages = $acts.actionImages; keyPresses = $acts.keyPresses; quickAccesses = $acts.quickAccesses; actions = $acts.actions; })?
+        (acts = contextActions[newActionsContext] { actionImages = $acts.actionImages; keyPresses = $acts.keyPresses; quickAccesses = $acts.quickAccesses; actions = $acts.actions; })?
         fs=formSessionScopeClause?
 		('TO' pUsage=propertyUsage { outProp = $pUsage.propUsage; } )?
         dDB=doInputBody[context, newContext]
