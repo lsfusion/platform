@@ -235,7 +235,7 @@
 .root-layout-panel {
     z-index: 0 !important;
 }
-.modal-form.popup-partner {
+.modal-form {
     /* actually needed only for bootstrap because it has no position, but for z-index position should be different from static */
     position: fixed;
 }
