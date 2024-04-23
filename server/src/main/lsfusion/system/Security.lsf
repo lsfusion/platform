@@ -95,49 +95,12 @@ CLASS Permission {
 parentPermissionForeground() = IF isDarkTheme() THEN RGB(167,167,167) ELSE RGB(109,109,109);
 childPermissionBackground() = IF isDarkTheme() THEN RGB(128,128,128) ELSE RGB(203,203,203);
 
-// Change password
-//remove after onStarted
-forbidChangePassword '{security.forbid.change.password}' = DATA BOOLEAN (UserRole) CHARWIDTH 10;
-//no equivalent, remove after onstarted
-dataForbidChangePassword '{security.forbid.change.password}' = DATA BOOLEAN (CustomUser) CHARWIDTH 10;
-
-// Edit profile
-//remove after onStarted
-forbidEditProfile '{security.forbid.edit.profile}' = DATA BOOLEAN (UserRole) CHARWIDTH 10;
-//no equivalent, remove after onstarted
-dataForbidEditProfile '{security.forbid.edit.profile}' = DATA BOOLEAN (CustomUser) CHARWIDTH 10;
-
-//remove after onStarted
-forbidEditObjects '{security.forbid.edit.objects}' = DATA BOOLEAN (UserRole) CHARWIDTH 10;
-
-// ------- Properties ------- //
-
 TABLE userRoleActionOrProperty (UserRole, ActionOrProperty);
 TABLE userRolePropertyGroup (UserRole, PropertyGroup);
-
-// ----- View ----- //
-
-// --- Global --- //
-
-//remove after onStarted
-dataPermitView = DATA BOOLEAN (PropertyGroup);
-dataPermitView = DATA BOOLEAN (ActionOrProperty) CHARWIDTH 10;
-dataForbidView = DATA BOOLEAN (PropertyGroup) CHARWIDTH 10;
-dataForbidView = DATA BOOLEAN (ActionOrProperty) CHARWIDTH 10;
-
-// --- Roles --- // 
 
 updatePermissionUserRoleNavigatorElement  INTERNAL 'lsfusion.server.logics.navigator.UpdatePermissionAction' (UserRole, STRING, STRING);
 updatePermissionUserRoleActionOrProperty  INTERNAL 'lsfusion.server.logics.property.UpdatePermissionAction' (UserRole, STRING, STRING, STRING);
 dropCachedSecurityPolicy  INTERNAL 'lsfusion.server.logics.DropCachedSecurityPolicyAction' (UserRole);
-
-//remove after onStarted
-permitViewAllProperty '{security.permit.view.all.properties}' = DATA BOOLEAN (UserRole) CHARWIDTH 10;
-dataPermitView = DATA BOOLEAN (UserRole, PropertyGroup);
-dataPermitView = DATA BOOLEAN (UserRole, ActionOrProperty);
-forbidViewAllProperty '{security.forbid.view.all.properties}' = DATA BOOLEAN (UserRole) CHARWIDTH 10;
-dataForbidView = DATA BOOLEAN (UserRole, PropertyGroup); 
-dataForbidView = DATA BOOLEAN (UserRole, ActionOrProperty);     
 
 META initPropertyPermission (type, caption)
     dataPermission###type = DATA Permission (UserRole, PropertyGroup);
@@ -175,31 +138,11 @@ END
 
 @initPropertyPermission(editObjects, '{security.editObjects}');       
 
-@initPropertyPermission(groupChange, '{security.groupChange}');       
-
-//remove after onStarted
-dataPermitChange = DATA BOOLEAN (PropertyGroup);
-dataPermitChange = DATA BOOLEAN (ActionOrProperty) CHARWIDTH 10;
-dataForbidChange = DATA BOOLEAN (PropertyGroup) CHARWIDTH 10;
-dataForbidChange = DATA BOOLEAN (ActionOrProperty) CHARWIDTH 10;
-permitChangeAllProperty '{security.permit.change.all.properties}' = DATA BOOLEAN (UserRole) CHARWIDTH 10;
-dataPermitChange = DATA BOOLEAN (UserRole, PropertyGroup);
-dataPermitChange = DATA BOOLEAN (UserRole, ActionOrProperty);
-forbidChangeAllProperty '{security.forbid.change.all.properties}' = DATA BOOLEAN (UserRole) CHARWIDTH 10;
-dataForbidChange = DATA BOOLEAN (UserRole, PropertyGroup);
-dataForbidChange = DATA BOOLEAN (UserRole, ActionOrProperty);
+@initPropertyPermission(groupChange, '{security.groupChange}');
 
 // ------- Navigator ------- //
 
 TABLE userRoleNavigatorElement (UserRole, NavigatorElement);
-
-//remove after onStarted
-permit '{security.permit}' = DATA BOOLEAN (NavigatorElement) CHARWIDTH 10;
-permitAllForms '{security.permit.all.forms}' = DATA BOOLEAN (UserRole) CHARWIDTH 10;
-permit '{security.permit}' = DATA BOOLEAN (UserRole, NavigatorElement) CHARWIDTH 10;
-forbid '{security.forbid}' = DATA BOOLEAN (NavigatorElement) CHARWIDTH 10;
-forbidAllForms '{security.forbid.all.forms}' = DATA BOOLEAN (UserRole) CHARWIDTH 10;
-forbid '{security.forbid}' = DATA BOOLEAN (UserRole, NavigatorElement) CHARWIDTH 10;  
 
 dataPermission = DATA Permission (UserRole, NavigatorElement);
 nearestParentPermission (UserRole ur, NavigatorElement e) = GROUP LAST dataPermission(ur, NavigatorElement parent) IF dataPermission(ur, parent) ORDER DESC level(e, parent) MATERIALIZED;
@@ -290,19 +233,6 @@ showDefaultForms()  {
 
 onDesktopClientStarted() + {  showDefaultForms(); }
 onWebClientStarted() + {  showDefaultForms(); }
-
-// ------------------ Custom policies ---------------- //
-//remove after onStarted
-CLASS Policy '{security.policy}';
-TABLE policy (Policy);
-id '{integration.id}' = DATA STRING[100](Policy);
-policy = GROUP AGGR Policy policy BY id(policy);
-name '{security.name.policy}' = DATA ISTRING[100](Policy);
-description '{security.description.policy}' = DATA STRING[100] (Policy);
-
-//remove after onStarted
-TABLE userRolePolicy (UserRole, Policy);
-order '{security.order.policy}' = DATA INTEGER (UserRole, Policy);
 
 createSystemUserRoles() {
     IF NOT propertyGroup('System_root') THEN
