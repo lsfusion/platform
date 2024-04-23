@@ -7,6 +7,7 @@ title: 'Операции с группами объектов'
 ### Действия
 
 -   [Поиск (`SEEK`)](Search_SEEK.md)
+-   [Видимость элементов дерева (`EXPAND`, `COLLAPSE`)](Object_tree_visibility_EXPAND_COLLAPSE.md)
 
 ### Свойства
 
