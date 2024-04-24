@@ -97,8 +97,12 @@ public interface PValue {
         if(useUnsafeCast)
             return (PValue) value;
         else {
-            // this way we can add "no toString" check
-            return toPValue((Serializable) value);
+            if(value instanceof DisplayString) {
+                return toPValue(((DisplayString) value).displayString);
+            } else {
+                // this way we can add "no toString" check
+                return toPValue((Serializable) value);
+            }
 //            if(value instanceof Number) // for pivoting we need actual numbers to sum them up (that's the idea of pivoting)
 //                return getPValue((Number)value);
 //            return (PValue) value;
