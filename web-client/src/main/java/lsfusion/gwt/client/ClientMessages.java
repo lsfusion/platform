@@ -62,9 +62,6 @@ public interface ClientMessages extends Messages {
     String formGridPreferencesReset();
     String formGridPreferencesSaveSuccess();
     String formGridPreferencesResetSuccess();
-    String formGridPreferencesNotSaved();
-    String formGridPreferencesSavedForCurrentUser();
-    String formGridPreferencesSavedForAllUsers();
     String formGridPreferencesSureToSave();
     String formGridPreferencesSureToReset();
     String formGridPreferencesForCurrentUser();
