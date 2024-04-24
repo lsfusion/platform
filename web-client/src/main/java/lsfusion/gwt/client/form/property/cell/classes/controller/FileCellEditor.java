@@ -115,20 +115,12 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
     private native void click(Element parent, Element inputElement, Widget popupOwnerWidget) /*-{
         var instance = this;
 
-        var needToCancel = true;
         inputElement.onchange = function () {
-            needToCancel = !instance.@FileCellEditor::addFilesToUploader(*)(this.files, parent, popupOwnerWidget);
+            !instance.@FileCellEditor::addFilesToUploader(*)(this.files, parent, popupOwnerWidget);
         }
 
-        var focusedElement = @lsfusion.gwt.client.base.FocusUtils::getFocusedElement()();
-        focusedElement.onfocus = function () {
-            setTimeout(function () {//onfocus event fires before onchange event, so we need a timeout
-                if (needToCancel) {
-                    instance.@FileCellEditor::cancel()();
-                    needToCancel = false;
-                }
-                focusedElement.onfocus = null;
-            }, 300)
+        inputElement.oncancel = function () {
+            instance.@FileCellEditor::cancel()();
         }
 
         inputElement.click();
