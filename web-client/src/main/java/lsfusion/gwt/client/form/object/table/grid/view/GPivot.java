@@ -2261,8 +2261,4 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     public String getRegexpMessage() {
         return null;
     }
-
-    @Override
-    public void onBrowserEvent(Element target, EventHandler event) {
-    }
 }

@@ -251,10 +251,10 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
             DataGrid.sinkPasteEvent(renderElement);
 
         isFocused = true;
-        focusedChanged(handler);
+        focusedChanged();
     }
 
-    private void focusedChanged(EventHandler handler) {
+    private void focusedChanged() {
         form.checkFocusElement(isFocused, getRenderElement());
 
         if(isFocused)
@@ -270,7 +270,7 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
         //if !isFocused should be replaced to assert; isFocused must be true, but sometimes is not (related to BusyDialogDisplayer)
         //assert isFocused;
         isFocused = false;
-        focusedChanged(handler);
+        focusedChanged();
     }
 
     public boolean isEditing;

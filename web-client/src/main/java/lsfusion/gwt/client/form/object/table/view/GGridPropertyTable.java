@@ -1036,8 +1036,8 @@ protected Double getUserFlex(int i) {
     }
 
     @Override
-    public void focusedChanged(Element target, Event focusEvent) {
-        super.focusedChanged(target, focusEvent);
+    public void focusedChanged(Element target) {
+        super.focusedChanged(target);
 
         checkFocusElement(null, target);
     }
@@ -1046,6 +1046,7 @@ protected Double getUserFlex(int i) {
         int selectedColumn = getSelectedColumn();
         Element selectedRenderElement = selectedColumn >= 0 && getSelectedRow() >= 0 ? getSelectedRenderElement(selectedColumn) : null;
 
+        boolean isFocused = isFocused();
         form.checkFocusElement(isFocused, selectedRenderElement);
 
         if(isFocused && selectedRenderElement != null) {

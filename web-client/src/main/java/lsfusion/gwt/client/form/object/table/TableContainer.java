@@ -113,6 +113,8 @@ public class TableContainer extends ResizableSimplePanel implements HasMaxPrefer
             addStyleName("tableContainerBoxed");
         else
             removeStyleName("tableContainerBoxed");
+
+        tableComponent.onActivate();
     }
 
     @Override
@@ -131,16 +133,16 @@ public class TableContainer extends ResizableSimplePanel implements HasMaxPrefer
         tableComponent.onBrowserEvent(target, eventHandler);
     }
 
-    private boolean isFocused;
+    public boolean isFocused;
     protected void onFocus(Element target, lsfusion.gwt.client.base.view.EventHandler eventHandler) {
         if(isFocused)
             return;
         isFocused = true;
         addStyleName("tableContainerFocused");
-        focusedChanged(target, eventHandler.event);
+        focusedChanged(target);
     }
 
-    public void focusedChanged(Element target, Event focusEvent) {
+    public void focusedChanged(Element target) {
         Element drawElement = null;
         if(tableComponent instanceof GCustom)
             drawElement = ((GCustom) tableComponent).getDrawElement();
@@ -161,7 +163,7 @@ public class TableContainer extends ResizableSimplePanel implements HasMaxPrefer
             return;
         isFocused = false;
         removeStyleName("tableContainerFocused");
-        focusedChanged(target, eventHandler.event);
+        focusedChanged(target);
     }
 
     public void setPreferredSize(boolean set, Result<Integer> grids) {

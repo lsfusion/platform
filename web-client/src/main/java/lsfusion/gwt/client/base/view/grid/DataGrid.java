@@ -67,7 +67,9 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     /**
      * The command used to resolve the pending state.
      */
-    protected boolean isFocused;
+    protected boolean isFocused() {
+        return tableContainer.isFocused;
+    }
 
     private final ArrayList<Column<T, ?>> columns = new ArrayList<>();
 
@@ -434,6 +436,11 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
     protected abstract ArrayList<T> getRows();
 
+    @Override
+    public void onActivate() {
+        onFocus(null, null);
+    }
+
     public final void onBrowserEvent(Element target, EventHandler eventHandler) {
         Event event = eventHandler.event;
         // Ignore spurious events (such as onblur) while we refresh the table.
@@ -724,7 +731,10 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         selectedColumnChanged = true;
         scheduleUpdateDOM();
     }
-    public void focusedChanged(Element target, Event focusEvent) {
+    public void focusedChanged(Element target) {
+        if(isFocused())
+            DataGrid.sinkPasteEvent(getTableDataFocusElement());
+
         focusedChanged = true;
         if(!isResolvingState) // hack, grid elements can have focus and not be in editing mode (for example input) and removing such elements will lead to blur
             scheduleUpdateDOM();
@@ -765,7 +775,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     }
 
     public int getFocusedColumn() {
-        return this.isFocused ? getSelectedColumn() : -1;
+        return isFocused() ? getSelectedColumn() : -1;
     }
 
     public boolean isSelectedRow(Cell cell) {
@@ -963,22 +973,11 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     }
 
     public void onFocus(Element target, EventHandler eventHandler) {
-        if(isFocused)
-            return;
-        isFocused = true;
-
-        DataGrid.sinkPasteEvent(getTableDataFocusElement());
-        focusedChanged(target, eventHandler.event);
+        focusedChanged(target);
     }
 
     public void onBlur(Element target, EventHandler eventHandler) {
-        if(!isFocused)
-            return;
-
-        //if !isFocused should be replaced to assert; isFocused must be true, but sometimes is not (related to BusyDialogDisplayer)
-        //assert isFocused;
-        isFocused = false;
-        focusedChanged(target, eventHandler.event);
+        focusedChanged(target);
     }
 
     public Element getTableDataFocusElement() {
@@ -1175,7 +1174,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
         //calculate left neighbour right border for focused cell
         if (columnsChanged || selectedRowChanged || selectedColumnChanged || focusedChanged) {
-            pendingState.leftNeighbourRightBorder = calcLeftNeighbourRightBorder(isFocused);
+            pendingState.leftNeighbourRightBorder = calcLeftNeighbourRightBorder(isFocused());
         }
 
         //calculate left for sticky properties
@@ -1375,7 +1374,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
         // SET NEW STATE
         if (newLocalSelectedRow >= 0 && newLocalSelectedRow < rows.getLength() && newLocalSelectedCol >= 0 && newLocalSelectedCol < columnCount) {
-            setFocusedCellStyles(newLocalSelectedRow, newLocalSelectedCol, rows, headerRow, isFocused);
+            setFocusedCellStyles(newLocalSelectedRow, newLocalSelectedCol, rows, headerRow, isFocused());
         }
     }
 

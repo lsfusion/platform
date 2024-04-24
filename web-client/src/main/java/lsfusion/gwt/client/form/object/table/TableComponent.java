@@ -25,5 +25,6 @@ public interface TableComponent {
     default void onTableContainerLoad() {}
     default void onTableContainerUnload() {}
     default void onResize() {}
-    void onBrowserEvent(Element target, EventHandler event);
+    default void onBrowserEvent(Element target, EventHandler event) {}
+    default void onActivate() {}
 }
