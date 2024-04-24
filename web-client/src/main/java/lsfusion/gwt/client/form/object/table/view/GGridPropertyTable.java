@@ -1031,6 +1031,16 @@ protected Double getUserFlex(int i) {
             focus(reason);
     }
 
+    @Override
+    protected void changeColumnGroupObject(int column) {
+        if (column > 0 || form.getForm().treeGroups.isEmpty()) { //in tree view column with index 0 never has a columnPropertyDraw
+            GGroupObjectValue columnKey = getColumnKey(column);
+            GPropertyDraw columnPropertyDraw = getColumnPropertyDraw(column);
+            if (columnPropertyDraw.hasColumnGroupObjects())
+                columnPropertyDraw.columnGroupObjects.forEach(c -> form.changeGroupObjectLater(c, columnKey));
+        }
+    }
+
     public void focus(FocusUtils.Reason reason) {
         FocusUtils.focus(getTableDataFocusElement(), reason);
     }

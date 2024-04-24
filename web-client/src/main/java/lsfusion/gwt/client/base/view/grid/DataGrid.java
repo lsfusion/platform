@@ -823,7 +823,11 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
         assert isFocusable(column);
         setSelectedColumn(column);
+        changeColumnGroupObject(column);
     }
+
+    protected void changeColumnGroupObject(int column) {}
+
     private void changeSelectedRow(int row) {
         int rowCount = getRowCount();
         if(rowCount == 0)
