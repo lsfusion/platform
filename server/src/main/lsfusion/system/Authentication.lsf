@@ -85,11 +85,6 @@ customUserLowerShort (login) = GROUP LAST CustomUser customUser ORDER customUser
 customUserNormalized (ISTRING[100] login) = OVERRIDE customUserLower(lower(login)), customUserLowerShort(lower(login));
 logName (CustomUser user) = OVERRIDE name(user), login(user);
 
-//backward compatibility
-customUser (login) = GROUP AGGR CustomUser customUser WHERE customUser IS CustomUser BY login(customUser);
-upcaseLogin (CustomUser customUser) = upper(login(customUser));
-customUserUpcase (login) = GROUP MAX CustomUser customUser BY upcaseLogin(customUser);
-
 //migration 4 -> 5 version
 intersectingLoginsCount '{authentication.intersecting.logins}' (CustomUser user) = GROUP SUM 1 IF upper(login(CustomUser u)) == upper(login(user));
 intersectingLoginsCount () = GROUP SUM 1 IF intersectingLoginsCount(CustomUser u) > 1;
