@@ -1039,7 +1039,7 @@ public class PropertyDrawView extends BaseComponentView {
         if(toolbarActions != null)
             return toolbarActions;
 
-        if (entity.getSelectProperty(context) != null)
+        if (!isProperty(context) || entity.getSelectProperty(context) != null)
             return false;
 
         return true;
