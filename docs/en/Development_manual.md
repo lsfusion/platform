@@ -23,7 +23,7 @@ To install the plug-in, Intellij IDEA version 2020.1 or higher must be installed
 
 ### Installing an application server via IDE
 
--   When [creating a new lsFusion project](IDE.md#newproject) click the `Download` button opposed to the `lsFusion library`: IDEA automatically downloads the JAR file of the latest (non-beta) version of the lsFusion server from the [central server](https://download.lsfusion.org/java) and installs this file as a dependency of this project (or rather, as its only module: `File > Project Structure > Modules > project name > Dependencies tab`). Also, if necessary, you can download another version of the server (different from the latest) or select a previously downloaded server JAR file on the local disk.  
+-   When [creating a new lsFusion project](IDE.md#newproject) click the `Download` button opposed to the `lsFusion library`: IDEA automatically downloads the JAR file of the latest (non-beta) version of the lsFusion server from the [central server](https://download.lsfusion.org/java/) and installs this file as a dependency of this project (or rather, as its only module: `File > Project Structure > Modules > project name > Dependencies tab`). Also, if necessary, you can download another version of the server (different from the latest) or select a previously downloaded server JAR file on the local disk.  
 
 
 :::info
@@ -46,7 +46,7 @@ Note that IDEA remembers the downloaded/specified application server file in its
 
 ### Installing an application server via IDE {#existingide}
 
--   Download the `lsfusion-server-<version>.jar` file of the required version (for example, `lsfusion-server-5.1.jar`) from the [central server](https://download.lsfusion.org/java) to the folder of the required project module (we will call this folder `$FUSION_DIR$`).
+-   Download the `lsfusion-server-<version>.jar` file of the required version (for example, `lsfusion-server-5.1.jar`) from the [central server](https://download.lsfusion.org/java/) to the folder of the required project module (we will call this folder `$FUSION_DIR$`).
 -   If the database server is located on another computer, and if authorization is enabled on the database server (for example, for Postgres, using the md5 method and if the postgres password is not empty), set the [database server connection parameters](Launch_parameters.md#connectdb) (e.g., by creating a startup [settings file](Launch_parameters.md#filesettings) in the project folder)
 -   Add the downloaded file as a dependency of the required project module (`File > Project Structure > Modules > module name > Dependencies tab > +`) 
 -   Create a [startup configuration](IDE.md#configuration) (when creating a new lsFusion project, this and the upper two sections are done automatically). If the platform is loaded as a library, instead of creating a configuration you can use a Spring bean with the `logicsInstance` ID from the `lsfusion.xml` configuration file, and its `start()` and `stop()` methods, responsible for starting and stopping the application server, respectively.

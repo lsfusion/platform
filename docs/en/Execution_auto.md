@@ -94,7 +94,7 @@ To give users access to the installed system, you must:
 Send users a link to `http://<web address of the web server (Client)>:8080`. When users open this link, they will be redirected by default to the login page, where, if necessary, they can install the desktop client via Java Web Start (requires Java (JDK) installed, for example, by following [this](https://developers.redhat.com/products/openjdk/download) link with registration or this one [without](https://github.com/ojdkbuild/ojdkbuild)). Web and desktop clients are updated automatically with [updates to the web server](#update) (Client)
 
 :::info
-Under Windows, you can also use desktop client [installers](https://download.lsfusion.org/exe/) (`lsfusion-desktop-*` files with the correct OS version and bit width). However, unlike installing with Java Web Start, a desktop client installed in this way will not be automatically updated. Therefore, you will need to update it manually by downloading the file of the new version of the desktop client (`lsfusion-client-5.<new version>.jar`) from [the central server](https://download.lsfusion.org/java) and replacing the `$INSTALL_DIR$/client.jar` file with it.
+Under Windows, you can also use desktop client [installers](https://download.lsfusion.org/exe/) (`lsfusion-desktop-*` files with the correct OS version and bit width). However, unlike installing with Java Web Start, a desktop client installed in this way will not be automatically updated. Therefore, you will need to update it manually by downloading the file of the new version of the desktop client (`lsfusion-client-5.<new version>.jar`) from [the central server](https://download.lsfusion.org/java/) and replacing the `$INSTALL_DIR$/client.jar` file with it.
 :::
 
 :::warning
@@ -120,7 +120,7 @@ Programs installed separately (OpenJDK, PostgreSQL) are also updated separately 
 <Tabs groupId="operating-systems" defaultValue="win" values={[{label: 'Windows', value: 'win'}, {label: 'Linux', value: 'linux'}]}>
 <TabItem value="win">
 
-Platform components are also updated separately from each other. To do this, you must download the file of the new version of the component from [the central server](https://download.lsfusion.org/java) and replace the following file with it:
+Platform components are also updated separately from each other. To do this, you must download the file of the new version of the component from [the central server](https://download.lsfusion.org/java/) and replace the following file with it:
 
 |Component|Files|
 |-|-|
