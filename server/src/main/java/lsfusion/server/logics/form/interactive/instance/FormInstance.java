@@ -1023,7 +1023,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         final ActionObjectInstance remappedEventAction = eventAction.getRemappedPropertyObject(keys, true);
         remappedEventAction.execute(FormInstance.this, stack, result, property, FormInstance.this);
 
-        fireEvent(property.getEntity(), stack);
+        fireEvent(property.getEntity(), stack, keys);
 
     }
 
@@ -2722,24 +2722,36 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     public void fireFormEvent(ExecutionStack stack, FormEvent formEvent, PushAsyncResult pushedAsyncResult) throws SQLException, SQLHandledException {
-        fireEvent(entity.getEventObject(formEvent), stack, pushedAsyncResult);
+        fireEvent(entity.getEventObject(formEvent), stack, null, pushedAsyncResult);
     }
 
     private void fireEvent(Object eventObject, ExecutionStack stack) throws SQLException, SQLHandledException {
         fireEvent(eventObject, stack, null);
     }
 
-    private void fireEvent(Object eventObject, ExecutionStack stack, PushAsyncResult pushedAsyncResult) throws SQLException, SQLHandledException {
-        for(ActionValueImplement event : getEvents(eventObject))
+    private void fireEvent(Object eventObject, ExecutionStack stack, ImMap<ObjectInstance, ? extends ObjectValue> keys) throws SQLException, SQLHandledException {
+        fireEvent(eventObject, stack, keys, null);
+    }
+
+    private void fireEvent(Object eventObject, ExecutionStack stack, ImMap<ObjectInstance, ? extends ObjectValue> keys, PushAsyncResult pushedAsyncResult) throws SQLException, SQLHandledException {
+        for(ActionValueImplement event : getEvents(eventObject, keys))
             event.execute(this, stack, pushedAsyncResult);
     }
 
     private ImOrderSet<ActionValueImplement> getEvents(Object eventObject) {
+        return getEvents(eventObject, null);
+    }
+
+    private ImOrderSet<ActionValueImplement> getEvents(Object eventObject, ImMap<ObjectInstance, ? extends ObjectValue> keys) {
         MOrderExclSet<ActionValueImplement> mResult = SetFact.mOrderExclSet();
         Iterable<ActionObjectEntity<?>> actionsOnEvent = entity.getEventActionsListIt(eventObject);
         if (actionsOnEvent != null) {
             for (ActionObjectEntity<?> autoAction : actionsOnEvent) {
                 ActionObjectInstance<? extends PropertyInterface> autoInstance = instanceFactory.getInstance(autoAction);
+                if(keys != null) {
+                    autoInstance = autoInstance.getRemappedPropertyObject(keys, true);
+                }
+
                 if (securityPolicy.checkPropertyChangePermission(autoAction.property, autoAction.property)) { // для проверки null'ов и политики безопасности
                     mResult.exclAdd(autoInstance.getValueImplement(this));
                 }

@@ -13,6 +13,7 @@ grammar LsfLogics;
     import lsfusion.interop.form.ContainerWindowFormType;
     import lsfusion.interop.form.ModalityWindowFormType;
     import lsfusion.interop.base.view.FlexAlignment;
+    import lsfusion.interop.form.event.FormPropertyChangeEvent;
     import lsfusion.interop.form.event.FormContainerEvent;
     import lsfusion.interop.form.event.FormScheduler;
     import lsfusion.interop.form.object.table.grid.ListViewType;
@@ -1242,9 +1243,8 @@ formEventDeclaration returns [ActionObjectEntity action, Object type, Boolean re
 		|	'DROP'	 { $type = FormEventType.DROP; }
 		|	'QUERYOK'	 { $type = FormEventType.QUERYOK; }
 		|	'QUERYCLOSE'	 { $type = FormEventType.QUERYCLOSE; }
-		| 	'CHANGE' ('OBJECT'? objectId=ID { $type = $objectId.text; } | 'PROPERTY' prop=formPropertyDraw { $type = $prop.property; })
-		| 	'COLLAPSE' objectId=ID { $type = new FormContainerEvent($objectId.text, true); }
-		| 	'EXPAND' objectId=ID { $type = new FormContainerEvent($objectId.text, false); }
+		| 	changeEvent = changeEventDeclaration { $type = $changeEvent.type; }
+		| 	containerEvent=formContainerEventDeclaration { $type = new FormContainerEvent($containerEvent.sid, $containerEvent.collapse); }
 		| 	schedule = scheduleFormEventDeclaration { $type = new FormScheduler($schedule.period, $schedule.fixed); }
 		|   oed = orderEventDeclaration { $type = $oed.type; }
 		|   fed = filterEventDeclaration { $type = $fed.type; }
@@ -1252,6 +1252,23 @@ formEventDeclaration returns [ActionObjectEntity action, Object type, Boolean re
 		('REPLACE' { $replace = true; } | 'NOREPLACE' { $replace = false; } )?
 		faprop=formActionObject { $action = $faprop.action; }
 	;
+
+changeEventDeclaration returns [Object type]
+@init {
+    boolean after = false;
+}
+    :
+    'CHANGE' (  'OBJECT'? objectId=ID { $type = $objectId.text; }
+             |  'PROPERTY' ('AFTER' { after = true; })? prop=formPropertyDraw { $type = after ? $prop.property : new FormChangeEvent($prop.property); }
+             )
+    ;
+
+formContainerEventDeclaration returns [String sid, boolean collapse = false]
+    :   ('COLLAPSE' { $collapse = true; } | 'EXPAND')
+        (   obj=ID { $sid = $obj.text; }
+        |   comp=formContainersComponentSelector { $sid = $comp.sid; }
+        )
+    ;
 
 scheduleFormEventDeclaration returns [int period, boolean fixed]
 	:   'SCHEDULE' 'PERIOD' periodLiteral=intLiteral { $period = $periodLiteral.val; } ('FIXED' { $fixed = true; })?

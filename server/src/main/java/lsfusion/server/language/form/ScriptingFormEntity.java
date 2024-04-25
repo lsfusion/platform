@@ -12,6 +12,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.interop.action.ServerResponse;
+import lsfusion.interop.form.event.FormPropertyChangeEvent;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.property.PivotOptions;
@@ -823,9 +824,11 @@ public class ScriptingFormEntity {
                 replace = eventType == FormEventType.QUERYCLOSE || eventType == FormEventType.QUERYOK;
             if (eventType instanceof String) {
                 form.addActionsOnEvent(getObjectEntity((String) eventType), replace, version, actions.get(i));
+            } else if (eventType instanceof FormPropertyChangeEvent) {
+                PropertyDrawEntity propertyDrawEntity = (PropertyDrawEntity) ((FormPropertyChangeEvent) eventType).propertyDrawEntity;
+                propertyDrawEntity.setEventAction(ServerResponse.CHANGE, actions.get(i), true);
             } else {
-                ActionObjectEntity action = actions.get(i);
-                form.addActionsOnEvent(eventType, replace, version, action);
+                form.addActionsOnEvent(eventType, replace, version, actions.get(i));
             }
         }
     }
