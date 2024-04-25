@@ -110,6 +110,13 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                 form.changeGroupObjectLater(groupObject, selectedRecord.getKey());
         });
 
+        setColumnChangedHandler(() -> {
+            GGroupObjectValue columnKey = getSelectedColumnKey();
+            ArrayList<GGroupObject> columnGroupObjects = getColumnPropertyDraw(getSelectedColumn()).columnGroupObjects;
+            if (columnGroupObjects != null)
+                columnGroupObjects.forEach(groupObject -> form.changeGroupObjectLater(groupObject, columnKey));
+        });
+
         sortableHeaderManager = new GGridSortableHeaderManager<Map<GPropertyDraw, GGroupObjectValue>>(this, false) {
             @Override
             protected void orderChanged(Map<GPropertyDraw, GGroupObjectValue> columnKey, GOrder modiType) {

@@ -37,6 +37,7 @@ import lsfusion.interop.form.order.user.Order;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.ListSelectionEvent;
 import javax.swing.plaf.TableHeaderUI;
 import javax.swing.plaf.basic.BasicTableHeaderUI;
 import javax.swing.table.*;
@@ -138,6 +139,17 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
     // вызова changeSelection() значение leadRow оказывается устаревшим. Подменяем его для избежания прыжков.
     private ThreadLocal<Object> threadLocalUIAction = new ThreadLocal<>();
     private ThreadLocal<Boolean> threadLocalIsStopCellEditing = new ThreadLocal<>();
+
+    @Override
+    public void columnSelectionChanged(ListSelectionEvent e) {
+        super.columnSelectionChanged(e);
+        stopCellEditing();
+        if (!properties.isEmpty()) {
+            List<ClientGroupObject> columnGroupObjects = model.getColumnProperty(getSelectedColumn()).columnGroupObjects;
+            ClientGroupObjectValue columnKey = getSelectedColumnKey();
+            columnGroupObjects.forEach(groupObject -> changeCurrentObjectLater(groupObject, columnKey, true));
+        }
+    }
 
     public GridTable(final GridView igridView, ClientFormController iform, GridUserPreferences[] iuserPreferences) {
         super(new GridTableModel(), iform, igridView.getGridController().getGroupObject());
@@ -548,18 +560,16 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         final ClientGroupObjectValue selectedObject = getSelectedObject();
         if (!currentObject.equals(selectedObject) && selectedObject != null) {
             setCurrentObject(selectedObject);
-            SwingUtils.invokeLaterSingleAction(
-                    groupObject.getActionID(),
-                    new ActionListener() {
-                        public void actionPerformed(ActionEvent ae) {
-                            changeCurrentObject(selectedObject);
-                        }
-                    }, 50);
+            changeCurrentObjectLater(groupObject, selectedObject, false);
         }
     }
 
-    private void changeCurrentObject(ClientGroupObjectValue selectedObject) {
-        if (currentObject.equals(selectedObject)) {
+    private void changeCurrentObjectLater(ClientGroupObject groupObject, ClientGroupObjectValue selectedObject, boolean isColumn) {
+        SwingUtils.invokeLaterSingleAction(groupObject.getActionID(), ae -> changeCurrentObject(groupObject, selectedObject, isColumn), 50);
+    }
+
+    private void changeCurrentObject(ClientGroupObject groupObject, ClientGroupObjectValue selectedObject, boolean isColumn) {
+        if (currentObject.equals(selectedObject) || isColumn) {
             try {
                 //Коммит закомменчен, поскольку он приводит к неправильной работе SEEK
                 //calledChangeGroupObject = true;

@@ -421,6 +421,11 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         rowChangedHandler = handler;
     }
 
+    private Runnable columnChangedHandler;
+    public void setColumnChangedHandler(Runnable handler) {
+        columnChangedHandler = handler;
+    }
+
     /**
      * Get the overall data size.
      *
@@ -822,8 +827,10 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
             column = columnCount - 1;
 
         assert isFocusable(column);
-        setSelectedColumn(column);
+        if (setSelectedColumn(column) && columnChangedHandler != null)
+            columnChangedHandler.run();
     }
+
     private void changeSelectedRow(int row) {
         int rowCount = getRowCount();
         if(rowCount == 0)
@@ -846,14 +853,15 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         return new Cell(getSelectedRow(), column, getColumn(column), (RowIndexHolder) getSelectedRowValue());
     }
 
-    public void setSelectedColumn(int column) {
+    public boolean setSelectedColumn(int column) {
         assert column >= 0 || columns.size() == 0 : "Column must be zero or greater";
 
         if (getSelectedColumn() == column)
-            return;
+            return false;
 
         this.selectedColumn = column;
         selectedColumnChanged();
+        return true;
     }
 
     public boolean isFocusable(int column) {
