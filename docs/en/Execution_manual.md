@@ -14,7 +14,7 @@ For the application server to work, it must have access to the PostgreSQL databa
 
 ### Installing the application server as a service
 
--   Download the file `lsfusion-server-<version>.jar` of the required version (for example `lsfusion-server-4.1.jar`) from [the central server](https://download.lsfusion.org/java) to some folder (we will call this folder `$FUSION_DIR$`).
+-   Download the file `lsfusion-server-<version>.jar` of the required version (for example `lsfusion-server-4.1.jar`) from [the central server](https://download.lsfusion.org/java/) to some folder (we will call this folder `$FUSION_DIR$`).
 
 -   If the database server is located on another computer, and if authorization is enabled on the database server (for example, for Postgres, using the md5 method and if the password postgres is not empty), set the [parameters for connecting to the database server](Launch_parameters.md#connectdb) (e.g. by creating a startup [settings file](Launch_parameters.md#filesettings) in the `$FUSION_DIR$` folder)
 
@@ -78,7 +78,7 @@ For the application server to work, it must have access to the PostgreSQL databa
 To install the web server, Apache Tomcat version 8 or higher must be installed on the computer.
 :::
 
--   Download the file `lsfusion-client-<version>.war` of the required version from [the central server](https://download.lsfusion.org/java). For example, `lsfusion-client-4.1.war`. 
+-   Download the file `lsfusion-client-<version>.war` of the required version from [the central server](https://download.lsfusion.org/java/). For example, `lsfusion-client-4.1.war`. 
 -   If the application server is located on another computer, as well as if [access parameters to the application server](Launch_parameters.md#accessapp) are different from the standard, set [connection parameters to the application server](Launch_parameters.md#connectapp) (for example by creating / editing the Tomcat [settings file](Launch_parameters.md#filewebsettings)) 
 -   Deploy the application on Tomcat. The easiest way is to copy Tomcat to the webapps folder. In this case, the file can be renamed first (for example, to `lsfusion.war`), since the file name will correspond to the context path where the application will be available. If Tomcat uses port `8080`, then the web client will be available at: `http://localhost:8080/<filename of the war file>`. For example, `http://localhost:8080/lsfusion`. An empty context name in Tomcat corresponds to the name `ROOT`, that is, if the file name is `ROOT.war`, the web client will be available at `http://localhost:8080/`. You can download the desktop client from the authorization page at `Run Desktop Client` (via Java Web Start).
 
