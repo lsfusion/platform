@@ -1022,6 +1022,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         final ActionObjectInstance remappedEventAction = eventAction.getRemappedPropertyObject(keys, true);
         remappedEventAction.execute(FormInstance.this, stack, result, property, FormInstance.this);
+
+        fireEvent(property.getEntity(), stack);
+
     }
 
     public void pasteExternalTable(List<PropertyDrawInstance> properties, List<ImMap<ObjectInstance, DataObject>> columnKeys, List<List<byte[]>> values, List<ArrayList<String>> rawValues, ExecutionStack stack, FormInstanceContext context) throws SQLException, IOException, SQLHandledException {

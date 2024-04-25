@@ -1242,7 +1242,7 @@ formEventDeclaration returns [ActionObjectEntity action, Object type, Boolean re
 		|	'DROP'	 { $type = FormEventType.DROP; }
 		|	'QUERYOK'	 { $type = FormEventType.QUERYOK; }
 		|	'QUERYCLOSE'	 { $type = FormEventType.QUERYCLOSE; }
-		| 	'CHANGE' objectId=ID { $type = $objectId.text; }
+		| 	'CHANGE' ('OBJECT'? objectId=ID { $type = $objectId.text; } | 'PROPERTY' prop=formPropertyDraw { $type = $prop.property; })
 		| 	'COLLAPSE' objectId=ID { $type = new FormContainerEvent($objectId.text, true); }
 		| 	'EXPAND' objectId=ID { $type = new FormContainerEvent($objectId.text, false); }
 		| 	schedule = scheduleFormEventDeclaration { $type = new FormScheduler($schedule.period, $schedule.fixed); }
