@@ -13,6 +13,7 @@ grammar LsfLogics;
     import lsfusion.interop.form.ContainerWindowFormType;
     import lsfusion.interop.form.ModalityWindowFormType;
     import lsfusion.interop.base.view.FlexAlignment;
+    import lsfusion.interop.form.event.FormContainerEvent;
     import lsfusion.interop.form.event.FormScheduler;
     import lsfusion.interop.form.object.table.grid.ListViewType;
     import lsfusion.interop.form.property.ClassViewType;
@@ -1242,6 +1243,8 @@ formEventDeclaration returns [ActionObjectEntity action, Object type, Boolean re
 		|	'QUERYOK'	 { $type = FormEventType.QUERYOK; }
 		|	'QUERYCLOSE'	 { $type = FormEventType.QUERYCLOSE; }
 		| 	'CHANGE' objectId=ID { $type = $objectId.text; }
+		| 	'COLLAPSE' objectId=ID { $type = new FormContainerEvent($objectId.text, true); }
+		| 	'EXPAND' objectId=ID { $type = new FormContainerEvent($objectId.text, false); }
 		| 	schedule = scheduleFormEventDeclaration { $type = new FormScheduler($schedule.period, $schedule.fixed); }
 		|   oed = orderEventDeclaration { $type = $oed.type; }
 		|   fed = filterEventDeclaration { $type = $fed.type; }

@@ -1212,7 +1212,7 @@ public class ClientFormController implements AsyncListener {
     }
 
     public void setContainerCollapsed(ClientContainer container, boolean collapsed) {
-        rmiQueue.adaptiveSyncRequest(new ProcessServerResponseRmiRequest("setTabVisible") {
+        rmiQueue.adaptiveSyncRequest(new ProcessServerResponseRmiRequest("setContainerCollapsed") {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
                 return remoteForm.setContainerCollapsed(requestIndex, lastReceivedRequestIndex, container.getID(), collapsed);

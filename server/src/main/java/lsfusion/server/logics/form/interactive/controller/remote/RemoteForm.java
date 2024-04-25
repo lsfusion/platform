@@ -17,6 +17,7 @@ import lsfusion.base.file.RawFileData;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.FormClientData;
 import lsfusion.interop.form.UpdateMode;
+import lsfusion.interop.form.event.FormContainerEvent;
 import lsfusion.interop.form.event.FormEvent;
 import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
@@ -703,7 +704,9 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 logger.debug("setContainerCollapsed Action");
             }
 
-            form.setContainerCollapsed((ContainerView) richDesign.findById(containerID), collapsed);
+            ContainerView containerView = (ContainerView) richDesign.findById(containerID);
+            form.setContainerCollapsed(containerView, collapsed);
+            form.fireFormEvent(stack, new FormContainerEvent(containerView.getSID(), collapsed), null);
         });
     }
 
