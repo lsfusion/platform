@@ -2,12 +2,12 @@
 title: 'NEWEXECUTOR operator'
 ---
 
-The `NEWEXECUTOR` operator creates an [action](Actions.md) that enables executing other actions in a [new thread pool](New_threads_NEWTHREAD_NEWEXECUTOR.md).
+The `NEWEXECUTOR` operator is the creation of an [action](Actions.md) that allows the execution of other actions in a [new thread pool](New_threads_NEWTHREAD_NEWEXECUTOR.md).
 
 ### Syntax
 
 ```
-NEWEXECUTOR action THREADS threadExpr
+NEWEXECUTOR action THREADS threadExpr [syncType]
 ```
 
 ### Description
@@ -23,6 +23,13 @@ The `NEWEXECUTOR` operator creates an action that creates a new thread pool and 
 - `threadExpr`
 
     An [expression](Expression.md) which value determines the number of threads in the pool. Must return the value of the `INTEGER` class. 
+
+- `syncType`
+
+    Synchronisation type. Specifies when the execution of `NEWEXECUTOR` action completes, allowing you to choose between synchronous and asynchronous approaches. Specified by one of the keywords:
+
+    - `WAIT` - after all threads have completed execution. This value is used by default.
+    - `NOWAIT` - immediately after all threads have been started.
 
 ### Examples
 
