@@ -1259,7 +1259,7 @@ changeEventDeclaration returns [Object type]
 }
     :
     'CHANGE' (  'OBJECT'? objectId=ID { $type = $objectId.text; }
-             |  'PROPERTY' ('AFTER' { after = true; })? prop=formPropertyDraw { $type = after ? $prop.property : new FormChangeEvent($prop.property); }
+             |  'PROPERTY' ('AFTER' { after = true; })? prop=formPropertyDraw { $type = after ? $prop.property : new FormPropertyChangeEvent($prop.property); }
              )
     ;
 
