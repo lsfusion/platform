@@ -20,6 +20,7 @@ import lsfusion.interop.form.ModalityWindowFormType;
 import lsfusion.interop.form.UpdateMode;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.form.design.FontInfo;
+import lsfusion.interop.form.event.FormChangeEvent;
 import lsfusion.interop.form.event.FormEvent;
 import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.object.table.grid.user.design.ColumnUserPreferences;
@@ -1012,6 +1013,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             return;
         }
 
+        fireFormChangeEvent(property, stack, keys, true);
+
         PushAsyncResult result = null;
         if(asyncResult != null) {
             AsyncEventExec asyncEventExec = property.getEntity().getAsyncEventExec(context, eventActionSID, externalChange);
@@ -1023,8 +1026,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         final ActionObjectInstance remappedEventAction = eventAction.getRemappedPropertyObject(keys, true);
         remappedEventAction.execute(FormInstance.this, stack, result, property, FormInstance.this);
 
-        fireEvent(property.getEntity(), stack, keys);
-
+        fireFormChangeEvent(property, stack, keys, false);
     }
 
     public void pasteExternalTable(List<PropertyDrawInstance> properties, List<ImMap<ObjectInstance, DataObject>> columnKeys, List<List<byte[]>> values, List<ArrayList<String>> rawValues, ExecutionStack stack, FormInstanceContext context) throws SQLException, IOException, SQLHandledException {
@@ -2723,6 +2725,10 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     public void fireFormEvent(ExecutionStack stack, FormEvent formEvent, PushAsyncResult pushedAsyncResult) throws SQLException, SQLHandledException {
         fireEvent(entity.getEventObject(formEvent), stack, null, pushedAsyncResult);
+    }
+
+    public void fireFormChangeEvent(PropertyDrawInstance property, ExecutionStack stack, ImMap<ObjectInstance, ? extends ObjectValue> keys, boolean before) throws SQLException, SQLHandledException {
+        fireEvent(new FormChangeEvent(property.getEntity(), before), stack, keys);
     }
 
     private void fireEvent(Object eventObject, ExecutionStack stack) throws SQLException, SQLHandledException {

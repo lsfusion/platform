@@ -20,13 +20,11 @@ public class FormContainerEvent extends FormEvent {
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {
-        super.serialize(outStream);
-        outStream.writeUTF(container);
-        outStream.writeBoolean(collapse);
+        throw new UnsupportedOperationException("FormContainerEvent should not be serialized");
     }
 
     public static FormContainerEvent deserialize(DataInputStream inStream) throws IOException {
-        return new FormContainerEvent(inStream.readUTF(), inStream.readBoolean());
+        throw new UnsupportedOperationException("FormContainerEvent should not be deserialized");
     }
 
     @Override

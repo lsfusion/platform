@@ -13,7 +13,7 @@ grammar LsfLogics;
     import lsfusion.interop.form.ContainerWindowFormType;
     import lsfusion.interop.form.ModalityWindowFormType;
     import lsfusion.interop.base.view.FlexAlignment;
-    import lsfusion.interop.form.event.FormPropertyChangeEvent;
+    import lsfusion.interop.form.event.FormChangeEvent;
     import lsfusion.interop.form.event.FormContainerEvent;
     import lsfusion.interop.form.event.FormScheduler;
     import lsfusion.interop.form.object.table.grid.ListViewType;
@@ -880,7 +880,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'DRAW' toDraw=formGroupObjectEntity { $options.setToDraw($toDraw.groupObject); }
 		|   pl=formPropertyDrawRelativePosition { $options.setLocation($pl.location, $pl.propText); }
 		|	'QUICKFILTER' pdraw=formPropertyDraw { $options.setQuickFilterPropertyDraw($pdraw.property); }
-		|	'ON' et=formEventType prop=formActionObject { $options.addEventAction($et.type, $prop.action); }
+		|	'ON' et=formEventType prop=formActionObject { $options.addEventAction($et.type, $et.before, $prop.action); }
 		|	'ON' 'CONTEXTMENU' (c=localizedStringLiteralNoID)? prop=formActionObject { $options.addContextMenuAction($c.val, $prop.action); }
 		|	'ON' 'KEYPRESS' key=stringLiteral prop=formActionObject { $options.addKeyPressAction($key.val, $prop.action); }
 		|	'EVENTID' id=stringLiteral { $options.setEventId($id.val); }
@@ -1255,11 +1255,11 @@ formEventDeclaration returns [ActionObjectEntity action, Object type, Boolean re
 
 changeEventDeclaration returns [Object type]
 @init {
-    boolean after = false;
+    Boolean before = null;
 }
     :
     'CHANGE' (  'OBJECT'? objectId=ID { $type = $objectId.text; }
-             |  'PROPERTY' ('AFTER' { after = true; })? prop=formPropertyDraw { $type = after ? $prop.property : new FormPropertyChangeEvent($prop.property); }
+             |  'PROPERTY' ('BEFORE' { before = true; } | 'AFTER' { before = false; })? prop=formPropertyDraw { $type = new FormChangeEvent($prop.property, before); }
              )
     ;
 
@@ -3116,8 +3116,8 @@ onEditEventSetting [LAP property, List<TypedParameter> context]
 		aDB=listTopContextDependentActionDefinitionBody[context, false, false]
 	;
 
-formEventType returns [String type]
-	:	'CHANGE' { $type = ServerResponse.CHANGE; }
+formEventType returns [String type, Boolean before]
+	:	'CHANGE' { $type = ServerResponse.CHANGE; } ('BEFORE' { $before = true; } | 'AFTER' { $before = false; })?
 	|	'CHANGEWYS' { $type = ServerResponse.CHANGE_WYS; }
 	|	'EDIT' { $type = ServerResponse.EDIT_OBJECT; }
 	|	'GROUPCHANGE' { $type = ServerResponse.GROUP_CHANGE; }
