@@ -1013,7 +1013,10 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             return;
         }
 
+        BL.LM.dropBeforeCanceled(this);
         fireFormChangeEvent(property, stack, keys, true);
+        if(BL.LM.isBeforeCanceled(this))
+            return;
 
         PushAsyncResult result = null;
         if(asyncResult != null) {

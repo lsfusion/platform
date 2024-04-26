@@ -1358,7 +1358,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         onContextAction.setAsEventActionFor(onContextAction.action.getSID(), mainProperty);
     }
 
-    public void setAsEventActionFor(LA eventAction, String eventActionSID, ActionOrPropertyUsage mainPropertyUsage) throws ScriptingErrorLog.SemanticErrorException {
+    public void setAsEventActionFor(LA eventAction, String eventActionSID, Boolean before, ActionOrPropertyUsage mainPropertyUsage) throws ScriptingErrorLog.SemanticErrorException {
+        if(before != null) {
+            throw new UnsupportedOperationException("ASON CHANGE BEFORE|AFTER is not supported");
+        }
+
         assert mainPropertyUsage != null;
 
         LAP<?, ?> mainProperty = findLAPByActionOrPropertyUsage(mainPropertyUsage);
@@ -1497,7 +1501,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         lp.property.setAggr(true);
     }
 
-    public void setScriptedEventAction(LAP property, String actionType, LAWithParams action) {
+    public void setScriptedEventAction(LAP property, String actionType, Boolean before, LAWithParams action) {
+        if(before != null) {
+            throw new UnsupportedOperationException("ON CHANGE BEFORE|AFTER is not supported");
+        }
         List<Object> params = getParamsPlainList(Collections.singletonList(action));
         ImList<ActionMapImplement<?, PropertyInterface>> actionImplements = readActionImplements(((LAP<PropertyInterface, ?>)property).listInterfaces, params.toArray());
         property.getActionOrProperty().setEventAction(actionType, actionImplements.get(0));

@@ -2948,7 +2948,7 @@ asonEventActionSetting [LA property]
 }
 @after {
 	if (inMainParseState()) {
-		self.setAsEventActionFor(property, $et.type, $usage.propUsage);
+		self.setAsEventActionFor(property, $et.type, $et.before, $usage.propUsage);
 	}
 }
 	:	'ASON' et=formEventType usage=actionOrPropertyUsage
@@ -3109,7 +3109,7 @@ notNullDeleteSetting returns [DebugInfo.DebugPoint debugPoint, Event event]
 onEditEventSetting [LAP property, List<TypedParameter> context]
 @after {
 	if (inMainParseState()) {
-		self.setScriptedEventAction(property, $et.type, $aDB.action);
+		self.setScriptedEventAction(property, $et.type, $et.before, $aDB.action);
 	}
 }
 	:	'ON' et=formEventType
