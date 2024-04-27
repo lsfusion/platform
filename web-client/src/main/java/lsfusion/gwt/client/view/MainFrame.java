@@ -4,8 +4,6 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
-import com.google.gwt.event.logical.shared.CloseEvent;
-import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.user.client.Event;
@@ -343,19 +341,15 @@ public class MainFrame implements EntryPoint {
         formsControllerLinker.link = formsController;
 
         //we use CloseHandler instead of Window.ClosingHandler because mobile browsers send closing event without closing window
-        Window.addCloseHandler(new CloseHandler<Window>() { // добавляем после инициализации окон
-            @Override
-            public void onClose(CloseEvent event) {
-                try {
-                    if (!mobile) {
-                        windowsController.storeWindowsSizes();
-                    }
-                    windowsController.storeEditMode();
-                } finally {
-                    clean();
-                }
-            }
-        });
+        if(mobile) {
+            Window.addCloseHandler(event -> {
+                saveAndClean(windowsController);
+            });
+        } else { // somewhy in browser close handler doesn't work
+            Window.addWindowClosingHandler(event -> {
+                saveAndClean(windowsController);
+            });
+        }
 
         Window.addWindowClosingHandler(event -> {
             if(!disableConfirmDialog) {
@@ -386,19 +380,8 @@ public class MainFrame implements EntryPoint {
                         @Override
                         public void onSuccess(ClientMessageResult result) {
                             setShouldRepeatPingRequest(true);
-                            for (Integer idNotification : result.notificationList) {
-                                FormContainer currentForm = MainFrame.getCurrentForm();
-                                GFormController form = currentForm != null ? currentForm.getForm() : null;
-                                if (form != null)
-                                    try {
-                                        form.executeNotificationAction(idNotification);
-                                    } catch (IOException e) {
-                                        GWT.log(e.getMessage());
-                                    }
-                                else {
-                                    formsController.executeNotificationAction(String.valueOf(idNotification), 2);
-                                }
-                            }
+                            for (Integer idNotification : result.notificationList)
+                                formsController.executeNotificationAction(idNotification, null);
                         }
 
                         @Override
@@ -413,6 +396,17 @@ public class MainFrame implements EntryPoint {
         }, 1000);
 
         GExceptionManager.flushUnreportedThrowables(popupOwner);
+    }
+
+    private void saveAndClean(WindowsController windowsController) {
+        try {
+            if (!mobile) {
+                windowsController.storeWindowsSizes();
+            }
+            windowsController.storeEditMode();
+        } finally {
+            clean();
+        }
     }
 
     public static void setShouldRepeatPingRequest(boolean ishouldRepeatPingRequest) {
@@ -558,16 +552,27 @@ public class MainFrame implements EntryPoint {
         //apply initial navigator changes from navigatorinfo somewhere around here
         applyNavigatorChanges(result.navigatorChanges, navigatorController, windowsController);
 
-        formsController.executeNotificationAction("SystemEvents.onClientStarted[]", 0, formsController.new ServerResponseCallback(false) {
-            @Override
-            protected Runnable getOnRequestFinished() {
-                return () -> {
-                    if (formsController.getFormsCount() == 0) {
-                        openNavigatorMenu();
-                    }
-                };
+        String notification = GwtClientUtils.getPageParameter(GwtSharedUtils.NOTIFICATION_PARAM);
+
+        Runnable openNavigatorMenuIfNeeded = () -> {
+            if (formsController.getFormsCount() == 0) {
+                openNavigatorMenu();
+            }
+        };
+
+        formsController.executeAction("SystemEvents.onClientStarted[]", notification == null ? openNavigatorMenuIfNeeded : null);
+
+        GwtClientUtils.openBroadcastChannel(GwtSharedUtils.NOTIFICATION_CHANNEL, (channel, message) -> {
+            String sendPrefix = GwtSharedUtils.NOTIFICATION_SEND;
+            if(message.startsWith(sendPrefix)) {
+                String notificationReceived = message.substring(sendPrefix.length());
+                GwtClientUtils.postBroadcastChannelMessage(channel, GwtSharedUtils.NOTIFICATION_RECEIVED + notificationReceived);
+                formsController.executeNotificationAction(Integer.valueOf(notificationReceived), null);
             }
         });
+
+        if(notification != null)
+            formsController.executeNotificationAction(Integer.valueOf(notification), openNavigatorMenuIfNeeded);
     }
 
     public static void applyNavigatorChanges(GNavigatorChangesDTO navigatorChangesDTO, GNavigatorController navigatorController, WindowsController windowsController) {

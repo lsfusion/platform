@@ -11,6 +11,7 @@ import lsfusion.interop.base.exception.RemoteMessageException;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.connection.authentication.PasswordAuthentication;
+import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.session.ExternalResponse;
 import lsfusion.interop.session.SessionInfo;
@@ -69,7 +70,7 @@ public class LSFRemoteAuthenticationProvider extends LogicsRequestHandler implem
         try {
             SessionInfo sessionInfo = NavigatorProviderImpl.getSessionInfo(auth, request);
             ExternalResponse result = remoteLogics.exec(authToken, sessionInfo, "Authentication.getCurrentUserLocale", sessionInfo.externalRequest);
-            JSONObject localeObject = new JSONObject(new String(((FileData) result.results[0]).getRawFile().getBytes(), StandardCharsets.UTF_8));
+            JSONObject localeObject = LogicsSessionObject.getJSONObjectResult(result);
             String language = localeObject.optString("language");
             String country = localeObject.optString("country");
             return LocalePreferences.getLocale(language, country);

@@ -3020,6 +3020,20 @@ public class Settings implements Cloneable {
         this.maxLengthForValueButton = maxLengthForValueButton;
     }
 
+    // 0 - on the client using BroadcastChannel - the most reliable and fast, however relies on the odd browser features
+    // 1 - on the server without pending request (redirect using notification parameter)
+    // 2 - on the server with pending request
+
+    private int externalUINotificationMode = 1;
+
+    public int getExternalUINotificationMode() {
+        return externalUINotificationMode;
+    }
+
+    public void setExternalUINotificationMode(int externalUINotificationMode) {
+        this.externalUINotificationMode = externalUINotificationMode;
+    }
+
     private boolean disableCombineFilters = false;
 
     public boolean isDisableCombineFilters() {

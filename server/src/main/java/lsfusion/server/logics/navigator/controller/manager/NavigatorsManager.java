@@ -6,7 +6,6 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.heavy.weak.WeakIdentityHashSet;
 import lsfusion.interop.base.exception.RemoteMessageException;
 import lsfusion.interop.connection.AuthenticationToken;
-import lsfusion.interop.connection.ClientType;
 import lsfusion.interop.navigator.NavigatorInfo;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
@@ -32,7 +31,11 @@ import org.springframework.util.Assert;
 
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class NavigatorsManager extends LogicsManager implements InitializingBean {
     private static final Logger logger = Logger.getLogger(NavigatorsManager.class);
@@ -63,8 +66,18 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
 
     // synchronize'ся везде
     private final WeakIdentityHashSet<RemoteNavigator> navigators = new WeakIdentityHashSet<>();
+    private static class PendingNotification {
+        private final Function<RemoteNavigator, Long> check;
+        private final Consumer<RemoteNavigator> run;
+        private final long started;
 
-    private AtomicBoolean removeExpiredScheduled = new AtomicBoolean(false);
+        public PendingNotification(Function<RemoteNavigator, Long> check, Consumer<RemoteNavigator> run) {
+            this.check = check;
+            this.run = run;
+            this.started = System.currentTimeMillis();
+        }
+    }
+    private final List<PendingNotification> pendingNotifications = new ArrayList<>();
 
     public NavigatorsManager() {
     }
@@ -145,11 +158,16 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
             businessLogics.systemEventsLM.computerConnection.change(navigator.getComputer(), session, newConnection);
             businessLogics.systemEventsLM.connectionStatusConnection.change(businessLogics.systemEventsLM.connectionStatus.getObjectID("connectedConnection"), session, newConnection);
             businessLogics.systemEventsLM.connectTimeConnection.change(businessLogics.timeLM.currentDateTime.readClasses(session), session, newConnection);
+
+            businessLogics.systemEventsLM.schemeConnection.change(navigatorInfo.session.externalRequest.scheme, session, newConnection);
             businessLogics.systemEventsLM.remoteAddressConnection.change(navigator.getLogInfo().remoteAddress, session, newConnection);
             businessLogics.systemEventsLM.webHostConnection.change(navigatorInfo.session.externalRequest.webHost, session, newConnection);
             businessLogics.systemEventsLM.webPortConnection.change(navigatorInfo.session.externalRequest.webPort, session, newConnection);
             businessLogics.systemEventsLM.contextPathConnection.change(navigatorInfo.session.externalRequest.contextPath, session, newConnection);
-            businessLogics.systemEventsLM.scheme.change(navigatorInfo.session.externalRequest.scheme, session, newConnection);
+            businessLogics.systemEventsLM.servletPathConnection.change(navigatorInfo.session.externalRequest.servletPath, session, newConnection);
+            businessLogics.systemEventsLM.pathInfoConnection.change(navigatorInfo.session.externalRequest.pathInfo, session, newConnection);
+            businessLogics.systemEventsLM.queryConnection.change(navigatorInfo.session.externalRequest.query, session, newConnection);
+
             businessLogics.systemEventsLM.launchConnection.change(businessLogics.systemEventsLM.currentLaunch.readClasses(session), session, newConnection);
             String result = session.applyMessage(businessLogics, stack);
             if(result != null)
@@ -162,6 +180,23 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
             }
             navigators.add(navigator);
         }
+    }
+
+    public void navigatorInitialized(RemoteNavigator navigator) {
+        List<Consumer<RemoteNavigator>> runNotifications = new ArrayList<>();
+        synchronized (navigators) {
+            for (Iterator<PendingNotification> iterator = pendingNotifications.iterator(); iterator.hasNext(); ) {
+                PendingNotification pendingNotification = iterator.next();
+                if (pendingNotification.check.apply(navigator) > 0) {
+                    runNotifications.add(pendingNotification.run);
+                    iterator.remove();
+                }
+                if (System.currentTimeMillis() - pendingNotification.started > 600000)
+                    iterator.remove();
+            }
+        }
+        for (Consumer<RemoteNavigator> runNotification : runNotifications)
+            runNotification.accept(navigator);
     }
 
     public void navigatorClosed(RemoteNavigator navigator, ExecutionStack stack, DataObject connection) {
@@ -184,38 +219,48 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
         }
     }
 
-    public void pushNotificationCustomUser(DataObject connectionObject, EnvStackRunnable run) {
-        RemoteNavigator navigator = findNavigator(connectionObject);
-        if (navigator != null) {
-            try {
-                navigator.pushNotification(run);
-            } catch (RemoteException e) {
-                logger.error(ThreadLocalContext.localize("{logics.server.remote.exception.on.push.action}"), e);
-            }
-        }
+    public void pushNotificationConnection(DataObject connectionObject, EnvStackRunnable run) {
+        pushNotificationConnection(connectionObject, navigator -> navigator.pushNotification(run));
+    }
+
+    public boolean pushNotificationSession(String sessionId, EnvStackRunnable run, boolean pend) {
+        return pushNotification(navigator -> navigator.active && navigator.sessionId != null && navigator.sessionId.equals(sessionId) ? navigator.getContext().getUserLastActivity() : 0L, navigator -> navigator.pushNotification(run), pend);
     }
 
     public void shutdownConnection(DataObject connectionObject) {
-        RemoteNavigator navigator = findNavigator(connectionObject);
-        if (navigator != null) {
+        pushNotificationConnection(connectionObject, navigator -> {
             try {
                 navigator.close();
             } catch (RemoteException e) {
                 logger.error(ThreadLocalContext.localize("{logics.server.remote.exception.on.shutdown.client}"), e);
             }
-        }
+        });
     }
 
-    private RemoteNavigator findNavigator(DataObject connectionObject) {
+    public void pushNotificationConnection(DataObject connectionObject, Consumer<RemoteNavigator> run) {
+        pushNotification(navigator -> navigator.getConnection() != null && navigator.getConnection().equals(connectionObject) ? 1L : 0L, run, false);
+    }
+
+    public boolean pushNotification(Function<RemoteNavigator, Long> check, Consumer<RemoteNavigator> run, boolean pend) {
+        RemoteNavigator foundNavigator = null;
         synchronized (navigators) {
+            long bestPriority = 0;
             for (RemoteNavigator navigator : navigators) {
                 if (navigator != null) {
-                    if (navigator.getConnection() != null && navigator.getConnection().equals(connectionObject)) {
-                        return navigator;
+                    long priority = check.apply(navigator);
+                    if (priority > bestPriority) {
+                        foundNavigator = navigator;
+                        bestPriority = priority;
                     }
                 }
             }
-            return null;
+            if(foundNavigator == null && pend)
+                pendingNotifications.add(new PendingNotification(check, run));
         }
+        if(foundNavigator != null) {
+            run.accept(foundNavigator);
+            return true;
+        }
+        return false;
     }
 }

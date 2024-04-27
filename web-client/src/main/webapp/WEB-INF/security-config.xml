@@ -45,6 +45,8 @@
     <http pattern="/change-password" security="none"/>
     <http pattern="/registration" security="none"/>
 
+    <http pattern="/push-notification" security="none"/>
+
     <http pattern="/app-not-available" security="none"/>
 
     <!--for backward compatibility-->

@@ -92,6 +92,6 @@ public class ExternalFormRequestHandler extends ExternalRequestHandler {
             }
         }
 
-        sendResponse(response, jsonResult, charset, null);
+        sendResponse(response, new ExternalUtils.ResultExternalResponse(jsonResult, charset, HttpServletResponse.SC_OK));
     }
 }

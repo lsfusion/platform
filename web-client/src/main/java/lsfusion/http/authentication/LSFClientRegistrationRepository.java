@@ -8,6 +8,7 @@ import lsfusion.http.provider.logics.LogicsProvider;
 import lsfusion.http.provider.navigator.NavigatorProviderImpl;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.connection.AuthenticationToken;
+import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.session.ExternalResponse;
 import org.json.JSONArray;
@@ -75,7 +76,7 @@ public class LSFClientRegistrationRepository extends LogicsRequestHandler implem
 
         ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, NavigatorProviderImpl.getSessionInfo(request),
                 "Authentication.getClientCredentials", MainController.getExternalRequest(new Object[]{authSecret}, request));
-        JSONArray jsonArray = new JSONArray(new String(((FileData) result.results[0]).getRawFile().getBytes(), StandardCharsets.UTF_8));
+        JSONArray jsonArray = LogicsSessionObject.getJSONArrayResult(result);
 
         int jsonArrayLength = jsonArray.length();
         if (jsonArrayLength == 1 && jsonArray.getJSONObject(0).has("error")){

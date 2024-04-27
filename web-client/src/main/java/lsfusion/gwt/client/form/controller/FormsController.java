@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.controller;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
@@ -46,6 +47,7 @@ import lsfusion.gwt.client.navigator.window.GWindowFormType;
 import lsfusion.gwt.client.navigator.window.view.WindowsController;
 import lsfusion.gwt.client.view.MainFrame;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -459,7 +461,7 @@ public abstract class FormsController {
         if(windowType instanceof GContainerWindowFormType) {
             formContainer = new ContainerForm(this, formController, async, editEvent, ((GContainerWindowFormType) windowType));
         } else if(windowType.isFloat()) {
-            formContainer =  new ModalForm(this, formController, async, editEvent, editContext != null ? editContext.getPopupOwner() : PopupOwner.GLOBAL);
+            formContainer =  new ModalForm(this, formController, async, editEvent, editContext != null ? editContext.getPopupOwner() : (formController != null ? formController.getPopupOwner() : PopupOwner.GLOBAL));
         } else if(windowType.isDocked()) {
             formContainer =  new FormDockable(this, formController, formCanonicalName, async, editEvent);
         } else if(windowType.isEmbedded()) {
@@ -674,21 +676,39 @@ public abstract class FormsController {
         }
     }
 
+    public void executeAction(String actionSID, Runnable onRequestFinished) {
+        executeNavigatorAction(actionSID, false, true, 0, onRequestFinished);
+    }
     public long executeNavigatorAction(String actionSID, final NativeEvent event, boolean sync) {
-        ExecuteNavigatorAction navigatorAction = new ExecuteNavigatorAction(actionSID, 1);
-        ServerResponseCallback callback = new ServerResponseCallback(event.getCtrlKey());
+        return executeNavigatorAction(actionSID, event.getCtrlKey(), sync, 1, null);
+    }
+    public void executeNotificationAction(Integer id, Runnable onRequestFinished) {
+        FormContainer currentForm = onRequestFinished == null ? MainFrame.getCurrentForm() : null;
+        GFormController form = currentForm != null ? currentForm.getForm() : null;
+        if (form != null)
+            try {
+                form.executeNotificationAction(id);
+            } catch (IOException e) {
+                GWT.log(e.getMessage());
+            }
+        else
+            executeNavigatorAction(id.toString(), false, true, 2, null);
+    }
+    public long executeNavigatorAction(String actionSID, boolean disableForbidDuplicate, boolean sync, int type, Runnable onRequestFinished) {
+        ExecuteNavigatorAction navigatorAction = new ExecuteNavigatorAction(actionSID, type);
+        ServerResponseCallback callback = new ServerResponseCallback(disableForbidDuplicate) {
+            @Override
+            protected Runnable getOnRequestFinished() {
+                if(onRequestFinished != null)
+                    return onRequestFinished;
+
+                return super.getOnRequestFinished();
+            }
+        };
         if(sync)
             return syncDispatch(navigatorAction, callback);
         else
             return asyncDispatch(navigatorAction, callback);
-    }
-
-    public void executeNotificationAction(String actionSID, int type) {
-        executeNotificationAction(actionSID, type, new ServerResponseCallback(false));
-    }
-    
-    public void executeNotificationAction(String actionSID, int type, RequestCountingAsyncCallback<ServerResponseResult> callback) {
-        syncDispatch(new ExecuteNavigatorAction(actionSID, type), callback);
     }
 
     public void executeVoidNavigatorAction(long waitRequestIndex) {

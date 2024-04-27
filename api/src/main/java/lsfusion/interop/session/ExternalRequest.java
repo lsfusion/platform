@@ -26,30 +26,19 @@ public class ExternalRequest implements Serializable {
     public final String pathInfo;
     public final String query;
     public final String contentType;
+    public final String sessionId;
     public final byte[] body;
 
-    public ExternalRequest() {
-        this(new Object[0]);
-    }
-
     public ExternalRequest(Object[] params) {
-        this(new String[0], params);    
-    }
-
-    public ExternalRequest(String[] returnNames, Object[] params) {
-        this(returnNames, params, "utf-8");
-    }
-
-    public ExternalRequest(String[] returnNames, Object[] params, String charsetName) {
-        this(returnNames, params, charsetName, new String[0], new String[0], null,
-                null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+        this(new String[0], params, "utf-8", new String[0], new String[0], null,
+                                null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
     }
 
     public ExternalRequest(String[] returnNames, Object[] params, String charsetName,
                            String[] headerNames, String[] headerValues, String[] cookieNames, String[] cookieValues,
                            String appHost, Integer appPort, String exportName, String scheme, String method, String webHost,
                            Integer webPort, String contextPath, String servletPath, String pathInfo, String query,
-                           String contentType, byte[] body) {
+                           String contentType, String sessionId, byte[] body) {
         this.returnNames = returnNames;
         this.params = params;
         this.charsetName = charsetName;
@@ -69,6 +58,7 @@ public class ExternalRequest implements Serializable {
         this.pathInfo = pathInfo;
         this.query = query;
         this.contentType = contentType;
+        this.sessionId = sessionId;
         this.body = body;
     }
 }

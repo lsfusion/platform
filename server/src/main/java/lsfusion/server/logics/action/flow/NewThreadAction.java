@@ -67,7 +67,7 @@ public class NewThreadAction extends AroundAspectAction {
         if (connectionProp != null) {
             ObjectValue connectionObject = connectionProp.readClasses(context);
             if(connectionObject instanceof DataObject)
-                context.getNavigatorsManager().pushNotificationCustomUser((DataObject) connectionObject,
+                context.getNavigatorsManager().pushNotificationConnection((DataObject) connectionObject,
                         (env, stack) -> run(context.override(env, stack))); //, callThread));
         } else {
             context.getSession().registerThreadStack();

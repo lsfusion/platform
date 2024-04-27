@@ -3,6 +3,7 @@ package lsfusion.http.controller;
 import com.google.common.base.Throwables;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.Pair;
+import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.http.provider.logics.LogicsProvider;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.base.exception.RemoteInternalException;
@@ -11,13 +12,11 @@ import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.session.ExternalHttpUtils;
 import lsfusion.interop.session.ExternalUtils;
 import org.apache.hc.core5.http.HttpEntity;
-import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.springframework.web.HttpRequestHandler;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
 
@@ -76,12 +75,20 @@ public abstract class ExternalRequestHandler extends LogicsRequestHandler implem
         }
     }
 
-    protected void sendResponse(HttpServletResponse response, String message, Charset charset, Integer statusHttp) throws IOException {
-        sendResponse(response, new ExternalUtils.ExternalResponse(new StringEntity(message, charset), null, null, null, null, null, statusHttp));
+    // copy of ExternalHTTPServer.sendResponse
+    protected void sendResponse(HttpServletResponse response, HttpServletRequest request, ExternalUtils.ExternalResponse responseHttpEntity) throws IOException {
+        if(responseHttpEntity instanceof ExternalUtils.ResultExternalResponse)
+            sendResponse(response, (ExternalUtils.ResultExternalResponse) responseHttpEntity);
+        else if(responseHttpEntity instanceof ExternalUtils.RedirectExternalResponse) {
+            ExternalUtils.RedirectExternalResponse redirect = (ExternalUtils.RedirectExternalResponse) responseHttpEntity;
+            response.sendRedirect(MainController.getDirectUrl(redirect.url, ExternalUtils.PARAMS, redirect.notification != null ? GwtSharedUtils.NOTIFICATION_PARAM + "=" + redirect.notification : null, request));
+        } else {
+            response.setContentType("text/html");
+            response.getWriter().print(((ExternalUtils.HtmlExternalResponse) responseHttpEntity).html);
+        }
     }
 
-    // copy of ExternalHTTPServer.sendResponse
-    protected void sendResponse(HttpServletResponse response, ExternalUtils.ExternalResponse responseHttpEntity) throws IOException {
+    protected void sendResponse(HttpServletResponse response, ExternalUtils.ResultExternalResponse responseHttpEntity) throws IOException {
         HttpEntity responseEntity = responseHttpEntity.response;
         String contentType = responseEntity.getContentType();
         String contentDisposition = responseHttpEntity.contentDisposition;
@@ -89,7 +96,7 @@ public abstract class ExternalRequestHandler extends LogicsRequestHandler implem
         String[] headerValues = responseHttpEntity.headerValues;
         String[] cookieNames = responseHttpEntity.cookieNames;
         String[] cookieValues = responseHttpEntity.cookieValues;
-        Integer statusHttp = nvl(responseHttpEntity.statusHttp, HttpServletResponse.SC_OK);
+        int statusHttp = responseHttpEntity.statusHttp;
 
         boolean hasContentType = false; 
         boolean hasContentDisposition = false;

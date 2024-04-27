@@ -52,6 +52,7 @@ public class RemoteLoggerAspect {
             Long connection = context.getCurrentConnection();
             if (connection != null)
                 connectionActivityMap.put(connection, LocalDateTime.now());
+            context.updateUserLastActivity();
 
             if (debugEnabled || runTime > Settings.get().getRemoteLogTime())
                 logger.info(String.format(

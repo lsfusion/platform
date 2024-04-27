@@ -13,7 +13,6 @@ import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.data.DataClass;
-import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.action.async.InputList;
 import lsfusion.server.logics.form.interactive.action.async.InputListAction;
@@ -51,6 +50,9 @@ public interface Context {
     void pushLogMessage();
     ImList<AbstractContext.LogMessage> popLogMessage();
     AbstractContext.MessageLogger getLogMessage(); // for multithreading
+
+    void updateUserLastActivity();
+    long getUserLastActivity();
 
     LogInfo getLogInfo();
     void delayUserInteraction(ClientAction action);

@@ -12,6 +12,7 @@ import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.navigator.ClientSettings;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 import lsfusion.interop.session.ExternalResponse;
+import lsfusion.interop.session.ResultExternalResponse;
 import lsfusion.interop.session.SessionInfo;
 import org.apache.commons.net.util.Base64;
 import org.castor.core.util.Base64Decoder;
@@ -40,7 +41,7 @@ public class LogicsSessionObject {
     public ServerSettings serverSettings; // caching
     public ServerSettings getServerSettings(SessionInfo sessionInfo, String contextPath, boolean noCache) throws RemoteException {
         if(serverSettings == null || serverSettings.inDevMode || noCache) {
-            JSONObject json = getJSONResult(remoteLogics.exec(AuthenticationToken.ANONYMOUS, sessionInfo, "Service.getServerSettings[]", sessionInfo.externalRequest));
+            JSONObject json = getJSONObjectResult(remoteLogics.exec(AuthenticationToken.ANONYMOUS, sessionInfo, "Service.getServerSettings[]", sessionInfo.externalRequest));
 
             String logicsName = trimToNull(json.optString("logicsName"));
             String displayName = trimToNull(json.optString("displayName"));
@@ -100,7 +101,7 @@ public class LogicsSessionObject {
     }
 
     public static ClientSettings getClientSettings(SessionInfo sessionInfo, RemoteNavigatorInterface remoteNavigator) throws RemoteException {
-        JSONObject json = getJSONResult(remoteNavigator.exec("Service.getClientSettings[]", sessionInfo.externalRequest));
+        JSONObject json = getJSONObjectResult(remoteNavigator.exec("Service.getClientSettings[]", sessionInfo.externalRequest));
 
         String currentUserName = json.optString("currentUserName");
         Integer fontSize = !json.has("fontSize") ? null : json.optInt("fontSize");
@@ -176,7 +177,7 @@ public class LogicsSessionObject {
     }
 
     public static InitSettings getInitSettings(SessionInfo sessionInfo, RemoteNavigatorInterface remoteNavigator) throws RemoteException {
-        JSONObject json = getJSONResult(remoteNavigator.exec("Service.getInitSettings[]", sessionInfo.externalRequest));
+        JSONObject json = getJSONObjectResult(remoteNavigator.exec("Service.getInitSettings[]", sessionInfo.externalRequest));
 
         List<Pair<String, RawFileData>> mainResourcesBeforeSystem = getFileData(json,"mainResourcesBeforeSystem");
         List<Pair<String, RawFileData>> mainResourcesAfterSystem = getFileData(json,"mainResourcesAfterSystem");
@@ -190,7 +191,15 @@ public class LogicsSessionObject {
         }
     }
 
-    private static JSONObject getJSONResult(ExternalResponse result) {
-        return new JSONObject(new String(((FileData) result.results[0]).getRawFile().getBytes(), StandardCharsets.UTF_8));
+    public static JSONObject getJSONObjectResult(ExternalResponse result) {
+        return new JSONObject(getStringResult(result));
+    }
+
+    public static JSONArray getJSONArrayResult(ExternalResponse result) {
+        return new JSONArray(getStringResult(result));
+    }
+
+    private static String getStringResult(ExternalResponse result) {
+        return new String(((FileData) ((ResultExternalResponse)result).results[0]).getRawFile().getBytes(), StandardCharsets.UTF_8);
     }
 }

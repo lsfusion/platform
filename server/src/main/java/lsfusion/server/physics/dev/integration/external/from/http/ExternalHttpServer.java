@@ -124,13 +124,9 @@ public class ExternalHttpServer extends MonitorServer {
                 ExecInterface remoteExec = ExternalUtils.getExecInterface(AuthenticationToken.ANONYMOUS, sessionInfo, remoteLogics);
                 ExternalUtils.ExternalResponse response = ExternalUtils.processRequest(remoteExec,
                         request.getRequestBody(), getContentType(request), headerNames, headerValues, cookieNames, cookieValues, null, null,null,
-                        "http", request.getRequestMethod(), host[0], Integer.parseInt(host[1]), "", request.getRequestURI().getPath(), "", request.getRequestURI().getRawQuery());
+                        "http", request.getRequestMethod(), host[0], Integer.parseInt(host[1]), "", request.getRequestURI().getPath(), "", request.getRequestURI().getRawQuery(), null);
 
-                if (response.response != null)
-                    sendResponse(request, response);
-                else
-                    sendOKResponse(request, response.statusHttp);
-
+                sendResponse(request, response);
             } catch (Exception e) {
                 ServerLoggers.systemLogger.error("ExternalHttpServer error: ", e);
                 try {
@@ -177,26 +173,24 @@ public class ExternalHttpServer extends MonitorServer {
             return headerValuesArray;
         }
 
-        private void sendOKResponse(HttpExchange request, Integer statusHttp) throws IOException {
-            sendResponse(request, "Executed successfully".getBytes(), statusHttp, false);
-        }
-
         private void sendErrorResponse(HttpExchange request, String response) throws IOException {
-            sendResponse(request, response.getBytes(), null, true);
-        }
-
-        private void sendResponse(HttpExchange request, byte[] response, Integer statusHttp, boolean error) throws IOException {
             request.getResponseHeaders().add("Content-Type", "text/html; charset=utf-8");
-            statusHttp = nvl(statusHttp, error ? HttpServletResponse.SC_INTERNAL_SERVER_ERROR : HttpServletResponse.SC_OK);
             request.getResponseHeaders().add("Access-Control-Allow-Origin","*");
-            request.sendResponseHeaders(statusHttp, response.length);
+            byte[] responseBytes = response.getBytes();
+            request.sendResponseHeaders(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, responseBytes.length);
             OutputStream os = request.getResponseBody();
-            os.write(response);
+            os.write(responseBytes);
             os.close();
         }
 
         // copy of ExternalRequestHandler.sendResponse
         private void sendResponse(HttpExchange response, ExternalUtils.ExternalResponse responseHttpEntity) throws IOException {
+            if(responseHttpEntity instanceof ExternalUtils.ResultExternalResponse) {
+                sendResponse(response, (ExternalUtils.ResultExternalResponse) responseHttpEntity);
+            } else
+                throw new UnsupportedOperationException();
+        }
+        private void sendResponse(HttpExchange response, ExternalUtils.ResultExternalResponse responseHttpEntity) throws IOException {
             HttpEntity responseEntity = responseHttpEntity.response;
             String contentType = responseEntity.getContentType();
             String contentDisposition = responseHttpEntity.contentDisposition;
@@ -204,7 +198,7 @@ public class ExternalHttpServer extends MonitorServer {
             String[] headerValues = responseHttpEntity.headerValues;
             String[] cookieNames = responseHttpEntity.cookieNames;
             String[] cookieValues = responseHttpEntity.cookieValues;
-            Integer statusHttp = nvl(responseHttpEntity.statusHttp, HttpServletResponse.SC_OK);
+            int statusHttp = responseHttpEntity.statusHttp;
 
             boolean hasContentType = false;
             boolean hasContentDisposition = false;

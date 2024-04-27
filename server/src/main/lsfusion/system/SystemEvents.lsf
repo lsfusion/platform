@@ -389,6 +389,9 @@ remoteAddress '{system.events.remote.address.connection}' = DATA STRING[40] (Con
 webHost '{system.events.web.host.connection}' = DATA STRING (Connection);
 webPort '{system.events.web.port.connection}' = DATA INTEGER (Connection);
 contextPath '{system.events.context.path.connection}' = DATA STRING (Connection);
+servletPath '{system.events.context.path.connection}' = DATA STRING (Connection);
+pathInfo '{system.events.path.info.connection}' = DATA STRING (Connection);
+query '{system.events.query.connection}' = DATA STRING (Connection);
 scheme '{system.events.context.path.scheme}' = DATA STRING (Connection);
 
 user '{system.events.user.connection}' = DATA CustomUser (Connection);

@@ -24,12 +24,14 @@ import javax.mail.BodyPart;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.util.ByteArrayDataSource;
+import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.net.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -58,8 +60,9 @@ public class ExternalUtils {
     private static final String PARAMS_PARAM = "p";
     private static final String RETURN_PARAM = "return";
     public static final String RETURNMULTITYPE_PARAM = "returnmultitype";
-    private static final String PROPERTY_PARAM = "property";
-    
+
+    public static List<String> PARAMS = Arrays.asList(ACTION_CN_PARAM, SCRIPT_PARAM, PARAMS_PARAM, RETURN_PARAM, RETURNMULTITYPE_PARAM);
+
     public static ExecInterface getExecInterface(final AuthenticationToken token, final SessionInfo sessionInfo, final RemoteLogicsInterface remoteLogics) {
         return new ExecInterface() {
             public lsfusion.interop.session.ExternalResponse exec(String action, ExternalRequest request) throws RemoteException {
@@ -96,7 +99,7 @@ public class ExternalUtils {
     public static ExternalResponse processRequest(ExecInterface remoteExec, InputStream is, ContentType requestContentType,
                                                   String[] headerNames, String[] headerValues, String[] cookieNames, String[] cookieValues, String logicsHost,
                                                   Integer logicsPort, String logicsExportName, String scheme, String method, String webHost, Integer webPort,
-                                                  String contextPath, String servletPath, String pathInfo, String query) throws IOException, MessagingException {
+                                                  String contextPath, String servletPath, String pathInfo, String query, String sessionId) throws IOException, MessagingException {
         Charset charset = getCharsetFromContentType(requestContentType);
         List<NameValuePair> queryParams = URLEncodedUtils.parse(query, charset);
 
@@ -106,17 +109,13 @@ public class ExternalUtils {
         ImList<Object> paramsList = ListFact.add(queryActionParams, bodyActionParams);
         
         ImList<String> returns = getParameterValues(queryParams, RETURN_PARAM);
-        String returnMultiType = getParameterValue(queryParams, RETURNMULTITYPE_PARAM);
-        boolean returnBodyUrl = returnMultiType != null && returnMultiType.equals("bodyurl");
-        lsfusion.interop.session.ExternalResponse execResult = null;
-        
-        String filename = "export";
 
         ExternalRequest request = new ExternalRequest(returns.toArray(new String[0]), paramsList.toArray(new Object[paramsList.size()]),
                 charset == null ? null : charset.toString(), headerNames, headerValues, cookieNames,
                 cookieValues, logicsHost, logicsPort, logicsExportName, scheme, method, webHost, webPort, contextPath,
-                servletPath, pathInfo, query, requestContentType != null ? requestContentType.toString() : null, body);
+                servletPath, pathInfo, query, requestContentType != null ? requestContentType.toString() : null, sessionId, body);
 
+        lsfusion.interop.session.ExternalResponse execResult = null;
         String path = servletPath + pathInfo;
         boolean isEvalAction = path.endsWith("/eval/action");
         if (path.endsWith("/eval") || isEvalAction) {
@@ -142,18 +141,25 @@ public class ExternalUtils {
             }
         }
 
-        HttpEntity entity = null;
-        String contentDisposition = null;
+        return getExternalResponse(execResult, queryParams, (returns.isEmpty() ? "export" : returns.get(0)));
+    }
 
-        if (execResult != null) {
-            Result<String> singleFileExtension = new Result<>();
-            entity = getInputStreamFromList(execResult.results, getBodyUrl(execResult.results, returnBodyUrl), null, new ArrayList<>(), singleFileExtension, null);
+    public static ExternalResponse getExternalResponse(lsfusion.interop.session.ExternalResponse execResult, List<NameValuePair> queryParams, String singleFileName) {
+        if(execResult instanceof lsfusion.interop.session.ResultExternalResponse) {
+            lsfusion.interop.session.ResultExternalResponse resultExecResult = (lsfusion.interop.session.ResultExternalResponse) execResult;
+            Result<String> singleFileExtension = singleFileName != null ? new Result<>() : null;
+            HttpEntity entity = getInputStreamFromList(resultExecResult, queryParams, singleFileExtension);
 
-            if (singleFileExtension.result != null) // если возвращается один файл, задаем ему имя
-                contentDisposition = "filename=" + (returns.isEmpty() ? filename : returns.get(0)).replace(',', '_') + "." + singleFileExtension.result;
-            return new ExternalResponse(entity, contentDisposition, execResult.headerNames, execResult.headerValues, execResult.cookieNames, execResult.cookieValues, execResult.statusHttp);
-        }
-        return new ExternalResponse(null, null, null, null, null, null, null);
+            String contentDisposition = null;
+            if (singleFileName != null && singleFileExtension.result != null) // если возвращается один файл, задаем ему имя
+                contentDisposition = "filename=" + singleFileName.replace(',', '_') + "." + singleFileExtension.result;
+            return new ResultExternalResponse(entity, contentDisposition, resultExecResult.headerNames, resultExecResult.headerValues, resultExecResult.cookieNames, resultExecResult.cookieValues, resultExecResult.statusHttp);
+        } else if(execResult instanceof lsfusion.interop.session.HtmlExternalResponse) {
+            return new HtmlExternalResponse(((lsfusion.interop.session.HtmlExternalResponse) execResult).html);
+        } else if(execResult instanceof lsfusion.interop.session.RedirectExternalResponse)
+            return new RedirectExternalResponse(((lsfusion.interop.session.RedirectExternalResponse) execResult).url, ((lsfusion.interop.session.RedirectExternalResponse) execResult).notification);
+
+        return new ExternalUtils.ResultExternalResponse("Something went wrong", StandardCharsets.UTF_8, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
     }
 
     public static String getBodyUrl(Object[] results, boolean returnBodyUrl) {
@@ -261,6 +267,12 @@ public class ExternalUtils {
         return mParamsList.immutableList();
     }
 
+    public static HttpEntity getInputStreamFromList(lsfusion.interop.session.ResultExternalResponse response, List<NameValuePair> queryParams, Result<String> singleFileExtension) {
+        Object[] results = response.results;
+        String returnMultiType = getParameterValue(queryParams, RETURNMULTITYPE_PARAM);
+        return getInputStreamFromList(results, getBodyUrl(results, returnMultiType != null && returnMultiType.equals("bodyurl")), null, new ArrayList<>(), singleFileExtension, null);
+    }
+
     // results byte[] || String, можно было бы попровать getRequestResult (по аналогии с getRequestParam) выделить общий, но там возвращаемые классы разные, нужны будут generic'и и оно того не стоит
     public static HttpEntity getInputStreamFromList(Object[] results, String bodyUrl, ImList<String> bodyParamNames, List<Map<String, String>> bodyParamHeadersList, Result<String> singleFileExtension, ContentType forceContentType) {
         HttpEntity entity;
@@ -337,15 +349,20 @@ public class ExternalUtils {
     }
 
     public static class ExternalResponse {
+    }
+    public static class ResultExternalResponse extends ExternalResponse {
         public final HttpEntity response;
         public final String contentDisposition;
         public final String[] headerNames;
         public final String[] headerValues;
         public final String[] cookieNames;
         public final String[] cookieValues;
-        public final Integer statusHttp;
+        public final int statusHttp;
 
-        public ExternalResponse(HttpEntity response, String contentDisposition, String[] headerNames, String[] headerValues, String[] cookieNames, String[] cookieValues, Integer statusHttp) {
+        public ResultExternalResponse(String message, Charset charset, int statusHttp) {
+            this(new StringEntity(message, charset), null, null, null, null, null, statusHttp);
+        }
+        public ResultExternalResponse(HttpEntity response, String contentDisposition, String[] headerNames, String[] headerValues, String[] cookieNames, String[] cookieValues, Integer statusHttp) {
             this.response = response;
             this.contentDisposition = contentDisposition;
             this.headerNames = headerNames;
@@ -353,6 +370,24 @@ public class ExternalUtils {
             this.cookieNames = cookieNames;
             this.cookieValues = cookieValues;
             this.statusHttp = statusHttp;
+        }
+    }
+    public static class HtmlExternalResponse extends ExternalResponse {
+
+        public final String html;
+
+        public HtmlExternalResponse(String html) {
+            this.html = html;
+        }
+    }
+    public static class RedirectExternalResponse extends ExternalResponse {
+
+        public final String url;
+        public final Integer notification;
+
+        public RedirectExternalResponse(String url, Integer notification) {
+            this.url = url;
+            this.notification = notification;
         }
     }
 }

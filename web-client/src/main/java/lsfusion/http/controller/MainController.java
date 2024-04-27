@@ -7,6 +7,7 @@ import lsfusion.base.Result;
 import lsfusion.base.ServerMessages;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
+import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.exception.AppServerNotAvailableDispatchException;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.http.authentication.LSFAuthenticationToken;
@@ -26,7 +27,6 @@ import lsfusion.interop.navigator.ClientInfo;
 import lsfusion.interop.navigator.ClientSettings;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 import lsfusion.interop.session.ExternalRequest;
-import lsfusion.interop.session.ExternalResponse;
 import net.customware.gwt.dispatch.shared.general.StringResult;
 import org.apache.hc.core5.http.ContentType;
 import org.json.JSONArray;
@@ -72,6 +72,16 @@ public class MainController {
     private final Map<String, String> oauth2AuthenticationUrls = new HashMap<>();
     private static final String authorizationRequestBaseUri = "/oauth2/authorization/";
     private final Result<String> checkVersionError = new Result<>();
+
+    @RequestMapping(value = "/push-notification", method = RequestMethod.GET)
+    public String pushNotification(ModelMap model, HttpServletRequest request) {
+        model.addAttribute("redirectUrl", getDirectUrl("/main", null, null, request));
+        model.addAttribute("notificationChannel", GwtSharedUtils.NOTIFICATION_CHANNEL);
+        model.addAttribute("notificationId", request.getParameter(GwtSharedUtils.NOTIFICATION_PARAM));
+        model.addAttribute("notificationSend", GwtSharedUtils.NOTIFICATION_SEND);
+        model.addAttribute("notificationReceived", GwtSharedUtils.NOTIFICATION_RECEIVED);
+        return "push-notification";
+    }
 
     @RequestMapping(value = "/login", method = RequestMethod.GET)
     public String processLogin(ModelMap model, HttpServletRequest request) {
@@ -198,10 +208,9 @@ public class MainController {
     private JSONObject sendRequest(JSONArray jsonArray, HttpServletRequest request, String method){
         FileData fileData = new FileData(new RawFileData(jsonArray.toString().getBytes(StandardCharsets.UTF_8)), "json");
         try {
-            ExternalResponse externalResponse = logicsProvider.runRequest(request,
+            return LogicsSessionObject.getJSONObjectResult(logicsProvider.runRequest(request,
                     (sessionObject, retry) -> sessionObject.remoteLogics.exec(AuthenticationToken.ANONYMOUS, NavigatorProviderImpl.getSessionInfo(request),
-                    method + "[JSONFILE]", getExternalRequest(new Object[]{fileData}, request)));
-            return new JSONObject(new String(((FileData) externalResponse.results[0]).getRawFile().getBytes(), StandardCharsets.UTF_8));
+                    method + "[JSONFILE]", getExternalRequest(new Object[]{fileData}, request))));
         } catch (IOException | AppServerNotAvailableDispatchException e) {
             throw Throwables.propagate(e);
         }
@@ -353,24 +362,34 @@ public class MainController {
         return new ExternalRequest(new String[0], params, charset.toString(), new String[0], new String[0], null,
                 null, null, null, null, request.getScheme(), request.getMethod(), request.getServerName(), request.getServerPort(), request.getContextPath(),
                 request.getServletPath(), request.getPathInfo() == null ? "" : request.getPathInfo(), request.getQueryString() != null ? request.getQueryString() : "",
-                contentTypeString, null);
+                contentTypeString, request.getSession().getId(), null);
     }
 
     public static String getURLPreservingParameters(String url, List<String> paramsToRemove, HttpServletRequest request) {
-        String queryString = request.getQueryString();
-        if (paramsToRemove != null && queryString != null){
-            List<String> params = Arrays.asList(queryString.split("&"));
-            String paramString = params.stream().filter(s -> (paramsToRemove.stream().noneMatch(s::contains))).collect(Collectors.joining("&"));
-            return !paramString.isEmpty() ? url + "?" + paramString : url;
-        } else {
-            queryString = !BaseUtils.isRedundantString(queryString) ? "?" + queryString : "";
-            return url + queryString;
+        return getURLPreservingParameters(url, null, paramsToRemove, request);
+    }
+    public static String getURLPreservingParameters(String url, String query, List<String> paramsToRemove, HttpServletRequest request) {
+        String requestQuery = getQueryPreservingParameters(paramsToRemove, request);
+        if(query != null) {
+            assert !query.isEmpty();
+            requestQuery = requestQuery.isEmpty() ? query : requestQuery + "&" + query;
         }
+        return url + (!requestQuery.isEmpty() ? "?" + requestQuery : "");
+    }
+
+    public static String getQueryPreservingParameters(List<String> paramsToRemove, HttpServletRequest request) {
+        String queryString = request.getQueryString();
+        if(queryString == null)
+            queryString = "";
+
+        if (paramsToRemove != null && !queryString.isEmpty())
+            queryString = Arrays.stream(queryString.split("&")).filter(s -> (paramsToRemove.stream().noneMatch(s::contains))).collect(Collectors.joining("&"));
+
+        return queryString;
     }
 
     public static String getDirectUrl(String url, List<String> paramsToRemove, String query, HttpServletRequest request) {
-        return request.getContextPath() + getURLPreservingParameters(url, paramsToRemove, request) +
-                (query != null ? (request.getQueryString() == null ? "?" : "&") + query : "");
+        return request.getContextPath() + getURLPreservingParameters(url, query, paramsToRemove, request);
     }
 
     public static String getRedirectUrl(String url, List<String> paramsToRemove, HttpServletRequest request) {

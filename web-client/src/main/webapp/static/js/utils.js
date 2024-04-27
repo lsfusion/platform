@@ -263,3 +263,14 @@ function createFocusElementType(tag) {
     else
         return document.createElement(tag);
 }
+
+function openBroadcastChannel(channelName, handler) {
+    let broadcastChannel = new BroadcastChannel(channelName);
+    broadcastChannel.addEventListener("message", function(event) {
+        handler(broadcastChannel, event.data);
+    });
+}
+
+function postBroadcastChannelMessage(channel, message) {
+    channel.postMessage(message);
+}

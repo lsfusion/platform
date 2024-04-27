@@ -15,6 +15,12 @@ import java.util.*;
 import java.util.stream.Stream;
 
 public class GwtSharedUtils {
+
+    public static final String NOTIFICATION_CHANNEL = "push_notification";
+    public static final String NOTIFICATION_PARAM = "notification_id";
+    public static final String NOTIFICATION_SEND = "send:";
+    public static final String NOTIFICATION_RECEIVED = "received:";
+
     public static <K> int relativePosition(K element, List<K> comparatorList, List<K> insertList) {
         int ins = 0;
         int ind = comparatorList.indexOf(element);

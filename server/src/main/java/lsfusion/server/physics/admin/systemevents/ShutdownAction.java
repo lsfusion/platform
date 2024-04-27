@@ -22,6 +22,6 @@ public class ShutdownAction extends InternalAction {
     @Override
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
         DataObject connection = context.getDataKeyValue(connectionInterface);
-        context.getLogicsInstance().getNavigatorsManager().shutdownConnection(connection);
+        context.getNavigatorsManager().shutdownConnection(connection);
     }
 }

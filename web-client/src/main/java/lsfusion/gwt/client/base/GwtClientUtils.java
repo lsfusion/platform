@@ -21,10 +21,7 @@ import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.*;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 import static java.lang.Math.max;
 import static lsfusion.gwt.client.base.GwtSharedUtils.isRedundantString;
@@ -1397,6 +1394,15 @@ public class GwtClientUtils {
 
     public static native boolean plainEquals(JavaScriptObject object1, JavaScriptObject object2, String ignoreField)/*-{
         return $wnd.plainEquals(object1, object2, ignoreField);
+    }-*/;
+
+    public static native void openBroadcastChannel(String channelName, BiConsumer<JavaScriptObject, String> onMessage)/*-{
+        $wnd.openBroadcastChannel(channelName, function (broadcastChannel, message) {
+            onMessage.@java.util.function.BiConsumer::accept(*)(broadcastChannel, message);
+        });
+    }-*/;
+    public static native void postBroadcastChannelMessage(JavaScriptObject channel, String message)/*-{
+        $wnd.postBroadcastChannelMessage(channel, message);
     }-*/;
 
     public static native boolean isFunctionContainsArguments(JavaScriptObject fn)/*-{

@@ -13,6 +13,7 @@ import lsfusion.client.logics.LogicsProvider;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.form.event.KeyStrokes;
 import lsfusion.interop.logics.LogicsConnection;
+import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.logics.ServerSettings;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.session.ExternalRequest;
@@ -251,8 +252,7 @@ public class LoginDialog extends JDialog {
             FileData fileData = new FileData(new RawFileData(users.toString().getBytes(StandardCharsets.UTF_8)), "json");
             try {
                 ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, MainController.getSessionInfo(), "Authentication.syncUsers[ISTRING[100], JSONFILE]", new ExternalRequest(new Object[]{MainController.computerName, fileData}));
-                JSONArray unlockedUsers = new JSONArray(new String(((FileData) result.results[0]).getRawFile().getBytes(), StandardCharsets.UTF_8));
-                List<Object> currentUsers = unlockedUsers.toList();
+                List<Object> currentUsers = LogicsSessionObject.getJSONArrayResult(result).toList();
                 List<UserInfo> newUserInfos = new ArrayList<>();
                 for (UserInfo userInfo : userInfos.result) {
                     if (currentUsers.remove(userInfo.name)) {

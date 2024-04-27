@@ -7,12 +7,9 @@ import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.connection.AuthenticationToken;
-import lsfusion.interop.connection.ConnectionInfo;
 import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.connection.RemoteConnectionInterface;
-import lsfusion.interop.session.ExternalRequest;
-import lsfusion.interop.session.ExternalResponse;
-import lsfusion.interop.session.ExternalUtils;
+import lsfusion.interop.session.*;
 import lsfusion.server.base.controller.remote.RemoteRequestObject;
 import lsfusion.server.base.controller.thread.SyncType;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
@@ -26,11 +23,14 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
+import lsfusion.server.logics.action.controller.stack.EnvStackRunnable;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
+import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.navigator.controller.env.*;
+import lsfusion.server.logics.navigator.controller.remote.RemoteNavigator;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.physics.admin.Settings;
@@ -41,7 +41,6 @@ import lsfusion.server.physics.dev.integration.external.to.ExternalHTTPAction;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hc.core5.http.ContentType;
-import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.NameValuePair;
 import org.apache.hc.core5.net.URLEncodedUtils;
 import org.apache.log4j.Logger;
@@ -60,6 +59,7 @@ import java.util.TimeZone;
 import java.util.concurrent.Callable;
 
 import static lsfusion.base.BaseUtils.getNotNullStringArray;
+import static lsfusion.base.BaseUtils.nvl;
 
 public abstract class RemoteConnection extends RemoteRequestObject implements RemoteConnectionInterface {
 
@@ -79,6 +79,8 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     public Long userRole;
     protected Integer transactionTimeout;
 
+    public String sessionId;
+
     public RemoteConnection(int port, String sID, ExecutionStack upStack) throws RemoteException {
         super(port, upStack, sID, SyncType.NOSYNC);
     }
@@ -90,12 +92,14 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         return dbManager.createSession(sql, new WeakUserController(this), createFormController(), new WeakTimeoutController(this), createChangesController(), new WeakLocaleController(this), dbManager.getIsServerRestartingController(), null);
     }
 
-    protected void initContext(LogicsInstance logicsInstance, AuthenticationToken token, ConnectionInfo connectionInfo, ExecutionStack stack) throws SQLException, InstantiationException, IllegalAccessException, ClassNotFoundException, SQLHandledException {
+    protected void initContext(LogicsInstance logicsInstance, AuthenticationToken token, SessionInfo connectionInfo, ExecutionStack stack) throws SQLException, InstantiationException, IllegalAccessException, ClassNotFoundException, SQLHandledException {
         this.businessLogics = logicsInstance.getBusinessLogics();
         this.dbManager = logicsInstance.getDbManager();
         this.sql = dbManager.createSQL(new WeakSQLSessionContextProvider(this));
         
         this.logicsInstance = logicsInstance;
+
+        sessionId = connectionInfo.externalRequest.sessionId;
 
         try(DataSession session = createSession()) {
             SecurityManager securityManager = logicsInstance.getSecurityManager();
@@ -375,20 +379,53 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     }
 
     private ExternalResponse executeExternal(LA<?> property, ExternalRequest request) throws SQLException, ParseException, SQLHandledException, IOException {
-        ExecSession execSession = getExecSession();
-        try {
-            DataSession dataSession = execSession.dataSession;
+        checkEnableApi(property);
 
-            checkEnableApi(property);
+        if(property.action.hasFlow(ChangeFlowType.INTERACTIVEWAIT)) {
+            EnvStackRunnable runnable = (env, stack) -> {
+                try {
+                    executeExternal(property, request, env, stack);
+                } catch (Throwable t) {
+                    throw Throwables.propagate(t);
+                }
+            };
 
-            writeRequestInfo(dataSession, property.action, request);
+            int mode = Settings.get().getExternalUINotificationMode();
 
-            property.execute(dataSession, getStack(), ExternalHTTPAction.getParams(dataSession, property, request.params, Charset.forName(request.charsetName)));
+            boolean serverNotification = mode >= 1;
+            if(serverNotification) {
+                boolean pendNotification = mode == 2;
 
-            return readResult(request.returnNames, property.action, dataSession);
-        } finally {
-            execSession.close();
+                boolean foundNavigator = true;
+                if (this instanceof RemoteNavigator)
+                    ((RemoteNavigator) this).pushNotification(runnable);
+                else
+                    foundNavigator = logicsInstance.getNavigatorsManager().pushNotificationSession(sessionId, runnable, pendNotification);
+
+                if (foundNavigator)
+                    return new RedirectExternalResponse("/static/noauth/html/close.html");
+                else
+                    return new RedirectExternalResponse("/", pendNotification ? null : RemoteNavigator.pushGlobalNotification(runnable));
+            } else
+                return new RedirectExternalResponse("/push-notification", RemoteNavigator.pushGlobalNotification(runnable));
+        } else {
+            ExecSession execSession = getExecSession();
+            try {
+                DataSession dataSession = execSession.dataSession;
+
+                executeExternal(property, request, dataSession, getStack());
+
+                return readResult(request.returnNames, property.action, dataSession);
+            } finally {
+                execSession.close();
+            }
         }
+    }
+
+    private void executeExternal(LA<?> property, ExternalRequest request, ExecutionEnvironment env, ExecutionStack stack) throws SQLException, SQLHandledException, ParseException {
+        writeRequestInfo(env, property.action, request);
+
+        property.execute(env, stack, ExternalHTTPAction.getParams(env.getSession(), property, request.params, Charset.forName(request.charsetName)));
     }
 
     protected AuthenticationException authException;
@@ -419,8 +456,8 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
             throw new AuthenticationException();
     }
 
-    public void writeRequestInfo(DataSession session, Action<?> action, ExternalRequest request) throws SQLException, SQLHandledException {
-        ExecutionEnvironment env = session;
+    public void writeRequestInfo(ExecutionEnvironment env, Action<?> action, ExternalRequest request) throws SQLException, SQLHandledException {
+        DataSession session = env.getSession();
         if (action.uses(businessLogics.LM.headers.property)) {
             ExternalHTTPAction.writePropertyValues(session, env, businessLogics.LM.headers, getNotNullStringArray(request.headerNames), getNotNullStringArray(request.headerValues));
         }
@@ -511,7 +548,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
 
         Integer statusHttp = (Integer) businessLogics.LM.statusHttpTo.read(dataSession);
 
-        return new ExternalResponse(returns.toArray(), headerNames, headerValues, cookieNames, cookieValues, statusHttp);
+        return new ResultExternalResponse(returns.toArray(), headerNames, headerValues, cookieNames, cookieValues, nvl(statusHttp, HttpServletResponse.SC_OK));
     }
 
     private Object formatReturnValue(Object returnValue, Property returnProperty) {
@@ -537,28 +574,28 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
                 "\tREQUEST_QUERY: " + request.query + "\n" + "\t" + (exec ? "ACTION" : "SCRIPT") + ":\n\t\t " + action) : null;
         boolean successfulResponse = false;
         try {
-            ExternalResponse response = responseCallable.call();
+            ExternalResponse execResult = responseCallable.call();
 
-            Integer statusCode = BaseUtils.nvl(response.statusHttp, HttpServletResponse.SC_OK);
-            successfulResponse = successfulResponse(statusCode);
+            successfulResponse = successfulResponse(execResult.getStatusHttp());
 
             if (requestLogMessage != null && Settings.get().isLogFromExternalSystemRequestsDetail()) {
                 Charset charset = ExternalUtils.getCharsetFromContentType(request.contentType == null ? null : ContentType.parse(request.contentType));
                 List<NameValuePair> queryParams = URLEncodedUtils.parse(request.query, charset);
-                String returnMultiType = ExternalUtils.getParameterValue(queryParams, ExternalUtils.RETURNMULTITYPE_PARAM);
-                boolean returnBodyUrl = returnMultiType != null && returnMultiType.equals("bodyurl");
-                HttpEntity httpEntity = ExternalUtils.getInputStreamFromList(response.results, ExternalUtils.getBodyUrl(response.results, returnBodyUrl), null, new ArrayList<>(), null, null);
+                ExternalUtils.ExternalResponse externalResponse = ExternalUtils.getExternalResponse(execResult, queryParams, null);
 
-                requestLogMessage += getExternalSystemRequestsLogDetail(BaseUtils.toStringMap(request.headerNames, request.headerValues),
-                        BaseUtils.toStringMap(request.cookieNames, request.cookieValues),
-                        request.body != null ? new String(request.body, Charset.forName(request.charsetName)) : null,
-                        null,
-                        BaseUtils.toStringMap(response.headerNames, response.headerValues),
-                        BaseUtils.toStringMap(response.cookieNames, response.cookieValues),
-                        String.valueOf(statusCode),
-                        "\tOBJECTS:\n\t\t" + httpEntity);
+                if(externalResponse instanceof ExternalUtils.ResultExternalResponse) {
+                    ExternalUtils.ResultExternalResponse result = (ExternalUtils.ResultExternalResponse) externalResponse;
+                    requestLogMessage += getExternalSystemRequestsLogDetail(BaseUtils.toStringMap(request.headerNames, request.headerValues),
+                            BaseUtils.toStringMap(request.cookieNames, request.cookieValues),
+                            request.body != null ? new String(request.body, Charset.forName(request.charsetName)) : null,
+                            null,
+                            BaseUtils.toStringMap(result.headerNames, result.headerValues),
+                            BaseUtils.toStringMap(result.cookieNames, result.cookieValues),
+                            String.valueOf(result.statusHttp),
+                            "\tOBJECTS:\n\t\t" + result.response);
+                }
             }
-            return response;
+            return execResult;
         } catch (Throwable t) {
             if (requestLogMessage != null)
                 requestLogMessage += "\n\tERROR: " + t.getMessage() + "\n";

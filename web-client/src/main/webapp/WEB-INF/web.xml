@@ -112,6 +112,7 @@
         <url-pattern>/registration</url-pattern>
         <url-pattern>/forgot-password</url-pattern>
         <url-pattern>/change-password</url-pattern>
+        <url-pattern>/push-notification</url-pattern>
     </servlet-mapping>
 
 
@@ -163,6 +164,7 @@
         <url-pattern>/registration</url-pattern>
         <url-pattern>/forgot-password</url-pattern>
         <url-pattern>/change-password</url-pattern>
+        <url-pattern>/push-notification</url-pattern>
     </filter-mapping>
 
     <!-- exposes request params and locale to the thread, used in LSFRemoteAuthenticationProvider and ServerMessages.getString (where there is no explicit request) -->

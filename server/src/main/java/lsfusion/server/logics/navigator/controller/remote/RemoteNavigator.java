@@ -433,15 +433,23 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         return client;
     }
 
-    public void pushNotification(EnvStackRunnable run) throws RemoteException {
+    public void pushNotification(EnvStackRunnable run) {
         if(isClosed())
             return;
 
         client.pushMessage(notificationsMap.putNotification(run));
     }
 
+    public static int pushGlobalNotification(EnvStackRunnable run) {
+        return notificationsMap.putNotification(run);
+    }
+
+    public boolean active = false;
     @Override
     public byte[] getNavigatorTree() {
+
+        active = true;
+        navigatorManager.navigatorInitialized(this);
 
         ImOrderMap<NavigatorElement, List<String>> elements = getNavigatorTreeObjects();
 
@@ -473,6 +481,12 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         }
 
         return outStream.toByteArray();
+    }
+
+    @Override
+    public void deactivateAndCloseLater(boolean confirmedClient) {
+        active = false;
+        super.deactivateAndCloseLater(confirmedClient);
     }
 
     private ImOrderMap<NavigatorElement, List<String>> getNavigatorTreeObjects() {
@@ -663,8 +677,8 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
                 EnvStackRunnable notification = notificationsMap.getNotification(idNotification);
                 if(notification != null)
                     notification.run(env, stack);
-                else
-                    ServerLoggers.assertLog(false, "NOTIFICATION " + idNotification + " SHOULD EXIST"); // возможно может нарушаться при перепосылке запроса на клиенте при проблемах со связью
+//                else
+//                    ServerLoggers.assertLog(false, "NOTIFICATION " + idNotification + " SHOULD EXIST"); // can be broken when notification is sent several times
             } catch (SQLException | SQLHandledException e) {
                 ServerLoggers.systemLogger.error("DeliveredNotificationAction failed: ", e);
             }
@@ -830,13 +844,13 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         private Map<Integer, EnvStackRunnable> notificationsMap = new HashMap<>();
         private int counter = 0;
 
-        private synchronized Integer putNotification(EnvStackRunnable value) {
+        private synchronized int putNotification(EnvStackRunnable value) {
             counter++;
             notificationsMap.put(counter, value);
             return counter;
         }
 
-        private synchronized EnvStackRunnable getNotification(Integer key) {
+        private synchronized EnvStackRunnable getNotification(int key) {
             return notificationsMap.remove(key);
         }
     }
