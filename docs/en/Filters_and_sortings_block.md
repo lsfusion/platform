@@ -1,10 +1,10 @@
 ---
-title: 'Filters and sortings block'
+title: 'Filter and sorting blocks'
 ---
 
-The filter and order block of the [`FORM` statement](FORM_statement.md) – add [filters](Form_structure.md#filters) and [orderings](Form_structure.md#sort) to the form structure; add [filter groups](Interactive_view.md#filtergroup) to the interactive form view.
+The filter and order blocks of the [`FORM` statement](FORM_statement.md) – adding [filters](Form_structure.md#filters) and [orderings](Form_structure.md#sort) to the form structure, as well as [filter groups](Interactive_view.md#filtergroup) and [user filters](Interactive_view.md#userfilters) to the interactive form view.
 
-## Fixed filter block {#fixedfilters}
+## Fixed filters block {#fixedfilters}
 
 ### Syntax
 
@@ -14,9 +14,9 @@ FILTERS expression1, ..., expressionN
 
 ### Description
 
-The fixed filters block adds filters that will be automatically applied when any form data is read. One block can list an arbitrary number of filters separated by a comma .
+The fixed filters block adds filters that will be automatically applied when any form data is read. One block can list an arbitrary number of filters separated by a comma.
 
-Each filter is defined with an  [expression](Expression.md) that defines the filtering condition. In all expressions and context-dependent action operators you can use the names of the objects already declared on the form as parameters.
+Each filter is defined with an [expression](Expression.md) that defines the filtering condition. In all expressions and context-dependent action operators you can use the names of the objects already declared on the form as parameters.
 
 ### Parameters
 
@@ -59,6 +59,39 @@ FORM onStock 'Balances' // creating a form in which the balances of products can
 ;
 ```
 
+## User filters block {#userfilters}
+
+### Syntax
+
+```
+USERFILTERS formProperty1, ..., formPropertyN
+```
+
+### Description
+
+The user filters block adds custom filters to the form. These are similar to those that the user can add themselves by pressing `F3`, however they cannot be removed.
+
+Each filter is specified by a [property on a form](Properties_and_actions_block.md#name), which must already have been added to the form previously.
+
+### Parameters
+
+- `formProperty1, ..., formPropertyN`
+
+    List of names of properties on a form for which filters are created.
+
+### Example
+
+```lsf
+CLASS Stock;
+name = DATA ISTRING[100] (Stock);
+
+FORM stocks 'Stocks'
+    OBJECTS st = Stock // add the 'Stock' object group
+    PROPERTIES name(st) // add the 'name' property 
+    USERFILTERS name(st) // add a user filter for the 'name' property
+;
+```
+
 ## Filter group block {#filtergroup}
 
 ### Syntax
@@ -82,7 +115,7 @@ Each filter is defined with an [expression](Expression.md) that defines the filt
 
 - `groupName` 
 
-    Internal name of a filter group [Simple ID](IDs.md#id). If the `EXTEND` keyword is specified, the platform will search the form for the created filter group with the specified name — otherwise a new filter group with the specified name will be created.
+    Internal name of a filter group. [Simple ID](IDs.md#id). If the `EXTEND` keyword is specified, the platform will search the form for the created filter group with the specified name — otherwise a new filter group with the specified name will be created.
 
 - `caption1, ..., captionN`
 
@@ -133,9 +166,10 @@ EXTEND FORM onStock
 ### Syntax
 
 ```
-ORDERS formPropertyName1 [DESC] 
-       ...
-       formPropertyNameN [DESC]
+ORDERS [FIRST]
+    formPropertyName1 [DESC] 
+    ...
+    formPropertyNameN [DESC]
 ```
 
 ### Description
@@ -143,6 +177,10 @@ ORDERS formPropertyName1 [DESC]
 An order block adds orderings to the form that will be automatically applied when any data are read on it. One block can list an arbitrary number of properties on the form separated by a comma in any sequence. These properties must be added to the form in advance.
 
 ### Parameters
+
+- `FIRST`
+
+    Keyword. Specifies that these sorts will be applied first, before all others.
 
 - `formPropertyName1, ..., formPropertyNameN`
 
