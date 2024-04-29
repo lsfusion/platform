@@ -10,7 +10,6 @@ import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.data.type.reader.AbstractReader;
 import lsfusion.server.logics.classes.data.ParseException;
-import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.classes.data.time.DateClass;
 import lsfusion.server.logics.form.stat.struct.export.plain.dbf.OverJDBField;
@@ -27,6 +26,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
+import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -96,10 +96,17 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     }
 
     @Override
-    public Object formatHTTP(T value, Charset charset) {
+    public Object formatHTTP(T value, Charset urlEncodeCharset) {
         if(value == null)
             return getParseNullValue();
-        return formatHTTPNotNullString(value, charset);
+        String resultString = formatHTTPNotNullString(value, urlEncodeCharset);
+        if(urlEncodeCharset != null)
+            try {
+                resultString = URLEncoder.encode(resultString, urlEncodeCharset.name());
+            } catch (UnsupportedEncodingException e) {
+                throw Throwables.propagate(e);
+            }
+        return resultString;
     }
 
     protected String formatHTTPNotNullString(T value, Charset charset) {

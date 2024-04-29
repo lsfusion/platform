@@ -274,3 +274,20 @@ function openBroadcastChannel(channelName, handler) {
 function postBroadcastChannelMessage(channel, message) {
     channel.postMessage(message);
 }
+
+function shareUrl(url, text, title) {
+    let shareData = {
+        tite: title,
+        text: text,
+        url: url
+    };
+
+    try {
+        if(navigator.canShare(shareData)) {
+            navigator.share(shareData);
+            return true;
+        }
+    } catch (error) {
+    }
+    return null;
+}

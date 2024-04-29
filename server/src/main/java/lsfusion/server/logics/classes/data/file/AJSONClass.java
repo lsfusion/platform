@@ -74,9 +74,9 @@ public abstract class AJSONClass extends DataClass<String> implements DBType {
     }
 
     @Override
-    public Object formatHTTP(String value, Charset charset) {
-        if(charset != null || value == null)
-            return super.formatHTTP(value, charset);
+    public Object formatHTTP(String value, Charset urlEncodeCharset) {
+        if(urlEncodeCharset != null || value == null)
+            return super.formatHTTP(value, urlEncodeCharset);
 
         return new FileData(new RawFileData(value.getBytes()), "json");
     }

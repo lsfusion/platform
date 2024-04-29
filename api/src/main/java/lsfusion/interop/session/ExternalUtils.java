@@ -48,6 +48,7 @@ public class ExternalUtils {
     public static final String defaultDBFCharset = "CP1251";
 
     public static final Charset stringCharset = StandardCharsets.UTF_8;
+    public static final Charset defaultUrlCharset = StandardCharsets.UTF_8;
     public static final ContentType TEXT_PLAIN = ContentType.create(
             "text/plain", stringCharset);
     public static final ContentType MULTIPART_MIXED = ContentType.create(
@@ -55,13 +56,13 @@ public class ExternalUtils {
     public static final ContentType APPLICATION_OCTET_STREAM = ContentType.create(
             "application/octet-stream");
 
-    private static final String ACTION_CN_PARAM = "action";
-    private static final String SCRIPT_PARAM = "script";
-    private static final String PARAMS_PARAM = "p";
-    private static final String RETURN_PARAM = "return";
+    public static final String ACTION_CN_PARAM = "action";
+    public static final String SCRIPT_PARAM = "script";
+    public static final String PARAMS_PARAM = "p";
+    public static final String RETURN_PARAM = "return";
     public static final String RETURNMULTITYPE_PARAM = "returnmultitype";
 
-    public static List<String> PARAMS = Arrays.asList(ACTION_CN_PARAM, SCRIPT_PARAM, PARAMS_PARAM, RETURN_PARAM, RETURNMULTITYPE_PARAM);
+    public static final List<String> PARAMS = Arrays.asList(ACTION_CN_PARAM, SCRIPT_PARAM, PARAMS_PARAM, RETURN_PARAM, RETURNMULTITYPE_PARAM);
 
     public static ExecInterface getExecInterface(final AuthenticationToken token, final SessionInfo sessionInfo, final RemoteLogicsInterface remoteLogics) {
         return new ExecInterface() {

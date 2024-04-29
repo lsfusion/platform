@@ -3024,7 +3024,7 @@ public class Settings implements Cloneable {
     // 1 - on the server without pending request (redirect using notification parameter)
     // 2 - on the server with pending request
 
-    private int externalUINotificationMode = 1;
+    private int externalUINotificationMode = 0;
 
     public int getExternalUINotificationMode() {
         return externalUINotificationMode;

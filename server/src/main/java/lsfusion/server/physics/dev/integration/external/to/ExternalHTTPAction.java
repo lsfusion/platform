@@ -101,8 +101,8 @@ public class ExternalHTTPAction extends CallAction {
             Result<ImOrderSet<PropertyInterface>> rNotUsedParams = new Result<>();
             String bodyUrl = bodyUrlInterface != null ? getTransformedText(context, bodyUrlInterface) : null;
             if(connectionString != null) {
-                connectionString = replaceParams(context, connectionString, rNotUsedParams, ExternalUtils.getCharsetFromContentType(ExternalUtils.TEXT_PLAIN));
-                bodyUrl = bodyUrl != null ? replaceParams(context, bodyUrl, rNotUsedParams, ExternalUtils.getCharsetFromContentType(ExternalUtils.TEXT_PLAIN)) : null;
+                connectionString = replaceParams(context, connectionString, rNotUsedParams, ExternalUtils.defaultUrlCharset);
+                bodyUrl = bodyUrl != null ? replaceParams(context, bodyUrl, rNotUsedParams, ExternalUtils.defaultUrlCharset) : null;
                 if(bodyUrl != null && !rNotUsedParams.result.isEmpty()) {
                     throw new RuntimeException("All params should be used in BODYURL");
                 }

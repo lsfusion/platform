@@ -146,7 +146,7 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
 
     T parseHTTP(Object o, Charset charset) throws ParseException; // o - String or FileData, o - not null, null'ы decode'ся в зависимости от типа
 
-    Object formatHTTP(T value, Charset charset); // returns String or FileData (не null), null'ы encode'ит в зависимости от типа
+    Object formatHTTP(T value, Charset urlEncodeCharset); // returns String or FileData (не null), null'ы encode'ит в зависимости от типа
 
     T writeProp(RawFileData value, String extension);
 

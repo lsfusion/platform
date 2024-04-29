@@ -1,6 +1,7 @@
 package lsfusion.server.physics.admin.interpreter;
 
 import lsfusion.base.Pair;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.lambda.set.FullFunctionSet;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
@@ -143,7 +144,7 @@ public class EvalUtils {
                 if(!script.endsWith(";")) {
                     script += ";";
                 }
-                List<String> paramsList = new ArrayList<>();
+                int maxParam = 0;
                 StringBuilder result = new StringBuilder();
                 StringBuilder currentParam = new StringBuilder();
                 State currentState = State.SCRIPT;
@@ -178,11 +179,10 @@ public class EvalUtils {
                                 currentParam.append(c);
                             } else {
                                 //param ends
-                                String param = paramPrefix + currentParam;
-                                result.append(param);
-                                if(!paramsList.contains(param)) {
-                                    paramsList.add(param);
-                                }
+                                result.append(paramPrefix).append(currentParam);
+                                int paramIndex = Integer.parseInt(currentParam.toString());
+                                if(paramIndex > maxParam)
+                                    maxParam = paramIndex;
                                 if (c == '/' && prevSlash) {
                                     //comment starts
                                     currentState = State.COMMENT;
@@ -215,8 +215,7 @@ public class EvalUtils {
                     i++;
                 }
 
-                Collections.sort(paramsList);
-                String params = StringUtils.join(paramsList.iterator(), ", ");
+                String params = ListFact.consecutiveList(maxParam).toString(index -> paramPrefix + index, ", ");
                 return String.format("run(%s) {%s\n};", params, result);
             } else return null;
         }

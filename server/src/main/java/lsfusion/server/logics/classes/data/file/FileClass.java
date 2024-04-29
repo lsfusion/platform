@@ -6,7 +6,6 @@ import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.DBType;
-import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.logics.classes.data.ByteArrayClass;
 import lsfusion.server.logics.classes.data.DataClass;
@@ -102,9 +101,9 @@ public abstract class FileClass<T> extends DataClass<T> {
     }
 
     @Override
-    public Object formatHTTP(T value, Charset charset) {
-        if(charset != null)
-            return super.formatHTTP(value, charset);
+    public Object formatHTTP(T value, Charset urlEncodeCharset) {
+        if(urlEncodeCharset != null)
+            return super.formatHTTP(value, urlEncodeCharset);
 
         if(value == null) 
             return new FileData(RawFileData.EMPTY, "null");

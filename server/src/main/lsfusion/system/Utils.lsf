@@ -203,6 +203,12 @@ escapeXMLValue(TEXT t) = replace(replace(replace(replace(replace(t, '&', '&amp;'
 
 copyToClipboard INTERNAL 'lsfusion.server.logics.classes.data.utils.string.CopyToClipboardAction' (TEXT);
 
+shareUrl(STRING url, STRING text, STRING title) {
+    INTERNAL CLIENT 'shareUrl' PARAMS url, text, title TO exportBoolean;
+    IF NOT exportBoolean() THEN
+        MESSAGE '<a href="' + url + '">${text}</a>';
+}
+
 // --------------------------------------------- Numeric operations --------------------------------- //
 floor = FORMULA 'floor($1)';
 floor = FORMULA NULL 'floor(($1)/notZero($2))*($2)';

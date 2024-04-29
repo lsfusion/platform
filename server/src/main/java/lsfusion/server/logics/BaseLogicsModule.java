@@ -362,6 +362,16 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @IdentityLazy
+    public LA getFormShare() {
+        try {
+            return findAction("formShare[]");
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            Throwables.propagate(e);
+        }
+        return null;
+    }
+
+    @IdentityLazy
     public LA<?> getPolyEdit() {
         try {
             return findAction("edit[Object]");

@@ -6,9 +6,7 @@ import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.DBType;
-import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.exec.TypeEnvironment;
-import lsfusion.server.logics.classes.data.file.FileClass;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.apache.commons.net.util.Base64;
 
@@ -136,9 +134,9 @@ public class ByteArrayClass extends DataClass<RawFileData> implements DBType {
     }
     
     @Override
-    public Object formatHTTP(RawFileData value, Charset charset) {
-        if(charset != null)
-            return super.formatHTTP(value, charset);
+    public Object formatHTTP(RawFileData value, Charset urlEncodeCharset) {
+        if(urlEncodeCharset != null)
+            return super.formatHTTP(value, urlEncodeCharset);
 
         if (value == null)
             return FileData.EMPTY;

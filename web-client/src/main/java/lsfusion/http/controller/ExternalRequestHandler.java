@@ -1,8 +1,10 @@
 package lsfusion.http.controller;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.BaseUtils;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.Pair;
+import lsfusion.base.col.ListFact;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.http.provider.logics.LogicsProvider;
 import lsfusion.interop.base.exception.AuthenticationException;
@@ -19,6 +21,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static lsfusion.base.BaseUtils.nvl;
 
@@ -81,12 +85,14 @@ public abstract class ExternalRequestHandler extends LogicsRequestHandler implem
             sendResponse(response, (ExternalUtils.ResultExternalResponse) responseHttpEntity);
         else if(responseHttpEntity instanceof ExternalUtils.RedirectExternalResponse) {
             ExternalUtils.RedirectExternalResponse redirect = (ExternalUtils.RedirectExternalResponse) responseHttpEntity;
-            response.sendRedirect(MainController.getDirectUrl(redirect.url, ExternalUtils.PARAMS, redirect.notification != null ? GwtSharedUtils.NOTIFICATION_PARAM + "=" + redirect.notification : null, request));
+            response.sendRedirect(MainController.getDirectUrl(redirect.url, REDIRECT_PARAMS, redirect.notification != null ? GwtSharedUtils.NOTIFICATION_PARAM + "=" + redirect.notification : null, request));
         } else {
             response.setContentType("text/html");
             response.getWriter().print(((ExternalUtils.HtmlExternalResponse) responseHttpEntity).html);
         }
     }
+
+    private static final List<String> REDIRECT_PARAMS = BaseUtils.addList(GwtSharedUtils.NOTIFICATION_PARAM, ExternalUtils.PARAMS);
 
     protected void sendResponse(HttpServletResponse response, ExternalUtils.ResultExternalResponse responseHttpEntity) throws IOException {
         HttpEntity responseEntity = responseHttpEntity.response;

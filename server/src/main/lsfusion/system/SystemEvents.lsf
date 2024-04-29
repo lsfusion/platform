@@ -393,6 +393,7 @@ servletPath '{system.events.context.path.connection}' = DATA STRING (Connection)
 pathInfo '{system.events.path.info.connection}' = DATA STRING (Connection);
 query '{system.events.query.connection}' = DATA STRING (Connection);
 scheme '{system.events.context.path.scheme}' = DATA STRING (Connection);
+webPath(Connection c) = scheme(c) + '://' + webHost(c) + ':' + webPort(c) + contextPath(c);
 
 user '{system.events.user.connection}' = DATA CustomUser (Connection);
 userLogin '{system.events.user.login.connection}' (Connection connection) = login(user(connection));
@@ -481,7 +482,7 @@ EXTEND FORM customUsers PROPERTIES(u) GRID reconnect, shutdown;
 
 @defineLog (Connection, '{system.events.define.log.of.connections}', log, connectDate);
 
-currentConnection = NATIVE Connection();
+currentConnection = NATIVE Connection ();
 
 clientType = DATA ClientType (Connection);
 nameClientType '{system.events.client.type}' (Connection connection) = staticCaption(clientType(connection));
@@ -846,4 +847,11 @@ onClientStarted() + {
     WHILE changePasswordOnNextLogin(currentUser()) DO {
         changePassword();
     } 
+}
+
+formShare() + {
+    getShowFormURLAction();
+
+    FOR Connection cn = currentConnection() DO
+        shareUrl((CONCAT '?', webPath(cn) + readPath(), (CONCAT '&', notEmpty(query(cn)), notEmpty(readQuery()))), 'The link to share the form', 'Share');
 }
