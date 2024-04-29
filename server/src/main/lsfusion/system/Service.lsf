@@ -864,17 +864,6 @@ getClientSettings() {
     getClientSettings(currentUser());
 } @@noauth;
 
-//Temporary. For migration. Can be deleted later. Need to fill in fields for existing users
-migratedRanges = DATA BOOLEAN();
-onStarted() + {
-    IF NOT migratedRanges() THEN {
-        FOR CustomUser cu IF cu IS CustomUser DO {
-            setDefaultRanges(cu);
-        }
-        migratedRanges() <- TRUE;
-    }
-}
-
 EXTEND FORM customUser
     PROPERTIES(u) fontSize, colorThemeName, selectedRowBackgroundColor, selectedCellBackgroundColor, 
         focusedCellBackgroundColor, focusedCellBorderColor, tableGridColor, dontShowCloseButtonOnInactiveTab, userFiltersManualApplyMode
