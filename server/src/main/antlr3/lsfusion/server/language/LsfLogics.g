@@ -13,6 +13,8 @@ grammar LsfLogics;
     import lsfusion.interop.form.ContainerWindowFormType;
     import lsfusion.interop.form.ModalityWindowFormType;
     import lsfusion.interop.base.view.FlexAlignment;
+    import lsfusion.interop.form.event.FormChangeEvent;
+    import lsfusion.interop.form.event.FormContainerEvent;
     import lsfusion.interop.form.event.FormScheduler;
     import lsfusion.interop.form.object.table.grid.ListViewType;
     import lsfusion.interop.form.property.ClassViewType;
@@ -878,7 +880,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'DRAW' toDraw=formGroupObjectEntity { $options.setToDraw($toDraw.groupObject); }
 		|   pl=formPropertyDrawRelativePosition { $options.setLocation($pl.location, $pl.propText); }
 		|	'QUICKFILTER' pdraw=formPropertyDraw { $options.setQuickFilterPropertyDraw($pdraw.property); }
-		|	'ON' et=formEventType prop=formActionObject { $options.addEventAction($et.type, $prop.action); }
+		|	'ON' et=formEventType prop=formActionObject { $options.addEventAction($et.type, $et.before, $prop.action); }
 		|	'ON' 'CONTEXTMENU' (c=localizedStringLiteralNoID)? prop=formActionObject { $options.addContextMenuAction($c.val, $prop.action); }
 		|	'ON' 'KEYPRESS' key=stringLiteral prop=formActionObject { $options.addKeyPressAction($key.val, $prop.action); }
 		|	'EVENTID' id=stringLiteral { $options.setEventId($id.val); }
@@ -1241,7 +1243,8 @@ formEventDeclaration returns [ActionObjectEntity action, Object type, Boolean re
 		|	'DROP'	 { $type = FormEventType.DROP; }
 		|	'QUERYOK'	 { $type = FormEventType.QUERYOK; }
 		|	'QUERYCLOSE'	 { $type = FormEventType.QUERYCLOSE; }
-		| 	'CHANGE' objectId=ID { $type = $objectId.text; }
+		| 	changeEvent = changeEventDeclaration { $type = $changeEvent.type; }
+		| 	containerEvent=formContainerEventDeclaration { $type = new FormContainerEvent($containerEvent.sid, $containerEvent.collapse); }
 		| 	schedule = scheduleFormEventDeclaration { $type = new FormScheduler($schedule.period, $schedule.fixed); }
 		|   oed = orderEventDeclaration { $type = $oed.type; }
 		|   fed = filterEventDeclaration { $type = $fed.type; }
@@ -1249,6 +1252,23 @@ formEventDeclaration returns [ActionObjectEntity action, Object type, Boolean re
 		('REPLACE' { $replace = true; } | 'NOREPLACE' { $replace = false; } )?
 		faprop=formActionObject { $action = $faprop.action; }
 	;
+
+changeEventDeclaration returns [Object type]
+@init {
+    Boolean before = null;
+}
+    :
+    'CHANGE' (  'OBJECT'? objectId=ID { $type = $objectId.text; }
+             |  'PROPERTY' ('BEFORE' { before = true; } | 'AFTER' { before = false; })? prop=formPropertyDraw { $type = new FormChangeEvent($prop.property, before); }
+             )
+    ;
+
+formContainerEventDeclaration returns [String sid, boolean collapse = false]
+    :   ('COLLAPSE' { $collapse = true; } | 'EXPAND')
+        (   obj=ID { $sid = $obj.text; }
+        |   comp=formContainersComponentSelector { $sid = $comp.sid; }
+        )
+    ;
 
 scheduleFormEventDeclaration returns [int period, boolean fixed]
 	:   'SCHEDULE' 'PERIOD' periodLiteral=intLiteral { $period = $periodLiteral.val; } ('FIXED' { $fixed = true; })?
@@ -2928,7 +2948,7 @@ asonEventActionSetting [LA property]
 }
 @after {
 	if (inMainParseState()) {
-		self.setAsEventActionFor(property, $et.type, $usage.propUsage);
+		self.setAsEventActionFor(property, $et.type, $et.before, $usage.propUsage);
 	}
 }
 	:	'ASON' et=formEventType usage=actionOrPropertyUsage
@@ -3089,15 +3109,15 @@ notNullDeleteSetting returns [DebugInfo.DebugPoint debugPoint, Event event]
 onEditEventSetting [LAP property, List<TypedParameter> context]
 @after {
 	if (inMainParseState()) {
-		self.setScriptedEventAction(property, $et.type, $aDB.action);
+		self.setScriptedEventAction(property, $et.type, $et.before, $aDB.action);
 	}
 }
 	:	'ON' et=formEventType
 		aDB=listTopContextDependentActionDefinitionBody[context, false, false]
 	;
 
-formEventType returns [String type]
-	:	'CHANGE' { $type = ServerResponse.CHANGE; }
+formEventType returns [String type, Boolean before]
+	:	'CHANGE' { $type = ServerResponse.CHANGE; } ('BEFORE' { $before = true; } | 'AFTER' { $before = false; })?
 	|	'CHANGEWYS' { $type = ServerResponse.CHANGE_WYS; }
 	|	'EDIT' { $type = ServerResponse.EDIT_OBJECT; }
 	|	'GROUPCHANGE' { $type = ServerResponse.GROUP_CHANGE; }

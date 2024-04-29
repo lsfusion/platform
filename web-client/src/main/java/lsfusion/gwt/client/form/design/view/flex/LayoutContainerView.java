@@ -46,7 +46,7 @@ public abstract class LayoutContainerView extends GAbstractContainerView {
                 if (((GContainer) child).popup) {
                     return childCaptionWidget;
                 } else if (((GContainer) child).collapsible) {
-                    return new CollapsiblePanel(childCaptionWidget, border, collapsed -> formController.setContainerCollapsed(container, collapsed));
+                    return new CollapsiblePanel(childCaptionWidget, border, collapsed -> formController.setContainerCollapsed((GContainer) child, collapsed));
                 }
             }
             return new CaptionPanel(childCaptionWidget, border);

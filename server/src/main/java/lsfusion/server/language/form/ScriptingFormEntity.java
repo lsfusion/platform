@@ -12,6 +12,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.interop.action.ServerResponse;
+import lsfusion.interop.form.event.FormChangeEvent;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.property.PivotOptions;
@@ -59,10 +60,7 @@ import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import javax.swing.*;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.server.language.ScriptingLogicsModule.parseKeyStrokeOptions;
@@ -616,6 +614,13 @@ public class ScriptingFormEntity {
             }
         }
 
+        List<Pair<ActionObjectEntity, Boolean>> formChangeEventActions = options.getFormChangeEventActions();
+        if (formChangeEventActions != null) {
+            for (Pair<ActionObjectEntity, Boolean> entry : formChangeEventActions) {
+                form.addActionsOnEvent(new FormChangeEvent(property, entry.second), false, version, entry.first);
+            }
+        }
+
         OrderedMap<String, LocalizedString> contextMenuBindings = options.getContextMenuBindings();
         if (contextMenuBindings != null) {
             for (int i = 0; i < contextMenuBindings.size(); ++i) {
@@ -823,9 +828,11 @@ public class ScriptingFormEntity {
                 replace = eventType == FormEventType.QUERYCLOSE || eventType == FormEventType.QUERYOK;
             if (eventType instanceof String) {
                 form.addActionsOnEvent(getObjectEntity((String) eventType), replace, version, actions.get(i));
+            } else if (eventType instanceof FormChangeEvent && ((FormChangeEvent) eventType).before == null) {
+                PropertyDrawEntity propertyDrawEntity = (PropertyDrawEntity) ((FormChangeEvent) eventType).propertyDrawEntity;
+                propertyDrawEntity.setEventAction(ServerResponse.CHANGE, actions.get(i), true);
             } else {
-                ActionObjectEntity action = actions.get(i);
-                form.addActionsOnEvent(eventType, replace, version, action);
+                form.addActionsOnEvent(eventType, replace, version, actions.get(i));
             }
         }
     }

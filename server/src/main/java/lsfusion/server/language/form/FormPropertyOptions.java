@@ -19,9 +19,7 @@ import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import javax.swing.*;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static lsfusion.base.BaseUtils.isRedundantString;
 import static lsfusion.base.BaseUtils.nvl;
@@ -50,6 +48,7 @@ public class FormPropertyOptions {
     private OrderedMap<String, LocalizedString> contextMenuBindings;
     private Map<KeyStroke, String> keyBindings;
     private Map<String, ActionObjectEntity> eventActions;
+    private List<Pair<ActionObjectEntity, Boolean>> formChangeEventActions;
     private String eventId;
     private String integrationSID;
     private Boolean order;
@@ -280,11 +279,22 @@ public class FormPropertyOptions {
     }
 
     public void addEventAction(String actionSID, ActionObjectEntity action) {
+        addEventAction(actionSID, null, action);
+    }
+
+    public void addEventAction(String actionSID, Boolean before, ActionObjectEntity action) {
         if (action != null) {
-            if (eventActions == null) {
-                eventActions = new HashMap<>();
+            if(before != null) {
+                if(formChangeEventActions == null) {
+                    formChangeEventActions = new ArrayList<>();
+                }
+                formChangeEventActions.add(Pair.create(action, before));
+            } else {
+                if (eventActions == null) {
+                    eventActions = new HashMap<>();
+                }
+                eventActions.put(actionSID, action);
             }
-            eventActions.put(actionSID, action);
         }
     }
 
@@ -353,6 +363,13 @@ public class FormPropertyOptions {
         this.eventActions = eventActions;
     }
 
+    public List<Pair<ActionObjectEntity, Boolean>> getFormChangeEventActions() {
+        return formChangeEventActions;
+    }
+
+    public void setFormChangeEventActions(List<Pair<ActionObjectEntity, Boolean>> formChangeEventActions) {
+        this.formChangeEventActions = formChangeEventActions;
+    }
 
     public void setLocation(ComplexLocation<PropertyDrawEntity> location, String propText) {
         this.location = location;
@@ -497,6 +514,7 @@ public class FormPropertyOptions {
         merged.setCustomEditorFunction(nvl(overrides.getCustomEditorFunction(), customEditorFunction));
         merged.setToDraw(nvl(overrides.getToDraw(), toDraw));
         merged.setEventActions(nvl(overrides.getEventActions(), eventActions));
+        merged.setFormChangeEventActions(nvl(overrides.getFormChangeEventActions(), formChangeEventActions));
         merged.setContextMenuBindings(nvl(overrides.getContextMenuBindings(), contextMenuBindings));
         merged.setKeyBindings(nvl(overrides.getKeyBindings(), keyBindings));
         merged.setEventId(nvl(overrides.getEventId(), eventId));
