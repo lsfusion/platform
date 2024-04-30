@@ -1,0 +1,54 @@
+.form-control {
+    padding: 0.05rem 0.1rem;
+}
+
+.form-check {
+    min-height: 0.5rem;
+    margin-bottom: 0.02rem;
+}
+
+.form-select {
+    padding: 0.05rem 1.8rem 0.05rem 0.1rem;
+}
+
+.btn {
+    --bs-btn-padding-y: 0.05rem;
+}
+
+.nav {
+    --bs-nav-link-padding-y: 0.05rem;
+}
+
+.navbar-text {
+    padding-top: 0.1rem;
+    padding-bottom: 0.1rem;
+}
+
+.card {
+    --bs-card-spacer-y: 0.15rem;
+    --bs-card-spacer-x: 0.15rem;
+}
+
+.modal {
+    --bs-modal-header-padding: 0.1rem 0.5rem;
+}
+
+.dropdown-menu {
+    --bs-dropdown-item-padding-x: 0.5rem;
+    --bs-dropdown-item-padding-y: 0.05rem;
+}
+
+.list-group {
+    --bs-list-group-item-padding-x: 0.5rem;
+    --bs-list-group-item-padding-y: 0.1rem;
+}
+
+.table>:not(caption)>*>* {
+    padding: 0.1rem 0.1rem;
+}
+
+:root {
+    --border-padding: 0.1rem;
+    --border-cont-horz-padding: 0.15rem;
+    --border-cont-vert-padding: 0.15rem;
+}

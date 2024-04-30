@@ -1,0 +1,79 @@
+.grid-property-label {
+    font-size: 0.65rem;
+}
+
+.caption-panel-header {
+    font-size: 0.65rem;
+}
+
+:root {
+    --bs-body-font-size: 0.75rem;
+}
+
+.form-control {
+    font-size: 0.75rem;
+}
+
+.form-select {
+    font-size: 0.75rem;
+}
+
+.btn-toolbar .btn {
+    font-size: 0.9rem;
+}
+
+.btn {
+    --bs-btn-font-size: 0.75rem;
+}
+
+.dropdown-menu {
+    --bs-dropdown-font-size: 0.75rem;
+}
+
+.h1,h1 {
+    font-size: calc(1.1rem + 1.2vw)
+}
+
+@media (min-width: 1200px) {
+    .h1,h1 {
+        font-size:1.8rem
+    }
+}
+
+.h2,h2 {
+    font-size: calc(1.025rem + .9vw)
+}
+
+@media (min-width: 1200px) {
+    .h2,h2 {
+        font-size:1.55rem
+    }
+}
+
+.h3,h3 {
+    font-size: calc(1rem + .5vw)
+}
+
+@media (min-width: 1200px) {
+    .h3,h3 {
+        font-size:1.35rem
+    }
+}
+
+.h4,h4 {
+    font-size: calc(0.9rem + .3vw)
+}
+
+@media (min-width: 1200px) {
+    .h4,h4 {
+        font-size:1.125rem
+    }
+}
+
+.h5,h5 {
+    font-size: 0.9rem
+}
+
+.h6,h6 {
+    font-size: 0.75rem
+}

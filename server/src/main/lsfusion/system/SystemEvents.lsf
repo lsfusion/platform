@@ -95,7 +95,8 @@ useBootstrap() = useBootstrap(currentDesignEnv()) PREREAD;
 
 CLASS Size '{system.events.size}' {
     normal '{system.events.size.normal}',
-    mini '{system.events.size.mini}'
+    mini '{system.events.size.mini}',
+    tiny '{system.events.size.tiny}'
 }
 
 designEnvSize '{system.events.size}' = DATA Size (DesignEnv);
@@ -104,6 +105,7 @@ serverSize '{system.events.size}' = DATA Size ();
 captionServerSize '{system.events.size}' = staticCaption(serverSize());
 size '{system.events.size}' (DesignEnv d) = OVERRIDE designEnvSize(d), serverSize(), Size.normal;
 isMini = size(currentDesignEnv()) == Size.mini;
+isTiny = size(currentDesignEnv()) == Size.tiny;
 
 CLASS Navbar '{system.events.navbar}' {
     horizontal '{system.events.navbar.horizontal}',
@@ -225,6 +227,10 @@ onWebClientInit() + {
         IF isMini() THEN {
             onWebClientInit('mini-padding.css') <- 7;
             onWebClientInit('mini-font.css') <- 8;
+        }
+        IF isTiny() THEN {
+            onWebClientInit('tiny-padding.css') <- 7;
+            onWebClientInit('tiny-font.css') <- 8;
         }
         
         onWebClientInit('selectize.bootstrap5.min.css') <- 9;
