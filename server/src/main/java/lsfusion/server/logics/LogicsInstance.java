@@ -220,6 +220,8 @@ public class LogicsInstance implements InitializingBean {
                 lifecycle.fireStarted();
 
                 businessLogics.cleanCaches();
+
+                reflectionManager.onFinallyStarted();
             } finally {
                 afterAspect.run();
             }
