@@ -1518,7 +1518,7 @@ public class ClientFormController implements AsyncListener {
                 if (!filter.property.isAction())
                     groupFilters.add(serializeClientFilter(filter));
             }
-            filters.put(group.ID, groupFilters.toArray(new byte[filters.size()][]));
+            filters.put(group.ID, groupFilters.toArray(new byte[groupFilters.size()][]));
         }
 
         rmiQueue.adaptiveSyncRequest(new ProcessServerResponseRmiRequest("applyCurrentFilters") {
