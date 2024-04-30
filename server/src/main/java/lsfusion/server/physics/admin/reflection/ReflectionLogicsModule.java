@@ -410,12 +410,12 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         overQuantityTableColumn = findProperty("overQuantity[TableColumn]");
         notNullQuantityTableColumn = findProperty("notNullQuantity[TableColumn]");
 
-        recalculateMaterializationsTableColumn = findAction("recalculateAggregation[TableColumn]");
+        recalculateMaterializationsTableColumn = findAction("recalculateMaterializations[TableColumn]");
 
         //Отключение пересчётов и проверок
         disableClassesTable = findProperty("disableClasses[Table]");
         disableStatsTable = findProperty("disableStatsTable[Table]");
-        disableMaterializationsTableColumn = findProperty("disableAggregations[TableColumn]");
+        disableMaterializationsTableColumn = findProperty("disableMaterializations[TableColumn]");
         disableClassesTableColumn = findProperty("disableClasses[TableColumn]");
         disableStatsTableColumn = findProperty("disableStatsTableColumn[TableColumn]");
 
