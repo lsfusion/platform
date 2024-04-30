@@ -44,8 +44,6 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LP currentUser;
     public LP currentUserName;
 
-    public LP intersectingLoginsCount;
-
     public LP currentAuthToken;
     public LP secret;
     public LP resultAuthToken;
@@ -146,8 +144,6 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         attributes = findProperty("attributes[Contact, STRING]");
 
         currentUserName = findProperty("currentUserName[]");
-
-        intersectingLoginsCount = findProperty("intersectingLoginsCount[]");
 
         // Компьютер
         hostnameComputer = findProperty("hostname[Computer]");

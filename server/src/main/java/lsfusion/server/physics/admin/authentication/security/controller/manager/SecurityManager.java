@@ -154,13 +154,6 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                 apply(session);
             }
             this.anonymousUser = new DataObject((Long) anonymousUser.object, authenticationLM.customUser); // to update classes after apply
-
-            //migration 4 -> 5 version
-            Integer intersectingLoginsCount = (Integer) authenticationLM.intersectingLoginsCount.read(session);
-            if(intersectingLoginsCount != null) {
-                startLogWarn(intersectingLoginsCount + " intersecting logins detected, please remove intersection. It will be forbidden in version 5.");
-            }
-            
         }
     }
 
