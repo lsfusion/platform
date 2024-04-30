@@ -77,9 +77,6 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LP hasNotNullQuantity;
 
     public LP numberNavigatorElement;
-    
-    // temporary for migration
-    public ImplementTable navigatorElementTable;
 
     public LP navigatorElementCanonicalName;
     public LP canonicalNameNavigatorElement;
@@ -293,8 +290,6 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         
         isNavigatorFolder = findProperty("isNavigatorFolder[?]");
         isNavigatorAction = findProperty("isNavigatorAction[?]");
-
-        navigatorElementTable = findTable("navigatorElement");
         
         // ----- Формы ---- //
         formCanonicalName = findProperty("canonicalName[Form]");
