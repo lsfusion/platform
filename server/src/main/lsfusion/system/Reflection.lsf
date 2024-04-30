@@ -277,20 +277,20 @@ percentNotNull '{reflection.percent.not.null}' (TableColumn tableColumn) = IF ro
                                                           ELSE NUMERIC[15,2](notNullQuantity(tableColumn)) / rows (table(tableColumn)) * 100;
 sparseColumns '{reflection.sparse.columns}' (table) = GROUP SUM 1 BY table(TableColumn tableColumn) IF percentNotNull(tableColumn) < 50;
 
-//todo: remove after afterSync migration
+//todo: remove after onFinallyStarted migration
 notRecalculate '{reflection.not.recalculate.materializations}' = DATA BOOLEAN (TableColumn);
 notRecalculateMaterializations '{reflection.not.recalculate.materializations}' = DATA BOOLEAN (TableColumn);
 
-//todo: remove after afterSync migration
+//todo: remove after onFinallyStarted migration
 recalculateAggregation '{reflection.recalculate.materializations}'  INTERNAL  'lsfusion.server.physics.admin.service.action.RecalculateTableColumnAction' (TableColumn);
 recalculateMaterializations '{reflection.recalculate.materializations}'  INTERNAL  'lsfusion.server.physics.admin.service.action.RecalculateTableColumnAction' (TableColumn);
-//todo: remove after afterSync migration
+//todo: remove after onFinallyStarted migration
 recalculateAggregationWithDependencies '{reflection.recalculate.materializations.with.dependencies}'  INTERNAL  'lsfusion.server.physics.admin.service.action.RecalculateTableColumnWithDependenciesAction' (TableColumn);
 recalculateMaterializationsWithDependencies '{reflection.recalculate.materializations.with.dependencies}'  INTERNAL  'lsfusion.server.physics.admin.service.action.RecalculateTableColumnWithDependenciesAction' (TableColumn);
-//todo: remove after afterSync migration
+//todo: remove after onFinallyStarted migration
 recalculateAggregationWithDependents '{reflection.recalculate.materializations.with.dependents}'  INTERNAL  'lsfusion.server.physics.admin.service.action.RecalculateTableColumnWithDependentsAction' (TableColumn);
 recalculateMaterializationsWithDependents '{reflection.recalculate.materializations.with.dependents}'  INTERNAL  'lsfusion.server.physics.admin.service.action.RecalculateTableColumnWithDependentsAction' (TableColumn);
-//todo: remove after afterSync migration
+//todo: remove after onFinallyStarted migration
 checkAggregation '{reflection.check.materializations}'  INTERNAL  'lsfusion.server.physics.admin.service.action.CheckTableColumnAction' (TableColumn);
 checkMaterializations '{reflection.check.materializations}'  INTERNAL  'lsfusion.server.physics.admin.service.action.CheckTableColumnAction' (TableColumn);
 checkAggregation(ISTRING[100] string)  { checkMaterializations(tableColumnSID(string)); }
@@ -301,7 +301,7 @@ drop '{reflection.drop.drop.column}' (DropColumn cl)  {
     DELETE cl;
 }
 
-//todo: remove after afterSync migration
+//todo: remove after onFinallyStarted migration
 recalculateColumnsAggregations '{reflection.recalculate.columns.materializations}' (Table table)  { 
     FOR table == table(TableColumn tableColumn) AND tableColumn IS TableColumn DO {
         recalculateMaterializations(tableColumn);    
@@ -322,7 +322,7 @@ pack '{reflection.pack.table}'  INTERNAL  'lsfusion.server.physics.admin.service
 
 disableClasses '{reflection.disable.classes}' = DATA BOOLEAN (Table);
 disableStatsTable '{reflection.disable.stats}' (Table t) = notRecalculateStats(t);
-//todo: remove after afterSync migration
+//todo: remove after onFinallyStarted migration
 disableAggregations '{reflection.disable.materializations}' (TableColumn tc) = notRecalculateMaterializations(tc);
 disableMaterializations '{reflection.disable.materializations}' (TableColumn tc) = notRecalculateMaterializations(tc); 
 disableClasses '{reflection.disable.classes}' = DATA BOOLEAN (TableColumn);
@@ -330,7 +330,7 @@ disableStatsTableColumn '{reflection.disable.stats}' = DATA BOOLEAN (TableColumn
 
 disableClasses '{reflection.disable.classes}' (ISTRING[100] sid) = disableClasses(tableSID(sid));
 disableStatsTable '{reflection.disable.stats}' (ISTRING[100] sid) = disableStatsTable(tableSID(sid));
-//todo: remove after afterSync migration
+//todo: remove after onFinallyStarted migration
 disableAggregations (ISTRING[100] sid) = disableMaterializations(tableColumnSID(sid));
 disableMaterializations (ISTRING[100] sid) = disableMaterializations(tableColumnSID(sid));
 disableStatsTableColumn '{reflection.disable.stats}' (ISTRING[100] sid) = disableStatsTableColumn(tableColumnSID(sid));

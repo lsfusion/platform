@@ -815,13 +815,13 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         }, "Synchronizing tables");
     }
 
-    public void executeAfterSync() {
+    public void onFinallyStarted() {
         runWithStartLog(() -> {
             try (DataSession session = createSession()) {
-                systemEventsLM.afterSync.execute(session, ThreadLocalContext.getStack());
+                systemEventsLM.onFinallyStarted.execute(session, ThreadLocalContext.getStack());
             } catch (SQLException | SQLHandledException e) {
                 throw Throwables.propagate(e);
             }
-        }, "Executing afterSync");
+        }, "Executing onFinallyStarted");
     }
 }

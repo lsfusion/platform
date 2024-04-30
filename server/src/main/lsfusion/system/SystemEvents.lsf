@@ -47,9 +47,9 @@ onStartedApply() {
     APPLY;
 }
 
-afterSync  ABSTRACT LIST ( );
-afterSyncApply() {
-    afterSync();
+onFinallyStarted  ABSTRACT LIST ( );
+onFinallyStartedApply() {
+    onFinallyStarted();
     APPLY;
 }
 

@@ -5,7 +5,7 @@ REQUIRE System, Security, SystemEvents;
 NAMESPACE Service;
 
 serviceDBAction '{service.db.action}'  INTERNAL  'lsfusion.server.physics.admin.service.action.ServiceDBAction' ();
-//todo: remove after afterSync migration
+//todo: remove after onFinallyStarted migration
 checkAggregationsAction '{service.check.materializations.action}'  INTERNAL 'lsfusion.server.physics.admin.service.action.CheckMaterializationsAction' ();
 checkMaterializationsAction '{service.check.materializations.action}'  INTERNAL 'lsfusion.server.physics.admin.service.action.CheckMaterializationsAction' ();
 checkClassesAction '{service.check.classes.action}'   INTERNAL  'lsfusion.server.physics.admin.service.action.CheckClassesAction' ();
@@ -20,7 +20,7 @@ maxQuantityOverCalculate '{service.max.quantity.over.calculate}' = DATA INTEGER 
 makeProcessDumpAction '{service.make.process.dump.action}'  INTERNAL  'lsfusion.server.physics.admin.monitor.action.MakeProcessDumpAction' ();
 
 serviceDBMultiThreadAction '{service.service.db.multi.thread.action}'  INTERNAL  'lsfusion.server.physics.admin.service.action.ServiceDBMultiThreadAction' (INTEGER, INTEGER) NULL;
-//todo: remove after afterSync migration
+//todo: remove after onFinallyStarted migration
 checkAggregationsMultiThreadAction '{service.check.materializations.multi.thread.action}'  INTERNAL 'lsfusion.server.physics.admin.service.action.CheckMaterializationsMultiThreadAction' (INTEGER, INTEGER) NULL;
 checkMaterializationsMultiThreadAction '{service.check.materializations.multi.thread.action}'  INTERNAL 'lsfusion.server.physics.admin.service.action.CheckMaterializationsMultiThreadAction' (INTEGER, INTEGER) NULL;
 checkClassesMultiThreadAction '{service.check.classes.multi.thread.action}'  INTERNAL  'lsfusion.server.physics.admin.service.action.CheckClassesMultiThreadAction' (INTEGER, INTEGER) NULL;
@@ -31,7 +31,7 @@ recalculateStatsMultiThreadAction '{service.recalculate.stats.thread.action}'  I
 overCalculateStatsMultiThreadAction '{service.over.calculate.stats.multi.thread.action}'  INTERNAL  'lsfusion.server.physics.admin.service.action.OverCalculateStatsMultiThreadAction' (INTEGER, INTEGER) NULL;
 
 serviceDBMultiThreadAction '{service.service.db.multi.thread.action.timeout}' (INTEGER propertyTimeout)  { serviceDBMultiThreadAction (NULL, propertyTimeout); }
-//todo: remove after afterSync migration
+//todo: remove after onFinallyStarted migration
 checkAggregationsMultiThreadAction '{service.check.materializations.multi.thread.action.timeout}' (INTEGER propertyTimeout) { checkMaterializationsMultiThreadAction (NULL, propertyTimeout); }
 checkMaterializationsMultiThreadAction '{service.check.materializations.multi.thread.action.timeout}' (INTEGER propertyTimeout) { checkMaterializationsMultiThreadAction (NULL, propertyTimeout); }
 checkClassesMultiThreadAction '{service.check.classes.multi.thread.action.timeout}' (INTEGER propertyTimeout) { checkClassesMultiThreadAction (NULL, propertyTimeout); }
@@ -43,7 +43,7 @@ overCalculateStatsMultiThreadAction '{service.over.calculate.stats.multi.thread.
 
 threadCountMultiThread '{service.thread.count.multi.thread}' = DATA LOCAL INTEGER (); 
 serviceDBMultiThreadAction '{service.service.db.multi.thread.action.thread.count}'  { serviceDBMultiThreadAction(threadCountMultiThread(), NULL); }
-//todo: remove after afterSync migration
+//todo: remove after onFinallyStarted migration
 checkAggregationsMultiThreadAction '{service.check.materializations.multi.thread.action.thread.count}'  { checkMaterializationsMultiThreadAction(threadCountMultiThread(), NULL); }
 checkMaterializationsMultiThreadAction '{service.check.materializations.multi.thread.action.thread.count}'  { checkMaterializationsMultiThreadAction(threadCountMultiThread(), NULL); }
 checkClassesMultiThreadAction '{service.check.classes.multi.thread.action.thread.count}'  { checkClassesMultiThreadAction(threadCountMultiThread(), NULL); }
@@ -67,7 +67,7 @@ copyPermissions(ActionOrProperty target, ActionOrProperty source) {
     dataPermissionGroupChange(UserRole ur, target) <- dataPermissionGroupChange(ur, source);
 }
 
-afterSync() + {
+onFinallyStarted() + {
     IF NOT migratedMaterializations() THEN {
         notRecalculateMaterializations(TableColumn tc) <- notRecalculate(tc);
         copyPermissions(propertyCanonicalName('Reflection.notRecalculateMaterializations[Reflection.TableColumn]'), propertyCanonicalName('Reflection.notRecalculate[Reflection.TableColumn]'));

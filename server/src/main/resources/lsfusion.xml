@@ -850,15 +850,6 @@
         <property name="securityManager" ref="securityManager"/>
     </bean>
 
-    <bean id="afterSyncTask" class="lsfusion.server.physics.admin.reflection.controller.init.AfterSyncTask">
-        <property name="dependencies">
-            <set>
-                <ref bean="syncReflectionTask"/>
-            </set>
-        </property>
-        <property name="reflectionManager" ref="reflectionManager"/>
-    </bean>
-
     <!-- Не имеет отношения к reflection manager'у, но желательно чтобы выполнялся после export'а remote объекта -->
     <bean id="prereadCachesTask" class="lsfusion.server.logics.controller.init.PrereadCachesTask">
         <property name="dependencies">
@@ -879,7 +870,7 @@
     <bean id="firstRecalculateStatsTask" class="lsfusion.server.physics.exec.db.controller.init.FirstRecalculateStatsTask">
         <property name="dependencies">
             <set>
-                <ref bean="afterSyncTask"/>
+                <ref bean="syncReflectionTask"/>
             </set>
         </property>
         <property name="BL" ref="businessLogics"/>
