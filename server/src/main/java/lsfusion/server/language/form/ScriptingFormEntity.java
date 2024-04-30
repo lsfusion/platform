@@ -431,10 +431,6 @@ public class ScriptingFormEntity {
             if(forceChangeAction != null)
                 propertyDraw.setEventAction(ServerResponse.CHANGE, forceChangeAction, true);
 
-            // temporary check
-            if(nvl(scope, PropertyDrawEntity.DEFAULT_ACTION_EVENTSCOPE) != OLDSESSION && !(pDrawUsage instanceof ScriptingLogicsModule.FormPredefinedUsage) && (propertyOptions.getEventActions() == null || !propertyOptions.getEventActions().containsKey(ServerResponse.CHANGE)))
-                startLog("WARNING! Now default change event action will work in new session " + propertyDraw);
-
             propertyDraw.defaultChangeEventScope = scope;
 
             if(forceIntegrationSID != null) // for NEW, DELETE will set integration SID for js integration
