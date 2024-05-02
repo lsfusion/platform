@@ -583,12 +583,10 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         }
 
         private int pushCompareTo(PushCost b, boolean pushLargeDepth) {
-            int compare = Integer.compare(pushStatKeys.getCost().rows.getWeight(), b.pushStatKeys.getCost().rows.getWeight());
-            if(compare != 0)
-                return compare;
             if(pushLargeDepth)
-                return 0;
-            compare = Integer.compare(pushStatKeys.getRows().getWeight(), b.pushStatKeys.getRows().getWeight());
+                return pushCompareCost(pushStatKeys, b.pushStatKeys);
+
+            int compare = WhereJoins.pushCompareTo(pushStatKeys, b.pushStatKeys);
             if(compare != 0)
                 return compare;
 
@@ -609,7 +607,18 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             return compare;
         }
     }
-    
+
+    public static int pushCompareTo(StatKeys pushStatKeys1, StatKeys pushStatKeys2) {
+        int compare = pushCompareCost(pushStatKeys1, pushStatKeys2);
+        if(compare != 0)
+            return compare;
+        return Integer.compare(pushStatKeys1.getRows().getWeight(), pushStatKeys2.getRows().getWeight());
+    }
+
+    public static int pushCompareCost(StatKeys pushStatKeys1, StatKeys pushStatKeys2) {
+        return Integer.compare(pushStatKeys1.getCost().rows.getWeight(), pushStatKeys2.getCost().rows.getWeight());
+    }
+
     public static class CompileInfo {
         protected final ImSet<BaseExpr> usedNotNulls;
         protected final ImOrderSet<BaseJoin> joinOrder;
@@ -1831,7 +1840,9 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                 removeUpWheres.set(UpWheres.EMPTY());
             }
 
-            if(removeJoins!=null) { // вырезали, придется выкидывать целиком join, оставлять sibling'ом
+            // cut, we need to throw away the whole join
+            // it's not good, because we can loose other siblings reductions (to prevent that there is a heuristics in the getReducePushedStatKeys)
+            if(removeJoins != null) {
                 if(result==null) {
                     result = removeJoins;
                     resultUpWheres = removeUpWheres.result;

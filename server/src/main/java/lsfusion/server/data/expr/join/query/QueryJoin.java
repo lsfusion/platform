@@ -21,8 +21,10 @@ import lsfusion.server.data.expr.join.classes.InnerExprFollows;
 import lsfusion.server.data.expr.join.inner.InnerJoin;
 import lsfusion.server.data.expr.join.inner.InnerJoins;
 import lsfusion.server.data.expr.join.where.WhereJoin;
+import lsfusion.server.data.expr.join.where.WhereJoins;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.key.ParamExpr;
+import lsfusion.server.data.expr.query.QueryExpr;
 import lsfusion.server.data.expr.value.StaticValueExpr;
 import lsfusion.server.data.stat.*;
 import lsfusion.server.data.translate.MapTranslate;
@@ -207,15 +209,61 @@ public abstract class QueryJoin<K extends Expr,I extends QueryJoin.Query<K, I>, 
     public StatKeys<K> getPushedStatKeys(StatType type, Cost pushCost, Stat pushStat, ImMap<K, Stat> pushKeys, ImMap<K, Stat> pushNotNullKeys, Result<ImSet<K>> rPushedKeys) {
 
         ImSet<K> pushedKeys = getPushKeys(pushKeys.keys());
-        if(rPushedKeys != null)
-            rPushedKeys.set(pushedKeys);
 
+        StatKeys<K> pushedStatKeys = getPushedStatKeys(type, pushedKeys, pushCost, pushStat, pushKeys, pushNotNullKeys);
+
+        if(rPushedKeys != null)
+            return getReducePushedStatKeys(type, pushedKeys, rPushedKeys, pushedStatKeys, pushCost, pushStat, pushKeys, pushNotNullKeys);
+
+        return pushedStatKeys;
+    }
+
+    private StatKeys<K> getPushedStatKeys(StatType type, ImSet<K> pushedKeys, Cost pushCost, Stat pushStat, ImMap<K, Stat> pushKeys, ImMap<K, Stat> pushNotNullKeys) {
         if(pushedKeys.size() < pushKeys.size()) {
             pushKeys = pushKeys.filterIncl(pushedKeys);
             pushNotNullKeys = pushNotNullKeys.filter(pushedKeys);
         }
 
         return getPushedStatKeys(type, adjustNotNullStats(pushCost, pushStat, pushKeys, pushNotNullKeys));
+    }
+
+    private boolean needPredicatePushDown(StatType type, StatKeys pushedStatKeys) {
+        return Stat.AGGR.lessEquals(getInnerStatKeys(type).getRows().div(pushedStatKeys.getRows()));
+    }
+
+    private StatKeys<K> getReducePushedStatKeys(StatType type, ImSet<K> pushedKeys, Result<ImSet<K>> rPushedKeys, StatKeys<K> pushedStatKeys, Cost pushCost, Stat pushStat, ImMap<K, Stat> pushKeys, ImMap<K, Stat> pushNotNullKeys) {
+        boolean needPredicatePushDown = needPredicatePushDown(type, pushedStatKeys); // need predicatePushDown
+        for(K pushedKey : pushedKeys) {
+            ImSet<K> reducedKeys = pushedKeys.removeIncl(pushedKey);
+            StatKeys<K> reducedStatKeys = getPushedStatKeys(type, reducedKeys, pushCost, pushStat, pushKeys, pushNotNullKeys);
+
+            boolean remove = WhereJoins.pushCompareTo(reducedStatKeys, pushedStatKeys) <= 0;
+
+            if(!remove && needPredicatePushDown && WhereJoins.pushCompareCost(reducedStatKeys, pushedStatKeys) <= 0) {
+                // here it's tricky, the problem is that removeJoin removes join completely (not only the branch with the subQuery)
+                // so if the query itself has not enough keys, and the subQuery also has not enough keys
+                // then there is a risk that the "pushed join" will be removed for the subQuery and the subQuery will get the incorrect operation exception
+                // of course it's not the clean solution (because we don't know if the subquery predicate push down need is related to the query push down), but it will work in the most cases
+                Result<Boolean> keyNeedPredicatePushDown = new Result<>(false);
+                StatKeys<K> fPushedStatKeys = pushedStatKeys;
+                pushedKey.enumerate(expr -> {
+                    if (expr instanceof QueryExpr) {
+                        keyNeedPredicatePushDown.set(((QueryExpr) expr).getInnerJoin().needPredicatePushDown(type, fPushedStatKeys));
+                        return false;
+                    }
+                    return true;
+                });
+                if(keyNeedPredicatePushDown.result)
+                    remove = true;
+            }
+            if(remove) {
+                pushedKeys = reducedKeys;
+                pushedStatKeys = reducedStatKeys;
+            }
+        }
+
+        rPushedKeys.set(pushedKeys);
+        return pushedStatKeys;
     }
 
     public Cost getPushedCost(KeyStat keyStat, StatType type, Cost pushCost, Stat pushStat, ImMap<K, Stat> pushKeys, ImMap<K, Stat> pushNotNullKeys, ImMap<BaseExpr, Stat> pushProps, Result<ImSet<K>> rPushedKeys, Result<ImSet<BaseExpr>> rPushedProps) {
