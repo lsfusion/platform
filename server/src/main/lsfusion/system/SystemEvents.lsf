@@ -47,6 +47,12 @@ onStartedApply() {
     APPLY;
 }
 
+onFinallyStarted  ABSTRACT LIST ( );
+onFinallyStartedApply() {
+    onFinallyStarted();
+    APPLY;
+}
+
 isIconModuleAvailable = ABSTRACT BOOLEAN ();
 iconIfAvailable(STRING imagePath, STRING fontClasses) = imagePath + (IF isIconModuleAvailable() THEN ';' + fontClasses ELSE '');
 

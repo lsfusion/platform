@@ -10,6 +10,7 @@ import lsfusion.server.base.task.PublicTask;
 import lsfusion.server.base.task.TaskRunner;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.value.ValueExpr;
+import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.table.KeyField;
 import lsfusion.server.data.table.PropertyField;
@@ -812,5 +813,15 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                 throw Throwables.propagate(e);
             }
         }, "Synchronizing tables");
+    }
+
+    public void onFinallyStarted() {
+        runWithStartLog(() -> {
+            try (DataSession session = createSession()) {
+                systemEventsLM.onFinallyStarted.execute(session, ThreadLocalContext.getStack());
+            } catch (SQLException | SQLHandledException e) {
+                throw Throwables.propagate(e);
+            }
+        }, "Executing onFinallyStarted");
     }
 }

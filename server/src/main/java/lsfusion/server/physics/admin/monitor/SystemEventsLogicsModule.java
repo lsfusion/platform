@@ -52,6 +52,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
 
     public LA<?> onInit;
     public LA<?> onStarted;
+    public LA<?> onFinallyStarted;
 
     public LP useBootstrap;
     public LP serverTheme;
@@ -157,6 +158,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
 
         onInit = findAction("onInitApply[]");
         onStarted = findAction("onStartedApply[]");
+        onFinallyStarted = findAction("onFinallyStartedApply[]");
 
         useBootstrap = findProperty("useBootstrap[DesignEnv]");
         serverTheme = findProperty("serverTheme[]");

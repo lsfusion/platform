@@ -277,28 +277,39 @@ percentNotNull '{reflection.percent.not.null}' (TableColumn tableColumn) = IF ro
                                                           ELSE NUMERIC[15,2](notNullQuantity(tableColumn)) / rows (table(tableColumn)) * 100;
 sparseColumns '{reflection.sparse.columns}' (table) = GROUP SUM 1 BY table(TableColumn tableColumn) IF percentNotNull(tableColumn) < 50;
 
-//todo: rename to notRecalculateMaterializations
+//todo: remove after onFinallyStarted migration
 notRecalculate '{reflection.not.recalculate.materializations}' = DATA BOOLEAN (TableColumn);
+notRecalculateMaterializations '{reflection.not.recalculate.materializations}' = DATA BOOLEAN (TableColumn);
 
-//todo: rename to recalculateMaterializations
+//todo: remove after onFinallyStarted migration
 recalculateAggregation '{reflection.recalculate.materializations}'  INTERNAL  'lsfusion.server.physics.admin.service.action.RecalculateTableColumnAction' (TableColumn);
-//todo: rename to recalculateMaterializationsWithDependencies
+recalculateMaterializations '{reflection.recalculate.materializations}'  INTERNAL  'lsfusion.server.physics.admin.service.action.RecalculateTableColumnAction' (TableColumn);
+//todo: remove after onFinallyStarted migration
 recalculateAggregationWithDependencies '{reflection.recalculate.materializations.with.dependencies}'  INTERNAL  'lsfusion.server.physics.admin.service.action.RecalculateTableColumnWithDependenciesAction' (TableColumn);
-//todo: rename to recalculateMaterializationsWithDependents
+recalculateMaterializationsWithDependencies '{reflection.recalculate.materializations.with.dependencies}'  INTERNAL  'lsfusion.server.physics.admin.service.action.RecalculateTableColumnWithDependenciesAction' (TableColumn);
+//todo: remove after onFinallyStarted migration
 recalculateAggregationWithDependents '{reflection.recalculate.materializations.with.dependents}'  INTERNAL  'lsfusion.server.physics.admin.service.action.RecalculateTableColumnWithDependentsAction' (TableColumn);
-//todo: rename to checkMaterializations
+recalculateMaterializationsWithDependents '{reflection.recalculate.materializations.with.dependents}'  INTERNAL  'lsfusion.server.physics.admin.service.action.RecalculateTableColumnWithDependentsAction' (TableColumn);
+//todo: remove after onFinallyStarted migration
 checkAggregation '{reflection.check.materializations}'  INTERNAL  'lsfusion.server.physics.admin.service.action.CheckTableColumnAction' (TableColumn);
-checkAggregation(ISTRING[100] string)  { checkAggregation(tableColumnSID(string)); }
+checkMaterializations '{reflection.check.materializations}'  INTERNAL  'lsfusion.server.physics.admin.service.action.CheckTableColumnAction' (TableColumn);
+checkAggregation(ISTRING[100] string)  { checkMaterializations(tableColumnSID(string)); }
+checkMaterializations(ISTRING[100] string)  { checkMaterializations(tableColumnSID(string)); }
 dropDB  INTERNAL  'lsfusion.server.physics.admin.service.action.DropColumnAction' (DropColumn);
 drop '{reflection.drop.drop.column}' (DropColumn cl)  { 
     dropDB(cl);
     DELETE cl;
 }
 
-//todo: rename to recalculateColumnsMaterializations
+//todo: remove after onFinallyStarted migration
 recalculateColumnsAggregations '{reflection.recalculate.columns.materializations}' (Table table)  { 
     FOR table == table(TableColumn tableColumn) AND tableColumn IS TableColumn DO {
-        recalculateAggregation(tableColumn);    
+        recalculateMaterializations(tableColumn);    
+    }
+}
+recalculateColumnsMaterializations '{reflection.recalculate.columns.materializations}' (Table table)  {
+    FOR table == table(TableColumn tableColumn) AND tableColumn IS TableColumn DO {
+        recalculateMaterializations(tableColumn);
     }
 }
 checkClasses '{reflection.check.classes}'  INTERNAL  'lsfusion.server.physics.admin.service.action.CheckTableClassesAction' (Table);
@@ -311,15 +322,17 @@ pack '{reflection.pack.table}'  INTERNAL  'lsfusion.server.physics.admin.service
 
 disableClasses '{reflection.disable.classes}' = DATA BOOLEAN (Table);
 disableStatsTable '{reflection.disable.stats}' (Table t) = notRecalculateStats(t);
-//todo: rename to disableMaterializations
-disableAggregations '{reflection.disable.materializations}' (TableColumn tc) = notRecalculate(tc);
+//todo: remove after onFinallyStarted migration
+disableAggregations '{reflection.disable.materializations}' (TableColumn tc) = notRecalculateMaterializations(tc);
+disableMaterializations '{reflection.disable.materializations}' (TableColumn tc) = notRecalculateMaterializations(tc); 
 disableClasses '{reflection.disable.classes}' = DATA BOOLEAN (TableColumn);
 disableStatsTableColumn '{reflection.disable.stats}' = DATA BOOLEAN (TableColumn);
 
 disableClasses '{reflection.disable.classes}' (ISTRING[100] sid) = disableClasses(tableSID(sid));
 disableStatsTable '{reflection.disable.stats}' (ISTRING[100] sid) = disableStatsTable(tableSID(sid));
-//todo: rename to disableMaterializations
-disableAggregations (ISTRING[100] sid) = disableAggregations(tableColumnSID(sid));
+//todo: remove after onFinallyStarted migration
+disableAggregations (ISTRING[100] sid) = disableMaterializations(tableColumnSID(sid));
+disableMaterializations (ISTRING[100] sid) = disableMaterializations(tableColumnSID(sid));
 disableStatsTableColumn '{reflection.disable.stats}' (ISTRING[100] sid) = disableStatsTableColumn(tableColumnSID(sid));
 
 CLASS DropColumn '{reflection.drop.column}';
@@ -396,8 +409,8 @@ FORM physicalModel '{reflection.form.physical.model}'
     OBJECTS tc=TableColumn
     PROPERTIES(tc) READONLY sid, caption, canonicalName, annotation, property, return, quantity CHANGEABLE ON CHANGE changeQuantity(tc), quantityTop,
                    notNullQuantity CHANGEABLE ON CHANGE changeNotNullQuantity(tc), percentNotNull, lastRecalculateProperty
-    PROPERTIES(tc) GRID disableAggregations, disableClasses, disableStatsTableColumn, recalculateAggregation, recalculateAggregationWithDependencies, 
-            recalculateAggregationWithDependents, checkAggregation
+    PROPERTIES(tc) GRID disableMaterializations, disableClasses, disableStatsTableColumn, recalculateMaterializations, recalculateMaterializationsWithDependencies, 
+            recalculateMaterializationsWithDependents, checkMaterializations
 
     OBJECTS dc=DropColumn
     PROPERTIES(dc) READONLY sidTable, sid, time, revision
