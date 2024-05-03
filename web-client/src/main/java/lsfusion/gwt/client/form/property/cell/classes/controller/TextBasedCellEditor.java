@@ -134,7 +134,9 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
             mask = getMaskFromPattern();
             if(mask != null) {
                 GwtClientUtils.setMask(inputElement, mask);
-                inputElement.select(); // setting inputmask somewhy drops selection, later should be solved some other way (positionCaretOnClick doesn't work)
+                if(!property.notSelectAll) {
+                    inputElement.select(); // setting inputmask somewhy drops selection, later should be solved some other way (positionCaretOnClick doesn't work)
+                }
             }
         }
 
@@ -151,7 +153,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
 
             setTextInputValue(value);
 
-            if (selectAll)
+            if (selectAll && !property.notSelectAll)
                 inputElement.select();
         } // assert !hasOldValue
 

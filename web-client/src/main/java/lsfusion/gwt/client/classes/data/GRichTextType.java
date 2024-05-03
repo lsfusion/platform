@@ -23,6 +23,6 @@ public class GRichTextType extends GTextType {
 
     @Override
     public RequestValueCellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, GInputListAction[] inputListActions, EditContext editContext) {
-        return new RichTextCellEditor(editManager);
+        return new RichTextCellEditor(editManager, editProperty);
     }
 }
