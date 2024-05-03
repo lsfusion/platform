@@ -486,7 +486,7 @@ public abstract class CellRenderer {
         boolean matches(ToolbarAction action);
 
         // there are to ways of working with toolbar actions
-        // 1 is setting some mark for the target element (s) and then checking it in regular event handler (this  is more flexible, for example in editOnSingleClick scenario, however needs some assertions)
+        // 1 is setting some mark for the target element (s) and then checking it in regular event handler (this  is more flexible, for example in changeOnSingleClick scenario, however needs some assertions)
         // 2 setting onMouseDown and stopping propagation (this way the row change won't be handled, when using ALL, and maybe some mor things)
         default void setToolbarAction(Element actionImgElement, Object value) {
             // we're setting TOOLBAR_ACTION for all containers to avoid recursive run in getToolbarAction (optimization)

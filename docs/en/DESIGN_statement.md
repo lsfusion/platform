@@ -162,7 +162,6 @@ To access design components, you can use their names or address property compone
 |`panelCaptionVertical`|Indicates that the captions of property or action components should be drawn above the value on the panel|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`panelCaptionLast`|Indicates that the value should be drawn on the panel prior to thee property caption|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`panelCaptionAlignment`|Component caption alignment. Acceptable values: `START` (at the beginning), `CENTER` (in the center), `END` (at the end), `STRETCH` (stretched).|Alignment type|`START`|`STRETCH`|
-|`editOnSingleClick`|Specifying that change event should be triggered after the property component is clicked once<br/>**deprecated, use `changeOnSingleClick` instead**|Extended Boolean literal|depends on the property|`TRUE`<br/>`FALSE`|
 |`changeOnSingleClick`|Specifying that change event should be triggered after the property component is clicked once|Extended Boolean literal|depends on the property|`TRUE`<br/>`FALSE`|
 |`focusable`|Specifying that the property (action) component or a table column can get focus|Extended Boolean literal|changeKey = `NULL`|`TRUE`<br/>`FALSE`|
 |`hide`|Specifying that the property (action) component should be always hidden|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|

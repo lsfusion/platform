@@ -43,11 +43,6 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.panelCaptionAlignment = panelCaptionAlignment;
     }
 
-    //for backward compatibility
-    public void setEditOnSingleClick(boolean editOnSingleClick) {
-        target.changeOnSingleClick = editOnSingleClick;
-    }
-
     public void setChangeOnSingleClick(boolean changeOnSingleClick) {
         target.changeOnSingleClick = changeOnSingleClick;
     }
