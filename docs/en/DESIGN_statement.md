@@ -190,7 +190,8 @@ To access design components, you can use their names or address property compone
 |`notSelectAll`|Specifying that the text is not selected at the start of editing|`FALSE`|`TRUE`<br/>`FALSE`|
 |`askConfirm`|Specifies that an attempt to change the property (execute an action) will show a confirmation request|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`askConfirmMessage`|Text of the confirmation request shown when an attempt to change the property (execute the action) is made|String literal|default message|`'Are you sure you want to modify this property?'`|
-|`toolTip`|The tip to be shown when the cursor hovers over the caption of a property or action|String literal|Default toolTip|`'Tip'`|
+|`tooltip`|The tip to be shown when the cursor hovers over the caption of a property or action|String literal|Default tooltip|`'Tip'`|
+|`toolTip`|Same as tooltip<br/>**deprecated since version 5, use `tooltip`**|String literal|Default tooltip|`'Tip'`|
 |`notNull`|Specifies that in case of a `NULL` property value, the component of this property should be highlighted|Extended Boolean literal|depends on the property|`TRUE`<br/>`FALSE`|
 
 ### Toolbar properties
