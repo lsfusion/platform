@@ -59,8 +59,6 @@ public enum Compare {
                 return CONTAINS;
             case 7:
                 return MATCH;
-            case 8:
-                return INARRAY;
         }
         throw new RuntimeException("Deserialize Compare");
     }
@@ -83,8 +81,6 @@ public enum Compare {
                 return 6;
             case MATCH:
                 return 7;
-            case INARRAY:
-                return 8;
         }
         throw new RuntimeException("Serialize Compare");
     }
@@ -134,8 +130,6 @@ public enum Compare {
                 return str + " (" + getString("filter.compare.contains") + ")";
             case MATCH:
                 return str + " (" + getString("filter.compare.search") + ")";
-            case INARRAY :
-                return getString("filter.compare.in.array");
         }
         return "";
     }
@@ -158,8 +152,6 @@ public enum Compare {
                 return getString("filter.compare.contains");
             case MATCH:
                 return getString("filter.compare.search");
-            case INARRAY :
-                return getString("filter.compare.in.array");
         }
         return "";
     }
