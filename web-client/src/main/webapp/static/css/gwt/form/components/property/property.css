@@ -119,7 +119,8 @@ a.text-based-prop-value { /* we have to set cursor pointer for a since we don't 
 
 .cell-with-foreground,
 .cell-with-foreground .btn,
-.cell-with-foreground .btn-check:checked+.btn {
+.cell-with-foreground .btn-check:checked+.btn,
+.cell-with-foreground.form-control {
     color: var(--foreground-color);
     --disabled-text-color: var(--foreground-color);
     --text-color: var(--foreground-color);
