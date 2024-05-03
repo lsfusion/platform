@@ -1067,6 +1067,12 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @IdentityStrongLazy
+    public LP addValueObjectProp(ObjectEntity object) {
+        Property<?> valueProperty = object.getNFValueProperty();
+        return addProperty(null, new LP<>(valueProperty));
+    }
+
+    @IdentityStrongLazy
     public LA getFormNavigatorAction(FormEntity form) {
         LA<?> result = addIFAProp(null, LocalizedString.NONAME, form, SetFact.EMPTYORDER(), FormSessionScope.OLDSESSION, false, ModalityWindowFormType.DOCKED, true);
 

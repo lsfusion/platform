@@ -1,7 +1,6 @@
 package lsfusion.server.logics.form.struct.object;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.Pair;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
@@ -9,6 +8,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
+import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.type.Type;
@@ -16,8 +16,8 @@ import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
-import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
+import lsfusion.server.logics.action.session.LocalNestedType;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
@@ -29,6 +29,8 @@ import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectI
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.order.OrderEntity;
+import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -53,6 +55,28 @@ public class ObjectEntity extends IdentityObject implements OrderEntity<Property
     private boolean noClasses;
 
     public String integrationSID;
+
+    public boolean isValue;
+
+    private boolean finalizedValueProperty;
+    private Property<?> valueProperty;
+    @NFLazy
+    public Property<?> getNFValueProperty() {
+        if(finalizedValueProperty)
+            return valueProperty;
+
+        Property<?> prop = valueProperty;
+        if(prop==null) {
+            prop = PropertyFact.createDataPropRev("VALUE", this, baseClass);
+            valueProperty = prop;
+        }
+        return prop;
+    }
+
+    public Property<?> getValueProperty() {
+        finalizedValueProperty = true;
+        return valueProperty;
+    }
 
     public ObjectEntity() {
 

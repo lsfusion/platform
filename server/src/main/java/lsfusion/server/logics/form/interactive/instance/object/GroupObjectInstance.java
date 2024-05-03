@@ -1409,7 +1409,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         if(this.listViewType != null && this.listViewType.isValue() != value.isValue())
             updated |= UPDATED_VIEWTYPEVALUE;
         this.listViewType = value;
-        execEnv.change(entity.getListViewType(listViewType).property, new PropertyChange<>(listViewType.getDataObject(value.getObjectName())));
+        execEnv.change(entity.getListViewType(listViewType), new PropertyChange<>(listViewType.getDataObject(value.getObjectName())));
     }
 
     private void updateViewProperty(ExecutionEnvironment execEnv, ImMap<ObjectInstance, DataObject> keys) throws SQLException, SQLHandledException {

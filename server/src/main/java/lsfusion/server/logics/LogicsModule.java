@@ -2023,7 +2023,11 @@ public abstract class LogicsModule {
     public LP addGroupObjectProp(GroupObjectEntity groupObject, GroupObjectProp prop) {
         return baseLM.addGroupObjectProp(groupObject, prop);
     }
-    
+
+    public LP addValueObjectProp(ObjectEntity object) {
+        return baseLM.addValueObjectProp(object);
+    }
+
     protected LA addOSAProp(ObjectEntity object, UpdateType type, Object... params) {
         return addJoinAProp(null, LocalizedString.NONAME, addOSAProp(object, type), params);
     }

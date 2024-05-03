@@ -167,10 +167,10 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         this.treeGroup = treeGroup; // нужно чтобы IsInTree правильно определялось в addScriptingTreeGroupObject, когда идет addGroupObjectView
     }
 
-    private PropertyRevImplement<ClassPropertyInterface, ObjectEntity> listViewTypeProp;
-    public PropertyRevImplement<ClassPropertyInterface, ObjectEntity> getListViewType(ConcreteCustomClass listViewType) {
+    private Property<?> listViewTypeProp;
+    public Property<?> getListViewType(ConcreteCustomClass listViewType) {
         if (listViewTypeProp == null) {
-            listViewTypeProp = PropertyFact.createDataPropRev(LocalizedString.create(this.toString()), MapFact.EMPTY(), listViewType, LocalNestedType.ALL);
+            listViewTypeProp = PropertyFact.createDataPropRev("LIST VIEW TYPE", this, listViewType);
         }
         return listViewTypeProp;
     }
@@ -208,7 +208,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         MExclMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectEntity>> mProps = (MExclMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectEntity>>) props;
         PropertyRevImplement<ClassPropertyInterface, ObjectEntity> prop = mProps.get(type);
         if(prop==null) { // type.getSID() + "_" + getSID() нельзя потому как надо еще SID формы подмешивать
-            prop = PropertyFact.createDataPropRev(LocalizedString.create(type.toString() + " (" + objects.toString() + ")", false), getObjects().mapValues(new Function<ObjectEntity, ValueClass>() {
+            prop = PropertyFact.createDataPropRev(type.toString(), objects, getObjects().mapValues(new Function<ObjectEntity, ValueClass>() {
                 public ValueClass apply(ObjectEntity value) {
                     return value.baseClass;
                 }}), type.getValueClass(), null);

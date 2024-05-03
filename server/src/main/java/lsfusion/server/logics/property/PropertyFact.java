@@ -760,9 +760,12 @@ public class PropertyFact {
         return dataProperty.getImplement(orderInterfaces.keyOrderSet());
     }
 
-    public static <T> PropertyRevImplement<ClassPropertyInterface, T> createDataPropRev(LocalizedString caption, ImMap<T, ValueClass> interfaces, ValueClass valueClass, LocalNestedType nestedType) {
+    public static Property<?> createDataPropRev(String caption, Object object, ValueClass valueClass) {
+        return createDataPropRev(caption, object, MapFact.EMPTY(), valueClass, LocalNestedType.ALL).property;
+    }
+    public static <T> PropertyRevImplement<ClassPropertyInterface, T> createDataPropRev(String typeString, Object objects, ImMap<T, ValueClass> interfaces, ValueClass valueClass, LocalNestedType nestedType) {
         ImOrderMap<T, ValueClass> orderInterfaces = interfaces.toOrderMap();
-        SessionDataProperty dataProperty = new SessionDataProperty(caption, orderInterfaces.valuesList().toArray(new ValueClass[orderInterfaces.size()]), valueClass);
+        SessionDataProperty dataProperty = new SessionDataProperty(LocalizedString.create(typeString + " (" + objects.toString() + ")", false), orderInterfaces.valuesList().toArray(new ValueClass[orderInterfaces.size()]), valueClass);
         dataProperty.nestedType = nestedType;
         return dataProperty.getRevImplement(orderInterfaces.keyOrderSet());
     }

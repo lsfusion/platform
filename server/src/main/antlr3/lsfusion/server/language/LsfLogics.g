@@ -1913,6 +1913,7 @@ expressionFriendlyPD[List<TypedParameter> context, boolean dynamic] returns [LPW
 	|	activeTabDef=activeTabPropertyDefinition[context, dynamic] { $property = $activeTabDef.property; }
 	|	roundProp=roundPropertyDefinition[context, dynamic] { $property = $roundProp.property; }
 	|	constDef=constantProperty[context, dynamic] { $property = $constDef.property; $ci = $constDef.ci; }
+	|	oProp=objectPropertyDefinition { $property = $oProp.property; }
 	;
 
 contextIndependentPD[List<TypedParameter> context, boolean dynamic, boolean innerPD] returns [LP property, List<ResolveClassSet> signature, List<Integer> usedContext = Collections.emptyList()]
@@ -2416,7 +2417,6 @@ formulaPropertySyntaxType returns [SQLSyntaxType type = null]
 
 groupObjectPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
 @init {
-	String className = null;
 	GroupObjectProp prop = null;
 }
 @after {
@@ -2427,6 +2427,19 @@ groupObjectPropertyDefinition returns [LP property, List<ResolveClassSet> signat
 }
 	:	('FILTER' { prop = GroupObjectProp.FILTER; } | 'ORDER' { prop = GroupObjectProp.ORDER; } | 'VIEW' { prop = GroupObjectProp.VIEW; } )
 		gobj=formGroupObjectID
+	;
+
+objectPropertyDefinition returns [LPWithParams property]
+@init {
+	GroupObjectProp prop = null;
+}
+@after {
+	if (inMainParseState()) {
+		$property = self.addScriptedValueObjectProp($gobj.sid);
+	}
+}
+	:	'VALUE'
+		gobj=formObjectID
 	;
 	
 reflectionPropertyDefinition returns [LP property, List<ResolveClassSet> signature]

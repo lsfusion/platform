@@ -429,6 +429,10 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         change(MapFact.EMPTY(), env, value);
     }
 
+    public void change(ExecutionEnvironment env, ObjectValue value) throws SQLException, SQLHandledException {
+        change(MapFact.EMPTY(), env, value);
+    }
+
     public void change(ImMap<T, DataObject> keys, ExecutionEnvironment env, ObjectValue value) throws SQLException, SQLHandledException {
         getImplement().change(keys, env, value);
     }

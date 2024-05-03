@@ -345,7 +345,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
             setFinalPropertyDrawSID(propertyDraw, "COUNT(" + group.getSID() + ")");
             propertyDraw.setToDraw(group);
             propertyDraw.setIntegrationSID(null); // we want to exclude this property from all integrations / apis / reports (use only in interactive view)
-            propertyDraw.setPropertyExtra(addPropertyObject(baseLM.addJProp(baseLM.isPivot, new LP(group.getListViewType(baseLM.listViewType).property))), PropertyDrawExtraType.SHOWIF, version);
+            propertyDraw.setPropertyExtra(addPropertyObject(baseLM.addJProp(baseLM.isPivot, new LP(group.getListViewType(baseLM.listViewType)))), PropertyDrawExtraType.SHOWIF, version);
             propertyDraw.ignoreHasHeaders = true;
 
             addPropertyDrawView(propertyDraw, ComplexLocation.DEFAULT(), version); // because it's called after form constructor

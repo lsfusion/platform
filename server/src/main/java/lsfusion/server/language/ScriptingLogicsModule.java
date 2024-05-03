@@ -4257,6 +4257,23 @@ public class ScriptingLogicsModule extends LogicsModule {
         return resultProp;
     }
 
+    public LPWithParams addScriptedValueObjectProp(String name) throws ScriptingErrorLog.SemanticErrorException {
+        int pointPos = name.lastIndexOf('.');
+        assert pointPos > 0;
+
+        String formName = name.substring(0, pointPos);
+        String objectName = name.substring(pointPos+1);
+        LPWithParams resultProp = null;
+
+        ObjectEntity object = findForm(formName).getNFObject(objectName, getVersion());
+        if (object != null) {
+            resultProp = new LPWithParams(addValueObjectProp(object));
+        } else  {
+            errLog.emitNotFoundError(parser, "оbject", objectName);
+        }
+        return resultProp;
+    }
+
 
     public LP addScriptedReflectionProperty(ReflectionPropertyType type, ActionOrPropertyUsage propertyUsage, List<ResolveClassSet> outClasses) throws ScriptingErrorLog.SemanticErrorException {
         switch (type) {
@@ -4812,7 +4829,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedActiveTabProp(ComponentView component) {
-        return new LPWithParams(new LP<>(component.getActiveTab().property));
+        return new LPWithParams(new LP<>(component.getActiveTab()));
     }
 
     public LPWithParams addScriptedRoundProp(LPWithParams expr, LPWithParams scaleExpr) throws ScriptingErrorLog.SemanticErrorException {

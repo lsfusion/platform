@@ -68,17 +68,12 @@ public class CustomObjectInstance extends ObjectInstance {
         return gridClass;
     }
 
-    private ObjectValue value = NullValue.instance;
-
-    public void changeValue(SessionChanges session, FormInstance form, ObjectValue changeValue) throws SQLException, SQLHandledException {
-        if(changeValue.equals(value)) return;
-
-        value = changeValue;
-
-        updateCurrentClass(session, form);
-
-        updated = updated | ObjectInstance.UPDATED_OBJECT;
-        groupTo.updated = groupTo.updated | GroupObjectInstance.UPDATED_OBJECT;
+    @Override
+    public boolean changeValue(SessionChanges session, FormInstance form, ObjectValue changeValue) throws SQLException, SQLHandledException {
+        boolean result = super.changeValue(session, form, changeValue);
+        if(result)
+            updateCurrentClass(session, form);
+        return result;
     }
 
     public void refreshValueClass(SessionChanges session, FormInstance form) throws SQLException, SQLHandledException {

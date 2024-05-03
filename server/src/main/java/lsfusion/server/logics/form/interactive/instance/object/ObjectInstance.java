@@ -1,5 +1,6 @@
 package lsfusion.server.logics.form.interactive.instance.object;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -11,6 +12,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.session.change.SessionChanges;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.classes.ConcreteClass;
@@ -46,10 +48,14 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
 
     public boolean noClasses = false;
 
+    private Property<?> valueProperty; // just to be symmetric with other form operator properts
+
     public ObjectInstance(ObjectEntity entity) {
         super(entity);
         this.entity = entity;
         this.noClasses = entity.noClasses();
+
+        this.valueProperty = entity.getValueProperty();
     }
 
     public String toString() {
@@ -72,7 +78,25 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
 
     public abstract ValueClass getGridClass();
 
-    public abstract void changeValue(SessionChanges session, FormInstance form, ObjectValue changeValue) throws SQLException, SQLHandledException;
+    public void updateValueProperty(ExecutionEnvironment env, ObjectValue changeValue) throws SQLException, SQLHandledException {
+        if(valueProperty != null)
+            valueProperty.change(env, changeValue);
+    }
+
+    protected ObjectValue value = NullValue.instance;
+
+    public boolean changeValue(SessionChanges session, FormInstance form, ObjectValue changeValue) throws SQLException, SQLHandledException {
+        if(BaseUtils.nullEquals(value, changeValue)) return false;
+
+        value = changeValue;
+
+        updated = updated | ObjectInstance.UPDATED_OBJECT;
+        groupTo.updated = groupTo.updated | GroupObjectInstance.UPDATED_OBJECT;
+
+        updateValueProperty(form, changeValue);
+
+        return true;
+    }
 
     public abstract boolean classChanged(ChangedData changedProps);
 

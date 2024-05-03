@@ -20,6 +20,7 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.S
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
@@ -181,18 +182,18 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
 
     public boolean activated; // as tab
 
-    private PropertyRevImplement<ClassPropertyInterface, ObjectEntity> activeTab;
+    private Property<?> activeTab;
 
-    public PropertyRevImplement<ClassPropertyInterface, ObjectEntity> getActiveTab() {
+    public Property<?> getActiveTab() {
         if (activeTab == null) {
-            activeTab = PropertyFact.createDataPropRev(LocalizedString.create(this.toString()), MapFact.EMPTY(), LogicalClass.instance, LocalNestedType.ALL);
+            activeTab = PropertyFact.createDataPropRev("ACTIVE TAB", this, LogicalClass.instance);
         }
         return activeTab;
     }
 
     public void updateActiveTabProperty(DataSession session, Boolean value) throws SQLException, SQLHandledException {
         if(activeTab != null)
-            activeTab.property.change(session, value);
+            activeTab.change(session, value);
     }
 
     public ComponentView() {
