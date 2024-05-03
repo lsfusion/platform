@@ -198,7 +198,6 @@ To access design components, you can use their names or address property compone
 |`panelCommentAlignment`|Comment component alignment inside the container. Acceptable values: `START` (at the beginning), `CENTER` (in the center), `END` (at the end), `STRETCH` (stretched).|Alignment type|`START`|`STRETCH`|
 |`placeholder`|Placeholder of a property or action|String literal|placeholder of a property or action|`'Placeholder'`|
 |`tooltip`|The tip to be shown when the cursor hovers over the caption of a property or action|String literal|Default tooltip|`'Tip'`|
-|`toolTip`|Same as tooltip<br/>**deprecated since version 6, use `tooltip`**|String literal|Default tooltip|`'Tip'`|
 |`valueTooltip`|The tip to be shown when the cursor hovers over the value of a property|String literal|Default tooltip|`'Tip'`|
 |`valueAlignment`|Component value alignment. Acceptable values: `START` (at the beginning), `CENTER` (in the center), `END` (at the end), `STRETCH` (stretched).|Alignment type|`START`|`STRETCH`|
 |`clearText`|Specifying that the current text should be reset when input starts|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
