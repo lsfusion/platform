@@ -545,6 +545,8 @@ public class PropertyDrawView extends BaseComponentView {
             AsyncSerializer.serializeEventExec(entry.getValue(), pool.context, outStream);
         }
 
+        outStream.writeBoolean(entity.ignoreHasHeaders);
+
         outStream.writeBoolean(entity.askConfirm);
         if(entity.askConfirm)
             pool.writeString(outStream, getAskConfirmMessage(pool.context));

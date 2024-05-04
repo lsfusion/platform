@@ -901,10 +901,11 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         }
     }
 
-    public void changeGroupObject(ImSet<ObjectInstance> objects, ExecutionStack stack) throws SQLException, SQLHandledException {
+    // in theory can be done in change value, but in that case update / events will be called for "not checked" objects (for example seeked in SEEK operator)
+    public void onGroupObjectChanged(ImSet<ObjectInstance> objects, ExecutionStack stack) throws SQLException, SQLHandledException {
         for (ObjectInstance objectInstance : objects) {
             if ((objectInstance.updated & UPDATED_OBJECT) != 0) {
-                fireObjectChanged(objectInstance, stack);
+                onObjectChanged(objectInstance, stack);
             }
         }
     }
@@ -2668,6 +2669,11 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     public Object read(PropertyObjectInstance<?> property) throws SQLException, SQLHandledException {
         return property.read(this);
+    }
+
+    public void onObjectChanged(ObjectInstance object, ExecutionStack stack) throws SQLException, SQLHandledException {
+        object.updateValueProperty(this);
+        fireObjectChanged(object, stack);
     }
 
     // ---------------------------------------- Events ----------------------------------------

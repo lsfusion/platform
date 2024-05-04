@@ -274,6 +274,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return asyncExecMap.get(actionSID);
     }
 
+    public boolean ignoreHasHeaders;
+
     public boolean askConfirm;
     public String askConfirmMessage;
 

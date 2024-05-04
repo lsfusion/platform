@@ -313,6 +313,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
             propertyDraw.asyncExecMap.put(entry.getKey(), asyncConverter.convertOrCast(entry.getValue()));
         }
 
+        propertyDraw.ignoreHasHeaders = clientPropertyDraw.ignoreHasHeaders;
+
         propertyDraw.askConfirm = clientPropertyDraw.askConfirm;
         propertyDraw.askConfirmMessage = clientPropertyDraw.askConfirmMessage;
 

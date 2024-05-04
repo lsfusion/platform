@@ -633,7 +633,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             header.setTooltip(property.getTooltip(nvl(columnTooltip, columnCaption)));
             header.setHeaderHeight(property.getHeaderCaptionHeight(this));
         } else
-            assert columnCaption == null || columnCaption.isEmpty();
+            assert property.ignoreHasHeaders || columnCaption == null || columnCaption.isEmpty();
     }
 
     protected void updatePropertyFooter(int index) {

@@ -78,24 +78,20 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
 
     public abstract ValueClass getGridClass();
 
-    public void updateValueProperty(ExecutionEnvironment env, ObjectValue changeValue) throws SQLException, SQLHandledException {
+    public void updateValueProperty(ExecutionEnvironment env) throws SQLException, SQLHandledException {
         if(valueProperty != null)
-            valueProperty.change(env, changeValue);
+            valueProperty.change(env, value);
     }
 
     protected ObjectValue value = NullValue.instance;
 
-    public boolean changeValue(SessionChanges session, FormInstance form, ObjectValue changeValue) throws SQLException, SQLHandledException {
-        if(BaseUtils.nullEquals(value, changeValue)) return false;
+    public void changeValue(SessionChanges session, FormInstance form, ObjectValue changeValue) throws SQLException, SQLHandledException {
+        if(BaseUtils.nullEquals(value, changeValue)) return;
 
         value = changeValue;
 
         updated = updated | ObjectInstance.UPDATED_OBJECT;
         groupTo.updated = groupTo.updated | GroupObjectInstance.UPDATED_OBJECT;
-
-        updateValueProperty(form, changeValue);
-
-        return true;
     }
 
     public abstract boolean classChanged(ChangedData changedProps);

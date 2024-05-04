@@ -102,6 +102,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public boolean toolbar;
     public boolean toolbarActions;
 
+    public boolean ignoreHasHeaders;
+
     public ClientType externalChangeType;
     public Map<String, ClientAsyncEventExec> asyncExecMap;
     public boolean askConfirm;
@@ -659,6 +661,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             ClientAsyncEventExec value = ClientAsyncSerializer.deserializeEventExec(inStream);
             asyncExecMap.put(key, value);
         }
+
+        ignoreHasHeaders = inStream.readBoolean();
 
         askConfirm = inStream.readBoolean();
         if(askConfirm)

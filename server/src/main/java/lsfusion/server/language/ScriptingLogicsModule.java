@@ -1294,23 +1294,31 @@ public class ScriptingLogicsModule extends LogicsModule {
     protected LP<?> wrapProperty(LP<?> property) {
         return addJProp(property, BaseUtils.consecutiveList(property.property.interfaces.size(), 1).toArray());
     }
+    protected LP<?> wrapNewProperty(LP<?> property) {
+        return wrapProperty(property);
+    }
+    protected LP<?> wrapObjProperty(LP<?> property) {
+        LP wrapProperty = wrapProperty(property);
+        wrapProperty.property.caption = property.property.caption;
+        return wrapProperty;
+    }
 
     public LP<?> checkPropertyIsNew(LP<?> property) {
         if (propertyNeedsToBeWrapped(property)) {
-            property = wrapProperty(property);
+            property = wrapNewProperty(property);
         }
         return property;
     }
 
     public FormLPUsage checkPropertyIsNew(FormLPUsage property) {
         if(propertyNeedsToBeWrapped(property.lp))
-            property = new FormLPUsage(wrapProperty(property.lp), property.mapping, property.signature);
+            property = new FormLPUsage(wrapNewProperty(property.lp), property.mapping, property.signature);
         return property;
     }
 
     public LPWithParams checkPropertyIsNew(LPWithParams property) {
         if(propertyNeedsToBeWrapped(property.getLP()))
-            property = new LPWithParams(wrapProperty(property.getLP()), property);
+            property = new LPWithParams(wrapNewProperty(property.getLP()), property);
         return property;
     }
 

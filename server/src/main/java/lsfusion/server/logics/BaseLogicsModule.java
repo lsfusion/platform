@@ -982,7 +982,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         if(!obj.noClasses()) {
             value = object(obj.baseClass); // we want this property to have classes (i.e. getType to return correct type)
             if (formEntity.getCanonicalName() != null) {
-                value = wrapProperty(value); // wrapping because all other form operators create new actions / properties
+                value = wrapObjProperty(value); // wrapping because all other form operators create new actions / properties
                 String name = objValuePrefix + getFormPrefix(formEntity) + getObjectPrefix(obj); // issue #47
                 makePropertyPublic(value, name, obj.baseClass.getResolveSet());
             }
@@ -1012,7 +1012,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         LP value = intervalProperty;
 
         if (formEntity.getCanonicalName() != null) {
-            value = wrapProperty(value); // wrapping because all other form operators create new actions / properties
+            value = wrapObjProperty(value); // wrapping because all other form operators create new actions / properties
             String name = intervalPrefix + getFormPrefix(formEntity) + getObjectPrefix(objectFrom) + getObjectPrefix(objectTo); // issue #47
             makePropertyPublic(value, name, objectFrom.baseClass.getResolveSet(), objectTo.baseClass.getResolveSet());
         }

@@ -69,11 +69,11 @@ public class CustomObjectInstance extends ObjectInstance {
     }
 
     @Override
-    public boolean changeValue(SessionChanges session, FormInstance form, ObjectValue changeValue) throws SQLException, SQLHandledException {
-        boolean result = super.changeValue(session, form, changeValue);
-        if(result)
+    public void changeValue(SessionChanges session, FormInstance form, ObjectValue changeValue) throws SQLException, SQLHandledException {
+        super.changeValue(session, form, changeValue);
+
+        if((updated & UPDATED_OBJECT) != 0)
             updateCurrentClass(session, form);
-        return result;
     }
 
     public void refreshValueClass(SessionChanges session, FormInstance form) throws SQLException, SQLHandledException {
