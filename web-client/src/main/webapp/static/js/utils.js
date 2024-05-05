@@ -275,13 +275,7 @@ function postBroadcastChannelMessage(channel, message) {
     channel.postMessage(message);
 }
 
-function shareUrl(url, text, title) {
-    let shareData = {
-        tite: title,
-        text: text,
-        url: url
-    };
-
+function shareUrl(shareData) {
     try {
         if(navigator.canShare(shareData)) {
             navigator.share(shareData);
@@ -290,4 +284,29 @@ function shareUrl(url, text, title) {
     } catch (error) {
     }
     return null;
+}
+
+function registerServiceWorker() {
+    if ('serviceWorker' in navigator) {
+        // should be in the app root: https://stackoverflow.com/questions/29874068/navigator-serviceworker-is-never-ready
+        navigator.serviceWorker.register('service-worker.js');
+            // .then(function (registration) {
+            //     Registration was successful
+            // })
+            // .catch(function (err) {
+            //     Registration failed
+            // });
+    }
+}
+
+function showNotification(title, options) {
+    if ('serviceWorker' in navigator) {
+        Notification.requestPermission().then((result) => {
+            if (result === "granted") {
+                navigator.serviceWorker.ready.then((registration) => {
+                    registration.showNotification(title, options);
+                });
+            }
+        });
+    }
 }

@@ -204,9 +204,13 @@ escapeXMLValue(TEXT t) = replace(replace(replace(replace(replace(t, '&', '&amp;'
 copyToClipboard INTERNAL 'lsfusion.server.logics.classes.data.utils.string.CopyToClipboardAction' (TEXT);
 
 shareUrl(STRING url, STRING text, STRING title) {
-    INTERNAL CLIENT 'shareUrl' PARAMS url, text, title TO exportBoolean;
+    INTERNAL CLIENT 'shareUrl' PARAMS (JSON FROM url = url, text = text, title = title) TO exportBoolean;
     IF NOT exportBoolean() THEN
         MESSAGE '<a href="' + url + '">${text}</a>';
+}
+
+showNotification(STRING text, JSON options) {
+    INTERNAL CLIENT 'showNotification' PARAMS text, options;
 }
 
 // --------------------------------------------- Numeric operations --------------------------------- //
