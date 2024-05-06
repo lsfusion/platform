@@ -65,7 +65,6 @@ import java.util.*;
 import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.server.language.ScriptingLogicsModule.parseKeyStrokeOptions;
 import static lsfusion.server.logics.form.interactive.action.edit.FormSessionScope.OLDSESSION;
-import static lsfusion.server.physics.admin.log.ServerLoggers.startLog;
 
 public class ScriptingFormEntity {
     private ScriptingLogicsModule LM;
@@ -79,6 +78,10 @@ public class ScriptingFormEntity {
 
     public FormEntity getForm() {
         return form;
+    }
+
+    public void addDeclaredTypedParameter(ScriptingLogicsModule.TypedParameter typedParameter) {
+        form.addDeclaredTypedParameter(typedParameter);
     }
 
     public void addScriptingGroupObjects(List<ScriptingGroupObject> groupObjects, Version version, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
@@ -911,7 +914,9 @@ public class ScriptingFormEntity {
         return typedObjects;
     }
     public List<ScriptingLogicsModule.TypedParameter> getTypedObjectsNames(Version version) {
-        return getTypedObjectsNames(LM, form, version);
+        List<ScriptingLogicsModule.TypedParameter> typedObjects = getTypedObjectsNames(LM, form, version);
+        typedObjects.addAll(form.getDeclaredTypedParameters());
+        return typedObjects;
     }
     
     public static class RegularFilterInfo {
