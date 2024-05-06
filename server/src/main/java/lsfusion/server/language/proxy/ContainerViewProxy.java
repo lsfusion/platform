@@ -114,13 +114,4 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
     public void setCaptionLineSize(int lineSize) {
         target.captionLineSize = lineSize;
     }
-    
-    
-    // should not be here. added for USERFILTER component backward compatibility
-    // as USERFILTER component became FILTERS container in v5.0  
-    public void setVisible(boolean visible) {
-        if (target.getSID().startsWith("FILTERS") && !visible) {
-            target.removeFromParent(Version.current());
-        }
-    }
 }
