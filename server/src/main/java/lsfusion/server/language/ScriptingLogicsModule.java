@@ -5797,6 +5797,19 @@ public class ScriptingLogicsModule extends LogicsModule {
                 return cls.getParsedName();
             return null;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            TypedParameter that = (TypedParameter) o;
+            return Objects.equals(cls, that.cls) && Objects.equals(paramName, that.paramName);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(cls, paramName);
+        }
     }
 
     public static class FormActionProps {
