@@ -263,11 +263,6 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
 //        super.setShowIf(showIf);
     }
 
-    //backward compatibility
-    public void setToolTip(Object toolTip) {
-        setTooltip(toolTip);
-    }
-
     public void setTooltip(Object tooltip) {
         if(tooltip instanceof LocalizedString)
             target.tooltip = (LocalizedString) tooltip;
