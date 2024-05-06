@@ -915,7 +915,11 @@ public class ScriptingFormEntity {
     }
     public List<ScriptingLogicsModule.TypedParameter> getTypedObjectsNames(Version version) {
         List<ScriptingLogicsModule.TypedParameter> typedObjects = getTypedObjectsNames(LM, form, version);
-        typedObjects.addAll(form.getDeclaredTypedParameters());
+        for (ScriptingLogicsModule.TypedParameter declaredTypeParam : form.getDeclaredTypedParameters()) {
+            if (!typedObjects.contains(declaredTypeParam)) {
+                typedObjects.add(declaredTypeParam);
+            }
+        }
         return typedObjects;
     }
     

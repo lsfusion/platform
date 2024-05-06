@@ -570,13 +570,6 @@ formGroupObjectDeclaration returns [ScriptingGroupObject groupObject]
 	;
 
 formGroupObjectOptions[ScriptingGroupObject groupObject]
-@init {
-    if (inMainParseState()) {
-        for(int i = 0; i < groupObject.objects.size(); i++) {
-            $formStatement::form.addDeclaredTypedParameter(self.new TypedParameter(groupObject.classes.get(i), groupObject.objects.get(i)));
-        }
-    }
-   }
 	:	(	viewType=formGroupObjectViewType { $groupObject.setViewType($viewType.type, $viewType.listType); $groupObject.setPivotOptions($viewType.options);
 	                                           $groupObject.setCustomTypeRenderFunction($viewType.customRenderFunction); $groupObject.setCustomOptions($viewType.customOptions);
 	                                           $groupObject.setMapTileProvider($viewType.mapTileProvider);}
@@ -611,9 +604,6 @@ formGroupObject returns [ScriptingGroupObject groupObject]
 formTreeGroupObject returns [ScriptingGroupObject groupObject, List<LP> properties, List<ImOrderSet<String>> propertyMappings]
 	:	( sdecl=formSingleGroupObjectDeclaration
 		{
-		    if (inMainParseState()) {
-		        $formStatement::form.addDeclaredTypedParameter(self.new TypedParameter($sdecl.className, $sdecl.name));
-		    }
 			$groupObject = new ScriptingGroupObject(null, asList($sdecl.name), asList($sdecl.className), asList($sdecl.caption), asList($sdecl.event), asList($sdecl.extID));
 		}
 
@@ -621,11 +611,6 @@ formTreeGroupObject returns [ScriptingGroupObject groupObject, List<LP> properti
 
 	|	mdecl=formMultiGroupObjectDeclaration
 		{
-		    if (inMainParseState()) {
-                for(int i = 0; i < $mdecl.objectNames.size(); i++) {
-                    $formStatement::form.addDeclaredTypedParameter(self.new TypedParameter($mdecl.classNames.get(i), $mdecl.objectNames.get(i)));
-                }
-            }
 			$groupObject = new ScriptingGroupObject($mdecl.groupName, $mdecl.objectNames, $mdecl.classNames, $mdecl.captions, $mdecl.events, $mdecl.extIDs);
 		}
 
@@ -801,7 +786,12 @@ formMultiGroupObjectDeclaration returns [String groupName, List<String> objectNa
 
 formObjectDeclaration returns [String name, String className, LocalizedString caption, ActionObjectEntity event, String extID]
 	:	((objectName=ID { $name = $objectName.text; })? (c=localizedStringLiteral { $caption = $c.val; })? EQ)?
-		id=classId { $className = $id.sid; }
+		id=classId {
+		    $className = $id.sid;
+		    if (inMainParseState()) {
+                $formStatement::form.addDeclaredTypedParameter(self.new TypedParameter($className, $name));
+            }
+		}
 		(
 		    'ON' 'CHANGE' faprop=formActionObject { $event = $faprop.action; }
 		|   'EXTID' eid=stringLiteral { $extID = $eid.val; }
