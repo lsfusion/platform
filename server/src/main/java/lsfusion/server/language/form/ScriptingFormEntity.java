@@ -125,6 +125,8 @@ public class ScriptingFormEntity {
             if (groupObject.integrationSIDs.get(j) != null) {
                 obj.setIntegrationSID(groupObject.integrationSIDs.get(j));
             }
+
+            form.getDeclaredTypedParameters().removeIf(t -> t.cls.equals(cls) && t.paramName.equals(objectName));
         }
 
         String groupName = groupObject.groupName;
@@ -915,11 +917,7 @@ public class ScriptingFormEntity {
     }
     public List<ScriptingLogicsModule.TypedParameter> getTypedObjectsNames(Version version) {
         List<ScriptingLogicsModule.TypedParameter> typedObjects = getTypedObjectsNames(LM, form, version);
-        for (ScriptingLogicsModule.TypedParameter declaredTypeParam : form.getDeclaredTypedParameters()) {
-            if (!typedObjects.contains(declaredTypeParam)) {
-                typedObjects.add(declaredTypeParam);
-            }
-        }
+        typedObjects.addAll(form.getDeclaredTypedParameters());
         return typedObjects;
     }
     
