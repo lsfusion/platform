@@ -25,6 +25,7 @@ import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.*;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.ScriptParsingException;
+import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.language.property.oraction.LAP;
@@ -1121,6 +1122,15 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     @IdentityInstanceLazy
     public GroupObjectHierarchy getSingleGroupObjectHierarchy(GroupObjectEntity groupObject) {
         return new GroupObjectHierarchy(groupObject, Collections.singletonMap(groupObject, SetFact.EMPTYORDER()));
+    }
+
+    private List<ScriptingLogicsModule.TypedParameter> declaredTypedParameters = new ArrayList<>();
+    public void addDeclaredTypedParameter(ScriptingLogicsModule.TypedParameter typedParameter) {
+        declaredTypedParameters.add(typedParameter);
+    }
+
+    public List<ScriptingLogicsModule.TypedParameter> getDeclaredTypedParameters() {
+        return declaredTypedParameters;
     }
 
     public void addActionsOnEvent(Object eventObject, boolean drop, Version version, ActionObjectEntity<?>... actions) {

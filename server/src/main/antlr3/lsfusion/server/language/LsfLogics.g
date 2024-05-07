@@ -567,7 +567,6 @@ formTreeGroupObjectList
 formGroupObjectDeclaration returns [ScriptingGroupObject groupObject]
 	:	object=formGroupObject { $groupObject = $object.groupObject; }
 	    formGroupObjectOptions[$groupObject]
-	    formGroupObjectOptionsContext[$groupObject]
 	;
 
 formGroupObjectOptions[ScriptingGroupObject groupObject]
@@ -581,20 +580,8 @@ formGroupObjectOptions[ScriptingGroupObject groupObject]
 		|   extID=formExtID { $groupObject.setIntegrationSID($extID.extID); }
 		|   formExtKey { $groupObject.setIntegrationKey(true); }
 		|   formSubReport { $groupObject.setSubReport($formSubReport.pathProperty);  }
-		)*
-	;
-
-formGroupObjectOptionsContext[ScriptingGroupObject groupObject]
-@init {
-    List<TypedParameter> extraContext = new ArrayList<>();
-    if (inMainParseState()) {
-        for(int i = 0; i < groupObject.objects.size(); i++) {
-            extraContext.add(self.new TypedParameter(groupObject.classes.get(i), groupObject.objects.get(i)));
-        }
-    }
-   }
-	:	(	background=formGroupObjectBackground[extraContext] { $groupObject.setBackground($background.background); }
-		|	foreground=formGroupObjectForeground[extraContext] { $groupObject.setForeground($foreground.foreground); }
+		|   background=formGroupObjectBackground { $groupObject.setBackground($background.background); }
+		|   foreground=formGroupObjectForeground { $groupObject.setForeground($foreground.foreground); }
 		)*
 	;
 
@@ -615,32 +602,21 @@ formGroupObject returns [ScriptingGroupObject groupObject]
 	;
 
 formTreeGroupObject returns [ScriptingGroupObject groupObject, List<LP> properties, List<ImOrderSet<String>> propertyMappings]
-@init {
-	List<TypedParameter> extraContext = new ArrayList<>();
-}
 	:	( sdecl=formSingleGroupObjectDeclaration
 		{
-		    if (inMainParseState()) {
-		        extraContext.add(self.new TypedParameter($sdecl.className, $sdecl.name));
-		    }
 			$groupObject = new ScriptingGroupObject(null, asList($sdecl.name), asList($sdecl.className), asList($sdecl.caption), asList($sdecl.event), asList($sdecl.extID));
 		}
 
-		('PARENT' decl=formExprDeclaration[extraContext] { $properties = asList($decl.property); $propertyMappings = asList($decl.mapping); })? )
+		('PARENT' decl=formExprDeclaration { $properties = asList($decl.property); $propertyMappings = asList($decl.mapping); })? )
 
 	|	mdecl=formMultiGroupObjectDeclaration
 		{
-		    if (inMainParseState()) {
-                for(int i = 0; i < $mdecl.objectNames.size(); i++) {
-                    extraContext.add(self.new TypedParameter($mdecl.classNames.get(i), $mdecl.objectNames.get(i)));
-                }
-            }
 			$groupObject = new ScriptingGroupObject($mdecl.groupName, $mdecl.objectNames, $mdecl.classNames, $mdecl.captions, $mdecl.events, $mdecl.extIDs);
 		}
 
         ( '('
-		'PARENT' {$properties = new ArrayList<>(); $propertyMappings = new ArrayList<>();} first=formExprDeclaration[extraContext] { $properties.add($first.property); $propertyMappings.add($first.mapping); }
-        		(',' next=formExprDeclaration[extraContext] { $properties.add($next.property); $propertyMappings.add($next.mapping); })*
+		'PARENT' {$properties = new ArrayList<>(); $propertyMappings = new ArrayList<>();} first=formExprDeclaration { $properties.add($first.property); $propertyMappings.add($first.mapping); }
+        		(',' next=formExprDeclaration { $properties.add($next.property); $propertyMappings.add($next.mapping); })*
         ')' )?
 
 	;
@@ -693,7 +669,7 @@ listViewType returns [ListViewType type, PivotOptions options, String customRend
     ;
 
 customOptionsGroupObjectContext returns [FormLPUsage customOptions]
-	:	propObj=formPropertyObjectContext[null]{ $customOptions = $propObj.propUsage; }
+	:	propObj=formLPUsage{ $customOptions = $propObj.propUsage; }
 	;
 
 propertyGroupType returns [PropertyGroupType type]
@@ -755,12 +731,12 @@ navigatorElementRelativePosition returns [ComplexLocation<NavigatorElement> loca
 	|	st=staticRelativePosition { $location = $st.location; }
 	;
 
-formGroupObjectBackground[List<TypedParameter> extraContext] returns [FormLPUsage background]
-    :	'BACKGROUND' propObj=formPropertyObjectContext[extraContext]{ background = $propObj.propUsage; }
+formGroupObjectBackground returns [FormLPUsage background]
+    :	'BACKGROUND' propObj=formLPUsage { background = $propObj.propUsage; }
     ;
 
-formGroupObjectForeground[List<TypedParameter> extraContext] returns [FormLPUsage foreground]
-    :	'FOREGROUND' propObj=formPropertyObjectContext[extraContext] { foreground = $propObj.propUsage; }
+formGroupObjectForeground returns [FormLPUsage foreground]
+    :	'FOREGROUND' propObj=formLPUsage { foreground = $propObj.propUsage; }
     ;
 
 formGroupObjectUpdate returns [UpdateType updateType]
@@ -810,7 +786,12 @@ formMultiGroupObjectDeclaration returns [String groupName, List<String> objectNa
 
 formObjectDeclaration returns [String name, String className, LocalizedString caption, ActionObjectEntity event, String extID]
 	:	((objectName=ID { $name = $objectName.text; })? (c=localizedStringLiteral { $caption = $c.val; })? EQ)?
-		id=classId { $className = $id.sid; }
+		id=classId {
+		    $className = $id.sid;
+		    if (inMainParseState()) {
+                $formStatement::form.addDeclaredTypedParameter(self.new TypedParameter($className, $name));
+            }
+		}
 		(
 		    'ON' 'CHANGE' faprop=formActionObject { $event = $faprop.action; }
 		|   'EXTID' eid=stringLiteral { $extID = $eid.val; }
@@ -1007,7 +988,7 @@ designOrFormPropertyObject[ScriptingFormView design] returns [PropertyObjectEnti
 @init {
     AbstractFormPropertyUsage propUsage = null;
 }
-	:	expr=designOrFormExprDeclaration[design, null] { propUsage = new FormLPUsage($expr.property, $expr.mapping); $literal = $expr.literal; }
+	:	expr=designOrFormExprDeclaration[design] { propUsage = new FormLPUsage($expr.property, $expr.mapping); $literal = $expr.literal; }
 		{
 			if (inMainParseState()) {
 			    if(design != null)
@@ -1018,12 +999,8 @@ designOrFormPropertyObject[ScriptingFormView design] returns [PropertyObjectEnti
 		}
 	;
 
-formPropertyObjectContext[List<TypedParameter> extraContext] returns [FormLPUsage propUsage]
-	:   fd = designOrFormPropertyObjectContext[null, extraContext] { $propUsage = $fd.propUsage; }
-	;
-
-designOrFormPropertyObjectContext[ScriptingFormView design, List<TypedParameter> extraContext] returns [FormLPUsage propUsage]
-	:	expr=designOrFormExprDeclaration[design, extraContext] { propUsage = new FormLPUsage($expr.property, $expr.mapping); }
+formLPUsage returns [FormLPUsage propUsage]
+	:	expr=designOrFormExprDeclaration[null] { propUsage = new FormLPUsage($expr.property, $expr.mapping); }
 	;
 
 formActionObject returns [ActionObjectEntity action = null]
@@ -1196,8 +1173,8 @@ formFiltersList
 	}
 }
 	:	'FILTERS'
-		decl=formExprDeclaration[null] { properties.add($decl.property); propertyMappings.add($decl.mapping);}
-	    (',' decl=formExprDeclaration[null] { properties.add($decl.property); propertyMappings.add($decl.mapping);})*
+		decl=formExprDeclaration { properties.add($decl.property); propertyMappings.add($decl.mapping);}
+	    (',' decl=formExprDeclaration { properties.add($decl.property); propertyMappings.add($decl.mapping);})*
 	;
 
 formHintsList
@@ -1336,7 +1313,7 @@ formRegularFilterDeclaration returns [RegularFilterInfo filter]
 	boolean showKey = true;
 	boolean showMouse = true;
 }
-    :   'FILTER' caption=localizedStringLiteral fd=formExprDeclaration[null] (
+    :   'FILTER' caption=localizedStringLiteral fd=formExprDeclaration (
             { isMouseEvent = false; showKey = true; showMouse = true; } ('KEY' | 'MOUSE' { isMouseEvent = true; })?
             key=stringLiteral {if(isMouseEvent) mouseEvent = $key.val; else keyEvent = $key.val;}
             ('SHOW' | 'HIDE' { if(isMouseEvent) showMouse = false; else showKey = false; })?
@@ -1346,11 +1323,11 @@ formRegularFilterDeclaration returns [RegularFilterInfo filter]
         }
     ;
 	
-formExprDeclaration[List<TypedParameter> extraContext] returns [LP property, ImOrderSet<String> mapping, List<ResolveClassSet> signature]
-    :   dfe = designOrFormExprDeclaration[null, extraContext] { $property = $dfe.property; $mapping = $dfe.mapping; $signature = $dfe.signature; }
+formExprDeclaration returns [LP property, ImOrderSet<String> mapping, List<ResolveClassSet> signature]
+    :   dfe = designOrFormExprDeclaration[null] { $property = $dfe.property; $mapping = $dfe.mapping; $signature = $dfe.signature; }
     ;
 
-designOrFormExprDeclaration[ScriptingFormView design, List<TypedParameter> extraContext] returns [LP property, ImOrderSet<String> mapping, List<ResolveClassSet> signature, Object literal]
+designOrFormExprDeclaration[ScriptingFormView design] returns [LP property, ImOrderSet<String> mapping, List<ResolveClassSet> signature, Object literal]
 @init {
 	List<TypedParameter> context = new ArrayList<>();
 	if (inMainParseState()) {
@@ -1359,8 +1336,6 @@ designOrFormExprDeclaration[ScriptingFormView design, List<TypedParameter> extra
 	    else
 		    context = $formStatement::form.getTypedObjectsNames(self.getVersion());
 	}
-	if(extraContext != null)
-	    context.addAll(extraContext);
 }
 @after {
 	if (inMainParseState()) {
