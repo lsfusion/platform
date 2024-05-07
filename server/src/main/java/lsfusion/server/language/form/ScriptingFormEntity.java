@@ -126,7 +126,7 @@ public class ScriptingFormEntity {
                 obj.setIntegrationSID(groupObject.integrationSIDs.get(j));
             }
 
-            form.getDeclaredTypedParameters().removeIf(t -> t.cls.equals(cls) && t.paramName.equals(objectName));
+            form.getDeclaredTypedParameters().removeIf(t -> t.cls.equals(cls) && t.paramName != null && t.paramName.equals(objectName));
         }
 
         String groupName = groupObject.groupName;
