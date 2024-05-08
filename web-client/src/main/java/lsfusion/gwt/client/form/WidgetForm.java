@@ -83,6 +83,7 @@ public abstract class WidgetForm extends FormContainer {
             maskWrapper.setStyleName("dockableBlockingMask");
             maskWrapper.setVisible(false);
             addFill(maskWrapper);
+            GwtClientUtils.setupFillParent(maskWrapper.getElement());
             maskWrapper.addClickHandler(clickEvent -> {
                 onMaskClick();
             });
