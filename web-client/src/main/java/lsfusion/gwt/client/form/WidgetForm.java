@@ -82,8 +82,7 @@ public abstract class WidgetForm extends FormContainer {
             maskWrapper = new FocusPanel(mask);
             maskWrapper.setStyleName("dockableBlockingMask");
             maskWrapper.setVisible(false);
-            add(maskWrapper);
-            GwtClientUtils.setupFillParent(maskWrapper.getElement());
+            addFill(maskWrapper);
             maskWrapper.addClickHandler(clickEvent -> {
                 onMaskClick();
             });
