@@ -149,8 +149,10 @@ public class ScriptingFormEntity {
             groupObj.setCustomRenderFunction(groupObject.customRenderFunction);
         if(groupObject.customOptions != null)
             groupObj.setCustomOptions(addPropertyObject(groupObject.customOptions));
-        if (groupObject.mapTileProvider != null)
+        if (groupObject.mapTileProvider != null) {
+            checkMapTileProvider(groupObject.mapTileProvider);
             groupObj.setMapTileProvider(groupObject.mapTileProvider);
+        }
 
         if (groupObject.pageSize != null) {
             groupObj.pageSize = groupObject.pageSize;
@@ -187,6 +189,13 @@ public class ScriptingFormEntity {
             groupObj.setPropertyForeground(addPropertyObject(groupObject.foreground));
 
         return groupObj;
+    }
+
+    private static List<String> supportedMapTileProviders = Arrays.asList("openStreetMap", "google", "yandex");
+    private void checkMapTileProvider(String mapTileProvider) throws ScriptingErrorLog.SemanticErrorException {
+        if(!supportedMapTileProviders.contains(mapTileProvider)) {
+            LM.getErrLog().emitMapTileProviderNotSupportedError(LM.getParser(), mapTileProvider, supportedMapTileProviders);
+        }
     }
 
     public void addScriptingTreeGroupObject(String treeSID, ComplexLocation<GroupObjectEntity> location, List<ScriptingGroupObject> groupObjects, List<List<LP>> parentProperties, List<List<ImOrderSet<String>>> propertyMappings, Version version, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {

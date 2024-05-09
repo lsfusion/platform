@@ -681,6 +681,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "LIKE " + (right ? "right" : "left") + " param should be string");
     }
 
+    public void emitMapTileProviderNotSupportedError(ScriptParser parser, String mapTileProvider, List<String> supportedMapTileProviders) throws SemanticErrorException {
+        emitSimpleError(parser, format("'%s' is not supported map option definition, use on of: %s", mapTileProvider, supportedMapTileProviders));
+    }
+
     public void emitSimpleError(ScriptParser parser, String message) throws SemanticErrorException {
         if (parser.getCurrentParser() != null) {
             SemanticErrorException e = new SemanticErrorException(parser.getCurrentParser().input);
