@@ -1124,15 +1124,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return new GroupObjectHierarchy(groupObject, Collections.singletonMap(groupObject, SetFact.EMPTYORDER()));
     }
 
-    private List<ScriptingLogicsModule.TypedParameter> declaredTypedParameters = new ArrayList<>();
-    public void addDeclaredTypedParameter(ScriptingLogicsModule.TypedParameter typedParameter) {
-        declaredTypedParameters.add(typedParameter);
-    }
-
-    public List<ScriptingLogicsModule.TypedParameter> getDeclaredTypedParameters() {
-        return declaredTypedParameters;
-    }
-
     public void addActionsOnEvent(Object eventObject, boolean drop, Version version, ActionObjectEntity<?>... actions) {
         if(drop)
             eventActions.removeAll(eventObject, version);
