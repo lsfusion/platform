@@ -80,8 +80,10 @@ public class ScriptingFormEntity {
         return form;
     }
 
+    private List<ScriptingLogicsModule.TypedParameter> declaredTypedParameters = new ArrayList<>();
+
     public void addDeclaredTypedParameter(ScriptingLogicsModule.TypedParameter typedParameter) {
-        form.addDeclaredTypedParameter(typedParameter);
+        declaredTypedParameters.add(typedParameter);
     }
 
     public void addScriptingGroupObjects(List<ScriptingGroupObject> groupObjects, Version version, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
@@ -126,7 +128,7 @@ public class ScriptingFormEntity {
                 obj.setIntegrationSID(groupObject.integrationSIDs.get(j));
             }
 
-            form.getDeclaredTypedParameters().removeIf(t -> t.cls.equals(cls) && t.paramName != null && t.paramName.equals(objectName));
+            declaredTypedParameters.removeIf(t -> t.cls.equals(cls) && t.paramName.equals(objectName));
         }
 
         String groupName = groupObject.groupName;
@@ -917,7 +919,7 @@ public class ScriptingFormEntity {
     }
     public List<ScriptingLogicsModule.TypedParameter> getTypedObjectsNames(Version version) {
         List<ScriptingLogicsModule.TypedParameter> typedObjects = getTypedObjectsNames(LM, form, version);
-        typedObjects.addAll(form.getDeclaredTypedParameters());
+        typedObjects.addAll(declaredTypedParameters);
         return typedObjects;
     }
     

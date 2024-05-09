@@ -789,7 +789,7 @@ formObjectDeclaration returns [String name, String className, LocalizedString ca
 		id=classId {
 		    $className = $id.sid;
 		    if (inMainParseState()) {
-                $formStatement::form.addDeclaredTypedParameter(self.new TypedParameter($className, $name));
+                $formStatement::form.addDeclaredTypedParameter(self.new TypedParameter($className, BaseUtils.nvl($name, $className)));
             }
 		}
 		(
