@@ -89,7 +89,7 @@ public class FlexPanelImpl {
     }
 
     //        parent.getStyle().setProperty(grid && !vertical ? "alignContent" : "justifyContent", getAlignmentValue(alignment, grid));
-    public void setFlexContentAlignment(DivElement parent, GFlexAlignment alignment) {
+    public void setFlexContentAlignment(Element parent, GFlexAlignment alignment) {
         switch (alignment) {
             case START:
                 parent.addClassName("flex-content-start");

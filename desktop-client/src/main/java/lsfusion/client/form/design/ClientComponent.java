@@ -47,6 +47,10 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
     public int marginLeft;
     public int marginRight;
 
+    public boolean panelCaptionVertical;
+    public boolean panelCaptionLast;
+    public FlexAlignment panelCaptionAlignment;
+
     public boolean defaultComponent;
 
     public ClientComponent() {
@@ -119,6 +123,10 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
         marginBottom = inStream.readInt();
         marginLeft = inStream.readInt();
         marginRight = inStream.readInt();
+
+        panelCaptionVertical = inStream.readBoolean();
+        panelCaptionLast = inStream.readBoolean();
+        panelCaptionAlignment = pool.readObject(inStream);
 
         defaultComponent = inStream.readBoolean();
 

@@ -103,10 +103,6 @@ public class PropertyDrawView extends BaseComponentView {
 
     public Boolean focusable;
 
-    public boolean panelCaptionVertical = false;
-    public Boolean panelCaptionLast;
-    public FlexAlignment panelCaptionAlignment;
-
     public boolean panelColumnVertical = false;
 
     public FlexAlignment valueAlignment;
@@ -114,7 +110,7 @@ public class PropertyDrawView extends BaseComponentView {
     public LocalizedString comment;
     public String commentElementClass;
     public boolean panelCommentVertical;
-    public boolean panelCommentFirst;
+    public Boolean panelCommentFirst;
     public FlexAlignment panelCommentAlignment;
 
     public LocalizedString placeholder;
@@ -186,6 +182,39 @@ public class PropertyDrawView extends BaseComponentView {
             return -1;
 
         return -2;
+    }
+
+    @Override
+    protected boolean isDefaultPanelCaptionVertical(FormInstanceContext context) {
+        return false;
+    }
+
+    private boolean isPanelBoolean(FormInstanceContext context) {
+        return isProperty(context) && getAssertCellType(context) instanceof LogicalClass;
+    }
+
+    @Override
+    protected boolean isDefaultPanelCaptionLast(FormInstanceContext context) {
+        return isPanelBoolean(context) && !isPanelCaptionVertical(context);
+    }
+
+    @Override
+    protected FlexAlignment getDefaultPanelCaptionAlignment(FormInstanceContext context) {
+        return FlexAlignment.CENTER;
+    }
+
+    protected boolean isPanelCommentFirst(FormInstanceContext context) {
+        if(panelCommentFirst != null)
+            return panelCommentFirst;
+
+        return false;
+    }
+
+    protected FlexAlignment getPanelCommentAlignment(FormInstanceContext context) {
+        if(panelCommentAlignment != null)
+            return panelCommentAlignment;
+
+        return FlexAlignment.CENTER;
     }
 
     public int getValueHeight(FormInstanceContext context) {
@@ -482,10 +511,6 @@ public class PropertyDrawView extends BaseComponentView {
         pool.writeObject(outStream, focusable);
         outStream.writeByte(entity.getEditType().serialize());
 
-        outStream.writeBoolean(panelCaptionVertical);
-        pool.writeObject(outStream, panelCaptionLast);
-        pool.writeObject(outStream, panelCaptionAlignment);
-
         outStream.writeBoolean(panelColumnVertical);
         
         pool.writeObject(outStream, getValueAlignment(pool.context));
@@ -493,8 +518,8 @@ public class PropertyDrawView extends BaseComponentView {
         pool.writeString(outStream, ThreadLocalContext.localize(comment));
         pool.writeString(outStream, getCommentElementClass(pool.context));
         outStream.writeBoolean(panelCommentVertical);
-        outStream.writeBoolean(panelCommentFirst);
-        pool.writeObject(outStream, panelCommentAlignment);
+        outStream.writeBoolean(isPanelCommentFirst(pool.context));
+        pool.writeObject(outStream, getPanelCommentAlignment(pool.context));
 
         pool.writeString(outStream, ThreadLocalContext.localize(getPlaceholder(pool.context)));
         pool.writeString(outStream, ThreadLocalContext.localize(pattern));
@@ -705,10 +730,6 @@ public class PropertyDrawView extends BaseComponentView {
         showChangeMouse = inStream.readBoolean();
 
         focusable = pool.readObject(inStream);
-
-        panelCaptionVertical = inStream.readBoolean();
-        panelCaptionLast = pool.readObject(inStream);
-        panelCaptionAlignment = pool.readObject(inStream);
 
         panelColumnVertical = inStream.readBoolean();
 

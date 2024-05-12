@@ -57,6 +57,10 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     protected Boolean alignShrink = null;
     protected Boolean alignCaption = null;
 
+    public Boolean panelCaptionVertical;
+    public Boolean panelCaptionLast;
+    public FlexAlignment panelCaptionAlignment;
+
     public PropertyObjectEntity<?> showIf;
 
     public int getWidth(FormInstanceContext context) {
@@ -79,6 +83,42 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
 
     protected int getDefaultHeight(FormInstanceContext context) {
         return -1;
+    }
+
+    protected boolean isDefaultPanelCaptionVertical(FormInstanceContext context) {
+        return true;
+    }
+
+    protected boolean isDefaultPanelCaptionLast(FormInstanceContext context) {
+        return false;
+    }
+
+    protected FlexAlignment getDefaultPanelCaptionAlignment(FormInstanceContext context) {
+        if(!isPanelCaptionVertical(context))
+           return FlexAlignment.CENTER;
+
+        return FlexAlignment.START;
+    }
+
+    protected boolean isPanelCaptionVertical(FormInstanceContext context) {
+        if(panelCaptionVertical != null)
+            return panelCaptionVertical;
+
+        return isDefaultPanelCaptionVertical(context);
+    }
+
+    protected boolean isPanelCaptionLast(FormInstanceContext context) {
+        if(panelCaptionLast != null)
+            return panelCaptionLast;
+
+        return isDefaultPanelCaptionLast(context);
+    }
+
+    protected FlexAlignment getPanelCaptionAlignment(FormInstanceContext context) {
+        if(panelCaptionAlignment != null)
+            return panelCaptionAlignment;
+
+        return getDefaultPanelCaptionAlignment(context);
     }
 
     public String getElementClass(FormInstanceContext context) {
@@ -410,6 +450,10 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         outStream.writeInt(marginBottom);
         outStream.writeInt(marginLeft);
         outStream.writeInt(marginRight);
+
+        outStream.writeBoolean(isPanelCaptionVertical(pool.context));
+        outStream.writeBoolean(isPanelCaptionLast(pool.context));
+        pool.writeObject(outStream, getPanelCaptionAlignment(pool.context));
 
         outStream.writeBoolean(defaultComponent);
 

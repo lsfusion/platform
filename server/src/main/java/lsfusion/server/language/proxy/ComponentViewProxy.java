@@ -162,6 +162,18 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> im
         }
     }
 
+    public void setPanelCaptionVertical(boolean panelCaptionVertical) {
+        target.panelCaptionVertical = panelCaptionVertical;
+    }
+
+    public void setPanelCaptionLast(boolean panelCaptionLast) {
+        target.panelCaptionLast = panelCaptionLast;
+    }
+
+    public void setPanelCaptionAlignment(FlexAlignment panelCaptionAlignment) {
+        target.panelCaptionAlignment = panelCaptionAlignment;
+    }
+
     public void setShowIf(PropertyObjectEntity<?> showIf) {
         target.setShowIf(showIf);
     }

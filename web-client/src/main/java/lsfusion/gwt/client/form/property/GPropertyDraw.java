@@ -404,10 +404,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public int captionWidth;
     public int captionHeight;
 
-    public boolean panelCaptionVertical;
-    public Boolean panelCaptionLast;
-    public GFlexAlignment panelCaptionAlignment;
-
     public boolean panelColumnVertical;
     
     public GFlexAlignment valueAlignment;
@@ -415,7 +411,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public String comment;
     public String commentElementClass;
     public boolean panelCommentVertical;
-    public Boolean panelCommentFirst;
+    public boolean panelCommentFirst;
     public GFlexAlignment panelCommentAlignment;
 
     public String placeholder;
@@ -746,16 +742,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return super.getFlex(rendererType);
     }
 
-    public boolean isPanelCaptionLast() {
-        return panelCaptionLast != null ? panelCaptionLast : (isPanelBoolean() && !panelCaptionVertical);
-    }
-
     public boolean isPanelCommentFirst() {
-        return panelCommentFirst != null ? panelCommentFirst : (isPanelBoolean() && !panelCommentVertical);
-    }
-
-    public GFlexAlignment getPanelCaptionAlignment() {
-        return (panelCaptionAlignment != null && panelCaptionAlignment != GFlexAlignment.STRETCH) ? panelCaptionAlignment : GFlexAlignment.CENTER;
+        return panelCommentFirst;
     }
 
     public GFlexAlignment getPanelValueAlignment() {
@@ -763,7 +751,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     public GFlexAlignment getPanelCommentAlignment() {
-        return (panelCommentAlignment != null && panelCommentAlignment != GFlexAlignment.STRETCH) ? panelCommentAlignment : GFlexAlignment.CENTER;
+        return panelCommentAlignment;
     }
 
     public GFlexAlignment getAlignment() {

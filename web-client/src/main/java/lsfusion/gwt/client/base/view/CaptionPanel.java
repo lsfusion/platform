@@ -10,9 +10,10 @@ public class CaptionPanel extends FlexPanel {
     public final boolean border;
 
     private boolean waitingForElement;
+    private Widget waitingHeaderLine;
 
-    public CaptionPanel(Widget header, boolean border) {
-        super(true);
+    public CaptionPanel(Widget header, boolean border, boolean vertical, boolean last, GFlexAlignment alignment) {
+        super(vertical);
 
         this.border = border;
 
@@ -27,12 +28,18 @@ public class CaptionPanel extends FlexPanel {
             CaptionPanelHeader headerLine = new CaptionPanelHeader();
             headerLine.setWidget(header);
             headerLine.addStyleName("caption-panel-header-line");
+            headerLine.addStyleName(vertical ? "caption-panel-header-line-vert" : "caption-panel-header-line-horz");
+            FlexPanelImpl.get().setFlexContentAlignment(headerLine.getElement(), alignment);
 
-            add(headerLine, GFlexAlignment.STRETCH);
 //        }
 
             if(border)
                 headerLine.addStyleName("card-header");
+
+            if(last)
+                waitingHeaderLine = headerLine;
+            else
+                add(headerLine, GFlexAlignment.STRETCH);
         }
 
         addStyleName("caption-panel");
@@ -48,7 +55,7 @@ public class CaptionPanel extends FlexPanel {
         this(caption, null, content);
     }
     public CaptionPanel(String caption, BaseImage image, Widget content) {
-        this(createCaptionWidget(caption, image), false);
+        this(createCaptionWidget(caption, image), false, true, false, GFlexAlignment.STRETCH);
 
         addFill(content);
     }
@@ -71,6 +78,12 @@ public class CaptionPanel extends FlexPanel {
                 widget.addStyleName("card-body");
 
             waitingForElement = false;
+
+            if(waitingHeaderLine != null) {
+                Widget waitingHeaderLine = this.waitingHeaderLine;
+                this.waitingHeaderLine = null;
+                add(waitingHeaderLine, GFlexAlignment.STRETCH);
+            }
         }
     }
 }

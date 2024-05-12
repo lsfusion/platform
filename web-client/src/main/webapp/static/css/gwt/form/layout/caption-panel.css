@@ -64,6 +64,12 @@
 .caption-panel-header-line {
     display: flex;
 }
+.caption-panel-header-line-vert {
+    flex-direction: row;
+}
+.caption-panel-header-line-horz {
+    flex-direction: column;
+}
 
 .caption-panel-header {
     min-height: calc(var(--border-cont-vert-padding) + var(--border-cont-vert-padding));

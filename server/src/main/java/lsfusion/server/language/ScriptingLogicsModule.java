@@ -21,6 +21,7 @@ import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.interop.session.ExternalHttpMethod;
+import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.base.AppServerImage;
 import lsfusion.server.base.ResourceUtils;
 import lsfusion.server.base.caches.IdentityLazy;
@@ -2063,7 +2064,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LAWithParams addScriptedExternalLSFAction(LPWithParams connectionString, LPWithParams actionLCP, boolean eval, boolean action, List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
-        String request = eval ? (action ? "/eval/action" : "/eval") : "/exec?action=$" + (params.size()+1);
+        String request = (eval ? (action ? "/eval/action" : "/eval") + "?" + ExternalUtils.SCRIPT_PARAM : ("/exec?" + ExternalUtils.ACTION_CN_PARAM)) + "=$" + (params.size()+1);
         return addScriptedExternalHTTPAction(false, ExternalHttpMethod.POST,
                 addScriptedJProp(getArithProp("+"), Arrays.asList(connectionString, new LPWithParams(addCProp(StringClass.text, LocalizedString.create(request, false))))),
                 null, Collections.emptyList(), null, null, null, null, null, BaseUtils.add(params, actionLCP), context, toPropertyUsageList);

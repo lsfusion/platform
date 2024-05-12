@@ -31,18 +31,6 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.boxed = boxed;
     }
 
-    public void setPanelCaptionVertical(boolean panelCaptionVertical) {
-        target.panelCaptionVertical = panelCaptionVertical;
-    }
-    
-    public void setPanelCaptionLast(boolean panelCaptionLast) {
-        target.panelCaptionLast = panelCaptionLast;
-    }
-
-    public void setPanelCaptionAlignment(FlexAlignment panelCaptionAlignment) {
-        target.panelCaptionAlignment = panelCaptionAlignment;
-    }
-
     public void setChangeOnSingleClick(boolean changeOnSingleClick) {
         target.changeOnSingleClick = changeOnSingleClick;
     }

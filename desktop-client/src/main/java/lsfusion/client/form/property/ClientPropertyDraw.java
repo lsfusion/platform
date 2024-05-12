@@ -136,10 +136,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public Boolean focusable;
     public PropertyEditType editType = PropertyEditType.EDITABLE;
 
-    public boolean panelCaptionVertical;
-    public Boolean panelCaptionLast;
-    public FlexAlignment panelCaptionAlignment;
-
     public boolean panelColumnVertical;
 
     public FlexAlignment valueAlignment;
@@ -147,7 +143,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public String comment;
     public String commentElementClass;
     public boolean panelCommentVertical;
-    public Boolean panelCommentFirst;
+    public boolean panelCommentFirst;
     public FlexAlignment panelCommentAlignment;
 
     public String placeholder;
@@ -448,19 +444,19 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public boolean isPanelCaptionLast() {
-        return panelCaptionLast != null ? panelCaptionLast : (baseType instanceof ClientLogicalClass && !panelCaptionVertical);
+        return panelCaptionLast;
     }
 
     public FlexAlignment getPanelCaptionAlignment() {
-        return (panelCaptionAlignment != null && panelCaptionAlignment != FlexAlignment.STRETCH) ? panelCaptionAlignment : FlexAlignment.CENTER;
+        return panelCaptionAlignment;
     }
 
     public boolean isPanelCommentFirst() {
-        return panelCommentFirst != null ? panelCommentFirst : (baseType instanceof ClientLogicalClass && !panelCommentVertical);
+        return panelCommentFirst;
     }
 
     public FlexAlignment getPanelCommentAlignment() {
-        return (panelCommentAlignment != null && panelCommentAlignment != FlexAlignment.STRETCH) ? panelCommentAlignment : FlexAlignment.CENTER;
+        return panelCommentAlignment;
     }
 
     public String formatString(Object obj) throws ParseException {
@@ -563,9 +559,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         pool.writeObject(outStream, valueAlignment);
 
         pool.writeString(outStream, comment);
-        outStream.writeBoolean(panelCommentVertical);
-        pool.writeObject(outStream, panelCommentFirst);
-        pool.writeObject(outStream, panelCommentAlignment);
 
         pool.writeString(outStream, placeholder);
         pool.writeString(outStream, pattern);
@@ -614,10 +607,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         focusable = pool.readObject(inStream);
         editType = PropertyEditType.deserialize(inStream.readByte());
-
-        panelCaptionVertical = inStream.readBoolean();
-        panelCaptionLast = pool.readObject(inStream);
-        panelCaptionAlignment = pool.readObject(inStream);
 
         panelColumnVertical = inStream.readBoolean();
 

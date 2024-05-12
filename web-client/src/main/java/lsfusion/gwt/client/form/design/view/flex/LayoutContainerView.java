@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.design.view.flex;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.view.CaptionPanel;
 import lsfusion.gwt.client.base.view.CollapsiblePanel;
+import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
@@ -42,14 +43,17 @@ public abstract class LayoutContainerView extends GAbstractContainerView {
         if(!(alignCaptions && child.isAlignCaption()) && ((childCaption = childrenCaptions.get(index)) != null || border)) {
             Widget childCaptionWidget = childCaption != null ? childCaption.widget.widget : null;
 
+            boolean panelCaptionVertical = child.panelCaptionVertical;
+            boolean panelCaptionLast = child.isPanelCaptionLast();
+            GFlexAlignment panelCaptionAlignment = child.getPanelCaptionAlignment();
             if (child instanceof GContainer) {
                 if (((GContainer) child).popup) {
                     return childCaptionWidget;
                 } else if (((GContainer) child).collapsible) {
-                    return new CollapsiblePanel(childCaptionWidget, border, collapsed -> formController.setContainerCollapsed((GContainer) child, collapsed));
+                    return new CollapsiblePanel(childCaptionWidget, border, collapsed -> formController.setContainerCollapsed((GContainer) child, collapsed), panelCaptionVertical, panelCaptionLast, panelCaptionAlignment);
                 }
             }
-            return new CaptionPanel(childCaptionWidget, border);
+            return new CaptionPanel(childCaptionWidget, border, panelCaptionVertical, panelCaptionLast, panelCaptionAlignment);
         }
         return null;
     }

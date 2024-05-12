@@ -108,6 +108,10 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         FontInfo captionFont = clientComponent.design.getCaptionFont();
         component.captionFont = convertFont(captionFont);
 
+        component.panelCaptionVertical = clientComponent.panelCaptionVertical;
+        component.panelCaptionLast = clientComponent.panelCaptionLast;
+        component.panelCaptionAlignment = convertFlexAlignment(clientComponent.panelCaptionAlignment);
+
         return component;
     }
 
@@ -397,10 +401,6 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.captionWidth = clientPropertyDraw.captionWidth;
         propertyDraw.captionHeight = clientPropertyDraw.captionHeight;
 
-        propertyDraw.panelCaptionVertical = clientPropertyDraw.panelCaptionVertical;
-        propertyDraw.panelCaptionLast = clientPropertyDraw.panelCaptionLast;
-        propertyDraw.panelCaptionAlignment = convertFlexAlignment(clientPropertyDraw.panelCaptionAlignment);
-        
         propertyDraw.panelColumnVertical = clientPropertyDraw.panelColumnVertical;
         
         propertyDraw.valueAlignment = convertFlexAlignment(clientPropertyDraw.valueAlignment);
