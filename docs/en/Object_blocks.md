@@ -2,8 +2,8 @@
 title: 'Object blocks'
 ---
 
-Object block of the [FORM statement](FORM_statement.md)  adds [objects](#objects) (including object groups) to the form structure, as well as [object trees](#tree) to the interactive form view.
-
+Object blocks of the [`FORM` statement](FORM_statement.md) - adding [object groups](Form_structure.md#objects) to the form structure, and [object trees](Interactive_view.md#tree) to the interactive form view.
+    
 ## Object block {#objects}
 
 ### Syntax
@@ -18,7 +18,7 @@ Each `groupDeclaration` is a declaration of an object group consisting of severa
 [groupName =] (objectDeclaration1, ..., objectDeclarationK)
 ```
 
- or an object group consisting of a single object:
+or an object group consisting of a single object:
 
 ```
 objectDeclaration
@@ -27,26 +27,35 @@ objectDeclaration
 Each `objectDeclaration` declaring an object has the following syntax:
 
 ```
-[[name] [caption] =] classId [ON CHANGE actionId(param1, ..., paramM) | { actionOperator } ]
+[[name] [caption] =] classId objectOptions
 ```
 
-The declaration of each object group may be followed by a set of options called `groupOptions`:
+Object options `objectOptions` can be listed one after another in any order. The following set of options is supported:
+
+```
+ON CHANGE actionId(param1, ..., paramM)
+ON CHANGE actionOperator 
+EXTID objectExtID
+```
+
+After the declaration of each object group, the group options `groupOptions` can be listed in any order:
 
 ```
 viewType
-INIT | FIXED
-PAGESIZE pageSize 
-AFTER groupName
-BEFORE groupName
+insertPosition
 defaultObjectsType
+PAGESIZE pageSize 
 IN propertyGroup
 EXTID extID
+EXTKEY
 SUBREPORT [subReportExpression]
+BACKGROUND backgroundExpr
+FOREGROUND foregroundExpr
 ```
 
 ### Description
 
-A single `OBJECTS` block can contain several comma-delimited declarations of [object groups](Interactive_view.md#objects). An object group can contain just one object or several ones. In case of a single object, you can use simplified syntax without specifying the name of an object group and using parentheses. The declaration of an object group may be followed by the options of this group. They are listed one after another in an arbitrary order.
+A single `OBJECTS` block can contain several comma-delimited declarations of [object groups](Interactive_view.md#objects). An object group can contain just one object or several ones. In case of a single object, you can use simplified syntax without specifying the name of an object group and using parentheses. 
 
 ### Parameters
 
@@ -68,9 +77,11 @@ A single `OBJECTS` block can contain several comma-delimited declarations of [ob
 
     Caption of the object being added. [String literal](Literals.md#strliteral). If the caption is not specified, the class caption will become the object caption.
 
-- `ON CHANGE actionName(param1, ..., paramM) | { actionOperator }`
+### Object options
 
-    Specifying an [action](Actions.md) that will be called when the current object value is changed.
+- `ON CHANGE actionName(param1, ..., paramM)`
+
+    Specifying an [action](Actions.md) that will be called when the current value of the object changes.
 
     - `actionID`
 
@@ -78,21 +89,146 @@ A single `OBJECTS` block can contain several comma-delimited declarations of [ob
 
     - `param1, ..., paramM`
     
-        A list of object names on the form that will be used as action parameters. The number of these objects must be equal to the number of action parameters. The name of the object is defined with a [simple ID](IDs.md#id).
+        A list of object names on the form that will be used as action parameters. The number of these objects must be equal to the number of action parameters. The name of the object is defined with a simple ID.
+
+- `ON CHANGE actionOperator`
+
+    Creating an [action](Actions.md) that will be called when the current value of the object changes.
 
     - `actionOperator`
 
         [Context-dependent action operator](Action_operators.md#contextdependent). You can use the names of already declared objects on the form as parameters.
 
+- `EXTID objectExtID`
+
+    Specifying the name that will be used for [export/import](Structured_view.md#extid) of this form object. Used only in the [structured](Structured_view.md) view.
+
+    - `objectExtID`
+
+        String literal.
+
 ### Object group options
 
 - `viewType`
 
-    [Default view](Interactive_view.md#property) for an object group. It is specified with one of the keywords:
-    
-    - `PANEL` - *panel* view.
-    - `TOOLBAR` - *toolbar* display mode.
-    - `GRID` - *table column* view;. Used by default.
+    The [default view](Interactive_view.md#property) for properties of this object group. Specified by one of the following ways:
+
+    - `PANEL`
+
+        Keyword that, when specified, selects the *panel* view type
+  
+    - `TOOLBAR`
+
+        Keyword that, when specified, selects the *toolbar* view type
+
+    - `GRID`
+
+        Keyword that, when specified, selects the *table column* view type. Used by default.
+
+    - `PIVOT [pivotOptions]`
+
+        When the `PIVOT` keyword is specified, the *pivot table* view type is selected. Options for this view type `pivotOptions` can be specified one after another in any order.
+
+        - `pivotType`
+
+            [String literal](Literals.md#strliteral) that defines the initial display mode of the pivot table. Can be equal to one of the following values:
+      
+            - `'Table'` (default value)
+            - `'Table Bar Chart'`
+            - `'Table Heatmap'`
+            - `'Table Row Heatmap'`
+            - `'Table Col Heatmap'`
+            - `'Bar Chart'`
+            - `'Stacked Bar Chart'`
+            - `'Line Chart'`
+            - `'Area Chart'`
+            - `'Scatter Chart'`
+            - `'Multiple Pie Chart'`
+            - `'Horizontal Bar Chart'`
+            - `'Horizontal Stacked Bar Chart'`
+
+        - `calcType`
+
+            Specifying the initial aggregation function. It can be set using one of the keywords:
+
+            - `SUM` - sum of values (default value)
+            - `MAX` - maximum of values
+            - `MIN` - minimum of values
+          
+        - `settingsType`
+
+            Specifying whether the pivot table settings are shown to the user. It can be specified by one of the keywords:
+
+            - `SETTINGS` - settings are shown (default value)
+            - `NOSETTINGS` - settings are not shown
+ 
+    - `MAP [tileProvider]`
+
+        When the `MAP` keyword is specified, the *map* view type is selected. By default, this view uses OpenStreetMap maps. It is possible to use Google or Yandex maps. To do this you need to include the `Geo.lsf` module in the project, then obtain an API key for Google or Yandex and specify it in `Administration > Application > Settings > Navigation`.
+
+        - `tileProvider`
+      
+            String literal that specifies the map source. Possible options: `'google'` and `'yandex'`. If not specified, OpenStreetMap will be used as the map source.
+         
+    - `CALENDAR`
+
+        Keyword that, when specified, selects the *calendar* view type.
+
+    - `CUSTOM renderFunction [HEADER expr]`
+
+        When the `CUSTOM` keyword is specified, the custom view type is selected. 
+
+        - `renderFunction`
+
+            A string literal specifying the name of the JavaScript function that is responsible for displaying the data. This function must be located in a .js file included in the project resources and loaded for use on the client. It should return a JavaScript object that contains three functions: 
+      
+            - `render(element, controller)`
+            - `update(element, controller, list, options)`
+            - `clear(element)` (optional)
+
+            A more detailed description of the mechanism can be found in the article [How-to: Custom Components (Objects)](How-to_Custom_components_objects.md).
+
+        - `expr`
+
+            Expression whose value must be an object of the JSON class. It is used to pass data that does not depend on the values of the described object group.
+
+<a className="lsdoc-anchor" id="insertPosition"/>
+
+- `insertPosition`
+
+    Specifying the insertion position of the object group within the list of object groups. Most often used together with the [form extension mechanism](Form_extension.md). It can be specified in one of the following ways:
+
+    - `AFTER groupName`
+    - `BEFORE groupName`
+
+      The object group will be added to the form structure directly before (keyword `BEFORE`) or after (keyword `AFTER`) the specified object group. If the group before (after) which it is to be added is in the tree, it must be the first (last) in that tree.
+
+        - `groupName`
+
+            Object group name. Simple ID.
+      
+    - `FIRST`
+
+        Keyword indicating that the object group will be added to the beginning of the list.
+  
+    - `LAST`
+
+        Keyword indicating that the object group will be added to the end of the list.
+
+    - `DEFAULT`
+
+        Keyword indicating that the object group is added in the order of declaration. This is the default value.
+  
+- `defaultObjectsType`
+
+    Specifying which object collection from the added object group will be current after the active filters are changed. Specified by one of the keywords:
+
+    - `FIRST`– specifies that the first object collection (according to the current order) will be the [default objects](Interactive_view.md#defaultobject)
+    - `LAST` - last object collection
+    - `PREV` - the previous (or closest possible) object collection
+    - `NULL` - none (reset)
+
+    If this option is not specified, the platform determines the option to be used depending on the current filters.
 
 - `PAGESIZE pageSize`
 
@@ -102,40 +238,25 @@ A single `OBJECTS` block can contain several comma-delimited declarations of [ob
 
         Number of objects read. [Integer literal](Literals.md#intliteral).
 
-- `AFTER` groupName
-- `BEFORE` groupName
-
-    Specifying that the object tree should be added to the form structure immediately before (keyword `BEFORE`) or after (keyword `AFTER`) of a specified object group. Typically used with the [form extension](Form_extension.md) mechanism . If a group is added before the group in a tree, then this group should the first in this tree. Accordingly, if a group is added after the group in a tree, this group should be the last in this tree.
-
-    - `groupName`
-
-        [Object group name](#groupName). 
-
-- `defaultObjectsType`
-
-    Specifying which object collection from the added object group will be current after the change of the active filters:
-
-    - `FIRST`– specifies that the first object collection will be the [default objects](Interactive_view.md#defaultobject)
-    - `LAST` - last one
-    - `PREV` - previous one
-
-  If this option is not specified, the platform determines the option to be used depending on the current filters.
-
 - `IN propertyGroup`
 
-    Specifying the [property/action group](Groups_of_properties_and_actions.md) that the object group belongs to. Used only in the [hierarchical](Structured_view.md#hierarchy) view.
+    Specifying the [property and action group](Groups_of_properties_and_actions.md) that the object group belongs to. Used only in the [hierarchical](Structured_view.md#hierarchy) view.
 
     - `propertyGroup`
     
-        The property group name. [Composite ID](IDs.md#cid).
+        The property and action group name. [Composite ID](IDs.md#cid).
 
 - `EXTID extID`
 
-    Specifying the name to be used for [export/import](Structured_view.md#extid) operations performed by this object group. Used only in the [structured](Structured_view.md) view.
+    Specifying the name to be used for [export/import](Structured_view.md#extid) of this object group. Used only in the structured view.
 
     - `extId`
 
         String literal.
+
+- `EXTKEY`
+
+    When keyword `EXTKEY` is specified the values of objects and properties of this object group are represented in a structured view as key-value pairs, where the key is the value of the object (set of objects) and the value is the property values. By default, they are represented as an array with lists of property values.
 
 - `SUBREPORT [subReportExpression]`
 
@@ -144,6 +265,22 @@ A single `OBJECTS` block can contain several comma-delimited declarations of [ob
     - `subReportExpression`
 
         The [expression](Expression.md) whose value will be used as the name of the  [report](Print_view.md) file for the created object group. You can use the names of already declared objects on the form as parameters. It is assumed that the values of these objects will be [passed](Open_form.md#params) when the form is opened [in the print view](In_a_print_view_PRINT.md) (if it's not done, they will be considered equal `NULL`).
+
+- `BACKGROUND backgroundExpr`
+
+    Specifying the background color of property cells belonging to this object group.
+    
+    - `backgroundExpr`
+
+        Expression whose value determines the background color.
+
+- `FOREGROUND foregroundExpr`
+
+    Specifying the foreground color of property cells belonging to this object group.
+
+    - `foregroundExpr`
+
+        Expression whose value determines the foreground color.
 
 ### Examples
 
@@ -194,24 +331,18 @@ FORM printLabel 'Price tag printing'
 ### Syntax
 
 ```
-TREE [name] groupDeclaration1 [parentBlock1], ...., groupDeclarationN [parentBlockN] [treeOptions]
+TREE [name] groupDeclaration1 [parentBlock1], ...., groupDeclarationN [parentBlockN] [insertPosition]
 ```
 
-Each `groupDeclaration` is a declaration of an object group that is similar to the declaration in an object block described above. Each `parentBlock` can be described in one of the following ways:
+Each `groupDeclaration` is a declaration of an object group that is fully analogous to the [declaration in the object block](#objects) described above. Each `parentBlock` can be described in one of two ways:
 
 ```
-PARENT propertyId
-(PARENT propertyId1, ..., propertyIdK)
+PARENT parentExpr
+(PARENT parentExpr1, ..., parentExprK)
 ```
 
 The first option is used if an object group for which the block is specified consists of a single object, the second one is used for groups of two and more objects.
 
-The `treeOptions` options set may be specified after the declaration of each object tree.
-
-```
-AFTER groupName
-BEFORE groupName
-```
 
 ### Description
 
@@ -227,24 +358,17 @@ Use the `PARENT` block to create [hierarchical object groups](Interactive_view.m
 
     The name of the object tree being created. [Simple ID](IDs.md#id). 
 
-- `propertyId`
+- `parentExpr`
 
-    [ID of the property](IDs.md#propertyid) defining the hierarchy for an object group consisting of a single object. The specified property must have a single parameter and return the parent object of the passed object as its value (or `NULL`  if the passed object is the top one).
+    Expression that defines a hierarchy for a group of objects consisting of a single object. This expression must create a property that has exactly one parameter and returns the parent object for the object passed as input (or `NULL` if the passed object is at the top level).
 
-- `propertyId1, ..., propertyIdK`
+- `parentExpr1, ..., parentExprK`
 
-    A list of property ID's defining the hierarchy for an object group consisting of several objects. All specified properties must have the same number of parameters as the number of objects in the object group. Each of these properties must return one of the parent objects of the passed objects as a value (or `NULL` if the passed object collection is the top one). The first property should return the first parent object, the second property - the second object, etc.  on.
+    A list of expressions that define a hierarchy for an object group consisting of multiple objects. These expressions should create properties with a number of parameters equal to the number of objects in the group. Each of these properties should return one of the parent objects for the object collection passed as input (or `NULL` if the passed object collection is at the top level). The first property should return the first object of the parent object collection, the second property - the second object, and so on.
 
-### Object tree options
+- `insertPosition`
 
-- `AFTER groupName`
-- `BEFORE groupName`
-
-    Specifying that the object tree should be added to the form structure immediately before (keyword `BEFORE`) or after (keyword `AFTER`) of a specified object group. Typically used with the [form extension](Form_extension.md) mechanism . If a group is added before the group in a tree, then this group should the first in this tree. Accordingly, if a group is added after the group in a tree, this group should be the last in this tree.
-
-- `groupName`
-
-    [Object group name](#groupName). 
+    Specifying the insertion position of tree object groups in the list of object groups. It has syntax fully analogous to the [same option in the object block](#insertPosition).
 
 ### Examples
 
