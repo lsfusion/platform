@@ -1333,6 +1333,12 @@ public class GwtClientUtils {
         return null;
     }-*/;
 
+    public static native JavaScriptObject toJsObject(String field1, JavaScriptObject value1) /*-{
+        var obj = $wnd.createPlainObject();
+        obj[field1] = value1;
+        return obj;
+    }-*/;
+
     public static JsDate toJsDate(Date date) {
         if(date == null)
             return null;
@@ -1394,6 +1400,12 @@ public class GwtClientUtils {
 
     public static native boolean plainEquals(JavaScriptObject object1, JavaScriptObject object2, String ignoreField)/*-{
         return $wnd.plainEquals(object1, object2, ignoreField);
+    }-*/;
+
+    public static native void registerServiceWorker(Consumer<JavaScriptObject> onMessage, JavaScriptObject message)/*-{
+        $wnd.registerServiceWorker(function (message) {
+            onMessage.@java.util.function.Consumer::accept(*)(message);
+        }, message);
     }-*/;
 
     public static native void openBroadcastChannel(String channelName, BiConsumer<JavaScriptObject, String> onMessage)/*-{

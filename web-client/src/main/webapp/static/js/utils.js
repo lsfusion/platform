@@ -275,7 +275,31 @@ function postBroadcastChannelMessage(channel, message) {
     channel.postMessage(message);
 }
 
-function shareUrl(shareData) {
+function registerServiceWorker(onMessage, message) {
+    navigator.serviceWorker.addEventListener("message", (event) => {
+        onMessage(event.data);
+    });
+    navigator.serviceWorker.register('/service-worker.js');
+    postServiceWorkerMessage(message);
+}
+
+function postServiceWorkerMessage(message) {
+    return navigator.serviceWorker.ready.then((registration) => {
+        registration.active.postMessage(message);
+    });
+}
+
+function addServiceWorkerData (options, newData) {
+    return {
+        ...(options || {}),
+        data: {
+            ...(options?.data || {}),
+            ...newData
+        }
+    };
+}
+
+function webShare(shareData) {
     try {
         if(navigator.canShare(shareData)) {
             navigator.share(shareData);
@@ -286,27 +310,9 @@ function shareUrl(shareData) {
     return null;
 }
 
-function registerServiceWorker() {
-    if ('serviceWorker' in navigator) {
-        // should be in the app root: https://stackoverflow.com/questions/29874068/navigator-serviceworker-is-never-ready
-        navigator.serviceWorker.register('service-worker.js');
-            // .then(function (registration) {
-            //     Registration was successful
-            // })
-            // .catch(function (err) {
-            //     Registration failed
-            // });
-    }
-}
+function webNotify(title, data, options) {
+    // should have dispatchAction fields (notificationId, url, redirectURL)
+    options = addServiceWorkerData(options, data);
 
-function showNotification(title, options) {
-    if ('serviceWorker' in navigator) {
-        Notification.requestPermission().then((result) => {
-            if (result === "granted") {
-                navigator.serviceWorker.ready.then((registration) => {
-                    registration.showNotification(title, options);
-                });
-            }
-        });
-    }
+    return postServiceWorkerMessage({type: 'showNotification', title: title, options: options});
 }

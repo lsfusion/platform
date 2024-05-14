@@ -4,20 +4,20 @@
     <title></title>
     <script>
         function init() {
-            let notification = ${notificationId};
-            let timeoutId = setTimeout(function() {
-                window.location.replace("${redirectUrl}");
-            }, 100);
-
-            let broadcastChannel = new BroadcastChannel("${notificationChannel}");
-            broadcastChannel.addEventListener("message", (event) => {
-                if(event.data.startsWith("${notificationReceived}" + notification)) {
+            navigator.serviceWorker.addEventListener("message", (event) => {
+                if(event.data === 'close') {
                     window.open('', '_self');
                     window.close();
-                    clearTimeout(timeoutId);
                 }
             });
-            broadcastChannel.postMessage("${notificationSend}" + notification);
+            navigator.serviceWorker.register('/service-worker.js');
+            navigator.serviceWorker.ready.then((registration) => {
+                registration.active.postMessage({
+                    type: 'pushNotification',
+                    notificationId: ${notificationId},
+                    redirectUrl: "${redirectUrl}"
+                });
+            });
         }
     </script>
 </head>

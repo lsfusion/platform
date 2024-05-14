@@ -979,13 +979,13 @@ public abstract class LogicsModule {
         return addAction(group, new LA<>(action));
     }
 
-    protected LA addNewThreadAProp(Group group, LocalizedString caption, boolean withConnection, boolean hasPeriod, boolean hasDelay, Object... params) {
+    protected LA addNewThreadAProp(Group group, LocalizedString caption, boolean withConnection, boolean hasPeriod, boolean hasDelay, LP<?> targetProp, Object... params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
         ImList<ActionOrPropertyInterfaceImplement> readImplements = readImplements(listInterfaces, params);
         PropertyInterfaceImplement connection = withConnection ? (PropertyInterfaceImplement) readImplements.get(1) : null;
         PropertyInterfaceImplement period = hasPeriod ? (PropertyInterfaceImplement) readImplements.get(1) : null;
         PropertyInterfaceImplement delay = hasDelay ? (PropertyInterfaceImplement) readImplements.get(hasPeriod ? 2 : 1) : null;
-        return addAction(group, new LA(new NewThreadAction(caption, listInterfaces, (ActionMapImplement) readImplements.get(0), period, delay, connection)));
+        return addAction(group, new LA(new NewThreadAction(caption, listInterfaces, (ActionMapImplement) readImplements.get(0), period, delay, connection, targetProp)));
     }
 
     protected LA addNewExecutorAProp(Group group, LocalizedString caption, Boolean sync, Object... params) {

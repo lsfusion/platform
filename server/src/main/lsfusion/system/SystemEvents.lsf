@@ -865,9 +865,22 @@ formShare() + {
     getShowFormURLAction();
 
     FOR Connection cn = currentConnection() DO
-        shareUrl((CONCAT '?', webPath(cn) + readPath(), (CONCAT '&', notEmpty(query(cn)), notEmpty(readQuery()))), 'The link to share the form', 'Share');
+        share((CONCAT '?', webPath(cn) + readPath(), (CONCAT '&', notEmpty(query(cn)), notEmpty(readQuery()))), 'The link to share the form', 'Share');
 }
 
-onWebClientStarted() +{
-    INTERNAL CLIENT 'registerServiceWorker';
+notify(STRING text, INTEGER notificationId, STRING execUrl, JSON options) {
+    FOR Connection cn = currentConnection() DO
+        notify(text, notificationId, execUrl, (CONCAT '?', contextPath(cn) + '/', notEmpty(query(cn))), options);
 }
+
+notify(STRING text, INTEGER notificationId, JSON options) {
+    notify(text, notificationId, '', options);
+}
+
+notify(STRING text, INTEGER notificationId) {
+    notify(text, notificationId, NULL);
+}
+
+//onWebClientStarted() +{
+//    INTERNAL CLIENT 'registerServiceWorker';
+//}

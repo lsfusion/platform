@@ -75,11 +75,8 @@ public class MainController {
 
     @RequestMapping(value = "/push-notification", method = RequestMethod.GET)
     public String pushNotification(ModelMap model, HttpServletRequest request) {
-        model.addAttribute("redirectUrl", getDirectUrl("/main", null, null, request));
-        model.addAttribute("notificationChannel", GwtSharedUtils.NOTIFICATION_CHANNEL);
+        model.addAttribute("redirectUrl", getDirectUrl("/", Collections.singletonList(GwtSharedUtils.NOTIFICATION_PARAM), null, request));
         model.addAttribute("notificationId", request.getParameter(GwtSharedUtils.NOTIFICATION_PARAM));
-        model.addAttribute("notificationSend", GwtSharedUtils.NOTIFICATION_SEND);
-        model.addAttribute("notificationReceived", GwtSharedUtils.NOTIFICATION_RECEIVED);
         return "push-notification";
     }
 
@@ -208,8 +205,8 @@ public class MainController {
     private JSONObject sendRequest(JSONArray jsonArray, HttpServletRequest request, String method){
         FileData fileData = new FileData(new RawFileData(jsonArray.toString().getBytes(StandardCharsets.UTF_8)), "json");
         try {
-            return LogicsSessionObject.getJSONObjectResult(logicsProvider.runRequest(request,
-                    (sessionObject, retry) -> sessionObject.remoteLogics.exec(AuthenticationToken.ANONYMOUS, NavigatorProviderImpl.getSessionInfo(request),
+            return logicsProvider.runRequest(request,
+                    (sessionObject, retry) -> LogicsSessionObject.getJSONObjectResult(sessionObject.remoteLogics.exec(AuthenticationToken.ANONYMOUS, NavigatorProviderImpl.getSessionInfo(request),
                     method + "[JSONFILE]", getExternalRequest(new Object[]{fileData}, request))));
         } catch (IOException | AppServerNotAvailableDispatchException e) {
             throw Throwables.propagate(e);

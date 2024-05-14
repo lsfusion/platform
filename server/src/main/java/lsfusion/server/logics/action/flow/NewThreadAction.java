@@ -10,9 +10,11 @@ import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
+import lsfusion.server.logics.navigator.controller.remote.RemoteNavigator;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -29,11 +31,13 @@ public class NewThreadAction extends AroundAspectAction {
     private PropertyInterfaceImplement<PropertyInterface> delayProp;
     private PropertyInterfaceImplement<PropertyInterface> connectionProp;
 
+    private LP<?> targetProp;
+
     public <I extends PropertyInterface> NewThreadAction(LocalizedString caption, ImOrderSet<I> innerInterfaces,
                                                          ActionMapImplement<?, I> action,
                                                          PropertyInterfaceImplement<I> period,
                                                          PropertyInterfaceImplement<I> delay,
-                                                         PropertyInterfaceImplement<I> connection) {
+                                                         PropertyInterfaceImplement<I> connection, LP<?> targetProp) {
         super(caption, innerInterfaces, action);
 
         ImRevMap<I, PropertyInterface> mapInterfaces = getMapInterfaces(innerInterfaces).reverse();
@@ -46,6 +50,7 @@ public class NewThreadAction extends AroundAspectAction {
         if(connection != null) {
             this.connectionProp = connection.map(mapInterfaces);
         }
+        this.targetProp = targetProp;
     }
 
     // in theory we can also pass Thread, and then add ExecutionStackAspect.getStackString to message (to get multi thread stack)
@@ -64,7 +69,9 @@ public class NewThreadAction extends AroundAspectAction {
     @Override
     protected FlowResult aroundAspect(final ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
 //        String callThread = ExecutionStackAspect.getStackString();
-        if (connectionProp != null) {
+        if(targetProp != null) {
+            targetProp.change(RemoteNavigator.pushGlobalNotification((env, stack) -> run(context.override(env, stack))), context);
+        } else if (connectionProp != null) {
             ObjectValue connectionObject = connectionProp.readClasses(context);
             if(connectionObject instanceof DataObject)
                 context.getNavigatorsManager().pushNotificationConnection((DataObject) connectionObject,
@@ -101,6 +108,6 @@ public class NewThreadAction extends AroundAspectAction {
 
     @Override
     protected <T extends PropertyInterface> ActionMapImplement<?, PropertyInterface> createAspectImplement(ImSet<PropertyInterface> interfaces, ActionMapImplement<?, PropertyInterface> action) {
-        return PropertyFact.createNewThreadAction(interfaces, action, periodProp, delayProp, connectionProp);
+        return PropertyFact.createNewThreadAction(interfaces, action, periodProp, delayProp, connectionProp, targetProp);
     }
 }

@@ -18,6 +18,7 @@ import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
 import lsfusion.server.data.expr.formula.FormulaUnionImpl;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.PartitionType;
+import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.change.AddObjectAction;
@@ -929,9 +930,9 @@ public class PropertyFact {
             return createNewSessionAction(innerInterfaces, action, caption, false, false, migrateSessionProps, scope.isNestedSession());
         return action;
     }
-    public static <L extends PropertyInterface, P extends PropertyInterface> ActionMapImplement<?, L> createNewThreadAction(ImSet<L> innerInterfaces, ActionMapImplement<?, L> action, PropertyInterfaceImplement<L> period, PropertyInterfaceImplement<L> delay, PropertyInterfaceImplement<L> connection) {
+    public static <L extends PropertyInterface, P extends PropertyInterface> ActionMapImplement<?, L> createNewThreadAction(ImSet<L> innerInterfaces, ActionMapImplement<?, L> action, PropertyInterfaceImplement<L> period, PropertyInterfaceImplement<L> delay, PropertyInterfaceImplement<L> connection, LP<?> targetProp) {
         ImOrderSet<L> listInterfaces = innerInterfaces.toOrderSet();
-        NewThreadAction aggAction = new NewThreadAction(LocalizedString.NONAME, listInterfaces, action, period, delay, connection);
+        NewThreadAction aggAction = new NewThreadAction(LocalizedString.NONAME, listInterfaces, action, period, delay, connection, targetProp);
         return aggAction.getImplement(listInterfaces);
     }
     public static <L extends PropertyInterface, P extends PropertyInterface> ActionMapImplement<?, L> createNewExecutorAction(ImSet<L> innerInterfaces, ActionMapImplement<?, L> action, PropertyInterfaceImplement<L> threads, Boolean sync) {

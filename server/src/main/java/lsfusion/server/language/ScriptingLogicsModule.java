@@ -4536,7 +4536,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         return usedClasses;
     }
 
-    public LAWithParams addScriptedNewThreadAction(LAWithParams action, LPWithParams connectionProp, LPWithParams periodProp, LPWithParams delayProp) {
+    public LAWithParams addScriptedNewThreadAction(LAWithParams action, LPWithParams connectionProp, LPWithParams periodProp, LPWithParams delayProp, NamedPropertyUsage toProp) throws ScriptingErrorLog.SemanticErrorException {
+        LP<?> targetProp = toProp != null ? findLPNoParamsByPropertyUsage(toProp) : null;
+
         List<LAPWithParams> propParams = BaseUtils.toList(action);
         if (periodProp != null) {
             propParams.add(periodProp);
@@ -4548,7 +4550,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             propParams.add(connectionProp);
         }
         List<Integer> allParams = mergeAllParams(propParams);
-        LA<?> newAction = addNewThreadAProp(null, LocalizedString.NONAME, connectionProp != null, periodProp != null, delayProp != null, getParamsPlainList(propParams).toArray());
+        LA<?> newAction = addNewThreadAProp(null, LocalizedString.NONAME, connectionProp != null, periodProp != null, delayProp != null, targetProp, getParamsPlainList(propParams).toArray());
         return new LAWithParams(newAction, allParams);
     }
 

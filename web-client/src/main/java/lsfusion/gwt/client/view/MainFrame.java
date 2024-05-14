@@ -32,6 +32,7 @@ import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GColorPreferences;
+import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.controller.DateRangePickerBasedCellEditor;
 import lsfusion.gwt.client.form.view.FormContainer;
@@ -552,27 +553,18 @@ public class MainFrame implements EntryPoint {
         //apply initial navigator changes from navigatorinfo somewhere around here
         applyNavigatorChanges(result.navigatorChanges, navigatorController, windowsController);
 
-        String notification = GwtClientUtils.getPageParameter(GwtSharedUtils.NOTIFICATION_PARAM);
-
-        Runnable openNavigatorMenuIfNeeded = () -> {
+        formsController.executeAction("SystemEvents.onClientStarted[]", () -> {
             if (formsController.getFormsCount() == 0) {
                 openNavigatorMenu();
             }
-        };
-
-        formsController.executeAction("SystemEvents.onClientStarted[]", notification == null ? openNavigatorMenuIfNeeded : null);
-
-        GwtClientUtils.openBroadcastChannel(GwtSharedUtils.NOTIFICATION_CHANNEL, (channel, message) -> {
-            String sendPrefix = GwtSharedUtils.NOTIFICATION_SEND;
-            if(message.startsWith(sendPrefix)) {
-                String notificationReceived = message.substring(sendPrefix.length());
-                GwtClientUtils.postBroadcastChannelMessage(channel, GwtSharedUtils.NOTIFICATION_RECEIVED + notificationReceived);
-                formsController.executeNotificationAction(Integer.valueOf(notificationReceived), null);
-            }
         });
 
-        if(notification != null)
-            formsController.executeNotificationAction(Integer.valueOf(notification), openNavigatorMenuIfNeeded);
+        GwtClientUtils.registerServiceWorker(message -> {
+            if(GSimpleStateTableView.toString(GwtClientUtils.getField(message, "type")).equals("pushNotification")) {
+                int notificationId = GSimpleStateTableView.toInt(GwtClientUtils.getField(message, "notificationId"));
+                formsController.executeNotificationAction(notificationId, null);
+            }
+        }, GwtClientUtils.toJsObject("type", GSimpleStateTableView.fromString("pullNotification")));
     }
 
     public static void applyNavigatorChanges(GNavigatorChangesDTO navigatorChangesDTO, GNavigatorController navigatorController, WindowsController windowsController) {
