@@ -2,7 +2,7 @@
 title: 'CONTINUE operator'
 ---
 
-The `CONTINUE` operator creates an [action](Actions.md) that implements move to the next iteration of the cycle.
+The `CONTINUE` operator creates an [action](Actions.md) that implements move to the [next iteration of the cycle](Next_iteration_CONTINUE.md).
 
 ### Syntax
 
@@ -14,7 +14,7 @@ CONTINUE
 
 The `CONTINUE` operator creates an action that moves to the next iteration of the cycle.
 
-### Examples
+### Example
 
 ```lsf
 testContinue ()  {

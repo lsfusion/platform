@@ -21,6 +21,7 @@ title: 'Операторы-действия'
 -   [Оператор `CHANGE`](CHANGE_operator.md)
 -   [Оператор `CHANGECLASS`](CHANGECLASS_operator.md)
 -   [Оператор `COLLAPSE`](COLLAPSE_operator.md)
+-   [Оператор `CONTINUE`](CONTINUE_operator.md)
 -   [Оператор `DELETE`](DELETE_operator.md)
 -   [Оператор `DIALOG`](DIALOG_operator.md)
 -   [Оператор `EMAIL`](EMAIL_operator.md)

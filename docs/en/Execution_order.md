@@ -10,6 +10,7 @@ The platform supports the following operators for managing the order in which ac
 -   [Recursive loop (`WHILE`)](Recursive_loop_WHILE.md)
 -   [Branching (`IF`)](Branching_CASE_IF_MULTI.md) 
 -   [Interruption (`BREAK`)](Interruption_BREAK.md)
+-   [Next iteration (`CONTINUE`)](Next_iteration_CONTINUE.md)
 -   [Exit (`RETURN`)](Exit_RETURN.md)
 -   [New thread (`NEWTHREAD`, `NEWEXECUTOR`)](New_threads_NEWTHREAD_NEWEXECUTOR.md)
 -   [Exception handling (`TRY`)](Exception_handling_TRY.md)

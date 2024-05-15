@@ -21,6 +21,7 @@ Context dependent action operators can use external context parameters. They can
 -   [`CHANGE` operator](CHANGE_operator.md)
 -   [`CHANGECLASS` operator](CHANGECLASS_operator.md)
 -   [`COLLAPSE` operator](COLLAPSE_operator.md)
+-   [`CONTINUE` operator](CONTINUE_operator.md)
 -   [`DELETE` operator](DELETE_operator.md)
 -   [`DIALOG` operator](DIALOG_operator.md)
 -   [`EMAIL` operator](EMAIL_operator.md)
