@@ -168,7 +168,11 @@ A single `OBJECTS` block can contain several comma-delimited declarations of [ob
 
         - `tileProvider`
       
-            String literal that specifies the map source. Possible options: `'google'` and `'yandex'`. If not specified, OpenStreetMap will be used as the map source.
+            String literal that specifies the map source. Possible options:
+      
+            - `'openStreetMap'` (default value)
+            - `'google'`
+            - `'yandex'`
          
     - `CALENDAR`
 
