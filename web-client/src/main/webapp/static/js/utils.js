@@ -279,7 +279,7 @@ function registerServiceWorker(onMessage, message) {
     navigator.serviceWorker.addEventListener("message", (event) => {
         onMessage(event.data);
     });
-    navigator.serviceWorker.register('/service-worker.js');
+    navigator.serviceWorker.register('service-worker.js');
     postServiceWorkerMessage(message);
 }
 

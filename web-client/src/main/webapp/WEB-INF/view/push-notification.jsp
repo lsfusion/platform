@@ -10,7 +10,7 @@
                     window.close();
                 }
             });
-            navigator.serviceWorker.register('/service-worker.js');
+            navigator.serviceWorker.register('service-worker.js');
             navigator.serviceWorker.ready.then((registration) => {
                 registration.active.postMessage({
                     type: 'pushNotification',
