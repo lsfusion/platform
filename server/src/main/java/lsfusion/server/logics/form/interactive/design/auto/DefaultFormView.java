@@ -260,7 +260,6 @@ public class DefaultFormView extends FormView {
 
         PropertyDrawView logMessage = get(entity.logMessagePropertyDraw);
 
-        toolbarLeftContainer.add(editFunction, version);
         toolbarLeftContainer.add(logMessage, version); // otherwise it will go to OBJECTS container which has types COLUMNS and this type doesnt respect SHOWIF
 
         toolbarRightContainer.add(refreshFunction, version);
@@ -270,6 +269,7 @@ public class DefaultFormView extends FormView {
         toolbarRightContainer.add(okFunction, version);
         toolbarRightContainer.add(closeFunction, version);
 
+        popupContainer.add(editFunction, version);
         popupContainer.add(shareFunction, version);
     }
 

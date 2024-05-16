@@ -4,6 +4,7 @@ import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.design.ContainerFactory;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
+import lsfusion.server.physics.admin.Settings;
 
 public class FormContainerSet {
     public static final String BOX_CONTAINER = "BOX";
@@ -90,17 +91,20 @@ public class FormContainerSet {
         set.groupContainer.setSID(DefaultFormView.getGroupContainerSID(""));
         set.groupContainer.setLines(DefaultFormView.GROUP_CONTAINER_LINES_COUNT);
 
+        boolean toolbarTopLeft = Settings.get().isToolbarTopLeft();
+
         set.toolbarLeftContainer = contFactory.createContainer();
         set.toolbarLeftContainer.setSID(DefaultFormView.getToolbarLeftContainerSID());
         set.toolbarLeftContainer.setHorizontal(true);
-        set.toolbarLeftContainer.setFlex(0);
+        set.toolbarLeftContainer.setChildrenAlignment(toolbarTopLeft ? FlexAlignment.END : FlexAlignment.START);
+        set.toolbarLeftContainer.setFlex(toolbarTopLeft ? 0 : 1);
         set.toolbarLeftContainer.setAlignment(FlexAlignment.STRETCH);
 
         set.toolbarRightContainer = contFactory.createContainer();
         set.toolbarRightContainer.setSID(DefaultFormView.getToolbarRightContainerSID());
         set.toolbarRightContainer.setHorizontal(true);
-        set.toolbarRightContainer.setChildrenAlignment(FlexAlignment.END);
-        set.toolbarRightContainer.setFlex(1);
+        set.toolbarRightContainer.setChildrenAlignment(toolbarTopLeft ? FlexAlignment.START : FlexAlignment.END);
+        set.toolbarRightContainer.setFlex(toolbarTopLeft ? 1 : 0);
         set.toolbarRightContainer.setAlignment(FlexAlignment.STRETCH);
 
         set.toolbarContainer = contFactory.createContainer(); // контейнер тулбара
@@ -109,8 +113,9 @@ public class FormContainerSet {
         set.toolbarContainer.setAlignment(FlexAlignment.STRETCH);
 
         set.toolbarRightContainer.add(set.toolbarContainer, version);
-        set.toolbarBoxContainer.add(set.toolbarLeftContainer, version);
-        set.toolbarBoxContainer.add(set.toolbarRightContainer, version);
+
+        set.toolbarBoxContainer.add(toolbarTopLeft ? set.toolbarRightContainer : set.toolbarLeftContainer, version);
+        set.toolbarBoxContainer.add(toolbarTopLeft ? set.toolbarLeftContainer : set.toolbarRightContainer, version);
 
         set.popupContainer = contFactory.createContainer();
         set.popupContainer.setSID(DefaultFormView.getPopupContainerSID());
@@ -118,11 +123,23 @@ public class FormContainerSet {
         set.popupContainer.setImage("bi bi-three-dots-vertical", null);
         set.popupContainer.valueClass = "remove-btn-all-mb";
 
-        set.toolbarRightContainer.add(set.popupContainer, version);
+        if(toolbarTopLeft) {
+            set.toolbarRightContainer.addLast(set.popupContainer, version);
+        } else {
+            set.toolbarRightContainer.addFirst(set.popupContainer, version);
+        }
+
+        if(toolbarTopLeft) {
+            set.mainContainer.add(set.toolbarBoxContainer, version);
+        }
 
         set.mainContainer.add(set.panelContainer, version);
         set.mainContainer.add(set.objectsContainer, version);
-        set.mainContainer.add(set.toolbarBoxContainer, version);
+
+        if(!toolbarTopLeft) {
+            set.mainContainer.add(set.toolbarBoxContainer, version);
+        }
+
         set.panelContainer.add(set.groupContainer, version);
 
         return set;

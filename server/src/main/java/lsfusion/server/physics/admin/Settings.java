@@ -3327,4 +3327,15 @@ public class Settings implements Cloneable {
     public void setDisableShowingRecentlyLogMessages(boolean disableShowingRecentlyLogMessages) {
         this.disableShowingRecentlyLogMessages = disableShowingRecentlyLogMessages;
     }
+
+    //show TOOLBARBOX container on the top and switch TOOLBARLEFT and TOOLBARRIGHT containers
+    private boolean toolbarTopLeft;
+
+    public boolean isToolbarTopLeft() {
+        return toolbarTopLeft;
+    }
+
+    public void setToolbarTopLeft(boolean toolbarTopLeft) {
+        this.toolbarTopLeft = toolbarTopLeft;
+    }
 }

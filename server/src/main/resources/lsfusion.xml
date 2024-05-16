@@ -152,6 +152,7 @@
                 <entry key="maxLengthForValueButton" value="${settings.maxLengthForValueButton:}"/>
                 <entry key="suppressOnFocusChange" value="${settings.suppressOnFocusChange:}"/>
                 <entry key="contentWordWrap" value="${settings.contentWordWrap:}"/>
+                <entry key="toolbarTopLeft" value="${settings.toolbarTopLeft:}"/>
             </map>
         </property>
         </bean>
