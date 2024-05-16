@@ -99,6 +99,10 @@ public class DialogBoxHelper {
             contentsContainerStyle.setProperty("overflow", "auto");
             contentsContainerStyle.setProperty("maxWidth", (Window.getClientWidth() * 0.75) + "px");
             contentsContainerStyle.setProperty("maxHeight", (Window.getClientHeight() * 0.75) + "px");
+            //fix max width for constraint
+            //https://stackoverflow.com/questions/12232858/css-table-and-max-width-in-chrome-not-working
+            contentsContainerStyle.setProperty("tableLayout", "fixed");
+            contentsContainerStyle.setProperty("width", "100%");
 
             createButtonsPanel(activeOption, options);
 
