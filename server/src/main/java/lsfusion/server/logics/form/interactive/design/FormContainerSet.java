@@ -97,14 +97,14 @@ public class FormContainerSet {
         set.toolbarLeftContainer.setSID(DefaultFormView.getToolbarLeftContainerSID());
         set.toolbarLeftContainer.setHorizontal(true);
         set.toolbarLeftContainer.setChildrenAlignment(toolbarTopLeft ? FlexAlignment.END : FlexAlignment.START);
-        set.toolbarLeftContainer.setFlex(toolbarTopLeft ? 0 : 1);
+        set.toolbarLeftContainer.setFlex(toolbarTopLeft ? 1 : 0);
         set.toolbarLeftContainer.setAlignment(FlexAlignment.STRETCH);
 
         set.toolbarRightContainer = contFactory.createContainer();
         set.toolbarRightContainer.setSID(DefaultFormView.getToolbarRightContainerSID());
         set.toolbarRightContainer.setHorizontal(true);
         set.toolbarRightContainer.setChildrenAlignment(toolbarTopLeft ? FlexAlignment.START : FlexAlignment.END);
-        set.toolbarRightContainer.setFlex(toolbarTopLeft ? 1 : 0);
+        set.toolbarRightContainer.setFlex(toolbarTopLeft ? 0 : 1);
         set.toolbarRightContainer.setAlignment(FlexAlignment.STRETCH);
 
         set.toolbarContainer = contFactory.createContainer(); // контейнер тулбара
@@ -126,7 +126,7 @@ public class FormContainerSet {
         if(toolbarTopLeft) {
             set.toolbarRightContainer.addLast(set.popupContainer, version);
         } else {
-            set.toolbarRightContainer.addFirst(set.popupContainer, version);
+            set.toolbarRightContainer.add(set.popupContainer, version);
         }
 
         if(toolbarTopLeft) {
