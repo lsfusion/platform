@@ -71,7 +71,7 @@ openFile '{system.open.file}' (Message m) {
     open(file(m));
 }
 
-FORM messengers '{messenger.messengers}' AUTOREFRESH 20
+FORM messengers '{messenger.messengers}'
     OBJECTS a = Account
     PROPERTIES(a) READONLY name, captionMessenger, token 
     PROPERTIES(a) NEWSESSION synchronizeChatsAction TOOLBAR SHOWIF isSynchronize(messenger(a)), NEW, EDIT, DELETE 
@@ -85,7 +85,9 @@ FORM messengers '{messenger.messengers}' AUTOREFRESH 20
     FILTERS chat(m) == c 
     ORDERS dateTime(m) DESC
 
-    FILTERS account(c) == a;
+    FILTERS account(c) == a
+
+    EVENTS ON SCHEDULE PERIOD 20 formRefresh();
 
 FORM messenger '{messenger.messenger}'
     OBJECTS a = Account PANEL
