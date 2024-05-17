@@ -175,4 +175,5 @@
 }
 .message-box .html-or-text {
     white-space: normal;
+    word-break: break-word;
 }
