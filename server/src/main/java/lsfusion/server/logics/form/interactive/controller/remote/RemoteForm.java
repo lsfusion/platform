@@ -367,7 +367,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
 
             if (logger.isDebugEnabled()) {
-                logger.debug(String.format("changePageSize: [ID: %1$d]", groupObject.getID()));
+                logger.debug(String.format("changeGroupSize: [ID: %1$d]", groupObject.getID()));
                 logger.debug(String.format("new type: %s", changeType));
             }
             

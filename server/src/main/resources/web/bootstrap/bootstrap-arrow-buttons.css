@@ -1,104 +1,152 @@
-/*copy-paste from https://github.com/shpoont/bootstrap-arrow-buttons*/
-
 .btn-arrow-right,
 .btn-arrow-left {
   position: relative;
-  padding-left: 18px;
-  padding-right: 18px;
+
+  --btn-full-height: calc(var(--bs-btn-padding-y) * 2 + (var(--bs-btn-font-size) * var(--bs-btn-line-height)));
+  --btn-full-half-height: calc(var(--btn-full-height) / 2);
+  --btn-edge-size: calc(var(--btn-full-height) / 1.4142135624);
+
+  --btn-btn-arrow-padding-x: calc(max(var(--bs-btn-padding-x), var(--btn-full-half-height)));
+  --btn-content-shift: calc(var(--btn-btn-arrow-padding-x) + var(--btn-full-half-height));
+
+    --bs-actual-border-width: 0px;
 }
-.btn-arrow-right {
-  padding-left: 36px;
+
+/* cutting the arrow inside */
+.btn-arrows-around > .btn-arrow-right,
+.btn-arrow-right:not(.btn-group > :first-of-type) {
+  clip-path: polygon(
+          0 0,
+          9999px 0,
+          9999px 100%,
+          0 100%,
+          var(--btn-full-half-height) 50%
+  );
+
+  padding-left: var(--btn-content-shift);
+
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
 }
-.btn-arrow-left {
-  padding-right: 36px;
+.btn-arrows-around > .btn-arrow-left,
+.btn-arrow-left:not(.btn-group > :last-of-type) {
+  clip-path: polygon(
+          100% 0,
+          -9999px 0,
+          -9999px 100%,
+          100% 100%,
+          calc(100% - var(--btn-full-half-height)) 50%
+  );
+
+  padding-right: var(--btn-content-shift);
+
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
 }
-.btn-arrow-right:before,
-.btn-arrow-right:after,
-.btn-arrow-left:before,
-.btn-arrow-left:after {
-  /* make two squares (before and after), looking similar to the button */
+.btn.btn-arrow-right,
+.btn-group:not(.btn-arrows-around) > .btn.btn-arrow-left:last-of-type {
+    padding-right: var(--btn-btn-arrow-padding-x);
+}
+.btn-arrows-around > .btn.btn-arrow-right,
+.btn.btn-arrow-right:not(.btn-group > :last-of-type) {
+    /*padding-right: var(--btn-btn-arrow-padding-x);*/
+  border-right-color: transparent !important;
+
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+.btn.btn-arrow-left,
+.btn-group:not(.btn-arrows-around) > .btn.btn-arrow-right:first-of-type {
+  padding-left: var(--btn-btn-arrow-padding-x);
+}
+.btn-arrows-around > .btn.btn-arrow-left,
+.btn.btn-arrow-left:not(.btn-group > :first-of-type) {
+  /*padding-left: var(--btn-btn-arrow-padding-x);*/
+  border-left-color: transparent !important;
+
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+}
+
+:not(.btn-group) > .btn.btn-arrow-right,
+.btn-arrows-around > .btn.btn-arrow-right:last-of-type {
+  margin-right: calc(var(--btn-full-half-height) + 0.5px);
+}
+
+:not(.btn-group) > .btn.btn-arrow-left,
+.btn-arrows-around > .btn.btn-arrow-left:first-of-type {
+  margin-left: calc(var(--btn-full-half-height) + 0.5px);
+}
+
+/* we need this to avoid overflows, because of the "invisible" square */
+.btn-arrows-around,
+:not(.btn-group) > .btn.btn-arrow-left,
+:not(.btn-group) > .btn.btn-arrow-right {
+    overflow: hidden;
+}
+
+.btn-arrows-around > .btn-arrow-right::after,
+.btn-arrow-right:not(.btn-group > :last-of-type)::after,
+.btn-arrows-around > .btn-arrow-left::before,
+.btn-arrow-left:not(.btn-group > :first-of-type)::before,
+.btn-arrows-around > .btn-arrow-right::before,
+.btn-arrow-right:not(.btn-group > :first-of-type)::before,
+.btn-arrows-around > .btn-arrow-left::after,
+.btn-arrow-left:not(.btn-group > :last-of-type)::after {
   content: "";
   position: absolute;
-  top: 5px;
-  /* move it down because of rounded corners */
-  width: 22.627417px;
-  /* same as height */
-  height: 22.627417px;
-  /* button_inner_height / sqrt(2) */
+  width: var(--btn-edge-size);
+  height: var(--btn-edge-size);
+
+  top: 50%;
+  box-sizing: content-box;
+
   background: inherit;
-  /* use parent background */
   border: inherit;
-  /* use parent border */
-  border-left-color: transparent;
-  /* hide left border */
-  border-bottom-color: transparent;
-  /* hide bottom border */
-  border-radius: 0px 4px 0px 0px;
-  /* round arrow corner, the shorthand property doesn't accept "inherit" so it is set to 4px */
-  -webkit-border-radius: 0px 4px 0px 0px;
-  -moz-border-radius: 0px 4px 0px 0px;
-}
-.btn-arrow-right:before,
-.btn-arrow-right:after {
-  transform: rotate(45deg);
-  /* rotate right arrow squares 45 deg to point right */
-  -webkit-transform: rotate(45deg);
-  -moz-transform: rotate(45deg);
-  -o-transform: rotate(45deg);
-  -ms-transform: rotate(45deg);
-}
-.btn-arrow-left:before,
-.btn-arrow-left:after {
-  transform: rotate(225deg);
-  /* rotate left arrow squares 225 deg to point left */
-  -webkit-transform: rotate(225deg);
-  -moz-transform: rotate(225deg);
-  -o-transform: rotate(225deg);
-  -ms-transform: rotate(225deg);
-}
-.btn-arrow-right:before,
-.btn-arrow-left:before {
-  /* align the "before" square to the left */
-  left: -11px;
-}
-.btn-arrow-right:after,
-.btn-arrow-left:after {
-  /* align the "after" square to the right */
-  right: -11px;
-}
-.btn-arrow-right:after,
-.btn-arrow-left:before {
-  /* bring arrow pointers to front */
-  z-index: 1;
-}
-.btn-arrow-right:before,
-.btn-arrow-left:after {
-  /* hide arrow tails background */
-  background-color: white;
+
+  border-radius: 0 !important;
 }
 
-/*end of original code*/
-
-/*remove right border for .btn-arrow-right, but remain it for before and after*/
-.btn-arrow-right:not(:checked) {
-  border-right-width: 0;
+.btn-arrow-right::before {
+  left: 0;
 }
-.btn-arrow-right:not(:checked):before,
-.btn-arrow-right:not(:checked):after {
-  border-right-width: 1px;
+.btn-arrow-right::after {
+  left: 100%;
 }
-
-/*remove left border for .btn-arrow-left, but remain it for before and after*/
-.btn-arrow-left:not(:checked) {
-  border-left-width: 0;
+.btn-arrow-left::before {
+    right: 100%;
 }
-.btn-arrow-left:not(:checked):before,
-.btn-arrow-left:not(:checked):after {
-  border-left-width: 1px;
+.btn-arrow-left::after {
+  right: 0;
 }
 
-/*override white background for 'before' rotated squares between buttons */
-.btn-check:checked+.btn-arrow-right+.btn-check+.btn-arrow-right:before,
-.btn-check:checked+.btn-arrow-left+.btn-check+.btn-arrow-left:before {
-  background: inherit;
+/* hack for arrow buttons */
+.btn.btn-arrow-left[class*="-outline-"],
+.btn.btn-arrow-right[class*="-outline-"] {
+    --bs-actual-border-width: var(--bs-border-width);
+}
+
+.btn-arrow-right::before,
+.btn-arrow-right::after {
+    clip-path: polygon(0% 0%, 100% 100%, 0% 100%);
+
+    /* it's tricky here we want content-box translation for X direction, to stick diagonal to the side (it works only this way), but border-box for the vertical translation, to align properly*/
+    /* but it's not possible in css, so we'll do it that way */
+    transform: /* centering */
+            translateX(-50%)
+            translateY(calc(calc(0px - var(--bs-actual-border-width)) - 50%)) /* it's not very clear solution because for example not outlined buttons will not have border and there will be incorrect shift  */
+            rotate(-135deg);
+    transform-box: content-box;
+}
+.btn-arrow-left::before,
+.btn-arrow-left::after {
+    clip-path: polygon(100% 0%, 0% 100%, 100% 100%);
+
+    /* it's tricky here we want content-box translation for X direction, to stick diagonal to the side (it works only this way), but border-box for the vertical translation, to align properly*/
+    /* but it's not possible in css, so we'll do it that way */
+    transform: /* centering */
+            translateX(50%)
+            translateY(calc(calc(0px - var(--bs-actual-border-width)) - 50%))  /* it's not very clear solution because for example not outlined buttons will not have border and there will be incorrect shift  */
+            rotate(135deg);
+    transform-box: content-box;
 }

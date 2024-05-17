@@ -49,7 +49,7 @@ public class GetShowFormURLAction extends InternalAction {
             script += ";";
 
             String query = ExternalUtils.SCRIPT_PARAM + "=" + URLEncoder.encode(script, charset.name()) + paramsString;
-            String innerPath = "/eval/action";
+            String innerPath = "/eval/action/";
 
             findProperty("readPath[]").change(innerPath, context);
             findProperty("readQuery[]").change(query, context);
