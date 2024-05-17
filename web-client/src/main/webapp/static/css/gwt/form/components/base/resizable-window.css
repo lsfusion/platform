@@ -3,7 +3,7 @@
 }
 
 .modal-dialog.modal-fit-content {
-    max-width: none;
+    max-width: 100vw;
     width: fit-content;
     margin-right: auto;
     margin-left: auto;
