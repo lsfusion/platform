@@ -552,8 +552,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         assert object.baseClass instanceof CustomClass;
         GroupObjectEntity groupObject = object.groupTo;
         assert groupObject.getObjects().size() == 1;
-
-        mapObjects = mapObjects.removeRev(object);
+        assert !mapObjects.containsKey(object);
 
         ImSet<FilterEntity> filters = getGroupFixedFilters(SetFact.EMPTY(), true).get(groupObject);
         if(filters == null)
