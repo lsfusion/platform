@@ -167,3 +167,12 @@
 .dialog-user-preferences-container {
     min-height: 40em;
 }
+
+/* ------------- message box ----------- */
+/*fix max width for constraint*/
+.message-box {
+    overflow: auto;
+}
+.message-box .html-or-text {
+    white-space: normal;
+}
