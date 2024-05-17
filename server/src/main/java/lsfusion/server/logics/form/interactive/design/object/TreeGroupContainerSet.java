@@ -137,7 +137,7 @@ public class TreeGroupContainerSet {
         set.toolbarRightContainer.setChildrenAlignment(FlexAlignment.END);
         set.toolbarRightContainer.add(set.filterGroupsContainer, version);
         set.toolbarRightContainer.add(set.toolbarContainer, version);
-        set.toolbarRightContainer.add(set.popupContainer, version);
+        set.toolbarLeftContainer.add(set.popupContainer, version);
 
         set.filterGroupsContainer.setHorizontal(true);
         set.filterGroupsContainer.setAlignment(FlexAlignment.STRETCH);

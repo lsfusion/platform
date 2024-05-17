@@ -140,9 +140,9 @@ public class GroupObjectContainerSet {
         // we're stretching the intermediate containers, and centering the leaf components
         set.toolbarBoxContainer.setHorizontal(true);
         set.toolbarBoxContainer.setAlignment(FlexAlignment.STRETCH);
-        set.toolbarBoxContainer.add(set.toolbarLeftContainer, version);
+        set.toolbarBoxContainer.add(toolbarTopLeft ? set.toolbarRightContainer : set.toolbarLeftContainer, version);
         set.toolbarLeftContainer.setAlignment(FlexAlignment.STRETCH);
-        set.toolbarBoxContainer.add(set.toolbarRightContainer, version);
+        set.toolbarBoxContainer.add(toolbarTopLeft ? set.toolbarLeftContainer : set.toolbarRightContainer, version);
         set.toolbarRightContainer.setFlex(1);
         set.toolbarRightContainer.setAlignment(FlexAlignment.STRETCH);
 
@@ -151,12 +151,12 @@ public class GroupObjectContainerSet {
         group.toolbarSystem.setAlignment(FlexAlignment.CENTER);
 
         set.toolbarRightContainer.setHorizontal(true);
-        set.toolbarRightContainer.setChildrenAlignment(FlexAlignment.END);
+        set.toolbarRightContainer.setChildrenAlignment(toolbarTopLeft ? FlexAlignment.START : FlexAlignment.END);
         set.toolbarRightContainer.add(group.getCalculations(), version);
         set.toolbarRightContainer.add(set.filterGroupsContainer, version);
         set.filterGroupsContainer.setAlignment(FlexAlignment.STRETCH);
         set.toolbarRightContainer.add(set.toolbarContainer, version);
-        set.toolbarRightContainer.add(set.popupContainer, version);
+        set.toolbarLeftContainer.add(set.popupContainer, version);
         set.toolbarContainer.setAlignment(FlexAlignment.STRETCH);
 
         set.filterGroupsContainer.setHorizontal(true);
