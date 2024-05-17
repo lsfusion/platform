@@ -95,10 +95,9 @@ public class DialogBoxHelper {
 
             setBodyWidget(contents);
 
-            Style contentsContainerStyle = contents.getElement().getStyle();
-            contents.getElement().addClassName("message-box");
-            contentsContainerStyle.setProperty("maxWidth", (Window.getClientWidth() * 0.75) + "px");
-            contentsContainerStyle.setProperty("maxHeight", (Window.getClientHeight() * 0.75) + "px");
+//            Style contentsContainerStyle = contents.getElement().getStyle();
+//            contentsContainerStyle.setProperty("maxWidth", (Window.getClientWidth() * 0.75) + "px");
+//            contentsContainerStyle.setProperty("maxHeight", (Window.getClientHeight() * 0.75) + "px");
 
             createButtonsPanel(activeOption, options);
 

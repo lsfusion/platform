@@ -13,6 +13,8 @@ public class DialogModalWindow extends ModalWindow {
     public DialogModalWindow(String caption, boolean resizable, ModalWindowSize size) {
         super(resizable, size);
 
+        getBody().getElement().addClassName("dialog-modal-body");
+
         BaseImage.initImageText(getTitleWidget(), caption, null, ImageHtmlOrTextType.FORM);
     }
 

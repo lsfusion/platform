@@ -9,6 +9,11 @@ public class CaptionHtmlOrTextType extends HtmlOrTextType {
 
     @Override
     protected boolean isWrap() {
-        return this == COMMENT_VERT;
+        return this == COMMENT_VERT || this == MESSAGE;
+    }
+
+    @Override
+    protected boolean isWrapWordBreak() {
+        return this == MESSAGE;
     }
 }

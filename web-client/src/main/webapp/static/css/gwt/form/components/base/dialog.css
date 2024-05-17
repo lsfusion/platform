@@ -168,12 +168,6 @@
     min-height: 40em;
 }
 
-/* ------------- message box ----------- */
-/*fix max width for constraint*/
-.message-box {
+.dialog-modal-body {
     overflow: auto;
-}
-.message-box .html-or-text {
-    white-space: normal;
-    word-break: break-word;
 }
