@@ -124,9 +124,9 @@ public class FormContainerSet {
         set.popupContainer.valueClass = "remove-btn-all-mb";
 
         if(toolbarTopLeft) {
-            set.toolbarRightContainer.addLast(set.popupContainer, version);
+            set.toolbarLeftContainer.addLast(set.popupContainer, version);
         } else {
-            set.toolbarRightContainer.add(set.popupContainer, version);
+            set.toolbarLeftContainer.add(set.popupContainer, version);
         }
 
         if(toolbarTopLeft) {

@@ -266,7 +266,7 @@ public class DefaultFormView extends FormView {
         boolean toolbarTopLeft = Settings.get().isToolbarTopLeft();
 
         if(!toolbarTopLeft) {
-            toolbarRightContainer.add(refreshFunction, version);
+            toolbarLeftContainer.add(refreshFunction, version);
         }
         toolbarRightContainer.add(dropFunction, version);
         toolbarRightContainer.add(applyFunction, version);
@@ -274,7 +274,7 @@ public class DefaultFormView extends FormView {
         toolbarRightContainer.add(okFunction, version);
         toolbarRightContainer.add(closeFunction, version);
         if(toolbarTopLeft) {
-            toolbarRightContainer.add(refreshFunction, version);
+            toolbarLeftContainer.add(refreshFunction, version);
         }
 
         popupContainer.add(editFunction, version);

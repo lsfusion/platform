@@ -5,6 +5,7 @@ import lsfusion.interop.form.design.ContainerFactory;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
+import lsfusion.server.physics.admin.Settings;
 
 // в этот класс вынесено автоматическое создание контейнеров при создании GroupObject
 // сейчас полный клон TreeGroupContainerSet, потом надо рефакторить
@@ -118,9 +119,16 @@ public class GroupObjectContainerSet {
 
         set.boxContainer.setAlignment(FlexAlignment.STRETCH);
         set.boxContainer.setFlex(1);
+
+        boolean toolbarTopLeft = Settings.get().isToolbarTopLeft();
+        if (toolbarTopLeft) {
+            set.boxContainer.add(set.toolbarBoxContainer, version);
+        }
         set.boxContainer.add(set.filterBoxContainer, version);
         set.boxContainer.add(group.getGrid(), version);
-        set.boxContainer.add(set.toolbarBoxContainer, version);
+        if (!toolbarTopLeft) {
+            set.boxContainer.add(set.toolbarBoxContainer, version);
+        }
         set.boxContainer.add(set.panelContainer, version);
         
         set.filterBoxContainer.setHorizontal(true);
