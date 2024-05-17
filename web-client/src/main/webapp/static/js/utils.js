@@ -281,6 +281,11 @@ function registerServiceWorker(onMessage, message) {
     });
     navigator.serviceWorker.register('service-worker.js');
     postServiceWorkerMessage(message);
+
+    try {
+        Notification.requestPermission();
+    } catch (error) {
+    }
 }
 
 function postServiceWorkerMessage(message) {
