@@ -401,6 +401,9 @@ public class ContainerView extends ComponentView {
     public void addFirst(ComponentView comp, Version version) {
         add(comp, ComplexLocation.FIRST(), version);
     }
+    public void addLast(ComponentView comp, Version version) {
+        add(comp, ComplexLocation.LAST(), version);
+    }
 
     public void addBefore(ComponentView comp, ComponentView compBefore, Version version) {
         add(comp, ComplexLocation.BEFORE(compBefore), version);

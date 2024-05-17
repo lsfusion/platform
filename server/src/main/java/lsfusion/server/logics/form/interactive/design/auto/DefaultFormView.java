@@ -31,6 +31,7 @@ import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.physics.admin.Settings;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -260,16 +261,23 @@ public class DefaultFormView extends FormView {
 
         PropertyDrawView logMessage = get(entity.logMessagePropertyDraw);
 
-        toolbarLeftContainer.add(editFunction, version);
         toolbarLeftContainer.add(logMessage, version); // otherwise it will go to OBJECTS container which has types COLUMNS and this type doesnt respect SHOWIF
 
-        toolbarRightContainer.add(refreshFunction, version);
+        boolean toolbarTopLeft = Settings.get().isToolbarTopLeft();
+
+        if(!toolbarTopLeft) {
+            toolbarLeftContainer.add(refreshFunction, version);
+        }
         toolbarRightContainer.add(dropFunction, version);
         toolbarRightContainer.add(applyFunction, version);
         toolbarRightContainer.add(cancelFunction, version);
         toolbarRightContainer.add(okFunction, version);
         toolbarRightContainer.add(closeFunction, version);
+        if(toolbarTopLeft) {
+            toolbarLeftContainer.add(refreshFunction, version);
+        }
 
+        popupContainer.add(editFunction, version);
         popupContainer.add(shareFunction, version);
     }
 

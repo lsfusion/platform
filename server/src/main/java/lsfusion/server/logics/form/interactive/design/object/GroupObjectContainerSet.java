@@ -5,6 +5,7 @@ import lsfusion.interop.form.design.ContainerFactory;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
+import lsfusion.server.physics.admin.Settings;
 
 // в этот класс вынесено автоматическое создание контейнеров при создании GroupObject
 // сейчас полный клон TreeGroupContainerSet, потом надо рефакторить
@@ -118,9 +119,16 @@ public class GroupObjectContainerSet {
 
         set.boxContainer.setAlignment(FlexAlignment.STRETCH);
         set.boxContainer.setFlex(1);
+
+        boolean toolbarTopLeft = Settings.get().isToolbarTopLeft();
+        if (toolbarTopLeft) {
+            set.boxContainer.add(set.toolbarBoxContainer, version);
+        }
         set.boxContainer.add(set.filterBoxContainer, version);
         set.boxContainer.add(group.getGrid(), version);
-        set.boxContainer.add(set.toolbarBoxContainer, version);
+        if (!toolbarTopLeft) {
+            set.boxContainer.add(set.toolbarBoxContainer, version);
+        }
         set.boxContainer.add(set.panelContainer, version);
         
         set.filterBoxContainer.setHorizontal(true);
@@ -132,9 +140,9 @@ public class GroupObjectContainerSet {
         // we're stretching the intermediate containers, and centering the leaf components
         set.toolbarBoxContainer.setHorizontal(true);
         set.toolbarBoxContainer.setAlignment(FlexAlignment.STRETCH);
-        set.toolbarBoxContainer.add(set.toolbarLeftContainer, version);
+        set.toolbarBoxContainer.add(toolbarTopLeft ? set.toolbarRightContainer : set.toolbarLeftContainer, version);
         set.toolbarLeftContainer.setAlignment(FlexAlignment.STRETCH);
-        set.toolbarBoxContainer.add(set.toolbarRightContainer, version);
+        set.toolbarBoxContainer.add(toolbarTopLeft ? set.toolbarLeftContainer : set.toolbarRightContainer, version);
         set.toolbarRightContainer.setFlex(1);
         set.toolbarRightContainer.setAlignment(FlexAlignment.STRETCH);
 
@@ -143,12 +151,12 @@ public class GroupObjectContainerSet {
         group.toolbarSystem.setAlignment(FlexAlignment.CENTER);
 
         set.toolbarRightContainer.setHorizontal(true);
-        set.toolbarRightContainer.setChildrenAlignment(FlexAlignment.END);
+        set.toolbarRightContainer.setChildrenAlignment(toolbarTopLeft ? FlexAlignment.START : FlexAlignment.END);
         set.toolbarRightContainer.add(group.getCalculations(), version);
         set.toolbarRightContainer.add(set.filterGroupsContainer, version);
         set.filterGroupsContainer.setAlignment(FlexAlignment.STRETCH);
         set.toolbarRightContainer.add(set.toolbarContainer, version);
-        set.toolbarRightContainer.add(set.popupContainer, version);
+        set.toolbarLeftContainer.add(set.popupContainer, version);
         set.toolbarContainer.setAlignment(FlexAlignment.STRETCH);
 
         set.filterGroupsContainer.setHorizontal(true);

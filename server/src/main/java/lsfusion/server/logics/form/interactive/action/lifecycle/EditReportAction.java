@@ -26,9 +26,4 @@ public class EditReportAction extends ReportClientAction {
     protected LP getShowIf() {
         return showIf;
     }
-
-    @Override
-    protected boolean isShowCaption() {
-        return false;
-    }
 }
