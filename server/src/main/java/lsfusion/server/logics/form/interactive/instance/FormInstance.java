@@ -1071,11 +1071,11 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 if (columnKey != null) {
                     key = key.addExcl(columnKey);
                 }
-                Type propType = property.entity.getPasteType(context);
+                Type propType = property.isProperty(context) ? property.entity.getPasteType(context) : null;
                 executeExternalEventAction(property, key, asyncEventExec -> asyncEventExec instanceof AsyncInput ?
                         new PushAsyncInput(new InputResult(ObjectValue.getValue(value.first, ((AsyncInput) asyncEventExec).changeType), null)) :
                         new PushExternalInput(type -> {
-                            if(type.getCompatible(propType) != null)
+                            if(propType != null && type.getCompatible(propType) != null)
                                 return value.first;
 
                             try {
