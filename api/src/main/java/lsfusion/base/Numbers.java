@@ -300,6 +300,7 @@ public class Numbers {
         return bigDecimal;
     }
 
+    @Deprecated
     public static String capitalizeFirstLetter(String value) {
         if (value == null || value.isEmpty()) return null;
         else {
