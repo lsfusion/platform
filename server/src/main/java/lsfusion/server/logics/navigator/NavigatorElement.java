@@ -1,6 +1,7 @@
 package lsfusion.server.logics.navigator;
 
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.server.base.AppServerImage;
@@ -13,11 +14,15 @@ import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFComplexOrderSet;
 import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.logics.BaseLogicsModule;
+import lsfusion.server.logics.action.SystemAction;
+import lsfusion.server.logics.action.controller.context.ExecutionContext;
+import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.form.interactive.action.async.AsyncExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncSerializer;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.navigator.window.NavigatorWindow;
 import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.dev.debug.DebugInfo;
@@ -169,7 +174,11 @@ public abstract class NavigatorElement {
             if(securityPolicy.checkNavigatorPermission(this)) {
                 return singletonOrder(this, Collections.emptyList());
             } else {
-                return MapFact.EMPTYORDER();
+                if(canonicalName.equals("SystemEvents.logoAction")) {
+                    return getDumbSystemChildrenMap();
+                } else {
+                    return MapFact.EMPTYORDER();
+                }
             }
         }
 
@@ -189,6 +198,18 @@ public abstract class NavigatorElement {
         }
 
         return MapFact.EMPTYORDER();
+    }
+
+    private ImOrderMap<NavigatorElement, List<String>> getDumbSystemChildrenMap() {
+        NavigatorAction emptyAction = new NavigatorAction(new SystemAction(this.caption.get(), SetFact.EMPTYORDER()) {
+            @Override
+            protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) {
+                return FlowResult.FINISH;
+            }
+        }, canonicalName, ((NavigatorAction)this).getForm());
+        emptyAction.caption = this.caption;
+        emptyAction.window = this.window;
+        return singletonOrder(emptyAction, Collections.emptyList());
     }
 
     public NavigatorElement getChildElement(String elementCanonicalName) {
