@@ -18,7 +18,6 @@ After specifying the form name and caption, form options `formOptions` are speci
 
 ```
 IMAGE path 
-AUTOREFRESH period 
 ```
 
 After the form options, the blocks of the form `formBlock1 ... formBlockN` are described in the arbitrary order: 
@@ -61,14 +60,6 @@ The `FORM` statement declares a new form and adds it to the current [module](Mod
     - `path`
     
         Path to the file. String literal. The path is relative to the `images` directory.
-
-- `AUTOREFRESH period`
-
-    Specifying the [automatic form update](Interactive_view.md#extra) period. If the option is not specified, the form will not be updated automatically. **deprecated since version 5, use `EVENTS ON SCHEDULE refresh()`**
-
-    - `period`
-    
-        A period of time in seconds. [Integral literal](IDs.md#intliteral). 
 
 ### Form blocks (`formBlock1 ... formBlockN`) {#blocks}
 

@@ -502,7 +502,6 @@ formExtIDDeclaration
 
 formDeclaration returns [ScriptingFormEntity form]
 @init {
-	int autoRefresh = 0;
 	String image = null;
 	String title = null;
 	boolean localAsync = false;
@@ -510,13 +509,12 @@ formDeclaration returns [ScriptingFormEntity form]
 }
 @after {
 	if (inMainParseState()) {
-		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, point, $img.image, autoRefresh, localAsync);
+		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, point, $img.image, localAsync);
 	}
 }
 	:	'FORM' 
 		formNameCaption=simpleNameWithCaption
 		(	img=imageStatement
-		|	('AUTOREFRESH' refresh=intLiteral { autoRefresh = $refresh.val; })
 		|	('LOCALASYNC' { localAsync = true; })
 		)*
 	;

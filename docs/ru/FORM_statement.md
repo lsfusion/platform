@@ -18,7 +18,6 @@ FORM name [caption] formOptions
 
 ```
 IMAGE path 
-AUTOREFRESH period 
 ```
 
 После опций формы описываются в произвольном порядке блоки формы `formBlock1 ... formBlockN`: 
@@ -61,14 +60,6 @@ LIST className OBJECT objectName
     - `path`
     
         Путь к файлу. Строковый литерал. Путь указывается относительно каталога `images`.
-
-- `AUTOREFRESH period`
-
-    Указание периода [автоматического обновления](Interactive_view.md#extra) формы через интервал времени. Если опция не задана, то форма автоматически обновляться не будет. **deprecated since version 5, используйте `EVENTS ON SCHEDULE refresh()`**
-
-    - `period`
-    
-        Пeриод времени в секундах. [Целочисленный литерал](IDs.md#intliteral). 
 
 ### Блоки формы (`formBlock1 ... formBlockN`) {#blocks}
 

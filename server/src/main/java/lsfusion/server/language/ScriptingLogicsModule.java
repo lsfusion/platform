@@ -816,7 +816,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public ScriptingFormEntity createScriptedForm(String formName, LocalizedString caption, DebugInfo.DebugPoint point, String icon,
-                                                  int autoRefresh, boolean localAsync) throws ScriptingErrorLog.SemanticErrorException {
+                                                  boolean localAsync) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkDuplicateForm(formName);
         caption = (caption == null ? LocalizedString.create(formName) : caption);
 
@@ -826,11 +826,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         addFormEntity(formEntity);
                 
         ScriptingFormEntity form = new ScriptingFormEntity(this, formEntity);
-
-        if(autoRefresh > 0) {
-            formEntity.addActionsOnEvent(new FormScheduler(autoRefresh, false), false, getVersion(), new ActionObjectEntity<>(baseLM.getFormRefresh()));
-        }
-
         form.setLocalAsync(localAsync);
 
         return form;
