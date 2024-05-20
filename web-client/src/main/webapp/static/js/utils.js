@@ -276,22 +276,26 @@ function postBroadcastChannelMessage(channel, message) {
 }
 
 function registerServiceWorker(onMessage, message) {
-    navigator.serviceWorker.addEventListener("message", (event) => {
-        onMessage(event.data);
-    });
-    navigator.serviceWorker.register('service-worker.js');
-    postServiceWorkerMessage(message);
-
     try {
+        navigator.serviceWorker.addEventListener("message", (event) => {
+            onMessage(event.data);
+        });
+        navigator.serviceWorker.register('service-worker.js');
+        postServiceWorkerMessage(message);
         Notification.requestPermission();
     } catch (error) {
+        console.warn(error);
     }
 }
 
 function postServiceWorkerMessage(message) {
-    return navigator.serviceWorker.ready.then((registration) => {
-        registration.active.postMessage(message);
-    });
+    try {
+        return navigator.serviceWorker.ready.then((registration) => {
+            registration.active.postMessage(message);
+        });
+    } catch (error) {
+        console.warn(error);
+    }
 }
 
 function addServiceWorkerData (options, newData) {
@@ -311,6 +315,7 @@ function webShare(shareData) {
             return true;
         }
     } catch (error) {
+        console.warn(error);
     }
     return null;
 }
