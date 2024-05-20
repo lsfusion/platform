@@ -9,6 +9,7 @@ import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.SystemExplicitAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
@@ -37,23 +38,29 @@ public class GetShowFormURLAction extends InternalAction {
             String objectsString = "";
             String paramsString = "";
             ImSet<ObjectInstance> objects = form.getObjects();
-            for(int i = 0, size = objects.size(); i < size; i++) {
+            int objectsSize = objects.size();
+            Object[] httpParams = new Object[objectsSize];
+            for(int i = 0; i < objectsSize; i++) {
                 ObjectInstance object = objects.get(i);
                 objectsString = (objectsString.isEmpty() ? "" : objectsString + ",") + object.getSID() + "=$" + (i + 1) + " NULL";
-                paramsString += "&" + ExternalUtils.PARAMS_PARAM + "=" + object.getType().formatHTTP(object.getObjectValue().getValue(), charset);
+                Object httpParam = object.getType().formatHTTP(object.getObjectValue().getValue(), charset);
+                httpParams[i] = httpParam;
+                paramsString += "&" + ExternalUtils.PARAMS_PARAM + "=" + URLEncoder.encode((String) httpParam, charset.name());
             }
 
             if(!objectsString.isEmpty())
                 script += " OBJECTS " + objectsString;
 
             script += ";";
+            Object httpString = StringClass.text.formatHTTP(script, charset);
 
-            String query = ExternalUtils.SCRIPT_PARAM + "=" + URLEncoder.encode(script, charset.name()) + paramsString;
+            String query = ExternalUtils.SCRIPT_PARAM + "=" + URLEncoder.encode((String) httpString, charset.name()) + paramsString +
+                    "&" + ExternalUtils.SIGNATURE_PARAM + "=" + context.getSecurityManager().signData(ExternalUtils.generate(httpString, true, httpParams));
             String innerPath = "/eval/action";
 
             findProperty("readPath[]").change(innerPath, context);
             findProperty("readQuery[]").change(query, context);
-        } catch (UnsupportedEncodingException | ScriptingErrorLog.SemanticErrorException e) {
+        } catch (ScriptingErrorLog.SemanticErrorException | UnsupportedEncodingException e) {
             throw Throwables.propagate(e);
         }
     }

@@ -99,14 +99,7 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     public Object formatHTTP(T value, Charset urlEncodeCharset) {
         if(value == null)
             return getParseNullValue();
-        String resultString = formatHTTPNotNullString(value, urlEncodeCharset);
-        if(urlEncodeCharset != null)
-            try {
-                resultString = URLEncoder.encode(resultString, urlEncodeCharset.name());
-            } catch (UnsupportedEncodingException e) {
-                throw Throwables.propagate(e);
-            }
-        return resultString;
+        return formatHTTPNotNullString(value, urlEncodeCharset);
     }
 
     protected String formatHTTPNotNullString(T value, Charset charset) {
