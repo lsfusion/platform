@@ -5,7 +5,6 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.server.base.AppServerImage;
 import lsfusion.interop.form.remote.serialization.SerializationUtil;
-import lsfusion.interop.navigator.window.WindowType;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.NFFact;
@@ -284,10 +283,9 @@ public abstract class NavigatorElement {
         outStream.writeUTF(getCaption());
         SerializationUtil.writeString(outStream, elementClass);
         outStream.writeBoolean(hasChildren());
-        if (window == null) {
-            outStream.writeInt(WindowType.NULL_VIEW);
-        } else {
-            window.serialize(outStream);
+        String windowCanonicalName = window != null ? window.getCanonicalName() : null;
+        SerializationUtil.writeString(outStream, windowCanonicalName);
+        if(windowCanonicalName != null) {
             outStream.writeBoolean(parentWindow);
         }
 

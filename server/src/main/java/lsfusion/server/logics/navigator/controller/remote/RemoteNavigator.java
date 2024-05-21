@@ -460,7 +460,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         DataOutputStream dataStream = new DataOutputStream(outStream);
 
         try {
-            ImSet<AbstractWindow> windows = getWindows().filterFn(w -> w instanceof NavigatorWindow && !w.getCanonicalName().equals("System.tree"));
+            ImSet<AbstractWindow> windows = getWindows().filterFn(w -> w instanceof NavigatorWindow);
             dataStream.writeInt(windows.size());
             for(AbstractWindow window : windows) {
                 window.serialize(dataStream);

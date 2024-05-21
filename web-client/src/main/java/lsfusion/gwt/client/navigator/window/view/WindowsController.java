@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.navigator.window.view;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -12,7 +11,6 @@ import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.navigator.window.GAbstractWindow;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
-import lsfusion.gwt.client.navigator.window.GToolbarNavigatorWindow;
 import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.*;
@@ -39,7 +37,7 @@ public abstract class WindowsController {
             if(className.equals(NAVBAR_TEXT_ON_HOVER) || className.equals(NAVBAR_POPUP_SELECTED_HOVER) || className.equals(NAVBAR_POPUP_OVER_SELECTED_HOVER)) {
                 boolean isWindow = widget.equals(windowView);
                 if((isWindow || widget instanceof FlexPanel) && parent instanceof FlexPanel) {
-                    boolean thisVertical = isWindow ? window instanceof GToolbarNavigatorWindow && ((GToolbarNavigatorWindow) window).isVertical() : ((FlexPanel) widget).isVertical();
+                    boolean thisVertical = isWindow ? window instanceof GNavigatorWindow && ((GNavigatorWindow) window).isVertical() : ((FlexPanel) widget).isVertical();
                     return ((FlexPanel) parent).isVertical() == thisVertical;
                 }
             } else if(className.startsWith(BACKGROUND_PREFIX))

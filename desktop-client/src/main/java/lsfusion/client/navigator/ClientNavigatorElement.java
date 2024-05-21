@@ -56,9 +56,9 @@ public abstract class ClientNavigatorElement {
         caption = inStream.readUTF();
         elementClass = SerializationUtil.readString(inStream);
         hasChildren = inStream.readBoolean();
-        boolean hasWindow = inStream.readBoolean();
-        if (hasWindow) {
-            window = windows.get(inStream.readUTF());
+        String windowCanonicalName = SerializationUtil.readString(inStream);
+        if(windowCanonicalName != null) {
+            window = windows.get(windowCanonicalName);
             parentWindow = inStream.readBoolean();
         }
 

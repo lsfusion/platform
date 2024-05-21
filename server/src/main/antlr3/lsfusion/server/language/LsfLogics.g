@@ -4891,12 +4891,15 @@ windowStatement
 	;
 
 windowCreateStatement
+@init {
+	boolean isNative = false;
+}
 @after {
 	if (inMainParseState()) {
-		self.addScriptedWindow($type.type, $name.name, $name.caption, $opts.options);
+		self.addScriptedWindow(isNative, $name.name, $name.caption, $opts.options);
 	}
 }
-	:	'WINDOW' name=simpleNameWithCaption type=windowType opts=windowOptions  ';'
+	:	'WINDOW' name=simpleNameWithCaption ('NATIVE' { isNative = true; })? opts=windowOptions  ';'
 	;
 
 windowHideStatement
@@ -4906,14 +4909,6 @@ windowHideStatement
 				self.hideWindow($wid.sid);
 			}
 		}
-	;
-
-windowType returns [WindowType type]
-	:	'MENU'		{ $type = MENU; }
-	|	'PANEL'		{ $type = PANEL; }
-	|	'TOOLBAR'	{ $type = TOOLBAR; }
-	|	'TREE'		{ $type = TREE; }
-	|	'NATIVE'	{ $type = NATIVE; }
 	;
 
 windowOptions returns [NavigatorWindowOptions options]

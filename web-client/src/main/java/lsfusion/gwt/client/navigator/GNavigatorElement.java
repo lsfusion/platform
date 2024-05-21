@@ -10,7 +10,6 @@ import lsfusion.gwt.client.view.MainFrame;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashSet;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.createTooltipHorizontalSeparator;
 

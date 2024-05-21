@@ -211,10 +211,6 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("can't create keystroke from string '%s'", ksLiteral));
     }
 
-    public void emitWindowPositionNotSpecifiedError(ScriptParser parser, String name) throws SemanticErrorException {
-        emitSimpleError(parser, format("position ( POSITION(x, y, width, height) ) isn't specified for window '%s'", name));
-    }
-
     public void emitWindowPositionConflictError(ScriptParser parser, String name) throws SemanticErrorException {
         emitSimpleError(parser, "both border position (LEFT, RIGHT, TOP or BOTTOM) and dock position (POSITION(x, y, width, height))" +
                 format("are specified for window '%s', only one of those should be used", name));

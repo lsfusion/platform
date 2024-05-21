@@ -36,7 +36,7 @@ public class NavigatorData {
         Map<String, ClientNavigatorWindow> windows = new HashMap<>();
         int windowsCount = inStream.readInt();
         for (int i = 0; i < windowsCount; i++) {
-            ClientNavigatorWindow window = ClientNavigatorWindow.deserialize(inStream);
+            ClientNavigatorWindow window = new ClientNavigatorWindow(inStream);
             windows.put(window.canonicalName, window);
         }
 
