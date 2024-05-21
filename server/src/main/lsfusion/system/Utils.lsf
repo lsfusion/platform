@@ -203,16 +203,6 @@ escapeXMLValue(TEXT t) = replace(replace(replace(replace(replace(t, '&', '&amp;'
 
 copyToClipboard INTERNAL 'lsfusion.server.logics.classes.data.utils.string.CopyToClipboardAction' (TEXT);
 
-share(STRING url, STRING text, STRING title) {
-    INTERNAL CLIENT 'webShare' PARAMS (JSON FROM url = url, text = text, title = title) TO exportBoolean;
-    IF NOT exportBoolean() THEN
-        MESSAGE '<a href="' + url + '">${text}</a>';
-}
-
-notify(STRING text, INTEGER notificationId, STRING execUrl, STRING uiUrl, JSON options) {
-    INTERNAL CLIENT 'webNotify' PARAMS text, (JSON FROM notificationId = notificationId, url = execUrl, redirectUrl = uiUrl), options;
-}
-
 // --------------------------------------------- Numeric operations --------------------------------- //
 floor = FORMULA 'floor($1)';
 floor = FORMULA NULL 'floor(($1)/notZero($2))*($2)';

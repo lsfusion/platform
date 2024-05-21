@@ -282,10 +282,59 @@ function registerServiceWorker(onMessage, message) {
         });
         navigator.serviceWorker.register('service-worker.js');
         postServiceWorkerMessage(message);
-        Notification.requestPermission();
+    } catch (error) {
+        console.warn(error)
+    }
+}
+
+function subscribePushManager(publicKey, onSubscribe) {
+    try {
+        navigator.serviceWorker.ready.then(function (registration) {
+            registration.pushManager.getSubscription().then((subscription) => {
+                if (!subscription) {
+                    registration.pushManager.subscribe({
+                        userVisibleOnly: true,
+                        applicationServerKey: base64UrlToUint8Array(publicKey)
+                    }).then((subscription) => {
+                        onSubscribe(JSON.stringify(subscription));
+                    });
+                } else {
+                    onSubscribe(JSON.stringify(subscription));
+                }
+            })
+        });
     } catch (error) {
         console.warn(error);
     }
+}
+
+// IF THE KEY IS CHANGED, IT WILL BE NECESSARY TO UNSUBSCRIBE THE USER FROM NOTIFICATIONS, AND THEN SIGN AGAIN WITH THE NEW KEY, OTHERWISE ERRORS WILL OCCUR!
+function unsubscribePushManager() {
+    try {
+        navigator.serviceWorker.ready.then(function (registration) {
+            registration.pushManager.getSubscription().then((subscription) => {
+                subscription.unsubscribe().then(()=> console.warn("unsubscribed"))
+            })
+        });
+    } catch (error) {
+        console.warn(error);
+    }
+}
+
+function base64UrlToUint8Array(base64UrlData) {
+    const padding = '='.repeat((4 - base64UrlData.length % 4) % 4);
+    const base64 = (base64UrlData + padding)
+        .replace(/\-/g, '+')
+        .replace(/_/g, '/');
+
+    const rawData = atob(base64);
+    const buffer = new Uint8Array(rawData.length);
+
+    for (let i = 0; i < rawData.length; ++i) {
+        buffer[i] = rawData.charCodeAt(i);
+    }
+
+    return buffer;
 }
 
 function postServiceWorkerMessage(message) {
@@ -296,16 +345,6 @@ function postServiceWorkerMessage(message) {
     } catch (error) {
         console.warn(error);
     }
-}
-
-function addServiceWorkerData (options, newData) {
-    return {
-        ...(options || {}),
-        data: {
-            ...(options?.data || {}),
-            ...newData
-        }
-    };
 }
 
 function webShare(shareData) {
@@ -319,10 +358,15 @@ function webShare(shareData) {
     }
     return null;
 }
+//todo firefox ???
+function webNotify(params) {
+    return postServiceWorkerMessage({type: 'showNotification', title: params.title, options: params.options, data: params.data});
+}
 
-function webNotify(title, data, options) {
-    // should have dispatchAction fields (notificationId, url, redirectURL)
-    options = addServiceWorkerData(options, data);
-
-    return postServiceWorkerMessage({type: 'showNotification', title: title, options: options});
+function requestPushNotificationPermissions() {
+    try {
+        Notification.requestPermission();
+    } catch (error) {
+        console.warn(error)
+    }
 }

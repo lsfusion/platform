@@ -121,6 +121,8 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LP minUsedMemoryComputerDateTimeFromDateTimeTo;
     public LP maxUsedMemoryComputerDateTimeFromDateTimeTo;
 
+    public LP subscription;
+
     public NavigatorElement logo;
 
     public SystemEventsLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
@@ -229,6 +231,8 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         maxTotalMemoryComputerDateTimeFromDateTimeTo = findProperty("maxTotalMemoryFromTo[Computer,DATETIME,DATETIME]");
         minUsedMemoryComputerDateTimeFromDateTimeTo = findProperty("minUsedMemoryFromTo[Computer,DATETIME,DATETIME]");
         maxUsedMemoryComputerDateTimeFromDateTimeTo = findProperty("maxUsedMemoryFromTo[Computer,DATETIME,DATETIME]");
+
+        subscription = findProperty("subscription[Connection]");
 
         logo = findNavigatorElement("logoAction");
 //        logo.elementClass = "navbar-icon-xlarge navbar-excel-mobile-hidden"; // set in lsf

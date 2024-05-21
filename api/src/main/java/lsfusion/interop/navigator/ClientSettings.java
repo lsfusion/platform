@@ -1,13 +1,10 @@
 package lsfusion.interop.navigator;
 
-import lsfusion.base.Pair;
-import lsfusion.base.file.RawFileData;
 import lsfusion.interop.base.view.ColorTheme;
 import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.form.object.table.grid.user.design.ColorPreferences;
 
 import java.io.Serializable;
-import java.util.List;
 
 public class ClientSettings implements Serializable {
     public LocalePreferences localePreferences;
@@ -37,6 +34,7 @@ public class ClientSettings implements Serializable {
     public boolean userFiltersManualApplyMode;
     public boolean disableActionsIfReadonly;
     public boolean disableShowingRecentlyLogMessages;
+    public String pushNotificationPublicKey;
     public int maxRequestQueueSize;
 
 
@@ -45,7 +43,8 @@ public class ClientSettings implements Serializable {
                           boolean suppressOnFocusChange, boolean contentWordWrap, boolean autoReconnectOnConnectionLost, boolean forbidDuplicateForms,
                           boolean showNotDefinedStrings, boolean pivotOnlySelectedColumn, String matchSearchSeparator, ColorTheme colorTheme,
                           boolean useBootstrap, ColorPreferences colorPreferences, String[] preDefinedDateRangesNames, boolean useTextAsFilterSeparator,
-                          boolean verticalNavbar, boolean userFiltersManualApplyMode, boolean disableActionsIfReadonly, boolean disableShowingRecentlyLogMessages, int maxRequestQueueSize) {
+                          boolean verticalNavbar, boolean userFiltersManualApplyMode, boolean disableActionsIfReadonly, boolean disableShowingRecentlyLogMessages,
+                          String pushNotificationPublicKey, int maxRequestQueueSize) {
         this.localePreferences = localePreferences;
         this.currentUserName = currentUserName;
         this.fontSize = fontSize;
@@ -72,6 +71,7 @@ public class ClientSettings implements Serializable {
         this.userFiltersManualApplyMode = userFiltersManualApplyMode;
         this.disableActionsIfReadonly = disableActionsIfReadonly;
         this.disableShowingRecentlyLogMessages = disableShowingRecentlyLogMessages;
+        this.pushNotificationPublicKey = pushNotificationPublicKey;
         this.maxRequestQueueSize = maxRequestQueueSize;
     }
 }

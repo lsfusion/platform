@@ -320,6 +320,16 @@
         </dependency>
 
 
+        <dependency>
+            <groupId>nl.martijndwars</groupId>
+            <artifactId>web-push</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk18on</artifactId>
+        </dependency>
+
         <!--java 11 dependencies-->
         <dependency>
             <groupId>javax.xml.bind</groupId>

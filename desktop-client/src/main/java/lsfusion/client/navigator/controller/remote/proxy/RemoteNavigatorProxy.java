@@ -52,4 +52,9 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends Re
     public void updateClientInfo(ClientInfo clientInfo) throws RemoteException {
         target.updateClientInfo(clientInfo);
     }
+
+    @Override
+    public void saveSubscription(String subscription) throws RemoteException {
+        target.saveSubscription(subscription);
+    }
 }

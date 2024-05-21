@@ -861,6 +861,38 @@ onClientStarted() + {
     } 
 }
 
+webPush INTERNAL 'lsfusion.server.logics.classes.data.utils.WebPushAction' (STRING, JSON);
+
+share(STRING url, STRING text, STRING title) {
+    INTERNAL CLIENT 'webShare' PARAMS (JSON FROM url = url, text = text, title = title) TO exportBoolean;
+    IF NOT exportBoolean() THEN
+        MESSAGE '<a href="' + url + '">${text}</a>';
+}
+
+notify(STRING text, INTEGER notificationId, STRING execUrl, STRING uiUrl, JSON options, STRING subscription) {
+    LOCAL params = JSON();
+    LOCAL title = STRING();
+    LOCAL data = JSON();
+    LOCAL notificationId = STRING();
+    LOCAL url = STRING ();
+    LOCAL redirectUrl = STRING ();
+    LOCAL options = JSON ();
+    
+    title() <- OVERRIDE text, '';
+    notificationId() <- OVERRIDE notificationId, '';
+    url() <- OVERRIDE execUrl, '';
+    redirectUrl() <- OVERRIDE uiUrl, '';
+    data() <- JSON FROM notificationId = notificationId(), url = url(), redirectUrl = redirectUrl();
+    options() <- OVERRIDE options, JSON('');
+    
+    params() <- JSON FROM title = title(), data = data(), options = options();
+
+    IF subscription THEN
+        webPush(subscription, params());
+    ELSE
+        INTERNAL CLIENT 'webNotify' PARAMS params();
+}
+
 formShare() + {
     getShowFormURLAction();
 
@@ -870,7 +902,7 @@ formShare() + {
 
 notify(STRING text, INTEGER notificationId, STRING execUrl, JSON options) {
     FOR Connection cn = currentConnection() DO
-        notify(text, notificationId, execUrl, (CONCAT '?', contextPath(cn) + '/', notEmpty(query(cn))), options);
+        notify(text, notificationId, execUrl, (CONCAT '?', contextPath(cn) + '/', notEmpty(query(cn))), options, NULL);
 }
 
 notify(STRING text, INTEGER notificationId, JSON options) {
@@ -881,6 +913,29 @@ notify(STRING text, INTEGER notificationId) {
     notify(text, notificationId, NULL);
 }
 
-//onWebClientStarted() +{
-//    INTERNAL CLIENT 'registerServiceWorker';
+subscription = DATA STRING(Connection);
+
+// payload example
+//{
+//   "title":"IT IS TITLE",
+//   "options":{
+//      "body":"IT IS BODY",
+//      "icon" :"path/to/icon.png",
+//      "badge": "path/to/badge.png"
+//   }
 //}
+push(STRING subscription, JSON payload) {
+    notify(NULL, NULL, NULL, NULL, payload, subscription);
+}
+
+push(JSON payload) {
+    push(subscription(currentConnection()), payload);
+}
+
+//todo remove
+adminSubscribtion = GROUP LAST subscription(Connection c) IF userLogin(c) == 'admin' ORDER c;
+
+//VAPID key gen: https://tools.reactpwa.com/vapid
+pushNotificationPublicKey '{system.events.push.notification.public.key}' = DATA STRING();
+pushNotificationPrivateKey '{system.events.push.notification.private.key}' = DATA STRING();
+

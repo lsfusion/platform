@@ -30,6 +30,7 @@ import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.*;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.controller.dispatch.ExceptionResult;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GColorPreferences;
 import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
@@ -101,6 +102,7 @@ public class MainFrame implements EntryPoint {
 
     public static boolean disableActionsIfReadonly;
     public static boolean disableShowingRecentlyLogMessages;
+    public static String pushNotificationPublicKey;
 
     // async dispatch
     public <T extends Result> long asyncDispatch(final ExecuteNavigatorAction action, RequestCountingAsyncCallback<ServerResponseResult> callback) {
@@ -565,6 +567,20 @@ public class MainFrame implements EntryPoint {
                 formsController.executeNotificationAction(notificationId, null);
             }
         }, GwtClientUtils.toJsObject("type", GSimpleStateTableView.fromString("pullNotification")));
+
+        GwtClientUtils.requestPushNotificationPermissions();
+
+        GwtClientUtils.subscribePushManager(pushNotificationPublicKey,
+                subscription ->
+                        navigatorDispatchAsync.syncExecute(new SavePushSubscribeAction(subscription), new RequestAsyncCallback<VoidResult>() {
+            @Override
+            public void onSuccess(VoidResult result, Runnable onDispatchFinished) {
+            }
+
+            @Override
+            public void onFailure(ExceptionResult exceptionResult) {
+            }
+        }, true));
     }
 
     public static void applyNavigatorChanges(GNavigatorChangesDTO navigatorChangesDTO, GNavigatorController navigatorController, WindowsController windowsController) {
@@ -630,6 +646,7 @@ public class MainFrame implements EntryPoint {
 
                 disableActionsIfReadonly = gClientSettings.disableActionsIfReadonly;
                 disableShowingRecentlyLogMessages = gClientSettings.disableShowingRecentlyLogMessages;
+                pushNotificationPublicKey = gClientSettings.pushNotificationPublicKey;
 
                 initializeFrame(result.navigatorInfo, popupOwner);
                 DateRangePickerBasedCellEditor.setPickerTwoDigitYearStart(gClientSettings.twoDigitYearStart);

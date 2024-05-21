@@ -109,6 +109,8 @@
 
         <tess4j.version>4.3.1</tess4j.version>
         <pdfbox.version>2.0.24</pdfbox.version>
+        <web.push.version>5.1.1</web.push.version>
+        <bouncycastle.version>1.78.1</bouncycastle.version>
     </properties>
 
     <!-- DEPENDENCY VERSIONS -->
@@ -654,6 +656,16 @@
                 <groupId>org.apache.pdfbox</groupId>
                 <artifactId>pdfbox</artifactId>
                 <version>${pdfbox.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>nl.martijndwars</groupId>
+                <artifactId>web-push</artifactId>
+                <version>${web.push.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcprov-jdk18on</artifactId>
+                <version>${bouncycastle.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

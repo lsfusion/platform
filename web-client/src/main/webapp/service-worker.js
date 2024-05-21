@@ -7,21 +7,8 @@ self.addEventListener('activate', function(event) {
 });
 
 self.addEventListener('push', function(event) {
-    // const title = 'Notification Title';
-    // const options = {
-    //     body: 'Notification Body',
-    //     icon: 'path/to/icon.png',
-    //     badge: 'path/to/badge.png'
-    // };
-    //
-    // event.waitUntil(self.registration.showNotification(title, options));
-
-    // https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerGlobalScope/push_event
     let data = event.data.json();
-    if(data.notify)
-        event.waitUntil(showNotification(data.title, data.options));
-    else
-        dispatchAction(event, data);
+    event.waitUntil(showNotification(data.options.title, data.options.options, data.data));
 })
 
 self.addEventListener('notificationclick', function(event) {
@@ -37,19 +24,18 @@ self.addEventListener('notificationclick', function(event) {
         dispatchAction(event, data);
 });
 
-function showNotification(title, options) {
-    // return Notification.requestPermission().then((result) => {
-    //     if (result === "granted") {
-            return self.registration.showNotification(title, options);
-        // }
-    // });
+
+function showNotification(title, options, data) {
+    // should have dispatchAction fields (notificationId, url, redirectURL)
+    options = addServiceWorkerData(options, data);
+    return self.registration.showNotification(title, options);
 }
 function pushNotification(client, notificationId) {
     client.postMessage( { type: 'pushNotification', notificationId: notificationId } );
 }
 function focusWithNotification(client) {
-    return client.focus().catch((error) => {
-        return showNotification("New window opened", { data: { type: 'focusNotification', clientId: client.id} } );
+    return client.focus().catch(() => {
+        return showNotification("New window opened", null, { data: { type: 'focusNotification', clientId: client.id} } );
     });
 }
 
@@ -69,7 +55,7 @@ self.addEventListener('message', function (event) {
             pendingNotificationIds[client.id] = 'checked';
         }
     } else if(data.type === 'showNotification') {
-        showNotification(data.title, data.options);
+        showNotification(data.title, data.options, data.data);
     } else if(data.type === 'getClientId') {
         client.postMessage({type: 'getClientId', clientId: client.id});
     }
@@ -137,4 +123,14 @@ function dispatchNotification(event, data, notificationClient) {
                 }
             })
     );
+}
+
+function addServiceWorkerData (options, newData) {
+    return {
+        ...(options || {}),
+        data: {
+            ...(options?.data || {}),
+            ...newData
+        }
+    };
 }
