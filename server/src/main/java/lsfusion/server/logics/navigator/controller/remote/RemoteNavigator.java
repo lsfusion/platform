@@ -10,6 +10,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
+import lsfusion.base.file.FileData;
 import lsfusion.base.lambda.set.FullFunctionSet;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.action.ClientAction;
@@ -35,6 +36,7 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.action.LA;
+import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
@@ -58,6 +60,7 @@ import lsfusion.server.logics.navigator.controller.context.RemoteNavigatorContex
 import lsfusion.server.logics.navigator.controller.env.*;
 import lsfusion.server.logics.navigator.controller.manager.NavigatorsManager;
 import lsfusion.server.logics.navigator.window.AbstractWindow;
+import lsfusion.server.logics.navigator.window.NavigatorWindow;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.controller.remote.RemoteConnection;
@@ -457,9 +460,13 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         DataOutputStream dataStream = new DataOutputStream(outStream);
 
         try {
-            int elementsCount = elements.size();
-            
-            dataStream.writeInt(elementsCount);
+            ImSet<AbstractWindow> windows = getWindows().filterFn(w -> w instanceof NavigatorWindow && !w.getCanonicalName().equals("System.tree"));
+            dataStream.writeInt(windows.size());
+            for(AbstractWindow window : windows) {
+                window.serialize(dataStream);
+            }
+
+            dataStream.writeInt(elements.size());
             for (NavigatorElement element : elements.keyIt()) {
                 element.serialize(getRemoteContext(), dataStream);
             }

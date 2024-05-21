@@ -27,7 +27,6 @@ public abstract class ClientNavigatorWindow extends ClientAbstractWindow {
 
     public static ClientNavigatorWindow deserialize(DataInputStream inStream) throws IOException {
         switch (inStream.readInt()) {
-            case NULL_VIEW: return null;
             case TREE_VIEW: return new ClientTreeNavigatorWindow(inStream);
             case TOOLBAR_VIEW: return new ClientToolBarNavigatorWindow(inStream);
             case MENU_VIEW: return new ClientMenuNavigatorWindow(inStream);

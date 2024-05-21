@@ -44,11 +44,11 @@ public abstract class ClientNavigatorElement {
         return asyncExec != null && asyncExec.isDesktopEnabled(true);
     }
 
-    protected boolean hasChildren = false;
+    protected boolean hasChildren;
     public ClientNavigatorWindow window;
     public boolean parentWindow;
 
-    public ClientNavigatorElement(DataInputStream inStream) throws IOException {
+    public ClientNavigatorElement(DataInputStream inStream, Map<String, ClientNavigatorWindow> windows) throws IOException {
         canonicalName = SerializationUtil.readString(inStream);
         creationPath = SerializationUtil.readString(inStream);
         path = SerializationUtil.readString(inStream);
@@ -56,8 +56,9 @@ public abstract class ClientNavigatorElement {
         caption = inStream.readUTF();
         elementClass = SerializationUtil.readString(inStream);
         hasChildren = inStream.readBoolean();
-        window = ClientNavigatorWindow.deserialize(inStream);
-        if(window != null) {
+        boolean hasWindow = inStream.readBoolean();
+        if (hasWindow) {
+            window = windows.get(inStream.readUTF());
             parentWindow = inStream.readBoolean();
         }
 
@@ -132,22 +133,10 @@ public abstract class ClientNavigatorElement {
         ClientNavigatorElement element;
 
         switch (type) {
-            case 1: element = new ClientNavigatorFolder(inStream); break;
-            case 2: element = new ClientNavigatorAction(inStream); break;
+            case 1: element = new ClientNavigatorFolder(inStream, windows); break;
+            case 2: element = new ClientNavigatorAction(inStream, windows); break;
             default:
                 throw new IOException("Incorrect navigator element type");
-        }
-
-        // todo [dale]: Это не помешало бы отрефакторить 
-        // Так как окна десериализуются при десериализации каждого элемента навигатора, то необходимо замещать
-        // окна с неуникальным каноническим именем, потому что такое окно уже было создано.
-        if (element.window != null) {
-            String windowCanonicalName = element.window.canonicalName;
-            if (windows.containsKey(windowCanonicalName)) {
-                element.window = windows.get(windowCanonicalName);
-            } else {
-                windows.put(windowCanonicalName, element.window);
-            }
         }
 
         return element;
