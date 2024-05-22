@@ -225,16 +225,19 @@ public class MainDispatchServlet extends net.customware.gwt.dispatch.server.stan
         if(e instanceof DispatchException) // mainly AppServerNotAvailableDispatchException, but in theory can be some InvalidSessionException
             return (DispatchException) e;
         // we need to wrap next two exceptions, otherwise they will be treated like RemoteInternalDispatchException (unknown server exception)
+        DispatchException clientException;
         if(e instanceof AuthenticationException)
-            return new AuthenticationDispatchException(e.getMessage());
-        if(e instanceof RemoteMessageException)
-            return new RemoteMessageDispatchException(e.getMessage());
-        if(e instanceof RemoteException && !(ExceptionUtils.getRootCause(e) instanceof ClassNotFoundException)) // when client action goes to web, because there is no classloader like in desktop, we'll get ClassNotFoundException, and we don't want to consider it connection problem
-            return new RemoteRetryException(e, e instanceof SessionInvalidatedException ? 3 : ExceptionUtils.getFatalRemoteExceptionCount(e));
-
-        RemoteInternalDispatchException clientException = new RemoteInternalDispatchException(ExceptionUtils.copyMessage(e), RemoteInternalException.getLsfStack(e));
-        //we do it because of problem with deserialization of exception's stacktrace
-        clientException.javaStack = RemoteInternalException.getJavaStack(e);
+            clientException = new AuthenticationDispatchException(e.getMessage());
+        else if(e instanceof RemoteMessageException)
+            clientException = new RemoteMessageDispatchException(e.getMessage());
+        else if(e instanceof RemoteException && !(ExceptionUtils.getRootCause(e) instanceof ClassNotFoundException)) // when client action goes to web, because there is no classloader like in desktop, we'll get ClassNotFoundException, and we don't want to consider it connection problem
+            clientException = new RemoteRetryException(e, e instanceof SessionInvalidatedException ? 3 : ExceptionUtils.getFatalRemoteExceptionCount(e));
+        else {
+            RemoteInternalDispatchException clientInternalException = new RemoteInternalDispatchException(ExceptionUtils.copyMessage(e), RemoteInternalException.getLsfStack(e));
+            //we do it because of problem with deserialization of exception's stacktrace
+            clientInternalException.javaStack = RemoteInternalException.getJavaStack(e);
+            clientException = clientInternalException;
+        }
         ExceptionUtils.copyStackTraces(e, clientException);
         return clientException;
     }
