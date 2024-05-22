@@ -151,7 +151,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
     public NavigatorSessionObject getNavigatorSessionObject(String sessionID) throws SessionInvalidatedException {
         NavigatorSessionObject navigatorSessionObject = currentLogicsAndNavigators.get(sessionID);
         if(navigatorSessionObject == null)
-            throw new SessionInvalidatedException();
+            throw new SessionInvalidatedException("Navigator " + sessionID);
         return navigatorSessionObject;
     }
 
@@ -168,6 +168,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
     @Override
     public void removeNavigatorSessionObject(String sessionID) throws RemoteException {
         NavigatorSessionObject navigatorSessionObject = getNavigatorSessionObject(sessionID);
+        MainDispatchServlet.logger.error("Removing navigator " + sessionID + "...");
         currentLogicsAndNavigators.remove(sessionID);
         navigatorSessionObject.remoteNavigator.close();
     }
