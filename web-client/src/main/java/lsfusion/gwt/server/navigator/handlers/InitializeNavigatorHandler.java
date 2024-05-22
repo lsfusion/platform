@@ -90,7 +90,7 @@ public class InitializeNavigatorHandler extends NavigatorActionHandler<Initializ
 
         LocalePreferences localePreferences = clientSettings.localePreferences;
         return new GClientSettings(clientSettings.busyDialogTimeout, clientSettings.devMode, clientSettings.projectLSFDir, clientSettings.showDetailedInfo,
-                clientSettings.showDetailedInfoDelay, clientSettings.suppressOnFocusChange, clientSettings.contentWordWrap, clientSettings.autoReconnectOnConnectionLost,
+                clientSettings.showDetailedInfoDelay, clientSettings.suppressOnFocusChange, clientSettings.autoReconnectOnConnectionLost,
                 clientSettings.forbidDuplicateForms, clientSettings.pivotOnlySelectedColumn, clientSettings.matchSearchSeparator, colorTheme, clientSettings.useBootstrap,
                 getVersionedColorThemesCss(servlet), colorPreferences, localePreferences.dateFormat, localePreferences.timeFormat, localePreferences.twoDigitYearStart,
                 servlet.staticImagesURL, clientSettings.preDefinedDateRangesNames, clientSettings.useTextAsFilterSeparator, clientSettings.verticalNavbar,

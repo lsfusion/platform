@@ -14,7 +14,6 @@ public class GClientSettings implements Serializable {
     public boolean autoReconnectOnConnectionLost;
     public int showDetailedInfoDelay;
     public boolean suppressOnFocusChange;
-    public boolean contentWordWrap;
     public boolean forbidDuplicateForms;
     public boolean pivotOnlySelectedColumn;
     public String matchSearchSeparator;
@@ -40,7 +39,7 @@ public class GClientSettings implements Serializable {
     }
 
     public GClientSettings(long busyDialogTimeout, boolean devMode, String projectLSFDir, boolean showDetailedInfo, int showDetailedInfoDelay, boolean suppressOnFocusChange,
-                           boolean contentWordWrap, boolean autoReconnectOnConnectionLost, boolean forbidDuplicateForms, boolean pivotOnlySelectedColumn,
+                           boolean autoReconnectOnConnectionLost, boolean forbidDuplicateForms, boolean pivotOnlySelectedColumn,
                            String matchSearchSeparator, GColorTheme colorTheme, boolean useBootstrap, Map<String, String> versionedColorThemesCss,
                            GColorPreferences colorPreferences, String dateFormat, String timeFormat, Integer twoDigitYearStart, String staticImagesURL,
                            String[] preDefinedDateRangesNames, boolean useTextAsFilterSeparator, boolean verticalNavbar, boolean userFiltersManualApplyMode,
@@ -52,7 +51,6 @@ public class GClientSettings implements Serializable {
         this.autoReconnectOnConnectionLost = autoReconnectOnConnectionLost;
         this.showDetailedInfoDelay = showDetailedInfoDelay;
         this.suppressOnFocusChange = suppressOnFocusChange;
-        this.contentWordWrap = contentWordWrap;
         this.forbidDuplicateForms = forbidDuplicateForms;
         this.pivotOnlySelectedColumn = pivotOnlySelectedColumn;
         this.matchSearchSeparator = matchSearchSeparator;

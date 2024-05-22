@@ -140,7 +140,7 @@ public class InputAction extends SystemExplicitAction {
     @IdentityInstanceLazy
     private InputListAction[] getInputListActions() {
         ImList<AsyncMapInputListAction<ClassPropertyInterface>> actions = getActions();
-        return actions.mapListValues(action -> action.map(new ConnectionContext(true))).toArray(new InputListAction[actions.size()]);
+        return actions.mapListValues(action -> action.map(new ConnectionContext(true, false))).toArray(new InputListAction[actions.size()]);
     }
 
     @Override

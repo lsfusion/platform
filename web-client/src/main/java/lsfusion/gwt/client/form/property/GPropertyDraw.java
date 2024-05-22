@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.property;
 
-import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.Style;
@@ -63,6 +62,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public boolean customCanBeRenderedInTD;
     public boolean customNeedPlaceholder;
     public boolean customNeedReadonly;
+
+    public boolean wrap;
+    public boolean wrapWordBreak;
+    public boolean collapse;
 
     public boolean clearText;
     public boolean notSelectAll;
@@ -838,6 +841,49 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             return parentFont;
 
         return null;
+    }
+
+    public ImageHtmlOrTextType getImageHtmlOrTextType() {
+        return new ImageHtmlOrTextType() {
+            @Override
+            public boolean isImageVertical() {
+                return panelCaptionVertical;
+            }
+
+            @Override
+            protected boolean isWrap() {
+                return wrap;
+            }
+
+            @Override
+            protected boolean isWrapWordBreak() {
+                return wrapWordBreak;
+            }
+
+            @Override
+            protected boolean isCollapse() {
+                return collapse;
+            }
+        };
+    }
+
+    public DataHtmlOrTextType getDataHtmlOrTextType() {
+        return new DataHtmlOrTextType() {
+            @Override
+            protected boolean isWrap() {
+                return wrap;
+            }
+
+            @Override
+            protected boolean isWrapWordBreak() {
+                return wrapWordBreak;
+            }
+
+            @Override
+            protected boolean isCollapse() {
+                return collapse;
+            }
+        };
     }
 
     public GSize getCaptionWidth() {

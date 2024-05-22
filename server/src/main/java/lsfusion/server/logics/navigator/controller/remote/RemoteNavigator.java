@@ -95,6 +95,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     private String currentForm;
 
     private boolean useBootstrap;
+    private boolean contentWordWrap;
     private boolean isNative;
     private boolean isMobile;
 
@@ -121,7 +122,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
         this.classCache = new ClassCache();
 
-        remoteContext = new ConnectionContext(isUseBootstrap());
+        remoteContext = new ConnectionContext(isUseBootstrap(), isContentWordWrap());
 
         this.client = new ClientCallBackController(port, toString(), this::updateLastUsedTime);
 
@@ -137,6 +138,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         super.initUserContext(hostName, remoteAddress, clientLanguage, clientCountry, clientTimeZone, clientDateFormat, clientTimeFormat, clientColorTheme, stack, session);
         DataObject designEnv = businessLogics.authenticationLM.storeNavigatorSettingsForComputer.read(session) != null ? computer : user;
         useBootstrap = businessLogics.systemEventsLM.useBootstrap.read(session, designEnv) != null;
+        contentWordWrap = businessLogics.systemEventsLM.contentWordWrap.read(session, designEnv) != null;
         localePreferences = readLocalePreferences(session, user, businessLogics, clientTimeZone, clientDateFormat, clientTimeFormat, stack);
         securityPolicy = logicsInstance.getSecurityManager().getSecurityPolicy(session, user);
         saveClientColorTheme(session, designEnv, businessLogics, clientColorTheme, stack);
@@ -200,6 +202,10 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
     public boolean isUseBootstrap() {
         return useBootstrap;
+    }
+
+    public boolean isContentWordWrap() {
+        return contentWordWrap;
     }
 
     public boolean isNative() {

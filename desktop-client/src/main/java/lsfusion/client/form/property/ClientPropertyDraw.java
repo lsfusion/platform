@@ -180,6 +180,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public String columnsName;
     public List<ClientGroupObject> columnGroupObjects = new ArrayList<>();
 
+    public boolean wrap;
+    public boolean wrapWordBreak;
+    public boolean collapse;
+
     public boolean clearText;
     public boolean notSelectAll;
     public String tableName;
@@ -675,6 +679,11 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         columnGroupObjects = pool.deserializeList(inStream);
 
         checkEquals = inStream.readBoolean();
+
+        wrap = inStream.readBoolean();
+        wrapWordBreak = inStream.readBoolean();
+        collapse = inStream.readBoolean();
+
         clearText = inStream.readBoolean();
         notSelectAll = inStream.readBoolean();
 
