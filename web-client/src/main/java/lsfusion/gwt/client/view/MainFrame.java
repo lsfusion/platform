@@ -339,15 +339,16 @@ public class MainFrame implements EntryPoint {
         formsControllerLinker.link = formsController;
 
         //we use CloseHandler instead of Window.ClosingHandler because mobile browsers send closing event without closing window
-        if(mobile) {
+//        if(mobile) {
             Window.addCloseHandler(event -> {
                 saveAndClean(windowsController);
             });
-        } else { // somewhy in browser close handler doesn't work
-            Window.addWindowClosingHandler(event -> {
-                saveAndClean(windowsController);
-            });
-        }
+//        } else { // somewhy in browser close handler doesn't work
+        // !!! but closing handler can be called too early
+//            Window.addWindowClosingHandler(event -> {
+//                saveAndClean(windowsController);
+//            });
+//        }
 
         Window.addWindowClosingHandler(event -> {
             if(!disableConfirmDialog) {
