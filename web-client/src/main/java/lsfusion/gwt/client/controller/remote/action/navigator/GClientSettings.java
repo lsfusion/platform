@@ -1,12 +1,13 @@
 package lsfusion.gwt.client.controller.remote.action.navigator;
 
+import com.google.gwt.user.client.rpc.IsSerializable;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GColorPreferences;
 import lsfusion.gwt.client.view.GColorTheme;
 
 import java.io.Serializable;
 import java.util.Map;
 
-public class GClientSettings implements Serializable {
+public class GClientSettings implements Serializable, IsSerializable {
     public long busyDialogTimeout;
     public boolean devMode;
     public String projectLSFDir;
