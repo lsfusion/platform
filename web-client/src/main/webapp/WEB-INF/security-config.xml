@@ -53,6 +53,9 @@
     <http pattern="/client.jnlp" security="none"/>
     <!--for jar -->
     <http pattern="/lsfusion-client*" security="none"/>
+
+    <!--service-worker must be accessible without security-->
+    <http pattern="/service-worker.js" security="none"/>
     <!-- UI security -->
     <http entry-point-ref="entryPoint">
         <intercept-url pattern="/**" access="isAuthenticated()"/>

@@ -276,26 +276,15 @@ function postBroadcastChannelMessage(channel, message) {
 }
 
 function registerServiceWorker(onMessage, message) {
-    // try {
-    //     navigator.serviceWorker.addEventListener("message", (event) => {
-    //         onMessage(event.data);
-    //     });
-    //     navigator.serviceWorker.register('service-worker.js');
-    //     postServiceWorkerMessage(message);
-    //     Notification.requestPermission();
-    // } catch (error) {
-    //     console.warn(error);
-    // }
-
     try {
-        // navigator.serviceWorker.addEventListener("message", (event) => {
-        //     onMessage(event.data);
-        // });
-        navigator.serviceWorker.unregister();
-        // postServiceWorkerMessage(message);
-        // Notification.requestPermission();
+        navigator.serviceWorker.addEventListener("message", (event) => {
+            onMessage(event.data);
+        });
+        navigator.serviceWorker.register('service-worker.js');
+        postServiceWorkerMessage(message);
+        Notification.requestPermission();
     } catch (error) {
-        // console.warn(error);
+        console.warn(error);
     }
 }
 
