@@ -8,7 +8,15 @@ self.addEventListener('activate', function(event) {
 
 self.addEventListener('push', function(event) {
     let data = event.data.json();
-    event.waitUntil(showNotification(data.options.title, data.options.options, data.data));
+    let showPushNotification = (action, push) => {
+        if(data.notification)
+            return showNotification(data.notification, action, push);
+        return Promise.resolve();
+    }
+    if(data.alwaysNotify)
+        event.waitUntil(showPushNotification(data.action, data.push));
+    else
+        dispatchAction(event, data.action, data.push, (client) => showFocusNotification(client), showPushNotification);
 })
 
 self.addEventListener('notificationclick', function(event) {
@@ -19,59 +27,62 @@ self.addEventListener('notificationclick', function(event) {
     // sent in options.data
     let data = event.notification.data;
     if(data.type === 'focusNotification')
-        event.waitUntil(clients.get(data.clientId).then((client) => focusWithNotification(client)));
+        event.waitUntil(clients.get(data.clientId).then((client) => client.focus()));
     else
-        dispatchAction(event, data);
+        dispatchAction(event, data.action, data.push, (client) => client.focus(),
+            (action, push) => clients.openWindow("/" + (push.query ? "?" + push.query : "")).then((client) => pushPendingNotification(client, action)));
 });
 
 
-function showNotification(title, options, data) {
-    // should have dispatchAction fields (notificationId, url, redirectURL)
-    options = addServiceWorkerData(options, data);
-    return self.registration.showNotification(title, options);
+function showNotification(notification, action, push) {
+    // should have dispatchAction fields (id, url, query)
+    return self.registration.showNotification(notification.title, addServiceWorkerData(notification.options, {action: action, push: push}));
 }
-function pushNotification(client, notificationId) {
-    client.postMessage( { type: 'pushNotification', notificationId: notificationId } );
+function pushNotification(client, action) {
+    client.postMessage( { type: 'pushNotification', id: action.id } );
 }
-function focusWithNotification(client) {
-    return client.focus().catch(() => {
-        return showNotification("New window opened", null, { data: { type: 'focusNotification', clientId: client.id} } );
-    });
+const pendingNotifications = {};
+function pushPendingNotification(client, action) {
+    if (client.id in pendingNotifications) { // assert equals "checked", so event listener is already installed, we can send notification
+        pushNotification(client, action);
+        delete pendingNotifications[client.id]
+    } else {
+        pendingNotifications[client.id] = action;
+    }
 }
-
-const pendingNotificationIds = {};
+function pullNotification(client) {
+    if (client.id in pendingNotifications) {
+        pushNotification(client, pendingNotifications[client.id]);
+        delete pendingNotifications[client.id];
+    } else {
+        pendingNotifications[client.id] = 'checked';
+    }
+}
+function showFocusNotification(client) {
+    return showNotification({ title: "New window opened", options: {}}, { type: 'focusNotification', clientId: client.id}, null);
+}
 
 self.addEventListener('message', function (event) {
     // sent in postMessage param
     let data = event.data;
-    let client = event.source;
+    let messageClient = event.source;
     if(data.type === 'pushNotification') { // message from push-notification.jsp
-        dispatchNotification(event, data, client);
-    } else if(data.type === 'pullNotification') { // message from the main fram (after message listener is added)
-        if(client.id in pendingNotificationIds) {
-            pushNotification(client, pendingNotificationIds[client.id]);
-            delete pendingNotificationIds[client.id];
-        } else {
-            pendingNotificationIds[client.id] = 'checked';
-        }
+        dispatchAction(event, {id: data.actionId}, data.push, (client) => {
+            messageClient.postMessage('close');
+            return showFocusNotification(client);
+        }, (action, push) =>
+            messageClient.navigate("/" + (push.query ? "?" + push.query : "")).then((client) => pushPendingNotification(client, action))
+        );
+    } else if(data.type === 'pullNotification') { // message from the main frame (after message listener is added)
+        messageClient.postMessage({type: 'clientId', clientId: messageClient.id});
+        pullNotification(messageClient);
     } else if(data.type === 'showNotification') {
-        showNotification(data.title, data.options, data.data);
-    } else if(data.type === 'getClientId') {
-        client.postMessage({type: 'getClientId', clientId: client.id});
+        showNotification(data.notification, data.action, data.push);
     }
 })
 
-// data should have: notificationId or (and) url, redirectUrl or (and) clientId
-function dispatchAction(event, data) {
-    // if(data.notificationId) {
-        dispatchNotification(event, data, null);
-    // } else { // fetching url, getting notificationId and sending in
-    //
-    // }
-}
-
-// data should have - notificationId, redirectUrl or clientId
-function dispatchNotification(event, data, notificationClient) {
+// action should have: id or (and) url, push should have - clientId (optional), query
+function dispatchAction(event, action, push, onClientFound, onClientNotFound) {
     event.waitUntil(
         clients
             .matchAll({
@@ -79,9 +90,9 @@ function dispatchNotification(event, data, notificationClient) {
             })
             .then((clientList) => {
                 let webClient = null;
-                if(data.clientId) {
+                if(push.clientId) {
                     for (const client of clientList)
-                        if (client.id === data.clientId)
+                        if (client.id === push.clientId)
                             webClient = client;
                 }
 
@@ -91,36 +102,17 @@ function dispatchNotification(event, data, notificationClient) {
                         const url = new URL(client.url);
 
                         // Get the URL without the origin
-                        if (url.pathname + url.search === data.redirectUrl)
+                        // url pathname = "/" or /main/
+                        if (url.search === push.query)
                             webClient = client;
                     }
                 }
 
-                let notificationId = data.notificationId;
-
                 if(webClient !== null) {
-                    pushNotification(webClient, notificationId);
-
-                    if(notificationClient != null)
-                        notificationClient.postMessage('close');
-
-                    return focusWithNotification(webClient);
-                } else {
-                    let redirectUrl = data.redirectUrl;
-                    let ready;
-                    if(notificationClient != null)
-                        ready = notificationClient.navigate(redirectUrl);
-                    else
-                        ready = clients.openWindow(redirectUrl);
-                    return ready.then((client) => {
-                        if(client.id in pendingNotificationIds) { // assert equals "checked", so event listener is already installed, we can send notification
-                            pushNotification(client, notificationId);
-                            delete pendingNotificationIds[client.id]
-                        } else {
-                            pendingNotificationIds[client.id] = notificationId;
-                        }
-                    });
-                }
+                    pushNotification(webClient, action);
+                    return onClientFound(webClient);
+                } else
+                    return onClientNotFound(action, push);
             })
     );
 }

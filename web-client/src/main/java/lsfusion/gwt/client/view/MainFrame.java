@@ -29,8 +29,6 @@ import lsfusion.gwt.client.controller.remote.action.RequestCountingAsyncCallback
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.*;
 import lsfusion.gwt.client.form.controller.FormsController;
-import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.controller.dispatch.ExceptionResult;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GColorPreferences;
 import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
@@ -49,7 +47,6 @@ import lsfusion.gwt.client.navigator.window.GToolbarNavigatorWindow;
 import lsfusion.gwt.client.navigator.window.view.WindowsController;
 import net.customware.gwt.dispatch.shared.Result;
 
-import java.io.IOException;
 import java.util.*;
 
 import static lsfusion.gwt.client.base.BaseImage.BASE_STATIC_IMAGE;
@@ -109,11 +106,11 @@ public class MainFrame implements EntryPoint {
         return navigatorDispatchAsync.asyncExecute(action, callback);
     }
 
-    public <T extends Result> long syncDispatch(final NavigatorRequestAction action, RequestCountingAsyncCallback<ServerResponseResult> callback) {
+    public <T extends Result> long syncDispatch(final NavigatorRequestAction<T> action, RequestCountingAsyncCallback<T> callback) {
         return syncDispatch(action, callback, false);
     }
 
-    public static <T extends Result> long syncDispatch(final NavigatorRequestAction action, RequestAsyncCallback<ServerResponseResult> callback, boolean continueInvocation) {
+    public static <T extends Result> long syncDispatch(final NavigatorRequestAction<T> action, RequestAsyncCallback<T> callback, boolean continueInvocation) {
         return navigatorDispatchAsync.syncExecute(action, callback, continueInvocation);
     }
 
@@ -326,7 +323,7 @@ public class MainFrame implements EntryPoint {
         final Linker<GNavigatorActionDispatcher> actionDispatcherLink = new Linker<>();
         final FormsController formsController = new FormsController(windowsController) {
             @Override
-            public long syncDispatch(NavigatorRequestAction action, RequestCountingAsyncCallback<ServerResponseResult> callback) {
+            public <T extends Result> long syncDispatch(NavigatorRequestAction<T> action, RequestCountingAsyncCallback<T> callback) {
                 return MainFrame.this.syncDispatch(action, callback);
             }
 
@@ -563,25 +560,42 @@ public class MainFrame implements EntryPoint {
         });
 
         GwtClientUtils.registerServiceWorker(message -> {
-            if(GSimpleStateTableView.toString(GwtClientUtils.getField(message, "type")).equals("pushNotification")) {
-                int notificationId = GSimpleStateTableView.toInt(GwtClientUtils.getField(message, "notificationId"));
+            String type = GSimpleStateTableView.toString(GwtClientUtils.getField(message, "type"));
+            if(type.equals("pushNotification")) {
+                int notificationId = GSimpleStateTableView.toInt(GwtClientUtils.getField(message, "id"));
                 formsController.executeNotificationAction(notificationId, null);
+            } else if(type.equals("clientId")) {
+                updateServiceClientInfo(formsController, null, GSimpleStateTableView.toString(GwtClientUtils.getField(message, "clientId")));
             }
         }, GwtClientUtils.toJsObject("type", GSimpleStateTableView.fromString("pullNotification")));
 
         GwtClientUtils.requestPushNotificationPermissions();
 
-        GwtClientUtils.subscribePushManager(pushNotificationPublicKey,
-                subscription ->
-                        navigatorDispatchAsync.syncExecute(new SavePushSubscribeAction(subscription), new RequestAsyncCallback<VoidResult>() {
-            @Override
-            public void onSuccess(VoidResult result, Runnable onDispatchFinished) {
+        GwtClientUtils.subscribePushManager(pushNotificationPublicKey, subscription -> updateServiceClientInfo(formsController, subscription, null));
+    }
+
+    private String subscription;
+    private String clientId;
+    private void updateServiceClientInfo(FormsController formsController, String subscription, String clientId) {
+        if(subscription != null) {
+            if(this.clientId == null) {
+                this.subscription = subscription;
+                return;
             }
 
-            @Override
-            public void onFailure(ExceptionResult exceptionResult) {
+            clientId = this.clientId;
+            this.clientId = null;
+        } else {
+            if(this.subscription == null) {
+                this.clientId = clientId;
+                return;
             }
-        }, true));
+
+            subscription = this.subscription;
+            this.subscription = null;
+        }
+
+        formsController.executeSystemAction(new UpdateServiceClientInfoAction(subscription, clientId));
     }
 
     public static void applyNavigatorChanges(GNavigatorChangesDTO navigatorChangesDTO, GNavigatorController navigatorController, WindowsController windowsController) {

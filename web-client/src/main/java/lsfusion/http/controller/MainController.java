@@ -75,8 +75,8 @@ public class MainController {
 
     @RequestMapping(value = "/push-notification", method = RequestMethod.GET)
     public String pushNotification(ModelMap model, HttpServletRequest request) {
-        model.addAttribute("redirectUrl", getDirectUrl("/", Collections.singletonList(GwtSharedUtils.NOTIFICATION_PARAM), null, request));
-        model.addAttribute("notificationId", request.getParameter(GwtSharedUtils.NOTIFICATION_PARAM));
+        model.addAttribute("id", request.getParameter(GwtSharedUtils.NOTIFICATION_PARAM));
+        model.addAttribute("query", getQueryPreservingParameters(Collections.singletonList(GwtSharedUtils.NOTIFICATION_PARAM), request));
         return "push-notification";
     }
 

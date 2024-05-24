@@ -395,9 +395,11 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     }
 
     @Override
-    public void saveSubscription(String subscription) throws RemoteException {
+    public void updateServiceClientInfo(String subscription, String clientId) throws RemoteException {
         try (DataSession session = createSession()) {
-            businessLogics.systemEventsLM.subscription.change(subscription, session, getConnection());
+            DataObject connection = getConnection();
+            businessLogics.systemEventsLM.subscription.change(subscription, session, connection);
+            businessLogics.systemEventsLM.clientId.change(clientId, session, connection);
             session.applyException(businessLogics, getStack());
         } catch (Exception e) {
             throw Throwables.propagate(e);

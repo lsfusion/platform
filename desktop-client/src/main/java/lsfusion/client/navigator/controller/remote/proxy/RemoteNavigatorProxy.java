@@ -54,7 +54,7 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends Re
     }
 
     @Override
-    public void saveSubscription(String subscription) throws RemoteException {
-        target.saveSubscription(subscription);
+    public void updateServiceClientInfo(String subscription, String clientId) throws RemoteException {
+        target.updateServiceClientInfo(subscription, clientId);
     }
 }

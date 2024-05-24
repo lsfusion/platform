@@ -499,15 +499,25 @@ currentConnection = NATIVE Connection ();
 clientType = DATA ClientType (Connection);
 nameClientType '{system.events.client.type}' (Connection connection) = staticCaption(clientType(connection));
 
-isNativeDesktop() = clientType(currentConnection()) == ClientType.nativeDesktop;
-isNativeMobile() = clientType(currentConnection()) == ClientType.nativeMobile;
-isWebDesktop() = clientType(currentConnection()) == ClientType.webDesktop;
-isWebMobile() = clientType(currentConnection()) == ClientType.webMobile;
+isNativeDesktop(Connection c) = clientType(c) == ClientType.nativeDesktop;
+isNativeMobile(Connection c) = clientType(c) == ClientType.nativeMobile;
+isWebDesktop(Connection c) = clientType(c) == ClientType.webDesktop;
+isWebMobile(Connection c) = clientType(c) == ClientType.webMobile;
 
-isDesktop() = isNativeDesktop() OR isWebDesktop();
-isMobile() = isNativeMobile() OR isWebMobile();
-isNative() = isNativeDesktop() OR isNativeMobile();
-isWeb() = isWebDesktop() OR isWebMobile();
+isDesktop(Connection c) = isNativeDesktop(c) OR isWebDesktop(c);
+isMobile(Connection c) = isNativeMobile(c) OR isWebMobile(c);
+isNative(Connection c) = isNativeDesktop(c) OR isNativeMobile(c);
+isWeb(Connection c) = isWebDesktop(c) OR isWebMobile(c);
+
+isNativeDesktop() = isNativeDesktop(currentConnection());
+isNativeMobile() = isNativeMobile(currentConnection());
+isWebDesktop() = isWebDesktop(currentConnection());
+isWebMobile() = isWebMobile(currentConnection());
+
+isDesktop() = isDesktop(currentConnection());
+isMobile() = isMobile(currentConnection());
+isNative() = isNative(currentConnection());
+isWeb() = isWeb(currentConnection());
 
 noSystemToolbarCaptions() += isNativeDesktop();
 
@@ -861,36 +871,12 @@ onClientStarted() + {
     } 
 }
 
-webPush INTERNAL 'lsfusion.server.logics.classes.data.utils.WebPushAction' (STRING, JSON);
+// NOTIFY, PUSH, SHARE actions
 
 share(STRING url, STRING text, STRING title) {
     INTERNAL CLIENT 'webShare' PARAMS (JSON FROM url = url, text = text, title = title) TO exportBoolean;
     IF NOT exportBoolean() THEN
         MESSAGE '<a href="' + url + '">${text}</a>';
-}
-
-notify(STRING text, INTEGER notificationId, STRING execUrl, STRING uiUrl, JSON options, STRING subscription) {
-    LOCAL params = JSON();
-    LOCAL title = STRING();
-    LOCAL data = JSON();
-    LOCAL notificationId = STRING();
-    LOCAL url = STRING ();
-    LOCAL redirectUrl = STRING ();
-    LOCAL options = JSON ();
-    
-    title() <- OVERRIDE text, '';
-    notificationId() <- OVERRIDE notificationId, '';
-    url() <- OVERRIDE execUrl, '';
-    redirectUrl() <- OVERRIDE uiUrl, '';
-    data() <- JSON FROM notificationId = notificationId(), url = url(), redirectUrl = redirectUrl();
-    options() <- OVERRIDE options, JSON('');
-    
-    params() <- JSON FROM title = title(), data = data(), options = options();
-
-    IF subscription THEN
-        webPush(subscription, params());
-    ELSE
-        INTERNAL CLIENT 'webNotify' PARAMS params();
 }
 
 formShare() + {
@@ -900,42 +886,47 @@ formShare() + {
         share((CONCAT '?', webPath(cn) + readPath(), (CONCAT '&', notEmpty(query(cn)), notEmpty(readQuery()))), 'The link to share the form', 'Share');
 }
 
-notify(STRING text, INTEGER notificationId, STRING execUrl, JSON options) {
-    FOR Connection cn = currentConnection() DO
-        notify(text, notificationId, execUrl, (CONCAT '?', contextPath(cn) + '/', notEmpty(query(cn))), options, NULL);
-}
-
-notify(STRING text, INTEGER notificationId, JSON options) {
-    notify(text, notificationId, '', options);
-}
-
-notify(STRING text, INTEGER notificationId) {
-    notify(text, notificationId, NULL);
-}
-
-subscription = DATA STRING(Connection);
-
-// payload example
-//{
-//   "title":"IT IS TITLE",
-//   "options":{
-//      "body":"IT IS BODY",
-//      "icon" :"path/to/icon.png",
-//      "badge": "path/to/badge.png"
-//   }
-//}
-push(STRING subscription, JSON payload) {
-    notify(NULL, NULL, NULL, NULL, payload, subscription);
-}
-
-push(JSON payload) {
-    push(subscription(currentConnection()), payload);
-}
-
-//todo remove
-adminSubscribtion = GROUP LAST subscription(Connection c) IF userLogin(c) == 'admin' ORDER c;
-
 //VAPID key gen: https://tools.reactpwa.com/vapid
-pushNotificationPublicKey '{system.events.push.notification.public.key}' = DATA STRING();
-pushNotificationPrivateKey '{system.events.push.notification.private.key}' = DATA STRING();
+pushPublicKey '{system.events.push.notification.public.key}' = DATA STRING();
+pushPrivateKey '{system.events.push.notification.private.key}' = DATA STRING();
+onStarted() + {
+    IF NOT pushPublicKey() THEN {
+        pushPublicKey() <- 'BHMyf7avYNkKhYajindjklo9_iAWnVCPCWRiUEmbBA-B5VEC1YKyxESfiVyHCHqLMgQ7Qv_g10yyjRU_1FPt0c0';
+        pushPrivateKey() <- 'ViyjJEUuqzAcw5uOd1lcFjLm0mIziWFVcPEFx4ZmZ7I';
+    }
+}
 
+subscription = DATA JSON (Connection);
+clientId = DATA STRING (Connection);
+push (Connection c) = JSON FROM subscription(c), query(c), clientId(c);
+
+pushConnection = GROUP LAST Connection c IF subscription(c) ORDER connectTime(c), c BY user(c);
+pushConnection = GROUP LAST Connection c IF subscription(c) ORDER connectTime(c), c BY user(c), computer(c);
+pushConnection = GROUP LAST Connection c IF subscription(c) ORDER connectTime(c), c BY computer(c);
+
+notify(JSON notification, JSON action) {
+    INTERNAL CLIENT 'webNotify' PARAMS notification, action, push(currentConnection());
+}
+push INTERNAL 'lsfusion.server.logics.classes.data.utils.PushAction' (BOOLEAN, JSON, JSON, JSON);
+push(BOOLEAN alwaysNotify, Connection connection, JSON notification, JSON action) {
+    push(alwaysNotify, notification, action, push(connection));
+}
+push(Connection connection, JSON notification, JSON action) {
+    push(NULL, connection, notification, action);
+}
+pushNotify(Connection connection, JSON notification, JSON action) {
+    push(TRUE, connection, notification, action);
+}
+
+// shortcuts
+
+notification(STRING title, JSON options) = JSON FROM title = title, options = options;
+notification(STRING title) = notification(title, JSON('\{\}'));
+action(INTEGER id) = JSON FROM id = id;
+//action(STRING url) = JSON FROM url = url;
+
+// the most commonly used cases
+
+push(Connection connection, INTEGER id) { push(connection, NULL, action(id)); }
+notify(STRING title, INTEGER id) { notify(notification(title), action(id)); }
+pushNotify(Connection connection, STRING title, INTEGER notificationId) { pushNotify(connection, notification(title), action(notificationId)); }

@@ -358,9 +358,9 @@ function webShare(shareData) {
     }
     return null;
 }
-//todo firefox ???
-function webNotify(params) {
-    return postServiceWorkerMessage({type: 'showNotification', title: params.title, options: params.options, data: params.data});
+
+function webNotify(notification, action, push) {
+    return postServiceWorkerMessage({type: 'showNotification', notification: notification, action: action, push: push});
 }
 
 function requestPushNotificationPermissions() {

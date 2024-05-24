@@ -72,7 +72,7 @@ public class MainDispatchServlet extends net.customware.gwt.dispatch.server.stan
         registry.addHandler(new ExecuteNavigatorActionHandler(this));
         registry.addHandler(new InitializeNavigatorHandler(this));
         registry.addHandler(new LogClientExceptionActionHandler(this));
-        registry.addHandler(new SavePushSubscribeActionHandler(this));
+        registry.addHandler(new UpdateServiceClientInfoActionHandler(this));
         registry.addHandler(new GainedFocusHandler(this));
         registry.addHandler(new ThrowInNavigatorActionHandler(this));
         registry.addHandler(new GetRemoteNavigatorActionMessageHandler(this));

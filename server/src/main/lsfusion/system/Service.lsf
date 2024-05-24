@@ -747,7 +747,7 @@ EXTEND FORM settings
     PROPERTIES(uc) fontSize, selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor,
         focusedCellBorderColor, tableGridColor
     
-    PROPERTIES() pushNotificationPublicKey, pushNotificationPrivateKey  
+    PROPERTIES() pushPublicKey, pushPrivateKey  
 ;
 
 DESIGN settings {
@@ -790,8 +790,8 @@ DESIGN settings {
         }
         NEW pushNotification {
             caption = '{service.form.settings.push.notification}';
-            MOVE PROPERTY (pushNotificationPublicKey());
-            MOVE PROPERTY (pushNotificationPrivateKey());
+            MOVE PROPERTY (pushPublicKey());
+            MOVE PROPERTY (pushPrivateKey());
         }
     }
 }
@@ -908,7 +908,7 @@ getClientSettings(User user) + WHEN user IS User THEN {
         userFiltersManualApplyMode = IF userFiltersManualApplyMode() THEN (IF userFiltersManualApplyMode() == TTRUE THEN TRUE ELSE NULL) ELSE valueSettingBoolean('userFiltersManualApplyMode'),
         disableActionsIfReadonly = valueSetting('disableActionsIfReadonly'),
         disableShowingRecentlyLogMessages = valueSetting('disableShowingRecentlyLogMessages'),
-        pushNotificationPublicKey = pushNotificationPublicKey(),
+        pushNotificationPublicKey = pushPublicKey(),
         maxRequestQueueSize = valueSetting('maxRequestQueueSize'),
         verticalNavbar = verticalNavbar(),
         navigatorPinMode = navigatorPinMode();

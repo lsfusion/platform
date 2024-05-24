@@ -122,6 +122,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LP maxUsedMemoryComputerDateTimeFromDateTimeTo;
 
     public LP subscription;
+    public LP clientId;
 
     public NavigatorElement logo;
 
@@ -233,6 +234,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         maxUsedMemoryComputerDateTimeFromDateTimeTo = findProperty("maxUsedMemoryFromTo[Computer,DATETIME,DATETIME]");
 
         subscription = findProperty("subscription[Connection]");
+        clientId = findProperty("clientId[Connection]");
 
         logo = findNavigatorElement("logoAction");
 //        logo.elementClass = "navbar-icon-xlarge navbar-excel-mobile-hidden"; // set in lsf

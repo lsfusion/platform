@@ -14,8 +14,10 @@
             navigator.serviceWorker.ready.then((registration) => {
                 registration.active.postMessage({
                     type: 'pushNotification',
-                    notificationId: ${notificationId},
-                    redirectUrl: "${redirectUrl}"
+                    actionId: ${id},
+                    push: {
+                        query: "${query}"
+                    }
                 });
             });
         }

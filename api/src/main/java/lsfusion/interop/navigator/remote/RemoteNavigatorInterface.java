@@ -34,5 +34,5 @@ public interface RemoteNavigatorInterface extends RemoteConnectionInterface {
 
     void updateClientInfo(ClientInfo clientInfo) throws RemoteException;
 
-    void saveSubscription(String subscription) throws RemoteException;
+    void updateServiceClientInfo(String subscription, String clientId) throws RemoteException;
 }
