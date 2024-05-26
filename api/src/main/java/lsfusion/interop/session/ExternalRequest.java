@@ -31,16 +31,18 @@ public class ExternalRequest implements Serializable {
 
     public final String signature;
 
+    public final boolean needNotificationId;
+
     public ExternalRequest(Object[] params) {
         this(new String[0], params, "utf-8", new String[0], new String[0], null,
-                                null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+                                null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, false);
     }
 
     public ExternalRequest(String[] returnNames, Object[] params, String charsetName,
                            String[] headerNames, String[] headerValues, String[] cookieNames, String[] cookieValues,
                            String appHost, Integer appPort, String exportName, String scheme, String method, String webHost,
                            Integer webPort, String contextPath, String servletPath, String pathInfo, String query,
-                           String contentType, String sessionId, byte[] body, String signature) {
+                           String contentType, String sessionId, byte[] body, String signature, boolean needNotificationId) {
         this.returnNames = returnNames;
         this.params = params;
         this.charsetName = charsetName;
@@ -63,5 +65,6 @@ public class ExternalRequest implements Serializable {
         this.sessionId = sessionId;
         this.body = body;
         this.signature = signature;
+        this.needNotificationId = needNotificationId;
     }
 }

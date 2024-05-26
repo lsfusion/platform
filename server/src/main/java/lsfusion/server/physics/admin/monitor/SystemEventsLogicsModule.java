@@ -54,7 +54,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LA<?> onStarted;
     public LA<?> onFinallyStarted;
 
-    public LA<?> shareLocal;
+    public LA<?> shareAction;
 
     public LP useBootstrap;
     public LP serverTheme;
@@ -165,7 +165,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         onStarted = findAction("onStartedApply[]");
         onFinallyStarted = findAction("onFinallyStartedApply[]");
 
-        shareLocal = findAction("shareLocal[STRING]");
+        shareAction = findAction("shareAction[STRING]");
 
         useBootstrap = findProperty("useBootstrap[DesignEnv]");
         serverTheme = findProperty("serverTheme[]");

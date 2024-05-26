@@ -39,7 +39,21 @@ function showNotification(notification, action, push) {
     return self.registration.showNotification(notification.title, addServiceWorkerData(notification.options, {action: action, push: push}));
 }
 function pushNotification(client, action) {
-    client.postMessage( { type: 'pushNotification', id: action.id } );
+    if(action.id)
+        pushNotificationId(client, action.id);
+    else
+        return fetch(action.url, {
+            headers: {
+                'Need-Notification-Id' : 'TRUE'
+            }
+        }).then(response => {
+            return response.text();
+        }).then(text => {
+            pushNotificationId(client, parseInt(text))
+        });
+}
+function pushNotificationId(client, actionId) {
+    client.postMessage( { type: 'pushNotification', id: actionId } );
 }
 const pendingNotifications = {};
 function pushPendingNotification(client, action) {

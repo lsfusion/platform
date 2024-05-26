@@ -1664,11 +1664,11 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         CallHTTPAction genUrlAction = new ExternalLSFAction(objectsTypes, ListFact.singleton(targetProp), true, true);
 
         // EXTERNAL LSF '' EVAL ACTION TO target()
-        // shareLocal(target())
+        // shareAction(target())
         ActionMapImplement<?, X> shareAction = PropertyFact.createListAction(listInterfaces.getSet(),
                 PropertyFact.createJoinAction(genUrlAction.getActionImplement(lm.addCProp(StringClass.text, LocalizedString.create("", false)).<X>getImplement(),
                         ListFact.add(PropertyFact.createStatic(LocalizedString.create(script, false), StringClass.text), BaseUtils.<ImOrderSet<PropertyInterfaceImplement<X>>>immutableCast(listInterfaces)))),
-                PropertyFact.createJoinAction(systemEventsLM.shareLocal.action, targetProp.<X>getImplement()));
+                PropertyFact.createJoinAction(systemEventsLM.shareAction.action, targetProp.<X>getImplement()));
 
         return shareAction.mapObjects(mapObjects.reverse());
     }

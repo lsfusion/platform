@@ -880,10 +880,10 @@ share(STRING url, STRING text, STRING title) {
 }
 
 share(Connection cn, STRING url) = CONCAT '&', webPath(cn) + url, notEmpty(query(cn));
-shareLocal(STRING url) = share(currentConnection(), url);
 
-shareLocal(STRING url) {
-    share(shareLocal(url), 'The link to share the form', 'Share');
+shareAction(STRING url) = share(currentConnection(), url);
+shareAction(STRING url) {
+    share(shareAction(url), 'The link to share the form', 'Share');
 }
 
 //VAPID key gen: https://tools.reactpwa.com/vapid
@@ -923,7 +923,7 @@ pushNotify(Connection connection, JSON notification, JSON action) {
 notification(STRING title, JSON options) = JSON FROM title = title, options = options;
 notification(STRING title) = notification(title, JSON('\{\}'));
 action(INTEGER id) = JSON FROM id = id;
-//action(STRING url) = JSON FROM url = url;
+action(STRING url) = JSON FROM url = url;
 
 // the most commonly used cases
 
