@@ -53,15 +53,7 @@ public abstract class CallDBAction extends CallAction {
 
     @Override
     protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
-        String replacedParams = connectionString != null ? replaceParams(context, getTransformedText(context, connectionString)) : null;
-
-        String exec = (String) context.getKeyObject(this.exec);
-        boolean isFile = exec.endsWith(".sql");
-        exec = ScriptingLogicsModule.transformFormulaText(exec, getParamName("$1"));
-        if(isFile)
-            exec = ResourceUtils.findResourceAsString(exec, false, true, null, null);
-
-        List<Object> results = readJDBC(context.getKeys(), replacedParams, exec, context.getDbManager());
+        List<Object> results = readJDBC(context, connectionString != null ? replaceParams(context, getTransformedText(context, connectionString)) : null, context.getDbManager());
 
         for (int i = 0; i < targetPropList.size(); i++)
             targetPropList.get(i).change(results.get(i), context);
@@ -69,17 +61,15 @@ public abstract class CallDBAction extends CallAction {
         return FlowResult.FINISH;
     }
 
-    protected abstract List<Object> readJDBC(ImMap<PropertyInterface, ? extends ObjectValue> params, String connectionString, String exec, DBManager dbManager) throws SQLException, SQLHandledException;
+    protected abstract List<Object> readJDBC(ExecutionContext<PropertyInterface> context, String connectionString, DBManager dbManager) throws SQLException, SQLHandledException;
 
-    protected List<Object> readJDBC(ImMap<PropertyInterface, ? extends ObjectValue> params, String exec, Connection conn, SQLSyntax syntax, OperationOwner owner, List<String> tempTables) throws SQLException, SQLHandledException, IOException, ExecutionException {
-        conn.setReadOnly(false);
-
+    private ImMap<String, ParseInterface> replaceParams(ExecutionContext<PropertyInterface> context, Connection conn, SQLSyntax syntax, OperationOwner owner, List<String> tempTables) throws IOException, SQLException {
         int tableParamNum = 0;
         ImOrderSet<PropertyInterface> orderInterfaces = paramInterfaces;
         MExclMap<String, ParseInterface> mParamObjects = MapFact.mExclMap(orderInterfaces.size());
         for (int i = 0, size = orderInterfaces.size(); i < size; i++) {
             PropertyInterface param = orderInterfaces.get(i);
-            ObjectValue paramValue = params.get(param);
+            ObjectValue paramValue = context.getKeyValue(param);
 
             ParseInterface parse = null;
 
@@ -104,35 +94,52 @@ public abstract class CallDBAction extends CallAction {
 
             mParamObjects.exclAdd(getParamName(String.valueOf(i + 1)), parse);
         }
-        ImMap<String, ParseInterface> paramObjects = mParamObjects.immutable();
-
-        ParsedStatement parsed = SQLCommand.preparseStatement(exec, paramObjects, syntax).parseStatement(conn, syntax);
-
-        try {
-            SQLSession.ParamNum paramNum = new SQLSession.ParamNum();
-            for (String param : parsed.preparedParams)
-                paramObjects.get(param).writeParam(parsed.statement, paramNum, syntax);
-
-            boolean isResultSet = (boolean) Executors.newSingleThreadExecutor().submit((Callable) parsed.statement::execute).get();
-
-            List<Object> results = new ArrayList<>();
-            while (true) {
-                if (isResultSet)
-                    results.add(new FileData(JDBCTable.serialize(parsed.statement.getResultSet()), "jdbc"));
-                else {
-                    int updateCount = parsed.statement.getUpdateCount();
-                    if (updateCount == -1) break;
-                    else results.add(updateCount);
-                }
-                isResultSet = parsed.statement.getMoreResults();
-            }
-            return results;
-        } catch (InterruptedException e) {
-            parsed.statement.cancel();
-            throw Throwables.propagate(e);
-        } finally {
-            parsed.statement.close();
-        }
+        return mParamObjects.immutable();
     }
 
+    protected List<Object> readJDBC(ExecutionContext<PropertyInterface> context, Connection conn, SQLSyntax syntax, OperationOwner owner) throws SQLException, SQLHandledException, IOException, ExecutionException {
+        conn.setReadOnly(false);
+
+        String exec = (String) context.getKeyObject(this.exec);
+        boolean isFile = exec.endsWith(".sql");
+        exec = ScriptingLogicsModule.transformFormulaText(exec, getParamName("$1"));
+        if(isFile)
+            exec = ResourceUtils.findResourceAsString(exec, false, true, null, null);
+
+        List<String> tempTables = new ArrayList<>();
+        try {
+            ImMap<String, ParseInterface> paramObjects = replaceParams(context, conn, syntax, owner, tempTables);
+
+            ParsedStatement parsed = SQLCommand.preparseStatement(exec, paramObjects, syntax).parseStatement(conn, syntax);
+
+            try {
+                SQLSession.ParamNum paramNum = new SQLSession.ParamNum();
+                for (String param : parsed.preparedParams)
+                    paramObjects.get(param).writeParam(parsed.statement, paramNum, syntax);
+
+                boolean isResultSet = (boolean) Executors.newSingleThreadExecutor().submit((Callable) parsed.statement::execute).get();
+
+                List<Object> results = new ArrayList<>();
+                while (true) {
+                    if (isResultSet)
+                        results.add(new FileData(JDBCTable.serialize(parsed.statement.getResultSet()), "jdbc"));
+                    else {
+                        int updateCount = parsed.statement.getUpdateCount();
+                        if (updateCount == -1) break;
+                        else results.add(updateCount);
+                    }
+                    isResultSet = parsed.statement.getMoreResults();
+                }
+                return results;
+            } catch (InterruptedException e) {
+                parsed.statement.cancel();
+                throw Throwables.propagate(e);
+            } finally {
+                parsed.statement.close();
+            }
+        } finally {
+            for(String table : tempTables)
+                SQLSession.dropTemporaryTableFromDB(conn, syntax, table, owner);
+        }
+    }
 }

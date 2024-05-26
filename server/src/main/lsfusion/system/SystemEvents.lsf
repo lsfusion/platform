@@ -879,11 +879,11 @@ share(STRING url, STRING text, STRING title) {
         MESSAGE '<a href="' + url + '">${text}</a>';
 }
 
-formShare() + {
-    getShowFormURLAction();
+share(Connection cn, STRING url) = CONCAT '&', webPath(cn) + url, notEmpty(query(cn));
+shareLocal(STRING url) = share(currentConnection(), url);
 
-    FOR Connection cn = currentConnection() DO
-        share((CONCAT '?', webPath(cn) + readPath(), (CONCAT '&', notEmpty(query(cn)), notEmpty(readQuery()))), 'The link to share the form', 'Share');
+shareLocal(STRING url) {
+    share(shareLocal(url), 'The link to share the form', 'Share');
 }
 
 //VAPID key gen: https://tools.reactpwa.com/vapid

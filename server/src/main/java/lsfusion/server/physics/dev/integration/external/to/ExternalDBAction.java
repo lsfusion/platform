@@ -2,7 +2,6 @@ package lsfusion.server.physics.dev.integration.external.to;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.mutability.MutableObject;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.sql.SQLSession;
@@ -12,8 +11,8 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.syntax.DefaultSQLSyntax;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.property.LP;
+import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 
@@ -30,7 +29,7 @@ public class ExternalDBAction extends CallDBAction {
         super(2, params, targetPropList); //connection string, command + params
     }
 
-    public List<Object> readJDBC(ImMap<PropertyInterface, ? extends ObjectValue> params, String connectionString, String exec, DBManager dbManager) throws SQLException, SQLHandledException {
+    public List<Object> readJDBC(ExecutionContext<PropertyInterface> context, String connectionString, DBManager dbManager) throws SQLException, SQLHandledException {
         SQLSyntax syntax;
         OperationOwner owner = OperationOwner.unknown;
 
@@ -50,15 +49,12 @@ public class ExternalDBAction extends CallDBAction {
             syntax = DefaultSQLSyntax.getSyntax(connectionString);
             conn = DriverManager.getConnection(connectionString);
         }
-        List<String> tempTables = new ArrayList<>();
 
         try {
-            return readJDBC(params, exec, conn, syntax, owner, tempTables);
+            return readJDBC(context, conn, syntax, owner);
         } catch (IOException | ExecutionException e) {
             throw Throwables.propagate(e);
         } finally {
-            for(String table : tempTables)
-                SQLSession.dropTemporaryTableFromDB(conn, syntax, table, owner);
             if (conn != null) {
                 if(isLocalDB) {
                     conn.setReadOnly(prevReadOnly);

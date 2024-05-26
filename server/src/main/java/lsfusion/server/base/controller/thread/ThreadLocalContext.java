@@ -48,6 +48,7 @@ import lsfusion.server.physics.admin.authentication.security.controller.manager.
 import lsfusion.server.physics.admin.log.LogInfo;
 import lsfusion.server.physics.admin.log.RemoteLoggerAspect;
 import lsfusion.server.physics.admin.log.ServerLoggers;
+import lsfusion.server.physics.admin.monitor.SystemEventsLogicsModule;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import org.apache.commons.beanutils.BeanUtils;
@@ -171,6 +172,9 @@ public class ThreadLocalContext {
     }
     public static BaseLogicsModule getBaseLM() {
         return getBusinessLogics().LM;
+    }
+    public static SystemEventsLogicsModule getSystemEventsLM() {
+        return getBusinessLogics().systemEventsLM;
     }
     public static TFormats getTFormats() {
         return getBusinessLogics().tFormats;

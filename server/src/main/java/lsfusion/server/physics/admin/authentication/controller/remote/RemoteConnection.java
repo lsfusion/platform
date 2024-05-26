@@ -37,7 +37,7 @@ import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
 import lsfusion.server.physics.admin.log.LogInfo;
 import lsfusion.server.physics.admin.log.ServerLoggers;
-import lsfusion.server.physics.dev.integration.external.to.ExternalHTTPAction;
+import lsfusion.server.physics.dev.integration.external.to.CallHTTPAction;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hc.core5.http.ContentType;
@@ -425,7 +425,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     private void executeExternal(LA<?> property, ExternalRequest request, ExecutionEnvironment env, ExecutionStack stack) throws SQLException, SQLHandledException, ParseException {
         writeRequestInfo(env, property.action, request);
 
-        property.execute(env, stack, ExternalHTTPAction.getParams(env.getSession(), property, request.params, Charset.forName(request.charsetName)));
+        property.execute(env, stack, CallHTTPAction.getParams(env.getSession(), property, request.params, Charset.forName(request.charsetName)));
     }
 
     protected AuthenticationException authException;
@@ -464,10 +464,10 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     public void writeRequestInfo(ExecutionEnvironment env, Action<?> action, ExternalRequest request) throws SQLException, SQLHandledException {
         DataSession session = env.getSession();
         if (action.uses(businessLogics.LM.headers.property)) {
-            ExternalHTTPAction.writePropertyValues(session, env, businessLogics.LM.headers, getNotNullStringArray(request.headerNames), getNotNullStringArray(request.headerValues));
+            CallHTTPAction.writePropertyValues(session, env, businessLogics.LM.headers, getNotNullStringArray(request.headerNames), getNotNullStringArray(request.headerValues));
         }
         if (action.uses(businessLogics.LM.cookies.property)) {
-            ExternalHTTPAction.writePropertyValues(session, env, businessLogics.LM.cookies, getNotNullStringArray(request.cookieNames), getNotNullStringArray(request.cookieValues));
+            CallHTTPAction.writePropertyValues(session, env, businessLogics.LM.cookies, getNotNullStringArray(request.cookieNames), getNotNullStringArray(request.cookieValues));
         }
         if (action.uses(businessLogics.LM.query.property)) {
             businessLogics.LM.query.change(request.query, session);
@@ -482,7 +482,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
                     paramValues.add(splittedParam[1]);
                 }
             }
-            ExternalHTTPAction.writePropertyValues(session, env, businessLogics.LM.params, paramNames.toArray(new String[0]), paramValues.toArray(new String[0]));
+            CallHTTPAction.writePropertyValues(session, env, businessLogics.LM.params, paramNames.toArray(new String[0]), paramValues.toArray(new String[0]));
         }
         if (action.uses(businessLogics.LM.contentType.property)) {
             businessLogics.LM.contentType.change(request.contentType, session);
@@ -544,10 +544,10 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
             returns.add(formatReturnValue(objectValue.getValue(), resultProp.result));
         }
 
-        ImOrderMap<String, String> headers = ExternalHTTPAction.readPropertyValues(dataSession, businessLogics.LM.headersTo).toOrderMap();
+        ImOrderMap<String, String> headers = CallHTTPAction.readPropertyValues(dataSession, businessLogics.LM.headersTo).toOrderMap();
         String[] headerNames = headers.keyOrderSet().toArray(new String[headers.size()]);
         String[] headerValues = headers.valuesList().toArray(new String[headers.size()]);
-        ImOrderMap<String, String> cookies = ExternalHTTPAction.readPropertyValues(dataSession, businessLogics.LM.cookiesTo).toOrderMap();
+        ImOrderMap<String, String> cookies = CallHTTPAction.readPropertyValues(dataSession, businessLogics.LM.cookiesTo).toOrderMap();
         String[] cookieNames = cookies.keyOrderSet().toArray(new String[cookies.size()]);
         String[] cookieValues = cookies.valuesList().toArray(new String[cookies.size()]);
 

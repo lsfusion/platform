@@ -1468,7 +1468,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     private DataObject createObject(FormInstance form, ObjectInstance objectInstance, DataSession session, ExecutionStack stack) throws SQLException, SQLHandledException {
         PropertyDrawInstance newActionProperty = getNewPropertyDrawInstance(form, objectInstance.getSID());
         if(newActionProperty != null) {
-            ((ActionObjectInstance) newActionProperty.getActionOrProperty()).getValueImplement(form).execute(session, stack);
+            ((ActionObjectInstance) newActionProperty.getActionOrProperty()).execute(form, stack, null, null, form);
         } else {
             LA addObjectAction = form.BL.LM.getAddObjectAction(form.entity, objectInstance.entity, (ConcreteCustomClass) objectInstance.getBaseClass());
             addObjectAction.execute(form, stack, new FormEnvironment<>(null, null, form));

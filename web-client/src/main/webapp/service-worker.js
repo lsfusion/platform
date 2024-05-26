@@ -26,8 +26,8 @@ self.addEventListener('notificationclick', function(event) {
     // https://developer.mozilla.org/en-US/docs/Web/API/NotificationEvent/notification
     // sent in options.data
     let data = event.notification.data;
-    if(data.type === 'focusNotification')
-        event.waitUntil(clients.get(data.clientId).then((client) => client.focus()));
+    if(data.action.type === 'focusNotification')
+        event.waitUntil(clients.get(data.action.clientId).then((client) => client.focus()));
     else
         dispatchAction(event, data.action, data.push, (client) => client.focus(),
             (action, push) => clients.openWindow("/" + (push.query ? "?" + push.query : "")).then((client) => pushPendingNotification(client, action)));

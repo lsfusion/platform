@@ -11,17 +11,14 @@ import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.lambda.set.FunctionSet;
-import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.form.event.BindingMode;
-import lsfusion.interop.form.event.FormScheduler;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.interop.session.ExternalHttpMethod;
-import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.base.AppServerImage;
 import lsfusion.server.base.ResourceUtils;
 import lsfusion.server.base.caches.IdentityLazy;
@@ -102,7 +99,6 @@ import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.stat.SelectTop;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.filter.CCCContextFilterEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
@@ -2058,11 +2054,8 @@ public class ScriptingLogicsModule extends LogicsModule {
                 properties);
     }
 
-    public LAWithParams addScriptedExternalLSFAction(LPWithParams connectionString, LPWithParams actionLCP, boolean eval, boolean action, List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
-        String request = (eval ? (action ? "/eval/action" : "/eval") + "?" + ExternalUtils.SCRIPT_PARAM : ("/exec?" + ExternalUtils.ACTION_CN_PARAM)) + "=$" + (params.size()+1);
-        return addScriptedExternalHTTPAction(false, ExternalHttpMethod.POST,
-                addScriptedJProp(getArithProp("+"), Arrays.asList(connectionString, new LPWithParams(addCProp(StringClass.text, LocalizedString.create(request, false))))),
-                null, Collections.emptyList(), null, null, null, null, null, BaseUtils.add(params, actionLCP), context, toPropertyUsageList);
+    public LAWithParams addScriptedExternalLSFAction(LPWithParams connectionString, LPWithParams actionString, boolean eval, boolean action, List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
+        return addScriptedJoinAProp(addAProp(new ExternalLSFAction(getTypesForExternalAction(params, context), findLPsNoParamsByPropertyUsage(toPropertyUsageList), eval, action)), BaseUtils.addList(connectionString, actionString, params));
     }
 
     private ImList<LP> findLPsNoParamsByPropertyUsage(List<NamedPropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
