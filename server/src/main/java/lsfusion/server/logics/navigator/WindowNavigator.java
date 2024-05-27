@@ -1,7 +1,6 @@
 package lsfusion.server.logics.navigator;
 
 import lsfusion.server.logics.navigator.window.AbstractWindow;
-import lsfusion.server.logics.navigator.window.NavigatorWindow;
 import lsfusion.server.logics.property.Property;
 
 import java.io.DataOutputStream;

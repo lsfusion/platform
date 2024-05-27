@@ -1,13 +1,18 @@
 package lsfusion.client.navigator.window;
 
+import lsfusion.client.navigator.ClientNavigatorElement;
 import lsfusion.interop.navigator.window.WindowType;
 
 import javax.swing.*;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ClientAbstractWindow<C extends JComponent> implements Serializable {
+    public List<ClientNavigatorElement> elements = new ArrayList<>();
+
     public String canonicalName;
     public String caption;
     public int position;

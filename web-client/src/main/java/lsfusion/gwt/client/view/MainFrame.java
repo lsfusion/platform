@@ -43,7 +43,6 @@ import lsfusion.gwt.client.navigator.view.ExcelMobileNavigatorView;
 import lsfusion.gwt.client.navigator.view.MobileNavigatorView;
 import lsfusion.gwt.client.navigator.window.GAbstractWindow;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
-import lsfusion.gwt.client.navigator.window.GToolbarNavigatorWindow;
 import lsfusion.gwt.client.navigator.window.view.WindowsController;
 import net.customware.gwt.dispatch.shared.Result;
 
@@ -527,11 +526,11 @@ public class MainFrame implements EntryPoint {
             if (MainFrame.verticalNavbar) {
                 // change navbar navigators orientation
                 for (GAbstractWindow window : result.navigatorWindows) {
-                    if (window instanceof GToolbarNavigatorWindow) {
-                        GToolbarNavigatorWindow toolbarWindow = (GToolbarNavigatorWindow) window;
+                    if (window instanceof GNavigatorWindow) {
+                        GNavigatorWindow toolbarWindow = (GNavigatorWindow) window;
                         if (toolbarWindow.isInRootNavBar()) {
                             toolbarWindow.vertical = true;
-                            toolbarWindow.verticalTextPosition = GToolbarNavigatorWindow.CENTER;
+                            toolbarWindow.verticalTextPosition = GNavigatorWindow.CENTER;
                         }
                     }
                 }

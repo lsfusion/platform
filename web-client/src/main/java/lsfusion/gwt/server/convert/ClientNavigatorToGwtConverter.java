@@ -6,7 +6,6 @@ import lsfusion.client.navigator.ClientNavigatorAction;
 import lsfusion.client.navigator.ClientNavigatorChanges;
 import lsfusion.client.navigator.ClientNavigatorElement;
 import lsfusion.client.navigator.ClientNavigatorFolder;
-import lsfusion.client.navigator.tree.window.ClientTreeNavigatorWindow;
 import lsfusion.client.navigator.window.*;
 import lsfusion.gwt.client.GNavigatorChangesDTO;
 import lsfusion.gwt.client.action.GAction;
@@ -95,8 +94,8 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
         initAbstractNavigatorWindow(clientWindow, window);
 
         window.drawScrollBars = clientWindow.drawScrollBars;
-        for (ClientNavigatorElement clientElement : clientWindow.elements) {
-            GNavigatorElement element = convertOrCast(clientElement);
+        for (Object clientElement : clientWindow.elements) {
+            GNavigatorElement element = convertOrCast((ClientNavigatorElement) clientElement);
             window.elements.add(element);
         }
         return window;
@@ -109,9 +108,9 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
     }
 
     @Cached
-    @Converter(from = ClientToolBarNavigatorWindow.class)
-    public GToolbarNavigatorWindow convertToolbarNavigatorWindow(ClientToolBarNavigatorWindow clientWindow) {
-        GToolbarNavigatorWindow window = initNavigatorWindow(clientWindow, new GToolbarNavigatorWindow());
+    @Converter(from = ClientNavigatorWindow.class)
+    public GNavigatorWindow convertToolbarNavigatorWindow(ClientNavigatorWindow clientWindow) {
+        GNavigatorWindow window = initNavigatorWindow(clientWindow, new GNavigatorWindow());
         window.alignmentX = clientWindow.alignmentX;
         window.alignmentY = clientWindow.alignmentY;
         window.horizontalAlignment = clientWindow.horizontalAlignment;
@@ -121,29 +120,6 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
         window.showSelect = clientWindow.showSelect;
         window.vertical = clientWindow.type == 1;
         return window;
-    }
-
-    @Cached
-    @Converter(from = ClientMenuNavigatorWindow.class)
-    public GMenuNavigatorWindow convertMenuNavigatorWindow(ClientMenuNavigatorWindow clientWindow) {
-        GMenuNavigatorWindow window = initNavigatorWindow(clientWindow, new GMenuNavigatorWindow());
-        window.orientation = clientWindow.orientation;
-        window.showLevel = clientWindow.showLevel;
-        return window;
-    }
-
-    @Cached
-    @Converter(from = ClientPanelNavigatorWindow.class)
-    public GPanelNavigatorWindow convertPanelNavigatorWindow(ClientPanelNavigatorWindow clientWindow) {
-        GPanelNavigatorWindow window = initNavigatorWindow(clientWindow, new GPanelNavigatorWindow());
-        window.orientation = clientWindow.orientation;
-        return window;
-    }
-
-    @Cached
-    @Converter(from = ClientTreeNavigatorWindow.class)
-    public GTreeNavigatorWindow convertTreeNavigatorWindow(ClientTreeNavigatorWindow clientWindow) {
-        return initNavigatorWindow(clientWindow, new GTreeNavigatorWindow());
     }
 
     @Cached

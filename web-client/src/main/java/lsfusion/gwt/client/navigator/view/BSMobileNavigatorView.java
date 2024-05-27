@@ -9,7 +9,6 @@ import lsfusion.gwt.client.base.view.NavigatorImageButton;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
 import lsfusion.gwt.client.navigator.window.GAbstractWindow;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
-import lsfusion.gwt.client.navigator.window.GToolbarNavigatorWindow;
 import lsfusion.gwt.client.navigator.window.view.WindowsController;
 
 import java.util.ArrayList;
@@ -51,7 +50,7 @@ public class BSMobileNavigatorView extends MobileNavigatorView {
                 filterWindow = navigatorWindow -> navigatorWindow == system;
             }
 
-            ToolbarPanel main = new ToolbarPanel(true, (GToolbarNavigatorWindow) toolbar);
+            ToolbarPanel main = new ToolbarPanel(true, toolbar);
 
             if(flex)
                 navWindowsPanel.addFill(main);
