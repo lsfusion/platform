@@ -53,6 +53,12 @@
     <http pattern="/client.jnlp" security="none"/>
     <!--for jar -->
     <http pattern="/lsfusion-client*" security="none"/>
+
+    <!--service-worker must be accessible without security-->
+    <!--  when security for service-worker is enabled, when logging in again after logging out,
+            unexpected behavior occurs:
+                user enters login and password, and then goes to /service-worker.js instead of /main -->
+    <http pattern="/service-worker.js" security="none"/>
     <!-- UI security -->
     <http entry-point-ref="entryPoint">
         <intercept-url pattern="/**" access="isAuthenticated()"/>

@@ -275,6 +275,18 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.valueAlignment = valueAlignment;
     }
 
+    public void setWrap(boolean wrap) {
+        target.wrap = wrap;
+    }
+
+    public void setWrapWordBreak(boolean wrapWordBreak) {
+        target.wrapWordBreak = wrapWordBreak;
+    }
+
+    public void setCollapse(boolean collapse) {
+        target.collapse = collapse;
+    }
+
     public void setClearText(boolean clearText) {
         target.clearText = clearText;
     }

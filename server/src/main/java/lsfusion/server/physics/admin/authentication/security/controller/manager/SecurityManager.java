@@ -44,7 +44,11 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import javax.naming.CommunicationException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -222,6 +226,22 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                 .setClaims(claims)
                 .signWith(SignatureAlgorithm.HS512, secret)
                 .compact());
+    }
+
+    public String signData(String message) {
+        try {
+            Mac sha256_HMAC = Mac.getInstance("HmacSHA256");
+            SecretKeySpec secretKeySpec = new SecretKeySpec(secret.getBytes(), "HmacSHA256");
+            sha256_HMAC.init(secretKeySpec);
+            byte[] hmacBytes = sha256_HMAC.doFinal(message.getBytes());
+            return Base64.getUrlEncoder().withoutPadding().encodeToString(hmacBytes);
+        } catch (NoSuchAlgorithmException | InvalidKeyException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    public boolean verifyData(String message, String signature) {
+        return signData(message).equals(signature);
     }
 
     private String getWebClientSecret() {

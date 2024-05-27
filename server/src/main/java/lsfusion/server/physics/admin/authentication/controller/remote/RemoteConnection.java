@@ -332,7 +332,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
                             findActionName = findActionName.substring(0, lastSlash);
                         }
                         if (action != null) {
-                            result = executeExternal(action, request);
+                            result = executeExternal(action, actionName, false, request);
                         } else {
                             throw new RuntimeException(String.format("Action %s was not found", actionName));
                         }
@@ -356,7 +356,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
                 try {
                     LA<?> runAction = businessLogics.evaluateRun(script, action);
                     if(runAction != null) {
-                        result = executeExternal(runAction, request);
+                        result = executeExternal(runAction, paramScript, true, request);
                     } else {
                         throw new RuntimeException("Action with name 'run' was not found");
                     }
@@ -378,8 +378,8 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         }
     }
 
-    private ExternalResponse executeExternal(LA<?> property, ExternalRequest request) throws SQLException, ParseException, SQLHandledException, IOException {
-        checkEnableApi(property);
+    private ExternalResponse executeExternal(LA<?> property, Object actionParam, boolean script, ExternalRequest request) throws SQLException, ParseException, SQLHandledException, IOException {
+        checkEnableApi(property, actionParam, script, request);
 
         if(property.action.hasFlow(ChangeFlowType.INTERACTIVEWAIT)) {
             EnvStackRunnable runnable = (env, stack) -> {
@@ -430,7 +430,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
 
     protected AuthenticationException authException;
 
-    private void checkEnableApi(LA<?> property) {
+    private void checkEnableApi(LA<?> property, Object actionParam, boolean script, ExternalRequest request) {
         boolean forceAPI = false;
         String annotation = property.action.annotation;
         if(annotation != null) {
@@ -438,8 +438,13 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
                 return;
             forceAPI = annotation.equals("api");
         }
+
+        if(request.signature != null && logicsInstance.getSecurityManager().verifyData(ExternalUtils.generate(actionParam, script, request.params), request.signature))
+            return;
+
         if(authException != null)
             throw authException;
+
         checkEnableApi(authToken.isAnonymous(), forceAPI);
     }
 

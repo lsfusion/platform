@@ -62,7 +62,16 @@ public class ExternalUtils {
     public static final String RETURN_PARAM = "return";
     public static final String RETURNMULTITYPE_PARAM = "returnmultitype";
 
-    public static final List<String> PARAMS = Arrays.asList(ACTION_CN_PARAM, SCRIPT_PARAM, PARAMS_PARAM, RETURN_PARAM, RETURNMULTITYPE_PARAM);
+    public static final String SIGNATURE_PARAM = "signature";
+
+    public static final String generate(Object actionParam, boolean script, Object[] params) {
+        String paramsString = "";
+        for(int i = 0; i < params.length; i++)
+            paramsString += "," + params[i];
+        return (script ? "1" : "0") + "," + actionParam + paramsString;
+    }
+
+    public static final List<String> PARAMS = Arrays.asList(ACTION_CN_PARAM, SCRIPT_PARAM, PARAMS_PARAM, RETURN_PARAM, RETURNMULTITYPE_PARAM, SIGNATURE_PARAM);
 
     public static ExecInterface getExecInterface(final AuthenticationToken token, final SessionInfo sessionInfo, final RemoteLogicsInterface remoteLogics) {
         return new ExecInterface() {
@@ -111,17 +120,19 @@ public class ExternalUtils {
         
         ImList<String> returns = getParameterValues(queryParams, RETURN_PARAM);
 
+        String signature = getParameterValue(queryParams, SIGNATURE_PARAM);
+
         ExternalRequest request = new ExternalRequest(returns.toArray(new String[0]), paramsList.toArray(new Object[paramsList.size()]),
                 charset == null ? null : charset.toString(), headerNames, headerValues, cookieNames,
                 cookieValues, logicsHost, logicsPort, logicsExportName, scheme, method, webHost, webPort, contextPath,
-                servletPath, pathInfo, query, requestContentType != null ? requestContentType.toString() : null, sessionId, body);
+                servletPath, pathInfo, query, requestContentType != null ? requestContentType.toString() : null, sessionId, body, signature);
 
         lsfusion.interop.session.ExternalResponse execResult = null;
         String path = servletPath + pathInfo;
         boolean isEvalAction = path.endsWith("/eval/action");
         if (path.endsWith("/eval") || isEvalAction) {
             Object script = getParameterValue(queryParams, SCRIPT_PARAM);
-            if (script == null && !paramsList.isEmpty()) {
+            if (script == null && !paramsList.isEmpty()) { // converting last script param to the script param
                 int scriptParam = queryActionParams.size();
                 if(paramsList.size() > scriptParam) {
                     script = paramsList.get(scriptParam);

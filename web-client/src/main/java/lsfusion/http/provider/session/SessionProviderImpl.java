@@ -41,13 +41,14 @@ public class SessionProviderImpl implements SessionProvider, DisposableBean {
     public SessionSessionObject getSessionSessionObject(String sessionID) throws SessionInvalidatedException {
         SessionSessionObject sessionSessionObject = currentSessions.get(sessionID);
         if(sessionSessionObject == null)
-            throw new SessionInvalidatedException();
+            throw new SessionInvalidatedException("Session " + sessionID);
         return sessionSessionObject;
     }
 
     @Override
     public void removeSessionSessionObject(String sessionID) throws RemoteException {
         SessionSessionObject sessionSessionObject = getSessionSessionObject(sessionID);
+        MainDispatchServlet.logger.error("Removing session " + sessionID + "...");
         currentSessions.remove(sessionID);
         sessionSessionObject.remoteSession.close();
     }

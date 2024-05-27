@@ -875,7 +875,6 @@ getClientSettings(User user) + WHEN user IS User THEN {
         showDetailedInfo = (GROUP MAX showDetailedInfo(UserRole ur) IF has(user, ur)),
         showDetailedInfoDelay = valueSetting('tooltipDelay'),
         suppressOnFocusChange = IF suppressOnFocusChange(user) THEN (IF suppressOnFocusChange(user) == TTRUE THEN TRUE ELSE NULL) ELSE valueSettingBoolean('suppressOnFocusChange'),
-        contentWordWrap = IF contentWordWrap(user) THEN (IF contentWordWrap(user) == TTRUE THEN TRUE ELSE NULL) ELSE valueSettingBoolean('contentWordWrap'),
         devMode = inDevMode() OR (devMode(user)),
         projectLSFDir = projectLSFDir(),
         colorThemeString = IF (colorThemeStaticName()) THEN substrFrom(colorThemeStaticName(), strpos(colorThemeStaticName(), '.') + 1),

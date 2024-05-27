@@ -311,6 +311,8 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
 
         TextBasedCellRenderer.setTextPadding(cellParent); // paddings should be for the element itself (and in general do not change), because the size is set for this element and reducing paddings will lead to changing element size
 
+        GwtClientUtils.initDataHtmlOrText(inputElement, property.getDataHtmlOrTextType());
+
         addPasteListener(inputElement);
     }
 

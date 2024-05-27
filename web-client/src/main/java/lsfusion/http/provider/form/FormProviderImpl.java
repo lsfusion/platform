@@ -121,7 +121,7 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
     public FormSessionObject getFormSessionObject(String formSessionID) throws SessionInvalidatedException {
         FormSessionObject formSessionObject = currentForms.get(formSessionID);
         if(formSessionObject == null)
-            throw new SessionInvalidatedException();
+            throw new SessionInvalidatedException("Form " + formSessionID);
         return formSessionObject;
     }
 
@@ -137,6 +137,7 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
 
     private void removeFormSessionObject(String formSessionID) throws SessionInvalidatedException {
         FormSessionObject<?> sessionObject = getFormSessionObject(formSessionID);
+        MainDispatchServlet.logger.error("Removing form " + formSessionID + "...");
         currentForms.remove(formSessionID);
         closeTempFiles(sessionObject);
     }

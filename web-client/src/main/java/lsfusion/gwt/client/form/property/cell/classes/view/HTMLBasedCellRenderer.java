@@ -18,13 +18,13 @@ public abstract class HTMLBasedCellRenderer extends CellRenderer {
 
     @Override
     public boolean renderContent(Element element, RenderContext renderContext) {
-        GwtClientUtils.initDataHtmlOrText(element, DataHtmlOrTextType.HTML);
+        GwtClientUtils.initDataHtmlOrText(element, property.getDataHtmlOrTextType());
         return false;
     }
 
     @Override
     public boolean clearRenderContent(Element element, RenderContext renderContext) {
-        GwtClientUtils.clearDataHtmlOrText(element, DataHtmlOrTextType.HTML);
+        GwtClientUtils.clearDataHtmlOrText(element, property.getDataHtmlOrTextType());
         return false;
     }
 

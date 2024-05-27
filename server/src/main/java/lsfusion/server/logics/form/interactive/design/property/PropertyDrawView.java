@@ -19,6 +19,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.ColorClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.data.StringClass;
+import lsfusion.server.logics.classes.data.TextClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.classes.data.link.LinkClass;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
@@ -123,6 +124,11 @@ public class PropertyDrawView extends BaseComponentView {
 
     public LocalizedString caption;
     public AppServerImage.Reader image;
+
+    public Boolean wrap;
+    public Boolean wrapWordBreak;
+    public Boolean collapse;
+
     public boolean clearText;
     public boolean notSelectAll;
 
@@ -239,6 +245,41 @@ public class PropertyDrawView extends BaseComponentView {
             return captionHeight;
 
         return -1;
+    }
+
+    public boolean isWrap(FormInstanceContext context) {
+        if (wrap != null)
+            return wrap;
+
+        if (isProperty(context)) {
+            Type type = getAssertCellType(context);
+            if (type instanceof TextClass)
+                return true;
+
+            return context.contentWordWrap;
+        }
+
+        return false;
+    }
+
+    public boolean isCollapse(FormInstanceContext context) {
+        if (collapse != null)
+            return collapse;
+
+        if (isProperty(context)) {
+            Type type = getAssertCellType(context);
+            if (type instanceof TextClass)
+                return false;
+        }
+
+        return true;
+    }
+
+    public boolean isWrapWordBreak(FormInstanceContext context) {
+        if (wrapWordBreak != null)
+            return wrapWordBreak;
+
+        return false;
     }
 
     // we force optimistic async event scheme for external calls (since this calls assume that async push should exist)
@@ -600,6 +641,11 @@ public class PropertyDrawView extends BaseComponentView {
         }
 
         outStream.writeBoolean(isProperty(pool.context));
+
+        outStream.writeBoolean(isWrap(pool.context));
+        outStream.writeBoolean(isWrapWordBreak(pool.context));
+        outStream.writeBoolean(isCollapse(pool.context));
+
         outStream.writeBoolean(clearText);
         outStream.writeBoolean(notSelectAll);
 

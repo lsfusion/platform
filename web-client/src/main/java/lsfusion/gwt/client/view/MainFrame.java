@@ -29,7 +29,6 @@ import lsfusion.gwt.client.controller.remote.action.RequestCountingAsyncCallback
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.*;
 import lsfusion.gwt.client.form.controller.FormsController;
-import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GColorPreferences;
 import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
@@ -47,7 +46,6 @@ import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
 import lsfusion.gwt.client.navigator.window.view.WindowsController;
 import net.customware.gwt.dispatch.shared.Result;
 
-import java.io.IOException;
 import java.util.*;
 
 import static lsfusion.gwt.client.base.BaseImage.BASE_STATIC_IMAGE;
@@ -70,7 +68,6 @@ public class MainFrame implements EntryPoint {
     public static boolean autoReconnectOnConnectionLost;
     public static int showDetailedInfoDelay;
     public static boolean suppressOnFocusChange;
-    public static boolean contentWordWrap;
     public static boolean forbidDuplicateForms;
     public static boolean useBootstrap;
     public static long busyDialogTimeout;
@@ -341,15 +338,16 @@ public class MainFrame implements EntryPoint {
         formsControllerLinker.link = formsController;
 
         //we use CloseHandler instead of Window.ClosingHandler because mobile browsers send closing event without closing window
-        if(mobile) {
+//        if(mobile) {
             Window.addCloseHandler(event -> {
                 saveAndClean(windowsController);
             });
-        } else { // somewhy in browser close handler doesn't work
-            Window.addWindowClosingHandler(event -> {
-                saveAndClean(windowsController);
-            });
-        }
+//        } else { // somewhy in browser close handler doesn't work
+        // !!! but closing handler can be called too early
+//            Window.addWindowClosingHandler(event -> {
+//                saveAndClean(windowsController);
+//            });
+//        }
 
         Window.addWindowClosingHandler(event -> {
             if(!disableConfirmDialog) {
@@ -610,7 +608,6 @@ public class MainFrame implements EntryPoint {
                 showDetailedInfo = gClientSettings.showDetailedInfo;
                 showDetailedInfoDelay = gClientSettings.showDetailedInfoDelay;
                 suppressOnFocusChange = gClientSettings.suppressOnFocusChange;
-                contentWordWrap = gClientSettings.contentWordWrap;
                 autoReconnectOnConnectionLost = gClientSettings.autoReconnectOnConnectionLost;
                 forbidDuplicateForms = gClientSettings.forbidDuplicateForms;
                 pivotOnlySelectedColumn = gClientSettings.pivotOnlySelectedColumn;
