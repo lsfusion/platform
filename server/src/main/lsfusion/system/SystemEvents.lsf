@@ -281,6 +281,8 @@ onWebClientInit() + {
     onWebClientInit('select.js') <- 30;
     onWebClientInit('selectize.js') <- 31;
     onWebClientInit('input.js') <- 32;
+    onWebClientInit('yearpicker.js') <- 33;
+    onWebClientInit('yearpicker.css') <- 34;
 }
 
 readDBNames INTERNAL 'lsfusion.server.logics.action.ReadDBNamesAction' ();
