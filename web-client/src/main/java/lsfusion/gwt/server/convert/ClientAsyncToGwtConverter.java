@@ -10,25 +10,25 @@ import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.GComple
 import lsfusion.gwt.client.navigator.window.GContainerWindowFormType;
 import lsfusion.gwt.client.navigator.window.GModalityWindowFormType;
 import lsfusion.gwt.server.MainDispatchServlet;
+import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.interop.form.ContainerWindowFormType;
 import lsfusion.interop.form.ModalityWindowFormType;
 import lsfusion.interop.form.event.BindingMode;
-import lsfusion.interop.logics.ServerSettings;
 
-import javax.servlet.ServletContext;
 import javax.swing.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
+
 import java.util.ArrayList;
 
-public class ClientAsyncToGwtConverter extends CachedObjectConverter {
+public class ClientAsyncToGwtConverter extends CachedFormObjectConverter {
 
     private final ClientTypeToGwtConverter typeConverter = ClientTypeToGwtConverter.getInstance();
     private final ClientFormChangesToGwtConverter valuesConverter = ClientFormChangesToGwtConverter.getInstance();
 
-    public ClientAsyncToGwtConverter(MainDispatchServlet servlet, String sessionID) {
-        super(servlet, sessionID);
+    public ClientAsyncToGwtConverter(MainDispatchServlet servlet, FormSessionObject formSessionObject) {
+        super(servlet, formSessionObject);
     }
 
     @Cached
@@ -119,8 +119,8 @@ public class ClientAsyncToGwtConverter extends CachedObjectConverter {
 
     @Cached
     @Converter(from = ClientAsyncChange.class)
-    public GAsyncChange convertAsyncChange(ClientAsyncChange clientAsyncChange) {
-        return new GAsyncChange(clientAsyncChange.propertyIDs, valuesConverter.convertOrCast(clientAsyncChange.value));
+    public GAsyncChange convertAsyncChange(ClientAsyncChange clientAsyncChange) throws IOException {
+        return new GAsyncChange(clientAsyncChange.propertyIDs, valuesConverter.convertFileValue(clientAsyncChange.value, formSessionObject, servlet));
     }
 
     @Converter(from = ModalityWindowFormType.class)

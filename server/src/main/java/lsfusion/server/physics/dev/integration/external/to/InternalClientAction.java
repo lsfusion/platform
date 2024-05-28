@@ -15,6 +15,7 @@ import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.FlowResult;
+import lsfusion.server.logics.form.interactive.changed.FormChanges;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.io.IOException;
@@ -58,7 +59,7 @@ public class InternalClientAction extends CallAction {
             for (int i = resourceName != null ? 0 : 1; i < orderInterfaces.size(); i++) {
                 PropertyInterface orderInterface = orderInterfaces.get(i);
                 ObjectValue objectValue = context.getKeys().get(orderInterface);
-                values.add(serializeObject(objectValue.getValue()));
+                values.add(FormChanges.serializeConvertFileValue(null, objectValue.getValue(), context.getRemoteContext()));
                 types.add(TypeSerializer.serializeType(objectValue.getType()));
             }
             returnType = targetProp != null ? TypeSerializer.serializeType(targetProp.property.getType()) : null;

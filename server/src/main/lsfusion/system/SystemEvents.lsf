@@ -904,12 +904,17 @@ pushConnection = GROUP LAST Connection c IF subscription(c) ORDER connectTime(c)
 pushConnection = GROUP LAST Connection c IF subscription(c) ORDER connectTime(c), c BY user(c), computer(c);
 pushConnection = GROUP LAST Connection c IF subscription(c) ORDER connectTime(c), c BY computer(c);
 
+inputActions = DATA LOCAL JSON();
+getInputActions INTERNAL 'lsfusion.server.logics.classes.data.utils.GetInputActionsAction' (JSON); 
+
 notify(JSON notification, JSON action) {
-    INTERNAL CLIENT 'webNotify' PARAMS notification, action, push(currentConnection());
+    getInputActions(action);
+    INTERNAL CLIENT 'webNotify' PARAMS notification, action, inputActions(), push(currentConnection());
 }
-push INTERNAL 'lsfusion.server.logics.classes.data.utils.PushAction' (BOOLEAN, JSON, JSON, JSON);
+push INTERNAL 'lsfusion.server.logics.classes.data.utils.PushAction' (BOOLEAN, JSON, JSON, JSON, JSON);
 push(BOOLEAN alwaysNotify, Connection connection, JSON notification, JSON action) {
-    push(alwaysNotify, notification, action, push(connection));
+    getInputActions(action);
+    push(alwaysNotify, notification, action, inputActions(), push(connection));
 }
 push(Connection connection, JSON notification, JSON action) {
     push(NULL, connection, notification, action);
@@ -928,5 +933,6 @@ action(STRING url) = JSON FROM url = url;
 // the most commonly used cases
 
 push(Connection connection, INTEGER id) { push(connection, NULL, action(id)); }
-notify(STRING title, INTEGER id) { notify(notification(title), action(id)); }
+notify(JSON notification, INTEGER id) { notify(notification, action(id)); }
+notify(STRING title, INTEGER id) { notify(notification(title), id); }
 pushNotify(Connection connection, STRING title, INTEGER notificationId) { pushNotify(connection, notification(title), action(notificationId)); }

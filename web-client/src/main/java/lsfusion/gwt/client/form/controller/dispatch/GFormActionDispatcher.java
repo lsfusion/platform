@@ -163,7 +163,7 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
         Result<Object> result = new Result<>();
         // we'll be optimists and assume that this value will stay
         long dispatchingIndex = getDispatchingIndex();
-        form.edit(action.readType, editEventHandler, action.hasOldValue, PValue.remapValue(action.oldValue), action.inputList, action.inputListActions,
+        form.edit(action.readType, editEventHandler, action.hasOldValue, PValue.convertFileValue(action.oldValue), action.inputList, action.inputListActions,
                 (value, onExec) -> {
                     onExec.accept(dispatchingIndex);
 
@@ -176,7 +176,7 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     @Override
     public void execute(GUpdateEditValueAction action) {
         if(editContext != null) {
-            form.setValue(editContext, PValue.remapValue(action.value));
+            form.setValue(editContext, PValue.convertFileValue(action.value));
         }
     }
 

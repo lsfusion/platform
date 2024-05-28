@@ -25,6 +25,7 @@ public class PushAction extends InternalAction {
     private final ClassPropertyInterface alwaysNotifyInterface;
     private final ClassPropertyInterface notificationInterface;
     private final ClassPropertyInterface actionInterface;
+    private final ClassPropertyInterface inputActionsInterface;
     private final ClassPropertyInterface pushInterface;
 
     public PushAction(SystemEventsLogicsModule LM, ValueClass... classes) {
@@ -34,6 +35,7 @@ public class PushAction extends InternalAction {
         alwaysNotifyInterface = i.next();
         notificationInterface = i.next();
         actionInterface = i.next();
+        inputActionsInterface = i.next();
         pushInterface = i.next();
     }
 
@@ -47,7 +49,9 @@ public class PushAction extends InternalAction {
             payload.put("alwaysNotify", !context.getKeyValue(alwaysNotifyInterface).isNull());
             String notification = (String) context.getKeyValue(notificationInterface).getValue();
             payload.put("notification", notification != null ? new JSONObject(notification) : null);
+
             payload.put("action", new JSONObject((String) context.getKeyValue(actionInterface).getValue()));
+            payload.put("inputActions", new JSONObject((String) context.getKeyValue(inputActionsInterface).getValue()));
             JSONObject pushJson = new JSONObject((String) context.getKeyValue(pushInterface).getValue());
             payload.put("push", pushJson);
 

@@ -382,7 +382,7 @@ public class MainFrame implements EntryPoint {
                         public void onSuccess(ClientMessageResult result) {
                             setShouldRepeatPingRequest(true);
                             for (Integer idNotification : result.notificationList)
-                                formsController.executeNotificationAction(idNotification, null);
+                                formsController.executeNotificationAction(idNotification, null, null);
                         }
 
                         @Override
@@ -563,7 +563,8 @@ public class MainFrame implements EntryPoint {
             String type = GSimpleStateTableView.toString(GwtClientUtils.getField(message, "type"));
             if(type.equals("pushNotification")) {
                 int notificationId = GSimpleStateTableView.toInt(GwtClientUtils.getField(message, "id"));
-                formsController.executeNotificationAction(notificationId, null);
+                String notificationResult = GSimpleStateTableView.toString(GwtClientUtils.getField(message, "result"));
+                formsController.executeNotificationAction(notificationId, notificationResult, null);
             } else if(type.equals("clientId")) {
                 updateServiceClientInfo(formsController, null, GSimpleStateTableView.toString(GwtClientUtils.getField(message, "clientId")));
             }

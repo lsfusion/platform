@@ -10,13 +10,13 @@ self.addEventListener('push', function(event) {
     let data = event.data.json();
     let showPushNotification = (action, push) => {
         if(data.notification)
-            return showNotification(data.notification, action, push);
+            return showNotification(data.notification, action, data.inputActions, push);
         return Promise.resolve();
     }
     if(data.alwaysNotify)
         event.waitUntil(showPushNotification(data.action, data.push));
     else
-        dispatchAction(event, data.action, data.push, (client) => showFocusNotification(client), showPushNotification);
+        dispatchAction(event, { action: data.action, result: null }, data.push, (client) => showFocusNotification(client), (actionResult, push) => showPushNotification(actionResult.action, push));
 })
 
 self.addEventListener('notificationclick', function(event) {
@@ -29,18 +29,19 @@ self.addEventListener('notificationclick', function(event) {
     if(data.action.type === 'focusNotification')
         event.waitUntil(clients.get(data.action.clientId).then((client) => client.focus()));
     else
-        dispatchAction(event, data.action, data.push, (client) => client.focus(),
-            (action, push) => clients.openWindow("/" + (push.query ? "?" + push.query : "")).then((client) => pushPendingNotification(client, action)));
+        dispatchAction(event, { action: data.action, result: event.action } , data.push, (client) => client.focus(),
+            (actionResult, push) => clients.openWindow("/" + (push.query ? "?" + push.query : "")).then((client) => pushPendingNotification(client, actionResult)));
 });
 
 
-function showNotification(notification, action, push) {
+function showNotification(notification, action, inputActions, push) {
     // should have dispatchAction fields (id, url, query)
-    return self.registration.showNotification(notification.title, addServiceWorkerData(notification.options, {action: action, push: push}));
+    return self.registration.showNotification(notification.title, addServiceWorkerData(notification.options, {action: action, push: push}, inputActions));
 }
-function pushNotification(client, action) {
+function pushNotification(client, actionResult) {
+    let action = actionResult.action;
     if(action.id)
-        pushNotificationId(client, action.id);
+        pushNotificationId(client, action.id, actionResult.result);
     else
         return fetch(action.url, {
             headers: {
@@ -49,19 +50,19 @@ function pushNotification(client, action) {
         }).then(response => {
             return response.text();
         }).then(text => {
-            pushNotificationId(client, parseInt(text))
+            pushNotificationId(client, parseInt(text), actionResult.result);
         });
 }
-function pushNotificationId(client, actionId) {
-    client.postMessage( { type: 'pushNotification', id: actionId } );
+function pushNotificationId(client, actionId, actionResult) {
+    client.postMessage( { type: 'pushNotification', id: actionId, result: actionResult } );
 }
 const pendingNotifications = {};
-function pushPendingNotification(client, action) {
+function pushPendingNotification(client, actionResult) {
     if (client.id in pendingNotifications) { // assert equals "checked", so event listener is already installed, we can send notification
-        pushNotification(client, action);
+        pushNotification(client, actionResult);
         delete pendingNotifications[client.id]
     } else {
-        pendingNotifications[client.id] = action;
+        pendingNotifications[client.id] = actionResult;
     }
 }
 function pullNotification(client) {
@@ -73,7 +74,7 @@ function pullNotification(client) {
     }
 }
 function showFocusNotification(client) {
-    return showNotification({ title: "New window opened", options: {}}, { type: 'focusNotification', clientId: client.id}, null);
+    return showNotification({ title: "New window opened", options: {}}, { type: 'focusNotification', clientId: client.id}, [], null);
 }
 
 self.addEventListener('message', function (event) {
@@ -81,22 +82,22 @@ self.addEventListener('message', function (event) {
     let data = event.data;
     let messageClient = event.source;
     if(data.type === 'pushNotification') { // message from push-notification.jsp
-        dispatchAction(event, {id: data.actionId}, data.push, (client) => {
+        dispatchAction(event, { action: {id: data.actionId}, result: null }, data.push, (client) => {
             messageClient.postMessage('close');
             return showFocusNotification(client);
-        }, (action, push) =>
-            messageClient.navigate("/" + (push.query ? "?" + push.query : "")).then((client) => pushPendingNotification(client, action))
+        }, (actionResult, push) =>
+            messageClient.navigate("/" + (push.query ? "?" + push.query : "")).then((client) => pushPendingNotification(client, actionResult))
         );
     } else if(data.type === 'pullNotification') { // message from the main frame (after message listener is added)
         messageClient.postMessage({type: 'clientId', clientId: messageClient.id});
         pullNotification(messageClient);
     } else if(data.type === 'showNotification') {
-        showNotification(data.notification, data.action, data.push);
+        showNotification(data.notification, data.action, data.inputActions, data.push);
     }
 })
 
 // action should have: id or (and) url, push should have - clientId (optional), query
-function dispatchAction(event, action, push, onClientFound, onClientNotFound) {
+function dispatchAction(event, actionResult, push, onClientFound, onClientNotFound) {
     event.waitUntil(
         clients
             .matchAll({
@@ -123,20 +124,21 @@ function dispatchAction(event, action, push, onClientFound, onClientNotFound) {
                 }
 
                 if(webClient !== null) {
-                    pushNotification(webClient, action);
+                    pushNotification(webClient, actionResult);
                     return onClientFound(webClient);
                 } else
-                    return onClientNotFound(action, push);
+                    return onClientNotFound(actionResult, push);
             })
     );
 }
 
-function addServiceWorkerData (options, newData) {
+function addServiceWorkerData (options, newData, newActions) {
     return {
         ...(options || {}),
         data: {
             ...(options?.data || {}),
             ...newData
-        }
+        },
+        actions: options?.actions || newActions
     };
 }

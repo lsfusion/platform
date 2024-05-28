@@ -56,7 +56,7 @@ public class BaseUtils {
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 281;
+        return 282;
     }
 
     public static String getPlatformVersion() {
@@ -2047,6 +2047,8 @@ public class BaseUtils {
     public static final String inlineFileSeparator = "<PQWERJUQMASPRETQT/>"; // we want separators as tags to have no problem with ts vectors
 
     public static final String inlineImageSeparator = "<GFDTRGDFSAFADXZW/>";
+
+    public static final String inlineSerializedImageSeparator = "<DFSRKNFDVSDRRES/>";
 
     public static Object executeWithTimeout(Callable<Object> callable, Integer timeout) {
         if (timeout != null) {

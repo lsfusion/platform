@@ -359,8 +359,8 @@ function webShare(shareData) {
     return null;
 }
 
-function webNotify(notification, action, push) {
-    return postServiceWorkerMessage({type: 'showNotification', notification: notification, action: action, push: push});
+function webNotify(notification, action, inputActions, push) {
+    return postServiceWorkerMessage({type: 'showNotification', notification: notification, action: action, inputActions: inputActions, push: push});
 }
 
 function requestPushNotificationPermissions() {

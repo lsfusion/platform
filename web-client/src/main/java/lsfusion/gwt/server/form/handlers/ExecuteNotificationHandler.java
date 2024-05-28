@@ -19,7 +19,7 @@ public class ExecuteNotificationHandler extends FormServerResponseActionHandler<
     public ServerResponseResult executeEx(final ExecuteNotification action, ExecutionContext context) throws RemoteException {
         return getServerResponseResult(action, new RemoteCall() {
             public ServerResponse call(RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.executeNotificationAction(action.requestIndex, action.lastReceivedRequestIndex, action.idNotification);
+                return remoteForm.executeNotificationAction(action.requestIndex, action.lastReceivedRequestIndex, action.notification);
             }
         });
     }

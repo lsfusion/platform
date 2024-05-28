@@ -25,7 +25,7 @@ public class GUserInputResult implements Serializable {
     }
     public GUserInputResult(boolean canceled, PValue value, Integer contextAction) {
         this.editCanceled = canceled;
-        this.value = PValue.remapValueBack(value);
+        this.value = PValue.convertFileValueBack(value);
         this.contextAction = contextAction;
 
         this.pValue = value;

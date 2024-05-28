@@ -195,7 +195,7 @@ public class FormChanges {
 
                 Object value = rows.getValue(j).getValue();
 
-                serializeObject(outStream, convertFileValue(convertData, value, context));
+                serializeConvertFileValue(outStream, convertData, value, context);
             }
         }
 
@@ -254,6 +254,14 @@ public class FormChanges {
         }
     }
 
+    public static byte[] serializeConvertFileValue(ConvertData convertData, Object value, ConnectionContext context) throws IOException {
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        serializeConvertFileValue(new DataOutputStream(outStream), convertData, value, context);
+        return outStream.toByteArray();
+    }
+    public static void serializeConvertFileValue(DataOutputStream outStream, ConvertData convertData, Object value, ConnectionContext context) throws IOException {
+        serializeObject(outStream, convertFileValue(convertData, value, context));
+    }
     public static Object convertFileValue(ConvertData convertData, Object value, ConnectionContext context) throws IOException {
         if(value instanceof FileData && convertData != null && ((FileData)value).getExtension().equals("resourceImage"))
             value = new String(((FileData) value).getRawFile().getBytes());
@@ -285,7 +293,9 @@ public class FormChanges {
                 prefixes[k] = parts[k * 2];
                 if (k * 2 + 1 < parts.length) {
                     String name = parts[k * 2 + 1];
-                    if(name.startsWith(inlineImageSeparator)) {
+                    if(name.startsWith(inlineSerializedImageSeparator)) {
+                        files[k] = IOUtils.deserializeAppImage(name.substring(inlineImageSeparator.length()));
+                    } else if(name.startsWith(inlineImageSeparator)) {
                         files[k] = AppServerImage.getAppImage(AppServerImage.createActionImage(name.substring(inlineImageSeparator.length())).get(context));
                     } else {
                         Result<String> fullPath = new Result<>();

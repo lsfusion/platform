@@ -23,13 +23,13 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
-import lsfusion.server.logics.action.controller.stack.EnvStackRunnable;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
+import lsfusion.server.logics.form.interactive.action.async.PushAsyncResult;
 import lsfusion.server.logics.navigator.controller.env.*;
 import lsfusion.server.logics.navigator.controller.remote.RemoteNavigator;
 import lsfusion.server.logics.property.Property;
@@ -47,7 +47,6 @@ import org.apache.hc.core5.net.URLEncodedUtils;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.nio.charset.Charset;
 import java.rmi.RemoteException;
@@ -370,11 +369,19 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     private ExternalResponse executeExternal(LA<?> property, Object actionParam, boolean script, ExternalRequest request) {
         checkEnableApi(property, actionParam, script, request);
 
-        EnvStackRunnable runnable = (env, stack) -> {
-            try {
-                executeExternal(property, request, env, stack);
-            } catch (Throwable t) {
-                throw Throwables.propagate(t);
+        RemoteNavigator.Notification runnable = new RemoteNavigator.Notification() {
+            @Override
+            public void run(ExecutionEnvironment env, ExecutionStack stack, PushAsyncResult asyncResult) {
+                try {
+                    RemoteConnection.this.executeExternal(property, request, env, stack);
+                } catch (Throwable t) {
+                    throw Throwables.propagate(t);
+                }
+            }
+
+            @Override
+            protected Action<?> getAction() {
+                return property.action;
             }
         };
 
@@ -406,7 +413,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
                 try {
                     DataSession dataSession = execSession.dataSession;
 
-                    runnable.run(dataSession, getStack());
+                    runnable.run(dataSession, getStack(), null);
 
                     return readResult(request.returnNames, property.action, dataSession);
                 } finally {

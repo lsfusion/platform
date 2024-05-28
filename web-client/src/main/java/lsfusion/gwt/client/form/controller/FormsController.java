@@ -684,17 +684,18 @@ public abstract class FormsController {
     public long executeNavigatorAction(String actionSID, final NativeEvent event, boolean sync) {
         return executeNavigatorAction(actionSID, event.getCtrlKey(), sync, 1, null);
     }
-    public void executeNotificationAction(Integer id, Runnable onRequestFinished) {
+    public void executeNotificationAction(Integer id, String result, Runnable onRequestFinished) {
         FormContainer currentForm = onRequestFinished == null ? MainFrame.getCurrentForm() : null;
         GFormController form = currentForm != null ? currentForm.getForm() : null;
+        String notification = id + (result != null ? ";" + result : ""); // should match RemoteNavigator.runNotification
         if (form != null)
             try {
-                form.executeNotificationAction(id);
+                form.executeNotificationAction(notification);
             } catch (IOException e) {
                 GWT.log(e.getMessage());
             }
         else
-            executeNavigatorAction(id.toString(), false, true, 2, null);
+            executeNavigatorAction(notification, false, true, 2, null);
     }
     public long executeNavigatorAction(String actionSID, boolean disableForbidDuplicate, boolean sync, int type, Runnable onRequestFinished) {
         ExecuteNavigatorAction navigatorAction = new ExecuteNavigatorAction(actionSID, type);

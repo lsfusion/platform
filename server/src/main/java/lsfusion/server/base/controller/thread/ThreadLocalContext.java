@@ -16,6 +16,7 @@ import lsfusion.server.base.controller.manager.MonitorServer;
 import lsfusion.server.base.controller.remote.RmiManager;
 import lsfusion.server.base.controller.remote.context.ContextAwarePendingRemoteObject;
 import lsfusion.server.base.controller.remote.manager.RmiServer;
+import lsfusion.server.base.controller.remote.ui.RemoteUIContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.BaseLogicsModule;
@@ -28,13 +29,13 @@ import lsfusion.server.logics.action.controller.stack.SyncExecutionStack;
 import lsfusion.server.logics.action.controller.stack.TopExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.data.DataClass;
-import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.controller.manager.RestartManager;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.action.async.InputList;
 import lsfusion.server.logics.form.interactive.action.async.InputListAction;
 import lsfusion.server.logics.form.interactive.action.input.InputContext;
 import lsfusion.server.logics.form.interactive.action.input.InputResult;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.struct.FormEntity;
@@ -251,6 +252,10 @@ public class ThreadLocalContext {
 
     public static void delayUserInteraction(ClientAction action) {
         get().delayUserInteraction(action);
+    }
+
+    public static ConnectionContext getRemoteContext() {
+        return ((RemoteUIContext)get()).getConnectionContext();
     }
 
     public static Object requestUserInteraction(ClientAction action) {

@@ -256,9 +256,6 @@ public interface PValue {
     }
 
     static PValue convertFileValue(Serializable value) {
-        return remapValue(value);
-    }
-    static PValue remapValue(Serializable value) {
         if (value instanceof GStringWithFiles) {
             GStringWithFiles stringWithFiles = (GStringWithFiles) value;
             StringBuilder result = new StringBuilder();
@@ -280,7 +277,7 @@ public interface PValue {
         return toPValue(value);
     }
 
-    static Serializable remapValueBack(PValue value) {
+    static Serializable convertFileValueBack(PValue value) {
         if(value instanceof DisplayString)
             return ((DisplayString) value).rawString;
         return getValue(value);

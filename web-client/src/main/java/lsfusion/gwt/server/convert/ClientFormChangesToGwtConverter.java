@@ -129,7 +129,7 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
                 GGroupObjectValue groupObjectValue = convertOrCast(clientValues.getKey());
 
                 propValueKeys[j] = groupObjectValue;
-                propValueValues[j] = convertFileValue(convertOrCast(clientValues.getValue()), sessionObject, servlet, sessionObject.navigatorID);
+                propValueValues[j] = convertFileValue(clientValues.getValue(), sessionObject, servlet);
                 j++;
             }
 
@@ -181,6 +181,10 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
         dto.size = changes.size;
 
         return dto;
+    }
+
+    public Serializable convertFileValue(Object object, FormSessionObject sessionObject, MainDispatchServlet servlet) throws IOException {
+        return convertFileValue(convertOrCast(object), sessionObject, servlet, sessionObject.navigatorID);
     }
 
     public static Serializable convertFileValue(Object value, FormSessionObject sessionObject, MainDispatchServlet servlet, String sessionID) throws IOException {
@@ -275,7 +279,7 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
             return GAsync.NEEDMORE;
         if(async.equals(ClientAsync.RECHECK))
             return GAsync.RECHECK;
-        return new GAsync(convertFileValue(convertOrCast(async.displayValue), sessionObject, servlet, sessionObject.navigatorID),
-                convertFileValue(convertOrCast(async.rawValue), sessionObject, servlet, sessionObject.navigatorID), convertOrCast(async.key));
+        return new GAsync(convertFileValue(async.displayValue, sessionObject, servlet),
+                convertFileValue(async.rawValue, sessionObject, servlet), convertOrCast(async.key));
     }
 }

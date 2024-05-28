@@ -250,4 +250,14 @@ public class IOUtils {
                 session.disconnect();
         }
     }
+
+    public static String serializeAppImage(AppImage image) throws IOException {
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        writeAppImage(new DataOutputStream(outStream), image);
+        return outStream.toString();
+    }
+
+    public static AppImage deserializeAppImage(String image) throws IOException {
+        return readAppImage(new DataInputStream(new ByteArrayInputStream(image.getBytes())));
+    }
 }

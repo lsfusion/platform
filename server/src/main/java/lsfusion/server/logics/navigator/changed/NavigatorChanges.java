@@ -41,7 +41,7 @@ public class NavigatorChanges {
 
             propertyNavigator.serialize(outStream);
 
-            serializeObject(outStream, FormChanges.convertFileValue(getNeedImage(propertyNavigator), value, context));
+            FormChanges.serializeConvertFileValue(outStream, getNeedImage(propertyNavigator), value, context);
         }
     }
 

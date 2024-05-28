@@ -2301,14 +2301,14 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
     private ScriptingLogicsModule.ILEWithParams getContextListEntity(int contextSize, ScriptingLogicsModule.LPWithParams list, ScriptingLogicsModule.LPWithParams where,
                                                                      List<String> actionImages, List<String> keyStrokes, List<List<QuickAccess>> quickAccesses, List<LAWithParams> actions) {
-        if(list == null) // optimization
-            return new ILEWithParams(SetFact.EMPTYORDER(), SetFact.EMPTYORDER(), null, null, ListFact.EMPTY());
+//        if(list == null) // optimization
+//            return new ILEWithParams(SetFact.EMPTYORDER(), SetFact.EMPTYORDER(), null, null, ListFact.EMPTY());
 
         List<LAPWithParams> props = new ArrayList<>();
-        props.add(list);
-        if(where != null) {
+        if(list != null)
+            props.add(list);
+        if(where != null)
             props.add(where);
-        }
         props.addAll(actions);
 
         // actually list / where and actions parameters are different (however it's not that important)
@@ -2318,7 +2318,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         ImRevMap<Integer, PropertyInterface> usedInterfaces = usedContextParams.mapSet(orderInterfaces);
 
         return new ScriptingLogicsModule.ILEWithParams(usedContextParams, orderInterfaces,
-                getInputListEntity(contextSize, list, usedInterfaces),
+                list != null ? getInputListEntity(contextSize, list, usedInterfaces) : null,
                 where != null ? getInputFilterEntity(contextSize, where, usedInterfaces) : null,
                 getInputContextActions(contextSize, actionImages, keyStrokes, quickAccesses, actions, usedInterfaces));
     }
@@ -3716,9 +3716,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         ListFact.addJavaAll(contextFilters, props);
         ListFact.addJavaAll(cccfs.mapListValues((CCCF<O> cccf) -> cccf.change), props);
         ListFact.addJavaAll(cccfs.mapListValues((CCCF<O> cccf) -> new LPWithParams(null, cccf.objectParam)), props);
-        if(list != null) {
+        if(list != null)
             props.add(list);
-        }
         props.addAll(actions);
 
         // actually action input param has different type (list type in theory), but it doesn't matter actually
