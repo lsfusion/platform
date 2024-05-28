@@ -116,22 +116,17 @@ grammar LsfLogics;
 	public ScriptingLogicsModule self;
 	public ScriptParser.State parseState;
 
+	public boolean isFirstFullParse() {
+		return parseState == ScriptParser.State.META_CLASS_TABLE;
+	}
+
 	@Override
 	public void emitErrorMessage(String msg) {
 		if (isFirstFullParse() || parseState == ScriptParser.State.PRE) { 
 			self.getErrLog().write(msg + "\n");
 		}
 	}
-	
-	public boolean isFirstFullParse() {
-		return parseState == ScriptParser.State.META_CLASS_TABLE;
-	}
-	
-	@Override
-	public String getErrorMessage(RecognitionException e, String[] tokenNames) {
-		return self.getErrLog().getErrorMessage(this, super.getErrorMessage(e, tokenNames), e);
-	}
-	
+
 	@Override
 	public void displayRecognitionError(String[] tokenNames, RecognitionException e) {
 		self.getErrLog().displayRecognitionError(this, self.getParser(), "error", tokenNames, e);
@@ -229,11 +224,6 @@ grammar LsfLogics;
 		if (isFirstFullParse() || inPreParseState()) { 
 			self.getErrLog().write(msg + "\n");
 		}
-	}
-
-	@Override
-	public String getErrorMessage(RecognitionException e, String[] tokenNames) {
-		return self.getErrLog().getErrorMessage(this, super.getErrorMessage(e, tokenNames), e);
 	}
 
 	@Override
