@@ -406,9 +406,6 @@ if ($.fn) {
         }
         yearpicker = new Yearpicker(element, options);
         $element.data(namespace, yearpicker);
-      } else {
-        yearpicker.year = options.year;
-        yearpicker.setValue();
       }
       if (typeof options === "string") {
         var fn = yearpicker[options];

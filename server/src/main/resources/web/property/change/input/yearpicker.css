@@ -73,3 +73,12 @@
     pointer-events: none;
     color: #bbb;
 }
+
+/*  do not show arrows */
+input.yearpicker::-webkit-outer-spin-button,
+input.yearpicker::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+}
+input.yearpicker[type=number] {
+    -moz-appearance: textfield;
+}

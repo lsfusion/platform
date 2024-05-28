@@ -1014,3 +1014,51 @@ function _changeSingleProperty(controller, object, set, changeValue) {
 function _getName(object) {
     return object.name != null ? String(object.name) : '';
 }
+
+function customInputYear() {
+    return {
+        render: (element) => {
+            let input = _wrapElement(element, () => createFocusElement('input'), element.tagName.toLowerCase() !== 'input');
+
+            lsfUtils.setFocusElement(element, input);
+            lsfUtils.setReadonlyFnc(element, (readonly) => {
+                _setReadonly(input, readonly);
+            });
+
+            input.type = 'number';
+            input.className = 'yearpicker';
+            input.onkeydown = function (ev) {
+                if(ev.key === 'Enter') {
+                    let yearpicker = $(input).data(namespace);
+                    yearpicker.year = $(input).val();
+                    yearpicker.hideView();
+                    ev.stopPropagation();
+                }
+            }
+            element.appendChild(input);
+        },
+        update: (element, controller, value) => {
+            element.controller = controller;
+
+            let input = element.querySelector("input");
+            let yearpicker = $(input).data(namespace);
+
+            if($(input).hasClass("is-readonly")) {
+                input.setAttribute("readonly", "");
+            } else {
+                if (yearpicker) {
+                    yearpicker.year = value;
+                    yearpicker.renderYear();
+                } else {
+                    $(input).yearpicker({
+                        year: value,
+                        onHide: function (value) {
+                            if (controller != null && (value == null ? "" : value).toString() !== this.year)
+                                controller.changeValue(value);
+                        }
+                    });
+                }
+            }
+        }
+    }
+}

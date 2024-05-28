@@ -173,27 +173,3 @@ class CustomInputDateTime extends CustomInput {
             super.getTwoDigitsValue(valueDate.getDate()) + 'T' + valueDate.getHours() + ':' + super.getTwoDigitsValue(valueDate.getMinutes()) : null;
     }
 }
-
-function customInputYear() {
-    return new CustomInputYear().getFunctions();
-}
-
-class CustomInputYear {
-    getFunctions() {
-        return {
-            render: (element) => {
-                let input = document.createElement("input");
-                element.appendChild(input);
-            },
-            update: (element, controller, value) => {
-                $(element.querySelector("input")).yearpicker({
-                    year: value,
-                    onChange: function (value) {
-                        if (controller != null && (value == null ? "" : value).toString() !== this.year)
-                            controller.changeValue(value);
-                    }
-                });
-            }
-        }
-    }
-}
