@@ -1,5 +1,24 @@
 grammar MigrationScript;
 
+@lexer::header { 
+    package lsfusion.server.language;
+}
+
+@lexer::members {
+	private List<String> errors = new ArrayList<>();
+
+    @Override
+    public void displayRecognitionError(String[] tokenNames, RecognitionException e) {
+        String hdr = getErrorHeader(e);
+        String msg = getErrorMessage(e, tokenNames);
+        errors.add(hdr + " " + msg);
+    }
+
+    public List<String> getErrors() {
+    	return errors;
+    }
+}
+
 @header {
 	package lsfusion.server.language;
 	import lsfusion.server.physics.exec.db.controller.manager.MigrationManager;
@@ -7,14 +26,22 @@ grammar MigrationScript;
 	import org.antlr.runtime.BitSet;
 }
 
-@lexer::header { 
-	package lsfusion.server.language;
-}
-
 @members {
 	public MigrationManager self;
-}
 
+	private List<String> errors = new ArrayList<>();
+
+    @Override
+    public void displayRecognitionError(String[] tokenNames, RecognitionException e) {
+        String hdr = getErrorHeader(e);
+        String msg = getErrorMessage(e, tokenNames);
+        errors.add(hdr + " " + msg);
+    }
+
+    public List<String> getErrors() {
+    	return errors;
+    }
+}
 
 
 script
