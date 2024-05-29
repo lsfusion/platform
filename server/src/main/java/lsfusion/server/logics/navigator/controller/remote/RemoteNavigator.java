@@ -465,8 +465,11 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         return notificationsMap.putNotification(run);
     }
 
-    public static <X extends PropertyInterface> ImList<AsyncMapInputListAction<X>> getGlobalNotificationInputActions(int notification) {
-        return notificationsMap.getNotification(notification).getInputActions();
+    public static <X extends PropertyInterface> ImList<AsyncMapInputListAction<X>> getGlobalNotificationInputActions(int idNotification) {
+        Notification notification = notificationsMap.getNotification(idNotification);
+        if(notification != null)
+            return notification.getInputActions();
+        return null;
     }
 
     public boolean active = false;
