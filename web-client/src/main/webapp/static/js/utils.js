@@ -370,3 +370,17 @@ function requestPushNotificationPermissions() {
         console.warn(error)
     }
 }
+
+function blinkTitle() {
+    if (document.hidden) {
+        let originalTitle = document.title;
+        let timer = setInterval(function () {
+            document.title = originalTitle === document.title ? "Check me!" : originalTitle;
+        }, 500);
+
+        window.addEventListener("focus", function () {
+            document.title = originalTitle;
+            clearInterval(timer);
+        }, { once: true });
+    }
+}

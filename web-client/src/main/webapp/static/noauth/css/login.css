@@ -212,11 +212,11 @@ details summary::-webkit-details-marker {
     font-size: 12px;
 }
 
-.appNotAvailable {
+.appNotAvailable, .tab-already-opened {
     align-self: center;
 }
 
-.appNotAvailableReconnect {
+.appNotAvailableReconnect, .can-close-tab {
     padding-top: 3em;
 }
 

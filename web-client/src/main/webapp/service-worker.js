@@ -30,13 +30,19 @@ self.addEventListener('notificationclick', function(event) {
         event.waitUntil(clients.get(data.action.clientId).then((client) => client.focus()));
     else
         dispatchAction(event, { action: data.action, result: event.action } , data.push, (client) => client.focus(),
-            (actionResult, push) => clients.openWindow("/" + (push.query ? "?" + push.query : "")).then((client) => pushPendingNotification(client, actionResult)));
+            (actionResult, push) => clients.openWindow("main" + (push.query ? "?" + push.query : "")).then((client) => pushPendingNotification(client, actionResult)));
 });
 
 
 function showNotification(notification, action, inputActions, push) {
+    let options = {
+        icon: icon,
+        body: pushBody
+    };
+
     // should have dispatchAction fields (id, url, query)
-    return self.registration.showNotification(notification.title, addServiceWorkerData(notification.options, {action: action, push: push}, inputActions));
+    return self.registration.showNotification(notification.title == null ? pushTitle : notification.title,
+        addServiceWorkerData({...options, ...notification.options}, {action: action, push: push}, inputActions));
 }
 function pushNotification(client, actionResult) {
     let action = actionResult.action;
@@ -74,9 +80,10 @@ function pullNotification(client) {
     }
 }
 function showFocusNotification(client) {
-    return showNotification({ title: "New window opened", options: {}}, { type: 'focusNotification', clientId: client.id}, [], null);
+    return showNotification({title: notificationTitle, options: { body: notificationBody, icon: icon}}, { type: 'focusNotification', clientId: client.id}, [], null);
 }
 
+let pushTitle, pushBody, icon, notificationTitle, notificationBody;
 self.addEventListener('message', function (event) {
     // sent in postMessage param
     let data = event.data;
@@ -86,13 +93,20 @@ self.addEventListener('message', function (event) {
             messageClient.postMessage('close');
             return showFocusNotification(client);
         }, (actionResult, push) =>
-            messageClient.navigate("/" + (push.query ? "?" + push.query : "")).then((client) => pushPendingNotification(client, actionResult))
+            messageClient.navigate("main" + (push.query ? "?" + push.query : "")).then((client) => pushPendingNotification(client, actionResult))
         );
     } else if(data.type === 'pullNotification') { // message from the main frame (after message listener is added)
         messageClient.postMessage({type: 'clientId', clientId: messageClient.id});
         pullNotification(messageClient);
     } else if(data.type === 'showNotification') {
         showNotification(data.notification, data.action, data.inputActions, data.push);
+    } else if (data.type === 'setDefaultNotifyOptions') {
+        let defaultOptions = data.defaultOptions;
+        icon = defaultOptions.icon;
+        pushTitle = defaultOptions.pushTitle;
+        pushBody = defaultOptions.pushBody;
+        notificationTitle = defaultOptions.notificationTitle;
+        notificationBody = defaultOptions.notificationBody;
     }
 })
 

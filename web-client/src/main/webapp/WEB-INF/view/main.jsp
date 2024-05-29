@@ -211,6 +211,19 @@
                 setCookie('LSFUSION_CLIENT_DATE_FORMAT', momentLocale.toJDFString(momentLocale.localeData().longDateFormat('L')));
 
                 setColorTheme();
+
+                navigator.serviceWorker.ready.then((registration) => {
+                    registration.active.postMessage({
+                        type: "setDefaultNotifyOptions",
+                        defaultOptions: {
+                            icon: "${logicsIcon}",
+                            pushTitle: "${title}",
+                            pushBody: "<%= ServerMessages.getString(request, "executed.successfully") %>",
+                            notificationTitle: "<%= ServerMessages.getString(request, "push.notification.tab.already.opened") %>",
+                            notificationBody: "<%= ServerMessages.getString(request, "push.notification.can.close.tab") %>"
+                        }
+                    });
+                });
             }
         </script>
     </head>

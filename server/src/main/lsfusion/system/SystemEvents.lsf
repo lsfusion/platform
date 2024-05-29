@@ -873,10 +873,27 @@ onClientStarted() + {
 
 // NOTIFY, PUSH, SHARE actions
 
+FORM shareUrlForm
+    OBJECTS share = TEXT PANEL
+    PROPERTIES shareLink = VALUE(share), copy = copyToClipboard(share)
+;
+
+DESIGN shareUrlForm {
+    OBJECTS {
+        MOVE PROPERTY(shareLink) {
+            caption = '';
+        }
+        MOVE PROPERTY(copy) {
+            caption = '{eval.script.copy.to.clipboard}';
+        }
+    }
+    REMOVE PROPERTY(formShare());
+}
+
 share(STRING url, STRING text, STRING title) {
     INTERNAL CLIENT 'webShare' PARAMS (JSON FROM url = url, text = text, title = title) TO exportBoolean;
     IF NOT exportBoolean() THEN
-        MESSAGE '<a href="' + url + '">${text}</a>';
+        SHOW shareUrlForm OBJECTS share = url POPUP;
 }
 
 share(Connection cn, STRING url) = CONCAT '&', webPath(cn) + url, notEmpty(query(cn));

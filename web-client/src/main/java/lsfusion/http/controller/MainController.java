@@ -77,6 +77,7 @@ public class MainController {
     public String pushNotification(ModelMap model, HttpServletRequest request) {
         model.addAttribute("id", request.getParameter(GwtSharedUtils.NOTIFICATION_PARAM));
         model.addAttribute("query", getQueryPreservingParameters(Collections.singletonList(GwtSharedUtils.NOTIFICATION_PARAM), request));
+        addStandardModelAttributes(model, request, getAndCheckServerSettings(request, checkVersionError, false), true);
         return "push-notification";
     }
 
