@@ -297,7 +297,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         String resourcePath;
         String originalResourceName = action.originalResourceName;
         if(action.isFile) {
-            resourcePath = servlet.getFormProvider().getWebFile(formSessionObject.navigatorID, action.resourceName, (RawFileData) resource);
+            resourcePath = FileUtils.saveWebFile(action.resourceName, (RawFileData) resource, servlet.getServerSettings(formSessionObject.navigatorID), false);
             if(action.isFont()) {
                 String fontFamily = fontFamilyMap.get(action.resourceName);
                 if(fontFamily == null) {

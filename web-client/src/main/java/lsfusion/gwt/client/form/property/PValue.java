@@ -257,6 +257,7 @@ public interface PValue {
 
     static PValue convertFileValue(Serializable value) {
         if (value instanceof GStringWithFiles) {
+            // should correspond PValue.convertFileValue + RmiManager.convertFileValue
             GStringWithFiles stringWithFiles = (GStringWithFiles) value;
             StringBuilder result = new StringBuilder();
             for (int j = 0; j < stringWithFiles.prefixes.length; j++) {

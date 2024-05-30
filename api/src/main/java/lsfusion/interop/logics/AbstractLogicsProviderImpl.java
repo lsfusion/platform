@@ -18,10 +18,8 @@ import java.util.concurrent.*;
 public abstract class AbstractLogicsProviderImpl {
 
     // not like in other providers, getter shouldn't be called directly to ensure invalidating reference if we get RemoteException
-    private LogicsSessionObject createLogicsSessionObject(LogicsConnection connection) throws AppServerNotAvailableException {
-        LogicsSessionObject logicsSessionObject;
-        logicsSessionObject = new LogicsSessionObject(lookup(connection), connection);
-        return logicsSessionObject;
+    protected LogicsSessionObject createLogicsSessionObject(LogicsConnection connection) throws AppServerNotAvailableException, RemoteException {
+        return new LogicsSessionObject(lookup(connection), connection);
     }
 
     protected RemoteLogicsInterface lookup(final LogicsConnection connection) throws AppServerNotAvailableException {
@@ -50,7 +48,7 @@ public abstract class AbstractLogicsProviderImpl {
 
     private final Map<LogicsConnection, LogicsSessionObject> currentLogics = new ConcurrentHashMap<>();
 
-    private LogicsSessionObject createOrGetLogicsSessionObject(LogicsConnection connection) throws AppServerNotAvailableException {
+    private LogicsSessionObject createOrGetLogicsSessionObject(LogicsConnection connection) throws AppServerNotAvailableException, RemoteException {
         LogicsSessionObject logicsSessionObject = currentLogics.get(connection);
         if(logicsSessionObject == null) { // no sync, it's no big deal if we'll lost some cache
             logicsSessionObject = createLogicsSessionObject(connection);

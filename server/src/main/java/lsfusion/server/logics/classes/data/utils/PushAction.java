@@ -1,9 +1,11 @@
 package lsfusion.server.logics.classes.data.utils;
 
+import lsfusion.base.file.StringWithFiles;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.form.interactive.changed.FormChanges;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.monitor.SystemEventsLogicsModule;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
@@ -13,6 +15,7 @@ import nl.martijndwars.webpush.PushService;
 import nl.martijndwars.webpush.Subscription;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jose4j.lang.JoseException;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -51,11 +54,16 @@ public class PushAction extends InternalAction {
             payload.put("notification", notification != null ? new JSONObject(notification) : null);
 
             payload.put("action", new JSONObject((String) context.getKeyValue(actionInterface).getValue()));
-            payload.put("inputActions", new JSONObject((String) context.getKeyValue(inputActionsInterface).getValue()));
+            payload.put("inputActions", new JSONArray((String) context.getKeyValue(inputActionsInterface).getValue()));
             JSONObject pushJson = new JSONObject((String) context.getKeyValue(pushInterface).getValue());
             payload.put("push", pushJson);
 
-            getPushService(context).send(new Notification(getSubscription(pushJson), payload.toString()), Encoding.AES128GCM); // Encoding.AES128GCM important!
+            String payloadString = payload.toString();
+            Object convertedPayload = FormChanges.convertFileValue(payload.toString(), context.getRemoteContext());
+            if (convertedPayload instanceof StringWithFiles)
+                payloadString = context.getRmiManager().convertFileValue((StringWithFiles) convertedPayload);
+
+            getPushService(context).send(new Notification(getSubscription(pushJson), payloadString), Encoding.AES128GCM); // Encoding.AES128GCM important!
 
         } catch (JoseException | GeneralSecurityException | IOException | ExecutionException | InterruptedException |
                  ScriptingErrorLog.SemanticErrorException e) {

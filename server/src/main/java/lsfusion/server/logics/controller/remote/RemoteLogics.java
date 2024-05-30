@@ -8,6 +8,7 @@ import lsfusion.base.lambda.CallableWithParam;
 import lsfusion.interop.base.exception.RemoteMessageException;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.authentication.Authentication;
+import lsfusion.interop.logics.remote.RemoteClientInterface;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.navigator.NavigatorInfo;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
@@ -213,6 +214,11 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         } catch (IOException e) {
             throw new RuntimeException(localize("{logics.error.reading.class.on.the.server}"), e);
         }
+    }
+
+    @Override
+    public void registerClient(RemoteClientInterface client) throws RemoteException {
+        rmiManager.registerClient(client);
     }
 }
 

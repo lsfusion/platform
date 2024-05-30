@@ -80,11 +80,6 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
         return gForm;
     }
 
-    @Override
-    public String getWebFile(String sessionID, String fullPath, RawFileData fileData) throws SessionInvalidatedException {
-        return FileUtils.saveWebFile(fullPath, fileData, navigatorProvider.getServerSettings(sessionID), false);
-    }
-
     public void createFormExternal(String formID, RemoteFormInterface remoteForm, String navigatorID) {
         addFormSessionObject(formID, new FormSessionObject(null, remoteForm, navigatorID));
     }

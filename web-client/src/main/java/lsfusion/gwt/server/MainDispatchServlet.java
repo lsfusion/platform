@@ -18,6 +18,7 @@ import lsfusion.http.provider.navigator.NavigatorProvider;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.base.exception.RemoteInternalException;
 import lsfusion.interop.base.exception.RemoteMessageException;
+import lsfusion.interop.logics.ServerSettings;
 import net.customware.gwt.dispatch.server.DefaultActionHandlerRegistry;
 import net.customware.gwt.dispatch.server.Dispatch;
 import net.customware.gwt.dispatch.server.InstanceActionHandlerRegistry;
@@ -247,6 +248,10 @@ public class MainDispatchServlet extends net.customware.gwt.dispatch.server.stan
             logRemoteRetryException(action, (RemoteRetryException) e);
         else
             logger.error("Error in LogicsAwareDispatchServlet.execute: ", e);
+    }
+
+    public ServerSettings getServerSettings(String sessionId) throws SessionInvalidatedException {
+        return getNavigatorProvider().getServerSettings(sessionId);
     }
 
     private void logRemoteRetryException(Action<?> action, RemoteRetryException et) {
