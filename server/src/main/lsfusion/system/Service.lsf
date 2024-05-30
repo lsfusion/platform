@@ -837,7 +837,7 @@ DESIGN editProfile {
 inTestMode = NATIVE BOOLEAN ();
 projectLSFDir = NATIVE STRING();
 
-contentWordWrap() += IF contentWordWrap(currentUser()) THEN (IF contentWordWrap(currentUser()) == TTRUE THEN TRUE ELSE NULL) ELSE valueSettingBoolean('contentWordWrap');
+contentWordWrap() += IF contentWordWrap(currentDesignEnv()) THEN (IF contentWordWrap(currentDesignEnv()) == TTRUE THEN TRUE ELSE NULL) ELSE valueSettingBoolean('contentWordWrap');
 
 getInitSettings(User user) ABSTRACT CASE;
 getInitSettings(User user) + WHEN user IS User THEN {
