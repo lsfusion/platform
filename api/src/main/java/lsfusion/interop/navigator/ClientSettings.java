@@ -35,7 +35,7 @@ public class ClientSettings implements Serializable {
     public boolean verticalNavbar;
     public boolean userFiltersManualApplyMode;
     public boolean disableActionsIfReadonly;
-    public boolean disableShowingRecentlyLogMessages;
+    public boolean enableShowingRecentlyLogMessages;
     public int maxRequestQueueSize;
 
 
@@ -44,7 +44,7 @@ public class ClientSettings implements Serializable {
                           boolean suppressOnFocusChange, boolean autoReconnectOnConnectionLost, boolean forbidDuplicateForms,
                           boolean showNotDefinedStrings, boolean pivotOnlySelectedColumn, String matchSearchSeparator, ColorTheme colorTheme,
                           boolean useBootstrap, ColorPreferences colorPreferences, String[] preDefinedDateRangesNames, boolean useTextAsFilterSeparator,
-                          boolean verticalNavbar, boolean userFiltersManualApplyMode, boolean disableActionsIfReadonly, boolean disableShowingRecentlyLogMessages, int maxRequestQueueSize) {
+                          boolean verticalNavbar, boolean userFiltersManualApplyMode, boolean disableActionsIfReadonly, boolean enableShowingRecentlyLogMessages, int maxRequestQueueSize) {
         this.localePreferences = localePreferences;
         this.currentUserName = currentUserName;
         this.fontSize = fontSize;
@@ -69,7 +69,7 @@ public class ClientSettings implements Serializable {
         this.verticalNavbar = verticalNavbar;
         this.userFiltersManualApplyMode = userFiltersManualApplyMode;
         this.disableActionsIfReadonly = disableActionsIfReadonly;
-        this.disableShowingRecentlyLogMessages = disableShowingRecentlyLogMessages;
+        this.enableShowingRecentlyLogMessages = enableShowingRecentlyLogMessages;
         this.maxRequestQueueSize = maxRequestQueueSize;
     }
 }

@@ -38,7 +38,7 @@ class LogPanel extends JPanel {
         if (!newText.isEmpty()) {
             logArea.setCaretPosition(newText.length() - 1);
 
-            if (!MainController.disableShowingRecentlyLogMessages) {
+            if (MainController.enableShowingRecentlyLogMessages) {
                 visibilityConsumer.accept(true);
                 SwingUtils.stopSingleAction("logSetInvisible", false);
 

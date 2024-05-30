@@ -123,7 +123,7 @@ public abstract class MainFrame extends JFrame {
             MainController.useTextAsFilterSeparator = clientSettings.useTextAsFilterSeparator;
             MainController.userFiltersManualApplyMode = clientSettings.userFiltersManualApplyMode;
             MainController.disableActionsIfReadonly = clientSettings.disableActionsIfReadonly;
-            MainController.disableShowingRecentlyLogMessages = clientSettings.disableShowingRecentlyLogMessages;
+            MainController.enableShowingRecentlyLogMessages = clientSettings.enableShowingRecentlyLogMessages;
             MainController.maxRequestQueueSize = clientSettings.maxRequestQueueSize;
             SwingDefaults.resetClientSettingsProperties();
             MainController.setClientSettingsDependentUIDefaults();

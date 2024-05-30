@@ -33,7 +33,7 @@ public class GClientSettings implements Serializable, IsSerializable {
     public boolean userFiltersManualApplyMode;
 
     public boolean disableActionsIfReadonly;
-    public boolean disableShowingRecentlyLogMessages;
+    public boolean enableShowingRecentlyLogMessages;
 
     @SuppressWarnings("unused")
     public GClientSettings() {
@@ -44,7 +44,7 @@ public class GClientSettings implements Serializable, IsSerializable {
                            String matchSearchSeparator, GColorTheme colorTheme, boolean useBootstrap, Map<String, String> versionedColorThemesCss,
                            GColorPreferences colorPreferences, String dateFormat, String timeFormat, Integer twoDigitYearStart, String staticImagesURL,
                            String[] preDefinedDateRangesNames, boolean useTextAsFilterSeparator, boolean verticalNavbar, boolean userFiltersManualApplyMode,
-                           boolean disableActionsIfReadonly, boolean disableShowingRecentlyLogMessages) {
+                           boolean disableActionsIfReadonly, boolean enableShowingRecentlyLogMessages) {
         this.busyDialogTimeout = busyDialogTimeout;
         this.devMode = devMode;
         this.projectLSFDir = projectLSFDir;
@@ -68,6 +68,6 @@ public class GClientSettings implements Serializable, IsSerializable {
         this.verticalNavbar = verticalNavbar;
         this.userFiltersManualApplyMode = userFiltersManualApplyMode;
         this.disableActionsIfReadonly = disableActionsIfReadonly;
-        this.disableShowingRecentlyLogMessages = disableShowingRecentlyLogMessages;
+        this.enableShowingRecentlyLogMessages = enableShowingRecentlyLogMessages;
     }
 }

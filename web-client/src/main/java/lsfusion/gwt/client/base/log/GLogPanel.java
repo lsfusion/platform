@@ -48,7 +48,7 @@ public class GLogPanel extends NavigatorPanel {
         Element logElement = logPanel.getElement();
         logElement.setScrollTop(logElement.getScrollHeight() - logElement.getClientHeight());
 
-        if (!MainFrame.disableShowingRecentlyLogMessages) {
+        if (MainFrame.enableShowingRecentlyLogMessages) {
             recentlySelected.onEvent();
         }
     }
