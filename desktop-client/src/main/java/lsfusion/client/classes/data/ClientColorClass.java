@@ -30,7 +30,7 @@ public class ClientColorClass extends ClientDataClass implements ClientTypeClass
     @Override
     public Object parseString(String s) throws ParseException {
         try {
-            return Color.decode("#" + s.substring(s.length() - 6, s.length()));
+            return Color.decode("#" + s.substring(s.length() - 6));
         } catch (Exception e) {
             throw new RuntimeException("error parsing color");
         }
