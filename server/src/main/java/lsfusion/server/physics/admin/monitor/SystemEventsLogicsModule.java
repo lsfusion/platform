@@ -54,6 +54,8 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LA<?> onStarted;
     public LA<?> onFinallyStarted;
 
+    public LA<?> storePrevSize;
+
     public LP useBootstrap;
     public LP contentWordWrap;
     public LP serverTheme;
@@ -83,6 +85,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LP javaVersionConnection;
     public LP is64JavaConnection;
     public LP screenSizeConnection;
+    public LP scaleConnection;
     public LP clientTypeConnection;
     public LP<PropertyInterface> connectionStatusConnection;
     public LP connectTimeConnection;
@@ -161,6 +164,8 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         onStarted = findAction("onStartedApply[]");
         onFinallyStarted = findAction("onFinallyStartedApply[]");
 
+        storePrevSize = findAction("storePrevSize[]");
+
         useBootstrap = findProperty("useBootstrap[DesignEnv]");
         contentWordWrap = findProperty("contentWordWrap[DesignEnv]");
         serverTheme = findProperty("serverTheme[]");
@@ -191,6 +196,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         javaVersionConnection = findProperty("javaVersion[Connection]");
         is64JavaConnection = findProperty("is64Java[Connection]");
         screenSizeConnection = findProperty("screenSize[Connection]");
+        scaleConnection = findProperty("scale[Connection]");
         clientTypeConnection = findProperty("clientType[Connection]");
         connectionStatusConnection = (LP<PropertyInterface>) findProperty("connectionStatus[Connection]");
         lastActivity = findProperty("lastActivity[Connection]");

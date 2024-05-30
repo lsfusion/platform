@@ -83,7 +83,12 @@ public abstract class MainFrame extends JFrame {
                                             screenSize = (int) dimension.getWidth() + "x" + (int) dimension.getHeight();
                                         }
 
-                                        remoteNavigator.updateClientInfo(new ClientInfo(screenSize, ClientType.NATIVE_DESKTOP));
+                                        GraphicsDevice[] devices = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices();
+                                        Rectangle bounds = devices[0].getDefaultConfiguration().getBounds();
+                                        DisplayMode dm = devices[0].getDefaultConfiguration().getDevice().getDisplayMode();
+                                        double scale = dm.getWidth() / bounds.getWidth();
+
+                                        remoteNavigator.updateClientInfo(new ClientInfo(screenSize, scale, ClientType.NATIVE_DESKTOP));
 
                                         return remoteNavigator;
                                     });

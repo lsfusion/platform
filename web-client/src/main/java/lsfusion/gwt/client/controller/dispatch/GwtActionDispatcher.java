@@ -365,6 +365,42 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     }
 
     @Override
+    public void execute(GChangeSizeAction action) {
+        for(Map.Entry<String, String> resource : action.resources.entrySet()) {
+            loadResource(resource.getKey(), resource.getValue());
+        }
+
+        for(String resource : action.unloadResources) {
+            unloadResource(resource);
+        }
+    }
+
+    private native void loadResource(String path, String extension)/*-{
+        if(extension === 'js') {
+            var scr = document.createElement('script');
+            scr.src = path;
+            scr.type = 'text/javascript';
+            $wnd.document.head.appendChild(scr);
+        } else if(extension === 'css') {
+            var link = document.createElement("link");
+            link.href = path;
+            link.type = "text/css";
+            link.rel = "stylesheet";
+            $wnd.document.head.appendChild(link);
+        }
+    }-*/;
+
+    private native void unloadResource(String resourceName)/*-{
+        var links = $wnd.document.head.getElementsByTagName("link");
+        for (var i=0; i<links.length; i++) {
+            var link = links[i];
+            if(link.href.indexOf(resourceName) > 0) {
+                link.parentNode.removeChild(link);
+            }
+        }
+    }-*/;
+
+    @Override
     public void execute(GResetWindowsLayoutAction action) {
     }
 

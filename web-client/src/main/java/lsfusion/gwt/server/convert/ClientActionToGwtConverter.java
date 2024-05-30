@@ -2,6 +2,7 @@ package lsfusion.gwt.server.convert;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.SystemUtils;
+import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.file.WriteClientAction;
 import lsfusion.client.classes.ClientObjectClass;
@@ -23,6 +24,7 @@ import lsfusion.gwt.client.navigator.window.GShowFormType;
 import lsfusion.gwt.client.view.GColorTheme;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.server.MainDispatchServlet;
+import lsfusion.http.provider.SessionInvalidatedException;
 import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.ContainerShowFormType;
@@ -269,6 +271,25 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     @Converter(from = ChangeColorThemeClientAction.class)
     public GChangeColorThemeAction convertAction(ChangeColorThemeClientAction action) {
         return new GChangeColorThemeAction(GColorTheme.valueOf(action.colorTheme.name()));
+    }
+
+    @Converter(from = ChangeSizeClientAction.class)
+    public GChangeSizeAction convertAction(ChangeSizeClientAction action, FormSessionObject formSessionObject, MainDispatchServlet servlet) throws SessionInvalidatedException {
+
+        Map<String, String> resources = new HashMap<>();
+        List<String> unloadResources = new ArrayList<>();
+        for(Map.Entry<String, FileData> resource : action.resources.entrySet()) {
+            String resourceName = resource.getKey();
+            FileData resourceFile = resource.getValue();
+            if(resourceFile != null) {
+                String resourcePath = servlet.getFormProvider().getWebFile(formSessionObject.navigatorID, resourceName, resourceFile.getRawFile());
+                resources.put(resourcePath, resourceFile.getExtension());
+            } else {
+                unloadResources.add(resourceName);
+            }
+        }
+
+        return new GChangeSizeAction(resources, unloadResources);
     }
 
     @Converter(from = ResetWindowsLayoutClientAction.class)

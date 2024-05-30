@@ -388,7 +388,11 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
     public void updateClientInfo(ClientInfo clientInfo) {
         try (DataSession session = createSession()) {
+
+            businessLogics.systemEventsLM.storePrevSize.execute(session, getStack(), getConnection());
+
             businessLogics.systemEventsLM.screenSizeConnection.change(clientInfo.screenSize, session, getConnection());
+            businessLogics.systemEventsLM.scaleConnection.change(clientInfo.scale, session, getConnection());
 
             ClientType clientType = clientInfo.clientType;
             businessLogics.systemEventsLM.clientTypeConnection.change(businessLogics.systemEventsLM.clientType.getObjectID(clientType.toString()), session, getConnection());

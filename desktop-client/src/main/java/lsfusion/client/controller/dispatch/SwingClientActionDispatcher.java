@@ -704,6 +704,11 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     }
 
     @Override
+    public void execute(ChangeSizeClientAction action) {
+        //do nothing in desktop
+    }
+
+    @Override
     public void execute(ResetWindowsLayoutClientAction action) {
         ((DockableMainFrame) MainFrame.instance).resetWindowsLayout();
     }

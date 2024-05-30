@@ -211,6 +211,9 @@
                 setCookie('LSFUSION_CLIENT_DATE_FORMAT', momentLocale.toJDFString(momentLocale.localeData().longDateFormat('L')));
 
                 setColorTheme();
+
+                setCookie('LSFUSION_SCREEN_SIZE', document.documentElement.clientWidth + 'x' + document.documentElement.clientHeight);
+                setCookie('LSFUSION_SCALE', window.devicePixelRatio);
             }
         </script>
     </head>

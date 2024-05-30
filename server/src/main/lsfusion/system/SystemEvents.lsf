@@ -109,9 +109,23 @@ designEnvSize '{system.events.size}' = DATA Size (DesignEnv);
 captionSize '{system.events.size}' (DesignEnv d) = staticCaption(designEnvSize(d));
 serverSize '{system.events.size}' = DATA Size ();
 captionServerSize '{system.events.size}' = staticCaption(serverSize());
-size '{system.events.size}' (DesignEnv d) = OVERRIDE designEnvSize(d), serverSize(), Size.normal;
+
+heuristicSize = ABSTRACT Size();
+size '{system.events.size}' (DesignEnv d) = OVERRIDE designEnvSize(d), serverSize(), heuristicSize();
 isMini = size(currentDesignEnv()) == Size.mini;
 isTiny = size(currentDesignEnv()) == Size.tiny;
+
+prevSize = DATA Size(DesignEnv);
+storePrevSize() {
+    prevSize(currentDesignEnv()) <- size(currentDesignEnv());
+}
+
+changeSize INTERNAL  'lsfusion.server.physics.admin.systemevents.ChangeSizeAction' (Size, Size);
+onWebClientStarted() + {
+    IF prevSize(currentDesignEnv()) != size(currentDesignEnv()) THEN {
+        changeSize(prevSize(currentDesignEnv()), size(currentDesignEnv()));
+    }
+}
 
 CLASS Navbar '{system.events.navbar}' {
     horizontal '{system.events.navbar.horizontal}',
@@ -421,6 +435,7 @@ freeMemory '{system.events.free.memory.connection}' = DATA INTEGER (Connection);
 javaVersion '{system.events.java.version.connection}' = DATA STRING[100] (Connection);
 is64Java '{system.events.is64java.connection}' = DATA BOOLEAN (Connection);
 screenSize '{system.events.screen.size.connection}' = DATA STRING[20] (Connection);
+scale '{system.events.scale.connection}' = DATA DOUBLE (Connection);
 lastActivity '{authentication.last.activity.user}' = DATA DATETIME (Connection);
 lastActivity '{authentication.last.activity.user}' (CustomUser cu) = GROUP MAX lastActivity(Connection c) BY user(c);
 lastActivityComputer(CustomUser cu) = GROUP LAST computer(Connection c) IF user(c) == cu ORDER lastActivity(c), c;
@@ -670,7 +685,7 @@ FORM connections '{system.events.form.connections}'
 
     OBJECTS c=Connection
     PROPERTIES (c) READONLY hostnameComputer, remoteAddress, userLogin, osVersion,
-                            javaVersion, is64Java, screenSize, processor, architecture, cores, physicalMemory,
+                            javaVersion, is64Java, screenSize, scale, processor, architecture, cores, physicalMemory,
                             totalMemory, maximumMemory, freeMemory, nameClientType, nameConnectionStatus, connectTime,
                             lastActivity, disconnectTime, shutdown GRID CHANGEABLE
 
@@ -810,7 +825,7 @@ FORM pings '{system.events.form.pings}'
     
     OBJECTS cn = Connection
     PROPERTIES (cn) READONLY hostnameComputer, remoteAddress, userLogin, osVersion,
-                             javaVersion, is64Java, screenSize, processor, architecture, cores, physicalMemory,
+                             javaVersion, is64Java, screenSize, scale, processor, architecture, cores, physicalMemory,
                              totalMemory, maximumMemory, freeMemory, nameClientType, nameConnectionStatus, connectTime,
                              disconnectTime
     FILTERS computer(cn) == c

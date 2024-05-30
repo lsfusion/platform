@@ -3338,4 +3338,26 @@ public class Settings implements Cloneable {
     public void setToolbarTopLeft(boolean toolbarTopLeft) {
         this.toolbarTopLeft = toolbarTopLeft;
     }
+
+    //default size is Tiny if screen width x height is not more than maxPixelTinySize
+    private int maxPixelTinySize = 921600; //1280x720
+
+    public int getMaxPixelTinySize() {
+        return maxPixelTinySize;
+    }
+
+    public void setMaxPixelTinySize(int maxPixelTinySize) {
+        this.maxPixelTinySize = maxPixelTinySize;
+    }
+
+    //default size is Mini if screen width x height is not more than maxPixelMiniSize
+    private int maxPixelMiniSize = 1281024; //1536x834
+
+    public int getMaxPixelMiniSize() {
+        return maxPixelMiniSize;
+    }
+
+    public void setMaxPixelMiniSize(int maxPixelMiniSize) {
+        this.maxPixelMiniSize = maxPixelMiniSize;
+    }
 }

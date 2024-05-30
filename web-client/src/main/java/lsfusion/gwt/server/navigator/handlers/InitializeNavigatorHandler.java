@@ -41,7 +41,7 @@ public class InitializeNavigatorHandler extends NavigatorActionHandler<Initializ
 
     @Override
     public InitializeNavigatorResult executeEx(InitializeNavigator action, ExecutionContext context) throws RemoteException, AppServerNotAvailableDispatchException {
-        return new InitializeNavigatorResult(getClientSettings(getRemoteNavigator(action), servlet, new ClientInfo(action.screenSize, action.mobile ? ClientType.WEB_MOBILE : ClientType.WEB_DESKTOP)), getNavigatorInfo(getRemoteNavigator(action), servlet, action.sessionID));
+        return new InitializeNavigatorResult(getClientSettings(getRemoteNavigator(action), servlet, new ClientInfo(action.screenSize, action.scale, action.mobile ? ClientType.WEB_MOBILE : ClientType.WEB_DESKTOP)), getNavigatorInfo(getRemoteNavigator(action), servlet, action.sessionID));
     }
 
     private static NavigatorInfo getNavigatorInfo(RemoteNavigatorInterface remoteNavigator, MainDispatchServlet servlet, String sessionID) throws RemoteException {

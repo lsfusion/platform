@@ -587,6 +587,7 @@ public class MainFrame implements EntryPoint {
         String portString = Window.Location.getParameter("port");
         Integer screenWidth = Window.getClientWidth();
         Integer screenHeight = Window.getClientHeight();
+        double scale = getScale();
         mobile = Math.min(screenHeight, screenWidth) <= StyleDefaults.maxMobileWidthHeight;
         mobileAdjustment = mobile ? 1 : 0;
 
@@ -594,7 +595,7 @@ public class MainFrame implements EntryPoint {
                 Window.Location.getParameter("exportName"));
 
         navigatorDispatchAsync = new NavigatorDispatchAsync(getSessionId());
-        navigatorDispatchAsync.executePriority(new InitializeNavigator(screenWidth + "x" + screenHeight, mobile), new PriorityErrorHandlingCallback<InitializeNavigatorResult>(popupOwner) {
+        navigatorDispatchAsync.executePriority(new InitializeNavigator(screenWidth + "x" + screenHeight, scale, mobile), new PriorityErrorHandlingCallback<InitializeNavigatorResult>(popupOwner) {
             @Override
             public void onSuccess(InitializeNavigatorResult result) {
                 GClientSettings gClientSettings = result.gClientSettings;
@@ -632,7 +633,11 @@ public class MainFrame implements EntryPoint {
             }
         });
     }
-    
+
+    private static native double getScale()/*-{
+        return window.devicePixelRatio;
+    }-*/;
+
     public static void openNavigatorMenu() {
         if (mobile) {
             mobileNavigatorView.openNavigatorMenu();
