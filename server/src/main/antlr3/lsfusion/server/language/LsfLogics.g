@@ -4889,7 +4889,8 @@ windowCreateStatement
 		self.addScriptedWindow(isNative, $name.name, $name.caption, $opts.options);
 	}
 }
-	:	'WINDOW' name=simpleNameWithCaption ('NATIVE' { isNative = true; })? opts=windowOptions  ';'
+    //'TOOLBAR' is backward compatibility in 6.0, will be removed in 7.0
+	:	'WINDOW' name=simpleNameWithCaption ('NATIVE' { isNative = true; })? 'TOOLBAR'? opts=windowOptions  ';'
 	;
 
 windowHideStatement
