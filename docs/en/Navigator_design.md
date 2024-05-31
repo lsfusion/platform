@@ -43,6 +43,10 @@ At any moment in time in each window there can be one current *user-selected* na
 
 ### Types
 
+:::warning
+Various window types have been deprecated. Future platform versions will only support windows similar to those with the toolbar type.
+:::
+
 There are several window *types* that determine which component in the interface will be used to display navigator elements.
 
 -   *Toolbar*: a container consisting of buttons, each of which corresponds to one element of the navigator. The vertical toolbar places all buttons from top to bottom, indenting each element from the left depending on its position in the tree. The horizontal toolbar shows the buttons from left to right, without indentation.
@@ -64,7 +68,7 @@ Also, three additional windows are automatically created for ease of development
 
 -   `root`: a horizontal toolbar in which it is recommended to display navigator element `root` children. The navigator folder `System.root` is displayed here by default.
 -   `toolbar`: a vertical toolbar in which it is recommended to display some of the descendants of the navigator elements that are displayed in the `root` window.
--   `tree`: a tree in which it is recommended to display some of the descendants of the navigator elements displayed in the `root` window
+-   `tree`: a tree in which it is recommended to display some of the descendants of the navigator elements displayed in the `root` window.
 
 ### Default layout
 
@@ -87,16 +91,13 @@ To manage windows, use the [`WINDOW` statement](WINDOW_statement.md).
 
 ```lsf
 // creating system windows in the System module
-WINDOW root 'Root' TOOLBAR HIDETITLE HIDESCROLLBARS HORIZONTAL POSITION(0, 0, 100, 6);
-WINDOW toolbar 'Toolbar' TOOLBAR HIDETITLE VERTICAL POSITION(0, 6, 20, 64);
-WINDOW tree 'Tree' TOOLBAR HIDETITLE POSITION(0, 6, 20, 64);
-
-// menu without scrollbars
-WINDOW menu MENU HIDESCROLLBARS POSITION(20, 6, 80, 4);
+WINDOW root 'Root' TOOLBAR HORIZONTAL POSITION(0, 0, 100, 6) VALIGN(CENTER) HIDETITLE HIDESCROLLBARS;
+WINDOW toolbar 'Toolbar' TOOLBAR VERTICAL POSITION(0, 6, 20, 64) HIDETITLE;
+WINDOW tree 'Tree' TOOLBAR POSITION(0, 6, 20, 64) HIDETITLE;
 
 // a horizontal toolbar at the bottom of the desktop, in which all buttons will be centered and text will be aligned up
 // in this toolbar, for example, it is possible to place forms for quick opening
-WINDOW hotforms TOOLBAR HORIZONTAL VALIGN(CENTER) TEXTVALIGN(START) BOTTOM;
+WINDOW hotforms TOOLBAR HORIZONTAL BOTTOM VALIGN(CENTER) TEXTVALIGN(START);
 ```
 
   
