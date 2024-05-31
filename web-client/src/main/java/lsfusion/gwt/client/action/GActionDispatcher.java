@@ -49,7 +49,9 @@ public interface GActionDispatcher {
     
     void execute(GChangeColorThemeAction action);
 
-    void execute(GChangeSizeAction action);
+    void execute(GLoadResourceAction action);
+
+    void execute(GUnloadResourceAction action);
 
     void execute(GResetWindowsLayoutAction action);
 

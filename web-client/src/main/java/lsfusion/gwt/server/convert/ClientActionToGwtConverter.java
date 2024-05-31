@@ -273,23 +273,19 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         return new GChangeColorThemeAction(GColorTheme.valueOf(action.colorTheme.name()));
     }
 
-    @Converter(from = ChangeSizeClientAction.class)
-    public GChangeSizeAction convertAction(ChangeSizeClientAction action, FormSessionObject formSessionObject, MainDispatchServlet servlet) throws SessionInvalidatedException {
+    @Converter(from = LoadResourceClientAction.class)
+    public GLoadResourceAction convertAction(LoadResourceClientAction action, FormSessionObject formSessionObject, MainDispatchServlet servlet) throws SessionInvalidatedException {
+        String resourceName = action.resourceName;
+        FileData resourceFile = action.resourceFile;
 
-        Map<String, String> resources = new HashMap<>();
-        List<String> unloadResources = new ArrayList<>();
-        for(Map.Entry<String, FileData> resource : action.resources.entrySet()) {
-            String resourceName = resource.getKey();
-            FileData resourceFile = resource.getValue();
-            if(resourceFile != null) {
-                String resourcePath = servlet.getFormProvider().getWebFile(formSessionObject.navigatorID, resourceName, resourceFile.getRawFile());
-                resources.put(resourcePath, resourceFile.getExtension());
-            } else {
-                unloadResources.add(resourceName);
-            }
-        }
+        String resourcePath = servlet.getFormProvider().getWebFile(formSessionObject.navigatorID, resourceName, resourceFile.getRawFile());
+        String resourceExtension = resourceFile.getExtension();
+        return new GLoadResourceAction(resourcePath, resourceExtension);
+    }
 
-        return new GChangeSizeAction(resources, unloadResources);
+    @Converter(from = UnloadResourceClientAction.class)
+    public GUnloadResourceAction convertAction(UnloadResourceClientAction action, FormSessionObject formSessionObject, MainDispatchServlet servlet) throws SessionInvalidatedException {
+        return new GUnloadResourceAction(action.resource);
     }
 
     @Converter(from = ResetWindowsLayoutClientAction.class)

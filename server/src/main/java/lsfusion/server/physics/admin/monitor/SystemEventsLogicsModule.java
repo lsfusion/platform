@@ -54,7 +54,8 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LA<?> onStarted;
     public LA<?> onFinallyStarted;
 
-    public LA<?> storePrevSize;
+    public LA<?> storeCurrentSizeConnection;
+    public LA<?> storeCurrentSize;
 
     public LP useBootstrap;
     public LP contentWordWrap;
@@ -95,6 +96,9 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LP currentConnection;
 
     public LP currentLaunch;
+
+    public LP paddingCss;
+    public LP fontCss;
 
     public LP messageException;
     public LP dateException;
@@ -164,7 +168,8 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         onStarted = findAction("onStartedApply[]");
         onFinallyStarted = findAction("onFinallyStartedApply[]");
 
-        storePrevSize = findAction("storePrevSize[]");
+        storeCurrentSizeConnection = findAction("storeCurrentSize[Connection]");
+        storeCurrentSize = findAction("storeCurrentSize[]");
 
         useBootstrap = findProperty("useBootstrap[DesignEnv]");
         contentWordWrap = findProperty("contentWordWrap[DesignEnv]");
@@ -205,6 +210,9 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         launchConnection = findProperty("launch[Connection]");
 
         currentLaunch = findProperty("currentLaunch[]");
+
+        paddingCss = findProperty("paddingCss[Size]");
+        fontCss = findProperty("fontCss[Size]");
 
         // Ошибки выполнения
         messageException = findProperty("message[Exception]");

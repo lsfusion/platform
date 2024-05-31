@@ -277,7 +277,7 @@ public class MainController {
                     throw e;
                 }
             }).get();
-            LogicsSessionObject.InitSettings initSettings = getInitSettings(navigatorProvider.getNavigatorSessionObject(sessionId).remoteNavigator, request, new ClientInfo("1366x768", 1.0, ClientType.WEB_DESKTOP));
+            LogicsSessionObject.InitSettings initSettings = getInitSettings(navigatorProvider.getNavigatorSessionObject(sessionId).remoteNavigator, request, new ClientInfo("1366x768", 1.0, ClientType.WEB_DESKTOP, true));
             mainResourcesBeforeSystem = initSettings.mainResourcesBeforeSystem;
             mainResourcesAfterSystem = initSettings.mainResourcesAfterSystem;
         } catch (AuthenticationException authenticationException) {

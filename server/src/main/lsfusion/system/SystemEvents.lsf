@@ -115,18 +115,6 @@ size '{system.events.size}' (DesignEnv d) = OVERRIDE designEnvSize(d), serverSiz
 isMini = size(currentDesignEnv()) == Size.mini;
 isTiny = size(currentDesignEnv()) == Size.tiny;
 
-prevSize = DATA Size(DesignEnv);
-storePrevSize() {
-    prevSize(currentDesignEnv()) <- size(currentDesignEnv());
-}
-
-changeSize INTERNAL  'lsfusion.server.physics.admin.systemevents.ChangeSizeAction' (Size, Size);
-onWebClientStarted() + {
-    IF prevSize(currentDesignEnv()) != size(currentDesignEnv()) THEN {
-        changeSize(prevSize(currentDesignEnv()), size(currentDesignEnv()));
-    }
-}
-
 CLASS Navbar '{system.events.navbar}' {
     horizontal '{system.events.navbar.horizontal}',
     vertical '{system.events.navbar.vertical}'
@@ -185,7 +173,7 @@ toggleNavigatorPinMode () {
 navigatorPinModeClass = ABSTRACT STRING();
 
 needReload = DATA LOCAL BOOLEAN();
-WHEN LOCAL CHANGED (captionTheme(DesignEnv de)) OR CHANGED (captionSize(de)) OR CHANGED (captionNavbar(de))
+WHEN LOCAL CHANGED (captionTheme(DesignEnv de)) OR CHANGED (captionNavbar(de))
     OR CHANGED (suppressOnFocusChange(de))  OR CHANGED (contentWordWrap(de))  OR CHANGED (userFiltersManualApplyMode(de)) DO {
     needReload() <- TRUE;
 } 
@@ -199,7 +187,10 @@ FORM design '{system.events.design}'
 
     PROPERTIES() needReloadText HEADER NULL SHOWIF needReload()
 
-    EVENTS ON APPLY reload()
+    EVENTS ON APPLY { 
+        IF needReload() 
+            THEN reload();
+    }
 ;
 
 DESIGN design {
@@ -235,6 +226,14 @@ NAVIGATOR {
     NEW toggleColorTheme WINDOW system PARENT BEFORE toggleNavigatorPinMode HEADER colorThemeCaption() IMAGE colorThemeImage();
 }
 
+paddingCss(Size s) = CASE
+    WHEN s == Size.mini THEN 'mini-padding.css'
+    WHEN s == Size.tiny THEN 'tiny-padding.css';
+
+fontCss(Size s) = CASE
+    WHEN s == Size.mini THEN 'mini-font.css'
+    WHEN s == Size.tiny THEN 'tiny-font.css';
+
 onWebClientInit() + {
     IF useBootstrap() THEN {
         onWebClientInit(nameTheme() + '/bootstrap.min.css') <- 1;
@@ -244,14 +243,8 @@ onWebClientInit() + {
         onWebClientInit('bootstrap-ext.css') <- 5; 
         onWebClientInit('bootstrap-dark.css') <- 6;
         
-        IF isMini() THEN {
-            onWebClientInit('mini-padding.css') <- 7;
-            onWebClientInit('mini-font.css') <- 8;
-        }
-        IF isTiny() THEN {
-            onWebClientInit('tiny-padding.css') <- 7;
-            onWebClientInit('tiny-font.css') <- 8;
-        }
+        onWebClientInit(paddingCss(size(currentDesignEnv()))) <- 7;
+        onWebClientInit(fontCss(size(currentDesignEnv()))) <- 8;
         
         onWebClientInit('selectize.bootstrap5.min.css') <- 9;
 
@@ -538,6 +531,25 @@ onClientStarted () + {
     IF isWeb() THEN {
         onWebClientStarted(); 
     }
+}
+
+currentSize = DATA Size(Connection);
+currentSize() = currentSize(currentConnection());
+storeCurrentSize(Connection c) {
+    currentSize(c) <- size(currentDesignEnv());
+}
+storeCurrentSize() {
+    storeCurrentSize(currentConnection());
+}
+
+updateSize INTERNAL 'lsfusion.server.physics.admin.systemevents.UpdateSizeAction' (Size, Size);
+onWebClientStarted() + {
+    IF currentSize() != size(currentDesignEnv()) THEN {
+        updateSize(currentSize(), size(currentDesignEnv()));
+    }
+}
+WHEN LOCAL CHANGED (designEnvSize(DesignEnv de)) DO {
+    updateSize(currentSize(), size(de));
 }
 
 textOnHoverClass() = IF isWebDesktop() AND NOT navigatorPinMode() THEN ' navbar-text-on-hover' ELSE '';

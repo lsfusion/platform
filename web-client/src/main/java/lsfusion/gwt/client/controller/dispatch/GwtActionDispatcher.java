@@ -365,14 +365,8 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     }
 
     @Override
-    public void execute(GChangeSizeAction action) {
-        for(Map.Entry<String, String> resource : action.resources.entrySet()) {
-            loadResource(resource.getKey(), resource.getValue());
-        }
-
-        for(String resource : action.unloadResources) {
-            unloadResource(resource);
-        }
+    public void execute(GLoadResourceAction action) {
+        loadResource(action.path, action.extension);
     }
 
     private native void loadResource(String path, String extension)/*-{
@@ -389,6 +383,11 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             $wnd.document.head.appendChild(link);
         }
     }-*/;
+
+    @Override
+    public void execute(GUnloadResourceAction action) {
+        unloadResource(action.resource);
+    }
 
     private native void unloadResource(String resourceName)/*-{
         var links = $wnd.document.head.getElementsByTagName("link");

@@ -704,7 +704,12 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     }
 
     @Override
-    public void execute(ChangeSizeClientAction action) {
+    public void execute(LoadResourceClientAction action) {
+        //do nothing in desktop
+    }
+
+    @Override
+    public void execute(UnloadResourceClientAction action) {
         //do nothing in desktop
     }
 

@@ -88,7 +88,7 @@ public abstract class MainFrame extends JFrame {
                                         DisplayMode dm = devices[0].getDefaultConfiguration().getDevice().getDisplayMode();
                                         double scale = dm.getWidth() / bounds.getWidth();
 
-                                        remoteNavigator.updateClientInfo(new ClientInfo(screenSize, scale, ClientType.NATIVE_DESKTOP));
+                                        remoteNavigator.updateClientInfo(new ClientInfo(screenSize, scale, ClientType.NATIVE_DESKTOP, false));
 
                                         return remoteNavigator;
                                     });
