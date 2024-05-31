@@ -37,7 +37,7 @@ function showNotification(notification, action, inputActions, push) {
     // should have dispatchAction fields (id, url, query)
     return self.registration.showNotification(!notification.title?.length/*check that the string is not null or empty https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Optional_chaining*/
             ? defaultNotification.title : notification.title,
-        addServiceWorkerData({...defaultNotification.options, ...notification.options}, {action: action, push: push}, inputActions));
+        addServiceWorkerData(defaultNotification.options, notification.options, {action: action, push: push}, inputActions));
 }
 function pushNotification(client, actionResult) {
     let action = actionResult.action;
@@ -137,8 +137,9 @@ function dispatchAction(event, actionResult, push, onClientFound, onClientNotFou
     );
 }
 
-function addServiceWorkerData (options, newData, newActions) {
+function addServiceWorkerData (defaultOptions, options, newData, newActions) {
     return {
+        ...defaultOptions,
         ...(options || {}),
         data: {
             ...(options?.data || {}),
