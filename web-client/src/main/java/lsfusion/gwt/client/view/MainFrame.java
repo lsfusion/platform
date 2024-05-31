@@ -43,7 +43,6 @@ import lsfusion.gwt.client.navigator.view.ExcelMobileNavigatorView;
 import lsfusion.gwt.client.navigator.view.MobileNavigatorView;
 import lsfusion.gwt.client.navigator.window.GAbstractWindow;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
-import lsfusion.gwt.client.navigator.window.GToolbarNavigatorWindow;
 import lsfusion.gwt.client.navigator.window.view.WindowsController;
 import net.customware.gwt.dispatch.shared.Result;
 
@@ -69,7 +68,6 @@ public class MainFrame implements EntryPoint {
     public static boolean autoReconnectOnConnectionLost;
     public static int showDetailedInfoDelay;
     public static boolean suppressOnFocusChange;
-    public static boolean contentWordWrap;
     public static boolean forbidDuplicateForms;
     public static boolean useBootstrap;
     public static long busyDialogTimeout;
@@ -98,7 +96,7 @@ public class MainFrame implements EntryPoint {
     public static boolean userFiltersManualApplyMode;
 
     public static boolean disableActionsIfReadonly;
-    public static boolean disableShowingRecentlyLogMessages;
+    public static boolean enableShowingRecentlyLogMessages;
     public static String pushNotificationPublicKey;
 
     // async dispatch
@@ -529,11 +527,11 @@ public class MainFrame implements EntryPoint {
             if (MainFrame.verticalNavbar) {
                 // change navbar navigators orientation
                 for (GAbstractWindow window : result.navigatorWindows) {
-                    if (window instanceof GToolbarNavigatorWindow) {
-                        GToolbarNavigatorWindow toolbarWindow = (GToolbarNavigatorWindow) window;
+                    if (window instanceof GNavigatorWindow) {
+                        GNavigatorWindow toolbarWindow = (GNavigatorWindow) window;
                         if (toolbarWindow.isInRootNavBar()) {
                             toolbarWindow.vertical = true;
-                            toolbarWindow.verticalTextPosition = GToolbarNavigatorWindow.CENTER;
+                            toolbarWindow.verticalTextPosition = GNavigatorWindow.CENTER;
                         }
                     }
                 }
@@ -643,7 +641,6 @@ public class MainFrame implements EntryPoint {
                 showDetailedInfo = gClientSettings.showDetailedInfo;
                 showDetailedInfoDelay = gClientSettings.showDetailedInfoDelay;
                 suppressOnFocusChange = gClientSettings.suppressOnFocusChange;
-                contentWordWrap = gClientSettings.contentWordWrap;
                 autoReconnectOnConnectionLost = gClientSettings.autoReconnectOnConnectionLost;
                 forbidDuplicateForms = gClientSettings.forbidDuplicateForms;
                 pivotOnlySelectedColumn = gClientSettings.pivotOnlySelectedColumn;
@@ -661,7 +658,7 @@ public class MainFrame implements EntryPoint {
                 verticalNavbar = gClientSettings.verticalNavbar;
 
                 disableActionsIfReadonly = gClientSettings.disableActionsIfReadonly;
-                disableShowingRecentlyLogMessages = gClientSettings.disableShowingRecentlyLogMessages;
+                enableShowingRecentlyLogMessages = gClientSettings.enableShowingRecentlyLogMessages;
                 pushNotificationPublicKey = gClientSettings.pushNotificationPublicKey;
 
                 initializeFrame(result.navigatorInfo, popupOwner);

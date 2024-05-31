@@ -65,7 +65,6 @@ import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.NavigatorFolder;
 import lsfusion.server.logics.navigator.window.AbstractWindow;
 import lsfusion.server.logics.navigator.window.NavigatorWindow;
-import lsfusion.server.logics.navigator.window.ToolBarNavigatorWindow;
 import lsfusion.server.logics.property.JoinProperty;
 import lsfusion.server.logics.property.LazyProperty;
 import lsfusion.server.logics.property.Property;
@@ -731,11 +730,10 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     // Окна
     public class Windows {
-        public ToolBarNavigatorWindow logo;
-        public ToolBarNavigatorWindow root;
-        public ToolBarNavigatorWindow system;
+        public NavigatorWindow logo;
+        public NavigatorWindow root;
+        public NavigatorWindow system;
         public NavigatorWindow toolbar;
-        public NavigatorWindow tree;
         public AbstractWindow forms;
         public AbstractWindow log;
     }
@@ -756,21 +754,17 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         // Окна
         baseWindows = new Windows();
 
-        baseWindows.logo = (ToolBarNavigatorWindow) findWindow("logo");
+        baseWindows.logo = (NavigatorWindow) findWindow("logo");
         baseWindows.logo.autoSize = true;
 
-        baseWindows.root = (ToolBarNavigatorWindow) findWindow("root");
+        baseWindows.root = (NavigatorWindow) findWindow("root");
         baseWindows.root.autoSize = true;
         root.window = baseWindows.root;
 
-        baseWindows.system = (ToolBarNavigatorWindow) findWindow("system");
+        baseWindows.system = (NavigatorWindow) findWindow("system");
         baseWindows.system.autoSize = true;
 
         baseWindows.toolbar = (NavigatorWindow) findWindow("toolbar");
-//        baseWindows.toolbar.autoSize = true;
-
-        baseWindows.tree = (NavigatorWindow) findWindow("tree");
-//        baseWindows.tree.autoSize = true;
 
         baseWindows.forms = findWindow("forms");
         baseWindows.log = findWindow("log");

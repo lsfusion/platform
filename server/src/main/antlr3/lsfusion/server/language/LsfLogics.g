@@ -116,22 +116,17 @@ grammar LsfLogics;
 	public ScriptingLogicsModule self;
 	public ScriptParser.State parseState;
 
+	public boolean isFirstFullParse() {
+		return parseState == ScriptParser.State.META_CLASS_TABLE;
+	}
+
 	@Override
 	public void emitErrorMessage(String msg) {
 		if (isFirstFullParse() || parseState == ScriptParser.State.PRE) { 
 			self.getErrLog().write(msg + "\n");
 		}
 	}
-	
-	public boolean isFirstFullParse() {
-		return parseState == ScriptParser.State.META_CLASS_TABLE;
-	}
-	
-	@Override
-	public String getErrorMessage(RecognitionException e, String[] tokenNames) {
-		return self.getErrLog().getErrorMessage(this, super.getErrorMessage(e, tokenNames), e);
-	}
-	
+
 	@Override
 	public void displayRecognitionError(String[] tokenNames, RecognitionException e) {
 		self.getErrLog().displayRecognitionError(this, self.getParser(), "error", tokenNames, e);
@@ -229,11 +224,6 @@ grammar LsfLogics;
 		if (isFirstFullParse() || inPreParseState()) { 
 			self.getErrLog().write(msg + "\n");
 		}
-	}
-
-	@Override
-	public String getErrorMessage(RecognitionException e, String[] tokenNames) {
-		return self.getErrLog().getErrorMessage(this, super.getErrorMessage(e, tokenNames), e);
 	}
 
 	@Override
@@ -4891,12 +4881,16 @@ windowStatement
 	;
 
 windowCreateStatement
+@init {
+	boolean isNative = false;
+}
 @after {
 	if (inMainParseState()) {
-		self.addScriptedWindow($type.type, $name.name, $name.caption, $opts.options);
+		self.addScriptedWindow(isNative, $name.name, $name.caption, $opts.options);
 	}
 }
-	:	'WINDOW' name=simpleNameWithCaption type=windowType opts=windowOptions  ';'
+    //'TOOLBAR' is backward compatibility in 6.0, will be removed in 7.0
+	:	'WINDOW' name=simpleNameWithCaption ('NATIVE' { isNative = true; })? 'TOOLBAR'? opts=windowOptions  ';'
 	;
 
 windowHideStatement
@@ -4906,14 +4900,6 @@ windowHideStatement
 				self.hideWindow($wid.sid);
 			}
 		}
-	;
-
-windowType returns [WindowType type]
-	:	'MENU'		{ $type = MENU; }
-	|	'PANEL'		{ $type = PANEL; }
-	|	'TOOLBAR'	{ $type = TOOLBAR; }
-	|	'TREE'		{ $type = TREE; }
-	|	'NATIVE'	{ $type = NATIVE; }
 	;
 
 windowOptions returns [NavigatorWindowOptions options]

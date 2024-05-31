@@ -57,6 +57,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LA<?> shareAction;
 
     public LP useBootstrap;
+    public LP contentWordWrap;
     public LP serverTheme;
     public LP serverSize;
     public LP serverNavbar;
@@ -168,6 +169,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         shareAction = findAction("shareAction[STRING]");
 
         useBootstrap = findProperty("useBootstrap[DesignEnv]");
+        contentWordWrap = findProperty("contentWordWrap[DesignEnv]");
         serverTheme = findProperty("serverTheme[]");
         serverSize = findProperty("serverSize[]");
         serverNavbar = findProperty("serverNavbar[]");

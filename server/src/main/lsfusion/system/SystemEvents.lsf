@@ -160,9 +160,9 @@ navigatorPinModeCaption = (IF navigatorPinMode()
     ELSE '{system.events.navigator.pin.none}') IF NOT noSystemToolbarCaptions();
 navigatorPinModeImage = IF navigatorPinMode() 
     THEN (IF navigatorPinMode() == TFALSE 
-        THEN iconIfAvailable('navigatorPinNavbar.png','fa-solid fa-thumbtack fa-rotate-90') 
-        ELSE iconIfAvailable('navigatorPinAll.png','fa-solid fa-thumbtack')) 
-    ELSE iconIfAvailable('navigatorPinNone.png','fa-solid fa-thumbtack fa-rotate-45');
+        THEN iconIfAvailable('navigatorPinNavbar.png','fa-solid fa-thumbtack fa-rotate-45') 
+        ELSE iconIfAvailable('navigatorPinAll.png','fa-solid fa-thumbtack fa-rotate-90')) 
+    ELSE iconIfAvailable('navigatorPinNone.png','fa-solid fa-thumbtack');
 toggleNavigatorPinMode () {
     designEnvNavigatorPinMode(currentDesignEnv()) <- IF navigatorPinMode() THEN (IF navigatorPinMode() == TFALSE THEN TTRUE ELSE NULL) ELSE TFALSE;
     useClientNavigatorPinMode(currentDesignEnv()) <- TRUE;
@@ -524,7 +524,7 @@ noSystemToolbarCaptions() += isNativeDesktop();
 dontShowCloseButtonOnInactiveTab '{service.dont.show.close.button.on.inactive.tab}' = DATA BOOLEAN(CustomUser);
 dontShowCloseButtonOnInactiveTab = dontShowCloseButtonOnInactiveTab(currentUser());
 
-userFiltersManualApplyMode = userFiltersManualApplyMode(currentUser());
+userFiltersManualApplyMode = userFiltersManualApplyMode(currentDesignEnv());
 
 onClientStarted () + {
     IF isNativeDesktop() THEN {

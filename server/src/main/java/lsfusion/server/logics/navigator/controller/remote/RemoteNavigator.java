@@ -11,6 +11,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
+import lsfusion.base.file.FileData;
 import lsfusion.base.lambda.set.FullFunctionSet;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.action.ClientAction;
@@ -36,6 +37,7 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.action.LA;
+import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.action.Action;
@@ -66,6 +68,7 @@ import lsfusion.server.logics.navigator.controller.context.RemoteNavigatorContex
 import lsfusion.server.logics.navigator.controller.env.*;
 import lsfusion.server.logics.navigator.controller.manager.NavigatorsManager;
 import lsfusion.server.logics.navigator.window.AbstractWindow;
+import lsfusion.server.logics.navigator.window.NavigatorWindow;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
@@ -104,6 +107,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     private String currentForm;
 
     private boolean useBootstrap;
+    private boolean contentWordWrap;
     private boolean isNative;
     private boolean isMobile;
 
@@ -130,7 +134,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
         this.classCache = new ClassCache();
 
-        remoteContext = new ConnectionContext(isUseBootstrap());
+        remoteContext = new ConnectionContext(isUseBootstrap(), isContentWordWrap());
 
         this.client = new ClientCallBackController(port, toString(), this::updateLastUsedTime);
 
@@ -146,6 +150,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         super.initUserContext(hostName, remoteAddress, clientLanguage, clientCountry, clientTimeZone, clientDateFormat, clientTimeFormat, clientColorTheme, stack, session);
         DataObject designEnv = businessLogics.authenticationLM.storeNavigatorSettingsForComputer.read(session) != null ? computer : user;
         useBootstrap = businessLogics.systemEventsLM.useBootstrap.read(session, designEnv) != null;
+        contentWordWrap = businessLogics.systemEventsLM.contentWordWrap.read(session, designEnv) != null;
         localePreferences = readLocalePreferences(session, user, businessLogics, clientTimeZone, clientDateFormat, clientTimeFormat, stack);
         securityPolicy = logicsInstance.getSecurityManager().getSecurityPolicy(session, user);
         saveClientColorTheme(session, designEnv, businessLogics, clientColorTheme, stack);
@@ -209,6 +214,10 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
     public boolean isUseBootstrap() {
         return useBootstrap;
+    }
+
+    public boolean isContentWordWrap() {
+        return contentWordWrap;
     }
 
     public boolean isNative() {
@@ -485,9 +494,13 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         DataOutputStream dataStream = new DataOutputStream(outStream);
 
         try {
-            int elementsCount = elements.size();
-            
-            dataStream.writeInt(elementsCount);
+            ImSet<AbstractWindow> windows = getWindows().filterFn(w -> w instanceof NavigatorWindow);
+            dataStream.writeInt(windows.size());
+            for(AbstractWindow window : windows) {
+                window.serialize(dataStream);
+            }
+
+            dataStream.writeInt(elements.size());
             for (NavigatorElement element : elements.keyIt()) {
                 element.serialize(getRemoteContext(), dataStream);
             }

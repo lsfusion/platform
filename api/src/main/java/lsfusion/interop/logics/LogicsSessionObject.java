@@ -112,7 +112,6 @@ public class LogicsSessionObject {
         boolean showDetailedInfo = json.optBoolean("showDetailedInfo");
         int showDetailedInfoDelay = json.optInt("showDetailedInfoDelay");
         boolean suppressOnFocusChange = json.optBoolean("suppressOnFocusChange");
-        boolean contentWordWrap = json.optBoolean("contentWordWrap");
         boolean devMode = json.optBoolean("devMode");
         String projectLSFDir = json.optString("projectLSFDir");
 
@@ -155,15 +154,15 @@ public class LogicsSessionObject {
         boolean useTextAsFilterSeparator = json.optBoolean("useTextAsFilterSeparator");
         boolean userFiltersManualApplyMode = json.optBoolean("userFiltersManualApplyMode");
         boolean disableActionsIfReadonly = json.optBoolean("disableActionsIfReadonly");
-        boolean disableShowingRecentlyLogMessages = json.optBoolean("disableShowingRecentlyLogMessages");
+        boolean enableShowingRecentlyLogMessages = json.optBoolean("enableShowingRecentlyLogMessages");
         String pushNotificationPublicKey = json.optString("pushNotificationPublicKey");
         int maxRequestQueueSize = json.optInt("maxRequestQueueSize");
 
         return new ClientSettings(localePreferences, currentUserName, fontSize, useBusyDialog, busyDialogTimeout, useRequestTimeout, devMode,
-                projectLSFDir, showDetailedInfo, showDetailedInfoDelay, suppressOnFocusChange, contentWordWrap, autoReconnectOnConnectionLost, forbidDuplicateForms, showNotDefinedStrings, pivotOnlySelectedColumn, matchSearchSeparator,
+                projectLSFDir, showDetailedInfo, showDetailedInfoDelay, suppressOnFocusChange, autoReconnectOnConnectionLost, forbidDuplicateForms, showNotDefinedStrings, pivotOnlySelectedColumn, matchSearchSeparator,
                 colorTheme, useBootstrap, colorPreferences, preDefinedDateRangesNames.toArray(new String[0]), useTextAsFilterSeparator, 
                 verticalNavbar, userFiltersManualApplyMode, disableActionsIfReadonly,
-                disableShowingRecentlyLogMessages, pushNotificationPublicKey, maxRequestQueueSize);
+                enableShowingRecentlyLogMessages, pushNotificationPublicKey, maxRequestQueueSize);
     }
 
     public static class InitSettings {

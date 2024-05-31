@@ -50,7 +50,7 @@ public class ScriptingErrorLog {
     }
 
     private String getSemanticRecognitionErrorText(String msg, ScriptParser parser, RecognitionException e) {
-        return getRecognitionErrorText(parser, "error", getErrorMessage(parser.getCurrentParser(), msg, e), e) + "Subsequent errors (if any) could not be found.";
+        return getRecognitionErrorText(parser, "error", msg, e) + "Subsequent errors (if any) could not be found.";
     }
 
     private String getRecognitionErrorText(ScriptParser parser, String errorType, String msg, RecognitionException e) {
@@ -63,10 +63,6 @@ public class ScriptingErrorLog {
     private String getModulePath(ScriptParser parser) {
         //remove first '/'
         return parser.getCurrentParser().self.getPath().substring(1);
-    }
-
-    public static String getErrorMessage(BaseRecognizer parser, String oldMsg, RecognitionException e) {
-        return /*BaseRecognizer.getRuleInvocationStack(e, parser.findClass().getName()) + " " + */ oldMsg;
     }
 
     public void displayRecognitionError(BaseRecognizer parser, ScriptParser scriptParser, String errorType, String[] tokenNames, RecognitionException e) {
@@ -209,10 +205,6 @@ public class ScriptingErrorLog {
 
     public void emitWrongKeyStrokeFormatError(ScriptParser parser, String ksLiteral) throws SemanticErrorException {
         emitSimpleError(parser, format("can't create keystroke from string '%s'", ksLiteral));
-    }
-
-    public void emitWindowPositionNotSpecifiedError(ScriptParser parser, String name) throws SemanticErrorException {
-        emitSimpleError(parser, format("position ( POSITION(x, y, width, height) ) isn't specified for window '%s'", name));
     }
 
     public void emitWindowPositionConflictError(ScriptParser parser, String name) throws SemanticErrorException {

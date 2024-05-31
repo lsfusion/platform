@@ -8,6 +8,7 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.async.GInputListAction;
+import lsfusion.gwt.client.form.property.cell.classes.ColorDTO;
 import lsfusion.gwt.client.form.property.cell.classes.controller.ColorCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.controller.RequestValueCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.view.ColorCellRenderer;
@@ -43,7 +44,11 @@ public class GColorType extends GDataType {
 
     @Override
     public PValue parseString(String s, String pattern) throws ParseException {
-        throw new ParseException("Color class doesn't support conversion from string", 0);
+        try {
+            return PValue.getPValue(new ColorDTO(s.substring(s.length() - 6)));
+        } catch (Exception e) {
+            throw new ParseException("error parsing color", 0);
+        }
     }
 
     @Override

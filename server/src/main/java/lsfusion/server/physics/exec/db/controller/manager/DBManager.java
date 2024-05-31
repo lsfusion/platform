@@ -124,6 +124,7 @@ import java.sql.Savepoint;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
 import static lsfusion.base.BaseUtils.isRedundantString;
@@ -233,7 +234,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 return null;
             });
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         } finally {
             LM = null;
             reflectionLM = null;
@@ -2322,14 +2323,24 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     parser.self = migrationManager;
 
                     parser.script();
+                    
+                    checkMigrationScriptParsingErrors(lexer, parser);
+                    
                     migrationScriptWasRead = true;
                 }
             } catch (Exception e) {
-                Throwables.propagate(e);
+                throw Throwables.propagate(e);
             }
         }
     }
-
+    
+    private void checkMigrationScriptParsingErrors(MigrationScriptLexer lexer, MigrationScriptParser parser) {
+        if (!lexer.getErrors().isEmpty() || !parser.getErrors().isEmpty()) {
+            String errorsText = Stream.concat(lexer.getErrors().stream(), parser.getErrors().stream()).collect(Collectors.joining("\n"));
+            throw new RuntimeException("Migration script parsing completed with the following errors:\n" + errorsText);
+        }
+    }
+    
     private void renameColumn(SQLSession sql, OldDBStructure oldData, DBStoredProperty oldProperty, String newName) throws SQLException {
         String oldName = oldProperty.getDBName();
         if (!oldName.equals(newName)) {

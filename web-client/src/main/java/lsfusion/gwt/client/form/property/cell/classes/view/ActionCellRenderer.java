@@ -37,7 +37,7 @@ public class ActionCellRenderer extends CellRenderer {
         if(property.hasChangeAction)
             element.addClassName("btn");
 
-        BaseImage.initImageText(element, property.panelCaptionVertical ? ImageHtmlOrTextType.ACTION_VERT : ImageHtmlOrTextType.ACTION_HORZ);
+        BaseImage.initImageText(element, property.getImageHtmlOrTextType());
 
         // we can't use text alignment for several reasons:
         // button does not support vertical-align

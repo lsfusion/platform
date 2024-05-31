@@ -277,6 +277,10 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         propertyDraw.customNeedPlaceholder = clientPropertyDraw.customNeedPlaceholder;
         propertyDraw.customNeedReadonly = clientPropertyDraw.customNeedReadonly;
         
+        propertyDraw.wrap = clientPropertyDraw.wrap;
+        propertyDraw.wrapWordBreak = clientPropertyDraw.wrapWordBreak;
+        propertyDraw.collapse = clientPropertyDraw.collapse;
+
         propertyDraw.clearText = clientPropertyDraw.clearText;
         propertyDraw.notSelectAll = clientPropertyDraw.notSelectAll;
         propertyDraw.tableName = clientPropertyDraw.tableName;

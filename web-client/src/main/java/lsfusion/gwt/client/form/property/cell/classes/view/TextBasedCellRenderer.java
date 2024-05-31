@@ -3,7 +3,6 @@ package lsfusion.gwt.client.form.property.cell.classes.view;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.TextAreaElement;
-import lsfusion.gwt.client.base.DataHtmlOrTextType;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -77,8 +76,7 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
     public boolean renderContent(Element element, RenderContext renderContext) {
         boolean renderedAlignment = super.renderContent(element, renderContext);
 
-        boolean multiLine = isMultiLine();
-        GwtClientUtils.initDataHtmlOrText(element, multiLine ? DataHtmlOrTextType.TEXT : DataHtmlOrTextType.TEXTBASED);
+        GwtClientUtils.initDataHtmlOrText(getMainElement(element), property.getDataHtmlOrTextType());
 
         // TEXT PART
         setTextPadding(getSizeElement(element));
@@ -87,7 +85,7 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
             element.addClassName("text-based-value-required");
 
         if(getInputElement(element) == null)
-            renderText(element, multiLine);
+            renderText(element, isMultiLine());
 
         return renderedAlignment;
     }
@@ -111,11 +109,10 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
             }
         }
 
-        boolean multiLine = isMultiLine();
         if(inputElement == null) // !isTagInput()
-            clearRenderText(element, multiLine);
+            clearRenderText(element, isMultiLine());
 
-        GwtClientUtils.clearDataHtmlOrText(element, multiLine ? DataHtmlOrTextType.TEXT : DataHtmlOrTextType.TEXTBASED);
+        GwtClientUtils.clearDataHtmlOrText(getMainElement(element), property.getDataHtmlOrTextType());
 
         return super.clearRenderContent(element, renderContext);
     }

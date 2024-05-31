@@ -3,7 +3,10 @@ package lsfusion.gwt.client.navigator.view;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.Result;
+import lsfusion.gwt.client.base.view.NavigatorImageButton;
 import lsfusion.gwt.client.base.view.RecentlyEventClassHandler;
+import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.navigator.GNavigatorAction;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
@@ -12,21 +15,39 @@ import lsfusion.gwt.client.navigator.controller.GINavigatorController;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
 
 import java.util.LinkedHashSet;
+import java.util.Set;
 
-public abstract class GNavigatorView<T extends GNavigatorWindow> {
-    protected T window;
-    protected Widget component;
-    protected GINavigatorController navigatorController;
-    protected GNavigatorElement selected;
+public class GNavigatorView {
 
-    public GNavigatorView(T window, GINavigatorController navigatorController) {
+    private GNavigatorWindow window;
+    private Widget component;
+    private GINavigatorController navigatorController;
+    private GNavigatorElement selected;
+
+    private ResizableComplexPanel panel;
+    private boolean verticalTextAlign;
+
+    public GNavigatorView(GNavigatorWindow window, GINavigatorController navigatorController) {
         this.window = window;
         this.navigatorController = navigatorController;
+
+        verticalTextAlign = window.hasVerticalTextPosition();
+
+        boolean vertical = window.isVertical();
+
+        ToolbarPanel main = new ToolbarPanel(vertical, window);
+
+        setComponent(main);
+
+        this.panel = main.panel;
     }
 
-    public GNavigatorView(T window, Widget component, GINavigatorController navigatorController) {
-        this(window, navigatorController);
-        setComponent(component);
+    public Widget getView() {
+        return component;
+    }
+
+    public Widget getComponent() {
+        return window.drawScrollBars ? ((ScrollPanel) component).getWidget() : component;
     }
 
     public void setComponent(Widget component) {
@@ -39,41 +60,76 @@ public abstract class GNavigatorView<T extends GNavigatorWindow> {
         recentlySelected = new RecentlyEventClassHandler(component, true, "was-selected-recently", 1000);
     }
 
-    private RecentlyEventClassHandler parentRecentlySelected;
-    private RecentlyEventClassHandler recentlySelected;
+    public void refresh(LinkedHashSet<GNavigatorElement> newElements) {
+        Result<Integer> index = new Result<>(0);
+        for (GNavigatorElement newElement : newElements) {
+            if (!newElements.contains(newElement.parent)) { // only root components, since children are added recursively
+                if (firstFolder == null && newElement.isFolder() && window.isRoot()) {
+                    firstFolder = newElement;
+                }
+                addElement(newElement, newElements, 0, index);
+            }
+        }
 
-    public Widget getView() {
-        return component;
+        for (int i = index.result, size = panel.getWidgetCount(); i < size; i++)
+            panel.remove(index.result);
     }
-
-    public Widget getComponent() {
-        return window.drawScrollBars ? ((ScrollPanel) component).getWidget() : component;
-    }
-
-    public abstract void refresh(LinkedHashSet<GNavigatorElement> newElements);
 
     public GNavigatorElement getSelectedElement() {
         return selected;
     }
 
-    public abstract int getHeight();
+    //open first folder at start
+    GNavigatorElement firstFolder = null;
 
-    public abstract int getWidth();
+    private void addElement(final GNavigatorElement element, Set<GNavigatorElement> newElements, int step, Result<Integer> index) {
+        boolean active = window.allButtonsActive() || (element.isFolder() && element.equals(selected));
+
+        if (index.result < panel.getWidgetCount()) {
+            NavigatorImageButton button = (NavigatorImageButton) panel.getWidget(index.result);
+            button.change(element, step, active);
+        } else {
+            NavigatorImageButton button = new NavigatorImageButton(element, verticalTextAlign, step, active, this::selectElement);
+            panel.add(button);
+        }
+        index.set(index.result + 1);
+
+        if (element.window == null || element.window.equals(window)) {
+            for (GNavigatorElement childEl : element.children) {
+                if (newElements.contains(childEl)) {
+                    addElement(childEl, newElements, step + 1, index);
+                }
+            }
+        }
+    }
+
+    private RecentlyEventClassHandler parentRecentlySelected;
+    private RecentlyEventClassHandler recentlySelected;
 
     public void onParentSelected() {
         parentRecentlySelected.onEvent();
     }
+
     public void onSelected() {
         recentlySelected.onEvent();
     }
+
     public void resetSelectedElement(GNavigatorElement newSelectedElement) {
-    }
-    
-    public void openFirstFolder() {
+        GNavigatorElement selectedElement = getSelectedElement();
+        if (selectedElement != null && selectedElement.findChild(newSelectedElement) == null) {
+            selected = null;
+        }
     }
 
-    protected void selectElement(GNavigatorElement element, NativeEvent event) {
-        if(element instanceof GNavigatorFolder) {
+    public void openFirstFolder() {
+        if (firstFolder != null) {
+            selectElement(firstFolder, null);
+            firstFolder = null;
+        }
+    }
+
+    private void selectElement(GNavigatorElement element, NativeEvent event) {
+        if (element instanceof GNavigatorFolder) {
             navigatorController.resetSelectedElements(element);
             selected = element;
 

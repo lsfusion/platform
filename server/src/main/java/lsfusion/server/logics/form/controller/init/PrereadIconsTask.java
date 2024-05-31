@@ -74,7 +74,7 @@ public class PrereadIconsTask extends GroupSplitTask<String> {
             }
 
             for(boolean useBootstrap : contexts) {
-                ConnectionContext context = new ConnectionContext(useBootstrap);
+                ConnectionContext context = new ConnectionContext(useBootstrap, false);
                 for (FormEntity form : BL.getAllForms()) // actually only interactive forms are needed, but there is no way to get them
                     form.prereadAutoIcons(context);
 

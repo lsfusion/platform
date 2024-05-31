@@ -4,7 +4,6 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.NativeEvent;
 import lsfusion.gwt.client.base.BaseImage;
-import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.navigator.GNavigatorElement;

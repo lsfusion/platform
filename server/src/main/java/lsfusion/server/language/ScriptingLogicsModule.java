@@ -5022,29 +5022,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void addScriptedWindow(WindowType type, String name, LocalizedString captionStr, NavigatorWindowOptions options) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedWindow(boolean isNative, String name, LocalizedString captionStr, NavigatorWindowOptions options) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkDuplicateWindow(name);
 
         LocalizedString caption = (captionStr == null ? LocalizedString.create(name) : captionStr);
-        AbstractWindow window = null;
-
-        switch (type) {
-            case MENU:
-                window = createMenuWindow(name, caption, options);
-                break;
-            case PANEL:
-                window = createPanelWindow(name, caption, options);
-                break;
-            case TOOLBAR:
-                window = createToolbarWindow(name, caption, options);
-                break;
-            case TREE:
-                window = createTreeWindow(name, caption, options);
-                break;
-            case NATIVE:
-                window = createNativeWindow(name, caption, options);
-                break;
-        }
+        AbstractWindow window = isNative ? createNativeWindow(name, caption, options) : createToolbarWindow(name, caption, options);
 
         window.drawScrollBars = nvl(options.getDrawScrollBars(), true);
         window.titleShown = nvl(options.getDrawTitle(), true);
@@ -5052,35 +5034,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         addWindow(window);
     }
 
-    private MenuNavigatorWindow createMenuWindow(String name, LocalizedString caption, NavigatorWindowOptions options) throws ScriptingErrorLog.SemanticErrorException {
-        Orientation orientation = options.getOrientation();
-        DockPosition dp = options.getDockPosition();
-        if (dp == null) {
-            errLog.emitWindowPositionNotSpecifiedError(parser, name);
-        }
-        assert dp != null;
-        MenuNavigatorWindow window = new MenuNavigatorWindow(elementCanonicalName(name), caption, dp.x, dp.y, dp.width, dp.height);
-        window.orientation = orientation.asMenuOrientation();
-
-        return window;
-    }
-
-    private PanelNavigatorWindow createPanelWindow(String name, LocalizedString caption, NavigatorWindowOptions options) {
-        Orientation orientation = options.getOrientation();
-        DockPosition dockPosition = options.getDockPosition();
-
-        if (orientation == null) {
-            orientation = Orientation.VERTICAL;
-        }
-
-        PanelNavigatorWindow window = new PanelNavigatorWindow(elementCanonicalName(name), caption, orientation.asToolbarOrientation());
-        if (dockPosition != null) {
-            window.setDockPosition(dockPosition.x, dockPosition.y, dockPosition.width, dockPosition.height);
-        }
-        return window;
-    }
-
-    private ToolBarNavigatorWindow createToolbarWindow(String name, LocalizedString caption, NavigatorWindowOptions options) throws ScriptingErrorLog.SemanticErrorException {
+    private NavigatorWindow createToolbarWindow(String name, LocalizedString caption, NavigatorWindowOptions options) throws ScriptingErrorLog.SemanticErrorException {
         Orientation orientation = options.getOrientation();
         BorderPosition borderPosition = options.getBorderPosition();
         DockPosition dockPosition = options.getDockPosition();
@@ -5093,13 +5047,13 @@ public class ScriptingLogicsModule extends LogicsModule {
             errLog.emitWindowPositionConflictError(parser, name);
         }
 
-        ToolBarNavigatorWindow window;
+        NavigatorWindow window;
         if (borderPosition != null) {
-            window = new ToolBarNavigatorWindow(orientation.asToolbarOrientation(), elementCanonicalName(name), caption, borderPosition.asLayoutConstraint());
+            window = new NavigatorWindow(orientation.asToolbarOrientation(), elementCanonicalName(name), caption, borderPosition.asLayoutConstraint());
         } else if (dockPosition != null) {
-            window = new ToolBarNavigatorWindow(orientation.asToolbarOrientation(), elementCanonicalName(name), caption, dockPosition.x, dockPosition.y, dockPosition.width, dockPosition.height);
+            window = new NavigatorWindow(orientation.asToolbarOrientation(), elementCanonicalName(name), caption, dockPosition.x, dockPosition.y, dockPosition.width, dockPosition.height);
         } else {
-            window = new ToolBarNavigatorWindow(orientation.asToolbarOrientation(), elementCanonicalName(name), caption);
+            window = new NavigatorWindow(orientation.asToolbarOrientation(), elementCanonicalName(name), caption);
         }
 
         FlexAlignment hAlign = options.getHAlign();
@@ -5122,15 +5076,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         window.propertyElementClass = options.elementClassProperty != null ? options.elementClassProperty.getLP().property : null;
         window.elementClass = options.elementClass;
 
-        return window;
-    }
-
-    private TreeNavigatorWindow createTreeWindow(String name, LocalizedString caption, NavigatorWindowOptions options) {
-        TreeNavigatorWindow window = new TreeNavigatorWindow(elementCanonicalName(name), caption);
-        DockPosition dp = options.getDockPosition();
-        if (dp != null) {
-            window.setDockPosition(dp.x, dp.y, dp.width, dp.height);
-        }
         return window;
     }
 

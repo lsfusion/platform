@@ -33,17 +33,17 @@ public class ClientSettings implements Serializable {
     public boolean verticalNavbar;
     public boolean userFiltersManualApplyMode;
     public boolean disableActionsIfReadonly;
-    public boolean disableShowingRecentlyLogMessages;
+    public boolean enableShowingRecentlyLogMessages;
     public String pushNotificationPublicKey;
     public int maxRequestQueueSize;
 
 
     public ClientSettings(LocalePreferences localePreferences, String currentUserName, Integer fontSize, boolean busyDialog, long busyDialogTimeout,
                           boolean useRequestTimeout, boolean devMode, String projectLSFDir, boolean showDetailedInfo, int showDetailedInfoDelay,
-                          boolean suppressOnFocusChange, boolean contentWordWrap, boolean autoReconnectOnConnectionLost, boolean forbidDuplicateForms,
+                          boolean suppressOnFocusChange, boolean autoReconnectOnConnectionLost, boolean forbidDuplicateForms,
                           boolean showNotDefinedStrings, boolean pivotOnlySelectedColumn, String matchSearchSeparator, ColorTheme colorTheme,
                           boolean useBootstrap, ColorPreferences colorPreferences, String[] preDefinedDateRangesNames, boolean useTextAsFilterSeparator,
-                          boolean verticalNavbar, boolean userFiltersManualApplyMode, boolean disableActionsIfReadonly, boolean disableShowingRecentlyLogMessages,
+                          boolean verticalNavbar, boolean userFiltersManualApplyMode, boolean disableActionsIfReadonly, boolean enableShowingRecentlyLogMessages,
                           String pushNotificationPublicKey, int maxRequestQueueSize) {
         this.localePreferences = localePreferences;
         this.currentUserName = currentUserName;
@@ -57,7 +57,6 @@ public class ClientSettings implements Serializable {
         this.autoReconnectOnConnectionLost = autoReconnectOnConnectionLost;
         this.showDetailedInfoDelay = showDetailedInfoDelay;
         this.suppressOnFocusChange = suppressOnFocusChange;
-        this.contentWordWrap = contentWordWrap;
         this.forbidDuplicateForms = forbidDuplicateForms;
         this.showNotDefinedStrings = showNotDefinedStrings;
         this.pivotOnlySelectedColumn = pivotOnlySelectedColumn;
@@ -70,7 +69,7 @@ public class ClientSettings implements Serializable {
         this.verticalNavbar = verticalNavbar;
         this.userFiltersManualApplyMode = userFiltersManualApplyMode;
         this.disableActionsIfReadonly = disableActionsIfReadonly;
-        this.disableShowingRecentlyLogMessages = disableShowingRecentlyLogMessages;
+        this.enableShowingRecentlyLogMessages = enableShowingRecentlyLogMessages;
         this.pushNotificationPublicKey = pushNotificationPublicKey;
         this.maxRequestQueueSize = maxRequestQueueSize;
     }

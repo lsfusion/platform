@@ -259,7 +259,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         this.weakFocusListener = new WeakReference<>(focusListener);
         this.weakClassListener = new WeakReference<>(classListener);
 
-        FormInstanceContext context = new FormInstanceContext(entity, entity.getRichDesign(), securityPolicy, isUseBootstrap(), isNative(), isMobile(), logicsInstance.getDbManager(), getQueryEnv());
+        FormInstanceContext context = new FormInstanceContext(entity, entity.getRichDesign(), securityPolicy, isUseBootstrap(), isContentWordWrap(), isNative(), isMobile(), logicsInstance.getDbManager(), getQueryEnv());
         this.context = context;
         instanceFactory = new InstanceFactory(context);
 
@@ -2259,6 +2259,10 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     public boolean isUseBootstrap() {
         CustomClassListener classListener = getClassListener();
         return classListener != null && classListener.isUseBootstrap();
+    }
+    public boolean isContentWordWrap() {
+        CustomClassListener classListener = getClassListener();
+        return classListener != null && classListener.isContentWordWrap();
     }
     public boolean isNative() {
         CustomClassListener classListener = getClassListener();

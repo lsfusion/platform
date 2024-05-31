@@ -91,6 +91,10 @@ The `FORM` statement declares a new form and adds it to the current [module](Mod
 
     Adds sorting options to the form. [Syntax of the order block](Filters_and_sortings_block.md#sort).
 
+- `PIVOT ...`
+
+    Defines the initial settings for the [pivot table view type](Interactive_view.md#property). [Syntax of the pivot block](Pivot_block.md).
+
 - `EVENTS ...`
 
     Defines actions that are executed on specific events. [Syntax of the event block](Event_block.md).

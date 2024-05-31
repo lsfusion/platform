@@ -3317,15 +3317,15 @@ public class Settings implements Cloneable {
         this.disableActionsIfReadonly = disableActionsIfReadonly;
     }
 
-    //option disables showing recently log messages
-    private boolean disableShowingRecentlyLogMessages;
+    //option enables showing recently log messages
+    private boolean enableShowingRecentlyLogMessages;
 
-    public boolean isDisableShowingRecentlyLogMessages() {
-        return disableShowingRecentlyLogMessages;
+    public boolean isEnableShowingRecentlyLogMessages() {
+        return enableShowingRecentlyLogMessages;
     }
 
-    public void setDisableShowingRecentlyLogMessages(boolean disableShowingRecentlyLogMessages) {
-        this.disableShowingRecentlyLogMessages = disableShowingRecentlyLogMessages;
+    public void setEnableShowingRecentlyLogMessages(boolean enableShowingRecentlyLogMessages) {
+        this.enableShowingRecentlyLogMessages = enableShowingRecentlyLogMessages;
     }
 
     //show TOOLBARBOX container on the top and switch TOOLBARLEFT and TOOLBARRIGHT containers
