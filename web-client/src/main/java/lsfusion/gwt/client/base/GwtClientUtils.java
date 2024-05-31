@@ -1431,10 +1431,6 @@ public class GwtClientUtils {
         $wnd.requestPushNotificationPermissions();
     }-*/;
 
-    public static native void blinkTitle()/*-{
-        $wnd.blinkTitle();
-    }-*/;
-
     public static native boolean isFunctionContainsArguments(JavaScriptObject fn)/*-{
         var str = fn.toString().replace(/\/\*[\s\S]*?\*\//g, '')
             .replace(/\/\/(.)*\\/g, '')

@@ -33,16 +33,11 @@ self.addEventListener('notificationclick', function(event) {
             (actionResult, push) => clients.openWindow("main" + (push.query ? "?" + push.query : "")).then((client) => pushPendingNotification(client, actionResult)));
 });
 
-
 function showNotification(notification, action, inputActions, push) {
-    let options = {
-        icon: icon,
-        body: pushBody
-    };
-
     // should have dispatchAction fields (id, url, query)
-    return self.registration.showNotification(notification.title == null ? pushTitle : notification.title,
-        addServiceWorkerData({...options, ...notification.options}, {action: action, push: push}, inputActions));
+    return self.registration.showNotification(!notification.title?.length/*check that the string is not null or empty https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Optional_chaining*/
+            ? defaultNotification.title : notification.title,
+        addServiceWorkerData({...defaultNotification.options, ...notification.options}, {action: action, push: push}, inputActions));
 }
 function pushNotification(client, actionResult) {
     let action = actionResult.action;
@@ -80,10 +75,10 @@ function pullNotification(client) {
     }
 }
 function showFocusNotification(client) {
-    return showNotification({title: notificationTitle, options: { body: notificationBody, icon: icon}}, { type: 'focusNotification', clientId: client.id}, [], null);
+    return showNotification(focusNotification, { type: 'focusNotification', clientId: client.id}, [], null);
 }
 
-let pushTitle, pushBody, icon, notificationTitle, notificationBody;
+let defaultNotification, focusNotification;
 self.addEventListener('message', function (event) {
     // sent in postMessage param
     let data = event.data;
@@ -101,12 +96,8 @@ self.addEventListener('message', function (event) {
     } else if(data.type === 'showNotification') {
         showNotification(data.notification, data.action, data.inputActions, data.push);
     } else if (data.type === 'setDefaultNotifyOptions') {
-        let defaultOptions = data.defaultOptions;
-        icon = defaultOptions.icon;
-        pushTitle = defaultOptions.pushTitle;
-        pushBody = defaultOptions.pushBody;
-        notificationTitle = defaultOptions.notificationTitle;
-        notificationBody = defaultOptions.notificationBody;
+        defaultNotification = data.defaultNotification;
+        focusNotification = data.focusNotification;
     }
 })
 

@@ -215,12 +215,18 @@
                 navigator.serviceWorker.ready.then((registration) => {
                     registration.active.postMessage({
                         type: "setDefaultNotifyOptions",
-                        defaultOptions: {
-                            icon: "${logicsIcon}",
-                            pushTitle: "${title}",
-                            pushBody: "<%= ServerMessages.getString(request, "executed.successfully") %>",
-                            notificationTitle: "<%= ServerMessages.getString(request, "push.notification.tab.already.opened") %>",
-                            notificationBody: "<%= ServerMessages.getString(request, "push.notification.can.close.tab") %>"
+                        defaultNotification: {
+                            title: "${title}",
+                            options: {
+                                icon: "${logicsIcon}",
+                                body: "<%= ServerMessages.getString(request, "executed.successfully") %>"
+                            }
+                        },
+                        focusNotification: {
+                            title: "<%= ServerMessages.getString(request, "push.notification.tab.already.opened") %>",
+                            options: {
+                                body: "<%= ServerMessages.getString(request, "push.notification.can.close.tab") %>"
+                            }
                         }
                     });
                 });

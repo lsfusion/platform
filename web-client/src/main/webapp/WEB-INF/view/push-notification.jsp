@@ -12,8 +12,10 @@
     <script>
         function init() {
             navigator.serviceWorker.addEventListener("message", (event) => {
-                if (event.data === 'close')
+                if (event.data === 'close') {
+                    window.close();
                     document.getElementById("push-notification").style.display = 'block'
+                }
             });
             navigator.serviceWorker.register('service-worker.js');
             navigator.serviceWorker.ready.then((registration) => {

@@ -696,8 +696,6 @@ public abstract class FormsController {
             }
         else
             executeNavigatorAction(notification, false, true, 2, null);
-
-        GwtClientUtils.blinkTitle();
     }
     public long executeNavigatorAction(String actionSID, boolean disableForbidDuplicate, boolean sync, int type, Runnable onRequestFinished) {
         ExecuteNavigatorAction navigatorAction = new ExecuteNavigatorAction(actionSID, type);
