@@ -7,6 +7,7 @@ import lsfusion.interop.action.UpdateEditValueClientAction;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.action.SystemAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
+import lsfusion.server.logics.form.interactive.changed.FormChanges;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
@@ -25,7 +26,7 @@ public class AsyncUpdateEditValueAction extends SystemAction {
     public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) {
         Object updatedValue = context.getSingleKeyObject();
         try {
-            context.delayUserInteraction(new UpdateEditValueClientAction(serializeObject(updatedValue)));
+            context.delayUserInteraction(new UpdateEditValueClientAction(FormChanges.serializeConvertFileValue(null, updatedValue, context.getRemoteContext())));
         } catch (IOException e) {
             Throwables.propagate(e);
         }

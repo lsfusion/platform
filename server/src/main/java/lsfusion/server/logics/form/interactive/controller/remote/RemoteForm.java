@@ -871,11 +871,11 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         return result;
     }
 
-    public ServerResponse executeNotificationAction(long requestIndex, long lastReceivedRequestIndex, final int idNotification) throws RemoteException {
+    public ServerResponse executeNotificationAction(long requestIndex, long lastReceivedRequestIndex, final String notification) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             RemoteFormListener remoteNavigator = getRemoteFormListener();
             if(remoteNavigator != null) {
-                remoteNavigator.executeNotificationAction(form, stack, idNotification);
+                remoteNavigator.executeNotificationAction(form, stack, notification);
             }
         });
     }

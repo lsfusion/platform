@@ -499,15 +499,25 @@ currentConnection = NATIVE Connection ();
 clientType = DATA ClientType (Connection);
 nameClientType '{system.events.client.type}' (Connection connection) = staticCaption(clientType(connection));
 
-isNativeDesktop() = clientType(currentConnection()) == ClientType.nativeDesktop;
-isNativeMobile() = clientType(currentConnection()) == ClientType.nativeMobile;
-isWebDesktop() = clientType(currentConnection()) == ClientType.webDesktop;
-isWebMobile() = clientType(currentConnection()) == ClientType.webMobile;
+isNativeDesktop(Connection c) = clientType(c) == ClientType.nativeDesktop;
+isNativeMobile(Connection c) = clientType(c) == ClientType.nativeMobile;
+isWebDesktop(Connection c) = clientType(c) == ClientType.webDesktop;
+isWebMobile(Connection c) = clientType(c) == ClientType.webMobile;
 
-isDesktop() = isNativeDesktop() OR isWebDesktop();
-isMobile() = isNativeMobile() OR isWebMobile();
-isNative() = isNativeDesktop() OR isNativeMobile();
-isWeb() = isWebDesktop() OR isWebMobile();
+isDesktop(Connection c) = isNativeDesktop(c) OR isWebDesktop(c);
+isMobile(Connection c) = isNativeMobile(c) OR isWebMobile(c);
+isNative(Connection c) = isNativeDesktop(c) OR isNativeMobile(c);
+isWeb(Connection c) = isWebDesktop(c) OR isWebMobile(c);
+
+isNativeDesktop() = isNativeDesktop(currentConnection());
+isNativeMobile() = isNativeMobile(currentConnection());
+isWebDesktop() = isWebDesktop(currentConnection());
+isWebMobile() = isWebMobile(currentConnection());
+
+isDesktop() = isDesktop(currentConnection());
+isMobile() = isMobile(currentConnection());
+isNative() = isNative(currentConnection());
+isWeb() = isWeb(currentConnection());
 
 noSystemToolbarCaptions() += isNativeDesktop();
 
@@ -861,26 +871,85 @@ onClientStarted() + {
     } 
 }
 
-formShare() + {
-    getShowFormURLAction();
+// NOTIFY, PUSH, SHARE actions
 
-    FOR Connection cn = currentConnection() DO
-        share((CONCAT '?', webPath(cn) + readPath(), (CONCAT '&', notEmpty(query(cn)), notEmpty(readQuery()))), 'The link to share the form', 'Share');
+FORM shareUrlForm
+    OBJECTS share = TEXT PANEL
+    PROPERTIES shareLink = VALUE(share), copy = copyToClipboard(share)
+;
+
+DESIGN shareUrlForm {
+    OBJECTS {
+        MOVE PROPERTY(shareLink) {
+            caption = '';
+        }
+        MOVE PROPERTY(copy) {
+            caption = '{eval.script.copy.to.clipboard}';
+        }
+    }
+    REMOVE PROPERTY(formShare());
 }
 
-notify(STRING text, INTEGER notificationId, STRING execUrl, JSON options) {
-    FOR Connection cn = currentConnection() DO
-        notify(text, notificationId, execUrl, (CONCAT '?', contextPath(cn) + '/', notEmpty(query(cn))), options);
+share(STRING url, STRING text, STRING title) {
+    INTERNAL CLIENT 'webShare' PARAMS (JSON FROM url = url, text = text, title = title) TO exportBoolean;
+    IF NOT exportBoolean() THEN
+        SHOW shareUrlForm OBJECTS share = url POPUP;
 }
 
-notify(STRING text, INTEGER notificationId, JSON options) {
-    notify(text, notificationId, '', options);
+share(Connection cn, STRING url) = CONCAT '&', webPath(cn) + url, notEmpty(query(cn));
+
+shareAction(STRING url) = share(currentConnection(), url);
+shareAction(STRING url) {
+    share(shareAction(url), 'The link to share the form', 'Share');
 }
 
-notify(STRING text, INTEGER notificationId) {
-    notify(text, notificationId, NULL);
+//VAPID key gen: https://tools.reactpwa.com/vapid
+pushPublicKey '{system.events.push.notification.public.key}' = DATA STRING();
+pushPrivateKey '{system.events.push.notification.private.key}' = DATA STRING();
+onStarted() + {
+    IF NOT pushPublicKey() THEN {
+        pushPublicKey() <- 'BHMyf7avYNkKhYajindjklo9_iAWnVCPCWRiUEmbBA-B5VEC1YKyxESfiVyHCHqLMgQ7Qv_g10yyjRU_1FPt0c0';
+        pushPrivateKey() <- 'ViyjJEUuqzAcw5uOd1lcFjLm0mIziWFVcPEFx4ZmZ7I';
+    }
 }
 
-//onWebClientStarted() +{
-//    INTERNAL CLIENT 'registerServiceWorker';
-//}
+subscription = DATA JSON (Connection);
+clientId = DATA STRING (Connection);
+push (Connection c) = JSON FROM subscription(c), query(c), clientId(c);
+
+pushConnection = GROUP LAST Connection c IF subscription(c) ORDER connectTime(c), c BY user(c);
+pushConnection = GROUP LAST Connection c IF subscription(c) ORDER connectTime(c), c BY user(c), computer(c);
+pushConnection = GROUP LAST Connection c IF subscription(c) ORDER connectTime(c), c BY computer(c);
+
+inputActions = DATA LOCAL JSON();
+getInputActions INTERNAL 'lsfusion.server.logics.classes.data.utils.GetInputActionsAction' (JSON); 
+
+notify(JSON notification, JSON action) {
+    getInputActions(action);
+    INTERNAL CLIENT 'webNotify' PARAMS notification, action, inputActions(), push(currentConnection());
+}
+push INTERNAL 'lsfusion.server.logics.classes.data.utils.PushAction' (BOOLEAN, JSON, JSON, JSON, JSON);
+push(BOOLEAN alwaysNotify, Connection connection, JSON notification, JSON action) {
+    getInputActions(action);
+    push(alwaysNotify, notification, action, inputActions(), push(connection));
+}
+push(Connection connection, JSON notification, JSON action) {
+    push(NULL, connection, notification, action);
+}
+pushNotify(Connection connection, JSON notification, JSON action) {
+    push(TRUE, connection, notification, action);
+}
+
+// shortcuts
+
+notification(STRING title, JSON options) = JSON FROM title = title, options = options;
+notification(STRING title) = notification(title, JSON('\{\}'));
+action(INTEGER id) = JSON FROM id = id;
+action(STRING url) = JSON FROM url = url;
+
+// the most commonly used cases
+
+push(Connection connection, INTEGER id) { push(connection, NULL, action(id)); }
+notify(JSON notification, INTEGER id) { notify(notification, action(id)); }
+notify(STRING title, INTEGER id) { notify(notification(title), id); }
+pushNotify(Connection connection, STRING title, INTEGER notificationId) { pushNotify(connection, notification(title), action(notificationId)); }

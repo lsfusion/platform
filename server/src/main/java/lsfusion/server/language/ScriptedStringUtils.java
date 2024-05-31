@@ -10,8 +10,7 @@ import java.util.Stack;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static lsfusion.base.BaseUtils.inlineFileSeparator;
-import static lsfusion.base.BaseUtils.inlineImageSeparator;
+import static lsfusion.base.BaseUtils.*;
 import static lsfusion.server.physics.dev.i18n.LocalizedString.CLOSE_CH;
 import static lsfusion.server.physics.dev.i18n.LocalizedString.OPEN_CH;
 
@@ -369,15 +368,23 @@ public class ScriptedStringUtils {
         } else if (state == StringInterpolateState.INLINE) {
             literals.add(quote(INLINE_PREFIX + currentLiteral + CLOSE_CH));
         } else if (state == StringInterpolateState.RESOURCE) {
-            literals.add(quote(inlineFileSeparator + currentLiteral + inlineFileSeparator));
+            literals.add(quote(wrapResource(currentLiteral)));
         } else if (state == StringInterpolateState.IMAGE) {
             literals.add(quote(wrapImage(currentLiteral)));
         } else
             assert false;
     }
 
+    public static String wrapResource(String currentLiteral) {
+        return inlineFileSeparator + currentLiteral + inlineFileSeparator;
+    }
+
     public static String wrapImage(String currentLiteral) {
         return inlineFileSeparator + inlineImageSeparator + currentLiteral + inlineFileSeparator;
+    }
+
+    public static String wrapSerializedImage(String currentLiteral) {
+        return inlineFileSeparator + inlineSerializedImageSeparator + currentLiteral + inlineFileSeparator;
     }
 
     private static String flushCurrentLiteral(List<String> literals, String currentLiteral) {

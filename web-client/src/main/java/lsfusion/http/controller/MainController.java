@@ -75,8 +75,9 @@ public class MainController {
 
     @RequestMapping(value = "/push-notification", method = RequestMethod.GET)
     public String pushNotification(ModelMap model, HttpServletRequest request) {
-        model.addAttribute("redirectUrl", getDirectUrl("/", Collections.singletonList(GwtSharedUtils.NOTIFICATION_PARAM), null, request));
-        model.addAttribute("notificationId", request.getParameter(GwtSharedUtils.NOTIFICATION_PARAM));
+        model.addAttribute("id", request.getParameter(GwtSharedUtils.NOTIFICATION_PARAM));
+        model.addAttribute("query", getQueryPreservingParameters(Collections.singletonList(GwtSharedUtils.NOTIFICATION_PARAM), request));
+        addStandardModelAttributes(model, request, getAndCheckServerSettings(request, checkVersionError, false), true);
         return "push-notification";
     }
 
@@ -359,7 +360,7 @@ public class MainController {
         return new ExternalRequest(new String[0], params, charset.toString(), new String[0], new String[0], null,
                 null, null, null, null, request.getScheme(), request.getMethod(), request.getServerName(), request.getServerPort(), request.getContextPath(),
                 request.getServletPath(), request.getPathInfo() == null ? "" : request.getPathInfo(), request.getQueryString() != null ? request.getQueryString() : "",
-                contentTypeString, request.getSession().getId(), null, null);
+                contentTypeString, request.getSession().getId(), null, null, false);
     }
 
     public static String getURLPreservingParameters(String url, List<String> paramsToRemove, HttpServletRequest request) {

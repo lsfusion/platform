@@ -6,6 +6,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.weak.WeakIdentityHashMap;
 import lsfusion.base.col.heavy.weak.WeakIdentityHashSet;
+import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -39,13 +40,20 @@ import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsInstance;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
-import lsfusion.server.logics.action.controller.stack.EnvStackRunnable;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
+import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.time.DateTimeClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.CustomClass;
+import lsfusion.server.logics.form.interactive.action.async.PushAsyncInput;
+import lsfusion.server.logics.form.interactive.action.async.PushAsyncResult;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInput;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInputListAction;
+import lsfusion.server.logics.form.interactive.action.input.InputResult;
 import lsfusion.server.logics.form.interactive.controller.remote.RemoteForm;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
@@ -62,6 +70,7 @@ import lsfusion.server.logics.navigator.controller.manager.NavigatorsManager;
 import lsfusion.server.logics.navigator.window.AbstractWindow;
 import lsfusion.server.logics.navigator.window.NavigatorWindow;
 import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.controller.remote.RemoteConnection;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
@@ -404,6 +413,18 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     }
 
     @Override
+    public void updateServiceClientInfo(String subscription, String clientId) throws RemoteException {
+        try (DataSession session = createSession()) {
+            DataObject connection = getConnection();
+            businessLogics.systemEventsLM.subscription.change(subscription, session, connection);
+            businessLogics.systemEventsLM.clientId.change(clientId, session, connection);
+            session.applyException(businessLogics, getStack());
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    @Override
     public Long getObject(CustomClass cls, FormEntity form, GroupObjectEntity groupObject) {
         return getCacheObject(cls, form, groupObject);
     }
@@ -442,15 +463,22 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         return client;
     }
 
-    public void pushNotification(EnvStackRunnable run) {
+    public void pushNotification(Notification run) {
         if(isClosed())
             return;
 
-        client.pushMessage(notificationsMap.putNotification(run));
+        client.pushMessage(pushGlobalNotification(run));
     }
 
-    public static int pushGlobalNotification(EnvStackRunnable run) {
+    public static int pushGlobalNotification(Notification run) {
         return notificationsMap.putNotification(run);
+    }
+
+    public static <X extends PropertyInterface> ImList<AsyncMapInputListAction<X>> getGlobalNotificationInputActions(int idNotification) {
+        Notification notification = notificationsMap.getNotification(idNotification);
+        if(notification != null)
+            return notification.getInputActions();
+        return null;
     }
 
     public boolean active = false;
@@ -675,26 +703,41 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     }
 
     private void runNotification(ExecutionEnvironment env, ExecutionStack stack, String actionSID) {
-        Integer idNotification;
+        int idNotification;
+        String result = null;
         try {
+            int resultIndex = actionSID.indexOf(";");
+            if(resultIndex >= 0) { // should match FormsController.executeNotificationAction
+                result = actionSID.substring(resultIndex + 1);
+                actionSID = actionSID.substring(0, resultIndex);
+            }
             idNotification = Integer.parseInt(actionSID);
         } catch (Exception e) {
-            idNotification = null;
+            throw Throwables.propagate(e);
         }
-        if (idNotification != null) {
-            try {
-                try(DataSession session = createSession()) {
-                    businessLogics.authenticationLM.deliveredNotificationAction.execute(session, stack, user);
-                    session.applyException(businessLogics, stack);
+        try {
+            try(DataSession session = createSession()) {
+                businessLogics.authenticationLM.deliveredNotificationAction.execute(session, stack, user);
+                session.applyException(businessLogics, stack);
+            }
+            Notification notification = notificationsMap.removeNotification(idNotification);
+            if(notification != null) {
+                Integer contextAction = null;
+                if(result != null) {
+                    ImList<AsyncMapInputListAction<PropertyInterface>> inputActions = notification.getInputActions();
+                    if (inputActions != null)
+                        for (int i = 0, size = inputActions.size(); i < size; i++)
+                            if(inputActions.get(i).id.equals(result)) {
+                                contextAction = i;
+                                break;
+                            }
                 }
-                EnvStackRunnable notification = notificationsMap.getNotification(idNotification);
-                if(notification != null)
-                    notification.run(env, stack);
+                notification.run(env, stack, new PushAsyncInput(new InputResult(ObjectValue.getValue(result, StringClass.text), contextAction)));
+            }
 //                else
 //                    ServerLoggers.assertLog(false, "NOTIFICATION " + idNotification + " SHOULD EXIST"); // can be broken when notification is sent several times
-            } catch (SQLException | SQLHandledException e) {
-                ServerLoggers.systemLogger.error("DeliveredNotificationAction failed: ", e);
-            }
+        } catch (SQLException | SQLHandledException e) {
+            ServerLoggers.systemLogger.error("DeliveredNotificationAction failed: ", e);
         }
     }
 
@@ -737,9 +780,9 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     }
 
     @Override
-    public void executeNotificationAction(ExecutionEnvironment env, ExecutionStack stack, Integer idNotification) {
+    public void executeNotificationAction(ExecutionEnvironment env, ExecutionStack stack, String notification) {
         try {
-            runNotification(env, stack, String.valueOf(idNotification));
+            runNotification(env, stack, notification);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -853,17 +896,36 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         }
     }
 
+    public static abstract class Notification {
+        public Notification() {
+        }
+
+        public <X extends PropertyInterface> ImList<AsyncMapInputListAction<X>> getInputActions() {
+            AsyncMapEventExec<X> asyncEventExec = (AsyncMapEventExec<X>) getAction().getAsyncEventExec(true);
+            if(asyncEventExec instanceof AsyncMapInput)
+                return ((AsyncMapInput<X>) asyncEventExec).actions;
+            return null;
+        }
+
+        public abstract void run(ExecutionEnvironment env, ExecutionStack stack, PushAsyncResult result);
+
+        protected abstract Action<?> getAction();
+    }
     private static class NotificationsMap {
-        private Map<Integer, EnvStackRunnable> notificationsMap = new HashMap<>();
+        private Map<Integer, Notification> notificationsMap = new HashMap<>();
         private int counter = 0;
 
-        private synchronized int putNotification(EnvStackRunnable value) {
+        private synchronized int putNotification(Notification value) {
             counter++;
             notificationsMap.put(counter, value);
             return counter;
         }
 
-        private synchronized EnvStackRunnable getNotification(int key) {
+        private synchronized Notification getNotification(int key) {
+            return notificationsMap.get(key);
+        }
+
+        private synchronized Notification removeNotification(int key) {
             return notificationsMap.remove(key);
         }
     }

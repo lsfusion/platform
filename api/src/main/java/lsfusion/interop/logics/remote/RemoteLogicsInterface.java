@@ -39,4 +39,6 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
     byte[] findClass(String name) throws RemoteException;
 
     List<String> saveAndGetCustomReportPathList(String formSID, boolean recreate) throws RemoteException;
+
+    void registerClient(RemoteClientInterface client) throws RemoteException;;
 }

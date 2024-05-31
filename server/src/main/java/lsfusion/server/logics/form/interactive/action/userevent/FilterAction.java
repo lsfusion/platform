@@ -1,16 +1,19 @@
 package lsfusion.server.logics.form.interactive.action.userevent;
 
+import com.google.common.base.Throwables;
 import lsfusion.interop.action.FilterClientAction;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
+import lsfusion.server.logics.form.interactive.changed.FormChanges;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +57,11 @@ public class FilterAction extends UserEventAction {
                             }
                             filterItem.negation = jsonObject.optBoolean(NEGATION_KEY);
                             // value may be String (when stored via ReadFiltersAction), may be any other Object
-                            filterItem.value = jsonObject.opt(VALUE_KEY);
+                            try {
+                                filterItem.value = FormChanges.serializeConvertFileValue(null, jsonObject.opt(VALUE_KEY), context.getRemoteContext());
+                            } catch (IOException e) {
+                                throw Throwables.propagate(e);
+                            }
                             filterItem.junction = !jsonObject.optBoolean(OR_KEY);
 
                             filters.add(filterItem);

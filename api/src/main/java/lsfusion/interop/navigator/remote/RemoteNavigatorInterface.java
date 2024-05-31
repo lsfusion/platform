@@ -33,4 +33,6 @@ public interface RemoteNavigatorInterface extends RemoteConnectionInterface {
     Pair<RemoteFormInterface, String> createFormExternal(String json) throws RemoteException;
 
     void updateClientInfo(ClientInfo clientInfo) throws RemoteException;
+
+    void updateServiceClientInfo(String subscription, String clientId) throws RemoteException;
 }

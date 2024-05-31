@@ -26,7 +26,7 @@ public class CachedObjectConverter extends ObjectConverter {
     }
 
     protected AppStaticImage createImage(AppImage imageHolder, boolean canBeDisabled) throws IOException {
-        return FileUtils.createImageFile(servlet, sessionID, imageHolder, canBeDisabled);
+        return FileUtils.createImageFile(servlet.getServletContext(), servlet.getServerSettings(sessionID), imageHolder, canBeDisabled);
     }
 
     @Override

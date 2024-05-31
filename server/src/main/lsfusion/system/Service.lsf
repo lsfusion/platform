@@ -746,6 +746,8 @@ EXTEND FORM settings
     PROPERTIES(uc) READONLY name, login, userRoles
     PROPERTIES(uc) fontSize, selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor,
         focusedCellBorderColor, tableGridColor
+    
+    PROPERTIES() pushPublicKey, pushPrivateKey  
 ;
 
 DESIGN settings {
@@ -785,6 +787,11 @@ DESIGN settings {
                 }
                 MOVE BOX(uc);
             }
+        }
+        NEW pushNotification {
+            caption = '{service.form.settings.push.notification}';
+            MOVE PROPERTY (pushPublicKey());
+            MOVE PROPERTY (pushPrivateKey());
         }
     }
 }
@@ -900,6 +907,7 @@ getClientSettings(User user) + WHEN user IS User THEN {
         userFiltersManualApplyMode = IF userFiltersManualApplyMode() THEN (IF userFiltersManualApplyMode() == TTRUE THEN TRUE ELSE NULL) ELSE valueSettingBoolean('userFiltersManualApplyMode'),
         disableActionsIfReadonly = valueSetting('disableActionsIfReadonly'),
         enableShowingRecentlyLogMessages = valueSetting('enableShowingRecentlyLogMessages'),
+        pushNotificationPublicKey = pushPublicKey(),
         maxRequestQueueSize = valueSetting('maxRequestQueueSize'),
         verticalNavbar = verticalNavbar(),
         navigatorPinMode = navigatorPinMode();

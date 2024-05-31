@@ -629,8 +629,3 @@ NAVIGATOR {
         }
     }
 }
-
-readPath = DATA LOCAL STRING ();
-readQuery = DATA LOCAL STRING ();
-
-getShowFormURLAction  INTERNAL  'lsfusion.server.logics.form.interactive.action.GetShowFormURLAction' ();

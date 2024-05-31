@@ -17,15 +17,16 @@ import lsfusion.interop.form.event.FormScheduler;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.caches.IdentityLazy;
+import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.*;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.ScriptParsingException;
-import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.language.property.oraction.LAP;
@@ -68,13 +69,17 @@ import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObje
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.data.SessionDataProperty;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.admin.monitor.SystemEventsLogicsModule;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
+import lsfusion.server.physics.dev.integration.external.to.CallHTTPAction;
+import lsfusion.server.physics.dev.integration.external.to.ExternalLSFAction;
 import lsfusion.server.physics.dev.integration.external.to.InternalClientAction;
 import lsfusion.server.physics.dev.property.IsDevProperty;
 import org.apache.log4j.Logger;
@@ -1640,6 +1645,34 @@ public class FormEntity implements FormSelector<ObjectEntity> {
                 consumer.accept(eventAction, null);
         }
     }
+
+    @IdentityStrongLazy
+    public <X extends PropertyInterface> ActionObjectEntity<?> getShareAction() {
+        ImOrderSet<ObjectEntity> objects = getObjects().toOrderSet();
+        String objectsString = objects.toString((i, object) -> object.getSID() + "=$" + (i + 1) + " NULL", ",");
+        ImList<Type> objectsTypes = objects.mapListValues(ObjectEntity::getType);
+        String script = "NEWSESSION SHOW " + getCanonicalName() + (objectsString.isEmpty() ? "" : " OBJECTS " + objectsString) + ";";
+
+        BaseLogicsModule lm = ThreadLocalContext.getBaseLM();
+        SystemEventsLogicsModule systemEventsLM = ThreadLocalContext.getSystemEventsLM();
+
+        LP<?> targetProp = lm.getRequestedValueProperty(StringClass.text);
+
+        ImRevMap<ObjectEntity, X> mapObjects = objects.mapOrderRevValues((int ID) -> (X) new PropertyInterface(ID));
+        ImOrderSet<X> listInterfaces = objects.mapOrder(mapObjects);
+
+        CallHTTPAction genUrlAction = new ExternalLSFAction(objectsTypes, ListFact.singleton(targetProp), true, true);
+
+        // EXTERNAL LSF '' EVAL ACTION TO target()
+        // shareAction(target())
+        ActionMapImplement<?, X> shareAction = PropertyFact.createListAction(listInterfaces.getSet(),
+                PropertyFact.createJoinAction(genUrlAction.getActionImplement(lm.addCProp(StringClass.text, LocalizedString.create("", false)).<X>getImplement(),
+                        ListFact.add(PropertyFact.createStatic(LocalizedString.create(script, false), StringClass.text), BaseUtils.<ImOrderSet<PropertyInterfaceImplement<X>>>immutableCast(listInterfaces)))),
+                PropertyFact.createJoinAction(systemEventsLM.shareAction.action, targetProp.<X>getImplement()));
+
+        return shareAction.mapObjects(mapObjects.reverse());
+    }
+
 
     private FormInstanceContext context;
     @ManualLazy

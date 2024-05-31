@@ -48,7 +48,9 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
         // 0, 1, 3 are indices from FormClientAction.methodNames array
         ClientForm clientForm = ClientFormController.deserializeClientForm(remoteForm, clientData);
 
-        GForm gForm = new ClientComponentToGwtConverter(servlet, sessionID).convertOrCast(clientForm);
+        FormSessionObject formSessionObject = new FormSessionObject(clientForm, remoteForm, sessionID);
+
+        GForm gForm = new ClientComponentToGwtConverter(servlet, formSessionObject).convertOrCast(clientForm);
 
         Set<Integer> inputObjects = clientData.inputGroupObjects;
         gForm.inputGroupObjects = new HashSet<>();
@@ -58,8 +60,6 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
 
         gForm.sID = clientData.formSID;
         gForm.canonicalName = clientData.formSID;
-
-        FormSessionObject formSessionObject = new FormSessionObject(clientForm, remoteForm, sessionID);
 
         byte[] firstChanges = clientData.firstChanges;
         if (firstChanges != null)
@@ -78,11 +78,6 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
         addFormSessionObject(formID, formSessionObject);
         gForm.sessionID = formID;
         return gForm;
-    }
-
-    @Override
-    public String getWebFile(String sessionID, String fullPath, RawFileData fileData) throws SessionInvalidatedException {
-        return FileUtils.saveWebFile(fullPath, fileData, navigatorProvider.getServerSettings(sessionID), false);
     }
 
     public void createFormExternal(String formID, RemoteFormInterface remoteForm, String navigatorID) {

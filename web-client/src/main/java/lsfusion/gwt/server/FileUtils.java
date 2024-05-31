@@ -126,11 +126,8 @@ public class FileUtils {
         return APP_STATIC_FOLDER_SUBPATH + "/" + settings.logicsName;
     }
 
-    public static AppStaticImage createImageFile(MainDispatchServlet servlet, String sessionID, AppImage imageHolder, boolean canBeDisabled) throws IOException {
+    public static AppStaticImage createImageFile(ServletContext servletContext, ServerSettings settings, AppImage imageHolder, boolean canBeDisabled) throws IOException {
         if (imageHolder != null) {
-            ServletContext servletContext = servlet.getServletContext();
-            ServerSettings settings = servlet.getNavigatorProvider().getServerSettings(sessionID);
-
             HashMap<GColorTheme, ImageDescription> images = null;
             RawFileData defaultImageFile = imageHolder.getImage(ColorTheme.DEFAULT);
             if(defaultImageFile != null) {

@@ -1408,6 +1408,16 @@ public class GwtClientUtils {
         }, message);
     }-*/;
 
+    public static native String subscribePushManager(String publicKey, Consumer<String> onSubscribe)/*-{
+        $wnd.subscribePushManager(publicKey, function (subscription) {
+            onSubscribe.@java.util.function.Consumer::accept(*)(subscription);
+        });
+    }-*/;
+
+    public static native String unsubscribePushManager()/*-{
+        $wnd.unsubscribePushManager();
+    }-*/;
+
     public static native void openBroadcastChannel(String channelName, BiConsumer<JavaScriptObject, String> onMessage)/*-{
         $wnd.openBroadcastChannel(channelName, function (broadcastChannel, message) {
             onMessage.@java.util.function.BiConsumer::accept(*)(broadcastChannel, message);
@@ -1415,6 +1425,10 @@ public class GwtClientUtils {
     }-*/;
     public static native void postBroadcastChannelMessage(JavaScriptObject channel, String message)/*-{
         $wnd.postBroadcastChannelMessage(channel, message);
+    }-*/;
+
+    public static native void requestPushNotificationPermissions()/*-{
+        $wnd.requestPushNotificationPermissions();
     }-*/;
 
     public static native boolean isFunctionContainsArguments(JavaScriptObject fn)/*-{

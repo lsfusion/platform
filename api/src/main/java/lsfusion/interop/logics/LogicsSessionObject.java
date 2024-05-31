@@ -155,13 +155,14 @@ public class LogicsSessionObject {
         boolean userFiltersManualApplyMode = json.optBoolean("userFiltersManualApplyMode");
         boolean disableActionsIfReadonly = json.optBoolean("disableActionsIfReadonly");
         boolean enableShowingRecentlyLogMessages = json.optBoolean("enableShowingRecentlyLogMessages");
+        String pushNotificationPublicKey = json.optString("pushNotificationPublicKey");
         int maxRequestQueueSize = json.optInt("maxRequestQueueSize");
 
         return new ClientSettings(localePreferences, currentUserName, fontSize, useBusyDialog, busyDialogTimeout, useRequestTimeout, devMode,
                 projectLSFDir, showDetailedInfo, showDetailedInfoDelay, suppressOnFocusChange, autoReconnectOnConnectionLost, forbidDuplicateForms, showNotDefinedStrings, pivotOnlySelectedColumn, matchSearchSeparator,
                 colorTheme, useBootstrap, colorPreferences, preDefinedDateRangesNames.toArray(new String[0]), useTextAsFilterSeparator, 
                 verticalNavbar, userFiltersManualApplyMode, disableActionsIfReadonly,
-                enableShowingRecentlyLogMessages, maxRequestQueueSize);
+                enableShowingRecentlyLogMessages, pushNotificationPublicKey, maxRequestQueueSize);
     }
 
     public static class InitSettings {
