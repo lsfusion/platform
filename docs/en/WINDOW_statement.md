@@ -59,6 +59,10 @@ The `WINDOW` statement declares a new window and adds it to the current [module]
 
 - `DRAWROOT`
 
+    :::warning
+    The option is declared deprecated. It will not be supported in future versions of the platform.
+    :::
+
     Keyword specifying that the [navigator elements](Navigator.md) whose descendants will be added to this window will also be added to it.
 
 - `orientationType`
