@@ -535,17 +535,42 @@ onClientStarted () + {
 
 currentSize = DATA Size(Connection);
 currentSize() = currentSize(currentConnection());
-storeCurrentSize(Connection c) {
+saveCurrentSize(Connection c) {
     currentSize(c) <- size(currentDesignEnv());
 }
-storeCurrentSize() {
-    storeCurrentSize(currentConnection());
-}
 
-updateSize INTERNAL 'lsfusion.server.physics.admin.systemevents.UpdateSizeAction' (Size, Size);
+loadResource INTERNAL 'lsfusion.server.physics.admin.systemevents.LoadResourceAction' (STRING, FILE);
+unloadResource INTERNAL 'lsfusion.server.physics.admin.systemevents.UnloadResourceAction' (STRING);
+
+updateSize (Size oldSize, Size newSize) {
+    IF NOT paddingCss(oldSize) = paddingCss(newSize) AND (paddingCss(oldSize) OR paddingCss(newSize)) THEN {
+        IF paddingCss(oldSize) THEN {
+            unloadResource(paddingCss(oldSize));
+        }
+        IF paddingCss(newSize) THEN {
+            readResource(paddingCss(newSize));
+            loadResource(paddingCss(newSize), resourceFile());
+        }
+    }
+
+    IF NOT fontCss(oldSize) = fontCss(newSize) AND (fontCss(oldSize) OR fontCss(newSize)) THEN {
+        IF fontCss(oldSize) THEN {
+            unloadResource(fontCss(oldSize));
+        }
+        IF fontCss(newSize) THEN {
+            readResource(fontCss(newSize));
+            loadResource(fontCss(newSize), resourceFile());
+        }
+    }
+    
+    saveCurrentSize(currentConnection());
+}
 onWebClientStarted() + {
     IF currentSize() != size(currentDesignEnv()) THEN {
-        updateSize(currentSize(), size(currentDesignEnv()));
+        NEWSESSION {
+            updateSize(currentSize(), size(currentDesignEnv()));
+            apply();
+        }
     }
 }
 WHEN LOCAL CHANGED (designEnvSize(DesignEnv de)) DO {

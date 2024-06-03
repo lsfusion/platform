@@ -3,10 +3,10 @@ package lsfusion.interop.action;
 import java.io.IOException;
 
 public class UnloadResourceClientAction extends ExecuteClientAction {
-    public String resource;
+    public String resourceName;
 
-    public UnloadResourceClientAction(String resource) {
-        this.resource = resource;
+    public UnloadResourceClientAction(String resourceName) {
+        this.resourceName = resourceName;
     }
 
     @Override

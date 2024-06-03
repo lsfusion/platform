@@ -54,8 +54,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LA<?> onStarted;
     public LA<?> onFinallyStarted;
 
-    public LA<?> storeCurrentSizeConnection;
-    public LA<?> storeCurrentSize;
+    public LA<?> saveCurrentSizeConnection;
 
     public LP useBootstrap;
     public LP contentWordWrap;
@@ -168,8 +167,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         onStarted = findAction("onStartedApply[]");
         onFinallyStarted = findAction("onFinallyStartedApply[]");
 
-        storeCurrentSizeConnection = findAction("storeCurrentSize[Connection]");
-        storeCurrentSize = findAction("storeCurrentSize[]");
+        saveCurrentSizeConnection = findAction("saveCurrentSize[Connection]");
 
         useBootstrap = findProperty("useBootstrap[DesignEnv]");
         contentWordWrap = findProperty("contentWordWrap[DesignEnv]");

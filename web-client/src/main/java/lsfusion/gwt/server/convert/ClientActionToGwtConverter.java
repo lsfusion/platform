@@ -285,7 +285,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = UnloadResourceClientAction.class)
     public GUnloadResourceAction convertAction(UnloadResourceClientAction action, FormSessionObject formSessionObject, MainDispatchServlet servlet) throws SessionInvalidatedException {
-        return new GUnloadResourceAction(action.resource);
+        return new GUnloadResourceAction(action.resourceName);
     }
 
     @Converter(from = ResetWindowsLayoutClientAction.class)
