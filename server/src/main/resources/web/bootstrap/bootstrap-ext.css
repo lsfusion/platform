@@ -26,18 +26,6 @@
     --link-color: var(--bs-link-color);
 }
 
-/* there is a really odd style in bootstrap.min.css */
-/*.table > :not(:first-child) {*/
-/*    border-top: 2px solid currentColor*/
-/*}*/
-
-.table > :not(:first-child) {
-    border-top-width: 0;
-}
-.table > :not(:first-child) {
-    border-top-color: inherit;
-}
-
 :root {
     --border-width: 1px;
 }
@@ -109,57 +97,73 @@
     background-color: var(--bs-body-bg); /* should correspond form-control background-color */
 }
 
-/* --- workaround for disappearing sticky cell borders when scrolling --- */
-.scrolled-down:not(.table-borderless) .dataGridHeaderRow,
-/*.scrolled-up:not(.table-borderless) .dataGridFooterRow,*/ /* switched to permanent bottom border in tableContainer */
-.table:not(.table-borderless) .dataGridFooter:not(.empty-footer) .dataGridFooterRow {
-    outline: var(--table-outline-width) solid var(--bs-table-border-color);
-}
-/* --- workaround for the dataGridColumnRow which collapses top border */
-.table-bordered .dataGridHeader {
-    border-top: var(--table-outline-width) solid var(--bs-table-border-color);
-}
+/* STICKY HEADER PROBLEM */
+/* 'border-collapse: collapse' + sticky header/footer make header/footer borders disappear
 
-@supports (-moz-appearance: none) {
-    /*Fixes missing line under header */
-    .dataGridHeaderRow{
-        outline: var(--table-outline-width) solid var(--bs-table-border-color);
-    }
+/* moving upper border to the top to make it sticky (and browsers work really odd with table elements that are sticky, especially when there is a scale in the OS, and the browser gets for example 0.666667px sizes) */
+.tableContainer:has(> .table-bordered),
+.tableContainer:has(> .table.empty-header) { /* when there is no header also we have to move border up */
+    border-top: var(--table-outline-width) solid var(--bs-border-color); /* there is no bs-table-border-color here*/
 }
-
-/* 'border-collapse: collapse' + sticky header/footer make header/footer borders disappear 
- In fact it looks as if border became transparent. As outline is being drawn outside border, we still see empty line 
- between header/footer and outline. So we need to hide these borders */
-.scrolled-down:not(.table-borderless) .dataGridHeaderCell,
-.scrolled-down.table-bordered .dataGridHeaderRow,
-.table.table-bordered .empty-header .dataGridHeaderRow,
-.table.table-bordered .empty-footer .dataGridFooterRow,
+.table.table-bordered .dataGridHeaderRow,
 .table.table-bordered .dataGridColumnRow,
-.table:not(.table-bordered) .empty-header .dataGridHeaderCell,
-.empty-footer .dataGridFooterCell,
-.empty-footer .arrow-th, /* cell with .arrow-th doesn't have .dataGridFooterCell class. adding for them to behave the same way */
-.dataGridFooterRow:not(.empty-footer) .dataGridFooterCell,
-.dataGridFooterRow:not(.empty-footer) .arrow-th {
-    border-bottom: none;
-}
-.scrolled-down.table-bordered .dataGridHeaderRow,
-.table.table-bordered .dataGridColumnRow,
-.table-bordered .dataGridBody .dataGridRow {
+.table.empty-header.table-bordered :not(.dataGridHeader) .dataGridRow:first-child { /* when there is no header we should remove border for the next row */
     border-top: none;
 }
-/* move header and footer on border width in order to see top/bottom outline,
- which otherwise hides under table container */
-.scrolled-down.table-bordered :not(.empty-header) .dataGridHeaderRow {
-    top: var(--table-outline-width);
+.table.table-bordered .dataGridColumnRow,
+.table.empty-header .dataGridHeaderRow,
+/* in not table-bordered styles bootstrap set borders for cell bottoms, not rows */
+.table:not(.table-bordered) .dataGridColumnRow > *,
+.table.empty-header .dataGridHeaderRow > * { /* in not table-bordered styles bootstrap set borders for cells, not rows */
+    border-bottom: none;
 }
-@media (min-width: 570px) {  /* likely because of rounding in mobile version we see "empty" border under footer with bottom: 1px */
-    .table :not(.empty-footer) .dataGridFooterRow {
-        bottom: var(--table-outline-width);
-    }
+
+/* collapsed borders are not sticked, so we have to replace them with outline, and remove border bottom, since outline somewhy respects it */
+.scrolled-down.table:not(.table-borderless):not(.empty-header) .dataGridHeaderRow {
+    outline: var(--table-outline-width) solid var(--bs-table-border-color);
 }
-.empty-header .dataGridHeaderCell,
-.empty-footer .dataGridFooterCell,
-.empty-footer .arrow-th {  /* cell with .arrow-th doesn't have .dataGridFooterCell class. adding for them to behave the same way */
+.scrolled-down.table-bordered .dataGridHeaderRow,
+/* in not table-bordered styles bootstrap set borders for cell bottoms, not rows */
+.scrolled-down:not(.table-bordered) .dataGridHeaderRow > * {
+    border-bottom: none;
+}
+
+/* FOOTER STICKY */
+/* a) here the difference is that we need border at the bottom almost all the time (to split grid from toolbar for example) */
+/* b) there is no dataGridColumnRow */
+/* c) we don't much care of the "doubled" bottom border, because it happens really rare */
+/* d) border bottoms are used, so everything is reversed */
+/* here we can't use scrolled-up, because we don't know if the footer "hits" the ground, so we always use outline, removing border bottom */
+
+.tableContainer {
+    border-bottom: var(--table-outline-width) solid var(--bs-border-color); /* there is no bs-table-border-color here*/
+}
+
+.table-bordered .dataGridFooterRow,
+.table.table-bordered:not(.empty-footer) :not(.dataGridFooter) .dataGridRow:last-child, /* we want to remove bottom border, because with outline it gives "doubled" line */
+/* in not table-bordered styles bootstrap set borders for cell bottoms, not rows */
+:not(.table-bordered) .dataGridFooterRow > *,
+.table:not(.table-bordered):not(.empty-footer) :not(.dataGridFooter) .dataGridRow:last-child > * { /* we want to remove bottom border, because with outline it gives "doubled" line */
+    border-bottom: none;
+}
+
+.table-bordered .dataGridFooterRow { /* we want to remove bottom border, because with outline it gives "doubled" line */
+    border-top: none;
+}
+
+.table:not(.table-borderless):not(.empty-footer) .dataGridFooterRow {
+    outline: var(--table-outline-width) solid var(--bs-table-border-color);
+}
+
+/*@media (min-width: 570px) {  !* likely because of rounding in mobile version we see "empty" border under footer with bottom: 1px *!*/
+/*    .table:not(.empty-footer) .dataGridFooterRow {*/
+/*        bottom: var(--table-outline-width);*/
+/*    }*/
+/*}*/
+
+.table.empty-header .dataGridHeaderCell,
+.table.empty-footer .dataGridFooterCell,
+.table.empty-footer .arrow-th {  /* cell with .arrow-th doesn't have .dataGridFooterCell class. adding for them to behave the same way */
     padding: 0;
 }
 /* only partly fixes vertical borders */
@@ -230,10 +234,6 @@
 
 .badge.wrap-text-img {
     color: unset;
-}
-
-.tableContainer {
-    border-bottom: 1px solid var(--bs-border-color);
 }
 
 /* form-select, form-control sets width to 100%, but the platform sizing components itself (with content-box box-sizing), so width : 100% breaks that */

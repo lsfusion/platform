@@ -17,12 +17,12 @@
     --focused-cell-border-color: var(--focus-color);
 }
 
-.dataGridHeader:not(.empty-header) .dataGridHeaderCell {
+.table:not(.empty-header) .dataGridHeader .dataGridHeaderCell {
     /* the same as dataGridCell, dataGridHeaderCell, table.pvtTable thead tr th/td */
     border-bottom: var(--border-width) solid var(--grid-separator-border-color);
 }
 
-.dataGridFooter:not(.empty-footer) .dataGridFooterCell {
+.table:not(.empty-footer) .dataGridFooter .dataGridFooterCell {
     border-top: var(--border-width) solid var(--grid-separator-border-color);
 }
 
@@ -32,7 +32,7 @@
 }
 
 .focusedCellBottomBorder,
-.dataGridHeader:not(.empty-header) .dataGridHeaderCell.focusedCellBottomBorder {
+:not(.empty-header) .dataGridHeader .dataGridHeaderCell.focusedCellBottomBorder {
     border-bottom: var(--border-width) solid var(--focused-cell-border-color);
 }
 

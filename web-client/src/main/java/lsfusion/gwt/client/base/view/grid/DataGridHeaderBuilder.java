@@ -76,31 +76,10 @@ public abstract class DataGridHeaderBuilder<T> implements HeaderBuilder<T> {
             headerRow.addClassName("background-inherit"); // because it's assumed that header and footer are sticky
             buildHeaderImpl(headerRow);
 
-            initArrow(headerRow, delegate.isFooter());
+            table.initArrow(headerRow, delegate.isFooter());
         } else {
             updateHeaderImpl(headerRow);
         }
-    }
-
-    private void initArrow(Element parent, boolean bottom) {
-        Element button = GwtClientUtils.createFocusElement("button");
-        button.addClassName("btn");
-        button.addClassName("btn-light");
-        button.addClassName("btn-sm");
-        button.addClassName("arrow");
-        button.appendChild(bottom ? StaticImage.CHEVRON_DOWN.createImage() : StaticImage.CHEVRON_UP.createImage());
-        GwtClientUtils.setOnClick(button, event -> table.scrollToEnd(bottom));
-
-        Element arrowTH = Document.get().createElement("th");
-        arrowTH.addClassName("arrow-th");
-        arrowTH.addClassName(bottom ? "bottom-arrow" : "top-arrow");
-
-        Element arrowContainer = Document.get().createElement("div");
-        arrowContainer.addClassName("arrow-container");
-        arrowContainer.appendChild(button);
-
-        arrowTH.appendChild(arrowContainer);
-        parent.appendChild(arrowTH);
     }
 
     public TableRowElement getHeaderRow() {

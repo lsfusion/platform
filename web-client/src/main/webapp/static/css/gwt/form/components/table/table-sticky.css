@@ -14,11 +14,11 @@
 }
 
 /* likely because of rounding in mobile version we see double border under footer */
-@media (max-width: 570px) {
-    .lsf-table .empty-footer .dataGridFooterRow {
-        bottom: -1px;
-    }
-}
+/*@media (max-width: 570px) {*/
+/*    .table.empty-footer .dataGridFooterRow {*/
+/*        bottom: -1px;*/
+/*    }*/
+/*}*/
 
 .dataGridHeaderCell {
     /*position: sticky;*/
