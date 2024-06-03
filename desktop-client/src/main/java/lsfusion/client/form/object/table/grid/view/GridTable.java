@@ -145,9 +145,12 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         super.columnSelectionChanged(e);
         stopCellEditing();
         if (!properties.isEmpty()) {
-            List<ClientGroupObject> columnGroupObjects = model.getColumnProperty(getSelectedColumn()).columnGroupObjects;
-            ClientGroupObjectValue columnKey = getSelectedColumnKey();
-            columnGroupObjects.forEach(groupObject -> changeCurrentObjectLater(groupObject, columnKey, true));
+            int selectedColumn = getSelectedColumn();
+            if (selectedColumn != -1) {
+                List<ClientGroupObject> columnGroupObjects = model.getColumnProperty(selectedColumn).columnGroupObjects;
+                ClientGroupObjectValue columnKey = getSelectedColumnKey();
+                columnGroupObjects.forEach(groupObject -> changeCurrentObjectLater(groupObject, columnKey, true));
+            }
         }
     }
 
