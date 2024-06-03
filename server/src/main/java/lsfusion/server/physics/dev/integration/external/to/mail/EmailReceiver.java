@@ -82,30 +82,33 @@ public class EmailReceiver {
 
     public static Store getEmailStore(String receiveHost, AccountType accountType, boolean startTLS, boolean insecureSSL) throws GeneralSecurityException, NoSuchProviderException {
         Properties mailProps = new Properties();
-        mailProps.setProperty(accountType.getHost(), receiveHost);
 
-        boolean imap = accountType == IMAP;
+        String protocol = accountType.getProtocol();
         boolean imaps = accountType == IMAPS;
-        if (imap || imaps) {
+        boolean pop3s = accountType == POP3S;
+
+        mailProps.setProperty("mail." + protocol + ".host", receiveHost);
+
+        if (imaps || pop3s) {
             if (insecureSSL) {
                 MailSSLSocketFactory socketFactory = new MailSSLSocketFactory();
                 socketFactory.setTrustAllHosts(true);
-                mailProps.put(imap ? "mail.imap.ssl.socketFactory" : "mail.imaps.ssl.socketFactory", socketFactory);
+                mailProps.put("mail." + protocol + ".ssl.socketFactory", socketFactory);
             } else
-                mailProps.put(imap ? "mail.imap.ssl.socketFactory.class" : "mail.imaps.ssl.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-            mailProps.setProperty("mail.store.protocol", accountType.getProtocol());
-            mailProps.setProperty(imap ? "mail.imap.timeout" : "mail.imaps.timeout", String.valueOf(Settings.get().getMailImapTimeout()));
-            if(startTLS) {
-                mailProps.setProperty("mail.imap.starttls.enable", "true");
-            }
-            if(imaps) {
-                //options to increase downloading big attachments
-                mailProps.put("mail.imaps.partialfetch", "true");
-                mailProps.put("mail.imaps.fetchsize", "819200");
-            }
+                mailProps.put("mail." + protocol + ".ssl.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
         }
 
-        return Session.getInstance(mailProps).getStore(accountType.getProtocol());
+        mailProps.setProperty("mail.store.protocol", protocol);
+        mailProps.setProperty("mail." + protocol + ".timeout", String.valueOf(Settings.get().getMailReceiveTimeout()));
+
+        if(startTLS) {
+            mailProps.setProperty("mail." + protocol + ".starttls.enable", "true");
+        }
+        //options to increase downloading big attachments
+        mailProps.put("mail." + protocol + ".partialfetch", "true");
+        mailProps.put("mail." + protocol + ".fetchsize", "819200");
+
+        return Session.getInstance(mailProps).getStore(protocol);
     }
 
     private static Map<String, EmailData> getSkipEmails(ExecutionContext context, EmailLogicsModule LM, DataObject accountObject, LocalDateTime minDateTime) throws ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
