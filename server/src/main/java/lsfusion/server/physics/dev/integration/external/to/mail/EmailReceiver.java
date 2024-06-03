@@ -106,27 +106,30 @@ public class EmailReceiver {
 
     public static Store getEmailStore(String receiveHost, AccountType accountType, boolean startTLS) throws GeneralSecurityException, NoSuchProviderException {
         Properties mailProps = new Properties();
-        mailProps.setProperty(accountType.getHost(), receiveHost);
 
-        boolean imap = accountType == IMAP;
+        String protocol = accountType.getProtocol();
         boolean imaps = accountType == IMAPS;
-        if (imap || imaps) {
+        boolean pop3s = accountType == POP3S;
+
+        mailProps.setProperty("mail." + protocol + ".host", receiveHost);
+
+        if (imaps || pop3s) {
             MailSSLSocketFactory socketFactory = new MailSSLSocketFactory();
             socketFactory.setTrustAllHosts(true);
-            mailProps.put(imap ? "mail.imap.ssl.socketFactory" : "mail.imaps.ssl.socketFactory", socketFactory);
-            mailProps.setProperty("mail.store.protocol", accountType.getProtocol());
-            mailProps.setProperty(imap ? "mail.imap.timeout" : "mail.imaps.timeout", String.valueOf(Settings.get().getMailImapTimeout()));
-            if(startTLS) {
-                mailProps.setProperty("mail.imap.starttls.enable", "true");
-            }
-            if(imaps) {
-                //options to increase downloading big attachments
-                mailProps.put("mail.imaps.partialfetch", "true");
-                mailProps.put("mail.imaps.fetchsize", "819200");
-            }
+            mailProps.put("mail." + protocol + ".ssl.socketFactory", socketFactory);
         }
 
-        return Session.getInstance(mailProps).getStore(accountType.getProtocol());
+        mailProps.setProperty("mail.store.protocol", protocol);
+        mailProps.setProperty("mail." + protocol + ".timeout", String.valueOf(Settings.get().getMailReceiveTimeout()));
+
+        if(startTLS) {
+            mailProps.setProperty("mail." + protocol + ".starttls.enable", "true");
+        }
+        //options to increase downloading big attachments
+        mailProps.put("mail." + protocol + ".partialfetch", "true");
+        mailProps.put("mail." + protocol + ".fetchsize", "819200");
+
+        return Session.getInstance(mailProps).getStore(protocol);
     }
 
     private Map<String, EmailData> getSkipEmails(ExecutionContext context, LocalDateTime minDateTime) throws ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
@@ -216,11 +219,11 @@ public class EmailReceiver {
         ImportField messageEmailField = new ImportField(LM.findProperty("message[Email]"));
         props.add(new ImportProperty(messageEmailField, LM.findProperty("message[Email]").getMapping(emailKey), true));
         fields.add(messageEmailField);
-        
+
         ImportField emlFileEmailField = new ImportField(LM.findProperty("emlFile[Email]"));
         props.add(new ImportProperty(emlFileEmailField, LM.findProperty("emlFile[Email]").getMapping(emailKey), true));
         fields.add(emlFileEmailField);
-        
+
         ImportTable table = new ImportTable(fields, data);
 
         try (ExecutionContext.NewSession newContext = context.newSession()) {

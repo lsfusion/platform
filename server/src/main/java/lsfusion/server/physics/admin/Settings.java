@@ -2988,14 +2988,14 @@ public class Settings implements Cloneable {
         this.disableAsyncValuesInterrupt = disableAsyncValuesInterrupt;
     }
 
-    private int mailImapTimeout = 5000; //ms
+    private int mailReceiveTimeout = 5000; //ms
 
-    public int getMailImapTimeout() {
-        return mailImapTimeout;
+    public int getMailReceiveTimeout() {
+        return mailReceiveTimeout;
     }
 
-    public void setMailImapTimeout(int mailImapTimeout) {
-        this.mailImapTimeout = mailImapTimeout;
+    public void setMailReceiveTimeout(int mailReceiveTimeout) {
+        this.mailReceiveTimeout = mailReceiveTimeout;
     }
     
     // makes FILTERS container vertical 3-column by default 
