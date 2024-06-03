@@ -149,9 +149,11 @@ public class FlexTabBar extends Composite implements TabBar {
     public void removeTab(int index) {
         checkTabIndex(index);
 
-        if (index == selectedTab)
+        if (index == selectedTab) {
+            // to be sure it is not drawn as active when inserted again if it is not supposed to 
+            updateSelectionStyle(false);
             selectedTab = -1;
-        else if(index < selectedTab)
+        } else if(index < selectedTab)
             selectedTab--;
 
         panel.remove(getTabItem(index));
