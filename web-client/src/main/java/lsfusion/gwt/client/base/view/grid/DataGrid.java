@@ -1221,7 +1221,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
                 //protect from too much sticky columns
                 GSize nextLeft = left.add(cellLeft);
                 // assert that nextLeft is Fixed PX, so the resize size is not null
-                stickyLefts.add(nextLeft.getResizeSize() <= viewportWidth * 0.33 ? left : null);
+                stickyLefts.add(nextLeft.getResizeSize() <= viewportWidth * MainFrame.maxStickyLeft ? left : null);
                 left = nextLeft;
             }
         }

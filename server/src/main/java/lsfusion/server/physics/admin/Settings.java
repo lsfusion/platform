@@ -3338,4 +3338,15 @@ public class Settings implements Cloneable {
     public void setToolbarTopLeft(boolean toolbarTopLeft) {
         this.toolbarTopLeft = toolbarTopLeft;
     }
+
+    //max percent of table for sticky columns
+    private double maxStickyLeft = 0.33;
+
+    public double getmaxStickyLeft() {
+        return maxStickyLeft;
+    }
+
+    public void setmaxStickyLeft(double maxStickyLeft) {
+        this.maxStickyLeft = maxStickyLeft;
+    }
 }

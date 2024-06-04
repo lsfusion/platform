@@ -98,6 +98,8 @@ public class MainFrame implements EntryPoint {
     public static boolean disableActionsIfReadonly;
     public static boolean enableShowingRecentlyLogMessages;
     public static String pushNotificationPublicKey;
+    
+    public static double maxStickyLeft;
 
     // async dispatch
     public <T extends Result> long asyncDispatch(final ExecuteNavigatorAction action, RequestCountingAsyncCallback<ServerResponseResult> callback) {
@@ -660,6 +662,8 @@ public class MainFrame implements EntryPoint {
                 disableActionsIfReadonly = gClientSettings.disableActionsIfReadonly;
                 enableShowingRecentlyLogMessages = gClientSettings.enableShowingRecentlyLogMessages;
                 pushNotificationPublicKey = gClientSettings.pushNotificationPublicKey;
+
+                maxStickyLeft = gClientSettings.maxStickyLeft;
 
                 initializeFrame(result.navigatorInfo, popupOwner);
                 DateRangePickerBasedCellEditor.setPickerTwoDigitYearStart(gClientSettings.twoDigitYearStart);
