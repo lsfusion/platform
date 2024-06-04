@@ -458,20 +458,9 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         beforeModalActionInSameEDT(false);
         try {
             if (!action.extended) {
-                JTextPane textPane = SwingUtils.getMessageTextPane(action.message);
-                textPane.setCaretPosition(0); //scroll to top
-                JScrollPane scrollPane = new JScrollPane(textPane);
-                scrollPane.setBorder(createEmptyBorder());
-
-                Container parentContainer = getDialogParentContainer();
-
-                int prefWidth = (int) scrollPane.getPreferredSize().getWidth();
-                int prefHeight = (int) scrollPane.getPreferredSize().getHeight();
-                int width = (int) (parentContainer.getWidth() * 0.75);
-                int height = (int) (parentContainer.getHeight() * 0.75);
-                scrollPane.setPreferredSize(new Dimension(Math.min(prefWidth, width), Math.min(prefHeight, height)));
-
-                JOptionPane.showMessageDialog(parentContainer, scrollPane, action.caption, JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(getDialogParentContainer(),
+                        SwingUtils.getMessageTextPane(action.message), action.caption,
+                        JOptionPane.INFORMATION_MESSAGE);
             } else {
                 new ExtendedMessageDialog(getDialogParentContainer(), action.caption, action.message).setVisible(true);
             }
