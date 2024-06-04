@@ -263,7 +263,9 @@ public abstract class CallHTTPAction extends CallAction {
         property.change(session, env, MapFact.toMap(names, values), StringClass.instance, StringClass.instance);
     }
 
-    protected abstract Integer getDefaultTimeout();
+    protected Integer getDefaultTimeout() {
+        return null;
+    };
 
     protected abstract UrlProcessor createUrlProcessor(String connectionString, boolean noExec);
     interface UrlProcessor {
