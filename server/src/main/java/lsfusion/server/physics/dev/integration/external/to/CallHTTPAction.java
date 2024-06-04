@@ -51,6 +51,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static lsfusion.base.BaseUtils.nvl;
+
 public abstract class CallHTTPAction extends CallAction {
     boolean clientAction;
     private ExternalHttpMethod method;
@@ -158,7 +160,7 @@ public abstract class CallHTTPAction extends CallAction {
                     }
                 }
 
-                Integer timeout = (Integer) context.getBL().LM.timeoutHttp.read(context);
+                Integer timeout = nvl((Integer) context.getBL().LM.timeoutHttp.read(context), getDefaultTimeout());
                 boolean insecureSSL = context.getBL().LM.insecureSSL.read(context) != null;
 
                 ExternalHttpResponse response;
@@ -260,6 +262,8 @@ public abstract class CallHTTPAction extends CallAction {
     public static <P extends PropertyInterface> void writePropertyValues(DataSession session, ExecutionEnvironment env, LP<P> property, String[] names, String[] values) throws SQLException, SQLHandledException {
         property.change(session, env, MapFact.toMap(names, values), StringClass.instance, StringClass.instance);
     }
+
+    protected abstract Integer getDefaultTimeout();
 
     protected abstract UrlProcessor createUrlProcessor(String connectionString, boolean noExec);
     interface UrlProcessor {
