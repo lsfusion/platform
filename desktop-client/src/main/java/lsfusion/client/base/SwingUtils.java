@@ -29,6 +29,7 @@ import java.util.*;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
+import static javax.swing.BorderFactory.createEmptyBorder;
 import static lsfusion.base.BaseUtils.isRedundantString;
 import static lsfusion.client.base.view.SwingDefaults.getSingleCellTableIntercellSpacing;
 
@@ -196,7 +197,7 @@ public class SwingUtils {
         }
     }
 
-    public static JTextPane getMessageTextPane(Object message) {
+    public static Object getMessageTextPane(Object message) {
         JTextPane textPane = new JTextPane();
         textPane.setText(String.valueOf(message)); //message can be null
         textPane.setEditable(false);
@@ -210,7 +211,25 @@ public class SwingUtils {
             }
         }
         textPane.setBackground(null);
-        return textPane;
+
+        if(rootPane != null && rootPane.getHeight() * 0.3 < textPane.getPreferredSize().height)
+            return wrapScroll(MainFrame.instance, textPane);
+        else
+            return textPane;
+    }
+
+    private static JScrollPane wrapScroll(Container parentContainer, JTextPane textPane) {
+        textPane.setCaretPosition(0); //scroll to top
+        JScrollPane scrollPane = new JScrollPane(textPane);
+        scrollPane.setBorder(createEmptyBorder());
+
+        int prefWidth = (int) scrollPane.getPreferredSize().getWidth();
+        int prefHeight = (int) scrollPane.getPreferredSize().getHeight();
+        int width = (int) (parentContainer.getWidth() * 0.75);
+        int height = (int) (parentContainer.getHeight() * 0.75);
+        scrollPane.setPreferredSize(new Dimension(Math.min(prefWidth, width), Math.min(prefHeight, height)));
+
+        return scrollPane;
     }
 
     private static int getWidth(String message) {
