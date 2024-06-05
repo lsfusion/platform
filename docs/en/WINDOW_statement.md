@@ -7,7 +7,7 @@ The `WINDOW` statement - creating a new [window](Navigator_design.md).
 ### Syntax
 
 ```
-WINDOW name [caption] type [options];
+WINDOW name [caption] [options];
 ```
 
 The `options` that appear at the end of the statement can be specified one after another in any order:
@@ -22,6 +22,7 @@ HALIGN(alignType)
 VALING(alignType) 
 TEXTHALIGN(alignType)
 TEXTVALIGN(alignType)
+CLASS cssClassExpr
 ```
 
 ### Description
@@ -37,14 +38,6 @@ The `WINDOW` statement declares a new window and adds it to the current [module]
 - `caption`
 
     Window caption. [String literal](Literals.md#strliteral). If caption is not specified, the window's name will be used as the caption.  
-
-- `type`
-
-    :::warning
-    The window type is declared deprecated. In future versions of the platform, only behavior similar to using the `TOOLBAR` keyword will be supported. Explicit specification of the window type will need to be removed.
-    :::
-
-    Type of window to create. Specified with one of the keywords `TOOLBAR`, `PANEL`, `TREE`, or `MENU`.
 
 ### Options
 
@@ -62,8 +55,6 @@ The `WINDOW` statement declares a new window and adds it to the current [module]
 
     - `VERTICAL` - vertical orientation (default value).
     - `HORIZONTAL` - horizontal orientation.
-
-    This option only makes sense for `TOOLBAR` or `PANEL` windows.
 
 - `POSITION (x, y, width, height)`
 
@@ -87,7 +78,7 @@ The `WINDOW` statement declares a new window and adds it to the current [module]
 
 - `fixedPositionType`
 
-    Specifying a fixed location of the window on the desktop, which does not allow the user to change its position and size. Here the window size is automatically determined based on the preferred dimensions of the component. The window will be located to the left, right, top, and bottom of the desktop, respectively. This option only makes sense for `TOOLBAR` windows and cannot be used simultaneously with the `POSITION` option. Specified by one of the keywords:
+    Specifying a fixed location of the window on the desktop, which does not allow the user to change its position and size. Here the window size is automatically determined based on the preferred dimensions of the component. The window will be located to the left, right, top, and bottom of the desktop, respectively. This option cannot be used simultaneously with the `POSITION` option. Specified by one of the keywords:
 
     - `LEFT`
     - `RIGHT`
@@ -96,7 +87,7 @@ The `WINDOW` statement declares a new window and adds it to the current [module]
 
 - `HALIGN(alignType)`
 
-    Specifying the horizontal alignment of the buttons in a vertical toolbar. This option only makes sense for `TOOLBAR` windows with `VERTICAL` orientation.
+    Specifying the horizontal alignment of the buttons in a vertical toolbar.
 
     - `alignType`
 
@@ -108,7 +99,7 @@ The `WINDOW` statement declares a new window and adds it to the current [module]
 
 - `VALIGN(alignType)`
 
-    Specifying the vertical alignment of the buttons in a horizontal toolbar. This option only makes sense for `TOOLBAR` windows with `HORIZONTAL` orientation.
+    Specifying the vertical alignment of the buttons in a horizontal toolbar.
 
     - `alignType`
 
@@ -142,17 +133,26 @@ The `WINDOW` statement declares a new window and adds it to the current [module]
         - `CENTER` - center alignment (default value).
         - `END` - bottom alignment.
 
+- `CLASS cssClassExpr`
+
+    Specifying the name of the CSS class for the DOM element created for the window component in HTML. This can be used to apply custom styles.
+
+    - `cssClassExpr`
+
+        [Expression](Expression.md), whose value determines the class name.
 
 ### Examples
 
 ```lsf
 // creating system windows in the System module
-WINDOW root 'Root' TOOLBAR HORIZONTAL POSITION(0, 0, 100, 6) VALIGN(CENTER) HIDETITLE HIDESCROLLBARS;
-WINDOW toolbar 'Toolbar' TOOLBAR VERTICAL POSITION(0, 6, 20, 64) HIDETITLE;
-WINDOW tree 'Tree' TOOLBAR POSITION(0, 6, 20, 64) HIDETITLE;
+WINDOW logo HORIZONTAL POSITION(0, 0, 10, 6) VALIGN(CENTER) HALIGN(START) HIDETITLE HIDESCROLLBARS CLASS logoWindowClass();
+WINDOW root HORIZONTAL POSITION(10, 0, 70, 6) VALIGN(CENTER) HALIGN(CENTER) HIDETITLE HIDESCROLLBARS CLASS rootWindowClass();
+WINDOW system HORIZONTAL POSITION(80, 0, 20, 6) VALIGN(CENTER) HALIGN(END) HIDETITLE HIDESCROLLBARS CLASS systemWindowClass();
+
+WINDOW toolbar VERTICAL POSITION(0, 6, 20, 94) HIDETITLE CLASS toolbarWindowClass();
 
 // a horizontal toolbar at the bottom of the desktop, in which all buttons will be centered and text will be aligned up
 // in this toolbar, for example, it is possible to place forms for quick opening
-WINDOW hotforms TOOLBAR HORIZONTAL BOTTOM VALIGN(CENTER) TEXTVALIGN(START);
+WINDOW hotforms HORIZONTAL BOTTOM VALIGN(CENTER) TEXTVALIGN(START);
 ```
 
