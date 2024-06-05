@@ -57,7 +57,7 @@ phone '{authentication.phone.contact}' = DATA STRING[100] (Contact) CHARWIDTH 10
 postAddress '{authentication.post.address.contact}' = DATA STRING[150] (Contact) CHARWIDTH 20;
 birthday '{authentication.birthday.contact}' = DATA DATE (Contact);
 
-email '{authentication.email.contact}'= DATA STRING[400] (Contact) CHARWIDTH 20;
+email '{authentication.email.contact}'= DATA STRING[400] (Contact) CHARWIDTH 20 REGEXP '[\\-!#-\'*+\\/-9=?A-Z^-~]+(\\.[\\-!#-\'*+\\/-9=?A-Z^-~]+)*@[0-9A-Za-z]([0-9A-Za-z\\-]\{0,61\}[0-9A-Za-z])?(\\.[0-9A-Za-z]([0-9A-Za-z\\-]\{0,61\}[0-9A-Za-z])?)+' '{authentication.email.contact.incorrect}';
 contact (email) = GROUP MAX Contact contact BY email(contact);
 attributes '{authentication.attributes.contact}' = DATA STRING (Contact, STRING);
 
