@@ -19,7 +19,6 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.dom.client.TableSectionElement;
-import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
 import java.util.List;
@@ -170,7 +169,7 @@ public class DefaultHeaderBuilder<T> extends DataGridHeaderBuilder<T> {
     }
 
     @Override
-    protected void updateHeaderStickyLeftImpl(TableRowElement tr, List<Integer> stickyColumns, List<GSize> stickyLefts) {
+    protected void updateHeaderStickyLeftImpl(TableRowElement tr, List<Integer> stickyColumns, List<DataGrid.StickyParams> stickyLefts) {
         GPropertyTableBuilder.updateStickyLeft(tr, stickyColumns, stickyLefts, true);
     }
 

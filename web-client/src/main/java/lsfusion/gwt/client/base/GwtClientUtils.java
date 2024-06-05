@@ -722,6 +722,24 @@ public class GwtClientUtils {
         return GSize.getOffsetSize((int) Math.round((double) height));
     }
 
+    public static GSize getClientWidth(Element element) {
+        final int width = element.getClientWidth();
+
+        return GSize.getOffsetSize((int) Math.round((double) width));
+    }
+    public static GSize getClientHeight(Element element) {
+        final int height = element.getClientHeight();
+
+        return GSize.getOffsetSize((int) Math.round((double) height));
+    }
+    public static native double getDoubleOffsetWidth(Element element) /*-{
+        return element.getBoundingClientRect().width;
+    }-*/;
+    public static native double getDoubleOffsetLeft(Element element) /*-{
+        return element.getBoundingClientRect().left;
+    }-*/;
+
+
     /**
      * should always be consistent with lsfusion.client.form.property.table.view.TableTransferHandler#getClipboardTable(java.lang.String)
      */
@@ -1063,12 +1081,22 @@ public class GwtClientUtils {
 
     public static native int getBorderHeight(Element element) /*-{
         var computedStyle = $wnd.getComputedStyle(element, null);
-        return parseInt(computedStyle.borderTop) + parseInt(computedStyle.borderBottom);
+        return parseInt(computedStyle.borderTopWidth) + parseInt(computedStyle.borderBottomWidth);
     }-*/;
 
     public static native int getBorderWidth(Element element) /*-{
         var computedStyle = $wnd.getComputedStyle(element, null);
-        return parseInt(computedStyle.borderLeft) + parseInt(computedStyle.borderRight);
+        return parseInt(computedStyle.borderLeftWidth) + parseInt(computedStyle.borderRightWidth);
+    }-*/;
+
+    public static native int getDoubleBorderRightWidth(Element element) /*-{
+        var computedStyle = $wnd.getComputedStyle(element, null);
+        return parseFloat(computedStyle.borderRightWidth);
+    }-*/;
+
+    public static native double getDoubleBorderLeftWidth(Element element) /*-{
+        var computedStyle = $wnd.getComputedStyle(element, null);
+        return parseFloat(computedStyle.borderLeftWidth);
     }-*/;
 
     public static native int getAllMargins(Element element) /*-{
@@ -1523,8 +1551,11 @@ public class GwtClientUtils {
         return keyEventCaption != null ? (mouseEventCaption != null ? (keyEventCaption + " / " + mouseEventCaption) : keyEventCaption) : mouseEventCaption;
     }
 
-    public static native void resizable(Element element, String handles)/*-{
-        $wnd.$(element).resizable({ handles: handles});
+    public static native void resizable(Element element, String handles, Consumer<NativeEvent> handler)/*-{
+        $wnd.$(element).resizable({
+            handles: handles,
+            resize: function (event, ui) { handler.@Consumer::accept(*)(event); }
+        });
     }-*/;
 
     public static native void draggable(Element element, String handle)/*-{

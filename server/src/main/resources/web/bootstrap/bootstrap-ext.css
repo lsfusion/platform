@@ -155,23 +155,46 @@
     outline: var(--table-outline-width) solid var(--bs-table-border-color);
 }
 
-/*@media (min-width: 570px) {  !* likely because of rounding in mobile version we see "empty" border under footer with bottom: 1px *!*/
-/*    .table:not(.empty-footer) .dataGridFooterRow {*/
-/*        bottom: var(--table-outline-width);*/
-/*    }*/
-/*}*/
+/* LEFT STICKY  */
+/* just like in all stickies there is a problem that border is not shown, but is respected in left */
+/* the whole idea that box-shadow also respects invisible borders, so we stretch it to the border + shadow-width */
+/* plus we substract border from the left, that way we get pixel perfect behaviour */
+/* it's better to fix border to the left always to avoid blinking */
+
+.tableContainer:has(> .table-bordered) { /* .scrolled-left */
+    border-left: var(--table-outline-width) solid var(--bs-border-color); /* there is no bs-table-border-color here */
+    border-right: var(--table-outline-width) solid var(--bs-border-color); /* there is no bs-table-border-color here */
+}
+
+.table.table-bordered .dataGridHeaderCell:first-child,
+.table.table-bordered .dataGridCell:first-child,
+.table.table-bordered .dataGridFooterCell:first-child {
+    border-left: none;
+}
+
+.table.table-bordered.scrolled-left .dataGridStickyHeader.sticked,
+.table.table-bordered.scrolled-left .dataGridStickyCell.sticked,
+.table.table-bordered.scrolled-left .dataGridStickyFooter.sticked {
+    /* there is no way to add box-shadow, so we "override" it */
+    box-shadow: inset 0 0 0 9999px var(--bs-table-bg-state, var(--bs-table-bg-type, var(--bs-table-accent-bg))),
+                inset calc(0px - calc(var(--cell-border-right) + var(--cell-border-right))) 0 0 var(--bs-table-border-color);
+}
+
+.tableContainer:has(> .table-bordered) {
+    border-right: var(--table-outline-width) solid var(--bs-border-color); /* there is no bs-table-border-color here */
+}
+
+.table.table-bordered .dataGridLastHeaderCell, /* there is arrow-th in the row*/
+.table.table-bordered .dataGridCell:last-child,
+.table.table-bordered .dataGridFooterCell:last-child {
+    border-right: none;
+}
 
 .table.empty-header .dataGridHeaderCell,
 .table.empty-footer .dataGridFooterCell,
 .table.empty-footer .arrow-th {  /* cell with .arrow-th doesn't have .dataGridFooterCell class. adding for them to behave the same way */
     padding: 0;
-}
-/* only partly fixes vertical borders */
-.table.table-bordered .dataGridStickyHeader.sticked,
-.table.table-bordered .dataGridStickyCell.sticked,
-.table.table-bordered .dataGridStickyFooter.sticked {
-    outline: var(--table-outline-width) solid var(--bs-table-border-color);
-    border-right: none;
+    border: none;
 }
 
 /* --- --- */

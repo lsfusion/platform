@@ -202,22 +202,31 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
     }
 
     @Override
-    public void updateRowStickyLeftImpl(TableRowElement tr, List<Integer> stickyColumns, List<GSize> stickyLefts) {
+    public void updateRowStickyLeftImpl(TableRowElement tr, List<Integer> stickyColumns, List<DataGrid.StickyParams> stickyLefts) {
         updateStickyLeft(tr, stickyColumns, stickyLefts, false);
     }
 
-    public static void updateStickyLeft(TableRowElement tr, List<Integer> stickyColumns, List<GSize> stickyLefts, boolean header) {
+    private static native void setCellBorderRight(Element element, String borderRight) /*-{
+        element.style.setProperty("--cell-border-right", borderRight);
+    }-*/;
+    private static native void clearCellBorderRight(Element element) /*-{
+        element.style.removeProperty("--cell-border-right");
+    }-*/;
+
+    public static void updateStickyLeft(TableRowElement tr, List<Integer> stickyColumns, List<DataGrid.StickyParams> stickyLefts, boolean header) {
         for (int i = 0; i < stickyColumns.size(); i++) {
             Integer stickyColumn = stickyColumns.get(i);
-            GSize left = stickyLefts.get(i);
+            DataGrid.StickyParams left = stickyLefts.get(i);
             TableCellElement cell = tr.getCells().getItem(stickyColumn);
             if (left != null) {
-                cell.getStyle().setProperty("left", left.getString());
+                cell.getStyle().setProperty("left", left.left + "px");
+                setCellBorderRight(cell, left.borderRight + "px");
                 //if (!header) {
                     cell.removeClassName("dataGridStickyOverflow");
                 //}
             } else {
                 cell.getStyle().clearProperty("left");
+                clearCellBorderRight(cell);
                 //if (!header) {
                     cell.addClassName("dataGridStickyOverflow");
                 //}

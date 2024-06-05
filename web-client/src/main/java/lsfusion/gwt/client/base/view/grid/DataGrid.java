@@ -193,6 +193,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         int adjustment = MainFrame.mobileAdjustment;
         tableWidget.setStyleName("scrolled-down", verticalScrollPosition > adjustment);
         tableWidget.setStyleName("scrolled-up", verticalScrollPosition < tableContainer.getScrollHeight() - tableContainer.getClientHeight() - adjustment);
+        tableWidget.setStyleName("scrolled-left", horizontalScrollPosition > adjustment);
 
         if (horizontalScrollPosition != latestHorizontalScrollPosition) {
             updateStickyColumnsState(horizontalScrollPosition);
@@ -203,30 +204,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     
     private void updateStickyColumnsState(int horizontalScrollPosition) {
         List<Integer> stickyColumns = getStickyColumns();
-        int lastSticked = -1;
-
-        if(!noHeaders) {
-            // used header as there might be no body rows and header is always present
-            NodeList<TableCellElement> trCells = headerBuilder.getHeaderRow().getCells();
-            List<GSize> stickyLefts = getStickyLefts();
-            for (int i = stickyColumns.size() - 1; i >= 0; i--) {
-                Integer stickyColumn = stickyColumns.get(i);
-
-                TableCellElement cell = trCells.getItem(stickyColumn);
-                GSize left = stickyLefts.get(i);
-                if (left != null) {
-                    Integer intLeft = left.getIntResizeSize();
-                    if (intLeft != null) {
-                        int offsetLeft = cell.getOffsetLeft();
-                        // actually it is == but may differ for 1px (for now is being observed in Firefox, where no borders in header are seen)
-                        if (horizontalScrollPosition + intLeft >= offsetLeft) {
-                            lastSticked = i;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
+        int lastSticked = getLastStickedColumn(horizontalScrollPosition, stickyColumns);
 
         if (lastSticked != latestLastStickedColumn) {
             if (!noHeaders)
@@ -238,6 +216,28 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
             
             latestLastStickedColumn = lastSticked;
         }
+    }
+
+    private int getLastStickedColumn(int horizontalScrollPosition, List<Integer> stickyColumns) {
+        TableRowElement stickyLeftRow = getStickyLeftRow();
+        if(stickyLeftRow != null) {
+            NodeList<TableCellElement> trCells = stickyLeftRow.getCells();
+            List<StickyParams> stickyLefts = getStickyLefts();
+            for (int i = stickyColumns.size() - 1; i >= 0; i--) {
+                Integer stickyColumn = stickyColumns.get(i);
+
+                TableCellElement cell = trCells.getItem(stickyColumn);
+                StickyParams left = stickyLefts.get(i);
+                if (left != null) {
+                    int offsetLeft = cell.getOffsetLeft();
+                    // actually it is == but may differ for 1px (for now is being observed in Firefox, where no borders in header are seen)
+                    if (horizontalScrollPosition + left.left + 1 >= offsetLeft) {
+                        return i;
+                    }
+                }
+            }
+        }
+        return -1;
     }
 
     private static Set<String> browserKeyEvents;
@@ -1177,7 +1177,6 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         int viewportWidth = getViewportWidth();
 
         //scroll column to visible if needed
-        int scrollLeft = currentScrollLeft;
         int colToShow;
         if (selectedColumnChanged && (colToShow = getSelectedColumn()) >=0 && getRowCount() > 0) {
             NodeList<TableCellElement> cells = tableWidget.getDataRows().getItem(0).getCells();
@@ -1185,14 +1184,15 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
             int columnLeft = td.getOffsetLeft() - getPrevStickyCellsOffsetWidth(cells, colToShow);
             int columnRight = td.getOffsetLeft() + td.getOffsetWidth();
+
+            int scrollLeft = currentScrollLeft;
             if (columnRight >= scrollLeft + viewportWidth) // not completely visible from right
                 scrollLeft = columnRight - viewportWidth;
             if (columnLeft < scrollLeft) // not completely visible from left
                 scrollLeft = columnLeft;
+            if(currentScrollLeft != scrollLeft)
+                pendingState.left = scrollLeft;
         }
-
-        if(currentScrollLeft != scrollLeft)
-            pendingState.left = scrollLeft;
 
         //calculate left neighbour right border for focused cell
         if (columnsChanged || selectedRowChanged || selectedColumnChanged || focusedChanged) {
@@ -1206,26 +1206,38 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
 //        updateScrollHorizontal(pendingState);
     }
-    
-    private List<GSize> getStickyLefts() {
-        List<GSize> stickyLefts = new ArrayList<>();
-        
+
+    public static class StickyParams {
+        public final double left;
+        public final double borderRight;
+
+        public StickyParams(double left, double borderRight) {
+            this.left = left;
+            this.borderRight = borderRight;
+        }
+    }
+
+    private List<StickyParams> getStickyLefts() {
         TableRowElement tr = getStickyLeftRow();
         if(tr != null) {
-            GSize left = GSize.ZERO;
+            List<StickyParams> stickyLefts = new ArrayList<>();
+            double left = 0.0;
             List<Integer> stickyColumns = getStickyColumns();
             double viewportWidth = getViewportWidth();
             for (int i = 0; i < stickyColumns.size(); i++) {
                 Element cell = tr.getCells().getItem(stickyColumns.get(i));
-                GSize cellLeft = GwtClientUtils.getOffsetWidth(cell);
+                double borderLeftWidth = GwtClientUtils.getDoubleBorderLeftWidth(cell);
+                double borderRightWidth = GwtClientUtils.getDoubleBorderRightWidth(cell);
+                double cellWidth = GwtClientUtils.getDoubleOffsetWidth(cell) - borderLeftWidth - borderRightWidth;
                 //protect from too much sticky columns
-                GSize nextLeft = left.add(cellLeft);
+                double nextLeft = left + cellWidth;
                 // assert that nextLeft is Fixed PX, so the resize size is not null
-                stickyLefts.add(nextLeft.getResizeSize() <= viewportWidth * MainFrame.maxStickyLeft ? left : null);
+                stickyLefts.add(nextLeft <= viewportWidth * MainFrame.maxStickyLeft ? new StickyParams(left - borderLeftWidth, borderRightWidth) : null);
                 left = nextLeft;
             }
+            return stickyLefts;
         }
-        return stickyLefts;
+        return null;
     }
 
     private TableRowElement getStickyLeftRow() {
@@ -1316,7 +1328,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         if (pendingState.left != null) {
             tableContainer.setHorizontalScrollPosition(pendingState.left);
 
-            updateScrolledState();
+//            updateScrolledState(); // scroll handler is called after programmatic change
         }
 
         //set left neighbour right border for focused cell
@@ -1352,7 +1364,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         tableBuilder.update(tableWidget.getSection(), getRows(), columnsChanged, columnsToRedraw);
     }
 
-    private void updateStickyLeftDOM(List<GSize> stickyLefts) {
+    private void updateStickyLeftDOM(List<StickyParams> stickyLefts) {
         List<Integer> stickyColumns = getStickyColumns();
         if (!noHeaders)
             headerBuilder.updateStickyLeft(stickyColumns, stickyLefts);
@@ -1648,7 +1660,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         private Boolean hasVertical;
 
         private LeftNeighbourRightBorder leftNeighbourRightBorder;
-        private List<GSize> stickyLefts;
+        private List<StickyParams> stickyLefts;
     }
 
     private static class LeftNeighbourRightBorder {

@@ -16,9 +16,6 @@
 package lsfusion.gwt.client.base.view.grid;
 
 import com.google.gwt.dom.client.*;
-import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.StaticImage;
-import lsfusion.gwt.client.base.size.GSize;
 
 import java.util.List;
 
@@ -91,7 +88,7 @@ public abstract class DataGridHeaderBuilder<T> implements HeaderBuilder<T> {
     protected abstract void updateHeaderImpl(TableRowElement tr);
 
     @Override
-    public void updateStickyLeft(List<Integer> stickyColumns, List<GSize> stickyLefts) {
+    public void updateStickyLeft(List<Integer> stickyColumns, List<DataGrid.StickyParams> stickyLefts) {
         updateHeaderStickyLeftImpl(getHeaderRow(), stickyColumns, stickyLefts);
     }
 
@@ -100,7 +97,7 @@ public abstract class DataGridHeaderBuilder<T> implements HeaderBuilder<T> {
         updateStickedState(getHeaderRow(), stickyColumns, lastSticked);
     }
 
-    protected abstract void updateHeaderStickyLeftImpl(TableRowElement tr, List<Integer> stickyColumns, List<GSize> stickyLefts);
+    protected abstract void updateHeaderStickyLeftImpl(TableRowElement tr, List<Integer> stickyColumns, List<DataGrid.StickyParams> stickyLefts);
     
     protected abstract void updateStickedState(TableRowElement tr, List<Integer> stickyColumns, int lastSticked);
 
