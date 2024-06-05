@@ -35,8 +35,8 @@ public class MakeUnzipFileAction extends InternalAction {
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
 
-            FileData unzippingFile = (FileData)findProperty("unzipping[]").read(context);
-            if(unzippingFile != null) {
+            FileData unzippingFile = (FileData) findProperty("unzipping[]").read(context);
+            if (unzippingFile != null) {
                 RawFileData file = unzippingFile.getRawFile();
                 String extension = unzippingFile.getExtension();
 
@@ -46,7 +46,7 @@ public class MakeUnzipFileAction extends InternalAction {
                 } else if (extension.equalsIgnoreCase("zip")) {
                     result = unpackZIPFile(file);
                 }
-                for(Map.Entry<String, FileData> entry : result.entrySet()) {
+                for (Map.Entry<String, FileData> entry : result.entrySet()) {
                     findProperty("unzipped[STRING[100]]").change(entry.getValue(), context, new DataObject(entry.getKey()));
                 }
             }
@@ -64,10 +64,10 @@ public class MakeUnzipFileAction extends InternalAction {
             inputFile = File.createTempFile("email", ".rar");
             fileBytes.write(inputFile);
 
-            List<File> dirList = new ArrayList<>();
+            Set<File> dirSet = new HashSet<>();
             File outputDirectory = new File(inputFile.getParent() + "/" + BaseUtils.getFileName(inputFile));
-            if(inputFile.exists() && (outputDirectory.exists() || outputDirectory.mkdir())) {
-                dirList.add(outputDirectory);
+            if (inputFile.exists() && (outputDirectory.exists() || outputDirectory.mkdir())) {
+                dirSet.add(outputDirectory);
                 Archive a = new Archive(new FileVolumeManager(inputFile));
 
                 FileHeader fh = a.nextFileHeader();
@@ -76,10 +76,9 @@ public class MakeUnzipFileAction extends InternalAction {
                     String fileName = (fh.isUnicode() ? fh.getFileNameW() : fh.getFileNameString());
                     outputFile = new File(outputDirectory.getPath() + "/" + fileName);
                     File dir = outputFile.getParentFile();
-                    dir.mkdirs();
-                    if(!dirList.contains(dir))
-                        dirList.add(dir);
-                    if(!outputFile.isDirectory()) {
+                    if (dir.mkdirs())
+                        dirSet.add(dir);
+                    if (!outputFile.isDirectory()) {
                         try (FileOutputStream os = new FileOutputStream(outputFile)) {
                             a.extractFile(fh, os);
                         }
@@ -91,7 +90,7 @@ public class MakeUnzipFileAction extends InternalAction {
                 a.close();
             }
 
-            for(File dir : dirList) {
+            for (File dir : dirSet) {
                 BaseUtils.safeDelete(dir);
             }
 
@@ -114,22 +113,38 @@ public class MakeUnzipFileAction extends InternalAction {
             fileBytes.write(inputFile);
 
             byte[] buffer = new byte[1024];
-            Set<File> dirList = new HashSet<>();
+            Set<File> dirSet = new HashSet<>();
             File outputDirectory = new File(inputFile.getParent() + "/" + BaseUtils.getFileName(inputFile));
-            if(inputFile.exists() && (outputDirectory.exists() || outputDirectory.mkdir())) {
-                dirList.add(outputDirectory);
+            if (inputFile.exists() && (outputDirectory.exists() || outputDirectory.mkdir())) {
+                dirSet.add(outputDirectory);
                 ZipInputStream inputStream = new ZipInputStream(Files.newInputStream(inputFile.toPath()), Charset.forName("cp866"));
 
                 ZipEntry ze = inputStream.getNextEntry();
                 while (ze != null) {
-                    if(ze.isDirectory()) {
+                    if (ze.isDirectory()) {
                         File dir = new File(outputDirectory.getPath() + "/" + ze.getName());
-                        dir.mkdirs();
-                        dirList.add(dir);
-                    }
-                    else {
-                        String fileName = ze.getName();
-                        outputFile = new File(outputDirectory.getPath() + "/" + fileName);
+                        if (dir.mkdirs())
+                            dirSet.add(dir);
+                    } else {
+                        String filePath = ze.getName();
+
+                        String[] splitted = filePath.split("/");
+
+                        String fileName;
+                        if (splitted.length > 1) {
+                            String path = "";
+                            for (int i = 0; i < splitted.length - 1; i++) {
+                                path += "/" + splitted[i];
+                                File dir = new File(outputDirectory.getPath() + path);
+                                if (dir.mkdirs())
+                                    dirSet.add(dir);
+                            }
+                            fileName = splitted[splitted.length - 1];
+                        } else {
+                            fileName = filePath;
+                        }
+
+                        outputFile = new File(outputDirectory.getPath() + "/" + filePath);
                         FileOutputStream outputStream = new FileOutputStream(outputFile);
                         int len;
                         while ((len = inputStream.read(buffer)) > 0) {
@@ -145,7 +160,7 @@ public class MakeUnzipFileAction extends InternalAction {
                 inputStream.close();
             }
 
-            for(File dir : dirList) {
+            for (File dir : dirSet) {
                 BaseUtils.safeDelete(dir);
             }
 
