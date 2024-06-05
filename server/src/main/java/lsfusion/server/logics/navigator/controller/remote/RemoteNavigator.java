@@ -274,6 +274,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         List<String> preDefinedDateRangesNames = new ArrayList<>();
         boolean userFiltersManualApplyMode;
         int maxRequestQueueSize;
+        double maxStickyLeft;
 
         try (DataSession session = createSession()) {
             currentUserName = nvl((String) businessLogics.authenticationLM.currentUserName.read(session), "(без имени)");
@@ -309,13 +310,16 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
                 userFiltersManualApplyMode = Settings.get().isUserFiltersManualApplyMode();
             }
             maxRequestQueueSize = Settings.get().getMaxRequestQueueSize();
+
+            maxStickyLeft = Settings.get().getMaxStickyLeft();
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
         return new ClientSettings(localePreferences, currentUserName, fontSize, useBusyDialog, Settings.get().getBusyDialogTimeout(),
                 useRequestTimeout, devMode, projectLSFDir, showDetailedInfo, showDetailedInfoDelay, forbidDuplicateForms, Settings.get().isShowNotDefinedStrings(),
                 Settings.get().isPivotOnlySelectedColumn(), Settings.get().getMatchSearchSeparator(),
-                colorTheme, colorPreferences, preDefinedDateRangesNames.toArray(new String[0]), Settings.get().isUseTextAsFilterSeparator(), userFiltersManualApplyMode, maxRequestQueueSize);
+                colorTheme, colorPreferences, preDefinedDateRangesNames.toArray(new String[0]), Settings.get().isUseTextAsFilterSeparator(),
+                userFiltersManualApplyMode, maxRequestQueueSize, maxStickyLeft);
     }
 
     private void fillRanges(String json, List<String> ranges) {

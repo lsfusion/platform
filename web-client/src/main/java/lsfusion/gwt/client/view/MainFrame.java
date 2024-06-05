@@ -90,6 +90,8 @@ public class MainFrame implements EntryPoint {
 
     public static boolean userFiltersManualApplyMode;
 
+    public static double maxStickyLeft;
+
     // async dispatch
     public <T extends Result> long asyncDispatch(final ExecuteNavigatorAction action, RequestCountingAsyncCallback<ServerResponseResult> callback) {
         return navigatorDispatchAsync.asyncExecute(action, callback);
@@ -293,6 +295,7 @@ public class MainFrame implements EntryPoint {
                 preDefinedDateRangesNames = result.preDefinedDateRangesNames;
                 useTextAsFilterSeparator = result.useTextAsFilterSeparator;
                 userFiltersManualApplyMode = result.userFiltersManualApplyMode;
+                maxStickyLeft = result.maxStickyLeft;
             }
         });
 

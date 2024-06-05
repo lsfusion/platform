@@ -3069,4 +3069,15 @@ public class Settings implements Cloneable {
     public void setMaxColumnsInPlainImportExport(int maxColumnsInPlainImportExport) {
         this.maxColumnsInPlainImportExport = maxColumnsInPlainImportExport;
     }
+
+    //max percent of table for sticky columns
+    private double maxStickyLeft = 0.33;
+
+    public double getMaxStickyLeft() {
+        return maxStickyLeft;
+    }
+
+    public void setMaxStickyLeft(double maxStickyLeft) {
+        this.maxStickyLeft = maxStickyLeft;
+    }
 }

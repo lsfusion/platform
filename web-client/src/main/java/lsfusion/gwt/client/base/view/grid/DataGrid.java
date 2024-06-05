@@ -1331,7 +1331,7 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
                     //protect from too much sticky columns
                     GSize nextLeft = left.add(cellLeft);
                     // assert that nextLeft is Fixed PX, so the resize size is not null
-                    pendingState.stickyLefts.add(nextLeft.getResizeSize() <= viewportWidth * 0.33 ? left : null);
+                    pendingState.stickyLefts.add(nextLeft.getResizeSize() <= viewportWidth * MainFrame.maxStickyLeft ? left : null);
                     left = nextLeft;
                 }
             }

@@ -39,7 +39,8 @@ public class GetClientSettingsHandler extends NavigatorActionHandler<GetClientSe
         return new GetClientSettingsResult(clientSettings.busyDialogTimeout, clientSettings.devMode, clientSettings.projectLSFDir, clientSettings.showDetailedInfo, clientSettings.showDetailedInfoDelay,
                 clientSettings.forbidDuplicateForms, clientSettings.showNotDefinedStrings, clientSettings.pivotOnlySelectedColumn, clientSettings.matchSearchSeparator,
                 colorTheme, getVersionedColorThemesCss(), colorPreferences, clientSettings.localePreferences.dateFormat, clientSettings.localePreferences.timeFormat,
-                servlet.staticImagesURL, clientSettings.preDefinedDateRangesNames, clientSettings.useTextAsFilterSeparator, clientSettings.userFiltersManualApplyMode);
+                servlet.staticImagesURL, clientSettings.preDefinedDateRangesNames, clientSettings.useTextAsFilterSeparator, clientSettings.userFiltersManualApplyMode,
+                clientSettings.maxStickyLeft);
     }
 
     private Map<String, String> getVersionedColorThemesCss() throws RemoteException {

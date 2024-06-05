@@ -25,6 +25,7 @@ public class GetClientSettingsResult implements Result {
     public String[] preDefinedDateRangesNames;
     public boolean useTextAsFilterSeparator;
     public boolean userFiltersManualApplyMode;
+    public double maxStickyLeft;
 
     public GetClientSettingsResult() {
     }
@@ -32,7 +33,7 @@ public class GetClientSettingsResult implements Result {
     public GetClientSettingsResult(long busyDialogTimeout, boolean devMode, String projectLSFDir, boolean showDetailedInfo, int showDetailedInfoDelay, boolean forbidDuplicateForms, boolean showNotDefinedStrings,
                                    boolean pivotOnlySelectedColumn, String matchSearchSeparator, GColorTheme colorTheme, Map<String, String> versionedColorThemesCss,
                                    GColorPreferences colorPreferences, String dateFormat, String timeFormat, String staticImagesURL, String[] preDefinedDateRangesNames,
-                                   boolean useTextAsFilterSeparator, boolean userFiltersManualApplyMode) {
+                                   boolean useTextAsFilterSeparator, boolean userFiltersManualApplyMode, double maxStickyLeft) {
         this.busyDialogTimeout = busyDialogTimeout;
         this.devMode = devMode;
         this.projectLSFDir = projectLSFDir;
@@ -51,5 +52,6 @@ public class GetClientSettingsResult implements Result {
         this.preDefinedDateRangesNames = preDefinedDateRangesNames;
         this.useTextAsFilterSeparator = useTextAsFilterSeparator;
         this.userFiltersManualApplyMode = userFiltersManualApplyMode;
+        this.maxStickyLeft = maxStickyLeft;
     }
 }
