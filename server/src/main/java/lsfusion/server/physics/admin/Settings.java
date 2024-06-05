@@ -3342,11 +3342,11 @@ public class Settings implements Cloneable {
     //max percent of table for sticky columns
     private double maxStickyLeft = 0.33;
 
-    public double getmaxStickyLeft() {
+    public double getMaxStickyLeft() {
         return maxStickyLeft;
     }
 
-    public void setmaxStickyLeft(double maxStickyLeft) {
+    public void setMaxStickyLeft(double maxStickyLeft) {
         this.maxStickyLeft = maxStickyLeft;
     }
 }
