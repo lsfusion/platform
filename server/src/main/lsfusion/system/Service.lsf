@@ -796,11 +796,14 @@ DESIGN settings {
     }
 }
 
+showColorSettings = theme(currentDesignEnv()) == Theme.excel OR isNative();
+
 EXTEND FORM editProfile
     PROPERTIES()  resetWindowsLayout
-    PROPERTIES(u) fontSize, colorThemeName,
-                  selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor, 
-                  tableGridColor, dontShowCloseButtonOnInactiveTab, userFiltersManualApplyMode
+    PROPERTIES(u) fontSize, colorThemeName
+    PROPERTIES(u) SHOWIF showColorSettings() selectedRowBackgroundColor, selectedCellBackgroundColor,
+        focusedCellBackgroundColor, focusedCellBorderColor, tableGridColor
+    PROPERTIES(u) dontShowCloseButtonOnInactiveTab, userFiltersManualApplyMode
     OBJECTS r = DateTimePickerRanges
     PROPERTIES dateTimeRange(r) READONLY, isDateTimeRangeSelected(r, u)
     
