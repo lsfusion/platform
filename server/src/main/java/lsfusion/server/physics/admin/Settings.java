@@ -3340,7 +3340,7 @@ public class Settings implements Cloneable {
     }
 
     //default size is Tiny if screen width x height is not more than maxPixelTinySize
-    private int maxPixelTinySize = 921600; //1280x720
+    private int maxPixelTinySize = 748800; //1280x585
 
     public int getMaxPixelTinySize() {
         return maxPixelTinySize;
@@ -3351,7 +3351,7 @@ public class Settings implements Cloneable {
     }
 
     //default size is Mini if screen width x height is not more than maxPixelMiniSize
-    private int maxPixelMiniSize = 1281024; //1536x834
+    private int maxPixelMiniSize = 1121280; //1536x730
 
     public int getMaxPixelMiniSize() {
         return maxPixelMiniSize;
