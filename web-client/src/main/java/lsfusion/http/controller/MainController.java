@@ -31,6 +31,7 @@ import net.customware.gwt.dispatch.shared.general.StringResult;
 import org.apache.hc.core5.http.ContentType;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -38,13 +39,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
@@ -96,8 +96,6 @@ public class MainController {
         model.addAttribute("disableRegistration", getDisableRegistration(serverSettings));
         model.addAttribute("registrationPage", getDirectUrl("/registration", null, null, request));
         model.addAttribute("forgotPasswordPage", getDirectUrl("/forgot-password", null, null, request));
-
-        model.addAttribute("PWAIcon", getPWAIcon(serverSettings));
         addStandardModelAttributes(model, request, serverSettings, true);
 
         try {
@@ -118,6 +116,31 @@ public class MainController {
         } else {
             return "login";
         }
+    }
+
+    @GetMapping(value = "/lsf-manifest", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public Map<String, Object> getLSFManifest(HttpServletRequest request) {
+        String currentLocation = URI.create(request.getRequestURL().toString()).toString().replace("lsf-manifest", "");
+
+        ServerSettings serverSettings = getAndCheckServerSettings(request, checkVersionError, false);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("name", getTitle(serverSettings));
+        List<Map<String, Object>> icons = new ArrayList<>();
+        Map<String, Object> iconsMap = new HashMap<>();
+        iconsMap.put("src", currentLocation + getPWAIcon(serverSettings));
+        iconsMap.put("type", "image/png");
+        iconsMap.put("sizes", "512x512");
+        icons.add(iconsMap);
+        response.put("icons", icons);
+        String contextPath = request.getContextPath();
+        response.put("id", (!contextPath.isEmpty() ? contextPath + "/" : "") + "main");
+        response.put("start_url", currentLocation + "main");
+        response.put("display", "standalone");
+        response.put("scope", currentLocation);
+
+        return response;
     }
 
     @RequestMapping(value = "/registration", method = RequestMethod.GET)
@@ -293,7 +316,6 @@ public class MainController {
         model.addAttribute("sessionID", sessionId);
         model.addAttribute("mainResourcesBeforeSystem", serverSettings != null && mainResourcesBeforeSystem != null ? saveResources(serverSettings, mainResourcesBeforeSystem, false) : null);
         model.addAttribute("mainResourcesAfterSystem", serverSettings != null && mainResourcesAfterSystem != null ? saveResources(serverSettings, mainResourcesAfterSystem, false) : null);
-        model.addAttribute("PWAIcon", getPWAIcon(serverSettings));
 
         return "main";
     }

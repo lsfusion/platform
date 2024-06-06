@@ -108,6 +108,7 @@
     <servlet-mapping>
         <servlet-name>LSFWeb</servlet-name>
         <url-pattern>/login</url-pattern>
+        <url-pattern>/lsf-manifest</url-pattern>
         <url-pattern>/main</url-pattern>
         <url-pattern>/registration</url-pattern>
         <url-pattern>/forgot-password</url-pattern>

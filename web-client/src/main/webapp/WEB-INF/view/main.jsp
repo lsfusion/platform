@@ -9,7 +9,7 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <html>
     <head>
-        <link rel="manifest" id="manifest">
+        <link rel="manifest" href="${pageContext.request.contextPath}/lsf-manifest">
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     	<meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -54,8 +54,6 @@
                 "static/noauth/css/fontAwesome/css/solid.min.css",
                 "static/noauth/css/fontAwesome/css/regular.min.css",
                 "static/noauth/css/lsfFonts/lsf-icons.css",
-
-                "static/noauth/pwa/pwa.js",
 
                 //optional: mobile support with jqueryui-touch-punch
                 "static/js/external/jquery.ui.touch-punch.min.js", //https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js
@@ -234,8 +232,6 @@
                     });
                 });
             }
-
-            createManifest("${pageContext.request.contextPath}", document.querySelector('#manifest'), "${title}", "${PWAIcon}");
         </script>
     </head>
     <body onload="init();" sessionID = '${sessionID}'>
