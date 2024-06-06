@@ -431,6 +431,12 @@ loadLogicsIcon '{system.logics.icon.load}'()  { INPUT=logicsIcon() CHANGE; }
 openLogicsIcon '{system.logics.icon.open}'()  { open(logicsIcon()); }
 resetLogicsIcon '{system.logics.icon.reset}'()  { logicsIcon() <- NULL; }
 
+//PWAIcon size should be 512*512
+PWAIcon = DATA IMAGEFILE ();
+loadPWAIcon '{system.logics.pwa.icon.load}'()  { INPUT=PWAIcon() CHANGE; }
+openPWAIcon '{system.logics.pwa.icon.open}'()  { open(PWAIcon()); }
+resetPWAIcon '{system.logics.pwa.icon.reset}'()  { PWAIcon() <- NULL; }
+
 META applicationForm(sid, name)
     FORM sid name;
     

@@ -96,6 +96,8 @@ public class MainController {
         model.addAttribute("disableRegistration", getDisableRegistration(serverSettings));
         model.addAttribute("registrationPage", getDirectUrl("/registration", null, null, request));
         model.addAttribute("forgotPasswordPage", getDirectUrl("/forgot-password", null, null, request));
+
+        model.addAttribute("PWAIcon", getPWAIcon(serverSettings));
         addStandardModelAttributes(model, request, serverSettings, true);
 
         try {
@@ -291,6 +293,7 @@ public class MainController {
         model.addAttribute("sessionID", sessionId);
         model.addAttribute("mainResourcesBeforeSystem", serverSettings != null && mainResourcesBeforeSystem != null ? saveResources(serverSettings, mainResourcesBeforeSystem, false) : null);
         model.addAttribute("mainResourcesAfterSystem", serverSettings != null && mainResourcesAfterSystem != null ? saveResources(serverSettings, mainResourcesAfterSystem, false) : null);
+        model.addAttribute("PWAIcon", getPWAIcon(serverSettings));
 
         return "main";
     }
@@ -329,6 +332,10 @@ public class MainController {
 
     private String getLogicsLogo(ServerSettings serverSettings) {
         return serverSettings != null && serverSettings.logicsLogo != null ? getFileUrl(serverSettings.logicsLogo) : "static/noauth/images/logo.png";
+    }
+
+    private String getPWAIcon(ServerSettings serverSettings) {
+        return serverSettings != null && serverSettings.PWAIcon != null ? getFileUrl(serverSettings.PWAIcon) : "";
     }
 
     private String getLogicsIcon(ServerSettings serverSettings) {

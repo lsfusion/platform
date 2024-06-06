@@ -321,7 +321,8 @@ NAVIGATOR {
 FORM settings '{service.form.settings}'
     PROPERTIES() currentDate, currentDateTime, currentDateTimeSnapshot, defaultBackgroundColor, defaultForegroundColor, 
                  reportCharWidth, reportRowHeight, reportNotToStretch, hostnameServerComputer, 
-                 dataLogicsName, dataDisplayName, loadLogicsLogo, openLogicsLogo, resetLogicsLogo, loadLogicsIcon, openLogicsIcon, resetLogicsIcon
+                 dataLogicsName, dataDisplayName, loadLogicsLogo, openLogicsLogo, resetLogicsLogo, 
+                 loadLogicsIcon, openLogicsIcon, resetLogicsIcon, loadPWAIcon, openPWAIcon, resetPWAIcon
 ;
 
 DESIGN settings {
@@ -356,6 +357,9 @@ DESIGN settings {
                         MOVE PROPERTY(loadLogicsIcon());
                         MOVE PROPERTY(openLogicsIcon());
                         MOVE PROPERTY(resetLogicsIcon());
+                        MOVE PROPERTY(loadPWAIcon());
+                        MOVE PROPERTY(openPWAIcon());
+                        MOVE PROPERTY(resetPWAIcon());
                     }                                       
                 }
             }
@@ -476,7 +480,7 @@ WHEN CHANGED (lsfParams(STRING s)) DO {
     resetServerSettingsCacheAction();
 }
 
-WHEN CHANGED (logicsName()) OR CHANGED (displayName()) OR CHANGED (logicsLogo()) OR CHANGED (logicsIcon()) DO {
+WHEN CHANGED (logicsName()) OR CHANGED (displayName()) OR CHANGED (logicsLogo()) OR CHANGED (logicsIcon()) OR CHANGED (PWAIcon()) DO {
     resetServerSettingsCacheAction();
 }
 getServerSettings() ABSTRACT CASE @@noauth;
@@ -492,7 +496,8 @@ getServerSettings() + WHEN TRUE THEN {
     }
     
     generateJnlpUrls();
-    EXPORT JSON FROM logicsName(), displayName(), logicsLogo = FILE(logicsLogo()), logicsIcon = FILE(logicsIcon()), platformVersion(), apiVersion(), inDevMode(),
+    EXPORT JSON FROM logicsName(), displayName(), logicsLogo = FILE(logicsLogo()), logicsIcon = FILE(logicsIcon()),
+    PWAIcon = FILE(PWAIcon()), platformVersion(), apiVersion(), inDevMode(),
     sessionConfigTimeout=INTEGER(valueSetting('sessionConfigTimeout')), anonymousUI=(valueSetting('enableUI')='2'),
     jnlpUrls=exportText(),
     disableRegistration=disableRole('selfRegister'),
