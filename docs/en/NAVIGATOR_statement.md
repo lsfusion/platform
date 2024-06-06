@@ -2,7 +2,7 @@
 title: 'NAVIGATOR statement'
 ---
 
-The `NAVIGATOR` statement is used to modify the [navigator](Navigator.md).
+The `NAVIGATOR` instruction - managing and configuring the [navigator](Navigator.md).
 
 ### Syntax
 
@@ -16,7 +16,7 @@ NAVIGATOR {
 }
 ```
 
-Each `navigatorStatement` describes a single navigator statement, and at the end it may contain a nested block of additional navigator statements. There are three types of navigator statements:  
+Each `navigatorStatement` describes a single navigator statement, and at the end it may contain a nested block of navigator statements. There are three types of navigator statements:  
 
 ```
 NEW elementDescription [options] [{ ... }];
@@ -28,28 +28,26 @@ where `elementDescription` in the `NEW` statement describes the type of element 
 
 ```
 FOLDER name [caption] 
-FORM [name [caption] =] formName
-ACTION [name [caption] =] actionName
-[name [caption] =] formElseActionName
+FORM [[name] [caption] =] formName
+ACTION [[name] [caption] =] actionName
+[[name] [caption] =] formElseActionName
 ```
 
 A navigator statement must end with a semicolon if it does not contain a nested block of additional statements.
 
-The options for the `options` navigator element can be listed one after the other in arbitrary order. The following set of options is supported:
+Navigator element options (`options`) can be listed one after the other in arbitrary order. The following set of options is supported:
 
 ```
 WINDOW windowName
-BEFORE elementName
-AFTER elementName
-FIRST 
+insertPosition
 IMAGE fileName
 ```
 
 ### Description
 
-The `NAVIGATOR` statement allows to modify the navigator. Each navigator statement block enclosed in braces allows to change the descendants of a particular [navigator element](Navigator.md), which we will call the *current* element. In the outer block that follows the `NAVIGATOR` keyword, the current element is the root system folder `System.root`. There are three types of navigator statements:
+The `NAVIGATOR` statement allows to modify the navigator. Each navigator statement block enclosed in braces allows to change the descendants of a particular [navigator element](Navigator.md), which we will call the *current element*. In the outer block that follows the `NAVIGATOR` keyword, the current element is the root system folder `System.root`. There are three types of navigator statements:
 
--   The *create statement* (`NEW`) allows to create a new navigator element, making it a child object of the current element. The created navigator elements can be of three types: folder, form element, and action element. The type of element to be created is specified by the keywords `FOLDER`, `FORM`, and `ACTION`. When creating a form element, the keyword `FORM` is optional. The navigator statement block contained in this statement (if any) describes the descendants of the element being created.
+-   The *create statement* (`NEW`) allows to create a new navigator element, making it a child of the current element. The created navigator elements can be of three types: folder, form element, and action element. The type of element to be created is specified by the keywords `FOLDER`, `FORM`, and `ACTION`. If the type is not specified, a form with the given name is searched first. If no form is found, the action is searched. The navigator statement block contained in this statement (if any) describes the descendants of the element being created.
 -   The *move statement* (`MOVE`) allows to move an existing element to the current navigator element, making it a child element. Prior to this, the navigator element being moved is deleted from its previous location. The navigator statement block contained in this statement describes the descendants of the element being added. 
 -   The *modify statement* allows to change the specified navigator element, which must be a descendant (not necessarily a child) of the current element. The navigator statement block contained in this statement describes the descendants of the specified element.
 
@@ -73,42 +71,56 @@ The hierarchy described within a single `NAVIGATOR` statement can have an arbitr
 
 - `formName`
 
-    The [form ID](IDs.md#propertyid) for which the navigator element will be created.
+    The form name for which the navigator element will be created. Composite ID.
 
 - `formElseActionName`
 
-    The [form or action ID](IDs.md#propertyid) for which the navigator element will be created. It is initially assumed that in `formElseActionName` a form is specified, and that only if it is not found an action is specified in `formElseActionName`. The action must not take any parameters.
+    The form name or action ID for which the navigator element will be created. The platform will first attempt to find a form with that name, and if that fails, it will search for an action with that ID. The action must not take any parameters.
 
-- `options`
+### Options
 
-    - `WINDOW windowName`
+- `WINDOW windowName`
 
-        Specifying a [window](Navigator_design.md) in which the element and its descendants will be displayed (unless another window is specified for them). 
+    Specifying a [window](Navigator_design.md) in which the element and its descendants will be displayed (unless another window is specified for them). 
 
-        - `windowName`
+    - `windowName`
 
-            Window name. Composite ID.
+        Window name. Composite ID.
+
+- `insertPosition`
+ 
+    Specifying the insertion position of the navigator element. It can be specified in one of the following ways:
 
     - `BEFORE elementName`
-    - `AFTER elementName` 
+    - `AFTER elementName`
 
-        Specifying that the element must be added or moved before (keyword `BEFORE`) or after (keyword `AFTER`) the specified navigator element. The specified element must be a child of the current element. If the option is specified in the modify statement, then the element itself must also be a child of the current element. Otherwise, the `MOVE` statement should be used.
-    
+        Specifying that the element must be added or moved just before (keyword `BEFORE`) or after (keyword `AFTER`) the specified navigator element. The specified element must be a child of the current element. 
+
         - `elementName`
-        
-            Navigator element name. Composite ID. 
+
+            Navigator element name. Composite ID.
 
     - `FIRST`
 
-        A keyword that specifies that the element must be added or moved to first place in the child list of the current element. If the option is specified in the modify statement, then the element itself must also be a child of the current element. Otherwise, the `MOVE` statement should be used.
+        Keyword indicating that the navigator element should be added or moved to the beginning of the list of child elements of the current element.
+       
+    - `LAST`
 
-    - `IMAGE fileName`
+        Keyword indicating that the navigator element should be added or moved to the end of the list of child elements of the current element.
 
-        Specifying the relative path to the file with the image to be displayed as the icon for the navigator element. 
+    - `DEFAULT`
 
-        - `fileName`
+        Keyword indicating that the navigator element should be added or moved in the order of insertion to the list of child elements of the current element. This is the default value.
 
-            Path to the file. String literal. The path is relative to the `images` directory.
+    If the option is specified in the modify statement, then the element itself must also be a direct child of the current element. Otherwise, the `MOVE` statement should be used.
+
+- `IMAGE fileName`
+
+    Specifying the relative path to the file with the image to be displayed as the icon for the navigator element. 
+
+    - `fileName`
+
+        Path to the file. String literal. The path is relative to the `images` directory.
 
 ### Examples
 
