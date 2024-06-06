@@ -550,7 +550,7 @@ public class MainFrame implements EntryPoint {
         //apply initial navigator changes from navigatorinfo somewhere around here
         applyNavigatorChanges(result.navigatorChanges, navigatorController, windowsController);
 
-        formsController.executeAction("SystemEvents.onClientStarted[]", () -> {
+        formsController.executeAction("SystemEvents.onClientStartedApply[]", () -> {
             if (formsController.getFormsCount() == 0) {
                 openNavigatorMenu();
             }

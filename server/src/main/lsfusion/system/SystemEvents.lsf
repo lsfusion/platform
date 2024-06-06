@@ -53,6 +53,11 @@ onFinallyStartedApply() {
     APPLY;
 }
 
+onClientStartedApply() {
+    onClientStarted();
+    APPLY;
+}
+
 isIconModuleAvailable = ABSTRACT BOOLEAN ();
 iconIfAvailable(STRING imagePath, STRING fontClasses) = imagePath + (IF isIconModuleAvailable() THEN ';' + fontClasses ELSE '');
 
@@ -533,48 +538,44 @@ onClientStarted () + {
     }
 }
 
-currentSize = DATA Size(Connection);
-currentSize() = currentSize(currentConnection());
-saveCurrentSize(Connection c) {
-    currentSize(c) <- size(currentDesignEnv());
-}
-
 loadResource INTERNAL 'lsfusion.server.physics.admin.systemevents.LoadResourceAction' (STRING, FILE);
+loadResource(STRING resource) {
+    readResource(resource);
+    loadResource(resource, resourceFile());
+}
 unloadResource INTERNAL 'lsfusion.server.physics.admin.systemevents.UnloadResourceAction' (STRING);
 
-updateSize (Size oldSize, Size newSize) {
-    IF NOT paddingCss(oldSize) = paddingCss(newSize) AND (paddingCss(oldSize) OR paddingCss(newSize)) THEN {
-        IF paddingCss(oldSize) THEN {
-            unloadResource(paddingCss(oldSize));
-        }
-        IF paddingCss(newSize) THEN {
-            readResource(paddingCss(newSize));
-            loadResource(paddingCss(newSize), resourceFile());
-        }
-    }
+currentSize = DATA Size(Connection);
+currentSize() = currentSize(currentConnection());
+size() = size(currentDesignEnv());
+saveCurrentSize(BOOLEAN updateResources) {
+    FOR Size newSize = size() DO {
+        FOR updateResources AND Size prevSize = currentSize() DO {
+            IF paddingCss(prevSize) THEN {
+                unloadResource(paddingCss(prevSize));
+                unloadResource(fontCss(prevSize));
+            }
 
-    IF NOT fontCss(oldSize) = fontCss(newSize) AND (fontCss(oldSize) OR fontCss(newSize)) THEN {
-        IF fontCss(oldSize) THEN {
-            unloadResource(fontCss(oldSize));
+            IF paddingCss(newSize) THEN {
+                loadResource(paddingCss(newSize));
+                loadResource(fontCss(newSize));
+            }            
         }
-        IF fontCss(newSize) THEN {
-            readResource(fontCss(newSize));
-            loadResource(fontCss(newSize), resourceFile());
-        }
+
+        currentSize(currentConnection()) <- newSize; // currentSize() <- 
     }
-    
-    saveCurrentSize(currentConnection());
+}
+
+initCurrentSize() {
+    saveCurrentSize(NULL);
 }
 onWebClientStarted() + {
-    IF currentSize() != size(currentDesignEnv()) THEN {
-        NEWSESSION {
-            updateSize(currentSize(), size(currentDesignEnv()));
-            apply();
-        }
+    IF currentSize() != size() THEN { // check current size
+        saveCurrentSize(TRUE);
     }
 }
-WHEN LOCAL CHANGED (designEnvSize(DesignEnv de)) DO {
-    updateSize(currentSize(), size(de));
+WHEN FORMS design CHANGED (size()) DO {
+    saveCurrentSize(TRUE);
 }
 
 textOnHoverClass() = IF isWebDesktop() AND NOT navigatorPinMode() THEN ' navbar-text-on-hover' ELSE '';

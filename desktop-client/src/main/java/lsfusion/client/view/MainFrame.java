@@ -178,7 +178,7 @@ public abstract class MainFrame extends JFrame {
             
             MainController.changeColorTheme(clientSettings.colorTheme);
 
-            frame.executeNavigatorAction("SystemEvents.onClientStarted[]", 0, null, null);
+            frame.executeNavigatorAction("SystemEvents.onClientStartedApply[]", 0, null, null);
         } catch (Throwable e) {
             closeSplashScreen();
             logger.error(getString("client.error.application.initialization"), e);
