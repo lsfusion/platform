@@ -128,6 +128,7 @@ import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
 import static lsfusion.base.BaseUtils.isRedundantString;
+import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.server.base.ResourceUtils.getRevision;
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 import static lsfusion.server.logics.property.oraction.ActionOrPropertyUtils.directLI;
@@ -151,9 +152,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private boolean ignoreMigration;
     private boolean migrationScriptWasRead = false;
 
-    private boolean denyDropModules;
-
-    private boolean denyDropTables;
+    private Boolean denyDropModules;
+    private Boolean denyDropTables;
 
     private String dbNamingPolicy;
     private Integer dbMaxIdLength;
@@ -729,14 +729,21 @@ public class DBManager extends LogicsManager implements InitializingBean {
         this.ignoreMigration = ignoreMigration;
     }
 
-    public void setDenyDropModules(boolean denyDropModules) {
+    public void setDenyDropModules(Boolean denyDropModules) {
         this.denyDropModules = denyDropModules;
     }
 
-    public void setDenyDropTables(boolean denyDropTables) {
+    public boolean isDenyDropModules() {
+        return nvl(denyDropModules, SystemProperties.lightStart);
+    }
+
+    public void setDenyDropTables(Boolean denyDropTables) {
         this.denyDropTables = denyDropTables;
     }
 
+    public boolean isDenyDropTables() {
+        return nvl(denyDropTables, SystemProperties.lightStart);
+    }
 
     public String getDbNamingPolicy() {
         return dbNamingPolicy;
@@ -1504,7 +1511,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 alterDBStructure(sql, oldDBStructure, newDBStructure);
 
             // проверка, не удалятся ли старые таблицы
-            if (denyDropTables) {
+            if (isDenyDropTables()) {
                 String droppedTables = getDroppedTablesString(sql, oldDBStructure, newDBStructure);
                 if (!droppedTables.isEmpty()) {
                     throw new RuntimeException("Dropped tables: " + droppedTables);
@@ -2301,7 +2308,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 startLog("Module " + moduleName + " has been dropped");
                 droppedModules += moduleName + ", ";
             }
-        if (denyDropModules && !droppedModules.isEmpty())
+        if (isDenyDropModules() && !droppedModules.isEmpty())
             throw new RuntimeException("Dropped modules: " + droppedModules.substring(0, droppedModules.length() - 2) + "\nTry using 'db.denyDropModules = false' in lsfusion.properties");
     }
 
