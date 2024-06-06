@@ -1700,13 +1700,13 @@ public abstract class LogicsModule {
 
     // ------------------- MESSAGE ----------------- //
 
-    protected LA addMAProp(String title, boolean noWait, boolean log, Object... params) {
-        return addJoinAProp(null, LocalizedString.NONAME, addMAProp(title, noWait, log), params);
+    protected LA addMAProp(boolean hasHeader, boolean noWait, boolean log, Object... params) {
+        return addJoinAProp(null, LocalizedString.NONAME, addMAProp(hasHeader, noWait, log), params);
     }
 
     @IdentityStrongLazy
-    protected LA addMAProp(String title, boolean noWait, boolean log) {
-        return addAction(null, new LA(new MessageAction(LocalizedString.create("Message"), title, noWait, log)));
+    protected LA addMAProp(boolean hasHeader, boolean noWait, boolean log) {
+        return addAction(null, new LA(new MessageAction(LocalizedString.create("Message"), hasHeader, noWait, log)));
     }
 
     public LA addFocusAction(PropertyDrawEntity propertyDrawEntity) {
@@ -1715,18 +1715,13 @@ public abstract class LogicsModule {
 
     // ------------------- CONFIRM ----------------- //
 
-
-    protected LA addConfirmAProp(String title, boolean yesNo, LP targetProp, Object... params) {
-        return addConfirmAProp(null, LocalizedString.NONAME, title, yesNo, targetProp, params);
-    }
-
-    protected LA addConfirmAProp(Group group, LocalizedString caption, String title, boolean yesNo, LP<?> targetProp, Object... params) {
-        return addJoinAProp(group, caption, addConfirmAProp(title, yesNo, targetProp != null ? targetProp.property : null), params);
+    protected LA addConfirmAProp(boolean hasHeader, boolean yesNo, LP targetProp, Object... params) {
+        return addJoinAProp(null, LocalizedString.NONAME, addConfirmAProp(hasHeader, yesNo, targetProp != null ? targetProp.property : null), params);
     }
 
     @IdentityStrongLazy
-    protected LA addConfirmAProp(String title, boolean yesNo, Property property) {
-        return addAction(null, new LA(new ConfirmAction(LocalizedString.create("Confirm"), title, yesNo, property != null ? new LP(property) : null)));
+    protected LA addConfirmAProp(boolean hasHeader, boolean yesNo, Property property) {
+        return addAction(null, new LA(new ConfirmAction(LocalizedString.create("Confirm"), hasHeader, yesNo, property != null ? new LP(property) : null)));
     }
 
     // ------------------- Async Update Action ----------------- //

@@ -3899,11 +3899,12 @@ confirmActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams 
 }
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedConfirmProp($pe.property, $dDB.action, $dDB.elseAction, yesNo, context, newContext);
+		$action = self.addScriptedConfirmProp($mpe.property, $hpe.property, $dDB.action, $dDB.elseAction, yesNo, context, newContext);
 	}
 }
 	:	'ASK'
-        pe=propertyExpression[context, false]
+        mpe=propertyExpression[context, false]
+        ('HEADER' hpe=propertyExpression[context, false])?
         { newContext = new ArrayList<TypedParameter>(context); }
 	    ((varID=ID { if (inMainParseState()) { self.getParamIndex(self.new TypedParameter("BOOLEAN", $varID.text), newContext, true, insideRecursion); } } EQ)? 'YESNO' { yesNo = true;} )?
         dDB=doInputBody[context, newContext]
@@ -3916,11 +3917,12 @@ messageActionDefinitionBody[List<TypedParameter> context, boolean dynamic] retur
 }
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedMessageProp($pe.property, noWait, log);
+		$action = self.addScriptedMessageProp($mpe.property, $hpe.property, noWait, log);
 	}
 }
 	:	'MESSAGE'
-	    pe=propertyExpression[context, dynamic]
+	    mpe=propertyExpression[context, dynamic]
+	    ('HEADER' hpe=propertyExpression[context, dynamic])?
 	    (
 	        sync = syncTypeLiteral { noWait = !$sync.val; }
 	    |   'LOG' {  log = true; }

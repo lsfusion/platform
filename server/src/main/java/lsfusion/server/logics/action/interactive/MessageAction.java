@@ -5,7 +5,6 @@ import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.LogMessageClientAction;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.SystemAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
@@ -16,38 +15,49 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
 
+import static lsfusion.base.BaseUtils.nvl;
+
 public class MessageAction extends SystemAction {
-    protected final String title;
+    private PropertyInterface messageInterface;
+    private PropertyInterface headerInterface;
+
     private boolean noWait = false;
     private boolean log = false;
 
-    public <I extends PropertyInterface> MessageAction(LocalizedString caption, String title) {
-        super(caption, SetFact.singletonOrder(new PropertyInterface()));
+    public MessageAction(LocalizedString caption, boolean hasHeader) {
+        super(caption, SetFact.toOrderExclSet(hasHeader ? 2 : 1, i -> new PropertyInterface()));
 
-        this.title = title;
+        this.messageInterface = getOrderInterfaces().get(0);
+        this.headerInterface = hasHeader ? getOrderInterfaces().get(1) : null;
     }
 
-    public <I extends PropertyInterface> MessageAction(LocalizedString caption, String title, boolean noWait, boolean log) {
-        this(caption, title);
+    public MessageAction(LocalizedString caption, boolean hasHeader, boolean noWait, boolean log) {
+        this(caption, hasHeader);
 
         this.noWait = noWait;
         this.log = log;
     }
 
     public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
-        ObjectValue singleKeyValue = context.getSingleKeyValue();
-        showMessage(context, singleKeyValue instanceof NullValue ? null : singleKeyValue.getType().formatString(singleKeyValue.getValue(), true));
+        ObjectValue messageObject = context.getKeyValue(messageInterface);
+        String message = messageObject.getType().formatString(messageObject.getValue(), true);
+
+        String header = null;
+        if(headerInterface != null) {
+            ObjectValue headerObject = context.getKeyValue(headerInterface);
+            header = headerObject.getType().formatString(headerObject.getValue(), true);
+        }
+
+        showMessage(context, nvl(message, ""), nvl(header, "lsFusion"));
         return FlowResult.FINISH;
     }
 
-    protected void showMessage(ExecutionContext<PropertyInterface> context, String message) throws SQLException, SQLHandledException {
+    protected void showMessage(ExecutionContext<PropertyInterface> context, String message, String header) throws SQLException, SQLHandledException {
         ClientAction action;
-        if(message == null)
-            message = "";
         if(log)
             action = new LogMessageClientAction(message, false);
         else
-            action = new MessageClientAction(message, title);
+            action = new MessageClientAction(message, header);
 
         if (noWait) {
             context.delayUserInteraction(action);
