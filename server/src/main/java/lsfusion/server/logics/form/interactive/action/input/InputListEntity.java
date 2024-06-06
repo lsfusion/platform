@@ -141,23 +141,8 @@ public class InputListEntity<P extends PropertyInterface, V extends PropertyInte
 
     @IdentityInstanceLazy
     private <X extends PropertyInterface> ImOrderMap<PropertyInterfaceImplement<P>, Boolean> getOrderImplements() {
-        ImOrderMap<PropertyInterfaceImplement<P>, Boolean> mergeOrders = BaseUtils.<ImOrderMap<InputOrderEntity<X, V>, Boolean>>immutableCast(orders).mapOrderKeys(
+        return BaseUtils.<ImOrderMap<InputOrderEntity<X, V>, Boolean>>immutableCast(orders).mapOrderKeys(
                 order -> new PropertyMapImplement<>(order.property, MapFact.addRevExcl(order.mapValues.innerCrossValues(mapValues), order.singleInterface(), singleInterface())));
-
-        Stat interfaceStat = property.getInterfaceStat(mapValues.keys());
-        boolean tooManyRows = interfaceStat.getCount() > Settings.get().getAsyncValuesMaxReadOrderCount();
-
-        // we could do it in getListExpr (at the bottom stack point),
-        // but it seems better to do it here (at the top stack point), to properly handle caches ("global read" caches in particular)
-        // the check is that when we have too much rows, we remove the order for the optimization purposes
-        if (!mergeOrders.isEmpty()) {
-            if (tooManyRows)
-                mergeOrders = MapFact.EMPTYORDER();
-        } else {
-            if (!tooManyRows)
-                mergeOrders = MapFact.singletonOrder(singleInterface(), false);
-        }
-        return mergeOrders;
     }
 
     public DataClass getDataClass() {

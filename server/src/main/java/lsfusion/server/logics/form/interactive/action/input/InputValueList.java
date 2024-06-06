@@ -26,6 +26,7 @@ import lsfusion.server.logics.property.CurrentEnvironmentProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 
 import java.sql.SQLException;
@@ -46,13 +47,29 @@ public class InputValueList<P extends PropertyInterface> {
         this.mapValues = mapValues;
     }
 
-    public InputListExpr<P> getListExpr(Modifier modifier) throws SQLException, SQLHandledException {
+    public InputListExpr<P> getListExpr(Modifier modifier, AsyncMode asyncMode) throws SQLException, SQLHandledException {
         ImRevMap<P, KeyExpr> innerKeys = KeyExpr.getMapKeys(property.interfaces.removeIncl(mapValues.keys()));
-        ImMap<P, Expr> innerExprs = MapFact.addExcl(innerKeys, DataObject.getMapExprs(mapValues));
+        return new InputListExpr<>(innerKeys, property.getExpr(MapFact.addExcl(innerKeys, DataObject.getMapExprs(mapValues)), modifier), getOrderExprs(modifier, innerKeys, asyncMode));
+    }
 
-        ImOrderMap<Expr, Boolean> orderExprs = orders.mapMergeOrderKeysEx((ThrowingFunction<PropertyInterfaceImplement<P>, Expr, SQLException, SQLHandledException>) value -> value.mapExpr(innerKeys, modifier));
+    private ImOrderMap<Expr, Boolean> getOrderExprs(Modifier modifier, ImRevMap<P, KeyExpr> innerKeys, AsyncMode asyncMode) throws SQLException, SQLHandledException {
+        if(asyncMode == null)
+            return MapFact.EMPTYORDER();
 
-        return new InputListExpr<>(innerKeys, property.getExpr(innerExprs, modifier), orderExprs);
+        // the check is that when we have too much rows, we remove the order for the optimization purposes
+        if (!orders.isEmpty()) {
+            if (isTooMayRows())
+                return MapFact.EMPTYORDER();
+        } else {
+            if (asyncMode.isObjects() && !isTooMayRows()) // maybe OBJECTVALUES also can be used
+                return MapFact.singletonOrder(innerKeys.get(singleInterface()), false);
+        }
+
+        return orders.mapMergeOrderKeysEx((ThrowingFunction<PropertyInterfaceImplement<P>, Expr, SQLException, SQLHandledException>) value -> value.mapExpr(innerKeys, modifier));
+    }
+
+    private boolean isTooMayRows() {
+        return property.getInterfaceStat(mapValues.keys()).getCount() > Settings.get().getAsyncValuesMaxReadOrderCount();
     }
 
     public P singleInterface() {

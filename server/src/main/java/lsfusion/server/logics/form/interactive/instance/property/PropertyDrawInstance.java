@@ -80,6 +80,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
 
         boolean needObjects = actionSID.equals(ServerResponse.OBJECTS);
         boolean strictValues = actionSID.equals(ServerResponse.STRICTVALUES);
+        AsyncMode valuesMode = null;
         if(needObjects || strictValues || actionSID.equals(ServerResponse.VALUES)) { // filter or custom view
             int useFilters = needObjects ? 2 : Settings.get().getUseGroupFiltersInAsyncFilterCompletion();
 
@@ -90,6 +91,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
                 return null;
             newSession = BaseUtils.nvl(this.entity.defaultChangeEventScope, needObjects ? PropertyDrawEntity.DEFAULT_OBJECTS_EVENTSCOPE : PropertyDrawEntity.DEFAULT_VALUES_EVENTSCOPE) == FormSessionScope.NEWSESSION;
             converter = needObjects ? values -> rMapObjects.result.crossJoin(values) : null;
+            valuesMode = strictValues ? AsyncMode.STRICTVALUES : AsyncMode.VALUES;
         } else {
             ActionObjectEntity<P> eventAction = (ActionObjectEntity<P>) this.entity.getEventAction(actionSID, context);
             ImMap<P, ObjectValue> mapValues = formInstance.instanceFactory.getInstanceMap(eventAction.mapping).mapValues(BaseUtils.<Function<ObjectInstance, ObjectValue>>immutableCast(valuesGetter));
@@ -102,11 +104,12 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
             list = listEntity.map(mapValues);
             newSession = listEntity.newSession;
             if(asyncExec instanceof AsyncMapInput)
-                strictValues = ((AsyncMapInput<P>) asyncExec).strict;
+                valuesMode = AsyncMapInput.getAsyncMode(((AsyncMapInput<P>) asyncExec).strict);
+            else
+                assert converter != null; // so we don't need valuesMode
         }
 
-        asyncMode = converter != null ? AsyncMode.OBJECTS : (strictValues ? AsyncMode.STRICTVALUES : AsyncMode.VALUES);
-        return new AsyncValueList<>(list, converter, newSession, asyncMode);
+        return new AsyncValueList<>(list, converter, newSession, converter != null ? AsyncMode.OBJECTS : valuesMode);
     }
 
     // filter / custom view
