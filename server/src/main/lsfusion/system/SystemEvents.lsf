@@ -521,8 +521,8 @@ isWeb() = isWeb(currentConnection());
 
 noSystemToolbarCaptions() += isNativeDesktop();
 
-dontShowCloseButtonOnInactiveTab '{service.dont.show.close.button.on.inactive.tab}' = DATA BOOLEAN(CustomUser);
-dontShowCloseButtonOnInactiveTab = dontShowCloseButtonOnInactiveTab(currentUser());
+dontShowCloseButtonOnInactiveTab '{service.dont.show.close.button.on.inactive.tab}' = DATA BOOLEAN(DesignEnv);
+dontShowCloseButtonOnInactiveTab = dontShowCloseButtonOnInactiveTab(currentDesignEnv());
 
 userFiltersManualApplyMode = userFiltersManualApplyMode(currentDesignEnv());
 
