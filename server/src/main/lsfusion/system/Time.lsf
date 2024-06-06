@@ -158,7 +158,7 @@ name '{master.data.name}' (Month m) = staticCaption(m) IF m IS Month MATERIALIZE
 month '{time.month.number}' (number) = GROUP AGGR Month month BY number(month);
 
 extractMonth '{time.extract.month}' (DATE date) = month(extractMonthNumber(date));
-extractMonthName '{time.extract.month.name}' (DATE date) = staticCaption(extractMonth(date)) CHARWIDTH 12;
+extractMonthName '{time.extract.month.name}' (DATE date) = name(extractMonth(date)) CHARWIDTH 12;
 
 FORM months '{time.form.months}'
     OBJECTS m = Month
@@ -199,7 +199,7 @@ numberM '{time.number.dow}' (DOW d) = CASE EXCLUSIVE
     WHEN d == DOW.sunday THEN 6
     MATERIALIZED;
 
-name '{master.data.name}' (DOW d) = staticCaption(d) IF d IS Month MATERIALIZED CHARWIDTH 10;
+name '{master.data.name}' (DOW d) = staticCaption(d) IF d IS DOW MATERIALIZED CHARWIDTH 10;
 
 FORM DOWs '{time.form.dows}'
     OBJECTS d = DOW
