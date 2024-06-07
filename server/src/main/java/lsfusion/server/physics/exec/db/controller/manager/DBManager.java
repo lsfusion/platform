@@ -1514,7 +1514,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             if (isDenyDropTables()) {
                 String droppedTables = getDroppedTablesString(sql, oldDBStructure, newDBStructure);
                 if (!droppedTables.isEmpty()) {
-                    throw new RuntimeException("Dropped tables: " + droppedTables);
+                    throw new RuntimeException("Dropped tables: " + droppedTables + "\nTry using 'db.denyDropTables = false' in lsfusion.properties");
                 }
             }
 
