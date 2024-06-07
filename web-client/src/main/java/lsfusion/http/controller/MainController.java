@@ -355,11 +355,11 @@ public class MainController {
     }
 
     private String getPWAIcon(ServerSettings serverSettings) {
-        return serverSettings != null && serverSettings.PWAIcon != null ? getFileUrl(serverSettings.PWAIcon) : "";
+        return serverSettings != null && serverSettings.PWAIcon != null ? getFileUrl(serverSettings.PWAIcon) : "static/noauth/images/pwa-icon.png";
     }
 
     private String getLogicsIcon(ServerSettings serverSettings) {
-        return serverSettings != null && serverSettings.logicsIcon != null ? getFileUrl(serverSettings.logicsIcon) : "favicon.ico";
+        return serverSettings != null && serverSettings.logicsIcon != null ? getFileUrl(serverSettings.logicsIcon) : "static/noauth/images/favicon.ico";
     }
     
     private String getLogicsName(ServerSettings serverSettings) {
