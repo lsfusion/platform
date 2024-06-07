@@ -47,6 +47,7 @@ public class LogicsSessionObject {
             String displayName = trimToNull(json.optString("displayName"));
             FileData logicsLogo = getFileData(trimToNull(json.optString("logicsLogo")));
             FileData logicsIcon = getFileData(trimToNull(json.optString("logicsIcon")));
+            FileData PWAIcon = getFileData(trimToNull(json.optString("PWAIcon")));
             String platformVersion = trimToNull(json.optString("platformVersion"));
             Integer apiVersion = json.optInt("apiVersion");
             boolean inDevMode = json.optBoolean("inDevMode");
@@ -62,7 +63,7 @@ public class LogicsSessionObject {
             List<Pair<String, RawFileData>> noAuthResourcesBeforeSystem = getFileData(json, "noAuthResourcesBeforeSystem");
             List<Pair<String, RawFileData>> noAuthResourcesAfterSystem = getFileData(json, "noAuthResourcesAfterSystem");
 
-            serverSettings = new ServerSettings(logicsName, displayName, logicsLogo, logicsIcon, platformVersion, apiVersion, inDevMode,
+            serverSettings = new ServerSettings(logicsName, displayName, logicsLogo, logicsIcon, PWAIcon, platformVersion, apiVersion, inDevMode,
                     sessionConfigTimeout, anonymousUI, jnlpUrls, disableRegistration, lsfParams, noAuthResourcesBeforeSystem, noAuthResourcesAfterSystem);
         }
         return serverSettings;

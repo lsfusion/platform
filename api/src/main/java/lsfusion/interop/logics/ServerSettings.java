@@ -12,6 +12,7 @@ public class ServerSettings {
     public String displayName;
     public FileData logicsLogo;
     public FileData logicsIcon;
+    public FileData PWAIcon;
     public String platformVersion;
     public Integer apiVersion;
     public boolean inDevMode;
@@ -23,13 +24,14 @@ public class ServerSettings {
     public List<Pair<String, RawFileData>> noAuthResourcesBeforeSystem;
     public List<Pair<String, RawFileData>> noAuthResourcesAfterSystem;
 
-    public ServerSettings(String logicsName, String displayName, FileData logicsLogo, FileData logicsIcon, String platformVersion, Integer apiVersion,
+    public ServerSettings(String logicsName, String displayName, FileData logicsLogo, FileData logicsIcon, FileData PWAIcon, String platformVersion, Integer apiVersion,
                           boolean inDevMode, int sessionConfigTimeout, boolean anonymousUI, String jnlpUrls, boolean disableRegistration, Map<String, String> lsfParams,
                           List<Pair<String, RawFileData>> noAuthResourcesBeforeSystem, List<Pair<String, RawFileData>> noAuthResourcesAfterSystem) {
         this.logicsName = logicsName;
         this.displayName = displayName;
         this.logicsLogo = logicsLogo;
         this.logicsIcon = logicsIcon;
+        this.PWAIcon = PWAIcon;
         this.platformVersion = platformVersion;
         this.apiVersion = apiVersion;
         this.inDevMode = inDevMode;
