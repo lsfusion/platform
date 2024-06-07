@@ -538,12 +538,12 @@ onClientStarted () + {
     }
 }
 
-loadResource INTERNAL 'lsfusion.server.physics.admin.systemevents.LoadResourceAction' (STRING, FILE);
-loadResource(STRING resource) {
-    readResource(resource);
-    loadResource(resource, resourceFile());
+loadResource (STRING path) {
+    INTERNAL CLIENT path;
 }
-unloadResource INTERNAL 'lsfusion.server.physics.admin.systemevents.UnloadResourceAction' (STRING);
+unloadResource (STRING path) {
+    INTERNAL CLIENT 'remove ' + path;
+}
 
 currentSize = DATA Size(Connection);
 currentSize() = currentSize(currentConnection());

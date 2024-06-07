@@ -20,6 +20,8 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static lsfusion.base.BaseUtils.serializeObject;
 
@@ -49,6 +51,14 @@ public class InternalClientAction extends CallAction {
 
         ImOrderSet<PropertyInterface> orderInterfaces = getOrderInterfaces();
         String exec = resourceName != null ? resourceName : (String) context.getKeyObject(orderInterfaces.get(0));
+
+        boolean remove = false;
+        Matcher commandMatcher = Pattern.compile("remove (.*)").matcher(exec);
+        if (commandMatcher.matches()) {
+            remove = true;
+            exec = commandMatcher.group(1);
+        }
+
         boolean isFile = exec.contains(".");
         if(resourceName != null && !isFile && exec.contains("(")) { //backward compatibility
            exec = exec.substring(0, exec.indexOf("("));
@@ -80,7 +90,7 @@ public class InternalClientAction extends CallAction {
             resourceName = exec;
         }
 
-        ClientWebAction clientWebAction = new ClientWebAction(resource, resourceName, exec, values, types, returnType, isFile, syncType);
+        ClientWebAction clientWebAction = new ClientWebAction(resource, resourceName, exec, values, types, returnType, isFile, syncType, remove);
         if (syncType) {
             Object result = context.requestUserInteraction(clientWebAction);
             if(targetProp != null)

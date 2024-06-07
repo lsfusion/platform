@@ -704,16 +704,6 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     }
 
     @Override
-    public void execute(LoadResourceClientAction action) {
-        //do nothing in desktop
-    }
-
-    @Override
-    public void execute(UnloadResourceClientAction action) {
-        //do nothing in desktop
-    }
-
-    @Override
     public void execute(ResetWindowsLayoutClientAction action) {
         ((DockableMainFrame) MainFrame.instance).resetWindowsLayout();
     }

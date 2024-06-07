@@ -365,41 +365,6 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     }
 
     @Override
-    public void execute(GLoadResourceAction action) {
-        loadResource(action.path, action.extension);
-    }
-
-    private native void loadResource(String path, String extension)/*-{
-        if(extension === 'js') {
-            var scr = document.createElement('script');
-            scr.src = path;
-            scr.type = 'text/javascript';
-            $wnd.document.head.appendChild(scr);
-        } else if(extension === 'css') {
-            var link = document.createElement("link");
-            link.href = path;
-            link.type = "text/css";
-            link.rel = "stylesheet";
-            $wnd.document.head.appendChild(link);
-        }
-    }-*/;
-
-    @Override
-    public void execute(GUnloadResourceAction action) {
-        unloadResource(action.resource);
-    }
-
-    private native void unloadResource(String resourceName)/*-{
-        var links = $wnd.document.head.getElementsByTagName("link");
-        for (var i=0; i<links.length; i++) {
-            var link = links[i];
-            if(link.href.indexOf(resourceName) > 0) {
-                link.parentNode.removeChild(link);
-            }
-        }
-    }-*/;
-
-    @Override
     public void execute(GResetWindowsLayoutAction action) {
     }
 
@@ -443,14 +408,30 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
         private final NativeStringMap<String> resources = new NativeStringMap<>();
         private void executeFile(GClientWebAction action) {
-            String resource = action.resource;
-            if (resources.containsKey(resource)) {
+            if(action.remove) {
+                unloadResource(action.resourceName);
+                resources.remove(action.resource);
                 onFileExecuted(action);
             } else {
-                resources.put(resource, null);
-                executeFile(action, GwtClientUtils.getAppStaticWebURL(resource), action.resourceName, action.originalResourceName);
+                String resource = action.resource;
+                if (resources.containsKey(resource)) {
+                    onFileExecuted(action);
+                } else {
+                    resources.put(resource, null);
+                    executeFile(action, GwtClientUtils.getAppStaticWebURL(resource), action.resourceName, action.originalResourceName);
+                }
             }
         }
+
+        private native void unloadResource(String resourceName)/*-{
+            var links = $wnd.document.head.getElementsByTagName("link");
+            for (var i=0; i<links.length; i++) {
+                var link = links[i];
+                if(link.href.indexOf(resourceName) > 0) {
+                    link.parentNode.removeChild(link);
+                }
+            }
+        }-*/;
 
         private native void executeFile(GClientWebAction action, String resourcePath, String resourceName, String originalResourceName)/*-{
             var thisObj = this;

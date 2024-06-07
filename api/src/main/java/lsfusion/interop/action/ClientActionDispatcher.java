@@ -72,10 +72,6 @@ public interface ClientActionDispatcher {
 
     void execute(ChangeColorThemeClientAction action);
 
-    void execute(LoadResourceClientAction action);
-
-    void execute(UnloadResourceClientAction action);
-
     void execute(ResetWindowsLayoutClientAction action);
     
     void execute(OrderClientAction action);

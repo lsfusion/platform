@@ -273,21 +273,6 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         return new GChangeColorThemeAction(GColorTheme.valueOf(action.colorTheme.name()));
     }
 
-    @Converter(from = LoadResourceClientAction.class)
-    public GLoadResourceAction convertAction(LoadResourceClientAction action, FormSessionObject formSessionObject, MainDispatchServlet servlet) throws SessionInvalidatedException {
-        String resourceName = action.resourceName;
-        FileData resourceFile = action.resourceFile;
-
-        String resourcePath = servlet.getFormProvider().getWebFile(formSessionObject.navigatorID, resourceName, resourceFile.getRawFile());
-        String resourceExtension = resourceFile.getExtension();
-        return new GLoadResourceAction(resourcePath, resourceExtension);
-    }
-
-    @Converter(from = UnloadResourceClientAction.class)
-    public GUnloadResourceAction convertAction(UnloadResourceClientAction action, FormSessionObject formSessionObject, MainDispatchServlet servlet) throws SessionInvalidatedException {
-        return new GUnloadResourceAction(action.resourceName);
-    }
-
     @Converter(from = ResetWindowsLayoutClientAction.class)
     public GResetWindowsLayoutAction convertAction(ResetWindowsLayoutClientAction action) {
         return new GResetWindowsLayoutAction();
@@ -325,7 +310,8 @@ public class ClientActionToGwtConverter extends ObjectConverter {
             }
         } else
             resourcePath = (String) resource;
-        return new GClientWebAction(resourcePath, action.resourceName, originalResourceName, values, types, returnType, action.isFile, action.syncType);
+        return new GClientWebAction(resourcePath, action.resourceName, originalResourceName, values, types, returnType,
+                action.isFile, action.syncType, action.remove);
     }
 
     @Converter(from = ResetServerSettingsCacheClientAction.class)
