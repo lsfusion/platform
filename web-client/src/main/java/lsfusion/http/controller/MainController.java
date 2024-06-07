@@ -118,27 +118,25 @@ public class MainController {
         }
     }
 
-    @GetMapping(value = "/lsf-manifest", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/manifest", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public Map<String, Object> getLSFManifest(HttpServletRequest request) {
-        String currentLocation = URI.create(request.getRequestURL().toString()).toString().replace("lsf-manifest", "");
-
         ServerSettings serverSettings = getAndCheckServerSettings(request, checkVersionError, false);
 
         Map<String, Object> response = new HashMap<>();
         response.put("name", getTitle(serverSettings));
         List<Map<String, Object>> icons = new ArrayList<>();
         Map<String, Object> iconsMap = new HashMap<>();
-        iconsMap.put("src", currentLocation + getPWAIcon(serverSettings));
+        iconsMap.put("src", getPWAIcon(serverSettings));
         iconsMap.put("type", "image/png");
         iconsMap.put("sizes", "512x512");
         icons.add(iconsMap);
         response.put("icons", icons);
         String contextPath = request.getContextPath();
         response.put("id", (!contextPath.isEmpty() ? contextPath + "/" : "") + "main");
-        response.put("start_url", currentLocation + "main");
+        response.put("start_url", "main");
         response.put("display", "standalone");
-        response.put("scope", currentLocation);
+        response.put("scope", contextPath + "/");
 
         return response;
     }

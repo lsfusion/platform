@@ -59,7 +59,7 @@
             unexpected behavior occurs:
                 user enters login and password, and then goes to /service-worker.js instead of /main -->
     <http pattern="/service-worker.js" security="none"/>
-    <http pattern="/lsf-manifest" security="none"/>
+    <http pattern="/manifest" security="none"/>
     <!-- UI security -->
     <http entry-point-ref="entryPoint">
         <intercept-url pattern="/**" access="isAuthenticated()"/>
