@@ -161,8 +161,8 @@ navigatorPinModeCaption = (IF navigatorPinMode()
 navigatorPinModeImage = IF navigatorPinMode() 
     THEN (IF navigatorPinMode() == TFALSE 
         THEN iconIfAvailable('navigatorPinNavbar.png','fa-solid fa-thumbtack fa-rotate-45') 
-        ELSE iconIfAvailable('navigatorPinAll.png','fa-solid fa-thumbtack fa-rotate-90')) 
-    ELSE iconIfAvailable('navigatorPinNone.png','fa-solid fa-thumbtack');
+        ELSE iconIfAvailable('navigatorPinAll.png','fa-solid fa-thumbtack')) 
+    ELSE iconIfAvailable('navigatorPinNone.png','fa-solid fa-thumbtack fa-rotate-90');
 toggleNavigatorPinMode () {
     designEnvNavigatorPinMode(currentDesignEnv()) <- IF navigatorPinMode() THEN (IF navigatorPinMode() == TFALSE THEN TTRUE ELSE NULL) ELSE TFALSE;
     useClientNavigatorPinMode(currentDesignEnv()) <- TRUE;
