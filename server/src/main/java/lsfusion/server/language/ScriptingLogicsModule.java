@@ -2509,22 +2509,28 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LAWithParams(action, usedParams);
     }
 
-    public LAWithParams addScriptedConfirmProp(LPWithParams msgProp, LAWithParams doAction, LAWithParams elseAction, boolean yesNo, List<TypedParameter> oldContext, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
-        LP targetProp = null;
-        if(yesNo)
-            targetProp = getInputProp(null, LogicalClass.instance, null);
+    public LAWithParams addScriptedConfirmProp(LPWithParams messageProp, LPWithParams headerProp, LAWithParams doAction, LAWithParams elseAction, boolean yesNo, List<TypedParameter> oldContext, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
+        LP targetProp = yesNo ? getInputProp(null, LogicalClass.instance, null) : null;
 
-        List<Object> resultParams = getParamsPlainList(singletonList(msgProp));
-        LA asyncLA = addConfirmAProp("lsFusion", yesNo, targetProp, resultParams.toArray());
-        LAWithParams inputAction = new LAWithParams(asyncLA, msgProp.usedParams);
+        List<LPWithParams> properties = new ArrayList<>();
+        properties.add(messageProp);
+        if(headerProp != null) {
+            properties.add(headerProp);
+        }
+        LAWithParams inputAction = new LAWithParams(addConfirmAProp(headerProp != null, yesNo, targetProp,
+                getParamsPlainList(properties).toArray()), mergeAllParams(properties));
 
         return proceedInputDoClause(doAction, elseAction, oldContext, newContext, yesNo ? ListFact.singleton(targetProp) : ListFact.EMPTY(), inputAction, yesNo ? ListFact.singleton(null) : ListFact.EMPTY());
     }
 
-    public LAWithParams addScriptedMessageProp(LPWithParams msgProp, boolean noWait, boolean log) {
-        List<Object> resultParams = getParamsPlainList(singletonList(msgProp));
-        LA asyncLA = addMAProp("lsFusion", noWait, log, resultParams.toArray());
-        return new LAWithParams(asyncLA, msgProp.usedParams);
+    public LAWithParams addScriptedMessageProp(LPWithParams messageProp, LPWithParams headerProp, boolean noWait, boolean log) {
+        List<LPWithParams> properties = new ArrayList<>();
+        properties.add(messageProp);
+        if(headerProp != null) {
+            properties.add(headerProp);
+        }
+        return new LAWithParams(addMAProp(headerProp != null, noWait, log,
+                getParamsPlainList(properties).toArray()), mergeAllParams(properties));
     }
 
     public LAWithParams addScriptedAsyncUpdateProp(LPWithParams asyncProp) {

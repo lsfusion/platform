@@ -25,8 +25,8 @@ public class ConfirmAction extends MessageAction {
     private final boolean yesNo;
     private final LP targetProp;
 
-    public <I extends PropertyInterface> ConfirmAction(LocalizedString caption, String title, boolean yesNo, LP targetProp) {
-        super(caption, title);
+    public ConfirmAction(LocalizedString caption, boolean hasHeader, boolean yesNo, LP targetProp) {
+        super(caption, hasHeader);
         
         this.yesNo = yesNo;
         this.targetProp = targetProp;
@@ -34,24 +34,24 @@ public class ConfirmAction extends MessageAction {
     }
 
     @Override
-    protected void showMessage(ExecutionContext<PropertyInterface> context, String message) throws SQLException, SQLHandledException {
+    protected void showMessage(ExecutionContext<PropertyInterface> context, String message, String header) throws SQLException, SQLHandledException {
         Integer result;
         if(message == null) // если NULL считаем что YES
             result = JOptionPane.YES_OPTION;
         else
             result = (Integer) context.requestUserInteraction(
-                    new ConfirmClientAction(toCaption(title), message, yesNo, 0, 0)
+                    new ConfirmClientAction(toCaption(header), message, yesNo, 0, 0)
             );
         
         assert result != null;
-        ImList<RequestResult> requestResults = null;
+        ImList<RequestResult> requestResults;
         if(yesNo) {
-            if(result == null || result == JOptionPane.CANCEL_OPTION)
+            if(result == JOptionPane.CANCEL_OPTION)
                 requestResults = null;
             else
                 requestResults = ListFact.singleton(new RequestResult(result == JOptionPane.YES_OPTION ? DataObject.TRUE : NullValue.instance, LogicalClass.instance, targetProp));
         } else {
-            if(result != null && result == JOptionPane.YES_OPTION)
+            if(result == JOptionPane.YES_OPTION)
                 requestResults = ListFact.EMPTY();                
             else
                 requestResults = null; // NO_OPTION
