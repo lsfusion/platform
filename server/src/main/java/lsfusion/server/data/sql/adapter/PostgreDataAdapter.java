@@ -284,7 +284,7 @@ public class PostgreDataAdapter extends DataAdapter {
                 executor.execute(commandLine, env);
                 return tempDB;
             } catch (IOException e) {
-                logger.error("Error while restoring the database : " + commandLine);
+                logger.error("Error while restoring the database : " + commandLine, e);
                 return tempDB;
             }
         } else return null;
