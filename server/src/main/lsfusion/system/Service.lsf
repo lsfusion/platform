@@ -950,4 +950,10 @@ DESIGN customUser {
             }
         }
     }
-} 
+}
+
+pixelSize(Connection c) = INTEGER(splitPart(screenSize(c), 'x', 1)) * INTEGER(splitPart(screenSize(c), 'x', 2));
+heuristicSize() += CASE
+    WHEN pixelSize(currentConnection()) <= INTEGER(valueSetting('maxPixelTinySize')) THEN Size.tiny
+    WHEN pixelSize(currentConnection()) <= INTEGER(valueSetting('maxPixelMiniSize')) THEN Size.mini
+    ELSE Size.normal;

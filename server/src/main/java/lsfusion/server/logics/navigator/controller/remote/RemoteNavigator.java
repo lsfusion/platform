@@ -11,7 +11,6 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
-import lsfusion.base.file.FileData;
 import lsfusion.base.lambda.set.FullFunctionSet;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.action.ClientAction;
@@ -37,7 +36,6 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.action.LA;
-import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.action.Action;
@@ -397,7 +395,13 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
     public void updateClientInfo(ClientInfo clientInfo) {
         try (DataSession session = createSession()) {
+
             businessLogics.systemEventsLM.screenSizeConnection.change(clientInfo.screenSize, session, getConnection());
+            businessLogics.systemEventsLM.scaleConnection.change(clientInfo.scale, session, getConnection());
+
+            if(clientInfo.initial) {
+                businessLogics.systemEventsLM.initCurrentSize.execute(session, getStack());
+            }
 
             ClientType clientType = clientInfo.clientType;
             businessLogics.systemEventsLM.clientTypeConnection.change(businessLogics.systemEventsLM.clientType.getObjectID(clientType.toString()), session, getConnection());

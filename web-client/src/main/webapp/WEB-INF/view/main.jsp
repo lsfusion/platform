@@ -213,6 +213,9 @@
 
                 setColorTheme();
 
+                setCookie('LSFUSION_SCREEN_SIZE', document.documentElement.clientWidth + 'x' + document.documentElement.clientHeight);
+                setCookie('LSFUSION_SCALE', window.devicePixelRatio);
+
                 navigator.serviceWorker.ready.then((registration) => {
                     registration.active.postMessage({
                         type: "setDefaultNotifyOptions",

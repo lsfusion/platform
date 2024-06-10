@@ -15,8 +15,10 @@ public class ClientWebAction extends ExecuteClientAction {
     public byte[] returnType;
     public boolean isFile;
     public boolean syncType;
+    public boolean remove;
 
-    public ClientWebAction(Object resource, String resourceName, String originalResourceName, ArrayList<byte[]> values, ArrayList<byte[]> types, byte[] returnType, boolean isFile, boolean syncType) {
+    public ClientWebAction(Object resource, String resourceName, String originalResourceName, ArrayList<byte[]> values,
+                           ArrayList<byte[]> types, byte[] returnType, boolean isFile, boolean syncType, boolean remove) {
         this.resource = resource;
         this.resourceName = resourceName;
         this.originalResourceName = originalResourceName;
@@ -25,6 +27,7 @@ public class ClientWebAction extends ExecuteClientAction {
         this.returnType = returnType;
         this.isFile = isFile;
         this.syncType = syncType;
+        this.remove = remove;
     }
 
     public boolean isFont() {

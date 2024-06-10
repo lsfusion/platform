@@ -2,6 +2,7 @@ package lsfusion.gwt.server.convert;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.SystemUtils;
+import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.file.WriteClientAction;
 import lsfusion.client.classes.ClientObjectClass;
@@ -23,6 +24,7 @@ import lsfusion.gwt.client.navigator.window.GShowFormType;
 import lsfusion.gwt.client.view.GColorTheme;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.server.MainDispatchServlet;
+import lsfusion.http.provider.SessionInvalidatedException;
 import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.ContainerShowFormType;
@@ -308,7 +310,8 @@ public class ClientActionToGwtConverter extends ObjectConverter {
             }
         } else
             resourcePath = (String) resource;
-        return new GClientWebAction(resourcePath, action.resourceName, originalResourceName, values, types, returnType, action.isFile, action.syncType);
+        return new GClientWebAction(resourcePath, action.resourceName, originalResourceName, values, types, returnType,
+                action.isFile, action.syncType, action.remove);
     }
 
     @Converter(from = ResetServerSettingsCacheClientAction.class)

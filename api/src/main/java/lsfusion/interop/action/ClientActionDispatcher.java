@@ -71,7 +71,7 @@ public interface ClientActionDispatcher {
     void execute(CloseFormClientAction action);
 
     void execute(ChangeColorThemeClientAction action);
-    
+
     void execute(ResetWindowsLayoutClientAction action);
     
     void execute(OrderClientAction action);

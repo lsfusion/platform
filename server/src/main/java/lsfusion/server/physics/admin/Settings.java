@@ -3349,4 +3349,26 @@ public class Settings implements Cloneable {
     public void setMaxStickyLeft(double maxStickyLeft) {
         this.maxStickyLeft = maxStickyLeft;
     }
+
+    //default size is Tiny if screen width x height is not more than maxPixelTinySize
+    private int maxPixelTinySize = 748800; //1280x585
+
+    public int getMaxPixelTinySize() {
+        return maxPixelTinySize;
+    }
+
+    public void setMaxPixelTinySize(int maxPixelTinySize) {
+        this.maxPixelTinySize = maxPixelTinySize;
+    }
+
+    //default size is Mini if screen width x height is not more than maxPixelMiniSize
+    private int maxPixelMiniSize = 1121280; //1536x730
+
+    public int getMaxPixelMiniSize() {
+        return maxPixelMiniSize;
+    }
+
+    public void setMaxPixelMiniSize(int maxPixelMiniSize) {
+        this.maxPixelMiniSize = maxPixelMiniSize;
+    }
 }

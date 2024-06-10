@@ -41,6 +41,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
@@ -300,7 +301,7 @@ public class MainController {
                     throw e;
                 }
             }).get();
-            LogicsSessionObject.InitSettings initSettings = getInitSettings(navigatorProvider.getNavigatorSessionObject(sessionId).remoteNavigator, request, new ClientInfo("1366x768", ClientType.WEB_DESKTOP));
+            LogicsSessionObject.InitSettings initSettings = getInitSettings(navigatorProvider.getNavigatorSessionObject(sessionId).remoteNavigator, request, new ClientInfo("1366x768", 1.0, ClientType.WEB_DESKTOP, true));
             mainResourcesBeforeSystem = initSettings.mainResourcesBeforeSystem;
             mainResourcesAfterSystem = initSettings.mainResourcesAfterSystem;
         } catch (AuthenticationException authenticationException) {
@@ -338,6 +339,26 @@ public class MainController {
     }
 
     public static LogicsSessionObject.InitSettings getInitSettings(RemoteNavigatorInterface remoteNavigator, HttpServletRequest request, ClientInfo clientInfo) throws RemoteException {
+        String screenSize = null;
+        String scale = null;
+
+        Cookie[] cookies = request.getCookies();
+        if(cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("LSFUSION_SCREEN_SIZE")) {
+                    screenSize = cookie.getValue();
+                } else if(cookie.getName().equals("LSFUSION_SCALE")) {
+                    scale = cookie.getValue();
+                }
+            }
+        }
+        if (screenSize != null) {
+            clientInfo.screenSize = screenSize;
+        }
+        if (scale != null) {
+            clientInfo.scale = Double.parseDouble(scale);
+        }
+
         remoteNavigator.updateClientInfo(clientInfo);
         return LogicsSessionObject.getInitSettings(NavigatorProviderImpl.getSessionInfo(request), remoteNavigator);
     }
