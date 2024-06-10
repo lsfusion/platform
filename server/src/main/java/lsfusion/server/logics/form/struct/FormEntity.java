@@ -623,9 +623,9 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 //    }
 
     @IdentityLazy
-    public ImMap<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> getAllGroupProperties(final ImSet<GroupObjectEntity> excludeGroupObjects, final boolean supportGroupColumns) {
+    public ImMap<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> getAllGroupProperties() {
         return ((ImOrderSet<PropertyDrawEntity>)getPropertyDrawsList()).groupOrder(key -> {
-            GroupObjectEntity applyObject = key.getApplyObject(FormEntity.this, excludeGroupObjects, supportGroupColumns);
+            GroupObjectEntity applyObject = key.getToDraw(FormEntity.this);
             return applyObject == null ? GroupObjectEntity.NULL : applyObject;
         });
     }
@@ -717,7 +717,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     public MetaExternal getMetaExternal(FormInstanceContext context) {
-        final ImMap<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> groupProperties = getAllGroupProperties(SetFact.EMPTY(), false);
+        final ImMap<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> groupProperties = getAllGroupProperties();
 
         return new MetaExternal(getGroups().mapValues((GroupObjectEntity group) -> {
             ImOrderSet<PropertyDrawEntity> properties = groupProperties.get(group);
@@ -848,9 +848,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return result;
     }
 
-    public GroupObjectEntity getApplyObject(ImSet<ObjectEntity> objects) {
-        return getApplyObject(objects, SetFact.EMPTY());
-    }
     public GroupObjectEntity getApplyObject(ImSet<ObjectEntity> objects, ImSet<GroupObjectEntity> excludeGroupObjects) {
         GroupObjectEntity result = null;
         for (GroupObjectEntity group : getGroupsList()) {
@@ -1090,7 +1087,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     private ImOrderSet<PropertyDrawEntity> getProperties(GroupObjectEntity group) {
-        ImOrderSet<PropertyDrawEntity> properties = getAllGroupProperties(SetFact.EMPTY(), true).get(group);
+        ImOrderSet<PropertyDrawEntity> properties = getAllGroupProperties().get(group);
         return properties != null ? properties : SetFact.EMPTYORDER();
     }
 

@@ -34,6 +34,7 @@ import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.CustomClass;
+import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapChange;
 import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelector;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
@@ -88,7 +89,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     private OrderedMap<String, LocalizedString> contextMenuBindings;
     private Map<String, ActionObjectSelector> eventActions;
 
-    public boolean ignoreIsInInterfaceCheck;
+    public boolean isSelector;
 
     public boolean optimisticAsync;
 
@@ -424,7 +425,13 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         contextMenuBindings.put(actionSID, caption);
     }
 
-    public void setEventAction(String actionSID, ActionObjectSelector eventAction, boolean ignoreIsInInterfaceCheck) {
+    // VALUE, INTERVAL or SELECTOR
+    // assert that it is single panel object, VALUE, INTERVAL - Data with classes, SELECT - Object
+    public void setSelectorAction(ActionObjectSelector eventAction) {
+        setEventAction(CHANGE, eventAction);
+        this.isSelector = true;
+    }
+    public void setEventAction(String actionSID, ActionObjectSelector eventAction) {
         if(actionSID.equals(CHANGE_WYS)) { // CHANGE_WYS, temp check
             startLog("WARNING! CHANGE_WYS is deprecated, use LIST clause in INPUT / DIALOG operator instead " + this);
             return;
@@ -434,7 +441,6 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             eventActions = new HashMap<>();
         }
         eventActions.put(actionSID, eventAction);
-        this.ignoreIsInInterfaceCheck = ignoreIsInInterfaceCheck;
     }
 
     public FormSessionScope defaultChangeEventScope = null;
@@ -830,6 +836,10 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             boolean changeValue = false;
             ActionObjectEntity<?> explicitChange = getExplicitEventActionEntity(CHANGE, context);
             if(explicitChange != null) {
+                // when we have selector, then it's normal for the object to be null, which however can lead to the "closure problem" - current value (it's params / objects) is "pushed" inside the JSON (GROUP) operator, which doesn't support NULL values (so all the options will be "erased")
+                if(!forceSelect && isSelector && getToDraw(context.entity).updateType == UpdateType.NULL) // assert that group object is single panel object
+                    return null;
+
                 changeValue = true;
                 select = explicitChange.getSelectProperty(context, forceSelect, forceFilter, property);
             } else

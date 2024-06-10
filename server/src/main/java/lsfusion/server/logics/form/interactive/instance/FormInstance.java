@@ -2382,7 +2382,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     private boolean isPropertyStaticShown(ComponentView drawComponent, PropertyDrawInstance drawProperty, ImSet<GroupObjectInstance> propRowColumnGrids) {
-        if(!drawProperty.getEntity().ignoreIsInInterfaceCheck && !drawProperty.isInInterface(propRowColumnGrids, true)) { // don't show property if it is always null
+        if(!drawProperty.isInInterface(propRowColumnGrids, true) && !drawProperty.getEntity().isSelector) { // don't show property if it is always null
             return false;
         }
 

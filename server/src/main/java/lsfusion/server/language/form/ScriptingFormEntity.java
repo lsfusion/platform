@@ -376,7 +376,7 @@ public class ScriptingFormEntity {
             LAP<?, ?> property = null;
             ImOrderSet<ObjectEntity> objects = null;
             String forceIntegrationSID = null;
-            ActionObjectSelector forceChangeAction = null;
+            ActionObjectSelector selectorAction = null;
             if(pDrawUsage instanceof ScriptingLogicsModule.FormPredefinedUsage) {
                 ScriptingLogicsModule.FormPredefinedUsage prefefUsage = (ScriptingLogicsModule.FormPredefinedUsage) pDrawUsage;
                 ScriptingLogicsModule.NamedPropertyUsage pUsage = prefefUsage.property;
@@ -386,7 +386,7 @@ public class ScriptingFormEntity {
                     ObjectEntity obj = getSingleMappingObject(mapping);
                     Pair<LP, ActionObjectSelector> valueProp = LM.getObjValueProp(form, obj);
                     property = valueProp.first;
-                    forceChangeAction = valueProp.second;
+                    selectorAction = valueProp.second;
                     objects = SetFact.singletonOrder(obj);
                 } else if (propertyName.equals("NEW") && nvl(scope, PropertyDrawEntity.DEFAULT_ACTION_EVENTSCOPE) == OLDSESSION) {
                     ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
@@ -422,7 +422,7 @@ public class ScriptingFormEntity {
                     LP<?>[] intProps = LM.findProperties(timeClass.getIntervalProperty(), timeClass.getFromIntervalProperty(), timeClass.getToIntervalProperty());
                     Pair<LP, ActionObjectSelector> intervalProp = LM.getObjIntervalProp(form, objectFrom, objectTo, intProps[0], intProps[1], intProps[2]);
                     property = intervalProp.first;
-                    forceChangeAction = intervalProp.second;
+                    selectorAction = intervalProp.second;
                 } else
                     throw new UnsupportedOperationException();
             } else {
@@ -444,8 +444,8 @@ public class ScriptingFormEntity {
             PropertyDrawEntity propertyDraw = form.addPropertyDraw((ActionOrPropertyObjectEntity) property.createObjectEntity(objects), debugPoint.getFullPath(), inherited.result, property.listInterfaces, location, version);
             propertyDraw.setScriptIndex(Pair.create(debugPoint.getScriptLine(), debugPoint.offset));
 
-            if(forceChangeAction != null)
-                propertyDraw.setEventAction(ServerResponse.CHANGE, forceChangeAction, true);
+            if(selectorAction != null)
+                propertyDraw.setSelectorAction(selectorAction);
 
             propertyDraw.defaultChangeEventScope = scope;
 
@@ -617,14 +617,12 @@ public class ScriptingFormEntity {
         Boolean isSelector = options.getSelector();
         boolean hasSelector = isSelector != null && isSelector;
         if (hasSelector)
-            property.setEventAction(ServerResponse.CHANGE, property::getSelectorAction, true);
+            property.setSelectorAction(property::getSelectorAction);
 
         Map<String, ActionObjectEntity> eventActions = options.getEventActions();
-        if (eventActions != null) {
-            for (Map.Entry<String, ActionObjectEntity> e : eventActions.entrySet()) {
-                property.setEventAction(e.getKey(), e.getValue(), hasSelector);
-            }
-        }
+        if (eventActions != null)
+            for (Map.Entry<String, ActionObjectEntity> e : eventActions.entrySet())
+                property.setEventAction(e.getKey(), e.getValue());
 
         List<Pair<ActionObjectEntity, Boolean>> formChangeEventActions = options.getFormChangeEventActions();
         if (formChangeEventActions != null) {
@@ -842,7 +840,7 @@ public class ScriptingFormEntity {
                 form.addActionsOnEvent(getObjectEntity((String) eventType), replace, version, actions.get(i));
             } else if (eventType instanceof FormChangeEvent && ((FormChangeEvent) eventType).before == null) {
                 PropertyDrawEntity propertyDrawEntity = (PropertyDrawEntity) ((FormChangeEvent) eventType).propertyDrawEntity;
-                propertyDrawEntity.setEventAction(ServerResponse.CHANGE, actions.get(i), true);
+                propertyDrawEntity.setEventAction(ServerResponse.CHANGE, actions.get(i));
             } else {
                 form.addActionsOnEvent(eventType, replace, version, actions.get(i));
             }

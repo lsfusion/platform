@@ -66,7 +66,7 @@ public class RegularFilterGroupEntity extends IdentityObject {
             mGroupObjects.addAll(regFilter.filter.getObjects());
         }
 
-        return form.getApplyObject(mGroupObjects.immutable());
+        return form.getApplyObject(mGroupObjects.immutable(), SetFact.EMPTY());
     }
 
     public GroupObjectEntity getNFToDraw(FormEntity form, Version version) {
