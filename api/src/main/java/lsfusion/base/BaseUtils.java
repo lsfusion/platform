@@ -697,6 +697,14 @@ public class BaseUtils {
         return result;
     }
 
+    public static <B> List<B> addList(B item1, B item2, List<? extends B> list) {
+        List<B> result = new ArrayList<>();
+        result.add(item1);
+        result.add(item2);
+        result.addAll(list);
+        return result;
+    }
+
     public static <B> List<B> mergeList(List<? extends B> list1, List<? extends B> list2) {
         List<B> result = new ArrayList<>(list1);
         result.addAll(list2);
@@ -2039,6 +2047,8 @@ public class BaseUtils {
     public static final String inlineFileSeparator = "<PQWERJUQMASPRETQT/>"; // we want separators as tags to have no problem with ts vectors
 
     public static final String inlineImageSeparator = "<GFDTRGDFSAFADXZW/>";
+
+    public static final String inlineSerializedImageSeparator = "<DFSRKNFDVSDRRES/>";
 
     public static Object executeWithTimeout(Callable<Object> callable, Integer timeout) {
         if (timeout != null) {

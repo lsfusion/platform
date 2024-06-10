@@ -31,6 +31,7 @@ import net.customware.gwt.dispatch.shared.general.StringResult;
 import org.apache.hc.core5.http.ContentType;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -38,14 +39,13 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
@@ -76,8 +76,9 @@ public class MainController {
 
     @RequestMapping(value = "/push-notification", method = RequestMethod.GET)
     public String pushNotification(ModelMap model, HttpServletRequest request) {
-        model.addAttribute("redirectUrl", getDirectUrl("/", Collections.singletonList(GwtSharedUtils.NOTIFICATION_PARAM), null, request));
-        model.addAttribute("notificationId", request.getParameter(GwtSharedUtils.NOTIFICATION_PARAM));
+        model.addAttribute("id", request.getParameter(GwtSharedUtils.NOTIFICATION_PARAM));
+        model.addAttribute("query", getQueryPreservingParameters(Collections.singletonList(GwtSharedUtils.NOTIFICATION_PARAM), request));
+        addStandardModelAttributes(model, request, getAndCheckServerSettings(request, checkVersionError, false), true);
         return "push-notification";
     }
 
@@ -116,6 +117,29 @@ public class MainController {
         } else {
             return "login";
         }
+    }
+
+    @GetMapping(value = "/manifest", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public Map<String, Object> getLSFManifest(HttpServletRequest request) {
+        ServerSettings serverSettings = getAndCheckServerSettings(request, checkVersionError, false);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("name", getTitle(serverSettings));
+        List<Map<String, Object>> icons = new ArrayList<>();
+        Map<String, Object> iconsMap = new HashMap<>();
+        iconsMap.put("src", getPWAIcon(serverSettings));
+        iconsMap.put("type", "image/png");
+        iconsMap.put("sizes", "512x512");
+        icons.add(iconsMap);
+        response.put("icons", icons);
+        String contextPath = request.getContextPath();
+        response.put("id", (!contextPath.isEmpty() ? contextPath + "/" : "") + "main");
+        response.put("start_url", "main");
+        response.put("display", "standalone");
+        response.put("scope", contextPath + "/");
+
+        return response;
     }
 
     @RequestMapping(value = "/registration", method = RequestMethod.GET)
@@ -351,8 +375,12 @@ public class MainController {
         return serverSettings != null && serverSettings.logicsLogo != null ? getFileUrl(serverSettings.logicsLogo) : "static/noauth/images/logo.png";
     }
 
+    private String getPWAIcon(ServerSettings serverSettings) {
+        return serverSettings != null && serverSettings.PWAIcon != null ? getFileUrl(serverSettings.PWAIcon) : "static/noauth/images/pwa-icon.png";
+    }
+
     private String getLogicsIcon(ServerSettings serverSettings) {
-        return serverSettings != null && serverSettings.logicsIcon != null ? getFileUrl(serverSettings.logicsIcon) : "favicon.ico";
+        return serverSettings != null && serverSettings.logicsIcon != null ? getFileUrl(serverSettings.logicsIcon) : "static/noauth/images/favicon.ico";
     }
     
     private String getLogicsName(ServerSettings serverSettings) {
@@ -380,7 +408,7 @@ public class MainController {
         return new ExternalRequest(new String[0], params, charset.toString(), new String[0], new String[0], null,
                 null, null, null, null, request.getScheme(), request.getMethod(), request.getServerName(), request.getServerPort(), request.getContextPath(),
                 request.getServletPath(), request.getPathInfo() == null ? "" : request.getPathInfo(), request.getQueryString() != null ? request.getQueryString() : "",
-                contentTypeString, request.getSession().getId(), null, null);
+                contentTypeString, request.getSession().getId(), null, null, false);
     }
 
     public static String getURLPreservingParameters(String url, List<String> paramsToRemove, HttpServletRequest request) {

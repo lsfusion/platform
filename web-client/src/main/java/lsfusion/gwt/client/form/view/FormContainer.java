@@ -173,7 +173,7 @@ public abstract class FormContainer {
             if(contextForm != null) {
                 contextForm.executeVoidAction();
             } else {
-                formsController.executeVoidNavigatorAction(requestIndex);
+                formsController.executeVoidAction(requestIndex);
             }
         });
 

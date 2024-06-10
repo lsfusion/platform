@@ -44,6 +44,7 @@ import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.property.*;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.server.MainDispatchServlet;
+import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.event.*;
@@ -60,16 +61,16 @@ import java.util.*;
 import static lsfusion.gwt.server.convert.StaticConverters.convertColor;
 
 @SuppressWarnings("UnusedDeclaration")
-public class ClientComponentToGwtConverter extends CachedObjectConverter {
+public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
 
     private final ClientTypeToGwtConverter typeConverter = ClientTypeToGwtConverter.getInstance();
     private final ClientAsyncToGwtConverter asyncConverter;
     private GForm form;
 
-    public ClientComponentToGwtConverter(MainDispatchServlet servlet, String sessionID) {
-        super(servlet, sessionID);
+    public ClientComponentToGwtConverter(MainDispatchServlet servlet, FormSessionObject formSessionObject) {
+        super(servlet, formSessionObject);
 
-        asyncConverter = new ClientAsyncToGwtConverter(servlet, sessionID);
+        asyncConverter = new ClientAsyncToGwtConverter(servlet, formSessionObject);
     }
 
     private <T extends GComponent> T initGwtComponent(ClientComponent clientComponent, T component) {

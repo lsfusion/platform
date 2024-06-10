@@ -19,6 +19,7 @@ import lsfusion.interop.base.view.ColorTheme;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.language.ScriptedStringUtils;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
@@ -37,9 +38,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.icon.IconLogicsModule;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 
-import java.io.DataOutputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.function.BiFunction;
@@ -435,5 +434,12 @@ public class AppServerImage {
     }
     public static void serialize(AppServerImage image, DataOutputStream outStream, ServerSerializationPool pool) throws IOException {
         pool.writeImageIcon(outStream, getAppImage(image));
+    }
+
+    public static String convertFileValue(AppServerImage image, boolean asImage) throws IOException {
+        if(asImage)
+            return ScriptedStringUtils.wrapSerializedImage(IOUtils.serializeAppImage(getAppImage(image)));
+        else
+            return ScriptedStringUtils.wrapResource(image.imagePath);
     }
 }

@@ -321,7 +321,8 @@ NAVIGATOR {
 FORM settings '{service.form.settings}'
     PROPERTIES() currentDate, currentDateTime, currentDateTimeSnapshot, defaultBackgroundColor, defaultForegroundColor, 
                  reportCharWidth, reportRowHeight, reportNotToStretch, hostnameServerComputer, 
-                 dataLogicsName, dataDisplayName, loadLogicsLogo, openLogicsLogo, resetLogicsLogo, loadLogicsIcon, openLogicsIcon, resetLogicsIcon
+                 dataLogicsName, dataDisplayName, loadLogicsLogo, openLogicsLogo, resetLogicsLogo, 
+                 loadLogicsIcon, openLogicsIcon, resetLogicsIcon, loadPWAIcon, openPWAIcon, resetPWAIcon
 ;
 
 DESIGN settings {
@@ -356,6 +357,9 @@ DESIGN settings {
                         MOVE PROPERTY(loadLogicsIcon());
                         MOVE PROPERTY(openLogicsIcon());
                         MOVE PROPERTY(resetLogicsIcon());
+                        MOVE PROPERTY(loadPWAIcon());
+                        MOVE PROPERTY(openPWAIcon());
+                        MOVE PROPERTY(resetPWAIcon());
                     }                                       
                 }
             }
@@ -476,7 +480,7 @@ WHEN CHANGED (lsfParams(STRING s)) DO {
     resetServerSettingsCacheAction();
 }
 
-WHEN CHANGED (logicsName()) OR CHANGED (displayName()) OR CHANGED (logicsLogo()) OR CHANGED (logicsIcon()) DO {
+WHEN CHANGED (logicsName()) OR CHANGED (displayName()) OR CHANGED (logicsLogo()) OR CHANGED (logicsIcon()) OR CHANGED (PWAIcon()) DO {
     resetServerSettingsCacheAction();
 }
 getServerSettings() ABSTRACT CASE @@noauth;
@@ -492,7 +496,8 @@ getServerSettings() + WHEN TRUE THEN {
     }
     
     generateJnlpUrls();
-    EXPORT JSON FROM logicsName(), displayName(), logicsLogo = FILE(logicsLogo()), logicsIcon = FILE(logicsIcon()), platformVersion(), apiVersion(), inDevMode(),
+    EXPORT JSON FROM logicsName(), displayName(), logicsLogo = FILE(logicsLogo()), logicsIcon = FILE(logicsIcon()),
+    PWAIcon = FILE(PWAIcon()), platformVersion(), apiVersion(), inDevMode(),
     sessionConfigTimeout=INTEGER(valueSetting('sessionConfigTimeout')), anonymousUI=(valueSetting('enableUI')='2'),
     jnlpUrls=exportText(),
     disableRegistration=disableRole('selfRegister'),
@@ -746,6 +751,8 @@ EXTEND FORM settings
     PROPERTIES(uc) READONLY name, login, userRoles
     PROPERTIES(uc) fontSize, selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor,
         focusedCellBorderColor, tableGridColor
+    
+    PROPERTIES() pushPublicKey, pushPrivateKey  
 ;
 
 DESIGN settings {
@@ -786,14 +793,22 @@ DESIGN settings {
                 MOVE BOX(uc);
             }
         }
+        NEW pushNotification {
+            caption = '{service.form.settings.push.notification}';
+            MOVE PROPERTY (pushPublicKey());
+            MOVE PROPERTY (pushPrivateKey());
+        }
     }
 }
 
+showColorSettings = theme(currentDesignEnv()) == Theme.excel OR isNative();
+
 EXTEND FORM editProfile
     PROPERTIES()  resetWindowsLayout
-    PROPERTIES(u) fontSize, colorThemeName,
-                  selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor, 
-                  tableGridColor, dontShowCloseButtonOnInactiveTab, userFiltersManualApplyMode
+    PROPERTIES(u) fontSize, colorThemeName
+    PROPERTIES(u) SHOWIF showColorSettings() selectedRowBackgroundColor, selectedCellBackgroundColor,
+        focusedCellBackgroundColor, focusedCellBorderColor, tableGridColor
+    PROPERTIES(u) dontShowCloseButtonOnInactiveTab, userFiltersManualApplyMode
     OBJECTS r = DateTimePickerRanges
     PROPERTIES dateTimeRange(r) READONLY, isDateTimeRangeSelected(r, u)
     
@@ -837,7 +852,7 @@ DESIGN editProfile {
 inTestMode = NATIVE BOOLEAN ();
 projectLSFDir = NATIVE STRING();
 
-contentWordWrap() += IF contentWordWrap(currentUser()) THEN (IF contentWordWrap(currentUser()) == TTRUE THEN TRUE ELSE NULL) ELSE valueSettingBoolean('contentWordWrap');
+contentWordWrap() += IF contentWordWrap(currentDesignEnv()) THEN (IF contentWordWrap(currentDesignEnv()) == TTRUE THEN TRUE ELSE NULL) ELSE valueSettingBoolean('contentWordWrap');
 
 getInitSettings(User user) ABSTRACT CASE;
 getInitSettings(User user) + WHEN user IS User THEN {
@@ -900,7 +915,9 @@ getClientSettings(User user) + WHEN user IS User THEN {
         userFiltersManualApplyMode = IF userFiltersManualApplyMode() THEN (IF userFiltersManualApplyMode() == TTRUE THEN TRUE ELSE NULL) ELSE valueSettingBoolean('userFiltersManualApplyMode'),
         disableActionsIfReadonly = valueSetting('disableActionsIfReadonly'),
         enableShowingRecentlyLogMessages = valueSetting('enableShowingRecentlyLogMessages'),
+        pushNotificationPublicKey = pushPublicKey(),
         maxRequestQueueSize = valueSetting('maxRequestQueueSize'),
+        maxStickyLeft = valueSetting('maxStickyLeft'),
         verticalNavbar = verticalNavbar(),
         navigatorPinMode = navigatorPinMode();
 }

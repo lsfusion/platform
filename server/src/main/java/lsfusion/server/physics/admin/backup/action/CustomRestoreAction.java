@@ -8,6 +8,9 @@ import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
+import lsfusion.base.file.FileData;
+import lsfusion.base.file.NamedFileData;
+import lsfusion.base.file.RawFileData;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.data.OperationOwner;
@@ -32,6 +35,7 @@ import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.table.SessionTableUsage;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
+import lsfusion.server.logics.classes.data.file.*;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.classes.data.integral.NumericClass;
 import lsfusion.server.logics.classes.data.time.DateClass;
@@ -215,6 +219,34 @@ public class CustomRestoreAction extends InternalAction {
                                         return context.getSession().getDataObject(((StoredDataProperty) prop.property).value, object);
                                     } else if (classValue instanceof LogicalClass) {
                                         return getBooleanObject(object);
+                                    } else if (classValue instanceof DynamicFormatFileClass) {
+                                        return new DataObject(new FileData((byte[]) object), DynamicFormatFileClass.get());
+                                    } else if (classValue instanceof NamedFileClass) {
+                                        return new DataObject(new NamedFileData((byte[]) object), NamedFileClass.instance);
+                                    } else if (classValue instanceof WordClass) {
+                                        return new DataObject(new RawFileData((byte[]) object), WordClass.get());
+                                    } else if (classValue instanceof ImageClass) {
+                                        return new DataObject(new RawFileData((byte[]) object), ImageClass.get());
+                                    } else if (classValue instanceof TableClass) {
+                                        return new DataObject(new RawFileData((byte[]) object), TableClass.get());
+                                    } else if (classValue instanceof CustomStaticFormatFileClass) {
+                                        return new DataObject(new RawFileData((byte[]) object), CustomStaticFormatFileClass.get());
+                                    } else if (classValue instanceof PDFClass) {
+                                        return new DataObject(new RawFileData((byte[]) object), PDFClass.get());
+                                    } else if (classValue instanceof ExcelClass) {
+                                        return new DataObject(new RawFileData((byte[]) object), ExcelClass.get());
+                                    } else if (classValue instanceof DBFClass) {
+                                        return new DataObject(new RawFileData((byte[]) object), DBFClass.get());
+                                    } else if (classValue instanceof HTMLClass) {
+                                        return new DataObject(new RawFileData((byte[]) object), HTMLClass.get());
+                                    } else if (classValue instanceof TXTClass) {
+                                        return new DataObject(new RawFileData((byte[]) object), TXTClass.get());
+                                    } else if (classValue instanceof CSVClass) {
+                                        return new DataObject(new RawFileData((byte[]) object), CSVClass.get());
+                                    } else if (classValue instanceof XMLClass) {
+                                        return new DataObject(new RawFileData((byte[]) object), XMLClass.get());
+                                    } else if (classValue instanceof JSONFileClass) {
+                                        return new DataObject(new RawFileData((byte[]) object), JSONFileClass.get());
                                     } else if (object instanceof String)
                                         return new DataObject(((String) object).trim());
                                     else if (object instanceof Integer)

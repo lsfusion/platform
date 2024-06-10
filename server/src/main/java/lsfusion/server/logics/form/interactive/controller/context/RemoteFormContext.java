@@ -92,7 +92,7 @@ public class RemoteFormContext<F extends FormInstance> extends RemoteUIContext {
     }
 
     @Override
-    protected ConnectionContext getConnectionContext() {
+    public ConnectionContext getConnectionContext() {
         return form.getRemoteContext();
     }
 

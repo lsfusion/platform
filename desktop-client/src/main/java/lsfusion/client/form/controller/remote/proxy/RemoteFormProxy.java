@@ -254,9 +254,9 @@ public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterfac
     }
 
     @Override
-    public ServerResponse executeNotificationAction(long requestIndex, long lastReceivedRequestIndex, int idNotification) throws RemoteException {
+    public ServerResponse executeNotificationAction(long requestIndex, long lastReceivedRequestIndex, String notification) throws RemoteException {
         logRemoteMethodStartCall("executeNotificationAction");
-        ServerResponse result = target.executeNotificationAction(requestIndex, lastReceivedRequestIndex, idNotification);
+        ServerResponse result = target.executeNotificationAction(requestIndex, lastReceivedRequestIndex, notification);
         logRemoteMethodEndCall("executeNotificationAction", result);
         return result;
     }

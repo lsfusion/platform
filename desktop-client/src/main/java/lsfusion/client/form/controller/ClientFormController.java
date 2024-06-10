@@ -1226,7 +1226,7 @@ public class ClientFormController implements AsyncListener {
         rmiQueue.adaptiveSyncRequest(new ProcessServerResponseRmiRequest("executeNotificationAction") {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.executeNotificationAction(requestIndex, lastReceivedRequestIndex, idNotification);
+                return remoteForm.executeNotificationAction(requestIndex, lastReceivedRequestIndex, String.valueOf(idNotification));
             }
         });
     }
@@ -1538,17 +1538,18 @@ public class ClientFormController implements AsyncListener {
                 ClientPropertyDraw propertyDraw = form.getProperty(filter.propertyId);
                 if (propertyDraw != null) {
                     Compare compare = null;
+                    Object value = null;
                     try {
                         compare = Compare.deserialize(filter.compare);
-                    } catch (IOException ignored) {}
 
-                    Object value = filter.value;
-                    if (filter.value instanceof String) {
-                        try {
-                            value = propertyDraw.baseType.parseString((String) filter.value);
-                        } catch (ParseException ignored) {
+                        value = BaseUtils.deserializeObject(filter.value);
+                        if (value instanceof String) {
+                            try {
+                                value = propertyDraw.baseType.parseString((String) value);
+                            } catch (ParseException ignored) {
+                            }
                         }
-                    }
+                    } catch (IOException ignored) {}
                     props.add(FilterController.createNewCondition(gridController, new ClientFilter(propertyDraw), ClientGroupObjectValue.EMPTY, value, filter.negation, compare, filter.junction));
                 }
             }

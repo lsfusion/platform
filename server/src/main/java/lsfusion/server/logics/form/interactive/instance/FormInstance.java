@@ -90,6 +90,7 @@ import lsfusion.server.logics.form.interactive.FormEventType;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.interactive.action.async.*;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInput;
 import lsfusion.server.logics.form.interactive.action.input.InputContext;
 import lsfusion.server.logics.form.interactive.action.input.InputListExpr;
 import lsfusion.server.logics.form.interactive.action.input.InputResult;
@@ -1173,7 +1174,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         boolean highlight = list.isHighlight();
 
-        InputListExpr<P> listExprKeys = list.getListExpr(modifier);
+        InputListExpr<P> listExprKeys = list.getListExpr(modifier, asyncMode);
 
         Expr listExpr = listExprKeys.expr;
         if(!value.isEmpty()) {
@@ -1297,7 +1298,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     public static <P extends PropertyInterface> ObjectValue getAsyncKey(InputValueList<P> list, DataSession session, Modifier modifier, ObjectValue value) throws SQLException, SQLHandledException {
-        InputListExpr<P> listExprKeys = list.getListExpr(modifier);
+        InputListExpr<P> listExprKeys = list.getListExpr(modifier, null);
         ImMap<P, DataObject> row = getAsyncKey(listExprKeys, session.sql, session.env, session.baseClass, value);
         if(row == null)
             return NullValue.instance;
@@ -1340,7 +1341,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
                 listProperty = inputContext.list;
                 converter = null;
-                asyncMode = inputContext.strict ? AsyncMode.OBJECTVALUES : AsyncMode.VALUES;
+                asyncMode = AsyncMapInput.getAsyncMode(inputContext.strict);
 
                 if(checkAsyncLength(listProperty, value, asyncMode))
                     return new Async[] {Async.NEEDMORE};
@@ -2381,7 +2382,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     private boolean isPropertyStaticShown(ComponentView drawComponent, PropertyDrawInstance drawProperty, ImSet<GroupObjectInstance> propRowColumnGrids) {
-        if(!drawProperty.isInInterface(propRowColumnGrids, true) && !drawProperty.getEntity().ignoreIsInInterfaceCheck) { // don't show property if it is always null
+        if(!drawProperty.getEntity().ignoreIsInInterfaceCheck && !drawProperty.isInInterface(propRowColumnGrids, true)) { // don't show property if it is always null
             return false;
         }
 

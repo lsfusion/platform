@@ -16,12 +16,14 @@ import lsfusion.gwt.client.RemoteDispatchAsync;
 import lsfusion.gwt.client.action.GFormAction;
 import lsfusion.gwt.client.action.GHideFormAction;
 import lsfusion.gwt.client.base.*;
+import lsfusion.gwt.client.base.result.VoidResult;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.controller.remote.action.RequestCountingAsyncCallback;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.ExecuteNavigatorAction;
 import lsfusion.gwt.client.controller.remote.action.navigator.NavigatorRequestAction;
+import lsfusion.gwt.client.controller.remote.action.navigator.NavigatorRequestCountingAction;
 import lsfusion.gwt.client.controller.remote.action.navigator.VoidNavigatorAction;
 import lsfusion.gwt.client.form.ContainerForm;
 import lsfusion.gwt.client.form.EmbeddedForm;
@@ -658,7 +660,7 @@ public abstract class FormsController {
         windowsController.resetLayout();
     }
 
-    public abstract long syncDispatch(final NavigatorRequestAction action, RequestCountingAsyncCallback<ServerResponseResult> callback);
+    public abstract <T extends net.customware.gwt.dispatch.shared.Result> long syncDispatch(final NavigatorRequestAction<T> action, RequestCountingAsyncCallback<T> callback);
 
     public abstract long asyncDispatch(final ExecuteNavigatorAction action, RequestCountingAsyncCallback<ServerResponseResult> callback);
 
@@ -682,17 +684,18 @@ public abstract class FormsController {
     public long executeNavigatorAction(String actionSID, final NativeEvent event, boolean sync) {
         return executeNavigatorAction(actionSID, event.getCtrlKey(), sync, 1, null);
     }
-    public void executeNotificationAction(Integer id, Runnable onRequestFinished) {
+    public void executeNotificationAction(Integer id, String result, Runnable onRequestFinished) {
         FormContainer currentForm = onRequestFinished == null ? MainFrame.getCurrentForm() : null;
         GFormController form = currentForm != null ? currentForm.getForm() : null;
+        String notification = id + (result != null ? ";" + result : ""); // should match RemoteNavigator.runNotification
         if (form != null)
             try {
-                form.executeNotificationAction(id);
+                form.executeNotificationAction(notification);
             } catch (IOException e) {
                 GWT.log(e.getMessage());
             }
         else
-            executeNavigatorAction(id.toString(), false, true, 2, null);
+            executeNavigatorAction(notification, false, true, 2, null);
     }
     public long executeNavigatorAction(String actionSID, boolean disableForbidDuplicate, boolean sync, int type, Runnable onRequestFinished) {
         ExecuteNavigatorAction navigatorAction = new ExecuteNavigatorAction(actionSID, type);
@@ -711,9 +714,12 @@ public abstract class FormsController {
             return asyncDispatch(navigatorAction, callback);
     }
 
-    public void executeVoidNavigatorAction(long waitRequestIndex) {
-        syncDispatch(new VoidNavigatorAction(waitRequestIndex), new SimpleRequestCallback<ServerResponseResult>() {
-            protected void onSuccess(ServerResponseResult result) {
+    public void executeVoidAction(long waitRequestIndex) {
+        executeSystemAction(new VoidNavigatorAction(waitRequestIndex));
+    }
+    public void executeSystemAction(NavigatorRequestCountingAction<VoidResult> systemAction) {
+        syncDispatch(systemAction, new SimpleRequestCallback<VoidResult>() {
+            protected void onSuccess(VoidResult result) {
             }
 
             @Override

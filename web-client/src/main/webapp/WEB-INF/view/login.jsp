@@ -8,6 +8,7 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <link rel="manifest" href="manifest">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
         <title>${title}</title>
@@ -21,7 +22,6 @@
                 "static/noauth/css/fontAwesome/css/fontawesome.min.css",
                 "static/noauth/css/fontAwesome/css/brands.min.css",
                 "static/noauth/css/fontAwesome/css/solid.min.css"
-
                 )); %>
         <lsf:writeResources resources="${versionedResources}"/>
         <lsf:writeResources resources="${noAuthResourcesAfterSystem}"/>

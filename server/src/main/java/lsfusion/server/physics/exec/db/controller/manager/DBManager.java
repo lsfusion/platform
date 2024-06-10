@@ -734,7 +734,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     public boolean isDenyDropModules() {
-        return nvl(denyDropModules, SystemProperties.lightStart);
+        return nvl(denyDropModules, !SystemProperties.lightStart);
     }
 
     public void setDenyDropTables(Boolean denyDropTables) {
@@ -742,7 +742,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     public boolean isDenyDropTables() {
-        return nvl(denyDropTables, SystemProperties.lightStart);
+        return nvl(denyDropTables, !SystemProperties.lightStart);
     }
 
     public String getDbNamingPolicy() {
@@ -1510,11 +1510,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
             if (!isFirstStart)
                 alterDBStructure(sql, oldDBStructure, newDBStructure);
 
-            // проверка, не удалятся ли старые таблицы
             if (isDenyDropTables()) {
                 String droppedTables = getDroppedTablesString(sql, oldDBStructure, newDBStructure);
                 if (!droppedTables.isEmpty()) {
-                    throw new RuntimeException("Dropped tables: " + droppedTables);
+                    throw new RuntimeException("Dropping tables: " + droppedTables + "\nNow, dropping tables is restricted by settings. If you are sure you want to drop these tables, you can set 'db.denyDropTables = false'\nin settings.properties or through other methods. For more information, please visit: https://docs.lsfusion.org/next/Launch_parameters/#applsfusion");
                 }
             }
 
@@ -2309,7 +2308,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 droppedModules += moduleName + ", ";
             }
         if (isDenyDropModules() && !droppedModules.isEmpty())
-            throw new RuntimeException("Dropped modules: " + droppedModules.substring(0, droppedModules.length() - 2) + "\nTry using 'db.denyDropModules = false' in lsfusion.properties");
+            throw new RuntimeException("Dropping modules: " + droppedModules.substring(0, droppedModules.length() - 2) + "\nNow, dropping modules is restricted by settings. If you are sure you want to drop these modules, you can set 'db.denyDropModules = false'\\nin settings.properties or through other methods. For more information, please visit: https://docs.lsfusion.org/next/Launch_parameters/#applsfusion\"");
     }
 
     private synchronized void runMigrationScript() {

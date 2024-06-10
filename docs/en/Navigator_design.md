@@ -41,30 +41,19 @@ The entire desktop is `100 x 100` *pixels* in size. When creating a window, you 
 
 At any moment in time in each window there can be one current *user-selected* navigator folder. Accordingly, if the element item belongs to a window other than the window of its parent folder, then this element is shown in its window if and only if its parent folder is selected in its window. The predefined `System.root` folder is always considered to be selected. If at some point a window does not display any navigator element, then that window is automatically hidden.
 
-### Types
-
-There are several window *types* that determine which component in the interface will be used to display navigator elements.
-
--   *Toolbar*: a container consisting of buttons, each of which corresponds to one element of the navigator. The vertical toolbar places all buttons from top to bottom, indenting each element from the left depending on its position in the tree. The horizontal toolbar shows the buttons from left to right, without indentation.
--   *Panel*: a container in which the hierarchy of components corresponds to navigator elements, where for [forms](Forms.md) and *[actions](Actions.md)* buttons are created, and for navigator folders – nested containers with the corresponding caption. The vertical panel places all the nested containers and their buttons from top to bottom, and the horizontal panel places them from left to right.
--   *Tree*: a tree in which each node corresponds to a navigator element.
--   *Menu*: a menu in which a popup menu corresponds to each navigator folder, and the items on that menu correspond to the forms and actions.
-
-By default, a UI component that displays navigator elements is wrapped into scrollbars. They appear when the component does not fit in the window. If necessary, this behavior can be disabled.
-
 ### System windows {#systemwindows}
 
 There are several predefined system windows that are necessary for the client application to work:
 
--   `forms`: a window in which user forms open.
--   `log`: a window in which messages to the user are displayed. If this window is invisible, messages will be shown to the user in the form of system dialog forms.
--   `status`: a window in which various system information is displayed.
+-   `System.forms`: a window in which user forms open.
+-   `System.log`: a window in which messages to the user are displayed. If this window is invisible, messages will be shown to the user in the form of system dialog forms.
 
-Also, three additional windows are automatically created for ease of development:
+Also, additional windows are automatically created for ease of development:
 
--   `root`: a horizontal toolbar in which it is recommended to display navigator element `root` children. The navigator folder `System.root` is displayed here by default.
--   `toolbar`: a vertical toolbar in which it is recommended to display some of the descendants of the navigator elements that are displayed in the `root` window.
--   `tree`: a tree in which it is recommended to display some of the descendants of the navigator elements displayed in the `root` window
+-   `System.root`: a horizontal toolbar in which it is recommended to display navigator element `System.root` children. The navigator folder `System.root` is displayed here by default.
+-   `System.toolbar`: a vertical toolbar in which it is recommended to display some of the descendants of the navigator elements that are displayed in the `System.root` window.
+-   `System.system`: a toolbar with system buttons providing convenient access to the main interface functions.
+-   `System.logo`: a window for displaying the logo.
 
 ### Default layout
 
@@ -87,16 +76,15 @@ To manage windows, use the [`WINDOW` statement](WINDOW_statement.md).
 
 ```lsf
 // creating system windows in the System module
-WINDOW root 'Root' TOOLBAR HIDETITLE HIDESCROLLBARS HORIZONTAL POSITION(0, 0, 100, 6);
-WINDOW toolbar 'Toolbar' TOOLBAR HIDETITLE VERTICAL POSITION(0, 6, 20, 64);
-WINDOW tree 'Tree' TOOLBAR HIDETITLE POSITION(0, 6, 20, 64);
+WINDOW logo HORIZONTAL POSITION(0, 0, 10, 6) VALIGN(CENTER) HALIGN(START) HIDETITLE HIDESCROLLBARS CLASS logoWindowClass();
+WINDOW root HORIZONTAL POSITION(10, 0, 70, 6) VALIGN(CENTER) HALIGN(CENTER) HIDETITLE HIDESCROLLBARS CLASS rootWindowClass();
+WINDOW system HORIZONTAL POSITION(80, 0, 20, 6) VALIGN(CENTER) HALIGN(END) HIDETITLE HIDESCROLLBARS CLASS systemWindowClass();
 
-// menu without scrollbars
-WINDOW menu MENU HIDESCROLLBARS POSITION(20, 6, 80, 4);
+WINDOW toolbar VERTICAL POSITION(0, 6, 20, 94) HIDETITLE CLASS toolbarWindowClass();
 
 // a horizontal toolbar at the bottom of the desktop, in which all buttons will be centered and text will be aligned up
 // in this toolbar, for example, it is possible to place forms for quick opening
-WINDOW hotforms TOOLBAR HORIZONTAL VALIGN(CENTER) TEXTVALIGN(START) BOTTOM;
+WINDOW hotforms HORIZONTAL BOTTOM VALIGN(CENTER) TEXTVALIGN(START);
 ```
 
   

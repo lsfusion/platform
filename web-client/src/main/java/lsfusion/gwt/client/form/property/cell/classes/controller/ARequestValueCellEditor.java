@@ -75,7 +75,7 @@ public abstract class ARequestValueCellEditor implements RequestValueCellEditor 
                     } else
                         commitFinish(value, contextAction, commitReason);
                 } catch (InvalidEditException e) {
-                    if (commitReason.isCancelIfInvalid() && !e.patternMismatch)
+                    if (commitReason.isCancelIfInvalid())
                         cancel(commitReason.cancel());
                 }
             }

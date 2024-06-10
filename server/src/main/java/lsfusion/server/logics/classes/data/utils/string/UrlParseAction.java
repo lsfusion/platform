@@ -4,7 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.physics.dev.integration.external.to.ExternalHTTPAction;
+import lsfusion.server.physics.dev.integration.external.to.CallHTTPAction;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 import org.apache.hc.core5.http.NameValuePair;
 import org.apache.hc.core5.net.URLEncodedUtils;
@@ -30,7 +30,7 @@ public class UrlParseAction extends InternalAction {
                 names[i] = param.getName();
                 values[i] = param.getValue();
             }
-            ExternalHTTPAction.writePropertyValues(context, findProperty("urlParsed[TEXT]"), names, values);
+            CallHTTPAction.writePropertyValues(context, findProperty("urlParsed[TEXT]"), names, values);
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }

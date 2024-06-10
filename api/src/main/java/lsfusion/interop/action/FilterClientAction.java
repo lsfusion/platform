@@ -22,7 +22,7 @@ public class FilterClientAction extends ExecuteClientAction {
         public int propertyId;
         public byte compare = -1;
         public boolean negation;
-        public Object value;
+        public byte[] value;
         public boolean junction;
         
         public FilterItem(int propertyId) {

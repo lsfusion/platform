@@ -16,7 +16,6 @@
 package lsfusion.gwt.client.base.view.grid;
 
 import com.google.gwt.dom.client.*;
-import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 
 import java.util.List;
@@ -190,7 +189,7 @@ public abstract class AbstractDataGridBuilder<T> {
 
     public abstract void updateRowImpl(int rowIndex, T rowValue, int[] columnsToRedraw, TableRowElement rowElement, BiPredicate<Column<T, ?>, Cell> filter);
 
-    public void updateRowStickyLeft(TableSectionElement tbodyElement, List<Integer> stickyColumns, List<GSize> stickyLefts) {
+    public void updateRowStickyLeft(TableSectionElement tbodyElement, List<Integer> stickyColumns, List<DataGrid.StickyParams> stickyLefts) {
         int rowCount = tbodyElement.getChildCount();
         if (rowCount > 0) {
             NodeList<TableRowElement> rows = tbodyElement.getRows();
@@ -200,7 +199,7 @@ public abstract class AbstractDataGridBuilder<T> {
         }
     }
 
-    protected abstract void updateRowStickyLeftImpl(TableRowElement rowElement, List<Integer> stickyColumns, List<GSize> stickyLefts);
+    protected abstract void updateRowStickyLeftImpl(TableRowElement rowElement, List<Integer> stickyColumns, List<DataGrid.StickyParams> stickyLefts);
 
     public void updateStickedState(TableSectionElement tbodyElement, List<Integer> stickyColumns, int lastSticked) {
         int rowCount = tbodyElement.getChildCount();

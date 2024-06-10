@@ -3,7 +3,6 @@ package lsfusion.server.base.controller.remote.ui;
 import com.google.common.base.Throwables;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.interop.action.ChooseClassClientAction;
 import lsfusion.interop.action.FormClientAction;
 import lsfusion.interop.action.RequestUserInputClientAction;
 import lsfusion.interop.form.ShowFormType;
@@ -12,12 +11,10 @@ import lsfusion.interop.form.property.cell.UserInputResult;
 import lsfusion.server.base.controller.context.AbstractContext;
 import lsfusion.server.base.controller.thread.ThreadUtils;
 import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.data.DataClass;
-import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.action.async.AsyncSerializer;
 import lsfusion.server.logics.form.interactive.action.async.InputList;
@@ -25,6 +22,7 @@ import lsfusion.server.logics.form.interactive.action.async.InputListAction;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInput;
 import lsfusion.server.logics.form.interactive.action.input.InputContext;
 import lsfusion.server.logics.form.interactive.action.input.InputResult;
+import lsfusion.server.logics.form.interactive.changed.FormChanges;
 import lsfusion.server.logics.form.interactive.controller.remote.RemoteForm;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
@@ -37,8 +35,6 @@ import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.concurrent.locks.ReentrantLock;
@@ -78,13 +74,13 @@ public abstract class RemoteUIContext extends AbstractContext {
         inputContextLock.unlock();
     }
 
-    protected abstract ConnectionContext getConnectionContext();
+    public abstract ConnectionContext getConnectionContext();
 
     @Override
     public InputResult inputUserData(ActionOrProperty securityProperty, DataClass dataClass, Object oldValue, boolean hasOldValue, InputContext inputContext, String customChangeFunction, InputList inputList, InputListAction[] actions) {
         this.inputContext = inputContext; // we don't have to lock here since thread-safety will be ok anyway
         try {
-            UserInputResult result = (UserInputResult) requestUserInteraction(new RequestUserInputClientAction(serializeType(dataClass), serializeObject(oldValue), hasOldValue,
+            UserInputResult result = (UserInputResult) requestUserInteraction(new RequestUserInputClientAction(serializeType(dataClass), FormChanges.serializeConvertFileValue(null, oldValue, getConnectionContext()), hasOldValue,
                     customChangeFunction,
                     inputContext != null ? AsyncSerializer.serializeInputList(inputList, getConnectionContext()) : null,
                     inputContext != null && actions != null ? AsyncSerializer.serializeInputListActions(AsyncMapInput.filter(getSecurityPolicy(), securityProperty, actions), getConnectionContext()) : null));

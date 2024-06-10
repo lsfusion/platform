@@ -19,7 +19,6 @@ import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.interop.session.ExternalHttpMethod;
-import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.base.AppServerImage;
 import lsfusion.server.base.ResourceUtils;
 import lsfusion.server.base.caches.IdentityLazy;
@@ -2055,11 +2054,8 @@ public class ScriptingLogicsModule extends LogicsModule {
                 properties);
     }
 
-    public LAWithParams addScriptedExternalLSFAction(LPWithParams connectionString, LPWithParams actionLCP, boolean eval, boolean action, List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
-        String request = (eval ? (action ? "/eval/action" : "/eval") + "?" + ExternalUtils.SCRIPT_PARAM : ("/exec?" + ExternalUtils.ACTION_CN_PARAM)) + "=$" + (params.size()+1);
-        return addScriptedExternalHTTPAction(false, ExternalHttpMethod.POST,
-                addScriptedJProp(getArithProp("+"), Arrays.asList(connectionString, new LPWithParams(addCProp(StringClass.text, LocalizedString.create(request, false))))),
-                null, Collections.emptyList(), null, null, null, null, null, BaseUtils.add(params, actionLCP), context, toPropertyUsageList);
+    public LAWithParams addScriptedExternalLSFAction(LPWithParams connectionString, LPWithParams actionString, boolean eval, boolean action, List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
+        return addScriptedJoinAProp(addAProp(new ExternalLSFAction(getTypesForExternalAction(params, context), findLPsNoParamsByPropertyUsage(toPropertyUsageList), eval, action)), BaseUtils.addList(connectionString, actionString, params));
     }
 
     private ImList<LP> findLPsNoParamsByPropertyUsage(List<NamedPropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
@@ -2305,14 +2301,14 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
     private ScriptingLogicsModule.ILEWithParams getContextListEntity(int contextSize, ScriptingLogicsModule.LPWithParams list, ScriptingLogicsModule.LPWithParams where,
                                                                      List<String> actionImages, List<String> keyStrokes, List<List<QuickAccess>> quickAccesses, List<LAWithParams> actions) {
-        if(list == null) // optimization
-            return new ILEWithParams(SetFact.EMPTYORDER(), SetFact.EMPTYORDER(), null, null, ListFact.EMPTY());
+//        if(list == null) // optimization
+//            return new ILEWithParams(SetFact.EMPTYORDER(), SetFact.EMPTYORDER(), null, null, ListFact.EMPTY());
 
         List<LAPWithParams> props = new ArrayList<>();
-        props.add(list);
-        if(where != null) {
+        if(list != null)
+            props.add(list);
+        if(where != null)
             props.add(where);
-        }
         props.addAll(actions);
 
         // actually list / where and actions parameters are different (however it's not that important)
@@ -2322,7 +2318,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         ImRevMap<Integer, PropertyInterface> usedInterfaces = usedContextParams.mapSet(orderInterfaces);
 
         return new ScriptingLogicsModule.ILEWithParams(usedContextParams, orderInterfaces,
-                getInputListEntity(contextSize, list, usedInterfaces),
+                list != null ? getInputListEntity(contextSize, list, usedInterfaces) : null,
                 where != null ? getInputFilterEntity(contextSize, where, usedInterfaces) : null,
                 getInputContextActions(contextSize, actionImages, keyStrokes, quickAccesses, actions, usedInterfaces));
     }
@@ -3720,9 +3716,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         ListFact.addJavaAll(contextFilters, props);
         ListFact.addJavaAll(cccfs.mapListValues((CCCF<O> cccf) -> cccf.change), props);
         ListFact.addJavaAll(cccfs.mapListValues((CCCF<O> cccf) -> new LPWithParams(null, cccf.objectParam)), props);
-        if(list != null) {
+        if(list != null)
             props.add(list);
-        }
         props.addAll(actions);
 
         // actually action input param has different type (list type in theory), but it doesn't matter actually

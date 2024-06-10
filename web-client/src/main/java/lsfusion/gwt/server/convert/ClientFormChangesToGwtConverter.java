@@ -22,7 +22,9 @@ import lsfusion.gwt.client.form.property.cell.classes.*;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.http.provider.form.FormSessionObject;
+import lsfusion.interop.logics.ServerSettings;
 
+import javax.servlet.ServletContext;
 import java.awt.*;
 import java.io.IOException;
 import java.io.Serializable;
@@ -129,7 +131,7 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
                 GGroupObjectValue groupObjectValue = convertOrCast(clientValues.getKey());
 
                 propValueKeys[j] = groupObjectValue;
-                propValueValues[j] = convertFileValue(convertOrCast(clientValues.getValue()), sessionObject, servlet, sessionObject.navigatorID);
+                propValueValues[j] = convertFileValue(clientValues.getValue(), sessionObject, servlet);
                 j++;
             }
 
@@ -183,37 +185,62 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
         return dto;
     }
 
+    public Serializable convertFileValue(Object object, FormSessionObject sessionObject, MainDispatchServlet servlet) throws IOException {
+        return convertFileValue(convertOrCast(object), sessionObject, servlet, sessionObject.navigatorID);
+    }
+
     public static Serializable convertFileValue(Object value, FormSessionObject sessionObject, MainDispatchServlet servlet, String sessionID) throws IOException {
+        return convertFileValue(value, sessionObject, servlet.getServletContext(), servlet.getServerSettings(sessionID));
+    }
+    // AppFileImage, String | AppStaticImage, GStringWithFiles (String | AppStaticImage)
+    public static Serializable convertFileValue(Object value, FormSessionObject sessionObject, ServletContext servletContext, ServerSettings serverSettings) throws IOException {
         if(value instanceof AppFileDataImage) { // dynamic image
-            return new AppFileImage(convertFileData(((AppFileDataImage) value).data, sessionObject));
+            return new AppFileImage(convertFileValue(((AppFileDataImage) value).data, sessionObject));
         }
 
         if (value instanceof FileData || value instanceof NamedFileData || value instanceof RawFileData) {
-            return convertFileData(value, sessionObject);
+            return convertFileValue(value, sessionObject);
+        }
+
+        if(value instanceof AppImage) { // static image
+            return FileUtils.createImageFile(servletContext, serverSettings, (AppImage) value, false);
         }
 
         if (value instanceof StringWithFiles) {
             StringWithFiles stringWithFiles = (StringWithFiles) value;
-            Serializable[] urls = new Serializable[stringWithFiles.files.length];
-            for (int k = 0; k < stringWithFiles.files.length; k++) {
-                Serializable data = stringWithFiles.files[k];
-                if(data instanceof StringWithFiles.File) { // image
-                    StringWithFiles.File file = (StringWithFiles.File) data;
-                    urls[k] = servlet.getFormProvider().getWebFile(sessionID, file.name, file.raw);
-                } else
-                    urls[k] = FileUtils.createImageFile(servlet, sessionID, (AppImage) data, false);;
-            }
-            return new GStringWithFiles(stringWithFiles.prefixes, urls, stringWithFiles.rawString);
-        }
-
-        if(value instanceof AppImage) { //static image
-            return FileUtils.createImageFile(servlet, sessionID, (AppImage) value, false);
+            return new GStringWithFiles(stringWithFiles.prefixes, convertFileValue(stringWithFiles.files, servletContext, serverSettings), stringWithFiles.rawString);
         }
 
         return (Serializable) value;
     }
 
-    private static String convertFileData(Object value, FormSessionObject sessionObject) {
+    // String | AppStaticImage
+    public static Serializable[] convertFileValue(Serializable[] files, ServletContext servletContext, ServerSettings serverSettings) throws IOException {
+        Serializable[] urls = new Serializable[files.length];
+        for (int k = 0; k < files.length; k++) {
+            Serializable data = files[k];
+            if(data instanceof StringWithFiles.File) { // resource file
+                StringWithFiles.File file = (StringWithFiles.File) data;
+                urls[k] = FileUtils.saveWebFile(file.name, file.raw, serverSettings, false);
+            } else // static image
+                urls[k] = FileUtils.createImageFile(servletContext, serverSettings, (AppImage) data, false);;
+        }
+        return urls;
+    }
+
+    // should correspond PValue.convertFileValue
+    public static String[] convertFileValue(Serializable[] files) {
+        String[] fileStrings = new String[files.length];
+        for (int j = 0; j < files.length; j++) {
+            Serializable file = files[j];
+            if(file instanceof String) // file
+                fileStrings[j] = (String) file;
+        }
+        return fileStrings;
+   }
+
+
+    private static String convertFileValue(Object value, FormSessionObject sessionObject) {
         String displayName = null;
         FileData fileData;
         if(value instanceof NamedFileData) {
@@ -275,7 +302,7 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
             return GAsync.NEEDMORE;
         if(async.equals(ClientAsync.RECHECK))
             return GAsync.RECHECK;
-        return new GAsync(convertFileValue(convertOrCast(async.displayValue), sessionObject, servlet, sessionObject.navigatorID),
-                convertFileValue(convertOrCast(async.rawValue), sessionObject, servlet, sessionObject.navigatorID), convertOrCast(async.key));
+        return new GAsync(convertFileValue(async.displayValue, sessionObject, servlet),
+                convertFileValue(async.rawValue, sessionObject, servlet), convertOrCast(async.key));
     }
 }

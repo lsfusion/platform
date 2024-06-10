@@ -16,6 +16,7 @@ import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.property.AsyncDataConverter;
+import lsfusion.server.logics.form.interactive.property.AsyncMode;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
@@ -121,5 +122,9 @@ public class AsyncMapInput<T extends PropertyInterface> extends AsyncMapValue<T>
     @Override
     public <X extends PropertyInterface> Pair<InputListEntity<X, T>, AsyncDataConverter<X>> getAsyncValueList(Result<String> value) {
         return new Pair<>((InputListEntity<X, T>) list, null);
+    }
+
+    public static AsyncMode getAsyncMode(boolean strict) {
+        return strict ? AsyncMode.OBJECTVALUES : AsyncMode.VALUES;
     }
 }

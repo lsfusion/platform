@@ -48,6 +48,7 @@ import lsfusion.server.logics.form.interactive.action.input.InputContext;
 import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputResult;
 import lsfusion.server.logics.form.interactive.action.input.RequestResult;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.object.CustomObjectInstance;
@@ -563,7 +564,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return new ExecutionContext<>(keys, pushedAsyncResult, env, newExecutorService, form, stack, hasMoreSessionUsages);
     }
 
-    public ExecutionContext<P> override(ExecutionEnvironment newEnv, ExecutionStack stack) {
+    public ExecutionContext<P> override(ExecutionEnvironment newEnv, ExecutionStack stack, PushAsyncResult pushedAsyncResult) {
         return new ExecutionContext<>(keys, pushedAsyncResult, newEnv, executorService, new FormEnvironment<>(null, null, newEnv.getFormInstance()), stack, hasMoreSessionUsages);
     }
 
@@ -601,6 +602,10 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 
     public void delayUserInteraction(ClientAction action) {
         ThreadLocalContext.delayUserInteraction(action);
+    }
+
+    public ConnectionContext getRemoteContext() {
+        return ThreadLocalContext.getRemoteContext();
     }
 
     private void assertNotUserInteractionInTransaction() {

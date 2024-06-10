@@ -175,7 +175,8 @@ public class ColorUtils {
     }
 
     private static int darkenComp(int comp, double opacity) {
-        return (int) ((comp - 255 * opacity) / (1 - opacity));
+        int darken = (int) ((comp - 255 * opacity) / (1 - opacity));
+        return darken > 0 ? darken : (int) (comp * opacity);
     }
 
     private static String rgbToRgba(String rgb, double a) {

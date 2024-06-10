@@ -97,17 +97,20 @@ public class MainFrame implements EntryPoint {
 
     public static boolean disableActionsIfReadonly;
     public static boolean enableShowingRecentlyLogMessages;
+    public static String pushNotificationPublicKey;
+    
+    public static double maxStickyLeft;
 
     // async dispatch
     public <T extends Result> long asyncDispatch(final ExecuteNavigatorAction action, RequestCountingAsyncCallback<ServerResponseResult> callback) {
         return navigatorDispatchAsync.asyncExecute(action, callback);
     }
 
-    public <T extends Result> long syncDispatch(final NavigatorRequestAction action, RequestCountingAsyncCallback<ServerResponseResult> callback) {
+    public <T extends Result> long syncDispatch(final NavigatorRequestAction<T> action, RequestCountingAsyncCallback<T> callback) {
         return syncDispatch(action, callback, false);
     }
 
-    public static <T extends Result> long syncDispatch(final NavigatorRequestAction action, RequestAsyncCallback<ServerResponseResult> callback, boolean continueInvocation) {
+    public static <T extends Result> long syncDispatch(final NavigatorRequestAction<T> action, RequestAsyncCallback<T> callback, boolean continueInvocation) {
         return navigatorDispatchAsync.syncExecute(action, callback, continueInvocation);
     }
 
@@ -320,7 +323,7 @@ public class MainFrame implements EntryPoint {
         final Linker<GNavigatorActionDispatcher> actionDispatcherLink = new Linker<>();
         final FormsController formsController = new FormsController(windowsController) {
             @Override
-            public long syncDispatch(NavigatorRequestAction action, RequestCountingAsyncCallback<ServerResponseResult> callback) {
+            public <T extends Result> long syncDispatch(NavigatorRequestAction<T> action, RequestCountingAsyncCallback<T> callback) {
                 return MainFrame.this.syncDispatch(action, callback);
             }
 
@@ -379,7 +382,7 @@ public class MainFrame implements EntryPoint {
                         public void onSuccess(ClientMessageResult result) {
                             setShouldRepeatPingRequest(true);
                             for (Integer idNotification : result.notificationList)
-                                formsController.executeNotificationAction(idNotification, null);
+                                formsController.executeNotificationAction(idNotification, null, null);
                         }
 
                         @Override
@@ -557,11 +560,43 @@ public class MainFrame implements EntryPoint {
         });
 
         GwtClientUtils.registerServiceWorker(message -> {
-            if(GSimpleStateTableView.toString(GwtClientUtils.getField(message, "type")).equals("pushNotification")) {
-                int notificationId = GSimpleStateTableView.toInt(GwtClientUtils.getField(message, "notificationId"));
-                formsController.executeNotificationAction(notificationId, null);
+            String type = GSimpleStateTableView.toString(GwtClientUtils.getField(message, "type"));
+            if(type.equals("pushNotification")) {
+                int notificationId = GSimpleStateTableView.toInt(GwtClientUtils.getField(message, "id"));
+                String notificationResult = GSimpleStateTableView.toString(GwtClientUtils.getField(message, "result"));
+                formsController.executeNotificationAction(notificationId, notificationResult, null);
+            } else if(type.equals("clientId")) {
+                updateServiceClientInfo(formsController, null, GSimpleStateTableView.toString(GwtClientUtils.getField(message, "clientId")));
             }
         }, GwtClientUtils.toJsObject("type", GSimpleStateTableView.fromString("pullNotification")));
+
+        GwtClientUtils.requestPushNotificationPermissions();
+
+        GwtClientUtils.subscribePushManager(pushNotificationPublicKey, subscription -> updateServiceClientInfo(formsController, subscription, null));
+    }
+
+    private String subscription;
+    private String clientId;
+    private void updateServiceClientInfo(FormsController formsController, String subscription, String clientId) {
+        if(subscription != null) {
+            if(this.clientId == null) {
+                this.subscription = subscription;
+                return;
+            }
+
+            clientId = this.clientId;
+            this.clientId = null;
+        } else {
+            if(this.subscription == null) {
+                this.clientId = clientId;
+                return;
+            }
+
+            subscription = this.subscription;
+            this.subscription = null;
+        }
+
+        formsController.executeSystemAction(new UpdateServiceClientInfoAction(subscription, clientId));
     }
 
     public static void applyNavigatorChanges(GNavigatorChangesDTO navigatorChangesDTO, GNavigatorController navigatorController, WindowsController windowsController) {
@@ -627,6 +662,9 @@ public class MainFrame implements EntryPoint {
 
                 disableActionsIfReadonly = gClientSettings.disableActionsIfReadonly;
                 enableShowingRecentlyLogMessages = gClientSettings.enableShowingRecentlyLogMessages;
+                pushNotificationPublicKey = gClientSettings.pushNotificationPublicKey;
+
+                maxStickyLeft = gClientSettings.maxStickyLeft;
 
                 initializeFrame(result.navigatorInfo, popupOwner);
                 DateRangePickerBasedCellEditor.setPickerTwoDigitYearStart(gClientSettings.twoDigitYearStart);

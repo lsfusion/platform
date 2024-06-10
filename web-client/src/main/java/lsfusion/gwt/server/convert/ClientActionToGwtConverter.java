@@ -173,14 +173,14 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     }
 
     @Converter(from = RequestUserInputClientAction.class)
-    public GRequestUserInputAction convertAction(RequestUserInputClientAction action, FormSessionObject formSessionObject, String realHostName, MainDispatchServlet servlet) throws IOException {
+    public GRequestUserInputAction convertAction(RequestUserInputClientAction action, FormSessionObject formSessionObject, MainDispatchServlet servlet) throws IOException {
         GType type = typeConverter.convertOrCast(
                 ClientTypeSerializer.deserializeClientType(action.readType)
         ) ;
 
-        Object value = deserializeServerValue(action.oldValue);
+        Object value = deserializeServerValue(action.oldValue, formSessionObject, servlet);
 
-        ClientAsyncToGwtConverter asyncConverter = new ClientAsyncToGwtConverter(servlet, formSessionObject.navigatorID);
+        ClientAsyncToGwtConverter asyncConverter = new ClientAsyncToGwtConverter(servlet, formSessionObject);
 
         GInputList inputList = asyncConverter.convertOrCast(ClientAsyncSerializer.deserializeInputList(action.inputList));
         GInputListAction[] inputListActions = asyncConverter.convertOrCast(ClientAsyncSerializer.deserializeInputListActions(action.inputListActions));
@@ -188,13 +188,13 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         return new GRequestUserInputAction(type, value, action.hasOldValue, action.customChangeFunction, inputList, inputListActions);
     }
 
-    private Object deserializeServerValue(byte[] valueBytes) throws IOException {
-        return valuesConverter.convertOrCast(deserializeObject(valueBytes));
+    private Object deserializeServerValue(byte[] valueBytes, FormSessionObject formSessionObject, MainDispatchServlet servlet) throws IOException {
+        return valuesConverter.convertFileValue(deserializeObject(valueBytes), formSessionObject, servlet);
     }
 
     @Converter(from = UpdateEditValueClientAction.class)
-    public GUpdateEditValueAction convertAction(UpdateEditValueClientAction action) throws IOException {
-        return new GUpdateEditValueAction(deserializeServerValue(action.value));
+    public GUpdateEditValueAction convertAction(UpdateEditValueClientAction action, FormSessionObject formSessionObject, MainDispatchServlet servlet) throws IOException {
+        return new GUpdateEditValueAction(deserializeServerValue(action.value, formSessionObject, servlet));
     }
 
     @Converter(from = AsyncGetRemoteChangesClientAction.class)
@@ -281,7 +281,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     Map<String, String> fontFamilyMap = new HashMap<>();
 
     @Converter(from = ClientWebAction.class)
-    public GClientWebAction convertAction(ClientWebAction action, FormSessionObject formSessionObject, String realHostName, MainDispatchServlet servlet) throws IOException {
+    public GClientWebAction convertAction(ClientWebAction action, FormSessionObject formSessionObject, MainDispatchServlet servlet) throws IOException {
         ArrayList<Serializable> values = new ArrayList<>();
         ArrayList<Object> types = new ArrayList<>();
 
@@ -290,7 +290,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
         for (int i = 0; i < actionTypes.size(); i++) {
             types.add(typeConverter.convertOrCast(ClientTypeSerializer.deserializeClientType(actionTypes.get(i))));
-            values.add((Serializable) deserializeServerValue(actionValues.get(i)));
+            values.add((Serializable) deserializeServerValue(actionValues.get(i), formSessionObject, servlet));
         }
 
         GType returnType = action.returnType != null ? typeConverter.convertOrCast(ClientTypeSerializer.deserializeClientType(action.returnType)) : null;
@@ -299,7 +299,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         String resourcePath;
         String originalResourceName = action.originalResourceName;
         if(action.isFile) {
-            resourcePath = servlet.getFormProvider().getWebFile(formSessionObject.navigatorID, action.resourceName, (RawFileData) resource);
+            resourcePath = FileUtils.saveWebFile(action.resourceName, (RawFileData) resource, servlet.getServerSettings(formSessionObject.navigatorID), false);
             if(action.isFont()) {
                 String fontFamily = fontFamilyMap.get(action.resourceName);
                 if(fontFamily == null) {
@@ -325,10 +325,10 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     }
 
     @Converter(from = FilterClientAction.class)
-    public GFilterAction convertAction(FilterClientAction action) {
+    public GFilterAction convertAction(FilterClientAction action, FormSessionObject formSessionObject, MainDispatchServlet servlet) throws IOException {
         List<GFilterAction.FilterItem> filters = new ArrayList<>();
         for (FilterClientAction.FilterItem filter : action.filters) {
-            filters.add(new GFilterAction.FilterItem(filter.propertyId, filter.compare, filter.negation, filter.value instanceof Serializable ? (Serializable) filter.value : null, filter.junction));
+            filters.add(new GFilterAction.FilterItem(filter.propertyId, filter.compare, filter.negation, (Serializable) deserializeServerValue(filter.value, formSessionObject, servlet), filter.junction));
         }
         return new GFilterAction(action.goID, filters);
     }

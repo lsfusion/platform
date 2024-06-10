@@ -219,11 +219,11 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
         }
     }
 
-    public void pushNotificationConnection(DataObject connectionObject, EnvStackRunnable run) {
+    public void pushNotificationConnection(DataObject connectionObject, RemoteNavigator.Notification run) {
         pushNotificationConnection(connectionObject, navigator -> navigator.pushNotification(run));
     }
 
-    public boolean pushNotificationSession(String sessionId, EnvStackRunnable run, boolean pend) {
+    public boolean pushNotificationSession(String sessionId, RemoteNavigator.Notification run, boolean pend) {
         return pushNotification(navigator -> navigator.active && navigator.sessionId != null && navigator.sessionId.equals(sessionId) ? navigator.getContext().getUserLastActivity() : 0L, navigator -> navigator.pushNotification(run), pend);
     }
 

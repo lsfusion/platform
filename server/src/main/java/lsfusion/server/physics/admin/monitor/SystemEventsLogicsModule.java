@@ -54,6 +54,8 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LA<?> onStarted;
     public LA<?> onFinallyStarted;
 
+    public LA<?> shareAction;
+
     public LA<?> initCurrentSize;
 
     public LP useBootstrap;
@@ -128,6 +130,9 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LP minUsedMemoryComputerDateTimeFromDateTimeTo;
     public LP maxUsedMemoryComputerDateTimeFromDateTimeTo;
 
+    public LP subscription;
+    public LP clientId;
+
     public NavigatorElement logo;
 
     public SystemEventsLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
@@ -166,6 +171,8 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         onInit = findAction("onInitApply[]");
         onStarted = findAction("onStartedApply[]");
         onFinallyStarted = findAction("onFinallyStartedApply[]");
+
+        shareAction = findAction("shareAction[STRING]");
 
         initCurrentSize = findAction("initCurrentSize[]");
 
@@ -243,6 +250,9 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         maxTotalMemoryComputerDateTimeFromDateTimeTo = findProperty("maxTotalMemoryFromTo[Computer,DATETIME,DATETIME]");
         minUsedMemoryComputerDateTimeFromDateTimeTo = findProperty("minUsedMemoryFromTo[Computer,DATETIME,DATETIME]");
         maxUsedMemoryComputerDateTimeFromDateTimeTo = findProperty("maxUsedMemoryFromTo[Computer,DATETIME,DATETIME]");
+
+        subscription = findProperty("subscription[Connection]");
+        clientId = findProperty("clientId[Connection]");
 
         logo = findNavigatorElement("logoAction");
 //        logo.elementClass = "navbar-icon-xlarge navbar-excel-mobile-hidden"; // set in lsf

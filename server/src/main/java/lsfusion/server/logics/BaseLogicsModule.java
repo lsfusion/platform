@@ -809,7 +809,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     @Override
     @IdentityStrongLazy
-    public <P extends PropertyInterface> LP addCProp(StaticClass valueClass, Object value) {
+    public <P extends PropertyInterface> LP<?> addCProp(StaticClass valueClass, Object value) {
         return addProperty(null, new LP<>(PropertyFact.createStatic(value, valueClass).property));
     }
 

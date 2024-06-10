@@ -256,10 +256,8 @@ public interface PValue {
     }
 
     static PValue convertFileValue(Serializable value) {
-        return remapValue(value);
-    }
-    static PValue remapValue(Serializable value) {
         if (value instanceof GStringWithFiles) {
+            // should correspond PValue.convertFileValue + RmiManager.convertFileValue
             GStringWithFiles stringWithFiles = (GStringWithFiles) value;
             StringBuilder result = new StringBuilder();
             for (int j = 0; j < stringWithFiles.prefixes.length; j++) {
@@ -280,7 +278,7 @@ public interface PValue {
         return toPValue(value);
     }
 
-    static Serializable remapValueBack(PValue value) {
+    static Serializable convertFileValueBack(PValue value) {
         if(value instanceof DisplayString)
             return ((DisplayString) value).rawString;
         return getValue(value);

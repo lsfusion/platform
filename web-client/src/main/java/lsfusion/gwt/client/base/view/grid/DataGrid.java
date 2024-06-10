@@ -30,6 +30,7 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Result;
+import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
@@ -140,6 +141,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
         recentlyScrolledClassHandler = new RecentlyEventClassHandler(tableWidget, false, "was-scrolled-recently", 1000);
 
+        // we always need headers and footers to support scroll arrows
         // INITIALIZING HEADERS
         headerBuilder = new DefaultHeaderBuilder<>(this, false);
 
@@ -191,6 +193,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         int adjustment = MainFrame.mobileAdjustment;
         tableWidget.setStyleName("scrolled-down", verticalScrollPosition > adjustment);
         tableWidget.setStyleName("scrolled-up", verticalScrollPosition < tableContainer.getScrollHeight() - tableContainer.getClientHeight() - adjustment);
+        tableWidget.setStyleName("scrolled-left", horizontalScrollPosition > adjustment);
 
         if (horizontalScrollPosition != latestHorizontalScrollPosition) {
             updateStickyColumnsState(horizontalScrollPosition);
@@ -201,28 +204,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     
     private void updateStickyColumnsState(int horizontalScrollPosition) {
         List<Integer> stickyColumns = getStickyColumns();
-        int lastSticked = -1;
-
-        // used header as there might be no body rows and header is always present
-        NodeList<TableCellElement> trCells = headerBuilder.getHeaderRow().getCells();
-        List<GSize> stickyLefts = getStickyLefts();
-        for (int i = stickyColumns.size() - 1; i >= 0; i--) {
-            Integer stickyColumn = stickyColumns.get(i);
-            
-            TableCellElement cell = trCells.getItem(stickyColumn);
-            GSize left = stickyLefts.get(i);
-            if (left != null) {
-                Integer intLeft = left.getIntResizeSize();
-                if (intLeft != null) {
-                    int offsetLeft = cell.getOffsetLeft();
-                    // actually it is == but may differ for 1px (for now is being observed in Firefox, where no borders in header are seen)
-                    if (horizontalScrollPosition + intLeft >= offsetLeft) {
-                        lastSticked = i;
-                        break;
-                    }
-                }
-            }
-        }
+        int lastSticked = getLastStickedColumn(horizontalScrollPosition, stickyColumns);
 
         if (lastSticked != latestLastStickedColumn) {
             if (!noHeaders)
@@ -234,6 +216,28 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
             
             latestLastStickedColumn = lastSticked;
         }
+    }
+
+    private int getLastStickedColumn(int horizontalScrollPosition, List<Integer> stickyColumns) {
+        TableRowElement stickyLeftRow = getStickyLeftRow();
+        if(stickyLeftRow != null) {
+            NodeList<TableCellElement> trCells = stickyLeftRow.getCells();
+            List<StickyParams> stickyLefts = getStickyLefts();
+            for (int i = stickyColumns.size() - 1; i >= 0; i--) {
+                Integer stickyColumn = stickyColumns.get(i);
+
+                TableCellElement cell = trCells.getItem(stickyColumn);
+                StickyParams left = stickyLefts.get(i);
+                if (left != null) {
+                    int offsetLeft = cell.getOffsetLeft();
+                    // actually it is == but may differ for 1px (for now is being observed in Firefox, where no borders in header are seen)
+                    if (horizontalScrollPosition + left.left + 1 >= offsetLeft) {
+                        return i;
+                    }
+                }
+            }
+        }
+        return -1;
     }
 
     private static Set<String> browserKeyEvents;
@@ -461,8 +465,8 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
         // Find the cell where the event occurred.
         TableSectionElement tbody = getTableBodyElement();
-        TableSectionElement tfoot = getTableFootElement();
-        TableSectionElement thead = getTableHeadElement();
+        TableSectionElement tfoot = !noFooters ? getTableFootElement() : null;
+        TableSectionElement thead = !noHeaders ? getTableHeadElement() : null;
 
         int row = -1;
         Column column = null;
@@ -1120,8 +1124,8 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
             int rowTop = rowElement.getOffsetTop();
             int rowBottom = rowTop + rowElement.getClientHeight();
 
-            int headerHeight = getTableHeadElement().getClientHeight();
-            int footerHeight = getTableFootElement().getClientHeight();
+            int headerHeight = getHeaderHeight();
+            int footerHeight = getFooterHeight();
             int visibleTop = scrollTop + headerHeight;
             int visibleBottom = scrollTop + scrollHeight - footerHeight;
 
@@ -1136,6 +1140,16 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
                 selectionHandler.changeRow(newRow, FocusUtils.Reason.SCROLLNAVIGATE);
             }
         }
+    }
+
+    private int getHeaderHeight() {
+        return !noHeaders ? getTableHeadElement().getClientHeight() : 0;
+//        return getTableHeadElement().getClientHeight();
+    }
+
+    private int getFooterHeight() {
+        return !noFooters ? getTableFootElement().getClientHeight() : 0;
+//        return getTableFootElement().getClientHeight();
     }
 
     private void beforeUpdateDOMScroll(SetPendingScrollState pendingState) {
@@ -1163,7 +1177,6 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         int viewportWidth = getViewportWidth();
 
         //scroll column to visible if needed
-        int scrollLeft = currentScrollLeft;
         int colToShow;
         if (selectedColumnChanged && (colToShow = getSelectedColumn()) >=0 && getRowCount() > 0) {
             NodeList<TableCellElement> cells = tableWidget.getDataRows().getItem(0).getCells();
@@ -1171,14 +1184,15 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
             int columnLeft = td.getOffsetLeft() - getPrevStickyCellsOffsetWidth(cells, colToShow);
             int columnRight = td.getOffsetLeft() + td.getOffsetWidth();
+
+            int scrollLeft = currentScrollLeft;
             if (columnRight >= scrollLeft + viewportWidth) // not completely visible from right
                 scrollLeft = columnRight - viewportWidth;
             if (columnLeft < scrollLeft) // not completely visible from left
                 scrollLeft = columnLeft;
+            if(currentScrollLeft != scrollLeft)
+                pendingState.left = scrollLeft;
         }
-
-        if(currentScrollLeft != scrollLeft)
-            pendingState.left = scrollLeft;
 
         //calculate left neighbour right border for focused cell
         if (columnsChanged || selectedRowChanged || selectedColumnChanged || focusedChanged) {
@@ -1192,24 +1206,49 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
 //        updateScrollHorizontal(pendingState);
     }
-    
-    private List<GSize> getStickyLefts() {
-        List<GSize> stickyLefts = new ArrayList<>();
-        
-        TableRowElement tr = headerBuilder.getHeaderRow(); // used header as there might be no body rows and header is always present
-        GSize left = GSize.ZERO;
-        List<Integer> stickyColumns = getStickyColumns();
-        double viewportWidth = getViewportWidth();
-        for (int i = 0; i < stickyColumns.size(); i++) {
-            Element cell = tr.getCells().getItem(stickyColumns.get(i));
-            GSize cellLeft = GwtClientUtils.getOffsetWidth(cell);
-            //protect from too much sticky columns
-            GSize nextLeft = left.add(cellLeft);
-            // assert that nextLeft is Fixed PX, so the resize size is not null
-            stickyLefts.add(nextLeft.getResizeSize() <= viewportWidth * 0.33 ? left : null);
-            left = nextLeft;
+
+    public static class StickyParams {
+        public final double left;
+        public final double borderRight;
+
+        public StickyParams(double left, double borderRight) {
+            this.left = left;
+            this.borderRight = borderRight;
         }
-        return stickyLefts;
+    }
+
+    private List<StickyParams> getStickyLefts() {
+        TableRowElement tr = getStickyLeftRow();
+        if(tr != null) {
+            List<StickyParams> stickyLefts = new ArrayList<>();
+            double left = 0.0;
+            List<Integer> stickyColumns = getStickyColumns();
+            double viewportWidth = getViewportWidth();
+            for (int i = 0; i < stickyColumns.size(); i++) {
+                Element cell = tr.getCells().getItem(stickyColumns.get(i));
+                double borderLeftWidth = GwtClientUtils.getDoubleBorderLeftWidth(cell);
+                double borderRightWidth = GwtClientUtils.getDoubleBorderRightWidth(cell);
+                double cellWidth = GwtClientUtils.getDoubleOffsetWidth(cell) - borderLeftWidth - borderRightWidth;
+                //protect from too much sticky columns
+                double nextLeft = left + cellWidth;
+                // assert that nextLeft is Fixed PX, so the resize size is not null
+                stickyLefts.add(nextLeft <= viewportWidth * MainFrame.maxStickyLeft ? new StickyParams(left - borderLeftWidth, borderRightWidth) : null);
+                left = nextLeft;
+            }
+            return stickyLefts;
+        }
+        return null;
+    }
+
+    private TableRowElement getStickyLeftRow() {
+        if(!noHeaders)
+           return headerBuilder.getHeaderRow();
+
+        NodeList<TableRowElement> dataRows = tableWidget.getDataRows();
+        if(dataRows.getLength() > 0)
+            return dataRows.getItem(0);
+
+        return null;
     }
 
     private void preAfterUpdateDOMScrollVertical(SetPendingScrollState pendingState) {
@@ -1226,8 +1265,8 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
         int scrollTop = currentScrollTop;
 
-        int headerHeight = getTableHeadElement().getClientHeight();
-        int footerHeight = getTableFootElement().getClientHeight();
+        int headerHeight = getHeaderHeight();
+        int footerHeight = getFooterHeight();
 
         // we're trying to keep viewport the same after rerendering
         int rerenderedSelectedRow;
@@ -1289,7 +1328,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         if (pendingState.left != null) {
             tableContainer.setHorizontalScrollPosition(pendingState.left);
 
-            updateScrolledState();
+//            updateScrolledState(); // scroll handler is called after programmatic change
         }
 
         //set left neighbour right border for focused cell
@@ -1325,7 +1364,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         tableBuilder.update(tableWidget.getSection(), getRows(), columnsChanged, columnsToRedraw);
     }
 
-    private void updateStickyLeftDOM(List<GSize> stickyLefts) {
+    private void updateStickyLeftDOM(List<StickyParams> stickyLefts) {
         List<Integer> stickyColumns = getStickyColumns();
         if (!noHeaders)
             headerBuilder.updateStickyLeft(stickyColumns, stickyLefts);
@@ -1556,8 +1595,10 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     }
 
     public void updateHeadersDOM(boolean columnsChanged) {
-        headerBuilder.update(columnsChanged);
-        footerBuilder.update(columnsChanged);
+        if(!noHeaders)
+            headerBuilder.update(columnsChanged);
+        if(!noFooters)
+            footerBuilder.update(columnsChanged);
     }
 
     public Element getHeaderElement(int element) {
@@ -1619,7 +1660,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         private Boolean hasVertical;
 
         private LeftNeighbourRightBorder leftNeighbourRightBorder;
-        private List<GSize> stickyLefts;
+        private List<StickyParams> stickyLefts;
     }
 
     private static class LeftNeighbourRightBorder {
@@ -1730,12 +1771,15 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
             tableElement.addClassName("table");
             tableElement.addClassName("lsf-table");
+            if (noHeaders) {
+                tableElement.addClassName("empty-header");
+            }
+            if (noFooters) {
+                tableElement.addClassName("empty-footer");
+            }
 
             headerElement = tableElement.createTHead();
             headerElement.setClassName("dataGridHeader");
-            if (noHeaders) {
-                headerElement.addClassName("empty-header");
-            }
 
             colRowElement = headerElement.insertRow(-1);
 
@@ -1744,9 +1788,6 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
             footerElement = tableElement.createTFoot();
             footerElement.setClassName("dataGridFooter");
-            if (noFooters) {
-                footerElement.addClassName("empty-footer");
-            }
 
             setElement(tableElement);
         }
@@ -1909,6 +1950,27 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
             changeCell(rowIndex, columnIndex, reason);
         }
+    }
+
+    public void initArrow(Element parent, boolean bottom) {
+        Element button = GwtClientUtils.createFocusElement("button");
+        button.addClassName("btn");
+        button.addClassName("btn-light");
+        button.addClassName("btn-sm");
+        button.addClassName("arrow");
+        button.appendChild(bottom ? StaticImage.CHEVRON_DOWN.createImage() : StaticImage.CHEVRON_UP.createImage());
+        GwtClientUtils.setOnClick(button, event -> scrollToEnd(bottom));
+
+        Element arrowTH = Document.get().createElement("th");
+        arrowTH.addClassName("arrow-th");
+        arrowTH.addClassName(bottom ? "bottom-arrow" : "top-arrow");
+
+        Element arrowContainer = Document.get().createElement("div");
+        arrowContainer.addClassName("arrow-container");
+        arrowContainer.appendChild(button);
+
+        arrowTH.appendChild(arrowContainer);
+        parent.appendChild(arrowTH);
     }
 
     private boolean wasUnloaded;

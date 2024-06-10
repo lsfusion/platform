@@ -11,9 +11,12 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.property.LP;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
+import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
+import lsfusion.server.logics.form.interactive.action.async.PushAsyncResult;
 import lsfusion.server.logics.navigator.controller.remote.RemoteNavigator;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
@@ -69,13 +72,25 @@ public class NewThreadAction extends AroundAspectAction {
     @Override
     protected FlowResult aroundAspect(final ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
 //        String callThread = ExecutionStackAspect.getStackString();
-        if(targetProp != null) {
-            targetProp.change(RemoteNavigator.pushGlobalNotification((env, stack) -> run(context.override(env, stack))), context);
-        } else if (connectionProp != null) {
-            ObjectValue connectionObject = connectionProp.readClasses(context);
-            if(connectionObject instanceof DataObject)
-                context.getNavigatorsManager().pushNotificationConnection((DataObject) connectionObject,
-                        (env, stack) -> run(context.override(env, stack))); //, callThread));
+        if(targetProp != null || connectionProp != null) {
+            RemoteNavigator.Notification notification = new RemoteNavigator.Notification() {
+                @Override
+                public void run(ExecutionEnvironment env, ExecutionStack stack, PushAsyncResult asyncResult) {
+                    NewThreadAction.this.run(context.override(env, stack, asyncResult));
+                }
+
+                @Override
+                protected Action<?> getAction() {
+                    return aspectActionImplement.action;
+                }
+            };
+            if(targetProp != null)
+                targetProp.change(RemoteNavigator.pushGlobalNotification(notification), context);
+            else {
+                ObjectValue connectionObject = connectionProp.readClasses(context);
+                if (connectionObject instanceof DataObject)
+                    context.getNavigatorsManager().pushNotificationConnection((DataObject) connectionObject, notification); //, callThread));
+            }
         } else {
             context.getSession().registerThreadStack();
             Long delay = delayProp != null ? ((Number) delayProp.read(context, context.getKeys())).longValue() : 0L;

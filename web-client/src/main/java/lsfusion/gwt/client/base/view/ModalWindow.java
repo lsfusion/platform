@@ -86,7 +86,7 @@ public class ModalWindow extends ResizableComplexPanel {
 
         GwtClientUtils.draggable(dialog.getElement(), ".modal-header");
         if (resizable)
-            GwtClientUtils.resizable(content.getElement(), "e, s, se");
+            GwtClientUtils.resizable(content.getElement(), "e, s, se", nativeEvent -> body.onResize());
     }
 
     public void makeShadowOnScroll() {

@@ -64,6 +64,8 @@ public class ExternalUtils {
 
     public static final String SIGNATURE_PARAM = "signature";
 
+    public static final String NEED_NOTIFICATION_ID_HEADER = "Need-Notification-Id";
+
     public static final String generate(Object actionParam, boolean script, Object[] params) {
         String paramsString = "";
         for(int i = 0; i < params.length; i++)
@@ -122,10 +124,12 @@ public class ExternalUtils {
 
         String signature = getParameterValue(queryParams, SIGNATURE_PARAM);
 
+        boolean needNotificationId = getHeaderValue(headerNames, headerValues, NEED_NOTIFICATION_ID_HEADER) != null;
+
         ExternalRequest request = new ExternalRequest(returns.toArray(new String[0]), paramsList.toArray(new Object[paramsList.size()]),
                 charset == null ? null : charset.toString(), headerNames, headerValues, cookieNames,
                 cookieValues, logicsHost, logicsPort, logicsExportName, scheme, method, webHost, webPort, contextPath,
-                servletPath, pathInfo, query, requestContentType != null ? requestContentType.toString() : null, sessionId, body, signature);
+                servletPath, pathInfo, query, requestContentType != null ? requestContentType.toString() : null, sessionId, body, signature, needNotificationId);
 
         lsfusion.interop.session.ExternalResponse execResult = null;
         String path = servletPath + pathInfo;
@@ -218,6 +222,14 @@ public class ExternalUtils {
                 mValues.add(queryParam.getValue());
         }
         return mValues.immutableList();
+    }
+
+    private static String getHeaderValue(String[] headerNames, String[] headerValues, String header) {
+        for(int i = 0; i < headerNames.length; i++) {
+            if(headerNames[i].equalsIgnoreCase(header))
+                return headerValues[i];
+        }
+        return null;
     }
 
     private static Object getRequestParam(Object object, ContentType contentType, boolean convertedToString) {

@@ -491,8 +491,8 @@ public class GFormController implements EditManager {
         return form.getPivotMeasures(groupObject);
     }
 
-    public void executeNotificationAction(final Integer idNotification) throws IOException {
-        syncResponseDispatch(new ExecuteNotification(idNotification));
+    public void executeNotificationAction(final String notification) throws IOException {
+        syncResponseDispatch(new ExecuteNotification(notification));
     }
 
     private void initializeFormSchedulers() {
@@ -885,7 +885,7 @@ public class GFormController implements EditManager {
                 GType externalType = property.getExternalChangeType();
                 if(externalType == null)
                     externalType = property.getPasteType();
-                valueRow.add(PValue.remapValueBack(property.parsePaste(sCell, externalType)));
+                valueRow.add(PValue.convertFileValueBack(property.parsePaste(sCell, externalType)));
                 rawValueRow.add(sCell);
             }
             values.add(valueRow);
@@ -1283,7 +1283,7 @@ public class GFormController implements EditManager {
     public void asyncChange(EditContext editContext, ExecContext execContext, EventHandler handler, String actionSID, GAsyncChange asyncChange, GPushAsyncInput pushAsyncResult, boolean externalChange, Consumer<Long> onExec) {
         asyncExecutePropertyEventAction(actionSID, editContext, execContext, handler, pushAsyncResult, externalChange, requestIndex -> {
             for (int propertyID : asyncChange.propertyIDs)
-                setLoadingValueAt(propertyID, editContext.getFullKey(), PValue.remapValue(asyncChange.value), requestIndex);
+                setLoadingValueAt(propertyID, editContext.getFullKey(), PValue.convertFileValue(asyncChange.value), requestIndex);
         }, onExec);
     }
 
@@ -1356,7 +1356,7 @@ public class GFormController implements EditManager {
                         } catch (ParseException ignored) {
                         }
                     } else {
-                        value = PValue.remapValue(filter.value);
+                        value = PValue.convertFileValue(filter.value);
                     }
                     uFilters.add(GFilterController.createNewCondition(gGridController, new GFilter(propertyDraw), GGroupObjectValue.EMPTY, value, filter.negation, GCompare.get(filter.compare), filter.junction));
                 }

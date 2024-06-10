@@ -47,6 +47,7 @@ public class LogicsSessionObject {
             String displayName = trimToNull(json.optString("displayName"));
             FileData logicsLogo = getFileData(trimToNull(json.optString("logicsLogo")));
             FileData logicsIcon = getFileData(trimToNull(json.optString("logicsIcon")));
+            FileData PWAIcon = getFileData(trimToNull(json.optString("PWAIcon")));
             String platformVersion = trimToNull(json.optString("platformVersion"));
             Integer apiVersion = json.optInt("apiVersion");
             boolean inDevMode = json.optBoolean("inDevMode");
@@ -62,7 +63,7 @@ public class LogicsSessionObject {
             List<Pair<String, RawFileData>> noAuthResourcesBeforeSystem = getFileData(json, "noAuthResourcesBeforeSystem");
             List<Pair<String, RawFileData>> noAuthResourcesAfterSystem = getFileData(json, "noAuthResourcesAfterSystem");
 
-            serverSettings = new ServerSettings(logicsName, displayName, logicsLogo, logicsIcon, platformVersion, apiVersion, inDevMode,
+            serverSettings = new ServerSettings(logicsName, displayName, logicsLogo, logicsIcon, PWAIcon, platformVersion, apiVersion, inDevMode,
                     sessionConfigTimeout, anonymousUI, jnlpUrls, disableRegistration, lsfParams, noAuthResourcesBeforeSystem, noAuthResourcesAfterSystem);
         }
         return serverSettings;
@@ -155,13 +156,15 @@ public class LogicsSessionObject {
         boolean userFiltersManualApplyMode = json.optBoolean("userFiltersManualApplyMode");
         boolean disableActionsIfReadonly = json.optBoolean("disableActionsIfReadonly");
         boolean enableShowingRecentlyLogMessages = json.optBoolean("enableShowingRecentlyLogMessages");
+        String pushNotificationPublicKey = json.optString("pushNotificationPublicKey");
         int maxRequestQueueSize = json.optInt("maxRequestQueueSize");
+        double maxStickyLeft = json.optDouble("maxStickyLeft");
 
         return new ClientSettings(localePreferences, currentUserName, fontSize, useBusyDialog, busyDialogTimeout, useRequestTimeout, devMode,
                 projectLSFDir, showDetailedInfo, showDetailedInfoDelay, suppressOnFocusChange, autoReconnectOnConnectionLost, forbidDuplicateForms, showNotDefinedStrings, pivotOnlySelectedColumn, matchSearchSeparator,
                 colorTheme, useBootstrap, colorPreferences, preDefinedDateRangesNames.toArray(new String[0]), useTextAsFilterSeparator, 
                 verticalNavbar, userFiltersManualApplyMode, disableActionsIfReadonly,
-                enableShowingRecentlyLogMessages, maxRequestQueueSize);
+                enableShowingRecentlyLogMessages, pushNotificationPublicKey, maxRequestQueueSize, maxStickyLeft);
     }
 
     public static class InitSettings {

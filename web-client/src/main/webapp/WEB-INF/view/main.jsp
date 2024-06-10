@@ -9,6 +9,7 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <html>
     <head>
+        <link rel="manifest" href="manifest">
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     	<meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -214,6 +215,25 @@
 
                 setCookie('LSFUSION_SCREEN_SIZE', document.documentElement.clientWidth + 'x' + document.documentElement.clientHeight);
                 setCookie('LSFUSION_SCALE', window.devicePixelRatio);
+
+                navigator.serviceWorker.ready.then((registration) => {
+                    registration.active.postMessage({
+                        type: "setDefaultNotifyOptions",
+                        defaultNotification: {
+                            title: "${title}",
+                            options: {
+                                icon: "${logicsIcon}",
+                                body: "<%= ServerMessages.getString(request, "executed.successfully") %>"
+                            }
+                        },
+                        focusNotification: {
+                            title: "<%= ServerMessages.getString(request, "push.notification.tab.already.opened") %>",
+                            options: {
+                                body: "<%= ServerMessages.getString(request, "push.notification.can.close.tab") %>"
+                            }
+                        }
+                    });
+                });
             }
         </script>
     </head>

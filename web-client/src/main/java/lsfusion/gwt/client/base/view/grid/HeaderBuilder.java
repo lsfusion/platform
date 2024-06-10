@@ -17,7 +17,6 @@ package lsfusion.gwt.client.base.view.grid;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableRowElement;
-import lsfusion.gwt.client.base.size.GSize;
 
 import java.util.List;
 
@@ -36,7 +35,7 @@ public interface HeaderBuilder<T> {
 
     void update(boolean columnsChanged);
 
-    void updateStickyLeft(List<Integer> stickyColumns, List<GSize> stickyLefts);
+    void updateStickyLeft(List<Integer> stickyColumns, List<DataGrid.StickyParams> stickyLefts);
     
     void updateStickedState(List<Integer> stickyColumns, int lastSticked);
 

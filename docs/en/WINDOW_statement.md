@@ -2,31 +2,32 @@
 title: 'WINDOW statement'
 ---
 
-The `WINDOW` statement creates a new [window](Navigator_design.md).
+The `WINDOW` statement - creating a new [window](Navigator_design.md).
 
 ### Syntax
 
 ```
-WINDOW name [caption] type [options]
+WINDOW name [caption] [options];
 ```
 
-The `options` that go at the end of the statement has the following syntax (the syntax for each option is indicated on a separate line):
+The `options` that appear at the end of the statement can be specified one after another in any order:
 
 ```
 HIDETITLE 
 HIDESCROLLBARS 
-VERTICAL | HORIZONTAL
+orientationType
 POSITION(x, y, width, height)
-LEFT | RIGHT | TOP | BOTTOM
+fixedPositionType
 HALIGN(alignType)
 VALING(alignType) 
 TEXTHALIGN(alignType)
 TEXTVALIGN(alignType)
+CLASS cssClassExpr
 ```
 
 ### Description
 
-The `WINDOW` statement declares a new window and adds it to the current [module](Modules.md). Options are listed one after another in arbitrary order, separated by spaces or line breaks. Depending on the selected window type – `TOOLBAR`, `PANEL`, `TREE`, or `MENU` – a toolbar, panel, tree, or menu will be created.
+The `WINDOW` statement declares a new window and adds it to the current [module](Modules.md).
 
 ### Parameters
 
@@ -36,112 +37,122 @@ The `WINDOW` statement declares a new window and adds it to the current [module]
 
 - `caption`
 
-    Window caption. [String literal](Literals.md#strliteral). If caption is not specified, the caption of the window will be its name.  
+    Window caption. [String literal](Literals.md#strliteral). If caption is not specified, the window's name will be used as the caption.  
 
-- `type`
+### Options
 
-    Type of window to create. Specified with one of the keywords `TOOLBAR`, `PANEL`, `TREE`, or `MENU`.
+- `HIDETITLE`
 
-- `options`
+    Keyword specifying that no caption should be displayed in the user interface.
 
-    - `HIDETITLE`
+- `HIDESCROLLBARS`
 
-        Specifying that no caption should be displayed in the user interface.
+    Keyword specifying that no scrollbars should be displayed for this window.
 
-    - `HIDESCROLLBARS`
+- `orientationType`
 
-        Specifying that no scrollbars should be displayed for this window.
+    Specifying the vertical or horizontal orientation of the toolbar or panel being created. Specified by one of the keywords:
 
-    - `VERTICAL` | `HORIZONTAL`
+    - `VERTICAL` - vertical orientation (default value).
+    - `HORIZONTAL` - horizontal orientation.
 
-        Specifying the vertical or horizontal orientation of the toolbar or panel being created. `VERTICAL` is used by default. This option only makes sense for `TOOLBAR` or `PANEL` windows.
+- `POSITION (x, y, width, height)`
 
-    - `POSITION (x, y, width, height)`
+    Specifying the size and location of the window. 
 
-        Specifying the size and location of the window. 
+    - `x`
 
-        - `x`
+        The left window coordinate. [Integer literal](Literals.md#intliteral) ranging from `0` to `100`.
 
-            The left window coordinate. [Integer literal](Literals.md#intliteral) ranging from `0` to `100`.
+    - `y`
 
-        - `y`
+        Top window coordinate. Integer literal ranging from `0` to `100`.
 
-            Top window coordinate. Integer literal ranging from `0` to `100`.
+    - `width`
 
-        - `width`
+        Window width. Integer literal ranging from `0` to `100`.
 
-            Window width. Integer literal ranging from `0` to `100`.
+    - `height`
 
-        - `height`
+        Window height. Integer literal ranging from `0` to `100`.
 
-            Window height. Integer literal ranging from `0` to `100`.
+- `fixedPositionType`
 
-    - `LEFT` | `RIGHT` | `TOP` | `BOTTOM`
+    Specifying a fixed location of the window on the desktop, which does not allow the user to change its position and size. Here the window size is automatically determined based on the preferred dimensions of the component. The window will be located to the left, right, top, and bottom of the desktop, respectively. This option cannot be used simultaneously with the `POSITION` option. Specified by one of the keywords:
 
-        Specifying a fixed location of the window on the desktop, which does not allow the user to change its position and size. Here the window size is automatically determined based on the preferred dimensions of the component. The window will be located to the left, right, top, and bottom of the desktop, respectively. This option only makes sense for `TOOLBAR` windows and cannot be used simultaneously with the `POSITION` option.
+    - `LEFT`
+    - `RIGHT`
+    - `TOP` 
+    - `BOTTOM`
 
-    - `HALIGN(alignType)`
+- `HALIGN(alignType)`
 
-        Specifying the horizontal alignment of the buttons in a vertical toolbar. This option only makes sense for `TOOLBAR` windows with `VERTICAL` orientation.
+    Specifying the horizontal alignment of the buttons in a vertical toolbar.
 
-        - `alignType`
+    - `alignType`
 
-            Alignment type. This is specified using one of these keywords:
+        Alignment type. This is specified using one of these keywords:
 
-            - `START` - all buttons will have the same left coordinate. Used by default.
-            - `CENTER` - all buttons will be centered along the X axis.
-            - `END` - all buttons will have the same right coordinate.
+        - `START` - left alignment (default value).
+        - `CENTER` - center alignment.
+        - `END` - right alignment.
 
-    - `TEXTHALIGN(alignType)`
+- `VALIGN(alignType)`
 
-        Specifies the horizontal alignment of text on the buttons in a vertical toolbar. This option makes sense only for `TOOLBAR` windows with `VERTICAL` orientation. 
+    Specifying the vertical alignment of the buttons in a horizontal toolbar.
 
-        - `alignType`
+    - `alignType`
 
-            Alignment type. This is specified using one of these keywords:
+        Alignment type. This is specified using one of these keywords:
 
-            - `START` - the text will be located on the button on the left. Used by default.
-            - `CENTER` – the text will be located in the center of the button.
-            - `END` - the text will be located on the button on the right.
+        - `START` - top alignment (default value).
+        - `CENTER` - center alignment.
+        - `END` - bottom alignment.
 
-    - `VALIGN(alignType)`
+- `TEXTHALIGN(alignType)`
 
-        Specifies the vertical alignment of the buttons in a horizontal toolbar. This option only makes sense for `TOOLBAR` windows with `HORIZONTAL` orientation. 
+    Specifying the horizontal alignment of text on the buttons. 
 
-        - `alignType`
+    - `alignType`
 
-            Alignment type. This is specified using one of these keywords:
+        Alignment type. This is specified using one of these keywords:
 
-            - `START` - all buttons will have the same upper coordinate. Used by default.
-            - `CENTER` - all buttons will be centered along the Y axis.
-            - `END` - all buttons will have the same lower coordinate.
+        - `START` - left alignment (default value).
+        - `CENTER` - center alignment.
+        - `END` - right alignment.
 
-    - `TEXTVALIGN(alignType)`
+- `TEXTVALIGN(alignType)`
 
-        Specifying the vertical alignment of text on the buttons in a horizontal toolbar. This option makes sense only for `TOOLBAR` windows with `HORIZONTAL` orientation. 
+    Specifying the vertical alignment of text on the buttons. 
 
-        - `alignType`
+    - `alignType`
 
-            Alignment type. This is specified using one of these keywords:
+        Alignment type. This is specified using one of these keywords:
 
-            - `START` - the text will be located at the top of the button.
-            - `CENTER` - the text will be located in the center of the button. Used by default.
-            - `END` - the text will be located at the bottom of the button.  
+        - `START` - top alignment.
+        - `CENTER` - center alignment (default value).
+        - `END` - bottom alignment.
 
+- `CLASS cssClassExpr`
+
+    Specifying the name of the CSS class for the DOM element created for the window component in HTML. This can be used to apply custom styles.
+
+    - `cssClassExpr`
+
+        [Expression](Expression.md), whose value determines the class name.
 
 ### Examples
 
 ```lsf
 // creating system windows in the System module
-WINDOW root 'Root' TOOLBAR HIDETITLE HIDESCROLLBARS HORIZONTAL POSITION(0, 0, 100, 6);
-WINDOW toolbar 'Toolbar' TOOLBAR HIDETITLE VERTICAL POSITION(0, 6, 20, 64);
-WINDOW tree 'Tree' TOOLBAR HIDETITLE POSITION(0, 6, 20, 64);
+WINDOW logo HORIZONTAL POSITION(0, 0, 10, 6) VALIGN(CENTER) HALIGN(START) HIDETITLE HIDESCROLLBARS CLASS logoWindowClass();
+WINDOW root HORIZONTAL POSITION(10, 0, 70, 6) VALIGN(CENTER) HALIGN(CENTER) HIDETITLE HIDESCROLLBARS CLASS rootWindowClass();
+WINDOW system HORIZONTAL POSITION(80, 0, 20, 6) VALIGN(CENTER) HALIGN(END) HIDETITLE HIDESCROLLBARS CLASS systemWindowClass();
 
-// menu without scrollbars
-WINDOW menu MENU HIDESCROLLBARS POSITION(20, 6, 80, 4);
+WINDOW toolbar VERTICAL POSITION(0, 6, 20, 94) HIDETITLE CLASS toolbarWindowClass();
 
 // a horizontal toolbar at the bottom of the desktop, in which all buttons will be centered and text will be aligned up
 // in this toolbar, for example, it is possible to place forms for quick opening
-WINDOW hotforms TOOLBAR HORIZONTAL VALIGN(CENTER) TEXTVALIGN(START) BOTTOM;
+WINDOW hotforms HORIZONTAL BOTTOM VALIGN(CENTER) TEXTVALIGN(START);
 ```
 
