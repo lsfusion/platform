@@ -538,13 +538,6 @@ onClientStarted () + {
     }
 }
 
-loadResource (STRING path) {
-    INTERNAL CLIENT path;
-}
-unloadResource (STRING path) {
-    INTERNAL CLIENT 'remove ' + path;
-}
-
 currentSize = DATA Size(Connection);
 currentSize() = currentSize(currentConnection());
 size() = size(currentDesignEnv());
@@ -552,13 +545,13 @@ saveCurrentSize(BOOLEAN updateResources) {
     FOR Size newSize = size() DO {
         FOR updateResources AND Size prevSize = currentSize() DO {
             IF paddingCss(prevSize) THEN {
-                unloadResource(paddingCss(prevSize));
-                unloadResource(fontCss(prevSize));
+                INTERNAL CLIENT 'remove ' + paddingCss(prevSize);
+                INTERNAL CLIENT 'remove ' + fontCss(prevSize);
             }
 
             IF paddingCss(newSize) THEN {
-                loadResource(paddingCss(newSize));
-                loadResource(fontCss(newSize));
+                INTERNAL CLIENT paddingCss(newSize);
+                INTERNAL CLIENT fontCss(newSize);
             }            
         }
 
