@@ -128,7 +128,7 @@ It is possible to run the code snippets in lsfusion programming language [online
 
 ## Feedback
 - [Issue tracker](https://github.com/lsfusion/platform/issues) 
-- [Slack community](https://slack.lsfusion.org)
+- [Slack community](https://join.slack.com/t/lsfusion/shared_invite/zt-1itj7vlmf-9aBIP__nj9iMJglDaecqXg)
 - [Telegram group](https://t.me/lsfusion_official)
 
 ## License
