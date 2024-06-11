@@ -837,7 +837,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             ActionObjectEntity<?> explicitChange = getExplicitEventActionEntity(CHANGE, context);
             if(explicitChange != null) {
                 // when we have selector, then it's normal for the object to be null, which however can lead to the "closure problem" - current value (it's params / objects) is "pushed" inside the JSON (GROUP) operator, which doesn't support NULL values (so all the options will be "erased")
-                if(!forceSelect && isSelector && getToDraw(context.entity).updateType == UpdateType.NULL) // assert that group object is single panel object
+                GroupObjectEntity toDraw = getToDraw(context.entity);
+                if(toDraw == null || !forceSelect && isSelector && toDraw.updateType == UpdateType.NULL) // assert that group object is single panel object
                     return null;
 
                 changeValue = true;
