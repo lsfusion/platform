@@ -70,7 +70,7 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrP
         return property.read(env, joinImplement);
     }
 
-    public <T extends PropertyInterface> PropertyMapImplement<?, T> getImplement(ImRevMap<ObjectEntity, T> mapObjects) {
+    public <T extends PropertyInterface> PropertyMapImplement<P, T> getImplement(ImRevMap<ObjectEntity, T> mapObjects) {
         return new PropertyMapImplement<>(property, mapping.join(mapObjects));
     }
 

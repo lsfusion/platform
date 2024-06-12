@@ -1,8 +1,6 @@
 package lsfusion.server.logics.form.struct.action;
 
-import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
-import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.language.action.LA;
@@ -10,9 +8,7 @@ import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInput;
 import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelector;
-import lsfusion.server.logics.form.interactive.action.input.InputContextSelector;
 import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
-import lsfusion.server.logics.form.interactive.action.input.InputOrderEntity;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.controller.init.Instantiable;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
@@ -26,11 +22,9 @@ import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObje
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
-import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
-import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
 public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPropertyObjectEntity<P, Action<P>> implements Instantiable<ActionObjectInstance<P>>, ActionObjectSelector {
@@ -54,11 +48,11 @@ public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPro
         return instanceFactory.getInstance(this);
     }
 
-    public ActionObjectEntity<?> getGroupChange(GroupObjectEntity entity) {
+    public ActionObjectEntity<?> getGroupChange(GroupObjectEntity entity, PropertyObjectEntity<?> readOnly) {
         if(entity == null || !entity.viewType.isList())
             return null;
         
-        return this.property.getGroupChange(entity, mapping);
+        return this.property.getGroupChange(entity, mapping, readOnly);
     }
 
     public <X extends PropertyInterface> PropertyObjectEntity.Select getSelectProperty(FormInstanceContext context, boolean forceSelect, Boolean forceFilterSelected, PropertyObjectEntity<X> drawProperty) { // false - filter selected,

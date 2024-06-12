@@ -53,6 +53,7 @@ import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.IsClassProperty;
@@ -688,8 +689,11 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     }
 
     @IdentityStrongLazy // STRONG because of using in security policy
-    public <G extends PropertyInterface> ActionObjectEntity<?> getGroupChange(GroupObjectEntity entity, ImRevMap<P, ObjectEntity> mapping) {
+    public <G extends PropertyInterface> ActionObjectEntity<?> getGroupChange(GroupObjectEntity entity, ImRevMap<P, ObjectEntity> mapping, PropertyObjectEntity<G> readOnly) {
         ImSet<ObjectEntity> entityObjects = entity.getObjects();
+        if(readOnly != null)
+            entityObjects = entityObjects.merge(readOnly.getObjects());
+
         ImSet<ObjectEntity> notUsedEntityObjects = entityObjects.remove(mapping.valuesSet());
         if(!notUsedEntityObjects.isEmpty()) { // adding missing parameters to fulfil the assertion
             // it's a sort patchExtendParams (generating virtual parameters using list action for that)
@@ -697,14 +701,15 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
             ImRevMap<PropertyInterface, ObjectEntity> notUsedInterfaces = notUsedEntityObjects.mapRevKeys((Supplier<PropertyInterface>) PropertyInterface::new);
             return PropertyFact.createListAction(context.keys().addExcl(notUsedInterfaces.keys()),
                     ListFact.singleton(new ActionMapImplement<>(this, context.reverse()))).
-                        mapObjects(notUsedInterfaces.addRevExcl(context.join(mapping))).getGroupChange(entity);
+                        mapObjects(notUsedInterfaces.addRevExcl(context.join(mapping))).getGroupChange(entity, readOnly);
         }
 
         ImRevMap<ObjectEntity, P> reversedMapping = mapping.reverse();
         return getGroupChange(entity.getProperty(GroupObjectProp.FILTER).mapPropertyImplement(reversedMapping),
-                              entity.getProperty(GroupObjectProp.ORDER).mapPropertyImplement(reversedMapping)).mapObjects(mapping);
+                              entity.getProperty(GroupObjectProp.ORDER).mapPropertyImplement(reversedMapping),
+                              readOnly != null ? readOnly.getImplement(reversedMapping) : null).mapObjects(mapping);
     }
-    public <G extends PropertyInterface> ActionMapImplement<?, P> getGroupChange(PropertyMapImplement<G, P> groupFilter, PropertyMapImplement<G, P> groupOrder) {
+    private <G extends PropertyInterface, R extends PropertyInterface> ActionMapImplement<?, P> getGroupChange(PropertyMapImplement<G, P> groupFilter, PropertyMapImplement<G, P> groupOrder, PropertyMapImplement<R, P> readOnly) {
 
 //        lm.addGroupObjectProp();
         MList<ActionMapImplement<?, P>> mList = ListFact.mList();
@@ -724,13 +729,17 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         }
         ImRevMap<P, PropertyInterface> iterate = iterateGroup.mapRevValues((Supplier<PropertyInterface>) PropertyInterface::new);
         ImOrderSet<P> orderedSet = iterate.keys().toOrderSet();
+        ImRevMap<P, PropertyInterface> mapIterateContext = context.removeRev(iterate.keys()).addRevExcl(iterate);
+
+        ImList<PropertyInterfaceImplement<PropertyInterface>> nots = ListFact.singleton(PropertyFact.createCompareInterface(orderedSet.mapOrder(context), orderedSet.mapOrder(iterate), Compare.EQUALS));
+        if(readOnly != null)
+            nots = nots.addList(readOnly.map(mapIterateContext));
 
         mList.add(PropertyFact.createPushRequestAction(interfaces, // PUSH REQUEST
                         PropertyFact.createForAction(context.valuesSet().addExcl(iterate.valuesSet()), context.valuesSet(), // FOR
-                                PropertyFact.createAndNot(groupFilter.map(iterate), // group() AND NOT current objects
-                                        PropertyFact.createCompareInterface(orderedSet.mapOrder(context), orderedSet.mapOrder(iterate), Compare.EQUALS)),
+                                PropertyFact.createAndNot(groupFilter.map(iterate), nots), // group() AND NOT current objects AND NOT readonly
                                 MapFact.singletonOrder(groupOrder.map(iterate), false), ordersNotNull,
-                                getImplement().map(context.removeRev(iterate.keys()).addRevExcl(iterate)), // DO changeAction 
+                                getImplement().map(mapIterateContext), // DO changeAction
                       null, false, SetFact.EMPTY(), false).map(context.reverse())));
         
         return PropertyFact.createListAction(interfaces, mList.immutableList());

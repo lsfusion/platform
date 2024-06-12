@@ -333,7 +333,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             // if there is no explicit default handler, then generate one
             ActionObjectEntity<?> eventAction = getEventAction(CHANGE, context);
             if (eventAction != null)
-                return eventAction.getGroupChange(getToDraw(context.entity));
+                return eventAction.getGroupChange(getToDraw(context.entity), getReadOnly());
         } else { // default handler
             ActionMapImplement<?, X> eventActionImplement = eventProperty.getEventAction(actionId, actionId.equals(CHANGE) ? defaultChangeEventScope : null, ListFact.EMPTY(), actionId.equals(CHANGE) ? customChangeFunction : null);
             if (eventActionImplement != null)

@@ -267,6 +267,9 @@ public class PropertyFact {
     public static <T extends PropertyInterface> PropertyMapImplement<?,T> createAndNot(PropertyInterfaceImplement<T> object, PropertyInterfaceImplement<T> not) {
         return createAndNot(getUsedInterfaces(SetFact.toSet(object, not)), object, not);
     }
+    public static <T extends PropertyInterface> PropertyMapImplement<?,T> createAndNot(PropertyInterfaceImplement<T> object, ImList<PropertyInterfaceImplement<T>> nots) {
+        return createAnd(LocalizedString.NONAME, getUsedInterfaces(nots.addList(object).getCol()), object, nots, ListFact.toList(true, nots.size()));
+    }
     public static <T extends PropertyInterface> PropertyMapImplement<?,T> createAndNot(ImSet<T> innerInterfaces, PropertyInterfaceImplement<T> object, PropertyInterfaceImplement<T> not) {
         return createAnd(LocalizedString.NONAME, innerInterfaces, object, ListFact.singleton(not), ListFact.singleton(true));
     }
