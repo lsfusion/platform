@@ -219,4 +219,8 @@ public class RemoteNavigatorContext extends RemoteConnectionContext {
         return uiContext.createRemoteForm(formInstance, stack);
     }
 
+    @Override
+    public ConnectionContext getConnectionContext() {
+        return uiContext.getConnectionContext();
+    }
 }

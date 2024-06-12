@@ -19,6 +19,7 @@ import lsfusion.server.logics.form.interactive.action.async.InputListAction;
 import lsfusion.server.logics.form.interactive.action.input.InputContext;
 import lsfusion.server.logics.form.interactive.action.input.InputResult;
 import lsfusion.server.logics.form.interactive.controller.remote.RemoteForm;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.interactive.listener.FocusListener;
@@ -72,4 +73,6 @@ public interface Context {
     String localize(LocalizedString s, Locale locale);
     Locale getLocale();
     LocalePreferences getLocalePreferences();
+
+    ConnectionContext getConnectionContext();
 }

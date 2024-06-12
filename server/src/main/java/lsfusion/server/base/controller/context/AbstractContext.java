@@ -24,6 +24,7 @@ import lsfusion.server.logics.form.interactive.action.async.InputListAction;
 import lsfusion.server.logics.form.interactive.action.input.InputContext;
 import lsfusion.server.logics.form.interactive.action.input.InputResult;
 import lsfusion.server.logics.form.interactive.controller.remote.RemoteForm;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
@@ -272,5 +273,10 @@ public abstract class AbstractContext implements Context {
 
     public RemoteForm createRemoteForm(FormInstance formInstance, ExecutionStack stack) {
         throw new UnsupportedOperationException("createRemoteForm is not supported");
+    }
+
+    @Override
+    public ConnectionContext getConnectionContext() {
+        throw new UnsupportedOperationException("getConnectionContext is not supported");
     }
 }

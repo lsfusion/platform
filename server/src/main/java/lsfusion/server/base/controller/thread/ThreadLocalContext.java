@@ -255,7 +255,7 @@ public class ThreadLocalContext {
     }
 
     public static ConnectionContext getRemoteContext() {
-        return ((RemoteUIContext)get()).getConnectionContext();
+        return get().getConnectionContext();
     }
 
     public static Object requestUserInteraction(ClientAction action) {
