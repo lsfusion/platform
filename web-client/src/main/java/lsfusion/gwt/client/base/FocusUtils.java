@@ -27,11 +27,17 @@ public class FocusUtils {
         return lastBlurredElement;
     }
 
+    private static boolean lastBlurred = false;
     public static boolean focusLastBlurredElement(EventHandler focusEventHandler, Element focusEventElement) {
         // in theory we also have to check if focused element still visible, isShowing in GwtClientUtils but now it's assumed that it is always visible
         if(lastBlurredElement != null && focusReason == null && lastBlurredElement != focusEventElement) { // return focus back where it was
             focusEventHandler.consume();
-            focus(lastBlurredElement, Reason.RESTOREFOCUS);
+            try {
+                lastBlurred = true;
+                focus(lastBlurredElement, Reason.RESTOREFOCUS);
+            } finally {
+                lastBlurred = false;
+            }
             return true;
         }
         return false;
@@ -226,6 +232,9 @@ public class FocusUtils {
     }-*/;
 
     public static boolean isFakeBlur(NativeEvent event, Element blur) {
+        if(lastBlurred)
+            return true;
+
         EventTarget focus = event.getRelatedEventTarget();
         if(focus == null) {
             // if we're in focus transaction then there are some manipulations in the focusTransaction elements, so we pend all blur events from there
