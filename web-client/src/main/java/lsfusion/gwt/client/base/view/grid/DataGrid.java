@@ -164,7 +164,8 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
                 calcLeftNeighbourRightBorder(true);
                 checkSelectedRowVisible();
 
-                updateScrolledState();
+                updateScrolledStateVertical();
+                updateScrolledStateHorizontal();
             }
         };
     }
@@ -185,21 +186,20 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
     protected abstract void scrollToEnd(boolean toEnd);
 
-    private void updateScrolledState() {
-        int verticalScrollPosition = tableContainer.getVerticalScrollPosition();
+    private void updateScrolledStateHorizontal() {
         int horizontalScrollPosition = tableContainer.getHorizontalScrollPosition();
-        //The mobile version does not set the "scrolled-up" class correctly when scrolling to the bottom of the table due to size rounding.
-        // This is solved by adding one pixel to the calculation
-        int adjustment = MainFrame.mobileAdjustment;
-        tableWidget.setStyleName("scrolled-down", verticalScrollPosition > adjustment);
-        tableWidget.setStyleName("scrolled-up", verticalScrollPosition < tableContainer.getScrollHeight() - tableContainer.getClientHeight() - adjustment);
-        tableWidget.setStyleName("scrolled-left", horizontalScrollPosition > adjustment);
+        tableWidget.setStyleName("scrolled-left", horizontalScrollPosition > MainFrame.mobileAdjustment);
 
         if (horizontalScrollPosition != latestHorizontalScrollPosition) {
             updateStickyColumnsState(horizontalScrollPosition);
 
             latestHorizontalScrollPosition = horizontalScrollPosition;
         }
+    }
+    private void updateScrolledStateVertical() {
+        int verticalScrollPosition = tableContainer.getVerticalScrollPosition();
+        tableWidget.setStyleName("scrolled-down", verticalScrollPosition > MainFrame.mobileAdjustment);
+        tableWidget.setStyleName("scrolled-up", verticalScrollPosition < tableContainer.getScrollHeight() - tableContainer.getClientHeight() - MainFrame.mobileAdjustment);
     }
     
     private void updateStickyColumnsState(int horizontalScrollPosition) {
@@ -219,20 +219,21 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     }
 
     private int getLastStickedColumn(int horizontalScrollPosition, List<Integer> stickyColumns) {
-        TableRowElement stickyLeftRow = getStickyLeftRow();
-        if(stickyLeftRow != null) {
-            NodeList<TableCellElement> trCells = stickyLeftRow.getCells();
-            List<StickyParams> stickyLefts = getStickyLefts();
-            for (int i = stickyColumns.size() - 1; i >= 0; i--) {
-                Integer stickyColumn = stickyColumns.get(i);
+        if(stickyLefts != null) {
+            TableRowElement stickyLeftRow = getStickyLeftRow();
+            if (stickyLeftRow != null) {
+                NodeList<TableCellElement> trCells = stickyLeftRow.getCells();
+                for (int i = stickyColumns.size() - 1; i >= 0; i--) {
+                    Integer stickyColumn = stickyColumns.get(i);
 
-                TableCellElement cell = trCells.getItem(stickyColumn);
-                StickyParams left = stickyLefts.get(i);
-                if (left != null) {
-                    int offsetLeft = cell.getOffsetLeft();
-                    // actually it is == but may differ for 1px (for now is being observed in Firefox, where no borders in header are seen)
-                    if (horizontalScrollPosition + left.left + 1 >= offsetLeft) {
-                        return i;
+                    TableCellElement cell = trCells.getItem(stickyColumn);
+                    StickyParams left = stickyLefts.get(i);
+                    if (left != null) {
+                        int offsetLeft = cell.getOffsetLeft();
+                        // actually it is == but may differ for 1px (for now is being observed in Firefox, where no borders in header are seen)
+                        if (horizontalScrollPosition + left.left + 1 >= offsetLeft) {
+                            return i;
+                        }
                     }
                 }
             }
@@ -1315,9 +1316,11 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
             skipScrollEvent = true;
             tableContainer.setVerticalScrollPosition(pendingState.top);
 
-            updateScrolledState();
+//            updateScrolledStateVertical(); // scroll handler is called after programmatic change
         }
     }
+
+    private List<StickyParams> stickyLefts;
 
     private void afterUpdateDOMScrollHorizontal(SetPendingScrollState pendingState) {
         if(pendingState.hasVertical != null) {
@@ -1325,20 +1328,22 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
             updateVerticalScroll(hasVerticalScroll, tableContainer.getScrollableElement());
         }
 
+        //set left sticky, we want it before setting horizontal position to have relevant sticky lefts
+        if(pendingState.stickyLefts != null) {
+            stickyLefts = pendingState.stickyLefts;
+
+            updateStickyLeftDOM();
+        }
+
         if (pendingState.left != null) {
             tableContainer.setHorizontalScrollPosition(pendingState.left);
 
-//            updateScrolledState(); // scroll handler is called after programmatic change
+//            updateScrolledStateHorizontal(); // scroll handler is called after programmatic change
         }
 
         //set left neighbour right border for focused cell
         if(pendingState.leftNeighbourRightBorder != null) {
             setLeftNeighbourRightBorder(pendingState.leftNeighbourRightBorder);
-        }
-
-        //set left sticky
-        if(pendingState.stickyLefts != null) {
-            updateStickyLeftDOM(pendingState.stickyLefts);
         }
     }
 
@@ -1364,7 +1369,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         tableBuilder.update(tableWidget.getSection(), getRows(), columnsChanged, columnsToRedraw);
     }
 
-    private void updateStickyLeftDOM(List<StickyParams> stickyLefts) {
+    private void updateStickyLeftDOM() {
         List<Integer> stickyColumns = getStickyColumns();
         if (!noHeaders)
             headerBuilder.updateStickyLeft(stickyColumns, stickyLefts);
@@ -1595,10 +1600,11 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     }
 
     public void updateHeadersDOM(boolean columnsChanged) {
-        if(!noHeaders)
-            headerBuilder.update(columnsChanged);
-        if(!noFooters)
-            footerBuilder.update(columnsChanged);
+        // we always need headers and footers to support scroll arrows
+//        if(!noHeaders)
+        headerBuilder.update(columnsChanged);
+//        if(!noFooters)
+        footerBuilder.update(columnsChanged);
     }
 
     public Element getHeaderElement(int element) {

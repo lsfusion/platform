@@ -311,12 +311,11 @@ table.pvtTable thead tr th {
     font-weight: bold;
 }
 
-.headertable.table {
-    /*disable margin-bottom from .table,
-    because here we have separate headertable and bodytable*/
+/*disable margin-bottom from .table */
+.pvtTable.table,
+.lsf-table.table {
     margin-bottom: 0;
 }
-
 
 /*
     to still possible to set attributes horizontally
