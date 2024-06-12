@@ -119,12 +119,12 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     public PropertyDrawEntity logMessagePropertyDraw;
 
-    private int ID;
+    private final int ID;
     
-    private String canonicalName;
-    private LocalizedString initCaption;
-    private String initImage;
-    private DebugInfo.DebugPoint debugPoint;
+    private final String canonicalName;
+    private final LocalizedString initCaption;
+    private final String initImage;
+    private final DebugInfo.DebugPoint debugPoint;
 
     public NFMapList<Object, ActionObjectEntity<?>> eventActions = NFFact.mapList();
     public ImMap<Object, ImList<ActionObjectEntity<?>>> getEventActions() {
@@ -299,7 +299,9 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         okActionPropertyDraw = addPropertyDraw(formOk, version);
         closeActionPropertyDraw = addPropertyDraw(formClose, version);
         dropActionPropertyDraw = addPropertyDraw(baseLM.getFormDrop(), version);
-        shareActionPropertyDraw = addPropertyDraw(baseLM.getFormShare(), version);
+
+        if(isNamed())
+            shareActionPropertyDraw = addPropertyDraw(baseLM.getFormShare(), version);
 
         logMessagePropertyDraw = addPropertyDraw(baseLM.getLogMessage(), version);
         logMessagePropertyDraw.setPropertyExtra(addPropertyObject(externalShowIf), PropertyDrawExtraType.SHOWIF, version);
