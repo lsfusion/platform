@@ -672,7 +672,7 @@ public class MainFrame implements EntryPoint {
         });
     }
 
-    public static native double getScale()/*-{
+    private static native double getScale()/*-{
         return window.devicePixelRatio;
     }-*/;
 

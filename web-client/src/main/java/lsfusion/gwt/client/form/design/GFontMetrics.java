@@ -8,7 +8,6 @@ import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.HashMap;
 import java.util.function.Function;
@@ -148,14 +147,20 @@ public class GFontMetrics {
 
         Style style = element.getStyle();
 
-        int fontSize = -1;
+        double fontSize = -1;
         GFont font = fontWidth.font;
         if(font != null) {
             fontSize = font.size;
             GFormController.setFont(element, font);
         }
-        if(fontSize <= 0) {
-            fontSize = MainFrame.getScale() <= 1 ? 16 : 12;
+        if (fontSize <= 0) {
+            if (checkResource("tiny-font.css")) {
+                fontSize = 12;
+            } else if (checkResource("mini-font.css")) {
+                fontSize = 12.8;
+            } else {
+                fontSize = 16;
+            }
             style.setFontSize(fontSize, Style.Unit.PX);
         }
 
@@ -180,11 +185,22 @@ public class GFontMetrics {
         element.setInnerText(string);
         style.setWhiteSpace(string.contains("\n") ? Style.WhiteSpace.PRE_WRAP : Style.WhiteSpace.PRE);
 
-        int fFontSize = fontSize;
+        double fFontSize = fontSize;
         measure = calcSize(element, size -> GSize.getCalcValueSize(size, fFontSize));
         calculatedMeasures.put(fontWidth, measure);
         return measure;
     }
+
+    private static native boolean checkResource(String resourceName)/*-{
+        var links = $wnd.document.head.getElementsByTagName("link");
+        for (var i=0; i<links.length; i++) {
+            var link = links[i];
+            if(link.href.indexOf(resourceName) > 0) {
+                return true;
+            }
+        }
+        return false;
+    }-*/;
 
     private static <T> Pair<T, T> calcSize(Element element, Function<Integer, T> sizeCalc) {
         final Element body = RootPanel.getBodyElement();
