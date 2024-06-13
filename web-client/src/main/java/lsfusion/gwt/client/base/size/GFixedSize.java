@@ -4,6 +4,9 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 
 import java.util.Objects;
 
+import static lsfusion.gwt.client.form.design.GFontMetrics.getEmSize;
+import static lsfusion.gwt.client.form.design.GFontMetrics.getRemSize;
+
 public class GFixedSize extends GSimpleSize {
 
     public enum Type {
@@ -26,16 +29,30 @@ public class GFixedSize extends GSimpleSize {
         return new GFixedSize(value * count, type);
     }
 
-    public static double convertFontSize = 12.0; // default font size used to convert usually from constants;
     public static GFixedSize getSize(double pixels, Type type) {
-        return getSize(pixels, type, convertFontSize);
+        double fontSize;
+        switch (type) {
+            case EM:
+                fontSize = getEmSize();
+                break;
+            case REM:
+                fontSize = getRemSize();
+                break;
+            default:
+                fontSize = 1;
+        }
+        return getSize(pixels, type, fontSize);
     }
     public static GFixedSize getSize(double pixels, Type type, double fontSize) {
         return new GFixedSize(type == GFixedSize.Type.PX ? pixels : ((double)pixels / fontSize), type);
     }
     @Override
     protected double getPixelSize() {
-        return type == GFixedSize.Type.PX ? value : value * convertFontSize; // used with SIZE_TYPE so we don't really care about the convertFontSize
+        switch (type) {
+            case EM: return value * getEmSize();
+            case REM: return value * getRemSize();
+            default: return value;
+        }
     }
 
     @Override

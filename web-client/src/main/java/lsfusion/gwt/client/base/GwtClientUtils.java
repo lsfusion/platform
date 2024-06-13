@@ -735,6 +735,9 @@ public class GwtClientUtils {
     public static native double getDoubleOffsetWidth(Element element) /*-{
         return element.getBoundingClientRect().width;
     }-*/;
+    public static native double getDoubleOffsetHeight(Element element) /*-{
+        return element.getBoundingClientRect().height;
+    }-*/;
     public static native double getDoubleOffsetLeft(Element element) /*-{
         return element.getBoundingClientRect().left;
     }-*/;
