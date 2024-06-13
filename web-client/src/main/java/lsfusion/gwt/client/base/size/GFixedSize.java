@@ -1,11 +1,9 @@
 package lsfusion.gwt.client.base.size;
 
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.form.design.GFontMetrics;
 
 import java.util.Objects;
-
-import static lsfusion.gwt.client.form.design.GFontMetrics.getEmSize;
-import static lsfusion.gwt.client.form.design.GFontMetrics.getRemSize;
 
 public class GFixedSize extends GSimpleSize {
 
@@ -30,29 +28,14 @@ public class GFixedSize extends GSimpleSize {
     }
 
     public static GFixedSize getSize(double pixels, Type type) {
-        double fontSize;
-        switch (type) {
-            case EM:
-                fontSize = getEmSize();
-                break;
-            case REM:
-                fontSize = getRemSize();
-                break;
-            default:
-                fontSize = 1;
-        }
-        return getSize(pixels, type, fontSize);
+        return getSize(pixels, type, GFontMetrics.getPixelSize(type));
     }
     public static GFixedSize getSize(double pixels, Type type, double fontSize) {
-        return new GFixedSize(type == GFixedSize.Type.PX ? pixels : ((double)pixels / fontSize), type);
+        return new GFixedSize(type == GFixedSize.Type.PX ? pixels : (pixels / fontSize), type);
     }
     @Override
     protected double getPixelSize() {
-        switch (type) {
-            case EM: return value * getEmSize();
-            case REM: return value * getRemSize();
-            default: return value;
-        }
+        return value * GFontMetrics.getPixelSize(type);
     }
 
     @Override

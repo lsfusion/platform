@@ -34,7 +34,7 @@ public abstract class GSize implements Serializable {
     public static GSize getCalcValueSize(int pixels, double fontSize) { // "font dependent" pixels (not explicit constants like in getValueSize)
         return GFixedSize.getSize(pixels, VALUE_TYPE, fontSize);
     }
-    public static GSize getCalcComponentSize(int pixels, int remFontSize) { // "font dependent" pixels (not explicit constants like in getValueSize)
+    public static GSize getCalcComponentSize(int pixels, double remFontSize) { // "font dependent" pixels (not explicit constants like in getValueSize)
         return GFixedSize.getSize(pixels, COMPONENT_TYPE, remFontSize);
     }
 

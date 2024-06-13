@@ -6,10 +6,12 @@ import com.google.gwt.user.client.ui.RootPanel;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.Pair;
+import lsfusion.gwt.client.base.size.GFixedSize;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.form.controller.GFormController;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.getDoubleOffsetHeight;
@@ -157,8 +159,7 @@ public class GFontMetrics {
             GFormController.setFont(element, font);
         }
         if (fontSize <= 0) {
-            fontSize = getEmSize();
-            style.setFontSize(1, Style.Unit.EM);
+            fontSize = getPixelSize(GFixedSize.Type.EM);
         }
 
         style.setDisplay(Style.Display.INLINE_BLOCK);
@@ -282,7 +283,7 @@ public class GFontMetrics {
             addCells(headerElement.insertRow(-1), columnCount);
         }
 
-        int remSize = getRemSize();
+        double remSize = getPixelSize(GFixedSize.Type.REM);
         measure = calcSize(tableElement, size -> GSize.getCalcComponentSize(size, remSize));
         calculatedPaddings.put(gridParams, measure);
         return measure;
@@ -293,26 +294,16 @@ public class GFontMetrics {
             headerRow.insertCell(-1);
     }
 
-    private static Integer calculatedRemSize;
-    public static int getRemSize() {
-        if(calculatedRemSize == null) {
+    private static Map<GFixedSize.Type, Double> calculatedSizes = new HashMap<>();
+    public static double getPixelSize(GFixedSize.Type type) {
+        Double calculatedSize = calculatedSizes.get(type);
+        if (calculatedSize == null) {
             final Element element = DOM.createDiv();
-            element.getStyle().setProperty("width", "1rem");
-
-            calculatedRemSize = calcSize(element, size -> size).first;
+            element.getStyle().setProperty("width", "1" + type.name().toLowerCase());
+            calculatedSize = calcSizeDouble(element, size -> size).first;
+            calculatedSizes.put(type, calculatedSize);
         }
-        return calculatedRemSize;
-    }
-
-    private static Double calculatedEmSize;
-    public static double getEmSize() {
-        if(calculatedEmSize == null) {
-            final Element element = DOM.createDiv();
-            element.getStyle().setProperty("width", "1em");
-
-            calculatedEmSize = calcSizeDouble(element, size -> size).first;
-        }
-        return calculatedEmSize;
+        return calculatedSize;
     }
 
 //    public interface MetricsCallback {
