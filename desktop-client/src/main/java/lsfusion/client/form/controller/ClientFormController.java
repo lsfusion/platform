@@ -75,6 +75,7 @@ import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.print.ReportGenerator;
 import lsfusion.interop.form.property.Compare;
+import lsfusion.interop.form.property.EventSource;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 
 import javax.swing.Timer;
@@ -1125,7 +1126,7 @@ public class ClientFormController implements AsyncListener {
         return executeEventAction(requestIndex, lastReceivedRequestIndex, remoteForm, property, fullCurrentKey, actionSID, null);
     }
     private ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm, ClientPropertyDraw property, byte[] fullCurrentKey, String actionSID, ClientPushAsyncResult asyncResult) throws RemoteException {
-        return remoteForm.executeEventAction(requestIndex, lastReceivedRequestIndex, actionSID, new int[]{property.getID()}, new byte[][]{fullCurrentKey}, new boolean[] {false}, new byte[][]{asyncResult != null ? asyncResult.serialize() : null});
+        return remoteForm.executeEventAction(requestIndex, lastReceivedRequestIndex, actionSID, new int[]{property.getID()}, new byte[][]{fullCurrentKey}, new EventSource[] {EventSource.EDIT}, new byte[][]{asyncResult != null ? asyncResult.serialize() : null});
     }
 
     public ServerResponse executeEventAction(final ClientPropertyDraw property, final ClientGroupObjectValue columnKey, final String actionSID, ClientPushAsyncResult asyncResult) throws IOException {

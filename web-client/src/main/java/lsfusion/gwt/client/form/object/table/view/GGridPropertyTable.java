@@ -23,6 +23,7 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.TableContainer;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
+import lsfusion.gwt.client.form.property.GEventSource;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.view.InputBasedCellRenderer;
@@ -907,7 +908,7 @@ protected Double getUserFlex(int i) {
 
             @Override
             public void changeProperty(PValue changeValue, GFormController.ChangedRenderValueSupplier renderValueSupplier) {
-                form.changeProperty(getEditContext(cell, renderElement), changeValue, renderValueSupplier);
+                form.changeProperty(getEditContext(cell, renderElement), changeValue, GEventSource.CUSTOM, renderValueSupplier);
             }
 
             @Override

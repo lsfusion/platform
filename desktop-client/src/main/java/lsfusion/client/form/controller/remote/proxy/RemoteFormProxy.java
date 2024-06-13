@@ -10,6 +10,7 @@ import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.toolbar.FormGrouping;
 import lsfusion.interop.form.print.FormPrintType;
+import lsfusion.interop.form.property.EventSource;
 import lsfusion.interop.form.property.PropertyGroupType;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 
@@ -246,9 +247,9 @@ public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterfac
     }
 
     @Override
-    public ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, String actionSID, int[] propertyIDs, byte[][] fullKeys, boolean[] externalChanges, byte[][] pushAsyncResults) throws RemoteException {
+    public ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, String actionSID, int[] propertyIDs, byte[][] fullKeys, EventSource[] eventSources, byte[][] pushAsyncResults) throws RemoteException {
         logRemoteMethodStartCall("executeEventAction");
-        ServerResponse result = target.executeEventAction(requestIndex, lastReceivedRequestIndex, actionSID, propertyIDs, fullKeys, externalChanges, pushAsyncResults);
+        ServerResponse result = target.executeEventAction(requestIndex, lastReceivedRequestIndex, actionSID, propertyIDs, fullKeys, eventSources, pushAsyncResults);
         logRemoteMethodEndCall("executeEventAction", result);
         return result;
     }

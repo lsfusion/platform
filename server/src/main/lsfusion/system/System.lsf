@@ -227,6 +227,7 @@ htmlLinkInTab(HTMLLINK htmlLink) {
 }
   
 addedObject() = DATA LOCAL Object ();
+eventSource() = DATA LOCAL STRING ();
 formPageCount() = DATA LOCAL INTEGER ();
 
 exportObject = DATA LOCAL Object ();

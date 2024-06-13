@@ -27,6 +27,7 @@ import lsfusion.interop.form.order.Scroll;
 import lsfusion.interop.form.order.user.Order;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportGenerationData;
+import lsfusion.interop.form.property.EventSource;
 import lsfusion.interop.form.property.PropertyGroupType;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.server.base.caches.IdentityLazy;
@@ -730,7 +731,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     }
 
     @Override
-    public ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, String actionSID, int[] propertyIDs, byte[][] fullKeys, boolean[] externalChanges, byte[][] pushAsyncResults) throws RemoteException {
+    public ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, String actionSID, int[] propertyIDs, byte[][] fullKeys, EventSource[] eventSources, byte[][] pushAsyncResults) throws RemoteException {
         return processPausableRMIContextRequest(requestIndex, lastReceivedRequestIndex, (stack, context) -> {
             for (int j = 0; j < propertyIDs.length; j++) {
                 PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyIDs[j]);
@@ -742,7 +743,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                     asyncResult = asyncEventExec -> asyncEventExec.deserializePush(pushAsyncResult);
 
                 logger.info(String.format("executeEventAction started: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getSID()));
-                form.executeEventAction(propertyDraw, actionSID, keys, externalChanges[j], asyncResult, stack, context);
+                form.executeEventAction(propertyDraw, actionSID, keys, eventSources[j], asyncResult, stack, context);
                 logger.info(String.format("executeEventAction ended: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getSID()));
 
                 if (logger.isTraceEnabled()) {
@@ -1204,7 +1205,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             }
         }
         final PushAsyncResult fAsyncResult = asyncResult;
-        form.executeExternalEventAction(propertyDraw, currentObjects, asyncEventExec -> fAsyncResult, stack, context);
+        form.executeExternalEventAction(propertyDraw, currentObjects, asyncEventExec -> fAsyncResult, stack, context, EventSource.CUSTOM);
     }
 
     // будем считать что если unreferenced \ finalized то форма точно также должна закрыться ???

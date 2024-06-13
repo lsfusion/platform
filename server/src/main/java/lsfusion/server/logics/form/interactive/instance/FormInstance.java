@@ -30,6 +30,7 @@ import lsfusion.interop.form.object.table.grid.user.toolbar.FormGrouping;
 import lsfusion.interop.form.order.Scroll;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.property.Compare;
+import lsfusion.interop.form.property.EventSource;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.controller.stack.ParamMessage;
 import lsfusion.server.base.controller.stack.StackMessage;
@@ -1000,12 +1001,12 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             session.changeClass(objectInstance, dataObject, cls);
     }
 
-    public void executeExternalEventAction(final PropertyDrawInstance<?> property, final ImMap<ObjectInstance, ? extends ObjectValue> keys, Function<AsyncEventExec, PushAsyncResult> asyncResult, final ExecutionStack stack, FormInstanceContext context) throws SQLException, SQLHandledException {
-        executeEventAction(property, CHANGE, keys, true, asyncResult, stack, context);
+    public void executeExternalEventAction(final PropertyDrawInstance<?> property, final ImMap<ObjectInstance, ? extends ObjectValue> keys, Function<AsyncEventExec, PushAsyncResult> asyncResult, final ExecutionStack stack, FormInstanceContext context, EventSource eventSource) throws SQLException, SQLHandledException {
+        executeEventAction(property, CHANGE, keys, eventSource, asyncResult, stack, context);
     }
 
     @ThisMessage
-    public void executeEventAction(final PropertyDrawInstance<?> property, String eventActionSID, final ImMap<ObjectInstance, ? extends ObjectValue> keys, boolean externalChange, Function<AsyncEventExec, PushAsyncResult> asyncResult, final ExecutionStack stack, FormInstanceContext context) throws SQLException, SQLHandledException {
+    public void executeEventAction(final PropertyDrawInstance<?> property, String eventActionSID, final ImMap<ObjectInstance, ? extends ObjectValue> keys, EventSource eventSource, Function<AsyncEventExec, PushAsyncResult> asyncResult, final ExecutionStack stack, FormInstanceContext context) throws SQLException, SQLHandledException {
         PropertyObjectInstance<?> propertyReadOnly = property.propertyReadOnly;
         SQLCallable<Boolean> checkReadOnly = propertyReadOnly != null ? () -> propertyReadOnly.getRemappedPropertyObject(keys, true).read(FormInstance.this) != null : null;
 
@@ -1015,6 +1016,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             return;
         }
 
+        BL.LM.eventSource.change(eventSource.toString(), this);
+
         BL.LM.dropBeforeCanceled(this);
         fireFormChangeEvent(property, stack, keys, true);
         if(BL.LM.isBeforeCanceled(this))
@@ -1022,7 +1025,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         PushAsyncResult result = null;
         if(asyncResult != null) {
-            AsyncEventExec asyncEventExec = property.getEntity().getAsyncEventExec(context, eventActionSID, externalChange);
+            AsyncEventExec asyncEventExec = property.getEntity().getAsyncEventExec(context, eventActionSID, eventSource.isExternalChange());
             result = asyncResult.apply(asyncEventExec);
 //            if(result == null) // in case of paste can be null
 //                return;
@@ -1084,7 +1087,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                             } catch (ParseException e) {
                                 return null;
                             }
-                        }), stack, context);
+                        }), stack, context, EventSource.PASTE);
             }
         }
     }

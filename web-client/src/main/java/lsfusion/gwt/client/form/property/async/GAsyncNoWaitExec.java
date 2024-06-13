@@ -4,6 +4,7 @@ import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.property.GEventSource;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.ExecContext;
 import lsfusion.gwt.client.form.view.FormContainer;
@@ -15,8 +16,8 @@ public class GAsyncNoWaitExec extends GAsyncExec {
     }
 
     @Override
-    public void exec(GFormController formController, EventHandler handler, EditContext editContext, ExecContext execContext, String actionSID, GPushAsyncInput pushAsyncResult, boolean externalChange, Consumer<Long> onExec) {
-        formController.asyncNoWait(editContext, execContext, handler, actionSID, this, pushAsyncResult, externalChange, onExec);
+    public void exec(GFormController formController, EventHandler handler, EditContext editContext, ExecContext execContext, String actionSID, GPushAsyncInput pushAsyncResult, GEventSource eventSource, Consumer<Long> onExec) {
+        formController.asyncNoWait(editContext, execContext, handler, actionSID, this, pushAsyncResult, eventSource, onExec);
     }
 
     @Override

@@ -1089,7 +1089,7 @@ public class GwtClientUtils {
         return parseInt(computedStyle.borderLeftWidth) + parseInt(computedStyle.borderRightWidth);
     }-*/;
 
-    public static native int getDoubleBorderRightWidth(Element element) /*-{
+    public static native double getDoubleBorderRightWidth(Element element) /*-{
         var computedStyle = $wnd.getComputedStyle(element, null);
         return parseFloat(computedStyle.borderRightWidth);
     }-*/;

@@ -18,6 +18,7 @@ import lsfusion.gwt.client.form.object.table.grid.user.design.GFormUserPreferenc
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
 import lsfusion.gwt.client.form.property.GClassViewType;
+import lsfusion.gwt.client.form.property.GEventSource;
 import lsfusion.gwt.client.form.property.GPropertyGroupType;
 import lsfusion.gwt.client.form.property.async.GPushAsyncAdd;
 import lsfusion.gwt.client.form.property.async.GPushAsyncClose;
@@ -34,6 +35,7 @@ import lsfusion.interop.form.object.table.grid.user.design.ColumnUserPreferences
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
 import lsfusion.interop.form.property.ClassViewType;
+import lsfusion.interop.form.property.EventSource;
 import lsfusion.interop.form.property.PropertyGroupType;
 import lsfusion.interop.form.property.cell.UserInputResult;
 import lsfusion.interop.session.ExternalHttpResponse;
@@ -151,6 +153,17 @@ public class GwtToClientConverter extends ObjectConverter {
     @Converter(from = GPushAsyncClose.class)
     public byte[] convertPushASyncClose(GPushAsyncClose pushAsyncChange) {
         return new ClientPushAsyncClose().serialize();
+    }
+
+    @Converter(from = GEventSource.class)
+    public EventSource convertEventSource(GEventSource eventSource) {
+        switch (eventSource) {
+            case PASTE: return EventSource.PASTE;
+            case EDIT: return EventSource.EDIT;
+            case BINDING: return EventSource.BINDING;
+            case CUSTOM: return EventSource.CUSTOM;
+        }
+        return null;
     }
 
     @Converter(from = GExternalHttpResponse.class)

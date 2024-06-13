@@ -23,6 +23,7 @@ import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.TableContainer;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
+import lsfusion.gwt.client.form.property.GEventSource;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.async.GPushAsyncInput;
@@ -315,14 +316,14 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         int length = columns.length;
         GPropertyDraw[] properties = new GPropertyDraw[length];
         GGroupObjectValue[] fullKeys = new GGroupObjectValue[length];
-        boolean[] externalChanges = new boolean[length];
+        GEventSource[] eventSources = new GEventSource[length];
         GPushAsyncResult[] pushAsyncResults = new GPushAsyncResult[length];
 
         for (int i = 0; i < length; i++) {
             Column column = getColumn(columns[i]);
             properties[i] = column.property;
             fullKeys[i] = GGroupObjectValue.getFullKey(getJsObjects(objects[i]), column.columnKey);
-            externalChanges[i] = true;
+            eventSources[i] = GEventSource.CUSTOM;
             PValue newValue = newValues[i];
             pushAsyncResults[i] = newValue == PValue.UNDEFINED ? null : new GPushAsyncInput(new GUserInputResult(newValue));
         }
@@ -338,9 +339,9 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         };
         String actionSID = GEditBindingMap.changeOrGroupChange();
         if(length == 1 && newValues[0] == PValue.UNDEFINED)
-            form.executePropertyEventAction(properties[0], fullKeys[0], actionSID, (GPushAsyncInput) pushAsyncResults[0], externalChanges[0], onExec);
+            form.executePropertyEventAction(properties[0], fullKeys[0], actionSID, (GPushAsyncInput) pushAsyncResults[0], eventSources[0], onExec);
         else
-            onExec.accept(form.asyncExecutePropertyEventAction(actionSID, null, null, properties, externalChanges, fullKeys, pushAsyncResults));
+            onExec.accept(form.asyncExecutePropertyEventAction(actionSID, null, null, properties, eventSources, fullKeys, pushAsyncResults));
     }
 
     protected String getCaption(String property) {

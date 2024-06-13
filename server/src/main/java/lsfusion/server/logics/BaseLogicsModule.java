@@ -222,6 +222,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LP readFile;
 
     public LP showResult;
+    public LP eventSource;
 
     public LP extension;
 
@@ -579,6 +580,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         importFile = findProperty("importFile[]");
         readFile = findProperty("readFile[]");
 
+        eventSource = findProperty("eventSource[]");
         showResult = findProperty("showResult[]");
 
         imported = findProperty("imported[INTEGER]");

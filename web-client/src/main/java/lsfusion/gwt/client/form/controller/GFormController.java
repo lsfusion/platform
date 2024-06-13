@@ -904,7 +904,7 @@ public class GFormController implements EditManager {
         GPropertyDraw property = editContext.getProperty();
         GType externalType = property.getExternalChangeType();
         if(externalType != null) {
-            changeProperty(editContext, property.parsePaste(sValue, externalType), null);
+            changeProperty(editContext, property.parsePaste(sValue, externalType), GEventSource.PASTE, null);
         } else {
             ArrayList<GPropertyDraw> propertyList = new ArrayList<>();
             propertyList.add(property);
@@ -967,10 +967,11 @@ public class GFormController implements EditManager {
         if(property == null)  // in tree there can be no property in groups other than last
             return;
 
+        GEventSource eventSource = isBinding ? GEventSource.BINDING : GEventSource.EDIT;
         if(BrowserEvents.CONTEXTMENU.equals(event.getType())) {
             handler.consume();
             GPropertyContextMenuPopup.show(new PopupOwner(editContext.getPopupOwnerWidget(), Element.as(event.getEventTarget())), property, actionSID -> {
-                executePropertyEventAction(editContext, actionSID, handler);
+                executePropertyEventAction(editContext, actionSID, eventSource, handler);
             });
         } else {
             lsfusion.gwt.client.base.Result<Integer> contextAction = new lsfusion.gwt.client.base.Result<>();
@@ -985,31 +986,31 @@ public class GFormController implements EditManager {
                 return;
 
             if(contextAction.result != null)
-                executeContextAction(handler, editContext, actionSID, contextAction.result);
+                executeContextAction(handler, editContext, actionSID, eventSource, contextAction.result);
             else
-                executePropertyEventAction(editContext, actionSID, handler);
+                executePropertyEventAction(editContext, actionSID, eventSource, handler);
 
             if(!handler.consumed)
                 handler.consume();
         }
     }
 
-    public void executePropertyEventAction(ExecuteEditContext editContext, String actionSID, EventHandler handler) {
+    public void executePropertyEventAction(ExecuteEditContext editContext, String actionSID, GEventSource eventSource, EventHandler handler) {
         GPropertyDraw property = editContext.getProperty();
         if (isChangeEvent(actionSID) && property.askConfirm) {
             DialogBoxHelper.showConfirmBox("lsFusion", EscapeUtils.toHTML(property.askConfirmMessage), editContext.getPopupOwner(), chosenOption -> {
                         if (chosenOption == DialogBoxHelper.OptionType.YES)
-                            executePropertyEventActionConfirmed(editContext, actionSID, handler);
+                            executePropertyEventActionConfirmed(editContext, actionSID, eventSource, handler);
                     });
         } else
-            executePropertyEventActionConfirmed(editContext, actionSID, handler);
+            executePropertyEventActionConfirmed(editContext, actionSID, eventSource, handler);
     }
 
-    public void executePropertyEventActionConfirmed(ExecuteEditContext editContext, String actionSID, EventHandler handler) {
-        executePropertyEventAction(handler, editContext, editContext, actionSID, null, false, requestIndex -> setLoading(editContext, requestIndex));
+    public void executePropertyEventActionConfirmed(ExecuteEditContext editContext, String actionSID, GEventSource eventSource, EventHandler handler) {
+        executePropertyEventAction(handler, editContext, editContext, actionSID, null, eventSource, requestIndex -> setLoading(editContext, requestIndex));
     }
 
-    public void executePropertyEventAction(GPropertyDraw property, GGroupObjectValue fullKey, String actionSID, GPushAsyncInput pushAsyncInput, boolean externalChange, Consumer<Long> onExec) {
+    public void executePropertyEventAction(GPropertyDraw property, GGroupObjectValue fullKey, String actionSID, GPushAsyncInput pushAsyncInput, GEventSource eventSource, Consumer<Long> onExec) {
         executePropertyEventAction(null, null, new ExecContext() {
             @Override
             public GPropertyDraw getProperty() {
@@ -1020,22 +1021,22 @@ public class GFormController implements EditManager {
             public GGroupObjectValue getFullKey() {
                 return fullKey;
             }
-        }, actionSID, pushAsyncInput, externalChange, onExec);
+        }, actionSID, pushAsyncInput, eventSource, onExec);
     }
 
-    public void executePropertyEventAction(EventHandler handler, EditContext editContext, ExecContext execContext, String actionSID, GPushAsyncInput pushAsyncInput, boolean externalChange, Consumer<Long> onExec) {
-        executePropertyEventAction(execContext.getProperty().getAsyncEventExec(actionSID), handler, editContext, execContext, actionSID, pushAsyncInput, externalChange, onExec);
+    public void executePropertyEventAction(EventHandler handler, EditContext editContext, ExecContext execContext, String actionSID, GPushAsyncInput pushAsyncInput, GEventSource eventSource, Consumer<Long> onExec) {
+        executePropertyEventAction(execContext.getProperty().getAsyncEventExec(actionSID), handler, editContext, execContext, actionSID, pushAsyncInput, eventSource, onExec);
     }
 
-    private void executePropertyEventAction(GAsyncEventExec asyncEventExec, EventHandler handler, EditContext editContext, ExecContext execContext, String actionSID, GPushAsyncInput pushAsyncInput, boolean externalChange, Consumer<Long> onExec) {
+    private void executePropertyEventAction(GAsyncEventExec asyncEventExec, EventHandler handler, EditContext editContext, ExecContext execContext, String actionSID, GPushAsyncInput pushAsyncInput, GEventSource eventSource, Consumer<Long> onExec) {
         if (asyncEventExec != null)
-            asyncEventExec.exec(this, handler, editContext, execContext, actionSID, pushAsyncInput, externalChange, onExec);
+            asyncEventExec.exec(this, handler, editContext, execContext, actionSID, pushAsyncInput, eventSource, onExec);
         else
-            syncExecutePropertyEventAction(editContext, handler, execContext.getProperty(), execContext.getFullKey(), pushAsyncInput, actionSID, onExec);
+            syncExecutePropertyEventAction(editContext, handler, execContext.getProperty(), execContext.getFullKey(), pushAsyncInput, actionSID, eventSource, onExec);
     }
 
-    public void asyncExecutePropertyEventAction(String actionSID, EditContext editContext, ExecContext execContext, EventHandler handler, GPushAsyncResult pushAsyncResult, boolean externaChange, Consumer<Long> onRequestExec, Consumer<Long> onExec) {
-        long requestIndex = asyncExecutePropertyEventAction(actionSID, editContext, handler, new GPropertyDraw[]{execContext.getProperty()}, new boolean[]{externaChange}, new GGroupObjectValue[]{execContext.getFullKey()}, new GPushAsyncResult[]{pushAsyncResult});
+    public void asyncExecutePropertyEventAction(String actionSID, EditContext editContext, ExecContext execContext, EventHandler handler, GPushAsyncResult pushAsyncResult, GEventSource eventSource, Consumer<Long> onRequestExec, Consumer<Long> onExec) {
+        long requestIndex = asyncExecutePropertyEventAction(actionSID, editContext, handler, new GPropertyDraw[]{execContext.getProperty()}, new GEventSource[]{eventSource}, new GGroupObjectValue[]{execContext.getFullKey()}, new GPushAsyncResult[]{pushAsyncResult});
 
         onExec.accept(requestIndex);
 
@@ -1043,17 +1044,17 @@ public class GFormController implements EditManager {
         onRequestExec.accept(requestIndex);
     }
 
-    public void syncExecutePropertyEventAction(EditContext editContext, EventHandler handler, GPropertyDraw property, GGroupObjectValue fullKey, GPushAsyncInput pushAsyncResult, String actionSID, Consumer<Long> onExec) {
-        long requestIndex = executePropertyEventAction(actionSID, true, editContext, handler, new GPropertyDraw[]{property}, new boolean[]{false}, new GGroupObjectValue[]{fullKey}, new GPushAsyncResult[] {pushAsyncResult});
+    public void syncExecutePropertyEventAction(EditContext editContext, EventHandler handler, GPropertyDraw property, GGroupObjectValue fullKey, GPushAsyncInput pushAsyncResult, String actionSID, GEventSource eventSource, Consumer<Long> onExec) {
+        long requestIndex = executePropertyEventAction(actionSID, true, editContext, handler, new GPropertyDraw[]{property}, new GEventSource[]{eventSource}, new GGroupObjectValue[]{fullKey}, new GPushAsyncResult[] {pushAsyncResult});
 
         onExec.accept(requestIndex);
     }
 
-    public long asyncExecutePropertyEventAction(String actionSID, EditContext editContext, EventHandler handler, GPropertyDraw[] properties, boolean[] externalChanges, GGroupObjectValue[] fullKeys, GPushAsyncResult[] pushAsyncResults) {
-        return executePropertyEventAction(actionSID, false, editContext, handler, properties, externalChanges, fullKeys, pushAsyncResults);
+    public long asyncExecutePropertyEventAction(String actionSID, EditContext editContext, EventHandler handler, GPropertyDraw[] properties, GEventSource[] eventSources, GGroupObjectValue[] fullKeys, GPushAsyncResult[] pushAsyncResults) {
+        return executePropertyEventAction(actionSID, false, editContext, handler, properties, eventSources, fullKeys, pushAsyncResults);
     }
 
-    private long executePropertyEventAction(String actionSID, boolean sync, EditContext editContext, EventHandler handler, GPropertyDraw[] properties, boolean[] externalChanges, GGroupObjectValue[] fullKeys, GPushAsyncResult[] pushAsyncResults) {
+    private long executePropertyEventAction(String actionSID, boolean sync, EditContext editContext, EventHandler handler, GPropertyDraw[] properties, GEventSource[] eventSources, GGroupObjectValue[] fullKeys, GPushAsyncResult[] pushAsyncResults) {
         int length = properties.length;
         int[] IDs = new int[length];
         GGroupObjectValue[] fullCurrentKeys = new GGroupObjectValue[length];
@@ -1063,7 +1064,7 @@ public class GFormController implements EditManager {
             fullCurrentKeys[i] = getFullCurrentKey(property, fullKeys[i]);
         }
 
-        ExecuteEventAction executeEventAction = new ExecuteEventAction(IDs, fullCurrentKeys, actionSID, externalChanges, pushAsyncResults);
+        ExecuteEventAction executeEventAction = new ExecuteEventAction(IDs, fullCurrentKeys, actionSID, eventSources, pushAsyncResults);
         ServerResponseCallback serverResponseCallback = new ServerResponseCallback() {
             @Override
             protected Runnable getOnRequestFinished() {
@@ -1100,11 +1101,11 @@ public class GFormController implements EditManager {
         return syncDispatch(action, new ServerResponseCallback());
     }
 
-    public void asyncInput(EventHandler handler, EditContext editContext, String actionSID, GAsyncInput asyncChange, Consumer<Long> onExec) {
+    public void asyncInput(EventHandler handler, EditContext editContext, String actionSID, GAsyncInput asyncChange, GEventSource eventSource, Consumer<Long> onExec) {
         GInputList inputList = asyncChange.inputList;
         GInputListAction[] inputListActions = asyncChange.inputListActions;
         edit(asyncChange.changeType, handler, false, null, inputList, inputListActions, (value, onRequestExec) ->
-            executePropertyEventAction(handler, editContext, inputListActions, value, actionSID, false, requestIndex -> {
+            executePropertyEventAction(handler, editContext, inputListActions, value, actionSID, eventSource, requestIndex -> {
                 onExec.accept(requestIndex); // setLoading
 
                 // doing that after to set the last value (onExec recursively can also set value)
@@ -1114,10 +1115,10 @@ public class GFormController implements EditManager {
 
     private final static GAsyncNoWaitExec asyncExec = new GAsyncNoWaitExec();
 
-    private void executePropertyEventAction(EventHandler handler, EditContext editContext, GInputListAction[] inputListActions, GUserInputResult value, String actionSID, boolean externalChange, Consumer<Long> onExec) {
+    private void executePropertyEventAction(EventHandler handler, EditContext editContext, GInputListAction[] inputListActions, GUserInputResult value, String actionSID, GEventSource eventSource, Consumer<Long> onExec) {
         GInputListAction contextAction = getContextAction(inputListActions, value);
         executePropertyEventAction(contextAction != null ? contextAction.asyncExec : asyncExec,
-                handler, editContext, editContext, actionSID, value != null ? new GPushAsyncInput(value) : null, externalChange, onExec);
+                handler, editContext, editContext, actionSID, value != null ? new GPushAsyncInput(value) : null, eventSource, onExec);
     }
 
     private GInputListAction getContextAction(GInputListAction[] inputListActions, GUserInputResult value) {
@@ -1131,8 +1132,8 @@ public class GFormController implements EditManager {
         return null;
     }
 
-    public void asyncOpenForm(GAsyncOpenForm asyncOpenForm, EditContext editContext, ExecContext execContext, EventHandler handler, String actionSID, GPushAsyncInput pushAsyncResult, boolean externalChange, Consumer<Long> onExec) {
-        asyncExecutePropertyEventAction(actionSID, editContext, execContext, handler, pushAsyncResult, externalChange, requestIndex -> {
+    public void asyncOpenForm(GAsyncOpenForm asyncOpenForm, EditContext editContext, ExecContext execContext, EventHandler handler, String actionSID, GPushAsyncInput pushAsyncResult, GEventSource eventSource, Consumer<Long> onExec) {
+        asyncExecutePropertyEventAction(actionSID, editContext, execContext, handler, pushAsyncResult, eventSource, requestIndex -> {
             formsController.asyncOpenForm(getAsyncFormController(requestIndex), asyncOpenForm, editEvent, editContext, execContext, this);
         }, onExec);
     }
@@ -1160,12 +1161,12 @@ public class GFormController implements EditManager {
         asyncCloseFormConfirmed(() -> formsController.asyncCloseForm(asyncExecutor, formContainer));
     }
 
-    public void asyncCloseForm(EditContext editContext, ExecContext execContext, EventHandler handler, String actionSID, GPushAsyncInput pushAsyncResult, boolean externalChange, Consumer<Long> onExec) {
-        asyncCloseFormConfirmed(() -> asyncCloseForm(editContext, execContext, handler, actionSID, externalChange, onExec));
+    public void asyncCloseForm(EditContext editContext, ExecContext execContext, EventHandler handler, String actionSID, GPushAsyncInput pushAsyncResult, GEventSource eventSource, Consumer<Long> onExec) {
+        asyncCloseFormConfirmed(() -> asyncCloseForm(editContext, execContext, handler, actionSID, eventSource, onExec));
     }
 
-    private void asyncCloseForm(EditContext editContext, ExecContext execContext, EventHandler handler, String actionSID, boolean externalChange, Consumer<Long> onExec) {
-        asyncExecutePropertyEventAction(actionSID, editContext, execContext, handler, new GPushAsyncClose(), externalChange, requestIndex ->
+    private void asyncCloseForm(EditContext editContext, ExecContext execContext, EventHandler handler, String actionSID, GEventSource eventSource, Consumer<Long> onExec) {
+        asyncExecutePropertyEventAction(actionSID, editContext, execContext, handler, new GPushAsyncClose(), eventSource, requestIndex ->
                 formsController.asyncCloseForm(getAsyncFormController(requestIndex), formContainer), onExec);
     }
 
@@ -1214,25 +1215,25 @@ public class GFormController implements EditManager {
     }
 
     // for custom renderer, paste
-    public void changeProperty(ExecuteEditContext editContext, PValue changeValue, ChangedRenderValueSupplier renderValueSupplier) {
+    public void changeProperty(ExecuteEditContext editContext, PValue changeValue, GEventSource eventSource, ChangedRenderValueSupplier renderValueSupplier) {
         ChangedRenderValue changedRenderValue = changeValue != PValue.UNDEFINED ? setLocalValue(editContext, changeValue, renderValueSupplier) : null;
         // noGroupChange is needed for custom renderers that use onBlur to change values:
         // a) when ALT+TAB pressed there is no keydown previewed to disable group change mode, which is not what we want
         // b) when binding with ALT calls check commit editing, we don't want it to be treated as the group change
         String actionSID = GEditBindingMap.changeOrGroupChange(MainFrame.switchedToAnotherWindow || forcedBlurCustom);
-        executePropertyEventAction(null, editContext, actionSID, changeValue == PValue.UNDEFINED ? null : new GUserInputResult(changeValue), requestIndex -> {
+        executePropertyEventAction(null, editContext, actionSID, eventSource, changeValue == PValue.UNDEFINED ? null : new GUserInputResult(changeValue), requestIndex -> {
             setRemoteValue(editContext, changedRenderValue, requestIndex);
         });
     }
 
     // for quick access actions (in toolbar and keypress)
-    public void executeContextAction(EventHandler handler, ExecuteEditContext editContext, String actionSID, int contextAction) {
-        executePropertyEventAction(handler, editContext, actionSID, new GUserInputResult(null, contextAction), requestIndex -> {});
+    public void executeContextAction(EventHandler handler, ExecuteEditContext editContext, String actionSID, GEventSource eventSource, int contextAction) {
+        executePropertyEventAction(handler, editContext, actionSID, eventSource, new GUserInputResult(null, contextAction), requestIndex -> {});
     }
 
     // for custom renderer, paste, quick access actions (in toolbar and keypress)
-    private void executePropertyEventAction(EventHandler handler, ExecuteEditContext editContext, String actionSID, GUserInputResult value, Consumer<Long> onExec) {
-        executePropertyEventAction(handler, editContext, editContext.getProperty().getInputListActions(), value, actionSID, true, requestIndex -> {
+    private void executePropertyEventAction(EventHandler handler, ExecuteEditContext editContext, String actionSID, GEventSource eventSource, GUserInputResult value, Consumer<Long> onExec) {
+        executePropertyEventAction(handler, editContext, editContext.getProperty().getInputListActions(), value, actionSID, eventSource, requestIndex -> {
             onExec.accept(requestIndex);
 
             setLoading(editContext, requestIndex);
@@ -1276,18 +1277,18 @@ public class GFormController implements EditManager {
         putToDoubleNativeMap(pendingChangePropertyRequests, property, fullKey, new Change(changeRequestIndex, value, oldValue));
     }
 
-    public void asyncNoWait(EditContext editContext, ExecContext execContext, EventHandler handler, String actionSID, GAsyncNoWaitExec asyncNoWait, GPushAsyncInput pushAsyncResult, boolean externalChange, Consumer<Long> onExec) {
-        asyncExecutePropertyEventAction(actionSID, editContext, execContext, handler, pushAsyncResult, externalChange, requestIndex -> {}, onExec);
+    public void asyncNoWait(EditContext editContext, ExecContext execContext, EventHandler handler, String actionSID, GAsyncNoWaitExec asyncNoWait, GPushAsyncInput pushAsyncResult, GEventSource eventSource, Consumer<Long> onExec) {
+        asyncExecutePropertyEventAction(actionSID, editContext, execContext, handler, pushAsyncResult, eventSource, requestIndex -> {}, onExec);
     }
 
-    public void asyncChange(EditContext editContext, ExecContext execContext, EventHandler handler, String actionSID, GAsyncChange asyncChange, GPushAsyncInput pushAsyncResult, boolean externalChange, Consumer<Long> onExec) {
-        asyncExecutePropertyEventAction(actionSID, editContext, execContext, handler, pushAsyncResult, externalChange, requestIndex -> {
+    public void asyncChange(EditContext editContext, ExecContext execContext, EventHandler handler, String actionSID, GAsyncChange asyncChange, GPushAsyncInput pushAsyncResult, GEventSource eventSource, Consumer<Long> onExec) {
+        asyncExecutePropertyEventAction(actionSID, editContext, execContext, handler, pushAsyncResult, eventSource, requestIndex -> {
             for (int propertyID : asyncChange.propertyIDs)
                 setLoadingValueAt(propertyID, editContext.getFullKey(), PValue.convertFileValue(asyncChange.value), requestIndex);
         }, onExec);
     }
 
-    public void asyncAddRemove(EditContext editContext, ExecContext execContext, EventHandler handler, String actionSID, GAsyncAddRemove asyncAddRemove, GPushAsyncInput pushAsyncResult, boolean externalChange, Consumer<Long> onExec) {
+    public void asyncAddRemove(EditContext editContext, ExecContext execContext, EventHandler handler, String actionSID, GAsyncAddRemove asyncAddRemove, GPushAsyncInput pushAsyncResult, GEventSource eventSource, Consumer<Long> onExec) {
         final GObject object = form.getObject(asyncAddRemove.object);
         final boolean add = asyncAddRemove.add;
 
@@ -1299,7 +1300,7 @@ public class GFormController implements EditManager {
             MainFrame.logicsDispatchAsync.executePriority(new GenerateID(), new PriorityErrorHandlingCallback<GenerateIDResult>(editContext.getPopupOwner()) {
                 @Override
                 public void onSuccess(GenerateIDResult result) {
-                    asyncAddRemove(editContext, execContext, handler, actionSID, object, add, new GPushAsyncAdd(result.ID), new GGroupObjectValue(object.ID, new GCustomObjectValue(result.ID, null)), position, externalChange, onExec);
+                    asyncAddRemove(editContext, execContext, handler, actionSID, object, add, new GPushAsyncAdd(result.ID), new GGroupObjectValue(object.ID, new GCustomObjectValue(result.ID, null)), position, eventSource, onExec);
                 }
             });
         } else {
@@ -1308,12 +1309,12 @@ public class GFormController implements EditManager {
             final GGroupObjectValue value = controllers.get(object.groupObject).getSelectedKey();
             if(value.isEmpty())
                 return;
-            asyncAddRemove(editContext, execContext, handler, actionSID, object, add, pushAsyncResult, value, position, externalChange, onExec);
+            asyncAddRemove(editContext, execContext, handler, actionSID, object, add, pushAsyncResult, value, position, eventSource, onExec);
         }
     }
 
-    private void asyncAddRemove(EditContext editContext, ExecContext execContext, EventHandler handler, String actionSID, GObject object, boolean add, GPushAsyncResult pushAsyncResult, GGroupObjectValue value, int position, boolean externalChange, Consumer<Long> onExec) {
-        asyncExecutePropertyEventAction(actionSID, editContext, execContext, handler, pushAsyncResult, externalChange, requestIndex -> {
+    private void asyncAddRemove(EditContext editContext, ExecContext execContext, EventHandler handler, String actionSID, GObject object, boolean add, GPushAsyncResult pushAsyncResult, GGroupObjectValue value, int position, GEventSource eventSource, Consumer<Long> onExec) {
+        asyncExecutePropertyEventAction(actionSID, editContext, execContext, handler, pushAsyncResult, eventSource, requestIndex -> {
             pendingChangeCurrentObjectsRequests.put(object.groupObject, requestIndex);
             pendingModifyObjectRequests.put(requestIndex, new ModifyObject(object, add, value, position));
 

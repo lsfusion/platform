@@ -15,7 +15,6 @@ import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
 import lsfusion.gwt.client.base.size.GSize;
-import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.PopupOwner;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.classes.GObjectType;
@@ -38,10 +37,7 @@ import lsfusion.gwt.client.form.object.table.tree.view.GTreeColumnValueType;
 import lsfusion.gwt.client.form.object.table.tree.view.GTreeTable;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableHeader;
-import lsfusion.gwt.client.form.property.GPivotOptions;
-import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.GPropertyGroupType;
-import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.form.property.*;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
@@ -2027,7 +2023,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     private void executePropertyEditAction(Column column, Integer rowIndex) {
         GPropertyDraw property = column.property;
         GGroupObjectValue fullKey = GGroupObjectValue.getFullKey(keys.get(rowIndex), column.columnKey);
-        form.executePropertyEventAction(property, fullKey, GEditBindingMap.EDIT_OBJECT, null, false, requestIndex -> {});
+        form.executePropertyEventAction(property, fullKey, GEditBindingMap.EDIT_OBJECT, null, GEventSource.EDIT, requestIndex -> {});
     }
 
     private Integer getRowIndex(JsArrayMixed keyValues, boolean cols) {
