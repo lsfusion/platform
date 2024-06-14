@@ -81,7 +81,11 @@ The hierarchy described within a single `NAVIGATOR` statement can have an arbitr
 
 - `WINDOW windowName`
 
-    Specifying a [window](Navigator_design.md) in which the element and its descendants will be displayed (unless another window is specified for them). 
+    Specifying the [window](Navigator_design.md) in which the descendants of this navigator element will be displayed (unless another window is specified for them).
+
+    :::info
+    Note that this option sets the window not for the current element itself, but for its descendants. 
+    :::
 
     - `windowName`
 
