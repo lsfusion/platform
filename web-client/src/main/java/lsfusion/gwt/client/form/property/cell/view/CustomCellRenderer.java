@@ -236,6 +236,9 @@ public class CustomCellRenderer extends CellRenderer {
             },
             isTabFocusable: function () {
                 return isTabFocusable;
+            },
+            clearDiff: function () {
+                @GSimpleStateTableView::clearDiff(*)(element);
             }
         };
     }-*/;

@@ -214,6 +214,8 @@ function selectMultiInput() {
             lsfUtils.clearFocusElement(element);
             lsfUtils.clearReadonlyFnc(element); // !isList check should be here
 
+            controller.clearDiff();
+
             if(!controller.isList())
                 lsfUtils.removeOnFocusOut(element);
 
@@ -588,8 +590,10 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
             }
             lsfUtils.setFocusElement(element, focusInput);
         },
-        clear: function (element) {
+        clear: function (element, controller) {
             lsfUtils.clearFocusElement(element);
+
+            controller.clearDiff();
         }
     }
 }
@@ -947,9 +951,11 @@ function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBo
                 }
             }
         },
-        clear: function (element) {
+        clear: function (element, controller) {
             lsfUtils.clearFocusElement(element);
             lsfUtils.clearReadonlyFnc(element); // !isList check should be here
+
+            controller.clearDiff();
 
             lsfUtils.removeOnFocusOut(element);
         }

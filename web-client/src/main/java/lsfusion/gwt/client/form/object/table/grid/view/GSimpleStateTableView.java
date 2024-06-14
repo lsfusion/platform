@@ -704,6 +704,10 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     // 100000 if key are not equals
     // 1 - otherwise
 
+    public static <K, V extends JavaScriptObject> void clearDiff(Element element) {
+        GwtClientUtils.removeField(element, "prevList");
+    }
+
     public static <K, V extends JavaScriptObject> void diff(JsArray<V> list, Element element, JavaScriptObject proceed, JavaScriptObject getObjectString, String objectsField, boolean noDiffObjects, boolean removeFirst) {
         JsArray<V> prevList = (JsArray<V>) GwtClientUtils.getField(element, "prevList");
         if(prevList == null)
@@ -888,6 +892,9 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             diff: function (newList, fnc, noDiffObjects, removeFirst) {
                 var controller = this;
                 @GSimpleStateTableView::diff(*)(newList, element, fnc, function(object) {return controller.getObjectsString(object);}, this.getObjectsField(), noDiffObjects, removeFirst);
+            },
+            clearDiff: function () {
+                @GSimpleStateTableView::clearDiff(*)(element);
             },
             getColorThemeName: function () {
                 return @lsfusion.gwt.client.view.MainFrame::colorTheme.@java.lang.Enum::name()();

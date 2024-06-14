@@ -4,6 +4,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.ModalityWindowFormType;
 import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.data.expr.Expr;
@@ -121,7 +122,7 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
     @IdentityStrongLazy
     public ActionMapImplement<?, Interface<I>> getDefaultEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction) {
         ImRevMap<Interface<I>, I> groupMap = getConcatMap();
-        if(groupMap != null) {
+        if(groupMap != null && !eventActionSID.equals(ServerResponse.EDIT_OBJECT)) {
             BaseLogicsModule baseLM = getBaseLM();
 
             PropertyMapImplement<ClassPropertyInterface, I> selectProp = ForAction.createForDataProp((PropertyMapImplement<?, I>) whereProp, groupMap, null, null);
