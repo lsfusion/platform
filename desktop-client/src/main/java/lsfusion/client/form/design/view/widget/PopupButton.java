@@ -1,5 +1,6 @@
 package lsfusion.client.form.design.view.widget;
 
+import lsfusion.base.file.AppImage;
 import lsfusion.client.base.view.ClientImages;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.ClientContainer;
@@ -10,11 +11,11 @@ import javax.swing.event.PopupMenuListener;
 import java.awt.*;
 
 public class PopupButton extends ButtonWidget {
-    private static final String THREE_DOTS_ICON_PATH = "threedots.png";
+    private static final ImageIcon THREE_DOTS_IMAGE = ClientImages.get("threedots.png");
 
     private ClientFormController formController;
-    public PopupButton(ClientFormController formController) {
-        super(null, ClientImages.get(THREE_DOTS_ICON_PATH));
+    public PopupButton(ClientFormController formController, AppImage image) {
+        super(null, image != null && image.getImagePath() != null ? ClientImages.getImage(image) : THREE_DOTS_IMAGE);
         this.formController = formController;
     }
 

@@ -144,7 +144,7 @@ public class LinearClientContainerView extends AbstractClientContainerView {
         if (child instanceof ClientContainer) {
             ClientContainer childContainer = (ClientContainer) child;
             if(childContainer.popup) {
-                return new PopupButton(formController);
+                return new PopupButton(formController, childContainer.image);
             } else if (childContainer.collapsible) {
                 return new CollapsiblePanel(formController, childContainer, vertical);
             } else if (childContainer.caption != null) {
