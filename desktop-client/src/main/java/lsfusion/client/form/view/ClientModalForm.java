@@ -27,7 +27,7 @@ public class ClientModalForm extends JDialog {
     public boolean async;
 
     public ClientModalForm(Component owner, String title, boolean async) {
-        super(getWindow(owner), title, ModalityType.DOCUMENT_MODAL);
+        super(getModalFormOwner(owner), title, ModalityType.DOCUMENT_MODAL);
 
         setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 

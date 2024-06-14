@@ -64,6 +64,12 @@ public class SwingUtils {
         return comp == null ? MainFrame.instance : (Window) comp;
     }
 
+    //need only Frame or Dialog in Dialog constructor, in popup menu getWindow returns Popup.HeavyWeightWindow
+    public static Window getModalFormOwner(Component comp) {
+        Window owner = getWindow(comp);
+        return owner instanceof Frame || owner instanceof Dialog ? owner : MainFrame.instance;
+    }
+
     public static void assertDispatchThread() {
         Preconditions.checkState(EventQueue.isDispatchThread(), "should be executed in dispatch thread");
     }
