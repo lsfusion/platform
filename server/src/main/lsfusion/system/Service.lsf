@@ -801,17 +801,20 @@ DESIGN settings {
     }
 }
 
-showColorSettings = theme(currentDesignEnv()) == Theme.excel OR isNative();
-
 EXTEND FORM editProfile
-    PROPERTIES()  resetWindowsLayout
-    PROPERTIES(u) fontSize, colorThemeName
-    PROPERTIES(u) SHOWIF showColorSettings() selectedRowBackgroundColor, selectedCellBackgroundColor,
+    OBJECTS d = DesignEnv PANEL
+    PROPERTIES(d) colorThemeName, dontShowCloseButtonOnInactiveTab SHOWIF isWeb(), userFiltersManualApplyMode
+    FILTERS d = currentDesignEnv()
+    
+    PROPERTIES() resetWindowsLayout
+
+    PROPERTIES(u) fontSize
+    PROPERTIES(u) SHOWIF theme(d) == Theme.excel OR isNative() selectedRowBackgroundColor, selectedCellBackgroundColor,
         focusedCellBackgroundColor, focusedCellBorderColor, tableGridColor
-    PROPERTIES(u) dontShowCloseButtonOnInactiveTab, userFiltersManualApplyMode
+
     OBJECTS r = DateTimePickerRanges
     PROPERTIES dateTimeRange(r) READONLY, isDateTimeRangeSelected(r, u)
-    
+
     OBJECTS ir = DateTimeIntervalPickerRanges
     PROPERTIES intervalRange(ir) READONLY, isIntervalRangeSelected(ir, u)
 ;
@@ -822,7 +825,7 @@ DESIGN editProfile {
             caption = '{navigator.account.edit.profile.design}';
             
             MOVE PROPERTY(fontSize(u)) { fontSize = 24; }
-            MOVE PROPERTY(colorThemeName(u)) { fontSize = 24; }
+            MOVE PROPERTY(colorThemeName(d)) { fontSize = 24; }
             
             MOVE PROPERTY(resetWindowsLayout());
             
@@ -835,8 +838,8 @@ DESIGN editProfile {
                 MOVE PROPERTY(tableGridColor(u)) { fontSize = 24; }
             }
             NEW closeButton {
-                MOVE PROPERTY(dontShowCloseButtonOnInactiveTab(u));
-                MOVE PROPERTY(userFiltersManualApplyMode(u));
+                MOVE PROPERTY(dontShowCloseButtonOnInactiveTab(d));
+                MOVE PROPERTY(userFiltersManualApplyMode(d));
             }
             NEW predefinedRanges {
                 horizontal = TRUE;
