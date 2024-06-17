@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.base.size;
 
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.form.design.GFontMetrics;
 
 import java.util.Objects;
 
@@ -26,16 +27,15 @@ public class GFixedSize extends GSimpleSize {
         return new GFixedSize(value * count, type);
     }
 
-    public static double convertFontSize = 12.0; // default font size used to convert usually from constants;
     public static GFixedSize getSize(double pixels, Type type) {
-        return getSize(pixels, type, convertFontSize);
+        return getSize(pixels, type, GFontMetrics.getPixelSize(type));
     }
     public static GFixedSize getSize(double pixels, Type type, double fontSize) {
-        return new GFixedSize(type == GFixedSize.Type.PX ? pixels : ((double)pixels / fontSize), type);
+        return new GFixedSize(type == GFixedSize.Type.PX ? pixels : (pixels / fontSize), type);
     }
     @Override
     protected double getPixelSize() {
-        return type == GFixedSize.Type.PX ? value : value * convertFontSize; // used with SIZE_TYPE so we don't really care about the convertFontSize
+        return value * GFontMetrics.getPixelSize(type);
     }
 
     @Override
