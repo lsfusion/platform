@@ -110,7 +110,7 @@ public class RmiQueue implements DispatcherListener {
     private static ExecutorService executorService = Executors.newCachedThreadPool();
     
     private static double getTimeout(Pair<Integer, Integer> timeoutParams, int exponent) {
-        return timeoutParams.second * Math.pow(timeoutParams.first, exponent);    
+        return timeoutParams.second * Math.pow(timeoutParams.first, Math.min(exponent, 4));
     }
     
     // вызывает request (предположительно remote) несколько раз, проблемы с целостностью предполагается что решается либо индексом, либо результат не так важен
