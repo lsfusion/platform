@@ -10,7 +10,7 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.safety.Whitelist;
+import org.jsoup.safety.Safelist;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -55,7 +55,7 @@ public class RichTextToStringAction extends InternalAction {
             }
             //get the HTML from the document, and retaining original new lines
             String str = jsoupDoc.html().replaceAll("\\\\n", "\n");
-            value = Jsoup.clean(str, "", Whitelist.none(), outputSettings);
+            value = Jsoup.clean(str, "", Safelist.none(), outputSettings);
         }
         return value;
     }

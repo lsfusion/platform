@@ -1,6 +1,5 @@
 package lsfusion.server.logics.form.interactive.instance.property;
 
-import com.sun.org.apache.bcel.internal.generic.ARETURN;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.Result;
