@@ -6,12 +6,16 @@ import com.google.gwt.user.client.ui.RootPanel;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.Pair;
+import lsfusion.gwt.client.base.size.GFixedSize;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
+
+import static lsfusion.gwt.client.base.GwtClientUtils.getDoubleOffsetHeight;
+import static lsfusion.gwt.client.base.GwtClientUtils.getDoubleOffsetWidth;
 
 public class GFontMetrics {
     //    private static final HashMap<MetricsCallback, Integer> calculationsInProgress = new HashMap<>();
@@ -148,15 +152,14 @@ public class GFontMetrics {
 
         Style style = element.getStyle();
 
-        int fontSize = -1;
+        double fontSize = -1;
         GFont font = fontWidth.font;
         if(font != null) {
             fontSize = font.size;
             GFormController.setFont(element, font);
         }
-        if(fontSize <= 0) {
-            fontSize = MainFrame.getScale() <= 1 ? 16 : 12;
-            style.setFontSize(fontSize, Style.Unit.PX);
+        if (fontSize <= 0) {
+            fontSize = getPixelSize(GFixedSize.Type.EM);
         }
 
         style.setDisplay(Style.Display.INLINE_BLOCK);
@@ -180,7 +183,7 @@ public class GFontMetrics {
         element.setInnerText(string);
         style.setWhiteSpace(string.contains("\n") ? Style.WhiteSpace.PRE_WRAP : Style.WhiteSpace.PRE);
 
-        int fFontSize = fontSize;
+        double fFontSize = fontSize;
         measure = calcSize(element, size -> GSize.getCalcValueSize(size, fFontSize));
         calculatedMeasures.put(fontWidth, measure);
         return measure;
@@ -202,6 +205,21 @@ public class GFontMetrics {
             element.getParentElement().removeChild(element);
         }
     }
+
+    private static <T> Pair<T, T> calcSizeDouble(Element element, Function<Double, T> sizeCalc) {
+        final Element body = RootPanel.getBodyElement();
+        DOM.appendChild(body, element);
+
+        try {
+            final double width = getDoubleOffsetWidth(element);
+            final double height = getDoubleOffsetHeight(element);
+
+            return new Pair<>(sizeCalc.apply(width), sizeCalc.apply(height));
+        } finally {
+            element.getParentElement().removeChild(element);
+        }
+    }
+
 
     public static GSize getStringWidth(GFont font, String widthString) {
         return getCalcMeasure(new GFontWidthString(font, widthString)).first;
@@ -265,7 +283,7 @@ public class GFontMetrics {
             addCells(headerElement.insertRow(-1), columnCount);
         }
 
-        int remSize = getRemSize();
+        double remSize = getPixelSize(GFixedSize.Type.REM);
         measure = calcSize(tableElement, size -> GSize.getCalcComponentSize(size, remSize));
         calculatedPaddings.put(gridParams, measure);
         return measure;
@@ -276,15 +294,16 @@ public class GFontMetrics {
             headerRow.insertCell(-1);
     }
 
-    private static Integer calculatedRemSize;
-    private static int getRemSize() {
-        if(calculatedRemSize == null) {
+    private static Map<GFixedSize.Type, Double> calculatedSizes = new HashMap<>();
+    public static double getPixelSize(GFixedSize.Type type) {
+        Double calculatedSize = calculatedSizes.get(type);
+        if (calculatedSize == null) {
             final Element element = DOM.createDiv();
-            element.getStyle().setProperty("width", "1rem");
-
-            calculatedRemSize = calcSize(element, size -> size).first;
+            element.getStyle().setProperty("width", "1" + type.name().toLowerCase());
+            calculatedSize = calcSizeDouble(element, size -> size).first;
+            calculatedSizes.put(type, calculatedSize);
         }
-        return calculatedRemSize;
+        return calculatedSize;
     }
 
 //    public interface MetricsCallback {
