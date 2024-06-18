@@ -60,9 +60,29 @@ public class GGroupObject implements Serializable, HasNativeSID {
     public GCustomOptionsReader customOptionsReader;
 
     // transient
-    public transient GSize columnSumWidth = GSize.ZERO;
+    private transient GSize columnSumWidth;
+    public GSize getColumnSumWidth() {
+        if(columnSumWidth == null) {
+            columnSumWidth = GSize.ZERO;
+        }
+        return columnSumWidth;
+    }
+    public void setColumnSumWidth(GSize columnSumWidth) {
+        this.columnSumWidth = columnSumWidth;
+    }
+
     public transient int columnCount;
-    public transient GSize rowMaxHeight = GSize.ZERO;
+
+    private transient GSize rowMaxHeight;
+    public GSize getRowMaxHeight() {
+        if(rowMaxHeight == null) {
+            rowMaxHeight = GSize.ZERO;
+        }
+        return rowMaxHeight;
+    }
+    public void setRowMaxHeight(GSize rowMaxHeight) {
+        this.rowMaxHeight = rowMaxHeight;
+    }
 
     public Pair<GSize, GSize> getSize(int lines, int columns, boolean extraColumn, GSize headerHeight) {
         if(lines == -1)
@@ -77,7 +97,7 @@ public class GGroupObject implements Serializable, HasNativeSID {
         Pair<GSize, GSize> gridPaddings = GFontMetrics.getGridPaddings(lines, columns, hasHeaders, hasFooters);
         return new Pair<>(
                 columnCount > 0 ? columnSumWidth.scale(columns).div(columnCount).add(gridPaddings.first) : GSize.ZERO,
-                rowMaxHeight.scale(lines).add(gridPaddings.second).add(
+                getRowMaxHeight().scale(lines).add(gridPaddings.second).add(
                         headerHeight != null ? headerHeight : GGridPropertyTableHeader.DEFAULT_HEADER_HEIGHT)); // actually it is the max header height, so it's not that accurate, however for now it doesn't matter that much
     }
 

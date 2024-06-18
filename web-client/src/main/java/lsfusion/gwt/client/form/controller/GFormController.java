@@ -403,9 +403,9 @@ public class GFormController implements EditManager {
                 // in theory property renderers padding should be included, but it's hard to do that (there will be problems with the memoization)
                 // plus usually there are no paddings for the property renderers in the table (td paddings are used, and they are included see the usages)
                 RendererType rendererType = RendererType.GRID;
-                groupObject.columnSumWidth = groupObject.columnSumWidth.add(property.getValueWidth(font, true, true, rendererType));
+                groupObject.setColumnSumWidth(groupObject.getColumnSumWidth().add(property.getValueWidth(font, true, true, rendererType)));
                 groupObject.columnCount++;
-                groupObject.rowMaxHeight = groupObject.rowMaxHeight.max(property.getValueHeight(font, true, true, rendererType));
+                groupObject.setRowMaxHeight(groupObject.getRowMaxHeight().max(property.getValueHeight(font, true, true, rendererType)));
             }
         }
     }
