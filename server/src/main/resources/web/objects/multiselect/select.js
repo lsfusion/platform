@@ -1,38 +1,57 @@
 
 var lsf_events_defined = false;
 
+// input with drop down
+function handleInputKeyEvent(isOpen, controller, e, keyDown) {
+    if(isOpen) { // is editing
+        if(controller.isEditInputKeyEvent(e, true) || (keyDown && (e.key === 'Enter' || e.key === 'Escape')))
+            e.stopPropagation()
+    } else {
+        if(controller.isRenderInputKeyEvent(e, true))
+            e.stopPropagation();
+    }
+}
+function handleDropdownKeyEvent(isOpen, e, keyDown) {
+    if(isOpen) { // is editing
+        if(keyDown && (e.keyCode === 38 || e.keyCode === 40 || e.key === 'Enter' || e.key === 'Escape'))
+            e.stopPropagation()
+    }
+    if(e.keyCode === 32)
+        e.stopPropagation();
+}
+
+function handleOptionKeyEvent(isButton, e, keyDown, isInGrid) {
+    if (keyDown && e.shiftKey && isInGrid && ((isButton && (e.keyCode === 39 || e.keyCode === 37)) || (e.keyCode === 40 || e.keyCode === 38)))
+        e.stopPropagation();
+}
+
 function selectMultiHTMLInput() {
     return selectMultiInput(); // check how it will work
 }
 
 function selectMultiInput() {
-    function handleKeyEvent(selectize, e, mouseDown) {
-        if(selectize.isOpen) { // is editing
-            if(selectize.controller.isEditInputKeyEvent(e, true) || (mouseDown && (e.key === 'Enter' || e.key === 'Escape')))
-                e.stopPropagation()
-        } else {
-            if(selectize.controller.isRenderInputKeyEvent(e, true))
-                e.stopPropagation();
-        }
+    function handleSelectizeKeyEvent(selectize, e, keyDown) {
+       handleInputKeyEvent(selectize.isOpen, selectize.controller, e, keyDown);
     }
 
     if(!lsf_events_defined) {
         Selectize.define('lsf_events', function () {
             let selfKeyDown = this.onKeyDown;
             this.onKeyDown = function (e) {
+                handleSelectizeKeyEvent(this, e, true);
+
                 // we're copying suggest + multi line text event handling
                 if (e.shiftKey === true && e.key === 'Enter') {
                     this.close();
-                    e.stopPropagation();
                     return;
                 }
 
-                handleKeyEvent(this, e, true);
                 selfKeyDown.apply(this, arguments);
             }
             let selfKeyPress = this.onKeyPress;
             this.onKeyPress = function (e) {
-                handleKeyEvent(this, e, false);
+                handleSelectizeKeyEvent(this, e, false);
+
                 selfKeyPress.apply(this, arguments);
             }
             this.onItemSelect = function (e) {
@@ -106,13 +125,13 @@ function selectMultiInput() {
                         element.controller.changeProperty('selected', originalObject, null, "remove");
                     }
                 },
-                onDropdownOpen: function (dropdown) {
+                onDropdownOpen: function () {
                     // setting auto hide partner to avoid fake blurs
                     this.setCaret(this.items.length);
-                    _setIsEditing(this.$control[0], true);
+                    _setIsEditing(element, this.$control[0], true);
                 },
                 onDropdownClose: function () {
-                    _setIsEditing(this.$control[0], false);
+                    _setIsEditing(element, this.$control[0], false);
                 },
                 openOnFocus: function () {
                     return !lsfUtils.isSuppressOnFocusChange(element);
@@ -147,6 +166,7 @@ function selectMultiInput() {
             // we need to do it here, not in update to have relevant focusElement
             let selectizeInstance = element.selectizeInstance[0].selectize;
             selectizeInstance.controller = controller; // needed for lsf_events
+            selectizeInstance.isInGrid = _isInGrid(element);
             lsfUtils.setFocusElement(element, selectizeInstance.$control_input[0]);
             if(!isList)
                 lsfUtils.setReadonlyFnc(element, (readonly) => {
@@ -378,13 +398,16 @@ function _isInGrid(element) {
     return lsfUtils.isTDorTH(element); // because canBeRenderedInTD can be true
 }
 
-function _setIsEditing(element, add) {
+function _setIsEditing(element, controlElement, add) {
     let editingClassName = 'is-editing';
 
     if (add)
-        element.classList.add(editingClassName);
+        controlElement.classList.add(editingClassName);
     else
-        element.classList.remove(editingClassName);
+        controlElement.classList.remove(editingClassName);
+}
+function _isEditing(element, controlElement) {
+    return controlElement.classList.contains('is-editing')
 }
 
 // buttons / radios / selects
@@ -429,12 +452,11 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
 
             // allow to navigate in custom button group component in grid cell by pressed shift + left / right or shift + up / down
             // for some reason it doesn't work with ctrl button
-            if (_isInGrid(element)) {
-                options.addEventListener('keydown', function (e) {
-                    if (e.shiftKey && ((isButton && (e.keyCode === 39 || e.keyCode === 37)) || (e.keyCode === 40 || e.keyCode === 38)))
-                        e.stopPropagation();
-                })
-            }
+            let isInGrid = _isInGrid(element);
+
+            options.addEventListener('keydown', function (e) {
+                handleOptionKeyEvent(isButton, e, true, isInGrid);
+            });
 
         }, update: function (element, controller, list, extraValue) {
             let isList = controller.isList();
@@ -669,7 +691,8 @@ function _selectPicker(multi, html, shouldBeSelected, changeValue) {
         }
 
         return _dropDown({}, (element) => {
-                let selectElement = $(element.select);
+                let select = element.select;
+                let selectElement = $(select);
                 selectElement.select2({
                     theme: "bootstrap-5",
                     multiple: multi,
@@ -680,9 +703,6 @@ function _selectPicker(multi, html, shouldBeSelected, changeValue) {
                     selectionCssClass: ':all:' // move css-classes into select2 :button"
                 });
 
-                if (!_isInGrid(element))
-                    selectElement.data('select2').$container.addClass('form-control');
-
                 selectElement.on('select2:select', function (e) {
                     changeProperty(e, element, true);
                 });
@@ -691,19 +711,36 @@ function _selectPicker(multi, html, shouldBeSelected, changeValue) {
                     changeProperty(e, element, false);
                 });
 
-                selectElement.on('select2:open', function (e) {
-                    _setIsEditing(element, true);
-                });
+                let select2 = selectElement.data('select2');
 
-                selectElement.on('select2:close', function (e) {
-                    _setIsEditing(element, false);
-                });
+                let containerElement = select2.$container;
 
-                lsfUtils.setOnFocusOutWithDropDownPartner(element, selectElement.data('select2').$results[0], function(e) {
+                lsfUtils.setOnFocusOutWithDropDownPartner(element, select2.$results[0], function() {
                     selectElement.select2('close');
                 });
+
+                if (!_isInGrid(element))
+                    containerElement.addClass('form-control');
+
+                selectElement.hide(); // there is a bug that select2 uses position absolute 0 to hide the element and exclude it from the layouting, but there is no position relative so it can stick to any container
+                containerElement.css('height', '100%'); //height 100% is needed to keep a cell clickable if no options are selected.
+
+                let selectionElement = select2.$selection;
+                let selection = selectionElement[0]
+
+                selectElement.on('select2:open', function () {
+                    _setIsEditing(element, selection, true);
+                });
+
+                selectElement.on('select2:close', function () {
+                    // The timeout is needed because select2:close is triggered before key handler,
+                    // and pressing escape closes the whole form, not the dropdown
+                    setTimeout(() => _setIsEditing(element, selection, false));
+                });
+
+                return selection;
             },
-            multi, shouldBeSelected, html, true, 'select2');
+            multi, shouldBeSelected, html, true, true);
     } else {
         return _dropDown(multi ? {'multiple': ''} : {},
             (element) => {
@@ -726,26 +763,60 @@ function _selectPicker(multi, html, shouldBeSelected, changeValue) {
                         // needed here because refresh recreates dropdown
                         lsfUtils.addDropDownPartner(element, selectElement.multipleSelect('getDropdown')[0]);
                         element.silent = true; // Because "refresh" is called after every update, which removes the dropdown
-                        _setIsEditing(element, true);
+                        _setIsEditing(element, select, true);
                     },
                     onClose: function () {
                         element.silent = false;// Because "refresh" is called after every update, which removes the dropdown
-                        _setIsEditing(element, false);
+                        _setIsEditing(element, select, false);
                     }
                 });
-                lsfUtils.setOnFocusOut(element, function(e) {
+                lsfUtils.setOnFocusOut(element, function() {
                     selectElement.multipleSelect('close');
                 });
-            }, multi, shouldBeSelected, html, false);
+                select.addEventListener('keypress', function (e) {
+                    if (e.keyCode === 32)
+                        selectElement.multipleSelect('open');
+                });
+
+                return select;
+            }, multi, shouldBeSelected, html, false, true);
     }
 }
 
 function _selectDropdown(shouldBeSelected, changeValue) {
     return _dropDown({},
         (element) => {
-            element.select.addEventListener('change', function () {
+            let select = element.select;
+
+            select.classList.add("form-select");
+
+            select.addEventListener('keydown', function (e) {
+                if (e.keyCode === 32) {
+                    _setIsEditing(element, select, true);
+                }
+            });
+
+            select.addEventListener('change', function () {
                 _changeSingleDropdownProperty(this.selectedOptions[0].object, element, changeValue);
+
+                _setIsEditing(element, select, false);
             })
+
+            select.addEventListener('blur', function () {
+                _setIsEditing(element, select, false);
+            });
+
+            select.addEventListener('mousedown', function (e) {
+                // dropdown can be prevented if !isChangeOnSingleClick
+                // if(!element.controller.previewEvent(select, e))
+                //     return;
+                setTimeout(function() {
+                    if(!e.defaultPrevented)
+                        _setIsEditing(element, select, true);
+                });
+            });
+
+            return select;
         }, false, shouldBeSelected);
 }
 
@@ -760,27 +831,13 @@ function _setSelectName(option, name, html) {
     setDataHtmlOrText(option, name, html);
 }
 
-function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBootstrap, pickerType) {
-    let picker = multi || html;
+function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBootstrap, picker) {
     return {
         render: function (element, controller) {
             let isList = controller.isList();
 
             let select = _wrapElement(element, () => createFocusElement('select'), element.tagName.toLowerCase() !== 'select');
-
             element.select = select;
-
-            if(!picker)
-                select.classList.add("form-select");
-
-            _removeAllPMBInTD(element, select);
-
-            lsfUtils.setFocusElement(element, select);
-            if(!isList) {
-                lsfUtils.setReadonlyFnc(element, (readonly) => {
-                    _setSelectReadonly(select, readonly);
-                });
-            }
 
             Object.keys(selectAttributes).forEach(key => select.setAttribute(key, selectAttributes[key]));
 
@@ -795,44 +852,25 @@ function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBo
                 select.appendChild(option);
             }
 
-            render(element);
+            let mainElement = render(element);
 
-            // both for multiple and single
-            if (_isInGrid(element) && pickerType !== 'select2') { //select2 doesn't need listeners
-                // press on space button on dropdown element in grid-cell opens dropdown instead of adding a filter.
-                select.addEventListener('keypress', function (e) {
-                    if (e.keyCode === 32) {
-                        e.stopPropagation();
-                        //in excel theme picker space button does not opens dropdown
-                        if (!lsfUtils.useBootstrap() && picker)
-                            $(select).multipleSelect('open');
-                    }
-                });
+            _removeAllPMBInTD(element, mainElement);
 
-                // control opening of drop-down menu
-                select.addEventListener('change', function () {
-                    _setIsEditing(select, false);
-                });
-
-                select.addEventListener('blur', function () {
-                    _setIsEditing(select, false);
-                });
-
-                select.addEventListener('mousedown', function (e) {
-                    // dropdown can be prevented if !isChangeOnSingleClick
-                    // if(!element.controller.previewEvent(select, e))
-                    //     return;
-                    setTimeout(function() {
-                       if(!e.defaultPrevented)
-                            _setIsEditing(select, true);
-                    });
-                });
-
-                select.addEventListener('keydown', function (e) {
-                    if (e.keyCode === 32)
-                        _setIsEditing(select, true);
+            lsfUtils.setFocusElement(element, mainElement);
+            if(!isList) {
+                lsfUtils.setReadonlyFnc(element, (readonly) => {
+                    _setSelectReadonly(mainElement, readonly);
                 });
             }
+
+            mainElement.addEventListener('keydown', function (e) {
+                handleDropdownKeyEvent(_isEditing(element, mainElement), e, true);
+            });
+
+            // press on space button on dropdown element in grid-cell opens dropdown instead of adding a filter.
+            mainElement.addEventListener('keypress', function (e) {
+                handleDropdownKeyEvent(_isEditing(element, mainElement), e, false);
+            });
         },
         update: function (element, controller, list, extraValue) {
             element.controller = controller;

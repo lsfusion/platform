@@ -42,7 +42,7 @@
 }
 /* ********** SINGLE SELECT  ********** */
 
-:not(.is-editing) > .remove-all-pmb:not(.is-editing) {
+.remove-all-pmb:not(.is-editing) {
     background-color: transparent !important;
 }
 
@@ -65,7 +65,7 @@
     content: none;
 }
 
-:not(.is-editing) > .remove-all-pmb .dropdown-toggle {
+.remove-all-pmb:not(.is-editing) .dropdown-toggle {
     border: none;
     border-radius: unset;
     background-color: transparent !important;
@@ -75,7 +75,7 @@
 
 /* because focus event comes to <select> element, but MultipleSelect displays <button>, we write css rule with "+" */
 /* excel. multiple select. since the MultipleSelect draws this component as <button>, this component needs to remove the border  */
-:not(.is-editing) > .remove-all-pmb .ms-choice {
+.remove-all-pmb:not(.is-editing) .ms-choice {
     border: none;
     border-radius: unset;
     background-color: transparent !important;
