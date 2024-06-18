@@ -110,7 +110,7 @@ The hierarchy described within a single `NAVIGATOR` statement can have an arbitr
        
     - `LAST`
 
-        Keyword indicating that the navigator element should be added or moved to the end of the list of child elements of the current element.
+        Keyword indicating that the navigator element should be added or moved to the end of the list of child elements of the current element. Unlike default addition, elements inserted using `LAST` will always be positioned after all elements added in the order of insertion.
 
     - `DEFAULT`
 
