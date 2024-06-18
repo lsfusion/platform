@@ -213,7 +213,7 @@ A single `OBJECTS` block can contain several comma-delimited declarations of [ob
   
     - `LAST`
 
-        Keyword indicating that the object group will be added to the end of the list.
+        Keyword indicating that the object group will be added to the end of the list. Unlike default addition, object groups inserted using `LAST` will always be positioned after all object groups added in the order of declaration.
 
     - `DEFAULT`
 
