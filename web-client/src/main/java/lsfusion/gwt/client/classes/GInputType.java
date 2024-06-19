@@ -51,7 +51,7 @@ public class GInputType implements Serializable {
     }
 
     public boolean isSelectAll() { // important not to be logical, because in that case we will cancel the CHANGE event
-        return isStretchText() && !hasNativePopup() && !isYear();
+        return isStretchText() && !hasNativePopup();
     }
 
     public boolean isRemoveAllPMB() {
