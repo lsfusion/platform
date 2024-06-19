@@ -7,6 +7,7 @@ import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.async.GInputListAction;
 import lsfusion.gwt.client.form.property.cell.classes.controller.IntegerCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.controller.RequestValueCellEditor;
+import lsfusion.gwt.client.form.property.cell.classes.controller.YearCellEditor;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 
@@ -15,7 +16,7 @@ public class GIntegerType extends GIntegralType {
 
     @Override
     public RequestValueCellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, GInputListAction[] inputListActions, EditContext editContext) {
-        return new IntegerCellEditor(editManager, editProperty);
+        return editProperty.inputType.isYear() ? new YearCellEditor(editManager, editProperty) : new IntegerCellEditor(editManager, editProperty);
     }
 
     @Override

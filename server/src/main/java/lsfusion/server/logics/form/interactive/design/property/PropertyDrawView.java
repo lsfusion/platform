@@ -459,7 +459,7 @@ public class PropertyDrawView extends BaseComponentView {
         }
         setupShowIf(reportField);
         
-        reportField.pattern = getPattern();
+        reportField.pattern = getReportPattern();
 
         type.fillReportDrawField(reportField);
         return reportField;
@@ -563,7 +563,7 @@ public class PropertyDrawView extends BaseComponentView {
         pool.writeObject(outStream, getPanelCommentAlignment(pool.context));
 
         pool.writeString(outStream, ThreadLocalContext.localize(getPlaceholder(pool.context)));
-        pool.writeString(outStream, ThreadLocalContext.localize(pattern));
+        pool.writeString(outStream, ThreadLocalContext.localize(getPattern(pool.context)));
         pool.writeString(outStream, ThreadLocalContext.localize(regexp));
         pool.writeString(outStream, ThreadLocalContext.localize(regexpMessage));
 
@@ -745,7 +745,20 @@ public class PropertyDrawView extends BaseComponentView {
         return contextMenuItems;
     }
 
-    public String getPattern() {
+    private LocalizedString getPattern(FormInstanceContext context) {
+        if(pattern != null)
+            return pattern;
+
+        if (isProperty(context)) {
+            String inputType = getInputType(context);
+            if (inputType != null && inputType.equals("year"))
+                return LocalizedString.create("{####}");
+        }
+
+        return null;
+    }
+
+    public String getReportPattern() {
         return pattern != null ? pattern.getSourceString() : null;
     }
 

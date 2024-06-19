@@ -33,6 +33,10 @@ public class GInputType implements Serializable {
         return name.equals("checkbox");
     }
 
+    public boolean isYear() {
+        return name.equals("year");
+    }
+
     public boolean hasNativePopup() {
         switch (name) {
             case "date":
