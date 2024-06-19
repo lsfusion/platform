@@ -55,7 +55,7 @@ public abstract class GType implements Serializable {
     }
 
     public GSize getValueHeight(GFont font, GPropertyDraw propertyDraw, boolean needNotNull, boolean globalCaptionIsDrawn) {
-        if(propertyDraw.charWidth != 0)
+        if(propertyDraw.charHeight != 0)
             return getDefaultCharHeight(font, propertyDraw, needNotNull);
 
         return getDefaultHeight(font, propertyDraw, needNotNull, globalCaptionIsDrawn);
