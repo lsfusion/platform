@@ -7,15 +7,23 @@ import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.async.GInputListAction;
 import lsfusion.gwt.client.form.property.cell.classes.controller.IntegerCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.controller.RequestValueCellEditor;
+import lsfusion.gwt.client.form.property.cell.classes.controller.YearCellEditor;
+import lsfusion.gwt.client.form.property.cell.classes.view.YearCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
 public class GIntegerType extends GIntegralType {
     public static GIntegerType instance = new GIntegerType();
 
     @Override
+    public CellRenderer createCellRenderer(GPropertyDraw property) {
+        return property.inputType.isYear() ? new YearCellRenderer(property) : super.createCellRenderer(property);
+    }
+
+    @Override
     public RequestValueCellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, GInputListAction[] inputListActions, EditContext editContext) {
-        return new IntegerCellEditor(editManager, editProperty);
+        return editProperty.inputType.isYear() ? new YearCellEditor(editManager, editProperty) : new IntegerCellEditor(editManager, editProperty);
     }
 
     @Override
