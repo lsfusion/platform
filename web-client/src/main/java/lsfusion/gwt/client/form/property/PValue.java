@@ -161,6 +161,10 @@ public interface PValue {
         return data != null ? data.toString() : null;
     }
 
+    static Integer getIntegerValue(PValue value) {
+        return getValue(value);
+    }
+
     static BigDecimal getBigDecimalValue(PValue value) {
         return getValue(value);
     }
