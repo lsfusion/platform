@@ -5,12 +5,8 @@ import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsArrayString;
 import lsfusion.gwt.client.base.Result;
 
-/**
- * modified com/google/gwt/emul/java/util/AbstractHashMap.java
- */
 public class NativeHashMap<K, V> {
 
-    @SuppressWarnings("UnusedDeclaration")
     private JavaScriptObject hashCodeMap;
 
     public NativeHashMap() {
@@ -43,7 +39,7 @@ public class NativeHashMap<K, V> {
     public V get(K key) {
         if(hashCodeMap == null)
             return null;
-        return jsGet(key, key.hashCode());
+        return jsGet(key, key.hashCode(), hashCodeMap);
     }
 
     private boolean containsAll(NativeHashMap<K, V> map) {
@@ -76,27 +72,31 @@ public class NativeHashMap<K, V> {
 
     public V put(K key, V value) {
         if(hashCodeMap == null)
-            hashCodeMap = JavaScriptObject.createObject();
-        return jsPut(key, value, key.hashCode());
+            hashCodeMap = createMap();
+        return jsPut(key, value, key.hashCode(), hashCodeMap);
     }
+
+    public native JavaScriptObject createMap() /*-{
+        return new Map();
+    }-*/;
 
     public V remove(Object key) {
         if(hashCodeMap == null)
             return null;
 
-        V removed = jsRemove(key, key.hashCode());
+        V removed = jsRemove(key, key.hashCode(), hashCodeMap);
 
-        if(jsIsEmpty())
+        if(jsIsEmpty(hashCodeMap))
             hashCodeMap = null;
         return removed;
     }
 
     public boolean containsKey(Object key) {
-        return hashCodeMap != null && jsContainsKey(key, key.hashCode());
+        return hashCodeMap != null && jsContainsKey(key, key.hashCode(), hashCodeMap);
     }
 
     public boolean containsValue(final Object value) {
-        return hashCodeMap != null && jsContainsValue(value);
+        return hashCodeMap != null && jsContainsValue(value, hashCodeMap);
     }
 
     public boolean isEmpty() {
@@ -116,25 +116,23 @@ public class NativeHashMap<K, V> {
         return ts.join();
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     public void foreachKey(Function<K> f) {
         if(hashCodeMap != null)
-            jsForeachKey(f);
+            jsForeachKey(f, hashCodeMap);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     public void foreachValue(Function<V> f) {
         if(hashCodeMap != null)
-            jsForeachValue(f);
+            jsForeachValue(f, hashCodeMap);
     }
 
     public void foreachEntry(Function2<K, V> f) {
         if(hashCodeMap != null)
-            jsForeachEntry(f);
+            jsForeachEntry(f, hashCodeMap);
     }
 
     public int size() {
-        return jsSize();
+        return jsSize(hashCodeMap);
     }
 
     /**
@@ -153,151 +151,74 @@ public class NativeHashMap<K, V> {
         f.apply(obj1, obj2);
     }
 
-    public native V jsGet(Object key, int hashCode) /*-{
-        var array = this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hashCodeMap[hashCode];
-        if (array) {
-            for (var i = 0, c = array.length; i < c; ++i) {
-                var entry = array[i];
-                if (this.@lsfusion.gwt.client.base.jsni.NativeHashMap::equalsBridge(Ljava/lang/Object;Ljava/lang/Object;)(key, entry[0])) {
-                    return entry[1];
-                }
-            }
+    public native V jsGet(Object key, int hashCode, JavaScriptObject hashCodeMap) /*-{
+        var array = hashCodeMap.get(hashCode);
+        return array && this.@lsfusion.gwt.client.base.jsni.NativeHashMap::equalsBridge(*)(key, array[0]) ? array[1] : null;
+    }-*/;
+
+    private native V jsPut(K key, V value, int hashCode, JavaScriptObject hashCodeMap) /*-{
+        var array = hashCodeMap.get(hashCode);
+        var returnVal;
+        if (array && this.@NativeHashMap::equalsBridge(*)(key, array[0]))
+            returnVal = array[1];
+
+        if (!array || returnVal)
+            this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hashCodeMap.set(hashCode, [key, value]);
+
+        return returnVal;
+    }-*/;
+
+    private native V jsRemove(Object key, int hashCode, JavaScriptObject hashCodeMap) /*-{
+        var array = hashCodeMap.get(hashCode);
+
+        if (array && this.@lsfusion.gwt.client.base.jsni.NativeHashMap::equalsBridge(*)(key, array[0])) {
+            hashCodeMap['delete'](hashCode);
+            return array[1];
         }
+
         return null;
     }-*/;
 
-    private native V jsPut(K key, V value, int hashCode) /*-{
-        var array = this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hashCodeMap[hashCode];
-        if (array) {
-            for (var i = 0, c = array.length; i < c; ++i) {
-                var entry = array[i];
-                if (this.@lsfusion.gwt.client.base.jsni.NativeHashMap::equalsBridge(Ljava/lang/Object;Ljava/lang/Object;)(key, entry[0])) {
-                    // Found an exact match, just update the existing entry
-                    var previous = entry[1];
-                    entry[1] = value;
-                    return previous;
-                }
-            }
-        } else {
-            array = this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hashCodeMap[hashCode] = []
-        }
-
-        array.push([key, value]);
-        return null;
+    private native boolean jsContainsKey(Object key, int hashCode, JavaScriptObject hashCodeMap) /*-{
+        var array = hashCodeMap.get(hashCode);
+        return array && this.@lsfusion.gwt.client.base.jsni.NativeHashMap::equalsBridge(*)(key, array[0]);
     }-*/;
 
-    private native V jsRemove(Object key, int hashCode) /*-{
-        var array = this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hashCodeMap[hashCode];
-        if (array) {
-            for (var i = 0, c = array.length; i < c; ++i) {
-                var entry = array[i];
-                if (this.@lsfusion.gwt.client.base.jsni.NativeHashMap::equalsBridge(Ljava/lang/Object;Ljava/lang/Object;)(key, entry[0])) {
-                    if (array.length == 1) {
-                        // remove the whole array
-                        delete this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hashCodeMap[hashCode];
-                    } else {
-                        array.splice(i, 1)
-                    }
-                    return entry[1]
-                }
-            }
-        }
-        return null;
-    }-*/;
-
-    private native boolean jsContainsKey(Object key, int hashCode) /*-{
-        var array = this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hashCodeMap[hashCode];
-        if (array) {
-            for (var i = 0, c = array.length; i < c; ++i) {
-                if (this.@lsfusion.gwt.client.base.jsni.NativeHashMap::equalsBridge(Ljava/lang/Object;Ljava/lang/Object;)(key, array[i][0])) {
-                    return true;
-                }
-            }
-        }
+    private native boolean jsContainsValue(Object value, JavaScriptObject hashCodeMap) /*-{
+        var thisObj = this;
+        hashCodeMap.values().forEach(function (array) {
+            if (thisObj.@lsfusion.gwt.client.base.jsni.NativeHashMap::equalsBridge(*)(value, array[1]))
+                return true;
+        });
         return false;
     }-*/;
 
-    private native boolean jsContainsValue(Object value) /*-{
-        var hashCodeMap = this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hashCodeMap;
-        for (var hashCode in hashCodeMap) {
-            // sanity check that it's really one of ours
-            var hashCodeInt = parseInt(hashCode, 10);
-            if (hashCode == hashCodeInt) {
-                var array = hashCodeMap[hashCodeInt];
-                for (var i = 0, c = array.length; i < c; ++i) {
-                    if (this.@lsfusion.gwt.client.base.jsni.NativeHashMap::equalsBridge(Ljava/lang/Object;Ljava/lang/Object;)(value, array[i][1])) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
+    private native boolean jsIsEmpty(JavaScriptObject hashCodeMap) /*-{
+        return hashCodeMap.size === 0;
     }-*/;
 
-    private native boolean jsIsEmpty() /*-{
-        var hashCodeMap = this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hashCodeMap;
-        for (var hashCode in hashCodeMap) {
-            // sanity check that it's really one of ours
-            var hashCodeInt = parseInt(hashCode, 10);
-            if (hashCode == hashCodeInt) {
-                var array = hashCodeMap[hashCodeInt];
-                for (var i = 0, c = array.length; i < c; ++i) {
-                    return false;
-                }
-            }
-        }
-        return true;
+    private native void jsForeachKey(Function f, JavaScriptObject hashCodeMap) /*-{
+        var thisObj = this;
+        hashCodeMap.forEach(function (array) {
+            thisObj.@lsfusion.gwt.client.base.jsni.NativeHashMap::bridgeApply(*)(f, array[0]);
+        });
     }-*/;
 
-    private native void jsForeachKey(Function f) /*-{
-        var hashCodeMap = this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hashCodeMap;
-        for (var hashCode in hashCodeMap) {
-            // sanity check that it's really one of ours
-            var hashCodeInt = parseInt(hashCode, 10);
-            if (hashCode == hashCodeInt) {
-                var array = hashCodeMap[hashCodeInt];
-                for (var i = 0, c = array.length; i < c; ++i) {
-                    this.@lsfusion.gwt.client.base.jsni.NativeHashMap::bridgeApply(Llsfusion/gwt/client/base/jsni/Function;Ljava/lang/Object;)(f, array[i][0]);
-                }
-            }
-        }
+    private native void jsForeachValue(Function f, JavaScriptObject hashCodeMap) /*-{
+        var thisObj = this;
+        hashCodeMap.values().forEach(function (array) {
+            thisObj.@lsfusion.gwt.client.base.jsni.NativeHashMap::bridgeApply(*)(f, array[1]);
+        });
     }-*/;
 
-    private native void jsForeachValue(Function f) /*-{
-        var hashCodeMap = this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hashCodeMap;
-        for (var hashCode in hashCodeMap) {
-            // sanity check that it's really one of ours
-            var hashCodeInt = parseInt(hashCode, 10);
-            if (hashCode == hashCodeInt) {
-                var array = hashCodeMap[hashCodeInt];
-                for (var i = 0, c = array.length; i < c; ++i) {
-                    this.@lsfusion.gwt.client.base.jsni.NativeHashMap::bridgeApply(Llsfusion/gwt/client/base/jsni/Function;Ljava/lang/Object;)(f, array[i][1]);
-                }
-            }
-        }
+    private native void jsForeachEntry(Function2 f, JavaScriptObject hashCodeMap) /*-{
+        var thisObj = this;
+        hashCodeMap.values().forEach(function (array) {
+            thisObj.@NativeHashMap::bridgeApply2(*)(f, array[0], array[1]);
+        });
     }-*/;
 
-    private native void jsForeachEntry(Function2 f) /*-{
-        var hashCodeMap = this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hashCodeMap;
-        for (var hashCode in hashCodeMap) {
-            // sanity check that it's really one of ours
-            var hashCodeInt = parseInt(hashCode, 10);
-            if (hashCode == hashCodeInt) {
-                var array = hashCodeMap[hashCodeInt];
-                for (var i = 0, c = array.length; i < c; ++i) {
-                    this.@lsfusion.gwt.client.base.jsni.NativeHashMap::bridgeApply2(Llsfusion/gwt/client/base/jsni/Function2;Ljava/lang/Object;Ljava/lang/Object;)
-                            (f, array[i][0], array[i][1]);
-                }
-            }
-        }
-    }-*/;
-
-    private native int jsSize() /*-{
-        var hashCodeMap = this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hashCodeMap;
-        var size = 0;
-        for (var hashCode in hashCodeMap) {
-            size++;
-        }
-        return size;
+    private native int jsSize(JavaScriptObject hashCodeMap) /*-{
+        return hashCodeMap.size;
     }-*/;
 }

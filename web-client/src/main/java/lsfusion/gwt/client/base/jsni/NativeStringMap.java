@@ -9,23 +9,31 @@ public class NativeStringMap<V> {
     private JavaScriptObject map;
 
     public NativeStringMap() {
-        map = JavaScriptObject.createObject();
+        map = createMap();
     }
 
     public void clear() {
-        map = JavaScriptObject.createObject();
+        map = createMap();
     }
+
+    public native JavaScriptObject createMap() /*-{
+        return new Map();
+    }-*/;
 
     public boolean containsKey(String key) {
         return jsContainsKey(key, map);
     }
 
+    public boolean containsValue(final Object value) {
+        return jsContainsValue(value, map);
+    }
+
     public V get(String key) {
-        return jsGet(key);
+        return jsGet(key, map);
     }
 
     public V put(String key, V value) {
-        return jsPut(key, value);
+        return jsPut(key, value, map);
     }
 
     public void putAll(NativeStringMap<? extends V> m) {
@@ -33,7 +41,7 @@ public class NativeStringMap<V> {
     }
 
     public V remove(String key) {
-        return jsRemove(key);
+        return jsRemove(key, map);
     }
 
     public boolean isEmpty() {
@@ -41,7 +49,7 @@ public class NativeStringMap<V> {
     }
 
     public int size() {
-        return jsSize();
+        return jsSize(map);
     }
 
     public String toString() {
@@ -49,7 +57,7 @@ public class NativeStringMap<V> {
         ts.push("{");
         foreachEntry((key, value) -> {
             ts.push(",");
-            ts.push(key == null ? null : key);
+            ts.push(key);
             ts.push("=");
             ts.push(value == null ? null : value.toString());
         });
@@ -58,19 +66,15 @@ public class NativeStringMap<V> {
     }
 
     public void foreachKey(Function<String> f) {
-        jsForeachKey(f);
+        jsForeachKey(f, map);
     }
 
     public void foreachValue(Function<V> f) {
-        foreach(map, f);
+        jsForeachValue(f, map);
     }
 
     public void foreachEntry(Function2<String, V> f) {
-        jsForeachEntry(f);
-    }
-
-    private <T> void foreach(JavaScriptObject jsMap, Function<T> f) {
-        jsForeach(f, jsMap);
+        jsForeachEntry(f, map);
     }
 
     /**
@@ -89,89 +93,62 @@ public class NativeStringMap<V> {
         f.apply(obj1, obj2);
     }
 
-    // Prepend ':' to avoid conflicts with built-in Object properties.
-    public native V jsGet(String key) /*-{
-        return this.@lsfusion.gwt.client.base.jsni.NativeStringMap::map[':' + key];
+    public native V jsGet(String key, JavaScriptObject map) /*-{
+        return map.get(key);
     }-*/;
 
-    // Prepend ':' to avoid conflicts with built-in Object properties.
-    private native V jsPut(String sKey, V value) /*-{
-        sKey = ':' + sKey;
-
-        var map = this.@lsfusion.gwt.client.base.jsni.NativeStringMap::map;
-
-        var previous = map[sKey];
-        map[sKey] = value;
+    private native V jsPut(String sKey, V value, JavaScriptObject map) /*-{
+        var previous = map.get(sKey);
+        map.set(sKey, value);
         return previous;
     }-*/;
 
-    // only count keys with ':' prefix
-    public native int jsSize() /*-{
-        var map = this.@lsfusion.gwt.client.base.jsni.NativeStringMap::map;
-        var count = 0;
-        for(var key in map) {
-            if (key.charCodeAt(0) == 58) ++count;
-        }
-        return count;
+    public native int jsSize(JavaScriptObject map) /*-{
+        return map.size;
     }-*/;
 
-    // Prepend ':' to avoid conflicts with built-in Object properties.
-    private native V jsRemove(String sKey) /*-{
-        sKey = ':' + sKey;
-
-        var map = this.@lsfusion.gwt.client.base.jsni.NativeStringMap::map;
-
-        var previous = map[sKey];
-        delete map[sKey];
-
+    private native V jsRemove(String sKey, JavaScriptObject map) /*-{
+        var previous = map.get(sKey);
+        map['delete'](sKey);
         return previous;
     }-*/;
 
-    // Prepend ':' to avoid conflicts with built-in Object properties.
     private native boolean jsContainsKey(String key, JavaScriptObject map) /*-{
-        return (':' + key) in map;
-    }-*/;
-
-    // Prepend ':' to avoid conflicts with built-in Object properties.
-    private native boolean jsContainsValue(Object value, JavaScriptObject map) /*-{
-        for (var sKey in map) {
-            if (sKey.charCodeAt(0) == 58) {
-                var entryValue = map[sKey];
-                if (this.@lsfusion.gwt.client.base.jsni.NativeStringMap::equalsBridge(Ljava/lang/Object;Ljava/lang/Object;)(value, entryValue)) {
-                    return true;
-                }
-            }
-        }
+        var thisObj = this;
+        map.keys().forEach(function (mapKey) {
+            if (thisObj.@lsfusion.gwt.client.base.jsni.NativeStringMap::equalsBridge(*)(mapKey, key))
+                return true;
+        });
         return false;
     }-*/;
 
-    // only iterate keys with ':' prefix
-    private native void jsForeachKey(Function f) /*-{
-        var map = this.@lsfusion.gwt.client.base.jsni.NativeStringMap::map;
-        for (var sKey in map) {
-            if (sKey.charCodeAt(0) == 58) {
-                this.@lsfusion.gwt.client.base.jsni.NativeStringMap::bridgeApply(Llsfusion/gwt/client/base/jsni/Function;Ljava/lang/Object;)(f, sKey.substr(1));
-            }
-        }
+    private native boolean jsContainsValue(Object value, JavaScriptObject map) /*-{
+        var thisObj = this;
+        map.values().forEach(function (mapValue) {
+            if (thisObj.@lsfusion.gwt.client.base.jsni.NativeStringMap::equalsBridge(*)(mapValue, value))
+                return true;
+        });
+        return false;
     }-*/;
 
-    // only iterate keys with ':' prefix
-    private native void jsForeach(Function f, JavaScriptObject map) /*-{
-        for (var sKey in map) {
-            if (sKey.charCodeAt(0) == 58) {
-                this.@lsfusion.gwt.client.base.jsni.NativeStringMap::bridgeApply(Llsfusion/gwt/client/base/jsni/Function;Ljava/lang/Object;)(f, map[sKey]);
-            }
-        }
+    private native void jsForeachKey(Function f, JavaScriptObject map) /*-{
+        var thisObj = this;
+        map.keys().forEach(function (mapKey) {
+            thisObj.@lsfusion.gwt.client.base.jsni.NativeStringMap::bridgeApply(*)(f, mapKey);
+        });
     }-*/;
 
-    // only iterate keys with ':' prefix
-    private native void jsForeachEntry(Function2 f) /*-{
-        var map = this.@lsfusion.gwt.client.base.jsni.NativeStringMap::map;
-        for (var sKey in map) {
-            if (sKey.charCodeAt(0) == 58) {
-                this.@lsfusion.gwt.client.base.jsni.NativeStringMap::bridgeApply2(Llsfusion/gwt/client/base/jsni/Function2;Ljava/lang/Object;Ljava/lang/Object;)
-                (f, sKey.substr(1), map[sKey]);
-            }
-        }
+    private native void jsForeachValue(Function f, JavaScriptObject map) /*-{
+        var thisObj = this;
+        map.values().forEach(function (value) {
+            thisObj.@lsfusion.gwt.client.base.jsni.NativeStringMap::bridgeApply(*)(f, value);
+        });
+    }-*/;
+
+    private native void jsForeachEntry(Function2 f, JavaScriptObject map) /*-{
+        var thisObj = this;
+        map.forEach(function (value, key) {
+            thisObj.@lsfusion.gwt.client.base.jsni.NativeStringMap::bridgeApply2(*)(f, key, value);
+        });
     }-*/;
 }

@@ -6,8 +6,7 @@ import com.google.gwt.core.client.JsArrayString;
 
 public class NativeSIDMap<K extends HasNativeSID, V> {
 
-    private JavaScriptObject keyMap;
-    private JavaScriptObject valueMap;
+    private JavaScriptObject nativeSIDMap;
 
     public NativeSIDMap() {
         init();
@@ -18,24 +17,27 @@ public class NativeSIDMap<K extends HasNativeSID, V> {
     }
 
     private void init() {
-        keyMap = JavaScriptObject.createObject();
-        valueMap = JavaScriptObject.createObject();
+        nativeSIDMap = createMap();
     }
 
+    public native JavaScriptObject createMap() /*-{
+        return new Map();
+    }-*/;
+
     public boolean containsKey(K key) {
-        return jsContainsKey(key.getNativeSID(), keyMap);
+        return jsContainsKey(key.getNativeSID(), nativeSIDMap);
     }
 
     public boolean containsValue(final Object val) {
-        return jsContainsValue(val, valueMap);
+        return jsContainsValue(val, nativeSIDMap);
     }
 
     public V get(K key) {
-        return jsGet(key.getNativeSID());
+        return jsGet(key.getNativeSID(), nativeSIDMap);
     }
 
     public V put(K key, V value) {
-        return jsPut(key.getNativeSID(), key, value);
+        return jsPut(key.getNativeSID(), key, value, nativeSIDMap);
     }
 
     public void putAll(NativeSIDMap<? extends K, ? extends V> m) {
@@ -43,7 +45,7 @@ public class NativeSIDMap<K extends HasNativeSID, V> {
     }
 
     public V remove(K key) {
-        return jsRemove(key.getNativeSID());
+        return jsRemove(key.getNativeSID(), nativeSIDMap);
     }
 
     public boolean isEmpty() {
@@ -51,11 +53,11 @@ public class NativeSIDMap<K extends HasNativeSID, V> {
     }
 
     public int size() {
-        return jsSize();
+        return jsSize(nativeSIDMap);
     }
 
     public K singleKey() {
-        return jsSingleKey(valueMap);
+        return jsSingleKey(nativeSIDMap);
     }
 
     public String toString() {
@@ -85,19 +87,15 @@ public class NativeSIDMap<K extends HasNativeSID, V> {
     }
 
     public void foreachKey(Function<K> f) {
-        foreach(keyMap, f);
+        jsForeachKey(f, nativeSIDMap);
     }
 
     public void foreachValue(Function<V> f) {
-        foreach(valueMap, f);
+        jsForeachValue(f, nativeSIDMap);
     }
 
     public void foreachEntry(Function2<K, V> f) {
-        jsForeachEntry(f);
-    }
-
-    private <T> void foreach(JavaScriptObject jsMap, Function<T> f) {
-        jsForeach(f, jsMap);
+        jsForeachEntry(f, nativeSIDMap);
     }
 
     /**
@@ -116,95 +114,73 @@ public class NativeSIDMap<K extends HasNativeSID, V> {
         f.apply(obj1, obj2);
     }
 
-    // Prepend ':' to avoid conflicts with built-in Object properties.
-    public native V jsGet(String key) /*-{
-        return this.@lsfusion.gwt.client.base.jsni.NativeSIDMap::valueMap[':' + key];
+    public native V jsGet(String key, JavaScriptObject nativeSIDMap) /*-{
+        var array = nativeSIDMap.get(key);
+        return array ? array[1] : null;
     }-*/;
 
-    // Prepend ':' to avoid conflicts with built-in Object properties.
-    private native V jsPut(String sKey, K key, V value) /*-{
-        sKey = ':' + sKey;
+    private native V jsPut(String sKey, K key, V value, JavaScriptObject nativeSIDMap) /*-{
+        var array = nativeSIDMap.get(sKey);
+        var returnVal;
+        if (array)
+            returnVal = array[1];
 
-        var keyMap = this.@lsfusion.gwt.client.base.jsni.NativeSIDMap::keyMap;
-        var valueMap = this.@lsfusion.gwt.client.base.jsni.NativeSIDMap::valueMap;
+        if (!array || returnVal)
+            this.@lsfusion.gwt.client.base.jsni.NativeSIDMap::nativeSIDMap.set(sKey, [key, value]);
 
-        var previous = valueMap[sKey];
-
-        keyMap[sKey] = key;
-        valueMap[sKey] = value;
-
-        return previous;
+        return returnVal;
     }-*/;
 
-    // only count keys with ':' prefix
-    public native int jsSize() /*-{
-        var value = this.@lsfusion.gwt.client.base.jsni.NativeSIDMap::keyMap;
-        var count = 0;
-        for(var key in value) {
-            if (key.charCodeAt(0) == 58) ++count;
+    public native int jsSize(JavaScriptObject nativeSIDMap) /*-{
+        return nativeSIDMap.size;
+    }-*/;
+
+    private native V jsRemove(String sKey, JavaScriptObject nativeSIDMap) /*-{
+        var array = nativeSIDMap.get(key);
+
+        if (array) {
+            nativeSIDMap['delete'](key);
+            return array[1];
         }
-        return count;
-    }-*/;
 
-    // Prepend ':' to avoid conflicts with built-in Object properties.
-    private native V jsRemove(String sKey) /*-{
-        sKey = ':' + sKey;
-
-        var keyMap = this.@lsfusion.gwt.client.base.jsni.NativeSIDMap::keyMap;
-        var valueMap = this.@lsfusion.gwt.client.base.jsni.NativeSIDMap::valueMap;
-
-        var previous = valueMap[sKey];
-        delete valueMap[sKey];
-        delete keyMap[sKey];
-
-        return previous;
-    }-*/;
-
-    // Prepend ':' to avoid conflicts with built-in Object properties.
-    private native boolean jsContainsKey(String key, JavaScriptObject keyMap) /*-{
-        return (':' + key) in keyMap;
-    }-*/;
-
-    // Prepend ':' to avoid conflicts with built-in Object properties.
-    private native boolean jsContainsValue(Object value, JavaScriptObject valueMap) /*-{
-        for (var sKey in valueMap) {
-            if (sKey.charCodeAt(0) == 58) {
-                var entryValue = valueMap[sKey];
-                if (this.@lsfusion.gwt.client.base.jsni.NativeSIDMap::equalsBridge(Ljava/lang/Object;Ljava/lang/Object;)(value, entryValue)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }-*/;
-
-    // Prepend ':' to avoid conflicts with built-in Object properties.
-    private native K jsSingleKey(JavaScriptObject valueMap) /*-{
-        for (var sKey in valueMap) {
-            if (sKey.charCodeAt(0) == 58)
-                return sKey;
-        }
         return null;
     }-*/;
 
-    // only iterate keys with ':' prefix
-    private native void jsForeach(Function f, JavaScriptObject map) /*-{
-        for (var sKey in map) {
-            if (sKey.charCodeAt(0) == 58) {
-                this.@lsfusion.gwt.client.base.jsni.NativeSIDMap::bridgeApply(Llsfusion/gwt/client/base/jsni/Function;Ljava/lang/Object;)(f, map[sKey]);
-            }
-        }
+    private native boolean jsContainsKey(String key, JavaScriptObject nativeSIDMap) /*-{
+        return  nativeSIDMap.has(key);
     }-*/;
 
-    // only iterate keys with ':' prefix
-    private native void jsForeachEntry(Function2 f) /*-{
-        var keyMap = this.@lsfusion.gwt.client.base.jsni.NativeSIDMap::keyMap;
-        var valueMap = this.@lsfusion.gwt.client.base.jsni.NativeSIDMap::valueMap;
-        for (var sKey in keyMap) {
-            if (sKey.charCodeAt(0) == 58) {
-                this.@lsfusion.gwt.client.base.jsni.NativeSIDMap::bridgeApply2(Llsfusion/gwt/client/base/jsni/Function2;Ljava/lang/Object;Ljava/lang/Object;)
-                        (f, keyMap[sKey], valueMap[sKey]);
-            }
-        }
+    private native boolean jsContainsValue(Object value, JavaScriptObject nativeSIDMap) /*-{
+        var thisObj = this;
+        nativeSIDMap.values().forEach(function (array) {
+            if (thisObj.@lsfusion.gwt.client.base.jsni.NativeSIDMap::equalsBridge(*)(value, array[1]))
+                return true;
+        });
+        return false;
+    }-*/;
+
+    private native K jsSingleKey(JavaScriptObject nativeSIDMap) /*-{
+        return nativeSIDMap.keys().next().value;
+    }-*/;
+
+    private native void jsForeachKey(Function f, JavaScriptObject nativeSIDMap) /*-{
+        var thisObj = this;
+        nativeSIDMap.forEach(function (array) {
+            thisObj.@lsfusion.gwt.client.base.jsni.NativeSIDMap::bridgeApply(*)(f, array[0]);
+        });
+    }-*/;
+
+    private native void jsForeachValue(Function f, JavaScriptObject nativeSIDMap) /*-{
+        var thisObj = this;
+        nativeSIDMap.values().forEach(function (array) {
+            thisObj.@lsfusion.gwt.client.base.jsni.NativeSIDMap::bridgeApply(*)(f, array[1]);
+        });
+    }-*/;
+
+    private native void jsForeachEntry(Function2 f, JavaScriptObject nativeSIDMap) /*-{
+        var thisObj = this;
+        nativeSIDMap.values().forEach(function (array) {
+            thisObj.@NativeSIDMap::bridgeApply2(*)(f, array[0], array[1]);
+        });
     }-*/;
 }
