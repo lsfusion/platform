@@ -1625,4 +1625,11 @@ public class GwtClientUtils {
     public static native boolean hasProperty(JavaScriptObject object, String property)/*-{
         return !!object[property];
     }-*/;
+
+    public static native void setAttributeOrStyle(Element element, String attribute, String value)/*-{
+        $wnd.setAttributeOrStyle(element, attribute, value);
+    }-*/;
+    public static native void removeAttributeOrStyle(Element element, String attribute) /*-{
+        $wnd.removeAttributeOrStyle(element, attribute);
+    }-*/;
 }

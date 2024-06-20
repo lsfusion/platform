@@ -370,3 +370,18 @@ function requestPushNotificationPermissions() {
         console.warn(error)
     }
 }
+
+
+function setAttributeOrStyle(element, attribute, value) {
+    if (attribute in element.style)
+        element.style.setProperty(attribute, value);
+    else
+        element.setAttribute(attribute, value)
+
+}
+function removeAttributeOrStyle(element, attribute, value) {
+    if (attribute in element.style)
+        element.style.removeProperty(attribute, value);
+    else
+        element.removeAttribute(attribute, value)
+}

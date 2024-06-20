@@ -145,11 +145,13 @@ public interface BaseImage extends Serializable {
                 else
                     element.removeClassName(aclass);
 
-            } else { //attr
+            } else { //attr or style
                 if (value != null)
-                    element.setAttribute(aclass, (String) value);
+                    GwtClientUtils.setAttributeOrStyle(element, aclass, ((String)value));
+//                    element.setAttribute(aclass, (String) value);
                 else
-                    element.removeAttribute(aclass);
+                    GwtClientUtils.removeAttributeOrStyle(element, aclass);
+//                    element.removeAttribute(aclass);
             }
         }
     }
