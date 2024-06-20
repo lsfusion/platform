@@ -5101,11 +5101,10 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public static class NavigatorElementOptions {
-        public String imagePath;
         ComplexLocation<NavigatorElement> location;
         public String windowName;
         public boolean parentWindow;
-        public LPWithParams imageProperty;
+        public ImageOption imageOption;
         public LPWithParams headerProperty;
 
         public LPWithParams elementClassProperty;
@@ -5197,7 +5196,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public void applyNavigatorElementOptions(NavigatorElement element, NavigatorElement parent, NavigatorElementOptions options, boolean isEditOperation) throws ScriptingErrorLog.SemanticErrorException {
         setNavigatorElementWindow(element, options.windowName, options.parentWindow);
-        setNavigatorElementImage(element, options.imageProperty != null ? options.imageProperty.getLP().property : null, options.imagePath);
+        setNavigatorElementImage(element, options.imageOption);
         setNavigatorElementClass(element, options.elementClassProperty != null ? options.elementClassProperty.getLP().property : null, options.elementClass);
         setNavigatorElementHeader(element, options.headerProperty != null ? options.headerProperty.getLP().property : null);
 
@@ -5228,11 +5227,41 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void setNavigatorElementImage(NavigatorElement element, Property imageProperty, String imagePath) {
-        if(imageProperty != null)
-            element.setPropertyImage(imageProperty);
-        if (imagePath != null)
-            element.setImage(imagePath);
+    public static class ImageOption {
+        public String imagePath;
+        public LPWithParams imageLP;
+        
+        public boolean hasImage;
+        
+        public ImageOption(String imagePath) {
+            this.imagePath = imagePath;
+            this.hasImage = true;
+        }
+        
+        public ImageOption(LPWithParams imageLP) {
+            this.imageLP = imageLP;
+            this.hasImage = true;
+        }
+        
+        public ImageOption(boolean hasImage) {
+            this.hasImage = hasImage;
+        }
+    }
+    
+    public void setNavigatorElementImage(NavigatorElement element, ImageOption imageOption) {
+        if (imageOption == null) return;
+        assert imageOption.imageLP == null || imageOption.imagePath == null;
+        
+        element.setPropertyImage(null);
+        element.setImage(AppServerImage.AUTO);
+        
+        if (!imageOption.hasImage) {
+            element.setImage(AppServerImage.NULL);
+        } else if (imageOption.imageLP != null) {
+            element.setPropertyImage(imageOption.imageLP.getLP().property);
+        } else if (imageOption.imagePath != null) {
+            element.setImage(imageOption.imagePath);
+        }
     }
 
     public void setNavigatorElementClass(NavigatorElement element, Property elementClassProperty, String elementClass) {

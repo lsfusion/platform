@@ -5012,13 +5012,13 @@ navigatorElementOptions returns [NavigatorElementOptions options]
 	|	('IMAGE' (image=propertyExpressionOrLiteral[null])? {
 	        if (inMainParseState()) {
 	            if($image.literal != null && $image.literal.value instanceof LocalizedString) {
-	                $options.imagePath = ((LocalizedString) $image.literal.value).toString();
+	                $options.imageOption = new ImageOption(((LocalizedString) $image.literal.value).toString());
 	            } else if($image.property != null) {
-	                $options.imageProperty = $image.property;
+	                $options.imageOption = new ImageOption($image.property);
 	            } else
-	                $options.imagePath = AppServerImage.AUTO;
+	                $options.imageOption = new ImageOption(true);
 	        }
-	    } | 'NOIMAGE' { $options.imagePath = AppServerImage.NULL; } )
+	    } | 'NOIMAGE' { $options.imageOption = new ImageOption(false); } )
 	|	'CLASS' aclass = propertyExpressionOrLiteral[null] {
 	        if (inMainParseState()) {
 	            if($aclass.literal != null && $aclass.literal.value instanceof LocalizedString) {
