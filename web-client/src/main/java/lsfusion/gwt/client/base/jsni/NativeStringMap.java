@@ -6,14 +6,18 @@ import com.google.gwt.core.client.JsArrayString;
 
 public class NativeStringMap<V> {
 
-    private JavaScriptObject map;
+    private JavaScriptObject nativeStringMap;
 
     public NativeStringMap() {
-        map = createMap();
+        init();
     }
 
     public void clear() {
-        map = createMap();
+        init();
+    }
+
+    private void init() {
+        nativeStringMap = createMap();
     }
 
     public native JavaScriptObject createMap() /*-{
@@ -21,19 +25,19 @@ public class NativeStringMap<V> {
     }-*/;
 
     public boolean containsKey(String key) {
-        return jsContainsKey(key, map);
+        return jsContainsKey(key);
     }
 
     public boolean containsValue(final Object value) {
-        return jsContainsValue(value, map);
+        return jsContainsValue(value);
     }
 
     public V get(String key) {
-        return jsGet(key, map);
+        return jsGet(key);
     }
 
     public V put(String key, V value) {
-        return jsPut(key, value, map);
+        return jsPut(key, value);
     }
 
     public void putAll(NativeStringMap<? extends V> m) {
@@ -41,7 +45,7 @@ public class NativeStringMap<V> {
     }
 
     public V remove(String key) {
-        return jsRemove(key, map);
+        return jsRemove(key);
     }
 
     public boolean isEmpty() {
@@ -49,7 +53,7 @@ public class NativeStringMap<V> {
     }
 
     public int size() {
-        return jsSize(map);
+        return jsSize();
     }
 
     public String toString() {
@@ -66,15 +70,15 @@ public class NativeStringMap<V> {
     }
 
     public void foreachKey(Function<String> f) {
-        jsForeachKey(f, map);
+        jsForeachKey(f);
     }
 
     public void foreachValue(Function<V> f) {
-        jsForeachValue(f, map);
+        jsForeachValue(f);
     }
 
     public void foreachEntry(Function2<String, V> f) {
-        jsForeachEntry(f, map);
+        jsForeachEntry(f);
     }
 
     /**
@@ -93,62 +97,59 @@ public class NativeStringMap<V> {
         f.apply(obj1, obj2);
     }
 
-    public native V jsGet(String key, JavaScriptObject map) /*-{
-        return map.get(key);
+    public native V jsGet(String key) /*-{
+        return this.@NativeStringMap::nativeStringMap.get(key);
     }-*/;
 
-    private native V jsPut(String sKey, V value, JavaScriptObject map) /*-{
-        var previous = map.get(sKey);
-        map.set(sKey, value);
+    private native V jsPut(String sKey, V value) /*-{
+        var nativeStringMap = this.@NativeStringMap::nativeStringMap;
+        var previous = nativeStringMap.get(sKey);
+        nativeStringMap.set(sKey, value);
         return previous;
     }-*/;
 
-    public native int jsSize(JavaScriptObject map) /*-{
-        return map.size;
+    public native int jsSize() /*-{
+        return this.@NativeStringMap::nativeStringMap.size;
     }-*/;
 
-    private native V jsRemove(String sKey, JavaScriptObject map) /*-{
-        var previous = map.get(sKey);
-        map['delete'](sKey);
+    private native V jsRemove(String sKey) /*-{
+        var nativeStringMap = this.@NativeStringMap::nativeStringMap;
+        var previous = nativeStringMap.get(sKey);
+        nativeStringMap['delete'](sKey);
         return previous;
     }-*/;
 
-    private native boolean jsContainsKey(String key, JavaScriptObject map) /*-{
+    private native boolean jsContainsKey(String key) /*-{
+        return this.@NativeStringMap::nativeStringMap.has(key);
+    }-*/;
+
+    private native boolean jsContainsValue(Object value) /*-{
         var thisObj = this;
-        map.keys().forEach(function (mapKey) {
-            if (thisObj.@lsfusion.gwt.client.base.jsni.NativeStringMap::equalsBridge(*)(mapKey, key))
+        thisObj.@NativeStringMap::nativeStringMap.forEach(function (mapValue) {
+            if (thisObj.@NativeStringMap::equalsBridge(*)(mapValue, value))
                 return true;
         });
         return false;
     }-*/;
 
-    private native boolean jsContainsValue(Object value, JavaScriptObject map) /*-{
+    private native void jsForeachKey(Function f) /*-{
         var thisObj = this;
-        map.values().forEach(function (mapValue) {
-            if (thisObj.@lsfusion.gwt.client.base.jsni.NativeStringMap::equalsBridge(*)(mapValue, value))
-                return true;
-        });
-        return false;
-    }-*/;
-
-    private native void jsForeachKey(Function f, JavaScriptObject map) /*-{
-        var thisObj = this;
-        map.keys().forEach(function (mapKey) {
-            thisObj.@lsfusion.gwt.client.base.jsni.NativeStringMap::bridgeApply(*)(f, mapKey);
+        thisObj.@NativeStringMap::nativeStringMap.forEach(function (value, mapKey) {
+            thisObj.@NativeStringMap::bridgeApply(*)(f, mapKey);
         });
     }-*/;
 
-    private native void jsForeachValue(Function f, JavaScriptObject map) /*-{
+    private native void jsForeachValue(Function f) /*-{
         var thisObj = this;
-        map.values().forEach(function (value) {
-            thisObj.@lsfusion.gwt.client.base.jsni.NativeStringMap::bridgeApply(*)(f, value);
+        thisObj.@NativeStringMap::nativeStringMap.forEach(function (value) {
+            thisObj.@NativeStringMap::bridgeApply(*)(f, value);
         });
     }-*/;
 
-    private native void jsForeachEntry(Function2 f, JavaScriptObject map) /*-{
+    private native void jsForeachEntry(Function2 f) /*-{
         var thisObj = this;
-        map.forEach(function (value, key) {
-            thisObj.@lsfusion.gwt.client.base.jsni.NativeStringMap::bridgeApply2(*)(f, key, value);
+        thisObj.@NativeStringMap::nativeStringMap.forEach(function (value, key) {
+            thisObj.@NativeStringMap::bridgeApply2(*)(f, key, value);
         });
     }-*/;
 }

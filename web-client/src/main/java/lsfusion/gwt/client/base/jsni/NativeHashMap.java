@@ -39,7 +39,7 @@ public class NativeHashMap<K, V> {
     public V get(K key) {
         if(hashCodeMap == null)
             return null;
-        return jsGet(key, key.hashCode(), hashCodeMap);
+        return jsGet(key, key.hashCode());
     }
 
     private boolean containsAll(NativeHashMap<K, V> map) {
@@ -73,7 +73,7 @@ public class NativeHashMap<K, V> {
     public V put(K key, V value) {
         if(hashCodeMap == null)
             hashCodeMap = createMap();
-        return jsPut(key, value, key.hashCode(), hashCodeMap);
+        return jsPut(key, value, key.hashCode());
     }
 
     public native JavaScriptObject createMap() /*-{
@@ -84,7 +84,7 @@ public class NativeHashMap<K, V> {
         if(hashCodeMap == null)
             return null;
 
-        V removed = jsRemove(key, key.hashCode(), hashCodeMap);
+        V removed = jsRemove(key, key.hashCode());
 
         if(jsIsEmpty(hashCodeMap))
             hashCodeMap = null;
@@ -92,11 +92,11 @@ public class NativeHashMap<K, V> {
     }
 
     public boolean containsKey(Object key) {
-        return hashCodeMap != null && jsContainsKey(key, key.hashCode(), hashCodeMap);
+        return hashCodeMap != null && jsContainsKey(key, key.hashCode());
     }
 
     public boolean containsValue(final Object value) {
-        return hashCodeMap != null && jsContainsValue(value, hashCodeMap);
+        return hashCodeMap != null && jsContainsValue(value);
     }
 
     public boolean isEmpty() {
@@ -118,21 +118,21 @@ public class NativeHashMap<K, V> {
 
     public void foreachKey(Function<K> f) {
         if(hashCodeMap != null)
-            jsForeachKey(f, hashCodeMap);
+            jsForeachKey(f);
     }
 
     public void foreachValue(Function<V> f) {
         if(hashCodeMap != null)
-            jsForeachValue(f, hashCodeMap);
+            jsForeachValue(f);
     }
 
     public void foreachEntry(Function2<K, V> f) {
         if(hashCodeMap != null)
-            jsForeachEntry(f, hashCodeMap);
+            jsForeachEntry(f);
     }
 
     public int size() {
-        return jsSize(hashCodeMap);
+        return jsSize();
     }
 
     /**
@@ -151,44 +151,75 @@ public class NativeHashMap<K, V> {
         f.apply(obj1, obj2);
     }
 
-    public native V jsGet(Object key, int hashCode, JavaScriptObject hashCodeMap) /*-{
-        var array = hashCodeMap.get(hashCode);
-        return array && this.@lsfusion.gwt.client.base.jsni.NativeHashMap::equalsBridge(*)(key, array[0]) ? array[1] : null;
-    }-*/;
-
-    private native V jsPut(K key, V value, int hashCode, JavaScriptObject hashCodeMap) /*-{
-        var array = hashCodeMap.get(hashCode);
-        var returnVal;
-        if (array && this.@NativeHashMap::equalsBridge(*)(key, array[0]))
-            returnVal = array[1];
-
-        if (!array || returnVal)
-            this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hashCodeMap.set(hashCode, [key, value]);
-
-        return returnVal;
-    }-*/;
-
-    private native V jsRemove(Object key, int hashCode, JavaScriptObject hashCodeMap) /*-{
-        var array = hashCodeMap.get(hashCode);
-
-        if (array && this.@lsfusion.gwt.client.base.jsni.NativeHashMap::equalsBridge(*)(key, array[0])) {
-            hashCodeMap['delete'](hashCode);
-            return array[1];
+    public native V jsGet(Object key, int hashCode) /*-{
+        var array = this.@NativeHashMap::hashCodeMap.get(hashCode);
+        if (array) {
+            for (var i = 0, c = array.length; i < c; ++i) {
+                var entry = array[i];
+                if (this.@NativeHashMap::equalsBridge(*)(key, entry[0]))
+                    return entry[1];
+            }
         }
-
         return null;
     }-*/;
 
-    private native boolean jsContainsKey(Object key, int hashCode, JavaScriptObject hashCodeMap) /*-{
-        var array = hashCodeMap.get(hashCode);
-        return array && this.@lsfusion.gwt.client.base.jsni.NativeHashMap::equalsBridge(*)(key, array[0]);
+    private native V jsPut(K key, V value, int hashCode) /*-{
+        var array = this.@NativeHashMap::hashCodeMap.get(hashCode);
+        if (array) {
+            for (var i = 0, c = array.length; i < c; ++i) {
+                var entry = array[i];
+                if (this.@NativeHashMap::equalsBridge(*)(key, entry[0])) {
+                    // Found an exact match, just update the existing entry
+                    var previous = entry[1];
+                    entry[1] = value;
+                    return previous;
+                }
+            }
+        } else {
+            array = this.@NativeHashMap::hashCodeMap.set(hashCode, []).get(hashCode);
+        }
+
+        array.push([key, value]);
+        return null;
     }-*/;
 
-    private native boolean jsContainsValue(Object value, JavaScriptObject hashCodeMap) /*-{
+    private native V jsRemove(Object key, int hashCode) /*-{
+        var array = this.@NativeHashMap::hashCodeMap.get(hashCode);
+        if (array) {
+            for (var i = 0, c = array.length; i < c; ++i) {
+                var entry = array[i];
+                if (this.@NativeHashMap::equalsBridge(*)(key, entry[0])) {
+                    if (array.length == 1) {
+                        // remove the whole array
+                        this.@NativeHashMap::hashCodeMap['delete'](hashCode);
+                    } else {
+                        array.splice(i, 1)
+                    }
+                    return entry[1]
+                }
+            }
+        }
+        return null;
+    }-*/;
+
+    private native boolean jsContainsKey(Object key, int hashCode) /*-{
+        var array = this.@NativeHashMap::hashCodeMap.get(hashCode);
+        if (array) {
+            for (var i = 0, c = array.length; i < c; ++i) {
+                if (this.@NativeHashMap::equalsBridge(*)(key, array[i][0]))
+                    return true;
+            }
+        }
+        return false;
+    }-*/;
+
+    private native boolean jsContainsValue(Object value) /*-{
         var thisObj = this;
-        hashCodeMap.values().forEach(function (array) {
-            if (thisObj.@lsfusion.gwt.client.base.jsni.NativeHashMap::equalsBridge(*)(value, array[1]))
-                return true;
+        thisObj.@NativeHashMap::hashCodeMap.forEach(function (array) {
+            for (var i = 0, c = array.length; i < c; ++i) {
+                if (thisObj.@NativeHashMap::equalsBridge(*)(value, array[i][1]))
+                    return true;
+            }
         });
         return false;
     }-*/;
@@ -197,28 +228,34 @@ public class NativeHashMap<K, V> {
         return hashCodeMap.size === 0;
     }-*/;
 
-    private native void jsForeachKey(Function f, JavaScriptObject hashCodeMap) /*-{
+    private native void jsForeachKey(Function f) /*-{
         var thisObj = this;
-        hashCodeMap.forEach(function (array) {
-            thisObj.@lsfusion.gwt.client.base.jsni.NativeHashMap::bridgeApply(*)(f, array[0]);
+        thisObj.@NativeHashMap::hashCodeMap.forEach(function (array) {
+            for (var i = 0, c = array.length; i < c; ++i) {
+                thisObj.@NativeHashMap::bridgeApply(*)(f, array[i][0]);
+            }
         });
     }-*/;
 
-    private native void jsForeachValue(Function f, JavaScriptObject hashCodeMap) /*-{
+    private native void jsForeachValue(Function f) /*-{
         var thisObj = this;
-        hashCodeMap.values().forEach(function (array) {
-            thisObj.@lsfusion.gwt.client.base.jsni.NativeHashMap::bridgeApply(*)(f, array[1]);
+        thisObj.@NativeHashMap::hashCodeMap.forEach(function (array) {
+            for (var i = 0, c = array.length; i < c; ++i) {
+                thisObj.@NativeHashMap::bridgeApply(*)(f, array[i][1]);
+            }
         });
     }-*/;
 
-    private native void jsForeachEntry(Function2 f, JavaScriptObject hashCodeMap) /*-{
+    private native void jsForeachEntry(Function2 f) /*-{
         var thisObj = this;
-        hashCodeMap.values().forEach(function (array) {
-            thisObj.@NativeHashMap::bridgeApply2(*)(f, array[0], array[1]);
+        thisObj.@NativeHashMap::hashCodeMap.forEach(function (array) {
+            for (var i = 0, c = array.length; i < c; ++i) {
+                thisObj.@NativeHashMap::bridgeApply2(*)(f, array[i][0], array[i][1]);
+            }
         });
     }-*/;
 
-    private native int jsSize(JavaScriptObject hashCodeMap) /*-{
-        return hashCodeMap.size;
+    private native int jsSize() /*-{
+        return this.@NativeHashMap::hashCodeMap.size;
     }-*/;
 }
