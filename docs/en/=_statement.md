@@ -9,16 +9,20 @@ The `=` statement creates a new [property](Properties.md).
 ```
 name [caption] [(param1, ..., paramN)] = expression [options];
 name [caption] [(param1, ..., paramN)] = contextIndependentOperator [options];
+
+name [caption] [(param1, ..., paramN)] = NATIVE returnClass (argClass1, ..., argClassM) [options];
 ```
 
 ### Description
 
 The `=` statement declares a new property and adds it to the current [module](Modules.md).
 
-When creating a property, the statement has two forms:
+When creating a property, the statement has two main forms:
 
 - The first form describes and creates a property using an [expression](Expression.md). 
 - The second form describes the property using one of the [context-independent](Property_operators.md#contextindependent) [property operators](Property_operators.md) that cannot be part of an expression.
+
+The third form with the keyword `NATIVE` is used in some system modules. It is used to declare individual system properties that are created before the modules are initialized.
 
 When declaring a property, its set of options can also be specified.   
 
@@ -49,6 +53,14 @@ When declaring a property, its set of options can also be specified.
 - `options`
 
     [Property options](Property_options.md). 
+
+- `returnClass`
+
+    [Class ID](IDs.md#classid) of the property's return value.
+
+- `argClass1, ..., argClassM`
+
+    List of class IDs for the property's arguments.
 
 ### Examples
 
