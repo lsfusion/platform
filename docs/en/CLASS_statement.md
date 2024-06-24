@@ -9,7 +9,7 @@ title: 'CLASS statement'
 ```
 CLASS ABSTRACT name [caption] [: parent1, ..., parentN];
  
-CLASS name [caption] 
+CLASS [NATIVE] name [caption] 
 [{
     objectName1 [objectCaption1],
     ...
@@ -22,7 +22,9 @@ CLASS name [caption]
 
 The `CLASS` statement declares a new class and adds it to the current [module](Modules.md). 
 
-The statement has two forms:  `CLASS ABSTRACT` for declaring an [abstract class](User_classes.md#abstract) and just `CLASS` for declaring a concrete class. In the latter case, during declaration, you can declare the [static objects](Static_objects.md)  of this class and specify their names and captions in a curly brackets block.   
+The statement has two forms: `CLASS ABSTRACT` for declaring an [abstract class](User_classes.md#abstract) and just `CLASS` for declaring a concrete class. In the latter case, during declaration, you can declare the [static objects](Static_objects.md) of this class and specify their names and captions in a curly brackets block.   
+
+The `NATIVE` keyword is used in some system modules. It is used to declare individual system classes that are created before the modules are initialized.
 
 ### Parameters
 
