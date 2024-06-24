@@ -86,7 +86,7 @@ public class NativeHashMap<K, V> {
 
         V removed = jsRemove(key, key.hashCode());
 
-        if(jsIsEmpty(hashCodeMap))
+        if(jsIsEmpty())
             hashCodeMap = null;
         return removed;
     }
@@ -176,7 +176,8 @@ public class NativeHashMap<K, V> {
                 }
             }
         } else {
-            array = this.@NativeHashMap::hashCodeMap.set(hashCode, []).get(hashCode);
+            array = [];
+            this.@NativeHashMap::hashCodeMap.set(hashCode, array);
         }
 
         array.push([key, value]);
@@ -191,7 +192,7 @@ public class NativeHashMap<K, V> {
                 if (this.@NativeHashMap::equalsBridge(*)(key, entry[0])) {
                     if (array.length == 1) {
                         // remove the whole array
-                        this.@NativeHashMap::hashCodeMap['delete'](hashCode);
+                        jsMapDelete(hashCode);
                     } else {
                         array.splice(i, 1)
                     }
@@ -224,8 +225,8 @@ public class NativeHashMap<K, V> {
         return false;
     }-*/;
 
-    private native boolean jsIsEmpty(JavaScriptObject hashCodeMap) /*-{
-        return hashCodeMap.size === 0;
+    private native boolean jsIsEmpty() /*-{
+        return this.@NativeHashMap::hashCodeMap.size === 0;
     }-*/;
 
     private native void jsForeachKey(Function f) /*-{
