@@ -7,12 +7,14 @@ The `GROUP` statement creates a new [property group](Groups_of_properties_and_ac
 ### Syntax
 
 ```
-GROUP name [caption] [EXTID extID] [: parentName];
+GROUP [NATIVE] name [caption] [EXTID extID] [: parentName];
 ```
 
 ### Description
 
 The `GROUP` statement declares a new property group and adds it to the current [module](Modules.md).  
+
+The `NATIVE` keyword is used in some system modules. It is used to declare individual property groups that are created before the modules are initialized.
 
 ### Parameters
 

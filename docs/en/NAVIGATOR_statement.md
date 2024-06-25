@@ -2,7 +2,7 @@
 title: 'NAVIGATOR statement'
 ---
 
-The `NAVIGATOR` instruction - managing and configuring the [navigator](Navigator.md).
+The `NAVIGATOR` statement - managing and configuring the [navigator](Navigator.md).
 
 ### Syntax
 
@@ -38,9 +38,11 @@ A navigator statement must end with a semicolon if it does not contain a nested 
 Navigator element options (`options`) can be listed one after the other in arbitrary order. The following set of options is supported:
 
 ```
-WINDOW windowName
+WINDOW windowName [PARENT]
 insertPosition
-IMAGE fileName
+imageSetting
+CLASS classExpr
+HEADER headerExpr
 ```
 
 ### Description
@@ -79,17 +81,17 @@ The hierarchy described within a single `NAVIGATOR` statement can have an arbitr
 
 ### Options
 
-- `WINDOW windowName`
+- `WINDOW windowName [PARENT]`
 
-    Specifying the [window](Navigator_design.md) in which the descendants of this navigator element will be displayed (unless another window is specified for them).
-
-    :::info
-    Note that this option sets the window not for the current element itself, but for its descendants. 
-    :::
+    Specifying the [window](Navigator_design.md) in which the descendants of this navigator element will be displayed (unless another window is specified for them), and the element itself, if the keyword `PARENT` is specified.
 
     - `windowName`
 
         Window name. Composite ID.
+
+    - `PARENT`
+
+        Keyword indicating that the current element will also be displayed in the specified window.
 
 - `insertPosition`
  
@@ -118,16 +120,39 @@ The hierarchy described within a single `NAVIGATOR` statement can have an arbitr
 
     If the option is specified in the modify statement, then the element itself must also be a direct child of the current element. Otherwise, the `MOVE` statement should be used.
 
-- `IMAGE fileName`
+- `imageSetting`
 
-    Specifying the relative path to the file with the image to be displayed as the icon for the navigator element. 
+    Configuring the display of the navigator element's icon. By default, the icon or its absence is controlled by the [parameters](Working_parameters.md) `settings.defaultNavigatorImageRankingThreshold` and `settings.defaultNavigatorImage`. This option allows you to manually configure the icon display. It can have one of two forms:
+ 
+    - `IMAGE [fileExpr]`
 
-    - `fileName`
+        Specifying the relative path to the image file that will be displayed as the navigator element's icon. If `fileExpr` is not specified, the default icon display mode is activated.
 
-        Path to the file. String literal. The path is relative to the `images` directory.
+        - `fileExpr`
+
+            [Expression](Expression.md) whose value specifies the path to the image file. The path is specified relative to the `images` directory.
+
+      - `NOIMAGE`
+
+          Keyword indicating that the navigator element should have no icon.
+
+- `CLASS classExpr`
+
+    Specifying the name of the CSS class for the DOM element created for the navigator element component in HTML. This can be used to apply custom styles.
+
+    - `cssClassExpr`
+
+        Expression, whose value determines the class name.
+
+- `HEADER headerExpr`
+
+    Specifying a property that determines the dynamic header of the navigator element. If the return value of this property is `NULL`, the title of the navigator element will be automatically hidden.
+ 
+    - `headerExpr`
+
+        Expression whose value determines the dynamic header of the navigator element.
 
 ### Examples
-
 
 ```lsf
 FORM items;

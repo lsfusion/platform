@@ -371,6 +371,21 @@ function requestPushNotificationPermissions() {
     }
 }
 
+
+function setAttributeOrStyle(element, attribute, value) {
+    if (attribute in element.style)
+        element.style.setProperty(attribute, value);
+    else
+        element.setAttribute(attribute, value)
+
+}
+function removeAttributeOrStyle(element, attribute, value) {
+    if (attribute in element.style)
+        element.style.removeProperty(attribute, value);
+    else
+        element.removeAttribute(attribute, value)
+}
+
 // Function is used in NativeHashMap.jsRemove()
 // Because gwt throws an error when using js Map's .delete function, we have to use this hack
 function jsMapDelete(map, key) {
