@@ -385,3 +385,9 @@ function removeAttributeOrStyle(element, attribute, value) {
     else
         element.removeAttribute(attribute, value)
 }
+
+// Function is used in NativeHashMap.jsRemove()
+// Because gwt throws an error when using js Map's .delete function, we have to use this hack
+function jsMapDelete(map, key) {
+    return map.delete(key);
+}
