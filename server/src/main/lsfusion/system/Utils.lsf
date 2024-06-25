@@ -170,7 +170,8 @@ onlyDigits (TEXT p1) = FORMULA NULL BOOLEAN PG 'CASE WHEN trim($1) ~ \'^[0-9]*$\
 
 encode = FORMULA TEXT 'encode(($1),($2))';
 decode = FORMULA RAWFILE 'decode(($1),($2))';
-decodeText = FORMULA TEXT 'decode(($1),($2))';
+encodeText = FORMULA TEXT 'encode(convert_to(($1),\'UTF8\'),($2))';
+decodeText = FORMULA TEXT 'convert_from(decode(($1),($2)), \'UTF8\')';
 
 encodedBase64 = DATA LOCAL TEXT();
 encodeBase64  INTERNAL  'lsfusion.server.logics.classes.data.utils.string.EncodeBase64Action' (TEXT);
