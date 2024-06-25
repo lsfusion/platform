@@ -68,10 +68,6 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
         return PropertyFact.createCompare(interfaces, getImplement(), PropertyFact.createStatic(integralClass.div(integralClass.getSafeInfiniteValue(), 2), integralClass), Compare.GREATER).property;
     }
 
-    public LocalizedString getConstrainedMessage() {
-        return LocalizedString.createFormatted("{logics.property.cycle.detected}", caption);
-    }
-
     public RecursiveProperty(LocalizedString caption, ImOrderSet<Interface> interfaces, Cycle cycle, ImRevMap<Interface, T> mapInterfaces, ImRevMap<T, T> mapIterate, PropertyMapImplement<?, T> initial, PropertyMapImplement<?, T> step) {
         super(caption, interfaces);
         this.mapInterfaces = mapInterfaces;

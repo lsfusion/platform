@@ -41,12 +41,14 @@
 }
 
 .caption-panel-header.collapsible.collapsed::before,
+.collapsible-text-header.collapsed::before,
 .nav-bs-mobile-folder.collapsed::before {
     content: "\f105";
     font: var(--fa-font-solid);
 }
 
 .caption-panel-header.collapsible:not(.collapsed)::before,
+.collapsible-text-header:not(.collapsed)::before,
 .nav-bs-mobile-folder:not(.collapsed)::before {
     content: "\f107";
     font: var(--fa-font-solid);

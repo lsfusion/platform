@@ -500,6 +500,7 @@ WINDOW toolbar VERTICAL POSITION(0, 6, 20, 94) HIDETITLE CLASS toolbarWindowClas
 WINDOW forms NATIVE POSITION(20, 6, 80, 94) CLASS formsWindowClass();
 WINDOW log NATIVE POSITION(80, 6, 20, 93) HIDETITLE CLASS logsWindowClass();
 
+isHTMLSupported() = NATIVE BOOLEAN ();
 noSystemToolbarCaptions = ABSTRACT BOOLEAN();
 
 NAVIGATOR {

@@ -44,6 +44,7 @@ import net.sf.jasperreports.engine.type.HorizontalTextAlignEnum;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Random;
+import java.util.function.Function;
 
 public abstract class DataClass<T> extends AbstractType<T> implements StaticClass, FormulaClass, ValueClassSet, OrClassSet, ResolveClassSet {
 //    private static MAddExclMap<String, DataClass> sidToClass = MapFact.mBigStrongMap();
@@ -60,6 +61,11 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
 
     @Override
     public LocalizedString getCaption() {
+        return caption;
+    }
+
+    @Override
+    public LocalizedString exToString(Function<String, LocalizedString> debugInfoFormatter) {
         return caption;
     }
 

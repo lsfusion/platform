@@ -22,6 +22,7 @@ import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.server.base.AppServerImage;
+import lsfusion.server.base.ResourceUtils;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFLazy;
@@ -60,6 +61,7 @@ import javax.swing.*;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.function.Function;
 import java.util.function.IntFunction;
 
 import static lsfusion.interop.action.ServerResponse.*;
@@ -109,7 +111,56 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         }
         return result;
     } 
-    
+
+
+    private static String collapsibleFormattedText = null;
+    private static String getCollapsibleFormattedText() {
+        if(collapsibleFormattedText == null)
+            collapsibleFormattedText = ResourceUtils.findResourceAsString("collapsible-text.html", false, false, null, "web");
+        return collapsibleFormattedText;
+    }
+
+    public static LocalizedString getCollapsibleFormattedText(String text) {
+        return LocalizedString.create(getCollapsibleFormattedText().replace("${text}", text));
+    }
+
+    private static String collapsibleTextHeader = null;
+    private static String getCollapsibleTextHeader() {
+        if(collapsibleTextHeader == null)
+            collapsibleTextHeader = ResourceUtils.findResourceAsString("collapsible-text-header.html", false, false, null, "web");
+        return collapsibleTextHeader;
+    }
+
+    public static LocalizedString getCollapsibleTextHeader(String text) {
+        return LocalizedString.create(getCollapsibleTextHeader().replace("${text}", text));
+    }
+
+    private static String highlightText = null;
+    private static String getHighlightText() {
+        if(highlightText == null)
+            highlightText = ResourceUtils.findResourceAsString("highlight-text.html", false, false, null, "web");
+        return highlightText;
+    }
+
+    public static LocalizedString getHighlightText(LocalizedString text) {
+        return LocalizedString.createFormatted(getHighlightText().replace("${text}","{0}"), text);
+    }
+
+    public LocalizedString exToString(Function<String, LocalizedString> debugInfoFormatter) {
+        LocalizedString result = caption;
+
+        if(debugInfoFormatter != null) {
+            String systemInfo = getCanonicalName();
+            if (debugInfo != null)
+                systemInfo = (systemInfo != null ? systemInfo + " " : "") + "[" + debugInfo + "]";
+
+            if (systemInfo != null)
+                result = LocalizedString.concatList(result, debugInfoFormatter.apply(systemInfo));
+        }
+
+        return result;
+    }
+
     private String fullString;
     @ManualLazy
     public String toString() {

@@ -1809,7 +1809,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJProp(and(false), Arrays.asList(new LPWithParams(baseLM.vtrue), property));
     }
 
-    private boolean useExclusiveIfElse = false; // not sure why exclusiveness was used (it doesn't change anything except moving prevExpr to the end of CaseExpr)
+    public static boolean useExclusiveIfElse = false; // not sure why exclusiveness was used (it doesn't change anything except moving prevExpr to the end of CaseExpr)
 
     public LPWithParams addScriptedIfElseUProp(LPWithParams ifProp, LPWithParams thenProp, LPWithParams elseProp) throws ScriptingErrorLog.SemanticErrorException {
 //        List<LPWithParams> lpParams = new ArrayList<>();
@@ -3080,7 +3080,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return resultParams;
     }
 
-    public LP addScriptedGProp(List<LPWithParams> groupProps, GroupingType type, List<LPWithParams> mainProps, List<LPWithParams> orderProps, boolean ascending, LPWithParams whereProp, List<ResolveClassSet> explicitInnerClasses) throws ScriptingErrorLog.SemanticErrorException {
+    public LP addScriptedGProp(List<LPWithParams> groupProps, GroupingType type, List<LPWithParams> mainProps, List<LPWithParams> orderProps, boolean ascending, Supplier<ConstraintData> constraintData, LPWithParams whereProp, List<ResolveClassSet> explicitInnerClasses) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkGPropAggrConstraints(type, mainProps, groupProps);
         checks.checkGPropAggregateConsistence(type, mainProps);
         checks.checkGPropWhereConsistence(type, whereProp);
@@ -3116,18 +3116,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         } else if (type == GroupingType.CONCAT) {
             resultProp = addOGProp(null, false, emptyCaption, GroupType.CONCAT, whereProp != null, orderProps.size(), ordersNotNull, !ascending, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
         } else if (type == GroupingType.AGGR || type == GroupingType.NAGGR) {
-            resultProp = addAGProp(null, false, false, emptyCaption, type == GroupingType.NAGGR, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
+            resultProp = addAGProp(null, false, false, emptyCaption, type == GroupingType.NAGGR, constraintData, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
         } else if (type == GroupingType.EQUAL) {
-            resultProp = addCGProp(null, false, false, emptyCaption, null, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
+            resultProp = addCGProp(null, false, false, emptyCaption, constraintData, null, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
         } else if (type == GroupingType.LAST) {
             resultProp = addOGProp(null, false, emptyCaption, GroupType.LAST, false, orderProps.size(), ordersNotNull, !ascending, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
         }
         return resultProp;
-    }
-
-    public LPContextIndependent addScriptedCIGProp(int oldContextSize, List<LPWithParams> groupProps, GroupingType type, List<LPWithParams> mainProps, List<LPWithParams> orderProps,
-                                                   boolean ascending, LPWithParams whereProp, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
-        return addScriptedCDIGProp(oldContextSize, groupProps, type, mainProps, orderProps, ascending, whereProp, newContext);
     }
 
     // ci - надо в дырки вставлять, от использованных, если не ci то в конце
@@ -3159,7 +3154,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     // второй результат в паре использованные параметры из внешнего контекста (LP на выходе имеет сначала эти использованные параметры, потом группировки)
     public LPContextIndependent addScriptedCDIGProp(int oldContextSize, List<LPWithParams> groupProps, GroupingType type, List<LPWithParams> mainProps, List<LPWithParams> orderProps,
-                                                    boolean ascending, LPWithParams whereProp, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
+                                                    boolean ascending, LPWithParams whereProp, List<TypedParameter> newContext, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
         List<LPWithParams> lpWithParams = mergeLists(groupProps, mainProps, orderProps, Collections.singletonList(whereProp));
         List<Integer> resultInterfaces = getResultInterfaces(oldContextSize, lpWithParams.toArray(new LAPWithParams[lpWithParams.size()]));
 
@@ -3167,7 +3162,9 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         List<ResolveClassSet> explicitInnerClasses = getClassesFromTypedParams(oldContextSize, resultInterfaces, newContext);
 
-        LP gProp = addScriptedGProp(allGroupProps, type, mainProps, orderProps, ascending, whereProp, explicitInnerClasses);
+        Supplier<ConstraintData> constraintCaption = () -> getConstraintData("{logics.property.derived.violate.property.uniqueness.for.objects}", allGroupProps, debugPoint);
+
+        LP gProp = addScriptedGProp(allGroupProps, type, mainProps, orderProps, ascending, constraintCaption, whereProp, explicitInnerClasses);
         return new LPContextIndependent(gProp, getParamClassesByParamProperties(allGroupProps, newContext), resultInterfaces);
     }
 
@@ -3180,10 +3177,10 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public Pair<LPWithParams, LPContextIndependent> addScriptedCDGProp(int oldContextSize, List<LPWithParams> groupProps, GroupingType type, List<LPWithParams> mainProps, List<LPWithParams> orderProps,
-                                                                       boolean ascending, LPWithParams whereProp, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
+                                                                       boolean ascending, LPWithParams whereProp, List<TypedParameter> newContext, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
         if(groupProps == null)
             groupProps = Collections.emptyList();
-        LPContextIndependent ci = addScriptedCDIGProp(oldContextSize, groupProps, type, mainProps, orderProps, ascending, whereProp, newContext);
+        LPContextIndependent ci = addScriptedCDIGProp(oldContextSize, groupProps, type, mainProps, orderProps, ascending, whereProp, newContext, debugPoint);
         if(groupProps.size() > 0)
             return new Pair<>(null, ci);
         else
@@ -3223,7 +3220,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 //                GROUP AGGR aggrClass aggrObject
 //        WHERE aggrObject IS aggrClass BY prim1Object(aggrObject), prim2Object(aggrObject);
         LP<T> aggrObjectLP = addScriptedGProp(groupProps, GroupingType.AGGR, Collections.singletonList(new LPWithParams(0)), Collections.emptyList(), false,
-                new LPWithParams(is(aggClass), 0), Collections.singletonList(aggSignature));
+                () -> getConstraintData("{logics.property.violated.aggr.unique}", aggClass, whereLP, aggrDebugPoint), new LPWithParams(is(aggClass), 0), Collections.singletonList(aggSignature));
         ((AggregateGroupProperty) aggrObjectLP.property).isFullAggr = true;
 
         // RESOLVING
@@ -3238,14 +3235,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         // WHEN DROPPED(aggrExpr)(PREV(prim1Object(aggrObject)), PREV(prim2Object(aggrObject)) DO DELETE aggrObject // we need prev because the param object in aggrExpr can be deleted => aggobject will be changed to null
         ImList<LP> optResDeleteConds = useOptResolve ? ListFact.singleton(addJProp(whereLP.getChanged(IncrementType.DROP, (deleteEvent != null ? deleteEvent : aggrEvent.onlyScope()).getScope()), prevGroupProps)) : null;
 
-        // CONSTRAINING
-        LocalizedString details = LocalizedString.concatList(aggClass.toString() + " WHERE ", whereLP.property.localizedToString());
-
 //        aggrProperty(prim1Class prim1Object, prim2Class prim2Object) => aggrObject(prim1Object, prim2Object) RESOLVE LEFT; // new
-        addScriptedFollows(whereLP, new LPWithParams(aggrObjectLP, whereExpr), resolveNew, optResNewConds, aggrEvent, aggrDebugPoint, false, LocalizedString.create("{logics.property.violated.aggr.new}"), details);
+        addScriptedFollows(whereLP, new LPWithParams(aggrObjectLP, whereExpr), resolveNew, optResNewConds, aggrEvent, getConstraintData("{logics.property.violated.aggr.new}", aggClass, whereLP, aggrDebugPoint).noUseDebugPoint());
 
 //        aggrObject IS aggrClass => aggrProperty(prim1Object(aggrObject), prim2Object(aggrObject)) RESOLVE RIGHT; // delete
-        addScriptedFollows(is(aggClass), addScriptedJProp(whereLP, groupProps), resolveDelete, optResDeleteConds, aggrEvent, aggrDebugPoint, false, LocalizedString.create("{logics.property.violated.aggr.delete}"), details);
+        addScriptedFollows(is(aggClass), addScriptedJProp(whereLP, groupProps), resolveDelete, optResDeleteConds, aggrEvent, getConstraintData("{logics.property.violated.aggr.delete}", aggClass, whereLP, aggrDebugPoint).noUseDebugPoint());
 
         return new LPContextIndependent(aggrObjectLP, resultSignature, Collections.emptyList());
     }
@@ -3365,7 +3359,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return text != null ? text.replaceAll("\\$(\\d+)", textTo) : null;
     }
 
-    public LPWithParams addScriptedRProp(List<TypedParameter> context, LPWithParams zeroStep, LPWithParams nextStep, Cycle cycleType) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedRProp(List<TypedParameter> context, LPWithParams zeroStep, LPWithParams nextStep, Cycle cycleType, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
         List<Integer> usedParams = mergeAllParams(asList(zeroStep, nextStep));
         checks.checkRecursionContext(getParamNamesFromTypedParams(context), usedParams);
 
@@ -3395,7 +3389,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
 
         List<Object> resultParams = getParamsPlainList(Arrays.asList(zeroStep, nextStep));
-        LP res = addRProp(null, false, LocalizedString.NONAME, cycleType, mainParams, MapFact.fromJavaRevMap(mapPrev), resultParams.toArray());
+        LP res = addRProp(null, false, LocalizedString.NONAME, cycleType, debugPoint, mainParams, MapFact.fromJavaRevMap(mapPrev), resultParams.toArray());
 
         List<Integer> resUsedParams = new ArrayList<>();
         for (Integer usedParam : usedParams) {
@@ -4852,17 +4846,16 @@ public class ScriptingLogicsModule extends LogicsModule {
         checks.checkParamCount(mainProp, namedParams.size());
         checks.checkDistinctParameters(getParamNamesFromTypedParams(namedParams));
 
-        addScriptedFollows(mainProp, rightProp, resolveOptions, null, event, debugPoint,
-                true, LocalizedString.create("{logics.property.violated.consequence.from}"), LocalizedString.concatList(mainProp.property.localizedToString(), " => ",  rightProp.getLP().property.localizedToString()));
+        addScriptedFollows(mainProp, rightProp, resolveOptions, null, event,
+                getConstraintData("{logics.property.violated.consequence.from}", rightProp, mainProp, debugPoint));
     }
 
-    private void addScriptedFollows(LP mainProp, LPWithParams rightProp, List<PropertyFollowsDebug> resolveOptions, ImList<LP> optResConds, Event event, DebugInfo.DebugPoint debugPoint, boolean useDebugPoint, LocalizedString caption, LocalizedString details) {
+    private void addScriptedFollows(LP mainProp, LPWithParams rightProp, List<PropertyFollowsDebug> resolveOptions, ImList<LP> optResConds, Event event, ConstraintData constraintData) {
         Integer[] params = new Integer[rightProp.usedParams.size()];
         for (int j = 0; j < params.length; j++) {
             params[j] = rightProp.usedParams.get(j) + 1;
         }
-        addFollows(mainProp, useDebugPoint ? debugPoint : null, ListFact.fromJavaList(resolveOptions), optResConds, event,
-                rightProp.getLP(), LocalizedString.concatList(caption, ": " + debugPoint.toString(), "\n", LocalizedString.create("{logics.property.violated.consequence.details}"), ": ", details), params);
+        addFollows(mainProp, ListFact.fromJavaList(resolveOptions), optResConds, event, rightProp.getLP(), constraintData, params);
     }
 
     public void addScriptedWriteWhen(NamedPropertyUsage mainPropUsage, List<TypedParameter> namedParams, LPWithParams valueProp, LPWithParams whenProp, boolean action) throws ScriptingErrorLog.SemanticErrorException {

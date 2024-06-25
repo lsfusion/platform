@@ -99,15 +99,15 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
     }
 
     @Override
-    public Pair<LPWithParams, LPContextIndependent> addScriptedCDGProp(int oldContextSize, List<LPWithParams> groupProps, GroupingType type, 
-                                                                       List<LPWithParams> mainProps, List<LPWithParams> orderProps, boolean ascending, 
-                                                                       LPWithParams whereProp, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
+    public Pair<LPWithParams, LPContextIndependent> addScriptedCDGProp(int oldContextSize, List<LPWithParams> groupProps, GroupingType type,
+                                                                       List<LPWithParams> mainProps, List<LPWithParams> orderProps, boolean ascending,
+                                                                       LPWithParams whereProp, List<TypedParameter> newContext, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
         if (type == GroupingType.AGGR) {
             emitEvalError("GROUP operator's AGGR type");            
         } else if (type == GroupingType.EQUAL) {
             emitEvalError("GROUP operator's EQUAL type");
         }
-        return super.addScriptedCDGProp(oldContextSize, groupProps, type, mainProps, orderProps, ascending, whereProp, newContext);
+        return super.addScriptedCDGProp(oldContextSize, groupProps, type, mainProps, orderProps, ascending, whereProp, newContext, debugPoint);
     }    
     
     @Override

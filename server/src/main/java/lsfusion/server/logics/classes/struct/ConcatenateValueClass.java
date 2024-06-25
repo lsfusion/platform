@@ -16,6 +16,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.io.DataOutputStream;
 import java.util.Arrays;
+import java.util.function.Function;
 
 public class ConcatenateValueClass implements ValueClass {
     
@@ -70,6 +71,11 @@ public class ConcatenateValueClass implements ValueClass {
     }
 
     public LocalizedString getCaption() {
+        throw new RuntimeException("not supported");
+    }
+
+    @Override
+    public LocalizedString exToString(Function<String, LocalizedString> debugInfoFormatter) {
         throw new RuntimeException("not supported");
     }
 

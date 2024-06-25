@@ -18,6 +18,7 @@ import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
 import lsfusion.server.data.expr.formula.FormulaUnionImpl;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.PartitionType;
+import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.Action;
@@ -733,7 +734,10 @@ public class PropertyFact {
         return createDeconcatenate(captions, max, props.size(), baseClass);
     }
 
-    public static <L extends PropertyInterface> PropertyMapImplement<?, L> createIfElseUProp(ImSet<L> innerInterfaces, PropertyInterfaceImplement<L> ifProp, PropertyMapImplement<?, L> trueProp, PropertyMapImplement<?, L> falseProp) {
+    public static <L extends PropertyInterface> PropertyMapImplement<?, L> createIfElseUProp(ImSet<L> innerInterfaces, PropertyInterfaceImplement<L> ifProp, PropertyInterfaceImplement<L> trueProp, PropertyInterfaceImplement<L> falseProp) {
+        if(trueProp != null && falseProp != null && !ScriptingLogicsModule.useExclusiveIfElse)
+            return PropertyFact.createUnion(innerInterfaces, false, ListFact.toList(new CalcCase<>(ifProp, trueProp), new CalcCase<>(createTrue(), falseProp)));
+
         PropertyMapImplement<?, L> ifTrue = null;
         if(trueProp!=null)
             ifTrue = PropertyFact.createAnd(innerInterfaces, trueProp, ifProp);

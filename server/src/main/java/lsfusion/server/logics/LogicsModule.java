@@ -160,6 +160,7 @@ import java.io.PrintWriter;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.IntFunction;
+import java.util.function.Supplier;
 
 import static lsfusion.base.BaseUtils.add;
 import static lsfusion.server.logics.property.PropertyFact.createAnd;
@@ -170,6 +171,67 @@ public abstract class LogicsModule {
     protected static final Logger logger = Logger.getLogger(LogicsModule.class);
 
     protected static final ActionDebugger debugger = ActionDebugger.getInstance();
+
+    private LocalizedString getConstraintObject(ValueClass valueClass, Function<String, LocalizedString> debugInfoFormatter) {
+        return valueClass.exToString(debugInfoFormatter);
+    }
+
+    private LocalizedString getConstraintObject(Property property, Function<String, LocalizedString> debugInfoFormatter) {
+        return property.exToString(debugInfoFormatter);
+    }
+
+    private <T extends PropertyInterface> LocalizedString getConstraintObject(List<ScriptingLogicsModule.LPWithParams> groupProps, Function<String, LocalizedString> debugInfoFormatter) {
+        LocalizedString constrainedMessage = LocalizedString.NONAME;
+        for(ScriptingLogicsModule.LPWithParams groupProp : groupProps) {
+            LP<?> lp = groupProp.getLP();
+            if(lp != null) {
+                LocalizedString implementCaption = getConstraintObject(lp.property, debugInfoFormatter);
+                if(constrainedMessage == LocalizedString.NONAME)
+                    constrainedMessage = implementCaption;
+                else
+                    constrainedMessage = LocalizedString.concatList(constrainedMessage, ", ", implementCaption);
+            }
+        }
+        return constrainedMessage;
+    }
+
+    private LocalizedString getConstraintObject(ValueClass aggClass, LP<?> whereLP, Function<String, LocalizedString> debugInfoFormatter) {
+        return LocalizedString.concatList(getConstraintObject(aggClass, debugInfoFormatter), " AGGR ", getConstraintObject(whereLP.property, debugInfoFormatter));
+    }
+
+    private LocalizedString getConstraintObject(ScriptingLogicsModule.LPWithParams rightProp, LP mainProp, Function<String, LocalizedString> debugInfoFormatter) {
+        return LocalizedString.concatList(getConstraintObject(mainProp.property, debugInfoFormatter), " => ", getConstraintObject(rightProp.getLP().property, debugInfoFormatter));
+    }
+
+    // GROUP AGGR
+    protected ConstraintData getConstraintData(String message, List<ScriptingLogicsModule.LPWithParams> groupProps, DebugInfo.DebugPoint debugPoint) {
+        return getConstraintData(message, debugInfoFormatter -> getConstraintObject(groupProps, debugInfoFormatter), debugPoint);
+    }
+
+    // RECURSIVE, NOT NULL
+    public ConstraintData getConstraintData(String message, Property property, DebugInfo.DebugPoint debugPoint) {
+        return getConstraintData(message, debugInfoFormatter -> getConstraintObject(property, debugInfoFormatter), debugPoint);
+    }
+
+    // AGGR (recheck)
+    protected ConstraintData getConstraintData(String message, ValueClass aggClass, LP<?> whereLP, DebugInfo.DebugPoint debugPoint) {
+        return getConstraintData(message, debugInfoFormatter -> getConstraintObject(aggClass, whereLP, debugInfoFormatter), debugPoint);
+    }
+
+    // =>
+    protected ConstraintData getConstraintData(String message, ScriptingLogicsModule.LPWithParams rightProp, LP mainProp, DebugInfo.DebugPoint debugPoint) {
+        return getConstraintData(message, debugInfoFormatter -> getConstraintObject(rightProp, mainProp, debugInfoFormatter), debugPoint);
+    }
+
+    private ConstraintData getConstraintData(String message, Function<Function<String, LocalizedString>, LocalizedString> details, DebugInfo.DebugPoint debugPoint) {
+        LocalizedString htmlMessage = LocalizedString.concatList(LocalizedString.createFormatted(message, ActionOrProperty.getHighlightText(details.apply(ActionOrProperty::getCollapsibleFormattedText))), ActionOrProperty.getCollapsibleTextHeader(""), ActionOrProperty.getCollapsibleFormattedText("[" + debugPoint + "]"));
+
+        LocalizedString simpleMessage = LocalizedString.concatList(LocalizedString.createFormatted(message, details.apply(debugInfo -> LocalizedString.create("(" + debugInfo + ")"))), LocalizedString.create("[" + debugPoint + "]"));
+
+        LP htmlProp = baseLM.addIfProp(baseLM.getIsHTMLSupported(), baseLM.addCProp(StringClass.text, htmlMessage), baseLM.addCProp(StringClass.text, simpleMessage));
+        return new ConstraintData(htmlProp, debugPoint);
+//        return LocalizedString.concatList(LocalizedString.create(message), ": " + debugPoint.toString(), "\n", LocalizedString.create("{logics.property.violated.consequence.details}"), ": ", details);
+    }
 
     // после этого шага должны быть установлены name, namespace, requiredModules
     public abstract void initModuleDependencies() throws RecognitionException;
@@ -858,6 +920,20 @@ public abstract class LogicsModule {
                 (ActionMapImplement<?, PropertyInterface>) readImplements.get(1), readImplements.size() == 3 ? (ActionMapImplement<?, PropertyInterface>) readImplements.get(2) : null)));
     }
 
+    protected LP addIfProp(Object... params) {
+        return addIfProp(null, params);
+    }
+
+    protected <T extends PropertyInterface> LP addIfProp(Group group, Object... params) {
+        ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
+        ImList<ActionOrPropertyInterfaceImplement> readImplements = readImplements(listInterfaces, params);
+        assert readImplements.size() >= 2 && readImplements.size() <= 3;
+
+        PropertyMapImplement<T, PropertyInterface> ifElseUProp = (PropertyMapImplement<T, PropertyInterface>) PropertyFact.createIfElseUProp(listInterfaces.getSet(), (PropertyInterfaceImplement<PropertyInterface>) readImplements.get(0),
+                (PropertyInterfaceImplement<PropertyInterface>) readImplements.get(1), (PropertyInterfaceImplement<PropertyInterface>) (readImplements.size() == 3 ? readImplements.get(2) : null));
+        return addProperty(group, new LP(ifElseUProp.property, listInterfaces.mapOrder(ifElseUProp.mapping.reverse())));
+    }
+
     // ------------------- Case action ----------------- //
 
     protected LA addCaseAProp(boolean isExclusive, Object... params) {
@@ -1285,7 +1361,7 @@ public abstract class LogicsModule {
         return mapLProp(group, persistent, PropertyFact.createOProp(caption, partitionType, interfaces.getSet(), mainProp, partitions, orders, ordersNotNull, includeLast), interfaces);
     }
 
-    protected <P extends PropertyInterface> LP addRProp(Group group, boolean persistent, LocalizedString caption, Cycle cycle, ImList<Integer> resInterfaces, ImRevMap<Integer, Integer> mapPrev, Object... params) {
+    protected <P extends PropertyInterface> LP addRProp(Group group, boolean persistent, LocalizedString caption, Cycle cycle, DebugInfo.DebugPoint debugPoint, ImList<Integer> resInterfaces, ImRevMap<Integer, Integer> mapPrev, Object... params) {
         int innerCount = getIntNum(params);
         final ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(innerCount);
         ImList<PropertyInterfaceImplement<PropertyInterface>> listImplement = readCalcImplements(innerInterfaces, params);
@@ -1309,7 +1385,7 @@ public abstract class LogicsModule {
         RecursiveProperty<PropertyInterface> property = new RecursiveProperty<>(caption, interfaces, cycle,
                 mapInterfaces, mapIterate, initial, step);
         if(cycle==Cycle.NO)
-            addConstraint(property.getConstrainedProperty(), property.getConstrainedMessage(), false);
+            addConstraint(property.getConstrainedProperty(), getConstraintData("{logics.property.cycle.detected}", property, debugPoint), false);
 
         LP result = new LP<>(property, interfaces);
 //        if (convertToLogical)
@@ -1468,47 +1544,41 @@ public abstract class LogicsModule {
 
     // ------------------- CGProperty ----------------- //
 
-    protected <T extends PropertyInterface, P extends PropertyInterface> LP addCGProp(Group group, boolean checkChange, boolean persistent, LocalizedString caption, LP<PropertyInterface> dataProp, int interfaces, List<ResolveClassSet> explicitInnerClasses, Object... params) {
+    protected <T extends PropertyInterface, P extends PropertyInterface> LP addCGProp(Group group, boolean checkChange, boolean persistent, LocalizedString caption, Supplier<ConstraintData> constraintData, LP<PropertyInterface> dataProp, int interfaces, List<ResolveClassSet> explicitInnerClasses, Object... params) {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(interfaces);
-        return addCGProp(group, checkChange, persistent, caption, dataProp, innerInterfaces, explicitInnerClasses, readCalcImplements(innerInterfaces, params));
+        return addCGProp(group, checkChange, persistent, caption, constraintData, dataProp, innerInterfaces, explicitInnerClasses, readCalcImplements(innerInterfaces, params));
     }
 
-    protected <T extends PropertyInterface, P extends PropertyInterface> LP addCGProp(Group group, boolean checkChange, boolean persistent, LocalizedString caption, LP<P> dataProp, ImOrderSet<T> innerInterfaces, List<ResolveClassSet> explicitInnerClasses, ImList<PropertyInterfaceImplement<T>> listImplements) {
+    protected <T extends PropertyInterface, P extends PropertyInterface> LP addCGProp(Group group, boolean checkChange, boolean persistent, LocalizedString caption, Supplier<ConstraintData> constraintData, LP<P> dataProp, ImOrderSet<T> innerInterfaces, List<ResolveClassSet> explicitInnerClasses, ImList<PropertyInterfaceImplement<T>> listImplements) {
         CycleGroupProperty<T, P> property = new CycleGroupProperty<>(caption, innerInterfaces.getSet(), listImplements.subList(1, listImplements.size()).getCol(), listImplements.get(0), dataProp == null ? null : dataProp.property);
         property.setExplicitInnerClasses(innerInterfaces, explicitInnerClasses);
 
-        // нужно добавить ограничение на уникальность
-        addConstraint(property.getConstrainedProperty(), property.getConstrainedMessage(), checkChange);
+        addConstraint(property.getConstrainedProperty(), constraintData.get(), checkChange);
 
         return mapLGProp(group, persistent, property, listImplements.subList(1, listImplements.size()));
     }
 
-//    protected static <T extends PropertyInterface<T>> AggregateGroupProperty create(String sID, LocalizedString caption, Property<T> property, T aggrInterface, Collection<PropertyMapImplement<?, T>> groupProps) {
+    //    protected static <T extends PropertyInterface<T>> AggregateGroupProperty create(String sID, LocalizedString caption, Property<T> property, T aggrInterface, Collection<PropertyMapImplement<?, T>> groupProps) {
 
     // ------------------- GROUP AGGR ----------------- //
 
-    protected LP addAGProp(Group group, boolean checkChange, boolean persistent, LocalizedString caption, boolean noConstraint, int interfaces, List<ResolveClassSet> explicitInnerClasses, Object... props) {
+    protected LP addAGProp(Group group, boolean checkChange, boolean persistent, LocalizedString caption, boolean noConstraint, Supplier<ConstraintData> constraintData, int interfaces, List<ResolveClassSet> explicitInnerClasses, Object... props) {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(interfaces);
-        return addAGProp(group, checkChange, persistent, caption, noConstraint, innerInterfaces, explicitInnerClasses, readCalcImplements(innerInterfaces, props));
+        return addAGProp(group, checkChange, persistent, caption, noConstraint, constraintData, innerInterfaces, explicitInnerClasses, readCalcImplements(innerInterfaces, props));
     }
 
-    protected <T extends PropertyInterface<T>, I extends PropertyInterface> LP addAGProp(Group group, boolean checkChange, boolean persistent, LocalizedString caption, boolean noConstraint, ImOrderSet<T> innerInterfaces, List<ResolveClassSet> explicitInnerClasses, ImList<PropertyInterfaceImplement<T>> listImplements) {
+    protected <T extends PropertyInterface<T>> LP addAGProp(Group group, boolean checkChange, boolean persistent, LocalizedString caption, boolean noConstraint, Supplier<ConstraintData> constraintData, ImOrderSet<T> innerInterfaces, List<ResolveClassSet> explicitInnerClasses, ImList<PropertyInterfaceImplement<T>> listImplements) {
         T aggrInterface = (T) listImplements.get(0);
         PropertyInterfaceImplement<T> whereProp = listImplements.get(1);
         ImList<PropertyInterfaceImplement<T>> groupImplements = listImplements.subList(2, listImplements.size());
 
         AggregateGroupProperty<T> aggProp = AggregateGroupProperty.create(caption, innerInterfaces.getSet(), whereProp, aggrInterface, groupImplements.toOrderExclSet().getSet());
         aggProp.setExplicitInnerClasses(innerInterfaces, explicitInnerClasses);
-        return addAGProp(group, checkChange, persistent, noConstraint, aggProp, groupImplements);
-    }
 
-    // чисто для generics
-    private <T extends PropertyInterface<T>> LP addAGProp(Group group, boolean checkChange, boolean persistent, boolean noConstraint, AggregateGroupProperty<T> property, ImList<PropertyInterfaceImplement<T>> listImplements) {
-        // нужно добавить ограничение на уникальность
         if(!noConstraint)
-            addConstraint(property.getConstrainedProperty(), property.getConstrainedMessage(), checkChange);
+            addConstraint(aggProp.getConstrainedProperty(), constraintData.get(), checkChange);
 
-        return mapLGProp(group, persistent, property, listImplements);
+        return mapLGProp(group, persistent, aggProp, groupImplements);
     }
 
     // ------------------- UNION ----------------- //
@@ -2085,12 +2155,22 @@ public abstract class LogicsModule {
         return addAction(null, new LA<>(new ReadFiltersAction(object, toProperty)));
     }
 
-    public void addConstraint(Property<?> property, LocalizedString message, boolean checkChange) {
-        addConstraint(property, message, checkChange, null);
+    public static class ConstraintData {
+        public final LP<?> message;
+        public final DebugInfo.DebugPoint debugPoint;
+
+        public ConstraintData(LP<?> message, DebugInfo.DebugPoint debugPoint) {
+            this.message = message;
+            this.debugPoint = debugPoint;
+        }
+
+        public ConstraintData noUseDebugPoint() {
+            return new ConstraintData(message, null);
+        }
     }
 
-    public void addConstraint(Property<?> property, LocalizedString message, boolean checkChange, DebugInfo.DebugPoint debugPoint) {
-        addConstraint(addProp(property), baseLM.addCProp(StringClass.text, message), ListFact.EMPTY(), (checkChange ? Property.CheckType.CHECK_ALL : Property.CheckType.CHECK_NO), null, Event.APPLY, this, debugPoint);
+    public void addConstraint(Property<?> property, ConstraintData data, boolean checkChange) {
+        addConstraint(addProp(property), data.message, ListFact.EMPTY(), (checkChange ? Property.CheckType.CHECK_ALL : Property.CheckType.CHECK_NO), null, Event.APPLY, this, data.debugPoint);
     }
 
     protected <P extends PropertyInterface, T extends PropertyInterface> void addConstraint(LP<?> lp, LP<?> messageLP, ImList<PropertyMapImplement<?, P>> properties, Property.CheckType type, ImSet<Property<?>> checkProps, Event event, LogicsModule lm, DebugInfo.DebugPoint debugPoint) {
@@ -2208,9 +2288,9 @@ public abstract class LogicsModule {
             action.addAfterAspect(aspect);
     }
 
-    protected <L extends PropertyInterface, T extends PropertyInterface, K extends PropertyInterface> void addFollows(final LP<T> first, DebugInfo.DebugPoint debugPoint, ImList<PropertyFollowsDebug> resolves, ImList<LP> optResConds, Event event, LP<L> second, LocalizedString caption, final Integer... mapping) {
+    protected <L extends PropertyInterface, T extends PropertyInterface, K extends PropertyInterface> void addFollows(final LP<T> first, ImList<PropertyFollowsDebug> resolves, ImList<LP> optResConds, Event event, LP<L> second, ConstraintData constraintData, final Integer... mapping) {
         addFollows(first.property, new PropertyMapImplement<L, T>(second.property, second.getRevMap(first.listInterfaces, mapping)),
-                caption, debugPoint, resolves,
+                constraintData, resolves,
                 optResConds != null ? BaseUtils.<ImList<LP<K>>>immutableCast(optResConds).mapListValues(lp -> new PropertyMapImplement<>(lp.property, lp.getRevMap(first.listInterfaces))) : null,
                 event);
     }
@@ -2219,8 +2299,7 @@ public abstract class LogicsModule {
         PropertyMapImplement<L, T> mapClasses = (PropertyMapImplement<L, T>) IsClassProperty.getMapProperty(property.getInterfaceClasses(ClassType.logPolicy));
         property.notNull = true;
         addFollows(mapClasses.property, new PropertyMapImplement<>(property, mapClasses.mapping.reverse()),
-                LocalizedString.concatList(LocalizedString.create("{logics.property} "), property.caption, " [" + property.getSID(), LocalizedString.create("] {logics.property.not.defined}")),
-                debugPoint, options,
+                getConstraintData("{logics.property.not.defined}", property, debugPoint), options,
                 optResConds != null ? BaseUtils.<ImList<PropertyMapImplement<K, T>>>immutableCast(optResConds).mapListValues(cond -> cond.map(mapClasses.mapping.reverse())) : null,
                 event);
     }
@@ -2230,7 +2309,7 @@ public abstract class LogicsModule {
     }
 
     public <T extends PropertyInterface, L extends PropertyInterface, S extends PropertyInterface>
-        void addFollows(Property<T> property, PropertyMapImplement<L, T> implement, LocalizedString caption, DebugInfo.DebugPoint debugPoint, ImList<PropertyFollowsDebug> resolve, ImList<PropertyMapImplement<?, T>> optResConds, Event event) {
+        void addFollows(Property<T> property, PropertyMapImplement<L, T> implement, ConstraintData constraintData, ImList<PropertyFollowsDebug> resolve, ImList<PropertyMapImplement<?, T>> optResConds, Event event) {
 //        PropertyFollows<T, L> propertyFollows = new PropertyFollows<T, L>(this, implement, options);
 
         PropertyMapImplement<?, T> constraint = PropertyFact.createAndNot(property, implement);
@@ -2254,11 +2333,11 @@ public abstract class LogicsModule {
                     }
                 }
                 addWhenAction(setAction.action.interfaces, setAction.action.getImplement(), condition.map(setAction.mapping.reverse()), constraint.map(setAction.mapping.reverse()), MapFact.EMPTYORDER(), false,
-                        option.event != null ? option.event : event.onlyScope(), SetFact.EMPTY(), false, option.debugPoint, option.caption);
+                        option.event != null ? option.event : event.onlyScope(), SetFact.EMPTY(), false, option.debugPoint, option.debugCaption);
             }
         }
 
-        addConstraint(constraint.property, caption, false, debugPoint);
+        addConstraint(constraint.property, constraintData, false);
     }
 
     public static <P extends PropertyInterface, T extends PropertyInterface> ActionMapImplement<P, T> mapActionListImplement(LA<P> property, ImOrderSet<T> mapList) {

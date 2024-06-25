@@ -55,6 +55,7 @@ import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.function.Function;
 
 public abstract class CustomClass extends ImmutableObject implements ObjectClass, ValueClass {
 
@@ -695,4 +696,18 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return upAggrProps.filterFn(element -> !upAggrProps.intersect(((Property<?>)element).getImplements()));
     }
 
+    public LocalizedString exToString(Function<String, LocalizedString> debugInfoFormatter) {
+        LocalizedString result = caption;
+
+        if(debugInfoFormatter != null) {
+            String systemInfo = getCanonicalName();
+            if (debugInfo != null)
+                systemInfo = (systemInfo != null ? systemInfo + " " : "") + "[" + debugInfo + "]";
+
+            if (systemInfo != null)
+                result = LocalizedString.concatList(result, debugInfoFormatter.apply(systemInfo));
+        }
+
+        return result;
+    }
 }

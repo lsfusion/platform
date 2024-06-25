@@ -12,6 +12,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Comparator;
+import java.util.function.Function;
 
 public interface ValueClass extends AClass {
 
@@ -30,6 +31,8 @@ public interface ValueClass extends AClass {
     String getSID();
     
     LocalizedString getCaption();
+
+    LocalizedString exToString(Function<String, LocalizedString> debugInfoFormatter);
 
     Object getDefaultValue();
 

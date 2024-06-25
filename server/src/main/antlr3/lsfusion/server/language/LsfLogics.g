@@ -1949,10 +1949,11 @@ aggrPropertyDefinition[List<TypedParameter> context, boolean dynamic, boolean in
 groupCDPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPContextIndependent ci]
 @init {
 	List<TypedParameter> groupContext = new ArrayList<>(context);
+    DebugInfo.DebugPoint debugPoint = getEventDebugPoint();
 }
 @after {
 	if (inMainParseState()) {
-		Pair<LPWithParams, LPContextIndependent> peOrCI = self.addScriptedCDGProp(context.size(), $exprList.props, $gp.type, $gp.mainProps, $gp.orderProps, $gp.ascending, $gp.whereProp, groupContext);
+		Pair<LPWithParams, LPContextIndependent> peOrCI = self.addScriptedCDGProp(context.size(), $exprList.props, $gp.type, $gp.mainProps, $gp.orderProps, $gp.ascending, $gp.whereProp, groupContext, debugPoint);
 		$property = peOrCI.first;
 		$ci = peOrCI.second;
 	}
@@ -2206,10 +2207,11 @@ recursivePropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 	if (inMainParseState() && insideRecursion) {
 		self.getErrLog().emitNestedRecursionError(self.getParser());
 	}
+    DebugInfo.DebugPoint debugPoint = getEventDebugPoint();
 }
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedRProp(recursiveContext, $zeroStep.property, $nextStep.property, cycleType);			
+		$property = self.addScriptedRProp(recursiveContext, $zeroStep.property, $nextStep.property, cycleType, debugPoint);
 	}
 	insideRecursion = false;
 }
@@ -4565,10 +4567,7 @@ constraintStatement
 	LP<?> property = null;
 	List<NamedPropertyUsage> propUsages = null;
 	List<LPWithParams> properties = new ArrayList<>();
-	DebugInfo.DebugPoint debugPoint = null; 
-	if (inMainParseState()) {
-		debugPoint = getEventDebugPoint();
-	}
+	DebugInfo.DebugPoint debugPoint = getEventDebugPoint();
 }
 @after {
 	if (inMainParseState()) {
@@ -4682,11 +4681,7 @@ eventStatement
 	List<TypedParameter> context = new ArrayList<>();
 	List<LPWithParams> orderProps = new ArrayList<>();
 	boolean descending = false;
-	DebugInfo.DebugPoint debug = null;
-
-	if (inMainParseState()) {
-		debug = getEventDebugPoint(); 
-	}
+	DebugInfo.DebugPoint debug = getEventDebugPoint();
 }
 @after {
 	if (inMainParseState()) {

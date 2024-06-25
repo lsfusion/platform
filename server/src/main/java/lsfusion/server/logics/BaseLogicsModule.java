@@ -69,6 +69,7 @@ import lsfusion.server.logics.property.JoinProperty;
 import lsfusion.server.logics.property.LazyProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
+import lsfusion.server.logics.property.cases.CaseUnionProperty;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.classes.data.FormulaJoinProperty;
@@ -214,6 +215,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     private LP addedObject;
     private LP beforeCanceled;
     private LP requestCanceled;
+    private LP isHTMLSupported;
     private LP requestPushed;
     private LP isActiveForm;
     public LP formPageCount;
@@ -637,12 +639,17 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     private void initNativeProperties() {
         objectClass = addProperty(null, new LP<>(baseClass.getObjectClassProperty()));
         makePropertyPublic(objectClass, "objectClass", Collections.nCopies(1, null));
+
         random = addRMProp(LocalizedString.create("Random"));
         makePropertyPublic(random, "random", Collections.emptyList());
+
         SessionDataProperty requestCanceledProp = new SessionDataProperty(LocalizedString.NONAME, LogicalClass.instance);
         requestCanceledProp.nestedType = LocalNestedType.ALL;
         requestCanceled = addProperty(null, new LP<>(requestCanceledProp));
         makePropertyPublic(requestCanceled, "requestCanceled", Collections.emptyList());
+
+        isHTMLSupported = addAUProp(null, false, false, false, false, CaseUnionProperty.Type.MULTI, LocalizedString.NONAME, LogicalClass.instance);
+        makePropertyPublic(isHTMLSupported, "isHTMLSupported", Collections.emptyList());
 
         makePropertyPublic(FormEntity.isDocked, "isDocked");
         makePropertyPublic(FormEntity.isEditing, "isEditing");
@@ -937,6 +944,10 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     public LP getRequestCanceledProperty() {
         return requestCanceled;
+    }
+
+    public LP getIsHTMLSupported() {
+        return isHTMLSupported;
     }
 
     private LP getRequestPushedProperty() {

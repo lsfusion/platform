@@ -10,15 +10,15 @@ public class PropertyFollowsDebug {
     public final DebugInfo.DebugPoint debugPoint;
     public final boolean isFull;
 
-    public final LocalizedString caption;
+    public final LocalizedString debugCaption;
 
-    public PropertyFollowsDebug(Event event, boolean isTrue, boolean isFull, DebugInfo.DebugPoint debugPoint, LocalizedString caption) {
+    public PropertyFollowsDebug(Event event, boolean isTrue, boolean isFull, DebugInfo.DebugPoint debugPoint, LocalizedString debugCaption) {
         this.event = event;
 
         this.isTrue = isTrue;
         this.isFull = isFull;
         this.debugPoint = debugPoint;
 
-        this.caption = caption;
+        this.debugCaption = debugCaption;
     }
 }

@@ -28,6 +28,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 
 public class SystemEventsLogicsModule extends ScriptingLogicsModule {
 
@@ -215,6 +216,8 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         launchConnection = findProperty("launch[Connection]");
 
         currentLaunch = findProperty("currentLaunch[]");
+
+        baseLM.getIsHTMLSupported().addOperand(false, Collections.emptyList(), getVersion(), findProperty("isWeb[]"));
 
         paddingCss = findProperty("paddingCss[Size]");
         fontCss = findProperty("fontCss[Size]");

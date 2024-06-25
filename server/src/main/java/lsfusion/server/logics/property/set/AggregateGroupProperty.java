@@ -11,6 +11,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
+import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.property.PropertyFact;
@@ -99,7 +100,7 @@ public class AggregateGroupProperty<T extends PropertyInterface> extends CycleGr
         if(isFullAggr)
             return interfaces.mapSetValues(value -> (StoredDataProperty) ((PropertyMapImplement<?, T>)value.implement).property);
         return null;
-    } 
+    }
 }
 
 

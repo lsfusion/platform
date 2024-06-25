@@ -65,6 +65,13 @@
     background-image: var(--caption-panel-header-collapse-icon-url);
 }
 
+.collapsible-text-header, .collapsible-text {
+    display: none;
+}
+.highlight-text {
+    font-weight: bold;
+}
+
 /* just like in the clobal tab panel we want the top padding to come from the "header" */
 .modal-body {
     padding-top: var(--border-cont-vert-padding);

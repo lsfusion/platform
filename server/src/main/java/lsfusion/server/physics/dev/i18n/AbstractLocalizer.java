@@ -25,7 +25,11 @@ public abstract class AbstractLocalizer implements LocalizedString.Localizer {
                     break;
                 }
 
-                builder.append(localizeKey(source.substring(i + 1, closePos), locale));
+                String substring = source.substring(i + 1, closePos);
+                if(substring.matches("\\d+")) // if there are only digits then probably it is formatting
+                    builder.append(source, i, closePos + 1);
+                else
+                    builder.append(localizeKey(substring, locale));
                 i = closePos;
             } else {
                 builder.append(source.charAt(i));

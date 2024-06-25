@@ -1,10 +1,12 @@
 package lsfusion.server.logics.property.set;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.PullExpr;
@@ -54,15 +56,6 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
             constraintImplement = PropertyFact.createSumGProp(innerInterfaces, getMapInterfaces().values().mergeCol(SetFact.singleton(groupProperty)), one);
         }
         return PropertyFact.createCompare(constraintImplement, BaseUtils.<PropertyMapImplement<?, Interface<I>>>immutableCast(one), Compare.GREATER).property;
-    }
-
-    public LocalizedString getConstrainedMessage() {
-        String cycleCaption;
-        if(groupProperty instanceof PropertyMapImplement)
-            cycleCaption = ((PropertyMapImplement<?, I>)groupProperty).property.toString();
-        else
-            cycleCaption = groupProperty.toString();
-        return LocalizedString.createFormatted("{logics.property.derived.violate.property.uniqueness.for.objects}", cycleCaption);
     }
 
     @Override
