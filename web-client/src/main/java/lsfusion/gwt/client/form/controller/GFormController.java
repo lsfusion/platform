@@ -2494,8 +2494,12 @@ public class GFormController implements EditManager {
     }
 
     private static native void setCellBackgroundColor(Element element, String background) /*-{
-        element.style.setProperty("--bs-table-bg", background);
-        element.style.setProperty("--bs-body-bg", background);
+        // if pass null as a value, it will be undefined in browser.
+        // in this case, the sticky column will become transparent in TREE view
+        if (background != null) {
+            element.style.setProperty("--bs-table-bg", background);
+            element.style.setProperty("--bs-body-bg", background);
+        }
     }-*/;
 
     private static void setForegroundColor(Element element, String color) {
@@ -2508,7 +2512,9 @@ public class GFormController implements EditManager {
     }
 
     private static native void setCellForegroundColor(Element element, String color) /*-{
-        element.style.setProperty("--foreground-color", color);
+        // if pass null as a value, it will be undefined in browser
+        if (color != null)
+            element.style.setProperty("--foreground-color", color);
     }-*/;
 
     public static void setFont(Element element, GFont font) {
