@@ -82,7 +82,7 @@ public class CustomRestoreAction extends InternalAction {
                 dbName = context.getDbManager().customRestoreDB(fileBackup, tables.keySet());
                 importColumns(context, dbName, tables);
             } else {
-                context.requestUserInteraction(new MessageClientAction("Backup File not found or no selected tables", "Error"));
+                context.delayUserInteraction(new MessageClientAction("Backup File not found or no selected tables", "Error"));
             }
         } catch (Exception e) {
             throw Throwables.propagate(e);

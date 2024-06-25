@@ -34,7 +34,7 @@ public class RunCommandAction extends InternalAction {
             if (isClient) {
                 String result = (String) context.requestUserInteraction(new RunCommandClientAction(command, directory));
                 if (result != null) {
-                    context.requestUserInteraction(new MessageClientAction(result, "Ошибка"));
+                    context.delayUserInteraction(new MessageClientAction(result, "Ошибка"));
                 }
             } else {
                 try {

@@ -79,9 +79,7 @@ import lsfusion.server.logics.action.session.change.*;
 import lsfusion.server.logics.action.session.change.increment.IncrementChangeProps;
 import lsfusion.server.logics.action.session.change.increment.IncrementTableProps;
 import lsfusion.server.logics.action.session.change.modifier.*;
-import lsfusion.server.logics.action.session.changed.ChangedProperty;
 import lsfusion.server.logics.action.session.changed.OldProperty;
-import lsfusion.server.logics.action.session.changed.SessionProperty;
 import lsfusion.server.logics.action.session.changed.UpdateResult;
 import lsfusion.server.logics.action.session.classes.change.ClassChange;
 import lsfusion.server.logics.action.session.classes.change.ClassChanges;
@@ -2006,7 +2004,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     if(interaction == null) {
                         autoAttemptCount++;
                         if(autoAttemptCount > settings.getApplyAutoAttemptCountLimit()) {
-                            ThreadLocalContext.delayUserInteraction(new LogMessageClientAction(localize("{logics.server.apply.timeout.canceled}"), true));                            
+                            ThreadLocalContext.delayUserInteraction(new LogMessageClientAction(localize("{logics.server.apply.timeout.canceled}"), true, false));
                             return false;
                         }
                     } else {

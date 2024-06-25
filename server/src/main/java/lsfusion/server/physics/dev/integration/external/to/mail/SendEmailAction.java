@@ -169,7 +169,7 @@ public class SendEmailAction extends SystemExplicitAction {
                     email = trimToNull(email);
                     if (email == null || !p.matcher(email).matches()) {
                         if(email != null)
-                            context.requestUserInteraction(new MessageClientAction("Invalid email: " + email, "Invalid email"));
+                            context.delayUserInteraction(new MessageClientAction("Invalid email: " + email, "Invalid email"));
                         continue;
                     }
 

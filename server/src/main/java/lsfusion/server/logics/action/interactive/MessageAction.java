@@ -45,9 +45,9 @@ public class MessageAction extends SystemAction {
         if(message == null)
             message = "";
         if(log)
-            action = new LogMessageClientAction(message, false);
+            action = new LogMessageClientAction(message, false, !noWait);
         else
-            action = new MessageClientAction(message, title);
+            action = new MessageClientAction(message, title, false, !noWait);
 
         if (noWait) {
             context.delayUserInteraction(action);

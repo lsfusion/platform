@@ -98,12 +98,11 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
         if (GLog.isLogPanelVisible || action.failed) {
             super.execute(action);
         } else {
-            pauseDispatching();
-            form.blockingMessage(action.failed, "lsFusion", action.message, new DialogBoxHelper.CloseCallback() {
-                @Override
-                public void closed(DialogBoxHelper.OptionType chosenOption) {
+            if(action.syncType)
+                pauseDispatching();
+            form.blockingMessage(action.failed, "lsFusion", action.message, chosenOption -> {
+                if(action.syncType)
                     continueDispatching();
-                }
             });
         }
     }

@@ -116,12 +116,12 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         ArrayList<ArrayList<String>> arrayData = new ArrayList<>();
         for(List<String> row : action.data)
             arrayData.add(new ArrayList<>(row));
-        return new GLogMessageAction(action.failed, action.message, arrayData, new ArrayList<>(action.titles));
+        return new GLogMessageAction(action.failed, action.message, arrayData, new ArrayList<>(action.titles), action.syncType);
     }
 
     @Converter(from = MessageClientAction.class)
     public GMessageAction convertAction(MessageClientAction action) {
-        return new GMessageAction(action.message, action.caption);
+        return new GMessageAction(action.message, action.caption, action.syncType);
     }
 
     @Converter(from = ProcessFormChangesClientAction.class)
