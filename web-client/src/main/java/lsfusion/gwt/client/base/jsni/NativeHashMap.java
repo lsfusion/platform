@@ -185,14 +185,15 @@ public class NativeHashMap<K, V> {
     }-*/;
 
     private native V jsRemove(Object key, int hashCode) /*-{
-        var array = this.@NativeHashMap::hashCodeMap.get(hashCode);
+        var hashCodeMap = this.@NativeHashMap::hashCodeMap;
+        var array = hashCodeMap.get(hashCode);
         if (array) {
             for (var i = 0, c = array.length; i < c; ++i) {
                 var entry = array[i];
                 if (this.@NativeHashMap::equalsBridge(*)(key, entry[0])) {
                     if (array.length == 1) {
                         // remove the whole array
-                        jsMapDelete(hashCode);
+                        $wnd.jsMapDelete(hashCodeMap, hashCode);
                     } else {
                         array.splice(i, 1)
                     }

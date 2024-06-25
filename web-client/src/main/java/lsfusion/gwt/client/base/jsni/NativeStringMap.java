@@ -115,7 +115,7 @@ public class NativeStringMap<V> {
     private native V jsRemove(String sKey) /*-{
         var nativeStringMap = this.@NativeStringMap::nativeStringMap;
         var previous = nativeStringMap.get(sKey);
-        jsMapDelete(sKey);
+        $wnd.jsMapDelete(nativeStringMap, sKey);
         return previous;
     }-*/;
 

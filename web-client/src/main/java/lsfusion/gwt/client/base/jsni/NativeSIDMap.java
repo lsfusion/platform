@@ -144,7 +144,7 @@ public class NativeSIDMap<K extends HasNativeSID, V> {
         if (array)
             previous = array[1];
 
-        jsMapDelete(sKey);
+        $wnd.jsMapDelete(nativeSIDMap, sKey);
 
         return previous;
     }-*/;
