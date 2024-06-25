@@ -1029,6 +1029,6 @@
         <property name="theme" value="${user.theme:#{null}}"/>
         <property name="size" value="${user.size:#{null}}"/>
         <property name="navbar" value="${user.navbar:#{null}}"/>
-        <property name="navigatorPinMode" value="${user.navigatorPinMode:#{null}}"/>
+        <property name="navigatorPinMode" value="${user.navigatorPinMode:#{false}}"/>
     </bean>
 </beans>
