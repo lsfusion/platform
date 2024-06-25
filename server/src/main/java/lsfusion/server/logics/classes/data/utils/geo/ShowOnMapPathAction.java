@@ -66,7 +66,7 @@ public class ShowOnMapPathAction extends GeoAction {
             }
 
             if (index <= result.values().size())
-                context.requestUserInteraction(new MessageClientAction("Не все координаты проставлены", "Ошибка"));
+                context.delayUserInteraction(new MessageClientAction("Не все координаты проставлены", "Ошибка"));
             else
                 context.requestUserInteraction(new OpenUriClientAction(new URI((isYandex ?
                         ("https://maps.yandex.ru/?rtt=auto&rtm=atm&rtext=" + uri + firstLatLong) :

@@ -10,15 +10,19 @@ public class LogMessageClientAction extends ExecuteClientAction {
     public List<List<String>> data;
     public List<String> titles;
 
-    public LogMessageClientAction(String message, boolean failed) {
-        this(message, new ArrayList<>(), new ArrayList<>(), failed);
+    public boolean syncType;
+
+    public LogMessageClientAction(String message, boolean failed, boolean syncType) {
+        this(message, new ArrayList<>(), new ArrayList<>(), failed, syncType);
     }
 
-    public LogMessageClientAction(String message, List<String> titles, List<List<String>> data, boolean failed) {
+    public LogMessageClientAction(String message, List<String> titles, List<List<String>> data, boolean failed, boolean syncType) {
         this.message = message;
         this.titles = titles;
         this.data = data;
         this.failed = failed;
+
+        this.syncType = syncType;
     }
 
     @Override

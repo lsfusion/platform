@@ -99,7 +99,7 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
             PrintMessageData reportData = new StaticFormDataManager(form, mapObjectValues, context, contextFilters).getPrintMessageData(selectTop, removeNullsAndDuplicates);
 
             // proceeding data
-            LogMessageClientAction action = new LogMessageClientAction(reportData.message, reportData.titles, reportData.rows, !context.getSession().isNoCancelInTransaction());
+            LogMessageClientAction action = new LogMessageClientAction(reportData.message, reportData.titles, reportData.rows, !context.getSession().isNoCancelInTransaction(), syncType);
             if(syncType)
                 context.requestUserInteraction(action);
             else

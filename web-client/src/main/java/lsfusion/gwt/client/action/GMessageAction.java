@@ -4,17 +4,17 @@ public class GMessageAction extends GExecuteAction {
     public String message;
     public String caption;
 
+    public boolean syncType;
+
     //needed for it to be gwt-serializable
     @SuppressWarnings("UnusedDeclaration")
     public GMessageAction() {}
 
-    public GMessageAction(String message, String caption) {
-        this(false, message, caption);
-    }
-
-    public GMessageAction(boolean failed, String message, String caption) {
+    public GMessageAction(String message, String caption, boolean syncType) {
         this.message = message;
         this.caption = caption;
+
+        this.syncType = syncType;
     }
 
     @Override

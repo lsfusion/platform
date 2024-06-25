@@ -55,9 +55,9 @@ public class MessageAction extends SystemAction {
     protected void showMessage(ExecutionContext<PropertyInterface> context, String message, String header) throws SQLException, SQLHandledException {
         ClientAction action;
         if(log)
-            action = new LogMessageClientAction(message, false);
+            action = new LogMessageClientAction(message, false, !noWait);
         else
-            action = new MessageClientAction(message, header);
+            action = new MessageClientAction(message, header, false, !noWait);
 
         if (noWait) {
             context.delayUserInteraction(action);

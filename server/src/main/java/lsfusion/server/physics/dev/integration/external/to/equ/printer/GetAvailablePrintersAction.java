@@ -19,7 +19,7 @@ public class GetAvailablePrintersAction extends InternalAction {
     @Override
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
         String printerNames = (String) context.requestUserInteraction(new GetAvailablePrintersClientAction());
-        context.requestUserInteraction(
+        context.delayUserInteraction(
                 new MessageClientAction(printerNames.isEmpty() ? "Не найдено доступных принтеров" : printerNames, "Список доступных принтеров"));
     }
 
