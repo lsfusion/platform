@@ -11,9 +11,9 @@ CLASS ABSTRACT name [caption] [: parent1, ..., parentN];
  
 CLASS [NATIVE] name [caption] 
 [{
-    objectName1 [objectCaption1],
+    objectName1 [objectCaption1] [imageSetting1],
     ...
-    objectNameM [objectCaptionM]
+    objectNameM [objectCaptionM] [imageSettingM]
 }] 
 [: parent1, ..., parentN];
 ```
@@ -43,6 +43,22 @@ CLASS [NATIVE] name [caption]
 - `objectCaption1, ..., objectCaptionM`
 
     Заголовки статических объектов данного класса. Каждый заголовок является строковым литералом. Если заголовок не задан, то заголовком статического объекта будет являться его имя. Значения заголовков хранятся в системном свойстве `System.staticCaption`.
+
+- `imageSetting1, ..., imageSettingM`
+
+    Настройки отображения иконок заголовков статических объектов данного класса. По умолчанию наличие иконки или ее отсутствие регулируется [параметрами](Working_parameters.md) `settings.defaultImagePathRankingThreshold` и `settings.defaultAutoImageRankingThreshold`. Значение класса `HTML`, используемое для отображения иконки, хранится в системном свойстве `System.image[StaticObject]`. Эта опция позволяет настроить отображение иконки вручную. Может иметь один из двух видов:
+
+    - `IMAGE [fileExpr]`
+
+        Указание относительного пути к файлу изображения, которое будет отображаться в качестве иконки заголовка статического объекта. Если `fileExpr` не указывается, то происходит переключение в режим отображения иконки по умолчанию.
+
+        - `fileExpr`
+
+            [Выражение](Expression.md), значение которого определяет путь к файлу изображения. Путь указывается относительно каталога `images`.
+
+    - `NOIMAGE`
+
+        Ключевое слово, указывающее на то, что иконка заголовка статического объекта должна отсутствовать.
 
 - `parent1, ..., parentN`
 
