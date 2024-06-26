@@ -210,6 +210,14 @@ public abstract class AbstractContext implements Context {
 
     @Override
     public Object[] requestUserInteraction(ClientAction... actions) {
+        // the problem is that we shouldn't pauseDispatching when it's delay call (not request), and vice a versa
+        // usually in server we manage it manually (for now), but for backward compatibility, adding this check
+        String[] messages = new String[actions.length];
+        for (int i = 0; i < actions.length; i++) {
+            ClientAction action = actions[i];
+            if(action instanceof MessageClientAction)
+                ((MessageClientAction) action).syncType = true;
+        }
         return aspectRequestUserInteraction(actions, processClientActions(actions));
     }
 
