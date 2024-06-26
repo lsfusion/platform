@@ -122,7 +122,7 @@ The hierarchy described within a single `NAVIGATOR` statement can have an arbitr
 
 - `imageSetting`
 
-    Configuring the display of the navigator element's icon. By default, the icon or its absence is controlled by the [parameters](Working_parameters.md) `settings.defaultNavigatorImageRankingThreshold` and `settings.defaultNavigatorImage`. This option allows you to manually configure the icon display. It can have one of two forms:
+    Configuring the display of the navigator element's icon. By default, the icon or its absence is controlled by the [parameters](Working_parameters.md) `settings.defaultNavigatorImageRankingThreshold`, `settings.defaultNavigatorImage` and others. This option allows you to manually configure the icon display. It can have one of two forms:
  
     - `IMAGE [fileExpr]`
 

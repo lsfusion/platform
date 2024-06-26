@@ -122,7 +122,7 @@ HEADER headerExpr
 
 - `imageSetting`
 
-    Настройка отображения иконки элемента навигатора. По умолчанию иконка или ее отсутствие регулируется [параметрами](Working_parameters.md) `settings.defaultNavigatorImageRankingThreshold` и `settings.defaultNavigatorImage`. Эта опция позволяет настроить отображение иконки вручную. Может иметь один из двух видов:
+    Настройка отображения иконки элемента навигатора. По умолчанию иконка или ее отсутствие регулируется [параметрами](Working_parameters.md) `settings.defaultNavigatorImageRankingThreshold`, `settings.defaultNavigatorImage` и другими. Эта опция позволяет настроить отображение иконки вручную. Может иметь один из двух видов:
 
     - `IMAGE [fileExpr]`
 
