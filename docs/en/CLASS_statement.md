@@ -2,7 +2,7 @@
 title: 'CLASS statement'
 ---
 
-`CLASS` statement creates a new [custom class](User_classes.md).
+`CLASS` statement - creating a new [custom class](User_classes.md).
 
 ### Syntax
 
@@ -34,11 +34,11 @@ The `NATIVE` keyword is used in some system modules. It is used to declare indiv
 
 - `caption`
 
-    Class header. [String literal](Literals.md#strliteral). If the caption is not defined, the name of the class will be its caption.  
+    Class caption. [String literal](Literals.md#strliteral). If the caption is not defined, the name of the class will be its caption.  
 
 - `objectName1, ..., objectNameM`
 
-    The names of [static](Static_objects.md) objects of this class. Each name is defined by a simple ID. Name values are stored in the `System.staticName` system property.
+    The names of static objects of this class. Each name is defined by a simple ID. Name values are stored in the `System.staticName` system property.
 
 - `objectCaption1, ..., objectCaptionM`
 
@@ -49,7 +49,6 @@ The `NATIVE` keyword is used in some system modules. It is used to declare indiv
     List of parent class names. Each name is defined by a [composite ID](IDs.md#cid). If the list of parent classes is not specified, the class is inherited from the `System.Object` class.  
 
 ### Examples
-
 
 ```lsf
 CLASS ABSTRACT Document; // The caption of this class will be 'Document'
