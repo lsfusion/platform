@@ -2291,9 +2291,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             query.and(expr.getWhere());
             disableStatsTableColumnSet = query.execute(dataSession).keys().mapSetValues(value -> (String) value.singleValue());
 
-        } catch (SQLException e) {
-            serviceLogger.info(e.getMessage());
-        } catch (SQLHandledException e) {
+        } catch (Exception e) {
             serviceLogger.info(e.getMessage());
         }
         return disableStatsTableColumnSet.toJavaSet();
