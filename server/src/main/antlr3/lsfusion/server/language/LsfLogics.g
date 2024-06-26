@@ -327,7 +327,7 @@ classStatement
 		('ABSTRACT' {isAbstract = true;} | 'NATIVE' {isNative = true;})?
 		('COMPLEX' { isComplex = true; })?
 		nameCaption=simpleNameWithCaption
-		(image=imageStatement)?
+		(image=imageOption)?
 		classData=classInstancesAndParents
 	;
 
@@ -352,9 +352,9 @@ classInstancesAndParents returns [List<String> names, List<LocalizedString> capt
 	:	(
 			'{'
 				(firstInstData=simpleNameWithCaption { $names.add($firstInstData.name); $captions.add($firstInstData.caption); }
-				(firstInstImg = imageStatement)? {$images.add($firstInstImg.image);}
+				(firstInstImg = imageOption)? {$images.add($firstInstImg.image);}
 				(',' nextInstData=simpleNameWithCaption { $names.add($nextInstData.name); $captions.add($nextInstData.caption); }
-				(nextInstImg = imageStatement)? {$images.add($nextInstImg.image); })*)?
+				(nextInstImg = imageOption)? {$images.add($nextInstImg.image); })*)?
 			'}'
 			(clist=classParentsList ';' { $parents = $clist.list; })?
 		|
@@ -504,7 +504,7 @@ formDeclaration returns [ScriptingFormEntity form]
 }
 	:	'FORM' 
 		formNameCaption=simpleNameWithCaption
-		(	img=imageStatement
+		(	img=imageOption
 		|	('LOCALASYNC' { localAsync = true; })
 		)*
 	;
@@ -2982,7 +2982,7 @@ imageSetting [LAP property]
 		self.setImage(property, $img.image);
 	}
 }
-	:   img=imageStatement
+	:   img=imageOption
 	;
 
 defaultCompareSetting [LAP property]
@@ -5388,7 +5388,7 @@ typedParameter returns [TypedParameter param]
 	:	(cname=classId)? pname=ID
 	;
 
-imageStatement returns [String image]
+imageOption returns [String image]
     :   ('IMAGE' (img=stringLiteral)? {$image = BaseUtils.nvl($img.val, AppServerImage.AUTO); } | 'NOIMAGE' { $image = AppServerImage.NULL; } )
     ;
 
