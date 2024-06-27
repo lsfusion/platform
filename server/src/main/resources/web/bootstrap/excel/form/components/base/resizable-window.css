@@ -51,6 +51,17 @@
     overflow: hidden;
 }
 
+.modal-dialog-scrollable {
+    height: calc(100% - 1.75rem * 2);
+}
+.modal-dialog-scrollable .modal-content {
+    max-height: 100%;
+    overflow: hidden;
+}
+.modal-dialog-scrollable .modal-body {
+    overflow-y: auto;
+}
+
 .modal-backdrop {
     position: fixed;
     top: 0;

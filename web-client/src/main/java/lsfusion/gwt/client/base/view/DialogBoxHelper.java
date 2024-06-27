@@ -90,6 +90,8 @@ public class DialogBoxHelper {
 
         private MessageBox(String caption, Widget contents, int timeout, final CloseCallback closeCallback, final OptionType activeOption, OptionType... options) {
             super(caption, false, ModalWindowSize.FIT_CONTENT);
+            
+            dialog.addStyleName("modal-dialog-scrollable");
 
             this.closeCallback = closeCallback;
 
