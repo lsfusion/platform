@@ -23,8 +23,6 @@ import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
 import lsfusion.gwt.client.view.MainFrame;
 
-import static lsfusion.gwt.client.base.view.ColorUtils.getThemedColor;
-
 // property value renderer with editing
 public abstract class ActionOrPropertyValue extends Widget implements EditContext, RenderContext, UpdateContext, ColorThemeChangeListener {
 
@@ -194,12 +192,11 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
             FocusUtils.focus(focusElement, reason);
     }
 
-    public SizedWidget getSizedWidget() {
+    public SizedWidget getSizedWidget(boolean needNotNull) {
         boolean globalCaptionIsDrawn = this.globalCaptionIsDrawn;
         GFont font = getFont();
-        RendererType rendererType = getRendererType();
-        GSize valueWidth = property.getValueWidth(font, false, globalCaptionIsDrawn, rendererType);
-        GSize valueHeight = property.getValueHeight(font, false, globalCaptionIsDrawn, rendererType);
+        GSize valueWidth = property.getValueWidth(font, needNotNull, globalCaptionIsDrawn);
+        GSize valueHeight = property.getValueHeight(font, needNotNull, globalCaptionIsDrawn);
 
         Element renderElement = getRenderElement();
         Element sizeElement = InputBasedCellRenderer.getSizeElement(renderElement);

@@ -740,7 +740,7 @@ protected Double getUserFlex(int i) {
         //      but the main problem is that % percentage works really odd (but only in Chrome, in Firefox it works fine), it respects paddings, but not the way it does in divs (i.e subtract paddings, and then split the rest). This might create problems in resizing,
         //      plus Firefox doesn't respect min-width for td (as well as Chrome)
         // but there is another way : to create separate columns for flex props : one fixed size, one percent size, and set colspan 2 for headers / rows
-        return getColumnPropertyDraw(i).getValueWidth(font, true, true, RendererType.GRID);
+        return getColumnPropertyDraw(i).getValueWidth(font, true, true);
     }
 
     private <C> Element getRenderElement(Cell cell, TableCellElement parent) {

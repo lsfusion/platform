@@ -28,7 +28,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
     public PropertyPanelRenderer(final GFormController form, ActionOrPropertyValueController controller, GPropertyDraw property, GGroupObjectValue columnKey, Result<CaptionWidget> captionContainer) {
         super(form, controller, property, columnKey, property.isAction()); // assert if is Action that property has alignCaption() true and captionContainer != null
 
-        SizedWidget valueWidget = value.getSizedWidget();
+        SizedWidget valueWidget = value.getSizedWidget(false);
 
         setStyles(valueWidget.widget.getElement(), property.isEditableNotNull(), property.hasChangeAction);
 

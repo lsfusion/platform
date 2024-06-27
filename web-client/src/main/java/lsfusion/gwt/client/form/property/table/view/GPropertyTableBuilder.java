@@ -41,7 +41,7 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         }
 
         // we need to set the size to the "render" element to avoid problems with padding
-        GSize valueHeight = property.getValueHeight(font, false, true, rendererType);
+        GSize valueHeight = property.getValueHeight(font, false, true);
         if(valueHeight != null) // this way we can avoid prop-size-value fill-parent-perc conflict (see the css file) in most cases
             element.addClassName("prop-size-value");
         if(!property.isShrinkOverflowVisible())

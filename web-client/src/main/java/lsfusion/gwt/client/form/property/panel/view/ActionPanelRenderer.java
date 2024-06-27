@@ -9,14 +9,12 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 public class ActionPanelRenderer extends PanelRenderer {
 
-//    private final GFormController form;
-
     private final SizedWidget sizedView;
 
     public ActionPanelRenderer(final GFormController form, ActionOrPropertyValueController controller, final GPropertyDraw property, GGroupObjectValue columnKey) {
         super(form, controller, property, columnKey, false);
 
-        sizedView = value.getSizedWidget();
+        sizedView = value.getSizedWidget(false);
 
         if (property.drawAsync)
             form.setAsyncView(this);

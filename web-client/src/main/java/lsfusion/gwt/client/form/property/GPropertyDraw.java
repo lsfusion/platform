@@ -740,7 +740,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
     public double getFlex(RendererType rendererType) {
         if (flex == -2) {
-            return getValueWidth(null, true, false, rendererType).getValueFlexSize();
+            return getValueWidth(null, true, false).getValueFlexSize();
         }
         return super.getFlex(rendererType);
     }
@@ -804,7 +804,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     // not null
     // padding has to be included for grid column for example, and not for panel property (since flex, width, min-width, etc. doesn't include padding)
     public GSize getValueWidthWithPadding(GFont parentFont, RendererType rendererType) {
-        return getValueWidth(parentFont, true, true, rendererType).add(getCellRenderer(rendererType).getWidthPadding() * 2);
+        return getValueWidth(parentFont, true, true).add(getCellRenderer(rendererType).getWidthPadding() * 2);
     }
 
     public boolean hasAutoSize() {
@@ -812,25 +812,25 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     // not null
-    public GSize getValueWidth(GFont parentFont, boolean needNotNull, boolean globalCaptionIsDrawn, RendererType rendererType) {
+    public GSize getValueWidth(GFont parentFont, boolean needNotNull, boolean globalCaptionIsDrawn) {
         if (valueWidth >= 0)
             return GSize.getValueSize(valueWidth);
 
         if(!needNotNull && valueWidth == -1 && charWidth == 0)
             return null;
 
-        return getRenderType(rendererType).getValueWidth(getFont(parentFont), this, needNotNull, globalCaptionIsDrawn);
+        return getValueType().getValueWidth(getFont(parentFont), this, needNotNull, globalCaptionIsDrawn);
     }
 
     // not null
-    public GSize getValueHeight(GFont parentFont, boolean needNotNull, boolean globalCaptionIsDrawn, RendererType rendererType) {
+    public GSize getValueHeight(GFont parentFont, boolean needNotNull, boolean globalCaptionIsDrawn) {
         if (valueHeight >= 0)
             return GSize.getValueSize(valueHeight);
 
         if(!needNotNull && valueHeight == -1 && charHeight == 0)
             return null;
 
-        return getRenderType(rendererType).getValueHeight(getFont(parentFont), this, needNotNull, globalCaptionIsDrawn);
+        return getValueType().getValueHeight(getFont(parentFont), this, needNotNull, globalCaptionIsDrawn);
     }
 
     private GFont getFont(GFont parentFont) {
