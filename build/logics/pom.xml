@@ -92,12 +92,12 @@
                             <goal>run</goal>
                         </goals>
                         <configuration>
-                            <tasks>
+                            <target>
                                 <!-- to synchronize jrxml files in src and target folders (move or delete inside src) -->
                                 <delete quiet="true">
                                     <fileset dir="${project.build.outputDirectory}" includes="**/*.jrxml" />
                                 </delete>
-                            </tasks>
+                            </target>
                         </configuration>
                     </execution>
                 </executions>
