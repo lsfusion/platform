@@ -77,12 +77,24 @@
             <plugins>
                 <plugin>
                     <artifactId>maven-antrun-plugin</artifactId>
-                    <version>1.7</version>
+                    <version>3.1.0</version>
                     <dependencies>
                         <dependency>
                             <groupId>de.matthiasmann</groupId>
                             <artifactId>p200ant</artifactId>
                             <version>1.0</version>
+                        </dependency>
+                        <!-- Fix of 'java.lang.UnsupportedOperationException: The Security Manager is deprecated
+                        and will be removed in a future release' error when compiling on Java 18+.
+                        Fails on execution of LSFLogicsParserPostProcess (server pom.xml)
+                        The issue has been resolved in Ant 1.10.14
+                        https://bz.apache.org/bugzilla/show_bug.cgi?id=65381
+                        This dependency can be removed when new version on antrun plugin arrives 
+                        as current latest version 3.1.0 uses Ant 1.10.12 -->
+                        <dependency>
+                            <groupId>org.apache.ant</groupId>
+                            <artifactId>ant</artifactId>
+                            <version>1.10.14</version>
                         </dependency>
                     </dependencies>
                 </plugin>
