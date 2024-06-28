@@ -165,7 +165,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
             singleDatePicker: singleDatePicker,
             drops: 'auto',
             opens: 'left', // thisObj.@DateRangePickerBasedCellEditor::getHorzTextAlignment()().@com.google.gwt.dom.client.Style.TextAlign::getCssName()()
-            alwaysShowCalendars: true,
+            alwaysShowCalendars: true
         };
         if(startDate != null) { // needed for the 2-year digit dates
             options.startDate = startDate;

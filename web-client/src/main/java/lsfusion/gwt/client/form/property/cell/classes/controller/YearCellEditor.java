@@ -9,6 +9,8 @@ import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 
+import java.util.Date;
+
 import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
 
 public class YearCellEditor extends IntegralCellEditor {
@@ -17,12 +19,26 @@ public class YearCellEditor extends IntegralCellEditor {
         super(GIntegerType.instance, editManager, property);
     }
 
+    public PValue getDefaultNullValue() {
+        return PValue.getPValue(new Date().getYear() + 1900);
+    }
+
     @Override
     public void start(EventHandler handler, Element parent, RenderContext renderContext, boolean notFocusable, PValue oldValue) {
         super.start(handler, parent, renderContext, notFocusable, oldValue);
 
         if (started) {
-            openYearPicker(inputElement, parent, nvl(PValue.getIntegerValue(oldValue), 0));
+            // the air datepicker differs from the "regular" datepicker - it doesn't set the value of start date to the input element, so we have to do it manually
+            if(oldValue == null) {
+                oldValue = getDefaultNullValue();
+
+                setTextInputValue(tryFormatInputText(oldValue));
+
+                // if value is null - current date will be set, so we need to select the value, since we want to rewrite data on key input
+                inputElement.select();
+            }
+
+            openYearPicker(inputElement, parent, PValue.getIntegerValue(oldValue));
             GwtClientUtils.addDropDownPartner(parent, getYearPickerContainer(parent));
         }
     }
@@ -44,13 +60,12 @@ public class YearCellEditor extends IntegralCellEditor {
             view: 'years', // displaying the years of one decade
             minView: 'years', // The minimum possible representation of the calendar. It is used, for example, when you need to provide only a choice of the year.
             visible: true, // Shows the calendar immediately after initialization.
-            startDate: initYear !== 0 ? new Date().setFullYear(initYear) : new Date(),
+            startDate: new Date().setFullYear(initYear),
             dateFormat: function (date) {
                 return date.getFullYear(); // to return a number, not a Date object
             },
-            onHide: function(isFinished) {
-                if (isFinished) // isFinished — animation completion indicator
-                    thisObj.@YearCellEditor::pickerApply(*)(parent);
+            onSelect: function(event) {
+                thisObj.@YearCellEditor::pickerApply(*)(parent);
             }
         });
     }-*/;
