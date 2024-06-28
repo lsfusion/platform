@@ -188,9 +188,10 @@ public class LogicsSessionObject {
     }
 
     private static void fillRanges(JSONArray rangesJson, List<String> ranges) {
-        for (int i = 0; i < rangesJson.length(); i++) {
-            ranges.add(rangesJson.getJSONObject(i).getString("range"));
-        }
+        if(rangesJson != null)
+            for (int i = 0; i < rangesJson.length(); i++) {
+                ranges.add(rangesJson.getJSONObject(i).getString("range"));
+           }
     }
 
     public static JSONObject getJSONObjectResult(ExternalResponse result) {
