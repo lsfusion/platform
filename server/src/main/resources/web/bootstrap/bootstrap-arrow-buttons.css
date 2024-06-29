@@ -12,14 +12,14 @@
     --bs-actual-border-width: 0px;
 }
 
-/* cutting the arrow inside */
+/* cutting the arrow inside, adding 10px to show shadows */
 .btn-arrows-around > .btn-arrow-right,
 .btn-arrow-right:not(.btn-group > :first-of-type) {
   clip-path: polygon(
-          0 0,
-          9999px 0,
-          9999px 100%,
-          0 100%,
+          0 0, 0 -10px,
+          9999px -10px,
+          9999px calc(100% + 10px),
+          0 calc(100% + 10px), 0 100%,
           var(--btn-full-half-height) 50%
   );
 
@@ -31,10 +31,10 @@
 .btn-arrows-around > .btn-arrow-left,
 .btn-arrow-left:not(.btn-group > :last-of-type) {
   clip-path: polygon(
-          100% 0,
-          -9999px 0,
-          -9999px 100%,
-          100% 100%,
+          100% 0, 100% -10px,
+          -9999px -10px,
+          -9999px calc(100% + 10px),
+          100% calc(100% + 10px), 100% 100%,
           calc(100% - var(--btn-full-half-height)) 50%
   );
 

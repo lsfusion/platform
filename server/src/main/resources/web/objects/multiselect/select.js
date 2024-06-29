@@ -791,9 +791,10 @@ function _selectDropdown(shouldBeSelected, changeValue) {
             select.classList.add("form-select");
 
             select.addEventListener('keydown', function (e) {
-                if (e.keyCode === 32) {
+                if (e.keyCode === 32)
                     _setIsEditing(element, select, true);
-                }
+                else if (e.key === 'Escape')
+                   _setIsEditing(element, select, false);
             });
 
             select.addEventListener('change', function () {
@@ -812,7 +813,7 @@ function _selectDropdown(shouldBeSelected, changeValue) {
                 //     return;
                 setTimeout(function() {
                     if(!e.defaultPrevented)
-                        _setIsEditing(element, select, true);
+                        _setIsEditing(element, select, !_isEditing(element, select));
                 });
             });
 
