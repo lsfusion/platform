@@ -2,9 +2,7 @@ package lsfusion.server.logics.form.open.stat;
 
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.interop.action.LogMessageClientAction;
-import lsfusion.interop.action.ReportClientAction;
-import lsfusion.interop.action.ServerPrintAction;
+import lsfusion.interop.action.*;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.print.ReportGenerator;
@@ -98,12 +96,12 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
             // getting data
             PrintMessageData reportData = new StaticFormDataManager(form, mapObjectValues, context, contextFilters).getPrintMessageData(selectTop, removeNullsAndDuplicates);
 
+            MessageClientType messageType = MessageClientType.ERROR;
+            if(context.getSession().isNoCancelInTransaction())
+                messageType = MessageClientType.INFO;
+
             // proceeding data
-            LogMessageClientAction action = new LogMessageClientAction(reportData.message, reportData.titles, reportData.rows, !context.getSession().isNoCancelInTransaction(), syncType);
-            if(syncType)
-                context.requestUserInteraction(action);
-            else
-                context.delayUserInteraction(action);
+            context.message(reportData.message, "lsFusion", reportData.rows, reportData.titles, messageType, !syncType);
         } else {
             // getting data
             StaticFormReportManager formReportManager = new StaticFormReportManager(form, mapObjectValues, context, contextFilters);

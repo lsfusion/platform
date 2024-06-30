@@ -6,7 +6,6 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.lambda.E2Runnable;
 import lsfusion.base.log.FlushableRollingFileAppender;
-import lsfusion.interop.action.LogMessageClientAction;
 import lsfusion.server.base.controller.stack.ExecutionStackAspect;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.physics.admin.Settings;
@@ -95,7 +94,7 @@ public class ServerLoggers {
         if(!assertion) {
             Settings settings;
             if(interactive && (settings = Settings.get()) != null && settings.isEnableInteractiveAssertLog())
-                ThreadLocalContext.delayUserInteraction(new LogMessageClientAction(ThreadLocalContext.localize("{logics.server.interactive.assert}"), true, false));
+                ThreadLocalContext.message(ThreadLocalContext.localize("{logics.server.interactive.assert}"));
             assertLogger.info(message + '\n' + ExecutionStackAspect.getExStackTrace());
         }
         assert assertion : message;

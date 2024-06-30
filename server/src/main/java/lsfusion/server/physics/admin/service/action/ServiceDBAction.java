@@ -25,13 +25,13 @@ public class ServiceDBAction extends InternalAction {
         run(context, (session, isolatedTransaction) -> {
             String result = context.getDbManager().recalculateClasses(session, isolatedTransaction);
             if(result != null)
-                context.delayUserInterfaction(new MessageClientAction(result, localize("{logics.service.db}")));
+                context.message(result, localize("{logics.service.db}"));
         });
 
         run(context, (session, isolatedTransaction) -> {
             String result = context.getDbManager().recalculateMaterializations(context.stack, session, isolatedTransaction);
             if(result != null)
-                context.delayUserInterfaction(new MessageClientAction(result, localize("{logics.service.db}")));
+                context.message(result, localize("{logics.service.db}"));
         });
 
         run(context, (session, isolatedTransaction) -> context.getDbManager().packTables(session, context.getBL().LM.tableFactory.getImplementTables(), isolatedTransaction));
@@ -42,13 +42,13 @@ public class ServiceDBAction extends InternalAction {
         runData(context, (session, isolatedTransaction) -> {
             String result = context.getBL().recalculateFollows(session, isolatedTransaction, context.stack);
             if(result != null)
-                context.delayUserInterfaction(new MessageClientAction(result, localize("{logics.service.db}")));
+                context.message(result, localize("{logics.service.db}"));
         });
 
         context.getDbManager().recalculateStats(context.getSession());
         context.apply();
 
-        context.delayUserInterfaction(new MessageClientAction(localize("{logics.service.db.completed}"), localize("{logics.service.db}")));
+        context.message(localize("{logics.service.db.completed}"), localize("{logics.service.db}"));
     }
     
     public static boolean singleTransaction(ExecutionContext context) throws SQLException, SQLHandledException {

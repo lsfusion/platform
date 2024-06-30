@@ -38,9 +38,9 @@ public class CheckTableClassesAction extends InternalAction {
 
             boolean noErrors = isEmpty(message.result);
 
-            context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted(noErrors ? "{logics.check.completed}" : "{logics.check.failed}",
+            context.message(localize(LocalizedString.createFormatted(noErrors ? "{logics.check.completed}" : "{logics.check.failed}",
                     localize("{logics.checking.data.classes}"))) + (noErrors ? "" : ("\n\n" + message.result)),
-                    localize("{logics.checking.data.classes}"), true));
+                    localize("{logics.checking.data.classes}"), true);
         }
     }
 }

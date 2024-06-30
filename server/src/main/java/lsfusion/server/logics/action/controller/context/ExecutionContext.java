@@ -9,6 +9,7 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.lambda.Processor;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.action.ClientAction;
+import lsfusion.interop.action.MessageClientType;
 import lsfusion.interop.form.ModalityWindowFormType;
 import lsfusion.interop.form.ShowFormType;
 import lsfusion.interop.form.WindowFormType;
@@ -350,6 +351,17 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 
     public void delayUserInterfaction(ClientAction action) {
         ThreadLocalContext.delayUserInteraction(action);
+    }
+
+    public void message(String message, String header) {
+        message(message, header, false);
+    }
+    public void message(String message, String header, boolean extended) {
+        ThreadLocalContext.message(message, header, extended);
+    }
+
+    public void message(String message, String caption, List<List<String>> data, List<String> titles, MessageClientType type, boolean noWait) {
+        ThreadLocalContext.message(message, caption, data, titles, type, noWait);
     }
 
     public ExecutionEnvironment getSessionEventFormEnv() {

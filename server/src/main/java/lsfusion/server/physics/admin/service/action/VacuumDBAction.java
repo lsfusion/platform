@@ -20,6 +20,6 @@ public class VacuumDBAction extends InternalAction {
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
         context.getDbManager().vacuumDB(context.getSession().sql);
-        context.delayUserInterfaction(new MessageClientAction(localize("{logics.vacuum.db.was.completed}"), localize("{logics.vacuum.db}")));
+        context.message(localize("{logics.vacuum.db.was.completed}"), localize("{logics.vacuum.db}"));
     }
 }

@@ -95,6 +95,6 @@ public class ReceiveEmailAction extends InternalAction {
 
     private void logError(ExecutionContext context, String errorMessage) {
         logger.error(errorMessage);
-        context.delayUserInterfaction(new MessageClientAction(errorMessage, localize("{mail.receiving}")));
+        context.message(errorMessage, localize("{mail.receiving}"));
     }
 }

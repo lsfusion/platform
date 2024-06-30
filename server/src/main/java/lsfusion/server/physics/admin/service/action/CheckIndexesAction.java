@@ -20,6 +20,6 @@ public class CheckIndexesAction extends InternalAction {
     @Override
     public void executeInternal(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         context.getDbManager().checkIndexes(context.getSession().sql);
-        context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted("{logics.check.completed}", localize("{logics.checking.indexes}"))), localize("{logics.checking.indexes}")));
+        context.message(localize(LocalizedString.createFormatted("{logics.check.completed}", localize("{logics.checking.indexes}"))), localize("{logics.checking.indexes}"));
     }
 }

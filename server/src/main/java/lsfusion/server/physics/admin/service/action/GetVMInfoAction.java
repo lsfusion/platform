@@ -20,6 +20,6 @@ public class GetVMInfoAction extends InternalAction {
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
 
         String message = SystemUtils.getVMInfo();
-        context.delayUserInterfaction(new MessageClientAction(message, ThreadLocalContext.localize("{vm.data}")));
+        context.message(message, ThreadLocalContext.localize("{vm.data}"));
     }
 }

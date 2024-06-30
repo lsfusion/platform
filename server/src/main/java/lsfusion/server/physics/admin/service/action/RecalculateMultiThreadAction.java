@@ -1,6 +1,5 @@
 package lsfusion.server.physics.admin.service.action;
 
-import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.controller.init.GroupPropertiesSingleTask;
 import lsfusion.server.physics.admin.service.ServiceLogicsModule;
@@ -26,8 +25,8 @@ public class RecalculateMultiThreadAction extends MultiThreadAction {
     }
 
     @Override
-    protected MessageClientAction createMessageClientAction(GroupPropertiesSingleTask task, boolean errorOccurred) {
-        return new MessageClientAction(localize(LocalizedString.createFormatted(errorOccurred ? "{logics.recalculation.failed}" : "{logics.recalculation.completed}",
+    protected Messages getMessages(GroupPropertiesSingleTask task, boolean errorOccurred) {
+        return new Messages(localize(LocalizedString.createFormatted(errorOccurred ? "{logics.recalculation.failed}" : "{logics.recalculation.completed}",
                 localize("{logics.recalculation.materializations}"))) + task.getMessages(), localize("{logics.recalculation.materializations}"));
     }
 }

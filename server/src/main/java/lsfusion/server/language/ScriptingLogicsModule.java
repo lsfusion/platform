@@ -11,6 +11,7 @@ import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.lambda.set.FunctionSet;
+import lsfusion.interop.action.MessageClientType;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.form.event.BindingMode;
@@ -2529,7 +2530,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if(headerProp != null) {
             properties.add(headerProp);
         }
-        return new LAWithParams(addMAProp(headerProp != null, noWait, log,
+        return new LAWithParams(addMAProp(headerProp != null, noWait, log ? MessageClientType.INFO : MessageClientType.WARN,
                 getParamsPlainList(properties).toArray()), mergeAllParams(properties));
     }
 

@@ -90,7 +90,7 @@ public class ImportEMLAction extends EmailAction {
 
         } catch (Exception e) {
             logger.error(localize("{mail.failed.to.receive.mail}"), e);
-            context.delayUserInterfaction(new MessageClientAction(localize("{mail.failed.to.receive.mail}") + " : " + e, localize("{mail.receiving}")));
+            context.message(localize("{mail.failed.to.receive.mail}") + " : " + e, localize("{mail.receiving}"));
         }
 
     }

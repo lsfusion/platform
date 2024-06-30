@@ -10,7 +10,7 @@ self.addEventListener('push', function(event) {
     let data = event.data.json();
     let showPushNotification = (action, push) => {
         if(data.notification)
-            return showNotification(data.notification, action, data.inputActions, push);
+            return showNotification(data.notification, action, data.inputActions, push, null);
         return Promise.resolve();
     }
     if(data.alwaysNotify)
@@ -33,7 +33,14 @@ self.addEventListener('notificationclick', function(event) {
             (actionResult, push) => clients.openWindow("main" + (push.query ? "?" + push.query : "")).then((client) => pushPendingNotification(client, actionResult)));
 });
 
-function showNotification(notification, action, inputActions, push) {
+function showNotification(notification, action, inputActions, push, client) {
+    if(client != null) {
+        if(notification.ifNotFocused && client.focused)
+            return;
+        if (action.type === 'focusNotification')
+            action = {clientId: client.id, ...action}
+    }
+
     // should have dispatchAction fields (id, url, query)
     return self.registration.showNotification(!notification.title?.length/*check that the string is not null or empty https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Optional_chaining*/
             ? defaultNotification.title : notification.title,
@@ -75,10 +82,23 @@ function pullNotification(client) {
     }
 }
 function showFocusNotification(client) {
-    return showNotification(focusNotification, { type: 'focusNotification', clientId: client.id}, [], null);
+    return showNotification(focusNotification, { type: 'focusNotification'}, [], null, client);
 }
 
-let defaultNotification, focusNotification;
+let defaultNotification = {
+    title: "lsFusion",
+    options: {
+        icon: "static/noauth/images/favicon.ico",
+        body: "Executed successfully"
+    }
+};
+let focusNotification = {
+    title: "The tab for this application is already opened. Please check it",
+    options: {
+        body: "You can close this tab"
+    }
+}
+
 self.addEventListener('message', function (event) {
     // sent in postMessage param
     let data = event.data;
@@ -94,7 +114,7 @@ self.addEventListener('message', function (event) {
         messageClient.postMessage({type: 'clientId', clientId: messageClient.id});
         pullNotification(messageClient);
     } else if(data.type === 'showNotification') {
-        showNotification(data.notification, data.action, data.inputActions, data.push);
+        showNotification(data.notification, data.action, data.inputActions, data.push, messageClient);
     } else if (data.type === 'setDefaultNotifyOptions') {
         defaultNotification = data.defaultNotification;
         focusNotification = data.focusNotification;

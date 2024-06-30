@@ -28,8 +28,6 @@ public interface ClientActionDispatcher {
 
     int execute(ConfirmClientAction action);
 
-    void execute(LogMessageClientAction action);
-
     void execute(OpenFileClientAction action);
 
     void execute(AudioClientAction action);

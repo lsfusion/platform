@@ -95,20 +95,6 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     }
 
     @Override
-    public void execute(GLogMessageAction action) {
-        if (GLog.isLogPanelVisible || action.failed) {
-            super.execute(action);
-        } else {
-            if(action.syncType)
-                pauseDispatching();
-            DialogBoxHelper.showMessageBox("lsFusion", EscapeUtils.toHTML(action.message), getPopupOwner(), chosenOption -> {
-                if(action.syncType)
-                    continueDispatching();
-            });
-        }
-    }
-
-    @Override
     protected PopupOwner getPopupOwner() {
         return editContext != null ? editContext.getPopupOwner() : form.getPopupOwner();
     }

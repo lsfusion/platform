@@ -13,8 +13,6 @@ public interface GActionDispatcher {
 
     Object execute(GConfirmAction action);
 
-    void execute(GLogMessageAction action);
-
     void execute(GHideFormAction action);
 
     void execute(GProcessFormChangesAction action);

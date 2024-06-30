@@ -255,12 +255,25 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     @Override
     public void execute(GMessageAction action) {
-        if(action.syncType)
-            pauseDispatching();
-        DialogBoxHelper.showMessageBox(action.caption, EscapeUtils.toHTML(action.message), getPopupOwner(), chosenOption -> {
-            if(action.syncType)
-                continueDispatching();
-        });
+        boolean ifNotFocused = false;
+
+        boolean error = action.type == GMessageType.ERROR;
+        if(error || action.type == GMessageType.WARN) {
+            if (action.syncType)
+                pauseDispatching();
+            DialogBoxHelper.showMessageBox(action.caption, GLog.toPrintMessage(action.message, action.data, action.titles), getPopupOwner(), chosenOption -> {
+                if (action.syncType)
+                    continueDispatching();
+            });
+
+            ifNotFocused = true;
+        }
+
+        if(!MainFrame.enableShowingRecentlyLogMessages)
+            GLog.showFocusNotification(action.textMessage, action.caption, ifNotFocused);
+
+        if(error || action.type == GMessageType.INFO)
+            GLog.message(EscapeUtils.toHTML(action.message), action.caption, error);
     }
 
     @Override
@@ -271,16 +284,6 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         DialogBoxHelper.showConfirmBox(action.caption, EscapeUtils.toHTML(action.message), action.cancel, action.timeout, action.initialValue, getPopupOwner(),
                 chosenOption -> continueDispatching(chosenOption.asInteger(), result));
         return result.result;
-    }
-
-    @Override
-    public void execute(GLogMessageAction action) {
-        if (action.failed) {
-            GLog.error(EscapeUtils.toHTML(action.message));
-            DialogBoxHelper.showMessageBox("lsFusion", GLog.toPrintMessage(action.message, action.data, action.titles), getPopupOwner(), null);
-        } else {
-            GLog.message(EscapeUtils.toHTML(action.message));
-        }
     }
 
     @Override

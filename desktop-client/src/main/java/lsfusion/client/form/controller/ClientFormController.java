@@ -604,8 +604,8 @@ public class ClientFormController implements AsyncListener {
         });
 
         for (ClientAction action : result.actions) {
-            if (action instanceof LogMessageClientAction) {
-                actionDispatcher.execute((LogMessageClientAction) action);
+            if (action instanceof MessageClientAction) {
+                actionDispatcher.execute((MessageClientAction) action);
                 failureCallback.run();
                 return;
             }

@@ -170,7 +170,7 @@ public class SendEmailAction extends SystemAction {
                     email = trimToNull(email);
                     if (email == null || !p.matcher(email).matches()) {
                         if(email != null)
-                            context.delayUserInteraction(new MessageClientAction("Invalid email: " + email, "Invalid email"));
+                            context.message("Invalid email: " + email, "Invalid email");
                         continue;
                     }
 
@@ -264,7 +264,7 @@ public class SendEmailAction extends SystemAction {
 
     private void logErrorAndShowMessage(ExecutionContext context, String errorMessage) {
         ServerLoggers.mailLogger.error(errorMessage);
-        context.delayUserInterfaction(new MessageClientAction(errorMessage, localize("{mail.sending}")));
+        context.message(errorMessage, localize("{mail.sending}"));
     }
 
     @Override

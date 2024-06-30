@@ -4,9 +4,7 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HTMLPanel;
-import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.view.RecentlyEventClassHandler;
 import lsfusion.gwt.client.navigator.view.NavigatorPanel;
 import lsfusion.gwt.client.view.MainFrame;
@@ -30,16 +28,10 @@ public class GLogPanel extends NavigatorPanel {
         recentlySelected = new RecentlyEventClassHandler(panel, true, "parent-was-selected-recently", 2000);
     }
 
-    public void printMessage(Widget message) {
-        commitMessage(message, "successLogMessage");
-    }
+    public void printMessage(Widget message, String caption, boolean failed) {
+        String messageClass = failed ? "errorLogMessage" : "successLogMessage";
 
-    public void printError(Widget errorMessage) {
-        commitMessage(errorMessage, "errorLogMessage");
-    }
-
-    private void commitMessage(Widget message, String messageClass) {
-        HTML messageDate = new HTML("--- " + DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_TIME_MEDIUM).format(new Date(System.currentTimeMillis())) + " ---<br/>");
+        HTML messageDate = new HTML("--- " + DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_TIME_MEDIUM).format(new Date(System.currentTimeMillis())) + " " + caption + " ---<br/>");
         messageDate.addStyleName(messageClass);
         logPanel.add(messageDate);
         message.addStyleName(messageClass);

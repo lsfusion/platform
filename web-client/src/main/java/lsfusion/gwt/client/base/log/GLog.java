@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.base.log;
 
 import com.google.gwt.user.client.ui.FlexTable;
-import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.view.ResizableVerticalPanel;
@@ -52,11 +51,11 @@ public final class GLog {
         return panel;
     }
 
-    public static void error(Widget message) {
-        logPanel.printError(message);
+    public static void message(Widget message, String caption, boolean failed) {
+        logPanel.printMessage(message, caption, failed);
     }
 
-    public static void message(Widget message) {
-        logPanel.printMessage(message);
-    }
+    public static native void showFocusNotification(String message, String caption, boolean ifNotFocused)/*-{
+        return $wnd.showFocusNotification(message, caption, ifNotFocused);
+    }-*/;
 }

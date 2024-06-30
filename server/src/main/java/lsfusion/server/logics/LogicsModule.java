@@ -13,6 +13,7 @@ import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.file.AppImage;
 import lsfusion.base.lambda.set.FunctionSet;
+import lsfusion.interop.action.MessageClientType;
 import lsfusion.interop.form.ModalityWindowFormType;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.form.event.BindingMode;
@@ -1770,13 +1771,13 @@ public abstract class LogicsModule {
 
     // ------------------- MESSAGE ----------------- //
 
-    protected LA addMAProp(boolean hasHeader, boolean noWait, boolean log, Object... params) {
-        return addJoinAProp(null, LocalizedString.NONAME, addMAProp(hasHeader, noWait, log), params);
+    protected LA addMAProp(boolean hasHeader, boolean noWait, MessageClientType type, Object... params) {
+        return addJoinAProp(null, LocalizedString.NONAME, addMAProp(hasHeader, noWait, type), params);
     }
 
     @IdentityStrongLazy
-    protected LA addMAProp(boolean hasHeader, boolean noWait, boolean log) {
-        return addAction(null, new LA(new MessageAction(LocalizedString.create("Message"), hasHeader, noWait, log)));
+    protected LA addMAProp(boolean hasHeader, boolean noWait, MessageClientType type) {
+        return addAction(null, new LA(new MessageAction(LocalizedString.create("Message"), hasHeader, noWait, type)));
     }
 
     public LA addFocusAction(PropertyDrawEntity propertyDrawEntity) {

@@ -359,6 +359,11 @@ function webShare(shareData) {
     return null;
 }
 
+// should correspond service worker's showFocusNotification
+function showFocusNotification(message, caption, ifNotFocused) {
+    webNotify({ title: caption, options: { body: message }, ifNotFocused: ifNotFocused}, { type: "focusNotification" }, [], null);
+}
+
 function webNotify(notification, action, inputActions, push) {
     return postServiceWorkerMessage({type: 'showNotification', notification: notification, action: action, inputActions: inputActions, push: push});
 }

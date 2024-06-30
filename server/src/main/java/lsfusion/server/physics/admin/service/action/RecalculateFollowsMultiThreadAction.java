@@ -26,8 +26,8 @@ public class RecalculateFollowsMultiThreadAction extends MultiThreadAction {
     }
 
     @Override
-    protected MessageClientAction createMessageClientAction(GroupPropertiesSingleTask task, boolean errorOccurred) {
-        return new MessageClientAction(localize(LocalizedString.createFormatted(errorOccurred ? "{logics.recalculation.failed}" : "{logics.recalculation.completed}",
+    protected Messages getMessages(GroupPropertiesSingleTask task, boolean errorOccurred) {
+        return new Messages(localize(LocalizedString.createFormatted(errorOccurred ? "{logics.recalculation.failed}" : "{logics.recalculation.completed}",
                 localize("{logics.recalculation.follows}"))) + task.getMessages(), localize("{logics.recalculation.follows}"));
     }
 }

@@ -13,7 +13,7 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.*;
 import lsfusion.gwt.client.action.GAction;
 import lsfusion.gwt.client.action.GFilterAction;
-import lsfusion.gwt.client.action.GLogMessageAction;
+import lsfusion.gwt.client.action.GMessageAction;
 import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
@@ -1576,8 +1576,8 @@ public class GFormController implements EditManager {
             @Override
             public void onSuccess(ServerResponseResult response) {
                 for (GAction action : response.actions) {
-                    if (action instanceof GLogMessageAction) {
-                        actionDispatcher.execute((GLogMessageAction) action);
+                    if (action instanceof GMessageAction) {
+                        actionDispatcher.execute((GMessageAction) action);
                         callback.onFailure(new Throwable());
                         return;
                     }

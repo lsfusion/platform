@@ -23,9 +23,9 @@ public class RecalculateAction extends InternalAction {
         ServiceDBAction.run(context, (session, isolatedTransaction) -> {
             String result = context.getDbManager().recalculateMaterializations(context.stack, session, isolatedTransaction);
             if(result != null)
-                context.delayUserInterfaction(new MessageClientAction(result, localize("{logics.recalculation.materializations}")));
+                context.message(result, localize("{logics.recalculation.materializations}"));
         });
 
-        context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted("{logics.recalculation.completed}", localize("{logics.recalculation.materializations}"))), localize("{logics.recalculation.materializations}")));
+        context.message(localize(LocalizedString.createFormatted("{logics.recalculation.completed}", localize("{logics.recalculation.materializations}"))), localize("{logics.recalculation.materializations}"));
     }
 }

@@ -42,7 +42,7 @@ public class RecalculateTableStatsAction extends InternalAction {
                     newContext.apply();
                 }
             });
-            context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted("{logics.recalculation.completed}", localize("{logics.recalculation.stats}"))), localize("{logics.recalculation.stats}")));
+            context.message(localize(LocalizedString.createFormatted("{logics.recalculation.completed}", localize("{logics.recalculation.stats}"))), localize("{logics.recalculation.stats}"));
         }
     }
 }

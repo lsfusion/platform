@@ -16,11 +16,6 @@ dateTime '{eval.script.date.time.script}' = DATA DATETIME (Script);
 dateTimeChange '{eval.script.date.time.change.script}' = DATA DATETIME (Script);  
 dateTimeChange(Script s) <- currentDateTime() WHEN CHANGED(text(s));
 
-preRunScript(Script s)  { 
-    dateTime(s) <- currentDateTime();
-    APPLY;
-}
-
 copyToClipboard '{eval.script.copy.to.clipboard}' (STRING message, STRING javaStack, STRING lsfStack) {
     copyToClipboard(CONCAT '\n', message, javaStack, lsfStack);
 }
@@ -134,16 +129,19 @@ executionScriptTypeName (ScriptType st) = getWord(staticName(st),'.',2);
 
 evalString = DATA LOCAL STRING();
 executeScript '{eval.execution}' (Script s) {
-    preRunScript(s);
+    dateTime(s) <- currentDateTime();
+    APPLY;
 
-    NEWSESSION TRY { 
-        IF executionScriptTypeName(dataScriptType(s)) == 'script' OR executionScriptTypeName(dataScriptType(s)) == 'action' THEN evalString() <- text(s);
-        IF executionScriptTypeName(dataScriptType(s)) == 'form' THEN evalString() <- CONCAT ' ', 'FORM form', text(s), '\n;\nrun() \{ SHOW form NOWAIT; \}';
-        IF executionScriptTypeName(dataScriptType(s)) == 'java' THEN evalString() <- CONCAT ' ', 'run()  INTERNAL  <\{ ', text(s), ' \}>;';
-         
-        IF executionScriptTypeName(dataScriptType(s)) == 'action' THEN EVAL ACTION evalString(); ELSE EVAL evalString(); 
-    } CATCH {
-        SHOW exception OBJECTS message = messageCaughtException(), javaStack = javaStackTraceCaughtException(), lsfStack = lsfStackTraceCaughtException() WAIT;
+    NEWSESSION {
+        TRY {
+            IF executionScriptTypeName(dataScriptType(s)) == 'script' OR executionScriptTypeName(dataScriptType(s)) == 'action' THEN evalString() <- text(s);
+            IF executionScriptTypeName(dataScriptType(s)) == 'form' THEN evalString() <- CONCAT ' ', 'FORM form', text(s), '\n;\nrun() \{ SHOW form NOWAIT; \}';
+            IF executionScriptTypeName(dataScriptType(s)) == 'java' THEN evalString() <- CONCAT ' ', 'run()  INTERNAL  <\{ ', text(s), ' \}>;';
+
+            IF executionScriptTypeName(dataScriptType(s)) == 'action' THEN EVAL ACTION evalString(); ELSE EVAL evalString();
+        } CATCH {
+            SHOW exception OBJECTS message = messageCaughtException(), javaStack = javaStackTraceCaughtException(), lsfStack = lsfStackTraceCaughtException() WAIT;
+        }
     }
 } IMAGE 'play.png';
 

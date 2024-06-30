@@ -31,6 +31,6 @@ public class ExecuteScheduledTaskAction extends InternalAction {
         startLog("Executing Scheduled Task: " + nameScheduledTask);
         Scheduler scheduler = context.getLogicsInstance().getCustomObject(Scheduler.class);
         if(!scheduler.executeScheduledTask(context.getSession(), scheduledTaskObject, nameScheduledTask))
-            context.delayUserInteraction(new MessageClientAction("Scheduler disabled, change serverComputer() to enable", "Scheduler disabled"));
+            context.message("Scheduler disabled, change serverComputer() to enable", "Scheduler disabled");
     }
 }

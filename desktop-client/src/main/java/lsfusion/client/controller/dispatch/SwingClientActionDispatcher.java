@@ -40,7 +40,6 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -455,17 +454,31 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     }
 
     public void execute(MessageClientAction action) {
-        beforeModalActionInSameEDT(false);
-        try {
-            if (!action.extended) {
-                JOptionPane.showMessageDialog(getDialogParentContainer(),
-                        SwingUtils.getMessageTextPane(action.message), action.caption,
-                        JOptionPane.INFORMATION_MESSAGE);
-            } else {
-                new ExtendedMessageDialog(getDialogParentContainer(), action.caption, action.message).setVisible(true);
+        MessageClientType actionType = action.type;
+        boolean message = actionType == MessageClientType.WARN;
+        String textMessage = action.textMessage;
+        if(message || actionType == MessageClientType.WARN_EXTENDED) {
+            beforeModalActionInSameEDT(false);
+            try {
+                if (message) {
+                    JOptionPane.showMessageDialog(getDialogParentContainer(),
+                            SwingUtils.getMessageTextPane(textMessage), action.caption,
+                            JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    new ExtendedMessageDialog(getDialogParentContainer(), action.caption, textMessage).setVisible(true);
+                }
+            } finally {
+                afterModalActionInSameEDT(false);
             }
-        } finally {
-            afterModalActionInSameEDT(false);
+        }
+
+        boolean failed = actionType == MessageClientType.ERROR;
+        if(failed || actionType == MessageClientType.INFO) {
+            if (failed) {
+                Log.messageWarning(textMessage, action.titles, action.data);
+            } else {
+                Log.message(textMessage);
+            }
         }
     }
 
@@ -494,14 +507,6 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
             };
             KeyStroke stroke = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
             getRootPane().registerKeyboardAction(escListener, stroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
-        }
-    }
-
-    public void execute(LogMessageClientAction action) {
-        if (action.failed) {
-            Log.messageWarning(action.message, action.titles, action.data);
-        } else {
-            Log.message(action.message);
         }
     }
 

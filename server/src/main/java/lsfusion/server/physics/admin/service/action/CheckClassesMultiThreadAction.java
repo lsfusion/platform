@@ -1,6 +1,6 @@
 package lsfusion.server.physics.admin.service.action;
 
-import lsfusion.interop.action.MessageClientAction;
+import lsfusion.base.Pair;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.controller.init.GroupPropertiesSingleTask;
 import lsfusion.server.physics.admin.service.ServiceLogicsModule;
@@ -26,8 +26,8 @@ public class CheckClassesMultiThreadAction extends MultiThreadAction {
     }
 
     @Override
-    protected MessageClientAction createMessageClientAction(GroupPropertiesSingleTask task, boolean errorOccurred) {
-        return new MessageClientAction(localize(LocalizedString.createFormatted(errorOccurred ? "{logics.check.failed}" : "{logics.check.completed}",
+    protected Messages getMessages(GroupPropertiesSingleTask task, boolean errorOccurred) {
+        return new Messages(localize(LocalizedString.createFormatted(errorOccurred ? "{logics.check.failed}" : "{logics.check.completed}",
                 localize("{logics.checking.data.classes}"))) + task.getMessages(), localize("{logics.checking.data.classes}"), true);
     }
 }

@@ -62,7 +62,7 @@ public class ReceiveEmailAccountAction extends InternalAction {
 
             } catch (Exception e) {
                 logger.error(localize("{mail.failed.to.receive.mail}"), e);
-                context.delayUserInterfaction(new MessageClientAction(localize("{mail.failed.to.receive.mail}") + " : " + e, localize("{mail.receiving}")));
+                context.message(localize("{mail.failed.to.receive.mail}") + " : " + e, localize("{mail.receiving}"));
             }
         } else {
             logger.info("Email Server disabled, change serverComputer() to enable");
@@ -71,6 +71,6 @@ public class ReceiveEmailAccountAction extends InternalAction {
 
     private void logError(ExecutionContext context, String errorMessage) {
         logger.error(errorMessage);
-        context.delayUserInterfaction(new MessageClientAction(errorMessage, localize("{mail.receiving}")));
+        context.message(errorMessage, localize("{mail.receiving}"));
     }
 }

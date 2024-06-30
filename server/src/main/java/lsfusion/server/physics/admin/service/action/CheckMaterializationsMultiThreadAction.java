@@ -26,8 +26,8 @@ public class CheckMaterializationsMultiThreadAction extends MultiThreadAction {
     }
 
     @Override
-    protected MessageClientAction createMessageClientAction(GroupPropertiesSingleTask task, boolean errorOccurred) {
-        return new MessageClientAction(localize(LocalizedString.createFormatted(errorOccurred ? "{logics.check.failed}" : "{logics.check.completed}",
+    protected Messages getMessages(GroupPropertiesSingleTask task, boolean errorOccurred) {
+        return new Messages(localize(LocalizedString.createFormatted(errorOccurred ? "{logics.check.failed}" : "{logics.check.completed}",
                 localize("{logics.checking.materializations}"))) + task.getMessages(), localize("{logics.checking.materializations}"), true);
     }
 }

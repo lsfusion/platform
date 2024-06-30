@@ -575,28 +575,15 @@ public class MainFrame implements EntryPoint {
         GwtClientUtils.subscribePushManager(pushNotificationPublicKey, subscription -> updateServiceClientInfo(formsController, subscription, null));
     }
 
-    private String subscription;
-    private String clientId;
+    public static String subscription;
+    public static String clientId;
     private void updateServiceClientInfo(FormsController formsController, String subscription, String clientId) {
-        if(subscription != null) {
-            if(this.clientId == null) {
-                this.subscription = subscription;
-                return;
-            }
-
-            clientId = this.clientId;
-            this.clientId = null;
-        } else {
-            if(this.subscription == null) {
-                this.clientId = clientId;
-                return;
-            }
-
-            subscription = this.subscription;
-            this.subscription = null;
-        }
-
-        formsController.executeSystemAction(new UpdateServiceClientInfoAction(subscription, clientId));
+        if(subscription != null)
+            MainFrame.subscription = subscription;
+        if(clientId != null)
+            MainFrame.clientId = clientId;
+        if(MainFrame.clientId != null && MainFrame.subscription != null)
+            formsController.executeSystemAction(new UpdateServiceClientInfoAction(MainFrame.subscription, MainFrame.clientId));
     }
 
     public static void applyNavigatorChanges(GNavigatorChangesDTO navigatorChangesDTO, GNavigatorController navigatorController, WindowsController windowsController) {

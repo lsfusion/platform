@@ -25,7 +25,6 @@ import lsfusion.base.lambda.set.NotFunctionSet;
 import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.interop.ProgressBar;
 import lsfusion.interop.action.ConfirmClientAction;
-import lsfusion.interop.action.LogMessageClientAction;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.base.caches.ManualLazy;
@@ -2002,7 +2001,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     if(interaction == null) {
                         autoAttemptCount++;
                         if(autoAttemptCount > settings.getApplyAutoAttemptCountLimit()) {
-                            ThreadLocalContext.delayUserInteraction(new LogMessageClientAction(localize("{logics.server.apply.timeout.canceled}"), true, false));
+                            ThreadLocalContext.message(localize("{logics.server.apply.timeout.canceled}"));
                             return false;
                         }
                     } else {

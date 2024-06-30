@@ -72,10 +72,10 @@ public class SaveBackupAction extends InternalAction {
                         context.delayUserInterfaction(new WriteClientAction(new RawFileData(file), fileBackupName, null, false, true));
                     }
                 } else {
-                    context.delayUserInterfaction(new MessageClientAction("Файл не найден", "Ошибка"));
+                    context.message("Файл не найден", "Ошибка");
                 }
             } else {
-                context.delayUserInterfaction(new MessageClientAction("Файл был удалён", "Ошибка"));
+                context.message("Файл был удалён", "Ошибка");
             }
         } catch (Exception e) {
             Throwables.propagate(e);

@@ -42,7 +42,7 @@ public class WriteToPrinterAction extends InternalAction {
             String result = (String) context.requestUserInteraction(new WriteToPrinterClientAction(text, charset, printerName));
             findProperty("printed[]").change(result == null ? true : null, context);
             if (result != null)
-                context.delayUserInteraction(new MessageClientAction(result, "Ошибка"));
+                context.message(result, "Ошибка");
         } catch (Exception e) {
             ServerLoggers.printerLogger.error("WriteToPrinter error", e);
             try {

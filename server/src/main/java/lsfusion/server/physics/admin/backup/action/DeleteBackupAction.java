@@ -51,7 +51,7 @@ public class DeleteBackupAction extends InternalAction {
             if (deleted) {
                 ServerLoggers.systemLogger.info("Deleted backup " + f.getName());
                 findProperty("fileDeleted[Backup]").change(true, newContext, backupObject);
-                context.delayUserInteraction(new MessageClientAction("Deleted backup " + f.getName(), "Deleted backup"));
+                context.message("Deleted backup " + f.getName(), "Deleted backup");
             }
             newContext.apply();
 

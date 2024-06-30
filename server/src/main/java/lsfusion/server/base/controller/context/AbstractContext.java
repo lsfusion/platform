@@ -5,19 +5,16 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.ClientAction;
-import lsfusion.interop.action.LogMessageClientAction;
 import lsfusion.interop.action.MessageClientAction;
+import lsfusion.interop.action.MessageClientType;
 import lsfusion.interop.form.ShowFormType;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.LogicsInstance;
-import lsfusion.server.logics.action.Action;
-import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.data.DataClass;
-import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.action.async.InputList;
 import lsfusion.server.logics.form.interactive.action.async.InputListAction;
@@ -26,7 +23,6 @@ import lsfusion.server.logics.form.interactive.action.input.InputResult;
 import lsfusion.server.logics.form.interactive.controller.remote.RemoteForm;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
-import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
@@ -122,12 +118,10 @@ public abstract class AbstractContext implements Context {
     }
 
     public static String getMessage(ClientAction action) {
-        if (action instanceof LogMessageClientAction) {
-            LogMessageClientAction logAction = (LogMessageClientAction) action;
-            return logAction.message + "\n" + errorDataToTextTable(logAction.titles, logAction.data);
-        } else if (action instanceof MessageClientAction) {
+        if (action instanceof MessageClientAction) {
             MessageClientAction msgAction = (MessageClientAction) action;
-            return String.valueOf(msgAction.message); //message can be null
+            String exInfo = errorDataToTextTable(msgAction.titles, msgAction.data);
+            return msgAction.textMessage + (exInfo.isEmpty() ? "" : "\n" + exInfo); //message can be null
         }
 //        else if (action instanceof ConfirmClientAction) {
 //            ConfirmClientAction confirmAction = (ConfirmClientAction) action;
@@ -187,7 +181,7 @@ public abstract class AbstractContext implements Context {
         if(message != null) {
             MessageLogger messageLogger = logMessage.get();
             if(messageLogger != null)
-                messageLogger.add(message, action instanceof LogMessageClientAction ? ((LogMessageClientAction) action).failed : false);
+                messageLogger.add(message, action instanceof MessageClientAction && ((MessageClientAction) action).type == MessageClientType.ERROR);
             return message;
         }
         return null;

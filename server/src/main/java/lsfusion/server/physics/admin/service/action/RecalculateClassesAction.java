@@ -27,10 +27,10 @@ public class RecalculateClassesAction extends InternalAction {
             BusinessLogics BL = context.getBL();
             String result = context.getDbManager().recalculateClasses(session, isolatedTransaction);
             if(result != null)
-                context.delayUserInterfaction(new MessageClientAction(result, localize("{logics.recalculating.data.classes}")));
+                context.message(result, localize("{logics.recalculating.data.classes}"));
             context.getDbManager().packTables(session, BL.LM.tableFactory.getImplementTables(), isolatedTransaction);
         });
 
-        context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted("{logics.recalculation.completed}", localize("{logics.recalculating.data.classes}"))), localize("{logics.recalculating.data.classes}"), true));
+        context.message(localize(LocalizedString.createFormatted("{logics.recalculation.completed}", localize("{logics.recalculating.data.classes}"))), localize("{logics.recalculating.data.classes}"), true);
     }
 }

@@ -2,7 +2,6 @@ package lsfusion.gwt.server.convert;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.SystemUtils;
-import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.file.WriteClientAction;
 import lsfusion.client.classes.ClientObjectClass;
@@ -24,7 +23,6 @@ import lsfusion.gwt.client.navigator.window.GShowFormType;
 import lsfusion.gwt.client.view.GColorTheme;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.server.MainDispatchServlet;
-import lsfusion.http.provider.SessionInvalidatedException;
 import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.ContainerShowFormType;
@@ -132,17 +130,26 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         return new GHideFormAction(action.closeConfirmedDelay);
     }
 
-    @Converter(from = LogMessageClientAction.class)
-    public GLogMessageAction convertAction(LogMessageClientAction action) throws IOException {
+    @Converter(from = MessageClientAction.class)
+    public GMessageAction convertAction(MessageClientAction action) {
         ArrayList<ArrayList<String>> arrayData = new ArrayList<>();
         for(List<String> row : action.data)
             arrayData.add(new ArrayList<>(row));
-        return new GLogMessageAction(action.failed, action.message, arrayData, new ArrayList<>(action.titles), action.syncType);
+        return new GMessageAction(action.message, action.textMessage, action.caption, arrayData, new ArrayList<>(action.titles), convertOrCast(action.type), action.syncType);
     }
 
-    @Converter(from = MessageClientAction.class)
-    public GMessageAction convertAction(MessageClientAction action) {
-        return new GMessageAction(action.message, action.caption, action.syncType);
+    @Converter(from = MessageClientType.class)
+    public GMessageType convertMessageClientType(MessageClientType messageClientType) {
+        switch (messageClientType) {
+            case WARN:
+            case WARN_EXTENDED:
+                return GMessageType.WARN;
+            case INFO:
+                return GMessageType.INFO;
+            case ERROR:
+                return GMessageType.ERROR;
+        }
+        throw new UnsupportedOperationException();
     }
 
     @Converter(from = ProcessFormChangesClientAction.class)

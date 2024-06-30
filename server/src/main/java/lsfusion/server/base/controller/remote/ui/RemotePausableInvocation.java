@@ -1,6 +1,5 @@
 package lsfusion.server.base.controller.remote.ui;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.interop.action.*;
@@ -9,12 +8,8 @@ import lsfusion.server.base.controller.stack.ThrowableWithStack;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 
 import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 public abstract class RemotePausableInvocation extends PausableInvocation<ServerResponse, RemoteException> {
@@ -32,7 +27,7 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
 
     protected List<ClientAction> delayedActions = new ArrayList<>();
 
-    protected MessageClientAction delayedMessageAction = null; 
+    protected MessageClientAction delayedMessageAction = null;
 
     private Object[] actionResults;
     private Throwable clientThrowable;
@@ -46,10 +41,12 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
         }
 
         if (action instanceof MessageClientAction) {
-            if (delayedMessageAction == null)
-                delayedMessageAction = (MessageClientAction) action;
+            MessageClientAction messageAction = (MessageClientAction) action;
+            if (delayedMessageAction == null || !delayedMessageAction.type.equals(messageAction.type))
+                delayedMessageAction = messageAction;
             else {
-                delayedMessageAction.message += "\n" + ((MessageClientAction) action).message;
+                delayedMessageAction.message += "\n" + messageAction.message;
+                delayedMessageAction.textMessage += "\n" + messageAction.textMessage;
                 return; // we've already added message to existing action
             }
         }
@@ -161,6 +158,7 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
         try {
             ServerResponse result = new ServerResponse(requestIndex, delayedActions.toArray(new ClientAction[delayedActions.size()]), true);
             delayedActions.clear();
+            delayedMessageAction = null;
 
             return result;
         } catch (Exception e) {

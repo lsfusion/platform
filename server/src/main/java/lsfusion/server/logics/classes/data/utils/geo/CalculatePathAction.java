@@ -139,10 +139,10 @@ public class CalculatePathAction extends DistanceGeoAction {
 
                     }
                 } else {
-                    context.delayUserInteraction(new MessageClientAction("Не все координаты проставлены", "Ошибка"));
+                    context.message("Не все координаты проставлены", "Ошибка");
                 }
             } else {
-                context.delayUserInteraction(new MessageClientAction("Не задана начальная точка", "Ошибка"));
+                context.message("Не задана начальная точка", "Ошибка");
             }
         } catch (Exception e) {
             throw Throwables.propagate(e);

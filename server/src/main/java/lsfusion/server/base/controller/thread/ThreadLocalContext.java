@@ -1,11 +1,14 @@
 package lsfusion.server.base.controller.thread;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.EscapeUtils;
 import lsfusion.base.col.heavy.concurrent.weak.ConcurrentWeakHashMap;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.ClientAction;
+import lsfusion.interop.action.MessageClientAction;
+import lsfusion.interop.action.MessageClientType;
 import lsfusion.interop.connection.TFormats;
 import lsfusion.interop.form.ShowFormType;
 import lsfusion.interop.form.WindowFormType;
@@ -16,7 +19,6 @@ import lsfusion.server.base.controller.manager.MonitorServer;
 import lsfusion.server.base.controller.remote.RmiManager;
 import lsfusion.server.base.controller.remote.context.ContextAwarePendingRemoteObject;
 import lsfusion.server.base.controller.remote.manager.RmiServer;
-import lsfusion.server.base.controller.remote.ui.RemoteUIContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.BaseLogicsModule;
@@ -55,10 +57,15 @@ import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.log4j.MDC;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Stack;
 import java.util.concurrent.ConcurrentHashMap;
@@ -252,6 +259,32 @@ public class ThreadLocalContext {
 
     public static void delayUserInteraction(ClientAction action) {
         get().delayUserInteraction(action);
+    }
+
+    public static String htmlToPlainText(String html) {
+        Document document = Jsoup.parse(html);
+        for (Element element : document.getElementsByClass("collapse"))
+            element.remove();
+        return document.text();
+    }
+
+    public static void message(String message) {
+        message(message, "lsFusion", false);
+    }
+    public static void message(String message, String header, boolean extended) {
+        message(message, header, new ArrayList<>(), new ArrayList<>(), MessageClientType.SYSTEM(extended), true);
+    }
+
+    public static void message(String message, String caption, List<List<String>> data, List<String> titles, MessageClientType type, boolean noWait) {
+        String textMessage = message;
+        if(EscapeUtils.containsHtmlTag(textMessage)) // optimization
+            textMessage = htmlToPlainText(textMessage);
+
+        ClientAction action = new MessageClientAction(message, textMessage, caption, data, titles, type, !noWait);
+        if (noWait)
+            delayUserInteraction(action);
+        else
+            requestUserInteraction(action);
     }
 
     public static ConnectionContext getRemoteContext() {
