@@ -19,6 +19,7 @@ FORM name [caption] formOptions
 ```
 IMAGE path 
 AUTOREFRESH period 
+LOCALASYNC
 ```
 
 После опций формы описываются в произвольном порядке блоки формы `formBlock1 ... formBlockN`: 
@@ -63,13 +64,21 @@ LIST className OBJECT objectName
     
         Путь к файлу. Строковый литерал. Путь указывается относительно каталога `images`.
 
-- `AUTOREFRESH period`
+  - `AUTOREFRESH period`
 
-    Указание периода [автоматического обновления](Interactive_view.md#extra) формы через интервал времени. Если опция не задана, то форма автоматически обновляться не будет. **deprecated since version 5, используйте `EVENTS ON SCHEDULE refresh()`**
+      :::warning
+      Опция объявлена устаревшей, используйте `EVENTS ON SCHEDULE PERIOD period formRefresh()` в качестве замены. В будущих версиях платформы она не будет поддерживаться.
+      :::
 
-    - `period`
+      Указание периода [автоматического обновления](Interactive_view.md#extra) формы через интервал времени. Если опция не задана, то форма автоматически обновляться не будет.
+
+      - `period`
     
-        Пeриод времени в секундах. [Целочисленный литерал](IDs.md#intliteral). 
+          Период времени в секундах. [Целочисленный литерал](IDs.md#intliteral). 
+
+- `LOCALASYNC`
+
+    Ключевое слово, указывающее на то, что обработки [локальных событий](Events.md#type) будут выполняться после отображения изменений на форме.
 
 ### Блоки формы (`formBlock1 ... formBlockN`) {#blocks}
 

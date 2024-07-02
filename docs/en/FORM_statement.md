@@ -19,6 +19,7 @@ After specifying the form name and caption, form options `formOptions` are speci
 ```
 IMAGE path 
 AUTOREFRESH period 
+LOCALASYNC
 ```
 
 After the form options, the blocks of the form `formBlock1 ... formBlockN` are described in the arbitrary order: 
@@ -64,11 +65,19 @@ The `FORM` statement declares a new form and adds it to the current [module](Mod
 
 - `AUTOREFRESH period`
 
-    Specifying the [automatic form update](Interactive_view.md#extra) period. If the option is not specified, the form will not be updated automatically. **deprecated since version 5, use `EVENTS ON SCHEDULE refresh()`**
+    :::warning
+    The option has been declared deprecated. Use `EVENTS ON SCHEDULE PERIOD period formRefresh()` as a replacement. It will not be supported in future versions of the platform.
+    :::
+
+    Specifying the [automatic form update](Interactive_view.md#extra) period. If the option is not specified, the form will not be updated automatically.
 
     - `period`
     
         A period of time in seconds. [Integral literal](IDs.md#intliteral). 
+
+- `LOCALASYNC`
+
+    Keyword indicating that [local events](Events.md#type) handling will be performed after changes are displayed on the form.
 
 ### Form blocks (`formBlock1 ... formBlockN`) {#blocks}
 
