@@ -4,6 +4,13 @@ self.addEventListener('install', function(event) {
 
 self.addEventListener('activate', function(event) {
     // Perform any necessary cleanup or other tasks
+
+    getNotificationFromCache().then(notifications => {
+        if (notifications) {
+            focusNotification = notifications.focus;
+            defaultNotification = notifications.default;
+        }
+    });
 });
 
 self.addEventListener('push', function(event) {
@@ -92,6 +99,7 @@ let defaultNotification = {
         body: "Executed successfully"
     }
 };
+
 let focusNotification = {
     title: "The tab for this application is already opened. Please check it",
     options: {
@@ -118,8 +126,23 @@ self.addEventListener('message', function (event) {
     } else if (data.type === 'setDefaultNotifyOptions') {
         defaultNotification = data.defaultNotification;
         focusNotification = data.focusNotification;
+        saveNotificationsToCache();
     }
 })
+
+function saveNotificationsToCache() {
+    caches.open('lsf').then(cache => cache.put('notifications',
+        new Response(JSON.stringify({default: defaultNotification, focus: focusNotification}), {
+            headers: { 'Content-Type': 'application/json' }
+        }))
+    );
+}
+
+function getNotificationFromCache() {
+    return caches.open('lsf')
+        .then(cache => cache.match('notifications')
+            .then(response => response ? response.json() : null));
+}
 
 // action should have: id or (and) url, push should have - clientId (optional), query
 function dispatchAction(event, actionResult, push, onClientFound, onClientNotFound) {
