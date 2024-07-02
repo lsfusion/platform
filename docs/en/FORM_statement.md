@@ -18,6 +18,7 @@ After specifying the form name and caption, form options `formOptions` are speci
 
 ```
 IMAGE path 
+LOCALASYNC
 ```
 
 After the form options, the blocks of the form `formBlock1 ... formBlockN` are described in the arbitrary order: 
@@ -60,6 +61,10 @@ The `FORM` statement declares a new form and adds it to the current [module](Mod
     - `path`
     
         Path to the file. String literal. The path is relative to the `images` directory.
+
+- `LOCALASYNC`
+
+    Keyword indicating that [local events](Events.md#type) handling will be performed after changes are displayed on the form.
 
 ### Form blocks (`formBlock1 ... formBlockN`) {#blocks}
 

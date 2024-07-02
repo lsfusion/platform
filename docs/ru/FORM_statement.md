@@ -18,6 +18,7 @@ FORM name [caption] formOptions
 
 ```
 IMAGE path 
+LOCALASYNC
 ```
 
 После опций формы описываются в произвольном порядке блоки формы `formBlock1 ... formBlockN`: 
@@ -61,6 +62,10 @@ LIST className OBJECT objectName
     - `path`
     
         Путь к файлу. Строковый литерал. Путь указывается относительно каталога `images`.
+
+- `LOCALASYNC`
+
+    Ключевое слово, указывающее на то, что обработки [локальных событий](Events.md#type) будут выполняться после отображения изменений на форме.
 
 ### Блоки формы (`formBlock1 ... formBlockN`) {#blocks}
 
