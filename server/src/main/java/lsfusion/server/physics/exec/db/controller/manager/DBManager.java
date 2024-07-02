@@ -2306,7 +2306,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 droppedModules += moduleName + ", ";
             }
         if (isDenyDropModules() && !droppedModules.isEmpty())
-            throw new RuntimeException("Dropping modules: " + droppedModules.substring(0, droppedModules.length() - 2) + "\nNow, dropping modules is restricted by settings. If you are sure you want to drop these modules, you can set 'db.denyDropModules = false'\\nin settings.properties or through other methods. For more information, please visit: https://docs.lsfusion.org/next/Launch_parameters/#applsfusion\"");
+            throw new RuntimeException("Dropping modules: " + droppedModules.substring(0, droppedModules.length() - 2) + "\nNow, dropping modules is restricted by settings. If you are sure you want to drop these modules, you can set 'db.denyDropModules = false'\nin settings.properties or through other methods. For more information, please visit: https://docs.lsfusion.org/next/Launch_parameters/#applsfusion\"");
     }
 
     private synchronized void runMigrationScript() {
