@@ -141,11 +141,12 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     @Converter(from = MessageClientType.class)
     public GMessageType convertMessageClientType(MessageClientType messageClientType) {
         switch (messageClientType) {
-            case WARN:
-            case WARN_EXTENDED:
-                return GMessageType.WARN;
             case INFO:
                 return GMessageType.INFO;
+            case SUCCESS:
+                return GMessageType.SUCCESS;
+            case WARN:
+                return GMessageType.WARN;
             case ERROR:
                 return GMessageType.ERROR;
         }

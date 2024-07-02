@@ -18,7 +18,7 @@ public class ModalWindow extends ResizableComplexPanel {
 
     private final ResizableComplexPanel content;
 
-    private final SizedFlexPanel body;
+    protected final SizedFlexPanel body;
 
     private final Widget title;
 

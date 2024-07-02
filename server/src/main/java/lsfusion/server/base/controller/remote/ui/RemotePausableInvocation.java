@@ -42,7 +42,7 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
 
         if (action instanceof MessageClientAction) {
             MessageClientAction messageAction = (MessageClientAction) action;
-            if (delayedMessageAction == null || !delayedMessageAction.type.equals(messageAction.type))
+            if (delayedMessageAction == null || !isMergeable(delayedMessageAction, messageAction))
                 delayedMessageAction = messageAction;
             else {
                 delayedMessageAction.message += "\n" + messageAction.message;
@@ -52,6 +52,12 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
         }
 
         delayedActions.add(action);
+    }
+
+    private boolean isMergeable(MessageClientAction action1, MessageClientAction action2) {
+        return action1.type.equals(action2.type)
+                && action1.data.isEmpty() && action2.data.isEmpty()
+                && action1.titles.isEmpty() && action2.titles.isEmpty();
     }
 
     /**

@@ -33,6 +33,11 @@
     --bs-modal-header-padding: 0.1rem 0.5rem;
 }
 
+.modal-footer {
+    /*need to be equal to header padding, override default calc*/
+    padding: 0.1rem 0.5rem;
+}
+
 .dropdown-menu {
     --bs-dropdown-item-padding-x: 0.5rem;
     --bs-dropdown-item-padding-y: 0.05rem;

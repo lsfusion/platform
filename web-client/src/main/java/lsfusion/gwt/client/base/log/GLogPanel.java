@@ -28,13 +28,8 @@ public class GLogPanel extends NavigatorPanel {
         recentlySelected = new RecentlyEventClassHandler(panel, true, "parent-was-selected-recently", 2000);
     }
 
-    public void printMessage(Widget message, String caption, boolean failed) {
-        String messageClass = failed ? "errorLogMessage" : "successLogMessage";
-
-        HTML messageDate = new HTML("--- " + DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_TIME_MEDIUM).format(new Date(System.currentTimeMillis())) + " " + caption + " ---<br/>");
-        messageDate.addStyleName(messageClass);
-        logPanel.add(messageDate);
-        message.addStyleName(messageClass);
+    public void printMessage(Widget message, boolean failed) {
+        message.addStyleName(failed ? "errorLogMessage" : "successLogMessage");
         logPanel.add(message);
 
         Element logElement = logPanel.getElement();

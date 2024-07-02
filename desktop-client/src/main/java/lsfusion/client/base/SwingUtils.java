@@ -169,7 +169,7 @@ public class SwingUtils {
             options = BaseUtils.add(options, UIManager.getString("OptionPane.cancelButtonText"));
         }
 
-        JOptionPane dialogPane = new JOptionPane(getMessageTextPane(message),
+        JOptionPane dialogPane = new JOptionPane(getMessageTextPane(message, null),
                 messageType,
                 cancel ? JOptionPane.YES_NO_CANCEL_OPTION : JOptionPane.YES_NO_OPTION,
                 null, options, options[initialValue]);
@@ -204,7 +204,7 @@ public class SwingUtils {
         }
     }
 
-    public static Object getMessageTextPane(Object message) {
+    public static Object getMessageTextPane(Object message, Color backgroundColor) {
         JTextPane textPane = new JTextPane();
         textPane.setText(String.valueOf(message)); //message can be null
         textPane.setEditable(false);
@@ -217,7 +217,7 @@ public class SwingUtils {
                 textPane.setPreferredSize((new Dimension(width, height)));
             }
         }
-        textPane.setBackground(null);
+        textPane.setBackground(backgroundColor);
 
         if(rootPane != null && rootPane.getHeight() * 0.3 < textPane.getPreferredSize().height)
             return wrapScroll(MainFrame.instance, textPane);

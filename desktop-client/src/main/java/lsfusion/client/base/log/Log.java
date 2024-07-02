@@ -114,14 +114,14 @@ public final class Log {
             message += "\n" + getString("errors.contact.administrator");
 
         Pair<String, String> exStacks = RemoteInternalException.getExStacks(remote);
-        error(message, null, null, exStacks.first, exStacks.second, false);
+        error(message, null, null, null, exStacks.first, exStacks.second, false);
     }
 
-    public static void messageWarning(String message, List<String> titles, List<List<String>> data) {
-        error(message, titles, data, "", null, true);
+    public static void messageWarning(String message, Color backgroundColor, List<String> titles, List<List<String>> data) {
+        error(message, backgroundColor, titles, data, "", null, true);
     }
     
-    public static void error(String message, List<String> titles, List<List<String>> data, String javaStack, String lsfStack, boolean warning) {
+    public static void error(String message, Color backgroundColor, List<String> titles, List<List<String>> data, String javaStack, String lsfStack, boolean warning) {
         if (ConnectionLostManager.isConnectionLost()) {
             return;
         }
@@ -217,6 +217,9 @@ public final class Log {
 
         final JOptionPane optionPane = new JOptionPane(mainPanel, warning ? JOptionPane.WARNING_MESSAGE : JOptionPane.ERROR_MESSAGE,
                 JOptionPane.YES_NO_OPTION, null, opt.toArray(), closeOption);
+        if(backgroundColor != null) {
+            optionPane.setBackground(backgroundColor);
+        }
 
         final JDialog dialog = new JDialog(MainFrame.instance, MainFrame.instance  != null ? MainFrame.instance.getTitle() : "lsfusion", Dialog.ModalityType.APPLICATION_MODAL);
         dialog.setContentPane(optionPane);

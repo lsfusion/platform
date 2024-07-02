@@ -9,12 +9,10 @@ import com.google.gwt.typedarrays.shared.ArrayBuffer;
 import com.google.gwt.typedarrays.shared.Uint8Array;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xhr.client.XMLHttpRequest;
 import lsfusion.gwt.client.action.*;
-import lsfusion.gwt.client.base.EscapeUtils;
-import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.Pair;
-import lsfusion.gwt.client.base.Result;
+import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.exception.GExceptionManager;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
@@ -257,11 +255,31 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     public void execute(GMessageAction action) {
         boolean ifNotFocused = false;
 
+        boolean info = action.type == GMessageType.INFO;
+        boolean success = action.type == GMessageType.SUCCESS;
+        boolean warn = action.type == GMessageType.WARN;
         boolean error = action.type == GMessageType.ERROR;
-        if(error || action.type == GMessageType.WARN) {
+
+        StaticImage image = null;
+        String backgroundClass = null;
+        if(info) {
+            image = StaticImage.MESSAGE_INFO;
+            backgroundClass = "bg-info-subtle";
+        } else if(success) {
+            image = StaticImage.MESSAGE_SUCCESS;
+            backgroundClass = "bg-success-subtle";
+        } else if(warn) {
+            image = StaticImage.MESSAGE_WARN;
+            backgroundClass = "bg-warning-subtle";
+        } else if(error) {
+            image = StaticImage.MESSAGE_WARN;
+            backgroundClass = "bg-danger-subtle";
+        }
+
+        if(!info) {
             if (action.syncType)
                 pauseDispatching();
-            DialogBoxHelper.showMessageBox(action.caption, GLog.toPrintMessage(action.message, action.data, action.titles), getPopupOwner(), chosenOption -> {
+            DialogBoxHelper.showMessageBox(action.caption, GLog.toPrintMessage(action.message, image, action.data, action.titles), backgroundClass, getPopupOwner(), chosenOption -> {
                 if (action.syncType)
                     continueDispatching();
             });
@@ -272,8 +290,11 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         if(!MainFrame.enableShowingRecentlyLogMessages)
             GLog.showFocusNotification(action.textMessage, action.caption, ifNotFocused);
 
-        if(error || action.type == GMessageType.INFO)
-            GLog.message(EscapeUtils.toHTML(action.message), action.caption, error);
+        if(info || error) {
+            Widget widget = action.data.isEmpty() ? EscapeUtils.toHTML(action.message, image) : GLog.toPrintMessage(action.message, image, action.data, action.titles);
+            widget.addStyleName("alert " + (info ? "alert-info" : "alert-danger"));
+            GLog.message(widget, error);
+        }
     }
 
     @Override

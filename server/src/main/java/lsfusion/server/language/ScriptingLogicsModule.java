@@ -2524,13 +2524,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         return proceedInputDoClause(doAction, elseAction, oldContext, newContext, yesNo ? ListFact.singleton(targetProp) : ListFact.EMPTY(), inputAction, yesNo ? ListFact.singleton(null) : ListFact.EMPTY());
     }
 
-    public LAWithParams addScriptedMessageProp(LPWithParams messageProp, LPWithParams headerProp, boolean noWait, boolean log) {
+    public LAWithParams addScriptedMessageProp(LPWithParams messageProp, LPWithParams headerProp, boolean noWait, MessageClientType type) {
         List<LPWithParams> properties = new ArrayList<>();
         properties.add(messageProp);
         if(headerProp != null) {
             properties.add(headerProp);
         }
-        return new LAWithParams(addMAProp(headerProp != null, noWait, log ? MessageClientType.INFO : MessageClientType.WARN,
+        return new LAWithParams(addMAProp(headerProp != null, noWait, type,
                 getParamsPlainList(properties).toArray()), mergeAllParams(properties));
     }
 
@@ -3972,7 +3972,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public <O extends ObjectSelector> LAWithParams addScriptedPrintFAProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps, FormPrintType printType,
-                                                                          boolean server, boolean autoPrint, NamedPropertyUsage propUsage, Boolean syncType, Integer selectTop,
+                                                                          boolean server, boolean autoPrint, NamedPropertyUsage propUsage, Boolean syncType,
+                                                                          MessageClientType messageType, Integer selectTop,
                                                                           LPWithParams printerProperty, LPWithParams sheetNameProperty, LPWithParams passwordProperty,
                                                                           List<TypedParameter> objectsContext, List<LPWithParams> contextFilters, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
         assert printType != null;
@@ -4005,8 +4006,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         CFEWithParams<O> contextEntities = getContextFilterEntities(params.size(), contextObjects, ListFact.fromJavaList(contextFilters));
 
         LA action = addPFAProp(null, LocalizedString.NONAME, mapped.form, mappedObjects, mNulls.immutableList(),
-                contextEntities.orderInterfaces, contextEntities.filters, printType, server, autoPrint, syncType, selectTop,
-                targetProp, false, printer, sheetName, password);
+                contextEntities.orderInterfaces, contextEntities.filters, printType, server, autoPrint, syncType,
+                messageType, selectTop, targetProp, false, printer, sheetName, password);
 
         for (int usedParam : contextEntities.usedParams) {
             mapping.add(new LPWithParams(usedParam));
