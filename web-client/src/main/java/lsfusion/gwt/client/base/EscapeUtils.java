@@ -11,12 +11,12 @@ public class EscapeUtils {
     public static final String UNICODE_NBSP = "\u00A0";
     public static final String UNICODE_BULLET = "\u2022";
 
-    // CONFIRM, ASK, tooltip
+    // toPrintMessage, tooltip
     public static Widget toHTML(String plainString) {
         return toHTML(plainString, null);
     }
 
-    // MESSAGE
+    // MESSAGE, CONFIRM, ASK
     public static Widget toHTML(String plainString, StaticImage image) {
         if(image != null) {
             FlexPanel panel = new FlexPanel();

@@ -260,8 +260,8 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         boolean warn = action.type == GMessageType.WARN;
         boolean error = action.type == GMessageType.ERROR;
 
-        StaticImage image = null;
-        String backgroundClass = null;
+        StaticImage image;
+        String backgroundClass;
         if(info) {
             image = StaticImage.MESSAGE_INFO;
             backgroundClass = "bg-info-subtle";
@@ -274,6 +274,9 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         } else if(error) {
             image = StaticImage.MESSAGE_WARN;
             backgroundClass = "bg-danger-subtle";
+        } else { //default
+            image = null;
+            backgroundClass = null;
         }
 
         if(!info) {
@@ -302,7 +305,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         pauseDispatching();
 
         Result<Object> result = new Result<>();
-        DialogBoxHelper.showConfirmBox(action.caption, EscapeUtils.toHTML(action.message), action.cancel, action.timeout, action.initialValue, getPopupOwner(),
+        DialogBoxHelper.showConfirmBox(action.caption, EscapeUtils.toHTML(action.message, StaticImage.MESSAGE_WARN), action.cancel, action.timeout, action.initialValue, getPopupOwner(),
                 chosenOption -> continueDispatching(chosenOption.asInteger(), result));
         return result.result;
     }

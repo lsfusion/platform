@@ -997,7 +997,7 @@ public class GFormController implements EditManager {
     public void executePropertyEventAction(ExecuteEditContext editContext, String actionSID, GEventSource eventSource, EventHandler handler) {
         GPropertyDraw property = editContext.getProperty();
         if (isChangeEvent(actionSID) && property.askConfirm) {
-            DialogBoxHelper.showConfirmBox("lsFusion", EscapeUtils.toHTML(property.askConfirmMessage), editContext.getPopupOwner(), chosenOption -> {
+            DialogBoxHelper.showConfirmBox("lsFusion", EscapeUtils.toHTML(property.askConfirmMessage, StaticImage.MESSAGE_WARN), editContext.getPopupOwner(), chosenOption -> {
                         if (chosenOption == DialogBoxHelper.OptionType.YES)
                             executePropertyEventActionConfirmed(editContext, actionSID, eventSource, handler);
                     });

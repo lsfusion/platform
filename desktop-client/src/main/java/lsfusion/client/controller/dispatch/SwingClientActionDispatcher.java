@@ -459,8 +459,8 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         boolean warn = action.type == MessageClientType.WARN;
         boolean error = action.type == MessageClientType.ERROR;
 
-        int messageType = JOptionPane.PLAIN_MESSAGE;
-        Color backgroundColor = null;
+        int messageType;
+        Color backgroundColor;
         if(info) {
             messageType = JOptionPane.INFORMATION_MESSAGE;
             backgroundColor = Color.decode("#cff4fc");
@@ -473,6 +473,9 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         } else if(error) {
             messageType = JOptionPane.WARNING_MESSAGE;
             backgroundColor = Color.decode("#f8d7da");
+        } else { //default
+            messageType = JOptionPane.PLAIN_MESSAGE;
+            backgroundColor = null;
         }
 
         if(!info) {

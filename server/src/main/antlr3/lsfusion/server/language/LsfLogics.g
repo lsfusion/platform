@@ -3499,7 +3499,7 @@ printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 
 	FormPrintType printType = null;
     Boolean syncType = null;
-    MessageClientType messageType = MessageClientType.WARN;
+    MessageClientType messageType = MessageClientType.DEFAULT;
     Integer selectTop = null;
     LPWithParams printerProperty = null;
     LPWithParams sheetNameProperty = null;
@@ -3920,7 +3920,7 @@ confirmActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams 
 messageActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {
     boolean syncType = true;
-    MessageClientType messageType = MessageClientType.WARN;
+    MessageClientType messageType = MessageClientType.DEFAULT;
 }
 @after {
 	if (inMainParseState()) {
@@ -3942,6 +3942,7 @@ messageTypeLiteral returns [MessageClientType val]
 	|   'SUCCESS' { $val = MessageClientType.SUCCESS; }
 	|	'WARN' { $val = MessageClientType.WARN; }
 	|	'ERROR' { $val = MessageClientType.ERROR; }
+	|	'DEFAULT' { $val = MessageClientType.DEFAULT; }
 	;
 
 asyncUpdateActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]

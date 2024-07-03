@@ -149,6 +149,8 @@ public class ClientActionToGwtConverter extends ObjectConverter {
                 return GMessageType.WARN;
             case ERROR:
                 return GMessageType.ERROR;
+            case DEFAULT:
+                return GMessageType.DEFAULT;
         }
         throw new UnsupportedOperationException();
     }

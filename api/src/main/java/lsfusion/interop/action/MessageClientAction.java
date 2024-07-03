@@ -18,7 +18,7 @@ public class MessageClientAction extends ExecuteClientAction {
     // message method should be used instead
     @Deprecated
     public MessageClientAction(String message, String caption) {
-        this(message, message, caption, new ArrayList<>(), new ArrayList<>(), MessageClientType.WARN, false);
+        this(message, message, caption, new ArrayList<>(), new ArrayList<>(), MessageClientType.DEFAULT, false);
     }
 
     public MessageClientAction(String message, String textMessage, String caption, List<List<String>> data, List<String> titles, MessageClientType type, boolean syncType) {

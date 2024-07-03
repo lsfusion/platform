@@ -4,5 +4,6 @@ public enum GMessageType {
     INFO,
     SUCCESS,
     WARN,
-    ERROR
+    ERROR,
+    DEFAULT
 }
