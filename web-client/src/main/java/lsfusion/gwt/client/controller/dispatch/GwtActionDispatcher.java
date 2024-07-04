@@ -296,7 +296,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         if(info || error) {
             Widget widget = action.data.isEmpty() ? EscapeUtils.toHTML(action.message, image) : GLog.toPrintMessage(action.message, image, action.data, action.titles);
             widget.addStyleName("alert " + (info ? "alert-info" : "alert-danger"));
-            GLog.message(widget, error);
+            GLog.message(widget, action.caption, error);
         }
     }
 
