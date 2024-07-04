@@ -17,7 +17,7 @@ FORM name [caption] formOptions
 After specifying the form name and caption, form options `formOptions` are specified in an arbitrary order
 
 ```
-IMAGE path 
+imageSetting
 LOCALASYNC
 ```
 
@@ -54,13 +54,21 @@ The `FORM` statement declares a new form and adds it to the current [module](Mod
 
 ### Form options (`formOptions`)
 
-- `IMAGE path`
+- `imageSetting`
 
-    The relative path to the file with the image that will be used as the form icon. 
+    Configuring the display of the form's icon. By default, the presence or absence of an icon is controlled by the [parameters](Working_parameters.md) `settings.defaultImagePathRankingThreshold` and `settings.defaultAutoImageRankingThreshold`. This option allows you to manually configure the icon display. It can have one of two forms:
 
-    - `path`
-    
-        Path to the file. String literal. The path is relative to the `images` directory.
+    - `IMAGE [fileExpr]`
+
+        Specifying the relative path to the image file that will be displayed as the form's icon. If `fileExpr` is not specified, the default icon display mode is activated.
+
+        - `fileExpr`
+
+            [Expression](Expression.md) whose value specifies the path to the image file. The path is specified relative to the `images` directory.
+
+    - `NOIMAGE`
+
+        Keyword indicating that the form should have no icon.
 
 - `LOCALASYNC`
 
