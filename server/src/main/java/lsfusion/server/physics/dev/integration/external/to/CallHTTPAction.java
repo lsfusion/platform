@@ -17,6 +17,7 @@ import lsfusion.interop.session.*;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.property.LP;
@@ -29,6 +30,8 @@ import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.classes.data.StringClass;
+import lsfusion.server.logics.classes.data.TextClass;
+import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -261,6 +264,15 @@ public abstract class CallHTTPAction extends CallAction {
     }
     public static <P extends PropertyInterface> void writePropertyValues(DataSession session, ExecutionEnvironment env, LP<P> property, String[] names, String[] values) throws SQLException, SQLHandledException {
         property.change(session, env, MapFact.toMap(names, values), StringClass.instance, StringClass.instance);
+    }
+
+    public static <P extends PropertyInterface> void writePropertyValues(DataSession session, ExecutionEnvironment env, LP<P> property, Map<String, List<String>> params) throws SQLException, SQLHandledException {
+        for (String key : params.keySet()) {
+            List<String> values = params.get(key);
+            for (int i = 0; i < values.size(); i++) {
+                property.change(values.get(i), session, new DataObject(key, TextClass.instance), new DataObject(i, IntegerClass.instance));
+            }
+        }
     }
 
     protected Integer getDefaultTimeout() {

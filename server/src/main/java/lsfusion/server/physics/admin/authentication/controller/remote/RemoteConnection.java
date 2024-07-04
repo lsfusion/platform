@@ -51,11 +51,7 @@ import java.lang.ref.WeakReference;
 import java.nio.charset.Charset;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.TimeZone;
+import java.util.*;
 import java.util.concurrent.Callable;
 
 import static lsfusion.base.BaseUtils.getNotNullStringArray;
@@ -476,16 +472,21 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
             businessLogics.LM.query.change(request.query, session);
         }
         if (request.query != null && action.uses(businessLogics.LM.params.property)) {
-            List<String> paramNames = new ArrayList<>();
-            List<String> paramValues = new ArrayList<>();
+            Map<String, List<String>> params = new HashMap<>();
             for (String param : request.query.split("[&?]")) {
                 String[] splittedParam = param.split("=");
                 if (splittedParam.length == 2) {
-                    paramNames.add(splittedParam[0]);
-                    paramValues.add(splittedParam[1]);
+                    String paramName = splittedParam[0];
+                    if (params.containsKey(paramName)) {
+                        params.get(paramName).add(splittedParam[1]);
+                    } else {
+                        List<String> values = new ArrayList<>();
+                        values.add(splittedParam[1]);
+                        params.put(paramName, values);
+                    }
                 }
             }
-            CallHTTPAction.writePropertyValues(session, env, businessLogics.LM.params, paramNames.toArray(new String[0]), paramValues.toArray(new String[0]));
+            CallHTTPAction.writePropertyValues(session, env, businessLogics.LM.params, params);
         }
         if (action.uses(businessLogics.LM.contentType.property)) {
             businessLogics.LM.contentType.change(request.contentType, session);

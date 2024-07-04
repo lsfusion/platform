@@ -325,6 +325,9 @@ FORM settings '{service.form.settings}'
                  loadLogicsIcon, openLogicsIcon, resetLogicsIcon, loadPWAIcon, openPWAIcon, resetPWAIcon
 ;
 
+CONSTRAINT SETCHANGED (dataLogicsName()) AND NOT regexPatternMatch(dataLogicsName(), '^[A-Za-z0-9\\-._~]*$')
+    MESSAGE '{system.logics.name.space.constraint}';
+
 DESIGN settings {
     OBJECTS {
         NEW tabs {
