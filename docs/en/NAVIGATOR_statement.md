@@ -136,7 +136,7 @@ The hierarchy described within a single `NAVIGATOR` statement can have an arbitr
 
           Keyword indicating that the navigator element should have no icon.
 
-- `CLASS classExpr`
+- `CLASS cssClassExpr`
 
     Specifying the name of the CSS class for the DOM element created for the navigator element component in HTML. This can be used to apply custom styles.
 
