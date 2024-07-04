@@ -141,6 +141,8 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     @Converter(from = MessageClientType.class)
     public GMessageType convertMessageClientType(MessageClientType messageClientType) {
         switch (messageClientType) {
+            case LOG:
+                return GMessageType.LOG;
             case INFO:
                 return GMessageType.INFO;
             case SUCCESS:

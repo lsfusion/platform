@@ -454,6 +454,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     }
 
     public void execute(MessageClientAction action) {
+        boolean log = action.type == MessageClientType.LOG;
         boolean info = action.type == MessageClientType.INFO;
         boolean success = action.type == MessageClientType.SUCCESS;
         boolean warn = action.type == MessageClientType.WARN;
@@ -478,7 +479,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
             backgroundColor = null;
         }
 
-        if(!info) {
+        if(!log && !info) {
             beforeModalActionInSameEDT(false);
             try {
                 if(action.data.isEmpty()) {
@@ -493,7 +494,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
             }
         }
 
-        if(info || error) {
+        if(log || info || error) {
             if (action.data.isEmpty()) {
                 Log.message(action.textMessage);
             } else {

@@ -255,6 +255,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     public void execute(GMessageAction action) {
         boolean ifNotFocused = false;
 
+        boolean log = action.type == GMessageType.LOG;
         boolean info = action.type == GMessageType.INFO;
         boolean success = action.type == GMessageType.SUCCESS;
         boolean warn = action.type == GMessageType.WARN;
@@ -279,7 +280,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             backgroundClass = null;
         }
 
-        if(!info) {
+        if(!log && !info) {
             if (action.syncType)
                 pauseDispatching();
             DialogBoxHelper.showMessageBox(action.caption, GLog.toPrintMessage(action.message, image, action.data, action.titles), backgroundClass, getPopupOwner(), chosenOption -> {
@@ -290,12 +291,12 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             ifNotFocused = true;
         }
 
-        if(!MainFrame.enableShowingRecentlyLogMessages)
+        if (!log && !MainFrame.enableShowingRecentlyLogMessages)
             GLog.showFocusNotification(action.textMessage, action.caption, ifNotFocused);
 
-        if(info || error) {
+        if(log || info || error) {
             Widget widget = action.data.isEmpty() ? EscapeUtils.toHTML(action.message, image) : GLog.toPrintMessage(action.message, image, action.data, action.titles);
-            widget.addStyleName("alert " + (info ? "alert-info" : "alert-danger"));
+            widget.addStyleName("alert " + (log || info ? "alert-info" : "alert-danger"));
             GLog.message(widget, action.caption, error);
         }
     }

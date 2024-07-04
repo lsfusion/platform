@@ -3936,9 +3936,9 @@ messageActionDefinitionBody[List<TypedParameter> context, boolean dynamic] retur
         )*
 	;
 
-//LOG - backward compatibility
 messageTypeLiteral returns [MessageClientType val]
-	:	('INFO' | 'LOG') { $val = MessageClientType.INFO; }
+	:	'LOG' { $val = MessageClientType.LOG; }
+	|	'INFO' { $val = MessageClientType.INFO; }
 	|   'SUCCESS' { $val = MessageClientType.SUCCESS; }
 	|	'WARN' { $val = MessageClientType.WARN; }
 	|	'ERROR' { $val = MessageClientType.ERROR; }
