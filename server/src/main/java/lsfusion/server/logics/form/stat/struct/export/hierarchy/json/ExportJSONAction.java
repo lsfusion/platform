@@ -1,14 +1,14 @@
 package lsfusion.server.logics.form.stat.struct.export.hierarchy.json;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.language.property.LP;
+import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.open.FormSelector;
 import lsfusion.server.logics.form.open.ObjectSelector;
-import lsfusion.server.logics.form.stat.SelectTop;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 import lsfusion.server.logics.form.stat.struct.export.hierarchy.ExportHierarchicalAction;
 import lsfusion.server.logics.form.stat.struct.hierarchy.json.JSONNode;
@@ -27,8 +27,8 @@ public class ExportJSONAction<O extends ObjectSelector> extends ExportHierarchic
 
     public ExportJSONAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                             ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
-                            FormIntegrationType staticType, LP exportFile, SelectTop selectTop, String charset) {
-        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFile, selectTop, charset, null, null);
+                            FormIntegrationType staticType, LP exportFile, ValueClass selectTop, ImOrderMap<GroupObjectEntity, ValueClass> selectTops, String charset) {
+        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFile, selectTop, selectTops, charset, null, null);
     }
 
     protected JSONNode createRootNode(String root, String tag) {

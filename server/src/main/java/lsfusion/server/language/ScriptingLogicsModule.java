@@ -97,7 +97,6 @@ import lsfusion.server.logics.form.interactive.dialogedit.ClassFormSelector;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
 import lsfusion.server.logics.form.open.MappedForm;
 import lsfusion.server.logics.form.open.ObjectSelector;
-import lsfusion.server.logics.form.stat.SelectTop;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.CCCContextFilterEntity;
@@ -108,7 +107,8 @@ import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.navigator.NavigatorElement;
-import lsfusion.server.logics.navigator.window.*;
+import lsfusion.server.logics.navigator.window.AbstractWindow;
+import lsfusion.server.logics.navigator.window.NavigatorWindow;
 import lsfusion.server.logics.property.AggregateProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
@@ -3972,7 +3972,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public <O extends ObjectSelector> LAWithParams addScriptedPrintFAProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps, FormPrintType printType,
-                                                                          boolean server, boolean autoPrint, NamedPropertyUsage propUsage, Boolean syncType, Integer selectTop,
+                                                                          boolean server, boolean autoPrint, NamedPropertyUsage propUsage, Boolean syncType,
+                                                                          LPWithParams selectTopProperty,
                                                                           LPWithParams printerProperty, LPWithParams sheetNameProperty, LPWithParams passwordProperty,
                                                                           List<TypedParameter> objectsContext, List<LPWithParams> contextFilters, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
         assert printType != null;
@@ -3998,6 +3999,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if(propUsage != null)
             targetProp = findLPNoParamsByPropertyUsage(propUsage);
 
+        ValueClass selectTop = selectTopProperty != null ? getValueClassByParamProperty(selectTopProperty, params) : null;
         ValueClass printer = printerProperty != null ? getValueClassByParamProperty(printerProperty, params) : null;
         ValueClass sheetName = sheetNameProperty != null ? getValueClassByParamProperty(sheetNameProperty, params) : null;
         ValueClass password = passwordProperty != null ? getValueClassByParamProperty(passwordProperty, params) : null;
@@ -4005,13 +4007,16 @@ public class ScriptingLogicsModule extends LogicsModule {
         CFEWithParams<O> contextEntities = getContextFilterEntities(params.size(), contextObjects, ListFact.fromJavaList(contextFilters));
 
         LA action = addPFAProp(null, LocalizedString.NONAME, mapped.form, mappedObjects, mNulls.immutableList(),
-                contextEntities.orderInterfaces, contextEntities.filters, printType, server, autoPrint, syncType, selectTop,
-                targetProp, false, printer, sheetName, password);
+                contextEntities.orderInterfaces, contextEntities.filters, printType, server, autoPrint, syncType,
+                targetProp, false, selectTop, null, printer, sheetName, password);
 
         for (int usedParam : contextEntities.usedParams) {
             mapping.add(new LPWithParams(usedParam));
         }
 
+        if(selectTopProperty != null)  {
+            mapping.add(selectTopProperty);
+        }
         if(printerProperty != null) {
             mapping.add(printerProperty);
         }
@@ -4064,7 +4069,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public <O extends ObjectSelector> LAWithParams addScriptedExportFAProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps, FormIntegrationType exportType,
                                                                            LPWithParams sheetNameProperty, LPWithParams rootProperty, LPWithParams tagProperty, boolean attr, Boolean hasHeader,
-                                                                           String separator, boolean noEscape, SelectTop selectTop, String charset, NamedPropertyUsage propUsage,
+                                                                           String separator, boolean noEscape, LPWithParams selectTopProperty, ImOrderMap<GroupObjectEntity, LPWithParams> selectTopProperties, String charset, NamedPropertyUsage propUsage,
                                                                            OrderedMap<GroupObjectEntity, NamedPropertyUsage> propUsages, List<TypedParameter> objectsContext,
                                                                            List<LPWithParams> contextFilters, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
         ImList<O> mappedObjects = mapped.objects;
@@ -4118,6 +4123,13 @@ public class ScriptingLogicsModule extends LogicsModule {
             errLog.emitSimpleError(parser, String.format("EXPORT %s TO multiple files not supported", exportType));
         }
 
+        ValueClass selectTop = selectTopProperty != null ? getValueClassByParamProperty(selectTopProperty, params) : null;
+        MOrderMap<GroupObjectEntity, ValueClass> selectTops = MapFact.mOrderMap();
+        if(selectTopProperties != null) {
+            for(int i = 0; i < selectTopProperties.size(); i++) {
+                selectTops.add(selectTopProperties.getKey(i), getValueClassByParamProperty(selectTopProperties.getValue(i), params));
+            }
+        }
         ValueClass sheetName = sheetNameProperty != null ? getValueClassByParamProperty(sheetNameProperty, params) : null;
         ValueClass root = rootProperty != null ? getValueClassByParamProperty(rootProperty, params) : null;
         ValueClass tag = tagProperty != null ? getValueClassByParamProperty(tagProperty, params) : null;
@@ -4125,11 +4137,17 @@ public class ScriptingLogicsModule extends LogicsModule {
         CFEWithParams<O> contextEntities = getContextFilterEntities(params.size(), contextObjects, ListFact.fromJavaList(contextFilters));
 
         LA action = addEFAProp(null, LocalizedString.NONAME, mapped.form, mappedObjects, mNulls.immutableList(),
-                contextEntities.orderInterfaces, contextEntities.filters, exportType, hasHeader, separator, noEscape, selectTop, charset, singleExportFile, exportFiles.immutable(), sheetName, root, tag);
+                contextEntities.orderInterfaces, contextEntities.filters, exportType, hasHeader, separator, noEscape, selectTop, selectTops.immutableOrder(), charset, singleExportFile, exportFiles.immutable(), sheetName, root, tag);
 
         for (int usedParam : contextEntities.usedParams) {
             mapping.add(new LPWithParams(usedParam));
         }
+
+        if(selectTopProperty != null)
+            mapping.add(selectTopProperty);
+
+        if(selectTopProperties != null)
+            mapping.addAll(selectTopProperties.values().toJavaCol());
 
         if(sheetNameProperty != null)
             mapping.add(sheetNameProperty);
@@ -4411,7 +4429,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LAWithParams addScriptedExportAction(List<TypedParameter> oldContext, FormIntegrationType type, final List<String> ids, List<Boolean> literals,
                                                 List<LPWithParams> exprs, List<LPTrivialLA> propUsages, LPWithParams whereProperty, NamedPropertyUsage fileProp,
                                                 LPWithParams sheetNameProperty, LPWithParams rootProperty, LPWithParams tagProperty,
-                                                String separator, Boolean hasHeader, boolean noEscape, Integer selectTop, String charset, boolean attr,
+                                                String separator, Boolean hasHeader, boolean noEscape, LPWithParams selectTopProperty, String charset, boolean attr,
                                                 List<LPWithParams> orderProperties, List<Boolean> orderDirections) throws ScriptingErrorLog.SemanticErrorException {
 
         LP<?> targetProp = fileProp != null ? findLPNoParamsByPropertyUsage(fileProp) : null;
@@ -4467,6 +4485,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 //        ImList<Type> exprTypes = getTypesForExportProp(exprs, newContext);
         List<Object> resultParams = getParamsPlainList(paramsList);
 
+        ValueClass selectTop = selectTopProperty != null ? getValueClassByParamProperty(selectTopProperty, oldContext) : null;
         ValueClass sheetName = sheetNameProperty != null ? getValueClassByParamProperty(sheetNameProperty, oldContext) : null;
         ValueClass root = rootProperty != null ? getValueClassByParamProperty(rootProperty, oldContext) : null;
         ValueClass tag = tagProperty != null ? getValueClassByParamProperty(tagProperty, oldContext) : null;
@@ -4479,6 +4498,8 @@ public class ScriptingLogicsModule extends LogicsModule {
             throwAlreadyDefinePropertyDraw(alreadyDefined);
         }
 
+        if(selectTopProperty != null)
+            mapping.add(selectTopProperty);
         if(sheetNameProperty != null)
             mapping.add(sheetNameProperty);
         if(rootProperty != null)

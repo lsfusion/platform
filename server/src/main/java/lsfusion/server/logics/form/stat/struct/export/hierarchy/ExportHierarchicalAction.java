@@ -1,10 +1,7 @@
 package lsfusion.server.logics.form.stat.struct.export.hierarchy;
 
 import lsfusion.base.col.MapFact;
-import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -14,13 +11,13 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.open.FormSelector;
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.open.stat.ExportAction;
-import lsfusion.server.logics.form.stat.SelectTop;
 import lsfusion.server.logics.form.stat.StaticDataGenerator;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 import lsfusion.server.logics.form.stat.struct.export.StaticExportData;
 import lsfusion.server.logics.form.stat.struct.hierarchy.Node;
 import lsfusion.server.logics.form.stat.struct.hierarchy.ParseNode;
 import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
+import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -38,13 +35,17 @@ public abstract class ExportHierarchicalAction<T extends Node<T>, O extends Obje
 
     protected final LP<?> exportFile; // nullable
 
-    private static ValueClass[] getExtraParams(ValueClass root, ValueClass tag) {
+    private static ValueClass[] getExtraParams(ValueClass selectTop, ImOrderMap<GroupObjectEntity, ValueClass> selectTops, ValueClass root, ValueClass tag) {
         List<ValueClass> params = new ArrayList<>();
+        if(selectTop != null)
+            params.add(selectTop);
+        if(selectTops != null)
+            params.addAll(selectTops.values().toJavaCol());
         if(root != null)
             params.add(root);
         if(tag != null)
             params.add(tag);
-        return params.toArray(new ValueClass[params.size()]);
+        return params.toArray(new ValueClass[0]);
     }
     public ExportHierarchicalAction(LocalizedString caption,
                                     FormSelector<O> form,
@@ -54,10 +55,11 @@ public abstract class ExportHierarchicalAction<T extends Node<T>, O extends Obje
                                     ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
                                     FormIntegrationType staticType,
                                     LP exportFile,
-                                    SelectTop selectTop,
+                                    ValueClass selectTop,
+                                    ImOrderMap<GroupObjectEntity, ValueClass> selectTops,
                                     String charset,
                                     ValueClass root, ValueClass tag) {
-        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, selectTop, charset != null ? charset : ExternalUtils.defaultXMLJSONCharset, getExtraParams(root, tag));
+        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, selectTop, selectTops, charset != null ? charset : ExternalUtils.defaultXMLJSONCharset, getExtraParams(selectTop, selectTops, root, tag));
 
         ImOrderSet<ClassPropertyInterface> orderInterfaces = getOrderInterfaces();
         if (tag != null)
