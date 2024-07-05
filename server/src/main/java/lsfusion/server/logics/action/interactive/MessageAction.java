@@ -47,12 +47,12 @@ public class MessageAction extends SystemAction {
             header = headerObject.getType().formatString(headerObject.getValue(), true);
         }
 
-        showMessage(context, nvl(message, ""), nvl(header, "lsFusion"));
+        showMessage(context, message, nvl(header, "lsFusion"));
         return FlowResult.FINISH;
     }
 
     protected void showMessage(ExecutionContext<PropertyInterface> context, String message, String header) throws SQLException, SQLHandledException {
-        context.message(message, header, new ArrayList<>(), new ArrayList<>(), type, noWait);
+        context.message(nvl(message, ""), header, new ArrayList<>(), new ArrayList<>(), type, noWait);
     }
 
     @Override
