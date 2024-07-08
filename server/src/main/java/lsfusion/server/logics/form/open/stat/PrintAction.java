@@ -57,9 +57,9 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
     private final boolean autoPrint;
 
     private static ValueClass[] getExtraParams(SelectTop<ValueClass> selectTop, ValueClass printer, ValueClass sheetName, ValueClass password) {
-        List<ValueClass> params = selectTop.getParams();
-        if (printer != null)
-            params.add(printer);
+        List<ValueClass> params = new ArrayList<>();
+        if (selectTop != null)
+            params.addAll(selectTop.getParams());
         if (sheetName != null)
             params.add(sheetName);
         if (password != null)

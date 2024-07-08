@@ -39,7 +39,9 @@ public abstract class ExportHierarchicalAction<T extends Node<T>, O extends Obje
     protected final LP<?> exportFile; // nullable
 
     private static ValueClass[] getExtraParams(SelectTop<ValueClass> selectTop, ValueClass root, ValueClass tag) {
-        List<ValueClass> params = selectTop.getParams();
+        List<ValueClass> params = new ArrayList<>();
+        if (selectTop != null)
+            params.addAll(selectTop.getParams());
         if (root != null)
             params.add(root);
         if (tag != null)

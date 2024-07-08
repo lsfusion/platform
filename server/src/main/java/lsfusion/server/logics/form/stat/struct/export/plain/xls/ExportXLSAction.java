@@ -18,6 +18,7 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ExportXLSAction<O extends ObjectSelector> extends ExportPlainAction<O> {
@@ -27,7 +28,9 @@ public class ExportXLSAction<O extends ObjectSelector> extends ExportPlainAction
     private ClassPropertyInterface sheetNameInterface;
 
     private static ValueClass[] getExtraParams(SelectTop<ValueClass> selectTop, ValueClass sheetName) {
-        List<ValueClass> params = selectTop.getParams();
+        List<ValueClass> params = new ArrayList<>();
+        if (selectTop != null)
+            params.addAll(selectTop.getParams());
         if (sheetName != null)
             params.add(sheetName);
         return params.toArray(new ValueClass[0]);
