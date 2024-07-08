@@ -454,30 +454,51 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     }
 
     public void execute(MessageClientAction action) {
-        MessageClientType actionType = action.type;
-        boolean message = actionType == MessageClientType.WARN;
-        String textMessage = action.textMessage;
-        if(message || actionType == MessageClientType.WARN_EXTENDED) {
+        boolean log = action.type == MessageClientType.LOG;
+        boolean info = action.type == MessageClientType.INFO;
+        boolean success = action.type == MessageClientType.SUCCESS;
+        boolean warn = action.type == MessageClientType.WARN;
+        boolean error = action.type == MessageClientType.ERROR;
+
+        int messageType;
+        Color backgroundColor;
+        if(info) {
+            messageType = JOptionPane.INFORMATION_MESSAGE;
+            backgroundColor = Color.decode("#cff4fc");
+        } else if(success) {
+            messageType = JOptionPane.INFORMATION_MESSAGE;
+            backgroundColor = Color.decode("#d1e7dd");
+        } else if(warn) {
+            messageType = JOptionPane.WARNING_MESSAGE;
+            backgroundColor = Color.decode("#fff3cd");
+        } else if(error) {
+            messageType = JOptionPane.WARNING_MESSAGE;
+            backgroundColor = Color.decode("#f8d7da");
+        } else { //default
+            messageType = JOptionPane.PLAIN_MESSAGE;
+            backgroundColor = null;
+        }
+
+        if(!log && !info) {
             beforeModalActionInSameEDT(false);
             try {
-                if (message) {
+                if(action.data.isEmpty()) {
                     JOptionPane.showMessageDialog(getDialogParentContainer(),
-                            SwingUtils.getMessageTextPane(textMessage), action.caption,
-                            JOptionPane.INFORMATION_MESSAGE);
+                            SwingUtils.getMessageTextPane(action.textMessage, backgroundColor), action.caption,
+                            messageType);
                 } else {
-                    new ExtendedMessageDialog(getDialogParentContainer(), action.caption, textMessage).setVisible(true);
+                    Log.messageWarning(action.textMessage, backgroundColor, action.titles, action.data);
                 }
             } finally {
                 afterModalActionInSameEDT(false);
             }
         }
 
-        boolean failed = actionType == MessageClientType.ERROR;
-        if(failed || actionType == MessageClientType.INFO) {
-            if (failed) {
-                Log.messageWarning(textMessage, action.titles, action.data);
+        if(log || info || error) {
+            if (action.data.isEmpty()) {
+                Log.message(action.textMessage);
             } else {
-                Log.message(textMessage);
+                //todo: now only plain text messages in log panel supported
             }
         }
     }
@@ -489,24 +510,6 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
                     action.cancel, action.timeout, action.initialValue);
         } finally {
             afterModalActionInSameEDT(false);
-        }
-    }
-
-    public class ExtendedMessageDialog extends JDialog {
-        public ExtendedMessageDialog(Container owner, String title, String message) {
-            super(SwingUtils.getWindow(owner), title, ModalityType.DOCUMENT_MODAL);
-            JTextArea textArea = new JTextArea(message);
-            textArea.setFont(textArea.getFont().deriveFont((float) 12));
-            add(new JScrollPane(textArea));
-            setMinimumSize(new Dimension(400, 200));
-            setLocationRelativeTo(owner);
-            ActionListener escListener = new ActionListener() {
-                public void actionPerformed(ActionEvent actionEvent) {
-                    setVisible(false);
-                }
-            };
-            KeyStroke stroke = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
-            getRootPane().registerKeyboardAction(escListener, stroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
         }
     }
 

@@ -42,4 +42,9 @@
     --excel-component-border-color: #646464;
 
     --excel-link-color: #000000;
+
+    --bs-success-bg-subtle: #332701;
+    --bs-info-bg-subtle: #032830;
+    --bs-warning-bg-subtle: #332701;
+    --bs-danger-bg-subtle: #2c0b0e;
 }

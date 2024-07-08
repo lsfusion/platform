@@ -269,10 +269,10 @@ public class ThreadLocalContext {
     }
 
     public static void message(String message) {
-        message(message, "lsFusion", false);
+        message(message, "lsFusion");
     }
-    public static void message(String message, String header, boolean extended) {
-        message(message, header, new ArrayList<>(), new ArrayList<>(), MessageClientType.SYSTEM(extended), true);
+    public static void message(String message, String header) {
+        message(message, header, new ArrayList<>(), new ArrayList<>(), MessageClientType.WARN, true);
     }
 
     public static void message(String message, String caption, List<List<String>> data, List<String> titles, MessageClientType type, boolean noWait) {

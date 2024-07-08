@@ -354,10 +354,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
 
     public void message(String message, String header) {
-        message(message, header, false);
-    }
-    public void message(String message, String header, boolean extended) {
-        ThreadLocalContext.message(message, header, extended);
+        ThreadLocalContext.message(message, header);
     }
 
     public void message(String message, String caption, List<List<String>> data, List<String> titles, MessageClientType type, boolean noWait) {

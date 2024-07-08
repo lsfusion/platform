@@ -8,6 +8,7 @@ grammar LsfLogics;
     import lsfusion.base.col.MapFact;
     import lsfusion.base.col.heavy.OrderedMap;
     import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+    import lsfusion.interop.action.MessageClientType;
     import lsfusion.interop.action.ServerResponse;
     import lsfusion.interop.form.WindowFormType;
     import lsfusion.interop.form.ContainerWindowFormType;
@@ -3498,6 +3499,7 @@ printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 
 	FormPrintType printType = null;
     Boolean syncType = null;
+    MessageClientType messageType = MessageClientType.DEFAULT;
     Integer selectTop = null;
     LPWithParams printerProperty = null;
     LPWithParams sheetNameProperty = null;
@@ -3507,7 +3509,7 @@ printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 }
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedPrintFAProp($mf.mapped, $mf.props, printType, server, autoPrint, $pUsage.propUsage, syncType, selectTop, printerProperty, sheetNameProperty, passwordProperty,
+		$action = self.addScriptedPrintFAProp($mf.mapped, $mf.props, printType, server, autoPrint, $pUsage.propUsage, syncType, messageType, selectTop, printerProperty, sheetNameProperty, passwordProperty,
 		                                      objectsContext, contextFilters, context);
 	}
 }
@@ -3520,7 +3522,10 @@ printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
         (
             ( // static - rest
                 'MESSAGE' { printType = FormPrintType.MESSAGE; }
-                (sync = syncTypeLiteral { syncType = $sync.val; })?
+                (
+                    sync = syncTypeLiteral { syncType = $sync.val; }
+                |   mt = messageTypeLiteral { messageType = $mt.val; }
+                )*
                 ('TOP' top = intLiteral { selectTop = $top.val; } )?
             )
             |
@@ -3914,21 +3919,30 @@ confirmActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams 
 		
 messageActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {
-    boolean noWait = false;
-    boolean log = false;
+    boolean syncType = true;
+    MessageClientType messageType = MessageClientType.DEFAULT;
 }
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedMessageProp($mpe.property, $hpe.property, noWait, log);
+		$action = self.addScriptedMessageProp($mpe.property, $hpe.property, !syncType, messageType);
 	}
 }
 	:	'MESSAGE'
 	    mpe=propertyExpression[context, dynamic]
 	    ('HEADER' hpe=propertyExpression[context, dynamic])?
 	    (
-	        sync = syncTypeLiteral { noWait = !$sync.val; }
-	    |   'LOG' {  log = true; }
+	        sync = syncTypeLiteral { syncType = $sync.val; }
+	    |   mt = messageTypeLiteral { messageType = $mt.val; }
         )*
+	;
+
+messageTypeLiteral returns [MessageClientType val]
+	:	'LOG' { $val = MessageClientType.LOG; }
+	|	'INFO' { $val = MessageClientType.INFO; }
+	|   'SUCCESS' { $val = MessageClientType.SUCCESS; }
+	|	'WARN' { $val = MessageClientType.WARN; }
+	|	'ERROR' { $val = MessageClientType.ERROR; }
+	|	'DEFAULT' { $val = MessageClientType.DEFAULT; }
 	;
 
 asyncUpdateActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]

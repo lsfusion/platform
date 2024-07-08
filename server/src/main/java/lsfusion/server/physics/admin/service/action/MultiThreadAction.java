@@ -50,7 +50,7 @@ public abstract class MultiThreadAction extends InternalAction {
             ThreadUtils.interruptThread(context, Thread.currentThread());
         } finally {
             Messages messages = getMessages(task, errorOccurred);
-            context.message(messages.message, messages.header, messages.extended);
+            context.message(messages.message, messages.header);
         }
     }
 
@@ -61,16 +61,10 @@ public abstract class MultiThreadAction extends InternalAction {
     protected static class Messages {
         public final String message;
         public final String header;
-        public final boolean extended;
 
         public Messages(String message, String header) {
-            this(message, header, false);
-        }
-
-        public Messages(String message, String header, boolean extended) {
             this.message = message;
             this.header = header;
-            this.extended = extended;
         }
     }
     protected abstract Messages getMessages(GroupPropertiesSingleTask task, boolean errorOccurred);

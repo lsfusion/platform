@@ -1,7 +1,6 @@
 package lsfusion.server.physics.admin.service.action;
 
 import lsfusion.base.Result;
-import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
@@ -43,7 +42,7 @@ public class CheckTableColumnAction extends InternalAction {
 
             context.message(localize(LocalizedString.createFormatted(noErrors ? "{logics.check.completed}" : "{logics.check.failed}",
                     localize("{logics.checking.materializations}"))) + (noErrors ? "" : ("\n\n" + message.result)),
-                    localize("{logics.checking.materializations}"), true);
+                    localize("{logics.checking.materializations}"));
         }
     }
 }
