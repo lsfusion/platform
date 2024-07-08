@@ -11,22 +11,26 @@
 
     <script>
         function init() {
-            navigator.serviceWorker.addEventListener("message", (event) => {
-                if (event.data === 'close') {
-                    window.close();
-                    document.getElementById("push-notification").style.display = 'block'
-                }
-            });
-            navigator.serviceWorker.register('service-worker.js');
-            navigator.serviceWorker.ready.then((registration) => {
-                registration.active.postMessage({
-                    type: 'pushNotification',
-                    actionId: ${id},
-                    push: {
-                        query: "${query}"
+            try {
+                navigator.serviceWorker.addEventListener("message", (event) => {
+                    if (event.data === 'close') {
+                        window.close();
+                        document.getElementById("push-notification").style.display = 'block'
                     }
                 });
-            });
+                navigator.serviceWorker.register('service-worker.js');
+                navigator.serviceWorker.ready.then((registration) => {
+                    registration.active.postMessage({
+                        type: 'pushNotification',
+                        actionId: ${id},
+                        push: {
+                            query: "${query}"
+                        }
+                    });
+                });
+            } catch (error) {
+                console.warn(error)
+            }
         }
     </script>
 </head>

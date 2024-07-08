@@ -216,24 +216,28 @@
                 setCookie('LSFUSION_SCREEN_SIZE', document.documentElement.clientWidth + 'x' + document.documentElement.clientHeight);
                 setCookie('LSFUSION_SCALE', window.devicePixelRatio);
 
-                navigator.serviceWorker.ready.then((registration) => {
-                    registration.active.postMessage({
-                        type: "setDefaultNotifyOptions",
-                        defaultNotification: {
-                            title: "${title}",
-                            options: {
-                                icon: "${logicsIcon}",
-                                body: "<%= ServerMessages.getString(request, "executed.successfully") %>"
+                try {
+                    navigator.serviceWorker.ready.then((registration) => {
+                        registration.active.postMessage({
+                            type: "setDefaultNotifyOptions",
+                            defaultNotification: {
+                                title: "${title}",
+                                options: {
+                                    icon: "${logicsIcon}",
+                                    body: "<%= ServerMessages.getString(request, "executed.successfully") %>"
+                                }
+                            },
+                            focusNotification: {
+                                title: "<%= ServerMessages.getString(request, "push.notification.tab.already.opened") %>",
+                                options: {
+                                    body: "<%= ServerMessages.getString(request, "push.notification.can.close.tab") %>"
+                                }
                             }
-                        },
-                        focusNotification: {
-                            title: "<%= ServerMessages.getString(request, "push.notification.tab.already.opened") %>",
-                            options: {
-                                body: "<%= ServerMessages.getString(request, "push.notification.can.close.tab") %>"
-                            }
-                        }
+                        });
                     });
-                });
+                } catch (error) {
+                    console.warn(error)
+                }
             }
         </script>
     </head>
