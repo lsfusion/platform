@@ -29,8 +29,11 @@ import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.changed.IncrementType;
 import lsfusion.server.logics.action.session.table.SingleKeyPropertyUsage;
 import lsfusion.server.logics.action.session.table.SingleKeyTableUsage;
+import lsfusion.server.logics.action.session.table.SinglePropertyTableUsage;
 import lsfusion.server.logics.classes.ConcreteClass;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.classes.data.StringClass;
+import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.event.Event;
 import lsfusion.server.logics.event.PrevScope;
@@ -50,7 +53,7 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.*;
 
 import static lsfusion.server.logics.property.oraction.ActionOrPropertyUtils.readCalcImplements;
 
@@ -248,6 +251,30 @@ public class LP<T extends PropertyInterface> extends LAP<T, Property<T>> {
 
         try {
             env.change(property, SingleKeyPropertyUsage.getChange(table, propertyKey));
+        } finally {
+            table.drop(session.sql, session.getOwner());
+        }
+    }
+
+    public void change(DataSession session, ExecutionEnvironment env, Map<String, List<String>> params) throws SQLException, SQLHandledException {
+
+        SinglePropertyTableUsage<T> table = new SinglePropertyTableUsage<>("updpm:sp", property.getFriendlyOrderInterfaces(), key -> property.getInterfaceType(key), property.getType());
+        Map<ImMap<T, DataObject>, ObjectValue> result = new HashMap<>();
+
+        for (Map.Entry<String, List<String>> entry : params.entrySet()) {
+            List<String> value = entry.getValue();
+            for (int i = 0; i < value.size(); i++) {
+                Map<T, DataObject> keyMap = new HashMap<>();
+                keyMap.put(property.getFriendlyOrderInterfaces().get(0), new DataObject(entry.getKey(), StringClass.instance));
+                keyMap.put(property.getFriendlyOrderInterfaces().get(1), new DataObject(i, IntegerClass.instance));
+
+                result.put(MapFact.fromJavaMap(keyMap), ObjectValue.getValue(value.get(i), StringClass.instance));
+            }
+        }
+        table.writeRows(MapFact.fromJavaMap(result), session.sql, session.getOwner());
+
+        try {
+            env.change(property, SinglePropertyTableUsage.getChange(table));
         } finally {
             table.drop(session.sql, session.getOwner());
         }
