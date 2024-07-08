@@ -10,6 +10,7 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.open.FormSelector;
 import lsfusion.server.logics.form.open.ObjectSelector;
+import lsfusion.server.logics.form.stat.SelectTop;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 import lsfusion.server.logics.form.stat.struct.export.plain.ExportPlainAction;
 import lsfusion.server.logics.form.stat.struct.export.plain.ExportPlainWriter;
@@ -25,8 +26,8 @@ public class ExportDBFAction<O extends ObjectSelector> extends ExportPlainAction
 
     public ExportDBFAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                            ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
-                           FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, ValueClass selectTop, ImOrderMap<GroupObjectEntity, ValueClass> selectTops, String charset) {
-        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, selectTops, charset != null ? charset : ExternalUtils.defaultDBFCharset);
+                           FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, SelectTop<ValueClass> selectTop, String charset) {
+        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, charset != null ? charset : ExternalUtils.defaultDBFCharset);
     }
 
     @Override

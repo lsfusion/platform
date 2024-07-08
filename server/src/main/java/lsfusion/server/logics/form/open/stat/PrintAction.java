@@ -2,6 +2,7 @@ package lsfusion.server.logics.form.open.stat;
 
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.base.col.interfaces.mutable.MOrderMap;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportGenerationData;
@@ -20,6 +21,7 @@ import lsfusion.server.logics.form.stat.print.StaticFormReportManager;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
 import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
+import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
@@ -38,6 +40,8 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
 
     private final Integer defaultSelectTop;
     private final ClassPropertyInterface selectTopInterface;
+    private final ImOrderMap<GroupObjectEntity, ClassPropertyInterface> selectTopsInterfaces;
+
     private final ClassPropertyInterface printerInterface;
     private final ClassPropertyInterface sheetNameInterface;
     private final ClassPropertyInterface passwordInterface;
@@ -52,17 +56,15 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
     private final boolean server;
     private final boolean autoPrint;
 
-    private static ValueClass[] getExtraParams(ValueClass selectTop, ValueClass printer, ValueClass sheetName, ValueClass password) {
-        List<ValueClass> params = new ArrayList<>();
-        if(selectTop != null)
-            params.add(selectTop);
-        if(printer != null)
+    private static ValueClass[] getExtraParams(SelectTop<ValueClass> selectTop, ValueClass printer, ValueClass sheetName, ValueClass password) {
+        List<ValueClass> params = selectTop.getParams();
+        if (printer != null)
             params.add(printer);
-        if(sheetName != null)
+        if (sheetName != null)
             params.add(sheetName);
-        if(password != null)
+        if (password != null)
             params.add(password);
-        return params.toArray(new ValueClass[params.size()]);
+        return params.toArray(new ValueClass[0]);
     }
     public PrintAction(LocalizedString caption,
                        FormSelector<O> form,
@@ -76,8 +78,8 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
                        boolean autoPrint,
                        LP exportFile,
                        LP formPageCount, boolean removeNullsAndDuplicates,
-                       ValueClass selectTop, Integer defaultSelectTop, ValueClass printer, ValueClass sheetName, ValueClass password) {
-        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, selectTop, null, getExtraParams(selectTop, printer, sheetName, password));
+                       SelectTop<ValueClass> selectTop, Integer defaultSelectTop, ValueClass printer, ValueClass sheetName, ValueClass password) {
+        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, selectTop, getExtraParams(selectTop, printer, sheetName, password));
 
         ImOrderSet<ClassPropertyInterface> orderInterfaces = getOrderInterfaces();
         int shift = 0;
@@ -85,7 +87,17 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
         this.sheetNameInterface = sheetName != null ? orderInterfaces.get(orderInterfaces.size() - 1 - shift++) : null;
         this.printerInterface = printer != null ? orderInterfaces.get(orderInterfaces.size() - 1 - shift++) : null;
         this.defaultSelectTop = defaultSelectTop;
-        this.selectTopInterface = selectTop != null ? orderInterfaces.get(orderInterfaces.size() - 1 - shift) : null;
+
+        this.selectTopInterface = selectTop != null && selectTop.selectTop != null ? orderInterfaces.get(orderInterfaces.size() - 1 - shift++) : null;
+        if (selectTop != null && selectTop.selectTops != null) {
+            MOrderMap<GroupObjectEntity, ClassPropertyInterface> mSelectTopInterfaces = MapFact.mOrderMap();
+            for (int i = 0; i < selectTop.selectTops.size(); i++) {
+                mSelectTopInterfaces.add(selectTop.selectTops.getKey(i), orderInterfaces.get(orderInterfaces.size() - shift - selectTop.selectTops.size() + i));
+            }
+            this.selectTopsInterfaces = mSelectTopInterfaces.immutableOrder();
+        } else {
+            this.selectTopsInterfaces = null;
+        }
 
         this.formPageCount = formPageCount;
 
@@ -100,11 +112,19 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
 
     @Override
     protected void executeInternal(FormEntity form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, ExecutionContext<ClassPropertyInterface> context, ImRevMap<ObjectEntity, O> mapResolvedObjects, ImSet<ContextFilterInstance> contextFilters) throws SQLException, SQLHandledException {
-        Integer selectTop = selectTopInterface != null ? (Integer) context.getKeyObject(selectTopInterface) : null;
+        Integer selectTopValue = selectTopInterface != null ? (Integer) context.getKeyObject(selectTopInterface) : null;
+
+        MOrderMap<GroupObjectEntity, Integer> selectTops = MapFact.mOrderMap();
+        if(selectTopsInterfaces != null) {
+            for (int i = 0; i < selectTopsInterfaces.size(); i++) {
+                selectTops.add(selectTopsInterfaces.getKey(i), (Integer) context.getKeyObject(selectTopsInterfaces.getValue(i)));
+            }
+        }
+        SelectTop selectTop = new SelectTop(nvl(selectTopValue, defaultSelectTop), selectTops.immutableOrder());
 
         if (staticType == FormPrintType.MESSAGE) {
             // getting data
-            PrintMessageData reportData = new StaticFormDataManager(form, mapObjectValues, context, contextFilters).getPrintMessageData(new SelectTop(nvl(selectTop, defaultSelectTop)), removeNullsAndDuplicates);
+            PrintMessageData reportData = new StaticFormDataManager(form, mapObjectValues, context, contextFilters).getPrintMessageData(selectTop, removeNullsAndDuplicates);
 
             MessageClientType messageType = MessageClientType.ERROR;
             if(context.getSession().isNoCancelInTransaction())
@@ -115,7 +135,7 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
         } else {
             // getting data
             StaticFormReportManager formReportManager = new StaticFormReportManager(form, mapObjectValues, context, contextFilters);
-            ReportGenerationData reportData = formReportManager.getReportData(staticType, new SelectTop(nvl(selectTop, defaultSelectTop)));
+            ReportGenerationData reportData = formReportManager.getReportData(staticType, selectTop);
 
             String sheetName = sheetNameInterface != null ? (String) context.getKeyObject(sheetNameInterface) : null;
             String password = passwordInterface != null ? (String) context.getKeyObject(passwordInterface) : null;

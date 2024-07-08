@@ -43,15 +43,15 @@ public abstract class ExportPlainAction<O extends ObjectSelector> extends Export
 
     public ExportPlainAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                              ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
-                             FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, ValueClass selectTop, ImOrderMap<GroupObjectEntity, ValueClass> selectTops, String charset, ValueClass... extraParams) {
-        this(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, selectTops, charset, false, extraParams);
+                             FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, SelectTop<ValueClass> selectTop, String charset, ValueClass... extraParams) {
+        this(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, charset, false, extraParams);
     }
 
     public ExportPlainAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                              ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
-                             FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, ValueClass selectTop, ImOrderMap<GroupObjectEntity, ValueClass> selectTops, String charset,
+                             FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, SelectTop<ValueClass> selectTop, String charset,
                              boolean useCaptionInsteadOfIntegrationSID, ValueClass... extraParams) {
-        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, selectTop, selectTops, charset, extraParams);
+        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, selectTop, charset, extraParams);
         this.exportFiles = exportFiles;
         this.useCaptionInsteadOfIntegrationSID = useCaptionInsteadOfIntegrationSID;
     }

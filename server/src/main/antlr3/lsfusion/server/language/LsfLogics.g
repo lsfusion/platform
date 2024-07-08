@@ -2554,13 +2554,13 @@ exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 @after {
 	if (inMainParseState()) {
 			$action = self.addScriptedExportAction(context, format, $plist.aliases, $plist.literals, $plist.properties, $plist.propUsages, $whereExpr.property, $pUsage.propUsage,
-			                                                 sheetName, root, tag, separator, hasHeader, noEscape, $selectTopExpr.property, charset, attr, orderProperties, orderDirections);
+			                                                 sheetName, root, tag, separator, hasHeader, noEscape, new SelectTop($selectTop.property), charset, attr, orderProperties, orderDirections);
 	}
 } 
 	:	'EXPORT'
 	    (type = exportSourceFormat [context, dynamic] { format = $type.format; separator = $type.separator; hasHeader = $type.hasHeader; noEscape = $type.noEscape;
 	                                                    sheetName = $type.sheetName; charset = $type.charset; root = $type.root; tag = $type.tag; attr = $type.attr; })?
-		('TOP' selectTopExpr = propertyExpression[context, dynamic])?
+		('TOP' selectTop = propertyExpression[context, dynamic])?
 		'FROM' plist=nonEmptyAliasedPropertyExpressionList[newContext, true]
 		('WHERE' whereExpr=propertyExpression[newContext, true])?
 		('ORDER' orderedProp=propertyExpressionWithOrder[newContext, true] { orderProperties.add($orderedProp.property); orderDirections.add($orderedProp.order); }
@@ -3498,7 +3498,6 @@ printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 
 	FormPrintType printType = null;
     Boolean syncType = null;
-    LPWithParams selectTopProperty = null;
     LPWithParams printerProperty = null;
     LPWithParams sheetNameProperty = null;
     LPWithParams passwordProperty = null;
@@ -3507,7 +3506,7 @@ printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 }
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedPrintFAProp($mf.mapped, $mf.props, printType, server, autoPrint, $pUsage.propUsage, syncType, selectTopProperty, printerProperty, sheetNameProperty, passwordProperty,
+		$action = self.addScriptedPrintFAProp($mf.mapped, $mf.props, printType, server, autoPrint, $pUsage.propUsage, syncType, new SelectTop($selectTop.property, $selectTops.selectTops != null ? MapFact.fromJavaOrderMap($selectTops.selectTops) : null), printerProperty, sheetNameProperty, passwordProperty,
 		                                      objectsContext, contextFilters, context);
 	}
 }
@@ -3521,7 +3520,7 @@ printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
             ( // static - rest
                 'MESSAGE' { printType = FormPrintType.MESSAGE; }
                 (sync = syncTypeLiteral { syncType = $sync.val; })?
-                ('TOP' selectTopExpr = propertyExpression[context, dynamic] { selectTopProperty = $selectTopExpr.property; })?
+                ('TOP' ({ input.LA(1)==ID && input.LA(2)==EQ }? selectTops=groupObjectSelectTopMap[$mf.form, context, dynamic] | selectTop = propertyExpression[context, dynamic]))?
             )
             |
             ( // static - interactive
@@ -3558,7 +3557,6 @@ exportFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 	boolean noEscape = false;
 	String charset = null;
 	boolean attr = false;
-	LPWithParams selectTopProperty = null;
 	LPWithParams sheetName = null;
 	LPWithParams root = null;
 	LPWithParams tag = null;
@@ -3566,7 +3564,7 @@ exportFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 @after {
 	if (inMainParseState()) {
 		$action = self.addScriptedExportFAProp($mf.mapped, $mf.props, format, sheetName, root, tag, attr, hasHeader, separator, noEscape,
-		                                       selectTopProperty, $selectTops.selectTops != null ? MapFact.fromJavaOrderMap($selectTops.selectTops) : null,
+		                                       new SelectTop($selectTop.property, $selectTops.selectTops != null ? MapFact.fromJavaOrderMap($selectTops.selectTops) : null),
 		                                       charset, $pUsage.propUsage, $pUsages.pUsages,
 		                                       objectsContext, contextFilters, context);
 	}
@@ -3578,7 +3576,7 @@ exportFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 	    (cf = contextFiltersClause[context, objectsContext] { contextFilters.addAll($cf.contextFilters); })?
 		(type = exportSourceFormat [context, dynamic] { format = $type.format; separator = $type.separator; hasHeader = $type.hasHeader; noEscape = $type.noEscape;
         	                                                    charset = $type.charset; sheetName = $type.sheetName; root = $type.root; tag = $type.tag; attr = $type.attr; })?
-		('TOP' ({ input.LA(1)==ID && input.LA(2)==EQ }? selectTops=groupObjectSelectTopMap[$mf.form, context, dynamic] | selectTopExpr = propertyExpression[context, dynamic] { selectTopProperty = $selectTopExpr.property; }))?
+		('TOP' ({ input.LA(1)==ID && input.LA(2)==EQ }? selectTops=groupObjectSelectTopMap[$mf.form, context, dynamic] | selectTop = propertyExpression[context, dynamic]))?
 		('TO' (pUsages=groupObjectPropertyUsageMap[$mf.form] | pUsage=propertyUsage))?
 	;
 
