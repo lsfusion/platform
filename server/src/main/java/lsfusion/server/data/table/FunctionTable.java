@@ -67,8 +67,7 @@ public class FunctionTable extends Table {
         if(params.size() == keys.size() - 1) {
             KeyField key = keys.removeOrderIncl(params.valuesSet()).single();
             if(key.getName().equals("row") && key.type.equals(IntegerClass.instance))
-                return "(SELECT ROW_NUMBER() OVER () AS row, t.* FROM " + querySource + " t)";
-        }
+                return "(SELECT ROW_NUMBER() OVER () AS row, value.* FROM " + querySource + " value)";}
 
         return querySource;
     }
