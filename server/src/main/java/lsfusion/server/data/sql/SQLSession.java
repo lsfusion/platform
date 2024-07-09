@@ -721,7 +721,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     // удостоверивается что таблица есть
-    public void ensureTable(NamedTable table) throws SQLException {
+    public void ensureTable(StoredTable table) throws SQLException {
         lockRead(OperationOwner.unknown);
         ExConnection connection = getConnection();
 
@@ -753,12 +753,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
 
-    public void addExtraIndexes(NamedTable table, ImOrderSet<KeyField> keys, boolean ifNotExists) throws SQLException {
+    public void addExtraIndexes(StoredTable table, ImOrderSet<KeyField> keys, boolean ifNotExists) throws SQLException {
         for(int i=1;i<keys.size();i++)
             addIndex(table, BaseUtils.<ImOrderSet<Field>>immutableCast(keys).subOrder(i, keys.size()).toOrderMap(true), defaultIndexOptions, ifNotExists);
     }
 
-    public void checkExtraIndexes(SQLSession threadLocalSQL, NamedTable table, ImOrderSet<KeyField> keys) throws SQLException, SQLHandledException {
+    public void checkExtraIndexes(SQLSession threadLocalSQL, StoredTable table, ImOrderSet<KeyField> keys) throws SQLException, SQLHandledException {
         for(int i=1;i<keys.size();i++) {
             ImOrderMap<Field, Boolean> fields = BaseUtils.<ImOrderSet<Field>>immutableCast(keys).subOrder(i, keys.size()).toOrderMap(true);
             threadLocalSQL.checkDefaultIndex(table, fields, defaultIndexOptions);
@@ -779,7 +779,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         return SetFact.toOrderExclSet(keys.size(), i -> BaseUtils.<ImOrderSet<Field>>immutableCast(keys).subOrder(i, keys.size())).getSet();
     }
 
-    public void createTable(NamedTable table, ImOrderSet<KeyField> keys, boolean ifNotExists) throws SQLException {
+    public void createTable(StoredTable table, ImOrderSet<KeyField> keys, boolean ifNotExists) throws SQLException {
         MStaticExecuteEnvironment env = StaticExecuteEnvironmentImpl.mEnv();
 
         if (keys.size() == 0)
@@ -792,31 +792,31 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         addExtraIndexes(table, keys, ifNotExists);
     }
 
-    public void renameTable(NamedTable table, String newTableName) throws SQLException {
+    public void renameTable(StoredTable table, String newTableName) throws SQLException {
         executeDDL("ALTER TABLE " + table.getName(syntax) + " RENAME TO " + syntax.getTableName(newTableName));
     }
 
-    public void dropTable(NamedTable table) throws SQLException {
+    public void dropTable(StoredTable table) throws SQLException {
         executeDDL("DROP TABLE " + table.getName(syntax));
     }
 
-    static String getIndexName(NamedTable table, String dbName, ImOrderMap<String, Boolean> fields, SQLSyntax syntax) {
+    static String getIndexName(StoredTable table, String dbName, ImOrderMap<String, Boolean> fields, SQLSyntax syntax) {
         return getIndexName(table, fields, dbName, null, false, false, syntax);
     }
 
-    public String getIndexName(NamedTable table, DBManager.IndexData<Field> index) {
+    public String getIndexName(StoredTable table, DBManager.IndexData<Field> index) {
         return getIndexName(table, syntax, index.options.dbName, getOrderFields(table.keys, index.options, SetFact.fromJavaOrderSet(index.fields)), index.options.type.suffix());
     }
 
-    static String getIndexName(NamedTable table, SQLSyntax syntax, String dbName, ImOrderMap<Field, Boolean> fields, String suffix) {
+    static String getIndexName(StoredTable table, SQLSyntax syntax, String dbName, ImOrderMap<Field, Boolean> fields, String suffix) {
         return getIndexName(table, syntax, dbName, fields, suffix, false, false);
     }
 
-    static String getIndexName(NamedTable table, SQLSyntax syntax, String dbName, ImOrderMap<Field, Boolean> fields, String suffix, boolean suffixInTheEnd, boolean old) {
+    static String getIndexName(StoredTable table, SQLSyntax syntax, String dbName, ImOrderMap<Field, Boolean> fields, String suffix, boolean suffixInTheEnd, boolean old) {
         return getIndexName(table, fields.mapOrderKeys(Field.nameGetter()), dbName, suffix, suffixInTheEnd, old, syntax);
     }
 
-    static String getIndexName(NamedTable table, ImOrderMap<String, Boolean> fields, String dbName, String suffix, boolean suffixInTheEnd, boolean old, SQLSyntax syntax) {
+    static String getIndexName(StoredTable table, ImOrderMap<String, Boolean> fields, String dbName, String suffix, boolean suffixInTheEnd, boolean old, SQLSyntax syntax) {
         if(dbName != null)
             return dbName;
         if (suffixInTheEnd) { //new style
@@ -842,7 +842,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         return result;
     }
 
-    public void checkIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<Field> fields, IndexOptions indexOptions) throws SQLException, SQLHandledException {
+    public void checkIndex(StoredTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<Field> fields, IndexOptions indexOptions) throws SQLException, SQLHandledException {
         ImOrderMap<Field, Boolean> fieldsMap = getOrderFields(keyFields, indexOptions, fields);
         if (indexOptions.type.isDefault()) {
             checkDefaultIndex(table, fieldsMap, indexOptions);
@@ -853,7 +853,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
 
-    private void checkLikeIndex(NamedTable table, ImOrderMap<Field, Boolean> fields, IndexOptions indexOptions) throws SQLException, SQLHandledException {
+    private void checkLikeIndex(StoredTable table, ImOrderMap<Field, Boolean> fields, IndexOptions indexOptions) throws SQLException, SQLHandledException {
         String newIndexName = getIndexName(table, syntax, indexOptions.dbName, fields, LIKE.suffix(), false, false);
         if (!checkIndex(newIndexName)) {
             //deprecated old index name with _like in the end  (can be removed after checkIndices)
@@ -866,7 +866,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
 
-    private void checkMatchIndex(NamedTable table, ImOrderMap<Field, Boolean> fields, IndexOptions indexOptions) throws SQLException, SQLHandledException {
+    private void checkMatchIndex(StoredTable table, ImOrderMap<Field, Boolean> fields, IndexOptions indexOptions) throws SQLException, SQLHandledException {
         String newIndexName = getIndexName(table, syntax, indexOptions.dbName, fields, MATCH.suffix(), false, false);
         if (!checkIndex(newIndexName)) {
             //deprecated old index name with _match in the end  (can be removed after checkIndices)
@@ -879,7 +879,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
 
-    private void checkDefaultIndex(NamedTable table, ImOrderMap<Field, Boolean> fields, IndexOptions indexOptions) throws SQLException, SQLHandledException {
+    private void checkDefaultIndex(StoredTable table, ImOrderMap<Field, Boolean> fields, IndexOptions indexOptions) throws SQLException, SQLHandledException {
         String newIndexName = getIndexName(table, syntax, indexOptions.dbName, fields, null, false, false);
         if (!checkIndex(newIndexName)) {
             //deprecated old index name with idx in the end (before 2015)  (can be removed after checkIndices)
@@ -916,7 +916,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         return exists;
     }
 
-    public void addConstraint(NamedTable table) {
+    public void addConstraint(StoredTable table) {
         try {
             if (!table.keys.isEmpty())
                 executeDDL("DO $$ BEGIN ALTER TABLE " + table.getName() + " ADD " + getConstraintDeclare(table.getName(), table.keys, syntax) +
@@ -926,15 +926,15 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
 
-    public void addIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<Field> fields, IndexOptions indexOptions, boolean ifNotExists) throws SQLException {
+    public void addIndex(StoredTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<Field> fields, IndexOptions indexOptions, boolean ifNotExists) throws SQLException {
         addIndex(table, getOrderFields(keyFields, indexOptions, fields), indexOptions, ifNotExists);
     }
 
-    public void addIndex(NamedTable table, ImOrderMap<Field, Boolean> fields) throws SQLException {
+    public void addIndex(StoredTable table, ImOrderMap<Field, Boolean> fields) throws SQLException {
         addIndex(table, fields, defaultIndexOptions, false);
     }
 
-    public void addIndex(NamedTable table, ImOrderMap<Field, Boolean> fields, IndexOptions indexOptions, boolean ifNotExists) throws SQLException {
+    public void addIndex(StoredTable table, ImOrderMap<Field, Boolean> fields, IndexOptions indexOptions, boolean ifNotExists) throws SQLException {
         String columns = getColumns(fields, indexOptions);
         if (indexOptions.type.isDefault()) {
             createDefaultIndex(table, fields, indexOptions.dbName, columns, null, ifNotExists);
@@ -966,30 +966,30 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }, ",");
     }
 
-    private void createLikeIndex(NamedTable table, ImOrderMap<Field, Boolean> fields, String dbName, String columns, Logger logger, boolean ifNotExists) throws SQLException {
+    private void createLikeIndex(StoredTable table, ImOrderMap<Field, Boolean> fields, String dbName, String columns, Logger logger, boolean ifNotExists) throws SQLException {
         if (DataAdapter.hasTrgmExtension()) {
             createIndex(table, getIndexName(table, syntax, dbName, fields, LIKE.suffix()),
                     " USING GIN (" + columns + " gin_trgm_ops)", logger, ifNotExists);
         }
     }
 
-    private void createMatchIndex(NamedTable table, ImOrderMap<Field, Boolean> fields, String dbName, String columns, IndexOptions indexOptions, Logger logger, boolean ifNotExists) throws SQLException {
+    private void createMatchIndex(StoredTable table, ImOrderMap<Field, Boolean> fields, String dbName, String columns, IndexOptions indexOptions, Logger logger, boolean ifNotExists) throws SQLException {
         if(DataAdapter.hasTrgmExtension()) {
             createIndex(table, getIndexName(table, syntax, dbName, fields, MATCH.suffix()),
                     " USING GIN (to_tsvector(" + (indexOptions.language != null ? ("'" + indexOptions.language + "', ") : "") + columns + "))", logger, ifNotExists);
         }
     }
 
-    private void createMatchIndexForTsVector(NamedTable table, String dbName, ImOrderMap<Field, Boolean> fields, String columns, IndexOptions indexOptions, Logger logger, boolean ifNotExists) throws SQLException {
+    private void createMatchIndexForTsVector(StoredTable table, String dbName, ImOrderMap<Field, Boolean> fields, String columns, IndexOptions indexOptions, Logger logger, boolean ifNotExists) throws SQLException {
         createIndex(table, getIndexName(table, syntax, dbName, fields, MATCH.suffix()),
                 " USING GIN (" + columns + ")", logger, ifNotExists);
     }
 
-    private void createDefaultIndex(NamedTable table, ImOrderMap<Field, Boolean> fields, String dbName, String columns, Logger logger, boolean ifNotExists) throws SQLException {
+    private void createDefaultIndex(StoredTable table, ImOrderMap<Field, Boolean> fields, String dbName, String columns, Logger logger, boolean ifNotExists) throws SQLException {
         createIndex(table, getIndexName(table, syntax, dbName, fields, null), " (" + columns + ")", logger, ifNotExists);
     }
 
-    private void createIndex(NamedTable table, String nameIndex, String columnsPostfix, Logger logger, boolean ifNotExists) throws SQLException {
+    private void createIndex(StoredTable table, String nameIndex, String columnsPostfix, Logger logger, boolean ifNotExists) throws SQLException {
         long start = System.currentTimeMillis();
         if (logger != null) {
             logger.info(String.format("Adding index started: %s", nameIndex));
@@ -1000,7 +1000,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
 
-    public void dropIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, IndexOptions indexOptions, boolean ifExists) throws SQLException {
+    public void dropIndex(StoredTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, IndexOptions indexOptions, boolean ifExists) throws SQLException {
         if (indexOptions.type.isDefault()) {
             dropDefaultIndex(table, keyFields, fields, indexOptions, ifExists);
         } else if (indexOptions.type.isLike()) {
@@ -1010,7 +1010,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
 
-    public void dropLikeIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, IndexOptions indexOptions) throws SQLException {
+    public void dropLikeIndex(StoredTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, IndexOptions indexOptions) throws SQLException {
         if (DataAdapter.hasTrgmExtension()) {
             ImOrderMap<String, Boolean> orderFields = getOrderFields(keyFields, fields, indexOptions);
             //ifExists true for both, because we don't know which of indexes exists
@@ -1020,7 +1020,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
 
-    public void dropMatchIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, IndexOptions indexOptions) throws SQLException {
+    public void dropMatchIndex(StoredTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, IndexOptions indexOptions) throws SQLException {
         if (DataAdapter.hasTrgmExtension()) {
             ImOrderMap<String, Boolean> orderFields = getOrderFields(keyFields, fields, indexOptions);
             //ifExists true for both, because we don't know which of indexes exists
@@ -1030,7 +1030,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
 
-    public void dropDefaultIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, IndexOptions indexOptions, boolean ifExists) throws SQLException {
+    public void dropDefaultIndex(StoredTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, IndexOptions indexOptions, boolean ifExists) throws SQLException {
         //ifExists true for both, because we don't know which of indexes exists
         ImOrderMap<String, Boolean> orderFields = getOrderFields(keyFields, fields, indexOptions);
         if (!ifExists)
@@ -1039,11 +1039,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         dropIndex(table, getIndexName(table, orderFields, indexOptions.dbName, null, false, false, syntax), true);
     }
 
-    public void dropIndex(NamedTable table, String indexName, boolean ifExists) throws SQLException {
+    public void dropIndex(StoredTable table, String indexName, boolean ifExists) throws SQLException {
         executeDDL("DROP INDEX " + (ifExists ? "IF EXISTS " : "") + indexName + (syntax.isIndexNameLocal() ? " ON " + table.getName(syntax) : ""));
     }
 
-    public void renameIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> oldFields, ImOrderSet<String> newFields, IndexOptions oldOptions, IndexOptions newOptions, boolean ifExists) throws SQLException {
+    public void renameIndex(StoredTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> oldFields, ImOrderSet<String> newFields, IndexOptions oldOptions, IndexOptions newOptions, boolean ifExists) throws SQLException {
         String oldIndexNameSuffix = (oldOptions.type == DEFAULT ? null : oldOptions.type.suffix());
         String newIndexNameSuffix = (newOptions.type == DEFAULT ? null : newOptions.type.suffix());
         String oldIndexName = getIndexName(table, getOrderFields(keyFields, oldFields, oldOptions), oldOptions.dbName, oldIndexNameSuffix, false, false, syntax);
@@ -1083,7 +1083,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 //        executeDerived("CREATE INDEX " + "idx_" + table + "_" + field.name + " ON " + table + " (" + field.name + ")"); //COLUMN
     }*/
 
-    public void addColumn(NamedTable table, PropertyField field, boolean ifNotExists) throws SQLException {
+    public void addColumn(StoredTable table, PropertyField field, boolean ifNotExists) throws SQLException {
         MStaticExecuteEnvironment env = StaticExecuteEnvironmentImpl.mEnv();
         executeDDL("ALTER TABLE " + table.getName(syntax) + " ADD " + (ifNotExists ? "IF NOT EXISTS " : "") + field.getDeclare(syntax, env), env.finish()); //COLUMN
     }
@@ -1105,12 +1105,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         executeDDL(syntax.getRenameColumn(table, columnName, newColumnName));
     }
 
-    public void modifyColumn(Table table, Field field, Type oldType) throws SQLException {
+    public void modifyColumn(StoredTable table, Field field, Type oldType) throws SQLException {
         MStaticExecuteEnvironment env = StaticExecuteEnvironmentImpl.mEnv();
         executeDDL("ALTER TABLE " + table + " ALTER COLUMN " + field.getName(syntax) + " " + syntax.getTypeChange(oldType, field.type, field.getName(syntax), env));
     }
 
-    public void modifyColumns(Table table, Map<Field, Type> fieldTypeMap) throws SQLException {
+    public void modifyColumns(StoredTable table, Map<Field, Type> fieldTypeMap) throws SQLException {
         MStaticExecuteEnvironment env = StaticExecuteEnvironmentImpl.mEnv();
         String ddl = "";
         for(Map.Entry<Field, Type> entry : fieldTypeMap.entrySet()) {
@@ -1121,7 +1121,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         executeDDL("ALTER TABLE " + table + " " + ddl);
     }
 
-    public void packTable(NamedTable table, OperationOwner owner, TableOwner tableOwner) throws SQLException {
+    public void packTable(StoredTable table, OperationOwner owner, TableOwner tableOwner) throws SQLException {
         checkTableOwner(table, tableOwner);
         
         String dropWhere = table.properties.toString(value -> value.getName(syntax) + " IS NULL", " AND ");
@@ -1991,9 +1991,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             temporaryTablesLock.unlock();
         }
     }
-    public static RegisterChange register(Table table, TableOwner tableOwner, TableChange tableChange) {
+    public static RegisterChange register(StoredTable table, TableOwner tableOwner, TableChange tableChange) {
         if(table instanceof SessionTable)
-            return register(((SessionTable)table).getName(), tableOwner, tableChange);
+            return register(table.getName(), tableOwner, tableChange);
         else
             return RegisterChange.VOID;
     }
@@ -2433,7 +2433,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         statement.executeBatch();
     }
 
-    private void insertParamRecord(NamedTable table, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, OperationOwner owner, TableOwner tableOwner) throws SQLException {
+    private void insertParamRecord(StoredTable table, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, OperationOwner owner, TableOwner tableOwner) throws SQLException {
         checkTableOwner(table, tableOwner);
         
         String insertString = "";
@@ -2482,7 +2482,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
 
-    public void insertRecord(NamedTable table, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, TableOwner owner, OperationOwner opOwner) throws SQLException {
+    public void insertRecord(StoredTable table, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, TableOwner owner, OperationOwner opOwner) throws SQLException {
         checkTableOwner(table, owner);
 
         boolean needParam = false;
@@ -2526,27 +2526,27 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         executeDML("INSERT INTO " + table.getName(syntax) + " (" + insertString + ") VALUES (" + valueString + ")", opOwner, owner, register(table, owner, TableChange.INSERT));
     }
 
-    public boolean isRecord(Table table, ImMap<KeyField, DataObject> keyFields, OperationOwner owner) throws SQLException, SQLHandledException {
+    public boolean isRecord(StoredTable table, ImMap<KeyField, DataObject> keyFields, OperationOwner owner) throws SQLException, SQLHandledException {
 
         // по сути пустое кол-во ключей
         return new Query<KeyField, String>(MapFact.EMPTYREV(),
                 table.join(DataObject.getMapExprs(keyFields)).getWhere()).execute(this, owner).size() > 0;
     }
 
-    public void ensureRecord(NamedTable table, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, TableOwner tableOwner, OperationOwner owner) throws SQLException, SQLHandledException {
+    public void ensureRecord(StoredTable table, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, TableOwner tableOwner, OperationOwner owner) throws SQLException, SQLHandledException {
         if (!isRecord(table, keyFields, owner))
             insertRecord(table, keyFields, propFields, tableOwner, owner);
     }
 
-    public void updateRecords(NamedTable table, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, OperationOwner owner, TableOwner tableOwner) throws SQLException, SQLHandledException {
+    public void updateRecords(StoredTable table, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, OperationOwner owner, TableOwner tableOwner) throws SQLException, SQLHandledException {
         updateRecords(table, false, keyFields, propFields, owner, tableOwner);
     }
 
-    public int updateRecordsCount(NamedTable table, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, OperationOwner owner, TableOwner tableOwner) throws SQLException, SQLHandledException {
+    public int updateRecordsCount(StoredTable table, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, OperationOwner owner, TableOwner tableOwner) throws SQLException, SQLHandledException {
         return updateRecords(table, true, keyFields, propFields, owner, tableOwner);
     }
 
-    private int updateRecords(NamedTable table, boolean count, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, OperationOwner owner, TableOwner tableOwner) throws SQLException, SQLHandledException {
+    private int updateRecords(StoredTable table, boolean count, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, OperationOwner owner, TableOwner tableOwner) throws SQLException, SQLHandledException {
         if(!propFields.isEmpty()) // есть запись нужно Update лупить
             return updateRecords(new ModifyQuery(table, new Query<>(table.getMapKeys(), Where.TRUE(), keyFields, ObjectValue.getMapExprs(propFields)), owner, tableOwner));
         if(count)
@@ -2555,7 +2555,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
     }
 
-    public boolean insertRecord(NamedTable table, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, boolean update, TableOwner tableOwner, OperationOwner owner) throws SQLException, SQLHandledException {
+    public boolean insertRecord(StoredTable table, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, boolean update, TableOwner tableOwner, OperationOwner owner) throws SQLException, SQLHandledException {
         if(update && isRecord(table, keyFields, owner)) {
             updateRecords(table, keyFields, propFields, owner, tableOwner);
             return false;
@@ -2565,7 +2565,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
 
-    public Object readRecord(Table table, ImMap<KeyField, DataObject> keyFields, PropertyField field, OperationOwner owner) throws SQLException, SQLHandledException {
+    public Object readRecord(StoredTable table, ImMap<KeyField, DataObject> keyFields, PropertyField field, OperationOwner owner) throws SQLException, SQLHandledException {
         // по сути пустое кол-во ключей
         return new Query<>(MapFact.<KeyField, KeyExpr>EMPTYREV(),
                 table.join(DataObject.getMapExprs(keyFields)).getExpr(field), "result", Where.TRUE()).
@@ -2601,7 +2601,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         return getCount(syntax.getSessionTableName(table), opOwner);
     }
 
-    public int getCount(NamedTable table, OperationOwner opOwner) throws SQLException {
+    public int getCount(StoredTable table, OperationOwner opOwner) throws SQLException {
         return getCount(table.getName(syntax), opOwner);
     }
 
@@ -2614,7 +2614,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
 
-    public <X> int deleteKeyRecords(NamedTable table, ImMap<KeyField, X> keys, OperationOwner owner, TableOwner tableOwner) throws SQLException {
+    public <X> int deleteKeyRecords(StoredTable table, ImMap<KeyField, X> keys, OperationOwner owner, TableOwner tableOwner) throws SQLException {
         checkTableOwner(table, tableOwner);
         
         String deleteWhere = keys.toString((key, value) -> key.getName(syntax) + "=" + value, " AND ");
@@ -2748,9 +2748,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 ServerLoggers.assertLog(false, "UPDATED FOREIGN TABLE : " + table + " " + currentOwner + " " + owner + ", DEBUG INFO : " + sessionDebugInfo.get(table));
         }
     }
-    private void checkTableOwner(Table table, TableOwner owner) {
+    private void checkTableOwner(StoredTable table, TableOwner owner) {
         if(table instanceof SessionTable)
-            checkTableOwner(((SessionTable)table).getName(), owner);
+            checkTableOwner(table.getName(), owner);
         else
             ServerLoggers.assertLog(owner == TableOwner.global || owner == TableOwner.debug, "THERE SHOULD BE NO OWNER FOR GLOBAL TABLE " + table + " " + owner);
     }
@@ -2835,7 +2835,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
 
         int result = 0;
-        if (modify.table.isSingle()) {// потому как запросом никак не сделаешь, просто вкинем одну пустую запись
+        if (modify.table.isSingle()) {
             if (!isRecord(modify.table, MapFact.EMPTY(), modify.getOwner()))
                 result = insertSelect(modify);
         } else

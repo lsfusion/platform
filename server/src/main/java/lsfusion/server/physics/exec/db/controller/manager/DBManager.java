@@ -1002,7 +1002,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     private String getDroppedTablesString(SQLSession sql, OldDBStructure oldDBStructure, NewDBStructure newDBStructure) throws SQLException, SQLHandledException {
         String droppedTables = "";
-        for (NamedTable table : oldDBStructure.tables.keySet()) {
+        for (DBTable table : oldDBStructure.tables.keySet()) {
             if (newDBStructure.getTable(table.getName()) == null) {
                 ImRevMap<KeyField, KeyExpr> mapKeys = table.getMapKeys();
                 Expr expr = GroupExpr.create(MapFact.<KeyField, KeyExpr>EMPTY(), ValueExpr.COUNT, table.join(mapKeys).getWhere(), GroupType.SUM, MapFact.EMPTY());
@@ -1178,10 +1178,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
         ImMap<String, ImRevMap<String, String>> oldTableFieldToCN = getFieldToCNMaps(oldDBStructure);
         ImMap<String, ImRevMap<String, String>> newTableFieldToCN = getFieldToCNMaps(newDBStructure);
 
-        for (Map.Entry<NamedTable, List<IndexData<String>>> oldTableIndexes : oldDBStructure.tables.entrySet()) {
-            NamedTable oldTable = oldTableIndexes.getKey();
+        for (Map.Entry<DBTable, List<IndexData<String>>> oldTableIndexes : oldDBStructure.tables.entrySet()) {
+            DBTable oldTable = oldTableIndexes.getKey();
             List<IndexData<String>> oldIndexes = oldTableIndexes.getValue();
-            NamedTable newTable = newDBStructure.getTable(oldTable.getName()); // Здесь никак не учитываем возможное изменение имени
+            DBTable newTable = newDBStructure.getTable(oldTable.getName()); // Здесь никак не учитываем возможное изменение имени
 
             if (newTable == null) {
                 dropTableIndexes(sql, oldTable, oldIndexes);
@@ -1260,7 +1260,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         return MapFact.fromJavaMap(result);
     }
 
-    private void dropTableIndexes(SQLSession sql, NamedTable table, List<IndexData<String>> indexes) throws SQLException {
+    private void dropTableIndexes(SQLSession sql, DBTable table, List<IndexData<String>> indexes) throws SQLException {
         for (IndexData<String> index : indexes) {
             ImOrderSet<String> indexKeysSet = SetFact.fromJavaOrderSet(index.fields);
             sql.dropIndex(table, table.keys, indexKeysSet, index.options, Settings.get().isStartServerAnyWay());
@@ -1672,7 +1672,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             DBStoredProperty oldProperty = move.oldProperty;
 
             ImplementTable newTable = newProperty.getTable();
-            NamedTable oldTable = oldDBStructure.getTable(oldProperty.tableName);
+            DBTable oldTable = oldDBStructure.getTable(oldProperty.tableName);
 
             sql.addColumn(newTable, newProperty.property.field, false);
             runWithStartLog(() -> newTable.moveColumn(sql, newProperty.property.field, oldTable, move.mapKeys, oldTable.findProperty(oldProperty.getDBName())),
@@ -1740,8 +1740,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     private static void changeKeyTypes(SQLSession sql, OldDBStructure oldDBStructure, NewDBStructure newDBStructure) throws SQLException {
-        for (NamedTable table : newDBStructure.tables.keySet()) {
-            NamedTable oldTable = oldDBStructure.getTable(table.getName());
+        for (DBTable table : newDBStructure.tables.keySet()) {
+            DBTable oldTable = oldDBStructure.getTable(table.getName());
             if (oldTable != null) {
                 for (KeyField key : table.keys) {
                     KeyField oldKey = oldTable.findKey(key.getName());
@@ -1759,7 +1759,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private static void createTables(SQLSession sql, OldDBStructure oldDBStructure, NewDBStructure newDBStructure) throws SQLException {
         // добавим таблицы которых не было
         startLog("Creating tables");
-        for (NamedTable table : newDBStructure.tables.keySet()) {
+        for (DBTable table : newDBStructure.tables.keySet()) {
             if (oldDBStructure.getTable(table.getName()) == null)
                 sql.createTable(table, table.keys, Settings.get().isStartServerAnyWay());
         }
@@ -1767,9 +1767,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     private static void createIndexes(SQLSession sql, OldDBStructure oldDBStructure, NewDBStructure newDBStructure) throws SQLException {
         startLog("Adding indexes");
-        for (Map.Entry<NamedTable, List<IndexData<Field>>> mapIndex : newDBStructure.tables.entrySet())
+        for (Map.Entry<DBTable, List<IndexData<Field>>> mapIndex : newDBStructure.tables.entrySet())
             for (IndexData<Field> index : mapIndex.getValue()) {
-                NamedTable table = mapIndex.getKey();
+                DBTable table = mapIndex.getKey();
                 addIndexWithStartLog(() ->
                     sql.addIndex(table, table.keys, SetFact.fromJavaOrderSet(index.fields), index.options, Settings.get().isStartServerAnyWay()),
                         "Adding index: " + sql.getIndexName(table, index), oldDBStructure.getTable(table.getName()) != null); // no need to log if the table is new
@@ -1786,7 +1786,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     private static void dropTables(SQLSession sql, OldDBStructure oldDBStructure, NewDBStructure newDBStructure) throws SQLException {
         // удаляем таблицы старые
-        for (NamedTable table : oldDBStructure.tables.keySet()) {
+        for (DBTable table : oldDBStructure.tables.keySet()) {
             if (newDBStructure.getTable(table.getName()) == null) {
                 startLog("Dropping table " + table);
                 sql.dropTable(table);
@@ -1823,7 +1823,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         ImMap<String, ImSet<Long>> toClean = MapFact.mergeMaps(movedObjects.values(), ASet.addMergeSet());
         for (int i = 0, size = toClean.size(); i < size; i++) { // удалим оставшиеся классы
             DBStoredProperty classProp = oldDBStructure.getProperty(toClean.getKey(i));
-            NamedTable table = oldDBStructure.getTable(classProp.tableName);
+            DBTable table = oldDBStructure.getTable(classProp.tableName);
 
             QueryBuilder<KeyField, PropertyField> dropClassObjects = new QueryBuilder<>(table);
             Where moveWhere = Where.FALSE();
@@ -1843,7 +1843,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private static void moveObjects(SQLSession sql, OldDBStructure oldDBStructure, NewDBStructure newDBStructure, ImMap<String, ImMap<String, ImSet<Long>>> movedObjects, BaseClass baseClass) throws Exception {
         for (int i = 0, size = movedObjects.size(); i < size; i++) { // перенесем классы, которые сохранились, но изменили поле
             DBStoredProperty classProp = newDBStructure.getProperty(movedObjects.getKey(i));
-            NamedTable table = newDBStructure.getTable(classProp.tableName);
+            DBTable table = newDBStructure.getTable(classProp.tableName);
 
             moveObjects(table, sql, oldDBStructure, movedObjects.getValue(i), classProp, baseClass);
         }
@@ -1882,7 +1882,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
     
-    public static void moveObjects(NamedTable table, SQLSession sql, OldDBStructure oldDBStructure, ImMap<String, ImSet<Long>> copyFrom, DBStoredProperty classProp, BaseClass baseClass) throws Exception {
+    public static void moveObjects(DBTable table, SQLSession sql, OldDBStructure oldDBStructure, ImMap<String, ImSet<Long>> copyFrom, DBStoredProperty classProp, BaseClass baseClass) throws Exception {
 //        ImplementTable.ignoreStatProps(() -> {
             QueryBuilder<KeyField, PropertyField> copyObjects = new QueryBuilder<>(table);
             Expr keyExpr = copyObjects.getMapExprs().singleValue();
@@ -1891,7 +1891,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             MSet<String> mCopyFromTables = SetFact.mSetMax(copyFrom.size());
             for (int j = 0, sizeJ = copyFrom.size(); j < sizeJ; j++) {
                 DBStoredProperty oldClassProp = oldDBStructure.getProperty(copyFrom.getKey(j));
-                Table oldTable = oldDBStructure.getTable(oldClassProp.tableName);
+                DBTable oldTable = oldDBStructure.getTable(oldClassProp.tableName);
                 mCopyFromTables.add(oldClassProp.tableName);
 
                 Expr oldExpr = oldTable.join(MapFact.singleton(oldTable.getTableKeys().single(), keyExpr)).getExpr(oldTable.findProperty(oldClassProp.getDBName()));
@@ -2392,7 +2392,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             }
         }
 
-        for (NamedTable table : oldData.tables.keySet()) {
+        for (DBTable table : oldData.tables.keySet()) {
             String tableDBName = table.getName();
             if (tableRenames.containsKey(tableDBName)) {
                 String newDBName = tableRenames.get(tableDBName);
@@ -2410,8 +2410,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
         
         Map<String, String> tableRenames = new HashMap<>();
-        Map<String, NamedTable> newTablesMap = createNewTablesMap(newData);
-        for (NamedTable table : oldData.tables.keySet()) {
+        Map<String, DBTable> newTablesMap = createNewTablesMap(newData);
+        for (DBTable table : oldData.tables.keySet()) {
             String oldCN = table.getCanonicalName();
             if (oldCN != null) {
                 String newCN = tableCNChanges.getOrDefault(oldCN, oldCN);
@@ -2427,10 +2427,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
         return tableRenames;
     }
     
-    private Map<String, NamedTable> createNewTablesMap(NewDBStructure newData) {
+    private Map<String, DBTable> createNewTablesMap(NewDBStructure newData) {
         return newData.tables.keySet().stream()
                 .filter(table -> table.getCanonicalName() != null)
-                .collect(Collectors.toMap(NamedTable::getCanonicalName, table -> table));
+                .collect(Collectors.toMap(DBTable::getCanonicalName, table -> table));
     }
     
     private Map<String, String> getTableSIDChanges(Map<String, String> tableCNChanges) {
@@ -2792,7 +2792,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         public int version;
         public MigrationVersion migrationVersion;
         public List<String> modulesList = new ArrayList<>();
-        public Map<NamedTable, List<IndexData<F>>> tables = new HashMap<>(); // actually it's only ImplementTable or SerializedTable
+        public Map<DBTable, List<IndexData<F>>> tables = new HashMap<>(); // actually it's only ImplementTable or SerializedTable
         public List<DBStoredProperty> storedProperties = new ArrayList<>();
         public Set<DBConcreteClass> concreteClasses = new HashSet<>();
 
@@ -2805,8 +2805,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
             }
         }
 
-        public NamedTable getTable(String name) {
-            for (NamedTable table : tables.keySet()) {
+        public DBTable getTable(String name) {
+            for (DBTable table : tables.keySet()) {
                 if (table.getName().equals(name)) {
                     return table;
                 }
@@ -2940,7 +2940,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 outDB.writeUTF(logicsModule.getName());
 
             outDB.writeInt(tables.size());
-            for (Map.Entry<NamedTable, List<IndexData<Field>>> tableIndexes : tables.entrySet()) {
+            for (Map.Entry<DBTable, List<IndexData<Field>>> tableIndexes : tables.entrySet()) {
                 tableIndexes.getKey().serialize(outDB);
                 outDB.writeInt(tableIndexes.getValue().size());
                 for (IndexData<Field> index : tableIndexes.getValue()) {
@@ -3031,7 +3031,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     boolean isDataProperty = inputDB.readBoolean();
                     
                     String tableName = inputDB.readUTF();
-                    Table prevTable = getTable(tableName);
+                    DBTable prevTable = getTable(tableName);
                     MExclMap<Integer, KeyField> mMapKeys = MapFact.mExclMap(prevTable.getTableKeys().size());
                     for (int j = 0; j < prevTable.getTableKeys().size(); j++) {
                         mMapKeys.exclAdd(inputDB.readInt(), prevTable.findKey(inputDB.readUTF()));

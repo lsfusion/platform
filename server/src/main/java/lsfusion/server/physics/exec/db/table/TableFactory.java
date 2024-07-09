@@ -18,7 +18,6 @@ import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.table.KeyField;
-import lsfusion.server.data.table.NamedTable;
 import lsfusion.server.data.table.PropertyField;
 import lsfusion.server.data.table.TableOwner;
 import lsfusion.server.data.value.DataObject;
@@ -77,7 +76,7 @@ public class TableFactory implements FullTablesInterface {
     }
 
     public ImRevMap<String, ImplementTable> getImplementTablesMap() {
-        return getImplementTables().mapRevKeys((Function<ImplementTable, String>) NamedTable::getName);
+        return getImplementTables().mapRevKeys((Function<ImplementTable, String>) ImplementTable::getName);
     }
 
     public <T> MapKeysTable<T> getMapTable(ImOrderMap<T, ValueClass> findItem, DBNamingPolicy policy) {

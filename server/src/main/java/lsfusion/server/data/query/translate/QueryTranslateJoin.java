@@ -29,10 +29,6 @@ public class QueryTranslateJoin<U> extends AbstractJoin<U> {
         return join.getExpr(property).translateExpr(translator);
     }
 
-    public ImSet<U> getProperties() {
-        return join.getProperties();
-    }
-
     public Join<U> translateRemoveValues(MapValuesTranslate translate) {
         return new QueryTranslateJoin<>(translator.translateRemoveValues(translate), join.translateRemoveValues(translate));
     }

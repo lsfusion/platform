@@ -13,15 +13,12 @@ import java.util.function.Function;
 
 public class JoinCaseList<U> extends CaseList<Join<U>, Join<U>,JoinCase<U>> {
 
-    public ImSet<U> properties;
-    public JoinCaseList(ImList<JoinCase<U>> joinCases, ImSet<U> properties) {
+    public JoinCaseList(ImList<JoinCase<U>> joinCases) {
         super(joinCases);
-        this.properties = properties;
     }
 
-    public JoinCaseList(ImSet<JoinCase<U>> joinCases, ImSet<U> properties) {
+    public JoinCaseList(ImSet<JoinCase<U>> joinCases) {
         super(joinCases);
-        this.properties = properties;
     }
 
     public Expr getExpr(U property) {
@@ -32,7 +29,7 @@ public class JoinCaseList<U> extends CaseList<Join<U>, Join<U>,JoinCase<U>> {
     }
 
     public JoinCaseList(Where where,Join<U> join) {
-        this(SetFact.<JoinCase<U>>singleton(new JoinCase<>(where, join)), join.getProperties());
+        this(SetFact.<JoinCase<U>>singleton(new JoinCase<>(where, join)));
     }
 
     public Where getWhere() {
@@ -44,8 +41,8 @@ public class JoinCaseList<U> extends CaseList<Join<U>, Join<U>,JoinCase<U>> {
         Function<JoinCase<U>, JoinCase<U>> transCase = exprCase -> new JoinCase<>(exprCase.where.translateOuter(translator), exprCase.data.translateRemoveValues(translate));
 
         if(exclusive)
-            return new JoinCaseList<>(((ImSet<JoinCase<U>>) list).mapSetValues(transCase), properties);
+            return new JoinCaseList<>(((ImSet<JoinCase<U>>) list).mapSetValues(transCase));
         else
-            return new JoinCaseList<>(((ImList<JoinCase<U>>) list).mapListValues(transCase), properties);
+            return new JoinCaseList<>(((ImList<JoinCase<U>>) list).mapListValues(transCase));
     }
 }

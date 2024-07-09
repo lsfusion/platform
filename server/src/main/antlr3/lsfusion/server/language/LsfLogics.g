@@ -9,6 +9,7 @@ grammar LsfLogics;
     import lsfusion.base.col.heavy.OrderedMap;
     import lsfusion.base.col.interfaces.immutable.ImOrderSet;
     import lsfusion.interop.action.MessageClientType;
+    import lsfusion.base.col.interfaces.immutable.ImList;
     import lsfusion.interop.action.ServerResponse;
     import lsfusion.interop.form.WindowFormType;
     import lsfusion.interop.form.ContainerWindowFormType;
@@ -2044,8 +2045,9 @@ dataPropertyDefinition[List<TypedParameter> context, boolean innerPD] returns [L
 }
 @after {
 	if (inMainParseState()) {
-	    $signature = $paramClassNames.ids == null ? self.getClassesFromTypedParams(context) : self.createClassSetsFromClassNames($paramClassNames.ids);
-		$property = self.addScriptedDProp($returnClass.sid, $paramClassNames.ids, $signature, localProp, innerPD, false, nestedType);
+	    ImList<ValueClass> paramClasses = self.findClasses($paramClassNames.ids, context);
+		$property = self.addScriptedDProp($returnClass.sid, paramClasses, localProp, innerPD, false, nestedType);
+		$signature = self.getParamClasses($property, paramClasses, innerPD);
 	}
 }
 	:	'DATA'
@@ -2073,8 +2075,9 @@ abstractPropertyDefinition[List<TypedParameter> context, boolean innerPD] return
 }
 @after {
 	if (inMainParseState()) {
-        $signature = $paramClassNames.ids == null ? self.getClassesFromTypedParams(context) : self.createClassSetsFromClassNames($paramClassNames.ids);
-        $property = self.addScriptedAbstractProp(type, $returnClass.sid, $paramClassNames.ids, $signature, isExclusive, isChecked, isLast, innerPD);
+        ImList<ValueClass> paramClasses = self.findClasses($paramClassNames.ids, context);
+        $property = self.addScriptedAbstractProp(type, $returnClass.sid, paramClasses, isExclusive, isChecked, isLast, innerPD);
+        $signature = self.getParamClasses($property, paramClasses, innerPD);
 	}
 }
 	:	'ABSTRACT'
@@ -2101,8 +2104,9 @@ abstractActionDefinition[List<TypedParameter> context] returns [LA action, List<
 }
 @after {
 	if (inMainParseState()) {
-		$signature = $paramClassNames.ids == null ? self.getClassesFromTypedParams(context) : self.createClassSetsFromClassNames($paramClassNames.ids);
-		$action = self.addScriptedAbstractAction(type, $paramClassNames.ids, $signature, isExclusive, isChecked, isLast);
+        ImList<ValueClass> paramClasses = self.findClasses($paramClassNames.ids, context);
+		$action = self.addScriptedAbstractAction(type, paramClasses, isExclusive, isChecked, isLast);
+        $signature = self.getParamClasses($action, paramClasses, false);
 	}
 }
 	:	'ABSTRACT'
@@ -2360,16 +2364,49 @@ formulaPropertyDefinition[List<TypedParameter> context, boolean innerPD] returns
 }
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedSFProp(className, $synt.types, $synt.strings, valueNull, paramsNull);
-		List<ResolveClassSet> contextParams = self.getClassesFromTypedParams(context);
-        $signature = innerPD || contextParams.isEmpty() ? Collections.<ResolveClassSet>nCopies($property.listInterfaces.size(), null) : contextParams;
+        ImList<ValueClass> paramClasses = self.findClasses($params.classNames, context);
+        List<String> paramNames = self.getParamNamesFromTypedParams($params.ids, context, innerPD);
+		$property = self.addScriptedSFProp($value.className, $value.id, paramClasses, paramNames, $synt.types, $synt.strings, valueNull, paramsNull);
+        $signature = self.getParamClasses($property, paramClasses, innerPD);
 	}
 }
 	:	'FORMULA'
 		('NULL' { valueNull = true; })?
-		(clsName=classId { className = $clsName.sid; })?
+	    (value = typedIdOrStringLiteral)?
 		synt=formulaPropertySyntaxList
+        ('('
+            params=typedIdOrStringLiteralList
+        ')')?
 		('NULL' { paramsNull = true; })?
+	;
+
+idOrStringLiteral returns [String id, boolean literal]
+    :
+        pid=ID { $id = $pid.text; $literal = false; }
+    |	sLiteral=stringLiteral { $id = $sLiteral.val; $literal = true; }
+;
+
+typedIdOrStringLiteral returns [String className, String id]
+    :
+    clsName=classId { $className = $clsName.sid; }
+    (exid = idOrStringLiteral { $id = $exid.id; } )?
+;
+
+typedIdOrStringLiteralList returns [List<String> classNames, List<String> ids]
+@init {
+	$classNames = new ArrayList<>();
+	$ids = new ArrayList<>();
+}
+	:	(neList=nonEmptyTypedIdOrStringLiteralList { $classNames = $neList.classNames; $ids = $neList.ids; })?
+	;
+
+nonEmptyTypedIdOrStringLiteralList returns [List<String> classNames, List<String> ids]
+@init {
+	$classNames = new ArrayList<>();
+	$ids = new ArrayList<>();
+}
+	:	firstIsl=typedIdOrStringLiteral { $classNames.add($firstIsl.className); $ids.add($firstIsl.id); }
+		(',' isl=typedIdOrStringLiteral { $classNames.add($isl.className); $ids.add($isl.id); })*
 	;
 
 formulaPropertySyntaxList returns [List<SQLSyntaxType> types = new ArrayList<>(), List<String> strings = new ArrayList<>()]
@@ -2525,9 +2562,7 @@ importFieldDefinition[List<TypedParameter> newContext] returns [String id, Boole
     :
         ptype=primitiveType { if(inMainParseState()) dataClass = (DataClass)self.findClass($ptype.text); }
         (varID=ID EQ)?
-        (   pid=ID { $id = $pid.text; $literal = false; }
-        |	sLiteral=stringLiteral { $id = $sLiteral.val; $literal = true; }
-        )
+        exid = idOrStringLiteral { $id = $exid.id; $literal = $exid.literal; }
         ('NULL' { $nulls = true; } )?
         {
         	if(inMainParseState())
@@ -2586,9 +2621,7 @@ nonEmptyAliasedPropertyExpressionList[List<TypedParameter> context, boolean dyna
 exportAliasedPropertyExpression[List<TypedParameter> context, boolean dynamic] returns [String alias = null, Boolean literal = null, LPWithParams property, LPTrivialLA propUsage]
     :
         ( { (input.LA(1)==ID || input.LA(1)==STRING_LITERAL) && input.LA(2)==EQ }?
-          (   simpleName=ID { $alias = $simpleName.text; $literal = false; }
-          |	  sLiteral=stringLiteral { $alias = $sLiteral.val; $literal = true; }
-          )
+          exid = idOrStringLiteral { $alias = $exid.id; $literal = $exid.literal; }
           EQ
         )?
         expr=propertyExpressionOrTrivialLA[context, dynamic] { $property = $expr.property; $propUsage = $expr.la; }
@@ -2714,9 +2747,7 @@ nonEmptyPropertyUsageListWithIds returns [List<String> ids, List<Boolean> litera
 propertyUsageWithId returns [String id = null, Boolean literal = null, NamedPropertyUsage propUsage]
 	:	pu=propertyUsage { $propUsage = $pu.propUsage; }
 		(	EQ
-			(	pid=ID { $id = $pid.text; $literal = false; }
-			|	sLiteral=stringLiteral { $id = $sLiteral.val; $literal = false; }
-			)
+            exid = idOrStringLiteral { $id = $exid.id; $literal = $exid.literal; }
 		)?
 	;
 
@@ -3711,16 +3742,15 @@ internalActionDefinitionBody[List<TypedParameter> context] returns [LA action, L
 }
 @after {
 	if (inMainParseState()) {
-
-	    List<ResolveClassSet> contextParams = self.getClassesFromTypedParams(context);
-
+        ImList<ValueClass> paramClasses = self.findClasses(classes, context);
+		$signature = classes == null ? self.getClassesFromTypedParams(context) : self.createClassSetsFromClassNames(classes);
         if(clientAction)
-            $action = self.addScriptedInternalClientAction($classN.val, classes, syncType);
+            $action = self.addScriptedInternalClientAction($classN.val, paramClasses, syncType);
         else if($code.val == null)
-	        $action = self.addScriptedInternalAction($classN.val, classes, contextParams, allowNullValue);
+	        $action = self.addScriptedInternalAction($classN.val, paramClasses, allowNullValue);
 	    else
 		    $action = self.addScriptedInternalAction($code.val, allowNullValue);
-		$signature = classes == null ? (contextParams.isEmpty() ? Collections.<ResolveClassSet>nCopies($action.listInterfaces.size(), null) : contextParams) : self.createClassSetsFromClassNames(classes);
+        $signature = self.getParamClasses($action, paramClasses, false);
 	}
 }
 
@@ -5428,7 +5458,7 @@ idList returns [List<String> ids]
 
 classIdList returns [List<String> ids]
 @init {
-	ids = new ArrayList<>();
+	$ids = new ArrayList<>();
 }
 	:	(neList=nonEmptyClassIdList { ids = $neList.ids; })?
 	;
@@ -5443,7 +5473,7 @@ nonEmptyClassIdList returns [List<String> ids]
 
 signatureClassList returns [List<String> ids]
 @init {
-	ids = new ArrayList<>();
+	$ids = new ArrayList<>();
 }
 	:	(neList=nonEmptySignatureClassList { ids = $neList.ids; })?
 	;
@@ -5458,7 +5488,7 @@ nonEmptySignatureClassList returns [List<String> ids]
 
 typedParameterList returns [List<TypedParameter> params]
 @init {
-	params = new ArrayList<>();
+	$params = new ArrayList<>();
 }
 	:	(neList=nonEmptyTypedParameterList { $params = $neList.params; })?
 	;

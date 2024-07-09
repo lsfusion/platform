@@ -508,7 +508,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         round = addRoundProp(false);
         roundScale = addRoundProp(true);
 
-        minus = addSFProp("(-(prm1))", 1);
+        minus = addSFProp("(-(prm1))", SetFact.toOrderExclSet("prm1"));
 
         object = addAFProp();
         object.property.caption = LocalizedString.create("{logics.id}");

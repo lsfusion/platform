@@ -28,7 +28,6 @@ import lsfusion.server.base.version.GlobalVersion;
 import lsfusion.server.base.version.LastVersion;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
-import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.expr.formula.StringConcatenateFormulaImpl;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.PartitionType;
@@ -1232,17 +1231,20 @@ public abstract class LogicsModule {
 
     // ------------------- FORMULA ----------------- //
 
-    protected LP addSFProp(String formula, int paramCount) {
-        return addSFProp(formula, MapFact.EMPTY(), null, paramCount, false, false);
+    protected LP addSFProp(String formula, ImOrderSet<String> params) {
+        return addSFProp(new CustomFormulaSyntax(formula, params.getSet()), null, null, ListFact.toList(null, params.size()), params, false, false);
     }
 
-    protected LP addSFProp(String defaultSyntax, ImMap<SQLSyntaxType, String> customSyntaxes, DataClass value, int paramCount, boolean valueNull, boolean paramsNull) {
+    protected LP addSFProp(CustomFormulaSyntax formula, DataClass valueClass, String valueName, ImList<DataClass> paramClasses, ImOrderSet<String> paramNames, boolean valueNull, boolean paramsNull) {
         Property property;
-        CustomFormulaSyntax formula = new CustomFormulaSyntax(defaultSyntax, customSyntaxes);
-        if(paramsNull)
-            property = new FormulaUnionProperty(value, formula, paramCount);
-        else
-            property = new FormulaJoinProperty(value, formula, paramCount, valueNull);
+        if(formula.params.size() < paramNames.size()) { // if there is unused param this is table
+            property = new FunctionTableProperty(formula, paramClasses, paramNames, valueClass, valueName);
+        } else {
+            if (paramsNull)
+                property = new FormulaUnionProperty(valueClass, formula, paramNames);
+            else
+                property = new FormulaJoinProperty(valueClass, formula, paramNames, valueNull);
+        }
         return addProperty(null, new LP<>(property));
     }
 

@@ -9,6 +9,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
+import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.comb.map.GlobalObject;
@@ -23,12 +24,14 @@ import lsfusion.server.data.caches.ValuesContext;
 import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.caches.hash.HashValues;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.classes.IsClassType;
 import lsfusion.server.data.expr.formula.FormulaExpr;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.query.IQuery;
+import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.build.QueryBuilder;
 import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.query.modify.Modify;
@@ -61,8 +64,13 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.ConcreteObjectClass;
+import lsfusion.server.logics.classes.user.CustomClass;
+import lsfusion.server.logics.classes.user.ObjectValueClassSet;
+import lsfusion.server.logics.classes.user.set.AndClassSet;
+import lsfusion.server.logics.classes.user.set.ObjectClassSet;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.log.ServerLoggers;
+import lsfusion.server.physics.dev.integration.external.to.CallAction;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import lsfusion.server.physics.exec.db.table.SerializedTable;
 import org.apache.log4j.Logger;
@@ -71,11 +79,13 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.IntFunction;
 
 import static lsfusion.base.BaseUtils.hashEquals;
 
-public class SessionTable extends NamedTable implements ValuesContext<SessionTable>, Value {// в явную хранимые ряды
+public class SessionTable extends StoredTable implements ValuesContext<SessionTable>, Value {// в явную хранимые ряды
     private static final Logger sqlLogger = ServerLoggers.sqlLogger;
 
     public final int count; // volatile, same as SubQueryContext.subQuery
@@ -137,7 +147,7 @@ public class SessionTable extends NamedTable implements ValuesContext<SessionTab
 
         statKeys = SerializedTable.getStatKeys(this);
         count = statKeys.getRows().getCount();
-        statProps = SerializedTable.getStatProps(this);
+        statProps = StoredTable.getStatProps(this);
     }
 
     private static BaseClass getBaseClass() {
@@ -194,7 +204,7 @@ public class SessionTable extends NamedTable implements ValuesContext<SessionTab
         return source.params.get(this);
     }
 
-    protected Table translate(MapTranslate translator) {
+    protected SessionTable translate(MapTranslate translator) {
         return translateValues(translator.mapValues());
     }
 
@@ -478,8 +488,8 @@ public class SessionTable extends NamedTable implements ValuesContext<SessionTab
         MExclMap<String, Expr> mParams = MapFact.mExclMap(1 + 2 * shifts.length);
         mParams.exclAdd("prm1", join.getExpr(field));
         for(int i=0;i<shifts.length;i++) {
-            String idsh = "prm" + (2*i+2);
-            String countsh = "prm" + (2*i+3);
+            String idsh = CallAction.getParamName( "" + (2*i+2));
+            String countsh = CallAction.getParamName("" + (2*i+3));
 
             if(i==0) {
                 formula = idsh;
@@ -558,8 +568,10 @@ public class SessionTable extends NamedTable implements ValuesContext<SessionTab
                     QueryBuilder<KeyField, PropertyField> moveData = new QueryBuilder<>(SessionTable.this);
                     lsfusion.server.data.query.build.Join<PropertyField> prevJoin = join(moveData.getMapExprs());
                     moveData.and(prevJoin.getWhere());
-                    moveData.addProperties(prevJoin.getExprs());
-                    session.insertSessionSelect(name, moveData.getQuery(), DataSession.emptyEnv(opOwner), owner);
+                    for(PropertyField prop : properties)
+                        moveData.addProperty(prop, prevJoin.getExpr(prop));
+                    Query<KeyField, PropertyField> query = moveData.getQuery();
+                    session.insertSessionSelect(name, query, DataSession.emptyEnv(opOwner), owner);
                     session.returnTemporaryTable(SessionTable.this, owner, opOwner, count);
                     return null;
                 }
@@ -585,7 +597,8 @@ public class SessionTable extends NamedTable implements ValuesContext<SessionTab
                 QueryBuilder<KeyField, PropertyField> moveData = new QueryBuilder<>(tableKeys.addExcl(addKeys.keys()), addKeys);
                 lsfusion.server.data.query.build.Join<PropertyField> prevJoin = join(moveData.getMapExprs().filterIncl(tableKeys));
                 moveData.and(prevJoin.getWhere());
-                moveData.addProperties(prevJoin.getExprs());
+                for(PropertyField prop : properties)
+                    moveData.addProperty(prop, prevJoin.getExpr(prop));
                 moveData.addProperties(DataObject.getMapExprs(addProps));
                 session.insertSessionSelect(name, moveData.getQuery(), DataSession.emptyEnv(opOwner), owner);
                 session.returnTemporaryTable(SessionTable.this, owner, opOwner, count);
@@ -613,10 +626,11 @@ public class SessionTable extends NamedTable implements ValuesContext<SessionTab
                 // записать в эту таблицу insertSessionSelect из текущей + default поля
                 QueryBuilder<KeyField, PropertyField> moveData = new QueryBuilder<>(remainKeys);
 
-                if (remainKeys.size() == keys.size()) { // для оптимизации
+                if (remainKeys.size() == keys.size()) { // optimization
                     lsfusion.server.data.query.build.Join<PropertyField> prevJoin = join(moveData.getMapExprs());
                     moveData.and(prevJoin.getWhere());
-                    moveData.addProperties(prevJoin.getExprs().filterIncl(remainProps));
+                    for (PropertyField prop : remainProps)
+                        moveData.addProperty(prop, prevJoin.getExpr(prop));
                 } else {
                     ImRevMap<KeyField, KeyExpr> tableKeys = getMapKeys();
                     lsfusion.server.data.query.build.Join<PropertyField> prevJoin = join(tableKeys);
@@ -775,7 +789,83 @@ public class SessionTable extends NamedTable implements ValuesContext<SessionTab
 
         return this;
     }
-    
+
+    private static <B extends Field, T extends B> ImMap<T, ObjectValueClassSet> splitRead(ImSet<T> fields, Function<T, AndClassSet> fieldClasses, boolean inconsistent, ImMap<B, ValueClass> inconsistentTableClasses, MExclSet<B> mInconsistentCheckChanges, RegisterClassRemove classRemove, long timestamp) {
+        MExclMap<T, ObjectValueClassSet> mObjectFields = MapFact.mExclMapMax(fields.size());
+        for(T field : fields) {
+            if(field.type instanceof ObjectType) {
+                ObjectClassSet classSet = (ObjectClassSet)fieldClasses.apply(field);
+                ObjectValueClassSet valueClassSet = classSet.getValueClassSet();
+                // если есть unknown или complex или inconsistent
+                boolean checkClasses;
+                ValueClass inconsistentTableClass;
+                if(inconsistent && (inconsistentTableClass = inconsistentTableClasses.get(field)) != null) { // проверка для correlations
+                    Result<Boolean> rereadChange = new Result<>();
+                    checkClasses = checkClasses(classSet, (CustomClass)inconsistentTableClass, rereadChange, classRemove, timestamp);
+                    if(rereadChange.result)
+                        mInconsistentCheckChanges.exclAdd(field);
+                } else {
+                    checkClasses = (!BaseUtils.hashEquals(classSet, valueClassSet) && !valueClassSet.isEmpty()) || (valueClassSet.hasComplex() && valueClassSet.getSetConcreteChildren().size() > 1);
+                }
+                if(checkClasses)
+                    mObjectFields.exclAdd(field, valueClassSet);
+            } else
+            if(!(field.type instanceof DataClass))
+                return null; // concatenate type
+        }
+        return mObjectFields.immutable();
+    }
+
+    public ImMap<ImMap<KeyField, ConcreteClass>,ImMap<PropertyField,ConcreteClass>> readClasses(SQLSession session, final BaseClass baseClass, Result<ImSet<KeyField>> resultKeys, Result<ImSet<PropertyField>> resultProps, OperationOwner owner, boolean inconsistent, ImMap<Field, ValueClass> inconsistentTableClasses, Result<ImSet<Field>> inconsistentRereadChanges, RegisterClassRemove classRemove, long timestamp) throws SQLException, SQLHandledException {
+        MExclSet<Field> mInconsistentRereadChanges = SetFact.mExclSetMax(getTableKeys().size() + properties.size());
+        final ImMap<KeyField, ObjectValueClassSet> objectKeyClasses = splitRead(getTableKeys(), classes.getCommonClasses(getTableKeys()).fnGetValue(), inconsistent, inconsistentTableClasses, mInconsistentRereadChanges, classRemove, timestamp);
+        if(objectKeyClasses == null) {
+            if(inconsistent)
+                inconsistentRereadChanges.set(SetFact.EMPTY());
+            return null;
+        }
+        final ImMap<PropertyField, ObjectValueClassSet> objectPropClasses = splitRead(properties, value -> propertyClasses.get(value).getCommonClass(value), inconsistent, inconsistentTableClasses, mInconsistentRereadChanges, classRemove, timestamp);
+        if(objectPropClasses == null) {
+            if(inconsistent)
+                inconsistentRereadChanges.set(SetFact.EMPTY());
+            return null;
+        }
+
+        final ImSet<KeyField> objectKeys = objectKeyClasses.keys();
+        final ImSet<PropertyField> objectProps = objectPropClasses.keys();
+        resultKeys.set(objectKeys);
+        resultProps.set(objectProps);
+        if(inconsistent)
+            inconsistentRereadChanges.set(mInconsistentRereadChanges.immutable());
+
+        if(objectKeyClasses.isEmpty() && objectPropClasses.isEmpty()) // no complex
+            return MapFact.singleton(MapFact.EMPTY(), MapFact.EMPTY());
+
+        ImRevMap<KeyField, KeyExpr> mapKeys = getMapKeys();
+        final lsfusion.server.data.query.build.Join<PropertyField> tableJoin = join(mapKeys);
+
+        ImRevMap<KeyField, KeyExpr> objectMapKeys = mapKeys.filterRev(objectKeys);
+        ImRevMap<Field, KeyExpr> classKeys = MapFact.addRevExcl(objectMapKeys, KeyExpr.getMapKeys(objectProps));
+        ImMap<Field, Expr> fieldExprs = MapFact.addExcl(objectMapKeys, objectProps.mapValues(new Function<PropertyField, Expr>() {
+            public Expr apply(PropertyField value) {
+                return tableJoin.getExpr(value);
+            }}));
+
+        final ValueExpr nullExpr = new ValueExpr(-2L, baseClass.unknown);
+        final ValueExpr unknownExpr = new ValueExpr(-1L, baseClass.unknown);
+        final ImMap<Field, ObjectValueClassSet> fieldClasses = MapFact.addExcl(objectKeyClasses, objectPropClasses);
+        final IsClassType classType = inconsistent ? IsClassType.INCONSISTENT : IsClassType.CONSISTENT;
+        BiFunction<Field, Expr, Expr> classExpr = (key, value) -> value.classExpr(fieldClasses.get(key), classType).nvl(unknownExpr).ifElse(value.getWhere(), nullExpr);
+        ImMap<Field, Expr> group = fieldExprs.mapValues(classExpr);
+
+        ImSet<ImMap<Field, ConcreteClass>> readClasses = new Query<>(classKeys, GroupExpr.create(group, tableJoin.getWhere(), classKeys).getWhere()).execute(session, owner).keyOrderSet().getSet()
+                .mapSetValues(value -> value.filterFnValues(element -> ((Long) element) != -2)
+                        .mapValues((key, id) -> baseClass.findConcreteClassID((Long) id, -1)));
+
+        return readClasses.mapKeyValues(value -> value.filter(objectKeys), value -> value.filter(objectProps));
+    }
+
+
     public void saveToDBForDebug(SQLSession sql) throws SQLException, IllegalAccessException, InstantiationException, ClassNotFoundException, SQLHandledException {
         try(SQLSession dbSql = ThreadLocalContext.getDbManager().createSQL()) {
 

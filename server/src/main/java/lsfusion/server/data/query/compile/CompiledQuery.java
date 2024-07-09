@@ -58,6 +58,7 @@ import lsfusion.server.data.stat.KeyStat;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.stat.StatType;
 import lsfusion.server.data.table.Field;
+import lsfusion.server.data.table.KeyField;
 import lsfusion.server.data.table.Table;
 import lsfusion.server.data.translate.ExprTranslator;
 import lsfusion.server.data.translate.MapTranslate;
@@ -95,6 +96,7 @@ import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.IntFunction;
+import java.util.function.Supplier;
 
 import static lsfusion.base.log.DebugInfoWriter.pushPrefix;
 
@@ -391,17 +393,39 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         return result.immutable();
     }
 
-    static class InnerSelect extends CompileSource {
+    protected static class InnerSelect extends CompileSource {
 
         public final Map<KeyExpr,String> keySelect;
-        private Stack<MRevMap<String, String>> stackTranslate = new Stack<>();
+
+        private static class Pending<R> {
+            public final R result;
+
+            public final ImSet<KeyExpr> usedKeys;
+            public final ImRevMap<String, String> translate;
+            public final boolean usedOuterOrLateral;
+
+            public Pending(R result, ImSet<KeyExpr> usedKeys, ImRevMap<String, String> translate, boolean usedOuterOrLateral) {
+                this.result = result;
+
+                this.usedKeys = usedKeys;
+                this.translate = translate;
+                this.usedOuterOrLateral = usedOuterOrLateral;
+            }
+        }
+
+        private <R> Pending<R> pendingApply(Supplier<R> supplier) {
+            stackUsedPendingKeys.push(SetFact.mSet()); stackPendingTranslate.push(MapFact.mRevMap()); stackUsedOuterOrLateralPendingJoins.push(new Result<>());
+            return new Pending<>(supplier.get(), stackUsedPendingKeys.pop().immutable(), stackPendingTranslate.pop().immutableRev(), stackUsedOuterOrLateralPendingJoins.pop().result != null);
+        }
+        private Stack<MRevMap<String, String>> stackPendingTranslate = new Stack<>();
         private Stack<MSet<KeyExpr>> stackUsedPendingKeys = new Stack<>();
-        private Stack<Result<Boolean>> stackUsedOuterPendingJoins = new Stack<>();
+        private Stack<Result<Boolean>> stackUsedOuterOrLateralPendingJoins = new Stack<>();
+
         private Set<KeyExpr> pending;
 
-        void usedJoin(JoinSelect join) {
-            if(!stackUsedOuterPendingJoins.isEmpty() && mOuterPendingJoins!=null && mOuterPendingJoins.contains(join))
-                stackUsedOuterPendingJoins.peek().set(true);
+        protected void usedJoin(JoinSelect join) {
+            if(!stackUsedOuterOrLateralPendingJoins.isEmpty() && mOuterOrLateralPendingJoins != null && mOuterOrLateralPendingJoins.contains(join))
+                stackUsedOuterOrLateralPendingJoins.peek().set(true);
         }
 
         public String getSource(KeyExpr key) {
@@ -456,22 +480,35 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             this.mSubQueries = mSubQueries;
         }
 
-        int aliasNum=0;
-        MList<JoinSelect> mJoins = ListFact.mList();
-        ImList<JoinSelect> joins;
-        MList<String> mExplicitWheres = ListFact.mList();
-        MList<String> mImplicitJoins = ListFact.mList();
-        MOrderExclSet<JoinSelect> mOuterPendingJoins = SetFact.mOrderExclSet();
+        private int aliasNum = 0;
+        private MList<JoinSelect> mJoins = ListFact.mList();
+        private ImList<JoinSelect> joins;
+        private MList<String> mImplicitJoins = ListFact.mList();
+        private MOrderExclSet<JoinSelect> mOuterOrLateralPendingJoins = SetFact.mOrderExclSet();
 
         boolean whereCompiling;
 
-        private abstract class JoinSelect<I extends InnerJoin> {
+        private abstract class JoinSelect<K, I extends InnerJoin<K, I>> {
 
             public final String alias; // final
-            public String join; // final
+            public ImMap<K, String> joinSources; // final
+            public ImSet<K> laterals;
             public final I innerJoin;
 
-            protected abstract ImMap<String, BaseExpr> initJoins(I innerJoin, SQLSyntax syntax);
+            // maybe here it makes sense to check if there are joins (with enumerate for example), so LITERAL is needed (however it's not clear if it will help, so we won't do that)
+            private boolean isLateral() {
+                return !laterals.isEmpty();
+            }
+
+            protected String getSource(String source) {
+                return alias + "." + source;
+            }
+
+            protected abstract Pair<ImMap<K, BaseExpr>, ImSet<K>> initJoins(SQLSyntax syntax);
+            protected String getKeySource(K key) {
+                return getSource(getKeyFieldSource(key));
+            }
+            protected abstract String getKeyFieldSource(K key);
 
             protected boolean isInner() {
                 return InnerSelect.this.isInner(innerJoin);
@@ -480,70 +517,77 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             protected JoinSelect(I innerJoin) {
                 alias = subcontext.wrapAlias("t" + (aliasNum++));
                 this.innerJoin = innerJoin;
+
                 boolean inner = isInner();
-                boolean outerPending = false;
 
-                // здесь проблема что keySelect может рекурсивно использоваться 2 раза, поэтому сначала пробежим не по ключам
-                String joinString = "";
-                ImMap<String, BaseExpr> initJoins = initJoins(innerJoin, syntax);
-                MExclMap<String,KeyExpr> mJoinKeys = MapFact.mExclMapMax(initJoins.size());
-                for(int i=0,size=initJoins.size();i<size;i++) {
-                    BaseExpr expr = initJoins.getValue(i);
-                    String keySource = alias + "." + initJoins.getKey(i);
-                    if(expr instanceof KeyExpr && inner)
-                        mJoinKeys.exclAdd(keySource, (KeyExpr) expr);
+                Pair<ImMap<K, BaseExpr>, ImSet<K>> initJoins = initJoins(syntax);
+                ImMap<K, BaseExpr> joinExprs = initJoins.first;
+                laterals = initJoins.second;
+
+                MExclMap<K, String> mJoinSources = MapFact.mExclMapMax(joinExprs.size());
+                MExclMap<K,KeyExpr> mJoinKeys = MapFact.mExclMapMax(joinExprs.size());
+                boolean outerOrLateralPending = false;
+                for(int i=0,size=joinExprs.size();i<size;i++) {
+                    BaseExpr expr = joinExprs.getValue(i);
+                    K key = joinExprs.getKey(i);
+
+                    boolean keyInner = inner && !laterals.contains(key);
+
+                    if(keyInner && expr instanceof KeyExpr)
+                        mJoinKeys.exclAdd(key, (KeyExpr) expr);
                     else {
-                        stackUsedPendingKeys.push(SetFact.mSet());
-                        stackTranslate.push(MapFact.mRevMap());
-                        stackUsedOuterPendingJoins.push(new Result<>());
-                        String exprJoin = keySource + "=" + expr.getSource(InnerSelect.this);
-                        ImSet<KeyExpr> usedPendingKeys = stackUsedPendingKeys.pop().immutable();
-                        ImRevMap<String, String> translate = stackTranslate.pop().immutableRev(); // их надо перетранслировать
-                        Result<Boolean> usedOuterPending = stackUsedOuterPendingJoins.pop();
-                        exprJoin = translatePlainParam(exprJoin, translate);
+                        Pending<String> pending = pendingApply(() -> expr.getSource(InnerSelect.this));
+                        String exprSource = pending.result;
 
-                        boolean havePending = usedPendingKeys.size() > translate.size() || usedOuterPending.result != null;
-                        if(inner && havePending) { // какие-то ключи еще зависли, придется в implicitJoins закидывать
-                            assert usedPendingKeys.size() <= translate.size() || usedPendingKeys.intersect(SetFact.fromJavaSet(pending));
-                            mImplicitJoins.add(exprJoin);
+                        exprSource = translatePlainParam(exprSource, pending.translate);
+                        boolean havePending = pending.usedKeys.size() > pending.translate.size() || pending.usedOuterOrLateral;
+                        if(keyInner && havePending) { // какие-то ключи еще зависли, придется в implicitJoins закидывать
+                            assert pending.usedKeys.size() <= pending.translate.size() || pending.usedKeys.intersect(SetFact.fromJavaSet(InnerSelect.this.pending));
+                            mImplicitJoins.add(getKeySource(key) + "=" + exprSource);
                         } else { // можно explicit join делать, перетранслировав usedPending
-                            joinString = (joinString.length() == 0 ? "" : joinString + " AND ") + exprJoin;
+                            mJoinSources.exclAdd(key, exprSource);
                             if(havePending) // если использовался другой outerPending, нужно и этот join докидывать ы outerPendingJoins иначе он будет раньше и не найдется использованный outerPending
-                                outerPending = true;
+                                outerOrLateralPending = true;
                         }
                     }
                 }
-                ImMap<String, KeyExpr> joinKeys = mJoinKeys.immutable();
+                ImMap<K, KeyExpr> joinKeys = mJoinKeys.immutable();
 
                 for(int i=0,size=joinKeys.size();i<size;i++) { // дозаполним ключи
-                    String keyString = joinKeys.getKey(i); KeyExpr keyExpr = joinKeys.getValue(i);
+                    K key = joinKeys.getKey(i); KeyExpr keyExpr = joinKeys.getValue(i);
                     String keySource = keySelect.get(keyExpr);
                     if(keySource==null || pending.remove(keyExpr)) {
+                        String keyString = getKeySource(key);
                         if(keySource!=null) { // нашли pending ключ, проставляем во все implicit joins
                             if(!stackUsedPendingKeys.isEmpty() && stackUsedPendingKeys.peek().contains(keyExpr)) // если ключ был использован, ну очень редкий случай
-                                stackTranslate.peek().revAdd(keySource, keyString);
+                                stackPendingTranslate.peek().revAdd(keySource, keyString);
                             for(int j=0,sizeJ=mImplicitJoins.size();j<sizeJ;j++)
                                 mImplicitJoins.set(j, mImplicitJoins.get(j).replace(keySource, keyString));
-                            for(int j=0,sizeJ=mExplicitWheres.size();j<sizeJ;j++)
-                                mExplicitWheres.set(j, mExplicitWheres.get(j).replace(keySource, keyString));
-                            for(int j=0,sizeJ=mOuterPendingJoins.size();j<sizeJ;j++) {
-                                JoinSelect pendingJoin = mOuterPendingJoins.get(j);
-                                pendingJoin.join = pendingJoin.join.replace(keySource, keyString);
+                            for(int j = 0, sizeJ = mOuterOrLateralPendingJoins.size(); j<sizeJ; j++) {
+                                JoinSelect<K, ?> pendingJoin = mOuterOrLateralPendingJoins.get(j); // it's not K actually, but it doesn't matter
+                                pendingJoin.joinSources = pendingJoin.joinSources.mapValues(value -> value.replace(keySource, keyString));
                             }
                         }
                         keySelect.put(keyExpr, keyString);
                     } else
-                        joinString = (joinString.length()==0?"":joinString+" AND ") + keyString + "=" + keySource;
+                        mJoinSources.exclAdd(key, keySource);
                 }
-                join = joinString;
+                joinSources = mJoinSources.immutable();
 
-                if(outerPending)
-                    mOuterPendingJoins.exclAdd(this);
+                if(outerOrLateralPending)
+                    mOuterOrLateralPendingJoins.exclAdd(this);
                 else
                     mJoins.add(this);
             }
 
-            public abstract String getSource(DebugInfoWriter debugInfoWriter);
+            public abstract String getSource(DebugInfoWriter debugInfoWriter, ImMap<K, String> laterals);
+
+            public Pair<String, String> getFrom(DebugInfoWriter debugInfoWriter) {
+                Result<ImMap<K, String>> rNotLateralSources = new Result<>();
+                ImMap<K, String> lateralSources = joinSources.splitKeys(laterals, rNotLateralSources);
+                String source = getSource(debugInfoWriter, lateralSources);
+                return new Pair<>(source + " " + alias, rNotLateralSources.result.toString((key, value) -> getKeySource(key) + "=" + value, " AND "));
+            }
 
             protected abstract Where getInnerWhere(); // assert что isInner
         }
@@ -566,28 +610,23 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             Result<ImOrderSet<BaseJoin>> joinOrder = new Result<>();
             whereJoins.fillCompileInfo(mBaseCost, mRows, usedNotNulls, joinOrder, mOptAdjustLimit, keys, keyStat, limit, orders, debugInfoWriter);
 
-            stackUsedPendingKeys.push(SetFact.mSet()); stackTranslate.push(MapFact.mRevMap()); stackUsedOuterPendingJoins.push(new Result<>());
-            
-            // заполняем inner joins, чтобы заполнить все ключи (плюс сделать это в правильном порядке)
-            // порядок получается не идеально правильный, так в архитектуре компиляции функциональная, а не реляционная логика (то есть учитывается разделение ключи значения), соответствено значение всегда "раньше" ключа, но всякие join_collapse_limit такой подход позволяет существенно снизить по идее
-            // вообще можно было бы от getInnerJoins избавиться (использовать полученный Set), но так как InnerJoins используется в ветке следствий в выражениях и т.п. оставим пока как было 
-            for (InnerJoin where : getInnerJoinOrder(joinOrder.result)) {
-                assert isInner(where);
-                getJoinSelect(where);
-            }
+            Pending<Object> pending = pendingApply(() -> {
+                // fill inner joins to fill all keys (plus do it in the right order).
+                // the order is not perfectly correct, because the compilation architecture is based on functional rather than relational logic (i.e. the separation of value keys is taken into account), so the value is always "before" the key, but all kinds of join_collapse_limit can be significantly reduced by this approach.
+                // in general we could get rid of getInnerJoins (use the obtained Set), but since InnerJoins is used in the branch of implications in expressions, etc. we'll leave it as it is for now.
+                for (InnerJoin where : getInnerJoinOrder(joinOrder.result)) {
+                    assert isInner(where);
+                    getJoinSelect(where);
+                }
+                return null;
+            });
+            assert pending.usedKeys.size() == pending.translate.size();
 
-            MSet<KeyExpr> usedKeys = stackUsedPendingKeys.pop();
-            MRevMap<String, String> translate = stackTranslate.pop();
-            stackUsedOuterPendingJoins.pop();
-            assert usedKeys.size() == translate.size();
-
-            whereSelect.addAll(mExplicitWheres.immutableList().getCol());
             whereSelect.addAll(mImplicitJoins.immutableList().getCol());
-            mJoins.addAll(mOuterPendingJoins.immutableOrder());
-            assert pending.isEmpty(); // из-за висячего ключа может падать (аналогично EmptyStackException)
-            mExplicitWheres = null;
+            mJoins.addAll(mOuterOrLateralPendingJoins.immutableOrder());
+            assert this.pending.isEmpty(); // из-за висячего ключа может падать (аналогично EmptyStackException)
             mImplicitJoins = null;
-            mOuterPendingJoins = null;
+            mOuterOrLateralPendingJoins = null;
 
             if(syntax.hasNotNullIndexProblem())
                 for(BaseExpr notNull : usedNotNulls.result)
@@ -623,39 +662,42 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
             String from;
             Iterator<JoinSelect> ij = joins.iterator();
-            JoinSelect first = ij.next();
+            JoinSelect<?, ?> first = ij.next();
             if(first.isInner()) {
-                from = first.getSource(debugInfoWriter) + " " + first.alias;
-                if(!(first.join.length()==0))
-                    whereSelect.add(first.join);
+                Pair<String, String> source = first.getFrom(debugInfoWriter);
+
+                from = source.first;
+                if(!source.second.isEmpty())
+                    whereSelect.add(source.second);
             } else {
                 from = "dumb";
                 ij = joins.iterator();
             }
 
             while(ij.hasNext()) {
-                JoinSelect join = ij.next();
-                from = from + (join.isInner() ?"":" LEFT")+" JOIN " + join.getSource(debugInfoWriter) + " " + join.alias  + " ON " + (join.join.length()==0?Where.TRUE_STRING:join.join);
+                JoinSelect<?, ?> join = ij.next();
+                Pair<String, String> source = join.getFrom(debugInfoWriter);
+
+                from = from + (join.isInner() ? "" : " LEFT") + " JOIN" + (join.isLateral() ? " LATERAL" : "") + " " + source.first + " ON " + (source.second.isEmpty() ? Where.TRUE_STRING : source.second);
             }
 
             return from;
         }
 
-        private class TableSelect extends JoinSelect<Table.Join> {
-            protected ImMap<String, BaseExpr> initJoins(Table.Join table, final SQLSyntax syntax) {
-                return table.joins.mapKeys(value -> value.getName(syntax));
+        private class TableSelect extends JoinSelect<KeyField, Table.Join> {
+            protected Pair<ImMap<KeyField, BaseExpr>, ImSet<KeyField>> initJoins(final SQLSyntax syntax) {
+                return new Pair<>(innerJoin.joins, innerJoin.getLaterals());
+            }
+            protected String getKeyFieldSource(KeyField key) {
+                return key.getName(syntax);
             }
 
-            TableSelect(Table.Join join) {
+            public TableSelect(Table.Join join) {
                 super(join);
             }
 
-            public String getSource(DebugInfoWriter debugInfoWriter) {
-                RecursiveTable recursiveTable = innerJoin.getRecursiveTable();
-                if(recursiveTable != null)
-                    env.addNotMaterializable(recursiveTable);
-
-                return innerJoin.getQuerySource(InnerSelect.this);
+            public String getSource(DebugInfoWriter debugInfoWriter, ImMap<KeyField, String> laterals) {
+                return innerJoin.getQuerySource(InnerSelect.this, laterals);
             }
 
             protected Where getInnerWhere() {
@@ -664,15 +706,12 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         }
 
         final MAddExclMap<Table.Join, TableSelect> tables = MapFact.mAddExclMap();
-        private String getAlias(Table.Join table) {
-            return getTableSelect(table).alias;
-        }
 
         public String getSource(Table.Join.Expr expr) {
-            return getAlias(expr.getInnerJoin())+"."+expr.property.getName(syntax);
+            return getSource(expr.getInnerJoin(), expr.property);
         }
         public String getSource(Table.Join.IsIn where) {
-            return getAlias(where.getJoin()) + "." + where.getFirstKey(syntax) + " IS NOT NULL";
+            return getSource(where.getJoin(), where.getFirstKey()) + " IS NOT NULL";
         }
         public String getSource(IsClassExpr classExpr, boolean needValue) {
             InnerExpr joinExpr = classExpr.getInnerJoinExpr();
@@ -682,15 +721,18 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 return getSource((SubQueryExpr)joinExpr, needValue);
         }
 
-        private abstract class QuerySelect<K extends Expr, I extends QueryExpr.Query<I>,J extends QueryJoin<K,?,?,?>,E extends QueryExpr<K,I,J,?,?>> extends JoinSelect<J> {
-            ImRevMap<String, K> group;
+        private abstract class QuerySelect<K extends Expr, I extends QueryExpr.Query<I>,J extends QueryJoin<K,?,J,?>,E extends QueryExpr<K,I,J,?,?>> extends JoinSelect<K, J> {
+            public ImRevMap<String, K> group;
 
-            protected ImMap<String, BaseExpr> initJoins(J groupJoin, SQLSyntax syntax) {
-                group = groupJoin.group.mapRevValues(new GenNameIndex("k", "")).reverse();
-                return group.join(groupJoin.group);
+            protected Pair<ImMap<K, BaseExpr>, ImSet<K>> initJoins(SQLSyntax syntax) {
+                group = innerJoin.group.mapRevValues(new GenNameIndex("k", "")).reverse();
+                return new Pair<>(innerJoin.group, SetFact.EMPTY());
+            }
+            protected String getKeyFieldSource(K key) {
+                return group.reverse().get(key);
             }
 
-            QuerySelect(J groupJoin) {
+            protected QuerySelect(J groupJoin) {
                 super(groupJoin);
             }
 
@@ -720,9 +762,9 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                     }
                     if(needValue)
                         mNeedValues.add(query);
-                    return alias + "." + name;
-                } else // в getInnerWhere needValues уже не нужен
-                    return alias + "." + queries.reverse().get(query);
+                    return name;
+                } else
+                    return queries.reverse().get(query);
             }
 
             protected boolean isEmptySelect(Where groupWhere, ImSet<KeyExpr> keys) {
@@ -766,7 +808,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             }
 
 
-            public String getSource(DebugInfoWriter debugInfoWriter) {
+            public String getSource(DebugInfoWriter debugInfoWriter, ImMap<K, String> laterals) {
                 SQLQuery query = getSQLQuery(debugInfoWriter);
                
                 env.add(query.getEnv());
@@ -986,12 +1028,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 ImMap<String, String> propertySelect = queries.mapValues(value -> value.getSource(fromPropertySelect.result, compiled.getMapPropertyReaders(), query, syntax, mSubEnv, exprs.get(value).getType()));
                 ImSet<String> areKeyValues = group.filterValues(compiled.arePropValues).keys();
 
-                ImCol<String> havingSelect;
-                if(isSingle(innerJoin))
-                    havingSelect = SetFact.singleton(propertySelect.get(queries.singleKey()) + " IS NOT NULL");
-                else
-                    havingSelect = SetFact.EMPTY();
-                SQLQuery result = getSQLQuery("(" + getGroupSelect(fromSelect, keySelect, propertySelect, whereSelect.result, havingSelect, areKeyValues) + ")", compiled.sql.baseCost, subQueries.result, mSubEnv, groupWhere, false);
+                SQLQuery result = getSQLQuery("(" + getGroupSelect(fromSelect, keySelect, propertySelect, whereSelect.result, SetFact.EMPTY(), areKeyValues) + ")", compiled.sql.baseCost, subQueries.result, mSubEnv, groupWhere, false);
 
                 if(isLastOpt) {
                     Result<Boolean> optAdjustLimit = new Result<>(false); 
@@ -1239,8 +1276,6 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 final boolean isLogical = innerJoin.isLogical();
                 final boolean cyclePossible = innerJoin.isCyclePossible();
 
-                boolean single = isSingle(innerJoin);
-
                 String rowPath = "qwpather";
 
                 ImMap<String, Type> propTypes;
@@ -1358,12 +1393,6 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 ImOrderSet<String> columnOrder = keyOrder.result.addOrderExcl(propOrder.result);
                 ImMap<String, SQLQuery> subQueries = rSubQueries.result;
 
-                ImCol<String> havingSelect;
-                if(single)
-                    havingSelect = SetFact.singleton(propertySelect.get(queries.singleKey()) + " IS NOT NULL");
-                else
-                    havingSelect = SetFact.EMPTY();
-
                 ImMap<String, String> keySelect = group.crossValuesRev(recKeys);
                 mSubEnv.addVolatileStats();
                 String select;
@@ -1371,14 +1400,14 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                     mSubEnv.addNoReadOnly();
                     String fieldDeclare = Field.getDeclare(columnOrder.mapOrderMap(columnTypes), syntax, mSubEnv);
                     select = getGroupSelect(syntax.getRecursion(types, recName, initialSelect, stepSelect, stepSmallSelect, smallLimit, fieldDeclare, outerParams, mSubEnv),
-                            keySelect, propertySelect, SetFact.EMPTY(), havingSelect, SetFact.EMPTY());
+                            keySelect, propertySelect, SetFact.EMPTY(), SetFact.EMPTY(), SetFact.EMPTY());
                 } else {
                     if(SQLQuery.countMatches(stepSelect, recName, subQueries) > 1) // почти у всех SQL серверов ограничение что не больше 2-х раз CTE можно использовать
                         return null;
                     String recursiveWith = "WITH RECURSIVE " + recName + "(" + columnOrder.toString(",") + ") AS ((" + initialSelect +
                             ") UNION " + (isLogical && cyclePossible?"":"ALL ") + "(" + stepSelect + ")) ";
                     select = recursiveWith + (isLogical ? SQLSession.getSelect(syntax, recName, keySelect, propertySelect, SetFact.EMPTY())
-                            : getGroupSelect(recName, keySelect, propertySelect, SetFact.EMPTY(), havingSelect, SetFact.EMPTY()));
+                            : getGroupSelect(recName, keySelect, propertySelect, SetFact.EMPTY(), SetFact.EMPTY(), SetFact.EMPTY()));
                 }
                 return getSQLQuery("(" + select + ")", baseCost.result, subQueries, mSubEnv, baseInitialWhere, useRecursionFunction);
             }
@@ -1484,70 +1513,23 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             }
         }
 
-        // выделять отдельный Join, в общем то чтобы нормально использовался ANTI-JOIN в некоторых СУБД, (а он нужен в свою очередь чтобы A LEFT JOIN B WHERE B.e IS NULL)
-        // не используется, потому a) как пока нет механизма выявления что идет именно ANTI-JOIN, в момент getSource
-        // b) anti-join не сильно быстрее обычной стратегии с left join + filter
-        private boolean isSingle(QueryJoin join) {
-            return Settings.get().isUseSingleJoins() && (join instanceof GroupJoin || join instanceof RecursiveJoin) && !isInner(join);
-        }
-
-        private QuerySelect<?,?,?,?> getSingleSelect(QueryExpr queryExpr) {
-            assert isSingle(queryExpr.getInnerJoin());
-            for(int i=0,size=queries.size();i<size;i++) {
-                QuerySelect select = queries.getValue(i);
-                if(select.queries.size()==1)
-                    if(BaseUtils.hashEquals(queryExpr, select.exprs.singleValue()))
-                        return select;
-            }
-            return null;
-        }
         public String getNullSource(InnerExpr innerExpr, String defaultSource) {
-            InnerJoin<?, ?> innerJoin = innerExpr.getInnerJoin();
-            if (innerExpr instanceof QueryExpr) {
-                QueryExpr queryExpr = (QueryExpr) innerExpr;
-                if (isSingle((QueryJoin) innerJoin)) {
-                    QuerySelect singleSelect = getSingleSelect(queryExpr);
-                    ImSet keys = singleSelect.group.keys();
-                    if (!keys.isEmpty())
-                        return singleSelect.alias + "." + keys.get(0) + " IS NULL";
-                }
-            }
             String result = super.getNullSource(innerExpr, defaultSource);
-            // решает частично ту же проблему что и верхняя проверка
-            if(syntax.hasNullWhereEstimateProblem() && whereCompiling && !Settings.get().isDisableAntiJoinOptimization() && !isInner(innerJoin) && isOptAntiJoin(innerJoin)) { // тут даже assert isInner возможно
+            if(syntax.hasNullWhereEstimateProblem() && whereCompiling && !Settings.get().isDisableAntiJoinOptimization() && !isInner(innerExpr.getInnerJoin()) && isOptAntiJoin(innerExpr.getInnerJoin())) { // тут даже assert isInner возможно
                 result = "(" + result + " OR " + syntax.getAdjustSelectivityPredicate() + ")";
             }
             return result;
         }
 
+        private String getSource(Table.Join table, Field field) {
+            return getTableSelect(table).getSource(field.getName(syntax));
+        }
         final MAddExclMap<QueryJoin, QuerySelect> queries = MapFact.mAddExclMap();
-        final MAddExclMap<GroupExpr, String> groupExprSources = MapFact.mAddExclMap();
         public String getSource(QueryExpr queryExpr, boolean needValue) {
-            if(queryExpr instanceof GroupExpr) {
-                GroupExpr groupExpr = (GroupExpr)queryExpr;
-                if(Settings.get().getInnerGroupExprs() >0 && !isInner(groupExpr.getInnerJoin())) { // если left join
-                    String groupExprSource = groupExprSources.get(groupExpr);
-                    if(groupExprSource==null) {
-                        groupExprSource = groupExpr.getExprSource(this, subcontext.pushAlias(groupExprSources.size()));
-                        groupExprSources.exclAdd(groupExpr, groupExprSource);
-                    }
-                    return groupExprSource;
-                }
-            }
+            Result<QueryExpr.Query> translatedQuery = new Result<>(queryExpr.query);
+            QuerySelect select = getQuerySelect(queryExpr.getInnerJoin(), translatedQuery);
 
-            QueryJoin exprJoin = queryExpr.getInnerJoin();
-
-            QuerySelect select = null;
-            Result<QueryExpr.Query> query = new Result<>(queryExpr.query);
-            
-            if(select == null && isSingle(exprJoin)) {
-                select = getSingleSelect(queryExpr);
-                usedJoin(select);
-            }
-
-            if(select == null)
-                select = getQuerySelect(exprJoin, query);            
-            return select.add(query.result,queryExpr, needValue);
+            return select.getSource(select.add(translatedQuery.result, queryExpr, needValue));
         }
         private JoinSelect getJoinSelect(InnerJoin innerJoin) {
             if(!whereCompiling) { // поаналогии с QuerySelect.add до innerWhere и после
@@ -1572,15 +1554,15 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             usedJoin(join);
             return join;
         }
-        private QuerySelect getQuerySelect(QueryJoin exprJoin, Result<QueryExpr.Query> query) {
+        private QuerySelect getQuerySelect(QueryJoin exprJoin, Result<QueryExpr.Query> translatedQuery) {
             QuerySelect select = null;
             // группировка query / кэгирование
             for (int i = 0, size = queries.size(); i < size; i++) {
                 MapTranslate translator;
                 if ((translator = exprJoin.mapInnerIdentity(queries.getKey(i), false)) != null) {
                     select = queries.getValue(i);
-                    if(query != null)
-                        query.set((QueryExpr.Query<?>)query.result.translateOuter(translator));
+                    if(translatedQuery != null)
+                        translatedQuery.set((QueryExpr.Query<?>)translatedQuery.result.translateOuter(translator));
                 }
             }
 
@@ -1684,21 +1666,6 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
         ImSet<KeyExpr> freeKeys = mapKeys.valuesSet().removeIncl(BaseUtils.<ImSet<KeyExpr>>immutableCast(innerSelect.keyEqual.keyExprs.keys()));
         final InnerSelect compile = new InnerSelect(freeKeys, innerSelect.where, innerSelect.where, innerSelect.where,innerSelect.joins,innerSelect.upWheres,syntax, mSubQueries, env, params, subcontext);
-
-        if(Settings.get().getInnerGroupExprs() > 0) { // если не одни joinData
-            final MAddSet<GroupExpr> groupExprs = SetFact.mAddSet(); final Result<Integer> repeats = new Result<>(0);
-            for(Expr property : compiledProps.valueIt())
-                property.enumerate(join -> {
-                    if (join instanceof FJData) { // если FJData то что внутри не интересует
-                        if (join instanceof GroupExpr && !compile.isInner(((GroupExpr) join).getInnerJoin()) && !groupExprs.add((GroupExpr) join))
-                            repeats.set(repeats.result + 1);
-                        return false;
-                    }
-                    return true;
-                });
-            if(repeats.result > Settings.get().getInnerGroupExprs())
-                return fillSingleSelect(mapKeys, innerSelect, compiledProps, resultKey, resultProperty, params, syntax, subcontext, env, mBaseCost, mOptAdjustLimit, mRows, mSubQueries, debugInfoWriter);
-        }
 
         ExprTranslator keyEqualTranslator = innerSelect.keyEqual.getTranslator();
         compiledProps = keyEqualTranslator.translate(compiledProps);

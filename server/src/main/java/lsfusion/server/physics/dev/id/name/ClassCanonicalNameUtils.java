@@ -207,13 +207,4 @@ public final class ClassCanonicalNameUtils {
         put("TSQUERY", TSQueryClass.instance);
         put("HTML", HTMLStringClass.instance);
     }};
-
-    public static List<ResolveClassSet> getResolveList(ValueClass[] classes) {
-        List<ResolveClassSet> classSets;
-        classSets = new ArrayList<>();
-        for (ValueClass cls : classes) {
-            classSets.add(cls.getResolveSet());
-        }
-        return classSets;
-    }
 }

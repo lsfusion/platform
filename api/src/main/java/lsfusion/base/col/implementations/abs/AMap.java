@@ -30,7 +30,7 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
         for(int i=0,size=size();i<size;i++) {
             if(i!=0)
                 builder.append(delimiter);
-            builder.append(getKey(i) + conc + getValue(i));
+            builder.append(getKey(i)).append(conc).append(getValue(i));
         }
         return builder.toString();
     }
@@ -334,6 +334,15 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
     }
 
     public ImMap<K, V> splitKeys(FunctionSet<K> filter, Result<ImMap<K, V>> rest) {
+        if(filter.isEmpty()) {
+            rest.set(this);
+            return MapFact.EMPTY();
+        }
+        if(filter.isFull()) {
+            rest.set(MapFact.EMPTY());
+            return this;
+        }
+
         MFilterMap<K, V> mResult = MapFact.mFilter(this);
         MFilterMap<K, V> mRest = MapFact.mFilter(this);
         for(int i=0,size=size();i<size;i++) {

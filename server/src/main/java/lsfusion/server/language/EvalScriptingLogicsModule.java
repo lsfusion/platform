@@ -1,6 +1,7 @@
 package lsfusion.server.language;
 
 import lsfusion.base.Pair;
+import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.server.data.table.IndexType;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.language.property.PropertySettings;
@@ -9,6 +10,7 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.session.LocalNestedType;
+import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.event.Event;
 import lsfusion.server.logics.form.struct.group.Group;
@@ -170,11 +172,11 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
     }
     
     @Override
-    public LP addScriptedDProp(String returnClass, List<String> paramClasses, List<ResolveClassSet> signature, boolean sessionProp, boolean innerProp, boolean isLocalScope, LocalNestedType nestedType) throws ScriptingErrorLog.SemanticErrorException {
+    public LP addScriptedDProp(String returnClass, ImList<ValueClass> paramClasses, boolean sessionProp, boolean innerProp, boolean isLocalScope, LocalNestedType nestedType) throws ScriptingErrorLog.SemanticErrorException {
 //        if (!sessionProp) {
 //            nestedType = LocalNestedType.ALL;
 //        }
-        return super.addScriptedDProp(returnClass, paramClasses, signature, true, innerProp, isLocalScope, nestedType);
+        return super.addScriptedDProp(returnClass, paramClasses, true, innerProp, isLocalScope, nestedType);
     }
     
     private void emitEvalError(String errorPrefix) throws ScriptingErrorLog.SemanticErrorException {

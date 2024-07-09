@@ -288,10 +288,6 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
             this.joinImplement = joinImplement;
         }
 
-        public ImSet<PropertyField> getProperties() {
-            return SessionData.this.getProperties();
-        }
-
         public Join<PropertyField> translateRemoveValues(MapValuesTranslate translate) {
             return SessionData.this.translateRemoveValues(translate).join(translate.mapKeys().translate(joinImplement));
         }

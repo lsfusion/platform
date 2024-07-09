@@ -26,7 +26,7 @@ import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.monitor.sql.SQLDebugInfo;
 
 public class ModifyQuery {
-    public final NamedTable table;
+    public final StoredTable table;
     private final IQuery<KeyField, PropertyField> change;
     public final QueryEnvironment env;
     public final TableOwner owner;
@@ -35,11 +35,11 @@ public class ModifyQuery {
         return env.getOpOwner();
     }
 
-    public ModifyQuery(NamedTable table, IQuery<KeyField, PropertyField> change, OperationOwner owner, TableOwner tableOwner) {
+    public ModifyQuery(StoredTable table, IQuery<KeyField, PropertyField> change, OperationOwner owner, TableOwner tableOwner) {
         this(table, change, DataSession.emptyEnv(owner), tableOwner);
     }
 
-    public ModifyQuery(NamedTable table, IQuery<KeyField, PropertyField> change, QueryEnvironment env, TableOwner owner) {
+    public ModifyQuery(StoredTable table, IQuery<KeyField, PropertyField> change, QueryEnvironment env, TableOwner owner) {
         this.table = table;
         this.change = change;
         this.env = env;
@@ -174,11 +174,11 @@ public class ModifyQuery {
         return leftKeysQuery.getQuery();
     }
 
-    public static SQLExecute getInsertSelect(String name, IQuery<KeyField, PropertyField> query, QueryEnvironment env, TableOwner owner, SQLSyntax syntax, SQLSessionContextProvider userProvider, Table table, RegisterChange change) {
+    public static SQLExecute getInsertSelect(String name, IQuery<KeyField, PropertyField> query, QueryEnvironment env, TableOwner owner, SQLSyntax syntax, SQLSessionContextProvider userProvider, StoredTable table, RegisterChange change) {
         return getInsertSelect(name, query, env, owner, syntax, userProvider, table, change, 0);
     }
 
-    public static SQLExecute getInsertSelect(String name, IQuery<KeyField, PropertyField> query, QueryEnvironment env, TableOwner owner, SQLSyntax syntax, SQLSessionContextProvider userProvider, Table table, RegisterChange change, int selectTop) {
+    public static SQLExecute getInsertSelect(String name, IQuery<KeyField, PropertyField> query, QueryEnvironment env, TableOwner owner, SQLSyntax syntax, SQLSessionContextProvider userProvider, StoredTable table, RegisterChange change, int selectTop) {
         CompileOptions<PropertyField> options = new CompileOptions<>(syntax, table != null ? table.getPropTypes() : null, selectTop);
         CompiledQuery<KeyField, PropertyField> changeCompile = query.compile(options);
 

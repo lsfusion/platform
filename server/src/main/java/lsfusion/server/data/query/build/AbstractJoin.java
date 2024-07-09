@@ -1,8 +1,6 @@
 package lsfusion.server.data.query.build;
 
-import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.mutability.ImmutableObject;
-import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.where.cases.CaseJoin;
 import lsfusion.server.data.expr.where.ifs.IfJoin;
@@ -23,15 +21,6 @@ public abstract class AbstractJoin<U> extends ImmutableObject implements Join<U>
 
     public Join<U> and(Where where) {
         return and(this, where);
-    }
-
-    public static <U> ImMap<U, Expr> getExprs(final Join<U> join) {
-        return join.getProperties().mapValues(join::getExpr);
-    }
-
-    @IdentityLazy
-    public ImMap<U, Expr> getExprs() {
-        return getExprs(this);
     }
 
     public static <U> Join<U> translateValues(Join<U> join, MapValuesTranslate translate) {

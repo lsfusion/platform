@@ -6,10 +6,8 @@ import lsfusion.server.data.where.Where;
 
 public class MJoinCaseList<U> extends MCaseList<Join<U>, Join<U>,JoinCase<U>> {
 
-    public ImSet<U> properties;
-    public MJoinCaseList(ImSet<U> properties, boolean exclusive) {
+    public MJoinCaseList(boolean exclusive) {
         super(exclusive);
-        this.properties = properties;
     }
 
     @Override
@@ -21,9 +19,9 @@ public class MJoinCaseList<U> extends MCaseList<Join<U>, Join<U>,JoinCase<U>> {
     public Join<U> getFinal() {
         JoinCaseList<U> finalCases;
         if(exclusive)
-            finalCases = new JoinCaseList<>(immutableSet(), properties);
+            finalCases = new JoinCaseList<>(immutableSet());
         else
-            finalCases = new JoinCaseList<>(immutableList(), properties);
+            finalCases = new JoinCaseList<>(immutableList());
         return new CaseJoin<>(finalCases);
     }
 

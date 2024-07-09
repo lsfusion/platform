@@ -9,9 +9,11 @@ import lsfusion.server.data.where.Where;
 
 public class NullJoin<U> extends AbstractJoin<U> {
 
-    private ImSet<U> properties;
-    public NullJoin(ImSet<U> properties) {
-        this.properties = properties;
+    private NullJoin() {
+    }
+    private static final NullJoin instance = new NullJoin();
+    public static <T> NullJoin<T> getInstance() {
+        return instance;
     }
 
     public Expr getExpr(U property) {
@@ -20,10 +22,6 @@ public class NullJoin<U> extends AbstractJoin<U> {
 
     public Where getWhere() {
         return Where.FALSE();
-    }
-
-    public ImSet<U> getProperties() {
-        return properties;
     }
 
     public Join<U> translateRemoveValues(MapValuesTranslate translate) {

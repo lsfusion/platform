@@ -25,6 +25,7 @@ import lsfusion.server.base.ResourceUtils;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.Version;
+import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.PartitionType;
@@ -856,11 +857,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new ScriptingFormEntity(this, form);
     }
 
-    public LP addScriptedDProp(String returnClass, List<String> paramClasses, List<ResolveClassSet> signature, boolean sessionProp, boolean innerProp, boolean isLocalScope, LocalNestedType nestedType) throws ScriptingErrorLog.SemanticErrorException {
+    public LP addScriptedDProp(String returnClass, ImList<ValueClass> paramClasses, boolean sessionProp, boolean innerProp, boolean isLocalScope, LocalNestedType nestedType) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkNoInline(innerProp);
 
         ValueClass value = findClass(returnClass);
-        ValueClass[] params = getParams(paramClasses, signature, true);
+        ValueClass[] params = getParams(paramClasses, true);
 
         if (sessionProp) {
             return addSDProp(LocalizedString.NONAME, isLocalScope, value, nestedType, params);
@@ -870,14 +871,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public LP<?> addScriptedAbstractProp(CaseUnionProperty.Type type, String returnClass, List<String> paramClasses, List<ResolveClassSet> signature, boolean isExclusive, boolean isChecked, boolean isLast, boolean innerPD) throws ScriptingErrorLog.SemanticErrorException {
+    public LP<?> addScriptedAbstractProp(CaseUnionProperty.Type type, String returnClass, ImList<ValueClass> paramClasses, boolean isExclusive, boolean isChecked, boolean isLast, boolean innerPD) throws ScriptingErrorLog.SemanticErrorException {
         ValueClass value = findClass(returnClass);
-        ValueClass[] params = getParams(paramClasses, signature, true);
+        ValueClass[] params = getParams(paramClasses, true);
         return addAUProp(null, false, isExclusive, isChecked, isLast, type, LocalizedString.NONAME, value, params);
     }
 
-    public LA addScriptedAbstractAction(ListCaseAction.AbstractType type, List<String> paramClasses, List<ResolveClassSet> signature, boolean isExclusive, boolean isChecked, boolean isLast) throws ScriptingErrorLog.SemanticErrorException {
-        ValueClass[] params = getParams(paramClasses, signature, true);
+    public LA addScriptedAbstractAction(ListCaseAction.AbstractType type, ImList<ValueClass> paramClasses, boolean isExclusive, boolean isChecked, boolean isLast) throws ScriptingErrorLog.SemanticErrorException {
+        ValueClass[] params = getParams(paramClasses, true);
         LA<?> result;
         if (type == ListCaseAction.AbstractType.LIST) {
             result = addAbstractListAProp(isChecked, isLast, params);
@@ -887,24 +888,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         return result;
     }
 
-    private ValueClass[] getParams(List<String> paramClasses, List<ResolveClassSet> signature, boolean checkSignature) throws ScriptingErrorLog.SemanticErrorException {
-        ValueClass[] params;
-        if(paramClasses == null) {
-            params = new ValueClass[signature.size()];
-            for (int i = 0; i < signature.size(); i++) {
-                ResolveClassSet signatureParam = signature.get(i);
-                if(checkSignature) {
-                    checks.checkSignatureParam(signatureParam);
-                }
-                params[i] = signatureParam.getCommonClass();
-            }
-        } else {
-            params = new ValueClass[paramClasses.size()];
-            for (int i = 0; i < paramClasses.size(); i++) {
-                params[i] = findClass(paramClasses.get(i));
-            }
-        }
-        return params;
+    private ValueClass[] getParams(ImList<ValueClass> paramClasses, boolean checkSignature) throws ScriptingErrorLog.SemanticErrorException {
+        if(checkSignature)
+            for (int i = 0; i < paramClasses.size(); i++)
+                checks.checkSignatureParam(paramClasses.get(i));
+        return paramClasses.toArray(new ValueClass[paramClasses.size()]);
     }
 
     // todo [dale]: выделить общий код    
@@ -1142,6 +1130,22 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
+    public List<String> getParamNamesFromTypedParams(List<String> paramNames, List<TypedParameter> params, boolean innerPD) {
+        List<String> defaultParamNames = !innerPD ? getParamNamesFromTypedParams(params) : null;
+        if(paramNames == null)
+            return defaultParamNames;
+
+        List<String> result = new ArrayList<>();
+        for (int i = 0, paramsSize = paramNames.size(); i < paramsSize; i++) {
+            String paramName = paramNames.get(i);
+            if(paramName == null && defaultParamNames != null)
+                paramName = defaultParamNames.get(i);
+
+            result.add(paramName);
+        }
+        return result;
+    }
+
     private List<String> getParamNamesFromTypedParams(List<TypedParameter> params) {
         List<String> paramNames = new ArrayList<>();
         for (TypedParameter param : params) {
@@ -1151,15 +1155,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public List<ResolveClassSet> getClassesFromTypedParams(List<TypedParameter> params) {
-        List<ResolveClassSet> paramClasses = new ArrayList<>();
-        for (TypedParameter param : params) {
-            if (param.cls == null) {
-                paramClasses.add(null);
-            } else {
-                paramClasses.add(param.cls.getResolveSet());
-            }
-        }
-        return paramClasses;
+        return getParamClasses(getValueClassesFromTypedParams(params));
     }
 
     public ImList<ValueClass> getValueClassesFromTypedParams(List<TypedParameter> params) {
@@ -1549,6 +1545,14 @@ public class ScriptingLogicsModule extends LogicsModule {
             return null;
         }
 
+        return getParamClasses(valueClasses);
+    }
+
+    public List<ResolveClassSet> getParamClasses(LAP lap, ImList<ValueClass> valueClasses, boolean innerPD) {
+        return innerPD || valueClasses.isEmpty() ? Collections.nCopies(lap.listInterfaces.size(), null) : getParamClasses(valueClasses);
+    }
+
+    private List<ResolveClassSet> getParamClasses(Iterable<ValueClass> valueClasses) {
         List<ResolveClassSet> classes = new ArrayList<>();
         for (ValueClass valueClass : valueClasses) {
             if (valueClass == null) {
@@ -1570,8 +1574,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             if (className.equals(PropertyCanonicalNameUtils.UNKNOWNCLASS)) {
                 classes.add(null);
             } else {
-                ValueClass cls = findClass(className);
-                classes.add(cls);
+                classes.add(findClass(className));
             }
         }
         return classes;
@@ -1853,40 +1856,41 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public LA addScriptedInternalClientAction(String resourceName, List<String> classes, boolean syncType) throws ScriptingErrorLog.SemanticErrorException {
-        List<Type> types = new ArrayList<>();
-        if(classes != null) {
-            boolean isFile = resourceName.contains(".js") || resourceName.contains(".css");
-            if (isFile && classes.size() > 0) {
-                errLog.emitInternalClientActionHasParamsOnFileCallingError(parser, resourceName);
-            }
+    public LA addScriptedInternalClientAction(String resourceName, ImList<ValueClass> paramClasses, boolean syncType) throws ScriptingErrorLog.SemanticErrorException {
+        ValueClass[] params = getParams(paramClasses, false);
 
-            for (String cls : classes) {
-                types.add(findClass(cls).getType());
-            }
+        boolean isFile = resourceName.contains(".js") || resourceName.contains(".css");
+        if (isFile && params.length > 0) {
+            errLog.emitInternalClientActionHasParamsOnFileCallingError(parser, resourceName);
         }
 
-        return new LA(new InternalClientAction(ListFact.EMPTY(), ListFact.EMPTY(), syncType, resourceName, ListFact.toList(types)));
+        return new LA(new InternalClientAction(ListFact.EMPTY(), ListFact.EMPTY(), syncType, resourceName, ListFact.toList(params.length, index -> {
+            ValueClass param = params[index];
+            return param != null ? param.getType() : null;
+        })));
     }
 
     public LAWithParams addScriptedShowRecDepAction(List<ActionOrPropertyUsage> ids, boolean showRec, boolean global) throws ScriptingErrorLog.SemanticErrorException {
         return new LAWithParams(addAProp(null, new ShowRecDepAction(showRec, ids != null ? findEventActionsOrPropsByUsages(ids).getSet() : SetFact.EMPTY(), global)), new ArrayList<>());
     }
 
-    public LA addScriptedInternalAction(String javaClassName, List<String> paramClasses, List<ResolveClassSet> signature, boolean allowNullValue) throws ScriptingErrorLog.SemanticErrorException {
+    public LA addScriptedInternalAction(String javaClassName, ImList<ValueClass> paramClasses, boolean allowNullValue) throws ScriptingErrorLog.SemanticErrorException {
         try {
             Object instanceObject = null;
             Class<?> javaClass = Class.forName(javaClassName);
-            if ((paramClasses == null || paramClasses.isEmpty()) && signature.isEmpty()) {
+
+            ValueClass[] params = getParams(paramClasses, false);
+
+            if (params.length == 0) {
                 try {
                     instanceObject = javaClass.getConstructor(this.getClass()).newInstance(this);
                 } catch (NoSuchMethodException ignored) {
                 }
             }
-            if(instanceObject == null) {
-                ValueClass[] params = getParams(paramClasses, signature, false);
+
+            if(instanceObject == null)
                 instanceObject = javaClass.getConstructor(new Class[] {this.getClass(), ValueClass[].class}).newInstance(this, params);
-            }
+
             Action instance = (Action)instanceObject;
             if (instance instanceof ExplicitAction && allowNullValue) {
                 ((ExplicitAction) instance).allowNullValue = true;
@@ -2474,14 +2478,13 @@ public class ScriptingLogicsModule extends LogicsModule {
     public List<LP<?>> addLocalDataProperty(List<String> names, String returnClassName, List<String> paramClassNames,
                                             LocalNestedType nestedType, DebugInfo.DebugPoint point) throws ScriptingErrorLog.SemanticErrorException {
 
-        List<ResolveClassSet> signature = new ArrayList<>();
-        for (String className : paramClassNames) {
-            signature.add(findClass(className).getResolveSet());
-        }
 
         List<LP<?>> res = new ArrayList<>();
+        ImList<ValueClass> paramClasses = findClasses(paramClassNames);
+        List<ResolveClassSet> signature = getParamClasses(paramClasses);
         for (String name : names) {
-            LP<?> lcp = addScriptedDProp(returnClassName, paramClassNames, new ArrayList<>(), true, false, true, nestedType);
+            LP<?> lcp = addScriptedDProp(returnClassName, paramClasses, true, false, true, nestedType);
+
             addLocal(lcp, new LocalPropertyData(name, signature));
             lcp.property.setDebugInfo(new PropertyDebugInfo(point, false));
             res.add(lcp);
@@ -3309,54 +3312,127 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJProp(addDCCProp(index - 1), Collections.singletonList(ccProp));
     }
 
-    public LP addScriptedSFProp(String typeName, List<SQLSyntaxType> types, List<String> implTexts, boolean valueNull, boolean paramsNull) throws ScriptingErrorLog.SemanticErrorException {
+    public LP addScriptedSFProp(String valueClassName, String valueName, ImList<ValueClass> paramClasses, List<String> paramNames, List<SQLSyntaxType> types, List<String> implTexts, boolean valueNull, boolean paramsNull) throws ScriptingErrorLog.SemanticErrorException {
+        ParsedFormula parsed = parseFormula(types, implTexts, paramNames);
+
+        ValueClass cls = null;
+        if (valueClassName != null) {
+            cls = findClass(valueClassName);
+            checks.checkFormulaClass(cls);
+        }
+
+        return addSFProp(parsed.formula, (DataClass) cls, valueName, BaseUtils.immutableCast(paramClasses), parsed.paramNames, valueNull, paramsNull);
+    }
+
+    private static class ParsedSingleFormula {
+        public final String formula;
+        public final ImOrderSet<String> paramNames; // translated params
+        public final ImSet<String> usedParams;
+
+        public ParsedSingleFormula(String formula, ImOrderSet<String> paramNames, ImSet<String> usedParams) {
+            this.formula = formula;
+            this.usedParams = usedParams;
+            this.paramNames = paramNames;
+        }
+    }
+    private ParsedSingleFormula parseSingleFormula(String formula, List<String> fieldNames) throws ScriptingErrorLog.SemanticErrorException {
+        MSet<String> mUsedParams = SetFact.mSet();
+
+        boolean explicitFields = fieldNames != null;
+        fieldNames = explicitFields ? new ArrayList<>(fieldNames) : new ArrayList<>(); // we have to copy the array because we'll change it
+
+        // building search pattern + filling missing parameters
+        String patternString = "\\$\\d+"; // looking for $i
+        for (int i = 0; i < fieldNames.size(); i++) {
+            String fieldName = fieldNames.get(i);
+            if (fieldName != null)
+                patternString += "|\\$" + fieldName;
+            else
+                fieldNames.set(i, i + "i");
+        }
+        patternString = "(" + patternString + ")\\b"; // word boundaries added to be able to match prm10+
+
+        // converting $i -> $paramName + getting used params + filling missing ones
+        StringBuffer result = new StringBuffer();
+        Matcher m = Pattern.compile(patternString).matcher(formula);
+        while (m.find()) {
+            String param = m.group().substring(1);
+
+            if(!fieldNames.contains(param)) { // can be index or fieldName
+                int paramIndex = Integer.parseInt(param) - 1;
+
+                if(paramIndex >= fieldNames.size()) {
+//                    if(explicitFields) have to emit error
+                    for(int i = fieldNames.size(); i <= paramIndex; i++)
+                        fieldNames.add(i + "i");
+                }
+
+                param = fieldNames.get(paramIndex);
+            }
+
+            m.appendReplacement(result, CallAction.getParamName(param)); // we have to replace to param name,
+            mUsedParams.add(param); // mark that param is used
+        }
+        m.appendTail(result);
+        ImSet<String> usedParams = mUsedParams.immutable();
+
+        // adding $ to the used params
+        MOrderExclSet<String> mParamNames = SetFact.mOrderExclSet(fieldNames.size());
+        for (int i = 0; i < fieldNames.size(); i++) {
+            String fieldName = fieldNames.get(i);
+            if(usedParams.contains(fieldName))
+                fieldName = CallAction.getParamName(fieldName);
+            mParamNames.exclAdd(fieldName);
+        }
+        usedParams = usedParams.mapSetValues(CallAction::getParamName);
+        ImOrderSet<String> paramNames = mParamNames.immutableOrder();
+
+        return new ParsedSingleFormula(result.toString(), paramNames, usedParams);
+    }
+
+    private static class ParsedFormula {
+        public final CustomFormulaSyntax formula;
+        public final ImOrderSet<String> paramNames; // all params
+
+        public ParsedFormula(CustomFormulaSyntax formula, ImOrderSet<String> paramNames) {
+            this.formula = formula;
+            this.paramNames = paramNames;
+        }
+    }
+    private ParsedFormula parseFormula(List<SQLSyntaxType> types, List<String> implTexts, List<String> fieldNames) throws ScriptingErrorLog.SemanticErrorException {
         assert types.size() == implTexts.size();
         checks.checkSingleImplementation(types);
 
-        Set<Integer> params = findFormulaParameters(implTexts.get(0));
-
-        for (String text : implTexts) {
-            Set<Integer> formulaParams = findFormulaParameters(text);
-            checks.checkFormulaParameters(formulaParams);
-            if (formulaParams.size() != params.size()) {
-                errLog.emitFormulaDifferentParamCountError(parser, implTexts.get(0), text);
-            }
-        }
-
         String defaultFormula = "";
         MExclMap<SQLSyntaxType, String> mSyntaxes = MapFact.mExclMap();
+        ImOrderSet<String> paramNames = null;
+        ImSet<String> usedParams = null;
+
         for (int i = 0; i < types.size(); i++) {
             SQLSyntaxType type = types.get(i);
-            String text = transformFormulaText(implTexts.get(i), FormulaJoinProperty.getParamName("$1"));
-            if (type == null) {
+            String implText = implTexts.get(i);
+            ParsedSingleFormula singleFormula = parseSingleFormula(implText, fieldNames);
+            String text = singleFormula.formula;
+
+            if (type == null)
                 defaultFormula = text;
-            } else {
+            else
                 mSyntaxes.exclAdd(type, text);
+
+            if(paramNames == null) {
+                paramNames = singleFormula.paramNames;
+                usedParams = singleFormula.usedParams;
+            } else {
+                if(!paramNames.equals(singleFormula.paramNames) && !usedParams.equals(singleFormula.usedParams))
+                    errLog.emitFormulaDifferentParamCountError(parser, implTexts.get(0), implText);
             }
         }
-        ValueClass cls = null;
-        if (typeName != null) {
-            cls = findClass(typeName);
-            checks.checkFormulaClass(cls);
-        }
-        return addSFProp(defaultFormula, mSyntaxes.immutable(), (DataClass) cls, params.size(), valueNull, paramsNull);
+        ImMap<SQLSyntaxType, String> syntaxes = mSyntaxes.immutable();
+
+        return new ParsedFormula(new CustomFormulaSyntax(defaultFormula, syntaxes, usedParams), paramNames);
     }
 
-    private Set<Integer> findFormulaParameters(String text) {
-        Set<Integer> params = new HashSet<>();
-        if(text != null) {
-            Pattern pattern = Pattern.compile("\\$\\d+");
-            Matcher matcher = pattern.matcher(text);
-            while (matcher.find()) {
-                String group = matcher.group();
-                int paramNumber = Integer.valueOf(group.substring(1));
-                params.add(paramNumber);
-            }
-        }
-        return params;
-    }
-
-    public static String transformFormulaText(String text, String textTo) { // так как $i не постфиксный (например $1 и $12)
+    public static String transformFormulaText(String text, String textTo) {
         return text != null ? text.replaceAll("\\$(\\d+)", textTo) : null;
     }
 
@@ -4604,25 +4680,21 @@ public class ScriptingLogicsModule extends LogicsModule {
         LP<?> lcp = findLPByPropertyUsage(propUsage);
         ValueClass[] paramClasses = lcp.getInterfaceClasses(ClassType.signaturePolicy);
         if (paramClasses.length != valueClasses.size()) {
-            errLog.emitPropertyWithParamsExpectedError(getParser(), propUsage.name, getParamClasses(valueClasses));
+            errLog.emitPropertyWithParamsExpectedError(getParser(), propUsage.name, getSignature(valueClasses));
         } else {
             for (int i = 0; i < paramClasses.length; i++) {
                 ValueClass paramClass = paramClasses[i];
                 ValueClass valueClass = valueClasses.get(i);
                 if (!valueClass.isCompatibleParent(paramClass) && !paramClass.isCompatibleParent(valueClass)) {
-                    errLog.emitPropertyWithParamsExpectedError(getParser(), propUsage.name, getParamClasses(valueClasses));
+                    errLog.emitPropertyWithParamsExpectedError(getParser(), propUsage.name, getSignature(valueClasses));
                 }
             }
         }
         return lcp;
     }
 
-    private String getParamClasses(ImList<ValueClass> valueClasses) {
-        List<ResolveClassSet> signature = new ArrayList<>();
-        for(ValueClass valueClass : valueClasses) {
-            signature.add(valueClass.getResolveSet());
-        }
-        return PropertyCanonicalNameUtils.createSignature(signature);
+    private String getSignature(ImList<ValueClass> valueClasses) {
+        return PropertyCanonicalNameUtils.createSignature(getParamClasses(valueClasses));
     }
 
     private FormIntegrationType adjustImportFormatFromFileType(FormIntegrationType format, LPWithParams fileProp, OrderedMap<GroupObjectEntity, LPWithParams> fileProps, List<TypedParameter> context) {
@@ -4703,8 +4775,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         return proceedImportDoClause(noParams, doAction, elseAction, context, newContext, whereLCP, props, nulls != null ? ListFact.fromJavaList(nulls) : null, addScriptedJoinAProp(importAction, params));
     }
 
+    public ImList<ValueClass> findClasses(List<String> classNames, List<TypedParameter> context) throws ScriptingErrorLog.SemanticErrorException {
+        return classNames == null ? getValueClassesFromTypedParams(context) : findClasses(classNames);
+    }
+
     public ImList<ValueClass> findClasses(List<String> classNames) throws ScriptingErrorLog.SemanticErrorException {
-        MList<ValueClass> mResult = ListFact.mList(classNames.size()); // exception 
+        MList<ValueClass> mResult = ListFact.mList(classNames.size()); // exception
         for(String className : classNames)
             mResult.add(findClass(className));
         return mResult.immutableList();
@@ -4929,11 +5005,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         // todo [dale]: Hack. Class CustomObjectClass is created after all in InitObjectClassTask 
         boolean isCustomObjectClassTable = isCustomObjectClassTable(name, classIds);
 
-        ValueClass[] classes = new ValueClass[classIds.size()];
+        ValueClass[] classes;
         if (!isCustomObjectClassTable) {
-            for (int i = 0; i < classIds.size(); i++) {
-                classes[i] = findClass(classIds.get(i));
-            }
+            classes = findClasses(classIds).toArray(new ValueClass[classIds.size()]);
+        } else {
+            classes = new ValueClass[classIds.size()];
         }
         
         tempTables.add(new TemporaryTableInfo(name, dbName, classes, isFull, isExplicit, isCustomObjectClassTable));

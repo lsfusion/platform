@@ -21,8 +21,6 @@ public class Settings implements Cloneable {
     // будет ли компилятор вместо UNION (когда UNION ALL не удается построить) использовать FULL JOIN
     boolean useFJInsteadOfUnion = false;
 
-    private int innerGroupExprs = 0; // использовать Subquery Expressions
-
     private boolean cacheInnerHashes = true;
 
     private int mapInnerMaxIterations = 24;
@@ -305,14 +303,6 @@ public class Settings implements Cloneable {
 
     public Settings cloneSettings() throws CloneNotSupportedException {
         return (Settings) clone();
-    }
-
-    public int getInnerGroupExprs() {
-        return innerGroupExprs;
-    }
-
-    public void setInnerGroupExprs(int innerGroupExprs) {
-        this.innerGroupExprs = innerGroupExprs;
     }
 
     public int getPackOnCacheComplexity() {

@@ -11,6 +11,7 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.lambda.CallableWithParam;
 import lsfusion.base.lambda.set.FunctionSet;
+import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.Compare;
@@ -39,6 +40,7 @@ import lsfusion.server.data.query.MapKeysInterface;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.build.Join;
 import lsfusion.server.data.query.build.QueryBuilder;
+import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.query.modify.ModifyQuery;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -119,6 +121,7 @@ import lsfusion.server.physics.dev.debug.PropertyDebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
+import lsfusion.server.physics.exec.db.table.DBTable;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
 import lsfusion.server.physics.exec.db.table.MapKeysTable;
 import lsfusion.server.physics.exec.db.table.TableFactory;
@@ -588,23 +591,51 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return gridInterfaces.isEmpty();
     }
 
-    public static class VirtualTable<P extends PropertyInterface> extends NamedTable {
+    public static class VirtualTable<P extends PropertyInterface> extends Table {
+
+        protected String name;
 
         public final ImRevMap<KeyField, P> mapFields;
         public final PropertyField propValue;
 
+        protected ClassWhere<KeyField> classes;
+        private final ClassWhere<Field> propertyClass;
+
         public VirtualTable(final Property<P> property, AlgType algType) {
-            super(property.getSID());
+            super();
+
+            name = property.getSID();
             
             ImRevMap<P, KeyField> revMapFields = property.interfaces.mapRevValues((P value) -> new KeyField(value.getSID(), property.getInterfaceType(value)));
             mapFields = revMapFields.reverse();
             keys = property.getOrderInterfaces().mapOrder(revMapFields);
             
             propValue = new PropertyField("value", property.getType());
-            properties = SetFact.singleton(propValue);
 
             classes = property.getClassWhere(algType).remap(revMapFields);
-            propertyClasses = MapFact.singleton(propValue, property.getClassValueWhere(algType).remap(MapFact.addRevExcl(revMapFields, "value", propValue)));
+
+            propertyClass = property.getClassValueWhere(algType).remap(MapFact.addRevExcl(revMapFields, "value", propValue));
+        }
+
+        public ClassWhere<KeyField> getClasses() {
+            return classes;
+        }
+
+        @Override
+        public ClassWhere<Field> getClassWhere(PropertyField property) {
+            assert property.equals(propValue);
+            return propertyClass;
+        }
+
+//        since there is a IdentityStrongLazy
+        @Override
+        public boolean calcTwins(TwinImmutableObject o) {
+            return this == o;
+        }
+
+        @Override
+        public int immutableHashCode() {
+            return System.identityHashCode(this);
         }
 
         @IdentityLazy
@@ -613,8 +644,17 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         }
 
         @IdentityLazy
-        public ImMap<PropertyField,PropStat> getStatProps() {
-            return ImplementTable.ignoreStatPropsNoException(() -> getStatProps(this));
+        public PropStat getStatProp(PropertyField property) {
+            return ImplementTable.ignoreStatPropsNoException(() -> getStatProp(this, property));
+        }
+
+        public String toString() {
+            return name;
+        }
+
+        public String getQuerySource(CompileSource source) {
+            assert false; // should not be compiled in theory
+            return name;
         }
     }
 
@@ -1130,7 +1170,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     public Table.Join.Expr getInconsistentExpr(ImMap<T, ? extends Expr> joinImplement, BaseClass baseClass) {
-        Table table = baseClass.getInconsistentTable(mapTable.table);
+        DBTable table = baseClass.getInconsistentTable(mapTable.table);
         return (Table.Join.Expr) table.join(mapTable.mapKeys.crossJoin(joinImplement)).getExpr(field);
     }
 
@@ -1198,7 +1238,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
         for (PropertyField field : mapTable.table.properties) {
             if (addedField.getName().equals(field.getName())) {
-                throw new DuplicateFieldNameException(String.format(formatStr, addedField.getName(), mapTable.table.getName()));
+                throw new DuplicateFieldNameException(String.format(formatStr, addedField.getName(), mapTable.table.toString()));
             }
         }
     }

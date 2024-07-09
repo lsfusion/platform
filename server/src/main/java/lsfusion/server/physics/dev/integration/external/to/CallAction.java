@@ -27,7 +27,7 @@ public abstract class CallAction extends SystemAction {
     }
 
     // важно! используется также в regexp'е, то есть не должно быть спецсимволов
-    protected static String getParamName(String prmID) {
+    public static String getParamName(String prmID) {
         return "qxprm" + prmID + "nx";
     }
 

@@ -22,7 +22,6 @@ import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.lambda.SQLCallable;
-import lsfusion.server.data.table.NamedTable;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
@@ -33,6 +32,7 @@ import lsfusion.server.logics.property.classes.user.ObjectClassProperty;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
+import lsfusion.server.physics.exec.db.table.DBTable;
 import lsfusion.server.physics.exec.db.table.FullTablesInterface;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
 import org.apache.log4j.Logger;
@@ -201,7 +201,7 @@ public class BaseClass extends AbstractCustomClass {
         return new Pair<>(keyExpr, IsClassExpr.getTableExpr(keyExpr, classTables, type));
     }
     @IdentityStrongLazy
-    public NamedTable getInconsistentTable(ImplementTable table) {
+    public DBTable getInconsistentTable(ImplementTable table) {
         return table.getInconsistent(this);
     }
 

@@ -1,6 +1,7 @@
 package lsfusion.server.data.expr.formula;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.Type;
 
@@ -14,41 +15,19 @@ public class CustomFormulaImpl extends AbstractFormulaImpl {
 
     public final CustomFormulaSyntax formula;
 
-    public final Pattern paramsPattern;
-    public ImMap<String, Integer> mapParams;
+    public ImRevMap<String, Integer> mapParams;
 
     public final FormulaClass valueClass;
     
-    public CustomFormulaImpl(CustomFormulaSyntax formula, ImMap<String, Integer> mapParams, FormulaClass valueClass) {
+    public CustomFormulaImpl(CustomFormulaSyntax formula, ImRevMap<String, Integer> mapParams, FormulaClass valueClass) {
         this.formula = formula;
         this.mapParams = mapParams;
         this.valueClass = valueClass;
-        
-        String patternString = mapParams.keys().toString("|");
-        if (!patternString.isEmpty()) {
-            // word boundaries added to be able to match prm10+
-            patternString = "\\b(" + patternString + ")\\b"; 
-        }
-        this.paramsPattern = Pattern.compile(patternString);
     }
 
     @Override
     public String getSource(final ExprSource source) {
-        ImMap<String, String> exprSource = mapParams.mapValues(source::getSource);
-
-        SQLSyntax syntax = source.getSyntax();
-        Matcher m = paramsPattern.matcher(formula.getFormula(syntax.getSyntaxType()));
-        StringBuffer result = new StringBuffer("(");
-        if (!paramsPattern.pattern().isEmpty()) {
-            while (m.find()) {
-                String param = m.group();
-                m.appendReplacement(result, Matcher.quoteReplacement(exprSource.get(param)));
-            }
-        }
-        m.appendTail(result);
-        result.append(")");
-
-        return "("+ result.toString() +")"; // type.getCast(sourceString, compile.syntax, false)
+        return "("+ formula.getSource(source.getSyntax(), mapParams.mapValues(source::getSource)) +")"; // type.getCast(sourceString, compile.syntax, false)
     }
 
     @Override
