@@ -364,7 +364,8 @@ evalServer(TEXT code) {
 
 //Do not remove properties showError() and openedFormId(). Used in plugin. FormDesignChangeDetector.evalClient()
 showError = DATA LOCAL BOOLEAN();
-openedFormId = DATA STRING();
+openedFormId = DATA STRING(Connection);
+openedFormId() = openedFormId(currentConnection());
 
 userChanged(CustomUser user) {
     user(currentConnection()) <- user;
