@@ -60,13 +60,18 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
         cancel();
     }
 
+
+    @Override
+    public PValue getCommitValue(Element parent, Integer contextAction) throws InvalidEditException {
+        if(!isNative()) // needed for the 2-year digit dates
+            return getValue(getPickerStartDate(), getPickerEndDate());
+        return super.getCommitValue(parent, contextAction);
+    }
+
     protected PValue tryParseInputText(String inputText, boolean onCommit) throws ParseException {
         //to be able to enter the date from keyboard
         if (!onCommit)
             return PValue.getPValue(inputText);
-
-        if(!isNative()) // needed for the 2-year digit dates
-            return getValue(getPickerStartDate(), getPickerEndDate());
 
         return super.tryParseInputText(inputText, onCommit);
     }
