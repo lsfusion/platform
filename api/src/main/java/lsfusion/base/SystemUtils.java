@@ -1,7 +1,6 @@
 package lsfusion.base;
 
 import com.google.common.base.Throwables;
-import com.sun.jna.Platform;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.action.ClientWebAction;
@@ -139,7 +138,7 @@ public class SystemUtils {
             name = new BufferedReader(new InputStreamReader(Runtime.getRuntime().exec("hostname").getInputStream())).readLine();
             //Windows allows cyrillic symbols in hostname. But all of them are replaced with "?" when reading via Runtime exec
             //System.getEnv supports cyrillic symbols, but returns hostname uppercase
-            if (name != null && name.contains("?") && Platform.isWindows()) {
+            if (name != null && name.contains("?")) {
                 name = System.getenv("COMPUTERNAME");
             }
         } catch (IOException ignored) {
