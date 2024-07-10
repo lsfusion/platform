@@ -3606,14 +3606,15 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     }
 
-    private void validateTime(int h, int m) throws ScriptingErrorLog.SemanticErrorException {
+    private void validateTime(int h, int m, int s) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkRange("hour component", h, 0, 23);
         checks.checkRange("minute component", m, 0, 59);
+        checks.checkRange("seconds component", s, 0, 59);
     }
 
-    private void validateDateTime(int y, int m, int d, int h, int mn) throws ScriptingErrorLog.SemanticErrorException {
+    private void validateDateTime(int y, int m, int d, int h, int mn, int s) throws ScriptingErrorLog.SemanticErrorException {
         validateDate(y, m, d);
-        validateTime(h, mn);
+        validateTime(h, mn, s);
     }
 
     public LocalDate dateLiteralToDate(String text) throws ScriptingErrorLog.SemanticErrorException {
@@ -3630,15 +3631,17 @@ public class ScriptingLogicsModule extends LogicsModule {
         int d = Integer.parseInt(text.substring(8, 10));
         int h = Integer.parseInt(text.substring(11, 13));
         int mn = Integer.parseInt(text.substring(14, 16));
-        validateDateTime(y, m, d, h, mn);
-        return LocalDateTime.of(y, m, d, h, mn);
+        int s = text.length() == 19 ? Integer.parseInt(text.substring(17, 19)) : 0;
+        validateDateTime(y, m, d, h, mn, s);
+        return LocalDateTime.of(y, m, d, h, mn, s);
     }
 
     public LocalTime timeLiteralToTime(String text) throws ScriptingErrorLog.SemanticErrorException {
         int h = Integer.parseInt(text.substring(0, 2));
         int m = Integer.parseInt(text.substring(3, 5));
-        validateTime(h, m);
-        return LocalTime.of(h, m);
+        int s = text.length() == 8 ? Integer.parseInt(text.substring(6, 8)) : 0;
+        validateTime(h, m, s);
+        return LocalTime.of(h, m, s);
     }
 
     public boolean tBooleanToBoolean(String text) {
