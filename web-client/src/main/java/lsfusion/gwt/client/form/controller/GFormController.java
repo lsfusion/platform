@@ -2498,6 +2498,9 @@ public class GFormController implements EditManager {
         if (background != null) {
             element.style.setProperty("--bs-table-bg", background);
             element.style.setProperty("--bs-body-bg", background);
+        } else {
+            element.style.removeProperty("--bs-table-bg");
+            element.style.removeProperty("--bs-body-bg");
         }
     }-*/;
 
