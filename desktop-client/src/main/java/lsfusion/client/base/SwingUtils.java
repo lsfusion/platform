@@ -206,6 +206,7 @@ public class SwingUtils {
 
     public static Object getMessageTextPane(Object message, Color backgroundColor) {
         JTextPane textPane = new JTextPane();
+        textPane.setContentType("text/html");
         textPane.setText(String.valueOf(message)); //message can be null
         textPane.setEditable(false);
         JRootPane rootPane = MainFrame.instance.getRootPane();

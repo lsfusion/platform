@@ -484,7 +484,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
             try {
                 if(action.data.isEmpty()) {
                     JOptionPane.showMessageDialog(getDialogParentContainer(),
-                            SwingUtils.getMessageTextPane(action.textMessage, backgroundColor), action.caption,
+                            SwingUtils.getMessageTextPane(action.message, backgroundColor), action.caption,
                             messageType);
                 } else {
                     Log.messageWarning(action.textMessage, backgroundColor, action.titles, action.data);
