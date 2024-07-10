@@ -110,91 +110,91 @@ public class UpdateProcessMonitorAction extends ProcessDumpAction {
         LP.change(context, propsSQL, sqlProcesses, StringClass.get(10), (key, value, lp) -> getSQLMapValue(lp, value, key));
     }
 
-    private ObjectValue getJavaMapValue(LP<?> prop, JavaProcess javaProcess, String idThread) {
+    private Object getJavaMapValue(LP<?> prop, JavaProcess javaProcess, String idThread) {
         switch (prop.property.getName()) {
             case "idThreadProcess":
-                return idThread == null ? NullValue.instance : new DataObject(idThread);
+                return idThread;
             case "stackTraceJavaProcess":
-                return javaProcess.stackTrace == null ? NullValue.instance : new DataObject(javaProcess.stackTrace);
+                return javaProcess.stackTrace;
             case "nameJavaProcess":
-                return javaProcess.name == null ? NullValue.instance : new DataObject(javaProcess.name);
+                return javaProcess.name;
             case "statusJavaProcess":
-                return javaProcess.status == null ? NullValue.instance : new DataObject(javaProcess.status);
+                return javaProcess.status;
             case "lockNameJavaProcess":
-                return javaProcess.lockName == null ? NullValue.instance : new DataObject(javaProcess.lockName);
+                return javaProcess.lockName;
             case "lockOwnerIdProcess":
-                return javaProcess.lockOwnerId == null ? NullValue.instance : new DataObject(javaProcess.lockOwnerId);
+                return javaProcess.lockOwnerId;
             case "lockOwnerNameProcess":
-                return javaProcess.lockOwnerName == null ? NullValue.instance : new DataObject(javaProcess.lockOwnerName);
+                return javaProcess.lockOwnerName;
             case "nameComputerJavaProcess":
-                return javaProcess.computer == null ? NullValue.instance : new DataObject(javaProcess.computer);
+                return javaProcess.computer;
             case "nameUserJavaProcess":
-                return javaProcess.user == null ? NullValue.instance : new DataObject(javaProcess.user);
+                return javaProcess.user;
             case "lsfStackTraceProcess":
-                return javaProcess.lsfStackTrace == null ? NullValue.instance : new DataObject(javaProcess.lsfStackTrace);
+                return javaProcess.lsfStackTrace;
             case "threadAllocatedBytesProcess":
-                return javaProcess.threadAllocatedBytes == null ? NullValue.instance : new DataObject(javaProcess.threadAllocatedBytes, LongClass.instance);
+                return javaProcess.threadAllocatedBytes;
             case "lastThreadAllocatedBytesProcess":
-                return javaProcess.lastThreadAllocatedBytes == null ? NullValue.instance : new DataObject(javaProcess.lastThreadAllocatedBytes, LongClass.instance);
+                return javaProcess.lastThreadAllocatedBytes;
             default:
-                return NullValue.instance;
+                return null;
         }
     }
 
-    private ObjectValue getSQLMapValue(LP<?> prop, SQLProcess sqlProcess, String idThread) {
+    private Object getSQLMapValue(LP<?> prop, SQLProcess sqlProcess, String idThread) {
         switch (prop.property.getName()) {
             case "idThreadProcess":
-                return idThread == null ? NullValue.instance : new DataObject(idThread);
+                return idThread;
             case "dateTimeCallProcess":
-                return sqlProcess.dateTimeCall == null ? NullValue.instance : new DataObject(sqlProcess.dateTimeCall, DateTimeClass.instance);
+                return sqlProcess.dateTimeCall;
             case "querySQLProcess":
-                return sqlProcess.query == null ? NullValue.instance : new DataObject(sqlProcess.query);
+                return sqlProcess.query;
             case "fullQuerySQLProcess":
-                return sqlProcess.fullQuery == null ? NullValue.instance : new DataObject(sqlProcess.fullQuery);
+                return sqlProcess.fullQuery;
             case "userProcess":
-                return sqlProcess.user == null ? NullValue.instance : new DataObject(sqlProcess.user);
+                return sqlProcess.user;
             case "computerProcess":
-                return sqlProcess.computer == null ? NullValue.instance : new DataObject(sqlProcess.computer);
+                return sqlProcess.computer;
             case "addressUserSQLProcess":
-                return sqlProcess.addressUser == null ? NullValue.instance : new DataObject(sqlProcess.addressUser);
+                return sqlProcess.addressUser;
             case "dateTimeSQLProcess":
-                return sqlProcess.dateTime == null ? NullValue.instance : new DataObject(sqlProcess.dateTime, DateTimeClass.instance);
+                return sqlProcess.dateTime;
             case "isActiveSQLProcess":
-                return DataObject.create(sqlProcess.isActive != null && sqlProcess.isActive);
+                return (sqlProcess.isActive != null && sqlProcess.isActive ? true : null);
             case "inTransactionSQLProcess":
                 if (sqlProcess.baseInTransaction != null && sqlProcess.fusionInTransaction != null && sqlProcess.fusionInTransaction)
                     ServerLoggers.assertLog(sqlProcess.baseInTransaction.equals(true), "FUSION AND BASE INTRANSACTION DIFFERS");
-                return DataObject.create(sqlProcess.baseInTransaction != null ? sqlProcess.baseInTransaction : sqlProcess.fusionInTransaction);
+                return (sqlProcess.baseInTransaction != null ? sqlProcess.baseInTransaction : sqlProcess.fusionInTransaction) ? true : null;
             case "startTransactionSQLProcess":
-                return sqlProcess.startTransaction == null ? NullValue.instance : new DataObject(sqlTimestampToLocalDateTime(new Timestamp(sqlProcess.startTransaction)), DateTimeClass.instance);
+                return sqlProcess.startTransaction != null ? sqlTimestampToLocalDateTime(new Timestamp(sqlProcess.startTransaction)) : null;
             case "attemptCountSQLProcess":
-                return sqlProcess.attemptCount == null ? NullValue.instance : new DataObject(sqlProcess.attemptCount);
+                return sqlProcess.attemptCount;
             case "statusSQLProcess":
-                return sqlProcess.status == null ? NullValue.instance : new DataObject(sqlProcess.status);
+                return sqlProcess.status;
             case "statusMessageSQLProcess":
-                return sqlProcess.statusMessage == null ? NullValue.instance : new DataObject(sqlProcess.statusMessage.getMessage());
+                return sqlProcess.statusMessage != null ? sqlProcess.statusMessage.getMessage() : null;
             case "waitEventTypeSQLProcess":
-                return sqlProcess.waitEventType == null ? NullValue.instance : new DataObject(sqlProcess.waitEventType);
+                return sqlProcess.waitEventType;
             case "waitEventSQLProcess":
-                return sqlProcess.waitEvent == null ? NullValue.instance : new DataObject(sqlProcess.waitEvent);
+                return sqlProcess.waitEvent;
             case "lockOwnerIdProcess":
-                return sqlProcess.lockOwnerId == null ? NullValue.instance : new DataObject(sqlProcess.lockOwnerId);
+                return sqlProcess.lockOwnerId;
             case "lockOwnerNameProcess":
-                return sqlProcess.lockOwnerName == null ? NullValue.instance : new DataObject(sqlProcess.lockOwnerName);
+                return sqlProcess.lockOwnerName;
             case "idSQLProcess":
-                return sqlProcess.sqlId == null ? NullValue.instance : new DataObject(sqlProcess.sqlId);
+                return sqlProcess.sqlId;
             case "isDisabledNestLoopProcess":
-                return DataObject.create(sqlProcess.isDisabledNestLoop != null && sqlProcess.isDisabledNestLoop);
+                return sqlProcess.isDisabledNestLoop != null && sqlProcess.isDisabledNestLoop ? true : null;
             case "queryTimeoutProcess":
-                return sqlProcess.queryTimeout == null ? NullValue.instance : new DataObject(sqlProcess.queryTimeout);
+                return sqlProcess.queryTimeout;
             case "debugInfoSQLProcess":
-                return sqlProcess.debugInfo == null ? NullValue.instance : new DataObject(sqlProcess.debugInfo);
+                return sqlProcess.debugInfo;
             case "threadNameSQLProcess":
-                return sqlProcess.threadName == null ? NullValue.instance : new DataObject(sqlProcess.threadName);
+                return sqlProcess.threadName;
             case "threadStackTraceSQLProcess":
-                return sqlProcess.threadStackTrace == null ? NullValue.instance : new DataObject(sqlProcess.threadStackTrace);
+                return sqlProcess.threadStackTrace;
             default:
-                return NullValue.instance;
+                return null;
         }
     }
 

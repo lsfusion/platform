@@ -260,11 +260,11 @@ public abstract class CallHTTPAction extends CallAction {
         writePropertyValues(context.getSession(), context.getEnv(), property, names, values);
     }
     public static <P extends PropertyInterface> void writePropertyValues(DataSession session, ExecutionEnvironment env, LP<P> property, String[] names, String[] values) throws SQLException, SQLHandledException {
-        property.change(session, env, MapFact.toMap(names, values), StringClass.instance, StringClass.instance);
+        property.change(session, env, MapFact.toMap(names, values));
     }
 
-    public static <P extends PropertyInterface> void writePropertyValues(DataSession session, ExecutionEnvironment env, LP<P> property, Map<String, List<String>> params) throws SQLException, SQLHandledException {
-        property.change(session, env, params);
+    public static <P extends PropertyInterface> void writePropertyValues(DataSession session, ExecutionEnvironment env, LP<P> property, ImMap<ImList<Object>, String> params) throws SQLException, SQLHandledException {
+        property.changeList(session, env, params);
     }
 
     protected Integer getDefaultTimeout() {

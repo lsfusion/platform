@@ -516,6 +516,24 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
         return mvResult.immutableValue();
     }
 
+    @Override
+    public <MK, MV, E1 extends Exception, E2 extends Exception> ImMap<MK, MV> mapKeyValuesEx(ThrowingFunction<K, MK, E1, E2> getterKey, ThrowingFunction<V, MV, E1, E2> getterValue) throws E1, E2 {
+        MExclMap<MK, MV> mResult = MapFact.mExclMap(size());
+        for(int i=0,size=size();i<size;i++)
+            mResult.exclAdd(getterKey.apply(getKey(i)), getterValue.apply(getValue(i)));
+        return mResult.immutable();
+    }
+
+    @Override
+    public <MK, MV, E1 extends Exception, E2 extends Exception> ImMap<MK, MV> mapKeyValuesEx(ThrowingFunction<K, MK, E1, E2> getterKey, ThrowingBiFunction<K, V, MV, E1, E2> getterValue) throws E1, E2 {
+        MExclMap<MK, MV> mResult = MapFact.mExclMap(size());
+        for(int i=0,size=size();i<size;i++) {
+            K key = getKey(i);
+            mResult.exclAdd(getterKey.apply(key), getterValue.apply(key, getValue(i)));
+        }
+        return mResult.immutable();
+    }
+
     public <M, E1 extends Exception, E2 extends Exception> ImMap<K, M> mapKeyValuesEx(ThrowingFunction<K, M, E1, E2> getter) throws E1, E2{
         ImValueMap<K, M> mvResult = mapItValues();
         for(int i=0,size=size();i<size;i++)

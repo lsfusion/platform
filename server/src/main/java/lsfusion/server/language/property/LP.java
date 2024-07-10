@@ -228,12 +228,12 @@ public class LP<T extends PropertyInterface> extends LAP<T, Property<T>> {
         property.change(keys, env, value);
     }
 
-    public <K, V> void change(ExecutionContext context, ImMap<K, V> data, ConcreteClass keyClass, ConcreteClass valueClass) throws SQLException, SQLHandledException {
-        change(context.getSession(), context.getEnv(), data, keyClass, valueClass);
+    public <K, V> void change(ExecutionContext context, ImMap<K, V> data) throws SQLException, SQLHandledException {
+        change(context.getSession(), context.getEnv(), data);
     }
 
     public interface GetLPValue<K, V> {
-        ObjectValue get(K key, V value, LP lp);
+        Object get(K key, V value, LP lp);
     }
 
     public static <K, V> void change(ExecutionContext context, final ImOrderSet<LP> props, ImMap<K, V> data, ConcreteClass keyClass, GetLPValue<K, V> mapper) throws SQLException, SQLHandledException {
@@ -241,13 +241,16 @@ public class LP<T extends PropertyInterface> extends LAP<T, Property<T>> {
     }
 
     // actually it is an "optimization" of the change for a set of properties
-    public <K, V> void change(DataSession session, ExecutionEnvironment env, ImMap<K, V> data, ConcreteClass keyClass, ConcreteClass valueClass) throws SQLException, SQLHandledException {
+    public <K, V> void change(DataSession session, ExecutionEnvironment env, ImMap<K, V> data) throws SQLException, SQLHandledException {
 
         T propertyKey = listInterfaces.single();
+        ValueClass propertyKeyClass = property.getInterfaceClasses(ClassType.editValuePolicy).get(propertyKey);
+        ValueClass propertyValueClass = property.getValueClass(ClassType.editValuePolicy);
 
-        SingleKeyPropertyUsage table = new SingleKeyPropertyUsage("updpm:sp", property.interfaceTypeGetter.getType(propertyKey), property.getType());
+        SingleKeyPropertyUsage table = new SingleKeyPropertyUsage("updpm:sp", propertyKeyClass.getType(), propertyValueClass.getType());
 
-        table.writeRows(session.sql, session.getOwner(), data.mapKeyValues(key -> new DataObject(key, keyClass), (key, value) -> ObjectValue.getValue(value, valueClass)));
+        table.writeRows(session.sql, session.getOwner(), data.<DataObject, ObjectValue, SQLException, SQLHandledException>mapKeyValuesEx(
+                key -> session.getDataObject(propertyKeyClass, key), value -> session.getObjectValue(propertyValueClass, value)));
 
         try {
             env.change(property, SingleKeyPropertyUsage.getChange(table, propertyKey));
@@ -256,23 +259,16 @@ public class LP<T extends PropertyInterface> extends LAP<T, Property<T>> {
         }
     }
 
-    public void change(DataSession session, ExecutionEnvironment env, Map<String, List<String>> params) throws SQLException, SQLHandledException {
+    public <V> void changeList(DataSession session, ExecutionEnvironment env, ImMap<ImList<Object>, V> params) throws SQLException, SQLHandledException {
 
-        SinglePropertyTableUsage<T> table = new SinglePropertyTableUsage<>("updpm:sp", property.getFriendlyOrderInterfaces(), key -> property.getInterfaceType(key), property.getType());
-        Map<ImMap<T, DataObject>, ObjectValue> result = new HashMap<>();
+        ImMap<T, ValueClass> keyClasses = property.getInterfaceClasses(ClassType.editValuePolicy);
+        ValueClass propertyValueClass = property.getValueClass(ClassType.editValuePolicy);
 
-        for (Map.Entry<String, List<String>> entry : params.entrySet()) {
-            List<String> value = entry.getValue();
-            for (int i = 0; i < value.size(); i++) {
-                Map<T, DataObject> keyMap = new HashMap<>();
-                keyMap.put(property.getFriendlyOrderInterfaces().get(0), new DataObject(entry.getKey(), StringClass.instance));
-                keyMap.put(property.getFriendlyOrderInterfaces().get(1), new DataObject(i, IntegerClass.instance));
+        SinglePropertyTableUsage<T> table = new SinglePropertyTableUsage<>("updpm:sp", listInterfaces, key -> keyClasses.get(key).getType(), propertyValueClass.getType());
 
-                result.put(MapFact.fromJavaMap(keyMap), ObjectValue.getValue(value.get(i), StringClass.instance));
-            }
-        }
-        table.writeRows(MapFact.fromJavaMap(result), session.sql, session.getOwner());
-
+        table.writeRows(params.<ImMap<T, DataObject>, ObjectValue, SQLException, SQLHandledException>mapKeyValuesEx(
+                keys -> listInterfaces.<DataObject, SQLException, SQLHandledException>mapOrderValuesEx((index, key) -> session.getDataObject(keyClasses.get(key), keys.get(index))),
+                value -> session.getObjectValue(propertyValueClass, value)), session.sql, session.getOwner());
         try {
             env.change(property, SinglePropertyTableUsage.getChange(table));
         } finally {
@@ -282,9 +278,13 @@ public class LP<T extends PropertyInterface> extends LAP<T, Property<T>> {
 
     public static <K, V> void change(DataSession session, ExecutionEnvironment env, final ImOrderSet<LP> props, ImMap<K, V> data, ConcreteClass keyClass, GetLPValue<K, V> mapper) throws SQLException, SQLHandledException {
 
-        SingleKeyTableUsage<LP> importTable = new SingleKeyTableUsage<>("updpm:wr", keyClass.getType(), props, key -> ((LP<?>)key).property.getType());
+        ValueClass propertyKeyClass = props.get(0).getInterfaceClasses(ClassType.editValuePolicy)[0];
+        ImOrderMap<LP, ValueClass> propertyValueClasses = props.mapOrderValues((LP lp) -> ((LP<?>) lp).property.getValueClass(ClassType.editValuePolicy));
 
-        importTable.writeRows(session.sql, data.mapKeyValues(key -> MapFact.singleton("key", new DataObject(key, keyClass)), (key, value) -> props.getSet().mapValues((LP lp) -> mapper.get(key, value, lp))), session.getOwner());
+        SingleKeyTableUsage<LP> importTable = new SingleKeyTableUsage<>("updpm:wr", keyClass.getType(), props, key -> propertyValueClasses.get(key).getType());
+
+        importTable.writeRows(session.sql, data.<ImMap<String, DataObject>, ImMap<LP, ObjectValue>, SQLException, SQLHandledException>mapKeyValuesEx(
+                key -> MapFact.singleton("key", session.getDataObject(propertyKeyClass, key)), (key, value) -> props.getSet().<ObjectValue, SQLException, SQLHandledException>mapValuesEx((LP lp) -> session.getObjectValue(propertyValueClasses.get(lp), mapper.get(key, value, lp)))), session.getOwner());
 
         ImRevMap<String, KeyExpr> mapKeys = importTable.getMapKeys();
         Join<LP> importJoin = importTable.join(mapKeys);

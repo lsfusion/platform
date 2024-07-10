@@ -162,7 +162,7 @@ public class AppServerImage {
         try(DataSession session = dbManager.createSession()) {
             ExecutionEnvironment env = session;
 
-            iconLM.bestIconNames.change(session, env, cacheKeys.mapValues(() -> true), StringClass.instance, LogicalClass.instance);
+            iconLM.bestIconNames.change(session, env, cacheKeys.mapValues(() -> true));
 
             iconLM.getBestIcons.execute(env, ThreadLocalContext.getStack());
 

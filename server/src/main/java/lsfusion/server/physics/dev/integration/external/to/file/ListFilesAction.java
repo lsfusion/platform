@@ -65,10 +65,10 @@ public class ListFilesAction extends InternalAction {
                 context.getSession().dropChanges((DataProperty) findProperty("fileModifiedDateTime[INTEGER]").property);
                 context.getSession().dropChanges((DataProperty) findProperty("fileSize[INTEGER]").property);
 
-                writeProperty(context, findProperty("fileName[INTEGER]"), (String[]) filesList.get(0), StringClass.text);
-                writeProperty(context, findProperty("fileIsDirectory[INTEGER]"), (Boolean[]) filesList.get(1), LogicalClass.instance);
-                writeProperty(context, findProperty("fileModifiedDateTime[INTEGER]"), (LocalDateTime[]) filesList.get(2), DateTimeClass.instance);
-                writeProperty(context, findProperty("fileSize[INTEGER]"), (Long[]) filesList.get(3), LongClass.instance);
+                writeProperty(context, findProperty("fileName[INTEGER]"), (String[]) filesList.get(0));
+                writeProperty(context, findProperty("fileIsDirectory[INTEGER]"), (Boolean[]) filesList.get(1));
+                writeProperty(context, findProperty("fileModifiedDateTime[INTEGER]"), (LocalDateTime[]) filesList.get(2));
+                writeProperty(context, findProperty("fileSize[INTEGER]"), (Long[]) filesList.get(3));
 
             } else {
                 throw new RuntimeException("ListFiles Error. Path not specified.");
@@ -80,8 +80,8 @@ public class ListFilesAction extends InternalAction {
 
     }
 
-    public static <P extends PropertyInterface> void writeProperty(ExecutionContext context, LP<P> property, Object[] values, ConcreteClass valueClass) throws SQLException, SQLHandledException {
-        property.change(context, MapFact.toIndexedMap(values), IntegerClass.instance, valueClass);
+    public static <P extends PropertyInterface> void writeProperty(ExecutionContext context, LP<P> property, Object[] values) throws SQLException, SQLHandledException {
+        property.change(context, MapFact.toIndexedMap(values));
     }
 
     @Override
