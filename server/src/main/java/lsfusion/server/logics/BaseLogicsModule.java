@@ -553,7 +553,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         headersTo = findProperty("headersTo[TEXT]");
         cookiesTo = findProperty("cookiesTo[TEXT]");
         query = findProperty("query[]");
-        params = findProperty("params[TEXT]");
+        params = findProperty("params[TEXT, INTEGER]");
         contentType = findProperty("contentType[]");
         body = findProperty("body[]");
         appHost = findProperty("appHost[]");

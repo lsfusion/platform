@@ -45,7 +45,7 @@ public class ReadPropertiesAction extends InternalAction {
 
             context.getSession().dropChanges((DataProperty) property.property);
 
-            property.change(context, MapFact.fromJavaMap(properties), StringClass.instance, StringClass.instance);
+            property.change(context, MapFact.fromJavaMap(properties));
 
         } catch (ScriptingErrorLog.SemanticErrorException | IOException e) {
             throw Throwables.propagate(e);

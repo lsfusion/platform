@@ -3,7 +3,11 @@ package lsfusion.server.physics.admin.authentication.controller.remote;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
+import lsfusion.base.col.ListFact;
+import lsfusion.base.col.MapFact;
+import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
+import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.connection.AuthenticationToken;
@@ -51,11 +55,7 @@ import java.lang.ref.WeakReference;
 import java.nio.charset.Charset;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.TimeZone;
+import java.util.*;
 import java.util.concurrent.Callable;
 
 import static lsfusion.base.BaseUtils.getNotNullStringArray;
@@ -476,16 +476,23 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
             businessLogics.LM.query.change(request.query, session);
         }
         if (request.query != null && action.uses(businessLogics.LM.params.property)) {
-            List<String> paramNames = new ArrayList<>();
-            List<String> paramValues = new ArrayList<>();
+            MExclMap<ImList<Object>, String> mParams = MapFact.mExclMap();
+            Map<String, Integer> paramIndexes = new HashMap<>();
             for (String param : request.query.split("[&?]")) {
                 String[] splittedParam = param.split("=");
                 if (splittedParam.length == 2) {
-                    paramNames.add(splittedParam[0]);
-                    paramValues.add(splittedParam[1]);
+                    String paramName = splittedParam[0];
+                    String paramValue = splittedParam[1];
+
+                    Integer paramIndex = paramIndexes.get(paramName);
+                    if(paramIndex == null)
+                        paramIndex = 0;
+                    paramIndexes.put(paramName, paramIndex + 1);
+
+                    mParams.exclAdd(ListFact.toList(paramName, (Object) paramIndex), paramValue);
                 }
             }
-            CallHTTPAction.writePropertyValues(session, env, businessLogics.LM.params, paramNames.toArray(new String[0]), paramValues.toArray(new String[0]));
+            CallHTTPAction.writePropertyValues(session, env, businessLogics.LM.params, mParams.immutable());
         }
         if (action.uses(businessLogics.LM.contentType.property)) {
             businessLogics.LM.contentType.change(request.contentType, session);
