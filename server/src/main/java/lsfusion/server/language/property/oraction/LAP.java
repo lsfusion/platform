@@ -7,9 +7,11 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
+import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -160,6 +162,14 @@ public abstract class LAP<T extends PropertyInterface, P extends ActionOrPropert
     @Override
     public String toString() {
         return getActionOrProperty().toString();
+    }
+
+    public ValueClass[] getInterfaceClasses(ClassType classType) {
+        return getActionOrProperty().getInterfaceClasses(listInterfaces, classType);
+    }
+
+    public String[] getInterfaceNames() {
+        return getActionOrProperty().getInterfaceNames(listInterfaces);
     }
 
     public abstract P getActionOrProperty();

@@ -29,6 +29,7 @@ import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.classes.data.StringClass;
+import lsfusion.server.logics.classes.data.file.CustomStaticFormatFileClass;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -41,6 +42,7 @@ import org.apache.hc.client5.http.cookie.Cookie;
 import org.apache.hc.client5.http.cookie.CookieStore;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.NameValuePair;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -224,20 +226,36 @@ public abstract class CallHTTPAction extends CallAction {
         return connectionString.isEmpty() || connectionString.startsWith("/");
     }
 
-    public static ObjectValue[] getParams(DataSession session, LAP property, Object[] params, Charset charset) throws ParseException, SQLException, SQLHandledException {
-        ImOrderSet<PropertyInterface> interfaces = (ImOrderSet<PropertyInterface>) property.listInterfaces;
-        ImMap<PropertyInterface, ValueClass> interfaceClasses = property.getActionOrProperty().getInterfaceClasses(ClassType.parsePolicy);
-        ObjectValue[] objectValues = new ObjectValue[interfaces.size()];
-        for (int i = 0; i < interfaces.size(); i++) {
-            ValueClass valueClass = interfaceClasses.get(interfaces.get(i));
+    public static ObjectValue[] getParams(DataSession session, LAP<?, ?> property, Object[] params, List<NameValuePair> queryParams, Charset charset) throws ParseException, SQLException, SQLHandledException {
+        ValueClass[] classes = property.getInterfaceClasses(ClassType.parsePolicy);
+        String[] names = property.getInterfaceNames();
+        ObjectValue[] values = new ObjectValue[classes.length];
+
+        int interfacesSize = classes.length;
+        int prmUsed = 0;
+        for (int i = 0; i < interfacesSize; i++) {
+            ValueClass valueClass = classes[i];
+            String paramName = names[i];
+
+            Object param = null;
+            // if there are not enough parameters - looking for some in the query
+            if(queryParams != null && paramName != null && interfacesSize - i > params.length - prmUsed)
+                param = ExternalUtils.getParameterValue(queryParams, paramName);
+
+            // if we have not found one - using the next in the list
+            if(param == null && prmUsed < params.length)
+                param = params[prmUsed++];
 
             Object value = null;
-            if (i < params.length && valueClass != null) // all incorrect params will consider to be nulls
-                value = valueClass.getType().parseHTTP(params[i], charset);
+            if (param != null) // all incorrect params will consider to be nulls
+                value = (valueClass != null ? valueClass.getType().parseHTTP(param, charset) : param);
 
-            objectValues[i] = value == null ? NullValue.instance : session.getObjectValue(valueClass, value);
+            if(valueClass == null && value != null)
+                valueClass = param instanceof String ? StringClass.instance : CustomStaticFormatFileClass.get();
+
+            values[i] = value == null ? NullValue.instance : session.getObjectValue(valueClass, value);
         }
-        return objectValues;
+        return values;
     }
 
     public static void fillResults(ExecutionContext context, ImList<LP> targetPropList, ImList<Object> results, Charset charset) throws ParseException, SQLException, SQLHandledException {

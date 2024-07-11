@@ -428,7 +428,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     private void executeExternal(LA<?> property, ExternalRequest request, ExecutionEnvironment env, ExecutionStack stack) throws SQLException, SQLHandledException, ParseException {
         writeRequestInfo(env, property.action, request);
 
-        property.execute(env, stack, CallHTTPAction.getParams(env.getSession(), property, request.params, Charset.forName(request.charsetName)));
+        property.execute(env, stack, CallHTTPAction.getParams(env.getSession(), property, request.params, request.queryParams, Charset.forName(request.charsetName)));
     }
 
     protected AuthenticationException authException;
@@ -475,22 +475,19 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         if (action.uses(businessLogics.LM.query.property)) {
             businessLogics.LM.query.change(request.query, session);
         }
-        if (request.query != null && action.uses(businessLogics.LM.params.property)) {
+        if (request.queryParams != null && action.uses(businessLogics.LM.params.property)) {
             MExclMap<ImList<Object>, String> mParams = MapFact.mExclMap();
             Map<String, Integer> paramIndexes = new HashMap<>();
-            for (String param : request.query.split("[&?]")) {
-                String[] splittedParam = param.split("=");
-                if (splittedParam.length == 2) {
-                    String paramName = splittedParam[0];
-                    String paramValue = splittedParam[1];
+            for (NameValuePair param : request.queryParams) {
+                String paramName = param.getName();
+                String paramValue = param.getValue();
 
-                    Integer paramIndex = paramIndexes.get(paramName);
-                    if(paramIndex == null)
-                        paramIndex = 0;
-                    paramIndexes.put(paramName, paramIndex + 1);
+                Integer paramIndex = paramIndexes.get(paramName);
+                if(paramIndex == null)
+                    paramIndex = 0;
+                paramIndexes.put(paramName, paramIndex + 1);
 
-                    mParams.exclAdd(ListFact.toList(paramName, (Object) paramIndex), paramValue);
-                }
+                mParams.exclAdd(ListFact.toList(paramName, (Object) paramIndex), paramValue);
             }
             CallHTTPAction.writePropertyValues(session, env, businessLogics.LM.params, mParams.immutable());
         }
@@ -594,9 +591,8 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
             successfulResponse = successfulResponse(execResult.getStatusHttp());
 
             if (requestLogMessage != null && Settings.get().isLogFromExternalSystemRequestsDetail()) {
-                Charset charset = ExternalUtils.getCharsetFromContentType(request.contentType == null ? null : ContentType.parse(request.contentType));
-                List<NameValuePair> queryParams = URLEncodedUtils.parse(request.query, charset);
-                ExternalUtils.ExternalResponse externalResponse = ExternalUtils.getExternalResponse(execResult, queryParams, null);
+                List<NameValuePair> queryParams = request.queryParams;
+                ExternalUtils.ExternalResponse externalResponse = ExternalUtils.getExternalResponse(execResult, queryParams != null ? queryParams : Collections.emptyList(), null);
 
                 if(externalResponse instanceof ExternalUtils.ResultExternalResponse) {
                     ExternalUtils.ResultExternalResponse result = (ExternalUtils.ResultExternalResponse) externalResponse;

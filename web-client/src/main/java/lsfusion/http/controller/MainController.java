@@ -45,7 +45,6 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
@@ -405,7 +404,7 @@ public class MainController {
     public static ExternalRequest getExternalRequest(Object[] params, HttpServletRequest request){
         String contentTypeString = request.getContentType();
         Charset charset = getCharsetFromContentType(contentTypeString != null ? ContentType.parse(contentTypeString) : null);
-        return new ExternalRequest(new String[0], params, charset.toString(), new String[0], new String[0], null,
+        return new ExternalRequest(new String[0], params, null, charset.toString(), new String[0], new String[0], null,
                 null, null, null, null, request.getScheme(), request.getMethod(), request.getServerName(), request.getServerPort(), request.getContextPath(),
                 request.getServletPath(), request.getPathInfo() == null ? "" : request.getPathInfo(), request.getQueryString() != null ? request.getQueryString() : "",
                 contentTypeString, request.getSession().getId(), null, null, false);

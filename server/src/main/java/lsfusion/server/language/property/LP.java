@@ -392,10 +392,6 @@ public class LP<T extends PropertyInterface> extends LAP<T, Property<T>> {
         property.autoset = autoset;
     }
 
-    public ValueClass[] getInterfaceClasses(ClassType classType) {
-        return property.getInterfaceClasses(listInterfaces, classType);
-    }
-
     public LP<T> getOld(PrevScope scope) {
         return new LP<>(property.getOld(scope), listInterfaces);
     }

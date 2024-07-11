@@ -127,7 +127,7 @@ public class ExternalUtils {
         boolean needNotificationId = getHeaderValue(headerNames, headerValues, NEED_NOTIFICATION_ID_HEADER) != null;
 
         ExternalRequest request = new ExternalRequest(returns.toArray(new String[0]), paramsList.toArray(new Object[paramsList.size()]),
-                charset == null ? null : charset.toString(), headerNames, headerValues, cookieNames,
+                queryParams, charset == null ? null : charset.toString(), headerNames, headerValues, cookieNames,
                 cookieValues, logicsHost, logicsPort, logicsExportName, scheme, method, webHost, webPort, contextPath,
                 servletPath, pathInfo, query, requestContentType != null ? requestContentType.toString() : null, sessionId, body, signature, needNotificationId);
 
@@ -259,8 +259,6 @@ public class ExternalUtils {
             charset = StandardCharsets.ISO_8859_1; // HTTP spec, хотя тут может быть нюанс что по спецификации некоторых content-type'ов (например application/json) может быть другая default кодировка
         return charset;
     }
-
-    // returns String or FileData
 
     // returns FileData for FILE or String for other classes, contentType can be null if there are no parameters
     public static ImList<Object> getListFromInputStream(byte[] bytes, ContentType contentType) throws IOException, MessagingException {

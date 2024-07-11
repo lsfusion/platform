@@ -1184,6 +1184,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         checks.checkDistinctParameters(paramNames);
         checks.checkNamedParams(property, paramNames);
         checks.checkParamsClasses(params, signature);
+        property.getActionOrProperty().paramNames = paramNames.isEmpty() ? MapFact.EMPTYREV() : property.listInterfaces.mapOrderRevValues(paramNames::get);
 
         String groupName = ps.groupName;
         Group group = (groupName == null ? null : findGroup(groupName));
