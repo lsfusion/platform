@@ -1092,13 +1092,21 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     @StackMessage("{message.global.event.exec}")
     @ThisMessage (profile = false)
     private boolean executeGlobalActionEvent(ExecutionStack stack, BusinessLogics BL, @ParamMessage ApplyGlobalActionEvent event) throws SQLException, SQLHandledException {
-        if(!noEventsInTransaction) {
+        if(!isNoEventsInTransaction()) {
             startPendingSingles(event.action);
 
             startShowRec(event.action);
 
-            event.action.execute(this, stack);
-
+            try {
+                event.action.execute(this, stack);
+            } catch (SQLException | SQLHandledException t) {
+                throw t;
+            } catch (Throwable t) {
+                if(!isNoCancelInTransaction())
+                    throw Throwables.propagate(t);
+                else
+                    ServerLoggers.systemLogger.info("EXCEPTION SUPPRESSED");
+            }
             if(!isInTransaction())
                 return false;
 
@@ -2604,7 +2612,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
 
         if(isInTransaction()) {
-            if(noCancelInTransaction) {
+            if(isNoCancelInTransaction()) {
                 ServerLoggers.systemLogger.info("CANCEL SUPPRESSED");
                 return false;
             }
