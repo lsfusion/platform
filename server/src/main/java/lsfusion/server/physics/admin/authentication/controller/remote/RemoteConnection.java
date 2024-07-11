@@ -489,7 +489,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
                         paramIndex = 0;
                     paramIndexes.put(paramName, paramIndex + 1);
 
-                    mParams.exclAdd(ListFact.toList(paramName, paramIndex), paramValue);
+                    mParams.exclAdd(ListFact.toList(paramName, (Object) paramIndex), paramValue);
                 }
             }
             CallHTTPAction.writePropertyValues(session, env, businessLogics.LM.params, mParams.immutable());
