@@ -227,9 +227,9 @@ function setReadonlyClass(element, readonly) {
 
 function setReadonlyHeur(element, readonly) {
     if(readonly)
-        element.setAttribute('onclick', 'return false');
+        element.setAttribute('onmousedown', 'event.preventDefault()');
     else
-        element.removeAttribute('onclick')
+        element.removeAttribute('onmousedown')
 }
 
 function setDisabledNative(element, disabled) {
