@@ -2517,6 +2517,8 @@ public class GFormController implements EditManager {
         // if pass null as a value, it will be undefined in browser
         if (color != null)
             element.style.setProperty("--foreground-color", color);
+        else
+            element.style.removeProperty("--foreground-color");
     }-*/;
 
     public static void setFont(Element element, GFont font) {
