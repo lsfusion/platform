@@ -45,9 +45,7 @@ import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.integration.external.to.CallHTTPAction;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import org.apache.commons.lang.StringUtils;
-import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.NameValuePair;
-import org.apache.hc.core5.net.URLEncodedUtils;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletResponse;
@@ -318,19 +316,19 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
                 if(actionName != null) {
                     LA action;
                     String findActionName = actionName;
+                    String actionPathInfo = "";
                     while(true) { // we're doing greedy search for all subpathes to find appropriate "endpoint" action
-                        int lastSlash = findActionName.lastIndexOf('/'); // if it is url
-                        String checkActionName = findActionName;
-                        if(lastSlash >= 0) // optimization
-                            checkActionName = checkActionName.replace('/', '_');
-
-                        if((action = businessLogics.findActionByCompoundName(checkActionName)) != null || lastSlash < 0)
+                        if ((action = businessLogics.findActionByCompoundName(findActionName.replace('/', '_'))) != null)
                             break;
 
+                        int lastSlash = findActionName.lastIndexOf('/'); // if it is url
+                        if (lastSlash < 0)
+                            break;
                         findActionName = findActionName.substring(0, lastSlash);
+                        actionPathInfo = actionName.substring(lastSlash + 1);
                     }
                     if (action != null) {
-                        return executeExternal(action, actionName, false, request);
+                        return executeExternal(action, actionName, actionPathInfo, false, request);
                     } else {
                         throw new RuntimeException(String.format("Action %s was not found", actionName));
                     }
@@ -348,7 +346,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
             if (script != null) {
                 LA<?> runAction = businessLogics.evaluateRun(script, action);
                 if(runAction != null) {
-                    return executeExternal(runAction, paramScript, true, request);
+                    return executeExternal(runAction, paramScript, null, true, request);
                 } else {
                     throw new RuntimeException("Action with name 'run' was not found");
                 }
@@ -366,14 +364,14 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         }
     }
 
-    private ExternalResponse executeExternal(LA<?> property, Object actionParam, boolean script, ExternalRequest request) {
+    private ExternalResponse executeExternal(LA<?> property, Object actionParam, String actionPathInfo, boolean script, ExternalRequest request) {
         checkEnableApi(property, actionParam, script, request);
 
         RemoteNavigator.Notification runnable = new RemoteNavigator.Notification() {
             @Override
             public void run(ExecutionEnvironment env, ExecutionStack stack, PushAsyncResult asyncResult) {
                 try {
-                    RemoteConnection.this.executeExternal(property, request, env, stack);
+                    RemoteConnection.this.executeExternal(property, request, actionPathInfo, env, stack);
                 } catch (Throwable t) {
                     throw Throwables.propagate(t);
                 }
@@ -425,8 +423,8 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         }
     }
 
-    private void executeExternal(LA<?> property, ExternalRequest request, ExecutionEnvironment env, ExecutionStack stack) throws SQLException, SQLHandledException, ParseException {
-        writeRequestInfo(env, property.action, request);
+    private void executeExternal(LA<?> property, ExternalRequest request, String actionPathInfo, ExecutionEnvironment env, ExecutionStack stack) throws SQLException, SQLHandledException, ParseException {
+        writeRequestInfo(env, property.action, request, actionPathInfo);
 
         property.execute(env, stack, CallHTTPAction.getParams(env.getSession(), property, request.params, request.queryParams, Charset.forName(request.charsetName)));
     }
@@ -464,7 +462,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
             throw new AuthenticationException();
     }
 
-    public void writeRequestInfo(ExecutionEnvironment env, Action<?> action, ExternalRequest request) throws SQLException, SQLHandledException {
+    public void writeRequestInfo(ExecutionEnvironment env, Action<?> action, ExternalRequest request, String actionPathInfo) throws SQLException, SQLHandledException {
         DataSession session = env.getSession();
         if (action.uses(businessLogics.LM.headers.property)) {
             CallHTTPAction.writePropertyValues(session, env, businessLogics.LM.headers, getNotNullStringArray(request.headerNames), getNotNullStringArray(request.headerValues));
@@ -490,6 +488,9 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
                 mParams.exclAdd(ListFact.toList(paramName, (Object) paramIndex), paramValue);
             }
             CallHTTPAction.writePropertyValues(session, env, businessLogics.LM.params, mParams.immutable());
+        }
+        if (action.uses(businessLogics.LM.actionPathInfo.property)) {
+            businessLogics.LM.actionPathInfo.change(actionPathInfo, session);
         }
         if (action.uses(businessLogics.LM.contentType.property)) {
             businessLogics.LM.contentType.change(request.contentType, session);

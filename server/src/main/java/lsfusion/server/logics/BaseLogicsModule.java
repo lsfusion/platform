@@ -177,6 +177,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LP<?> cookiesTo;
     public LP<?> query;
     public LP<?> params;
+    public LP<?> actionPathInfo;
     public LP<?> contentType;
     public LP<?> body;
     public LP<?> appHost;
@@ -553,6 +554,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         headersTo = findProperty("headersTo[TEXT]");
         cookiesTo = findProperty("cookiesTo[TEXT]");
         query = findProperty("query[]");
+        actionPathInfo = findProperty("actionPathInfo[]");
         params = findProperty("params[TEXT, INTEGER]");
         contentType = findProperty("contentType[]");
         body = findProperty("body[]");
