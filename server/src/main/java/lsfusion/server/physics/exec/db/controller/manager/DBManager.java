@@ -1510,13 +1510,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
             if (!isFirstStart)
                 alterDBStructure(sql, oldDBStructure, newDBStructure);
 
-            if (isDenyDropTables()) {
-                String droppedTables = getDroppedTablesString(sql, oldDBStructure, newDBStructure);
-                if (!droppedTables.isEmpty()) {
-                    throw new RuntimeException("Dropping tables: " + droppedTables + "\nNow, dropping tables is restricted by settings. If you are sure you want to drop these tables, you can set 'db.denyDropTables = false'\nin settings.properties or through other methods. For more information, please visit: https://docs.lsfusion.org/next/Launch_parameters/#applsfusion");
-                }
-            }
-
             // CREATE / CHANGE TYPES tables (keys)
 
             createTables(sql, oldDBStructure, newDBStructure);
@@ -1546,6 +1539,14 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 return null;
             });
             ImplementTable.updatedStats = true;
+
+            // since dropping tables uses queries we need to do it after updating stats
+            if (isDenyDropTables()) {
+                String droppedTables = getDroppedTablesString(sql, oldDBStructure, newDBStructure);
+                if (!droppedTables.isEmpty()) {
+                    throw new RuntimeException("Dropping tables: " + droppedTables + "\nNow, dropping tables is restricted by settings. If you are sure you want to drop these tables, you can set 'db.denyDropTables = false'\nin settings.properties or through other methods. For more information, please visit: https://docs.lsfusion.org/next/Launch_parameters/#applsfusion");
+                }
+            }
 
             // MOVE properties / objects (both uses query, should be before table drop)
 
