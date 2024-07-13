@@ -72,6 +72,8 @@ public abstract class InputBasedCellEditor extends RequestReplaceValueCellEditor
                 FocusUtils.focus(inputElement, FocusUtils.Reason.NOTFOCUSABLE);
         }
 
+        CellRenderer.setIsEditing(parent, inputElement, true);
+
         if(!needReplace) {
             parent.addClassName("property-hide-toolbar");
 
@@ -86,6 +88,8 @@ public abstract class InputBasedCellEditor extends RequestReplaceValueCellEditor
 
             setInputValue(parent, oldValue);
         }
+
+        CellRenderer.setIsEditing(parent, inputElement, false);
 
         inputElement = null;
         inputElementType = null;

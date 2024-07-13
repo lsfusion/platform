@@ -2281,7 +2281,6 @@ public class GFormController implements EditManager {
         Element element = getEditElement();
         FocusUtils.startFocusTransaction(element);
 
-        element.addClassName("is-editing");
         editContext.startEditing();
 
         boolean notFocusable = !editContext.isFocusable();
@@ -2373,7 +2372,6 @@ public class GFormController implements EditManager {
         //getAsyncValues need editContext, so it must be after clearRenderer
         this.editContext = null;
 
-        renderElement.removeClassName("is-editing");
         editContext.stopEditing();
 
         if(isReplace)

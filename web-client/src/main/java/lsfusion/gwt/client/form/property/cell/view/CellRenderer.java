@@ -78,6 +78,20 @@ public abstract class CellRenderer {
         parent.setPropertyObject(readonlyFncProp, null);
     }
 
+
+    public static void removeAllPMB(Element parent, Element element) {
+        element.addClassName("remove-all-pmb");
+    }
+    public static void setIsEditing(Element parent, Element element, boolean set) {
+        if(set)
+            element.addClassName("is-editing");
+        else
+            element.removeClassName("is-editing");
+    }
+    public static boolean isEditing(Element parent, Element element) {
+        return element.hasClassName("is-editing");
+    }
+
     protected boolean isTagInput() {
         return property.isTagInput();
     }
