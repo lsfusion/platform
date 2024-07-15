@@ -200,7 +200,7 @@ public class SwingUtils {
     public static Object getMessageTextPane(Object message) {
         JTextPane textPane = new JTextPane();
         textPane.setContentType("text/html");
-        textPane.setText(String.valueOf(message)); //message can be null
+        textPane.setText(toHtml(message)); //message can be null
         textPane.setEditable(false);
         JRootPane rootPane = MainFrame.instance.getRootPane();
         if (rootPane != null) {
@@ -293,6 +293,10 @@ public class SwingUtils {
         bounds.height -= (insets.top + insets.bottom);
 
         return new Dimension(bounds.width, bounds.height);
+    }
+
+    public static String toHtml(Object value) {
+        return String.valueOf(value).replace("\n", "<br>");
     }
 
     public static String toMultilineHtml(String text, Font font) {

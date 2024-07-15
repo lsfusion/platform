@@ -17,7 +17,7 @@ public class EscapeUtils {
         if (plainString == null) {
             return "";
         }
-        return HtmlSanitizerUtil.sanitizeHtml(plainString).asString().replaceAll("(\r\n|\n\r|\r|\n)", "<br />");
+        return HtmlSanitizerUtil.sanitizeHtml(plainString.replace("<br/>", "<br />")).asString().replaceAll("(\r\n|\n\r|\r|\n)", "<br />");
     }
 
     private static final RegExp AMP_RE = RegExp.compile("&", "g");
