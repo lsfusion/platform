@@ -10,6 +10,8 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.Serializable;
 
+import static lsfusion.client.base.SwingUtils.wrapHtml;
+
 public class ClientAsync implements Serializable {
     public final Serializable displayValue;
     public final Serializable rawValue;
@@ -77,6 +79,6 @@ public class ClientAsync implements Serializable {
 
     @Override
     public String toString() {
-        return "<html>" + displayValue + "</html>";
+        return wrapHtml(displayValue);
     }
 }

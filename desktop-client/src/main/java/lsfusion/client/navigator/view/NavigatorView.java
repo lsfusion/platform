@@ -21,6 +21,7 @@ import java.awt.event.MouseEvent;
 import java.util.Set;
 
 import static javax.swing.BorderFactory.createEmptyBorder;
+import static lsfusion.client.base.SwingUtils.wrapHtml;
 import static lsfusion.client.base.view.SwingDefaults.getSelectionColor;
 import static lsfusion.client.base.view.SwingDefaults.getToggleButtonHoverBackground;
 
@@ -78,7 +79,7 @@ public class NavigatorView {
     ClientNavigatorElement firstFolder = null;
 
     private void addElement(ClientNavigatorElement element, Set<ClientNavigatorElement> newElements, int indent) {
-        ToggleButtonWidget button = new ToggleButtonWidget(element.toString()) {
+        ToggleButtonWidget button = new ToggleButtonWidget(wrapHtml(element.toString())) {
             @Override
             public void updateUI() {
                 super.updateUI();

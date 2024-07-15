@@ -18,6 +18,8 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.List;
 
+import static lsfusion.client.base.SwingUtils.wrapHtml;
+
 public class ClientFormDockable extends ClientDockable {
 
     private FormsController formsController;
@@ -90,7 +92,7 @@ public class ClientFormDockable extends ClientDockable {
     }
 
     public void setCaption(String caption, String tooltip) {
-        setTitleText(caption);
+        setTitleText(wrapHtml(caption));
         setTitleToolTip(tooltip);
     }
 

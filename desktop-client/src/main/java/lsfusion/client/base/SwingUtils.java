@@ -889,4 +889,8 @@ public class SwingUtils {
     public static String getEventCaption(String keyEventCaption, String mouseEventCaption) {
         return keyEventCaption != null ? (mouseEventCaption != null ? (keyEventCaption + " / " + mouseEventCaption) : keyEventCaption) : mouseEventCaption;
     }
+
+    public static String wrapHtml(Object value) {
+        return value != null ? ("<html>" + value + "</html>") : null;
+    }
 }
