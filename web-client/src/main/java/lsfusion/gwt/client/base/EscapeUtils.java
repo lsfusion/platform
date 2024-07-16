@@ -16,7 +16,7 @@ public class EscapeUtils {
         if(image != null) {
             FlexPanel iconMessagePanel = new FlexPanel();
             iconMessagePanel.add(getImageWidget(image));
-            iconMessagePanel.add(toHTML(plainString), GFlexAlignment.CENTER, 1, true, null);
+            iconMessagePanel.add(toHTML(plainString.replace("<br/>", "<br />")), GFlexAlignment.CENTER, 1, true, null);
             return iconMessagePanel;
         } else {
             return toHTML(plainString);
