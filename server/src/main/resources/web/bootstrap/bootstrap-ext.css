@@ -267,6 +267,11 @@
     width: unset;
 }
 
+/* form-floating needs border-box because it sets the explicit height */
+.form-floating > .prop-size-value {
+    box-sizing: border-box;
+}
+
 /* bootstrap doesn't wrap button group by default, which is not what we want in the most cases */
 .option-btn-container.btn-group {
     flex-wrap: wrap;
