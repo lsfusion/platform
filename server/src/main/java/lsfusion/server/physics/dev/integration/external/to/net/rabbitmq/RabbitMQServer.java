@@ -84,11 +84,13 @@ public class RabbitMQServer extends MonitorServer {
 
             DeliverCallback deliverCallback = (consumerTag, delivery) -> {
                 String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
-                try(DataSession session = createSession()) {
+                try {
                     ThreadLocalContext.aspectBeforeMonitorHTTP(RabbitMQServer.this);
-                    LM.findAction("processConsumed[STRING,STRING]").execute(session, getStack(), new DataObject(queue), new DataObject(message));
-                } catch (SQLException | SQLHandledException | ScriptingErrorLog.SemanticErrorException e) {
-                    throw Throwables.propagate(e);
+                    try (DataSession session = createSession()) {
+                        LM.findAction("processConsumed[STRING,STRING]").execute(session, getStack(), new DataObject(queue), new DataObject(message));
+                    } catch (SQLException | SQLHandledException | ScriptingErrorLog.SemanticErrorException e) {
+                        throw Throwables.propagate(e);
+                    }
                 } finally {
                     ThreadLocalContext.aspectAfterMonitorHTTP(RabbitMQServer.this);
                 }
