@@ -34,6 +34,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
+import static java.awt.event.InputEvent.BUTTON1_MASK;
 import static javax.swing.SwingUtilities.isRightMouseButton;
 import static lsfusion.client.form.property.cell.EditBindingMap.getPropertyKeyPressActionSID;
 
@@ -95,7 +96,7 @@ public class ActionPanelView extends ButtonWidget implements PanelView, EditProp
                     RmiQueue.runAction(new Runnable() {
                         @Override
                         public void run() {
-                            executePropertyEventAction(ServerResponse.CHANGE);
+                            executePropertyEventAction(ServerResponse.CHANGE, ((ae.getModifiers() & BUTTON1_MASK) == 0));
                         }
                     });
                 }
@@ -165,7 +166,11 @@ public class ActionPanelView extends ButtonWidget implements PanelView, EditProp
     }
 
     private boolean executePropertyEventAction(String actionSID) {
-        return editDispatcher.executePropertyEventAction(property, columnKey, actionSID, null, null);
+        return executePropertyEventAction(actionSID, false);
+    }
+
+    private boolean executePropertyEventAction(String actionSID, boolean isBinding) {
+        return editDispatcher.executePropertyEventAction(property, columnKey, actionSID, isBinding, null, null);
     }
 
     private void showContextMenu(Point point) {
