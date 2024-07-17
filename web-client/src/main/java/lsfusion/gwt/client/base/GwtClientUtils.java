@@ -1304,12 +1304,34 @@ public class GwtClientUtils {
     }
 
     //split on space but not inside quotes
-    public static native JsArrayString parseString(String str)/*-{
-            var regex = /((?:\S+=)?"[^"]*")|(\S+)/g;
+    public static String[] splitUnquotedSpace(String str) {
+        return splitUnquoted(str, "((?:\\S+=)?\"[^\"]*\")|(\\S+)", " ");
+    }
+
+    //split on  but not inside quotes
+    public static String[] splitUnquotedEqual(String str) {
+        return splitUnquoted(str, "((?:[^=]+=)?\"[^\"]*\")|([^=]+)", "=");
+    }
+
+    private static String[] splitUnquoted(String str, String regex, String lightRegex) {
+        if(str.contains("\"")) {
+            JsArrayString jsClasses = splitUnquoted(str, regex);
+            String[] classes = new String[jsClasses.length()];
+            for (int i = 0; i < jsClasses.length(); i++) {
+                classes[i] = jsClasses.get(i);
+            }
+            return classes;
+        } else {
+            return str.split(lightRegex);
+        }
+    }
+
+    private static native JsArrayString splitUnquoted(String str, String regex)/*-{
+            var regexp = new RegExp(regex, "g");
             var result = [];
             var match;
 
-            while ((match = regex.exec(str)) !== null) {
+            while ((match = regexp.exec(str)) !== null) {
                 // match[1] is for strings with quotes
                 // match[2] is for strings without quotes
                 result.push(match[1] || match[2]);
