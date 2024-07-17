@@ -37,6 +37,7 @@ import lsfusion.server.logics.form.interactive.action.async.InputList;
 import lsfusion.server.logics.form.interactive.action.async.InputListAction;
 import lsfusion.server.logics.form.interactive.action.input.InputContext;
 import lsfusion.server.logics.form.interactive.action.input.InputResult;
+import lsfusion.server.logics.form.interactive.changed.FormChanges;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
@@ -61,6 +62,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -272,19 +274,23 @@ public class ThreadLocalContext {
         message(message, "lsFusion");
     }
     public static void message(String message, String header) {
-        message(message, header, new ArrayList<>(), new ArrayList<>(), MessageClientType.WARN, true);
+        message(ThreadLocalContext.getRemoteContext(), message, header, new ArrayList<>(), new ArrayList<>(), MessageClientType.WARN, true);
     }
 
-    public static void message(String message, String caption, List<List<String>> data, List<String> titles, MessageClientType type, boolean noWait) {
+    public static void message(ConnectionContext remoteContext, String message, String caption, List<List<String>> data, List<String> titles, MessageClientType type, boolean noWait) {
         String textMessage = message;
         if(EscapeUtils.containsHtmlTag(textMessage)) // optimization
             textMessage = htmlToPlainText(textMessage);
 
-        ClientAction action = new MessageClientAction(message, textMessage, caption, data, titles, type, !noWait);
-        if (noWait)
-            delayUserInteraction(action);
-        else
-            requestUserInteraction(action);
+        try {
+            ClientAction action = new MessageClientAction(FormChanges.convertFileValue(message, remoteContext), textMessage, caption, data, titles, type, !noWait);
+            if (noWait)
+                delayUserInteraction(action);
+            else
+                requestUserInteraction(action);
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     public static ConnectionContext getRemoteContext() {

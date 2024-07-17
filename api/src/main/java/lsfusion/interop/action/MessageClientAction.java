@@ -5,7 +5,7 @@ import java.util.List;
 
 public class MessageClientAction extends ExecuteClientAction {
 
-    public String message;
+    public Object message;
     public String textMessage;
     public String caption;
 
@@ -21,7 +21,7 @@ public class MessageClientAction extends ExecuteClientAction {
         this(message, message, caption, new ArrayList<>(), new ArrayList<>(), MessageClientType.DEFAULT, false);
     }
 
-    public MessageClientAction(String message, String textMessage, String caption, List<List<String>> data, List<String> titles, MessageClientType type, boolean syncType) {
+    public MessageClientAction(Object message, String textMessage, String caption, List<List<String>> data, List<String> titles, MessageClientType type, boolean syncType) {
         this.message = message;
         this.textMessage = textMessage;
         this.caption = caption;
@@ -39,6 +39,6 @@ public class MessageClientAction extends ExecuteClientAction {
 
     @Override
     public String toString() {
-        return "MessageClientAction[caption: " + caption + ", msg: " + message + ", type: " + type + "]";
+        return "MessageClientAction[caption: " + caption + ", msg: " + textMessage + ", type: " + type + "]";
     }
 }

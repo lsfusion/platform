@@ -254,10 +254,13 @@ public class FormChanges {
         }
     }
 
-    public static byte[] serializeConvertFileValue(ConvertData convertData, Object value, ConnectionContext context) throws IOException {
+    public static byte[] serializeConvertFileValue(Object value, ConnectionContext context) throws IOException {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-        serializeConvertFileValue(new DataOutputStream(outStream), convertData, value, context);
+        serializeConvertFileValue(value, new DataOutputStream(outStream), context);
         return outStream.toByteArray();
+    }
+    public static void serializeConvertFileValue(Object value, DataOutputStream outStream, ConnectionContext context) throws IOException {
+        serializeConvertFileValue(outStream, null, value, context);
     }
     public static void serializeConvertFileValue(DataOutputStream outStream, ConvertData convertData, Object value, ConnectionContext context) throws IOException {
         serializeObject(outStream, convertFileValue(convertData, value, context));

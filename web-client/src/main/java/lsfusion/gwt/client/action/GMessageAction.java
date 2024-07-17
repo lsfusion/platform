@@ -1,9 +1,10 @@
 package lsfusion.gwt.client.action;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 public class GMessageAction extends GExecuteAction {
-    public String message;
+    public Serializable message;
     public String textMessage;
     public String caption;
 
@@ -17,7 +18,7 @@ public class GMessageAction extends GExecuteAction {
     @SuppressWarnings("UnusedDeclaration")
     public GMessageAction() {}
 
-    public GMessageAction(String message, String textMessage, String caption, ArrayList<ArrayList<String>> data, ArrayList<String> titles, GMessageType type, boolean syncType) {
+    public GMessageAction(Serializable message, String textMessage, String caption, ArrayList<ArrayList<String>> data, ArrayList<String> titles, GMessageType type, boolean syncType) {
         this.message = message;
         this.textMessage = textMessage;
         this.caption = caption;

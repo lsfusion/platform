@@ -57,7 +57,7 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
     private boolean isMergeable(MessageClientAction action1, MessageClientAction action2) {
         return action1.type.equals(action2.type)
                 && action1.data.isEmpty() && action2.data.isEmpty()
-                && action1.titles.isEmpty() && action2.titles.isEmpty();
+                && action1.titles.isEmpty() && action2.titles.isEmpty() && action1.message instanceof String && action2.message instanceof String;
     }
 
     /**
