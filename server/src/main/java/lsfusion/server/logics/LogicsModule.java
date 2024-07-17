@@ -164,6 +164,7 @@ import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
 import static lsfusion.base.BaseUtils.add;
+import static lsfusion.server.logics.form.open.stat.PrintAction.getExtraParams;
 import static lsfusion.server.logics.property.PropertyFact.createAnd;
 import static lsfusion.server.logics.property.oraction.ActionOrPropertyUtils.*;
 
@@ -641,9 +642,9 @@ public abstract class LogicsModule {
                                                           ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
                                                           FormPrintType staticType, boolean server, boolean autoPrint, boolean syncType,
                                                           LP targetProp, boolean removeNullsAndDuplicates,
-                                                          SelectTop<ValueClass> selectTop, Integer defaultSelectTop, ValueClass printer, ValueClass sheetName, ValueClass password) {
+                                                          SelectTop<ValueClass> selectTop, ValueClass printer, ValueClass sheetName, ValueClass password) {
         return addAction(group, new LA<>(new PrintAction<>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters,
-                staticType, server, syncType, autoPrint, targetProp, baseLM.formPageCount, removeNullsAndDuplicates, selectTop, defaultSelectTop, printer, sheetName, password)));
+                staticType, server, syncType, autoPrint, targetProp, baseLM.formPageCount, removeNullsAndDuplicates, selectTop, printer, sheetName, password, getExtraParams(selectTop, printer, sheetName, password))));
     }
     protected <O extends ObjectSelector> LP addJSONFormProp(Group group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                                                        ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
@@ -2200,10 +2201,13 @@ public abstract class LogicsModule {
         addSimpleEvent(eventAction, resolveAction, event, debugPoint, debugCaption);
     }
 
+    private static PropertyMapImplement<?, ClassPropertyInterface> static30 = null;
     private <P extends PropertyInterface> Action<?> createConstraintAction(Property<?> property, ImList<PropertyMapImplement<?, P>> properties, Property<?> messageProperty, boolean cancel, LocalizedString debugCaption) {
         ActionMapImplement<?, ClassPropertyInterface> logAction;
         //  PRINT OUT property MESSAGE NOWAIT;
-        logAction = (ActionMapImplement<ClassPropertyInterface, ClassPropertyInterface>) addPFAProp(null, debugCaption, new OutFormSelector<P>((Property) property, messageProperty, properties), ListFact.EMPTY(), ListFact.EMPTY(), SetFact.EMPTYORDER(), SetFact.EMPTY(), FormPrintType.MESSAGE, false, false, false, null, true, null, 30, null, null, null).action.getImplement();
+        if(static30 == null)
+            static30 = PropertyFact.create30();
+        logAction = PropertyFact.createJoinAction(addPFAProp(null, debugCaption, new OutFormSelector<P>((Property) property, messageProperty, properties), ListFact.EMPTY(), ListFact.EMPTY(), SetFact.EMPTYORDER(), SetFact.EMPTY(), FormPrintType.MESSAGE, false, false, false, null, true, new SelectTop<>(static30.mapValueClass(ClassType.signaturePolicy)), null, null, null).action.getImplement().action, static30);
         if(cancel)
             logAction = PropertyFact.createListAction(
                     SetFact.EMPTY(),

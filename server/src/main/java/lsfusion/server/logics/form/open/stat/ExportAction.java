@@ -1,22 +1,22 @@
 package lsfusion.server.logics.form.open.stat;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.MOrderMap;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.open.FormSelector;
 import lsfusion.server.logics.form.open.ObjectSelector;
-import lsfusion.server.logics.form.stat.*;
+import lsfusion.server.logics.form.stat.FormDataManager;
+import lsfusion.server.logics.form.stat.SelectTop;
+import lsfusion.server.logics.form.stat.StaticDataGenerator;
+import lsfusion.server.logics.form.stat.StaticFormDataManager;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 import lsfusion.server.logics.form.stat.struct.export.StaticExportData;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
 import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
-import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -26,8 +26,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 public abstract class ExportAction<O extends ObjectSelector> extends FormStaticAction<O, FormIntegrationType> {
-    private final ClassPropertyInterface selectTopInterface;
-    private final ImOrderMap<GroupObjectEntity, ClassPropertyInterface> selectTopsInterfaces;
+    private final SelectTop<ClassPropertyInterface> selectTopInterfaces;
 
     protected String charset;
     
@@ -38,34 +37,15 @@ public abstract class ExportAction<O extends ObjectSelector> extends FormStaticA
 
         ImOrderSet<ClassPropertyInterface> orderInterfaces = getOrderInterfaces();
 
-        this.selectTopInterface = selectTop != null && selectTop.selectTop != null ? orderInterfaces.get(orderInterfaces.size() - extraParams.length) : null;
-
-        if (selectTop != null && selectTop.selectTops != null) {
-            MOrderMap<GroupObjectEntity, ClassPropertyInterface> mSelectTopInterfaces = MapFact.mOrderMap();
-            for (int i = 0; i < selectTop.selectTops.size(); i++) {
-                mSelectTopInterfaces.add(selectTop.selectTops.getKey(i), orderInterfaces.get(orderInterfaces.size() - extraParams.length + i));
-            }
-            this.selectTopsInterfaces = mSelectTopInterfaces.immutableOrder();
-        } else {
-            this.selectTopsInterfaces = null;
-        }
+        this.selectTopInterfaces = selectTop != null ? selectTop.mapValues(orderInterfaces, extraParams.length) : null;
     }
     
     protected abstract void export(ExecutionContext<ClassPropertyInterface> context, StaticExportData exportData, StaticDataGenerator.Hierarchy hierarchy) throws IOException, SQLException, SQLHandledException;
 
     @Override
     protected void executeInternal(FormEntity form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, ExecutionContext<ClassPropertyInterface> context, ImRevMap<ObjectEntity, O> mapResolvedObjects, ImSet<ContextFilterInstance> contextFilters) throws SQLException, SQLHandledException {
-        Integer selectTop = selectTopInterface != null ? (Integer) context.getKeyObject(selectTopInterface) : null;
-
-        MOrderMap<GroupObjectEntity, Integer> selectTops = MapFact.mOrderMap();
-        if(selectTopsInterfaces != null) {
-            for (int i = 0; i < selectTopsInterfaces.size(); i++) {
-                selectTops.add(selectTopsInterfaces.getKey(i), (Integer) context.getKeyObject(selectTopsInterfaces.getValue(i)));
-            }
-        }
-
         StaticFormDataManager formDataManager = new StaticFormDataManager(form, mapObjectValues, context, contextFilters);
-        FormDataManager.ExportResult exportData = formDataManager.getExportData(new SelectTop(selectTop, selectTops.immutableOrder()));
+        FormDataManager.ExportResult exportData = formDataManager.getExportData(selectTopInterfaces.mapValues(context));
         try {
             export(context, new StaticExportData(exportData.keys, exportData.properties), exportData.hierarchy);
         } catch (IOException e) {

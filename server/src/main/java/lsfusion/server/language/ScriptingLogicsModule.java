@@ -4007,7 +4007,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         LA action = addPFAProp(null, LocalizedString.NONAME, mapped.form, mappedObjects, mNulls.immutableList(),
                 contextEntities.orderInterfaces, contextEntities.filters, printType, server, autoPrint, syncType,
-                targetProp, false, selectTop.mapValueClass(this, params), null, printer, sheetName, password);
+                targetProp, false, selectTop.mapValues(this, params), printer, sheetName, password);
 
         for (int usedParam : contextEntities.usedParams) {
             mapping.add(new LPWithParams(usedParam));
@@ -4127,7 +4127,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         CFEWithParams<O> contextEntities = getContextFilterEntities(params.size(), contextObjects, ListFact.fromJavaList(contextFilters));
 
         LA action = addEFAProp(null, LocalizedString.NONAME, mapped.form, mappedObjects, mNulls.immutableList(),
-                contextEntities.orderInterfaces, contextEntities.filters, exportType, hasHeader, separator, noEscape, selectTop.mapValueClass(this, params), charset, singleExportFile, exportFiles.immutable(), sheetName, root, tag);
+                contextEntities.orderInterfaces, contextEntities.filters, exportType, hasHeader, separator, noEscape, selectTop.mapValues(this, params), charset, singleExportFile, exportFiles.immutable(), sheetName, root, tag);
 
         for (int usedParam : contextEntities.usedParams) {
             mapping.add(new LPWithParams(usedParam));
@@ -4478,7 +4478,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         LA result = null;
         try {
             result = addExportPropertyAProp(LocalizedString.NONAME, type, resultInterfaces.size(), exPropUsages, orders, targetProp,
-                    whereProperty != null, sheetName, root, tag, separator, hasHeader, noEscape, selectTop.mapValueClass(this, oldContext), charset, attr, resultParams.toArray());
+                    whereProperty != null, sheetName, root, tag, separator, hasHeader, noEscape, selectTop.mapValues(this, oldContext), charset, attr, resultParams.toArray());
         } catch (FormEntity.AlreadyDefined alreadyDefined) {
             throwAlreadyDefinePropertyDraw(alreadyDefined);
         }
