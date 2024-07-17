@@ -357,8 +357,8 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         ThreadLocalContext.message(message, header);
     }
 
-    public void message(ExecutionContext context, String message, String caption, List<List<String>> data, List<String> titles, MessageClientType type, boolean noWait) {
-        ThreadLocalContext.message(context.getRemoteContext(), message, caption, data, titles, type, noWait);
+    public void message(ConnectionContext context, String message, String caption, List<List<String>> data, List<String> titles, MessageClientType type, boolean noWait) {
+        ThreadLocalContext.message(context, message, caption, data, titles, type, noWait);
     }
 
     public ExecutionEnvironment getSessionEventFormEnv() {

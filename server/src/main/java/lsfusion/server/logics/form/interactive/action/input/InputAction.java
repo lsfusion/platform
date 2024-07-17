@@ -115,7 +115,7 @@ public class InputAction extends SystemExplicitAction {
         Object oldValue = hasOldValue ? context.getKeyObject(oldValueInterface) : null;
 
         InputListEntity<?, ClassPropertyInterface> fullContextList = getFullContextList();
-        InputResult userValue = context.inputUserData(getInputClass(fullContextList), oldValue, hasOldValue, fullContextList, customChangeFunction, getInputList(), getInputListActions());
+        InputResult userValue = context.inputUserData(getInputClass(fullContextList), oldValue, hasOldValue, fullContextList, customChangeFunction, getInputList(), getInputListActions(context.getRemoteContext()));
 
         Integer contextAction;
         if(userValue != null && (contextAction = userValue.contextAction) != null)
@@ -137,10 +137,9 @@ public class InputAction extends SystemExplicitAction {
         return new InputList(isStrict());
     }
 
-    @IdentityInstanceLazy
-    private InputListAction[] getInputListActions() {
+    private InputListAction[] getInputListActions(ConnectionContext context) {
         ImList<AsyncMapInputListAction<ClassPropertyInterface>> actions = getActions();
-        return actions.mapListValues(action -> action.map(new ConnectionContext(true, false))).toArray(new InputListAction[actions.size()]);
+        return actions.mapListValues(action -> action.map(context)).toArray(new InputListAction[actions.size()]);
     }
 
     @Override

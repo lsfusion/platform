@@ -52,7 +52,7 @@ public class MessageAction extends SystemAction {
     }
 
     protected void showMessage(ExecutionContext<PropertyInterface> context, String message, String header) throws SQLException, SQLHandledException {
-        context.message(context, message, header, new ArrayList<>(), new ArrayList<>(), type, noWait);
+        context.message(context.getRemoteContext(), message, header, new ArrayList<>(), new ArrayList<>(), type, noWait);
     }
 
     @Override

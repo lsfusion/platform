@@ -276,9 +276,4 @@ public abstract class AbstractContext implements Context {
     public RemoteForm createRemoteForm(FormInstance formInstance, ExecutionStack stack) {
         throw new UnsupportedOperationException("createRemoteForm is not supported");
     }
-
-    @Override
-    public ConnectionContext getConnectionContext() {
-        throw new UnsupportedOperationException("getConnectionContext is not supported");
-    }
 }
