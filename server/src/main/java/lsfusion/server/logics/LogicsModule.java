@@ -2201,13 +2201,10 @@ public abstract class LogicsModule {
         addSimpleEvent(eventAction, resolveAction, event, debugPoint, debugCaption);
     }
 
-    private static PropertyMapImplement<?, ClassPropertyInterface> static30 = null;
     private <P extends PropertyInterface> Action<?> createConstraintAction(Property<?> property, ImList<PropertyMapImplement<?, P>> properties, Property<?> messageProperty, boolean cancel, LocalizedString debugCaption) {
         ActionMapImplement<?, ClassPropertyInterface> logAction;
         //  PRINT OUT property MESSAGE NOWAIT;
-        if(static30 == null)
-            static30 = PropertyFact.create30();
-        logAction = PropertyFact.createJoinAction(addPFAProp(null, debugCaption, new OutFormSelector<P>((Property) property, messageProperty, properties), ListFact.EMPTY(), ListFact.EMPTY(), SetFact.EMPTYORDER(), SetFact.EMPTY(), FormPrintType.MESSAGE, false, false, false, null, true, new SelectTop<>(static30.mapValueClass(ClassType.signaturePolicy)), null, null, null).action.getImplement().action, static30);
+        logAction = PropertyFact.createJoinAction(addPFAProp(null, debugCaption, new OutFormSelector<P>((Property) property, messageProperty, properties), ListFact.EMPTY(), ListFact.EMPTY(), SetFact.EMPTYORDER(), SetFact.EMPTY(), FormPrintType.MESSAGE, false, false, false, null, true, new SelectTop<>(baseLM.static30.mapValueClass(ClassType.signaturePolicy)), null, null, null).action.getImplement().action, baseLM.static30);
         if(cancel)
             logAction = PropertyFact.createListAction(
                     SetFact.EMPTY(),

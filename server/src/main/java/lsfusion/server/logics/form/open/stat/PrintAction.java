@@ -52,9 +52,7 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
     private final boolean autoPrint;
 
     public static ValueClass[] getExtraParams(SelectTop<ValueClass> selectTop, ValueClass printer, ValueClass sheetName, ValueClass password) {
-        List<ValueClass> params = new ArrayList<>();
-        if (selectTop != null)
-            params.addAll(selectTop.getParams());
+        List<ValueClass> params = selectTop.getParams();
         if(printer != null)
             params.add(printer);
         if (sheetName != null)
@@ -85,7 +83,7 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
         this.sheetNameInterface = sheetName != null ? orderInterfaces.get(orderInterfaces.size() - 1 - shift++) : null;
         this.printerInterface = printer != null ? orderInterfaces.get(orderInterfaces.size() - 1 - shift++) : null;
 
-        this.selectTopInterfaces = selectTop != null ? selectTop.mapValues(orderInterfaces, extraParams.length) : null;
+        this.selectTopInterfaces = selectTop.mapValues(orderInterfaces, extraParams.length);
 
         this.formPageCount = formPageCount;
 

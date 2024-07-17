@@ -11,7 +11,10 @@ import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static lsfusion.base.BaseUtils.nvl;
 
@@ -31,50 +34,32 @@ public class SelectTop<T> {
     }
 
     public List<T> getParams() {
-        List<T> mapping = new ArrayList<>();
         if (selectTop != null)
-            mapping.add(selectTop);
-        if (selectTops != null)
-            mapping.addAll(selectTops.values().toJavaCol());
-        return mapping;
+            return Collections.singletonList(selectTop);
+        else if (selectTops != null)
+            return new ArrayList<>(selectTops.values().toJavaCol());
+        else return new ArrayList<>();
     }
 
     public SelectTop<ValueClass> mapValues(ScriptingLogicsModule LM, List<ScriptingLogicsModule.TypedParameter> params) {
-        if (selectTop != null) {
-            return new SelectTop(LM.getValueClassByParamProperty((ScriptingLogicsModule.LPWithParams) selectTop, params));
-        } else if (selectTops != null) {
-            MOrderMap<GroupObjectEntity, ValueClass> mSelectTops = MapFact.mOrderMap();
-            for (int i = 0; i < selectTops.size(); i++) {
-                mSelectTops.add(selectTops.getKey(i), LM.getValueClassByParamProperty((ScriptingLogicsModule.LPWithParams) selectTops.getValue(i), params));
-            }
-            return new SelectTop(null, mSelectTops.immutableOrder());
-        } else {
-            return NULL;
-        }
+        return mapValues(() -> (T) LM.getValueClassByParamProperty((ScriptingLogicsModule.LPWithParams) selectTop, params), i -> (T) LM.getValueClassByParamProperty((ScriptingLogicsModule.LPWithParams) selectTops.getValue(i), params));
     }
 
     public SelectTop<ClassPropertyInterface> mapValues(ImOrderSet<ClassPropertyInterface> orderInterfaces, int extraParams) {
-        if (selectTop != null) {
-            return new SelectTop(orderInterfaces.get(orderInterfaces.size() - extraParams));
-        } else if (selectTops != null) {
-            MOrderMap<GroupObjectEntity, ClassPropertyInterface> mSelectTops = MapFact.mOrderMap();
-            for (int i = 0; i < selectTops.size(); i++) {
-                mSelectTops.add(selectTops.getKey(i), orderInterfaces.get(orderInterfaces.size() - extraParams + i));
-            }
-            return new SelectTop(null, mSelectTops.immutableOrder());
-        } else {
-            return NULL;
-        }
+        return mapValues(() -> (T) orderInterfaces.get(orderInterfaces.size() - extraParams), i -> (T) orderInterfaces.get(orderInterfaces.size() - extraParams + i));
     }
 
     public SelectTop<Integer> mapValues(ExecutionContext<ClassPropertyInterface> context) {
-        if(selectTop != null) {
-            return new SelectTop(context.getKeyObject((ClassPropertyInterface) selectTop));
-        } else if(selectTops != null) {
-            ImOrderMap<GroupObjectEntity, ClassPropertyInterface> selectTopsInt = (ImOrderMap<GroupObjectEntity, ClassPropertyInterface>) selectTops;
-            MOrderMap<GroupObjectEntity, Integer> mSelectTops = MapFact.mOrderMap();
-            for (int i = 0; i < selectTopsInt.size(); i++) {
-                mSelectTops.add(selectTopsInt.getKey(i), (Integer) context.getKeyObject(selectTopsInt.getValue(i)));
+        return mapValues(() -> (T) context.getKeyObject((ClassPropertyInterface) selectTop), i -> (T) context.getKeyObject((ClassPropertyInterface) selectTops.getValue(i)));
+    }
+
+    public SelectTop mapValues(Supplier<T> selectTopSupplier, Function<Integer, T> selectTopsSupplier) {
+        if (selectTop != null) {
+            return new SelectTop(selectTopSupplier.get());
+        } else if (selectTops != null) {
+            MOrderMap<GroupObjectEntity, T> mSelectTops = MapFact.mOrderMap();
+            for (int i = 0; i < selectTops.size(); i++) {
+                mSelectTops.add(selectTops.getKey(i), selectTopsSupplier.apply(i));
             }
             return new SelectTop(null, mSelectTops.immutableOrder());
         } else {

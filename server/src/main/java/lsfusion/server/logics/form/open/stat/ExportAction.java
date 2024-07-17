@@ -34,10 +34,7 @@ public abstract class ExportAction<O extends ObjectSelector> extends FormStaticA
                         ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters, FormIntegrationType staticType, SelectTop<ValueClass> selectTop, String charset, ValueClass... extraParams) {
         super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, selectTop, extraParams);
         this.charset = charset;
-
-        ImOrderSet<ClassPropertyInterface> orderInterfaces = getOrderInterfaces();
-
-        this.selectTopInterfaces = selectTop != null ? selectTop.mapValues(orderInterfaces, extraParams.length) : null;
+        this.selectTopInterfaces = selectTop.mapValues(getOrderInterfaces(), extraParams.length);
     }
     
     protected abstract void export(ExecutionContext<ClassPropertyInterface> context, StaticExportData exportData, StaticDataGenerator.Hierarchy hierarchy) throws IOException, SQLException, SQLHandledException;

@@ -150,6 +150,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LP vzero;
     public LP vnull;
 
+    public PropertyMapImplement<?, ClassPropertyInterface> static30;
+
     public LP minus;
 
     private LA watch;
@@ -517,6 +519,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         vtrue = addCProp(LogicalClass.instance, true);
         vzero = addCProp(DoubleClass.instance, 0.0);
         vnull = addProperty(null, new LP<>(NullValueProperty.instance));
+
+        static30 = PropertyFact.create30();
 
         if(ActionDebugger.getInstance().isEnabled()) {
             watch = addAction(null, new LA<>(WatchAction.instance));
