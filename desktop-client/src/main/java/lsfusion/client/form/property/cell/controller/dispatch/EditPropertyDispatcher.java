@@ -55,6 +55,10 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
     }
 
     public boolean executePropertyEventAction(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String actionSID, EventObject editEvent, Integer contextAction) {
+        return executePropertyEventAction(property, columnKey, actionSID, false, editEvent, contextAction);
+    }
+
+    public boolean executePropertyEventAction(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String actionSID, boolean isBinding, EventObject editEvent, Integer contextAction) {
         valueRequested = false;
         oldValueRequested = null;
         oldValue = null;
@@ -78,7 +82,7 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
             else if (showConfirmDialog(property, actionSID)) return true;
 
             editPerformed = true;
-            ServerResponse response = form.executeEventAction(property, columnKey, actionSID, contextAction != null ? new ClientPushAsyncInput(null, contextAction) : null);
+            ServerResponse response = form.executeEventAction(property, columnKey, actionSID, isBinding, contextAction != null ? new ClientPushAsyncInput(null, contextAction) : null);
             try {
                 return internalDispatchServerResponse(response);
             } finally {
