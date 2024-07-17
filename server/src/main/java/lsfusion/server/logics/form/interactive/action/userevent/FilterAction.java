@@ -58,7 +58,7 @@ public class FilterAction extends UserEventAction {
                             filterItem.negation = jsonObject.optBoolean(NEGATION_KEY);
                             // value may be String (when stored via ReadFiltersAction), may be any other Object
                             try {
-                                filterItem.value = FormChanges.serializeConvertFileValue(null, jsonObject.opt(VALUE_KEY), context.getRemoteContext());
+                                filterItem.value = FormChanges.serializeConvertFileValue(jsonObject.opt(VALUE_KEY), context.getRemoteContext());
                             } catch (IOException e) {
                                 throw Throwables.propagate(e);
                             }

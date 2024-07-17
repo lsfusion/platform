@@ -131,11 +131,11 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     }
 
     @Converter(from = MessageClientAction.class)
-    public GMessageAction convertAction(MessageClientAction action) {
+    public GMessageAction convertAction(MessageClientAction action, FormSessionObject formSessionObject, MainDispatchServlet servlet) throws IOException {
         ArrayList<ArrayList<String>> arrayData = new ArrayList<>();
         for(List<String> row : action.data)
             arrayData.add(new ArrayList<>(row));
-        return new GMessageAction(action.message, action.textMessage, action.caption, arrayData, new ArrayList<>(action.titles), convertOrCast(action.type), action.syncType);
+        return new GMessageAction(valuesConverter.convertFileValue(action.message, formSessionObject, servlet), action.textMessage, action.caption, arrayData, new ArrayList<>(action.titles), convertOrCast(action.type), action.syncType);
     }
 
     @Converter(from = MessageClientType.class)

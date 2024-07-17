@@ -80,7 +80,7 @@ public abstract class RemoteUIContext extends AbstractContext {
     public InputResult inputUserData(ActionOrProperty securityProperty, DataClass dataClass, Object oldValue, boolean hasOldValue, InputContext inputContext, String customChangeFunction, InputList inputList, InputListAction[] actions) {
         this.inputContext = inputContext; // we don't have to lock here since thread-safety will be ok anyway
         try {
-            UserInputResult result = (UserInputResult) requestUserInteraction(new RequestUserInputClientAction(serializeType(dataClass), FormChanges.serializeConvertFileValue(null, oldValue, getConnectionContext()), hasOldValue,
+            UserInputResult result = (UserInputResult) requestUserInteraction(new RequestUserInputClientAction(serializeType(dataClass), FormChanges.serializeConvertFileValue(oldValue, getConnectionContext()), hasOldValue,
                     customChangeFunction,
                     inputContext != null ? AsyncSerializer.serializeInputList(inputList, getConnectionContext()) : null,
                     inputContext != null && actions != null ? AsyncSerializer.serializeInputListActions(AsyncMapInput.filter(getSecurityPolicy(), securityProperty, actions), getConnectionContext()) : null));

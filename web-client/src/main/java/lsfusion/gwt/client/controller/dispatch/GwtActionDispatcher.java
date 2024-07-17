@@ -280,10 +280,11 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             backgroundClass = null;
         }
 
+        String message = PValue.getStringValue(PValue.convertFileValue(action.message));
         if(!log && !info) {
             if (action.syncType)
                 pauseDispatching();
-            DialogBoxHelper.showMessageBox(action.caption, GLog.toPrintMessage(action.message, image, action.data, action.titles), backgroundClass, getPopupOwner(), chosenOption -> {
+            DialogBoxHelper.showMessageBox(action.caption, GLog.toPrintMessage(message, image, action.data, action.titles), backgroundClass, getPopupOwner(), chosenOption -> {
                 if (action.syncType)
                     continueDispatching();
             });
@@ -295,7 +296,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             GLog.showFocusNotification(action.textMessage, action.caption, ifNotFocused);
 
         if(log || info || error) {
-            Widget widget = action.data.isEmpty() ? EscapeUtils.toHTML(action.message, image) : GLog.toPrintMessage(action.message, image, action.data, action.titles);
+            Widget widget = action.data.isEmpty() ? EscapeUtils.toHTML(message, image) : GLog.toPrintMessage(message, image, action.data, action.titles);
             widget.addStyleName("alert " + (log || info ? "alert-info" : "alert-danger"));
             GLog.message(widget, action.caption, error);
         }
