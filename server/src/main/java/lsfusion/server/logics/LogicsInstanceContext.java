@@ -13,6 +13,7 @@ import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.controller.remote.RemoteForm;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.interactive.listener.FocusListener;
@@ -33,8 +34,12 @@ public class LogicsInstanceContext extends AbstractContext {
 
     private final LogicsInstance logicsInstance;
 
+    private final ConnectionContext remoteContext;
+
     public LogicsInstanceContext(LogicsInstance logicsInstance) {
         this.logicsInstance = logicsInstance;
+
+        remoteContext = new ConnectionContext(true, false);
     }
 
     @Override
@@ -116,5 +121,10 @@ public class LogicsInstanceContext extends AbstractContext {
                 mapObjects, stack, isModal,
                 noCancel, manageSession,
                 checkOnOk, showDrop, interactive, type, false, contextFilters, readonly, getLocale());
+    }
+
+    @Override
+    public ConnectionContext getConnectionContext() {
+        return remoteContext;
     }
 }

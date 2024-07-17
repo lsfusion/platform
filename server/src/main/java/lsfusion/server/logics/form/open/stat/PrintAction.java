@@ -104,7 +104,7 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
                 type = MessageClientType.INFO;
 
             // proceeding data
-            context.message(context, reportData.message, "lsFusion", reportData.rows, reportData.titles, type, !syncType);
+            context.message(context.getRemoteContext(), reportData.message, "lsFusion", reportData.rows, reportData.titles, type, !syncType);
         } else {
             // getting data
             StaticFormReportManager formReportManager = new StaticFormReportManager(form, mapObjectValues, context, contextFilters);
