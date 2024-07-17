@@ -1126,10 +1126,13 @@ public class ClientFormController implements AsyncListener {
         return executeEventAction(requestIndex, lastReceivedRequestIndex, remoteForm, property, fullCurrentKey, actionSID, null);
     }
     private ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm, ClientPropertyDraw property, byte[] fullCurrentKey, String actionSID, ClientPushAsyncResult asyncResult) throws RemoteException {
-        return remoteForm.executeEventAction(requestIndex, lastReceivedRequestIndex, actionSID, new int[]{property.getID()}, new byte[][]{fullCurrentKey}, new EventSource[] {EventSource.EDIT}, new byte[][]{asyncResult != null ? asyncResult.serialize() : null});
+        return executeEventAction(requestIndex, lastReceivedRequestIndex, remoteForm, property, fullCurrentKey, actionSID, false, asyncResult);
+    }
+    private ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm, ClientPropertyDraw property, byte[] fullCurrentKey, String actionSID, boolean isBinding, ClientPushAsyncResult asyncResult) throws RemoteException {
+        return remoteForm.executeEventAction(requestIndex, lastReceivedRequestIndex, actionSID, new int[]{property.getID()}, new byte[][]{fullCurrentKey}, new EventSource[] {isBinding ? EventSource.BINDING : EventSource.EDIT}, new byte[][]{asyncResult != null ? asyncResult.serialize() : null});
     }
 
-    public ServerResponse executeEventAction(final ClientPropertyDraw property, final ClientGroupObjectValue columnKey, final String actionSID, ClientPushAsyncResult asyncResult) throws IOException {
+    public ServerResponse executeEventAction(final ClientPropertyDraw property, final ClientGroupObjectValue columnKey, final String actionSID, boolean isBinding, ClientPushAsyncResult asyncResult) throws IOException {
         // При выполнение синхронных запросов, EDT блокируется. Если перед этим синхр. запросом был послан асинхронный, который возвращает DockedModal-FormAction,
         // то получается dead-lock: executeEventAction ждёт окончания предыдущего async-запроса и значит закрытия DockedModal формы,
         // а форма не может отработать, т.к. EDT заблокирован. Модальные диалоги отрабатывают нормально, т.к. Swing специально создаёт для них новую очередь событий.
@@ -1156,7 +1159,7 @@ public class ClientFormController implements AsyncListener {
                 rmiQueue.syncRequest(new RmiCheckNullFormRequest<ServerResponse>("executeEventAction - " + property.getLogName()) {
                     @Override
                     protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                        return executeEventAction(requestIndex, lastReceivedRequestIndex, remoteForm, property, fullCurrentKey, actionSID, asyncResult);
+                        return executeEventAction(requestIndex, lastReceivedRequestIndex, remoteForm, property, fullCurrentKey, actionSID, isBinding, asyncResult);
                     }
 
                     @Override
