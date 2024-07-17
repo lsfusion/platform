@@ -1303,6 +1303,22 @@ public class GwtClientUtils {
         return result;
     }
 
+    //split on space but not inside quotes
+    public static native JsArrayString parseString(String str)/*-{
+            var regex = /((?:\S+=)?"[^"]*")|(\S+)/g;
+            var result = [];
+            var match;
+
+            while ((match = regex.exec(str)) !== null) {
+                // match[1] is for strings with quotes
+                // match[2] is for strings without quotes
+                result.push(match[1] || match[2]);
+            }
+            return result;
+    }-*/;
+
+
+
     //when used in gwt-javascript, so as not to pass many parameters to the native-method and get localized strings directly
     protected static native void getLocalizedString(String string)/*-{
         var name;

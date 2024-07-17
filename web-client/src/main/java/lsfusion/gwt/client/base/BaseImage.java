@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.base;
 
+import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.ImageElement;
@@ -126,15 +127,22 @@ public interface BaseImage extends Serializable {
             changes.put(values[0], values.length > 1 || prevClass.endsWith("=") ? null : false);
         }
 
-        String[] classes = newClasses != null ? newClasses.split(" ") : new String[0];
-        for(String newClass : classes) {
+        JsArrayString jsClasses = newClasses != null ? GwtClientUtils.parseString(newClasses) : JsArrayString.createArray().cast();
+        String[] classes = new String[jsClasses.length()];
+        for (int i = 0; i < jsClasses.length(); i++) {
+            String newClass = jsClasses.get(i);
             String[] values = newClass.split("=");
-            if(changes.remove(values[0]) == null)
-                changes.put(values[0], values.length > 1 ? values[1] : (newClass.endsWith("=") ? "" : true));
+            if (changes.remove(values[0]) == null)
+                changes.put(values[0], values.length > 1 ? unquote(values[1]) : (newClass.endsWith("=") ? "" : true));
+            classes[i] = newClass;
         }
         element.setPropertyObject(GwtClientUtils.LSF_CLASSES_ATTRIBUTE + postfix, classes);
 
         return changes;
+    }
+
+    static String unquote(String value) {
+        return value.length() >= 2 && value.startsWith("\"") && value.endsWith("\"") ? value.substring(1, value.length() - 1) : value;
     }
 
     static void applyClassChange(Element element, String aclass, Object value) {
