@@ -41,6 +41,7 @@ import lsfusion.server.logics.classes.data.AnyValuePropertyHolder;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.data.integral.DoubleClass;
+import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.classes.data.time.IntervalClass;
 import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
@@ -149,6 +150,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LP vtrue;
     public LP vzero;
     public LP vnull;
+
+    public LP static30;
 
     public LP minus;
 
@@ -518,6 +521,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         vtrue = addCProp(LogicalClass.instance, true);
         vzero = addCProp(DoubleClass.instance, 0.0);
         vnull = addProperty(null, new LP<>(NullValueProperty.instance));
+
+        static30 = addCProp(IntegerClass.instance, 30);
 
         if(ActionDebugger.getInstance().isEnabled()) {
             watch = addAction(null, new LA<>(WatchAction.instance));

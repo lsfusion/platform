@@ -163,6 +163,7 @@ import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
 import static lsfusion.base.BaseUtils.add;
+import static lsfusion.server.logics.form.open.stat.PrintAction.getExtraParams;
 import static lsfusion.server.logics.property.PropertyFact.createAnd;
 import static lsfusion.server.logics.property.oraction.ActionOrPropertyUtils.*;
 
@@ -639,10 +640,10 @@ public abstract class LogicsModule {
     protected <O extends ObjectSelector> LA<?> addPFAProp(Group group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                                                           ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
                                                           FormPrintType staticType, boolean server, boolean autoPrint, boolean syncType,
-                                                          MessageClientType messageType, Integer selectTop, LP targetProp, boolean removeNullsAndDuplicates,
-                                                          ValueClass printer, ValueClass sheetName, ValueClass password) {
+                                                          MessageClientType messageType, LP targetProp, boolean removeNullsAndDuplicates,
+                                                          SelectTop<ValueClass> selectTop, ValueClass printer, ValueClass sheetName, ValueClass password) {
         return addAction(group, new LA<>(new PrintAction<>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters,
-                staticType, server, syncType, messageType, autoPrint, new SelectTop(selectTop), targetProp, baseLM.formPageCount, removeNullsAndDuplicates, printer, sheetName, password)));
+                staticType, server, syncType, messageType, autoPrint, targetProp, baseLM.formPageCount, removeNullsAndDuplicates, selectTop, printer, sheetName, password, getExtraParams(selectTop, printer, sheetName, password))));
     }
     protected <O extends ObjectSelector> LP addJSONFormProp(Group group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                                                        ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
@@ -653,7 +654,8 @@ public abstract class LogicsModule {
     }
     protected <O extends ObjectSelector> LA addEFAProp(Group group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                                                        ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
-                                                       FormIntegrationType staticType, Boolean hasHeader, String separator, boolean noEscape, SelectTop selectTop, String charset,
+                                                       FormIntegrationType staticType, Boolean hasHeader, String separator, boolean noEscape,
+                                                       SelectTop<ValueClass> selectTop, String charset,
                                                        LP singleExportFile, ImMap<GroupObjectEntity, LP> exportFiles, ValueClass sheetName, ValueClass root, ValueClass tag) {
         ExportAction<O> exportAction;
         switch(staticType) {
@@ -813,7 +815,7 @@ public abstract class LogicsModule {
     // ------------------- Export property action ----------------- //
     protected LA addExportPropertyAProp(LocalizedString caption, FormIntegrationType type, int resInterfaces, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders,
                                         LP singleExportFile, boolean hasWhere, ValueClass sheetName, ValueClass root, ValueClass tag, String separator,
-                                        Boolean hasHeader, boolean noEscape, Integer selectTop, String charset, boolean attr, Object... params) throws FormEntity.AlreadyDefined {
+                                        Boolean hasHeader, boolean noEscape, SelectTop<ValueClass> selectTop, String charset, boolean attr, Object... params) throws FormEntity.AlreadyDefined {
         IntegrationForm integrationForm = addIntegrationForm(resInterfaces, propUsages, orders, hasWhere, params);
         IntegrationFormEntity<PropertyInterface> form = integrationForm.form;
 
@@ -824,7 +826,7 @@ public abstract class LogicsModule {
         }            
                 
         // creating action
-        return addEFAProp(null, caption, form, integrationForm.objectsToSet, integrationForm.nulls, SetFact.EMPTYORDER(), SetFact.EMPTY(), type, hasHeader, separator, noEscape, new SelectTop(selectTop), charset, singleExportFile, exportFiles, sheetName, root, tag);
+        return addEFAProp(null, caption, form, integrationForm.objectsToSet, integrationForm.nulls, SetFact.EMPTYORDER(), SetFact.EMPTY(), type, hasHeader, separator, noEscape, selectTop, charset, singleExportFile, exportFiles, sheetName, root, tag);
     }
 
     protected LA addImportPropertyAProp(FormIntegrationType type, int paramsCount, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImList<ValueClass> paramClasses, LP<?> whereLCP,
@@ -2204,7 +2206,7 @@ public abstract class LogicsModule {
     private <P extends PropertyInterface> Action<?> createConstraintAction(Property<?> property, ImList<PropertyMapImplement<?, P>> properties, Property<?> messageProperty, boolean cancel, LocalizedString debugCaption) {
         ActionMapImplement<?, ClassPropertyInterface> logAction;
         //  PRINT OUT property MESSAGE NOWAIT;
-        logAction = (ActionMapImplement<ClassPropertyInterface, ClassPropertyInterface>) addPFAProp(null, debugCaption, new OutFormSelector<P>((Property) property, messageProperty, properties), ListFact.EMPTY(), ListFact.EMPTY(), SetFact.EMPTYORDER(), SetFact.EMPTY(), FormPrintType.MESSAGE, false, false, false, MessageClientType.WARN, 30, null, true, null, null, null).action.getImplement();
+        logAction = PropertyFact.createJoinAction(addPFAProp(null, debugCaption, new OutFormSelector<P>((Property) property, messageProperty, properties), ListFact.EMPTY(), ListFact.EMPTY(), SetFact.EMPTYORDER(), SetFact.EMPTY(), FormPrintType.MESSAGE, false, false, false, MessageClientType.WARN, null, true, new SelectTop<>(baseLM.static30.getImplement().mapValueClass(ClassType.signaturePolicy)), null, null, null).action.getImplement().action, baseLM.static30.getImplement());
         if(cancel)
             logAction = PropertyFact.createListAction(
                     SetFact.EMPTY(),

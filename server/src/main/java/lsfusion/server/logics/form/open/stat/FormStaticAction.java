@@ -1,6 +1,5 @@
 package lsfusion.server.logics.form.open.stat;
 
-import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -15,7 +14,6 @@ import lsfusion.server.logics.form.open.FormSelector;
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.stat.SelectTop;
 import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
-import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -26,7 +24,7 @@ public abstract class FormStaticAction<O extends ObjectSelector, T extends FormS
 
     protected final T staticType;
     
-    protected SelectTop selectTop;
+    protected SelectTop<ValueClass> selectTop;
 
     public FormStaticAction(LocalizedString caption,
                             FormSelector<O> form,
@@ -35,7 +33,7 @@ public abstract class FormStaticAction<O extends ObjectSelector, T extends FormS
                             ImOrderSet<PropertyInterface> orderContextInterfaces,
                             ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
                             T staticType,
-                            SelectTop selectTop,
+                            SelectTop<ValueClass> selectTop,
                             ValueClass... extraValueClasses) {
         super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, null, extraValueClasses);
 

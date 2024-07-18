@@ -2,7 +2,9 @@ package lsfusion.server.logics.form.open.stat;
 
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.interop.action.*;
+import lsfusion.interop.action.MessageClientType;
+import lsfusion.interop.action.ReportClientAction;
+import lsfusion.interop.action.ServerPrintAction;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.print.ReportGenerator;
@@ -33,6 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, FormPrintType> {
+    private final SelectTop<ClassPropertyInterface> selectTopInterfaces;
 
     private final ClassPropertyInterface printerInterface;
     private final ClassPropertyInterface sheetNameInterface;
@@ -49,15 +52,15 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
     private final boolean server;
     private final boolean autoPrint;
 
-    private static ValueClass[] getExtraParams(ValueClass printer, ValueClass sheetName, ValueClass password) {
-        List<ValueClass> params = new ArrayList<>();
-        if(printer != null)
+    public static ValueClass[] getExtraParams(SelectTop<ValueClass> selectTop, ValueClass printer, ValueClass sheetName, ValueClass password) {
+        List<ValueClass> params = selectTop.getParams();
+        if (printer != null)
             params.add(printer);
-        if(sheetName != null)
+        if (sheetName != null)
             params.add(sheetName);
-        if(password != null)
+        if (password != null)
             params.add(password);
-        return params.toArray(new ValueClass[params.size()]);
+        return params.toArray(new ValueClass[0]);
     }
     public PrintAction(LocalizedString caption,
                        FormSelector<O> form,
@@ -70,16 +73,19 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
                        boolean syncType,
                        MessageClientType messageType,
                        boolean autoPrint,
-                       SelectTop selectTop,
                        LP exportFile,
                        LP formPageCount, boolean removeNullsAndDuplicates,
-                       ValueClass printer, ValueClass sheetName, ValueClass password) {
-        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, selectTop, getExtraParams(printer, sheetName, password));
+                       SelectTop<ValueClass> selectTop, ValueClass printer, ValueClass sheetName, ValueClass password,
+                       ValueClass[] extraParams) {
+        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, selectTop, extraParams);
 
         ImOrderSet<ClassPropertyInterface> orderInterfaces = getOrderInterfaces();
-        this.passwordInterface = password != null ? orderInterfaces.get(orderInterfaces.size() - 1) : null;
-        this.sheetNameInterface = sheetName != null ? orderInterfaces.get(orderInterfaces.size() - 1 - (password != null ? 1 : 0)) : null;
-        this.printerInterface = printer != null ? orderInterfaces.get(orderInterfaces.size() - 1 - (password != null ? 1 : 0) - (sheetName != null ? 1 : 0)) : null;
+        int shift = 0;
+        this.passwordInterface = password != null ? orderInterfaces.get(orderInterfaces.size() - 1 - shift++) : null;
+        this.sheetNameInterface = sheetName != null ? orderInterfaces.get(orderInterfaces.size() - 1 - shift++) : null;
+        this.printerInterface = printer != null ? orderInterfaces.get(orderInterfaces.size() - 1 - shift++) : null;
+
+        this.selectTopInterfaces = selectTop.mapValues(orderInterfaces, extraParams.length);
 
         this.formPageCount = formPageCount;
 
@@ -97,7 +103,7 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
     protected void executeInternal(FormEntity form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, ExecutionContext<ClassPropertyInterface> context, ImRevMap<ObjectEntity, O> mapResolvedObjects, ImSet<ContextFilterInstance> contextFilters) throws SQLException, SQLHandledException {
         if (staticType == FormPrintType.MESSAGE) {
             // getting data
-            PrintMessageData reportData = new StaticFormDataManager(form, mapObjectValues, context, contextFilters).getPrintMessageData(selectTop, removeNullsAndDuplicates);
+            PrintMessageData reportData = new StaticFormDataManager(form, mapObjectValues, context, contextFilters).getPrintMessageData(selectTopInterfaces.mapValues(context), removeNullsAndDuplicates);
 
             MessageClientType type = messageType;
             if(context.getSession().isNoCancelInTransaction())

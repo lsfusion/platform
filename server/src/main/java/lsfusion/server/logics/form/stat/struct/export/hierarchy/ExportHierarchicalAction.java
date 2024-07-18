@@ -38,14 +38,15 @@ public abstract class ExportHierarchicalAction<T extends Node<T>, O extends Obje
 
     protected final LP<?> exportFile; // nullable
 
-    private static ValueClass[] getExtraParams(ValueClass root, ValueClass tag) {
-        List<ValueClass> params = new ArrayList<>();
-        if(root != null)
+    private static ValueClass[] getExtraParams(SelectTop<ValueClass> selectTop, ValueClass root, ValueClass tag) {
+        List<ValueClass> params = selectTop.getParams();
+        if (root != null)
             params.add(root);
-        if(tag != null)
+        if (tag != null)
             params.add(tag);
-        return params.toArray(new ValueClass[params.size()]);
+        return params.toArray(new ValueClass[0]);
     }
+
     public ExportHierarchicalAction(LocalizedString caption,
                                     FormSelector<O> form,
                                     ImList<O> objectsToSet,
@@ -54,10 +55,10 @@ public abstract class ExportHierarchicalAction<T extends Node<T>, O extends Obje
                                     ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
                                     FormIntegrationType staticType,
                                     LP exportFile,
-                                    SelectTop selectTop,
+                                    SelectTop<ValueClass> selectTop,
                                     String charset,
                                     ValueClass root, ValueClass tag) {
-        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, selectTop, charset != null ? charset : ExternalUtils.defaultXMLJSONCharset, getExtraParams(root, tag));
+        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, selectTop, charset != null ? charset : ExternalUtils.defaultXMLJSONCharset, getExtraParams(selectTop, root, tag));
 
         ImOrderSet<ClassPropertyInterface> orderInterfaces = getOrderInterfaces();
         if (tag != null)

@@ -1,7 +1,6 @@
 package lsfusion.server.logics.form.open.stat;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
@@ -18,7 +17,6 @@ import lsfusion.server.logics.form.stat.struct.export.StaticExportData;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
 import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
-import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -28,12 +26,15 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 public abstract class ExportAction<O extends ObjectSelector> extends FormStaticAction<O, FormIntegrationType> {
+    private final SelectTop<ClassPropertyInterface> selectTopInterfaces;
+
     protected String charset;
     
     public ExportAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, ImOrderSet<PropertyInterface> orderContextInterfaces,
-                        ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters, FormIntegrationType staticType, SelectTop selectTop, String charset, ValueClass... extraParams) {
+                        ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters, FormIntegrationType staticType, SelectTop<ValueClass> selectTop, String charset, ValueClass... extraParams) {
         super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, selectTop, extraParams);
         this.charset = charset;
+        this.selectTopInterfaces = selectTop.mapValues(getOrderInterfaces(), extraParams.length);
     }
     
     protected abstract void export(ExecutionContext<ClassPropertyInterface> context, StaticExportData exportData, StaticDataGenerator.Hierarchy hierarchy) throws IOException, SQLException, SQLHandledException;
@@ -41,7 +42,7 @@ public abstract class ExportAction<O extends ObjectSelector> extends FormStaticA
     @Override
     protected void executeInternal(FormEntity form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, ExecutionContext<ClassPropertyInterface> context, ImRevMap<ObjectEntity, O> mapResolvedObjects, ImSet<ContextFilterInstance> contextFilters) throws SQLException, SQLHandledException {
         StaticFormDataManager formDataManager = new StaticFormDataManager(form, mapObjectValues, context, contextFilters);
-        FormDataManager.ExportResult exportData = formDataManager.getExportData(selectTop);
+        FormDataManager.ExportResult exportData = formDataManager.getExportData(selectTopInterfaces.mapValues(context));
         try {
             export(context, new StaticExportData(exportData.keys, exportData.properties), exportData.hierarchy);
         } catch (IOException e) {

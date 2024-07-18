@@ -37,6 +37,7 @@ import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.integral.DoubleClass;
+import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.classes.data.integral.LongClass;
 import lsfusion.server.logics.classes.data.integral.NumericClass;
 import lsfusion.server.logics.classes.user.BaseClass;
@@ -378,6 +379,10 @@ public class PropertyFact {
 
     public static <T extends PropertyInterface> PropertyMapImplement<?,T> createOne() {
         return createStatic(1L, LongClass.instance);
+    }
+
+    public static <T extends PropertyInterface> PropertyMapImplement<?,T> create30() {
+        return createStatic(30, IntegerClass.instance);
     }
 
     public static <T extends PropertyInterface> PropertyMapImplement<?, T> createFalse() {
