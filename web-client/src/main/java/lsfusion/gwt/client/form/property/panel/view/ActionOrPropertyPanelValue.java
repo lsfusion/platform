@@ -72,6 +72,13 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
         controller.setLoading(columnKey, PValue.getPValue(true));
     }
 
+    @Override
+    public void stopEditing() {
+        super.stopEditing();
+
+        controller.stopEditing(columnKey);
+    }
+
     public PValue setLoadingValue(PValue value) {
         PValue oldValue = getValue();
 

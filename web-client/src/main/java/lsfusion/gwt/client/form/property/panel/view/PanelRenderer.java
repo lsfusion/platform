@@ -81,9 +81,14 @@ public abstract class PanelRenderer {
     public void setCaption(String caption) {
         if (!GwtSharedUtils.nullEquals(this.caption, caption)) {
             this.caption = caption;
-            setLabelText(property.getPanelCaption(caption));
+            updateCaption();
         }
     }
+
+    protected void updateCaption() {
+        setLabelText(property.getPanelCaption(caption));
+    }
+
     private String captionElementClass;
     public void setCaptionElementClass(String classes) {
         if (!GwtSharedUtils.nullEquals(this.captionElementClass, classes)) {
@@ -122,6 +127,9 @@ public abstract class PanelRenderer {
     protected abstract void setLabelClasses(String classes);
     protected abstract void setCommentText(String text);
     protected abstract void setCommentClasses(String classes);
+
+    public void stopEditing() {
+    }
 
     public void onBinding(Event event) {
         value.onBinding(event);

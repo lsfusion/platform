@@ -42,6 +42,10 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
             }
 
             @Override
+            public void stopEditing(GGroupObjectValue columnKey) {
+            }
+
+            @Override
             public void setLoading(GGroupObjectValue columnKey, PValue value) {
                 throw new UnsupportedOperationException();
             }

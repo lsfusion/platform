@@ -46,6 +46,7 @@ import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.stat.*;
 import lsfusion.server.data.table.*;
+import lsfusion.server.data.type.AbstractType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
@@ -78,6 +79,7 @@ import lsfusion.server.logics.classes.StaticClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.*;
 import lsfusion.server.logics.classes.data.file.AJSONClass;
+import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.classes.struct.ConcatenateValueClass;
 import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.CustomClass;
@@ -2643,8 +2645,11 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
     @IdentityInstanceLazy
     public ImRevMap<T, StaticParamNullableExpr> getInterfaceParamExprs(ImSet<T> interfaces) {
-        // maybe later it makes sense to fill params without classes with some "default" classes
-        return getInterfaceClasses(ClassType.forPolicy).filter(interfaces).mapRevValues(StaticParamNullableExpr::new);
+        ImMap<T, ValueClass> interfaceClasses = getInterfaceClasses(ClassType.forPolicy);
+        return interfaces.mapValues((T anInterface) -> {
+            ValueClass valueClass = interfaceClasses.get(anInterface);
+            return valueClass != null ? valueClass : AbstractType.getUnknownClassNull();
+        }).mapRevValues(StaticParamNullableExpr::new);
     }
     @IdentityInstanceLazy
     public StaticParamNullableExpr getValueParamExpr() {

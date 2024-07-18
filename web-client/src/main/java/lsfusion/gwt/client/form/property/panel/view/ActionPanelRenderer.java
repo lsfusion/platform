@@ -34,6 +34,11 @@ public class ActionPanelRenderer extends PanelRenderer {
     }
 
     @Override
+    public void stopEditing() { // after editing someone should restore the text (because caption is rendered inside the element)
+        updateCaption();
+    }
+
+    @Override
     protected void setLabelClasses(String classes) {
 //        BaseImage.updateClasses(value.getRenderElement());
     }
