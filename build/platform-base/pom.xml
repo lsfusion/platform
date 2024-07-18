@@ -49,6 +49,7 @@
         <jhlabs.filters.version>2.0.235</jhlabs.filters.version>
         <jcalendar.version>1.4</jcalendar.version>
         <jssc.version>2.9.4</jssc.version>
+        <jserialcomm.version>2.11.0</jserialcomm.version>
         <mssql.version>4.0</mssql.version>
         <javax.mail.version>1.6.2</javax.mail.version>
         <blocking.map.version>1.0-patched</blocking.map.version>
@@ -315,6 +316,11 @@
                 <groupId>io.github.java-native</groupId>
                 <artifactId>jssc</artifactId>
                 <version>${jssc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fazecast</groupId>
+                <artifactId>jSerialComm</artifactId>
+                <version>${jserialcomm.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.microsoft</groupId>
