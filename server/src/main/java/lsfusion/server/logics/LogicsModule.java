@@ -643,7 +643,7 @@ public abstract class LogicsModule {
                                                           MessageClientType messageType, LP targetProp, boolean removeNullsAndDuplicates,
                                                           SelectTop<ValueClass> selectTop, ValueClass printer, ValueClass sheetName, ValueClass password) {
         return addAction(group, new LA<>(new PrintAction<>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters,
-                staticType, server, syncType, messageType, autoPrint, new SelectTop(selectTop), targetProp, baseLM.formPageCount, removeNullsAndDuplicates, selectTop, printer, sheetName, password, getExtraParams(selectTop, printer, sheetName, password))));
+                staticType, server, syncType, messageType, autoPrint, targetProp, baseLM.formPageCount, removeNullsAndDuplicates, selectTop, printer, sheetName, password, getExtraParams(selectTop, printer, sheetName, password))));
     }
     protected <O extends ObjectSelector> LP addJSONFormProp(Group group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                                                        ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,

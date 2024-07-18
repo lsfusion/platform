@@ -4088,7 +4088,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         LA action = addPFAProp(null, LocalizedString.NONAME, mapped.form, mappedObjects, mNulls.immutableList(),
                 contextEntities.orderInterfaces, contextEntities.filters, printType, server, autoPrint, syncType,
-                messageType, selectTop.mapValues(this, params), targetProp, false, printer, sheetName, password);
+                messageType, targetProp, false, selectTop.mapValues(this, params), printer, sheetName, password);
 
         for (int usedParam : contextEntities.usedParams) {
             mapping.add(new LPWithParams(usedParam));
