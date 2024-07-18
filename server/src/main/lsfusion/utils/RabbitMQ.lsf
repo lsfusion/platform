@@ -20,6 +20,9 @@ start(Channel c) {
     apply();
 }
 
+//queue, message
+processConsumed ABSTRACT LIST (STRING, STRING);
+
 sendMessage 'Send message' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.rabbitmq.SendMessageRabbitMQAction' (Channel, STRING);
 
 onMessage ABSTRACT LIST (Channel, STRING);
