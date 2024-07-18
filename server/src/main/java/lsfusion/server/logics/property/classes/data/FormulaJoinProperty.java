@@ -33,11 +33,11 @@ public class FormulaJoinProperty extends FormulaProperty<FormulaJoinProperty.Int
 
     public final FormulaJoinImpl formula;
 
-    public FormulaJoinProperty(DataClass valueClass, CustomFormulaSyntax formula, int paramCount, boolean valueNull) {
-        this(valueClass, valueNull, formula, getInterfaces(paramCount));
+    public FormulaJoinProperty(DataClass valueClass, CustomFormulaSyntax formula, ImOrderSet<String> params, boolean valueNull) {
+        this(valueClass, valueNull, formula, getInterfaces(params.size()), params);
     }
-    private FormulaJoinProperty(DataClass valueClass, boolean valueNull, CustomFormulaSyntax formula, ImOrderSet<Interface> interfaces) {
-        this(LocalizedString.create(formula.getDefaultSyntax()), interfaces, FormulaExpr.createJoinCustomFormulaImpl(formula, valueClass, valueNull, interfaces.mapOrderSetValues(anInterface -> FormulaJoinProperty.getParamName(String.valueOf(anInterface.ID + 1)))));
+    private FormulaJoinProperty(DataClass valueClass, boolean valueNull, CustomFormulaSyntax formula, ImOrderSet<Interface> interfaces, ImOrderSet<String> params) {
+        this(LocalizedString.create(formula.getDefaultSyntax()), interfaces, FormulaExpr.createJoinCustomFormulaImpl(formula, valueClass, valueNull, params));
     }
 
     public FormulaJoinProperty(LocalizedString caption, int intCount, FormulaJoinImpl formula) {
@@ -53,10 +53,6 @@ public class FormulaJoinProperty extends FormulaProperty<FormulaJoinProperty.Int
 
     protected Expr calculateExpr(final ImMap<Interface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
         return FormulaExpr.create(formula, getOrderInterfaces().mapList(joinImplement));
-    }
-
-    public static String getParamName(String prmID) {
-        return "prm" + prmID;
     }
 
     public static ExClassSet inferInterfaceClass(ExClassSet commonValue, FormulaImpl formula, int index) {

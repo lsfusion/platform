@@ -40,8 +40,8 @@ public class Async {
     }
 
     public void serialize(FormInstanceContext context, DataOutputStream dataStream) throws IOException {
-        FormChanges.serializeConvertFileValue(dataStream, null, displayString, context);
-        FormChanges.serializeConvertFileValue(dataStream, null, rawString, context);
+        FormChanges.serializeConvertFileValue(displayString, dataStream, context);
+        FormChanges.serializeConvertFileValue(rawString, dataStream, context);
         serializeKey(dataStream, key);
     }
 

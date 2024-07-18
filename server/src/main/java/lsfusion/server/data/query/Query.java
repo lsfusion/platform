@@ -192,9 +192,6 @@ public class Query<K,V> extends IQuery<K,V> {
                 public Where getWhere() {
                     return where;
                 }
-                public ImSet<V> getProperties() {
-                    return properties.keys();
-                }
                 public Join<V> translateRemoveValues(MapValuesTranslate translate) {
                     return ((Query<K,V>)Query.this.translateRemoveValues(translate)).getJoin();
                 }

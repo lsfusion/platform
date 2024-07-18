@@ -180,6 +180,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LP<?> cookiesTo;
     public LP<?> query;
     public LP<?> params;
+    public LP<?> actionPathInfo;
     public LP<?> contentType;
     public LP<?> body;
     public LP<?> appHost;
@@ -511,7 +512,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         round = addRoundProp(false);
         roundScale = addRoundProp(true);
 
-        minus = addSFProp("(-(prm1))", 1);
+        minus = addSFProp("(-(prm1))", SetFact.toOrderExclSet("prm1"));
 
         object = addAFProp();
         object.property.caption = LocalizedString.create("{logics.id}");
@@ -558,7 +559,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         headersTo = findProperty("headersTo[TEXT]");
         cookiesTo = findProperty("cookiesTo[TEXT]");
         query = findProperty("query[]");
-        params = findProperty("params[TEXT]");
+        actionPathInfo = findProperty("actionPathInfo[]");
+        params = findProperty("params[TEXT, INTEGER]");
         contentType = findProperty("contentType[]");
         body = findProperty("body[]");
         appHost = findProperty("appHost[]");

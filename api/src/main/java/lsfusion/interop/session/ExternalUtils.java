@@ -127,7 +127,7 @@ public class ExternalUtils {
         boolean needNotificationId = getHeaderValue(headerNames, headerValues, NEED_NOTIFICATION_ID_HEADER) != null;
 
         ExternalRequest request = new ExternalRequest(returns.toArray(new String[0]), paramsList.toArray(new Object[paramsList.size()]),
-                charset == null ? null : charset.toString(), headerNames, headerValues, cookieNames,
+                queryParams, charset == null ? null : charset.toString(), headerNames, headerValues, cookieNames,
                 cookieValues, logicsHost, logicsPort, logicsExportName, scheme, method, webHost, webPort, contextPath,
                 servletPath, pathInfo, query, requestContentType != null ? requestContentType.toString() : null, sessionId, body, signature, needNotificationId);
 
@@ -136,9 +136,9 @@ public class ExternalUtils {
         boolean isEvalAction = path.endsWith("/eval/action");
         if (path.endsWith("/eval") || isEvalAction) {
             Object script = getParameterValue(queryParams, SCRIPT_PARAM);
-            if (script == null && !paramsList.isEmpty()) { // converting last script param to the script param
+            if (script == null) { // if we don't have script param, we consider the first body param as script
                 int scriptParam = queryActionParams.size();
-                if(paramsList.size() > scriptParam) {
+                if(scriptParam < paramsList.size()) {
                     script = paramsList.get(scriptParam);
                     paramsList = paramsList.remove(scriptParam);
                     request.params = paramsList.toArray(new Object[paramsList.size()]);
@@ -260,10 +260,6 @@ public class ExternalUtils {
         return charset;
     }
 
-    // returns String or FileData
-    public static ImList<Object> getListFromInputStream(InputStream is, ContentType contentType) throws IOException, MessagingException {
-        return getListFromInputStream(IOUtils.readBytesFromStream(is), contentType);
-    }
     // returns FileData for FILE or String for other classes, contentType can be null if there are no parameters
     public static ImList<Object> getListFromInputStream(byte[] bytes, ContentType contentType) throws IOException, MessagingException {
         MList<Object> mParamsList = ListFact.mList();
@@ -276,7 +272,7 @@ public class ExternalUtils {
                     Object param = bodyPart.getContent();
                     ContentType partContentType = ContentType.parse(bodyPart.getContentType());
                     if(param instanceof InputStream)
-                        mParamsList.addAll(getListFromInputStream((InputStream)param, partContentType));
+                        mParamsList.addAll(getListFromInputStream(IOUtils.readBytesFromStream((InputStream) param), partContentType));
                     else
                         mParamsList.add(getRequestParam(param, partContentType, true)); // multipart автоматически text/* возвращает как String
                 }

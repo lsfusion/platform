@@ -16,6 +16,7 @@ import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.caches.CacheAspect;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.controller.stack.StackProgress;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
@@ -160,7 +161,7 @@ public class ImplementTable extends DBTable { // последний интерф
         return changesQuery.getQuery();
     }
 
-    public void moveColumn(SQLSession sql, PropertyField field, NamedTable prevTable, ImMap<KeyField, KeyField> mapFields, PropertyField prevField) throws Exception {
+    public void moveColumn(SQLSession sql, PropertyField field, DBTable prevTable, ImMap<KeyField, KeyField> mapFields, PropertyField prevField) throws Exception {
 //        ImplementTable.ignoreStatProps(() -> {
         QueryBuilder<KeyField, PropertyField> moveColumn = new QueryBuilder<>(this);
         Expr moveExpr = prevTable.join(mapFields.join(moveColumn.getMapExprs())).getExpr(prevField);
@@ -185,7 +186,7 @@ public class ImplementTable extends DBTable { // последний интерф
 
     @NFLazy
     public void addIndex(ImOrderSet<Field> index, IndexType indexType) { // кривовато конечно, но пока другого варианта нет
-        assert CacheAspect.checkNoCaches(this, CacheAspect.Type.SIMPLE, Table.class, "getIndexes");
+        assert CacheAspect.checkNoCaches(this, CacheAspect.Type.SIMPLE, ImplementTable.class, "getIndexes");
         indexes = indexes.addExcl(index);
 
         Field field = index.get(0);
@@ -511,8 +512,14 @@ public class ImplementTable extends DBTable { // последний интерф
         if(statProps!=null) {
             checkStatProps();
             return statProps;
-        } else
-            return SerializedTable.getStatProps(this);
+        }
+
+        return getDefaultStatProps();
+    }
+
+    @IdentityLazy
+    private ImMap<PropertyField, PropStat> getDefaultStatProps() {
+        return StoredTable.getStatProps(this);
     }
 
     private Object readCount(DataSession session, Where where) throws SQLException, SQLHandledException {
@@ -839,7 +846,16 @@ public class ImplementTable extends DBTable { // последний интерф
         }
     }
 
-    public NamedTable getInconsistent(BaseClass baseClass) {
+    public String outputKeys() {
+        return ThreadLocalContext.localize("{data.table} : ") + name + ThreadLocalContext.localize(", {data.keys} : ") + classes.getCommonParent(getTableKeys()).toString();
+    }
+
+    public String outputField(PropertyField field, boolean outputTable) {
+        ImMap<Field, ValueClass> commonParent = propertyClasses.get(field).getCommonParent(SetFact.addExcl(getTableKeys(), field));
+        return (outputTable ? ThreadLocalContext.localize("{data.table}") + " : " + name + ", " : "") + ThreadLocalContext.localize("{data.field}") + " : " + field.getName() + " - " + commonParent.get(field) + ", " + ThreadLocalContext.localize("{data.keys}") + " : " + commonParent.remove(field);
+    }
+
+    public DBTable getInconsistent(BaseClass baseClass) {
         return new InconsistentTable(name, keys, properties, baseClass, statKeys, statProps);
 //        return new SerializedTable(name, keys, properties, baseClass);
     }

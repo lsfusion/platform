@@ -122,15 +122,15 @@ public interface BaseImage extends Serializable {
 
         NativeStringMap<Object> changes = new NativeStringMap<>();
         for(String prevClass : prevClasses) {
-            String[] values = prevClass.split("=");
+            String[] values = GwtClientUtils.splitUnquotedEqual(prevClass);
             changes.put(values[0], values.length > 1 || prevClass.endsWith("=") ? null : false);
         }
 
-        String[] classes = newClasses != null ? newClasses.split(" ") : new String[0];
-        for(String newClass : classes) {
-            String[] values = newClass.split("=");
-            if(changes.remove(values[0]) == null)
-                changes.put(values[0], values.length > 1 ? values[1] : (newClass.endsWith("=") ? "" : true));
+        String[] classes = newClasses != null ? GwtClientUtils.splitUnquotedSpace(newClasses) : new String[0];
+        for (String newClass : classes) {
+            String[] values = GwtClientUtils.splitUnquotedEqual(newClass);
+            if (changes.remove(values[0]) == null)
+                changes.put(values[0], values.length > 1 ? GwtClientUtils.unquote(values[1]) : (newClass.endsWith("=") ? "" : true));
         }
         element.setPropertyObject(GwtClientUtils.LSF_CLASSES_ATTRIBUTE + postfix, classes);
 

@@ -192,6 +192,10 @@
             <artifactId>jssc</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.fazecast</groupId>
+            <artifactId>jSerialComm</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.antlr</groupId>
             <artifactId>antlr</artifactId>
         </dependency>

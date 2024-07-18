@@ -439,11 +439,11 @@ public class PropertyFact {
         return groupProperty.getImplement();
     }
 
-    private static <T extends PropertyInterface> PropertyMapImplement<?,T> createFormula(LocalizedString caption, ImSet<T> interfaces, String formula, DataClass valueClass, ImList<? extends PropertyInterfaceImplement<T>> params) {
+    private static <T extends PropertyInterface> PropertyMapImplement<?,T> createFormula(LocalizedString caption, ImSet<T> interfaces, String formula, DataClass valueClass, ImList<? extends PropertyInterfaceImplement<T>> params, ImOrderSet<String> paramNames) {
         final ImRevMap<T, JoinProperty.Interface> joinMap = interfaces.mapRevValues(JoinProperty.genInterface);
         ImRevMap<JoinProperty.Interface, T> revJoinMap = joinMap.reverse();
 
-        final FormulaJoinProperty implement = new FormulaJoinProperty(valueClass, new CustomFormulaSyntax(formula), params.size(), false);
+        final FormulaJoinProperty implement = new FormulaJoinProperty(valueClass, new CustomFormulaSyntax(formula, paramNames.getSet()), paramNames, false);
         ImMap<FormulaJoinProperty.Interface, PropertyInterfaceImplement<JoinProperty.Interface>> joinImplement = implement.getFriendlyOrderInterfaces().mapList(PropertyFact.mapImplements(params, joinMap));
 
         JoinProperty<FormulaJoinProperty.Interface> joinProperty = new JoinProperty<>(caption,
@@ -666,7 +666,7 @@ public class PropertyFact {
         int numericLength = 15 + roundlen;
         PropertyMapImplement<?, T> distrRound =
                 createFormula(distrCaption, innerInterfaces.getSet(),
-                              "ROUND(CAST((prm1*prm2/prm3) as NUMERIC(" + numericLength + "," + roundlen+ "))," + roundlen + ")", NumericClass.get(numericLength, roundlen), ListFact.toList(distribute, proportion, propSum));
+                              "ROUND(CAST((prm1*prm2/prm3) as NUMERIC(" + numericLength + "," + roundlen+ "))," + roundlen + ")", NumericClass.get(numericLength, roundlen), ListFact.toList(distribute, proportion, propSum), SetFact.toOrderExclSet("prm1", "prm2", "prm3"));
 
         if (!roundfirst) return distrRound;
         

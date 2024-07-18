@@ -229,24 +229,6 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
         return createOuterGroupCases(translator.translate(group), query, MapFact.EMPTY(), false);
     }
 
-    public String getExprSource(final CompileSource source, SubQueryContext subcontext) {
-
-        DebugInfoWriter debugInfoWriter = null;
-        
-        final Result<ImMap<Expr,String>> fromPropertySelect = new Result<>();
-        Result<ImCol<String>> fromWhereSelect = new Result<>(); // проверить crossJoin
-        Result<ImMap<String, SQLQuery>> subQueries = new Result<>();
-        lsfusion.server.data.query.Query<KeyExpr,Expr> subQuery = new lsfusion.server.data.query.Query<>(getInner().getQueryKeys().toRevMap(),
-                group.keys().addExcl(query.getExprs()).toMap(), getInner().getFullWhere());
-        CompiledQuery<KeyExpr, Expr> compiled = subQuery.compile(new CompileOptions<>(source.syntax, subcontext, debugInfoWriter != null));
-        String fromSelect = compiled.fillSelect(new Result<>(), fromPropertySelect, fromWhereSelect, subQueries, source.params, null, DebugInfoWriter.pushPrefix(debugInfoWriter, "GROUP EXPR"));
-        
-        ImCol<String> whereSelect = fromWhereSelect.result.mergeCol(group.mapColValues((key, value) -> fromPropertySelect.result.get(key)+"="+value.getSource(source)));
-
-        return "(" + source.syntax.getSelect(fromSelect, query.getSource(fromPropertySelect.result, compiled.getMapPropertyReaders(), subQuery, source.syntax, source.env, getType()),
-                whereSelect.toString(" AND ")) + ")";
-    }
-
     @IdentityInstanceLazy
     public GroupJoin getInnerJoin() {
         final Where queryWhere = query.getWhere();

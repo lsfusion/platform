@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.controller.dispatch;
 import lsfusion.gwt.client.action.*;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.Result;
+import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.log.GLog;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
 import lsfusion.gwt.client.base.view.EventHandler;
@@ -90,7 +91,7 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
         pauseDispatching();
 
         Result<Object> result = new Result<>();
-        DialogBoxHelper.showConfirmBox(action.caption, EscapeUtils.toHTML(action.message), action.cancel, action.timeout, action.initialValue, getPopupOwner(), chosenOption -> continueDispatching(chosenOption.asInteger(), result));
+        DialogBoxHelper.showConfirmBox(action.caption, EscapeUtils.toHTML(action.message, StaticImage.MESSAGE_WARN), action.cancel, action.timeout, action.initialValue, getPopupOwner(), chosenOption -> continueDispatching(chosenOption.asInteger(), result));
         return result.result;
     }
 

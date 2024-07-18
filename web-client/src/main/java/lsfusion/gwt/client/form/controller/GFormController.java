@@ -997,7 +997,7 @@ public class GFormController implements EditManager {
     public void executePropertyEventAction(ExecuteEditContext editContext, String actionSID, GEventSource eventSource, EventHandler handler) {
         GPropertyDraw property = editContext.getProperty();
         if (isChangeEvent(actionSID) && property.askConfirm) {
-            DialogBoxHelper.showConfirmBox("lsFusion", EscapeUtils.toHTML(property.askConfirmMessage), editContext.getPopupOwner(), chosenOption -> {
+            DialogBoxHelper.showConfirmBox("lsFusion", EscapeUtils.toHTML(property.askConfirmMessage, StaticImage.MESSAGE_WARN), editContext.getPopupOwner(), chosenOption -> {
                         if (chosenOption == DialogBoxHelper.OptionType.YES)
                             executePropertyEventActionConfirmed(editContext, actionSID, eventSource, handler);
                     });
@@ -2281,7 +2281,6 @@ public class GFormController implements EditManager {
         Element element = getEditElement();
         FocusUtils.startFocusTransaction(element);
 
-        element.addClassName("is-editing");
         editContext.startEditing();
 
         boolean notFocusable = !editContext.isFocusable();
@@ -2373,7 +2372,6 @@ public class GFormController implements EditManager {
         //getAsyncValues need editContext, so it must be after clearRenderer
         this.editContext = null;
 
-        renderElement.removeClassName("is-editing");
         editContext.stopEditing();
 
         if(isReplace)
@@ -2498,6 +2496,9 @@ public class GFormController implements EditManager {
         if (background != null) {
             element.style.setProperty("--bs-table-bg", background);
             element.style.setProperty("--bs-body-bg", background);
+        } else {
+            element.style.removeProperty("--bs-table-bg");
+            element.style.removeProperty("--bs-body-bg");
         }
     }-*/;
 
@@ -2514,6 +2515,8 @@ public class GFormController implements EditManager {
         // if pass null as a value, it will be undefined in browser
         if (color != null)
             element.style.setProperty("--foreground-color", color);
+        else
+            element.style.removeProperty("--foreground-color");
     }-*/;
 
     public static void setFont(Element element, GFont font) {

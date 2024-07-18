@@ -33,10 +33,6 @@ public class MapJoin<U> extends AbstractJoin<U> {
         return join.getExpr(property).translateOuter(translator);
     }
 
-    public ImSet<U> getProperties() {
-        return join.getProperties();
-    }
-
     public Join<U> translateRemoveValues(MapValuesTranslate translate) {
         return new MapJoin<>(translator.mapValues(translate), join);
     }

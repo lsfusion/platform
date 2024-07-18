@@ -58,7 +58,11 @@ public class DialogBoxHelper {
     }
 
     public static void showMessageBox(String caption, Widget contents, PopupOwner popupOwner, final CloseCallback closeCallback) {
-        new MessageBox(caption, contents, 0, closeCallback, OptionType.CLOSE, OptionType.CLOSE).show(popupOwner);
+        showMessageBox(caption, contents, null, popupOwner, closeCallback);
+    }
+
+    public static void showMessageBox(String caption, Widget contents, String backgroundClass, PopupOwner popupOwner, final CloseCallback closeCallback) {
+        new MessageBox(caption, contents, backgroundClass, 0, closeCallback, OptionType.CLOSE, OptionType.CLOSE).show(popupOwner);
     }
 
     public static void showConfirmBox(String caption, String message, PopupOwner popupOwner, final CloseCallback closeCallback) {
@@ -89,7 +93,11 @@ public class DialogBoxHelper {
         private FormButton activeButton;
 
         private MessageBox(String caption, Widget contents, int timeout, final CloseCallback closeCallback, final OptionType activeOption, OptionType... options) {
-            super(caption, false, ModalWindowSize.FIT_CONTENT);
+            this(caption, contents, null, timeout, closeCallback, activeOption, options);
+        }
+
+        private MessageBox(String caption, Widget contents, String backgroundClass, int timeout, final CloseCallback closeCallback, final OptionType activeOption, OptionType... options) {
+            super(caption, false, ModalWindowSize.FIT_CONTENT, backgroundClass);
             
             dialog.addStyleName("modal-dialog-scrollable");
 

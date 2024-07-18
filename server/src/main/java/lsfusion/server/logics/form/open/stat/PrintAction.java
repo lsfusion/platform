@@ -44,6 +44,7 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
     private final LP formPageCount;
 
     private final boolean syncType; // static interactive
+    private final MessageClientType messageType;
     
     private final boolean removeNullsAndDuplicates; // print message
 
@@ -70,6 +71,7 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
                        FormPrintType staticType,
                        boolean server,
                        boolean syncType,
+                       MessageClientType messageType,
                        boolean autoPrint,
                        LP exportFile,
                        LP formPageCount, boolean removeNullsAndDuplicates,
@@ -88,6 +90,7 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
         this.formPageCount = formPageCount;
 
         this.syncType = syncType;
+        this.messageType = messageType;
         
         this.removeNullsAndDuplicates = removeNullsAndDuplicates;
         
@@ -102,12 +105,12 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
             // getting data
             PrintMessageData reportData = new StaticFormDataManager(form, mapObjectValues, context, contextFilters).getPrintMessageData(selectTopInterfaces.mapValues(context), removeNullsAndDuplicates);
 
-            MessageClientType messageType = MessageClientType.ERROR;
+            MessageClientType type = messageType;
             if(context.getSession().isNoCancelInTransaction())
-                messageType = MessageClientType.INFO;
+                type = MessageClientType.INFO;
 
             // proceeding data
-            context.message(reportData.message, "lsFusion", reportData.rows, reportData.titles, messageType, !syncType);
+            context.message(context.getRemoteContext(), reportData.message, "lsFusion", reportData.rows, reportData.titles, type, !syncType);
         } else {
             // getting data
             StaticFormReportManager formReportManager = new StaticFormReportManager(form, mapObjectValues, context, contextFilters);

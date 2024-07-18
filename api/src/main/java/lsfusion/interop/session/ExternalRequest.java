@@ -1,11 +1,16 @@
 package lsfusion.interop.session;
 
+import org.apache.hc.core5.http.NameValuePair;
+
 import java.io.Serializable;
+import java.util.List;
 
 public class ExternalRequest implements Serializable {
 
     public final String[] returnNames;
+
     public Object[] params;
+    public List<NameValuePair> queryParams;
 
     public final String charsetName;
     public final String[] headerNames;
@@ -34,17 +39,18 @@ public class ExternalRequest implements Serializable {
     public final boolean needNotificationId;
 
     public ExternalRequest(Object[] params) {
-        this(new String[0], params, "utf-8", new String[0], new String[0], null,
+        this(new String[0], params, null, "utf-8", new String[0], new String[0], null,
                                 null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, false);
     }
 
-    public ExternalRequest(String[] returnNames, Object[] params, String charsetName,
+    public ExternalRequest(String[] returnNames, Object[] params, List<NameValuePair> queryParams, String charsetName,
                            String[] headerNames, String[] headerValues, String[] cookieNames, String[] cookieValues,
                            String appHost, Integer appPort, String exportName, String scheme, String method, String webHost,
                            Integer webPort, String contextPath, String servletPath, String pathInfo, String query,
                            String contentType, String sessionId, byte[] body, String signature, boolean needNotificationId) {
         this.returnNames = returnNames;
         this.params = params;
+        this.queryParams = queryParams;
         this.charsetName = charsetName;
         this.headerNames = headerNames;
         this.headerValues = headerValues;

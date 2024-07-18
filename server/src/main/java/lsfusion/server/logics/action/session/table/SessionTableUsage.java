@@ -289,9 +289,15 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
     private Query<K, V> getQuery(ImMap<K, DataObject> mapValues) {
         QueryBuilder<K, V> query = new QueryBuilder<>(mapKeys.valuesSet(), mapValues);
         Join<V> tableJoin = join(query.getMapExprs());
-        query.addProperties(tableJoin.getExprs());
+        for(V prop : mapProps.values())
+            query.addProperty(prop, tableJoin.getExpr(prop));
         query.and(tableJoin.getWhere());
         return query.getQuery();
+    }
+
+    public ImMap<V, Expr> getExprs() {
+        Join<V> join = join(getMapKeys());
+        return mapProps.valuesSet().mapValues(join::getExpr);
     }
 
     public ImSet<Object> readDistinct(V prop, SQLSession session, OperationOwner owner) throws SQLException, SQLHandledException {

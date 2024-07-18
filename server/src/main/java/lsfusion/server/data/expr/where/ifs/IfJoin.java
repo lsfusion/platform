@@ -14,7 +14,7 @@ public class IfJoin<U> extends AbstractJoin<U> {
     private Join<U> falseJoin;
 
     public IfJoin(Where ifWhere, Join<U> join) {
-        this(ifWhere, join, new NullJoin<>(join.getProperties()));
+        this(ifWhere, join, NullJoin.getInstance());
     }
 
     public IfJoin(Where ifWhere, Join<U> trueJoin, Join<U> falseJoin) {
@@ -29,10 +29,6 @@ public class IfJoin<U> extends AbstractJoin<U> {
 
     public Where getWhere() {
         return ifWhere.ifElse(trueJoin.getWhere(),falseJoin.getWhere());
-    }
-
-    public ImSet<U> getProperties() {
-        return trueJoin.getProperties(); // assert что совпадает с falseJoin
     }
 
     public Join<U> translateRemoveValues(MapValuesTranslate translate) {

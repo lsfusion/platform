@@ -2,6 +2,7 @@ package lsfusion.server.data.expr.formula;
 
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.data.expr.BaseExpr;
 
 public class JoinCustomFormulaImpl extends CustomFormulaImpl implements FormulaJoinImpl {
@@ -12,7 +13,7 @@ public class JoinCustomFormulaImpl extends CustomFormulaImpl implements FormulaJ
         return hasNotNull;
     }
 
-    public JoinCustomFormulaImpl(CustomFormulaSyntax formula, ImMap<String, Integer> mapParams, FormulaClass valueClass, boolean hasNotNull) {
+    public JoinCustomFormulaImpl(CustomFormulaSyntax formula, ImRevMap<String, Integer> mapParams, FormulaClass valueClass, boolean hasNotNull) {
         super(formula, mapParams, valueClass);
 
         this.hasNotNull = hasNotNull;

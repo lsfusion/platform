@@ -254,10 +254,13 @@ public class FormChanges {
         }
     }
 
-    public static byte[] serializeConvertFileValue(ConvertData convertData, Object value, ConnectionContext context) throws IOException {
+    public static byte[] serializeConvertFileValue(Object value, ConnectionContext context) throws IOException {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-        serializeConvertFileValue(new DataOutputStream(outStream), convertData, value, context);
+        serializeConvertFileValue(value, new DataOutputStream(outStream), context);
         return outStream.toByteArray();
+    }
+    public static void serializeConvertFileValue(Object value, DataOutputStream outStream, ConnectionContext context) throws IOException {
+        serializeConvertFileValue(outStream, null, value, context);
     }
     public static void serializeConvertFileValue(DataOutputStream outStream, ConvertData convertData, Object value, ConnectionContext context) throws IOException {
         serializeObject(outStream, convertFileValue(convertData, value, context));
@@ -301,7 +304,7 @@ public class FormChanges {
             if (k * 2 + 1 < parts.length) {
                 String name = parts[k * 2 + 1];
                 if(name.startsWith(inlineSerializedImageSeparator)) {
-                    files[k] = IOUtils.deserializeAppImage(name.substring(inlineImageSeparator.length()));
+                    files[k] = IOUtils.deserializeAppImage(name.substring(inlineSerializedImageSeparator.length()));
                 } else if(name.startsWith(inlineImageSeparator)) {
                     files[k] = AppServerImage.getAppImage(AppServerImage.createActionImage(name.substring(inlineImageSeparator.length())).get(context));
                 } else { // resource file

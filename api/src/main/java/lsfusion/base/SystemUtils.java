@@ -16,6 +16,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.prefs.Preferences;
 
+import static lsfusion.base.BaseUtils.isRedundantString;
+
 public class SystemUtils {
 
     private static final String OS_NAME_WINDOWS_PREFIX = "Windows";
@@ -133,22 +135,24 @@ public class SystemUtils {
         String name = null;
 
         try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(Runtime.getRuntime().exec("hostname").getInputStream()));
-            name = reader.readLine();
-        } catch (IOException e) {
+            name = new BufferedReader(new InputStreamReader(Runtime.getRuntime().exec("hostname").getInputStream())).readLine();
+            //Windows allows cyrillic symbols in hostname. But all of them are replaced with "?" when reading via Runtime exec
+            //System.getEnv supports cyrillic symbols, but returns hostname uppercase
+            if (name != null && name.contains("?")) {
+                name = System.getenv("COMPUTERNAME");
+            }
+        } catch (IOException ignored) {
         }
-        if (name == null || name.trim().isEmpty()) {
+
+        if (isRedundantString(name)) {
             try {
                 InetAddress address = InetAddress.getLocalHost();
                 name = address.getCanonicalHostName();
-            } catch (UnknownHostException uhe) {
-            }
-
-            if (name == null || name.trim().isEmpty()) {
-                name = "localhost";
+            } catch (UnknownHostException ignored) {
             }
         }
-        return name;
+
+        return isRedundantString(name) ? "localhost" : name;
     }
 
     public static String getLocalHostIP() {

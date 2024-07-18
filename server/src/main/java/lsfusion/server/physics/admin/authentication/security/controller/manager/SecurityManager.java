@@ -218,9 +218,14 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
     }
 
     public AuthenticationToken generateToken(String userLogin) {
+        return generateToken(userLogin, null);
+    }
+
+    public AuthenticationToken generateToken(String userLogin, Integer tokenExpiration) { //tokenExpiration in minutes
         Claims claims = Jwts.claims().setSubject(userLogin);
-        claims.setExpiration(new Date(System.currentTimeMillis() + Settings.get().getAuthTokenExpiration() * 1000 * 60)); // expiration * 1000*60*60
-//        claims.put("userId", u.getId() + "");
+
+        claims.setExpiration(new Date(System.currentTimeMillis() +
+                (tokenExpiration != null ? tokenExpiration : Settings.get().getAuthTokenExpiration()) * 1000 * 60));
 
         return new AuthenticationToken(Jwts.builder()
                 .setClaims(claims)

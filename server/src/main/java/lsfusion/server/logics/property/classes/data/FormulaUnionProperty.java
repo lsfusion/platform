@@ -24,11 +24,11 @@ public class FormulaUnionProperty extends UnionProperty {
 
     // FORMULA
     // not pretty, but otherwise we need more complicated class structure (the same thing is in FormulaJoinProperty now)
-    public FormulaUnionProperty(DataClass valueClass, CustomFormulaSyntax formula, int paramCount) {
-        this(valueClass, formula, getInterfaces(paramCount));
+    public FormulaUnionProperty(DataClass valueClass, CustomFormulaSyntax formula, ImOrderSet<String> params) {
+        this(valueClass, formula, getInterfaces(params.size()), params);
     }
-    private FormulaUnionProperty(DataClass valueClass, CustomFormulaSyntax formula, ImOrderSet<Interface> interfaces) {
-        this(LocalizedString.create(formula.getDefaultSyntax()), interfaces, BaseUtils.immutableCast(interfaces), FormulaExpr.createUnionCustomFormulaImpl(formula, valueClass, interfaces.mapOrderSetValues(anInterface -> FormulaJoinProperty.getParamName(String.valueOf(anInterface.ID + 1)))));
+    private FormulaUnionProperty(DataClass valueClass, CustomFormulaSyntax formula, ImOrderSet<Interface> interfaces, ImOrderSet<String> params) {
+        this(LocalizedString.create(formula.getDefaultSyntax()), interfaces, BaseUtils.immutableCast(interfaces), FormulaExpr.createUnionCustomFormulaImpl(formula, valueClass, params));
     }
 
     // FORMULA, CONCAT, JSONBUILD

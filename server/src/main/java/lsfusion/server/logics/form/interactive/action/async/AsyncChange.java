@@ -25,7 +25,7 @@ public class AsyncChange extends AsyncFormExec {
         outStream.writeInt(properties.size());
         for(PropertyDrawEntity property : properties)
             outStream.writeInt(property.getID());
-        FormChanges.serializeConvertFileValue(outStream, null, value, context);
+        FormChanges.serializeConvertFileValue(value, outStream, context);
     }
 
     @Override

@@ -41,11 +41,13 @@ import lsfusion.server.logics.classes.data.integral.NumericClass;
 import lsfusion.server.logics.classes.data.time.DateClass;
 import lsfusion.server.logics.classes.data.time.DateTimeClass;
 import lsfusion.server.logics.classes.data.time.TimeClass;
+import lsfusion.server.logics.classes.user.AbstractCustomClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.UnknownClass;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
+import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.data.StoredDataProperty;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
@@ -201,6 +203,12 @@ public class CustomRestoreAction extends InternalAction {
                         ImMap<KeyField, DataObject> keysMap = MapFact.EMPTY();
                         for (int k = 0; k < keysEntry.size(); k++) {
                             ValueClass valueClass = getKeyClass(context, table.classKeys.get(k));
+                            //if the table class is abstract, but the property has concrete interface class,
+                            //we can get class from property interfaces
+                            //If property has abstract interface class, objects still cannot be restored
+                            if (valueClass instanceof AbstractCustomClass) {
+                                valueClass = table.lpProperties.get(0).getInterfaceClasses(ClassType.signaturePolicy)[k];
+                            }
                             DataObject keyObject = context.getSession().getDataObject(valueClass, keysEntry.get(k));
                             if (keyObject.objectClass instanceof UnknownClass && valueClass instanceof ConcreteCustomClass && table.restoreObjects) {
                                 keyObject = context.getSession().addObject((ConcreteCustomClass) valueClass, keyObject);

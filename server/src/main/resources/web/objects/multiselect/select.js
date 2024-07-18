@@ -391,7 +391,7 @@ function _wrapElement(element, createElement, wrap) {
 
 function _removeAllPMBInTD(element, controlElement) {
     if(_isInGrid(element))
-        controlElement.classList.add("remove-all-pmb");
+        lsfUtils.removeAllPMB(element, controlElement);
 }
 
 function _isInGrid(element) {
@@ -399,15 +399,10 @@ function _isInGrid(element) {
 }
 
 function _setIsEditing(element, controlElement, add) {
-    let editingClassName = 'is-editing';
-
-    if (add)
-        controlElement.classList.add(editingClassName);
-    else
-        controlElement.classList.remove(editingClassName);
+    lsfUtils.setIsEditing(element, controlElement, add);
 }
 function _isEditing(element, controlElement) {
-    return controlElement.classList.contains('is-editing')
+    return lsfUtils.isEditing(element, controlElement);
 }
 
 // buttons / radios / selects

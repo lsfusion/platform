@@ -169,7 +169,7 @@ public class SwingUtils {
             options = BaseUtils.add(options, UIManager.getString("OptionPane.cancelButtonText"));
         }
 
-        JOptionPane dialogPane = new JOptionPane(getMessageTextPane(message),
+        JOptionPane dialogPane = new JOptionPane(getMessageTextPane(message, null),
                 messageType,
                 cancel ? JOptionPane.YES_NO_CANCEL_OPTION : JOptionPane.YES_NO_OPTION,
                 null, options, options[initialValue]);
@@ -204,9 +204,10 @@ public class SwingUtils {
         }
     }
 
-    public static Object getMessageTextPane(Object message) {
+    public static Object getMessageTextPane(Object message, Color backgroundColor) {
         JTextPane textPane = new JTextPane();
-        textPane.setText(String.valueOf(message)); //message can be null
+        textPane.setContentType("text/html");
+        textPane.setText(toHtml(message)); //message can be null
         textPane.setEditable(false);
         JRootPane rootPane = MainFrame.instance.getRootPane();
         if (rootPane != null) {
@@ -217,7 +218,7 @@ public class SwingUtils {
                 textPane.setPreferredSize((new Dimension(width, height)));
             }
         }
-        textPane.setBackground(null);
+        textPane.setBackground(backgroundColor);
 
         if(rootPane != null && rootPane.getHeight() * 0.3 < textPane.getPreferredSize().height)
             return wrapScroll(MainFrame.instance, textPane);
@@ -299,6 +300,10 @@ public class SwingUtils {
         bounds.height -= (insets.top + insets.bottom);
 
         return new Dimension(bounds.width, bounds.height);
+    }
+
+    public static String toHtml(Object value) {
+        return String.valueOf(value).replace("\n", "<br>");
     }
 
     public static String toMultilineHtml(String text, Font font) {

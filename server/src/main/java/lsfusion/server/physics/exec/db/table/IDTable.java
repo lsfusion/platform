@@ -7,6 +7,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
+import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.query.Query;
@@ -171,6 +172,7 @@ public class IDTable extends DBTable {
         return getStatKeys(this, getCounters().size());
     }
 
+    @IdentityLazy
     public ImMap<PropertyField,PropStat> getStatProps() {
         return getStatProps(this);
     }

@@ -17,12 +17,13 @@ public interface PValue {
     PValue UNDEFINED = new PValue() {};
 
     static PValue escapeSeparator(PValue value, GCompare compare) {
-        if(compare != null) {
-            Object ovalue = value;
-            if (ovalue instanceof String) {
-                return getPValue(GwtClientUtils.escapeSeparator(getStringValue(value), compare));
-            } else if (ovalue instanceof DisplayString) {
-                DisplayString dvalue = (DisplayString) ovalue;
+        if (compare != null) {
+            if (value instanceof SerializableValue) {
+                if (((SerializableValue) value).value instanceof String) {
+                    return getPValue(GwtClientUtils.escapeSeparator(getStringValue(value), compare));
+                }
+            } else if (value instanceof DisplayString) {
+                DisplayString dvalue = (DisplayString) value;
                 return new DisplayString(GwtClientUtils.escapeSeparator(dvalue.displayString, compare),
                                          GwtClientUtils.escapeSeparator(dvalue.rawString, compare));
             }

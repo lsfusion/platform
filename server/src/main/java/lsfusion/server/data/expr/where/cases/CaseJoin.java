@@ -30,10 +30,6 @@ public class CaseJoin<U> extends AbstractJoin<U> {
         return cases.getExpr(property);
     }
 
-    public ImSet<U> getProperties() {
-        return cases.properties;
-    }
-
     public Join<U> translateRemoveValues(MapValuesTranslate translate) {
         return new CaseJoin<>(cases.translateRemoveValues(translate));
     }

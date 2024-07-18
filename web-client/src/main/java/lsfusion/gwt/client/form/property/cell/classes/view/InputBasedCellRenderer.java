@@ -35,7 +35,7 @@ public abstract class InputBasedCellRenderer extends CellRenderer {
 
     public static void appendInputElement(Element cellParent, InputElement inputElement, boolean removeAllPMB, boolean isToolbarContainer, GInputType inputType) {
         if(removeAllPMB && inputType.isRemoveAllPMB())
-            inputElement.addClassName("remove-all-pmb");
+            removeAllPMB(cellParent, inputElement);
 
         // should be before setupParent
         cellParent.appendChild(inputElement);

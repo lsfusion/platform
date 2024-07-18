@@ -129,7 +129,7 @@ public class IntegrationService {
             Where deleteWhere = Where.TRUE();
 
             // выражения для полей в импортируемой таблице
-            ImMap<ImportField, Expr> importExprs = importTable.join(importTable.getMapKeys()).getExprs();
+            ImMap<ImportField, Expr> importExprs = importTable.getExprs();
 
             // фильтруем только те, которых нету в ImportTable
             if (!delete.deleteAll)

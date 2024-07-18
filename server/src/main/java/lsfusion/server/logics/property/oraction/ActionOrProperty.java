@@ -75,6 +75,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     private int ID = 0;
     protected String canonicalName;
     public String annotation;
+    public ImRevMap<T, String> paramNames;
 
     private boolean local = false;
     
@@ -213,6 +214,9 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         return listInterfaces.mapList(getInterfaceClasses(classType)).toArray(new ValueClass[listInterfaces.size()]);
     }
     public abstract ImMap<T, ValueClass> getInterfaceClasses(ClassType type);
+    public String[] getInterfaceNames(ImOrderSet<T> listInterfaces) { // notification, load, lazy, dc, obsolete, в конструкторах при определении классов действий в основном
+        return listInterfaces.mapList(paramNames).toArray(new String[listInterfaces.size()]);
+    }
 
     public abstract boolean isInInterface(ImMap<T, ? extends AndClassSet> interfaceClasses, boolean isAny);
 

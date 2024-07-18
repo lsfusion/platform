@@ -17,7 +17,6 @@ import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.modify.ModifyQuery;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.data.table.NamedTable;
 import lsfusion.server.data.table.PropertyField;
 import lsfusion.server.data.table.TableOwner;
 import lsfusion.server.data.where.Where;
@@ -33,6 +32,7 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.data.AbstractDataProperty;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
+import lsfusion.server.physics.exec.db.table.DBTable;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
 
 import java.sql.SQLException;
@@ -67,7 +67,7 @@ public class ClassDataProperty extends AbstractDataProperty implements ObjectCla
     }
     
     public void dropInconsistentClasses(SQLSession session, BaseClass baseClass, KeyExpr key, Where where, OperationOwner owner) throws SQLException, SQLHandledException {
-        NamedTable table = baseClass.getInconsistentTable(mapTable.table);
+        DBTable table = baseClass.getInconsistentTable(mapTable.table);
         session.modifyRecords(new ModifyQuery(table, new Query<>(MapFact.singletonRev(table.keys.single(), key), MapFact.singleton(field, Expr.NULL()), where), owner, TableOwner.global));
     }
 

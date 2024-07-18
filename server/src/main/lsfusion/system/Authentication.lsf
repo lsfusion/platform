@@ -111,7 +111,11 @@ getAuthToken() {
 } @@api;
 
 resultAuthToken = DATA LOCAL TEXT();
-generateAuthToken INTERNAL 'lsfusion.server.physics.admin.authentication.action.GenerateAuthTokenAction' (STRING);
+generateAuthToken(user, tokenExpiration) INTERNAL 'lsfusion.server.physics.admin.authentication.action.GenerateAuthTokenAction' (STRING, INTEGER) NULL; // tokenExpiration in minutes
+
+generateAuthToken(user) {
+    generateAuthToken(user, NULL);
+}
 
 // LDAP
 useLDAP '{authentication.use.ldap}' = DATA BOOLEAN ();

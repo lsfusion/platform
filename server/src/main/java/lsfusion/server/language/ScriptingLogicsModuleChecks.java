@@ -677,7 +677,7 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkSignatureParam(ResolveClassSet signatureParam) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkSignatureParam(ValueClass signatureParam) throws ScriptingErrorLog.SemanticErrorException {
         if(signatureParam == null) {
             errLog.emitSignatureParamError(parser);
         }

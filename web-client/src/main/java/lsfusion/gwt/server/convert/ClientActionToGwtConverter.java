@@ -131,23 +131,28 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     }
 
     @Converter(from = MessageClientAction.class)
-    public GMessageAction convertAction(MessageClientAction action) {
+    public GMessageAction convertAction(MessageClientAction action, FormSessionObject formSessionObject, MainDispatchServlet servlet) throws IOException {
         ArrayList<ArrayList<String>> arrayData = new ArrayList<>();
         for(List<String> row : action.data)
             arrayData.add(new ArrayList<>(row));
-        return new GMessageAction(action.message, action.textMessage, action.caption, arrayData, new ArrayList<>(action.titles), convertOrCast(action.type), action.syncType);
+        return new GMessageAction(valuesConverter.convertFileValue(action.message, formSessionObject, servlet), action.textMessage, action.caption, arrayData, new ArrayList<>(action.titles), convertOrCast(action.type), action.syncType);
     }
 
     @Converter(from = MessageClientType.class)
     public GMessageType convertMessageClientType(MessageClientType messageClientType) {
         switch (messageClientType) {
-            case WARN:
-            case WARN_EXTENDED:
-                return GMessageType.WARN;
+            case LOG:
+                return GMessageType.LOG;
             case INFO:
                 return GMessageType.INFO;
+            case SUCCESS:
+                return GMessageType.SUCCESS;
+            case WARN:
+                return GMessageType.WARN;
             case ERROR:
                 return GMessageType.ERROR;
+            case DEFAULT:
+                return GMessageType.DEFAULT;
         }
         throw new UnsupportedOperationException();
     }

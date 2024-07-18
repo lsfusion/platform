@@ -28,7 +28,6 @@ import lsfusion.server.base.version.GlobalVersion;
 import lsfusion.server.base.version.LastVersion;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
-import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.expr.formula.StringConcatenateFormulaImpl;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.PartitionType;
@@ -641,10 +640,10 @@ public abstract class LogicsModule {
     protected <O extends ObjectSelector> LA<?> addPFAProp(Group group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                                                           ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
                                                           FormPrintType staticType, boolean server, boolean autoPrint, boolean syncType,
-                                                          LP targetProp, boolean removeNullsAndDuplicates,
+                                                          MessageClientType messageType, LP targetProp, boolean removeNullsAndDuplicates,
                                                           SelectTop<ValueClass> selectTop, ValueClass printer, ValueClass sheetName, ValueClass password) {
         return addAction(group, new LA<>(new PrintAction<>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters,
-                staticType, server, syncType, autoPrint, targetProp, baseLM.formPageCount, removeNullsAndDuplicates, selectTop, printer, sheetName, password, getExtraParams(selectTop, printer, sheetName, password))));
+                staticType, server, syncType, messageType, autoPrint, new SelectTop(selectTop), targetProp, baseLM.formPageCount, removeNullsAndDuplicates, selectTop, printer, sheetName, password, getExtraParams(selectTop, printer, sheetName, password))));
     }
     protected <O extends ObjectSelector> LP addJSONFormProp(Group group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                                                        ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
@@ -1234,17 +1233,20 @@ public abstract class LogicsModule {
 
     // ------------------- FORMULA ----------------- //
 
-    protected LP addSFProp(String formula, int paramCount) {
-        return addSFProp(formula, MapFact.EMPTY(), null, paramCount, false, false);
+    protected LP addSFProp(String formula, ImOrderSet<String> params) {
+        return addSFProp(new CustomFormulaSyntax(formula, params.getSet()), null, null, ListFact.toList(null, params.size()), params, false, false);
     }
 
-    protected LP addSFProp(String defaultSyntax, ImMap<SQLSyntaxType, String> customSyntaxes, DataClass value, int paramCount, boolean valueNull, boolean paramsNull) {
+    protected LP addSFProp(CustomFormulaSyntax formula, DataClass valueClass, String valueName, ImList<DataClass> paramClasses, ImOrderSet<String> paramNames, boolean valueNull, boolean paramsNull) {
         Property property;
-        CustomFormulaSyntax formula = new CustomFormulaSyntax(defaultSyntax, customSyntaxes);
-        if(paramsNull)
-            property = new FormulaUnionProperty(value, formula, paramCount);
-        else
-            property = new FormulaJoinProperty(value, formula, paramCount, valueNull);
+        if(formula.params.size() < paramNames.size()) { // if there is unused param this is table
+            property = new FunctionTableProperty(formula, paramClasses, paramNames, valueClass, valueName);
+        } else {
+            if (paramsNull)
+                property = new FormulaUnionProperty(valueClass, formula, paramNames);
+            else
+                property = new FormulaJoinProperty(valueClass, formula, paramNames, valueNull);
+        }
         return addProperty(null, new LP<>(property));
     }
 
@@ -2204,7 +2206,7 @@ public abstract class LogicsModule {
     private <P extends PropertyInterface> Action<?> createConstraintAction(Property<?> property, ImList<PropertyMapImplement<?, P>> properties, Property<?> messageProperty, boolean cancel, LocalizedString debugCaption) {
         ActionMapImplement<?, ClassPropertyInterface> logAction;
         //  PRINT OUT property MESSAGE NOWAIT;
-        logAction = PropertyFact.createJoinAction(addPFAProp(null, debugCaption, new OutFormSelector<P>((Property) property, messageProperty, properties), ListFact.EMPTY(), ListFact.EMPTY(), SetFact.EMPTYORDER(), SetFact.EMPTY(), FormPrintType.MESSAGE, false, false, false, null, true, new SelectTop<>(baseLM.static30.getImplement().mapValueClass(ClassType.signaturePolicy)), null, null, null).action.getImplement().action, baseLM.static30.getImplement());
+        logAction = PropertyFact.createJoinAction(addPFAProp(null, debugCaption, new OutFormSelector<P>((Property) property, messageProperty, properties), ListFact.EMPTY(), ListFact.EMPTY(), SetFact.EMPTYORDER(), SetFact.EMPTY(), FormPrintType.MESSAGE, false, false, false, MessageClientType.WARN, null, true, new SelectTop<>(baseLM.static30.getImplement().mapValueClass(ClassType.signaturePolicy)), null, null, null).action.getImplement().action, baseLM.static30.getImplement());
         if(cancel)
             logAction = PropertyFact.createListAction(
                     SetFact.EMPTY(),

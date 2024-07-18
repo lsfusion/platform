@@ -11,9 +11,16 @@ import lsfusion.gwt.client.view.MainFrame;
 public class DialogModalWindow extends ModalWindow {
 
     public DialogModalWindow(String caption, boolean resizable, ModalWindowSize size) {
+        this(caption, resizable, size, null);
+    }
+
+    public DialogModalWindow(String caption, boolean resizable, ModalWindowSize size, String backgroundClass) {
         super(resizable, size);
 
         getBody().getElement().addClassName("dialog-modal-body");
+
+        if(backgroundClass !=null)
+            body.addStyleName(backgroundClass);
 
         BaseImage.initImageText(getTitleWidget(), caption, null, ImageHtmlOrTextType.FORM);
     }

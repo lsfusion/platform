@@ -224,7 +224,7 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
         TableStatKeys tableStatKeys = TableStatKeys.createForTable(statKeys.mapBack(recKeys));
         if(adjustStat != null)
             tableStatKeys = tableStatKeys.decrease(adjustStat);
-        RecursiveTable recTable = new RecursiveTable(name, recKeys.keys(), recProps.valuesSet(),
+        RecursiveTable recTable = new RecursiveTable(name, recKeys.keys(), // recProps.valuesSet(),
                 classWhere.mapClasses(recKeys), tableStatKeys, query.noInnerFollows);
         if(rRecTable != null)
             rRecTable.set(recTable);

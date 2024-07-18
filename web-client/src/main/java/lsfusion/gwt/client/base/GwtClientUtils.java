@@ -85,6 +85,15 @@ public class GwtClientUtils {
             clearReadonlyFnc: function (element) {
                 return @lsfusion.gwt.client.form.property.cell.view.CellRenderer::clearReadonlyFnc(*)(element);
             },
+            removeAllPMB: function (element, controlElement) {
+                return @lsfusion.gwt.client.form.property.cell.view.CellRenderer::removeAllPMB(*)(element, controlElement);
+            },
+            setIsEditing: function (element, controlElement, set) {
+                return @lsfusion.gwt.client.form.property.cell.view.CellRenderer::setIsEditing(*)(element, controlElement, set);
+            },
+            isEditing: function (element, controlElement) {
+                return @lsfusion.gwt.client.form.property.cell.view.CellRenderer::isEditing(*)(element, controlElement);
+            },
             useBootstrap: function() {
                 return @lsfusion.gwt.client.view.MainFrame::useBootstrap;
             },
@@ -1135,6 +1144,15 @@ public class GwtClientUtils {
         return list;
     }
 
+    public static String[] toJavaArray(JsArrayString jsArray) {
+        String[] array = new String[jsArray.length()];
+        for (int i = 0; i < jsArray.length(); i++) {
+            array[i] = jsArray.get(i);
+        }
+        return array;
+    }
+
+
     public static native Element log(String i) /*-{
         console.log(i);
     }-*/;
@@ -1292,6 +1310,39 @@ public class GwtClientUtils {
         System.arraycopy(array1, 0, result, 0, array1.length);
         System.arraycopy(array2, 0, result, array1.length, array2.length);
         return result;
+    }
+
+    //split on space but not inside quotes
+    public static String[] splitUnquotedSpace(String str) {
+        return splitUnquoted(str, "((?:\\S+=)?\"[^\"]*\")|(\\S+)", " ");
+    }
+
+    //split on  but not inside quotes
+    public static String[] splitUnquotedEqual(String str) {
+        return splitUnquoted(str, "((?:[^=]+=)?\"[^\"]*\")|([^=]+)", "=");
+    }
+
+    private static String[] splitUnquoted(String str, String regex, String lightRegex) {
+        if (!str.contains("\""))
+            return str.split(lightRegex);
+        return toJavaArray(splitUnquoted(str, regex));
+    }
+
+    private static native JsArrayString splitUnquoted(String str, String regex)/*-{
+            var regexp = new RegExp(regex, "g");
+            var result = [];
+            var match;
+
+            while ((match = regexp.exec(str)) !== null) {
+                // match[1] is for strings with quotes
+                // match[2] is for strings without quotes
+                result.push(match[1] || match[2]);
+            }
+            return result;
+    }-*/;
+
+    public static String unquote(String value) {
+        return value.length() >= 2 && value.startsWith("\"") && value.endsWith("\"") ? value.substring(1, value.length() - 1) : value;
     }
 
     //when used in gwt-javascript, so as not to pass many parameters to the native-method and get localized strings directly

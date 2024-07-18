@@ -1,10 +1,11 @@
 package lsfusion.server.data.expr.formula;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImRevMap;
 
 public class UnionCustomFormulaImpl extends CustomFormulaImpl implements FormulaUnionImpl {
 
-    public UnionCustomFormulaImpl(CustomFormulaSyntax formula, ImMap<String, Integer> mapParams, FormulaClass valueClass) {
+    public UnionCustomFormulaImpl(CustomFormulaSyntax formula, ImRevMap<String, Integer> mapParams, FormulaClass valueClass) {
         super(formula, mapParams, valueClass);
     }
 

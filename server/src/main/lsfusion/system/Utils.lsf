@@ -207,6 +207,8 @@ escapeXMLValue(TEXT t) = replace(replace(replace(replace(replace(t, '&', '&amp;'
 
 copyToClipboard INTERNAL 'lsfusion.server.logics.classes.data.utils.string.CopyToClipboardAction' (TEXT);
 
+array(STRING string, STRING delimeter, INTEGER row) = FORMULA STRING value 'unnest(string_to_array($string, $delimeter))';
+
 // --------------------------------------------- Numeric operations --------------------------------- //
 floor = FORMULA 'floor($1)';
 floor = FORMULA NULL 'floor(($1)/notZero($2))*($2)';
@@ -278,11 +280,20 @@ numNode(TSQUERY search) = FORMULA INTEGER PG 'numnode($1)';
 
 // ---------------------------------- JSON functions  ---------------------------------- //
 
+// depreceated
 jsonObject (TEXT j, STRING key) = FORMULA STRING '(($1)::json->($2))::varchar';
-
 jsonArrayLength (TEXT j) = FORMULA INTEGER 'json_array_length(($1)::json)';
 jsonArrayElement (TEXT j, INTEGER i, STRING id) = FORMULA STRING '((($1)::json)->(($2)-1))->>($3)';
+
 merge(JSON a, JSON b) = FORMULA JSON 'jsonb_recursive_merge(($1)::jsonb,($2)::jsonb)';
+
+field (JSON json, STRING field) = FORMULA JSON 'jsonb_extract_path($json, $field)';
+array (JSON json, INTEGER row) = FORMULA JSON value 'jsonb_array_elements($json)';
+map (JSON json, STRING key) = FORMULA JSON value 'jsonb_each($json)';
+arrayElement(JSON json, INTEGER i) = FORMULA STRING '(($1)->(($2)-1))'; // one-based
+
+field (JSON json, STRING field1, STRING field2) = FORMULA JSON 'jsonb_extract_path($json, $field1, $field2)';
+field (JSON json, STRING field1, STRING field2, STRING field3) = FORMULA JSON 'jsonb_extract_path($json, $field1, $field2, $field3)';
 
 // -------------------------------------------- Files ---------------------------- //
 file = DATA LOCAL FILE ();

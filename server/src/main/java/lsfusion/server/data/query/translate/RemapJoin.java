@@ -21,10 +21,6 @@ public class RemapJoin<V,MV> extends AbstractJoin<V> {
         return join.getExpr(mapProps.get(property));
     }
 
-    public ImSet<V> getProperties() {
-        return mapProps.keys();
-    }
-
     public Where getWhere() {
         return join.getWhere();
     }
