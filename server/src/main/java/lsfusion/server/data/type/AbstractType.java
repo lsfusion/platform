@@ -9,6 +9,7 @@ import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.data.type.reader.AbstractReader;
+import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.classes.data.time.DateClass;
@@ -79,6 +80,9 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
         return "";
     }
 
+    public static ValueClass getUnknownClassNull() {
+        return IntegerClass.instance;
+    }
     public static Type getUnknownTypeNull() { // хак для общения нетипизированными параметрами
         return IntegerClass.instance;
     }

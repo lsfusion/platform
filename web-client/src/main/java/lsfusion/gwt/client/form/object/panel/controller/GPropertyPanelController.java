@@ -317,6 +317,15 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
         return new Pair<>(propertyColumnKey, panelRenderer.setLoadingValue(value));
     }
 
+
+    @Override
+    public void stopEditing(GGroupObjectValue columnKey) {
+        PanelRenderer panelRenderer = renderers.get(columnKey);
+        if(panelRenderer == null)
+            return;
+        panelRenderer.stopEditing();
+    }
+
     public void setPropertyComments(NativeHashMap<GGroupObjectValue, PValue> comments) {
         this.comments = comments;
     }

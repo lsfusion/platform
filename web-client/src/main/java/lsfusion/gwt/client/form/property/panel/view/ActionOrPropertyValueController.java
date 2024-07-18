@@ -8,4 +8,6 @@ public interface ActionOrPropertyValueController {
     void setValue(GGroupObjectValue columnKey, PValue value);
 
     void setLoading(GGroupObjectValue columnKey, PValue value);
+
+    void stopEditing(GGroupObjectValue columnKey);
 }

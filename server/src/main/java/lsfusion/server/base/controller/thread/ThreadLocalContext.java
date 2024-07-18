@@ -278,6 +278,9 @@ public class ThreadLocalContext {
     }
 
     public static void message(ConnectionContext remoteContext, String message, String caption, List<List<String>> data, List<String> titles, MessageClientType type, boolean noWait) {
+        if(message == null)
+            message = "";
+
         String textMessage = message;
         if(EscapeUtils.containsHtmlTag(textMessage)) // optimization
             textMessage = htmlToPlainText(textMessage);
