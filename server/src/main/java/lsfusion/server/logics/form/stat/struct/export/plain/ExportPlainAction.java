@@ -2,7 +2,6 @@ package lsfusion.server.logics.form.stat.struct.export.plain;
 
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.file.RawFileData;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
@@ -44,13 +43,13 @@ public abstract class ExportPlainAction<O extends ObjectSelector> extends Export
 
     public ExportPlainAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                              ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
-                             FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, SelectTop selectTop, String charset, ValueClass... extraParams) {
+                             FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, SelectTop<ValueClass> selectTop, String charset, ValueClass... extraParams) {
         this(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, charset, false, extraParams);
     }
 
     public ExportPlainAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                              ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
-                             FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, SelectTop selectTop, String charset,
+                             FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, SelectTop<ValueClass> selectTop, String charset,
                              boolean useCaptionInsteadOfIntegrationSID, ValueClass... extraParams) {
         super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, selectTop, charset, extraParams);
         this.exportFiles = exportFiles;
