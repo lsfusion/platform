@@ -130,15 +130,11 @@ public interface BaseImage extends Serializable {
         for (String newClass : classes) {
             String[] values = GwtClientUtils.splitUnquotedEqual(newClass);
             if (changes.remove(values[0]) == null)
-                changes.put(values[0], values.length > 1 ? unquote(values[1]) : (newClass.endsWith("=") ? "" : true));
+                changes.put(values[0], values.length > 1 ? GwtClientUtils.unquote(values[1]) : (newClass.endsWith("=") ? "" : true));
         }
         element.setPropertyObject(GwtClientUtils.LSF_CLASSES_ATTRIBUTE + postfix, classes);
 
         return changes;
-    }
-
-    static String unquote(String value) {
-        return value.length() >= 2 && value.startsWith("\"") && value.endsWith("\"") ? value.substring(1, value.length() - 1) : value;
     }
 
     static void applyClassChange(Element element, String aclass, Object value) {

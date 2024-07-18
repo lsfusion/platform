@@ -1144,6 +1144,15 @@ public class GwtClientUtils {
         return list;
     }
 
+    public static String[] toJavaArray(JsArrayString jsArray) {
+        String[] array = new String[jsArray.length()];
+        for (int i = 0; i < jsArray.length(); i++) {
+            array[i] = jsArray.get(i);
+        }
+        return array;
+    }
+
+
     public static native Element log(String i) /*-{
         console.log(i);
     }-*/;
@@ -1314,16 +1323,9 @@ public class GwtClientUtils {
     }
 
     private static String[] splitUnquoted(String str, String regex, String lightRegex) {
-        if(str.contains("\"")) {
-            JsArrayString jsClasses = splitUnquoted(str, regex);
-            String[] classes = new String[jsClasses.length()];
-            for (int i = 0; i < jsClasses.length(); i++) {
-                classes[i] = jsClasses.get(i);
-            }
-            return classes;
-        } else {
+        if (!str.contains("\""))
             return str.split(lightRegex);
-        }
+        return toJavaArray(splitUnquoted(str, regex));
     }
 
     private static native JsArrayString splitUnquoted(String str, String regex)/*-{
@@ -1339,7 +1341,9 @@ public class GwtClientUtils {
             return result;
     }-*/;
 
-
+    public static String unquote(String value) {
+        return value.length() >= 2 && value.startsWith("\"") && value.endsWith("\"") ? value.substring(1, value.length() - 1) : value;
+    }
 
     //when used in gwt-javascript, so as not to pass many parameters to the native-method and get localized strings directly
     protected static native void getLocalizedString(String string)/*-{
