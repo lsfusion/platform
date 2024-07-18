@@ -2,5 +2,9 @@ MODULE Com;
 
 REQUIRE System;
 
-//file, baudrate, com-port, daemon
-writeToComPort '{com.write.to.com.port}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.equ.com.WriteToComPortAction' (FILE, INTEGER, INTEGER);
+//file, baudrate, com-port, useJSerialComm
+writeToComPort '{com.write.to.com.port}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.equ.com.WriteToComPortAction' (FILE, INTEGER, INTEGER, BOOLEAN);
+
+writeToComPort '{com.write.to.com.port}' (FILE file, INTEGER baudrate, INTEGER comport) {
+    writeToComPort(file, baudrate, comport, NULL);
+}
