@@ -171,6 +171,10 @@
             <groupId>jssc</groupId>
             <artifactId>jssc</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.fazecast</groupId>
+            <artifactId>jSerialComm</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>bibliothek.gui</groupId>
