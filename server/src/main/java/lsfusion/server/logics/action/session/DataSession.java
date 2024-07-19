@@ -1100,7 +1100,16 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
             startShowRec(event.action);
 
-            event.action.execute(this, stack);
+            try {
+                event.action.execute(this, stack);
+            } catch (SQLException | SQLHandledException t) {
+                throw t;
+            } catch (Throwable t) {
+                if(!isNoCancelInTransaction())
+                    throw Throwables.propagate(t);
+                else
+                    ServerLoggers.systemLogger.info("EXCEPTION SUPPRESSED");
+            }
 
             if(!isInTransaction())
                 return false;
