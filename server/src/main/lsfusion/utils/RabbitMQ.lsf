@@ -12,6 +12,8 @@ isConsumer 'Consumer' = DATA BOOLEAN (Channel);
 local 'Local' = DATA BOOLEAN (Channel);
 started 'Started' = DATA BOOLEAN (Channel);
 
+channel = GROUP AGGR Channel c BY host(c), queue(c);
+
 startConsumer 'Start' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.rabbitmq.StartConsumerRabbitMQAction' (Channel);
 
 start(Channel c) {
@@ -20,12 +22,12 @@ start(Channel c) {
     apply();
 }
 
-//queue, message
-processConsumed ABSTRACT LIST (STRING, STRING);
-
 sendMessage 'Send message' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.rabbitmq.SendMessageRabbitMQAction' (Channel, STRING);
 
 onMessage ABSTRACT LIST (Channel, STRING);
+onMessage(STRING host, STRING queue, STRING message) {
+    onMessage(channel(host, queue), message);
+}
 
 stopConsumer 'Stop' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.rabbitmq.StopConsumerRabbitMQAction' (Channel);
 

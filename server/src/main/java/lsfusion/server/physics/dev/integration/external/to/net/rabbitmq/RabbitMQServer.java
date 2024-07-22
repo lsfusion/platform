@@ -87,7 +87,7 @@ public class RabbitMQServer extends MonitorServer {
                 try {
                     ThreadLocalContext.aspectBeforeMonitorHTTP(RabbitMQServer.this);
                     try (DataSession session = createSession()) {
-                        LM.findAction("processConsumed[STRING,STRING]").execute(session, getStack(), new DataObject(queue), new DataObject(message));
+                        LM.findAction("onMessage[STRING,STRING,STRING]").execute(session, getStack(), new DataObject(host), new DataObject(queue), new DataObject(message));
                     } catch (SQLException | SQLHandledException | ScriptingErrorLog.SemanticErrorException e) {
                         throw Throwables.propagate(e);
                     }
