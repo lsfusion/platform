@@ -34,7 +34,7 @@ public class RecalculateTableColumnWithDependentsAction extends InternalAction {
         if (!disableMaterializations) {
             ServiceDBAction.run(context, (session, isolatedTransaction) -> context.getDbManager().recalculateMaterializationWithDependenciesTableColumn(session, context.stack, propertyCanonicalName.trim(), isolatedTransaction, false));
 
-            context.message(localize(LocalizedString.createFormatted("{logics.recalculation.completed}", localize("{logics.recalculation.materializations}"))), localize("{logics.recalculation.materializations}"));
+            context.messageSuccess(localize(LocalizedString.createFormatted("{logics.recalculation.completed}", localize("{logics.recalculation.materializations}"))), localize("{logics.recalculation.materializations}"));
         }
     }
 }

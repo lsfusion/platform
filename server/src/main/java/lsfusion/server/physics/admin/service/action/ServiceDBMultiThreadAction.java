@@ -43,7 +43,7 @@ public class ServiceDBMultiThreadAction extends InternalAction {
 
         run(context, (session, isolatedTransaction) -> serviceLM.recalculateStatsMultiThreadAction.execute(context, threadCountObject));
 
-        context.message(localize("{logics.service.db.completed}"), localize("{logics.service.db}"));
+        context.messageSuccess(localize("{logics.service.db.completed}"), localize("{logics.service.db}"));
     }
 
     public static void run(ExecutionContext<?> context, final RunService run) throws SQLException, SQLHandledException {

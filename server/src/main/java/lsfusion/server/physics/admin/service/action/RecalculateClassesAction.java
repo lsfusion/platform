@@ -28,6 +28,6 @@ public class RecalculateClassesAction extends InternalAction {
             context.getDbManager().packTables(session, BL.LM.tableFactory.getImplementTables(), isolatedTransaction);
         });
 
-        context.message(localize(LocalizedString.createFormatted("{logics.recalculation.completed}", localize("{logics.recalculating.data.classes}"))), localize("{logics.recalculating.data.classes}"));
+        context.messageSuccess(localize(LocalizedString.createFormatted("{logics.recalculation.completed}", localize("{logics.recalculating.data.classes}"))), localize("{logics.recalculating.data.classes}"));
     }
 }

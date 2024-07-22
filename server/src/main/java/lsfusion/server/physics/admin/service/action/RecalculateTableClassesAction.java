@@ -36,7 +36,7 @@ public class RecalculateTableClassesAction extends InternalAction {
 
             ServiceDBAction.run(context, (session, isolatedTransaction) -> context.getDbManager().recalculateTableClasses(session, tableName.trim(), isolatedTransaction));
 
-            context.message(localize(LocalizedString.createFormatted("{logics.recalculation.completed}", localize("{logics.recalculating.data.classes}"))), localize("{logics.recalculating.data.classes}"));
+            context.messageSuccess(localize(LocalizedString.createFormatted("{logics.recalculation.completed}", localize("{logics.recalculating.data.classes}"))), localize("{logics.recalculating.data.classes}"));
         }
     }
 }

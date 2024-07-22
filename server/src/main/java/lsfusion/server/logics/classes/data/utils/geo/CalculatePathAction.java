@@ -6,7 +6,6 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.query.build.QueryBuilder;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -139,10 +138,10 @@ public class CalculatePathAction extends DistanceGeoAction {
 
                     }
                 } else {
-                    context.message("Не все координаты проставлены", "Ошибка");
+                    context.messageError("Не все координаты проставлены", "Ошибка");
                 }
             } else {
-                context.message("Не задана начальная точка", "Ошибка");
+                context.messageError("Не задана начальная точка", "Ошибка");
             }
         } catch (Exception e) {
             throw Throwables.propagate(e);

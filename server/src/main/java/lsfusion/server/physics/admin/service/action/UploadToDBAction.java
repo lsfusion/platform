@@ -52,7 +52,7 @@ public class UploadToDBAction extends InternalAction {
                 }
             });
     
-            context.message(localize("{logics.upload.was.completed}"), localize("{logics.upload.db}"));
+            context.messageSuccess(localize("{logics.upload.was.completed}"), localize("{logics.upload.db}"));
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw ExceptionUtils.propagate(e, SQLException.class, SQLHandledException.class);
         }

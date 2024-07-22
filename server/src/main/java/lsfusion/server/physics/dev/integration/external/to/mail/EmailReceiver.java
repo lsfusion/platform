@@ -308,7 +308,7 @@ public class EmailReceiver {
                 } catch (Exception e) {
                     if (ignoreExceptions) {
                         ServerLoggers.mailLogger.error("Ignored exception :", e);
-                        context.message(e.toString(), localize("{mail.receiving}"));
+                        context.messageError(e.toString(), localize("{mail.receiving}"));
                         count++;
                         folderClosedCount = 0;
                     } else throw e;

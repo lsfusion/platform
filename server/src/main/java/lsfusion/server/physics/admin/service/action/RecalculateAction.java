@@ -1,6 +1,5 @@
 package lsfusion.server.physics.admin.service.action;
 
-import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
@@ -26,6 +25,6 @@ public class RecalculateAction extends InternalAction {
                 context.message(result, localize("{logics.recalculation.materializations}"));
         });
 
-        context.message(localize(LocalizedString.createFormatted("{logics.recalculation.completed}", localize("{logics.recalculation.materializations}"))), localize("{logics.recalculation.materializations}"));
+        context.messageSuccess(localize(LocalizedString.createFormatted("{logics.recalculation.completed}", localize("{logics.recalculation.materializations}"))), localize("{logics.recalculation.materializations}"));
     }
 }

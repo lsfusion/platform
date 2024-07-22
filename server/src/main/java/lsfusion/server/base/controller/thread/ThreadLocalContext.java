@@ -271,10 +271,10 @@ public class ThreadLocalContext {
     }
 
     public static void message(String message) {
-        message(message, "lsFusion");
+        message(message, "lsFusion", MessageClientType.WARN);
     }
-    public static void message(String message, String header) {
-        message(ThreadLocalContext.getRemoteContext(), message, header, new ArrayList<>(), new ArrayList<>(), MessageClientType.WARN, true);
+    public static void message(String message, String header, MessageClientType type) {
+        message(ThreadLocalContext.getRemoteContext(), message, header, new ArrayList<>(), new ArrayList<>(), type, true);
     }
 
     public static void message(ConnectionContext remoteContext, String message, String caption, List<List<String>> data, List<String> titles, MessageClientType type, boolean noWait) {

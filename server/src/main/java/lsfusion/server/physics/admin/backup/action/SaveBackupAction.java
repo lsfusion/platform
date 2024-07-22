@@ -4,7 +4,6 @@ import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.file.WriteClientAction;
-import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
@@ -72,10 +71,10 @@ public class SaveBackupAction extends InternalAction {
                         context.delayUserInterfaction(new WriteClientAction(new RawFileData(file), fileBackupName, null, false, true));
                     }
                 } else {
-                    context.message("Файл не найден", "Ошибка");
+                    context.messageError("Файл не найден", "Ошибка");
                 }
             } else {
-                context.message("Файл был удалён", "Ошибка");
+                context.messageError("Файл был удалён", "Ошибка");
             }
         } catch (Exception e) {
             Throwables.propagate(e);

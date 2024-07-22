@@ -36,7 +36,7 @@ public class WriteToComPortAction extends InternalAction {
         if(file != null && baudRate != null && comPort != null) {
             String result = (String) context.requestUserInteraction(new WriteToComPortClientAction(file.getRawFile(), baudRate, comPort, useJSerialComm));
             if (result != null) {
-                context.message(result, "Ошибка");
+                context.messageError(result, "Ошибка");
             }
         }
     }
