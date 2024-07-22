@@ -40,7 +40,7 @@ public class RecalculateTableColumnAction extends InternalAction {
                 newContext.apply();
             }
 
-            context.message(localize(LocalizedString.createFormatted("{logics.recalculation.completed}",
+            context.messageSuccess(localize(LocalizedString.createFormatted("{logics.recalculation.completed}",
                     localize("{logics.recalculation.materializations}"))), localize("{logics.recalculation.materializations}"));
         }
     }

@@ -34,7 +34,7 @@ public class SetupScheduledTaskAction extends InternalAction {
             startLog("Setting up Scheduled Task: " + nameScheduledTask);
             Scheduler scheduler = context.getLogicsInstance().getCustomObject(Scheduler.class);
             if(!scheduler.setupScheduledTask(context.getSession(), scheduledTaskObject, nameScheduledTask))
-                context.message("Scheduler disabled, change serverComputer() to enable", "Scheduler disabled");
+                context.messageWarning("Scheduler disabled, change serverComputer() to enable", "Scheduler disabled");
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);
         }

@@ -353,8 +353,24 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         ThreadLocalContext.delayUserInteraction(action);
     }
 
+    public void messageSuccess(String message, String header) {
+        message(message, header, MessageClientType.SUCCESS);
+    }
+
+    public void messageWarning(String message, String header) {
+        message(message, header, MessageClientType.WARN);
+    }
+
+    public void messageError(String message, String header) {
+        message(message, header, MessageClientType.ERROR);
+    }
+
     public void message(String message, String header) {
-        ThreadLocalContext.message(message, header);
+        message(message, header, MessageClientType.DEFAULT);
+    }
+
+    public void message(String message, String header, MessageClientType type) {
+        ThreadLocalContext.message(message, header, type);
     }
 
     public void message(ConnectionContext context, String message, String caption, List<List<String>> data, List<String> titles, MessageClientType type, boolean noWait) {

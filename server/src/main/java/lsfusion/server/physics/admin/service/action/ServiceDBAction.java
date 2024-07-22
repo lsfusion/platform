@@ -1,6 +1,5 @@
 package lsfusion.server.physics.admin.service.action;
 
-import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
@@ -48,7 +47,7 @@ public class ServiceDBAction extends InternalAction {
         context.getDbManager().recalculateStats(context.getSession());
         context.apply();
 
-        context.message(localize("{logics.service.db.completed}"), localize("{logics.service.db}"));
+        context.messageSuccess(localize("{logics.service.db.completed}"), localize("{logics.service.db}"));
     }
     
     public static boolean singleTransaction(ExecutionContext context) throws SQLException, SQLHandledException {

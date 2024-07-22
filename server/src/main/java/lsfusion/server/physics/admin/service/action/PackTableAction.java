@@ -40,6 +40,6 @@ public class PackTableAction extends InternalAction {
             ImplementTable table = context.getBL().LM.tableFactory.getImplementTablesMap().get(tableName);
             session.packTable(table, OperationOwner.unknown, TableOwner.global);
         }));
-        context.message(localize(LocalizedString.createFormatted("{logics.table.packing.completed}", localize("{logics.table.packing}"))), localize("{logics.table.packing}"));
+        context.messageSuccess(localize(LocalizedString.createFormatted("{logics.table.packing.completed}", localize("{logics.table.packing}"))), localize("{logics.table.packing}"));
     }
 }

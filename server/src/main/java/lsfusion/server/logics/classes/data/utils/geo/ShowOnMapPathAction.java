@@ -4,7 +4,6 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.interop.action.MessageClientAction;
 import lsfusion.interop.action.OpenUriClientAction;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.query.build.QueryBuilder;
@@ -66,7 +65,7 @@ public class ShowOnMapPathAction extends GeoAction {
             }
 
             if (index <= result.values().size())
-                context.message("Не все координаты проставлены", "Ошибка");
+                context.messageError("Не все координаты проставлены", "Ошибка");
             else
                 context.requestUserInteraction(new OpenUriClientAction(new URI((isYandex ?
                         ("https://maps.yandex.ru/?rtt=auto&rtm=atm&rtext=" + uri + firstLatLong) :

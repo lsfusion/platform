@@ -80,7 +80,7 @@ public class WriteToSocketAction extends InternalAction {
                 } catch (ScriptingErrorLog.SemanticErrorException ignored) {
                 }
                 if (e instanceof ConnectException) {
-                    context.message(String.format("Сокет %s:%s недоступен. \n%s", ip, port, e.getMessage()), "Ошибка");
+                    context.messageError(String.format("Сокет %s:%s недоступен. \n%s", ip, port, e.getMessage()), "Ошибка");
                 } else {
                     throw Throwables.propagate(e);
                 }

@@ -1,11 +1,8 @@
 package lsfusion.server.physics.admin.service.action;
 
-import lsfusion.interop.action.MessageClientAction;
-import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.physics.admin.service.RunService;
 import lsfusion.server.physics.admin.service.ServiceLogicsModule;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
@@ -22,6 +19,6 @@ public class PackAction extends InternalAction {
     public void executeInternal(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         
         ServiceDBAction.run(context, (session, isolatedTransaction) -> context.getDbManager().packTables(session, context.getBL().LM.tableFactory.getImplementTables(), isolatedTransaction));
-        context.message(localize("{logics.tables.packing.completed}"), localize("{logics.tables.packing}"));
+        context.messageSuccess(localize("{logics.tables.packing.completed}"), localize("{logics.tables.packing}"));
     }
 }

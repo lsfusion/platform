@@ -1,14 +1,11 @@
 package lsfusion.server.physics.dev.integration.external.to.equ.printer;
 
-import lsfusion.interop.action.MessageClientAction;
-import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.interop.action.MessageClientType;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.dev.integration.external.to.equ.printer.client.GetAvailablePrintersClientAction;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
-
-import java.sql.SQLException;
 
 public class GetAvailablePrintersAction extends InternalAction {
 
@@ -19,7 +16,8 @@ public class GetAvailablePrintersAction extends InternalAction {
     @Override
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
         String printerNames = (String) context.requestUserInteraction(new GetAvailablePrintersClientAction());
-        context.message(printerNames.isEmpty() ? "Не найдено доступных принтеров" : printerNames, "Список доступных принтеров");
+        boolean error = printerNames.isEmpty();
+        context.message(error ? "Не найдено доступных принтеров" : printerNames, "Список доступных принтеров", error ? MessageClientType.ERROR : MessageClientType.SUCCESS);
     }
 
 }

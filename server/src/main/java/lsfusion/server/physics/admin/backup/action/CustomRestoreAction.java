@@ -11,7 +11,6 @@ import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.NamedFileData;
 import lsfusion.base.file.RawFileData;
-import lsfusion.interop.action.MessageClientAction;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.expr.key.KeyExpr;
@@ -90,7 +89,7 @@ public class CustomRestoreAction extends InternalAction {
                 dbName = context.getDbManager().customRestoreDB(fileBackup, tables.keySet(), isMultithread);
                 importColumns(context, dbName, tables);
             } else {
-                context.message("Backup File not found or no selected tables", "Error");
+                context.messageError("Backup File not found or no selected tables", "Error");
             }
         } catch (Exception e) {
             throw Throwables.propagate(e);

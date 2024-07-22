@@ -30,6 +30,6 @@ public abstract class EmailAction extends InternalAction {
 
     public void logError(ExecutionContext context, String errorMessage) {
         logger.error(errorMessage);
-        context.message(errorMessage, localize("{mail.receiving}"));
+        context.messageError(errorMessage, localize("{mail.receiving}"));
     }
 }

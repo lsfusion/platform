@@ -1,11 +1,8 @@
 package lsfusion.server.physics.admin.service.action;
 
-import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
-import lsfusion.server.logics.action.session.controller.init.SessionCreator;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.physics.admin.service.RunServiceData;
 import lsfusion.server.physics.admin.service.ServiceLogicsModule;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
@@ -26,6 +23,6 @@ public class RecalculateFollowsAction extends InternalAction {
                 context.message(result, localize("{logics.recalculation.follows}"));
         });
 
-        context.message(localize(LocalizedString.createFormatted("{logics.recalculation.completed}", localize("{logics.recalculation.follows}"))), localize("{logics.recalculation.follows}"));
+        context.messageSuccess(localize(LocalizedString.createFormatted("{logics.recalculation.completed}", localize("{logics.recalculation.follows}"))), localize("{logics.recalculation.follows}"));
     }
 }

@@ -4,7 +4,6 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.lru.LRUSVSMap;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.file.IOUtils;
-import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.syntax.PostgreSQLSyntax;
 import lsfusion.server.data.type.ConcatenateType;
@@ -169,7 +168,7 @@ public class PostgreDataAdapter extends DataAdapter {
     @Override
     public String backupDB(ExecutionContext context, String dumpFileName, int threadCount, List<String> excludeTables) throws IOException {
         if (isRedundantString(dumpDir) || isRedundantString(binPath)) {
-            context.message(ThreadLocalContext.localize("{logics.backup.path.not.specified}"), ThreadLocalContext.localize("{logics.backup.error}"));
+            context.messageWarning(ThreadLocalContext.localize("{logics.backup.path.not.specified}"), ThreadLocalContext.localize("{logics.backup.error}"));
             return null;
         }
 

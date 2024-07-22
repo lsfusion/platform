@@ -1,7 +1,6 @@
 package lsfusion.server.physics.admin.authentication.action;
 
 import lsfusion.base.ExceptionUtils;
-import lsfusion.interop.action.MessageClientAction;
 import lsfusion.interop.action.UserChangedClientAction;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
@@ -32,7 +31,7 @@ public class ReloginUserAction extends InternalAction {
                 throw ExceptionUtils.propagate(e, SQLException.class);
             }
         } else {
-            context.message(localize("{logics.error.changing.current.user.different.roles}"), localize("{logics.error}"));
+            context.messageError(localize("{logics.error.changing.current.user.different.roles}"), localize("{logics.error}"));
         }
     }
 }

@@ -77,7 +77,7 @@ public class ReceiveEMLAction extends EmailAction {
 
             } catch (Exception e) {
                 logger.error(localize("{mail.failed.to.receive.mail}"), e);
-                context.message(localize("{mail.failed.to.receive.mail}") + " : " + e, localize("{mail.receiving}"));
+                context.messageError(localize("{mail.failed.to.receive.mail}") + " : " + e, localize("{mail.receiving}"));
             }
         } else {
             logger.info("Email Server disabled, change serverComputer() to enable");
@@ -149,7 +149,7 @@ public class ReceiveEMLAction extends EmailAction {
                 } catch (Exception e) {
                     if (ignoreExceptions) {
                         ServerLoggers.mailLogger.error("Ignored exception :", e);
-                        context.message(e.toString(), localize("{mail.receiving}"));
+                        context.messageError(e.toString(), localize("{mail.receiving}"));
                         count++;
                     } else throw e;
                 }
