@@ -390,6 +390,21 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
+    public void checkTables(SQLSession session) throws SQLException, SQLHandledException {
+        try {
+            for (ImplementTable table : getIndexesMap().keySet()) {
+                session.startTransaction(START_TIL, OperationOwner.unknown);
+                session.createTable(table, table.keys, true);
+                for (PropertyField property : table.properties)
+                    session.addColumn(table, property, true);
+                session.commitTransaction();
+            }
+        } catch (Exception e) {
+            session.rollbackTransaction();
+            throw e;
+        }
+    }
+
     public void firstRecalculateStats(DataSession session) throws SQLException, SQLHandledException {
         if(reflectionLM.hasNotNullQuantity.read(session) == null) {
             recalculateStats(session);
