@@ -13,14 +13,14 @@ import TabItem from '@theme/TabItem';
 <TabItem value="win">
 
 Исполняемые exe файлы:
-**lsFusion 5.1** (OpenJDK **11.0.16**, PostgreSQL **15.1**, Tomcat **9.0.67**, IntelliJ IDEA Community Edition **2022.3.1**)
+**lsFusion 6.0-beta0** (OpenJDK **21.0.3**, PostgreSQL **16.3**, Tomcat **9.0.89**, IntelliJ IDEA Community Edition **2024.1.4**)
 
-- [x64](https://download.lsfusion.org/exe/lsfusion-5.1-x64.exe)
+- [x64](https://download.lsfusion.org/exe/lsfusion-6.0-beta0-x64.exe)
 - <details>
   <summary>Предыдущие версии</summary>
 
-    - lsFusion 5.0 Server & Client
-        - [x64](https://download.lsfusion.org/exe/lsfusion-5.0-x64.exe)
+    - lsFusion 5.1 Server & Client
+        - [x64](https://download.lsfusion.org/exe/lsfusion-5.1-x64.exe)
     - lsFusion 4.1 Server & Client
         - [x32](https://download.lsfusion.org/exe/lsfusion-4.1.exe)
         - [x64](https://download.lsfusion.org/exe/lsfusion-4.1-x64.exe)
@@ -39,15 +39,14 @@ import TabItem from '@theme/TabItem';
 </TabItem>
 <TabItem value="linux">
 
-Bash скрипты с использованием yum/apt (в качестве минорных версий используются последние стабильные):
+Bash скрипты с использованием dnf/apt (в качестве минорных версий используются последние стабильные):
 
-lsFusion **5** Server & Client (+ OpenJDK **11**, PostgreSQL **15**, Tomcat **9.0.67**):
+lsFusion **6** Server & Client (+ OpenJDK **11**, PostgreSQL **16**, Tomcat **9.0.89**):
 
 | ОС                               | Команда / Скрипт                                                        |
 |----------------------------------|-------------------------------------------------------------------------|
-| RHEL 8+ / CentOS 8+ / Fedora 35+ | `source <(curl -s https://download.lsfusion.org/dnf/install-lsfusion5)` |
-| RHEL 7 / CentOS 7                | `source <(curl -s https://download.lsfusion.org/yum/install-lsfusion5)` |
-| Ubuntu 18+ / Debian 9+           | `source <(curl -s https://download.lsfusion.org/apt/install-lsfusion5)` |
+| RHEL 8+ / CentOS 8+ / Fedora 35+ | `source <(curl -s https://download.lsfusion.org/dnf/install-lsfusion6)` |
+| Ubuntu 18+ / Debian 9+           | `source <(curl -s https://download.lsfusion.org/apt/install-lsfusion6)` |
 
 </TabItem>
 </Tabs>
@@ -94,11 +93,11 @@ Classpath сервера по умолчанию устанавливается 
 Отправить пользователям ссылку `http://<сетевой адрес веб-сервера (Client)>:8080`. При открытии этой ссылки, пользователь, по умолчанию, будет перенаправлен на страницу логина, где он, в свою очередь, при необходимости, может установить себе десктоп-клиент через Java Web Start, предварительно установив себе Java (JDK) (например, по [этой](https://developers.redhat.com/products/openjdk/download) ссылке с регистрацией или по этой - [без](https://github.com/ojdkbuild/ojdkbuild)). Обновление веб и десктоп-клиентов происходит автоматически вместе с [обновлением веб-сервера](#update) (Client).
 
 :::info
-Под Windows также можно воспользоваться [программами установки](https://download.lsfusion.org/exe/) десктоп клиента (файлы `lsfusion-desktop-*` с нужной версией и разрядностью ОС). Однако в отличие от установки при помощи Java Web Start, установленный таким образом десктоп-клиент не будет автоматически обновляться. Соответственно для его ручного обновления необходимо скачать файл новой версии десктоп клиента (`lsfusion-client-5.<новая версия>.jar`) с [центрального сервера](https://download.lsfusion.org/java/) и заместить им файл `$INSTALL_DIR$/client.jar`.
+Под Windows также можно воспользоваться [программами установки](https://download.lsfusion.org/exe/) десктоп клиента (файлы `lsfusion-desktop-*` с нужной версией и разрядностью ОС). Однако в отличие от установки при помощи Java Web Start, установленный таким образом десктоп-клиент не будет автоматически обновляться. Соответственно для его ручного обновления необходимо скачать файл новой версии десктоп клиента (`lsfusion-client-6.<новая версия>.jar`) с [центрального сервера](https://download.lsfusion.org/java/) и заместить им файл `$INSTALL_DIR$/client.jar`.
 :::
 
 :::warning
-Все пути и команды ниже приведены для мажорной версии платформы номер 5 (соответственно для других версий необходимо просто заменить 5 на нужное число, например `lsfusion5-server` → `lsfusion11-server`)
+Все пути и команды ниже приведены для мажорной версии платформы номер 6 (соответственно для других версий необходимо просто заменить 6 на нужное число, например `lsfusion6-server` → `lsfusion11-server`)
 
 <Tabs groupId="operating-systems" defaultValue="win" values={[{label: 'Windows', value: 'win'}, {label: 'Linux', value: 'linux'}]}>
 <TabItem value="win">
@@ -123,8 +122,8 @@ Classpath сервера по умолчанию устанавливается 
 
 |Компонент|Файлы|
 |-|-|
-|Сервер приложений (Server)|Файл на центральном сервере: `lsfusion-server-5.<новая версия>.jar`<br/>Замещаемый файл: `$INSTALL_DIR$/Server/server.jar`|
-|Веб-сервер (Client)|Файл на центральном сервере: `lsfusion-client-5.<новая версия>.war`<br/>Замещаемый файл: `$INSTALL_DIR$/Client/webapps/ROOT.war`<br/>Для обновления Tomcat, необходимо скачать архив с новой версией Tomcat и разархивировать его в папку `$INSTALL_DIR$/Client` без каталога `webapps` и файла [параметров запуска](#settings)
+|Сервер приложений (Server)|Файл на центральном сервере: `lsfusion-server-6.<новая версия>.jar`<br/>Замещаемый файл: `$INSTALL_DIR$/Server/server.jar`|
+|Веб-сервер (Client)|Файл на центральном сервере: `lsfusion-client-6.<новая версия>.war`<br/>Замещаемый файл: `$INSTALL_DIR$/Client/webapps/ROOT.war`<br/>Для обновления Tomcat, необходимо скачать архив с новой версией Tomcat и разархивировать его в папку `$INSTALL_DIR$/Client` без каталога `webapps` и файла [параметров запуска](#settings)
 </TabItem>
 <TabItem value="linux">
 
@@ -134,23 +133,21 @@ Classpath сервера по умолчанию устанавливается 
 
 | ОС                               | Команда                       |
 |----------------------------------|-------------------------------|
-| RHEL 8+ / CentOS 8+ / Fedora 35+ | `dnf update lsfusion5-server` |
-| RHEL 7 / CentOS 7                | `yum update lsfusion5-server` |
-| Ubuntu 18+ / Debian 9+           | `apt update lsfusion5-server` |
+| RHEL 8+ / CentOS 8+ / Fedora 35+ | `dnf update lsfusion6-server` |
+| Ubuntu 18+ / Debian 9+           | `apt update lsfusion6-server` |
 
 #### Веб-сервер (Client)
 
 | ОС                               | Команда                       |
 |----------------------------------|-------------------------------|
-| RHEL 8+ / CentOS 8+ / Fedora 35+ | `dnf update lsfusion5-client` |
-| RHEL 7 / CentOS 7                | `yum update lsfusion5-client` |
-| Ubuntu 18+ / Debian 9+           | `apt update lsfusion5-client` |
+| RHEL 8+ / CentOS 8+ / Fedora 35+ | `dnf update lsfusion6-client` |
+| Ubuntu 18+ / Debian 9+           | `apt update lsfusion6-client` |
 <!--- comment to prevent multiple error messages in IDEA --->
 
 #### Нестабильные версии
-Обновление на конкретную SNAPSHOT-версию платформы : `source <(curl -s https://download.lsfusion.org/apt/update-lsfusion5) <platform version>`.
+Обновление на конкретную SNAPSHOT-версию платформы : `source <(curl -s https://download.lsfusion.org/apt/update-lsfusion6) <platform version>`.
 
-Например, `source <(curl -s https://download.lsfusion.org/apt/update-lsfusion5) 6.0-SNAPSHOT`.
+Например, `source <(curl -s https://download.lsfusion.org/apt/update-lsfusion6) 6.0-SNAPSHOT`.
 
 </TabItem>
 </Tabs>
@@ -168,27 +165,24 @@ Classpath сервера по умолчанию устанавливается 
 
 Ниже приведены скрипты для установки отдельных компонент платформы:
 
-Сервер БД - PostgreSQL **14**:
+Сервер БД - PostgreSQL **16**:
 
 | ОС                            | Команда / Скрипт                                                           |
 |-------------------------------|----------------------------------------------------------------------------|
-| RHEL 7 / CentOS 7 / Fedora 29 | `source <(curl -s https://download.lsfusion.org/yum/install-lsfusion5-db)` |
-| Ubuntu 18+ / Debian 9+        | `source <(curl -s https://download.lsfusion.org/apt/install-lsfusion5-db)` |
+| Ubuntu 18+ / Debian 9+        | `source <(curl -s https://download.lsfusion.org/apt/install-lsfusion6-db)` |
 
-Сервер приложений - lsFusion 5 Server (+ OpenJDK **11**):
+Сервер приложений - lsFusion 6 Server (+ OpenJDK **11**):
 
 
 | ОС                            | Команда / Скрипт                                                               |
 |-------------------------------|--------------------------------------------------------------------------------|
-| RHEL 7 / CentOS 7 / Fedora 29 | `source <(curl -s https://download.lsfusion.org/yum/install-lsfusion5-server)` |
-| Ubuntu 18+ / Debian 9+        | `source <(curl -s https://download.lsfusion.org/apt/install-lsfusion5-server)` |
+| Ubuntu 18+ / Debian 9+        | `source <(curl -s https://download.lsfusion.org/apt/install-lsfusion6-server)` |
  
-Веб-сервер - lsFusion 5 Client (+ Tomcat 9.0.67): 
+Веб-сервер - lsFusion 6 Client (+ Tomcat 9.0.89): 
 
 | ОС                            | Команда / Скрипт                                                               |
 |-------------------------------|--------------------------------------------------------------------------------|
-| RHEL 7 / CentOS 7 / Fedora 29 | `source <(curl -s https://download.lsfusion.org/yum/install-lsfusion5-client)` |
-| Ubuntu 18+ / Debian 9+        | `source <(curl -s https://download.lsfusion.org/apt/install-lsfusion5-client)` |
+| Ubuntu 18+ / Debian 9+        | `source <(curl -s https://download.lsfusion.org/apt/install-lsfusion6-client)` |
 <!--- comment to prevent multiple error messages in IDEA --->
 </TabItem>
 </Tabs>
@@ -213,8 +207,8 @@ Classpath сервера по умолчанию устанавливается 
 
 |Компонент|java|lsfusion|
 |-|-|-|
-|Сервер приложений (Server)|вкладка Java в графическом интерфейсе `$INSTALL_DIR/Server/bin/lsfusion5_serverw.exe`<br/>[`classpath`](Launch_parameters.md#appjava) - параметр Classpath в той же вкладке|файл `$INSTALL_DIR/Server/conf/settings.properties`|
-|Веб-сервер (Client)|вкладка Java в графическом интерфейсе `$INSTALL_DIR/Client/bin/lsfusion5_serverw.exe`|файл `$INSTALL_DIR/Client/conf/catalina/localhost/ROOT.xml`|
+|Сервер приложений (Server)|вкладка Java в графическом интерфейсе `$INSTALL_DIR/Server/bin/lsfusion6_serverw.exe`<br/>[`classpath`](Launch_parameters.md#appjava) - параметр Classpath в той же вкладке|файл `$INSTALL_DIR/Server/conf/settings.properties`|
+|Веб-сервер (Client)|вкладка Java в графическом интерфейсе `$INSTALL_DIR/Client/bin/lsfusion6_serverw.exe`|файл `$INSTALL_DIR/Client/conf/catalina/localhost/ROOT.xml`|
 |Десктоп-клиент|Java параметры задаются внутри тега `j2se` в jnlp файле.||
 </TabItem>
 
@@ -222,8 +216,8 @@ Classpath сервера по умолчанию устанавливается 
 
 |Component|java|lsfusion|
 |-|-|-|
-|Сервер приложений (Server)|параметр `FUSION_OPTS` в файле `/etc/lsfusion5-server/lsfusion.conf`<br/>[`classpath`](Launch_parameters.md#appjava) - параметр `CLASSPATH` в том же файле|файл `/etc/lsfusion5-server/settings.properties`|
-|Веб-сервер (Client)|параметр `CATALINA_OPTS` в файле `/etc/lsfusion5-client/lsfusion.conf`|файл `/etc/lsfusion5-client/catalina/localhost/ROOT.xml`|
+|Сервер приложений (Server)|параметр `FUSION_OPTS` в файле `/etc/lsfusion6-server/lsfusion.conf`<br/>[`classpath`](Launch_parameters.md#appjava) - параметр `CLASSPATH` в том же файле|файл `/etc/lsfusion6-server/settings.properties`|
+|Веб-сервер (Client)|параметр `CATALINA_OPTS` в файле `/etc/lsfusion6-client/lsfusion.conf`|файл `/etc/lsfusion6-client/catalina/localhost/ROOT.xml`|
 |Десктоп-клиент|Java параметры задаются внутри тега `j2se` в jnlp файле.||
 </TabItem>
 </Tabs>
@@ -237,28 +231,28 @@ Classpath сервера по умолчанию устанавливается 
 
 #### Сервер приложений (Server)
 ```shell script title="Графический интерфейс"
-Панель управления > Администрирование > Службы > lsFusion 5 Server
+Панель управления > Администрирование > Службы > lsFusion 6 Server
 ```
 
 ```shell script title="Команда" 
 # Остановить сервер
-$INSTALL_DIR/Server/bin/lsfusion5_server.exe //SS//lsfusion5_server
+$INSTALL_DIR/Server/bin/lsfusion6_server.exe //SS//lsfusion6_server
  
 # Запустить сервер
-$INSTALL_DIR/Server/bin/lsfusion5_server.exe //ES//lsfusion5_server
+$INSTALL_DIR/Server/bin/lsfusion6_server.exe //ES//lsfusion6_server
 ```
 
 #### Веб-сервер (Client)
 ```shell script title="GUI"
-Панель управления > Администрирование > Службы > lsFusion 5 Client
+Панель управления > Администрирование > Службы > lsFusion 6 Client
 ```
 
 ```shell script title="Команда"
 # Остановить клиент
-$INSTALL_DIR/Client/bin/lsfusion5_client.exe //SS//lsfusion5_client
+$INSTALL_DIR/Client/bin/lsfusion6_client.exe //SS//lsfusion6_client
  
 # Запустить клиент
-$INSTALL_DIR/Client/bin/lsfusion5_client.exe //ES//lsfusion5_client
+$INSTALL_DIR/Client/bin/lsfusion6_client.exe //ES//lsfusion6_client
 ```
 </TabItem>
 <TabItem value="linux">
@@ -266,19 +260,19 @@ $INSTALL_DIR/Client/bin/lsfusion5_client.exe //ES//lsfusion5_client
 #### Сервер приложений (Server)
 ```shell script title="Команда" 
 # Остановить сервер
-systemctl stop lsfusion5-server
+systemctl stop lsfusion6-server
  
 # Запустить сервер
-systemctl start lsfusion5-server
+systemctl start lsfusion6-server
 ```
 
 #### Веб-сервер (Client)
 ```shell script title="Команда"
 # Остановить клиент
-systemctl stop lsfusion5-client
+systemctl stop lsfusion6-client
  
 # Запустить клиент
-systemctl start lsfusion5-client
+systemctl start lsfusion6-client
 ```
 
 </TabItem>
@@ -303,8 +297,8 @@ systemctl start lsfusion5-client
 
 | Компонент                   | Folder                                  |
 | --------------------------- |-----------------------------------------|
-| Сервер приложений (Server)  | `/var/log/lsfusion5-server`             |
-| Веб-сервер (Client)         | `/var/log/lsfusion5-client`             |
+| Сервер приложений (Server)  | `/var/log/lsfusion6-server`             |
+| Веб-сервер (Client)         | `/var/log/lsfusion6-client`             |
 | Десктоп-клиент              | `/home/<имя пользователя>/.fusion/logs` |
 <!--- comment to prevent multiple error messages in IDEA --->
 </TabItem>
