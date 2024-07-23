@@ -45,13 +45,6 @@ public class CustomTextCellEditor extends TextBasedCellEditor implements CustomC
     }
 
     @Override
-    public void render(Element cellParent, RenderContext renderContext, PValue oldValue, Integer renderedWidth, Integer renderedHeight) {
-        super.render(cellParent, renderContext, oldValue, renderedWidth, renderedHeight);
-
-        CustomCellEditor.super.render(cellParent, renderContext, oldValue, renderedWidth, renderedHeight);
-    }
-
-    @Override
     public PValue getCommitValue(Element parent, Integer contextAction) throws InvalidEditException {
         if(CustomReplaceCellEditor.hasGetValue(customEditor))
             return CustomCellEditor.super.getCommitValue(parent, contextAction);
@@ -60,10 +53,17 @@ public class CustomTextCellEditor extends TextBasedCellEditor implements CustomC
     }
 
     @Override
-    public void clearRender(Element cellParent, RenderContext renderContext, boolean cancel) {
-        super.clearRender(cellParent, renderContext, cancel);
+    public void start(EventHandler handler, Element parent, RenderContext renderContext, boolean notFocusable, PValue oldValue) {
+        super.start(handler, parent, renderContext, notFocusable, oldValue);
 
-        CustomCellEditor.super.clearRender(cellParent, renderContext, cancel);
+        CustomCellEditor.super.render(parent, renderContext, oldValue, null, null);
+    }
+
+    @Override
+    public void stop(Element parent, boolean cancel, boolean blurred) {
+        CustomCellEditor.super.clearRender(parent, null, cancel);
+
+        super.stop(parent, cancel, blurred);
     }
 
     @Override
