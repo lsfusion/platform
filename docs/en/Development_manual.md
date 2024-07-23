@@ -16,7 +16,7 @@ For the application server to work, it must have access to the PostgreSQL databa
 
 
 :::info
-To install the plug-in, Intellij IDEA version 2020.1 or higher must be installed on the computer.
+To install the plug-in, Intellij IDEA version 2022.2 or higher must be installed on the computer.
 :::
 
 -   In the IDEA settings (`File > Settings`), select `Plugins > Browse repositories`, find the [lsFusion plugin](https://plugins.jetbrains.com/plugin/7601-lsfusion), click `Install`, and restart IDEA.

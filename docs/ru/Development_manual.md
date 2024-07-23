@@ -16,7 +16,7 @@ title: 'Разработка (ручная)'
 
 
 :::info
-Для установки плагина на компьютере должна быть установлена Intellij IDEA не ниже 2020.1 версии.
+Для установки плагина на компьютере должна быть установлена Intellij IDEA не ниже 2022.2 версии.
 :::
 
 -   В настройках IDEA (`File > Settings`) выбрать `Plugins > Browse repositories`, найти [lsFusion плагин](https://plugins.jetbrains.com/plugin/7601-lsfusion), нажать `Install`, перезапустить IDEA.
