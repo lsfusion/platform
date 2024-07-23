@@ -5577,11 +5577,6 @@ expressionLiteral returns [ScriptingLogicsModule.ConstType cls, Object value]
 	|	str=multilineStringLiteral { $cls = ScriptingLogicsModule.ConstType.STRING; $value = $str.val; }
 	;
 
-literal returns [ScriptingLogicsModule.ConstType cls, Object value]
-	:	cl=commonLiteral { $cls = $cl.cls; $value = $cl.value; } 	
-	|	str=localizedStringLiteralNoID	{ $cls = ScriptingLogicsModule.ConstType.STRING; $value = $str.val; }
-	;
-
 commonLiteral returns [ScriptingLogicsModule.ConstType cls, Object value]
 	: 	vint=uintLiteral	{ $cls = ScriptingLogicsModule.ConstType.INT; $value = $vint.val; }
 	|	vlong=ulongLiteral	{ $cls = ScriptingLogicsModule.ConstType.LONG; $value = $vlong.val; }
