@@ -26,18 +26,33 @@ public interface BaseImage extends Serializable {
         return false;
     }
 
+    default boolean isPDF() {
+        return false;
+    }
+
     default String createImageHTML() {
         if(useIcon())
             return "<i class=\"" + ((BaseStaticImage) this).getFontClasses() + " wrap-text-img\"></i>";
-        else
-            return "<img src=\"" + getImageElementSrc(true) + "\" class=\"wrap-text-img\"></img>";
+        else {
+            if(isPDF()) {
+                return "<iframe src=\"" + getImageElementSrc(true) + "\" class=\"wrap-text-img\"></iframe>";
+            } else {
+                return "<img src=\"" + getImageElementSrc(true) + "\" class=\"wrap-text-img\"></img>";
+            }
+        }
     }
     default Element createImage() {
         Element imageElement;
         if(useIcon()) {
             imageElement = Document.get().createElement("i");
         } else {
-            imageElement = Document.get().createImageElement();
+            if(isPDF()) {
+                imageElement = Document.get().createElement("iframe");
+                imageElement.setPropertyString("width", "100%");
+                imageElement.setPropertyString("height", "100%");
+            } else {
+                imageElement = Document.get().createImageElement();
+            }
         }
 
         updateImageSrc(imageElement);
@@ -46,7 +61,7 @@ public interface BaseImage extends Serializable {
     }
 
     default boolean updateImageSrc(Element element) {
-        boolean useIcon = !ImageElement.is(element);
+        boolean useIcon = !ImageElement.is(element) && !isPDF();
         boolean needIcon = useIcon();
         if(useIcon != needIcon)
             return false;

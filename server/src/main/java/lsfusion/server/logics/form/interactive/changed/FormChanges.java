@@ -23,6 +23,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.file.FileClass;
 import lsfusion.server.logics.classes.data.file.ImageClass;
+import lsfusion.server.logics.classes.data.file.PDFClass;
 import lsfusion.server.logics.classes.data.file.StaticFormatFileClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.ConcreteObjectClass;
@@ -323,7 +324,7 @@ public class FormChanges {
         if (reader instanceof PropertyDrawInstance && ((PropertyDrawInstance<?>) reader).isProperty(context)) {
             PropertyDrawEntity<?> propertyDraw = ((PropertyDrawInstance<?>) reader).entity;
             readerType = readType.get();
-            if (readerType instanceof ImageClass || (propertyDraw.isPredefinedImage() && propertyDraw.needImage(context)))
+            if (readerType instanceof ImageClass || readerType instanceof PDFClass || (propertyDraw.isPredefinedImage() && propertyDraw.needImage(context)))
                 return getNeedImage(readerType, propertyDraw, context);
             else if (readerType instanceof FileClass && propertyDraw.needFile(context)) // if there is a custom function, we want file to be send to web-server as a link
                 return new NeedFile(readerType);

@@ -5,14 +5,20 @@ import static lsfusion.gwt.client.base.GwtClientUtils.getAppDownloadURL;
 public class AppFileImage implements BaseImage, AppBaseImage {
 
     public String path;
+    public String extension;
 
     public AppFileImage() {
     }
 
-    public AppFileImage(String path) {
+    public AppFileImage(String path, String extension) {
         this.path = path;
+        this.extension = extension;
     }
 
+    @Override
+    public boolean isPDF() {
+        return extension != null && extension.equalsIgnoreCase("pdf");
+    }
 
     @Override
     public String getImageElementSrc(boolean enabled) {

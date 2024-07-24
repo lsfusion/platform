@@ -21,22 +21,12 @@ public class ImagePropertyRenderer extends FilePropertyRenderer {
 
     public void setValue(Object value) {
         super.setValue(value);
-        
-        icon = null; // сбрасываем
-        if (value != null) {
-            Image image = convertValue(((AppFileDataImage) value));
-            if (image != null)
-                icon = new ImageIcon(image);
-        }
+
+        setIcon(value != null ? convertValue(((AppFileDataImage) value)) : null);
     }
 
-    public static Image convertValue(AppFileDataImage value) {
-        try {
-            return ImageIO.read(ImageIO.createImageInputStream(RawFileData.toRawFileData(value.data).getInputStream()));
-        } catch (IOException e) {
-            Throwables.propagate(e);
-        }
-        return null;
+    protected void setIcon(Image image) {
+        this.icon = image != null ? new ImageIcon(image) : null;
     }
 
     @Override
@@ -102,34 +92,46 @@ public class ImagePropertyRenderer extends FilePropertyRenderer {
 
     public static void expandImage(final AppFileDataImage value) {
         if (value != null) {
-            Image image = convertValue(value); 
-            if (image != null) {
-                final JDialog dialog = new JDialog(MainFrame.instance, true);
-                dialog.getRootPane().registerKeyboardAction(actionEvent -> dialog.setVisible(false),
-                        KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_IN_FOCUSED_WINDOW);
-
-                final Rectangle bounds = MainFrame.instance.getBounds();
-                bounds.x += 30;
-                bounds.y += 30;
-                bounds.width -= 60;
-                bounds.height -= 60;
-                dialog.setBounds(bounds);
-                dialog.setResizable(false);
-
-                ImageIcon imageIcon = new ImageIcon(image);
-                if (imageIcon.getIconWidth() > bounds.width || imageIcon.getIconHeight() > bounds.height) {
-                    Dimension scaled = getIconScale(imageIcon, bounds.width, bounds.height);
-                    if (scaled != null) {
-                        imageIcon.setImage(image.getScaledInstance(scaled.width, scaled.height, Image.SCALE_SMOOTH));
-                    }
-                }
-
-                dialog.add(new JLabel(imageIcon));
-
-                dialog.pack();
-                dialog.setLocationRelativeTo(dialog.getOwner());
-                dialog.setVisible(true);
-            }
+            expandImage(convertValue(value));
         }
+    }
+
+    protected static void expandImage(Image image) {
+        if (image != null) {
+            final JDialog dialog = new JDialog(MainFrame.instance, true);
+            dialog.getRootPane().registerKeyboardAction(actionEvent -> dialog.setVisible(false),
+                    KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_IN_FOCUSED_WINDOW);
+
+            final Rectangle bounds = MainFrame.instance.getBounds();
+            bounds.x += 30;
+            bounds.y += 30;
+            bounds.width -= 60;
+            bounds.height -= 60;
+            dialog.setBounds(bounds);
+            dialog.setResizable(false);
+
+            ImageIcon imageIcon = new ImageIcon(image);
+            if (imageIcon.getIconWidth() > bounds.width || imageIcon.getIconHeight() > bounds.height) {
+                Dimension scaled = getIconScale(imageIcon, bounds.width, bounds.height);
+                if (scaled != null) {
+                    imageIcon.setImage(image.getScaledInstance(scaled.width, scaled.height, Image.SCALE_SMOOTH));
+                }
+            }
+
+            dialog.add(new JLabel(imageIcon));
+
+            dialog.pack();
+            dialog.setLocationRelativeTo(dialog.getOwner());
+            dialog.setVisible(true);
+        }
+    }
+
+    public static Image convertValue(AppFileDataImage value) {
+        try {
+            return ImageIO.read(ImageIO.createImageInputStream(RawFileData.toRawFileData(value.data).getInputStream()));
+        } catch (IOException e) {
+            Throwables.propagate(e);
+        }
+        return null;
     }
 }

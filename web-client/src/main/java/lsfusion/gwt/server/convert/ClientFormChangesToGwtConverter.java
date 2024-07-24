@@ -195,7 +195,7 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
     // AppFileImage, String | AppStaticImage, GStringWithFiles (String | AppStaticImage)
     public static Serializable convertFileValue(Object value, FormSessionObject sessionObject, ServletContext servletContext, ServerSettings serverSettings) throws IOException {
         if(value instanceof AppFileDataImage) { // dynamic image
-            return new AppFileImage(convertFileValue(((AppFileDataImage) value).data, sessionObject));
+            return new AppFileImage(convertFileValue(((AppFileDataImage) value).data, sessionObject), getExtension(((AppFileDataImage) value).data));
         }
 
         if (value instanceof FileData || value instanceof NamedFileData || value instanceof RawFileData) {
@@ -253,6 +253,18 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
         }
 
         return FileUtils.saveFormFile(fileData, displayName, sessionObject != null ? sessionObject.savedTempFiles : null);
+    }
+
+    private static String getExtension(Object value) {
+        FileData fileData;
+        if (value instanceof NamedFileData) {
+            fileData = ((NamedFileData) value).getFileData();
+        } else if (value instanceof FileData) {
+            fileData = (FileData) value;
+        } else { // it's a really rare case see FormChanges.convertFileValue - when there is no static file class, but still we get rawFileData
+            fileData = new FileData((RawFileData) value, "");
+        }
+        return fileData.getExtension();
     }
 
     @Converter(from = Color.class)
