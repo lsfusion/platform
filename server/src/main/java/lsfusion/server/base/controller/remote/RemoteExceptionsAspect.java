@@ -11,6 +11,7 @@ import lsfusion.server.base.controller.stack.ThrowableWithStack;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.controller.stack.NewThreadExecutionStack;
+import lsfusion.server.logics.action.flow.LSFNotFoundException;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -80,7 +81,8 @@ public class RemoteExceptionsAspect {
             return new RemoteMessageException(throwable.getMessage());
 
         RemoteInternalException result = new RemoteInternalException(ThreadLocalContext.localize("{exceptions.internal.server.error}")
-                                    + ": " + ExceptionUtils.copyMessage(throwable), throwableWithStack.getLsfStack());
+                                    + ": " + ExceptionUtils.copyMessage(throwable), throwableWithStack.getLsfStack(),
+                                    throwable instanceof LSFNotFoundException ? 404 : null);
         ExceptionUtils.copyStackTraces(throwable, result);
         return result;
     }
