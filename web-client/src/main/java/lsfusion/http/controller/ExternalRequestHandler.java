@@ -41,7 +41,7 @@ public abstract class ExternalRequestHandler extends LogicsRequestHandler implem
             if(e instanceof AuthenticationException) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             } else {
-                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                response.setStatus(nvl(e instanceof RemoteInternalException ? ((RemoteInternalException) e).status : null, HttpServletResponse.SC_INTERNAL_SERVER_ERROR));
                 response.setContentType("text/html; charset=utf-8");
 
                 //we know that there will be a re-request, so we do not write in response - we can call getWriter() only once

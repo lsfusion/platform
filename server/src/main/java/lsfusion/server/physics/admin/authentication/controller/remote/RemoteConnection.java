@@ -29,6 +29,7 @@ import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
+import lsfusion.server.logics.action.flow.LSFStatusException;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.classes.data.StringClass;
@@ -330,7 +331,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
                     if (action != null) {
                         return executeExternal(action, actionName, actionPathInfo, false, request);
                     } else {
-                        throw new RuntimeException(String.format("Action %s was not found", actionName));
+                        throw new LSFStatusException(String.format("Action %s was not found", actionName), 404);
                     }
                 } else {
                     throw new RuntimeException("Action was not specified");
