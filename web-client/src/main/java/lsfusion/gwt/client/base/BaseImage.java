@@ -61,7 +61,7 @@ public interface BaseImage extends Serializable {
     }
 
     default boolean updateImageSrc(Element element) {
-        boolean useIcon = !ImageElement.is(element) && !isPDF();
+        boolean useIcon = element.getTagName().equalsIgnoreCase("i");
         boolean needIcon = useIcon();
         if(useIcon != needIcon)
             return false;
@@ -69,7 +69,7 @@ public interface BaseImage extends Serializable {
         if (useIcon)
             updateClasses(element, ((BaseStaticImage) this).getFontClasses());
         else
-            ((ImageElement) element).setSrc(getImageElementSrc(true));
+            GwtClientUtils.setSrc(element, getImageElementSrc(true));
 
         return true;
     }

@@ -1683,4 +1683,8 @@ public class GwtClientUtils {
     public static native void removeAttributeOrStyle(Element element, String attribute) /*-{
         $wnd.removeAttributeOrStyle(element, attribute);
     }-*/;
+
+    public static native void setSrc(Element element, String src) /*-{
+        element.src = src;
+    }-*/;
 }
