@@ -29,7 +29,7 @@ public class ExternalHTTPAction extends CallHTTPAction {
                 if(!connectionString.contains(prmName))
                     return false;
 
-                rConnectionString.set(rConnectionString.result.replace(prmName, replacement));
+                rConnectionString.set(rConnectionString.result.replace(prmName, encodedValue));
                 return true;
             }
 
