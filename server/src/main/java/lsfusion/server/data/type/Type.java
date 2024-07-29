@@ -6,6 +6,7 @@ import lsfusion.base.file.RawFileData;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.ExtInt;
+import lsfusion.interop.session.ExternalRequest;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -28,7 +29,6 @@ import org.apache.poi.ss.usermodel.CellValue;
 import org.json.JSONException;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
@@ -144,9 +144,9 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
     }
     String formatStringSource(String valueSource, SQLSyntax syntax); // should correspond formatString
 
-    T parseHTTP(Object o, Charset charset) throws ParseException; // o - String or FileData, o - not null, null'ы decode'ся в зависимости от типа
+    T parseHTTP(ExternalRequest.Param param) throws ParseException; // param.value - String or FileData, param.value - not null, nulls are decoded depending on type
 
-    Object formatHTTP(T value, Charset urlEncodeCharset); // returns String or FileData (не null), null'ы encode'ит в зависимости от типа
+    Object formatHTTP(T value); // returns String or FileData (not null), null's encode'it depending on type
 
     T writeProp(RawFileData value, String extension);
 

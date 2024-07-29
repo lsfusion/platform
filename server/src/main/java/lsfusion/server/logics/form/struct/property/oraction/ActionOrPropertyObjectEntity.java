@@ -5,6 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.logics.action.Action;
+import lsfusion.server.logics.form.interactive.action.input.InputPropertyValueList;
 import lsfusion.server.logics.form.interactive.action.input.InputValueList;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
@@ -96,7 +97,7 @@ public abstract class ActionOrPropertyObjectEntity<P extends PropertyInterface, 
 
     private static <P extends PropertyInterface> Pair<Integer, Integer> getActualSelectStats(FormInstanceContext context, Property.Select<P> select) {
         Pair<Integer, Integer> actualStats = new Pair<>(0, 0);
-        for(InputValueList value : select.values) {
+        for(InputPropertyValueList value : select.values) {
             Pair<Integer, Integer> readValues = context.getValues(value);
             if(actualStats.second < readValues.second)
                 actualStats = readValues;

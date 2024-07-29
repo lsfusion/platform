@@ -145,11 +145,9 @@ public class PropertyFact {
 
     // фильтрует только используемые интерфейсы и создает Join свойство с mapping'ом на эти интерфейсы
     public static <L extends PropertyInterface, T extends PropertyInterface> PropertyMapImplement<?,T> createJoin(PropertyImplement<L, PropertyInterfaceImplement<T>> implement) {
-        // определяем какие интерфейсы использовали
         ImSet<T> usedInterfaces = getUsedInterfaces(implement.mapping.values());
 
-        // создаем свойство - перемаппим интерфейсы
-        ImRevMap<T,JoinProperty.Interface> joinMap = usedInterfaces.mapRevValues(JoinProperty.genInterface); // строим карту
+        ImRevMap<T,JoinProperty.Interface> joinMap = usedInterfaces.mapRevValues(JoinProperty.genInterface);
         ImRevMap<JoinProperty.Interface, T> revJoinMap = joinMap.reverse();
         JoinProperty<L> joinProperty = new JoinProperty<>(LocalizedString.NONAME, revJoinMap.keys().toOrderSet(),
                 new PropertyImplement<>(implement.property, mapImplements(implement.mapping, joinMap)));
@@ -179,7 +177,22 @@ public class PropertyFact {
         JoinAction<L> joinProperty = new JoinAction<>(LocalizedString.NONAME, usedInterfaces, implement);
         return joinProperty.getImplement(usedInterfaces);
     }
-    
+    // join when there are not all params are passed, and we have to create virtual ones
+    public static <L extends PropertyInterface, T extends PropertyInterface> Pair<Action<PropertyInterface>, ImRevMap<PropertyInterface, T>> createPartJoinAction(ActionImplement<L, PropertyInterfaceImplement<T>> implement) {
+        ImSet<L> notUsedInterfaces = implement.action.interfaces.removeIncl(implement.mapping.keys());
+        ImSet<T> usedInterfaces = getUsedInterfaces(implement.mapping.values());
+
+        ImRevMap<L,PropertyInterface> notUsedJoinMap = notUsedInterfaces.mapRevValues(() -> new PropertyInterface<>());
+        ImRevMap<T,PropertyInterface> usedJoinMap = usedInterfaces.mapRevValues(() -> new PropertyInterface<>());
+
+        ImRevMap<PropertyInterface, L> revNotUsedJoinMap = notUsedJoinMap.reverse();
+        ImRevMap<PropertyInterface, T> revUsedJoinMap = usedJoinMap.reverse();
+
+        JoinAction<L> joinProperty = new JoinAction<L>(LocalizedString.NONAME, revUsedJoinMap.keys().addExcl(revNotUsedJoinMap.keys()).toOrderSet(),
+                new ActionImplement<>(implement.action, mapImplements(implement.mapping, usedJoinMap).addExcl(BaseUtils.<ImRevMap<L, PropertyInterfaceImplement<PropertyInterface>>>immutableCast(notUsedJoinMap))));
+        return new Pair<>(joinProperty, revUsedJoinMap);
+    }
+
     public static <T extends PropertyInterface> PropertyMapImplement<?, T> createCompare(Compare compare, T operator1, T operator2) {
         CompareFormulaProperty compareProperty = new CompareFormulaProperty(compare);
 

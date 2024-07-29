@@ -40,6 +40,7 @@ import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelecto
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.input.InputFilterEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
+import lsfusion.server.logics.form.interactive.action.input.InputPropertyListEntity;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.controller.init.Instantiable;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
@@ -374,7 +375,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
             // now we don't respect contextFilters (3rd parameter), however later, maybe we can pass it here from formInstance in most call trees
             InputFilterEntity<?, PropertyInterface> filter = entity.getInputFilterAndOrderEntities(object, SetFact.EMPTY(), listMapObjects).first;
-            InputListEntity<X, PropertyInterface> list = new InputListEntity<>(listProperty.property, listProperty.mapping.innerJoin(listMapObjects));
+            InputPropertyListEntity<X, PropertyInterface> list = new InputPropertyListEntity<>(listProperty.property, listProperty.mapping.innerJoin(listMapObjects));
 
             // filter orderInterfaces to only used in view and filter
             ImSet<PropertyInterface> usedInterfaces = list.getUsedInterfaces().merge(filter.getUsedInterfaces());

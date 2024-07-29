@@ -289,6 +289,9 @@ importFile() = DATA LOCAL FILE ();
 imported = DATA LOCAL BOOLEAN (INTEGER);
 importedString = DATA LOCAL BOOLEAN (STRING[10]);
 
+inputList = DATA LOCAL STRING (INTEGER);
+displayInputList = DATA LOCAL STRING (INTEGER);
+
 readFile = DATA LOCAL FILE ();
 
 showResult = DATA LOCAL TEXT();

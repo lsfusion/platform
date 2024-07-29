@@ -10,6 +10,7 @@ import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
+import lsfusion.interop.session.ExternalRequest;
 import lsfusion.interop.session.ExternalResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -75,7 +76,7 @@ public class LSFClientRegistrationRepository extends LogicsRequestHandler implem
         List<ClientRegistration> clientRegistrations = new ArrayList<>();
 
         ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, NavigatorProviderImpl.getSessionInfo(request),
-                "Authentication.getClientCredentials", MainController.getExternalRequest(new Object[]{authSecret}, request));
+                "Authentication.getClientCredentials", MainController.getExternalRequest(new ExternalRequest.Param[]{ExternalRequest.getSystemParam(authSecret)}, request));
         JSONArray jsonArray = LogicsSessionObject.getJSONArrayResult(result);
 
         int jsonArrayLength = jsonArray.length();

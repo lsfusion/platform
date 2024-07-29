@@ -22,7 +22,7 @@ public class RemoteSessionProxy<T extends RemoteSessionInterface> extends Remote
     }
 
     @Override
-    public ExternalResponse eval(boolean action, Object paramScript, ExternalRequest request) throws RemoteException {
+    public ExternalResponse eval(boolean action, ExternalRequest.Param paramScript, ExternalRequest request) throws RemoteException {
         logRemoteMethodStartCall("eval");
         ExternalResponse result = target.eval(action, paramScript, request);
         logRemoteMethodEndVoidCall("eval");

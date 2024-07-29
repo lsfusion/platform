@@ -60,18 +60,8 @@ public class NamedFileClass extends AbstractDynamicFormatFileClass<NamedFileData
     }
 
     @Override
-    protected NamedFileData parseHTTPNotNullString(String s, Charset charset) {
-        return new NamedFileData(new FileData(s.getBytes(charset)), "file");
-    }
-
-    @Override
     protected NamedFileData parseHTTPNotNull(FileData b) {
         return new NamedFileData(b, "file");
-    }
-
-    @Override
-    protected String formatHTTPNotNullString(NamedFileData value, Charset charset) {
-        return value != null ? new String(value.getRawFile().getBytes(), charset) : null;
     }
 
     @Override

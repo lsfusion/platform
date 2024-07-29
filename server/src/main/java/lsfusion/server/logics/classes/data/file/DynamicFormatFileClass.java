@@ -79,18 +79,8 @@ public class DynamicFormatFileClass extends AbstractDynamicFormatFileClass<FileD
     }
 
     @Override
-    protected FileData parseHTTPNotNullString(String s, Charset charset) {
-        return new FileData(new RawFileData(s.getBytes(charset)), "txt");
-    }
-
-    @Override
     protected FileData parseHTTPNotNull(FileData b) {
         return b;
-    }
-
-    @Override
-    protected String formatHTTPNotNullString(FileData value, Charset charset) {
-        return value != null ? new String(value.getRawFile().getBytes(), charset) : null;
     }
 
     @Override

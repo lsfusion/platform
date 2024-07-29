@@ -24,13 +24,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Map;
 
 import static java.util.Collections.list;
-import static lsfusion.base.ServerMessages.getString;
 
 public class ExternalLogicsAndSessionRequestHandler extends ExternalRequestHandler {
 
@@ -48,8 +46,7 @@ public class ExternalLogicsAndSessionRequestHandler extends ExternalRequestHandl
         try {
             String queryString = request.getQueryString();
             String query = queryString != null ? queryString : "";
-            String contentTypeString = request.getContentType();
-            ContentType contentType = contentTypeString != null ? ContentType.parse(contentTypeString) : null;
+            ContentType requestContentType = ExternalUtils.parseContentType(request.getContentType());
 
             String[] headerNames = list(request.getHeaderNames()).toArray(new String[0]);
             String[] headerValues = getRequestHeaderValues(request, headerNames);
@@ -78,9 +75,9 @@ public class ExternalLogicsAndSessionRequestHandler extends ExternalRequestHandl
             String logicsHost = sessionObject.connection.host != null && !sessionObject.connection.host.equals("localhost") && !sessionObject.connection.host.equals("127.0.0.1")
                     ? sessionObject.connection.host : request.getServerName();
 
-            InputStream requestInputStream = getRequestInputStream(request, contentType, query);
+            InputStream requestInputStream = getRequestInputStream(request, requestContentType, query);
 
-            ExternalUtils.ExternalResponse externalResponse = ExternalUtils.processRequest(remoteExec, requestInputStream, contentType,
+            ExternalUtils.ExternalResponse externalResponse = ExternalUtils.processRequest(remoteExec, requestInputStream, requestContentType,
                     headerNames, headerValues, cookieNames, cookieValues, logicsHost, sessionObject.connection.port, sessionObject.connection.exportName,
                     request.getScheme(), request.getMethod(), request.getServerName(), request.getServerPort(), request.getContextPath(), request.getServletPath(),
                     request.getPathInfo() == null ? "" : request.getPathInfo(), query, request.getSession().getId());
@@ -101,7 +98,7 @@ public class ExternalLogicsAndSessionRequestHandler extends ExternalRequestHandl
     private InputStream getRequestInputStream(HttpServletRequest request, ContentType contentType, String query) throws IOException {
         InputStream inputStream = request.getInputStream();
         if (contentType != null && ContentType.APPLICATION_FORM_URLENCODED.getMimeType().equals(contentType.getMimeType()) && inputStream.available() == 0) {
-            Charset charset = ExternalUtils.getCharsetFromContentType(contentType);
+            Charset charset = ExternalUtils.getCharsetFromContentType(contentType, true);
             List<NameValuePair> queryParams = URLEncodedUtils.parse(query, charset);
             StringBuilder bodyParams = new StringBuilder();
 

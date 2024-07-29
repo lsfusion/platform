@@ -29,6 +29,7 @@ import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
+import lsfusion.server.logics.form.interactive.action.input.InputPropertyValueList;
 import lsfusion.server.logics.form.interactive.action.input.InputValueList;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.cases.graph.Graph;
@@ -315,7 +316,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         Pair<Integer, Integer> resultStat = new Pair<>(0, 0);
         boolean multi = false;
         boolean html = false;
-        MList<InputValueList> mResultValues = ListFact.mList();
+        MList<InputPropertyValueList> mResultValues = ListFact.mList();
         ImList<CalcCase<Interface>> cases = getCases();
         boolean notNull = !cases.isEmpty();
         MList<PropertyMapImplement<?, Interface>> mJsonWheres = ListFact.mList();

@@ -28,11 +28,11 @@ public class ExternalLSFAction extends CallHTTPAction {
     protected UrlProcessor createUrlProcessor(String connectionString, boolean noExec) {
         StringBuilder query = new StringBuilder();
 
-        Result<String> script = new Result<>();
+        Result<Object> script = new Result<>();
         Object[] params = new Object[paramInterfaces.size() - 1];
         return new UrlProcessor() {
             @Override
-            public boolean proceed(int number, String value, String encodedValue) {
+            public boolean proceed(int number, Object value, String encodedValue) {
                 String paramName;
                 if (number == 0) {
                     paramName = eval ? ExternalUtils.SCRIPT_PARAM : ExternalUtils.ACTION_CN_PARAM;

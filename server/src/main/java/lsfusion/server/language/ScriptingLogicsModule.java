@@ -91,6 +91,7 @@ import lsfusion.server.logics.form.interactive.action.focus.IsActiveFormAction;
 import lsfusion.server.logics.form.interactive.action.input.InputContextAction;
 import lsfusion.server.logics.form.interactive.action.input.InputFilterEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
+import lsfusion.server.logics.form.interactive.action.input.InputPropertyListEntity;
 import lsfusion.server.logics.form.interactive.action.lifecycle.CloseFormAction;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.FormView;
@@ -2292,12 +2293,12 @@ public class ScriptingLogicsModule extends LogicsModule {
     private static class ILEWithParams {
         public final ImOrderSet<Integer> usedParams;
         public final ImOrderSet<PropertyInterface> orderInterfaces;
-        public final InputListEntity<?, PropertyInterface> list;
+        public final InputListEntity<?, PropertyInterface, ?> list;
         public final InputFilterEntity<?, PropertyInterface> where;
         public final ImList<InputContextAction<?, PropertyInterface>> contextActions;
 
         public ILEWithParams(ImOrderSet<Integer> usedParams, ImOrderSet<PropertyInterface> orderInterfaces,
-                             InputListEntity<?, PropertyInterface> list, InputFilterEntity<?, PropertyInterface> where, ImList<InputContextAction<?, PropertyInterface>> contextActions) {
+                             InputListEntity<?, PropertyInterface, ?> list, InputFilterEntity<?, PropertyInterface> where, ImList<InputContextAction<?, PropertyInterface>> contextActions) {
             this.usedParams = usedParams;
             this.orderInterfaces = orderInterfaces;
             assert usedParams.size() == orderInterfaces.size();
@@ -2306,7 +2307,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             this.contextActions = contextActions;
         }
     }
-    private ScriptingLogicsModule.ILEWithParams getContextListEntity(int contextSize, ScriptingLogicsModule.LPWithParams list, ScriptingLogicsModule.LPWithParams where,
+    private ScriptingLogicsModule.ILEWithParams getContextListEntity(int contextSize, ScriptingLogicsModule.LAPWithParams list, ScriptingLogicsModule.LPWithParams where,
                                                                      List<String> actionImages, List<String> keyStrokes, List<List<QuickAccess>> quickAccesses, List<LAWithParams> actions) {
 //        if(list == null) // optimization
 //            return new ILEWithParams(SetFact.EMPTYORDER(), SetFact.EMPTYORDER(), null, null, ListFact.EMPTY());
@@ -2334,8 +2335,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         return splitParams(where, contextSize, usedInterfaces, value -> 0, (property, mapValues, mapExternal) -> new InputFilterEntity<>(property, mapValues));
     }
 
-    private InputListEntity<?, PropertyInterface> getInputListEntity(int contextSize, LPWithParams list, ImRevMap<Integer, PropertyInterface> usedInterfaces) {
-        return splitParams(list, contextSize, usedInterfaces, value -> 0, (property, mapValues, mapExternal) -> new InputListEntity<>(property, mapValues));
+    private InputListEntity<?, PropertyInterface, ?> getInputListEntity(int contextSize, LAPWithParams list, ImRevMap<Integer, PropertyInterface> usedInterfaces) {
+        return splitAPParams(list, contextSize, usedInterfaces, value -> 0, (property, mapValues, mapExternal) -> InputListEntity.create(property, mapValues));
     }
 
     private <O extends ObjectSelector> ContextFilterEntity<PropertyInterface, PropertyInterface, O> getContextFilterEntity(int contextSize, ImOrderSet<O> objectsContext, LPWithParams contextFilter, ImRevMap<Integer, PropertyInterface> usedInterfaces) {
@@ -2386,7 +2387,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LAWithParams addScriptedInputAProp(ValueClass requestValueClass, LPWithParams oldValue, NamedPropertyUsage targetProp, LAWithParams doAction, LAWithParams elseAction,
                                               List<TypedParameter> oldContext, List<TypedParameter> newContext, boolean assign, boolean constraintFilter, LPWithParams changeProp,
-                                              LPWithParams listProp, LPWithParams whereProp, List<String> actionImages, List<String> keyStrokes, List<List<QuickAccess>> quickAccesses, List<LAWithParams> actions,
+                                              LAPWithParams listProp, LPWithParams whereProp, List<String> actionImages, List<String> keyStrokes, List<List<QuickAccess>> quickAccesses, List<LAWithParams> actions,
                                               DebugInfo.DebugPoint assignDebugPoint, FormSessionScope listScope, String customEditorFunction) throws ScriptingErrorLog.SemanticErrorException {
         if(listScope == null)
             listScope = FormSessionScope.OLDSESSION;
@@ -2412,7 +2413,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 cccfs = ListFact.singleton(new CCCF<>(changeProp, classForm.virtualObject, oldContext.size())); // assuming that there is only one parameter
             
             CFEWithParams<ClassFormSelector.VirtualObject> contextEntities = getContextFilterAndListAndActionsEntities(oldContext.size(), SetFact.singletonOrder(classForm.virtualObject),
-                    whereProp != null ? ListFact.singleton(whereProp) : ListFact.EMPTY(), listProp, cccfs, actionImages, keyStrokes, quickAccesses, actions);
+                    whereProp != null ? ListFact.singleton(whereProp) : ListFact.EMPTY(), (LPWithParams) listProp, cccfs, actionImages, keyStrokes, quickAccesses, actions);
             usedParams = contextEntities.usedParams;
 
             action = addDialogInputAProp(classForm, tprop, classForm.virtualObject, oldValue != null, contextEntities.orderInterfaces, listScope, contextEntities.list, contextEntities.filters, contextEntities.contextActions, customEditorFunction, notNull);
@@ -3741,10 +3742,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         public final ImOrderSet<Integer> usedParams;
         public final ImOrderSet<PropertyInterface> orderInterfaces;
         public final ImSet<ContextFilterSelector<PropertyInterface, O>> filters;
-        public final InputListEntity<?, PropertyInterface> list;
+        public final InputPropertyListEntity<?, PropertyInterface> list;
         public final ImList<InputContextAction<?, PropertyInterface>> contextActions;
 
-        public CFEWithParams(ImOrderSet<Integer> usedParams, ImOrderSet<PropertyInterface> orderInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> filters, InputListEntity<?, PropertyInterface> list, ImList<InputContextAction<?, PropertyInterface>> contextActions) {
+        public CFEWithParams(ImOrderSet<Integer> usedParams, ImOrderSet<PropertyInterface> orderInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> filters, InputPropertyListEntity<?, PropertyInterface> list, ImList<InputContextAction<?, PropertyInterface>> contextActions) {
             this.usedParams = usedParams;
             this.orderInterfaces = orderInterfaces;
             assert usedParams.size() == orderInterfaces.size();
@@ -3814,7 +3815,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 LP<X> lp = (LP<X>) cccf.change.getLP();
                 return new CCCContextFilterEntity<>(lp.getImplement(SetFact.fromJavaOrderSet(cccf.change.usedParams).mapOrder(usedInterfaces)), cccf.object);
             })).toOrderExclSet().getSet(),
-            list != null ? getInputListEntity(contextSize, list, usedInterfaces) : null,
+            list != null ? (InputPropertyListEntity<?, PropertyInterface>) getInputListEntity(contextSize, list, usedInterfaces) : null,
             getInputContextActions(contextSize, actionImages, keyStrokes, quickAccesses, actions, usedInterfaces));
     }
 

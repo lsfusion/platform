@@ -26,6 +26,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
+import lsfusion.server.logics.form.interactive.action.input.InputPropertyListEntity;
 import lsfusion.server.logics.property.classes.data.*;
 import lsfusion.server.logics.property.classes.infer.*;
 import lsfusion.server.logics.property.data.DataProperty;
@@ -536,7 +537,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
 
     // filter or custom view completion
     @Override
-    public <X extends PropertyInterface> InputListEntity<?, Interface> getInputList(ImMap<Interface, StaticParamNullableExpr> fixedExprs, boolean noJoin) {
+    public <X extends PropertyInterface> InputPropertyListEntity<?, Interface> getInputList(ImMap<Interface, StaticParamNullableExpr> fixedExprs, boolean noJoin) {
         if(!noJoin) {
             Property<X> mapProperty = null;
             ImRevMap<X, Interface> mapImplements = null;
@@ -557,9 +558,9 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
                 ImRevMap<X, Interface> mapFixedInterfaces = mapImplements.filterFnValuesRev(fixedExprs.keys());
                 ImMap<X, StaticParamNullableExpr> mapFixedExprs = mapFixedInterfaces.join(fixedExprs);
                 if(!useJoinFilterProperty(fixedExprs, mapProperty, mapFixedExprs)) {
-                    InputListEntity<?, X> mapInputList = mapProperty.getInputList(mapFixedExprs, noJoin);
+                    InputPropertyListEntity<?, X> mapInputList = mapProperty.getInputList(mapFixedExprs, noJoin);
                     if (mapInputList != null) {
-                        return mapInputList.map(mapFixedInterfaces);
+                        return mapInputList.mapProperty(mapFixedInterfaces);
                     }
                 }
             }
