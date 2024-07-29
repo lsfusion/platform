@@ -27,7 +27,7 @@ public interface BaseImage extends Serializable {
     }
 
     default String getTag() {
-        return "image";
+        return "img";
     }
 
     default String getTag(String extension) {
@@ -37,7 +37,7 @@ public interface BaseImage extends Serializable {
             case "mp4":
                 return "video";
             default:
-                return "image";
+                return "img";
         }
     }
 
@@ -55,7 +55,7 @@ public interface BaseImage extends Serializable {
             imageElement = Document.get().createElement("i");
         } else {
             String tag = getTag();
-            if(tag.equals("image")) {
+            if(tag.equals("img")) {
                 imageElement = Document.get().createImageElement();
             } else {
                 imageElement = Document.get().createElement(tag);

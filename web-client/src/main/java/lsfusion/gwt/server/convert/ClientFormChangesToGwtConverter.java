@@ -241,21 +241,15 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
 
 
     private static String convertFileValue(Object value, FormSessionObject sessionObject) {
-        String displayName = null;
-        FileData fileData;
-        if(value instanceof NamedFileData) {
-            displayName = ((NamedFileData) value).getName();
-            fileData = ((NamedFileData) value).getFileData();
-        } else if(value instanceof FileData) {
-            fileData = (FileData) value;
-        } else { // it's a really rare case see FormChanges.convertFileValue - when there is no static file class, but still we get rawFileData
-            fileData = new FileData((RawFileData) value, "");
-        }
-
-        return FileUtils.saveFormFile(fileData, displayName, sessionObject != null ? sessionObject.savedTempFiles : null);
+        String displayName = value instanceof NamedFileData ? ((NamedFileData) value).getName() : null;
+        return FileUtils.saveFormFile(getFileData(value), displayName, sessionObject != null ? sessionObject.savedTempFiles : null);
     }
 
     private static String getExtension(Object value) {
+        return getFileData(value).getExtension();
+    }
+
+    private static FileData getFileData(Object value) {
         FileData fileData;
         if (value instanceof NamedFileData) {
             fileData = ((NamedFileData) value).getFileData();
@@ -264,7 +258,8 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
         } else { // it's a really rare case see FormChanges.convertFileValue - when there is no static file class, but still we get rawFileData
             fileData = new FileData((RawFileData) value, "");
         }
-        return fileData.getExtension();
+
+        return fileData;
     }
 
     @Converter(from = Color.class)
