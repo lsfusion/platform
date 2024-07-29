@@ -45,13 +45,11 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static lsfusion.interop.session.ExternalUtils.getCharsetFromContentType;
 import static org.springframework.security.web.WebAttributes.AUTHENTICATION_EXCEPTION;
 
 @Controller
@@ -227,11 +225,11 @@ public class MainController {
     }
 
     private JSONObject sendRequest(JSONArray jsonArray, HttpServletRequest request, String method){
-        FileData fileData = new FileData(new RawFileData(jsonArray.toString().getBytes(StandardCharsets.UTF_8)), "json");
+        ExternalRequest.Param fileParam = ExternalRequest.getSystemParam(jsonArray.toString());
         try {
             return logicsProvider.runRequest(request,
                     (sessionObject, retry) -> LogicsSessionObject.getJSONObjectResult(sessionObject.remoteLogics.exec(AuthenticationToken.ANONYMOUS, NavigatorProviderImpl.getSessionInfo(request),
-                    method + "[JSONFILE]", getExternalRequest(new Object[]{fileData}, request))));
+                    method + "[JSONFILE]", getExternalRequest(new ExternalRequest.Param[]{fileParam}, request))));
         } catch (IOException | AppServerNotAvailableDispatchException e) {
             throw Throwables.propagate(e);
         }
@@ -401,10 +399,10 @@ public class MainController {
         return FileUtils.saveApplicationFile(file);
     }
 
-    public static ExternalRequest getExternalRequest(Object[] params, HttpServletRequest request){
+    public static ExternalRequest getExternalRequest(ExternalRequest.Param[] params, HttpServletRequest request){
         String contentTypeString = request.getContentType();
-        Charset charset = getCharsetFromContentType(contentTypeString != null ? ContentType.parse(contentTypeString) : null);
-        return new ExternalRequest(new String[0], params, null, charset.toString(), new String[0], new String[0], null,
+
+        return new ExternalRequest(new String[0], params, null, new String[0], new String[0], null,
                 null, null, null, null, request.getScheme(), request.getMethod(), request.getServerName(), request.getServerPort(), request.getContextPath(),
                 request.getServletPath(), request.getPathInfo() == null ? "" : request.getPathInfo(), request.getQueryString() != null ? request.getQueryString() : "",
                 contentTypeString, request.getSession().getId(), null, null, false);

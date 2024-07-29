@@ -237,6 +237,9 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LP<?> imported;
     public LP importedString;
 
+    public LP<?> inputList;
+    public LP<?> displayInputList;
+
     public LP isServer;
 
     public LA openFile;
@@ -594,6 +597,9 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
         imported = findProperty("imported[INTEGER]");
         importedString = findProperty("importedString[STRING[10]]");
+
+        inputList = findProperty("inputList[INTEGER]");
+        displayInputList = findProperty("displayInputList[INTEGER]");
 
         isServer = findProperty("isServer[]");
 

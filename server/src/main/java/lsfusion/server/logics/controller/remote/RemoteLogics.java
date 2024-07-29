@@ -159,7 +159,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
-    public ExternalResponse eval(AuthenticationToken token, SessionInfo sessionInfo, final boolean action, final Object paramScript, final ExternalRequest request) throws RemoteException {
+    public ExternalResponse eval(AuthenticationToken token, SessionInfo sessionInfo, final boolean action, final ExternalRequest.Param paramScript, final ExternalRequest request) throws RemoteException {
         return runInNewSession(token, sessionInfo, session -> session.eval(action, paramScript, request));
     }
 

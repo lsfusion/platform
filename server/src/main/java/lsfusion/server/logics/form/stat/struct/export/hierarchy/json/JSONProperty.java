@@ -30,6 +30,7 @@ import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExe
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapValue;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
+import lsfusion.server.logics.form.interactive.action.input.InputPropertyListEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputResult;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.property.AsyncDataConverter;
@@ -242,14 +243,14 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
             }
 
             @Override
-            public <X extends PropertyInterface> Pair<InputListEntity<X, C>, AsyncDataConverter<X>> getAsyncValueList(Result<String> value) {
+            public <X extends PropertyInterface> Pair<InputListEntity<X, C, ?>, AsyncDataConverter<X>> getAsyncValueList(Result<String> value) {
                 int separator = value.result.indexOf(":"); // should correspond CustomCellRenderer.getPropertyValues
                 String propertyID = value.result.substring(0, separator);
                 value.set(value.result.substring(separator + 1));
 
                 MapDraw<X> mapDraw = getPropertyDraw(propertyID);
 
-                return new Pair<>(new InputListEntity<>(mapDraw.property, mapDraw.mapValues.join(map)), values -> {
+                return new Pair<>(new InputPropertyListEntity<>(mapDraw.property, mapDraw.mapValues.join(map)), values -> {
                     JSONObject objects = new JSONObject();
                     for(int i = 0, size = values.size(); i < size; i++) {
                         ObjectEntity object = mapDraw.mapKeys.get(values.getKey(i));

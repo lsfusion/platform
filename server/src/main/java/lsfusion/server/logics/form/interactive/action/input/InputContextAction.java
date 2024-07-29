@@ -72,6 +72,7 @@ public class InputContextAction<P extends PropertyInterface, V extends PropertyI
         return null;
     }
 
+    // pretty similar to the InputActionValueList.execute
     public void execute(ExecutionContext<V> context, ObjectValue userValue) throws SQLException, SQLHandledException {
         ExecutionContext<P> mappedContext = context.map(mapValues);
 

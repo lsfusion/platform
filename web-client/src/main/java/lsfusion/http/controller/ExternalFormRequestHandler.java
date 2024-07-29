@@ -33,10 +33,9 @@ public class ExternalFormRequestHandler extends ExternalRequestHandler {
 
     @Override
     protected void handleRequest(LogicsSessionObject sessionObject, HttpServletRequest request, HttpServletResponse response) throws Exception {
-        String contentTypeString = request.getContentType();
-        ContentType contentType = contentTypeString != null ? ContentType.parse(contentTypeString) : null;
+        ContentType contentType = ExternalUtils.parseContentType(request.getContentType());
 
-        Charset charset = ExternalUtils.getCharsetFromContentType(contentType);
+        Charset charset = ExternalUtils.getCharsetFromContentType(contentType, false);
         String json = new String(IOUtils.readBytesFromStream(request.getInputStream()), charset);
         JSONObject jsonObject = new JSONObject(json);
 

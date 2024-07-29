@@ -7,6 +7,7 @@ import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.DBType;
 import lsfusion.server.data.type.exec.TypeEnvironment;
+import lsfusion.server.logics.classes.data.file.FileBasedClass;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.apache.commons.net.util.Base64;
 
@@ -17,7 +18,7 @@ import java.sql.SQLException;
 
 //import net.sourceforge.jtds.jdbc.BlobImpl;
 
-public class ByteArrayClass extends DataClass<RawFileData> implements DBType {
+public class ByteArrayClass extends FileBasedClass<RawFileData> implements DBType {
 
     public final static ByteArrayClass instance = new ByteArrayClass();
 
@@ -124,22 +125,12 @@ public class ByteArrayClass extends DataClass<RawFileData> implements DBType {
     }
 
     @Override
-    public RawFileData parseHTTP(Object o, Charset charset) throws ParseException {
-        if(o instanceof String)
-            return super.parseHTTP(o, charset);
-        
-        if (((FileData) o).getLength() == 0)
-            return null;
-        return ((FileData) o).getRawFile();
+    protected RawFileData parseHTTPNotNull(FileData b) {
+        return b.getRawFile();
     }
-    
-    @Override
-    public Object formatHTTP(RawFileData value, Charset urlEncodeCharset) {
-        if(urlEncodeCharset != null)
-            return super.formatHTTP(value, urlEncodeCharset);
 
-        if (value == null)
-            return FileData.EMPTY;
+    @Override
+    protected FileData formatHTTPNotNull(RawFileData value) {
         return new FileData(value, "bytea");
     }
 }

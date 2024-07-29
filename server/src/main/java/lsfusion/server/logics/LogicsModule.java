@@ -1090,14 +1090,14 @@ public abstract class LogicsModule {
     // ------------------- Input ----------------- //
 
     public <T extends PropertyInterface, V extends PropertyInterface> LA<?> addDataInputAProp(DataClass valueClass, LP targetProp, boolean hasOldValue, Property<V> valueProperty,
-                                                                                              ImOrderSet<T> orderInterfaces, InputListEntity<?, T> contextList,
+                                                                                              ImOrderSet<T> orderInterfaces, InputListEntity<?, T, ?> contextList,
                                                                                               InputFilterEntity<?, T> contextFilter, FormSessionScope contextScope,
                                                                                               ImList<InputContextAction<?, T>> contextActions, String customEditorFunction, boolean notNull) {
         InputContextSelector<T> contextSelector = null;
         assert contextList != null || contextFilter == null;
         if(contextList == null) {
             if(valueProperty != null && Property.isDefaultWYSInput(valueClass) && !valueProperty.disableInputList) { // && // if string and not disabled
-                contextList = new InputListEntity<>(valueProperty, MapFact.EMPTYREV());
+                contextList = new InputPropertyListEntity<>(valueProperty, MapFact.EMPTYREV());
 
                 // we're doing this with a "selector", because at this point not stats is available (synchronizeDB has not been run yet)
                 contextSelector = new InputContextSelector<T>() {
@@ -1120,7 +1120,7 @@ public abstract class LogicsModule {
     }
 
     public <T extends PropertyInterface> LA<?> addInputAProp(ValueClass valueClass, LP targetProp, boolean hasOldValue,
-                                                             ImOrderSet<T> orderInterfaces, InputListEntity<?, T> contextList,
+                                                             ImOrderSet<T> orderInterfaces, InputListEntity<?, T, ?> contextList,
                                                              FormSessionScope contextScope, InputContextSelector<T> contextSelector,
                                                              ImList<InputContextAction<?, T>> contextActions, String customEditorFunction, boolean notNull) {
         // adding reset action
@@ -1136,14 +1136,14 @@ public abstract class LogicsModule {
 
             if (valueClass instanceof ConcreteCustomClass) {
                 // adding newedit action
-                contextActions = ListFact.add(contextList.getNewEditAction(baseLM, (ConcreteCustomClass) valueClass, targetProp, contextScope), contextActions);
+                contextActions = ListFact.add(((InputPropertyListEntity<?, T>)contextList).getNewEditAction(baseLM, (ConcreteCustomClass) valueClass, targetProp, contextScope), contextActions);
             }
         }
 
         return addAction(null, new LA(new InputAction(LocalizedString.create("Input"), valueClass, targetProp, hasOldValue, orderInterfaces, contextList, contextSelector, contextActions, customEditorFunction)));
     }
 
-    public <T extends PropertyInterface> LA addDialogInputAProp(CustomClass customClass, LP targetProp, FormSessionScope scope, ImOrderSet<T> orderInterfaces, InputListEntity<?, T> list, Function<ObjectEntity, ImSet<ContextFilterEntity<?, T, ObjectEntity>>> filters, String customChangeFunction, boolean notNull, ImRevMap<T, StaticParamNullableExpr> listParamExprs) {
+    public <T extends PropertyInterface> LA addDialogInputAProp(CustomClass customClass, LP targetProp, FormSessionScope scope, ImOrderSet<T> orderInterfaces, InputPropertyListEntity<?, T> list, Function<ObjectEntity, ImSet<ContextFilterEntity<?, T, ObjectEntity>>> filters, String customChangeFunction, boolean notNull, ImRevMap<T, StaticParamNullableExpr> listParamExprs) {
 //        if (viewProperties.isEmpty() || viewProperties.get(0).getValueClass(ClassType.tryEditPolicy) instanceof CustomClass)
 //            viewProperties = ListFact.add(((LP<?>) getBaseLM().addCastProp(ObjectType.idClass)).property, viewProperties); // casting object class to long to provide WYS
 
@@ -1154,21 +1154,21 @@ public abstract class LogicsModule {
         return addDialogInputAProp(dialogForm.form, targetProp, dialogForm.object, true, orderInterfaces, scope, list, BaseUtils.immutableCast(filters.apply(dialogForm.object)), ListFact.EMPTY(), customChangeFunction, notNull);
     }
     
-    public <T extends PropertyInterface, O extends ObjectSelector> LA addDialogInputAProp(FormSelector<O> formSelector, LP targetProp, O object, boolean hasOldValue, ImOrderSet<T> orderInterfaces, FormSessionScope scope, InputListEntity<?, T> list, ImSet<ContextFilterSelector<T, O>> filters, ImList<InputContextAction<?, T>> contextActions, String customChangeFunction, boolean notNull) {
+    public <T extends PropertyInterface, O extends ObjectSelector> LA addDialogInputAProp(FormSelector<O> formSelector, LP targetProp, O object, boolean hasOldValue, ImOrderSet<T> orderInterfaces, FormSessionScope scope, InputPropertyListEntity<?, T> list, ImSet<ContextFilterSelector<T, O>> filters, ImList<InputContextAction<?, T>> contextActions, String customChangeFunction, boolean notNull) {
         return addDialogInputAProp(formSelector,
                 hasOldValue ? ListFact.singleton(object) : ListFact.EMPTY(), hasOldValue ? ListFact.singleton(true) : ListFact.EMPTY(),
                 ListFact.singleton(object), ListFact.singleton(targetProp), ListFact.singleton(true), scope, list,
                 ManageSessionType.AUTO, FormEntity.DEFAULT_NOCANCEL, orderInterfaces, filters, contextActions, true, ModalityWindowFormType.FLOAT, false, false, customChangeFunction, notNull);
     }
 
-    public <P extends PropertyInterface, X extends PropertyInterface, O extends ObjectSelector> LA addDialogInputAProp(FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, ImList<O> inputObjects, ImList<LP> inputProps, ImList<Boolean> inputNulls, FormSessionScope scope, InputListEntity<?, P> list, ManageSessionType manageSession, Boolean noCancel, ImOrderSet<P> orderInterfaces, ImSet<ContextFilterSelector<P, O>> contextFilters, ImList<InputContextAction<?, P>> contextActions, boolean syncType, WindowFormType windowType, boolean checkOnOk, boolean readonly, String customChangeFunction, boolean notNull) {
+    public <P extends PropertyInterface, X extends PropertyInterface, O extends ObjectSelector> LA addDialogInputAProp(FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, ImList<O> inputObjects, ImList<LP> inputProps, ImList<Boolean> inputNulls, FormSessionScope scope, InputPropertyListEntity<?, P> list, ManageSessionType manageSession, Boolean noCancel, ImOrderSet<P> orderInterfaces, ImSet<ContextFilterSelector<P, O>> contextFilters, ImList<InputContextAction<?, P>> contextActions, boolean syncType, WindowFormType windowType, boolean checkOnOk, boolean readonly, String customChangeFunction, boolean notNull) {
         // objects + contextInterfaces
-        Result<InputListEntity<?, ClassPropertyInterface>> mappedList = list != null ? new Result<>() : null;
+        Result<InputPropertyListEntity<?, ClassPropertyInterface>> mappedList = list != null ? new Result<>() : null;
         Result<ImList<InputContextAction<?, ClassPropertyInterface>>> mappedContextActions = new Result<>();
         FormInteractiveAction<O> formAction = new FormInteractiveAction<>(LocalizedString.NONAME, form, objectsToSet, nulls, inputObjects, inputProps, inputNulls, orderInterfaces, contextFilters,
                 map -> {
                     if(mappedList != null)
-                        mappedList.set(list.map(map));
+                        mappedList.set(list.mapProperty(map));
                     mappedContextActions.set(contextActions.mapListValues(action -> action.map(map)));
                 },manageSession, noCancel, syncType ? true : null, windowType, false, checkOnOk, readonly, null);
 

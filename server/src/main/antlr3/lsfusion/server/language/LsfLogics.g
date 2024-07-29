@@ -4142,7 +4142,7 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams ac
 
     NamedPropertyUsage outProp = null;
     LPWithParams changeProp = null;
-    LPWithParams listProp = null;
+    LAPWithParams listProp = null;
     LPWithParams whereProp = null;
 
     List<String> actionImages = new ArrayList<>();
@@ -4179,12 +4179,21 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams ac
             List<TypedParameter> newActionsContext = new ArrayList<TypedParameter>(newContext);
         }
         ('CUSTOM' editFun=stringLiteral {customEditorFunction = $editFun.val;})?
-	    ('LIST' listExpr=propertyExpression[newListContext, listDynamic] {
-	        listProp = $listExpr.property;
-	        if(!listDynamic && listProp != null) {
-			    newActionsContext.set(newActionsContext.size() - 1, self.new TypedParameter(listProp.getLP().property.getType().getSID(), newActionsContext.get(newContext.size() - 1).paramName));
-	        }
-	    })?
+	    ('LIST'
+	        (
+	            listExpr=propertyExpression[newListContext, listDynamic] {
+                    listProp = $listExpr.property;
+                    if(!listDynamic && listProp != null) {
+                        newActionsContext.set(newActionsContext.size() - 1, self.new TypedParameter($listExpr.property.getLP().property.getType().getSID(), newActionsContext.get(newContext.size() - 1).paramName));
+                    }
+                }
+                |
+                actDB=listActionDefinitionBody[newActionsContext, false] {
+                    // assert listDynamic
+                    listProp = $actDB.action;
+                }
+            )
+        )?
         ('WHERE' whereExpr=propertyExpression[newListContext, listDynamic] { whereProp = $whereExpr.property; })?
         (acts = contextActions[newActionsContext] { actionImages = $acts.actionImages; keyPresses = $acts.keyPresses; quickAccesses = $acts.quickAccesses; actions = $acts.actions; })?
         fs=formSessionScopeClause?

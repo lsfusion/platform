@@ -5,7 +5,6 @@ import lsfusion.base.file.RawFileData;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.DBType;
 import lsfusion.server.data.type.exec.TypeEnvironment;
-import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.postgresql.util.PGobject;
 
@@ -14,7 +13,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 
-public abstract class AJSONClass extends DataClass<String> implements DBType {
+public abstract class AJSONClass extends FileBasedClass<String> implements DBType {
 
     public AJSONClass(LocalizedString caption) {
         super(caption);
@@ -74,10 +73,12 @@ public abstract class AJSONClass extends DataClass<String> implements DBType {
     }
 
     @Override
-    public Object formatHTTP(String value, Charset urlEncodeCharset) {
-        if(urlEncodeCharset != null || value == null)
-            return super.formatHTTP(value, urlEncodeCharset);
+    protected String parseHTTPNotNull(FileData o) {
+        return new String(o.getRawFile().getBytes());
+    }
 
+    @Override
+    protected FileData formatHTTPNotNull(String value) {
         return new FileData(new RawFileData(value.getBytes()), "json");
     }
 

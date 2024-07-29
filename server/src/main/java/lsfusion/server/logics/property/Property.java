@@ -79,7 +79,6 @@ import lsfusion.server.logics.classes.StaticClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.*;
 import lsfusion.server.logics.classes.data.file.AJSONClass;
-import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.classes.struct.ConcatenateValueClass;
 import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.CustomClass;
@@ -92,7 +91,6 @@ import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapChange;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.input.*;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
-import lsfusion.server.logics.form.interactive.dialogedit.ClassFormEntity;
 import lsfusion.server.logics.form.interactive.dialogedit.ClassFormSelector;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.property.checked.ConstraintCheckChangeProperty;
@@ -100,7 +98,6 @@ import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.ValueClassWrapper;
 import lsfusion.server.logics.form.struct.filter.ContextFilterEntity;
-import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
 import lsfusion.server.logics.form.struct.property.PropertyClassImplement;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyClassImplement;
@@ -112,7 +109,6 @@ import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.*;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
-import lsfusion.server.logics.property.oraction.ActionOrPropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.value.NullValueProperty;
 import lsfusion.server.logics.property.value.ValueProperty;
@@ -1747,7 +1743,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     public static class Select<T extends PropertyInterface> {
         public final SelectProperty<T> property;
 
-        public final ImList<InputValueList> values;
+        public final ImList<InputPropertyValueList> values;
 
         public final Pair<Integer, Integer> stat; // estimate stat
         public final boolean multi;
@@ -1755,7 +1751,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
         public final boolean notNull;
 
-        public Select(SelectProperty<T> property, Pair<Integer, Integer> stat, ImList<InputValueList> values, boolean multi, boolean html, boolean notNull) {
+        public Select(SelectProperty<T> property, Pair<Integer, Integer> stat, ImList<InputPropertyValueList> values, boolean multi, boolean html, boolean notNull) {
             this.property = property;
             this.stat = stat;
             this.values = values;
@@ -1783,7 +1779,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 //          this or oldValue => this ??? this надо
 
             ImSet<T> innerInterfaces = interfaces;
-            InputListEntity<V, T> viewListEntity = new InputListEntity<>(viewProperty, MapFact.EMPTYREV());
+            InputPropertyListEntity<V, T> viewListEntity = new InputPropertyListEntity<>(viewProperty, MapFact.EMPTYREV());
             // assert viewListEntity.orders.isEmpty();
             PropertyMapImplement<T, T> value = getImplement();
 
@@ -1797,7 +1793,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return null;
     }
 
-    public static <T extends PropertyInterface, I extends PropertyInterface> Select<T> getSelectProperty(boolean forceSelect, ImSet<T> innerInterfaces, InputListEntity<?, T> viewListEntity, InputFilterEntity<?, T> where, ImOrderMap<InputOrderEntity<?, T>, Boolean> orders, PropertyInterfaceImplement<T> value, boolean drawnValue) {
+    public static <T extends PropertyInterface, I extends PropertyInterface> Select<T> getSelectProperty(boolean forceSelect, ImSet<T> innerInterfaces, InputPropertyListEntity<?, T> viewListEntity, InputFilterEntity<?, T> where, ImOrderMap<InputOrderEntity<?, T>, Boolean> orders, PropertyInterfaceImplement<T> value, boolean drawnValue) {
         BaseLogicsModule baseLM = ThreadLocalContext.getBaseLM();
 
         boolean isNotNull;
@@ -1849,7 +1845,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         if(!fallbackToFilterSelected && hasAlotValues) // optimization
             return null;
 
-        InputListEntity readEntity = null;
+        InputPropertyListEntity readEntity = null;
         if(!hasAlotValues) {
             Property readValuesProperty = null;
             if (mapWhereInterfaces.isEmpty())
@@ -1862,7 +1858,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             }
 
             if(readValuesProperty != null) {
-                readEntity = new InputListEntity(name.property, MapFact.EMPTYREV());
+                readEntity = new InputPropertyListEntity(name.property, MapFact.EMPTYREV());
                 if(!multi)
                     readEntity = readEntity.merge(new Pair<>(new InputFilterEntity<>(readValuesProperty, MapFact.EMPTYREV()), MapFact.EMPTYORDER()));
                 else
@@ -1991,7 +1987,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
             ActionMapImplement<?, T> action;
             if (valueClass instanceof CustomClass) {
-                InputListEntity<?, T> list = viewProperty != null ? new InputListEntity<>(viewProperty.get(), MapFact.EMPTYREV()) : null;
+                InputPropertyListEntity<?, T> list = viewProperty != null ? new InputPropertyListEntity<>(viewProperty.get(), MapFact.EMPTYREV()) : null;
 
                 // DIALOG LIST valueCLass INPUT object=property(...) CONSTRAINTFILTER
                 LP<T> lp = new LP<>(this);
@@ -2734,9 +2730,9 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     // filter or custom view completion
-    public <X extends PropertyInterface> InputListEntity<?, T> getInputList(ImMap<T, StaticParamNullableExpr> fixedExprs, boolean noJoin) {
+    public <X extends PropertyInterface> InputPropertyListEntity<?, T> getInputList(ImMap<T, StaticParamNullableExpr> fixedExprs, boolean noJoin) {
         if(isValueFull(fixedExprs) && !tooMuchSelectData(fixedExprs))
-            return new InputListEntity<>(this, fixedExprs.keys().toRevMap());
+            return new InputPropertyListEntity<>(this, fixedExprs.keys().toRevMap());
         return null;
     }
 

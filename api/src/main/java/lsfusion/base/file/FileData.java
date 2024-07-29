@@ -11,6 +11,10 @@ public class FileData extends TwinImmutableObject<FileData> implements Serializa
     private final String extension;
     
     public final static FileData EMPTY = new FileData(RawFileData.EMPTY, "");
+    public final static FileData NULL = new FileData(RawFileData.EMPTY, "null");
+    public boolean isNull() {
+        return getExtension().equals("null");
+    }
 
     public FileData(RawFileData fileData, String extension) {
         assert fileData != null;

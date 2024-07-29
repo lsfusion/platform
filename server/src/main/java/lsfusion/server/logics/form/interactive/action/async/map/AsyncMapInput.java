@@ -29,7 +29,7 @@ import org.apache.commons.lang3.ArrayUtils;
 
 public class AsyncMapInput<T extends PropertyInterface> extends AsyncMapValue<T> {
 
-    public final InputListEntity<?, T> list;
+    public final InputListEntity<?, T, ?> list;
 
     public final ImList<AsyncMapInputListAction<T>> actions;
     public final boolean strict;
@@ -39,7 +39,7 @@ public class AsyncMapInput<T extends PropertyInterface> extends AsyncMapValue<T>
 
     public final String customEditorFunction;
 
-    public AsyncMapInput(DataClass type, InputListEntity<?, T> list, ImList<AsyncMapInputListAction<T>> actions, boolean strict, boolean hasOldValue, PropertyInterfaceImplement<T> oldValue, String customEditorFunction) {
+    public AsyncMapInput(DataClass type, InputListEntity<?, T, ?> list, ImList<AsyncMapInputListAction<T>> actions, boolean strict, boolean hasOldValue, PropertyInterfaceImplement<T> oldValue, String customEditorFunction) {
         super(type);
 
         this.list = list;
@@ -56,7 +56,7 @@ public class AsyncMapInput<T extends PropertyInterface> extends AsyncMapValue<T>
         return new AsyncMapInput<>(type, list, actions != null ? actions.mapListValues(a -> a.replace(action, asyncExec)) : null, strict, hasOldValue, oldValue, customEditorFunction);
     }
 
-    private <P extends PropertyInterface> AsyncMapInput<P> override(InputListEntity<?, P> list, ImList<AsyncMapInputListAction<P>> actions, boolean hasOldValue, PropertyInterfaceImplement<P> oldValue) {
+    private <P extends PropertyInterface> AsyncMapInput<P> override(InputListEntity<?, P, ?> list, ImList<AsyncMapInputListAction<P>> actions, boolean hasOldValue, PropertyInterfaceImplement<P> oldValue) {
         return new AsyncMapInput<>(type, list, actions, strict, hasOldValue, oldValue, customEditorFunction);
     }
 
@@ -76,7 +76,8 @@ public class AsyncMapInput<T extends PropertyInterface> extends AsyncMapValue<T>
 
     @Override
     public <P extends PropertyInterface> AsyncMapFormExec<P> mapJoin(ImMap<T, PropertyInterfaceImplement<P>> mapping) {
-        return override(list != null ? list.mapJoin(mapping) : null, actions != null ? actions.mapListValues(action -> action.mapJoin(mapping)) : null, hasOldValue, oldValue instanceof PropertyInterface ? mapping.get((T)oldValue) : null);
+        InputListEntity<?, P, ?> mappedList = list != null ? list.mapJoin(mapping) : null;
+        return override(mappedList, actions != null ? actions.mapListValues(action -> action.mapJoin(mapping)) : null, hasOldValue, oldValue instanceof PropertyInterface ? mapping.get((T)oldValue) : null);
     }
 
     @Override
@@ -120,8 +121,8 @@ public class AsyncMapInput<T extends PropertyInterface> extends AsyncMapValue<T>
     }
 
     @Override
-    public <X extends PropertyInterface> Pair<InputListEntity<X, T>, AsyncDataConverter<X>> getAsyncValueList(Result<String> value) {
-        return new Pair<>((InputListEntity<X, T>) list, null);
+    public <X extends PropertyInterface> Pair<InputListEntity<X, T, ?>, AsyncDataConverter<X>> getAsyncValueList(Result<String> value) {
+        return new Pair<>((InputListEntity<X, T, ?>) list, null);
     }
 
     public static AsyncMode getAsyncMode(boolean strict) {

@@ -122,8 +122,9 @@ public class ExternalHttpServer extends MonitorServer {
 
                 String[] host = request.getRequestHeaders().getFirst("Host").split(":");
                 ExecInterface remoteExec = ExternalUtils.getExecInterface(AuthenticationToken.ANONYMOUS, sessionInfo, remoteLogics);
+                ContentType requestContentType = ExternalUtils.parseContentType(getContentType(request));
                 ExternalUtils.ExternalResponse response = ExternalUtils.processRequest(remoteExec,
-                        request.getRequestBody(), getContentType(request), headerNames, headerValues, cookieNames, cookieValues, null, null,null,
+                        request.getRequestBody(), requestContentType, headerNames, headerValues, cookieNames, cookieValues, null, null,null,
                         "http", request.getRequestMethod(), host[0], Integer.parseInt(host[1]), "", request.getRequestURI().getPath(), "", request.getRequestURI().getRawQuery(), null);
 
                 sendResponse(request, response);
@@ -155,16 +156,14 @@ public class ExternalHttpServer extends MonitorServer {
             return hostName;
         }
 
-        private ContentType getContentType(HttpExchange request) {
+        private String getContentType(HttpExchange request) {
+            String contentType = null;
             List<String> contentTypeList = request.getRequestHeaders().get("Content-Type");
-            if (contentTypeList != null) {
-                for (String contentType : contentTypeList) {
-                    return ContentType.parse(contentType);
-                }
-            }
-            return null;
+            if (contentTypeList != null && !contentTypeList.isEmpty())
+                contentType = contentTypeList.get(0);
+            return contentType;
         }
-        
+
         private String[] getRequestHeaderValues(Headers headers, String[] headerNames) {
             String[] headerValuesArray = new String[headerNames.length];
             for (int i = 0; i < headerNames.length; i++) {

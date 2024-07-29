@@ -26,5 +26,5 @@ public abstract class AsyncMapValue<T extends PropertyInterface> extends AsyncMa
         return true; // we have to send input value
     }
 
-    public abstract <X extends PropertyInterface> Pair<InputListEntity<X, T>, AsyncDataConverter<X>> getAsyncValueList(Result<String> value);
+    public abstract <X extends PropertyInterface> Pair<InputListEntity<X, T, ?>, AsyncDataConverter<X>> getAsyncValueList(Result<String> value);
 }
