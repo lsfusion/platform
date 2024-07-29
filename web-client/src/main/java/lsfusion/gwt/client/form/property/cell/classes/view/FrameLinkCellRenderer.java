@@ -1,18 +1,18 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
+import lsfusion.gwt.client.base.AppLinkImage;
 import lsfusion.gwt.client.base.BaseImage;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
-import lsfusion.gwt.client.form.property.cell.view.FileBasedCellRenderer;
 
-public class PDFCellRenderer extends FileBasedCellRenderer {
+public class FrameLinkCellRenderer extends FrameCellRenderer {
 
-    public PDFCellRenderer(GPropertyDraw property) {
+    public FrameLinkCellRenderer(GPropertyDraw property) {
         super(property);
     }
 
     @Override
     protected BaseImage getBaseImage(PValue value) {
-        return PValue.getImageValue(value);
+        return new AppLinkImage(PValue.getStringValue(value));
     }
 }

@@ -2,8 +2,8 @@ package lsfusion.gwt.client.base;
 
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.ImageElement;
 import com.google.gwt.dom.client.Node;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
 import lsfusion.gwt.client.base.view.FlexPanel;
@@ -26,19 +26,27 @@ public interface BaseImage extends Serializable {
         return false;
     }
 
-    default boolean isPDF() {
-        return false;
+    default String getTag() {
+        return "image";
+    }
+
+    default String getTag(String extension) {
+        switch (extension) {
+            case "pdf":
+                return "iframe";
+            case "mp4":
+                return "video";
+            default:
+                return "image";
+        }
     }
 
     default String createImageHTML() {
         if(useIcon())
             return "<i class=\"" + ((BaseStaticImage) this).getFontClasses() + " wrap-text-img\"></i>";
         else {
-            if(isPDF()) {
-                return "<iframe src=\"" + getImageElementSrc(true) + "\" class=\"wrap-text-img\"></iframe>";
-            } else {
-                return "<img src=\"" + getImageElementSrc(true) + "\" class=\"wrap-text-img\"></img>";
-            }
+            String tag = getTag();
+            return "<" + tag + "src=\"" + getImageElementSrc(true) + "\" class=\"wrap-text-img\"></" + tag + ">";
         }
     }
     default Element createImage() {
@@ -46,12 +54,16 @@ public interface BaseImage extends Serializable {
         if(useIcon()) {
             imageElement = Document.get().createElement("i");
         } else {
-            if(isPDF()) {
-                imageElement = Document.get().createElement("iframe");
-                imageElement.setPropertyString("width", "100%");
-                imageElement.setPropertyString("height", "100%");
-            } else {
+            String tag = getTag();
+            if(tag.equals("image")) {
                 imageElement = Document.get().createImageElement();
+            } else {
+                imageElement = Document.get().createElement(tag);
+                if(tag.equals("video")) {
+                    imageElement.setAttribute("controls", "");
+                }
+                imageElement.getStyle().setWidth(100, Style.Unit.PCT);
+                imageElement.getStyle().setHeight(100, Style.Unit.PCT);
             }
         }
 

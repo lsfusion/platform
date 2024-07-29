@@ -16,8 +16,8 @@ public class AppFileImage implements BaseImage, AppBaseImage {
     }
 
     @Override
-    public boolean isPDF() {
-        return extension != null && extension.equalsIgnoreCase("pdf");
+    public String getTag() {
+        return getTag(extension);
     }
 
     @Override

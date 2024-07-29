@@ -240,6 +240,8 @@ public class CustomRestoreAction extends InternalAction {
                                         return new DataObject(new RawFileData((byte[]) object), CustomStaticFormatFileClass.get());
                                     } else if (classValue instanceof PDFClass) {
                                         return new DataObject(new RawFileData((byte[]) object), PDFClass.get());
+                                    } else if (classValue instanceof VideoClass) {
+                                        return new DataObject(new RawFileData((byte[]) object), VideoClass.get());
                                     } else if (classValue instanceof ExcelClass) {
                                         return new DataObject(new RawFileData((byte[]) object), ExcelClass.get());
                                     } else if (classValue instanceof DBFClass) {

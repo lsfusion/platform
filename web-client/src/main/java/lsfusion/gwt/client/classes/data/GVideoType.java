@@ -1,17 +1,18 @@
-package lsfusion.gwt.client.classes.data.link;
+package lsfusion.gwt.client.classes.data;
 
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.classes.view.FrameLinkCellRenderer;
+import lsfusion.gwt.client.form.property.cell.classes.view.FrameCellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
-public class GPDFLinkType extends GLinkType {
+public class GVideoType extends GFileType {
     @Override
     public CellRenderer createCellRenderer(GPropertyDraw property) {
-        return new FrameLinkCellRenderer(property);
+        return new FrameCellRenderer(property);
     }
+
     @Override
     public String toString() {
-        return ClientMessages.Instance.get().typePDFFileLinkCaption();
+        return ClientMessages.Instance.get().typeVideoFileCaption();
     }
 }

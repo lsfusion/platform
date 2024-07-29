@@ -8,9 +8,11 @@ import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.classes.data.*;
 import lsfusion.client.classes.data.link.ClientImageLinkClass;
 import lsfusion.client.classes.data.link.ClientPDFLinkClass;
+import lsfusion.client.classes.data.link.ClientVideoLinkClass;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.classes.view.ImagePropertyRenderer;
 import lsfusion.client.form.property.cell.classes.view.PDFPropertyRenderer;
+import lsfusion.client.form.property.cell.classes.view.VideoPropertyRenderer;
 import lsfusion.client.form.property.cell.classes.view.link.ImageLinkPropertyRenderer;
 import lsfusion.client.view.MainFrame;
 import org.jdesktop.swingx.JXTreeTable;
@@ -94,7 +96,9 @@ public class GroupingTreeTable extends JXTreeTable {
                             ImagePropertyRenderer.expandImage((AppFileDataImage) getValueAt(rowAtPoint(e.getPoint()), columnClicked));
                         } else if (columnProperty.baseType instanceof ClientPDFClass || columnProperty.baseType instanceof ClientPDFLinkClass) {
                             PDFPropertyRenderer.expandImage((AppFileDataImage) getValueAt(rowAtPoint(e.getPoint()), columnClicked));
-                        }
+                        } else if (columnProperty.baseType instanceof ClientVideoClass || columnProperty.baseType instanceof ClientVideoLinkClass) {
+                            VideoPropertyRenderer.expandImage((AppFileDataImage) getValueAt(rowAtPoint(e.getPoint()), columnClicked));
+                    }
                     }
                 }
             }
