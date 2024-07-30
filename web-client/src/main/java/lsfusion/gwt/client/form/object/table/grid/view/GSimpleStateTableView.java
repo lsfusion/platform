@@ -930,7 +930,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
     // icon - deprecated
     private static native BaseImage getElementImage(JavaScriptObject element)/*-{
-        return element.image ? element.image : (element.icon ? @lsfusion.gwt.client.base.AppLinkImage::new(Ljava/lang/String;)(element.icon) : null);
+        return element.image ? element.image : (element.icon ? @lsfusion.gwt.client.base.AppLinkImage::new(Ljava/lang/String;Ljava/lang/String;)(element.icon, "") : null);
     }-*/;
 
     protected Element createImageCaptionElement(BaseImage image, String caption, ImageHtmlOrTextType type) {

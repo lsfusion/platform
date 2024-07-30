@@ -54,17 +54,7 @@ public interface BaseImage extends Serializable {
         if(useIcon()) {
             imageElement = Document.get().createElement("i");
         } else {
-            String tag = getTag();
-            if(tag.equals("img")) {
-                imageElement = Document.get().createImageElement();
-            } else {
-                imageElement = Document.get().createElement(tag);
-                if(tag.equals("video")) {
-                    imageElement.setAttribute("controls", "");
-                }
-                imageElement.getStyle().setWidth(100, Style.Unit.PCT);
-                imageElement.getStyle().setHeight(100, Style.Unit.PCT);
-            }
+            imageElement = GwtClientUtils.createImageElement(getTag());
         }
 
         updateImageSrc(imageElement);

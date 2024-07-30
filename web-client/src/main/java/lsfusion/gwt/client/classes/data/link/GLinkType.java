@@ -30,6 +30,11 @@ public abstract class GLinkType extends GDataType {
         this.multiple = multiple;
     }
 
+    //should be same as in server FileClasses
+    public String getExtension() {
+        return null;
+    }
+
     @Override
     public GCompare[] getFilterCompares() {
         return new GCompare[] {EQUALS};

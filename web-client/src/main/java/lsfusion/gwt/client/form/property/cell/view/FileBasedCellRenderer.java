@@ -33,6 +33,7 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
             imgStyle.setVerticalAlign(Style.VerticalAlign.MIDDLE);
             imgStyle.setProperty("maxWidth", "100%");
             imgStyle.setProperty("maxHeight", "100%");
+            imgStyle.setPosition(Style.Position.RELATIVE);
 
             if(property.hasEditObjectAction && value != null) {
                 img.addClassName("selectedFileCellHasEdit");
@@ -40,27 +41,17 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
                 img.removeClassName("selectedFileCellHasEdit");
             }
         }
-        element.appendChild(wrapImage(img));
+        element.appendChild(getDragDropLabel());
+        element.appendChild(img);
 
         return true;
     }
 
-    private Element wrapImage(Element img) {
+    private Element getDragDropLabel() {
         Label dropFilesLabel = new Label();
+        dropFilesLabel.getElement().addClassName("drag-drop-label");
         dropFilesLabel.setAutoHorizontalAlignment(HasAutoHorizontalAlignment.ALIGN_CENTER);
-        dropFilesLabel.setWidth("100%");
-        dropFilesLabel.setHeight("100%");
-
         DataGrid.initSinkDragDropEvents(dropFilesLabel);
-
-        Element dropFilesLabelElement = dropFilesLabel.getElement();
-
-        if(img != null) {
-            dropFilesLabelElement.appendChild(img);
-        } else {
-            dropFilesLabel.setText(REQUIRED_VALUE);
-        }
-
         return dropFilesLabel.getElement();
     }
 

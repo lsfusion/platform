@@ -3,12 +3,14 @@ package lsfusion.gwt.client.base;
 public class AppLinkImage implements BaseImage {
 
     public String url;
+    public String extension;
 
     public AppLinkImage() {
     }
 
-    public AppLinkImage(String url) {
+    public AppLinkImage(String url, String extension) {
         this.url = url;
+        this.extension = extension;
     }
 
     @Override
@@ -18,7 +20,7 @@ public class AppLinkImage implements BaseImage {
 
     @Override
     public String getTag() {
-        return getTag(GwtClientUtils.getFileExtension(url));
+        return getTag(extension);
     }
 
     @Override

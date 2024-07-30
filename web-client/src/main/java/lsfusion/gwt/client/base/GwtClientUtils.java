@@ -114,6 +114,18 @@ public class GwtClientUtils {
         return (InputElement) input;
     };
 
+    public static InputElement createImageElement(String type) {
+        Element element = Document.get().createElement(type);
+        if (type.equals("video")) {
+            element.setAttribute("controls", "");
+        }
+        /*if (!type.equals("img")) {
+            element.getStyle().setWidth(100, Style.Unit.PCT);
+            element.getStyle().setHeight(100, Style.Unit.PCT);
+        }*/
+        return (InputElement) element;
+    }
+
     public native static Element createFocusElement(String tag) /*-{
         return $wnd.createFocusElement(tag);
     }-*/;
