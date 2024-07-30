@@ -238,7 +238,7 @@ public class FocusUtils {
         EventTarget focus = event.getRelatedEventTarget();
         if(focus == null) {
             // if we're in focus transaction then there are some manipulations in the focusTransaction elements, so we pend all blur events from there
-            if(focusTransaction != null && blur.isOrHasChild(focusTransaction)) { // element might be removed
+            if(focusTransaction != null && isFakeBlurInner(focusTransaction, blur)) { // element might be removed
                 pendingBlurElements.add(blur);
                 return true;
             }
