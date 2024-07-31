@@ -4,8 +4,6 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsDate;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
-import com.google.gwt.dom.client.Style;
-import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -13,7 +11,6 @@ import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.SimpleDatePatternConverter;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
-import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
 
 import java.text.ParseException;
@@ -110,7 +107,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
         return this.@DateRangePickerBasedCellEditor::getPickerObject()().container.get(0);
     }-*/;
 
-    private Style.TextAlign getHorzTextAlignment() {
+    private String getHorzTextAlignment() {
         return property.getHorzTextAlignment(RendererType.CELL); // should be taken from RenderContext, but for now this would do
     }
 

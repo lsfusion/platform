@@ -82,7 +82,7 @@ public class GActionType extends GDataType {
     }
 
     @Override
-    public Style.TextAlign getHorzTextAlignment() {
-        return Style.TextAlign.CENTER;
+    public String getHorzTextAlignment() {
+        return "center";
     }
 }

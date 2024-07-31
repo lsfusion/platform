@@ -146,15 +146,18 @@ public abstract class CellRenderer {
     private static void renderFlexAlignment(GPropertyDraw property, Element element, RendererType rendererType) {
         element.addClassName("prop-display-flex");
 
-        Style.TextAlign horzTextAlignment = property.getHorzTextAlignment(rendererType);
+        String horzTextAlignment = property.getHorzTextAlignment(rendererType);
         switch(horzTextAlignment) {
-            case LEFT:
+            case "left":
                 element.addClassName("prop-flex-horz-start");
                 break;
-            case CENTER:
+            case "center":
                 element.addClassName("prop-flex-horz-center");
                 break;
-            case RIGHT:
+            case "stretch":
+                element.addClassName("prop-flex-horz-stretch");
+                break;
+            case "right":
                 element.addClassName("prop-flex-horz-end");
                 break;
         }
@@ -181,15 +184,16 @@ public abstract class CellRenderer {
 //        assert GwtClientUtils.isTDorTH(element) || GwtClientUtils.isInput(element);
 //        assert isInput == GwtClientUtils.isInput(element);
 
-        Style.TextAlign horzTextAlignment = property.getHorzTextAlignment(rendererType);
+        String horzTextAlignment = property.getHorzTextAlignment(rendererType);
         switch(horzTextAlignment) {
-            case LEFT:
+            case "left":
                 element.addClassName("prop-text-horz-start");
                 break;
-            case CENTER:
+            case "center":
+            case "stretch":
                 element.addClassName("prop-text-horz-center");
                 break;
-            case RIGHT:
+            case "right":
                 element.addClassName("prop-text-horz-end");
                 break;
         }
@@ -245,15 +249,16 @@ public abstract class CellRenderer {
         element.setPropertyObject(RENDERED, null);
     }
     public static void clearRenderTextAlignment(GPropertyDraw property, Element element, boolean isInput, RendererType rendererType) {
-        Style.TextAlign horzTextAlignment = property.getHorzTextAlignment(rendererType);
+        String horzTextAlignment = property.getHorzTextAlignment(rendererType);
         switch(horzTextAlignment) {
-            case LEFT:
+            case "left":
                 element.removeClassName("prop-text-horz-start");
                 break;
-            case CENTER:
+            case "center":
+            case "stretch":
                 element.removeClassName("prop-text-horz-center");
                 break;
-            case RIGHT:
+            case "right":
                 element.removeClassName("prop-text-horz-end");
                 break;
         }
@@ -278,15 +283,18 @@ public abstract class CellRenderer {
     private static void clearRenderFlexAlignment(GPropertyDraw property, Element element, RendererType rendererType) {
         element.removeClassName("prop-display-flex");
 
-        Style.TextAlign horzTextAlignment = property.getHorzTextAlignment(rendererType);
+        String horzTextAlignment = property.getHorzTextAlignment(rendererType);
         switch(horzTextAlignment) {
-            case LEFT:
+            case "left":
                 element.removeClassName("prop-flex-horz-start");
                 break;
-            case CENTER:
+            case "center":
                 element.removeClassName("prop-flex-horz-center");
                 break;
-            case RIGHT:
+            case "stretch":
+                element.removeClassName("prop-flex-horz-stretch");
+                break;
+            case "right":
                 element.removeClassName("prop-flex-horz-end");
                 break;
         }
@@ -544,7 +552,7 @@ public abstract class CellRenderer {
 
         if(needToolbar) {
             Element toolbarElement = cleared ? null : toolbarState.element;
-            boolean start = !property.getHorzTextAlignment(updateContext.getRendererType()).equals(Style.TextAlign.LEFT);
+            boolean start = !property.getHorzTextAlignment(updateContext.getRendererType()).equals("left");
             if(toolbarElement == null) {
                 toolbarElement = Document.get().createDivElement();
                 toolbarElement.addClassName(start ? "property-toolbar-start" : "property-toolbar-end");

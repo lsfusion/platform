@@ -110,8 +110,8 @@ public abstract class GType implements Serializable {
         return this;
     }
 
-    public Style.TextAlign getHorzTextAlignment() {
-        return Style.TextAlign.LEFT;
+    public String getHorzTextAlignment() {
+        return "left";
     }
     public String getVertTextAlignment(boolean isInput) {
         return "center";

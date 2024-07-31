@@ -2,7 +2,6 @@ package lsfusion.gwt.client.form.property;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
-import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.*;
@@ -760,17 +759,18 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GFlexAlignment getAlignment() {
         return alignment;
     }
-    
-    public Style.TextAlign getHorzTextAlignment(RendererType rendererType) {
+
+    public String getHorzTextAlignment(RendererType rendererType) {
         if (valueAlignment != null) {
             switch (valueAlignment) {
                 case START:
-                    return Style.TextAlign.LEFT;
+                    return "start";
                 case CENTER:
+                    return "center";
                 case STRETCH:
-                    return Style.TextAlign.CENTER;
+                    return "stretch";
                 case END:
-                    return Style.TextAlign.RIGHT;
+                    return "end";
             }
         }
         return getRenderType(rendererType).getHorzTextAlignment();
