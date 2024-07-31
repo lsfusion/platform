@@ -51,6 +51,8 @@ public class RmiManager extends LogicsManager implements InitializingBean {
 
     private int httpPort = 0;
 
+    private boolean https = false;
+
     private int webSocketPort = 0;
 
     private int debuggerPort = 0;
@@ -75,6 +77,14 @@ public class RmiManager extends LogicsManager implements InitializingBean {
 
     public void setHttpPort(int httpPort) {
         this.httpPort = httpPort;
+    }
+
+    public boolean isHttps() {
+        return https;
+    }
+
+    public void setHttps(boolean https) {
+        this.https = https;
     }
 
     public int getWebSocketPort() {
