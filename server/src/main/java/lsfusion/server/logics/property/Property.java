@@ -2098,12 +2098,8 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
                 result = result.or(andInferred, inferType);
         }
 
-        // докидываем те которые не учавствуют ни в одном notNull
-        return result.and(op(inferred.remove(SetFact.mergeSets(operandNotNulls)).values().toList().mapListValues(new Function<Inferred<T>, Inferred<T>>() {
-            public Inferred<T> apply(Inferred<T> value) {
-                return value.orAny();
-            }
-        }), false, inferType), inferType);
+        // add those that don't participate in any notNull
+        return result.and(op(inferred.remove(SetFact.mergeSets(operandNotNulls)).values().toList().mapListValues(value -> value.orAny()), false, inferType), inferType);
     }
 
     public static <T extends PropertyInterface> Inferred<T> op(ImList<PropertyInterfaceImplement<T>> operands, ImList<ExClassSet> operandClasses, int operandNotNullCount, int skipNotNull, InferType inferType, boolean or) {

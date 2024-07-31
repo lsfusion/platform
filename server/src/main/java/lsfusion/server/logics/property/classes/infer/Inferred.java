@@ -17,6 +17,8 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.util.Objects;
 
+import static lsfusion.server.logics.property.classes.infer.NotNull.nullFilter;
+
 public class Inferred<T extends PropertyInterface> {
 
     private final ImMap<T, ExClassSet> params;
@@ -269,13 +271,16 @@ public class Inferred<T extends PropertyInterface> {
         return new Inferred<>(MapFact.nullRemove(params, remove), NotNull.nullRemove(notNull, remove), Compared.remove(compared, remove), MapFact.nullRemove(notParams, remove), NotNull.nullRemove(notNotNull, remove), Compared.remove(notCompared, remove));
     }
     public Inferred<T> keep(ImSet<T> keep) {
-        return new Inferred<>(MapFact.nullFilter(params, keep), NotNull.nullFilter(notNull, keep), Compared.keep(compared, keep), MapFact.nullFilter(notParams, keep), NotNull.nullFilter(notNotNull, keep), Compared.keep(notCompared, keep));
+        return new Inferred<>(MapFact.nullFilter(params, keep), nullFilter(notNull, keep), Compared.keep(compared, keep), MapFact.nullFilter(notParams, keep), nullFilter(notNotNull, keep), Compared.keep(notCompared, keep));
     }
 
     public Inferred<T> orAny() { // или null или any
-        return new Inferred<>(params == null ? MapFact.EMPTY() : params.mapValues(value -> ExClassSet.orAny(value)), NotNull.EMPTY(), SetFact.EMPTY());        
+        return orAny(SetFact.EMPTY());
     }
-    
+    public Inferred<T> orAny(ImSet<T> notNullParam) { // или null или any
+        return new Inferred<>(params == null ? MapFact.EMPTY() : params.mapValues((key, value) -> notNullParam.contains(key) ? value : ExClassSet.orAny(value)), new NotNull<>(notNullParam), SetFact.EMPTY());
+    }
+
     public boolean isEmpty(InferType inferType) {
         return finishEx(inferType) == null;
 //        ImMap<T, ExClassSet> inferred = finishEx(inferType);
