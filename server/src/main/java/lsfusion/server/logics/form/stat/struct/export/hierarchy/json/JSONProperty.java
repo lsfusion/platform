@@ -103,6 +103,11 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
     }
 
     @Override
+    protected ImSet<ClassPropertyInterface> getNotNullInterfaces() {
+        return notNullInterfaces;
+    }
+
+    @Override
     protected PropertyMapImplement<?, ClassPropertyInterface> createProperty() {
         Pair<FormEntity, ImRevMap<ObjectEntity, O>> staticForm = this.form.getForm(getBaseLM());
         ImRevMap<ObjectEntity, ClassPropertyInterface> mappedObjects = staticForm.second.rightJoin(this.mapObjects);

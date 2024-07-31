@@ -36,8 +36,10 @@ public abstract class LazyProperty extends SimpleIncrementProperty<ClassProperty
 
     @Override
     protected Inferred<ClassPropertyInterface> calcInferInterfaceClasses(ExClassSet commonValue, InferType inferType) {
-        return new Inferred<>(ExClassSet.toExValue(IsClassProperty.getMapClasses(interfaces)));
+        return new Inferred<>(ExClassSet.toExValue(IsClassProperty.getMapClasses(interfaces))).orAny(getNotNullInterfaces());
     }
+
+    protected abstract ImSet<ClassPropertyInterface> getNotNullInterfaces();
 
     public void finalizeLazyInit() {
         property = createProperty();
