@@ -106,7 +106,8 @@ public class PropertyDrawView extends BaseComponentView {
 
     public boolean panelColumnVertical = false;
 
-    public FlexAlignment valueAlignment;
+    public FlexAlignment valueHorzAlignment;
+    public FlexAlignment valueVertAlignment;
 
     public LocalizedString comment;
     public String commentElementClass;
@@ -554,7 +555,8 @@ public class PropertyDrawView extends BaseComponentView {
 
         outStream.writeBoolean(panelColumnVertical);
         
-        pool.writeObject(outStream, getValueAlignment(pool.context));
+        pool.writeObject(outStream, getValueHorzAlignment(pool.context));
+        pool.writeObject(outStream, getValueVertAlignment());
 
         pool.writeString(outStream, ThreadLocalContext.localize(comment));
         pool.writeString(outStream, getCommentElementClass(pool.context));
@@ -792,7 +794,8 @@ public class PropertyDrawView extends BaseComponentView {
 
         panelColumnVertical = inStream.readBoolean();
 
-        valueAlignment = pool.readObject(inStream);
+        valueHorzAlignment = pool.readObject(inStream);
+        valueVertAlignment = pool.readObject(inStream);
 
         changeOnSingleClick = pool.readObject(inStream);
         hide = inStream.readBoolean();
@@ -956,14 +959,18 @@ public class PropertyDrawView extends BaseComponentView {
         return null;
     }
 
-    public FlexAlignment getValueAlignment(FormInstanceContext context) {
-        if (valueAlignment == null && isProperty(context)) {
+    public FlexAlignment getValueHorzAlignment(FormInstanceContext context) {
+        if (valueHorzAlignment == null && isProperty(context)) {
             Type type = getAssertValueType(context);
             if(type != null)
                 return type.getValueAlignment();
             return FlexAlignment.START;
         }
-        return valueAlignment;
+        return valueHorzAlignment;
+    }
+
+    public FlexAlignment getValueVertAlignment() {
+        return valueVertAlignment;
     }
 
     public String getInputType(FormInstanceContext context) {

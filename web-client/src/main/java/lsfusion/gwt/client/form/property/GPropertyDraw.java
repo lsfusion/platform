@@ -408,7 +408,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public boolean panelColumnVertical;
     
-    public GFlexAlignment valueAlignment;
+    public GFlexAlignment valueHorzAlignment;
+    public GFlexAlignment valueVertAlignment;
 
     public String comment;
     public String commentElementClass;
@@ -761,8 +762,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     public String getHorzTextAlignment(RendererType rendererType) {
-        if (valueAlignment != null) {
-            switch (valueAlignment) {
+        if (valueHorzAlignment != null) {
+            switch (valueHorzAlignment) {
                 case START:
                     return "start";
                 case CENTER:
@@ -777,6 +778,18 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     public String getVertTextAlignment(boolean isInput, RendererType rendererType) {
+        if (valueVertAlignment != null) {
+            switch (valueVertAlignment) {
+                case START:
+                    return "start";
+                case CENTER:
+                    return "center";
+                case STRETCH:
+                    return "stretch";
+                case END:
+                    return "end";
+            }
+        }
         return getRenderType(rendererType).getVertTextAlignment(isInput);
     }
 

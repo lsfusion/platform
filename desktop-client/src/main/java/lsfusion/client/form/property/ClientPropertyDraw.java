@@ -138,7 +138,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public boolean panelColumnVertical;
 
-    public FlexAlignment valueAlignment;
+    public FlexAlignment valueHorzAlignment;
+    public FlexAlignment valueVertAlignment;
 
     public String comment;
     public String commentElementClass;
@@ -350,9 +351,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return alignment;
     }
     
-    public Integer getSwingValueAlignment() {
-        if (valueAlignment != null) {
-            switch (valueAlignment) {
+    public Integer getSwingValueHorzAlignment() {
+        if (valueHorzAlignment != null) {
+            switch (valueHorzAlignment) {
                 case CENTER:
                 case STRETCH:
                     return SwingConstants.CENTER;
@@ -560,7 +561,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         outStream.writeBoolean(panelColumnVertical);
 
-        pool.writeObject(outStream, valueAlignment);
+        pool.writeObject(outStream, valueHorzAlignment);
+        pool.writeObject(outStream, valueVertAlignment);
 
         pool.writeString(outStream, comment);
 
@@ -614,7 +616,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         panelColumnVertical = inStream.readBoolean();
 
-        valueAlignment = pool.readObject(inStream);
+        valueHorzAlignment = pool.readObject(inStream);
+        valueVertAlignment = pool.readObject(inStream);
 
         comment = pool.readString(inStream);
         commentElementClass = pool.readString(inStream);

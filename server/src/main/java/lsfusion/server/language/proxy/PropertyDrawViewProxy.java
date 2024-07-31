@@ -271,8 +271,17 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         }
     }
 
+    //deprecated
     public void setValueAlignment(FlexAlignment valueAlignment) {
-        target.valueAlignment = valueAlignment;
+        setValueHorzAlignment(valueAlignment);
+    }
+
+    public void setValueHorzAlignment(FlexAlignment valueHorzAlignment) {
+        target.valueHorzAlignment = valueHorzAlignment;
+    }
+
+    public void setValueVertAlignment(FlexAlignment valueVertAlignment) {
+        target.valueVertAlignment = valueVertAlignment;
     }
 
     public void setWrap(boolean wrap) {

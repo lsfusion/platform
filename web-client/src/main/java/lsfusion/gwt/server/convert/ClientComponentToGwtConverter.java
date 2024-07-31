@@ -408,7 +408,8 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
 
         propertyDraw.panelColumnVertical = clientPropertyDraw.panelColumnVertical;
         
-        propertyDraw.valueAlignment = convertFlexAlignment(clientPropertyDraw.valueAlignment);
+        propertyDraw.valueHorzAlignment = convertFlexAlignment(clientPropertyDraw.valueHorzAlignment);
+        propertyDraw.valueVertAlignment = convertFlexAlignment(clientPropertyDraw.valueVertAlignment);
 
         propertyDraw.comment = clientPropertyDraw.comment;
         propertyDraw.commentElementClass = clientPropertyDraw.commentElementClass;
