@@ -43,6 +43,14 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
     public LP inTestMode;
     public LP projectLSFDir;
 
+    public LP useKeystore;
+    public LP keystorePassword;
+    public LP keyPassword;
+    public LP keystore;
+    public LP privateKey;
+    public LP chain;
+    public LP privateKeyPassword;
+
     public ServiceLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(baseLM, BL, "/system/Service.lsf");
     }
@@ -83,5 +91,13 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
         allowExcessAllocatedBytes = findProperty("allowExcessAllocatedBytes[CustomUser]");
 
         transactTimeoutUser = findProperty("transactTimeout[User]");
+
+        useKeystore = findProperty("useKeystore[]");
+        keystorePassword = findProperty("keystorePassword[]");
+        keyPassword = findProperty("keyPassword[]");
+        keystore = findProperty("keystore[]");
+        privateKey = findProperty("privateKey[]");
+        chain = findProperty("chain[]");
+        privateKeyPassword = findProperty("privateKeyPassword[]");
     }
 }
