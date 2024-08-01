@@ -26,15 +26,28 @@
     max-width: -moz-available;
 }
 
+.prop-value-overflow-horz-auto {
+    overflow-x: auto;
+}
 
-.prop-value-shrink,
-.prop-value-shrink.comp-shrink-horz {
+.prop-value-overflow-horz-clip {
     overflow-x: clip;
 }
 
-.prop-value-shrink,
-.prop-value-shrink.comp-shrink-vert {
+.prop-value-overflow-horz-visible {
+    overflow-x: visible;
+}
+
+.prop-value-overflow-vert-auto {
+    overflow-y: auto;
+}
+
+.prop-value-overflow-vert-clip {
     overflow-y: clip;
+}
+
+.prop-value-overflow-vert-visible {
+    overflow-y: visible;
 }
 
 .text-based-prop-value {

@@ -44,8 +44,11 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         GSize valueHeight = property.getValueHeight(font, false, true);
         if(valueHeight != null) // this way we can avoid prop-size-value fill-parent-perc conflict (see the css file) in most cases
             element.addClassName("prop-size-value");
-        if(!property.isShrinkOverflowVisible())
-            element.addClassName("prop-value-shrink");
+
+        GwtClientUtils.setupValueOverflowHorz(element, property.getValueOverflowHorz());
+        GwtClientUtils.setupValueOverflowVert(element, property.getValueOverflowVert());
+        GwtClientUtils.setupValueShrinkHorz(element, property.getValueShrinkHorz());
+        GwtClientUtils.setupValueShrinkVert(element, property.getValueShrinkVert());
 
         FlexPanel.setGridHeight(element, valueHeight);
 
@@ -67,7 +70,12 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         }
 
         element.removeClassName("prop-class-value");
-        element.removeClassName("prop-value-shrink");
+
+        GwtClientUtils.clearValueOverflowHorz(element, property.getValueOverflowHorz());
+        GwtClientUtils.clearValueOverflowVert(element, property.getValueOverflowVert());
+        GwtClientUtils.clearValueShrinkHorz(element, property.getValueShrinkHorz());
+        GwtClientUtils.clearValueShrinkVert(element, property.getValueShrinkVert());
+
         FlexPanel.setGridHeight(element, (GSize)null);
 
         return false;

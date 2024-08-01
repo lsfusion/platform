@@ -15,7 +15,7 @@ public class LogicalPropertyRenderer extends PropertyRenderer {
         this.threeState = threeState;
         
         if (property != null) {
-            Integer valueAlignment = property.getSwingValueHorzAlignment();
+            Integer valueAlignment = property.getSwingValueAlignmentHorz();
             if (valueAlignment != null) {
                 getComponent().setHorizontalAlignment(valueAlignment);
             }

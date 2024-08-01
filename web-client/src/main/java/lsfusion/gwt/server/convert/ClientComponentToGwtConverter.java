@@ -92,8 +92,9 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         component.setAlignment(convertFlexAlignment(clientComponent.alignment));
         component.shrink = clientComponent.shrink;
         component.alignShrink = clientComponent.alignShrink;
-        component.shrinkOverflowVisible = clientComponent.shrinkOverflowVisible;
         component.alignCaption = clientComponent.alignCaption;
+        component.overflowHorz = clientComponent.overflowHorz;
+        component.overflowVert = clientComponent.overflowVert;
 
         if (clientComponent.design.getBackground() != null) {
             component.background = convertColor(clientComponent.design.getBackground());
@@ -408,8 +409,14 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
 
         propertyDraw.panelColumnVertical = clientPropertyDraw.panelColumnVertical;
         
-        propertyDraw.valueHorzAlignment = convertFlexAlignment(clientPropertyDraw.valueHorzAlignment);
-        propertyDraw.valueVertAlignment = convertFlexAlignment(clientPropertyDraw.valueVertAlignment);
+        propertyDraw.valueAlignmentHorz = convertFlexAlignment(clientPropertyDraw.valueAlignmentHorz);
+        propertyDraw.valueAlignmentVert = convertFlexAlignment(clientPropertyDraw.valueAlignmentVert);
+
+        propertyDraw.valueOverflowHorz = clientPropertyDraw.valueOverflowHorz;
+        propertyDraw.valueOverflowVert = clientPropertyDraw.valueOverflowVert;
+
+        propertyDraw.valueShrinkHorz = clientPropertyDraw.valueShrinkHorz;
+        propertyDraw.valueShrinkVert = clientPropertyDraw.valueShrinkVert;
 
         propertyDraw.comment = clientPropertyDraw.comment;
         propertyDraw.commentElementClass = clientPropertyDraw.commentElementClass;

@@ -112,12 +112,33 @@ public abstract class GAbstractContainerView {
         GComponent child = children.get(index);
         boolean shrink = child.isShrink();
         boolean alignShrink = child.isAlignShrink();
-        boolean shrinkOverflowVisible = child.isShrinkOverflowVisible();
 
-        if((child.getWidth() != null || (!vertical ? shrink : alignShrink) || fixFlexBasis) && !shrinkOverflowVisible)
-            view.getElement().addClassName("comp-shrink-horz");
-        if((child.getHeight() != null || (vertical ? shrink : alignShrink) || fixFlexBasis) && !shrinkOverflowVisible)
-            view.getElement().addClassName("comp-shrink-vert");
+        if((child.getWidth() != null || (!vertical ? shrink : alignShrink) || fixFlexBasis)) {
+            String overflowHorz = child.getOverflowHorz();
+            if(overflowHorz != null) {
+                switch (overflowHorz) { //visible is default value
+                    case "auto":
+                        view.getElement().addClassName("comp-shrink-horz-auto");
+                        break;
+                    case "clip":
+                        view.getElement().addClassName("comp-shrink-horz-clip");
+                        break;
+                }
+            }
+        }
+        if((child.getHeight() != null || (vertical ? shrink : alignShrink) || fixFlexBasis)) {
+            String overflowVert = child.getOverflowVert();
+            if(overflowVert != null) {
+                switch (overflowVert) { //visible is default value
+                    case "auto":
+                        view.getElement().addClassName("comp-shrink-vert-auto");
+                        break;
+                    case "clip":
+                        view.getElement().addClassName("comp-shrink-vert-clip");
+                        break;
+                }
+            }
+        }
 
         if(child instanceof GContainer)
             GFormLayout.updateComponentClass(((GContainer) child).valueClass, view, "value");

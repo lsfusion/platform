@@ -6,11 +6,11 @@
     max-width: -webkit-fill-available;
     max-width: -moz-available;
 }
-.intr-stretch-width {
+.intr-stretch-width, .prop-value-shrink-horz>* {
     min-width: -webkit-fill-available;
     min-width: -moz-available;
 }
-.intr-shrink-height {
+.intr-shrink-height,.prop-value-shrink-vert>* {
     max-height: -webkit-fill-available;
     max-height: -moz-available;
 }
@@ -92,12 +92,20 @@
     padding: 0 !important;
 }
 
-.comp-shrink-horz {
+.comp-shrink-horz-auto {
     overflow-x : auto
 }
 
-.comp-shrink-vert {
+.comp-shrink-horz-clip {
+    overflow-x : clip
+}
+
+.comp-shrink-vert-auto {
     overflow-y : auto
+}
+
+.comp-shrink-vert-clip {
+    overflow-y : clip
 }
 
 .fill-parent-absolute {

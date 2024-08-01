@@ -138,8 +138,14 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public boolean panelColumnVertical;
 
-    public FlexAlignment valueHorzAlignment;
-    public FlexAlignment valueVertAlignment;
+    public FlexAlignment valueAlignmentHorz;
+    public FlexAlignment valueAlignmentVert;
+
+    public String valueOverflowHorz;
+    public String valueOverflowVert;
+
+    public boolean valueShrinkHorz;
+    public boolean valueShrinkVert;
 
     public String comment;
     public String commentElementClass;
@@ -351,9 +357,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return alignment;
     }
     
-    public Integer getSwingValueHorzAlignment() {
-        if (valueHorzAlignment != null) {
-            switch (valueHorzAlignment) {
+    public Integer getSwingValueAlignmentHorz() {
+        if (valueAlignmentHorz != null) {
+            switch (valueAlignmentHorz) {
                 case CENTER:
                 case STRETCH:
                     return SwingConstants.CENTER;
@@ -561,8 +567,14 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         outStream.writeBoolean(panelColumnVertical);
 
-        pool.writeObject(outStream, valueHorzAlignment);
-        pool.writeObject(outStream, valueVertAlignment);
+        pool.writeObject(outStream, valueAlignmentHorz);
+        pool.writeObject(outStream, valueAlignmentVert);
+
+        pool.writeString(outStream, valueOverflowHorz);
+        pool.writeString(outStream, valueOverflowVert);
+
+        pool.writeBoolean(outStream, valueShrinkHorz);
+        pool.writeBoolean(outStream, valueShrinkVert);
 
         pool.writeString(outStream, comment);
 
@@ -616,8 +628,14 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         panelColumnVertical = inStream.readBoolean();
 
-        valueHorzAlignment = pool.readObject(inStream);
-        valueVertAlignment = pool.readObject(inStream);
+        valueAlignmentHorz = pool.readObject(inStream);
+        valueAlignmentVert = pool.readObject(inStream);
+
+        valueOverflowHorz = pool.readString(inStream);
+        valueOverflowVert = pool.readString(inStream);
+
+        valueShrinkHorz = pool.readBoolean(inStream);
+        valueShrinkVert = pool.readBoolean(inStream);
 
         comment = pool.readString(inStream);
         commentElementClass = pool.readString(inStream);

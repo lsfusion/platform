@@ -106,8 +106,14 @@ public class PropertyDrawView extends BaseComponentView {
 
     public boolean panelColumnVertical = false;
 
-    public FlexAlignment valueHorzAlignment;
-    public FlexAlignment valueVertAlignment;
+    public FlexAlignment valueAlignmentHorz;
+    public FlexAlignment valueAlignmentVert;
+
+    public String valueOverflowHorz;
+    public String valueOverflowVert;
+
+    public boolean valueShrinkHorz;
+    public boolean valueShrinkVert;
 
     public LocalizedString comment;
     public String commentElementClass;
@@ -555,8 +561,14 @@ public class PropertyDrawView extends BaseComponentView {
 
         outStream.writeBoolean(panelColumnVertical);
         
-        pool.writeObject(outStream, getValueHorzAlignment(pool.context));
-        pool.writeObject(outStream, getValueVertAlignment());
+        pool.writeObject(outStream, getValueAlignmentHorz(pool.context));
+        pool.writeObject(outStream, getValueAlignmentVert());
+
+        pool.writeString(outStream, getValueOverflowHorz(pool.context));
+        pool.writeString(outStream, getValueOverflowVert(pool.context));
+
+        pool.writeBoolean(outStream, getValueShrinkHorz());
+        pool.writeBoolean(outStream, getValueShrinkVert());
 
         pool.writeString(outStream, ThreadLocalContext.localize(comment));
         pool.writeString(outStream, getCommentElementClass(pool.context));
@@ -794,8 +806,14 @@ public class PropertyDrawView extends BaseComponentView {
 
         panelColumnVertical = inStream.readBoolean();
 
-        valueHorzAlignment = pool.readObject(inStream);
-        valueVertAlignment = pool.readObject(inStream);
+        valueAlignmentHorz = pool.readObject(inStream);
+        valueAlignmentVert = pool.readObject(inStream);
+
+        valueOverflowHorz = pool.readString(inStream);
+        valueOverflowVert = pool.readString(inStream);
+
+        valueShrinkHorz = pool.readBoolean(inStream);
+        valueShrinkVert = pool.readBoolean(inStream);
 
         changeOnSingleClick = pool.readObject(inStream);
         hide = inStream.readBoolean();
@@ -959,18 +977,46 @@ public class PropertyDrawView extends BaseComponentView {
         return null;
     }
 
-    public FlexAlignment getValueHorzAlignment(FormInstanceContext context) {
-        if (valueHorzAlignment == null && isProperty(context)) {
+    public FlexAlignment getValueAlignmentHorz(FormInstanceContext context) {
+        if (valueAlignmentHorz == null && isProperty(context)) {
             Type type = getAssertValueType(context);
             if(type != null)
                 return type.getValueAlignment();
             return FlexAlignment.START;
         }
-        return valueHorzAlignment;
+        return valueAlignmentHorz;
     }
 
-    public FlexAlignment getValueVertAlignment() {
-        return valueVertAlignment;
+    public FlexAlignment getValueAlignmentVert() {
+        return valueAlignmentVert;
+    }
+
+    public String getValueOverflowHorz(FormInstanceContext context) {
+        if(valueOverflowHorz != null)
+            return valueOverflowHorz;
+
+        if(isShrinkOverflowVisible(context))
+            return "visible";
+
+        return null;
+    }
+
+    public String getValueOverflowVert(FormInstanceContext context) {
+        if(valueOverflowVert != null)
+            return valueOverflowVert;
+
+        if(isShrinkOverflowVisible(context))
+            return "visible";
+
+        return null;
+    }
+
+    public boolean getValueShrinkHorz() {
+        return valueShrinkHorz;
+    }
+
+    public boolean getValueShrinkVert() {
+        return valueShrinkVert;
     }
 
     public String getInputType(FormInstanceContext context) {

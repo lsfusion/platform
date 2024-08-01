@@ -408,8 +408,14 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public boolean panelColumnVertical;
     
-    public GFlexAlignment valueHorzAlignment;
-    public GFlexAlignment valueVertAlignment;
+    public GFlexAlignment valueAlignmentHorz;
+    public GFlexAlignment valueAlignmentVert;
+
+    public String valueOverflowHorz;
+    public String valueOverflowVert;
+
+    public boolean valueShrinkHorz;
+    public boolean valueShrinkVert;
 
     public String comment;
     public String commentElementClass;
@@ -762,8 +768,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     public String getHorzTextAlignment(RendererType rendererType) {
-        if (valueHorzAlignment != null) {
-            switch (valueHorzAlignment) {
+        if (valueAlignmentHorz != null) {
+            switch (valueAlignmentHorz) {
                 case START:
                     return "start";
                 case CENTER:
@@ -778,8 +784,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     public String getVertTextAlignment(boolean isInput, RendererType rendererType) {
-        if (valueVertAlignment != null) {
-            switch (valueVertAlignment) {
+        if (valueAlignmentVert != null) {
+            switch (valueAlignmentVert) {
                 case START:
                     return "start";
                 case CENTER:
@@ -792,6 +798,23 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         }
         return getRenderType(rendererType).getVertTextAlignment(isInput);
     }
+
+    public String getValueOverflowHorz() {
+        return valueOverflowHorz;
+    }
+
+    public String getValueOverflowVert() {
+        return valueOverflowVert;
+    }
+
+    public boolean getValueShrinkHorz() {
+        return valueShrinkHorz;
+    }
+
+    public boolean getValueShrinkVert() {
+        return valueShrinkVert;
+    }
+
 
     public static ArrayList<GGroupObjectValue> getColumnKeys(GPropertyDraw property, NativeSIDMap<GGroupObject, ArrayList<GGroupObjectValue>> currentGridObjects) {
         ArrayList<GGroupObjectValue> columnKeys = GGroupObjectValue.SINGLE_EMPTY_KEY_LIST;

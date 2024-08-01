@@ -58,8 +58,8 @@ public class ImagePropertyRenderer extends FilePropertyRenderer {
         int imageHeight = scaled.height;
 
         int dx = (width - imageWidth) / 2;
-        if (property != null && property.valueHorzAlignment != null) {
-            switch (property.valueHorzAlignment) {
+        if (property != null && property.valueAlignmentHorz != null) {
+            switch (property.valueAlignmentHorz) {
                 case START: 
                     dx = 0;
                     break;

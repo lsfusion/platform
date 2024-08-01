@@ -11,16 +11,16 @@ public class CaptionWidget {
     public GFlexAlignment horzAlignment;
     public GFlexAlignment vertAlignment;
 
-    public GFlexAlignment valueVertAlignment;
+    public GFlexAlignment valueAlignmentVert;
 
     public CaptionWidget(Widget widget) {
         this(new SizedWidget(widget), GFlexAlignment.START, GFlexAlignment.CENTER, GFlexAlignment.STRETCH);
 
     }
-    public CaptionWidget(SizedWidget widget, GFlexAlignment horzAlignment, GFlexAlignment vertAlignment, GFlexAlignment valueVertAlignment) {
+    public CaptionWidget(SizedWidget widget, GFlexAlignment horzAlignment, GFlexAlignment vertAlignment, GFlexAlignment valueAlignmentVert) {
         this.widget = widget;
         this.horzAlignment = horzAlignment;
         this.vertAlignment = vertAlignment;
-        this.valueVertAlignment = valueVertAlignment;
+        this.valueAlignmentVert = valueAlignmentVert;
     }
 }

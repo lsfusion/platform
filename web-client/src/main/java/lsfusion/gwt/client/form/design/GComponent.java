@@ -33,8 +33,9 @@ public class GComponent implements Serializable {
     protected GFlexAlignment alignment;
     public boolean shrink;
     public boolean alignShrink;
-    public boolean shrinkOverflowVisible;
     public Boolean alignCaption;
+    public String overflowHorz;
+    public String overflowVert;
 
     public ColorDTO background;
     public ColorDTO foreground;
@@ -124,8 +125,12 @@ public class GComponent implements Serializable {
         return alignShrink;
     }
 
-    public boolean isShrinkOverflowVisible() {
-        return shrinkOverflowVisible;
+    public String getOverflowHorz() {
+        return overflowHorz;
+    }
+
+    public String getOverflowVert() {
+        return overflowVert;
     }
 
     public void setAlignment(GFlexAlignment alignment) {

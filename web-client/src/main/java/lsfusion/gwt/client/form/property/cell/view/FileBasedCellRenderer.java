@@ -31,8 +31,8 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
 
             Style imgStyle = img.getStyle();
             imgStyle.setVerticalAlign(Style.VerticalAlign.MIDDLE);
-            imgStyle.setProperty("maxWidth", "100%");
-            imgStyle.setProperty("maxHeight", "100%");
+            //imgStyle.setProperty("maxWidth", "100%");
+            //imgStyle.setProperty("maxHeight", "100%");
             imgStyle.setPosition(Style.Position.RELATIVE);
 
             if(property.hasEditObjectAction && value != null) {

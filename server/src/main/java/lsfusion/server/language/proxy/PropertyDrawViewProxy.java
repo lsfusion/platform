@@ -273,15 +273,31 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
 
     //deprecated
     public void setValueAlignment(FlexAlignment valueAlignment) {
-        setValueHorzAlignment(valueAlignment);
+        setValueAlignmentHorz(valueAlignment);
     }
 
-    public void setValueHorzAlignment(FlexAlignment valueHorzAlignment) {
-        target.valueHorzAlignment = valueHorzAlignment;
+    public void setValueAlignmentHorz(FlexAlignment valueAlignmentHorz) {
+        target.valueAlignmentHorz = valueAlignmentHorz;
     }
 
-    public void setValueVertAlignment(FlexAlignment valueVertAlignment) {
-        target.valueVertAlignment = valueVertAlignment;
+    public void setValueAlignmentVert(FlexAlignment valueAlignmentVert) {
+        target.valueAlignmentVert = valueAlignmentVert;
+    }
+
+    public void setValueOverflowHorz(String valueOverflowHorz) {
+        target.valueOverflowHorz = valueOverflowHorz;
+    }
+
+    public void setValueOverflowVert(String valueOverflowVert) {
+        target.valueOverflowVert = valueOverflowVert;
+    }
+
+    public void setValueShrinkHorz(boolean valueShrinkHorz) {
+        target.valueShrinkHorz = valueShrinkHorz;
+    }
+
+    public void setValueShrinkVert(boolean valueShrinkVert) {
+        target.valueShrinkVert = valueShrinkVert;
     }
 
     public void setWrap(boolean wrap) {
