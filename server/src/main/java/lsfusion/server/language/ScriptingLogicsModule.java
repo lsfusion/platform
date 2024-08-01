@@ -2367,9 +2367,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         Matcher m = Pattern.compile("([^;]*);(.*)").matcher(code);
         if(m.matches()) {
             Map<String, String> optionsMap = getOptionsMap(m.group(2));
-            return new KeyStrokeOptions(m.group(1), getBindingModesMap(optionsMap), getPriority(optionsMap));
+            return new KeyStrokeOptions(nullEmpty(m.group(1)), getBindingModesMap(optionsMap), getPriority(optionsMap));
         } else {
-            return new KeyStrokeOptions(code, null, null);
+            return new KeyStrokeOptions(nullEmpty(code), null, null);
         }
     }
 
