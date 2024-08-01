@@ -1,5 +1,6 @@
 package lsfusion.server.language.proxy;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
@@ -84,7 +85,7 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
     }
 
     public void setChangeKey(ScriptingLogicsModule.KeyStrokeOptions changeKey) {
-        target.changeKey = new KeyInputEvent(KeyStroke.getKeyStroke(changeKey.keyStroke), changeKey.bindingModesMap);
+        target.changeKey = BaseUtils.isRedundantString(changeKey.keyStroke) ? null : new KeyInputEvent(KeyStroke.getKeyStroke(changeKey.keyStroke), changeKey.bindingModesMap);
         target.changeKeyPriority = changeKey.priority;
     }
     public void setChangeKeyPriority(int priority) {
@@ -96,7 +97,7 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
     }
 
     public void setChangeMouse(ScriptingLogicsModule.KeyStrokeOptions changeMouse) {
-        target.changeMouse = new MouseInputEvent(changeMouse.keyStroke, changeMouse.bindingModesMap);
+        target.changeMouse = BaseUtils.isRedundantString(changeMouse.keyStroke) ? null : new MouseInputEvent(changeMouse.keyStroke, changeMouse.bindingModesMap);
         target.changeMousePriority = changeMouse.priority;
     }
     public void setChangeMousePriority(int priority) {
