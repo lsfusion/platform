@@ -18,6 +18,7 @@ public class ReportClientAction implements ClientAction {
     public String printerName;
     public String password;
     public String sheetName;
+    public boolean jasperReportsIgnorePageMargins;
 
     public ReportClientAction(List<String> reportPathList, String formCaption, String formSID, boolean autoPrint, boolean isModal, ReportGenerationData generationData,
                               FormPrintType printType, String printerName, boolean inDevMode, String password, String sheetName) {

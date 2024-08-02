@@ -38,6 +38,8 @@ public class GClientSettings implements Serializable, IsSerializable {
     
     public double maxStickyLeft;
 
+    public boolean jasperReportsIgnorePageMargins;
+
     @SuppressWarnings("unused")
     public GClientSettings() {
     }
@@ -48,7 +50,7 @@ public class GClientSettings implements Serializable, IsSerializable {
                            GColorPreferences colorPreferences, String dateFormat, String timeFormat, Integer twoDigitYearStart, String staticImagesURL,
                            String[] preDefinedDateRangesNames, boolean useTextAsFilterSeparator, boolean verticalNavbar, boolean userFiltersManualApplyMode,
                            boolean disableActionsIfReadonly, boolean enableShowingRecentlyLogMessages, String pushNotificationPublicKey,
-                           double maxStickyLeft) {
+                           double maxStickyLeft, boolean jasperReportsIgnorePageMargins) {
         this.busyDialogTimeout = busyDialogTimeout;
         this.devMode = devMode;
         this.projectLSFDir = projectLSFDir;
@@ -75,5 +77,6 @@ public class GClientSettings implements Serializable, IsSerializable {
         this.enableShowingRecentlyLogMessages = enableShowingRecentlyLogMessages;
         this.pushNotificationPublicKey = pushNotificationPublicKey;
         this.maxStickyLeft = maxStickyLeft;
+        this.jasperReportsIgnorePageMargins = jasperReportsIgnorePageMargins;
     }
 }

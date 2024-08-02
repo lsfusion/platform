@@ -1555,7 +1555,7 @@ public class GFormController implements EditManager {
     }
 
     public void runGroupReport(Integer groupObjectID) {
-        syncDispatch(new GroupReport(groupObjectID, getUserPreferences()), new SimpleRequestCallback<GroupReportResult>() {
+        syncDispatch(new GroupReport(groupObjectID, getUserPreferences(), MainFrame.jasperReportsIgnorePageMargins), new SimpleRequestCallback<GroupReportResult>() {
             @Override
             public void onSuccess(GroupReportResult result) {
                 GwtClientUtils.openFile(result.filename, false, null);

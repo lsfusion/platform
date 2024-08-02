@@ -178,7 +178,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     @Converter(from = ReportClientAction.class)
     public GReportAction convertAction(ReportClientAction action, final MainDispatchServlet servlet) throws IOException {
         boolean autoPrint = action.autoPrint;
-        RawFileData rawFileData = ReportGenerator.exportToFileByteArray(action.generationData, action.printType, servlet.getNavigatorProvider().getRemoteLogics());
+        RawFileData rawFileData = ReportGenerator.exportToFileByteArray(action.generationData, action.printType, action.jasperReportsIgnorePageMargins, servlet.getNavigatorProvider().getRemoteLogics());
 
         String report = FileUtils.exportReport(action.printType, rawFileData);
         return new GReportAction(report, autoPrint, autoPrint && action.printType != FormPrintType.HTML ? rawFileData.getLength() / 15 : null);

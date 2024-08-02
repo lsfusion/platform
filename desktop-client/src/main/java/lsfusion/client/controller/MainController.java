@@ -82,6 +82,8 @@ public class MainController {
 
     public static int maxRequestQueueSize;
 
+    public static boolean jasperReportsIgnorePageMargins;
+
     // lifecycle
 
     private static RemoteClassLoader remoteClassLoader;
