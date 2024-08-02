@@ -4150,11 +4150,13 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams ac
     List<List<QuickAccess>> quickAccesses = new ArrayList<>();
     List<LAWithParams> actions = new ArrayList<>();
     String customEditorFunction = null;
+    boolean listAction = false;
 }
 @after {
 	if (inMainParseState()) {
 		$action = self.addScriptedInputAProp($in.valueClass, $in.initValue, outProp, $dDB.action, $dDB.elseAction, context, newContext,
-		 assign, constraintFilter, changeProp, listProp, whereProp, actionImages, keyPresses, quickAccesses, actions, assignDebugPoint, $fs.result, customEditorFunction);
+		 assign, constraintFilter, changeProp, listProp, whereProp, actionImages, keyPresses, quickAccesses, actions, assignDebugPoint,
+		 $fs.result, customEditorFunction, listAction);
 	}
 }
 	:	'INPUT'
@@ -4191,6 +4193,7 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams ac
                 actDB=listActionDefinitionBody[newActionsContext, false] {
                     // assert listDynamic
                     listProp = $actDB.action;
+                    listAction = true;
                 }
             )
         )?

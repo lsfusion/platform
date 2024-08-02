@@ -153,6 +153,9 @@
                 <entry key="suppressOnFocusChange" value="${settings.suppressOnFocusChange:}"/>
                 <entry key="contentWordWrap" value="${settings.contentWordWrap:}"/>
                 <entry key="toolbarTopLeft" value="${settings.toolbarTopLeft:}"/>
+                <entry key="defaultUrlCharset" value="${settings.defaultUrlCharset:}"/>
+                <entry key="defaultBodyUrlCharset" value="${settings.defaultBodyUrlCharset:}"/>
+                <entry key="defaultBodyCharset" value="${settings.defaultBodyCharset:}"/>
             </map>
         </property>
         </bean>

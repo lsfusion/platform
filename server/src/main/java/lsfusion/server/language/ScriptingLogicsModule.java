@@ -2388,7 +2388,11 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LAWithParams addScriptedInputAProp(ValueClass requestValueClass, LPWithParams oldValue, NamedPropertyUsage targetProp, LAWithParams doAction, LAWithParams elseAction,
                                               List<TypedParameter> oldContext, List<TypedParameter> newContext, boolean assign, boolean constraintFilter, LPWithParams changeProp,
                                               LAPWithParams listProp, LPWithParams whereProp, List<String> actionImages, List<String> keyStrokes, List<List<QuickAccess>> quickAccesses, List<LAWithParams> actions,
-                                              DebugInfo.DebugPoint assignDebugPoint, FormSessionScope listScope, String customEditorFunction) throws ScriptingErrorLog.SemanticErrorException {
+                                              DebugInfo.DebugPoint assignDebugPoint, FormSessionScope listScope, String customEditorFunction, boolean listAction) throws ScriptingErrorLog.SemanticErrorException {
+
+        if (listAction && !(requestValueClass instanceof DataClass))
+            errLog.emitNotPrimitiveTypeInListError(parser);
+
         if(listScope == null)
             listScope = FormSessionScope.OLDSESSION;
 
