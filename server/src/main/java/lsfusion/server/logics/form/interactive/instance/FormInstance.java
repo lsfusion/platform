@@ -1018,7 +1018,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         BL.LM.eventSource.change(eventSource.toString(), this);
 
         BL.LM.dropBeforeCanceled(this);
-        fireFormChangeEvent(property, stack, keys, true);
+        fireChangeEvent(property, stack, keys, true);
         if(BL.LM.isBeforeCanceled(this))
             return;
 
@@ -1033,7 +1033,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         final ActionObjectInstance remappedEventAction = eventAction.getRemappedPropertyObject(keys, true);
         remappedEventAction.execute(FormInstance.this, stack, result, property, FormInstance.this);
 
-        fireFormChangeEvent(property, stack, keys, false);
+        fireChangeEvent(property, stack, keys, false);
     }
 
     public void pasteExternalTable(List<PropertyDrawInstance> properties, List<ImMap<ObjectInstance, DataObject>> columnKeys, List<List<byte[]>> values, List<ArrayList<String>> rawValues, ExecutionStack stack, FormInstanceContext context) throws SQLException, IOException, SQLHandledException {
@@ -2259,16 +2259,16 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         GroupObjectValue updateGroupObject = null; // так как текущий groupObject идет относительно treeGroup, а не group
         for (GroupObjectInstance group : getOrderGroups()) {
             try {
-                ImMap<ObjectInstance, DataObject> selectObjects = group.updateKeys(session.sql, queryEnv, getModifier(), environmentIncrement, this, BL.LM.baseClass, isHidden(group), refresh, result, mChangedDrawProps, mChangedProps, this);
+                ImMap<ObjectInstance, DataObject> selectObjects = group.updateKeys(session.sql, queryEnv, getModifier(), environmentIncrement, this, BL.LM.baseClass, isHidden(group), refresh || group.toRefresh(), result, mChangedDrawProps, mChangedProps, this, getObjectEvents(stack, group));
                 if (selectObjects != null) // то есть нужно изменять объект
                     updateGroupObject = new GroupObjectValue(group, selectObjects);
 
-                if (group.getDownTreeGroups().size() == 0 && updateGroupObject != null) { // так как в tree группе currentObject друг на друга никак не влияют, то можно и нужно делать updateGroupObject в конце
+                if (group.getDownTreeGroups().isEmpty() && updateGroupObject != null) { // так как в tree группе currentObject друг на друга никак не влияют, то можно и нужно делать updateGroupObject в конце
                     updateGroupObject.group.update(session, result, this, updateGroupObject.value, stack);
                     updateGroupObject = null;
                 }
             } catch (EmptyStackException e) {
-                systemLogger.error("OBJECTS : " + group.toString() + " FORM " + entity.toString());
+                systemLogger.error("OBJECTS : " + group + " FORM " + entity.toString());
                 throw Throwables.propagate(e);
             }
         }
@@ -2709,6 +2709,26 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         fireEvent(object.entity, stack);
     }
 
+    private ChangeEvents getObjectEvents(ExecutionStack stack, GroupObjectInstance group) {
+        return new ChangeEvents() {
+            public void onFilterChanged() throws SQLException, SQLHandledException {
+                fireFilterChanged(group, stack, false);
+            }
+
+            public void onOrderChanged() throws SQLException, SQLHandledException {
+                fireOrderChanged(group, stack, false);
+            }
+        };
+    }
+
+    public void fireFilterChanged(GroupObjectInstance group, ExecutionStack stack, boolean user) throws SQLException, SQLHandledException {
+        fireOnUserActivity(stack, group, UserEventObject.Type.FILTER, user);
+    }
+
+    public void fireOrderChanged(GroupObjectInstance group, ExecutionStack stack, boolean user) throws SQLException, SQLHandledException {
+        fireOnUserActivity(stack, group, UserEventObject.Type.ORDER, user);
+    }
+
     public void fireOnInit(ExecutionStack stack) throws SQLException, SQLHandledException {
         fireEvent(FormEventType.INIT, stack);
     }
@@ -2755,15 +2775,15 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         fireEvent(FormEventType.DROP, stack);
     }
 
-    public void fireOnUserActivity(ExecutionStack stack, UserEventObject event) throws SQLException, SQLHandledException {
-        fireEvent(event, stack);
+    public void fireOnUserActivity(ExecutionStack stack, GroupObjectInstance groupObject, UserEventObject.Type type, boolean user) throws SQLException, SQLHandledException {
+        fireEvent(new UserEventObject(groupObject.getSID(), type, user), stack);
     }
 
-    public void fireFormEvent(ExecutionStack stack, FormEvent formEvent, PushAsyncResult pushedAsyncResult) throws SQLException, SQLHandledException {
+    public void fireEvent(ExecutionStack stack, FormEvent formEvent, PushAsyncResult pushedAsyncResult) throws SQLException, SQLHandledException {
         fireEvent(entity.getEventObject(formEvent), stack, null, pushedAsyncResult);
     }
 
-    public void fireFormChangeEvent(PropertyDrawInstance property, ExecutionStack stack, ImMap<ObjectInstance, ? extends ObjectValue> keys, boolean before) throws SQLException, SQLHandledException {
+    public void fireChangeEvent(PropertyDrawInstance property, ExecutionStack stack, ImMap<ObjectInstance, ? extends ObjectValue> keys, boolean before) throws SQLException, SQLHandledException {
         fireEvent(new FormChangeEvent(property.getEntity(), before), stack, keys);
     }
 
@@ -2789,12 +2809,12 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         Iterable<ActionObjectEntity<?>> actionsOnEvent = entity.getEventActionsListIt(eventObject);
         if (actionsOnEvent != null) {
             for (ActionObjectEntity<?> autoAction : actionsOnEvent) {
-                ActionObjectInstance<? extends PropertyInterface> autoInstance = instanceFactory.getInstance(autoAction);
-                if(keys != null) {
-                    autoInstance = autoInstance.getRemappedPropertyObject(keys, true);
-                }
-
                 if (securityPolicy.checkPropertyChangePermission(autoAction.property, autoAction.property)) { // для проверки null'ов и политики безопасности
+                    ActionObjectInstance<? extends PropertyInterface> autoInstance = instanceFactory.getInstance(autoAction);
+                    if(keys != null) {
+                        autoInstance = autoInstance.getRemappedPropertyObject(keys, true);
+                    }
+
                     mResult.exclAdd(autoInstance.getValueImplement(this));
                 }
             }

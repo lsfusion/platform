@@ -1081,9 +1081,14 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         }
     }
 
+    public interface ChangeEvents {
+        void onFilterChanged() throws SQLException, SQLHandledException;
+        void onOrderChanged() throws SQLException, SQLHandledException;
+    }
+
     @StackMessage("{message.form.update.group.keys}")
     @ThisMessage
-    public ImMap<ObjectInstance, DataObject> updateKeys(SQLSession sql, QueryEnvironment env, final FormInstance.FormModifier modifier, IncrementChangeProps environmentIncrement, ExecutionEnvironment execEnv, BaseClass baseClass, boolean hidden, final boolean refresh, MFormChanges result, MSet<PropertyDrawInstance> mChangedDrawProps, Result<ChangedData> changedProps, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
+    public ImMap<ObjectInstance, DataObject> updateKeys(SQLSession sql, QueryEnvironment env, final FormInstance.FormModifier modifier, IncrementChangeProps environmentIncrement, ExecutionEnvironment execEnv, BaseClass baseClass, boolean hidden, boolean refresh, MFormChanges result, MSet<PropertyDrawInstance> mChangedDrawProps, Result<ChangedData> changedProps, ReallyChanged reallyChanged, ChangeEvents changeEvents) throws SQLException, SQLHandledException {
         if (keyTable == null) // в общем то только для hidden'а но может и потом понадобиться
             keyTable = createKeyTable("upktable-" + System.identityHashCode(execEnv));
 
@@ -1091,16 +1096,15 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
         // FILTERS
 
-        boolean updateFilters = refresh || toRefresh() || (updated & UPDATED_FILTER) != 0;
+        boolean updateFilters = (updated & UPDATED_FILTER) != 0;
         ImSet<GroupObjectInstance> sThis = SetFact.singleton(this);
 
-        if (!updateFilters) // изменились "верхние" объекты для фильтров
-            for (FilterInstance filt : getFilters())
-                if (filt.objectUpdated(sThis)) {
-                    updateFilters = true;
-                    updateObjects = true;
-                    break;
-                }
+        for (FilterInstance filt : getFilters())
+            if (filt.objectUpdated(sThis)) {
+                updateFilters = true;
+                updateObjects = true;
+                break;
+            }
 
         if (!updateFilters) // изменились данные по фильтрам
             for (FilterInstance filt : getFilters())
@@ -1109,32 +1113,38 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                     break;
                 }
 
-        if(updateFilters)
+        if(updateFilters) {
             updateFilterProperty(true, modifier, environmentIncrement, changedProps, reallyChanged);
+
+            changeEvents.onFilterChanged();
+        }
 
         // ORDERS
 
-        boolean hasOrderProperty = hasUpdateEnvironmentIncrementProp(GroupObjectProp.ORDER); // optimization
         boolean updateOrders = (updated & UPDATED_ORDER) != 0;
         orders = getSetOrders();
 
-        if (!updateOrders && (!updateFilters || hasOrderProperty)) // изменились "верхние" объекты для порядков
-            for (OrderInstance order : orders.keyIt())
-                if (order.objectUpdated(sThis)) {
-                    updateOrders = true;
-                    updateObjects = true;
-                    break;
-                }
-        if (!updateOrders && (!updateFilters || hasOrderProperty)) // изменились данные по порядкам
+        for (OrderInstance order : orders.keyIt())
+            if (order.objectUpdated(sThis)) {
+                updateOrders = true;
+                updateObjects = true;
+                break;
+            }
+
+        if (!updateOrders)
             for (OrderInstance order : orders.keyIt())
                 if (order.dataUpdated(changedProps.result, reallyChanged, modifier, hidden, sThis)) {
                     updateOrders = true;
                     break;
                 }
 
-        if(updateOrders)
+        if(updateOrders) {
             updateOrderProperty(true, modifier, environmentIncrement, changedProps, reallyChanged);
 
+            changeEvents.onOrderChanged();
+        }
+
+        updateFilters = refresh || updateFilters;
         boolean updateKeys = updateFilters || updateOrders || (setGroupMode == null && userSeeks != null);
 
         boolean updatePageSize = (updated & UPDATED_PAGESIZE) != 0;

@@ -1226,6 +1226,8 @@ changeEventDeclaration returns [Object type]
 }
     :
     'CHANGE' (  'OBJECT'? objectId=ID { $type = $objectId.text; }
+             |  'FILTER' objectId=ID { $type = new UserEventObject($objectId.text, UserEventObject.Type.FILTER, false); }
+             |  'ORDER' objectId=ID { $type = new UserEventObject($objectId.text, UserEventObject.Type.ORDER, false); }
              |  'PROPERTY' ('BEFORE' { before = true; } | 'AFTER' { before = false; })? prop=formPropertyDraw { $type = new FormChangeEvent($prop.property, before); }
              )
     ;
@@ -1242,27 +1244,11 @@ scheduleFormEventDeclaration returns [int period, boolean fixed]
 	;
 
 orderEventDeclaration returns [UserEventObject type]
-@init {
-	String object = null;
-}
-@after {
-	if (inMainParseState()) {
-		$type = new UserEventObject(object, UserEventObject.Type.ORDER);
-	}
-}
-    :   'ORDER' objectId=ID { object = $objectId.text; }
+    :   'ORDER' objectId=ID { $type = new UserEventObject($objectId.text, UserEventObject.Type.ORDER, true); }
     ;
 
 filterEventDeclaration returns [UserEventObject type]
-@init {
-	String object = null;
-}
-@after {
-	if (inMainParseState()) {
-		$type = new UserEventObject(object, UserEventObject.Type.FILTER);
-	}
-}
-    :   'FILTER' objectId=ID { object = $objectId.text; }
+    :   'FILTER' objectId=ID { $type = new UserEventObject($objectId.text, UserEventObject.Type.FILTER, true); }
     ;
 
 
