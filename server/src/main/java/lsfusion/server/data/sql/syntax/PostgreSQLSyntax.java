@@ -275,11 +275,6 @@ public class PostgreSQLSyntax extends DefaultSQLSyntax {
     }
 
     @Override
-    public String getArrayAgg(String s, ClassReader classReader, TypeEnvironment typeEnv) {
-        return "AGGAR_SETADD(" + s + ")";
-    }
-
-    @Override
     public boolean orderTopProblem() {
         return true;
     }
