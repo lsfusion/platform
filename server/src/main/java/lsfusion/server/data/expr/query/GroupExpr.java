@@ -98,7 +98,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
         }
 
         public Expr getSingleExpr() {
-            return type.getSingleExpr(exprs, getOrderWhere());
+            return type.getSingleExpr(exprs).and(getOrderWhere());
         }
 
         public Query followFalse(Where falseWhere, boolean pack) {
@@ -657,7 +657,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
         Result<ImRevMap<Expr, BaseExpr>> compares = new Result<>();
         ImSet<KeyExpr> keys = getKeys(query, innerOuter);
         ImRevMap<KeyExpr, BaseExpr> groupKeys = MapFact.splitRevKeys(innerOuter, keys, compares);
-        if(groupKeys.size()==keys.size()) {
+        if(groupKeys.size()==keys.size() && query.type.hasSingle()) {
             ExprTranslator translator = new KeyExprTranslator(groupKeys);
             Where equalsWhere = Where.TRUE(); // чтобы лишних проталкиваний не было
             for(int i=0,size=compares.result.size();i<size;i++) // оставшиеся
