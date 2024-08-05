@@ -26,6 +26,7 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -125,7 +126,7 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
                 ServerPrintAction.autoPrintReport(reportData, printer, (e) -> ServerLoggers.printerLogger.error("ServerPrint error", e));
             } else if (exportFile != null)
                 //on the app-server the jasper classes should already be loaded, so remoteLogic is null
-                writeResult(exportFile, staticType, context, ReportGenerator.exportToFileByteArray(reportData, staticType, sheetName, password, null));
+                writeResult(exportFile, staticType, context, ReportGenerator.exportToFileByteArray(reportData, staticType, sheetName, password, Settings.get().isJasperReportsIgnorePageMargins(), null));
             else {
                 String formCaption = staticType == FormPrintType.PRINT ? formReportManager.readFormCaption() : null;
                 List<String> customReportPathList = SystemProperties.inDevMode && form.isNamed() && context.getBL().findForm(form.getCanonicalName()) != null ? formReportManager.getCustomReportPathList(staticType) : new ArrayList<>(); // checking that form is not in script, etc.

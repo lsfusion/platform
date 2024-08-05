@@ -973,6 +973,7 @@ getClientSettings(User user) + WHEN user IS User THEN {
         pushNotificationPublicKey = pushPublicKey(),
         maxRequestQueueSize = valueSetting('maxRequestQueueSize'),
         maxStickyLeft = valueSetting('maxStickyLeft'),
+        jasperReportsIgnorePageMargins = valueSetting('jasperReportsIgnorePageMargins'),
         verticalNavbar = verticalNavbar(),
         navigatorPinMode = navigatorPinMode();
 }

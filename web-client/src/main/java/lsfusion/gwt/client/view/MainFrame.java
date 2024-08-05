@@ -101,6 +101,8 @@ public class MainFrame implements EntryPoint {
     
     public static double maxStickyLeft;
 
+    public static boolean jasperReportsIgnorePageMargins;
+
     // async dispatch
     public <T extends Result> long asyncDispatch(final ExecuteNavigatorAction action, RequestCountingAsyncCallback<ServerResponseResult> callback) {
         return navigatorDispatchAsync.asyncExecute(action, callback);
@@ -652,6 +654,8 @@ public class MainFrame implements EntryPoint {
                 pushNotificationPublicKey = gClientSettings.pushNotificationPublicKey;
 
                 maxStickyLeft = gClientSettings.maxStickyLeft;
+
+                jasperReportsIgnorePageMargins = gClientSettings.jasperReportsIgnorePageMargins;
 
                 initializeFrame(result.navigatorInfo, popupOwner);
                 DateRangePickerBasedCellEditor.setPickerTwoDigitYearStart(gClientSettings.twoDigitYearStart);

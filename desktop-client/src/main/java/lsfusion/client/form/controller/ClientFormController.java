@@ -1763,7 +1763,7 @@ public class ClientFormController implements AsyncListener {
                         BaseUtils.openFile((RawFileData) reportData, "report", "csv");
                     } else {
                         //assert generationData instanceof ReportGenerationData
-                        ReportGenerator.exportAndOpen((ReportGenerationData) reportData, FormPrintType.XLSX, true, MainController.remoteLogics);
+                        ReportGenerator.exportAndOpen((ReportGenerationData) reportData, FormPrintType.XLSX, MainController.jasperReportsIgnorePageMargins, MainController.remoteLogics);
                     }
                 }
             }
