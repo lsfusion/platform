@@ -2388,10 +2388,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LAWithParams addScriptedInputAProp(ValueClass requestValueClass, LPWithParams oldValue, NamedPropertyUsage targetProp, LAWithParams doAction, LAWithParams elseAction,
                                               List<TypedParameter> oldContext, List<TypedParameter> newContext, boolean assign, boolean constraintFilter, LPWithParams changeProp,
                                               LAPWithParams listProp, LPWithParams whereProp, List<String> actionImages, List<String> keyStrokes, List<List<QuickAccess>> quickAccesses, List<LAWithParams> actions,
-                                              DebugInfo.DebugPoint assignDebugPoint, FormSessionScope listScope, String customEditorFunction, boolean listAction) throws ScriptingErrorLog.SemanticErrorException {
-
-        if (listAction && !(requestValueClass instanceof DataClass))
-            errLog.emitNotPrimitiveTypeInListError(parser);
+                                              DebugInfo.DebugPoint assignDebugPoint, FormSessionScope listScope, String customEditorFunction) throws ScriptingErrorLog.SemanticErrorException {
 
         if(listScope == null)
             listScope = FormSessionScope.OLDSESSION;
@@ -2415,6 +2412,9 @@ public class ScriptingLogicsModule extends LogicsModule {
             ImList<CCCF<ClassFormSelector.VirtualObject>> cccfs = ListFact.EMPTY();
             if(constraintFilter)
                 cccfs = ListFact.singleton(new CCCF<>(changeProp, classForm.virtualObject, oldContext.size())); // assuming that there is only one parameter
+
+            if (listProp instanceof LAWithParams)
+                errLog.emitNotPrimitiveTypeInListError(parser);
             
             CFEWithParams<ClassFormSelector.VirtualObject> contextEntities = getContextFilterAndListAndActionsEntities(oldContext.size(), SetFact.singletonOrder(classForm.virtualObject),
                     whereProp != null ? ListFact.singleton(whereProp) : ListFact.EMPTY(), (LPWithParams) listProp, cccfs, actionImages, keyStrokes, quickAccesses, actions);
