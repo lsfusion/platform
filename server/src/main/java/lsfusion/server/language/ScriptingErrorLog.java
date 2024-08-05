@@ -308,18 +308,6 @@ public class ScriptingErrorLog {
     public void emitAlreadyDefinedPropertyDrawError(ScriptParser parser, String formName, String propertyDrawName, String oldPosition) throws SemanticErrorException {
         emitSimpleError(parser, format("property '%s' in form '%s' was already defined at %s", propertyDrawName, formName, oldPosition));
     }
-    
-    public void emitCustomPropertyViewFunctionError(ScriptParser parser, String propertyDrawName, String customRenderFunction, boolean render) throws SemanticErrorException {
-        String type = render ? "render" : "editor";
-        emitSimpleError(parser,
-                format("Incorrect custom " + type + " function definition for %s:\n\texpected format: '<custom_" + type + "_function>',\n\tprovided: '%s'",
-                        propertyDrawName,
-                        customRenderFunction));
-    }
-
-    public void emitCustomPropertyWrongEditType(ScriptParser parser, String editType) throws SemanticErrorException {
-        emitSimpleError(parser, format("Incorrect CUSTOM EDIT type definition. \n\texpected type: TEXT or REPLACE or none,\n\tprovided: '%s'", editType));
-    }
 
     public void emitNamedParamsError(ScriptParser parser, List<String> paramNames, int actualParameters) throws SemanticErrorException {
         emitSimpleError(parser, format("number of actual property parameters (%d) differs from number of named parameters (%d: %s)",
@@ -346,20 +334,8 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("%s's arguments' types don't match", propType));
     }
 
-    public void emitMetaCodeNotEndedError(ScriptParser parser, String name) throws SemanticErrorException {
-        emitSimpleError(parser, format("meta code '%s' does not end with END keyword", name));
-    }
-
-    public void emitJavaCodeNotEndedError(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "java code does not end with '}>' sequence");
-    }
-
     public void emitDistinctParamNamesError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "names of parameters should be distinct");
-    }
-
-    public void emitRedundantOrderGPropError(ScriptParser parser, ScriptingLogicsModule.GroupingType groupType) throws SemanticErrorException {
-        emitSimpleError(parser, format("ORDER clause is forbidden with '%s' grouping type", groupType));
     }
 
     public void emitMultipleAggrGPropError(ScriptParser parser, ScriptingLogicsModule.GroupingType groupType) throws SemanticErrorException {
@@ -509,10 +485,6 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("properties '%s' and '%s' should be in one group", name1, name2));
     }
 
-    public void emitMetacodeInsideMetacodeError(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "metacode cannot be defined inside another metacode");
-    }
-
     public void emitNamespaceNameError(ScriptParser parser, String namespaceName) throws SemanticErrorException {
         emitSimpleError(parser, format("namespace name '%s' contains underscore character", namespaceName));
     }
@@ -608,10 +580,6 @@ public class ScriptingErrorLog {
     public void emitObjectOfGroupObjectError(ScriptParser parser, String objName, String groupObjName) throws SemanticErrorException {
         emitSimpleError(parser, format("group object '%s' does not contain object '%s'", groupObjName, objName));
     }
-    
-    public void emitImportNonIntegralSheetError(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "Sheet index should have INTEGER or LONG value");
-    }
 
     public void emitNavigatorElementFolderNameError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "navigator folder name should be defined");
@@ -685,5 +653,9 @@ public class ScriptingErrorLog {
         } else {
             throw new ScriptErrorException(message);
         }
+    }
+
+    public void emitNotPrimitiveTypeInListError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "The action in LIST can only be used for built-in types");
     }
 }

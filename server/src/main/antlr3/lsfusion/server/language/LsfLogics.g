@@ -4135,7 +4135,8 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams ac
 @after {
 	if (inMainParseState()) {
 		$action = self.addScriptedInputAProp($in.valueClass, $in.initValue, outProp, $dDB.action, $dDB.elseAction, context, newContext,
-		 assign, constraintFilter, changeProp, listProp, whereProp, actionImages, keyPresses, quickAccesses, actions, assignDebugPoint, $fs.result, customEditorFunction);
+		 assign, constraintFilter, changeProp, listProp, whereProp, actionImages, keyPresses, quickAccesses, actions, assignDebugPoint,
+		 $fs.result, customEditorFunction);
 	}
 }
 	:	'INPUT'
