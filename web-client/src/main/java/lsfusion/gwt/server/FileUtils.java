@@ -459,8 +459,8 @@ public class FileUtils {
         }
     }
 
-    public static String exportReport(FormPrintType type, ReportGenerationData reportData, RemoteLogicsInterface remoteLogics) {
-        return exportReport(type, ReportGenerator.exportToFileByteArray(reportData, type, remoteLogics));
+    public static String exportReport(FormPrintType type, ReportGenerationData reportData, boolean jasperReportsIgnorePageMargins, RemoteLogicsInterface remoteLogics) {
+        return exportReport(type, ReportGenerator.exportToFileByteArray(reportData, type, jasperReportsIgnorePageMargins, remoteLogics));
     }
 
     public static String exportFile(RawFileData file) {

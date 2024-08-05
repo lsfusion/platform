@@ -3069,6 +3069,17 @@ public class Settings implements Cloneable {
         this.jasperReportsGovernorTimeout = jasperReportsGovernorTimeout;
     }
 
+    //option IGNORE_PAGE_MARGINS for default jasper export
+    private boolean jasperReportsIgnorePageMargins = true;
+
+    public boolean isJasperReportsIgnorePageMargins() {
+        return jasperReportsIgnorePageMargins;
+    }
+
+    public void setJasperReportsIgnorePageMargins(boolean jasperReportsIgnorePageMargins) {
+        this.jasperReportsIgnorePageMargins = jasperReportsIgnorePageMargins;
+    }
+
     private boolean logFromExternalSystemRequestsDetail = false;
 
     public boolean isLogFromExternalSystemRequestsDetail() {

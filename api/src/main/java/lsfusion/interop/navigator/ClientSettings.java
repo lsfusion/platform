@@ -37,6 +37,7 @@ public class ClientSettings implements Serializable {
     public String pushNotificationPublicKey;
     public int maxRequestQueueSize;
     public double maxStickyLeft;
+    public boolean jasperReportsIgnorePageMargins;
 
 
     public ClientSettings(LocalePreferences localePreferences, String currentUserName, Integer fontSize, boolean busyDialog, long busyDialogTimeout,
@@ -45,7 +46,7 @@ public class ClientSettings implements Serializable {
                           boolean showNotDefinedStrings, boolean pivotOnlySelectedColumn, String matchSearchSeparator, ColorTheme colorTheme,
                           boolean useBootstrap, ColorPreferences colorPreferences, String[] preDefinedDateRangesNames, boolean useTextAsFilterSeparator,
                           boolean verticalNavbar, boolean userFiltersManualApplyMode, boolean disableActionsIfReadonly, boolean enableShowingRecentlyLogMessages,
-                          String pushNotificationPublicKey, int maxRequestQueueSize, double maxStickyLeft) {
+                          String pushNotificationPublicKey, int maxRequestQueueSize, double maxStickyLeft, boolean jasperReportsIgnorePageMargins) {
         this.localePreferences = localePreferences;
         this.currentUserName = currentUserName;
         this.fontSize = fontSize;
@@ -74,5 +75,6 @@ public class ClientSettings implements Serializable {
         this.pushNotificationPublicKey = pushNotificationPublicKey;
         this.maxRequestQueueSize = maxRequestQueueSize;
         this.maxStickyLeft = maxStickyLeft;
+        this.jasperReportsIgnorePageMargins = jasperReportsIgnorePageMargins;
     }
 }
