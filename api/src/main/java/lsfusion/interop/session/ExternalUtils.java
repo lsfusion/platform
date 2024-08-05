@@ -49,9 +49,9 @@ public class ExternalUtils {
 
     public static final Charset stringCharset = StandardCharsets.UTF_8;
 
-    public static final Charset defaultUrlCharset = StandardCharsets.UTF_8;
-    public static final Charset defaultBodyUrlCharset = StandardCharsets.ISO_8859_1;
-    public static final Charset defaultBodyCharset = StandardCharsets.ISO_8859_1;
+    public static Charset defaultUrlCharset = StandardCharsets.UTF_8;
+    public static Charset defaultBodyUrlCharset = StandardCharsets.ISO_8859_1;
+    public static Charset defaultBodyCharset = StandardCharsets.ISO_8859_1;
 
     public static final ContentType TEXT_PLAIN = ContentType.create(
             "text/plain", stringCharset);
@@ -306,9 +306,9 @@ public class ExternalUtils {
 
     public static HttpEntity getInputStreamFromList(lsfusion.interop.session.ResultExternalResponse response, List<NameValuePair> queryParams, Result<String> singleFileExtension) {
         Object[] results = response.results;
-        ContentType foceContentType = null;
+        ContentType forceContentType = parseContentType(getHeaderValue(response.headerNames, response.headerValues, "Content-Type"));
         String returnMultiType = getParameterValue(queryParams, RETURNMULTITYPE_PARAM);
-        return getInputStreamFromList(results, getBodyUrl(results, returnMultiType != null && returnMultiType.equals("bodyurl"), getCharsetFromContentType(foceContentType, true)), null, new ArrayList<>(), singleFileExtension, foceContentType);
+        return getInputStreamFromList(results, getBodyUrl(results, returnMultiType != null && returnMultiType.equals("bodyurl"), getCharsetFromContentType(forceContentType, true)), null, new ArrayList<>(), singleFileExtension, forceContentType);
     }
 
     // results byte[] || String, можно было бы попровать getRequestResult (по аналогии с getRequestParam) выделить общий, но там возвращаемые классы разные, нужны будут generic'и и оно того не стоит
