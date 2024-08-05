@@ -138,8 +138,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public boolean panelColumnVertical;
 
-    public FlexAlignment valueAlignmentHorz;
-    public FlexAlignment valueAlignmentVert;
+    public String valueAlignmentHorz;
+    public String valueAlignmentVert;
 
     public String valueOverflowHorz;
     public String valueOverflowVert;
@@ -360,12 +360,12 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public Integer getSwingValueAlignmentHorz() {
         if (valueAlignmentHorz != null) {
             switch (valueAlignmentHorz) {
-                case CENTER:
-                case STRETCH:
+                case "center":
+                case "stretch":
                     return SwingConstants.CENTER;
-                case END:
+                case "end":
                     return SwingConstants.RIGHT;
-                case START:
+                case "start":
                     return SwingConstants.LEFT;
             }
         }
@@ -567,8 +567,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         outStream.writeBoolean(panelColumnVertical);
 
-        pool.writeObject(outStream, valueAlignmentHorz);
-        pool.writeObject(outStream, valueAlignmentVert);
+        pool.writeString(outStream, valueAlignmentHorz);
+        pool.writeString(outStream, valueAlignmentVert);
 
         pool.writeString(outStream, valueOverflowHorz);
         pool.writeString(outStream, valueOverflowVert);
@@ -628,8 +628,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         panelColumnVertical = inStream.readBoolean();
 
-        valueAlignmentHorz = pool.readObject(inStream);
-        valueAlignmentVert = pool.readObject(inStream);
+        valueAlignmentHorz = pool.readString(inStream);
+        valueAlignmentVert = pool.readString(inStream);
 
         valueOverflowHorz = pool.readString(inStream);
         valueOverflowVert = pool.readString(inStream);

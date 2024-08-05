@@ -108,7 +108,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
     }-*/;
 
     private String getHorzTextAlignment() {
-        return property.getHorzTextAlignment(RendererType.CELL); // should be taken from RenderContext, but for now this would do
+        return property.getHorzTextAlignment(); // should be taken from RenderContext, but for now this would do
     }
 
     protected native void createPicker(Element parent, JsDate startDate, JsDate endDate, String pattern, boolean singleDatePicker, boolean time, boolean date)/*-{

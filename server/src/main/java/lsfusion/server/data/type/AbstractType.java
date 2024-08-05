@@ -68,8 +68,13 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     }
 
     @Override
-    public FlexAlignment getValueAlignment() {
-        return FlexAlignment.START;
+    public String getValueAlignmentHorz() {
+        return "start";
+    }
+
+    @Override
+    public String getValueAlignmentVert() {
+        return "center";
     }
 
     protected static boolean isParseNullValue(String value) {

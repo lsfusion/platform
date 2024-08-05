@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.design.view;
 
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.BaseImage;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.form.design.GComponent;
@@ -114,30 +115,10 @@ public abstract class GAbstractContainerView {
         boolean alignShrink = child.isAlignShrink();
 
         if((child.getWidth() != null || (!vertical ? shrink : alignShrink) || fixFlexBasis)) {
-            String overflowHorz = child.getOverflowHorz();
-            if(overflowHorz != null) {
-                switch (overflowHorz) { //visible is default value
-                    case "auto":
-                        view.getElement().addClassName("comp-shrink-horz-auto");
-                        break;
-                    case "clip":
-                        view.getElement().addClassName("comp-shrink-horz-clip");
-                        break;
-                }
-            }
+            GwtClientUtils.setupOverflowHorz(view.getElement(), child.getOverflowHorz());
         }
         if((child.getHeight() != null || (vertical ? shrink : alignShrink) || fixFlexBasis)) {
-            String overflowVert = child.getOverflowVert();
-            if(overflowVert != null) {
-                switch (overflowVert) { //visible is default value
-                    case "auto":
-                        view.getElement().addClassName("comp-shrink-vert-auto");
-                        break;
-                    case "clip":
-                        view.getElement().addClassName("comp-shrink-vert-clip");
-                        break;
-                }
-            }
+            GwtClientUtils.setupOverflowVert(view.getElement(), child.getOverflowVert());
         }
 
         if(child instanceof GContainer)

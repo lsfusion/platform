@@ -146,9 +146,9 @@ public abstract class CellRenderer {
     private static void renderFlexAlignment(GPropertyDraw property, Element element, RendererType rendererType) {
         element.addClassName("prop-display-flex");
 
-        String horzTextAlignment = property.getHorzTextAlignment(rendererType);
+        String horzTextAlignment = property.getHorzTextAlignment();
         switch(horzTextAlignment) {
-            case "left":
+            case "start":
                 element.addClassName("prop-flex-horz-start");
                 break;
             case "center":
@@ -157,14 +157,14 @@ public abstract class CellRenderer {
             case "stretch":
                 element.addClassName("prop-flex-horz-stretch");
                 break;
-            case "right":
+            case "end":
                 element.addClassName("prop-flex-horz-end");
                 break;
         }
 
         String vertAlignment = property.getVertTextAlignment(false, rendererType); // here we don't care about baseline / center
         switch (vertAlignment) {
-            case "top":
+            case "start":
                 element.addClassName("prop-flex-vert-start");
                 break;
             case "baseline":
@@ -174,7 +174,7 @@ public abstract class CellRenderer {
             case "stretch":
                 element.addClassName("prop-flex-vert-stretch");
                 break;
-            case "bottom":
+            case "end":
                 element.addClassName("prop-flex-vert-end");
                 break;
         }
@@ -184,23 +184,23 @@ public abstract class CellRenderer {
 //        assert GwtClientUtils.isTDorTH(element) || GwtClientUtils.isInput(element);
 //        assert isInput == GwtClientUtils.isInput(element);
 
-        String horzTextAlignment = property.getHorzTextAlignment(rendererType);
+        String horzTextAlignment = property.getHorzTextAlignment();
         switch(horzTextAlignment) {
-            case "left":
+            case "start":
                 element.addClassName("prop-text-horz-start");
                 break;
             case "center":
             case "stretch":
                 element.addClassName("prop-text-horz-center");
                 break;
-            case "right":
+            case "end":
                 element.addClassName("prop-text-horz-end");
                 break;
         }
 
         String vertAlignment = property.getVertTextAlignment(isInput, rendererType);
         switch (vertAlignment) {
-            case "top":
+            case "start":
                 element.addClassName("prop-text-vert-start");
                 break;
             case "center":
@@ -210,7 +210,7 @@ public abstract class CellRenderer {
             case "baseline":
                 element.addClassName("prop-text-vert-baseline");
                 break;
-            case "bottom":
+            case "end":
                 element.addClassName("prop-text-vert-end");
                 break;
         }
@@ -249,23 +249,23 @@ public abstract class CellRenderer {
         element.setPropertyObject(RENDERED, null);
     }
     public static void clearRenderTextAlignment(GPropertyDraw property, Element element, boolean isInput, RendererType rendererType) {
-        String horzTextAlignment = property.getHorzTextAlignment(rendererType);
+        String horzTextAlignment = property.getHorzTextAlignment();
         switch(horzTextAlignment) {
-            case "left":
+            case "start":
                 element.removeClassName("prop-text-horz-start");
                 break;
             case "center":
             case "stretch":
                 element.removeClassName("prop-text-horz-center");
                 break;
-            case "right":
+            case "end":
                 element.removeClassName("prop-text-horz-end");
                 break;
         }
 
         String vertAlignment = property.getVertTextAlignment(isInput, rendererType);
         switch (vertAlignment) {
-            case "top":
+            case "start":
                 element.removeClassName("prop-text-vert-start");
                 break;
             case "center":
@@ -275,7 +275,7 @@ public abstract class CellRenderer {
             case "baseline":
                 element.removeClassName("prop-text-vert-baseline");
                 break;
-            case "bottom":
+            case "end":
                 element.removeClassName("prop-text-vert-end");
                 break;
         }
@@ -283,9 +283,9 @@ public abstract class CellRenderer {
     private static void clearRenderFlexAlignment(GPropertyDraw property, Element element, RendererType rendererType) {
         element.removeClassName("prop-display-flex");
 
-        String horzTextAlignment = property.getHorzTextAlignment(rendererType);
+        String horzTextAlignment = property.getHorzTextAlignment();
         switch(horzTextAlignment) {
-            case "left":
+            case "start":
                 element.removeClassName("prop-flex-horz-start");
                 break;
             case "center":
@@ -294,7 +294,7 @@ public abstract class CellRenderer {
             case "stretch":
                 element.removeClassName("prop-flex-horz-stretch");
                 break;
-            case "right":
+            case "end":
                 element.removeClassName("prop-flex-horz-end");
                 break;
         }
@@ -315,6 +315,20 @@ public abstract class CellRenderer {
                 element.removeClassName("prop-flex-vert-end");
                 break;
         }
+    }
+
+    public static void setupValueOverflowShrink(Element element, GPropertyDraw property) {
+        GwtClientUtils.setupValueOverflowHorz(element, property.getValueOverflowHorz());
+        GwtClientUtils.setupValueOverflowVert(element, property.getValueOverflowVert());
+        GwtClientUtils.setupValueShrinkHorz(element, property.getValueShrinkHorz());
+        GwtClientUtils.setupValueShrinkVert(element, property.getValueShrinkVert());
+    }
+
+    public static void clearValueOverflowShrink(Element element, GPropertyDraw property) {
+        GwtClientUtils.clearValueOverflowHorz(element, property.getValueOverflowHorz());
+        GwtClientUtils.clearValueOverflowVert(element, property.getValueOverflowVert());
+        GwtClientUtils.clearValueShrinkHorz(element, property.getValueShrinkHorz());
+        GwtClientUtils.clearValueShrinkVert(element, property.getValueShrinkVert());
     }
 
     protected boolean renderedLoadingContent(UpdateContext updateContext) {
@@ -552,7 +566,7 @@ public abstract class CellRenderer {
 
         if(needToolbar) {
             Element toolbarElement = cleared ? null : toolbarState.element;
-            boolean start = !property.getHorzTextAlignment(updateContext.getRendererType()).equals("left");
+            boolean start = !property.getHorzTextAlignment().equals("start");
             if(toolbarElement == null) {
                 toolbarElement = Document.get().createDivElement();
                 toolbarElement.addClassName(start ? "property-toolbar-start" : "property-toolbar-end");

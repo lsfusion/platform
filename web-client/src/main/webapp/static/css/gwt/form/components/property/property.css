@@ -26,27 +26,35 @@
     max-width: -moz-available;
 }
 
-.prop-value-overflow-horz-auto {
+.prop-value-overflow-horz-auto,
+.prop-value-overflow-horz-auto.comp-shrink-horz-clip {
     overflow-x: auto;
 }
 
-.prop-value-overflow-horz-clip {
+.prop-value-overflow-horz-clip,
+.prop-value-overflow-horz-clip.comp-shrink-horz-auto {
     overflow-x: clip;
 }
 
-.prop-value-overflow-horz-visible {
+.prop-value-overflow-horz-visible,
+.prop-value-overflow-horz-visible.comp-shrink-horz-auto,
+.prop-value-overflow-horz-visible.comp-shrink-horz-clip {
     overflow-x: visible;
 }
 
-.prop-value-overflow-vert-auto {
+.prop-value-overflow-vert-auto,
+.prop-value-overflow-vert-auto.comp-shrink-vert-clip {
     overflow-y: auto;
 }
 
-.prop-value-overflow-vert-clip {
+.prop-value-overflow-vert-clip,
+.prop-value-overflow-vert-clip.comp-shrink-vert-auto {
     overflow-y: clip;
 }
 
-.prop-value-overflow-vert-visible {
+.prop-value-overflow-vert-visible
+.prop-value-overflow-vert-visible.comp-shrink-vert-auto,
+.prop-value-overflow-vert-visible.comp-shrink-vert-clip {
     overflow-y: visible;
 }
 

@@ -199,8 +199,8 @@ public abstract class IntegralClass<T extends Number> extends TextBasedClass<T> 
     }
 
     @Override
-    public FlexAlignment getValueAlignment() {
-        return FlexAlignment.END;
+    public String getValueAlignmentHorz() {
+        return "end";
     }
 
     protected boolean isEmptyString(String s) {

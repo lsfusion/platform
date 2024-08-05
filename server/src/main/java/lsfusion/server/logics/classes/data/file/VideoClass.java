@@ -51,4 +51,9 @@ public class VideoClass extends StaticFormatFileClass {
     public FormIntegrationType getIntegrationType() {
         throw new UnsupportedOperationException();
     }
+
+    @Override
+    public String getValueAlignmentVert() {
+        return "stretch";
+    }
 }

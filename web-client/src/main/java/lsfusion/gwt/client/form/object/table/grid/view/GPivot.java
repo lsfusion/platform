@@ -1276,17 +1276,17 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     }
 
     public static void setTableToExcelPropertyAttributes(Element element, PValue value, GPropertyDraw property) {
-        String textAlignStyle = property.getHorzTextAlignment(RendererType.PIVOT);
+        String textAlignStyle = property.getHorzTextAlignment();
         if (textAlignStyle != null) {
             switch (textAlignStyle) {
-                case "left":
+                case "start":
                     element.setAttribute("data-a-h", "left");
                     break;
                 case "center":
                 case "stretch":
                     element.setAttribute("data-a-h", "center");
                     break;
-                case "right":
+                case "end":
                     element.setAttribute("data-a-h", "right");
                     break;
             }

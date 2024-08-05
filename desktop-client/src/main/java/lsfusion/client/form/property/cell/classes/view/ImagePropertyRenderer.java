@@ -60,10 +60,10 @@ public class ImagePropertyRenderer extends FilePropertyRenderer {
         int dx = (width - imageWidth) / 2;
         if (property != null && property.valueAlignmentHorz != null) {
             switch (property.valueAlignmentHorz) {
-                case START: 
+                case "start":
                     dx = 0;
                     break;
-                case END:
+                case "end":
                     dx = width - imageWidth;
             }
         }

@@ -61,8 +61,8 @@ public abstract class FileClass<T> extends DataClass<T> {
     }
 
     @Override
-    public FlexAlignment getValueAlignment() {
-        return FlexAlignment.CENTER;
+    public String getValueAlignmentHorz() {
+        return "center";
     }
 
     protected abstract String getFileSID();

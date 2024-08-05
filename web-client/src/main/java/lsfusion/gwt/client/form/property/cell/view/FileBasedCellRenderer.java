@@ -29,12 +29,6 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
 
             img = (value != null ? getBaseImage(value) : StaticImage.EMPTY).createImage();
 
-            Style imgStyle = img.getStyle();
-            imgStyle.setVerticalAlign(Style.VerticalAlign.MIDDLE);
-            //imgStyle.setProperty("maxWidth", "100%");
-            //imgStyle.setProperty("maxHeight", "100%");
-            imgStyle.setPosition(Style.Position.RELATIVE);
-
             if(property.hasEditObjectAction && value != null) {
                 img.addClassName("selectedFileCellHasEdit");
             } else {

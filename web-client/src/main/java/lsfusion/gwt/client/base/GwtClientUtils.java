@@ -117,12 +117,12 @@ public class GwtClientUtils {
     public static InputElement createImageElement(String type) {
         Element element = Document.get().createElement(type);
         if (type.equals("video")) {
+            //show controls
             element.setAttribute("controls", "");
+        } else if(type.equals("iframe")) {
+            //need for the pdf controls to work
+            element.getStyle().setPosition(Style.Position.RELATIVE);
         }
-        /*if (!type.equals("img")) {
-            element.getStyle().setWidth(100, Style.Unit.PCT);
-            element.getStyle().setHeight(100, Style.Unit.PCT);
-        }*/
         return (InputElement) element;
     }
 
@@ -617,6 +617,32 @@ public class GwtClientUtils {
     public static void clearValueShrinkVert(Element element, boolean valueShrinkVert) {
         if (valueShrinkVert) {
             element.removeClassName("prop-value-shrink-vert");
+        }
+    }
+
+    public static void setupOverflowHorz(Element element, String overflowHorz) {
+        if(overflowHorz != null) {
+            switch (overflowHorz) { //visible is default value
+                case "auto":
+                    element.addClassName("comp-shrink-horz-auto");
+                    break;
+                case "clip":
+                    element.addClassName("comp-shrink-horz-clip");
+                    break;
+            }
+        }
+    }
+
+    public static void setupOverflowVert(Element element, String overflowVert) {
+        if(overflowVert != null) {
+            switch (overflowVert) { //visible is default value
+                case "auto":
+                    element.addClassName("comp-shrink-vert-auto");
+                    break;
+                case "clip":
+                    element.addClassName("comp-shrink-vert-clip");
+                    break;
+            }
         }
     }
 

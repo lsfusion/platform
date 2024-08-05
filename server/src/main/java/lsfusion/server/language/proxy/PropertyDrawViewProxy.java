@@ -277,11 +277,31 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
     }
 
     public void setValueAlignmentHorz(FlexAlignment valueAlignmentHorz) {
-        target.valueAlignmentHorz = valueAlignmentHorz;
+        target.valueAlignmentHorz = flexAlignmentToString(valueAlignmentHorz);
     }
 
     public void setValueAlignmentVert(FlexAlignment valueAlignmentVert) {
-        target.valueAlignmentVert = valueAlignmentVert;
+        target.valueAlignmentVert = flexAlignmentToString(valueAlignmentVert);
+    }
+
+    private String flexAlignmentToString(FlexAlignment flexAlignment) {
+        String result = null;
+        if(flexAlignment != null) {
+            switch (flexAlignment) {
+                case START:
+                    result = "start";
+                    break;
+                case CENTER:
+                    result = "center";
+                    break;
+                case STRETCH:
+                    result = "stretch";
+                    break;
+                case END:
+                    result = "end";
+            }
+        }
+        return result;
     }
 
     public void setValueOverflowHorz(String valueOverflowHorz) {

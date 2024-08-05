@@ -15,9 +15,4 @@ public class GPDFType extends GFileType {
     public String toString() {
         return ClientMessages.Instance.get().typePDFFileCaption();
     }
-
-    @Override
-    public String getVertTextAlignment(boolean isInput) {
-        return "stretch";
-    }
 }

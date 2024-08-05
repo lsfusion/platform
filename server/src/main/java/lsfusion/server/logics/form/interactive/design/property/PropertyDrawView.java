@@ -16,10 +16,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeSerializer;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.classes.data.ColorClass;
-import lsfusion.server.logics.classes.data.LogicalClass;
-import lsfusion.server.logics.classes.data.StringClass;
-import lsfusion.server.logics.classes.data.TextClass;
+import lsfusion.server.logics.classes.data.*;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.classes.data.link.LinkClass;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
@@ -106,8 +103,8 @@ public class PropertyDrawView extends BaseComponentView {
 
     public boolean panelColumnVertical = false;
 
-    public FlexAlignment valueAlignmentHorz;
-    public FlexAlignment valueAlignmentVert;
+    public String valueAlignmentHorz;
+    public String valueAlignmentVert;
 
     public String valueOverflowHorz;
     public String valueOverflowVert;
@@ -561,8 +558,8 @@ public class PropertyDrawView extends BaseComponentView {
 
         outStream.writeBoolean(panelColumnVertical);
         
-        pool.writeObject(outStream, getValueAlignmentHorz(pool.context));
-        pool.writeObject(outStream, getValueAlignmentVert());
+        pool.writeString(outStream, getValueAlignmentHorz(pool.context));
+        pool.writeString(outStream, getValueAlignmentVert(pool.context));
 
         pool.writeString(outStream, getValueOverflowHorz(pool.context));
         pool.writeString(outStream, getValueOverflowVert(pool.context));
@@ -977,17 +974,30 @@ public class PropertyDrawView extends BaseComponentView {
         return null;
     }
 
-    public FlexAlignment getValueAlignmentHorz(FormInstanceContext context) {
-        if (valueAlignmentHorz == null && isProperty(context)) {
-            Type type = getAssertValueType(context);
-            if(type != null)
-                return type.getValueAlignment();
-            return FlexAlignment.START;
+    public String getValueAlignmentHorz(FormInstanceContext context) {
+        if (valueAlignmentHorz == null) {
+            if (isProperty(context)) {
+                Type type = getAssertValueType(context);
+                if (type != null)
+                    return type.getValueAlignmentHorz();
+                return "start";
+            } else {
+                return "center";
+            }
         }
         return valueAlignmentHorz;
     }
 
-    public FlexAlignment getValueAlignmentVert() {
+    public String getValueAlignmentVert(FormInstanceContext context) {
+        if (valueAlignmentVert == null) {
+            if(isProperty(context)) {
+                Type type = getAssertValueType(context);
+                //see GTextBasedType.getVertTextAlignment
+                if (type != null && !(type instanceof TextBasedClass))
+                    return type.getValueAlignmentVert();
+            }
+            return "center";
+        }
         return valueAlignmentVert;
     }
 
@@ -998,7 +1008,7 @@ public class PropertyDrawView extends BaseComponentView {
         if(isShrinkOverflowVisible(context))
             return "visible";
 
-        return null;
+        return "clip";
     }
 
     public String getValueOverflowVert(FormInstanceContext context) {
@@ -1008,7 +1018,7 @@ public class PropertyDrawView extends BaseComponentView {
         if(isShrinkOverflowVisible(context))
             return "visible";
 
-        return null;
+        return "clip";
     }
 
     public boolean getValueShrinkHorz() {

@@ -79,6 +79,11 @@ public class ImageClass extends StaticFormatFileClass {
     }
 
     @Override
+    public String getValueAlignmentVert() {
+        return "stretch";
+    }
+
+    @Override
     public void formatXLS(RawFileData object, Cell cell, ExportXLSWriter.Styles styles) {
 
         if (object != null) {

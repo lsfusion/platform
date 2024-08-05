@@ -12,6 +12,7 @@ import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.object.table.grid.view.GPivot;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
@@ -45,10 +46,7 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         if(valueHeight != null) // this way we can avoid prop-size-value fill-parent-perc conflict (see the css file) in most cases
             element.addClassName("prop-size-value");
 
-        GwtClientUtils.setupValueOverflowHorz(element, property.getValueOverflowHorz());
-        GwtClientUtils.setupValueOverflowVert(element, property.getValueOverflowVert());
-        GwtClientUtils.setupValueShrinkHorz(element, property.getValueShrinkHorz());
-        GwtClientUtils.setupValueShrinkVert(element, property.getValueShrinkVert());
+        CellRenderer.setupValueOverflowShrink(element, property);
 
         FlexPanel.setGridHeight(element, valueHeight);
 
@@ -71,10 +69,7 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
 
         element.removeClassName("prop-class-value");
 
-        GwtClientUtils.clearValueOverflowHorz(element, property.getValueOverflowHorz());
-        GwtClientUtils.clearValueOverflowVert(element, property.getValueOverflowVert());
-        GwtClientUtils.clearValueShrinkHorz(element, property.getValueShrinkHorz());
-        GwtClientUtils.clearValueShrinkVert(element, property.getValueShrinkVert());
+        CellRenderer.clearValueOverflowShrink(element, property);
 
         FlexPanel.setGridHeight(element, (GSize)null);
 

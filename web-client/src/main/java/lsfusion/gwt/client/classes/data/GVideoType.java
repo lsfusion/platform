@@ -15,9 +15,4 @@ public class GVideoType extends GFileType {
     public String toString() {
         return ClientMessages.Instance.get().typeVideoFileCaption();
     }
-
-    @Override
-    public String getVertTextAlignment(boolean isInput) {
-        return "stretch";
-    }
 }

@@ -116,7 +116,8 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
     }
     ExtInt getCharLength();
 
-    FlexAlignment getValueAlignment();
+    String getValueAlignmentHorz();
+    String getValueAlignmentVert();
 
     T parseDBF(CustomDbfRecord dbfRecord, String fieldName, String charset) throws ParseException, java.text.ParseException, IOException;
     T parseJSON(Object value) throws ParseException, JSONException;
