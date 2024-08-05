@@ -1213,8 +1213,6 @@ formEventDeclaration returns [ActionObjectEntity action, Object type, Boolean re
 		| 	changeEvent = changeEventDeclaration { $type = $changeEvent.type; }
 		| 	containerEvent=formContainerEventDeclaration { $type = new FormContainerEvent($containerEvent.sid, $containerEvent.collapse); }
 		| 	schedule = scheduleFormEventDeclaration { $type = new FormScheduler($schedule.period, $schedule.fixed); }
-		|   oed = orderEventDeclaration { $type = $oed.type; }
-		|   fed = filterEventDeclaration { $type = $fed.type; }
 		)
 		('REPLACE' { $replace = true; } | 'NOREPLACE' { $replace = false; } )?
 		faprop=formActionObject { $action = $faprop.action; }
@@ -1225,9 +1223,17 @@ changeEventDeclaration returns [Object type]
     Boolean before = null;
 }
     :
-    'CHANGE' (  'OBJECT'? objectId=ID { $type = $objectId.text; }
-             |  'PROPERTY' ('BEFORE' { before = true; } | 'AFTER' { before = false; })? prop=formPropertyDraw { $type = new FormChangeEvent($prop.property, before); }
-             )
+    'CHANGE' objectId=ID { $type = $objectId.text; }
+    |
+    'CHANGE'? (
+        ('OBJECT' objectId=ID { $type = $objectId.text; }
+        |  'FILTER' objectId=ID { $type = new UserEventObject($objectId.text, UserEventObject.Type.FILTER, false); }
+        |  'ORDER' objectId=ID { $type = new UserEventObject($objectId.text, UserEventObject.Type.ORDER, false); }
+        |  'FILTERS' objectId=ID { $type = new UserEventObject($objectId.text, UserEventObject.Type.FILTER, true); }
+        |  'ORDERS' objectId=ID { $type = new UserEventObject($objectId.text, UserEventObject.Type.ORDER, true); }
+        |  'PROPERTY' ('BEFORE' { before = true; } | 'AFTER' { before = false; })? prop=formPropertyDraw { $type = new FormChangeEvent($prop.property, before); }
+        )
+     )
     ;
 
 formContainerEventDeclaration returns [String sid, boolean collapse = false]
@@ -1240,31 +1246,6 @@ formContainerEventDeclaration returns [String sid, boolean collapse = false]
 scheduleFormEventDeclaration returns [int period, boolean fixed]
 	:   'SCHEDULE' 'PERIOD' periodLiteral=intLiteral { $period = $periodLiteral.val; } ('FIXED' { $fixed = true; })?
 	;
-
-orderEventDeclaration returns [UserEventObject type]
-@init {
-	String object = null;
-}
-@after {
-	if (inMainParseState()) {
-		$type = new UserEventObject(object, UserEventObject.Type.ORDER);
-	}
-}
-    :   'ORDER' objectId=ID { object = $objectId.text; }
-    ;
-
-filterEventDeclaration returns [UserEventObject type]
-@init {
-	String object = null;
-}
-@after {
-	if (inMainParseState()) {
-		$type = new UserEventObject(object, UserEventObject.Type.FILTER);
-	}
-}
-    :   'FILTER' objectId=ID { object = $objectId.text; }
-    ;
-
 
 filterGroupDeclaration
 @init {
@@ -4154,7 +4135,8 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams ac
 @after {
 	if (inMainParseState()) {
 		$action = self.addScriptedInputAProp($in.valueClass, $in.initValue, outProp, $dDB.action, $dDB.elseAction, context, newContext,
-		 assign, constraintFilter, changeProp, listProp, whereProp, actionImages, keyPresses, quickAccesses, actions, assignDebugPoint, $fs.result, customEditorFunction);
+		 assign, constraintFilter, changeProp, listProp, whereProp, actionImages, keyPresses, quickAccesses, actions, assignDebugPoint,
+		 $fs.result, customEditorFunction);
 	}
 }
 	:	'INPUT'

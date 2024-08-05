@@ -98,7 +98,7 @@ public class GroupMode {
 
                 Expr groupExpr;
                 if(propertyGroupType != PropertyGroupType.GROUP) {
-                    GroupType groupType = GroupType.valueOf(propertyGroupType.name());
+                    GroupType groupType = getGroupType(propertyGroupType);
 
                     // first find last values
                     ImMap<PropertyDrawInstance<K>.LastReaderInstance, Expr> lastAggrExprs = property.aggrLastReaders.<Expr, SQLException, SQLHandledException>mapOrderValuesEx(lastReaderInstance -> getExpr.apply(lastReaderInstance.getGroupProperty()));
@@ -120,5 +120,17 @@ public class GroupMode {
             return mCases.getFinal();
         }
         return null;
+    }
+
+    private static GroupType getGroupType(PropertyGroupType propertyGroupType) {
+        switch (propertyGroupType) {
+            case MAX:
+                return GroupType.MAX;
+            case MIN:
+                return GroupType.MIN;
+            case SUM:
+                return GroupType.SUM;
+        }
+        throw new UnsupportedOperationException();
     }
 }

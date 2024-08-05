@@ -459,10 +459,6 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
         throw new UnsupportedOperationException();
     }
 
-    public String getArrayAgg(String s, ClassReader classReader, TypeEnvironment typeEnv) {
-        throw new UnsupportedOperationException();
-    }
-
     public boolean supportGroupSingleValue() {
         return true;
     }
@@ -477,29 +473,6 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
 
     public String getLastFunc() {
         throw new UnsupportedOperationException();
-    }
-
-    public String getOrderGroupAgg(GroupType groupType, Type resultType, ImList<String> exprs, ImList<ClassReader> readers, ImOrderMap<String, CompileOrder> orders, TypeEnvironment typeEnv) {
-        String orderClause = BaseUtils.clause("ORDER BY", Query.stringOrder(orders, this));
-
-        String fnc;
-        switch (groupType) {
-            case CONCAT:
-                fnc = "STRING_AGG";
-                exprs = SumFormulaImpl.castToVarStrings(exprs, readers, resultType, this, typeEnv);
-                break;
-            case JSON_CONCAT:
-                fnc = resultType instanceof JSONTextClass ? "JSON_AGG" : "JSONB_AGG";
-                break;
-            case LAST:
-                fnc = getLastFunc();
-                if(readers.single() instanceof NullReader) // need to cast when type is unknown (optimizer can keep null value because it is not included in where)
-                    exprs = ListFact.singleton(resultType.getCast(exprs.single(), this, typeEnv));
-                break;
-            default:
-                throw new UnsupportedOperationException();
-        }
-        return fnc + "(" + exprs.toString(",") + orderClause + ")";
     }
 
     public String getNotSafeConcatenateSource(ConcatenateType type, ImList<String> exprs, TypeEnvironment typeEnv) {
