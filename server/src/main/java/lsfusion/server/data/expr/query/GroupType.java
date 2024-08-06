@@ -6,7 +6,6 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.form.property.ExtInt;
-import lsfusion.interop.form.property.PropertyGroupType;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.formula.FormulaExpr;
 import lsfusion.server.data.expr.formula.JSONBuildSingleArrayFormulaImpl;
@@ -14,17 +13,18 @@ import lsfusion.server.data.expr.formula.SumFormulaImpl;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.compile.CompileOrder;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
+import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.data.type.reader.ClassReader;
 import lsfusion.server.data.type.reader.NullReader;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.file.AJSONClass;
 import lsfusion.server.logics.classes.data.file.FileClass;
 import lsfusion.server.logics.classes.data.file.JSONTextClass;
-import lsfusion.server.logics.classes.data.integral.IntegralClass;
 import lsfusion.server.logics.classes.data.link.LinkClass;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -33,6 +33,8 @@ import lsfusion.server.logics.property.set.MaxGroupProperty;
 import lsfusion.server.logics.property.set.SumGroupProperty;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
+
+import java.util.Objects;
 
 public abstract class GroupType implements AggrType {
 
@@ -46,15 +48,11 @@ public abstract class GroupType implements AggrType {
         public Expr add(Expr op1, Expr op2) {
             return op1.sum(op2);
         }
-        public boolean isLastOpt(boolean needValue, ImList<Expr> exprs) {
-            return !needValue && getMainExpr(exprs).isAlwaysPositiveOrNull();
+        public boolean isLastOpt(boolean needValue, ImList<Expr> exprs, ImOrderMap<Expr, Boolean> orders) {
+            return !needValue && getMainExpr(exprs, orders).isAlwaysPositiveOrNull();
         }
-        protected String getSource(ImList<String> exprs, ImList<ClassReader> exprReaders, String orderClause, Type type, SQLSyntax syntax, TypeEnvironment typeEnv) {
-            return syntax.getNotZero(getAggrSource("SUM", getSafeExprSource(0, exprs, exprReaders, type, syntax, typeEnv), orderClause), type, typeEnv);
-        }
-        public Type getType(Type exprType) {
-            assert exprType instanceof IntegralClass;
-            return exprType;
+        public String getSource(ImList<String> exprs, ImList<ClassReader> exprReaders, ImOrderMap<String, CompileOrder> orders, Type type, SQLSyntax syntax, TypeEnvironment typeEnv) {
+            return syntax.getNotZero(getAggrSource("SUM", getSafeExprSource(0, exprs, exprReaders, type, syntax, typeEnv), orders, syntax), type, typeEnv);
         }
         public String name() {
             return "STRING";
@@ -77,11 +75,11 @@ public abstract class GroupType implements AggrType {
         public boolean isMaxMin() {
             return true;
         }
-        public boolean isLastOpt(boolean needValue, ImList<Expr> exprs) {
+        public boolean isLastOpt(boolean needValue, ImList<Expr> exprs, ImOrderMap<Expr, Boolean> orders) {
             return true;
         }
-        protected String getSource(ImList<String> exprs, ImList<ClassReader> exprReaders, String orderClause, Type type, SQLSyntax syntax, TypeEnvironment typeEnv) {
-            return getAggrSource(type instanceof ConcatenateType && syntax.hasAggConcProblem() ? "MAXC" : "MAX", exprs.get(0), orderClause);
+        public String getSource(ImList<String> exprs, ImList<ClassReader> exprReaders, ImOrderMap<String, CompileOrder> orders, Type type, SQLSyntax syntax, TypeEnvironment typeEnv) {
+            return getAggrSource(type instanceof ConcatenateType && syntax.hasAggConcProblem() ? "MAXC" : "MAX", exprs.get(0), orders, syntax);
         }
         public String name() {
             return "MAX";
@@ -104,11 +102,11 @@ public abstract class GroupType implements AggrType {
         public boolean isMaxMin() {
             return true;
         }
-        public boolean isLastOpt(boolean needValue, ImList<Expr> exprs) {
+        public boolean isLastOpt(boolean needValue, ImList<Expr> exprs, ImOrderMap<Expr, Boolean> orders) {
             return true;
         }
-        protected String getSource(ImList<String> exprs, ImList<ClassReader> exprReaders, String orderClause, Type type, SQLSyntax syntax, TypeEnvironment typeEnv) {
-            return getAggrSource(type instanceof ConcatenateType && syntax.hasAggConcProblem() ? "MINC" : "MIN", exprs.get(0), orderClause);
+        public String getSource(ImList<String> exprs, ImList<ClassReader> exprReaders, ImOrderMap<String, CompileOrder> orders, Type type, SQLSyntax syntax, TypeEnvironment typeEnv) {
+            return getAggrSource(type instanceof ConcatenateType && syntax.hasAggConcProblem() ? "MINC" : "MIN", exprs.get(0), orders, syntax);
         }
         public String name() {
             return "MIN";
@@ -125,11 +123,11 @@ public abstract class GroupType implements AggrType {
         public boolean isSelect() {
             return true;
         }
-        public boolean isLastOpt(boolean needValue, ImList<Expr> exprs) {
+        public boolean isLastOpt(boolean needValue, ImList<Expr> exprs, ImOrderMap<Expr, Boolean> orders) {
             return true;
         }
-        protected String getSource(ImList<String> exprs, ImList<ClassReader> exprReaders, String orderClause, Type type, SQLSyntax syntax, TypeEnvironment typeEnv) {
-            return getAggrSource(syntax.getAnyValueFunc(), getSafeExprSource(0, exprs, exprReaders, type, syntax, typeEnv), orderClause);
+        public String getSource(ImList<String> exprs, ImList<ClassReader> exprReaders, ImOrderMap<String, CompileOrder> orders, Type type, SQLSyntax syntax, TypeEnvironment typeEnv) {
+            return getAggrSource(syntax.getAnyValueFunc(), getSafeExprSource(0, exprs, exprReaders, type, syntax, typeEnv), orders, syntax);
         }
         public String name() {
             return "ANY";
@@ -137,10 +135,13 @@ public abstract class GroupType implements AggrType {
     };
 
     public static final GroupType CONCAT = new GroupType() {
-        protected String getSource(ImList<String> exprs, ImList<ClassReader> exprReaders, String orderClause, Type type, SQLSyntax syntax, TypeEnvironment typeEnv) {
-            return type.getCast(getAggrSource("STRING_AGG" ,castToVarStrings(exprs, exprReaders, type, syntax, typeEnv).toString(","), orderClause), syntax, typeEnv);
+        public String getSource(ImList<String> exprs, ImList<ClassReader> exprReaders, ImOrderMap<String, CompileOrder> orders, Type type, SQLSyntax syntax, TypeEnvironment typeEnv) {
+            return type.getCast(getAggrSource("STRING_AGG" ,castToVarStrings(exprs, exprReaders, type, syntax, typeEnv).toString(","), orders, syntax), syntax, typeEnv);
         }
         public Type getType(Type exprType) {
+            if(exprType == null)
+                return null;
+
             return StringClass.getv(((StringClass)exprType).caseInsensitive, ExtInt.UNLIMITED);
         }
         public String name() {
@@ -149,8 +150,8 @@ public abstract class GroupType implements AggrType {
     };
 
     public static final GroupType AGGAR_SETADD = new GroupType() {
-        protected String getSource(ImList<String> exprs, ImList<ClassReader> exprReaders, String orderClause, Type type, SQLSyntax syntax, TypeEnvironment typeEnv) {
-            return getAggrSource("AGGAR_SETADD", exprs.get(0), orderClause);
+        public String getSource(ImList<String> exprs, ImList<ClassReader> exprReaders, ImOrderMap<String, CompileOrder> orders, Type type, SQLSyntax syntax, TypeEnvironment typeEnv) {
+            return getAggrSource("AGGAR_SETADD", exprs.get(0), orders, syntax);
         }
         public String name() {
             return "AGGAR_SETADD";
@@ -177,7 +178,7 @@ public abstract class GroupType implements AggrType {
             Expr secondExpr = exprs.get(1).followFalse(falseWhere.or(firstExpr.getWhere().not()), pack);
             return ListFact.toList(firstExpr, secondExpr);
         }
-        public int getMainIndex() {
+        public int getMainIndex(int props) {
             return 1;
         }
         public Expr getSingleExpr(ImList<Expr> exprs) {
@@ -187,12 +188,12 @@ public abstract class GroupType implements AggrType {
         public boolean nullsNotAllowed() {
             return true;
         }
-        public boolean isLastOpt(boolean needValue, ImList<Expr> exprs) {
+        public boolean isLastOpt(boolean needValue, ImList<Expr> exprs, ImOrderMap<Expr, Boolean> orders) {
             return true;
         }
-        protected String getSource(ImList<String> exprs, ImList<ClassReader> exprReaders, String orderClause, Type type, SQLSyntax syntax, TypeEnvironment typeEnv) {
+        public String getSource(ImList<String> exprs, ImList<ClassReader> exprReaders, ImOrderMap<String, CompileOrder> orders, Type type, SQLSyntax syntax, TypeEnvironment typeEnv) {
             assert exprs.size() == 2;
-            return getAggrSource(syntax.getLastFunc(), getSafeExprSource(1, exprs, exprReaders, type, syntax, typeEnv), orderClause);
+            return getAggrSource(syntax.getLastFunc(), getSafeExprSource(1, exprs, exprReaders, type, syntax, typeEnv), orders, syntax);
         }
         public String name() {
             return "LAST";
@@ -206,13 +207,75 @@ public abstract class GroupType implements AggrType {
         public boolean nullsNotAllowed() {
             return true;
         }
-        protected String getSource(ImList<String> exprs, ImList<ClassReader> exprReaders, String orderClause, Type type, SQLSyntax syntax, TypeEnvironment typeEnv) {
-            return getAggrSource((type instanceof JSONTextClass ? "JSON_AGG" : "JSONB_AGG"), exprs.get(0), orderClause);
+        public String getSource(ImList<String> exprs, ImList<ClassReader> exprReaders, ImOrderMap<String, CompileOrder> orders, Type type, SQLSyntax syntax, TypeEnvironment typeEnv) {
+            return getAggrSource((type instanceof JSONTextClass ? "JSON_AGG" : "JSONB_AGG"), exprs.get(0), orders, syntax);
         }
         public String name() {
             return "JSON_CONCAT";
         }
     };
+
+    public static class Custom extends GroupType {
+        public final String aggrFunc;
+        public final boolean setOrdered;
+
+        public final DataClass dataClass;
+        public final boolean valueNull;
+
+        public Custom(String aggrFunc, boolean setOrdered, DataClass dataClass, boolean valueNull) {
+            this.aggrFunc = aggrFunc;
+            this.setOrdered = setOrdered;
+
+            this.dataClass = dataClass;
+            this.valueNull = valueNull;
+        }
+
+        public String getSource(ImList<String> exprs, ImList<ClassReader> exprReaders, ImOrderMap<String, CompileOrder> orders, Type type, SQLSyntax syntax, TypeEnvironment typeEnv) {
+            return getAggrSource(aggrFunc, exprs.toString(","), orders, syntax, setOrdered);
+        }
+        public String name() {
+            return aggrFunc;
+        }
+        public boolean hasSingle() {
+            return false;
+        }
+
+        public Type getType(Type exprType) {
+            if(dataClass != null)
+                return dataClass;
+
+            return super.getType(exprType);
+        }
+        public Stat getTypeStat(Stat typeStat, boolean forJoin) {
+            if(dataClass != null)
+                return dataClass.getTypeStat(forJoin);
+
+            return super.getTypeStat(typeStat, forJoin);
+        }
+
+        @Override
+        public int getMainIndex(int props) {
+            if(setOrdered)
+                return props;
+
+            return super.getMainIndex(props);
+        }
+
+        public boolean canBeNull() {
+            return valueNull;
+        }
+
+        public boolean equals(Object o) {
+            return this == o || o instanceof Custom && setOrdered == ((Custom) o).setOrdered && aggrFunc.equals(((Custom) o).aggrFunc) && BaseUtils.nullEquals(dataClass, ((Custom) o).dataClass) && valueNull == ((Custom) o).valueNull;
+        }
+
+        public int hashCode() {
+            return Objects.hash(aggrFunc, setOrdered, dataClass, valueNull);
+        }
+    }
+    public static GroupType CUSTOM(String aggrFunc, boolean setOrdered, DataClass dataClass, boolean valueNull) {
+        return new Custom(aggrFunc, setOrdered, dataClass, valueNull);
+    }
 
     public static GroupType LOGICAL() {
         return ANY;
@@ -246,41 +309,15 @@ public abstract class GroupType implements AggrType {
         throw new UnsupportedOperationException();
     }
 
-    public boolean isSelect() {
-        return false;
-    }
-
-    public boolean canBeNull() {
-        return false;
-    }
-
-    public boolean isSelectNotInWhere() { // в общем то оптимизационная вещь потом можно убрать
-        assert isSelect();
-        return false;
-    }
-    public Where getWhere(ImList<Expr> exprs) {
-        return Expr.getWhere(exprs);
-    }
     public int getSkipWhereIndex() {
         return -1;
-    }
-
-    public ImList<Expr> followFalse(Where falseWhere, ImList<Expr> exprs, boolean pack) {
-        return falseWhere.followFalse(exprs, pack);
-    }
-
-    public Expr getMainExpr(ImList<Expr> exprs) {
-        return exprs.get(getMainIndex());
-    }
-
-    public int getMainIndex() {
-        return 0;
     }
 
     public boolean hasSingle() {
         return true;
     }
     public Expr getSingleExpr(ImList<Expr> exprs) {
+        assert hasSingle();
         return exprs.get(0);
     }
 
@@ -297,7 +334,7 @@ public abstract class GroupType implements AggrType {
         return false;
     }
     
-    public boolean isLastOpt(boolean needValue, ImList<Expr> exprs) {
+    public boolean isLastOpt(boolean needValue, ImList<Expr> exprs, ImOrderMap<Expr, Boolean> orders) {
         return !needValue;
     }
 
@@ -321,17 +358,13 @@ public abstract class GroupType implements AggrType {
         return !isSelect();
     }
 
-    public String getSource(ImList<String> exprs, ImList<ClassReader> exprReaders, ImOrderMap<String, CompileOrder> orders, Type type, SQLSyntax syntax, TypeEnvironment typeEnv) {
-        return getSource(exprs, exprReaders, BaseUtils.clause("ORDER BY", Query.stringOrder(orders, syntax)), type, syntax, typeEnv);
-    }
+    public abstract String getSource(ImList<String> exprs, ImList<ClassReader> exprReaders, ImOrderMap<String, CompileOrder> orders, Type type, SQLSyntax syntax, TypeEnvironment typeEnv);
 
-    protected abstract String getSource(ImList<String> exprs, ImList<ClassReader> exprReaders, String orderClause, Type type, SQLSyntax syntax, TypeEnvironment typeEnv);
-
-    private static String getAggrSource(String fnc, String exprs, String orderClause) {
-        return getAggrSource(fnc, exprs, orderClause, false);
+    private static String getAggrSource(String fnc, String exprs, ImOrderMap<String, CompileOrder> orders, SQLSyntax syntax) {
+        return getAggrSource(fnc, exprs, orders, syntax, false);
     }
-    private static String getAggrSource(String fnc, String exprs, String orderClause, boolean setOrdered) {
-        return fnc + "(" + exprs + (setOrdered ? ") WITHIN GROUP (" : "") + orderClause + ")";
+    private static String getAggrSource(String fnc, String exprs, ImOrderMap<String, CompileOrder> orders, SQLSyntax syntax, boolean setOrdered) {
+        return fnc + "(" + exprs + (setOrdered ? ") WITHIN GROUP (" : "") + BaseUtils.clause("ORDER BY", Query.stringOrder(orders, syntax)) + ")";
     }
 
     public static ImList<String> castToVarStrings(ImList<String> exprs, final ImList<? extends ClassReader> readers, final Type resultType, final SQLSyntax syntax, final TypeEnvironment typeEnv) {
@@ -358,8 +391,5 @@ public abstract class GroupType implements AggrType {
         return exprSource;
     }
 
-    public Type getType(Type exprType) {
-        return exprType;
-    }
     public abstract String name();
 }

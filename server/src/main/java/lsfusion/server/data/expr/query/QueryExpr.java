@@ -217,9 +217,7 @@ public abstract class QueryExpr<K extends Expr,I extends QueryExpr.Query<I>, J e
         }
 
         public abstract Type getType();
-        protected Stat getTypeStat(boolean forJoin) {
-            return getMainExpr().getTypeStat(getFullWhere(), forJoin);
-        }
+        protected abstract Stat getTypeStat(boolean forJoin);
         @IdentityLazy
         protected Stat getStatValue(StatType type) {
             Stat result;

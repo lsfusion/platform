@@ -332,7 +332,7 @@ public class ScriptingLogicsModuleChecks {
 
     public void checkGPropAggregateConsistence(GroupingType type, List<LPWithParams> mainProps) throws ScriptingErrorLog.SemanticErrorException {
         int aggrParamsCnt = mainProps.size();
-        if (type != GroupingType.CONCAT && aggrParamsCnt > 1) {
+        if (type != GroupingType.CONCAT && !(type instanceof ScriptingLogicsModule.CustomGroupingType) && aggrParamsCnt > 1) {
             errLog.emitMultipleAggrGPropError(parser, type);
         }
         if (type == GroupingType.CONCAT && aggrParamsCnt != 2 && !(mainProps.get(0).getLP().property.getType() instanceof AJSONClass)) {
