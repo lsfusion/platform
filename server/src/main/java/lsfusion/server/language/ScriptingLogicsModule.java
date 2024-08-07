@@ -198,7 +198,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     private String lastOptimizedJPropSID = null;
 
-    public enum ConstType { STATIC, INT, REAL, NUMERIC, STRING, LOGICAL, TLOGICAL, LONG, DATE, DATETIME, TIME, COLOR, NULL }
+    public enum ConstType { STATIC, INT, REAL, NUMERIC, STRING, RSTRING, LOGICAL, TLOGICAL, LONG, DATE, DATETIME, TIME, COLOR, NULL }
     public enum WindowType {MENU, PANEL, TOOLBAR, TREE, NATIVE}
     public static class GroupingType {
         public static final GroupingType SUM = new GroupingType();
@@ -393,6 +393,18 @@ public class ScriptingLogicsModule extends LogicsModule {
         return null;
     }
 
+    public String getRawStringLiteralText(String literalText) {
+        if (literalText.charAt(1) == '\'') {
+            return unquote(literalText.substring(1));
+        } else {
+            return unquote(literalText.substring(2, literalText.length() - 1));
+        }
+    }
+    
+    public LocalizedString getRawLocalizedStringLiteralText(String literalText) {
+        return LocalizedString.create(getRawStringLiteralText(literalText), false);
+    }
+    
     public LocalizedString transformLocalizedStringLiteral(String s) throws ScriptingErrorLog.SemanticErrorException {
         try {
             return ScriptedStringUtils.transformLocalizedStringLiteral(s, BL.getIdFromReversedI18NDictionaryMethod(), BL::appendEntryToBundle);
@@ -3532,6 +3544,11 @@ public class ScriptingLogicsModule extends LogicsModule {
             case LONG: lp =  addUnsafeCProp(LongClass.instance, value); break;
             case NUMERIC: lp =  addNumericConst((BigDecimal) value); break;
             case REAL: lp =  addUnsafeCProp(DoubleClass.instance, value); break;
+            case RSTRING:
+                LocalizedString rlstr = getRawLocalizedStringLiteralText((String) value);
+                lp = addUnsafeCProp(getStringConstClass(rlstr), rlstr);
+                return Pair.create(new LPWithParams(lp), new LPLiteral(rlstr));
+                
             case STRING:
                 String str = unquote((String) value);
                 if (isInlineSequence(str)) {
