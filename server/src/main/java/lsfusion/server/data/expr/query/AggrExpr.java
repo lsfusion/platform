@@ -4,6 +4,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.mutability.TwinImmutableObject;
+import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.data.caches.AbstractOuterContext;
 import lsfusion.server.data.caches.OuterContext;
@@ -12,8 +13,10 @@ import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.join.query.QueryJoin;
 import lsfusion.server.data.expr.key.KeyExpr;
+import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.translate.ExprTranslator;
 import lsfusion.server.data.translate.MapTranslate;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 
 public abstract class AggrExpr<K extends Expr,G extends AggrType, I extends AggrExpr.Query<G, I>, J extends QueryJoin<?, ?, ?, ?>,
@@ -86,7 +89,15 @@ public abstract class AggrExpr<K extends Expr,G extends AggrType, I extends Aggr
         }
 
         public Expr getMainExpr() {
-            return type.getMainExpr(exprs);
+            return type.getMainExpr(exprs, orders);
+        }
+
+        public Type getType(Where where) {
+            return type.getType(exprs, orders, where);
+        }
+
+        public Stat getTypeStat(Where where, boolean forJoin) {
+            return type.getTypeStat(forJoin, exprs, orders, where);
         }
 
         public boolean isSelectNotInWhere() {
@@ -122,6 +133,16 @@ public abstract class AggrExpr<K extends Expr,G extends AggrType, I extends Aggr
 
         protected Expr getMainExpr() {
             return thisObj.query.getMainExpr();
+        }
+
+        @IdentityLazy
+        public Type getType() {
+            return thisObj.query.getType(getFullWhere());
+        }
+
+        @IdentityLazy
+        public Stat getTypeStat(boolean forJoin) {
+            return thisObj.query.getTypeStat(getFullWhere(), forJoin);
         }
 
         protected boolean isSelectNotInFullWhere() {

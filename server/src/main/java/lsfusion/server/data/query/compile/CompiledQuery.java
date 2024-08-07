@@ -1098,7 +1098,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                     PartitionCalc calc = query.type.createAggr(mTokens,
                             query.exprs.mapList(fromPropertySelect.result),
                             subQuery.getCompileOrders(query.orders).map(fromPropertySelect.result),
-                            query.partitions.map(fromPropertySelect.result).toSet(), syntax, query.getType(), mSubEnv);
+                            query.partitions.map(fromPropertySelect.result).toSet(), syntax, query.getPartitionType(), mSubEnv);
                     mResultNames.mapValue(i, calc);
                 }
                 final ImRevMap<PartitionCalc, String> resultNames = mResultNames.immutableValueRev().reverse();

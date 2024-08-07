@@ -1947,7 +1947,7 @@ groupCDPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns
 	;
 	
 groupPropertyBodyDefinition[List<TypedParameter> context] returns [GroupingType type, List<LPWithParams> mainProps = new ArrayList<>(), List<LPWithParams> orderProps = new ArrayList<>(), boolean ascending = true, LPWithParams whereProp = null]
-	:	
+	:
     	(
     	    gt=groupingType { $type = $gt.type; }
             mainList=nonEmptyPropertyExpressionList[context, true] { $mainProps = $mainList.props; }
@@ -1956,10 +1956,29 @@ groupPropertyBodyDefinition[List<TypedParameter> context] returns [GroupingType 
             mainList=nonEmptyPropertyExpressionList[context, true] { $mainProps = $mainList.props; }
             ('ORDER' ('DESC' { $ascending = false; } )?
             orderList=nonEmptyPropertyExpressionList[context, true] { $orderProps = $orderList.props; })
+        |
+            { boolean setOrdered = false; }
+            gct = aggrCustomType
+            (
+                mainList=nonEmptyPropertyExpressionList[context, true] { $mainProps = $mainList.props; }
+                (('WITHIN' { setOrdered = true; })? 'ORDER' ('DESC' { $ascending = false; } )?
+                orderList=nonEmptyPropertyExpressionList[context, true] { $orderProps = $orderList.props; })?
+                |
+                ('WITHIN' { setOrdered = true; })? 'ORDER' ('DESC' { $ascending = false; } )?
+                orderList=nonEmptyPropertyExpressionList[context, true] { $orderProps = $orderList.props; }
+            )
+            { $type = new CustomGroupingType($gct.func, setOrdered, $gct.cls, $gct.valueNull); }
         )
         ('WHERE' whereExpr=propertyExpression[context, true] { $whereProp = $whereExpr.property; } )?
     ;
 
+aggrCustomType returns [DataClass cls = null, String func = null, boolean valueNull = false]
+    :
+        'CUSTOM'
+        ('NULL' { $valueNull = true; } )?
+        (clsName = primitiveType { if(inMainParseState()) $cls = (DataClass)self.findClass($clsName.text); })?
+        t = stringLiteral { $func = $t.val; }
+    ;
 
 groupingType returns [GroupingType type]
 	:	'SUM' 	{ $type = GroupingType.SUM; }
@@ -1981,6 +2000,7 @@ partitionPropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 	List<LPWithParams> paramProps = new ArrayList<>();
 	NamedPropertyUsage pUsage = null;
 	PartitionType type = null;
+	int exprCnt = 1;
 	int groupExprCnt = 0;
 	boolean strict = false;
 	int precision = 0;
@@ -1989,27 +2009,39 @@ partitionPropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 }
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedPartitionProp(type, pUsage, strict, precision, ascending, useLast, groupExprCnt, paramProps, context);
+		$property = self.addScriptedPartitionProp(type, pUsage, strict, precision, ascending, useLast, exprCnt, groupExprCnt, paramProps, context);
 	}
 }
-	:	'PARTITION' 
-		(
-			(	'SUM'	{ type = PartitionType.sum(); } 
-			|	'PREV'	{ type = PartitionType.previous(); }
-			)
-		|	'UNGROUP'
-			ungroupProp=propertyUsage { pUsage = $ungroupProp.propUsage; }
-			(	'PROPORTION' { type = PartitionType.distrCumProportion(); } 
-				('STRICT' { strict = true; })? 
-				'ROUND' '(' prec=intLiteral ')' { precision = $prec.val; }
-			|	'LIMIT' { type = PartitionType.distrRestrict(); } 
-				('STRICT' { strict = true; })? 
-			)
-		)
-		expr=propertyExpression[context, dynamic] { paramProps.add($expr.property); }
-		(	'ORDER' ('DESC' { ascending = false; } )?
-			orderList=nonEmptyPropertyExpressionList[context, dynamic] { paramProps.addAll($orderList.props); }
-		)? 
+	:	'PARTITION' (
+            (
+                (	'SUM'	{ type = PartitionType.sum(); }
+                |	'PREV'	{ type = PartitionType.previous(); }
+                )
+            |	'UNGROUP'
+                ungroupProp=propertyUsage { pUsage = $ungroupProp.propUsage; }
+                (	'PROPORTION' { type = PartitionType.distrCumProportion(); }
+                    ('STRICT' { strict = true; })?
+                    'ROUND' '(' prec=intLiteral ')' { precision = $prec.val; }
+                |	'LIMIT' { type = PartitionType.distrRestrict(); }
+                    ('STRICT' { strict = true; })?
+                )
+            )
+            expr=propertyExpression[context, dynamic] { paramProps.add($expr.property); }
+            (	'ORDER' ('DESC' { ascending = false; } )?
+                orderList=nonEmptyPropertyExpressionList[context, dynamic] { paramProps.addAll($orderList.props); }
+            )?
+            |
+            gct = aggrCustomType { type = PartitionType.CUSTOM($gct.func, $gct.cls, $gct.valueNull); }
+            (
+                mainList=nonEmptyPropertyExpressionList[context, true] { paramProps.addAll($mainList.props); exprCnt = $mainList.props.size(); }
+                ('ORDER' ('DESC' { ascending = false; } )?
+                orderList=nonEmptyPropertyExpressionList[context, true] { paramProps.addAll($orderList.props); })?
+                |
+                { exprCnt = 0; }
+                'ORDER' ('DESC' { ascending = false; } )?
+                orderList=nonEmptyPropertyExpressionList[context, true] { paramProps.addAll($orderList.props); }
+            )
+        )
 		('WINDOW' 'EXCEPTLAST' { useLast = false; })?
 		(	'BY'
 			exprList=nonEmptyPropertyExpressionList[context, dynamic] { paramProps.addAll(0, $exprList.props); }
