@@ -412,4 +412,8 @@ public class GFormLayout extends ResizableComplexPanel {
             return null;
         }
     }
+
+    public Map<GComponent, ComponentViewWidget> getBaseComponentViews() {
+        return baseComponentViews;
+    }
 }

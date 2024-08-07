@@ -41,10 +41,7 @@ import lsfusion.gwt.client.form.controller.dispatch.GFormActionDispatcher;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.design.view.CustomContainerView;
-import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
-import lsfusion.gwt.client.form.design.view.GFormLayout;
-import lsfusion.gwt.client.form.design.view.TabbedContainerView;
+import lsfusion.gwt.client.form.design.view.*;
 import lsfusion.gwt.client.form.event.*;
 import lsfusion.gwt.client.form.filter.GRegularFilter;
 import lsfusion.gwt.client.form.filter.GRegularFilterGroup;
@@ -348,6 +345,20 @@ public class GFormController implements EditManager {
         if (filterGroup.defaultFilterIndex >= 0) {
             filterBox.setSelectedIndex(filterGroup.defaultFilterIndex + 1);
         }
+    }
+
+    public void resetRegularFilters(String sid) {
+        formLayout.getBaseComponentViews().forEach((component, componentView) -> {
+            if (component instanceof GRegularFilterGroup && (sid == null || sid.equals(component.sID))) {
+                Widget widget = componentView.getSingleWidget().widget;
+                if (widget instanceof CheckBox) { //single filter
+                    ((CheckBox) widget).setValue(null);
+                } else if (widget instanceof ListBox) { //multiple filter
+                    ((ListBox) widget).setSelectedIndex(0);
+                }
+                setRegularFilter((GRegularFilterGroup) component, -1);
+            }
+        });
     }
 
     private void addFilterView(GRegularFilterGroup filterGroup, Widget filterWidget) {

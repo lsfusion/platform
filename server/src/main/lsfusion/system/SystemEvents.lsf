@@ -327,6 +327,9 @@ onWebClientInit() + {
     }
 }
 
+resetFilterGroup INTERNAL 'lsfusion.server.logics.form.interactive.action.userevent.ResetFilterGroupAction' (STRING);
+resetFilterGroups() { resetFilterGroup(NULL); }
+
 CLASS ABSTRACT Exception '{system.events.exception}';
 CLASS ClientException '{system.events.client.exception}' : Exception;
 CLASS WebClientException '{system.events.web.client.exception}' : ClientException;

@@ -723,6 +723,10 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     }
 
     @Override
+    public void execute(ResetFilterGroupClientAction action) {
+    }
+
+    @Override
     public EventBus getEventBus() {
         return MainFrame.instance.eventBus;
     }

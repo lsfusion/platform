@@ -4,7 +4,6 @@ import lsfusion.gwt.client.action.*;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.StaticImage;
-import lsfusion.gwt.client.base.log.GLog;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.PopupOwner;
@@ -136,6 +135,11 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     @Override
     public void execute(GFilterAction action) {
         form.changePropertyFilters(action.goID, action.filters);
+    }
+
+    @Override
+    public void execute(GResetFilterGroupAction action) {
+        form.resetRegularFilters(action.sid);
     }
 
     // editing (INPUT) functionality

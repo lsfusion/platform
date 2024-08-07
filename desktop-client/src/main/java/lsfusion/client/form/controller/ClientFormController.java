@@ -533,6 +533,27 @@ public class ClientFormController implements AsyncListener {
         }
     }
 
+    public void resetRegularFilters(String sid) {
+        formLayout.getBaseComponentViews().forEach((component, componentView) -> {
+            if (component instanceof ClientRegularFilterGroup && (sid == null || sid.equals(component.getSID()))) {
+                Widget widget = ((FlexPanel) componentView).getWidget(0);
+                if (widget instanceof SingleFilterBox) { //single filter
+                    SingleFilterBox singleFilterBox = (SingleFilterBox) widget;
+                    //Need setSelected twice because of FOCUS_LOST hack in SingleFilterBox
+                    singleFilterBox.setSelected(false);
+                    singleFilterBox.setSelected(false);
+                } else if (widget instanceof ComboBoxWidget) { //multiple filter
+                    ((ComboBoxWidget) widget).setSelectedIndex(0);
+                }
+                try {
+                    setRegularFilter((ClientRegularFilterGroup) component, null);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+    }
+
     private void addFilterView(ClientRegularFilterGroup filterGroup, Widget filterView) {
         FlexPanel filterPanel = new FlexPanel(false);
         filterPanel.setBorder(BorderFactory.createEmptyBorder(0, 2, 0 , 2));
@@ -1574,7 +1595,7 @@ public class ClientFormController implements AsyncListener {
             return;
         threadSettingRegularFilter.set(true);
         try {
-            rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("setRegularFilter - " + filterGroup.getLogName()) {
+            rmiQueue.adaptiveSyncRequest(new ProcessServerResponseRmiRequest("setRegularFilter - " + filterGroup.getLogName()) {
                 @Override
                 protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
                     return remoteForm.setRegularFilter(requestIndex, lastReceivedRequestIndex, filterGroup.getID(), (filter == null) ? -1 : filter.getID());

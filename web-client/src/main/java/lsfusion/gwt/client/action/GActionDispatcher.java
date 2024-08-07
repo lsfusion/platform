@@ -56,4 +56,6 @@ public interface GActionDispatcher {
     void execute(GOrderAction action);
     
     void execute(GFilterAction action);
+
+    void execute(GResetFilterGroupAction action);
 }
