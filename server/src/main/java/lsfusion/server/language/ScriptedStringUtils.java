@@ -523,4 +523,10 @@ public class ScriptedStringUtils {
         }
         return s;
     }
+    
+    public static boolean isRawStringSpecialChar(int ch) {
+        String rawStringForbiddenSpecialChars = " \n\t'+*,=<>[](){}_#";
+        return !(ch >= 'a' && ch <= 'z' || ch >= 'A' && ch <= 'Z' || ch >= '0' && ch <= '9') &&
+                rawStringForbiddenSpecialChars.indexOf(ch) == -1;
+    }
 }

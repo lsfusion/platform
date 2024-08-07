@@ -112,6 +112,7 @@ grammar LsfLogics;
 	package lsfusion.server.language; 
 	import lsfusion.server.language.ScriptingLogicsModule;
 	import lsfusion.server.language.ScriptParser;
+	import lsfusion.server.language.ScriptedStringUtils;
 }
 
 @lexer::members {
@@ -142,6 +143,10 @@ grammar LsfLogics;
 		}
 		return true;
 	}	
+
+    private boolean isRawStringSpecialChar(int ch) {
+    	return ScriptedStringUtils.isRawStringSpecialChar(ch);
+    }
 }
 
 @members {
@@ -5413,6 +5418,7 @@ metaCodeLiteral returns [String sid]
 
 metaCodeStringLiteral returns [String val]
 	:	slit=multilineStringLiteral { $val = $slit.val; }
+	|   rslit=rawMultilineStringLiteral { $val = $rslit.val; }
 	;
 
 metaCodeNonStringLiteral
@@ -5598,6 +5604,7 @@ constantProperty[List<TypedParameter> context, boolean dynamic] returns [LPWithP
 expressionLiteral returns [ScriptingLogicsModule.ConstType cls, Object value]
 	:	cl=commonLiteral { $cls = $cl.cls; $value = $cl.value; } 	
 	|	str=multilineStringLiteral { $cls = ScriptingLogicsModule.ConstType.STRING; $value = $str.val; }
+	|   rstr=rawMultilineStringLiteral { $cls = ScriptingLogicsModule.ConstType.RSTRING; $value = $rstr.val; }
 	;
 
 commonLiteral returns [ScriptingLogicsModule.ConstType cls, Object value]
@@ -5705,6 +5712,10 @@ multilineStringLiteral returns [String val]
 	:	s=STRING_LITERAL { $val = self.removeCarriageReturn($s.text); }
 	;
 
+rawMultilineStringLiteral returns [String val]
+	:   rs=RAW_STRING_LITERAL { $val = self.removeCarriageReturn($rs.text); }
+	;
+
 stringLiteral returns [String val]
 	:	s=stringLiteralNoID { $val = $s.val; }
     |   id=ID { $val = null; }
@@ -5718,9 +5729,12 @@ primitiveType returns [String val]
 // it makes sense to be synchronized with noIDCheck in LSF.bnf in idea-plugin
 localizedStringLiteralNoID returns [LocalizedString val]
 	:	s=multilineStringLiteral { $val = self.transformLocalizedStringLiteral($s.val); }
+	|   rs=rawMultilineStringLiteral { $val = self.getRawLocalizedStringLiteralText($rs.text); }
 	;
+	
 stringLiteralNoID returns [String val]
 	:	s=multilineStringLiteral { $val = self.transformStringLiteral($s.text); }
+	|   rs=rawMultilineStringLiteral { $val = self.getRawStringLiteralText($rs.text); }
 	;
 
 localizedStringLiteral returns [LocalizedString val]
@@ -5845,6 +5859,9 @@ fragment STR_LITERAL_CHAR
 	| 	{input.LA(1) == '$' && input.LA(2) != '{'}?=> '$'
 	;
 
+fragment SIMPLE_RAW_STR_LITERAL_CHAR: ~('\'');
+fragment RAW_STR_SPECIAL_CHAR: ~(NEXT_ID_LETTER|SPACE|'\n'|'\''|'+'|'*'|','|'='|'<'|'>'|'('|')'|'['|']'|'{'|'}'|'#');
+
 fragment ESCAPED_STR_LITERAL_CHAR:	('\\'.) | ~('\\'|'{'|'}');
 fragment BLOCK: '{' (BLOCK | ESCAPED_STR_LITERAL_CHAR)* '}';
 fragment INTERPOLATION_BLOCK: '${' (BLOCK | ESCAPED_STR_LITERAL_CHAR)* '}';
@@ -5880,6 +5897,13 @@ ID				:	ID_META_FRAGMENT;
 STRING_LITERAL	:	STRING_META_FRAGMENT;
 WS				:	(NEWLINE | SPACE) { $channel=HIDDEN; };
 COLOR_LITERAL 	:	'#' HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT;
+RAW_STRING_LITERAL:		('r'|'R') '\'' SIMPLE_RAW_STR_LITERAL_CHAR* '\''
+				  |  	(   {(input.LA(1) == 'r' || input.LA(1) == 'R') && isRawStringSpecialChar(input.LA(2)) && input.LA(3) == '\''}?=>
+				            ('r'|'R') c=RAW_STR_SPECIAL_CHAR '\'' { Character ch = $c.text.charAt(0); }
+	                    	({input.LA(1) != '\'' || input.LA(2) != ch}?=> .)*
+	                    	'\'' RAW_STR_SPECIAL_CHAR
+	                    )
+				  ;
 COMMENTS		:	'//' ~('\n')* ('\n' | EOF) { $channel=HIDDEN; };
 MULTILINE_COMMENTS	:	'/*' .* '*/' { $channel=HIDDEN; };	 
 UINT_LITERAL 	:	DIGITS;
