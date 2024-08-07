@@ -70,6 +70,11 @@ public abstract class SingleFilterBox extends CheckBoxWidget {
         latestCheckBoxEvent = e;
         super.processEvent(e);
     }
+
+    public void forceSelect(boolean select) {
+        latestCheckBoxEvent = null;
+        setSelected(select);
+    }
     
     public abstract void selected() throws IOException;
     public abstract void deselected() throws IOException;

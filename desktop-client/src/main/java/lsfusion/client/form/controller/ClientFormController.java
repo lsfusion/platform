@@ -539,9 +539,7 @@ public class ClientFormController implements AsyncListener {
                 Widget widget = ((FlexPanel) componentView).getWidget(0);
                 if (widget instanceof SingleFilterBox) { //single filter
                     SingleFilterBox singleFilterBox = (SingleFilterBox) widget;
-                    //Need setSelected twice because of FOCUS_LOST hack in SingleFilterBox
-                    singleFilterBox.setSelected(false);
-                    singleFilterBox.setSelected(false);
+                    singleFilterBox.forceSelect(false);
                 } else if (widget instanceof ComboBoxWidget) { //multiple filter
                     ((ComboBoxWidget) widget).setSelectedIndex(0);
                 }
