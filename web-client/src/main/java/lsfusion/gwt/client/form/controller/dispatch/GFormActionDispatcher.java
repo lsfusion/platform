@@ -138,8 +138,13 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     }
 
     @Override
-    public void execute(GResetFilterGroupAction action) {
-        form.resetRegularFilters(action.sid);
+    public void execute(GFilterGroupAction action) {
+        form.setRegularFilterIndex(action.filterGroup, action.index);
+    }
+
+    @Override
+    public Integer execute(GReadFilterGroupAction action) {
+        return form.getRegularFilterIndex(action.filterGroup);
     }
 
     // editing (INPUT) functionality

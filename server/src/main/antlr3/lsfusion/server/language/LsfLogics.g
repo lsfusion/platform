@@ -3312,6 +3312,8 @@ leafKeepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [
 	|   readOrdersADB=readOrdersActionDefinitionBody[context, dynamic] { $action = $readOrdersADB.action; }
 	|   filterADB=filterActionDefinitionBody[context, dynamic] { $action = $filterADB.action; }
 	|   readFiltersADB=readFiltersActionDefinitionBody[context, dynamic] { $action = $readFiltersADB.action; }
+	|   filterGroupADB=filterGroupActionDefinitionBody[context, dynamic] { $action = $filterGroupADB.action; }
+	|   readFilterGroupsADB=readFilterGroupsActionDefinitionBody[context, dynamic] { $action = $readFilterGroupsADB.action; }
 	|	mailADB=emailActionDefinitionBody[context, dynamic] { $action = $mailADB.action; }
 	|	evalADB=evalActionDefinitionBody[context, dynamic] { $action = $evalADB.action; }
 	|	readADB=readActionDefinitionBody[context, dynamic] { $action = $readADB.action; }
@@ -4061,6 +4063,29 @@ readFiltersActionDefinitionBody[List<TypedParameter> context, boolean dynamic] r
 }
     :   'FILTERS'
         gobj=formGroupObjectID
+        ('TO' pu=propertyUsage)?
+    ;
+
+ filterGroupActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
+ @after {
+ 	if (inMainParseState()) {
+ 		$action = self.addScriptedFilterGroupProp($fg.sid, $pu.propUsage);
+ 	}
+ }
+
+     :   'FILTERGROUP'
+         fg=formFilterGroupID
+         ('FROM' pu=propertyUsage)?
+     ;
+
+readFilterGroupsActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
+@after {
+	if (inMainParseState()) {
+		$action = self.addScriptedReadFilterGroupsProp($fg.sid, $pu.propUsage);
+	}
+}
+    :   'FILTERGROUPS'
+        fg=formFilterGroupID
         ('TO' pu=propertyUsage)?
     ;
 
@@ -5606,6 +5631,10 @@ staticObjectID returns [String sid]
 	;
 
 formGroupObjectID returns [String sid]
+    :	(namespacePart=ID '.')? formPart=ID '.' namePart=ID { $sid = ($namespacePart != null ? $namespacePart.text + '.' : "") + $formPart.text + '.' + $namePart.text; }
+    ;
+
+formFilterGroupID returns [String sid]
     :	(namespacePart=ID '.')? formPart=ID '.' namePart=ID { $sid = ($namespacePart != null ? $namespacePart.text + '.' : "") + $formPart.text + '.' + $namePart.text; }
     ;
 

@@ -347,18 +347,34 @@ public class GFormController implements EditManager {
         }
     }
 
-    public void resetRegularFilters(String sid) {
-        formLayout.getBaseComponentViews().forEach((component, componentView) -> {
-            if (component instanceof GRegularFilterGroup && (sid == null || sid.equals(component.sID))) {
-                Widget widget = componentView.getSingleWidget().widget;
+    public void setRegularFilterIndex(Integer filterGroup, Integer index) {
+        for(Map.Entry<GComponent, ComponentViewWidget> entry : formLayout.getBaseComponentViews().entrySet()) {
+            GComponent component = entry.getKey();
+            if (component instanceof GRegularFilterGroup && (filterGroup == null || filterGroup == component.ID)) {
+                Widget widget = entry.getValue().getSingleWidget().widget;
                 if (widget instanceof CheckBox) { //single filter
-                    ((CheckBox) widget).setValue(null);
+                    ((CheckBox) widget).setValue(index > 0 ? true : null);
                 } else if (widget instanceof ListBox) { //multiple filter
-                    ((ListBox) widget).setSelectedIndex(0);
+                    ((ListBox) widget).setSelectedIndex(index);
                 }
                 setRegularFilter((GRegularFilterGroup) component, -1);
             }
-        });
+        }
+    }
+
+    public Integer getRegularFilterIndex(Integer filterGroup) {
+        for(Map.Entry<GComponent, ComponentViewWidget> entry : formLayout.getBaseComponentViews().entrySet()) {
+            GComponent component = entry.getKey();
+            if (component instanceof GRegularFilterGroup && (filterGroup == null || filterGroup == component.ID)) {
+                Widget widget = entry.getValue().getSingleWidget().widget;
+                if (widget instanceof CheckBox) { //single filter
+                    return ((CheckBox) widget).getValue() ? 1 : 0;
+                } else if (widget instanceof ListBox) { //multiple filter
+                    return ((ListBox) widget).getSelectedIndex();
+                }
+            }
+        }
+        return null;
     }
 
     private void addFilterView(GRegularFilterGroup filterGroup, Widget filterWidget) {

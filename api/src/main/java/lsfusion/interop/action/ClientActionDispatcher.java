@@ -76,7 +76,9 @@ public interface ClientActionDispatcher {
     
     void execute(FilterClientAction action);
 
-    void execute(ResetFilterGroupClientAction action);
+    void execute(FilterGroupClientAction action);
+
+    Integer execute(ReadFilterGroupClientAction action);
 
     void execute(ClientWebAction action);
 

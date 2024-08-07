@@ -105,6 +105,7 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.CCCContextFilterEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
+import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
@@ -2566,6 +2567,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         return form.getNFGroupObject(getSeekObjectName(formObjectName), getVersion());
     }
 
+    private RegularFilterGroupEntity getSeekFilterGroup(FormEntity form, String formFilterGroupName) {
+        return form.getNFRegularFilterGroup(getSeekObjectName(formFilterGroupName), getVersion());
+    }
+
     private String getSeekObjectName(String formObjectName) {
         int pointPos = formObjectName.lastIndexOf('.');
         assert pointPos > 0;
@@ -2686,6 +2691,28 @@ public class ScriptingLogicsModule extends LogicsModule {
             return new LAWithParams(addReadFiltersAProp(go, targetProp), Collections.emptyList());
         } else {
             errLog.emitGroupObjectNotFoundError(parser, getSeekObjectName(goName));
+            return null;
+        }
+    }
+
+    public LAWithParams addScriptedFilterGroupProp(String fgName, NamedPropertyUsage propertyUsage)  throws ScriptingErrorLog.SemanticErrorException {
+        RegularFilterGroupEntity filterGroup = getSeekFilterGroup(getFormFromSeekObjectName(fgName), fgName);
+        if (filterGroup != null) {
+            LP<?> fromProp = propertyUsage != null ? findLPNoParamsByPropertyUsage(propertyUsage) : null;
+            return new LAWithParams(addFilterGroupAProp(filterGroup.getID(), fromProp), Collections.emptyList());
+        } else {
+            errLog.emitFilterGroupNotFoundError(parser, getSeekObjectName(fgName));
+            return null;
+        }
+    }
+
+    public LAWithParams addScriptedReadFilterGroupsProp(String fgName, NamedPropertyUsage propertyUsage)  throws ScriptingErrorLog.SemanticErrorException {
+        RegularFilterGroupEntity filterGroup = getSeekFilterGroup(getFormFromSeekObjectName(fgName), fgName);
+        if (filterGroup != null) {
+            LP<?> targetProp = propertyUsage != null ? findLPNoParamsByPropertyUsage(propertyUsage) : null;
+            return new LAWithParams(addReadFilterGroupsAProp(filterGroup.getID(), targetProp), Collections.emptyList());
+        } else {
+            errLog.emitFilterGroupNotFoundError(parser, getSeekObjectName(fgName));
             return null;
         }
     }

@@ -410,7 +410,12 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     }
 
     @Override
-    public void execute(GResetFilterGroupAction action) {
+    public void execute(GFilterGroupAction action) {
+    }
+
+    @Override
+    public Integer execute(GReadFilterGroupAction action) {
+        return null;
     }
 
     private class JSExecutor {

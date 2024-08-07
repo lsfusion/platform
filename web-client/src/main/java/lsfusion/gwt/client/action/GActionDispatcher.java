@@ -57,5 +57,7 @@ public interface GActionDispatcher {
     
     void execute(GFilterAction action);
 
-    void execute(GResetFilterGroupAction action);
+    void execute(GFilterGroupAction action);
+
+    Integer execute(GReadFilterGroupAction action);
 }

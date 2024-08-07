@@ -9,7 +9,8 @@ import org.antlr.runtime.RecognitionException;
 public class UserEventsLogicsModule extends ScriptingLogicsModule {
     public LP orders;
     public LP filters;
-    
+    public LP filterGroups;
+
     public UserEventsLogicsModule(BusinessLogics BL, BaseLogicsModule baseModule) {
         super(baseModule, BL, "/system/UserEvents.lsf");
     }
@@ -20,5 +21,6 @@ public class UserEventsLogicsModule extends ScriptingLogicsModule {
 
         orders = findProperty("orders[]");
         filters = findProperty("filters[]");
+        filterGroups = findProperty("filterGroups[]");
     }
 }

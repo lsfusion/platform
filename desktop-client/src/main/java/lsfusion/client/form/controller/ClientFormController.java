@@ -94,8 +94,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static lsfusion.base.BaseUtils.nvl;
-import static lsfusion.base.BaseUtils.serializeObject;
+import static lsfusion.base.BaseUtils.*;
 import static lsfusion.client.ClientResourceBundle.getString;
 
 public class ClientFormController implements AsyncListener {
@@ -533,15 +532,16 @@ public class ClientFormController implements AsyncListener {
         }
     }
 
-    public void resetRegularFilters(String sid) {
-        formLayout.getBaseComponentViews().forEach((component, componentView) -> {
-            if (component instanceof ClientRegularFilterGroup && (sid == null || sid.equals(component.getSID()))) {
-                Widget widget = ((FlexPanel) componentView).getWidget(0);
+    public void setRegularFilterIndex(Integer filterGroup, Integer index) {
+        for(Map.Entry<ClientComponent, Widget> entry : formLayout.getBaseComponentViews().entrySet()) {
+            ClientComponent component = entry.getKey();
+            if (component instanceof ClientRegularFilterGroup && (filterGroup == null || filterGroup == component.getID())) {
+                Widget widget = ((FlexPanel) entry.getValue()).getWidget(0);
                 if (widget instanceof SingleFilterBox) { //single filter
                     SingleFilterBox singleFilterBox = (SingleFilterBox) widget;
-                    singleFilterBox.forceSelect(false);
+                    singleFilterBox.forceSelect(index > 0);
                 } else if (widget instanceof ComboBoxWidget) { //multiple filter
-                    ((ComboBoxWidget) widget).setSelectedIndex(0);
+                    ((ComboBoxWidget) widget).setSelectedIndex(index);
                 }
                 try {
                     setRegularFilter((ClientRegularFilterGroup) component, null);
@@ -549,7 +549,22 @@ public class ClientFormController implements AsyncListener {
                     throw new RuntimeException(e);
                 }
             }
-        });
+        }
+    }
+
+    public Integer getRegularFilterIndex(Integer filterGroup) {
+        for(Map.Entry<ClientComponent, Widget> entry : formLayout.getBaseComponentViews().entrySet()) {
+            ClientComponent component = entry.getKey();
+            if (component instanceof ClientRegularFilterGroup && (filterGroup == null || filterGroup == component.getID())) {
+                Widget widget = ((FlexPanel) entry.getValue()).getWidget(0);
+                if (widget instanceof SingleFilterBox) { //single filter
+                    return ((SingleFilterBox) widget).isSelected() ? 1 : 0;
+                } else if (widget instanceof ComboBoxWidget) { //multiple filter
+                    return ((ComboBoxWidget) widget).getSelectedIndex();
+                }
+            }
+        }
+        return null;
     }
 
     private void addFilterView(ClientRegularFilterGroup filterGroup, Widget filterView) {

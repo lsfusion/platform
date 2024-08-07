@@ -2,6 +2,7 @@ MODULE UserEvents;
 
 orders = DATA LOCAL JSON();
 filters = DATA LOCAL JSON();
+filterGroups = DATA LOCAL INTEGER();
 
 property = DATA LOCAL STRING(INTEGER);
 desc = DATA LOCAL BOOLEAN(INTEGER);

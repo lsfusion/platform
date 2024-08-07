@@ -75,10 +75,7 @@ import lsfusion.server.logics.form.interactive.action.focus.FocusAction;
 import lsfusion.server.logics.form.interactive.action.input.*;
 import lsfusion.server.logics.form.interactive.action.seek.SeekGroupObjectAction;
 import lsfusion.server.logics.form.interactive.action.seek.SeekObjectAction;
-import lsfusion.server.logics.form.interactive.action.userevent.FilterAction;
-import lsfusion.server.logics.form.interactive.action.userevent.OrderAction;
-import lsfusion.server.logics.form.interactive.action.userevent.ReadFiltersAction;
-import lsfusion.server.logics.form.interactive.action.userevent.ReadOrdersAction;
+import lsfusion.server.logics.form.interactive.action.userevent.*;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.dialogedit.ClassFormEntity;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
@@ -2159,6 +2156,16 @@ public abstract class LogicsModule {
     @IdentityStrongLazy
     public LA addReadFiltersAProp(GroupObjectEntity object, LP toProperty) {
         return addAction(null, new LA<>(new ReadFiltersAction(object, toProperty)));
+    }
+
+    @IdentityStrongLazy
+    public LA<?> addFilterGroupAProp(Integer filterGroup, LP<?> fromProperty) {
+        return addAction(null, new LA<>(new FilterGroupAction(filterGroup, fromProperty)));
+    }
+
+    @IdentityStrongLazy
+    public LA<?> addReadFilterGroupsAProp(Integer filterGroup, LP<?> toProperty) {
+        return addAction(null, new LA<>(new ReadFilterGroupsAction(filterGroup, toProperty)));
     }
 
     public static class ConstraintData {
