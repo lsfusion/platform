@@ -117,7 +117,8 @@ TREE treeSelector
 |`shrink`|todo|Логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
 |`alignShrink`|todo|Логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
 |`align`<br/>`alignment`|Способ выравнивания компонента внутри контейнера. Допустимые значения: `START` (В начале), `CENTER` (В центре), `END` (В конце), `STRETCH` (Растянуть).|Тип выравнивания|`START`|`STRETCH`|
-|`alignCaption`|todo|Логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
+|`overflowHorz`|todo|Логический литерал|`auto`|`clip`<br/>`visible`<br/>`auto`|
+|`overflowVert`|todo|Логический литерал|`auto`|`clip`<br/>`visible`<br/>`auto`|
 |`marginTop`|Отступ сверху|Целочисленный литерал|`0`|`3`|
 |`marginRight`|Отступ справа|Целочисленный литерал|`0`|`1`|
 |`marginBottom`|Отступ снизу|Целочисленный литерал|`0`|`4`|
@@ -200,7 +201,13 @@ TREE treeSelector
 |`placeholder`|Placeholder свойства|Строковый литерал|placeholder свойства|`'Placeholder'`|
 |`tooltip`|Подсказка, которая будет показываться при наведении пользователем мышки на заголовок свойства или действия|Строковый литерал|tooltip по умолчанию|`'Подсказка'`|
 |`valueTooltip`|Подсказка, которая будет показываться при наведении пользователем мышки на значение свойства|Строковый литерал|tooltip по умолчанию|`'Подсказка'`|
-|`valueAlignment`|Способ выравнивания значения компонента. Допустимые значения: `START` (В начале), `CENTER` (В центре), `END` (В конце), `STRETCH` (Растянуть).|Тип выравнивания|`START`|`STRETCH`|
+|`valueAlignment`|Способ выравнивания значения компонента. Допустимые значения: `START` (В начале), `CENTER` (В центре), `END` (В конце), `STRETCH` (Растянуть).**deprecated since version 6, используйте `valueAlignmentHorz`**|Тип выравнивания|`START`|`STRETCH`|
+|`valueAlignmentHorz`|Способ выравнивания по горизонтали значения компонента. Допустимые значения: `START` (В начале), `CENTER` (В центре), `END` (В конце), `STRETCH` (Растянуть).|Тип выравнивания|`START`|`STRETCH`|
+|`valueAlignmentVert`|Способ выравнивания по вертикали значения компонента. Допустимые значения: `START` (В начале), `CENTER` (В центре), `END` (В конце), `STRETCH` (Растянуть).|Тип выравнивания|`START`|`STRETCH`|
+|`valueOverflowHorz`|todo|Строковый литерал|`auto`|`auto`<br/>`clip`<br/>`visible`|
+|`valueOverflowVert`|todo|Строковый литерал|`auto`|`auto`<br/>`clip`<br/>`visible`|
+|`valueShrinkHorz`|todo|Логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
+|`valueShrinkVert`|todo|Логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
 |`clearText`|Указание того, что в начале редактирования свойства должен сбрасываться текущий текст|Дополненный логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
 |`notSelectAll`|Указание того, что в начале редактирования весь текст не выделяется|Дополненный логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
 |`askConfirm`|Указание того, что при попытке редактирования свойства (выполнении действия) будет выполнен запрос на подтверждение|Дополненный логический литерал|`FALSE`|`TRUE`<br/>`FALSE`|
