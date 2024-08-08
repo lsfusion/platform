@@ -35,6 +35,8 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.controller.remote.RemoteConnection;
 import lsfusion.server.physics.admin.log.ServerLoggers;
+import org.apache.commons.httpclient.URIException;
+import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hc.client5.http.cookie.BasicCookieStore;
 import org.apache.hc.client5.http.cookie.Cookie;
@@ -99,9 +101,26 @@ public abstract class CallHTTPAction extends CallAction {
         return responseCookies;
     }
 
+    private String getTransformedEncodedText(ExecutionContext<PropertyInterface> context, PropertyInterface param, Charset charset) {
+        if (param == null)
+            return null;
+
+        String transformedText = getTransformedText(context, param);
+        if(transformedText != null) {
+            try {
+                transformedText = URIUtil.encodeQuery(transformedText, charset.toString());
+            } catch (URIException e) {
+                throw Throwables.propagate(e);
+            }
+        }
+
+        return transformedText;
+    }
+
     @Override
     protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) {
-        String connectionString = getTransformedText(context, queryInterface);
+        Charset defaultUrlCharset = ExternalUtils.defaultUrlCharset;
+        String connectionString = getTransformedEncodedText(context, queryInterface, defaultUrlCharset);
         if(connectionString == null)
             throw new RuntimeException("connectionString not specified");
 
@@ -111,7 +130,7 @@ public abstract class CallHTTPAction extends CallAction {
         boolean successfulResponse = false;
         try {
             Result<ImOrderSet<PropertyInterface>> rNotUsedParams = new Result<>();
-            connectionString = replaceParams(context, createUrlProcessor(connectionString, noExec), rNotUsedParams, ExternalUtils.defaultUrlCharset);
+            connectionString = replaceParams(context, createUrlProcessor(connectionString, noExec), rNotUsedParams, defaultUrlCharset);
 
             if(noExec)
                 targetPropList.single().change(connectionString, context);
@@ -133,9 +152,10 @@ public abstract class CallHTTPAction extends CallAction {
                 if (method.hasBody()) {
                     ContentType forceContentType = ExternalUtils.parseContentType(headers.get("Content-Type"));
 
-                    bodyUrl = bodyUrlInterface != null ? getTransformedText(context, bodyUrlInterface) : null;
+                    Charset charsetFromContentType = ExternalUtils.getCharsetFromContentType(forceContentType, true);
+                    bodyUrl = getTransformedEncodedText(context, bodyUrlInterface, charsetFromContentType);
                     if(bodyUrl != null) {
-                        bodyUrl = replaceParams(context, createUrlProcessor(bodyUrl, noExec), rNotUsedParams, ExternalUtils.getCharsetFromContentType(forceContentType, true));
+                        bodyUrl = replaceParams(context, createUrlProcessor(bodyUrl, noExec), rNotUsedParams, charsetFromContentType);
                         if (!rNotUsedParams.result.isEmpty()) {
                             throw new RuntimeException("All params should be used in BODYURL");
                         }
