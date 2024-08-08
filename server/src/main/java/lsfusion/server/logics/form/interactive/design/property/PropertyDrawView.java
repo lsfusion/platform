@@ -975,30 +975,31 @@ public class PropertyDrawView extends BaseComponentView {
     }
 
     public String getValueAlignmentHorz(FormInstanceContext context) {
-        if (valueAlignmentHorz == null) {
-            if (isProperty(context)) {
-                Type type = getAssertValueType(context);
-                if (type != null)
-                    return type.getValueAlignmentHorz();
-                return "start";
-            } else {
-                return "center";
-            }
+        if(valueAlignmentHorz != null)
+            return valueAlignmentHorz;
+
+        if (isProperty(context)) {
+            Type type = getAssertValueType(context);
+            if (type != null)
+                return type.getValueAlignmentHorz();
+            return "start";
         }
-        return valueAlignmentHorz;
+
+        return "center";
     }
 
     public String getValueAlignmentVert(FormInstanceContext context) {
-        if (valueAlignmentVert == null) {
-            if(isProperty(context)) {
-                Type type = getAssertValueType(context);
-                //see GTextBasedType.getVertTextAlignment
-                if (type != null && !(type instanceof TextBasedClass))
-                    return type.getValueAlignmentVert();
-            }
-            return "center";
+        if (valueAlignmentVert != null)
+            return valueAlignmentVert;
+
+        if(isProperty(context)) {
+            Type type = getAssertValueType(context);
+            //see GTextBasedType.getVertTextAlignment
+            if (type != null && !(type instanceof TextBasedClass))
+                return type.getValueAlignmentVert();
         }
-        return valueAlignmentVert;
+
+        return "center";
     }
 
     public String getValueOverflowHorz(FormInstanceContext context) {
