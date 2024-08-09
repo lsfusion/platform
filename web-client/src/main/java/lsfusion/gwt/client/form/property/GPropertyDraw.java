@@ -771,11 +771,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return valueAlignmentHorz;
     }
 
-    public String getVertTextAlignment(boolean isInput, RendererType rendererType) {
-        if (valueAlignmentVert != null) {
-            return valueAlignmentVert;
-        }
-        return getRenderType(rendererType).getVertTextAlignment(isInput);
+    public String getVertTextAlignment() {
+        return valueAlignmentVert;
     }
 
     public String getValueOverflowHorz() {

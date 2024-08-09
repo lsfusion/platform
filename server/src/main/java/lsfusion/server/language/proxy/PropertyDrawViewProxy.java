@@ -312,11 +312,11 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.valueOverflowVert = valueOverflowVert;
     }
 
-    public void setValueShrinkHorz(boolean valueShrinkHorz) {
+    public void setValueShrinkHorz(Boolean valueShrinkHorz) {
         target.valueShrinkHorz = valueShrinkHorz;
     }
 
-    public void setValueShrinkVert(boolean valueShrinkVert) {
+    public void setValueShrinkVert(Boolean valueShrinkVert) {
         target.valueShrinkVert = valueShrinkVert;
     }
 

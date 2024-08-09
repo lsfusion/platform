@@ -77,6 +77,16 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
         return "center";
     }
 
+    @Override
+    public String getValueOverflowHorz() {
+        return "clip";
+    }
+
+    @Override
+    public boolean getValueShrinkHorz() {
+        return false;
+    }
+
     protected static boolean isParseNullValue(String value) {
         return value.equals("");
     }

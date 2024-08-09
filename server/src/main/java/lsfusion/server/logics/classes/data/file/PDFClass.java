@@ -53,8 +53,17 @@ public class PDFClass extends StaticFormatFileClass {
     }
 
     @Override
+    public String getValueAlignmentHorz() {
+        return "stretch";
+    }
+
+    @Override
     public String getValueAlignmentVert() {
         return "stretch";
-
     }
+
+/*    @Override
+    public boolean getValueShrinkHorz() {
+        return true;
+    }*/
 }

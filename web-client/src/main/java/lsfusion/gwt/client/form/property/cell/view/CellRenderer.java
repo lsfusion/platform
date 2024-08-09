@@ -162,12 +162,11 @@ public abstract class CellRenderer {
                 break;
         }
 
-        String vertAlignment = property.getVertTextAlignment(false, rendererType); // here we don't care about baseline / center
+        String vertAlignment = property.getVertTextAlignment(); // here we don't care about baseline / center
         switch (vertAlignment) {
             case "start":
                 element.addClassName("prop-flex-vert-start");
                 break;
-            case "baseline":
             case "center":
                 element.addClassName("prop-flex-vert-center");
                 break;
@@ -198,7 +197,7 @@ public abstract class CellRenderer {
                 break;
         }
 
-        String vertAlignment = property.getVertTextAlignment(isInput, rendererType);
+        String vertAlignment = property.getVertTextAlignment();
         switch (vertAlignment) {
             case "start":
                 element.addClassName("prop-text-vert-start");
@@ -206,9 +205,6 @@ public abstract class CellRenderer {
             case "center":
             case "stretch":
                 element.addClassName("prop-text-vert-center");
-                break;
-            case "baseline":
-                element.addClassName("prop-text-vert-baseline");
                 break;
             case "end":
                 element.addClassName("prop-text-vert-end");
@@ -263,7 +259,7 @@ public abstract class CellRenderer {
                 break;
         }
 
-        String vertAlignment = property.getVertTextAlignment(isInput, rendererType);
+        String vertAlignment = property.getVertTextAlignment();
         switch (vertAlignment) {
             case "start":
                 element.removeClassName("prop-text-vert-start");
@@ -271,9 +267,6 @@ public abstract class CellRenderer {
             case "center":
             case "stretch":
                 element.removeClassName("prop-text-vert-center");
-                break;
-            case "baseline":
-                element.removeClassName("prop-text-vert-baseline");
                 break;
             case "end":
                 element.removeClassName("prop-text-vert-end");
@@ -299,12 +292,11 @@ public abstract class CellRenderer {
                 break;
         }
 
-        String vertAlignment = property.getVertTextAlignment(false, rendererType); // here we don't care about baseline / center
+        String vertAlignment = property.getVertTextAlignment(); // here we don't care about baseline / center
         switch (vertAlignment) {
             case "top":
                 element.removeClassName("prop-flex-vert-start");
                 break;
-            case "baseline":
             case "center":
                 element.removeClassName("prop-flex-vert-center");
                 break;

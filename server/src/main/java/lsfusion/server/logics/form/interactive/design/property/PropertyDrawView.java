@@ -109,8 +109,8 @@ public class PropertyDrawView extends BaseComponentView {
     public String valueOverflowHorz;
     public String valueOverflowVert;
 
-    public boolean valueShrinkHorz;
-    public boolean valueShrinkVert;
+    public Boolean valueShrinkHorz;
+    public Boolean valueShrinkVert;
 
     public LocalizedString comment;
     public String commentElementClass;
@@ -564,7 +564,7 @@ public class PropertyDrawView extends BaseComponentView {
         pool.writeString(outStream, getValueOverflowHorz(pool.context));
         pool.writeString(outStream, getValueOverflowVert(pool.context));
 
-        pool.writeBoolean(outStream, getValueShrinkHorz());
+        pool.writeBoolean(outStream, getValueShrinkHorz(pool.context));
         pool.writeBoolean(outStream, getValueShrinkVert());
 
         pool.writeString(outStream, ThreadLocalContext.localize(comment));
@@ -1006,6 +1006,12 @@ public class PropertyDrawView extends BaseComponentView {
         if(valueOverflowHorz != null)
             return valueOverflowHorz;
 
+        if(isProperty(context)) {
+            Type type = getAssertValueType(context);
+            if (type != null)
+                return type.getValueOverflowHorz();
+        }
+
         if(isShrinkOverflowVisible(context))
             return "visible";
 
@@ -1022,12 +1028,24 @@ public class PropertyDrawView extends BaseComponentView {
         return "clip";
     }
 
-    public boolean getValueShrinkHorz() {
-        return valueShrinkHorz;
+    public boolean getValueShrinkHorz(FormInstanceContext context) {
+        if(valueShrinkHorz != null)
+            return valueShrinkHorz;
+
+        if (isProperty(context)) {
+            Type type = getAssertValueType(context);
+            if (type != null)
+                return type.getValueShrinkHorz();
+        }
+
+        return false;
     }
 
     public boolean getValueShrinkVert() {
-        return valueShrinkVert;
+        if(valueShrinkVert != null)
+            return valueShrinkVert;
+
+        return false;
     }
 
     public String getInputType(FormInstanceContext context) {

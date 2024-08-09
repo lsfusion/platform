@@ -84,6 +84,11 @@ public class ImageClass extends StaticFormatFileClass {
     }
 
     @Override
+    public String getValueOverflowHorz() {
+        return "auto";
+    }
+
+    @Override
     public void formatXLS(RawFileData object, Cell cell, ExportXLSWriter.Styles styles) {
 
         if (object != null) {

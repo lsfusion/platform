@@ -132,7 +132,7 @@ a.text-based-prop-value { /* we have to set cursor pointer for a since we don't 
 .prop-text-vert-center {
     vertical-align: middle;
 }
-.prop-text-vert-baseline {
+input.prop-text-vert-center {
     vertical-align: baseline;
 }
 .prop-text-vert-end {
