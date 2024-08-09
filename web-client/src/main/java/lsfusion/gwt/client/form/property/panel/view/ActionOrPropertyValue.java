@@ -5,6 +5,7 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.AppBaseImage;
 import lsfusion.gwt.client.base.FocusUtils;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
@@ -201,8 +202,8 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
         Element renderElement = getRenderElement();
         Element sizeElement = InputBasedCellRenderer.getSizeElement(renderElement);
         sizeElement.addClassName("prop-size-value");
-        if(!property.isShrinkOverflowVisible())
-            sizeElement.addClassName("prop-value-shrink");
+
+        CellRenderer.setupValueOverflowShrink(sizeElement, property);
 
         if(sizeElement != renderElement) {
             FlexPanel.setPanelWidth(sizeElement, valueWidth);

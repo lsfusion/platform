@@ -26,9 +26,9 @@ title: 'Встроенные классы'
 |`JSON`               |JSON|`{"a":["x","y","z"]}`|
 |`FILE`               |Файл динамического типа (содержимое файла вместе с его расширением)||
 |`NAMEDFILE`          |Файл динамического типа (содержимое файла вместе с его именем и расширением)||
-|`RAWFILE`, `WORDFILE`, `IMAGEFILE`, `PDFFILE`, `EXCELFILE`, `CSVFILE`, `HTMLFILE`, `JSONFILE`, `XMLFILE`, `TABLEFILE`|Файлы конкретного типа (`RAWFILE` - файл без расширения / с неизвестным расширением)||
+|`RAWFILE`, `WORDFILE`, `IMAGEFILE`, `PDFFILE`, `VIDEOFILE`, `DBFFILE`, `EXCELFILE`, `CSVFILE`, `HTMLFILE`, `JSONFILE`, `XMLFILE`, `TABLEFILE`|Файлы конкретного типа (`RAWFILE` - файл без расширения / с неизвестным расширением)||
 |`LINK`               |Символьный идентификатор-ссылка на файл (URI)||
-|`RAWLINK`, `WORDLINK`, `IMAGELINK`, `PDFLINK`, `EXCELLINK`, `CSVLINK`, `HTMLLINK`, `JSONLINK`, `XMLLINK`, `TABLELINK`|Символьный идентификатор-ссылка на файл конкретного типа (`RAWLINK` - ссылка на файл без расширения / с неизвестным расширением)||
+|`RAWLINK`, `WORDLINK`, `IMAGELINK`, `PDFLINK`, `VIDEOLINK`, `DBFLINK`, `EXCELLINK`, `CSVLINK`, `HTMLLINK`, `JSONLINK`, `XMLLINK`, `TABLELINK`|Символьный идентификатор-ссылка на файл конкретного типа (`RAWLINK` - ссылка на файл без расширения / с неизвестным расширением)||
 
 ## Наследование {#inheritance}
 
@@ -38,8 +38,8 @@ title: 'Встроенные классы'
 |----------------------------------|--------------------------------------------|
 |Числа                             |`INTEGER`, `LONG`, `DOUBLE`, `NUMERIC [ , ]`|
 |Строки                            |`STRING`, `STRING[ ]`, `ISTRING`, `ISTRING[]`, `BPSTRING[ ]`, `BPISTRING[ ]`, `TEXT`|
-|Файлы конкретного типа            |`RAWFILE,` `WORDFILE, IMAGEFILE, PDFFILE,` `EXCELFILE`, `CSVFILE`, `HTMLFILE`, `JSONFILE`, `XMLFILE`, `TABLEFILE`|
-|Ссылки на файлы конкретного типа  |`RAWLINK`, `WORDLINK`, `IMAGELINK`, `PDFLINK`, `EXCELLINK`, `CSVLINK`, `HTMLLINK`, `JSONLINK`, `XMLLINK`, `TABLELINK`|
+|Файлы конкретного типа            |`RAWFILE,` `WORDFILE`, `IMAGEFILE`, `PDFFILE`, `VIDEOFILE`, `DBFFILE`, `EXCELFILE`, `CSVFILE`, `HTMLFILE`, `JSONFILE`, `XMLFILE`, `TABLEFILE`|
+|Ссылки на файлы конкретного типа  |`RAWLINK`, `WORDLINK`, `IMAGELINK`, `PDFLINK`, `VIDEOLINK`, `DBFLINK`, `EXCELLINK`, `CSVLINK`, `HTMLLINK`, `JSONLINK`, `XMLLINK`, `TABLELINK`|
 
 Встроенные классы наследуют друг друга только в рамках одного семейства и не могут наследовать / наследоваться от пользовательских классов. Наследование в рамках одного семейства строится по принципу: более узкий класс наследуется от более широкого.
 
@@ -127,27 +127,29 @@ ELSE
 
 При преобразовании файлов конкретного типа (`JSONFILE`, `XMLFILE`, ...) к файлу динамического типа (`FILE`, `NAMEDFILE`), как явном, так и неявном (например при [импорте данных](Data_import_IMPORT.md) без указании формата или при [взаимодействии с внешними системами](Access_to_an_external_system_EXTERNAL.md)) расширение результирующего файла определяется следующим образом:
 
-|Имя класса |Расширение   |
-|-----------|-------------|
-|`RAWFILE`  |Пустая строка|
-|`JSONFILE` |json         |
-|`XMLFILE`  |xml          |
-|`CSVFILE`  |csv          |
-|`WORDFILE` |doc          |
-|`EXCELFILE`|xls          |
-|`HTMLFILE` |html         |
-|`PDFFILE`  |pdf          |
-|`IMAGEFILE`|jpg          |
-|`TABLEFILE`|table        |
+|Имя класса  |Расширение   |
+|------------|-------------|
+|`RAWFILE`   |Пустая строка|
+|`JSONFILE`  |json         |
+|`XMLFILE`   |xml          |
+|`CSVFILE`   |csv          |
+|`WORDFILE`  |doc          |
+|`EXCELFILE` |xls          |
+|`HTMLFILE`  |html         |
+|`PDFFILE`   |pdf          |
+|`VIDEOFILE` |mp4          |
+|`DBFFILE`   |dbf          |
+|`IMAGEFILE` |jpg          |
+|`TABLEFILE` |table        |
 
 ## Порядок определения результирующего свойства при [обращении из внешней системы](Access_from_an_external_system.md#httpresult) {#export}
 
 |Имя класса|Имя свойства|
 |----------|------------|
-|`FILE`, `NAMEDFILE`, `RAWFILE`, `WORDFILE`, `IMAGEFILE`, `PDFFILE`, `EXCELFILE`, `CSVFILE`, `HTMLFILE`, `JSONFILE`, `XMLFILE`, `TABLEFILE`|`exportFile`, `exportNamedFile`, `exportRawFile`, `exportWordFile`, `exportImageFile`, `exportPdfFile`, `exportExcelFile`, `exportCsvFile`, `exportHtmlFile`, `exportJsonFile`, `exportXmlFile`|
+|`FILE`, `NAMEDFILE`, `RAWFILE`, `WORDFILE`, `IMAGEFILE`, `PDFFILE`, `VIDEOFILE`, `DBFFILE`, `EXCELFILE`, `CSVFILE`, `HTMLFILE`, `JSONFILE`, `XMLFILE`, `TABLEFILE`|`exportFile`, `exportNamedFile`, `exportRawFile`, `exportWordFile`, `exportImageFile`, `exportPdfFile`, `exportVideoFile`, `exportDbfFile`, `exportExcelFile`, `exportCsvFile`, `exportHtmlFile`, `exportJsonFile`, `exportXmlFile`|
 |`TEXT`, `STRING`, `BPSTRING`|`exportText`, `exportString`, `exportBPString`|
 |`NUMERIC`, `LONG`, `INTEGER`, `DOUBLE`|`exportNumeric`, `exportLong`, `exportInteger`, `exportDouble`|
 |`DATETIME`, `DATE`, `TIME`, `YEAR`| `exportDateTime`, `exportDate`, `exportTime`, `exportYear`|
-|`LINK`, `RAWLINK`, `WORDLINK`, `IMAGELINK`, `PDFLINK`, `EXCELLINK`, `CSVLINK`, `HTMLLINK`, `JSONLINK`, `XMLLINK`, `TABLELINK`| `exportFile`, `exportRawFile`, `exportWordFile`, `exportImageFile`, `exportPdfFile`, `exportExcelFile`, `exportCsvFile`, `exportHtmlFile`, `exportJsonFile`, `exportXmlFile`|
+|`LINK`, `RAWLINK`, `WORDLINK`, `IMAGELINK`, `PDFLINK`, `VIDEOLINK`, `DBFLINK`, `EXCELLINK`, `CSVLINK`, `HTMLLINK`, `JSONLINK`, `XMLLINK`, `TABLELINK`| `exportFile`, `exportRawFile`, `exportWordFile`, `exportImageFile`, `exportPdfFile`, `exportVideoFile`, `exportDbfFile`, `exportExcelFile`, `exportCsvFile`, `exportHtmlFile`, `exportJsonFile`, `exportXmlFile`|
 |`BOOLEAN`, `COLOR`, `JSON`|`exportBoolean`, `exportColor`, `exportJSON`|
 |[Пользовательские классы](User_classes.md)|`exportObject`|

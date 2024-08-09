@@ -57,4 +57,9 @@ public class TextClass extends StringClass {
     public String getInputType(FormInstanceContext context) {
         return "textarea";
     }
+
+    @Override
+    public String getValueAlignmentVert() {
+        return "start";
+    }
 }

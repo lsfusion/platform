@@ -7,6 +7,11 @@ import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
 public class GHTMLLinkType extends GLinkType {
     @Override
+    public String getExtension() {
+        return "html";
+    }
+
+    @Override
     public String toString() {
         return ClientMessages.Instance.get().typeHTMLFileLinkCaption();
     }

@@ -5879,9 +5879,9 @@ fragment STRING_META_FRAGMENT : ('###' | '##')? (NEXTID_FRAGMENT ('###' | '##'))
 fragment INTERVAL_TYPE : 'DATE' | 'DATETIME' | 'TIME' | 'ZDATETIME';
 
 PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'TBOOLEAN' | 'DATE' | ('DATETIME' ('[' '0'..'6' ']')?) | ('ZDATETIME' ('[' '0'..'6' ']')?) | 'YEAR'
-                |   'TEXT' | 'RICHTEXT' | 'HTMLTEXT' | ('TIME' ('[' '0'..'6' ']')?) | 'WORDFILE' | 'IMAGEFILE' | 'PDFFILE' | 'DBFFILE' | 'RAWFILE'
+                |   'TEXT' | 'RICHTEXT' | 'HTMLTEXT' | ('TIME' ('[' '0'..'6' ']')?) | 'WORDFILE' | 'IMAGEFILE' | 'PDFFILE' | 'VIDEOFILE' | 'DBFFILE' | 'RAWFILE'
 				| 	'FILE' | 'EXCELFILE' | 'TEXTFILE' | 'CSVFILE' | 'HTMLFILE' | 'JSONFILE' | 'XMLFILE' | 'TABLEFILE' | 'NAMEDFILE'
-				|   'WORDLINK' | 'IMAGELINK' | 'PDFLINK' | 'DBFLINK'
+				|   'WORDLINK' | 'IMAGELINK' | 'PDFLINK' | 'VIDEOLINK' | 'DBFLINK'
 				|   'RAWLINK' | 'LINK' | 'EXCELLINK' | 'TEXTLINK' | 'CSVLINK' | 'HTMLLINK' | 'JSONLINK' | 'XMLLINK' | 'TABLELINK'
 				|   ('BPSTRING' ('[' DIGITS ']')?) | ('BPISTRING' ('[' DIGITS ']')?)
 				|	('STRING' ('[' DIGITS ']')?) | ('ISTRING' ('[' DIGITS ']')?) | 'NUMERIC' ('[' DIGITS ',' DIGITS ']')? | 'COLOR'

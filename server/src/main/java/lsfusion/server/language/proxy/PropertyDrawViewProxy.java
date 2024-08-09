@@ -272,8 +272,53 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         }
     }
 
+    //deprecated
     public void setValueAlignment(FlexAlignment valueAlignment) {
-        target.valueAlignment = valueAlignment;
+        setValueAlignmentHorz(valueAlignment);
+    }
+
+    public void setValueAlignmentHorz(FlexAlignment valueAlignmentHorz) {
+        target.valueAlignmentHorz = flexAlignmentToString(valueAlignmentHorz);
+    }
+
+    public void setValueAlignmentVert(FlexAlignment valueAlignmentVert) {
+        target.valueAlignmentVert = flexAlignmentToString(valueAlignmentVert);
+    }
+
+    private String flexAlignmentToString(FlexAlignment flexAlignment) {
+        String result = null;
+        if(flexAlignment != null) {
+            switch (flexAlignment) {
+                case START:
+                    result = "start";
+                    break;
+                case CENTER:
+                    result = "center";
+                    break;
+                case STRETCH:
+                    result = "stretch";
+                    break;
+                case END:
+                    result = "end";
+            }
+        }
+        return result;
+    }
+
+    public void setValueOverflowHorz(String valueOverflowHorz) {
+        target.valueOverflowHorz = valueOverflowHorz;
+    }
+
+    public void setValueOverflowVert(String valueOverflowVert) {
+        target.valueOverflowVert = valueOverflowVert;
+    }
+
+    public void setValueShrinkHorz(Boolean valueShrinkHorz) {
+        target.valueShrinkHorz = valueShrinkHorz;
+    }
+
+    public void setValueShrinkVert(Boolean valueShrinkVert) {
+        target.valueShrinkVert = valueShrinkVert;
     }
 
     public void setWrap(boolean wrap) {

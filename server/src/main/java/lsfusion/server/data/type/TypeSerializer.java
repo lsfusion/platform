@@ -146,6 +146,7 @@ public class TypeSerializer {
         }
         if (type == DataType.DYNAMICFORMATFILE) return DynamicFormatFileClass.get(inStream.readBoolean(), inStream.readBoolean());
         if (type == DataType.PDF) return PDFClass.get(inStream.readBoolean(), inStream.readBoolean());
+        if (type == DataType.VIDEO) return VideoClass.get(inStream.readBoolean(), inStream.readBoolean());
 
         if (type == DataType.IMAGELINK) return ImageLinkClass.get(inStream.readBoolean());
         if (type == DataType.WORDLINK) return WordLinkClass.get(inStream.readBoolean());
@@ -173,6 +174,7 @@ public class TypeSerializer {
         }
         if (type == DataType.DYNAMICFORMATLINK) return DynamicFormatLinkClass.get(inStream.readBoolean());
         if (type == DataType.PDFLINK) return PDFLinkClass.get(inStream.readBoolean());
+        if (type == DataType.VIDEOLINK) return VideoLinkClass.get(inStream.readBoolean());
         if (type == DataType.DBFLINK) return DBFLinkClass.get(inStream.readBoolean());
         if (type == DataType.JDBC) return new JDBCTable.JDBCDataClass(inStream.readInt(), inStream.readUTF());
 

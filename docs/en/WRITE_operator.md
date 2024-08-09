@@ -23,19 +23,20 @@ The following URL types are supported:
 
 It is assumed that the file extension is not specified in the URL (that is, the period `.` is also considered a part of the file name). This extension is determined automatically based on the class of the file being written:
 
-|Extension                                  |Class      |
-|-------------------------------------------|-----------|
-|read from the passed object                |`FILE`     |
-|json                                       |`JSONFILE` |
-|xml                                        |`XMLFILE`  |
-|csv                                        |`CSVFILE`  |
-|xls or xlsx, depending on the file content |`EXCELFILE`|
-|dbf                                        |`DBFFILE`  |
-|table                                      |`TABLEFILE`|
-|html                                       |`HTMLFILE` |
-|doc or docx, depending on the file content |`WORDFILE` |
-|jpg                                        |`IMAGEFILE`|
-|pdf                                        |`PDFFILE`  |
+| Extension                                  | Class       |
+|--------------------------------------------|-------------|
+| read from the passed object                | `FILE`      |
+| json                                       | `JSONFILE`  |
+| xml                                        | `XMLFILE`   |
+| csv                                        | `CSVFILE`   |
+| xls or xlsx, depending on the file content | `EXCELFILE` |
+| dbf                                        | `DBFFILE`   |
+| table                                      | `TABLEFILE` |
+| html                                       | `HTMLFILE`  |
+| doc or docx, depending on the file content | `WORDFILE`  |
+| jpg                                        | `IMAGEFILE` |
+| pdf                                        | `PDFFILE`   |
+| mp4                                        | `VIDEOFILE` |
 
 The `Downloads` folder in the user folder is considered to be the current folder on the client side.
 

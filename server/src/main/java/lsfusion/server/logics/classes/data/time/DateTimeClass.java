@@ -123,8 +123,8 @@ public class DateTimeClass extends HasTimeClass<LocalDateTime> {
     }
 
     @Override
-    public FlexAlignment getValueAlignment() {
-        return FlexAlignment.END;
+    public String getValueAlignmentHorz() {
+        return "end";
     }
 
     public boolean isSafeString(Object value) {
