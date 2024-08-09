@@ -4,6 +4,11 @@ import lsfusion.gwt.client.ClientMessages;
 
 public class GJSONLinkType extends GLinkType {
     @Override
+    public String getExtension() {
+        return "json";
+    }
+
+    @Override
     public String toString() {
         return ClientMessages.Instance.get().typeJSONFileLinkCaption();
     }

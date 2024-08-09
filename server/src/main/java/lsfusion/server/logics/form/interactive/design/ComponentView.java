@@ -1,6 +1,5 @@
 package lsfusion.server.logics.form.interactive.design;
 
-import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.base.view.FlexAlignment;
@@ -12,19 +11,14 @@ import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.action.session.DataSession;
-import lsfusion.server.logics.action.session.LocalNestedType;
 import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerIdentitySerializable;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
-import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
-import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.logics.property.implement.PropertyRevImplement;
-import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.awt.*;
 import java.io.DataInputStream;
@@ -56,6 +50,8 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     protected Boolean shrink = null;
     protected Boolean alignShrink = null;
     protected Boolean alignCaption = null;
+    protected String overflowHorz;
+    protected String overflowVert;
 
     public Boolean panelCaptionVertical;
     public Boolean panelCaptionLast;
@@ -205,6 +201,28 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         return false;
     }
 
+    public String getOverflowHorz(FormInstanceContext context) {
+        if(overflowHorz != null) {
+            return overflowHorz;
+        }
+
+        if(isShrinkOverflowVisible(context))
+            return "visible";
+
+        return null;
+    }
+
+    public String getOverflowVert(FormInstanceContext context) {
+        if(overflowVert != null) {
+            return overflowVert;
+        }
+
+        if(isShrinkOverflowVisible(context))
+            return "visible";
+
+        return null;
+    }
+
     public Boolean getAlignCaption() {
         return alignCaption;
     }
@@ -269,6 +287,14 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
 
     public void setAlignCaption(boolean alignCaption) {
         this.alignCaption = alignCaption;
+    }
+
+    public void setOverflowHorz(String overflowHorz) {
+        this.overflowHorz = overflowHorz;
+    }
+
+    public void setOverflowVert(String overflowVert) {
+        this.overflowVert = overflowVert;
     }
 
     public void setSize(Dimension size) {
@@ -443,8 +469,9 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         pool.writeObject(outStream, getAlignment(pool.context));
         outStream.writeBoolean(isShrink(pool.context));
         outStream.writeBoolean(isAlignShrink(pool.context));
-        outStream.writeBoolean(isShrinkOverflowVisible(pool.context));
         pool.writeObject(outStream, alignCaption);
+        pool.writeString(outStream, getOverflowHorz(pool.context));
+        pool.writeString(outStream, getOverflowVert(pool.context));
 
         outStream.writeInt(marginTop);
         outStream.writeInt(marginBottom);
@@ -475,6 +502,8 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         shrink = inStream.readBoolean();
         alignShrink = inStream.readBoolean();
         alignCaption = pool.readObject(inStream);
+        overflowHorz = pool.readString(inStream);
+        overflowVert = pool.readString(inStream);
         marginTop = inStream.readInt();
         marginBottom = inStream.readInt();
         marginLeft = inStream.readInt();

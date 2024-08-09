@@ -91,6 +91,7 @@ public class ClientTypeSerializer {
         if (type == DataType.HTMLSTRING) return ClientHTMLStringClass.instance;
 
         if (type == DataType.PDF) return new ClientPDFClass(inStream.readBoolean(), inStream.readBoolean());
+        if (type == DataType.VIDEO) return new ClientVideoClass(inStream.readBoolean(), inStream.readBoolean());
         if (type == DataType.DBF) return new ClientDBFClass(inStream.readBoolean(), inStream.readBoolean());
         if (type == DataType.IMAGE) return new ClientImageClass(inStream.readBoolean(), inStream.readBoolean());
         if (type == DataType.WORD) return new ClientWordClass(inStream.readBoolean(), inStream.readBoolean());
@@ -110,6 +111,7 @@ public class ClientTypeSerializer {
         if (type == DataType.CUSTOMSTATICFORMATFILE) return ClientCustomStaticFormatFileClass.deserialize(inStream);
 
         if (type == DataType.PDFLINK) return new ClientPDFLinkClass(inStream.readBoolean());
+        if (type == DataType.VIDEOLINK) return new ClientVideoLinkClass(inStream.readBoolean());
         if (type == DataType.DBFLINK) return new ClientDBFLinkClass(inStream.readBoolean());
         if (type == DataType.IMAGELINK) return new ClientImageLinkClass(inStream.readBoolean());
         if (type == DataType.WORDLINK) return new ClientWordLinkClass(inStream.readBoolean());

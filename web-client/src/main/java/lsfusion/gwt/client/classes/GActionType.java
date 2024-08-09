@@ -80,9 +80,4 @@ public class GActionType extends GDataType {
     public String toString() {
         return ClientMessages.Instance.get().typeActionCaption();
     }
-
-    @Override
-    public Style.TextAlign getHorzTextAlignment() {
-        return Style.TextAlign.CENTER;
-    }
 }

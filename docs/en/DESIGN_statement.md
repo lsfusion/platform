@@ -118,6 +118,8 @@ To access design components, you can use their names or address property compone
 |`alignShrink`|todo|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`align`<br/>`alignment`|Component alignment inside the container. Acceptable values: `START` (at the beginning), `CENTER` (in the center), `END` (at the end), `STRETCH` (stretched).|Alignment type|`START`|`STRETCH`|
 |`alignCaption`|todo|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
+|`overflowHorz`|todo|String literal|`auto`|`clip`<br/>`visible`<br/>`auto`|
+|`overflowVert`|todo|String literal|`auto`|`clip`<br/>`visible`<br/>`auto`|
 |`marginTop`|Top margin|Integer literal|`0`|`3`|
 |`marginRight`|Right margin|Integer literal|`0`|`1`|
 |`marginBottom`|Bottom margin|Integer literal|`0`|`4`|
@@ -199,7 +201,13 @@ To access design components, you can use their names or address property compone
 |`placeholder`|Placeholder of a property or action|String literal|placeholder of a property or action|`'Placeholder'`|
 |`tooltip`|The tip to be shown when the cursor hovers over the caption of a property or action|String literal|Default tooltip|`'Tip'`|
 |`valueTooltip`|The tip to be shown when the cursor hovers over the value of a property|String literal|Default tooltip|`'Tip'`|
-|`valueAlignment`|Component value alignment. Acceptable values: `START` (at the beginning), `CENTER` (in the center), `END` (at the end), `STRETCH` (stretched).|Alignment type|`START`|`STRETCH`|
+|`valueAlignment`|Component value alignment. Acceptable values: `START` (at the beginning), `CENTER` (in the center), `END` (at the end), `STRETCH` (stretched). **deprecated since version 6, use `valueAlignmentHorz`**|Alignment type|`START`|`STRETCH`|
+|`valueAlignmentHorz`|Component value alignment horizontal. Acceptable values: `START` (at the beginning), `CENTER` (in the center), `END` (at the end), `STRETCH` (stretched).|Alignment type|`START`|`STRETCH`|
+|`valueAlignmentVert`|Component value alignment vertical. Acceptable values: `START` (at the beginning), `CENTER` (in the center), `END` (at the end), `STRETCH` (stretched).|Alignment type|`START`|`STRETCH`|
+|`valueOverflowHorz`|todo|String literal|`auto`|`auto`<br/>`clip`<br/>`visible`|
+|`valueOverflowVert`|todo|String literal|`auto`|`auto`<br/>`clip`<br/>`visible`|
+|`valueShrinkHorz`|todo|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
+|`valueShrinkVert`|todo|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`clearText`|Specifying that the current text should be reset when input starts|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`notSelectAll`|Specifying that the text is not selected at the start of editing|`FALSE`|`TRUE`<br/>`FALSE`|
 |`askConfirm`|Specifies that an attempt to change the property (execute an action) will show a confirmation request|Extended Boolean literal|`FALSE`|`TRUE`<br/>`FALSE`|

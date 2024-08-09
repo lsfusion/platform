@@ -8,43 +8,43 @@ import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class PDFClass extends StaticFormatFileClass {
+public class VideoClass extends StaticFormatFileClass {
 
     protected String getFileSID() {
-        return "PDFFILE";
+        return "VIDEOFILE";
     }
 
-    private static Collection<PDFClass> instances = new ArrayList<>();
+    private static Collection<VideoClass> instances = new ArrayList<>();
 
-    public static PDFClass get() {
+    public static VideoClass get() {
         return get(false, false);
     }
-    public static PDFClass get(boolean multiple, boolean storeName) {
-        for (PDFClass instance : instances)
+    public static VideoClass get(boolean multiple, boolean storeName) {
+        for (VideoClass instance : instances)
             if (instance.multiple == multiple && instance.storeName == storeName)
                 return instance;
 
-        PDFClass instance = new PDFClass(multiple, storeName);
+        VideoClass instance = new VideoClass(multiple, storeName);
         instances.add(instance);
         DataClass.storeClass(instance);
         return instance;
     }
 
-    private PDFClass(boolean multiple, boolean storeName) {
+    private VideoClass(boolean multiple, boolean storeName) {
         super(multiple, storeName);
     }
 
     public byte getTypeID() {
-        return DataType.PDF;
+        return DataType.VIDEO;
     }
 
     public String getOpenExtension(RawFileData file) {
-        return "pdf";
+        return "mp4";
     }
 
     @Override
     public String getExtension() {
-        return "pdf";
+        return "mp4";
     }
 
     @Override
@@ -63,7 +63,7 @@ public class PDFClass extends StaticFormatFileClass {
     }
 
     @Override
-    public boolean getValueShrinkHorz() {
-        return true;
+    public String getValueOverflowHorz() {
+        return "auto";
     }
 }

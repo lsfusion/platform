@@ -26,15 +26,36 @@
     max-width: -moz-available;
 }
 
+.prop-value-overflow-horz-auto,
+.prop-value-overflow-horz-auto.comp-shrink-horz-clip {
+    overflow-x: auto;
+}
 
-.prop-value-shrink,
-.prop-value-shrink.comp-shrink-horz {
+.prop-value-overflow-horz-clip,
+.prop-value-overflow-horz-clip.comp-shrink-horz-auto {
     overflow-x: clip;
 }
 
-.prop-value-shrink,
-.prop-value-shrink.comp-shrink-vert {
+.prop-value-overflow-horz-visible,
+.prop-value-overflow-horz-visible.comp-shrink-horz-auto,
+.prop-value-overflow-horz-visible.comp-shrink-horz-clip {
+    overflow-x: visible;
+}
+
+.prop-value-overflow-vert-auto,
+.prop-value-overflow-vert-auto.comp-shrink-vert-clip {
+    overflow-y: auto;
+}
+
+.prop-value-overflow-vert-clip,
+.prop-value-overflow-vert-clip.comp-shrink-vert-auto {
     overflow-y: clip;
+}
+
+.prop-value-overflow-vert-visible
+.prop-value-overflow-vert-visible.comp-shrink-vert-auto,
+.prop-value-overflow-vert-visible.comp-shrink-vert-clip {
+    overflow-y: visible;
 }
 
 .text-based-prop-value {
@@ -44,7 +65,7 @@ a.text-based-prop-value { /* we have to set cursor pointer for a since we don't 
     cursor: pointer;
 }
 
-.prop-display-flex, .prop-display-flex.btn {
+.prop-display-flex.form-control, .prop-display-flex.btn {
     display: flex;
 }
 
@@ -60,6 +81,13 @@ a.text-based-prop-value { /* we have to set cursor pointer for a since we don't 
 .prop-flex-vert-center.wrap-text-not-empty.wrap-img-vert
 {
     justify-content: center;
+}
+.prop-flex-horz-stretch>*,
+.prop-flex-horz-stretch.wrap-text-not-empty.wrap-img-horz>*,
+.prop-flex-vert-stretch.wrap-text-not-empty.wrap-img-vert>*
+{
+    flex-grow: 1;
+    flex-shrink: 1;
 }
 .prop-flex-horz-end,
 .prop-flex-horz-end.wrap-text-not-empty.wrap-img-horz,
@@ -104,7 +132,7 @@ a.text-based-prop-value { /* we have to set cursor pointer for a since we don't 
 .prop-text-vert-center {
     vertical-align: middle;
 }
-.prop-text-vert-baseline {
+input.prop-text-vert-center {
     vertical-align: baseline;
 }
 .prop-text-vert-end {

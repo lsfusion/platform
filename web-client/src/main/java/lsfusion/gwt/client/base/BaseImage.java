@@ -2,8 +2,8 @@ package lsfusion.gwt.client.base;
 
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.ImageElement;
 import com.google.gwt.dom.client.Node;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
 import lsfusion.gwt.client.base.view.FlexPanel;
@@ -26,18 +26,35 @@ public interface BaseImage extends Serializable {
         return false;
     }
 
+    default String getTag() {
+        return "img";
+    }
+
+    default String getTag(String extension) {
+        switch (extension) {
+            case "pdf":
+                return "iframe";
+            case "mp4":
+                return "video";
+            default:
+                return "img";
+        }
+    }
+
     default String createImageHTML() {
         if(useIcon())
             return "<i class=\"" + ((BaseStaticImage) this).getFontClasses() + " wrap-text-img\"></i>";
-        else
-            return "<img src=\"" + getImageElementSrc(true) + "\" class=\"wrap-text-img\"></img>";
+        else {
+            String tag = getTag();
+            return "<" + tag + "src=\"" + getImageElementSrc(true) + "\" class=\"wrap-text-img\"></" + tag + ">";
+        }
     }
     default Element createImage() {
         Element imageElement;
         if(useIcon()) {
             imageElement = Document.get().createElement("i");
         } else {
-            imageElement = Document.get().createImageElement();
+            imageElement = GwtClientUtils.createImageElement(getTag());
         }
 
         updateImageSrc(imageElement);
@@ -46,7 +63,7 @@ public interface BaseImage extends Serializable {
     }
 
     default boolean updateImageSrc(Element element) {
-        boolean useIcon = !ImageElement.is(element);
+        boolean useIcon = element.getTagName().equalsIgnoreCase("i");
         boolean needIcon = useIcon();
         if(useIcon != needIcon)
             return false;
@@ -54,7 +71,7 @@ public interface BaseImage extends Serializable {
         if (useIcon)
             updateClasses(element, ((BaseStaticImage) this).getFontClasses());
         else
-            ((ImageElement) element).setSrc(getImageElementSrc(true));
+            GwtClientUtils.setSrc(element, getImageElementSrc(true));
 
         return true;
     }

@@ -183,7 +183,7 @@ public class DatePropertyEditor extends JDateChooser implements PropertyEditor, 
             this.dateFormatter = format;
 
             if (property != null) {
-                Integer valueAlignment = property.getSwingValueAlignment();
+                Integer valueAlignment = property.getSwingValueAlignmentHorz();
                 if (valueAlignment != null) {
                     setHorizontalAlignment(valueAlignment);
                 }

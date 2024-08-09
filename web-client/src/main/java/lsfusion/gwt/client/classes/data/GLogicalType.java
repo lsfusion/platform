@@ -68,11 +68,6 @@ public class GLogicalType extends GDataType {
         return ClientMessages.Instance.get().typeLogicalCaption();
     }
 
-    @Override
-    public Style.TextAlign getHorzTextAlignment() {
-        return Style.TextAlign.CENTER;
-    }
-
     private final static GInputType inputType = new GInputType("checkbox");
     @Override
     public GInputType getValueInputType() {

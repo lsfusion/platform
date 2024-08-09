@@ -5,13 +5,11 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.view.link.ImageLinkCellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
-public class GPDFLinkType extends GLinkType {
-
+public class GVideoLinkType extends GLinkType {
     @Override
     public String getExtension() {
-        return "pdf";
+        return "mp4";
     }
-
     @Override
     public CellRenderer createCellRenderer(GPropertyDraw property) {
         return new ImageLinkCellRenderer(property);
@@ -19,6 +17,6 @@ public class GPDFLinkType extends GLinkType {
 
     @Override
     public String toString() {
-        return ClientMessages.Instance.get().typePDFFileLinkCaption();
+        return ClientMessages.Instance.get().typeVideoFileLinkCaption();
     }
 }

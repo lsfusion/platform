@@ -26,9 +26,9 @@ title: 'Built-in classes'
 |`JSON`               |JSON                          |`{"a":["x","y","z"]}`|
 |`FILE`               |File of dynamic type (file content together with extension)||
 |`NAMEDFILE`          |File of dynamic type (file content together with name and extension)||
-|`RAWFILE`, `WORDFILE`, `IMAGEFILE`, `PDFFILE`, `EXCELFILE`, `CSVFILE`, `HTMLFILE`, `JSONFILE`, `XMLFILE`, `TABLEFILE`|Files of specific type (`RAWFILE`: file with no extension or with unknown extension)||
+|`RAWFILE`, `WORDFILE`, `IMAGEFILE`, `PDFFILE`, `VIDEOFILE`, `DBFFILE`, `EXCELFILE`, `CSVFILE`, `HTMLFILE`, `JSONFILE`, `XMLFILE`, `TABLEFILE`|Files of specific type (`RAWFILE`: file with no extension or with unknown extension)||
 |`LINK`               |Link to a file (URI)          ||
-|`RAWLINK`, `WORDLINK`, `IMAGELINK`, `PDFLINK`, `EXCELLINK`, `CSVLINK`, `HTMLLINK`, `JSONLINK`, `XMLLINK`, `TABLELINK`|Link to a file of a specific type (`RAWLINK`: link to a file with no extension or an unknown extension)||
+|`RAWLINK`, `WORDLINK`, `IMAGELINK`, `PDFLINK`, `VIDEOLINK`, `DBFLINK`, `EXCELLINK`, `CSVLINK`, `HTMLLINK`, `JSONLINK`, `XMLLINK`, `TABLELINK`|Link to a file of a specific type (`RAWLINK`: link to a file with no extension or an unknown extension)||
 
 ## Inheritance {#inheritance}
 
@@ -38,8 +38,8 @@ The builtin classes can be divided into four class *families* (assuming that eac
 |---------------------------------|---------------------------------------------------------------------------------------------------------|
 |Numbers                          |`INTEGER`, `LONG`, `DOUBLE`, `NUMERIC[ , ]`|
 |Strings                          |`STRING`, `STRING[ ]`, `ISTRING`, `ISTRING[]`, `BPSTRING[ ]`, `BPISTRING[ ]`, `TEXT`|
-|Files of a specific type         |`RAWFILE`, `WORDFILE`, `IMAGEFILE`, `PDFFILE`, `EXCELFILE`, `CSVFILE`, `HTMLFILE`, `JSONFILE`, `XMLFILE`, `TABLEFILE`|
-|Links to files of a specific type|`RAWLINK`, `WORDLINK`, `IMAGELINK`, `PDFLINK`, `EXCELLINK`, `CSVLINK`, `HTMLLINK`, `JSONLINK`, `XMLLINK`, `TABLELINK`|
+|Files of a specific type         |`RAWFILE`, `WORDFILE`, `IMAGEFILE`, `PDFFILE`, `VIDEOFILE`, `DBFFILE`, `EXCELFILE`, `CSVFILE`, `HTMLFILE`, `JSONFILE`, `XMLFILE`, `TABLEFILE`|
+|Links to files of a specific type|`RAWLINK`, `WORDLINK`, `IMAGELINK`, `PDFLINK`, `VIDEOLINK`, `DBFLINK`, `EXCELLINK`, `CSVLINK`, `HTMLLINK`, `JSONLINK`, `XMLLINK`, `TABLELINK`|
 
 The builtin classes inherit only from one another within a single family, and cannot inherit from or be inherited by user classes. Inheritance within each family works on the principle that the narrower class inherits from the broader one.
 
@@ -127,27 +127,29 @@ It is sometimes necessary to use some value for a built-in class which will diff
 
 When files of a specific type (`JSONFILE`, `XMLFILE`, ...) are cast into a file of dynamic type (`FILE`, `NAMEDFILE`), whether explicitly or implicitly (e.g. with [data import](Data_import_IMPORT.md) without specifying a format or when [working with external systems](Access_to_an_external_system_EXTERNAL.md)), the extension of the result file is determined as follows:
 
-|Class name |Extension       |
-|-----------|----------------|
-|`RAWFILE`  |The empty string|
-|`JSONFILE` |json            |
-|`XMLFILE`  |xml             |
-|`CSVFILE`  |csv             |
-|`WORDFILE` |doc             |
-|`EXCELFILE`|xls             |
-|`HTMLFILE` |html            |
-|`PDFFILE`  |pdf             |
-|`IMAGEFILE`|jpg             |
-|`TABLEFILE`|table           |
+|Class name  |Extension       |
+|------------|----------------|
+|`RAWFILE`   |The empty string|
+|`JSONFILE`  |json            |
+|`XMLFILE`   |xml             |
+|`CSVFILE`   |csv             |
+|`WORDFILE`  |doc             |
+|`EXCELFILE` |xls             |
+|`HTMLFILE`  |html            |
+|`PDFFILE`   |pdf             |
+|`VIDEOFILE` |mp4             |
+|`DBFFILE`   |dbf             |
+|`IMAGEFILE` |jpg             |
+|`TABLEFILE` |table           |
 
 ## The order of determining the result property when [accessing from an external system](Access_from_an_external_system.md#httpresult) {#export}
 
 |Class name|Property name|
 |---|---|
-|`FILE`, `NAMEDFILE`, `RAWFILE`, `WORDFILE`, `IMAGEFILE`, `PDFFILE`, `EXCELFILE`, `CSVFILE`, `HTMLFILE`, `JSONFILE`, `XMLFILE`, `TABLEFILE`|`exportFile`, `exportNamedFile`,`exportRawFile`, `exportWordFile`, `exportImageFile`, `exportPdfFile`, `exportExcelFile`, `exportCsvFile`, `exportHtmlFile`, `exportJsonFile`, `exportXmlFile`|
+|`FILE`, `NAMEDFILE`, `RAWFILE`, `WORDFILE`, `IMAGEFILE`, `PDFFILE`, `VIDEOFILE`, `DBFFILE`, `EXCELFILE`, `CSVFILE`, `HTMLFILE`, `JSONFILE`, `XMLFILE`, `TABLEFILE`|`exportFile`, `exportNamedFile`,`exportRawFile`, `exportWordFile`, `exportImageFile`, `exportPdfFile`, `exportVideoFile`, `exportDbfFile`, `exportExcelFile`, `exportCsvFile`, `exportHtmlFile`, `exportJsonFile`, `exportXmlFile`|
 |`TEXT`, `STRING`, `BPSTRING`|`exportText`, `exportString`, `exportBPString`|
 |`NUMERIC`, `LONG`, `INTEGER`, `DOUBLE`|`exportNumeric`, `exportLong`, `exportInteger`, `exportDouble`|
 |`DATETIME`, `DATE`, `TIME`, `YEAR`|`exportDateTime`, `exportDate`, `exportTime`, `exportYear`|
-|`LINK`, `RAWLINK`, `WORDLINK`, `IMAGELINK`, `PDFLINK`, `EXCELLINK`, `CSVLINK`, `HTMLLINK`, `JSONLINK`, `XMLLINK`, `TABLELINK`|`exportFile`, `exportRawFile`, `exportWordFile`, `exportImageFile`, `exportPdfFile`, `exportExcelFile`, `exportCsvFile`, `exportHtmlFile`, `exportJsonFile`, `exportXmlFile`|
+|`LINK`, `RAWLINK`, `WORDLINK`, `IMAGELINK`, `PDFLINK`, `VIDEOLINK`, `DBFLINK`, `EXCELLINK`, `CSVLINK`, `HTMLLINK`, `JSONLINK`, `XMLLINK`, `TABLELINK`|`exportFile`, `exportRawFile`, `exportWordFile`, `exportImageFile`, `exportPdfFile`, `exportVideoFile`, `exportDbfFile`, `exportExcelFile`, `exportCsvFile`, `exportHtmlFile`, `exportJsonFile`, `exportXmlFile`|
 |`BOOLEAN`, `COLOR`, `JSON`|`exportBoolean`, `exportColor`, `exportJSON`|
 |[User classes](User_classes.md)|`exportObject`|
