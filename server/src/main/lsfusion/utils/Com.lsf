@@ -6,5 +6,5 @@ REQUIRE System;
 writeToComPort '{com.write.to.com.port}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.equ.com.WriteToComPortAction' (FILE, INTEGER, INTEGER, BOOLEAN);
 
 writeToComPort '{com.write.to.com.port}' (FILE file, INTEGER baudrate, INTEGER comport) {
-    writeToComPort(file, baudrate, comport, NULL);
+    writeToComPort(file, baudrate, comport, TRUE);
 }
