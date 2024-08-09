@@ -6,11 +6,11 @@
     max-width: -webkit-fill-available;
     max-width: -moz-available;
 }
-.intr-stretch-width, .prop-value-shrink-horz>* {
+.intr-stretch-width, .prop-value-shrink-horz>* > :not(.property-toolbar) {
     min-width: -webkit-fill-available;
     min-width: -moz-available;
 }
-.intr-shrink-height,.prop-value-shrink-vert>* {
+.intr-shrink-height,.prop-value-shrink-vert>* > :not(.property-toolbar) {
     max-height: -webkit-fill-available;
     max-height: -moz-available;
 }

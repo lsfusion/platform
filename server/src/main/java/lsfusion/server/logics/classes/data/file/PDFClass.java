@@ -62,8 +62,8 @@ public class PDFClass extends StaticFormatFileClass {
         return "stretch";
     }
 
-/*    @Override
+    @Override
     public boolean getValueShrinkHorz() {
         return true;
-    }*/
+    }
 }

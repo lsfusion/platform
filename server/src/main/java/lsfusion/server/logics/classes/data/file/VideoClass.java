@@ -62,8 +62,8 @@ public class VideoClass extends StaticFormatFileClass {
         return "stretch";
     }
 
-/*    @Override
-    public boolean getValueShrinkHorz() {
-        return true;
-    }*/
+    @Override
+    public String getValueOverflowHorz() {
+        return "auto";
+    }
 }
