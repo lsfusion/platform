@@ -22,7 +22,6 @@ import lsfusion.server.data.expr.where.classes.data.CompareWhere;
 import lsfusion.server.data.expr.where.pull.ExclExprPullWheres;
 import lsfusion.server.data.expr.where.pull.ExprPullWheres;
 import lsfusion.server.data.query.compile.CompileSource;
-import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.translate.ExprTranslator;
 import lsfusion.server.data.translate.KeyExprTranslator;
 import lsfusion.server.data.translate.MapTranslate;
@@ -79,13 +78,9 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
             return super.hash(hashContext) * 31 + hashOuter(partitions, hashContext);
         }
 
-        public Stat getTypeStat(boolean forJoin) {
-            return getMainExpr().getTypeStat(getWhere(), forJoin);
-        }
-
         @IdentityLazy
-        public Type getType() {
-            return getMainExpr().getType(getWhere());
+        public Type getPartitionType() {
+            return getType(getWhere());
         }
 
         @Override
@@ -112,10 +107,6 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
     public static class QueryInnerContext extends AggrExpr.QueryInnerContext<KeyExpr, PartitionType, PartitionExpr.Query, PartitionJoin, PartitionExpr, QueryInnerContext> {
         public QueryInnerContext(PartitionExpr thisObj) {
             super(thisObj);
-        }
-
-        public Type getType() {
-            return thisObj.query.getType();
         }
 
         protected Where getFullWhere() {

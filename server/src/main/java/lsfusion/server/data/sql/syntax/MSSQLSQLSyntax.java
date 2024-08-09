@@ -223,70 +223,66 @@ public class MSSQLSQLSyntax extends DefaultSQLSyntax {
         return SQLSyntaxType.MSSQL;
     }
 
-    @Override
-    public String getOrderGroupAgg(GroupType groupType, Type resultType, ImList<String> exprs, final ImList<ClassReader> readers, ImOrderMap<String, CompileOrder> orders, TypeEnvironment typeEnv) {
-        ImOrderMap<String, CompileOrder> filterOrders = orders.filterOrderValuesMap(element -> element.reader instanceof Type);
-        ImOrderSet<String> sourceOrders = filterOrders.keyOrderSet();
-        ImList<CompileOrder> compileOrders = filterOrders.valuesList();
-        ImList<Type> orderTypes = BaseUtils.immutableCast(compileOrders.mapListValues((CompileOrder value) -> value.reader));
-        boolean[] desc = new boolean[compileOrders.size()];
-        for(int i=0,size=compileOrders.size();i<size;i++)
-            desc[i] = compileOrders.get(i).desc;
-        String orderSource;
-        Type orderType;
-        int size = orderTypes.size();
-        if(size==0) {
-            orderSource = "1";
-            orderType = ValueExpr.COUNTCLASS;
-        } else if(size==1 && !desc[0]) {
-            orderSource = sourceOrders.single();
-            orderType = orderTypes.single();
-        } else {
-            ConcatenateType concatenateType = ConcatenateType.get(orderTypes.toArray(new Type[size]), desc);
-            orderSource = getNotSafeConcatenateSource(concatenateType, sourceOrders, typeEnv);
-            orderType = concatenateType;
-        }
-
-        ImList<Type> fixedTypes;
-        if(groupType == GroupType.CONCAT) { // будем считать что все implicit прокастится
-            assert exprs.size() == 2;
-            StringClass textClass = StringClass.instance;
-            fixedTypes = ListFact.toList(textClass, textClass);
-            exprs = SumFormulaImpl.castToVarStrings(exprs, readers, resultType, this, typeEnv);
-        } else {
-            fixedTypes = readers.mapListValues((ClassReader value) -> {
-                if(value instanceof Type)
-                    return (Type) value;
-                assert value instanceof NullReader;
-                return NullReader.typeInstance;
-            });
-        }
-        fixedTypes = fixedTypes.addList(orderType);
-        typeEnv.addNeedAggOrder(groupType, fixedTypes);
-
-        return "dbo." + getOrderGroupAggName(groupType, fixedTypes) + "(" + exprs.toString(",") + "," + orderSource + ")";
-    }
+//    @Override
+//    public String getOrderGroupAgg(GroupType groupType, Type resultType, ImList<String> exprs, final ImList<ClassReader> readers, ImOrderMap<String, CompileOrder> orders, TypeEnvironment typeEnv) {
+//        ImOrderMap<String, CompileOrder> filterOrders = orders.filterOrderValuesMap(element -> element.reader instanceof Type);
+//        ImOrderSet<String> sourceOrders = filterOrders.keyOrderSet();
+//        ImList<CompileOrder> compileOrders = filterOrders.valuesList();
+//        ImList<Type> orderTypes = BaseUtils.immutableCast(compileOrders.mapListValues((CompileOrder value) -> value.reader));
+//        boolean[] desc = new boolean[compileOrders.size()];
+//        for(int i=0,size=compileOrders.size();i<size;i++)
+//            desc[i] = compileOrders.get(i).desc;
+//        String orderSource;
+//        Type orderType;
+//        int size = orderTypes.size();
+//        if(size==0) {
+//            orderSource = "1";
+//            orderType = ValueExpr.COUNTCLASS;
+//        } else if(size==1 && !desc[0]) {
+//            orderSource = sourceOrders.single();
+//            orderType = orderTypes.single();
+//        } else {
+//            ConcatenateType concatenateType = ConcatenateType.get(orderTypes.toArray(new Type[size]), desc);
+//            orderSource = getNotSafeConcatenateSource(concatenateType, sourceOrders, typeEnv);
+//            orderType = concatenateType;
+//        }
+//
+//        ImList<Type> fixedTypes;
+//        if(groupType == GroupType.CONCAT) { // будем считать что все implicit прокастится
+//            assert exprs.size() == 2;
+//            StringClass textClass = StringClass.instance;
+//            fixedTypes = ListFact.toList(textClass, textClass);
+//            exprs = SumFormulaImpl.castToVarStrings(exprs, readers, resultType, this, typeEnv);
+//        } else {
+//            fixedTypes = readers.mapListValues((ClassReader value) -> {
+//                if(value instanceof Type)
+//                    return (Type) value;
+//                assert value instanceof NullReader;
+//                return NullReader.typeInstance;
+//            });
+//        }
+//        fixedTypes = fixedTypes.addList(orderType);
+//        typeEnv.addNeedAggOrder(groupType, fixedTypes);
+//
+//        return "dbo." + getOrderGroupAggName(groupType, fixedTypes) + "(" + exprs.toString(",") + "," + orderSource + ")";
+//    }
 
     @Override
     public String getTypeChange(Type oldType, Type type, String name, MStaticExecuteEnvironment env) {
         return type.getDB(this, env);
     }
 
-    public static String getOrderGroupAggName(GroupType groupType, ImList<Type> types) {
-        String fnc;
-        switch (groupType) {
-            case CONCAT:
-                fnc = "STRING_AGG";
-                break;
-            case LAST:
-                fnc = "LAST_VAL";
-                break;
-            default:
-                throw new UnsupportedOperationException();
-        }
-
-        return fnc + "_" + genTypePostfix(types);
-    }
+//    public static String getOrderGroupAggName(GroupType groupType, ImList<Type> types) {
+//        String fnc;
+//        if (groupType == GroupType.CONCAT) {
+//            fnc = "STRING_AGG";
+//        } else if (groupType == GroupType.LAST) {
+//            fnc = "LAST_VAL";
+//        } else
+//            throw new UnsupportedOperationException();
+//
+//        return fnc + "_" + genTypePostfix(types);
+//    }
 
     public static String getTypeFuncName(TypeFunc typeFunc, Type type) {
         String prefix;
@@ -434,13 +430,13 @@ public class MSSQLSQLSyntax extends DefaultSQLSyntax {
         return prm1 + "." + "\"Add\"(" + prm2 + ")";
     }
 
-    @Override
-    public String getArrayAgg(String s, ClassReader classReader, TypeEnvironment env) {
-        ArrayClass arrayClass = (ArrayClass) classReader;
-        env.addNeedArrayClass(arrayClass);
-
-        return "dbo.AGG_" + getArrayClassName(arrayClass) + "(" + s + ")";
-    }
+//    @Override
+//    public String getArrayAgg(String s, ClassReader classReader, TypeEnvironment env) {
+//        ArrayClass arrayClass = (ArrayClass) classReader;
+//        env.addNeedArrayClass(arrayClass);
+//
+//        return "dbo.AGG_" + getArrayClassName(arrayClass) + "(" + s + ")";
+//    }
 
     @Override
     public String getArrayConstructor(String source, ArrayClass rowType, TypeEnvironment env) {

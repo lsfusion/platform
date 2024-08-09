@@ -1,10 +1,12 @@
 package lsfusion.server.physics.admin;
 
+import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.logics.property.classes.infer.AlgType;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 
+import java.nio.charset.Charset;
 import java.util.Map;
 
 @SuppressWarnings("UnusedDeclaration")
@@ -3067,6 +3069,17 @@ public class Settings implements Cloneable {
         this.jasperReportsGovernorTimeout = jasperReportsGovernorTimeout;
     }
 
+    //option IGNORE_PAGE_MARGINS for default jasper export
+    private boolean jasperReportsIgnorePageMargins = true;
+
+    public boolean isJasperReportsIgnorePageMargins() {
+        return jasperReportsIgnorePageMargins;
+    }
+
+    public void setJasperReportsIgnorePageMargins(boolean jasperReportsIgnorePageMargins) {
+        this.jasperReportsIgnorePageMargins = jasperReportsIgnorePageMargins;
+    }
+
     private boolean logFromExternalSystemRequestsDetail = false;
 
     public boolean isLogFromExternalSystemRequestsDetail() {
@@ -3361,4 +3374,35 @@ public class Settings implements Cloneable {
     public void setMaxPixelMiniSize(int maxPixelMiniSize) {
         this.maxPixelMiniSize = maxPixelMiniSize;
     }
+
+    private String defaultUrlCharset = ExternalUtils.defaultUrlCharset.name();
+
+    public String getDefaultUrlCharset() {
+        return ExternalUtils.defaultUrlCharset.name();
+    }
+
+    public void setDefaultUrlCharset(String defaultUrlCharsetName) {
+        ExternalUtils.defaultUrlCharset = Charset.forName(defaultUrlCharsetName);
+    }
+
+    private String defaultBodyUrlCharset = ExternalUtils.defaultBodyUrlCharset.name();
+
+    public String getDefaultBodyUrlCharset() {
+        return ExternalUtils.defaultBodyUrlCharset.name();
+    }
+
+    public void setDefaultBodyUrlCharset(String defaultBodyUrlCharsetName) {
+        ExternalUtils.defaultBodyUrlCharset = Charset.forName(defaultBodyUrlCharsetName);
+    }
+
+    private String defaultBodyCharset = ExternalUtils.defaultBodyCharset.name();
+
+    public String getDefaultBodyCharset() {
+        return ExternalUtils.defaultBodyCharset.name();
+    }
+
+    public void setDefaultBodyCharset(String defaultBodyCharsetName) {
+        ExternalUtils.defaultBodyCharset = Charset.forName(defaultBodyCharsetName);
+    }
+
 }

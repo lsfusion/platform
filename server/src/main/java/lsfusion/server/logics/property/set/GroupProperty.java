@@ -79,7 +79,7 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
         return inferInnerInterfaceClasses(props.addList(orderInterfaces.mapList(getMapInterfaces())), getOrders(), getOrdersNotNull(), getGroupType().getSkipWhereIndex(), ListFact.toList((ExClassSet) null, props.size()).addList(orderInterfaces.mapList(inferred)), inferType);
     }
     public ExClassSet inferInnerValueClass(final ImMap<I, ExClassSet> commonClasses, InferType inferType) {
-        return inferInnerValueClass(getProps(), commonClasses, getGroupType(), inferType);
+        return inferInnerValueClass(getProps(), getOrders(), commonClasses, getGroupType(), inferType);
     }
 
     @Override

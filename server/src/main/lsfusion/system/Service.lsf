@@ -739,6 +739,26 @@ overrideTableGridColor '{service.table.grid.color}' = OVERRIDE tableGridColor(cu
 
 resetWindowsLayout '{service.reset.windows.layout}' INTERNAL 'lsfusion.server.logics.navigator.ResetWindowsLayoutAction';
 
+useKeystore '{service.use.keystore}' = DATA BOOLEAN();
+keystorePassword '{service.keystore.password}' = DATA STRING();
+keyPassword '{service.key.password}' = DATA STRING();
+keystore '{service.keystore}' = DATA FILE();
+loadKeystore '{service.keystore.load}' () { INPUT=keystore() CHANGE; }
+openKeystore '{service.keystore.open}' () { open(keystore()); }
+resetKeystore '{service.keystore.reset}' () { keystore() <- NULL; }
+
+privateKey '{service.private.key}' = DATA FILE();
+loadPrivateKey '{service.private.key.load}' () { INPUT=privateKey() CHANGE; }
+openPrivateKey '{service.private.key.open}' () { open(privateKey()); }
+resetPrivateKey '{service.private.key.reset}' () { privateKey() <- NULL; }
+
+privateKeyPassword '{service.private.key.password}' = DATA STRING();
+
+chain '{service.chain}' = DATA FILE();
+loadChain '{service.chain.load}' () { INPUT=chain() CHANGE; }
+openChain '{service.chain.open}' () { open(chain()); }
+resetChain '{service.chain.reset}' () { chain() <- NULL; }
+
 EXTEND FORM settings
     PROPERTIES() storeNavigatorSettingsForComputer
     PROPERTIES() READONLY captionServerTheme, captionServerSize, captionServerNavbar, serverNavigatorPinMode 
@@ -758,6 +778,10 @@ EXTEND FORM settings
         focusedCellBorderColor, tableGridColor
     
     PROPERTIES() pushPublicKey, pushPrivateKey  
+    
+    PROPERTIES() useKeystore
+    PROPERTIES() SHOWIF useKeystore() keystorePassword, keyPassword, loadKeystore, openKeystore, resetKeystore
+    PROPERTIES() SHOWIF NOT useKeystore() loadPrivateKey, openPrivateKey, resetPrivateKey, privateKeyPassword, loadChain, openChain, resetChain
 ;
 
 DESIGN settings {
@@ -802,6 +826,29 @@ DESIGN settings {
             caption = '{service.form.settings.push.notification}';
             MOVE PROPERTY (pushPublicKey());
             MOVE PROPERTY (pushPrivateKey());
+        }
+        NEW externalServerSettings {
+            caption = '{service.external.server.settings}';
+            MOVE PROPERTY (useKeystore());
+            NEW keystore {
+                caption = '{service.keystore}';
+                MOVE PROPERTY (loadKeystore());
+                MOVE PROPERTY (openKeystore());
+                MOVE PROPERTY (resetKeystore());
+                MOVE PROPERTY (keystorePassword());
+                MOVE PROPERTY (keyPassword());
+            }
+            NEW pem {
+                lines = 2;
+                caption = '{service.private.key}';
+                MOVE PROPERTY (loadPrivateKey());
+                MOVE PROPERTY (loadChain());
+                MOVE PROPERTY (openPrivateKey());
+                MOVE PROPERTY (openChain());
+                MOVE PROPERTY (resetPrivateKey());
+                MOVE PROPERTY (resetChain());
+                MOVE PROPERTY (privateKeyPassword());
+            }
         }
     }
 }
@@ -926,6 +973,7 @@ getClientSettings(User user) + WHEN user IS User THEN {
         pushNotificationPublicKey = pushPublicKey(),
         maxRequestQueueSize = valueSetting('maxRequestQueueSize'),
         maxStickyLeft = valueSetting('maxStickyLeft'),
+        jasperReportsIgnorePageMargins = valueSetting('jasperReportsIgnorePageMargins'),
         verticalNavbar = verticalNavbar(),
         navigatorPinMode = navigatorPinMode();
 }

@@ -5,6 +5,8 @@ import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.base.view.FlexAlignment;
+import lsfusion.interop.session.ExternalRequest;
+import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.exec.TypeEnvironment;
@@ -27,7 +29,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
-import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -103,25 +104,21 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     }
 
     @Override
-    public T parseHTTP(Object o, Charset charset) throws ParseException {
-        String s = o instanceof FileData ? new String(((FileData) o).getRawFile().getBytes(), charset) :  (String) o;
+    public T parseHTTP(ExternalRequest.Param param) throws ParseException {
+        Object value = param.value;
+        if(value instanceof FileData)
+            value = ExternalUtils.encodeFileData((FileData) value, Charset.forName(param.charsetName));
+
+        String s = (String) value;
         if(isParseNullValue(s))
             return null;
-        return parseHTTPNotNullString(s, charset);
-    }
-
-    protected T parseHTTPNotNullString(String s, Charset charset) throws ParseException {
         return parseString(s);
     }
 
     @Override
-    public Object formatHTTP(T value, Charset urlEncodeCharset) {
+    public Object formatHTTP(T value) {
         if(value == null)
             return getParseNullValue();
-        return formatHTTPNotNullString(value, urlEncodeCharset);
-    }
-
-    protected String formatHTTPNotNullString(T value, Charset charset) {
         return formatString(value);
     }
 

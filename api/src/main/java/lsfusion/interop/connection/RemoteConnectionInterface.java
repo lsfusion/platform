@@ -11,5 +11,5 @@ public interface RemoteConnectionInterface extends RemoteRequestInterface, ExecI
 
     // external requests (interface is similar to RemoteLogicsInterface but without token)
     ExternalResponse exec(String action, ExternalRequest request) throws RemoteException;
-    ExternalResponse eval(boolean action, Object paramScript, ExternalRequest request) throws RemoteException;
+    ExternalResponse eval(boolean action, ExternalRequest.Param paramScript, ExternalRequest request) throws RemoteException;
 }

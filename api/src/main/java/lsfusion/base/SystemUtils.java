@@ -212,10 +212,12 @@ public class SystemUtils {
         Long maxMemory = Runtime.getRuntime().maxMemory() / 1024 / 1024;
         Long totalMemory = Runtime.getRuntime().totalMemory() / 1024 / 1024;
         Integer processors = Runtime.getRuntime().availableProcessors();
+        String javaVesion = SystemUtils.getJavaVersion();
         return "Processors: " + processors + "\n" +
                 "Free Memory: " + freeMemory + " MB\n" +
                 "Total Memory: " + totalMemory + " MB\n" +
-                "Max Memory: " + maxMemory + " MB";
+                "Max Memory: " + maxMemory + " MB\n" +
+                "Java version: " + javaVesion;
     }
     
     private static char[] ids = new char[] {

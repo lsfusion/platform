@@ -8,17 +8,14 @@ import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.DBType;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.logics.classes.data.ByteArrayClass;
-import lsfusion.server.logics.classes.data.DataClass;
-import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.apache.commons.net.util.Base64;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.nio.charset.Charset;
 
 
-public abstract class FileClass<T> extends DataClass<T> {
+public abstract class FileClass<T> extends FileBasedClass<T> {
 
     public final boolean multiple;
     public boolean storeName;
@@ -89,30 +86,6 @@ public abstract class FileClass<T> extends DataClass<T> {
         outStream.writeBoolean(multiple);
         outStream.writeBoolean(storeName);
     }
-
-    @Override
-    public T parseHTTP(Object o, Charset charset) throws ParseException {
-        if(o instanceof String)
-            return super.parseHTTP(o, charset);
-
-        if (((FileData) o).getExtension().equals("null"))
-            return null;
-        return parseHTTPNotNull((FileData) o);
-    }
-
-    @Override
-    public Object formatHTTP(T value, Charset urlEncodeCharset) {
-        if(urlEncodeCharset != null)
-            return super.formatHTTP(value, urlEncodeCharset);
-
-        if(value == null) 
-            return new FileData(RawFileData.EMPTY, "null");
-        return formatHTTPNotNull(value);
-    }
-
-    protected abstract T parseHTTPNotNull(FileData b);
-
-    protected abstract FileData formatHTTPNotNull(T b);
 
     public String formatString(T value, boolean ui) {
         return value != null ? Base64.encodeBase64StringUnChunked(getBytes(value)) : null;

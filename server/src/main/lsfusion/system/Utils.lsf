@@ -290,10 +290,18 @@ merge(JSON a, JSON b) = FORMULA JSON 'jsonb_recursive_merge(($1)::jsonb,($2)::js
 field (JSON json, STRING field) = FORMULA JSON 'jsonb_extract_path($json, $field)';
 array (JSON json, INTEGER row) = FORMULA JSON value 'jsonb_array_elements($json)';
 map (JSON json, STRING key) = FORMULA JSON value 'jsonb_each($json)';
+
+fieldText (JSON json, STRING field) = FORMULA STRING 'jsonb_extract_path_text($json, $field)';
+arrayText (JSON json, INTEGER row) = FORMULA STRING value 'jsonb_array_elements_text($json)';
+mapText (JSON json, STRING key) = FORMULA STRING value 'jsonb_each_text($json)';
+
 arrayElement(JSON json, INTEGER i) = FORMULA STRING '(($1)->(($2)-1))'; // one-based
 
 field (JSON json, STRING field1, STRING field2) = FORMULA JSON 'jsonb_extract_path($json, $field1, $field2)';
 field (JSON json, STRING field1, STRING field2, STRING field3) = FORMULA JSON 'jsonb_extract_path($json, $field1, $field2, $field3)';
+
+fieldText (JSON json, STRING field1, STRING field2) = FORMULA STRING 'jsonb_extract_path_text($json, $field1, $field2)';
+fieldText (JSON json, STRING field1, STRING field2, STRING field3) = FORMULA STRING 'jsonb_extract_path_text($json, $field1, $field2, $field3)';
 
 // -------------------------------------------- Files ---------------------------- //
 file = DATA LOCAL FILE ();

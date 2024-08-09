@@ -18,6 +18,7 @@ import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInput;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapValue;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
+import lsfusion.server.logics.form.interactive.action.input.InputPropertyValueList;
 import lsfusion.server.logics.form.interactive.action.input.InputValueList;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.instance.CellInstance;
@@ -48,12 +49,12 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     }
 
     public static class AsyncValueList<P extends PropertyInterface> {
-        public final InputValueList<P> list;
+        public final InputValueList<P, ?> list;
         public final AsyncDataConverter<P> converter;
         public final boolean newSession;
         public final AsyncMode asyncMode;
 
-        public AsyncValueList(InputValueList<P> list, AsyncDataConverter<P> converter, boolean newSession, AsyncMode asyncMode) {
+        public AsyncValueList(InputValueList<P, ?> list, AsyncDataConverter<P> converter, boolean newSession, AsyncMode asyncMode) {
             this.list = list;
             this.converter = converter;
             this.newSession = newSession;
@@ -72,7 +73,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
             return po.getObjectValue();
         };
 
-        InputValueList<X> list;
+        InputValueList<X, ?> list;
         AsyncDataConverter<X> converter;
         boolean newSession;
         AsyncMode asyncMode;
@@ -96,8 +97,8 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
             ImMap<P, ObjectValue> mapValues = formInstance.instanceFactory.getInstanceMap(eventAction.mapping).mapValues(BaseUtils.<Function<ObjectInstance, ObjectValue>>immutableCast(valuesGetter));
 
             AsyncMapValue<P> asyncExec = (AsyncMapValue<P>) eventAction.property.getAsyncEventExec(this.entity.optimisticAsync);
-            Pair<InputListEntity<X, P>, AsyncDataConverter<X>> asyncValueList = asyncExec.getAsyncValueList(value);
-            InputListEntity<X, P> listEntity = asyncValueList.first;
+            Pair<InputListEntity<X, P, ?>, AsyncDataConverter<X>> asyncValueList = asyncExec.getAsyncValueList(value);
+            InputListEntity<X, P, ?> listEntity = asyncValueList.first;
             converter = asyncValueList.second;
 
             list = listEntity.map(mapValues);
@@ -112,15 +113,15 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     }
 
     // filter / custom view
-    private <X extends PropertyInterface> InputValueList<X> getInputValueList(Function<PropertyObjectInterfaceInstance, ObjectValue> valuesGetter, Result<ImRevMap<X, ObjectInstance>> rMapObjects, int useFilters) {
+    private <X extends PropertyInterface> InputPropertyValueList<X> getInputValueList(Function<PropertyObjectInterfaceInstance, ObjectValue> valuesGetter, Result<ImRevMap<X, ObjectInstance>> rMapObjects, int useFilters) {
         // actually that all X can be different
         PropertyObjectInstance<X> valueProperty = (PropertyObjectInstance<X>) getValueProperty();
 
-        InputValueList<X> list;
+        InputPropertyValueList<X> list;
         if(useFilters > 0)
             valueProperty = FilterInstance.ifCached(valueProperty, toDraw.getFilters(GroupObjectInstance.NOVIEWUSERFILTER(this), false));
 
-        list = (InputValueList<X>) valueProperty.getInputValueList(toDraw, rMapObjects, valuesGetter, useFilters == 2);
+        list = (InputPropertyValueList<X>) valueProperty.getInputValueList(toDraw, rMapObjects, valuesGetter, useFilters == 2);
         if(list == null && useFilters <= 0) // trying to use filters
             return getInputValueList(valuesGetter, rMapObjects, 1);
 

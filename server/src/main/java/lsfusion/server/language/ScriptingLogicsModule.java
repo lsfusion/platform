@@ -91,6 +91,7 @@ import lsfusion.server.logics.form.interactive.action.focus.IsActiveFormAction;
 import lsfusion.server.logics.form.interactive.action.input.InputContextAction;
 import lsfusion.server.logics.form.interactive.action.input.InputFilterEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
+import lsfusion.server.logics.form.interactive.action.input.InputPropertyListEntity;
 import lsfusion.server.logics.form.interactive.action.lifecycle.CloseFormAction;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.FormView;
@@ -197,9 +198,33 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     private String lastOptimizedJPropSID = null;
 
-    public enum ConstType { STATIC, INT, REAL, NUMERIC, STRING, LOGICAL, TLOGICAL, LONG, DATE, DATETIME, TIME, COLOR, NULL }
+    public enum ConstType { STATIC, INT, REAL, NUMERIC, STRING, RSTRING, LOGICAL, TLOGICAL, LONG, DATE, DATETIME, TIME, COLOR, NULL }
     public enum WindowType {MENU, PANEL, TOOLBAR, TREE, NATIVE}
-    public enum GroupingType {SUM, MAX, MIN, CONCAT, AGGR, EQUAL, LAST, NAGGR}
+    public static class GroupingType {
+        public static final GroupingType SUM = new GroupingType();
+        public static final GroupingType MAX = new GroupingType();
+        public static final GroupingType MIN = new GroupingType();
+        public static final GroupingType CONCAT = new GroupingType();
+        public static final GroupingType AGGR = new GroupingType();
+        public static final GroupingType EQUAL = new GroupingType();
+        public static final GroupingType LAST = new GroupingType();
+        public static final GroupingType NAGGR = new GroupingType();
+    }
+    public static class CustomGroupingType extends GroupingType {
+        public final String aggrFunc;
+        public final boolean setOrdered;
+
+        public final DataClass dataClass;
+        public final boolean valueNull;
+
+        public CustomGroupingType(String aggrFunc, boolean setOrdered, DataClass dataClass, boolean valueNull) {
+            this.aggrFunc = aggrFunc;
+            this.setOrdered = setOrdered;
+
+            this.dataClass = dataClass;
+            this.valueNull = valueNull;
+        }
+    }
 
    public ScriptingLogicsModule(BaseLogicsModule baseModule, BusinessLogics BL, String lsfPath) {
         this(ResourceUtils.findResourceAsString(lsfPath, false, false, null, null), baseModule, BL);
@@ -368,6 +393,18 @@ public class ScriptingLogicsModule extends LogicsModule {
         return null;
     }
 
+    public String getRawStringLiteralText(String literalText) {
+        if (literalText.charAt(1) == '\'') {
+            return unquote(literalText.substring(1));
+        } else {
+            return unquote(literalText.substring(2, literalText.length() - 1));
+        }
+    }
+    
+    public LocalizedString getRawLocalizedStringLiteralText(String literalText) {
+        return LocalizedString.create(getRawStringLiteralText(literalText), false);
+    }
+    
     public LocalizedString transformLocalizedStringLiteral(String s) throws ScriptingErrorLog.SemanticErrorException {
         try {
             return ScriptedStringUtils.transformLocalizedStringLiteral(s, BL.getIdFromReversedI18NDictionaryMethod(), BL::appendEntryToBundle);
@@ -2292,12 +2329,12 @@ public class ScriptingLogicsModule extends LogicsModule {
     private static class ILEWithParams {
         public final ImOrderSet<Integer> usedParams;
         public final ImOrderSet<PropertyInterface> orderInterfaces;
-        public final InputListEntity<?, PropertyInterface> list;
+        public final InputListEntity<?, PropertyInterface, ?> list;
         public final InputFilterEntity<?, PropertyInterface> where;
         public final ImList<InputContextAction<?, PropertyInterface>> contextActions;
 
         public ILEWithParams(ImOrderSet<Integer> usedParams, ImOrderSet<PropertyInterface> orderInterfaces,
-                             InputListEntity<?, PropertyInterface> list, InputFilterEntity<?, PropertyInterface> where, ImList<InputContextAction<?, PropertyInterface>> contextActions) {
+                             InputListEntity<?, PropertyInterface, ?> list, InputFilterEntity<?, PropertyInterface> where, ImList<InputContextAction<?, PropertyInterface>> contextActions) {
             this.usedParams = usedParams;
             this.orderInterfaces = orderInterfaces;
             assert usedParams.size() == orderInterfaces.size();
@@ -2306,7 +2343,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             this.contextActions = contextActions;
         }
     }
-    private ScriptingLogicsModule.ILEWithParams getContextListEntity(int contextSize, ScriptingLogicsModule.LPWithParams list, ScriptingLogicsModule.LPWithParams where,
+    private ScriptingLogicsModule.ILEWithParams getContextListEntity(int contextSize, ScriptingLogicsModule.LAPWithParams list, ScriptingLogicsModule.LPWithParams where,
                                                                      List<String> actionImages, List<String> keyStrokes, List<List<QuickAccess>> quickAccesses, List<LAWithParams> actions) {
 //        if(list == null) // optimization
 //            return new ILEWithParams(SetFact.EMPTYORDER(), SetFact.EMPTYORDER(), null, null, ListFact.EMPTY());
@@ -2334,8 +2371,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         return splitParams(where, contextSize, usedInterfaces, value -> 0, (property, mapValues, mapExternal) -> new InputFilterEntity<>(property, mapValues));
     }
 
-    private InputListEntity<?, PropertyInterface> getInputListEntity(int contextSize, LPWithParams list, ImRevMap<Integer, PropertyInterface> usedInterfaces) {
-        return splitParams(list, contextSize, usedInterfaces, value -> 0, (property, mapValues, mapExternal) -> new InputListEntity<>(property, mapValues));
+    private InputListEntity<?, PropertyInterface, ?> getInputListEntity(int contextSize, LAPWithParams list, ImRevMap<Integer, PropertyInterface> usedInterfaces) {
+        return splitAPParams(list, contextSize, usedInterfaces, value -> 0, (property, mapValues, mapExternal) -> InputListEntity.create(property, mapValues));
     }
 
     private <O extends ObjectSelector> ContextFilterEntity<PropertyInterface, PropertyInterface, O> getContextFilterEntity(int contextSize, ImOrderSet<O> objectsContext, LPWithParams contextFilter, ImRevMap<Integer, PropertyInterface> usedInterfaces) {
@@ -2366,9 +2403,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         Matcher m = Pattern.compile("([^;]*);(.*)").matcher(code);
         if(m.matches()) {
             Map<String, String> optionsMap = getOptionsMap(m.group(2));
-            return new KeyStrokeOptions(m.group(1), getBindingModesMap(optionsMap), getPriority(optionsMap));
+            return new KeyStrokeOptions(nullEmpty(m.group(1)), getBindingModesMap(optionsMap), getPriority(optionsMap));
         } else {
-            return new KeyStrokeOptions(code, null, null);
+            return new KeyStrokeOptions(nullEmpty(code), null, null);
         }
     }
 
@@ -2386,8 +2423,9 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LAWithParams addScriptedInputAProp(ValueClass requestValueClass, LPWithParams oldValue, NamedPropertyUsage targetProp, LAWithParams doAction, LAWithParams elseAction,
                                               List<TypedParameter> oldContext, List<TypedParameter> newContext, boolean assign, boolean constraintFilter, LPWithParams changeProp,
-                                              LPWithParams listProp, LPWithParams whereProp, List<String> actionImages, List<String> keyStrokes, List<List<QuickAccess>> quickAccesses, List<LAWithParams> actions,
+                                              LAPWithParams listProp, LPWithParams whereProp, List<String> actionImages, List<String> keyStrokes, List<List<QuickAccess>> quickAccesses, List<LAWithParams> actions,
                                               DebugInfo.DebugPoint assignDebugPoint, FormSessionScope listScope, String customEditorFunction) throws ScriptingErrorLog.SemanticErrorException {
+
         if(listScope == null)
             listScope = FormSessionScope.OLDSESSION;
 
@@ -2410,9 +2448,12 @@ public class ScriptingLogicsModule extends LogicsModule {
             ImList<CCCF<ClassFormSelector.VirtualObject>> cccfs = ListFact.EMPTY();
             if(constraintFilter)
                 cccfs = ListFact.singleton(new CCCF<>(changeProp, classForm.virtualObject, oldContext.size())); // assuming that there is only one parameter
+
+            if (listProp instanceof LAWithParams)
+                errLog.emitNotPrimitiveTypeInListError(parser);
             
             CFEWithParams<ClassFormSelector.VirtualObject> contextEntities = getContextFilterAndListAndActionsEntities(oldContext.size(), SetFact.singletonOrder(classForm.virtualObject),
-                    whereProp != null ? ListFact.singleton(whereProp) : ListFact.EMPTY(), listProp, cccfs, actionImages, keyStrokes, quickAccesses, actions);
+                    whereProp != null ? ListFact.singleton(whereProp) : ListFact.EMPTY(), (LPWithParams) listProp, cccfs, actionImages, keyStrokes, quickAccesses, actions);
             usedParams = contextEntities.usedParams;
 
             action = addDialogInputAProp(classForm, tprop, classForm.virtualObject, oldValue != null, contextEntities.orderInterfaces, listScope, contextEntities.list, contextEntities.filters, contextEntities.contextActions, customEditorFunction, notNull);
@@ -3090,7 +3131,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         checks.checkGPropAggrConstraints(type, mainProps, groupProps);
         checks.checkGPropAggregateConsistence(type, mainProps);
         checks.checkGPropWhereConsistence(type, whereProp);
-        checks.checkGPropSumConstraints(type, mainProps.get(0));
+        checks.checkGPropSumConstraints(type, mainProps.isEmpty() ? null : mainProps.get(0));
 
         List<LPWithParams> whereProps = new ArrayList<>();
         if (type == GroupingType.AGGR || type == GroupingType.NAGGR || (type == GroupingType.CONCAT && whereProp != null)) {
@@ -3106,6 +3147,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             } else {
                 mainProps.add(mainProps.get(0));
             }
+            whereProp = null;
         }
         List<Object> resultParams = getParamsPlainList(mainProps, whereProps, orderProps, groupProps);
 
@@ -3119,15 +3161,23 @@ public class ScriptingLogicsModule extends LogicsModule {
             resultProp = addSGProp(null, false, false, emptyCaption, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
         } else if (type == GroupingType.MAX || type == GroupingType.MIN) {
             resultProp = addMGProp(null, emptyCaption, type == GroupingType.MIN, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
-        } else if (type == GroupingType.CONCAT) {
-            resultProp = addOGProp(null, false, emptyCaption, GroupType.CONCAT, whereProp != null, orderProps.size(), ordersNotNull, !ascending, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
         } else if (type == GroupingType.AGGR || type == GroupingType.NAGGR) {
             resultProp = addAGProp(null, false, false, emptyCaption, type == GroupingType.NAGGR, constraintData, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
         } else if (type == GroupingType.EQUAL) {
             resultProp = addCGProp(null, false, false, emptyCaption, constraintData, null, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
-        } else if (type == GroupingType.LAST) {
-            resultProp = addOGProp(null, false, emptyCaption, GroupType.LAST, false, orderProps.size(), ordersNotNull, !ascending, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
-        }
+        } else if (type == GroupingType.LAST || type == GroupingType.CONCAT || type instanceof CustomGroupingType) {
+            GroupType groupType;
+            if(type == GroupingType.LAST)
+                groupType = GroupType.LAST;
+            else if (type == GroupingType.CONCAT)
+                groupType = GroupType.CONCAT;
+            else {
+                CustomGroupingType customType = (CustomGroupingType) type;
+                groupType = GroupType.CUSTOM(customType.aggrFunc, customType.setOrdered, customType.dataClass, customType.valueNull);
+            }
+            resultProp = addOGProp(null, false, emptyCaption, groupType, whereProp != null, mainProps.size(), orderProps.size(), ordersNotNull, !ascending, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
+        } else
+            throw new UnsupportedOperationException();
         return resultProp;
     }
 
@@ -3276,19 +3326,20 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedPartitionProp(PartitionType partitionType, NamedPropertyUsage ungroupPropUsage, boolean strict, int precision, boolean isAscending,
-                                                 boolean useLast, int groupPropsCnt, List<LPWithParams> paramProps, List<TypedParameter> context) throws ScriptingErrorLog.SemanticErrorException {
+                                                 boolean useLast, int exprCnt, int groupPropsCnt, List<LPWithParams> paramProps, List<TypedParameter> context) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkPartitionWindowConsistence(partitionType, useLast);
         LP ungroupProp = ungroupPropUsage != null ? findLPByPropertyUsage(ungroupPropUsage, paramProps.subList(0, groupPropsCnt), context) : null;
         checks.checkPartitionUngroupConsistence(ungroupProp, groupPropsCnt);
 
-        boolean ordersNotNull = doesExtendContext(0, paramProps.subList(0, groupPropsCnt + 1), paramProps.subList(groupPropsCnt + 1, paramProps.size()));
+        boolean ordersNotNull = doesExtendContext(0, paramProps.subList(0, groupPropsCnt + exprCnt), paramProps.subList(groupPropsCnt + exprCnt, paramProps.size()));
 
         List<Object> resultParams = getParamsPlainList(paramProps);
         List<Integer> usedParams = mergeAllParams(paramProps);
         LP prop;
-        if (partitionType == PartitionType.sum() || partitionType == PartitionType.previous()) {
-            prop = addOProp(null, false, LocalizedString.NONAME, partitionType, isAscending, ordersNotNull, useLast, groupPropsCnt, resultParams.toArray());
+        if (partitionType == PartitionType.sum() || partitionType == PartitionType.previous() || partitionType instanceof PartitionType.Custom) {
+            prop = addOProp(null, false, LocalizedString.NONAME, partitionType, isAscending, ordersNotNull, useLast, exprCnt, groupPropsCnt, resultParams.toArray());
         } else if (partitionType == PartitionType.distrCumProportion()) {
+            assert exprCnt == 1;
             List<ResolveClassSet> contextClasses = getClassesFromTypedParams(context);// для не script - временный хак
             // может быть внешний context
             List<ResolveClassSet> explicitInnerClasses = new ArrayList<>();
@@ -3296,6 +3347,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 explicitInnerClasses.add(contextClasses.get(usedParam)); // one-based;
             prop = addPGProp(null, false, precision, strict, LocalizedString.NONAME, usedParams.size(), explicitInnerClasses, isAscending, ordersNotNull, ungroupProp, resultParams.toArray());
         } else {
+            assert exprCnt == 1;
             prop = addUGProp(null, false, strict, LocalizedString.NONAME, usedParams.size(), isAscending, ordersNotNull, ungroupProp, resultParams.toArray());
         }
         return new LPWithParams(prop, usedParams);
@@ -3492,6 +3544,11 @@ public class ScriptingLogicsModule extends LogicsModule {
             case LONG: lp =  addUnsafeCProp(LongClass.instance, value); break;
             case NUMERIC: lp =  addNumericConst((BigDecimal) value); break;
             case REAL: lp =  addUnsafeCProp(DoubleClass.instance, value); break;
+            case RSTRING:
+                LocalizedString rlstr = getRawLocalizedStringLiteralText((String) value);
+                lp = addUnsafeCProp(getStringConstClass(rlstr), rlstr);
+                return Pair.create(new LPWithParams(lp), new LPLiteral(rlstr));
+                
             case STRING:
                 String str = unquote((String) value);
                 if (isInlineSequence(str)) {
@@ -3741,10 +3798,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         public final ImOrderSet<Integer> usedParams;
         public final ImOrderSet<PropertyInterface> orderInterfaces;
         public final ImSet<ContextFilterSelector<PropertyInterface, O>> filters;
-        public final InputListEntity<?, PropertyInterface> list;
+        public final InputPropertyListEntity<?, PropertyInterface> list;
         public final ImList<InputContextAction<?, PropertyInterface>> contextActions;
 
-        public CFEWithParams(ImOrderSet<Integer> usedParams, ImOrderSet<PropertyInterface> orderInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> filters, InputListEntity<?, PropertyInterface> list, ImList<InputContextAction<?, PropertyInterface>> contextActions) {
+        public CFEWithParams(ImOrderSet<Integer> usedParams, ImOrderSet<PropertyInterface> orderInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> filters, InputPropertyListEntity<?, PropertyInterface> list, ImList<InputContextAction<?, PropertyInterface>> contextActions) {
             this.usedParams = usedParams;
             this.orderInterfaces = orderInterfaces;
             assert usedParams.size() == orderInterfaces.size();
@@ -3814,7 +3871,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 LP<X> lp = (LP<X>) cccf.change.getLP();
                 return new CCCContextFilterEntity<>(lp.getImplement(SetFact.fromJavaOrderSet(cccf.change.usedParams).mapOrder(usedInterfaces)), cccf.object);
             })).toOrderExclSet().getSet(),
-            list != null ? getInputListEntity(contextSize, list, usedInterfaces) : null,
+            list != null ? (InputPropertyListEntity<?, PropertyInterface>) getInputListEntity(contextSize, list, usedInterfaces) : null,
             getInputContextActions(contextSize, actionImages, keyStrokes, quickAccesses, actions, usedInterfaces));
     }
 

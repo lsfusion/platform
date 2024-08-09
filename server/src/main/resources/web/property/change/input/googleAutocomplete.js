@@ -24,6 +24,7 @@ function customGoogleAutocomplete() {
                 tooltipElement.style.setProperty("position", "fixed");
                 tooltipElement.style.setProperty("color", "red");
                 tooltipElement.style.setProperty("font-weight", "bold");
+                tooltipElement.style.zIndex = 100000;
 
                 let firstLineText = document.createTextNode("Google API key does not set");
                 let secondLineText = document.createTextNode("Autocomplete is not available");

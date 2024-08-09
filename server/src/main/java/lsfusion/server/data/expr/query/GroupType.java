@@ -1,5 +1,6 @@
 package lsfusion.server.data.expr.query;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
@@ -8,17 +9,22 @@ import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.formula.FormulaExpr;
 import lsfusion.server.data.expr.formula.JSONBuildSingleArrayFormulaImpl;
+import lsfusion.server.data.expr.formula.SumFormulaImpl;
+import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.compile.CompileOrder;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
+import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.data.type.reader.ClassReader;
 import lsfusion.server.data.type.reader.NullReader;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.StringClass;
+import lsfusion.server.logics.classes.data.file.AJSONClass;
 import lsfusion.server.logics.classes.data.file.FileClass;
-import lsfusion.server.logics.classes.data.integral.IntegralClass;
+import lsfusion.server.logics.classes.data.file.JSONTextClass;
 import lsfusion.server.logics.classes.data.link.LinkClass;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -28,9 +34,249 @@ import lsfusion.server.logics.property.set.SumGroupProperty;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
-public enum GroupType implements AggrType {
-    SUM, MAX, MIN, ANY, CONCAT, AGGAR_SETADD, LAST, JSON_CONCAT;
-    
+import java.util.Objects;
+
+public abstract class GroupType implements AggrType {
+
+    public static final GroupType SUM = new GroupType() {
+        public <T extends PropertyInterface> GroupProperty<T> createProperty(LocalizedString caption, ImSet<T> innerInterfaces, PropertyInterfaceImplement<T> property, ImSet<? extends PropertyInterfaceImplement<T>> interfaces) {
+            return new SumGroupProperty<>(caption, innerInterfaces, interfaces, property);
+        }
+        public boolean hasAdd() {
+            return true;
+        }
+        public Expr add(Expr op1, Expr op2) {
+            return op1.sum(op2);
+        }
+        public boolean isLastOpt(boolean needValue, ImList<Expr> exprs, ImOrderMap<Expr, Boolean> orders) {
+            return !needValue && getMainExpr(exprs, orders).isAlwaysPositiveOrNull();
+        }
+        public String getSource(ImList<String> exprs, ImList<ClassReader> exprReaders, ImOrderMap<String, CompileOrder> orders, Type type, SQLSyntax syntax, TypeEnvironment typeEnv) {
+            return syntax.getNotZero(getAggrSource("SUM", getSafeExprSource(0, exprs, exprReaders, type, syntax, typeEnv), orders, syntax), type, typeEnv);
+        }
+        public String name() {
+            return "STRING";
+        }
+    };
+
+    public static final GroupType MAX = new GroupType() {
+        public <T extends PropertyInterface> GroupProperty<T> createProperty(LocalizedString caption, ImSet<T> innerInterfaces, PropertyInterfaceImplement<T> property, ImSet<? extends PropertyInterfaceImplement<T>> interfaces) {
+            return new MaxGroupProperty<>(caption, innerInterfaces, interfaces, property, false);
+        }
+        public boolean hasAdd() {
+            return true;
+        }
+        public Expr add(Expr op1, Expr op2) {
+            return op1.max(op2);
+        }
+        public boolean isSelect() {
+            return true;
+        }
+        public boolean isMaxMin() {
+            return true;
+        }
+        public boolean isLastOpt(boolean needValue, ImList<Expr> exprs, ImOrderMap<Expr, Boolean> orders) {
+            return true;
+        }
+        public String getSource(ImList<String> exprs, ImList<ClassReader> exprReaders, ImOrderMap<String, CompileOrder> orders, Type type, SQLSyntax syntax, TypeEnvironment typeEnv) {
+            return getAggrSource(type instanceof ConcatenateType && syntax.hasAggConcProblem() ? "MAXC" : "MAX", exprs.get(0), orders, syntax);
+        }
+        public String name() {
+            return "MAX";
+        }
+    };
+
+    public static final GroupType MIN = new GroupType() {
+        public <T extends PropertyInterface> GroupProperty<T> createProperty(LocalizedString caption, ImSet<T> innerInterfaces, PropertyInterfaceImplement<T> property, ImSet<? extends PropertyInterfaceImplement<T>> interfaces) {
+            return new MaxGroupProperty<>(caption, innerInterfaces, interfaces, property, true);
+        }
+        public boolean hasAdd() {
+            return true;
+        }
+        public Expr add(Expr op1, Expr op2) {
+            return op1.min(op2);
+        }
+        public boolean isSelect() {
+            return true;
+        }
+        public boolean isMaxMin() {
+            return true;
+        }
+        public boolean isLastOpt(boolean needValue, ImList<Expr> exprs, ImOrderMap<Expr, Boolean> orders) {
+            return true;
+        }
+        public String getSource(ImList<String> exprs, ImList<ClassReader> exprReaders, ImOrderMap<String, CompileOrder> orders, Type type, SQLSyntax syntax, TypeEnvironment typeEnv) {
+            return getAggrSource(type instanceof ConcatenateType && syntax.hasAggConcProblem() ? "MINC" : "MIN", exprs.get(0), orders, syntax);
+        }
+        public String name() {
+            return "MIN";
+        }
+    };
+
+    public static final GroupType ANY = new GroupType() {
+        public boolean hasAdd() {
+            return true;
+        }
+        public Expr add(Expr op1, Expr op2) {
+            return op1.nvl(op2);
+        }
+        public boolean isSelect() {
+            return true;
+        }
+        public boolean isLastOpt(boolean needValue, ImList<Expr> exprs, ImOrderMap<Expr, Boolean> orders) {
+            return true;
+        }
+        public String getSource(ImList<String> exprs, ImList<ClassReader> exprReaders, ImOrderMap<String, CompileOrder> orders, Type type, SQLSyntax syntax, TypeEnvironment typeEnv) {
+            return getAggrSource(syntax.getAnyValueFunc(), getSafeExprSource(0, exprs, exprReaders, type, syntax, typeEnv), orders, syntax);
+        }
+        public String name() {
+            return "ANY";
+        }
+    };
+
+    public static final GroupType CONCAT = new GroupType() {
+        public String getSource(ImList<String> exprs, ImList<ClassReader> exprReaders, ImOrderMap<String, CompileOrder> orders, Type type, SQLSyntax syntax, TypeEnvironment typeEnv) {
+            return type.getCast(getAggrSource("STRING_AGG" ,castToVarStrings(exprs, exprReaders, type, syntax, typeEnv).toString(","), orders, syntax), syntax, typeEnv);
+        }
+        public Type getType(Type exprType) {
+            if(exprType == null)
+                return null;
+
+            return StringClass.getv(((StringClass)exprType).caseInsensitive, ExtInt.UNLIMITED);
+        }
+        public String name() {
+            return "CONCAT";
+        }
+    };
+
+    public static final GroupType AGGAR_SETADD = new GroupType() {
+        public String getSource(ImList<String> exprs, ImList<ClassReader> exprReaders, ImOrderMap<String, CompileOrder> orders, Type type, SQLSyntax syntax, TypeEnvironment typeEnv) {
+            return getAggrSource("AGGAR_SETADD", exprs.get(0), orders, syntax);
+        }
+        public String name() {
+            return "AGGAR_SETADD";
+        }
+    };
+
+    public static final GroupType LAST = new GroupType() {
+        public boolean isSelect() {
+            return true;
+        }
+        public boolean isSelectNotInWhere() {
+            return true;
+        }
+        public Where getWhere(ImList<Expr> exprs) {
+            assert exprs.size()==2;
+            return exprs.get(0).getWhere();
+        }
+        public int getSkipWhereIndex() {
+            return 1;
+        }
+        public ImList<Expr> followFalse(Where falseWhere, ImList<Expr> exprs, boolean pack) {
+            assert exprs.size()==2;
+            Expr firstExpr = exprs.get(0).followFalse(falseWhere, pack);
+            Expr secondExpr = exprs.get(1).followFalse(falseWhere.or(firstExpr.getWhere().not()), pack);
+            return ListFact.toList(firstExpr, secondExpr);
+        }
+        public int getMainIndex(int props) {
+            return 1;
+        }
+        public Expr getSingleExpr(ImList<Expr> exprs) {
+            assert exprs.size()==2;
+            return exprs.get(1).and(exprs.get(0).getWhere());
+        }
+        public boolean nullsNotAllowed() {
+            return true;
+        }
+        public boolean isLastOpt(boolean needValue, ImList<Expr> exprs, ImOrderMap<Expr, Boolean> orders) {
+            return true;
+        }
+        public String getSource(ImList<String> exprs, ImList<ClassReader> exprReaders, ImOrderMap<String, CompileOrder> orders, Type type, SQLSyntax syntax, TypeEnvironment typeEnv) {
+            assert exprs.size() == 2;
+            return getAggrSource(syntax.getLastFunc(), getSafeExprSource(1, exprs, exprReaders, type, syntax, typeEnv), orders, syntax);
+        }
+        public String name() {
+            return "LAST";
+        }
+    };
+
+    public static final GroupType JSON_CONCAT = new GroupType() {
+        public Expr getSingleExpr(ImList<Expr> exprs) {
+            return FormulaExpr.create(JSONBuildSingleArrayFormulaImpl.instance, ListFact.singleton(exprs.get(0)));
+        }
+        public boolean nullsNotAllowed() {
+            return true;
+        }
+        public String getSource(ImList<String> exprs, ImList<ClassReader> exprReaders, ImOrderMap<String, CompileOrder> orders, Type type, SQLSyntax syntax, TypeEnvironment typeEnv) {
+            return getAggrSource((type instanceof JSONTextClass ? "JSON_AGG" : "JSONB_AGG"), exprs.get(0), orders, syntax);
+        }
+        public String name() {
+            return "JSON_CONCAT";
+        }
+    };
+
+    public static class Custom extends GroupType {
+        public final String aggrFunc;
+        public final boolean setOrdered;
+
+        public final DataClass dataClass;
+        public final boolean valueNull;
+
+        public Custom(String aggrFunc, boolean setOrdered, DataClass dataClass, boolean valueNull) {
+            this.aggrFunc = aggrFunc;
+            this.setOrdered = setOrdered;
+
+            this.dataClass = dataClass;
+            this.valueNull = valueNull;
+        }
+
+        public String getSource(ImList<String> exprs, ImList<ClassReader> exprReaders, ImOrderMap<String, CompileOrder> orders, Type type, SQLSyntax syntax, TypeEnvironment typeEnv) {
+            return getAggrSource(aggrFunc, exprs.toString(","), orders, syntax, setOrdered);
+        }
+        public String name() {
+            return aggrFunc;
+        }
+        public boolean hasSingle() {
+            return false;
+        }
+
+        public Type getType(Type exprType) {
+            if(dataClass != null)
+                return dataClass;
+
+            return super.getType(exprType);
+        }
+        public Stat getTypeStat(Stat typeStat, boolean forJoin) {
+            if(dataClass != null)
+                return dataClass.getTypeStat(forJoin);
+
+            return super.getTypeStat(typeStat, forJoin);
+        }
+
+        @Override
+        public int getMainIndex(int props) {
+            if(setOrdered)
+                return props;
+
+            return super.getMainIndex(props);
+        }
+
+        public boolean canBeNull() {
+            return valueNull;
+        }
+
+        public boolean equals(Object o) {
+            return this == o || o instanceof Custom && setOrdered == ((Custom) o).setOrdered && aggrFunc.equals(((Custom) o).aggrFunc) && BaseUtils.nullEquals(dataClass, ((Custom) o).dataClass) && valueNull == ((Custom) o).valueNull;
+        }
+
+        public int hashCode() {
+            return Objects.hash(aggrFunc, setOrdered, dataClass, valueNull);
+        }
+    }
+    public static GroupType CUSTOM(String aggrFunc, boolean setOrdered, DataClass dataClass, boolean valueNull) {
+        return new Custom(aggrFunc, setOrdered, dataClass, valueNull);
+    }
+
     public static GroupType LOGICAL() {
         return ANY;
     }
@@ -55,107 +301,41 @@ public enum GroupType implements AggrType {
     }
 
     public <T extends PropertyInterface> GroupProperty<T> createProperty(LocalizedString caption, ImSet<T> innerInterfaces, PropertyInterfaceImplement<T> property, ImSet<? extends PropertyInterfaceImplement<T>> interfaces) {
-        switch (this) {
-            case MAX:
-                return new MaxGroupProperty<>(caption, innerInterfaces, interfaces, property, false);
-            case MIN:
-                return new MaxGroupProperty<>(caption, innerInterfaces, interfaces, property, true);
-            case SUM:
-                return new SumGroupProperty<>(caption, innerInterfaces, interfaces, property);
-        }
-        throw new RuntimeException("not supported");
+        throw new UnsupportedOperationException();
     }
 
     public Expr add(Expr op1, Expr op2) {
-        switch (this) {
-            case MAX:
-                return op1.max(op2);
-            case MIN:
-                return op1.min(op2);
-            case SUM:
-                return op1.sum(op2);
-            case ANY: // для этого ANY и делается
-                return op1.nvl(op2);
-        }
-        throw new RuntimeException("can not be");
+        assert hasAdd();
+        throw new UnsupportedOperationException();
     }
 
-    public boolean isSelect() {
-        return this==MAX || this==MIN || this==ANY || this==LAST;
-    }
-
-    public boolean canBeNull() {
-        return false;
-    }
-
-    public boolean isSelectNotInWhere() { // в общем то оптимизационная вещь потом можно убрать
-        assert isSelect();
-        return this == LAST;
-    }
-    public Where getWhere(ImList<Expr> exprs) {
-        if(this==LAST) {
-            assert exprs.size()==2;
-            return exprs.get(0).getWhere();
-        }
-        return Expr.getWhere(exprs);
-    }
     public int getSkipWhereIndex() {
-        if(this == LAST)
-            return 1;
         return -1;
     }
 
-    public ImList<Expr> followFalse(Where falseWhere, ImList<Expr> exprs, boolean pack) {
-        if(this==LAST) {
-            assert exprs.size()==2;
-            Expr firstExpr = exprs.get(0).followFalse(falseWhere, pack);
-            Expr secondExpr = exprs.get(1).followFalse(falseWhere.or(firstExpr.getWhere().not()), pack);
-            return ListFact.toList(firstExpr, secondExpr);
-        }
-        return falseWhere.followFalse(exprs, pack);
+    public boolean hasSingle() {
+        return true;
     }
-
-    public Expr getMainExpr(ImList<Expr> exprs) {
-        return exprs.get(getMainIndex());
-    }
-
-    public int getMainIndex() {
-        if(this==LAST) {
-            return 1;
-        }
-        return 0;
-    }
-    
-    public Expr getSingleExpr(ImList<Expr> exprs, Where orderWhere) {
-        Expr result = exprs.get(0);
-        if(this == LAST)
-            result = exprs.get(1).and(result.getWhere());
-        else if(this == JSON_CONCAT)
-            result = FormulaExpr.create(JSONBuildSingleArrayFormulaImpl.instance, ListFact.singleton(result));
-        return result.and(orderWhere);
+    public Expr getSingleExpr(ImList<Expr> exprs) {
+        assert hasSingle();
+        return exprs.get(0);
     }
 
     public boolean hasAdd() {
-        return this!= CONCAT && this!=AGGAR_SETADD && this!=LAST && this!= JSON_CONCAT;
+        return false;
     }
     
     public boolean isMaxMin() {
-        return this == MAX || this == MIN;
+        return false;
     }
 
-    // если не комутативен и не инвариантен к появляению в выборке null'а
+    // if not comutative and not invariant to the occurrence of nulls in the selection
     public boolean nullsNotAllowed() {
-        return this == LAST || this == JSON_CONCAT;
+        return false;
     }
     
-    public boolean isLastOpt(boolean needValue, ImList<Expr> exprs) {
-        if(this == LAST || this == ANY || isMaxMin()) // ANY - LAST без порядка, MAX/MIN - LAST где f(a) =
-            return true;
-        if(needValue)
-            return false;
-        if(this == SUM)
-            return getMainExpr(exprs).isAlwaysPositiveOrNull();
-        return true;
+    public boolean isLastOpt(boolean needValue, ImList<Expr> exprs, ImOrderMap<Expr, Boolean> orders) {
+        return !needValue;
     }
 
     public boolean splitExprCases() {
@@ -178,35 +358,26 @@ public enum GroupType implements AggrType {
         return !isSelect();
     }
 
-    public String getSource(ImList<String> exprs, ImList<ClassReader> exprReaders, ImOrderMap<String, CompileOrder> orders, Type type, SQLSyntax syntax, TypeEnvironment typeEnv) {
-        switch (this) {
-            case MAX:
-                assert exprs.size()==1 && orders.size()==0;
-                return (type instanceof ConcatenateType && syntax.hasAggConcProblem() ? "MAXC" : "MAX") + "(" + exprs.get(0) + ")";
-            case MIN:
-                assert exprs.size()==1 && orders.size()==0;
-                return (type instanceof ConcatenateType && syntax.hasAggConcProblem() ? "MINC" : "MIN") + "(" + exprs.get(0) + ")";
-            case ANY:
-                assert exprs.size()==1 && orders.size()==0;
-                return syntax.getAnyValueFunc() + "(" + getSafeExprSource(0, exprs, exprReaders, type, syntax, typeEnv) + ")";
-            case SUM:
-                assert exprs.size()==1 && orders.size()==0;
-                return syntax.getNotZero("SUM(" + getSafeExprSource(0, exprs, exprReaders, type, syntax, typeEnv) + ")", type, typeEnv);
-            case CONCAT:
-                assert exprs.size() == 1 || exprs.size() == 2;
-                return type.getCast(syntax.getOrderGroupAgg(this, type, exprs, exprReaders, orders, typeEnv), syntax, typeEnv); // тут точная ширина не нужна главное чтобы не больше
-            case JSON_CONCAT:
-                assert exprs.size() == 1;
-                return syntax.getOrderGroupAgg(this, type, exprs, exprReaders, orders, typeEnv);
-            case AGGAR_SETADD:
-                assert exprs.size()==1 && orders.isEmpty();
-                return syntax.getArrayAgg(exprs.get(0), exprReaders.get(0), typeEnv);
-            case LAST:
-                assert exprs.size()==2;
-                return syntax.getOrderGroupAgg(this, type, ListFact.singleton(exprs.get(1)), ListFact.singleton(exprReaders.get(1)), orders, typeEnv);
-            default:
-                throw new RuntimeException("can not be");
-        }
+    public abstract String getSource(ImList<String> exprs, ImList<ClassReader> exprReaders, ImOrderMap<String, CompileOrder> orders, Type type, SQLSyntax syntax, TypeEnvironment typeEnv);
+
+    private static String getAggrSource(String fnc, String exprs, ImOrderMap<String, CompileOrder> orders, SQLSyntax syntax) {
+        return getAggrSource(fnc, exprs, orders, syntax, false);
+    }
+    private static String getAggrSource(String fnc, String exprs, ImOrderMap<String, CompileOrder> orders, SQLSyntax syntax, boolean setOrdered) {
+        return fnc + "(" + exprs + (setOrdered ? ") WITHIN GROUP (" : "") + BaseUtils.clause("ORDER BY", Query.stringOrder(orders, syntax)) + ")";
+    }
+
+    public static ImList<String> castToVarStrings(ImList<String> exprs, final ImList<? extends ClassReader> readers, final Type resultType, final SQLSyntax syntax, final TypeEnvironment typeEnv) {
+        return exprs.mapListValues((i, value) -> {
+            ClassReader reader = readers.get(i);
+            if(reader instanceof Type) {
+                if(resultType instanceof AJSONClass)
+                    value = resultType.getCast(value, syntax, typeEnv, (Type) reader);
+                else
+                    value = SumFormulaImpl.castToVarString(value, ((StringClass) resultType), (Type) reader, syntax, typeEnv);
+            }
+            return value;
+        });
     }
 
     // it seems that null cast is needed for all aggr types, but for now we faced only SUM and ANYVALUE
@@ -220,11 +391,5 @@ public enum GroupType implements AggrType {
         return exprSource;
     }
 
-    public Type getType(Type exprType) {
-        if(this==CONCAT)
-            return StringClass.getv(((StringClass)exprType).caseInsensitive, ExtInt.UNLIMITED);
-        assert this != SUM || exprType instanceof IntegralClass;
-
-        return exprType;
-    }
+    public abstract String name();
 }

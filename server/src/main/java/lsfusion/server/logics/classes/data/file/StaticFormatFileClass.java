@@ -61,18 +61,8 @@ public abstract class StaticFormatFileClass extends FileClass<RawFileData> {
     }
 
     @Override
-    protected RawFileData parseHTTPNotNullString(String s, Charset charset) {
-        return new RawFileData(s.getBytes(charset));
-    }
-
-    @Override
     protected RawFileData parseHTTPNotNull(FileData b) {
         return b.getRawFile();
-    }
-
-    @Override
-    protected String formatHTTPNotNullString(RawFileData value, Charset charset) {
-        return new String(value.getBytes(), charset);
     }
 
     @Override

@@ -1,11 +1,8 @@
 package lsfusion.server.data.sql.syntax;
 
 import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
-import lsfusion.server.data.expr.query.GroupType;
-import lsfusion.server.data.query.compile.CompileOrder;
 import lsfusion.server.data.query.exec.MStaticExecuteEnvironment;
 import lsfusion.server.data.table.SessionTable;
 import lsfusion.server.data.type.ConcatenateType;
@@ -13,7 +10,6 @@ import lsfusion.server.data.type.FunctionType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.exec.EnsureTypeEnvironment;
 import lsfusion.server.data.type.exec.TypeEnvironment;
-import lsfusion.server.data.type.reader.ClassReader;
 import lsfusion.server.logics.classes.data.ArrayClass;
 
 import java.sql.Date;
@@ -210,8 +206,6 @@ public interface SQLSyntax {
 
     String getStringCFunc();
 
-    String getOrderGroupAgg(GroupType groupType, Type resultType, ImList<String> exprs, ImList<ClassReader> readers, ImOrderMap<String, CompileOrder> orders, TypeEnvironment typeEnv);
-
     String getNotSafeConcatenateSource(ConcatenateType type, ImList<String> exprs, TypeEnvironment typeEnv);
 
     boolean isIndexNameLocal();
@@ -232,8 +226,6 @@ public interface SQLSyntax {
     String getArrayConstructor(String source, ArrayClass rowType, TypeEnvironment env);
 
     String getArrayConcatenate(ArrayClass arrayClass, String prm1, String prm2, TypeEnvironment env);
-
-    String getArrayAgg(String s, ClassReader classReader, TypeEnvironment typeEnv);
 
     String getArrayType(ArrayClass arrayClass, TypeEnvironment typeEnv);
 

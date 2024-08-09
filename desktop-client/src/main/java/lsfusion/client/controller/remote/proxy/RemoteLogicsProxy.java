@@ -68,7 +68,7 @@ public class RemoteLogicsProxy<T extends RemoteLogicsInterface> extends PendingR
     }
 
     @Override
-    public ExternalResponse eval(AuthenticationToken token, SessionInfo sessionInfo, boolean action, Object paramScript, ExternalRequest request) throws RemoteException {
+    public ExternalResponse eval(AuthenticationToken token, SessionInfo sessionInfo, boolean action, ExternalRequest.Param paramScript, ExternalRequest request) throws RemoteException {
         logRemoteMethodStartCall("eval");
         ExternalResponse result = target.eval(token, sessionInfo, action, paramScript, request);
         logRemoteMethodEndVoidCall("eval");

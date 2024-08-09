@@ -15,6 +15,7 @@ import lsfusion.interop.logics.ServerSettings;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.navigator.NavigatorInfo;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
+import lsfusion.interop.session.ExternalRequest;
 import lsfusion.interop.session.SessionInfo;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -45,7 +46,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
     public static SessionInfo getSessionInfo(Authentication auth, HttpServletRequest request) {
         Locale clientLocale = LocaleContextHolder.getLocale();
         return new SessionInfo(SystemUtils.getLocalHostName(), ((WebAuthenticationDetails) auth.getDetails()).getRemoteAddress(), clientLocale.getLanguage(), clientLocale.getCountry(),
-                LocaleContextHolder.getTimeZone(), BaseUtils.getDatePattern(), BaseUtils.getTimePattern(), null, MainController.getExternalRequest(new Object[0], request));
+                LocaleContextHolder.getTimeZone(), BaseUtils.getDatePattern(), BaseUtils.getTimePattern(), null, MainController.getExternalRequest(new ExternalRequest.Param[0], request));
     }
 
     public static SessionInfo getSessionInfo(HttpServletRequest request) {
@@ -61,7 +62,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
 
         return new SessionInfo(hostName, request.getRemoteAddr(), null, null, timeZone != null ? TimeZone.getTimeZone(URLDecoder.decode(timeZone.getValue())) : null,
                 dateFormat != null ? URLDecoder.decode(dateFormat.getValue()) : null, timeFormat != null ? URLDecoder.decode(timeFormat.getValue()) : null,
-                colorTheme != null ? colorTheme.getValue() : null, MainController.getExternalRequest(new Object[0], request));
+                colorTheme != null ? colorTheme.getValue() : null, MainController.getExternalRequest(new ExternalRequest.Param[0], request));
     }
 
     private static NavigatorInfo getNavigatorInfo(HttpServletRequest request) {

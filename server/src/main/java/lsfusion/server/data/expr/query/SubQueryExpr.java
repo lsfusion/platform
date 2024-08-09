@@ -19,6 +19,7 @@ import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.expr.where.pull.ExprPullWheres;
 import lsfusion.server.data.query.compile.CompileSource;
+import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.translate.ExprTranslator;
 import lsfusion.server.data.translate.MapTranslate;
 import lsfusion.server.data.translate.PartialKeyExprTranslator;
@@ -38,6 +39,10 @@ public class SubQueryExpr extends QueryExpr<KeyExpr, SubQueryExpr.Query, SubQuer
 
         public Type getType() {
             return thisObj.query.getType();
+        }
+
+        protected Stat getTypeStat(boolean forJoin) {
+            return thisObj.query.getTypeStat(forJoin);
         }
 
         protected Expr getMainExpr() {
@@ -96,6 +101,10 @@ public class SubQueryExpr extends QueryExpr<KeyExpr, SubQueryExpr.Query, SubQuer
 
         public Type getType() {
             return expr.getType(expr.getWhere());
+        }
+
+        public Stat getTypeStat(boolean forJoin) {
+            return expr.getTypeStat(expr.getWhere(), forJoin);
         }
 
         public Where getFullWhere() {

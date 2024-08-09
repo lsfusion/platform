@@ -54,10 +54,10 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.F
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
-import lsfusion.server.logics.form.interactive.event.UserEventObject;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.InteractiveFormReportManager;
 import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
+import lsfusion.server.logics.form.interactive.instance.filter.RegularFilterGroupInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupColumn;
 import lsfusion.server.logics.form.interactive.instance.object.GroupMode;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
@@ -486,7 +486,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 PropertyObjectInstance<?> propertyObject = propertyDraw.getOrderProperty().getRemappedPropertyObject(keys, false);
                 propertyDraw.toDraw.changeOrder(propertyObject, propertyDraw, order);
                 
-                form.fireOnUserActivity(stack, new UserEventObject(propertyDraw.toDraw.getSID(), UserEventObject.Type.ORDER));
+                form.fireOrderChanged(propertyDraw.toDraw, stack, true);
             }
         });
     }
@@ -517,7 +517,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 }
             }
 
-            form.fireOnUserActivity(stack, new UserEventObject(groupObject.getSID(), UserEventObject.Type.ORDER));
+            form.fireOrderChanged(groupObject, stack, true);
         });
     }
 
@@ -638,14 +638,15 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                     }
                 }
 
-                form.fireOnUserActivity(stack, new UserEventObject(goi.getSID(), UserEventObject.Type.FILTER));
+                form.fireFilterChanged(goi, stack, true);
             }
         });
     }
 
     public ServerResponse setRegularFilter(long requestIndex, long lastReceivedRequestIndex, final int groupID, final int filterID) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
-            form.setRegularFilter(form.getRegularFilterGroup(groupID), filterID);
+            RegularFilterGroupInstance filterGroup = form.getRegularFilterGroup(groupID);
+            form.setRegularFilter(filterGroup, filterID);
             if (logger.isDebugEnabled()) {
                 logger.debug(String.format("set regular filter: [GROUP: %1$s]", groupID));
                 logger.debug(String.format("filter ID: %s", filterID));
@@ -682,7 +683,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             }
 
             AsyncEventExec asyncEventExec = form.entity.getAsyncEventExec(formEvent, context);
-            form.fireFormEvent(stack, formEvent, asyncEventExec != null && pushAsyncResult != null ? asyncEventExec.deserializePush(pushAsyncResult) : null);
+            form.fireEvent(stack, formEvent, asyncEventExec != null && pushAsyncResult != null ? asyncEventExec.deserializePush(pushAsyncResult) : null);
         });
     }
 
@@ -707,7 +708,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
 
             ContainerView containerView = (ContainerView) richDesign.findById(containerID);
             form.setContainerCollapsed(containerView, collapsed);
-            form.fireFormEvent(stack, new FormContainerEvent(containerView.getSID(), collapsed), null);
+            form.fireEvent(stack, new FormContainerEvent(containerView.getSID(), collapsed), null);
         });
     }
 
@@ -863,7 +864,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         if (increaseValuesNeededCount > 0)
             neededCount += BaseUtils.roundToDegree(3, increaseValuesNeededCount);
 
-        Async[] result = form.getAsyncValues(propertyDraw, keys, actionSID, value, neededCount, optimistic, optimisticRun, getRemoteContext());
+        Async[] result = form.getAsyncValues(propertyDraw, keys, actionSID, value, neededCount, optimistic, optimisticRun, getRemoteContext(), getStack());
 
         if (logger.isDebugEnabled()) {
             logger.debug(String.format("getAsyncValues Action. propertyDrawID: %s. Result: %s", propertyDraw.getSID(), result));

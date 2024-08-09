@@ -19,8 +19,8 @@ import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
-import lsfusion.server.logics.form.interactive.action.input.InputValueList;
+import lsfusion.server.logics.form.interactive.action.input.InputPropertyListEntity;
+import lsfusion.server.logics.form.interactive.action.input.InputPropertyValueList;
 import lsfusion.server.logics.form.interactive.changed.ChangedData;
 import lsfusion.server.logics.form.interactive.changed.ReallyChanged;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
@@ -149,12 +149,12 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends ActionO
         return objectsOuterMapping.mapValues(o -> o.entity.getParamExpr()).addExcl(property.getInterfaceParamExprs(rNotObjectsOuterMapping.result.keys()));
     }
 
-    public InputValueList<?> getInputValueList(GroupObjectInstance toDraw, Result<ImRevMap<P, ObjectInstance>> innerMapping, Function<PropertyObjectInterfaceInstance, ObjectValue> valuesGetter, boolean useFilters) {
+    public InputPropertyValueList<?> getInputValueList(GroupObjectInstance toDraw, Result<ImRevMap<P, ObjectInstance>> innerMapping, Function<PropertyObjectInterfaceInstance, ObjectValue> valuesGetter, boolean useFilters) {
         // splitting to grid and not grid objects
         SFunctionSet<PropertyObjectInterfaceInstance> gridObjects = value -> (value instanceof ObjectInstance && toDraw.objects.contains((ObjectInstance) value));
         ImMap<P, PropertyObjectInterfaceInstance> outerMapping = mapping.filterFnValues(new NotFunctionSet<>(gridObjects));
 
-        InputListEntity<?, P> inputList = property.getInputList(getParamExprs(property, outerMapping), innerMapping != null || useFilters);
+        InputPropertyListEntity<?, P> inputList = property.getInputList(getParamExprs(property, outerMapping), innerMapping != null || useFilters);
         if(inputList == null)
             return null;
 

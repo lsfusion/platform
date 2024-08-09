@@ -153,6 +153,9 @@
                 <entry key="suppressOnFocusChange" value="${settings.suppressOnFocusChange:}"/>
                 <entry key="contentWordWrap" value="${settings.contentWordWrap:}"/>
                 <entry key="toolbarTopLeft" value="${settings.toolbarTopLeft:}"/>
+                <entry key="defaultUrlCharset" value="${settings.defaultUrlCharset:}"/>
+                <entry key="defaultBodyUrlCharset" value="${settings.defaultBodyUrlCharset:}"/>
+                <entry key="defaultBodyCharset" value="${settings.defaultBodyCharset:}"/>
             </map>
         </property>
         </bean>
@@ -942,6 +945,7 @@
     <bean id="rmiManager" class="lsfusion.server.base.controller.remote.RmiManager">
         <property name="port" value="${rmi.port:7652}"/>
         <property name="httpPort" value="${http.port:7651}"/>
+        <property name="https" value="${https:false}"/>
         <property name="webSocketPort" value="${webSocket.port:8887}"/>
         <property name="debuggerPort" value="${debugger.port:1299}"/>
         <property name="jmxPort" value="${rmi.jmxPort:0}"/>

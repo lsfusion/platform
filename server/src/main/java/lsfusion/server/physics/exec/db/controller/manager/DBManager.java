@@ -80,6 +80,7 @@ import lsfusion.server.logics.classes.user.ObjectValueClassSet;
 import lsfusion.server.logics.controller.manager.RestartManager;
 import lsfusion.server.logics.event.Event;
 import lsfusion.server.logics.form.interactive.action.input.InputValueList;
+import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.property.AsyncMode;
 import lsfusion.server.logics.form.interactive.property.PropertyAsync;
@@ -94,6 +95,7 @@ import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyObjectImplement;
 import lsfusion.server.logics.property.implement.PropertyObjectInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.ActionOrPropertyUtils;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
@@ -1102,19 +1104,19 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     // need this to clean outdated caches
     // could be done easier with timestamps (value and last changed), but this way cache will be cleaned faster
-    private final LRUWVSMap<Property<?>, ConcurrentIdentityWeakHashSet<ParamRef>> asyncValuesPropCache1 = new LRUWVSMap<>(LRUUtil.G1);
-    private final LRUWVSMap<Property<?>, ConcurrentIdentityWeakHashSet<ParamRef>> asyncValuesPropCache2 = new LRUWVSMap<>(LRUUtil.G2);
+    private final LRUWVSMap<ActionOrProperty<?>, ConcurrentIdentityWeakHashSet<ParamRef>> asyncValuesPropCache1 = new LRUWVSMap<>(LRUUtil.G1);
+    private final LRUWVSMap<ActionOrProperty<?>, ConcurrentIdentityWeakHashSet<ParamRef>> asyncValuesPropCache2 = new LRUWVSMap<>(LRUUtil.G2);
 
     // we need weak ref, but regular equals (not identity)
-    private final LRUWWEVSMap<Property<?>, Param, ValueRef> asyncValuesValueCache1 = new LRUWWEVSMap<>(LRUUtil.G1);
-    private final LRUWWEVSMap<Property<?>, Param, ValueRef> asyncValuesValueCache2 = new LRUWWEVSMap<>(LRUUtil.G2);
+    private final LRUWWEVSMap<ActionOrProperty<?>, Param, ValueRef> asyncValuesValueCache1 = new LRUWWEVSMap<>(LRUUtil.G1);
+    private final LRUWWEVSMap<ActionOrProperty<?>, Param, ValueRef> asyncValuesValueCache2 = new LRUWWEVSMap<>(LRUUtil.G2);
 
-    public <P extends PropertyInterface> PropertyAsync<P>[] getAsyncValues(InputValueList<P> list, QueryEnvironment env, String value, int neededCount, AsyncMode mode) throws SQLException, SQLHandledException {
+    public <P extends PropertyInterface> PropertyAsync<P>[] getAsyncValues(InputValueList<P, ?> list, QueryEnvironment env, ExecutionStack stack, FormEnvironment formEnv, String value, int neededCount, AsyncMode mode) throws SQLException, SQLHandledException {
         if(Settings.get().isIsClustered()) // we don't want to use caches since they can be inconsistent
-            return readAsyncValues(list, env, value, neededCount, mode);
+            return readAsyncValues(list, env, stack, formEnv, value, neededCount, mode);
 
-        LRUWVSMap<Property<?>, ConcurrentIdentityWeakHashSet<ParamRef>> asyncValuesPropCache;
-        LRUWWEVSMap<Property<?>, Param, ValueRef> asyncValuesValueCache;
+        LRUWVSMap<ActionOrProperty<?>, ConcurrentIdentityWeakHashSet<ParamRef>> asyncValuesPropCache;
+        LRUWWEVSMap<ActionOrProperty<?>, Param, ValueRef> asyncValuesValueCache;
         if(value.length() >= Settings.get().getAsyncValuesLongCacheThreshold() || list.hasValues()) {
             asyncValuesPropCache = asyncValuesPropCache1;
             asyncValuesValueCache = asyncValuesValueCache1;
@@ -1123,7 +1125,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             asyncValuesValueCache = asyncValuesValueCache2;
         }
 
-        Property<?> key = list.getCacheKey();
+        ActionOrProperty<?> key = list.getCacheKey();
         Param param = list.getCacheParam(value, neededCount, mode, env);
 
         ValueRef<P> valueRef = asyncValuesValueCache.get(key, param);
@@ -1139,14 +1141,14 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
         paramRefs.add(ref);
 
-        PropertyAsync<P>[] values = readAsyncValues(list, env, value, neededCount, mode);
+        PropertyAsync<P>[] values = readAsyncValues(list, env, stack, formEnv, value, neededCount, mode);
         asyncValuesValueCache.put(key, param, new ValueRef<>(ref, values));
 
         return values;
     }
 
-    private <P extends PropertyInterface> PropertyAsync<P>[] readAsyncValues(InputValueList<P> list, QueryEnvironment env, String value, int neededCount, AsyncMode asyncMode) throws SQLException, SQLHandledException {
-        return FormInstance.getAsyncValues(list, getThreadLocalSql(), env, LM.baseClass, Property.defaultModifier, value, neededCount, asyncMode);
+    private <P extends PropertyInterface> PropertyAsync<P>[] readAsyncValues(InputValueList<P, ?> list, QueryEnvironment env, ExecutionStack stack, FormEnvironment formEnv, String value, int neededCount, AsyncMode asyncMode) throws SQLException, SQLHandledException {
+        return FormInstance.getAsyncValues(list, getThreadLocalSql(), env, LM.baseClass, Property.defaultModifier, () -> new ExecutionContext<>(MapFact.EMPTY(), createSession(), stack, formEnv), value, neededCount, asyncMode);
     }
 
     public void flushChanges() {
@@ -1157,9 +1159,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
         if(flushedChanges.isEmpty())
             return;
 
-        FunctionSet<Property> changedSet = Property.getDependsOnSet(flushedChanges);
-        DProcessor<Property<?>, ConcurrentIdentityWeakHashSet<ParamRef>> dropCaches = (property, refs) -> {
-            if (property != null && changedSet.contains(property)) {
+        DProcessor<ActionOrProperty<?>, ConcurrentIdentityWeakHashSet<ParamRef>> dropCaches = (property, refs) -> {
+            if (property != null && InputValueList.depends(property, flushedChanges)) {
                 for (ParamRef ref : refs)
                     ref.drop(); // dropping ref will eventually lead to garbage collection of entries in all lru caches, plus there is a check that cache is dropped
             }
@@ -1559,7 +1560,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             if (isDenyDropTables()) {
                 String droppedTables = getDroppedTablesString(sql, oldDBStructure, newDBStructure);
                 if (!droppedTables.isEmpty()) {
-                    throw new RuntimeException("Dropping tables: " + droppedTables + "\nNow, dropping tables is restricted by settings. If you are sure you want to drop these tables, you can set 'db.denyDropTables = false'\nin settings.properties or through other methods. For more information, please visit: https://docs.lsfusion.org/next/Launch_parameters/#applsfusion");
+                    throw new RuntimeException("Dropping tables: " + droppedTables + "\nNow, dropping tables is restricted by settings. If you are sure you want to drop these tables, you can set 'db.denyDropTables = false'\nin settings.properties or through other methods. For more information, please visit: https://docs.lsfusion.org/Launch_parameters/#applsfusion");
                 }
             }
 
@@ -2322,7 +2323,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 droppedModules += moduleName + ", ";
             }
         if (isDenyDropModules() && !droppedModules.isEmpty())
-            throw new RuntimeException("Dropping modules: " + droppedModules.substring(0, droppedModules.length() - 2) + "\nNow, dropping modules is restricted by settings. If you are sure you want to drop these modules, you can set 'db.denyDropModules = false'\nin settings.properties or through other methods. For more information, please visit: https://docs.lsfusion.org/next/Launch_parameters/#applsfusion\"");
+            throw new RuntimeException("Dropping modules: " + droppedModules.substring(0, droppedModules.length() - 2) + "\nNow, dropping modules is restricted by settings. If you are sure you want to drop these modules, you can set 'db.denyDropModules = false'\nin settings.properties or through other methods. For more information, please visit: https://docs.lsfusion.org/Launch_parameters/#applsfusion\"");
     }
 
     private synchronized void runMigrationScript() {

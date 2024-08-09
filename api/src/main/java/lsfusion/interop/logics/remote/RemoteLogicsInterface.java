@@ -30,7 +30,7 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
     // RESTful interfaces
     // external requests (interface is similar to RemoteSessionInterface but with token)
     ExternalResponse exec(AuthenticationToken token, SessionInfo sessionInfo, String action, ExternalRequest request) throws RemoteException;
-    ExternalResponse eval(AuthenticationToken token, SessionInfo sessionInfo, boolean action, Object paramScript, ExternalRequest request) throws RemoteException;
+    ExternalResponse eval(AuthenticationToken token, SessionInfo sessionInfo, boolean action, ExternalRequest.Param paramScript, ExternalRequest request) throws RemoteException;
 
     // separate methods, because used really often (and don't need authentication)
     long generateID() throws RemoteException;

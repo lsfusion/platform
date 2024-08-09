@@ -24,12 +24,12 @@ public class ExternalHTTPAction extends CallHTTPAction {
         Result<String> rConnectionString = new Result<>(connectionString);
         return new CallHTTPAction.UrlProcessor() {
             @Override
-            public boolean proceed(int i, String replacement, String encodedValue) {
+            public boolean proceed(int i, Object replacement, String encodedValue) {
                 String prmName = getParamName(String.valueOf(i + 1));
                 if(!connectionString.contains(prmName))
                     return false;
 
-                rConnectionString.set(rConnectionString.result.replace(prmName, replacement));
+                rConnectionString.set(rConnectionString.result.replace(prmName, encodedValue));
                 return true;
             }
 

@@ -9,9 +9,7 @@ import lsfusion.base.file.RawFileData;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.design.*;
-import net.sf.jasperreports.engine.export.JRPdfExporter;
-import net.sf.jasperreports.engine.export.JRRtfExporter;
-import net.sf.jasperreports.engine.export.JRXlsExporter;
+import net.sf.jasperreports.engine.export.*;
 import net.sf.jasperreports.engine.export.ooxml.JRDocxExporter;
 import net.sf.jasperreports.engine.export.ooxml.JRXlsxExporter;
 import net.sf.jasperreports.engine.fill.JRSwapFileVirtualizer;
@@ -594,7 +592,7 @@ public class ReportGenerator {
 
     @Deprecated
     public static File exportToXlsx(ReportGenerationData generationData) throws IOException, ClassNotFoundException, JRException {
-        return exportToFile(generationData, FormPrintType.XLSX, null, null, null);
+        return exportToFile(generationData, FormPrintType.XLSX, null, null, false, null);
     }
 
     private void removeZeroWidthElements(JasperDesign design) {
@@ -788,13 +786,13 @@ public class ReportGenerator {
         return res;
     }
 
-    public static void exportAndOpen(ReportGenerationData generationData, FormPrintType type, boolean fixBoolean, RemoteLogicsInterface remoteLogics) {
-        exportAndOpen(generationData, type, null, null, remoteLogics);
+    public static void exportAndOpen(ReportGenerationData generationData, FormPrintType type, boolean jasperReportsIgnorePageMargins, RemoteLogicsInterface remoteLogics) {
+        exportAndOpen(generationData, type, null, null, jasperReportsIgnorePageMargins, remoteLogics);
     }
 
-    public static void exportAndOpen(ReportGenerationData generationData, FormPrintType type, String sheetName, String password, RemoteLogicsInterface remoteLogics) {
+    public static void exportAndOpen(ReportGenerationData generationData, FormPrintType type, String sheetName, String password, boolean jasperReportsIgnorePageMargins, RemoteLogicsInterface remoteLogics) {
         try {
-            File tempFile = exportToFile(generationData, type, sheetName, password, remoteLogics);
+            File tempFile = exportToFile(generationData, type, sheetName, password, jasperReportsIgnorePageMargins, remoteLogics);
 
             try {
                 if (Desktop.isDesktopSupported()) {
@@ -827,7 +825,7 @@ public class ReportGenerator {
         }
     }
 
-    public static File exportToFile(ReportGenerationData generationData, FormPrintType type, String sheetName, String password, RemoteLogicsInterface remoteLogics) throws ClassNotFoundException, IOException, JRException {
+    public static File exportToFile(ReportGenerationData generationData, FormPrintType type, String sheetName, String password, boolean jasperReportsIgnorePageMargins, RemoteLogicsInterface remoteLogics) throws ClassNotFoundException, IOException, JRException {
         String extension = type.getExtension();
         File tempFile = File.createTempFile("lsf", "." + extension);
 
@@ -840,6 +838,10 @@ public class ReportGenerator {
         }
 
         JRAbstractExporter exporter = getExporter(type);
+        if (jasperReportsIgnorePageMargins) {
+            exporter.setParameter(JRExporterParameter.IGNORE_PAGE_MARGINS, Boolean.TRUE);
+            exporter.setParameter(JRXlsExporterParameter.IS_ONE_PAGE_PER_SHEET, Boolean.TRUE);
+        }
         exporter.setParameter(JRExporterParameter.JASPER_PRINT, print);
         exporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, tempFile.getAbsolutePath());
         exporter.exportReport();
@@ -892,14 +894,14 @@ public class ReportGenerator {
         return tempFile;
     }
 
-    public static RawFileData exportToFileByteArray(ReportGenerationData generationData, FormPrintType type, RemoteLogicsInterface remoteLogics) {
-        return exportToFileByteArray(generationData, type, null, null, remoteLogics);
+    public static RawFileData exportToFileByteArray(ReportGenerationData generationData, FormPrintType type, boolean jasperReportsIgnorePageMargins, RemoteLogicsInterface remoteLogics) {
+        return exportToFileByteArray(generationData, type, null, null, jasperReportsIgnorePageMargins, remoteLogics);
     }
     
-    public static RawFileData exportToFileByteArray(ReportGenerationData generationData, FormPrintType type, String sheetName, String password, RemoteLogicsInterface remoteLogics) {
+    public static RawFileData exportToFileByteArray(ReportGenerationData generationData, FormPrintType type, String sheetName, String password, boolean jasperReportsIgnorePageMargins, RemoteLogicsInterface remoteLogics) {
         try {
             try {
-                return new RawFileData(exportToFile(generationData, type, sheetName, password, remoteLogics));
+                return new RawFileData(exportToFile(generationData, type, sheetName, password, jasperReportsIgnorePageMargins, remoteLogics));
             } finally {
                 JRVirtualizationHelper.clearThreadVirtualizer();
             }

@@ -1,43 +1,59 @@
 package lsfusion.server.physics.dev.integration.external.from.http;
 
-import com.sun.net.httpserver.Headers;
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
-import com.sun.net.httpserver.HttpServer;
+import com.sun.net.httpserver.*;
 import lsfusion.base.DaemonThreadFactory;
 import lsfusion.base.col.heavy.OrderedMap;
+import lsfusion.base.file.FileData;
 import lsfusion.interop.connection.AuthenticationToken;
+import lsfusion.interop.connection.authentication.PasswordAuthentication;
 import lsfusion.interop.session.ExecInterface;
 import lsfusion.interop.session.ExternalUtils;
 import lsfusion.interop.session.SessionInfo;
 import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
 import lsfusion.server.base.controller.manager.MonitorServer;
+import lsfusion.server.base.controller.remote.RmiManager;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
+import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.LogicsInstance;
+import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.controller.remote.RemoteLogics;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.log.ServerLoggers;
+import lsfusion.server.physics.admin.service.ServiceLogicsModule;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpEntity;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.openssl.PEMEncryptedKeyPair;
+import org.bouncycastle.openssl.PEMKeyPair;
+import org.bouncycastle.openssl.PEMParser;
+import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
+import org.bouncycastle.openssl.jcajce.JcePEMDecryptorProviderBuilder;
 
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.rmi.RemoteException;
+import java.security.*;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.sql.SQLException;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
 
-import static lsfusion.base.BaseUtils.nvl;
-
 public class ExternalHttpServer extends MonitorServer {
 
     private LogicsInstance logicsInstance;
     private RemoteLogics remoteLogics;
-    private Map<InetSocketAddress, String> hostMap = new HashMap<>();
+    private final Map<InetSocketAddress, String> hostMap = new HashMap<>();
 
     @Override
     public String getEventName() {
@@ -49,24 +65,110 @@ public class ExternalHttpServer extends MonitorServer {
         return logicsInstance;
     }
 
-    @Override
-    protected void onInit(LifecycleEvent event) {
-    }
+    private boolean useHTTPS = false;
 
     @Override
     protected void onStarted(LifecycleEvent event) {
-        ServerLoggers.systemLogger.info("Binding ExternalHttpServer");
-        HttpServer httpServer = null;
+        RmiManager rmiManager = getLogicsInstance().getRmiManager();
+        useHTTPS = rmiManager.isHttps();
+        ServerLoggers.systemLogger.info("Binding External" + (useHTTPS ? "HTTPS" : "HTTP") + "Server");
+        HttpServer server = null;
         try {
-            httpServer = HttpServer.create(new InetSocketAddress(getLogicsInstance().getRmiManager().getHttpPort()), 0);
-            httpServer.createContext("/", new HttpRequestHandler());
-            httpServer.setExecutor(Executors.newFixedThreadPool(Settings.get().getExternalHttpServerThreadCount(), new DaemonThreadFactory("externalHttpServer-daemon")));
-            httpServer.start();
+            server = initServer(useHTTPS, new InetSocketAddress(rmiManager.getHttpPort()));
+
+            server.createContext("/", new HttpRequestHandler());
+            server.setExecutor(Executors.newFixedThreadPool(Settings.get().getExternalHttpServerThreadCount(), new DaemonThreadFactory("externalHttpServer-daemon")));
+
+            server.start();
         } catch (Exception e) {
-            if (httpServer != null)
-                httpServer.stop(0);
+            if (server != null)
+                server.stop(0);
             e.printStackTrace();
         }
+    }
+
+    private char[] keyPassword = null;
+    private final char[] defaultKeystorePassword = getPassword(null);
+    private final char[] defaultKeyPassword = getPassword(null);
+    private static final String SECURITY_ALGORITHM = "SunX509";
+
+    protected HttpServer initServer(boolean useHTTPS, InetSocketAddress inetSocketAddress) throws IOException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException, KeyManagementException, CertificateException {
+
+        HttpServer server;
+        if (useHTTPS) {
+            KeyStore ks = getKeyStore();
+
+            KeyManagerFactory kmf = KeyManagerFactory.getInstance(SECURITY_ALGORITHM);
+            kmf.init(ks, keyPassword != null ? keyPassword : defaultKeyPassword); // keyPassword = null if keystore.jks file is not used
+
+            TrustManagerFactory tmf = TrustManagerFactory.getInstance(SECURITY_ALGORITHM);
+            tmf.init(ks);
+
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+
+            HttpsServer httpsServer = HttpsServer.create(inetSocketAddress, 0);
+            httpsServer.setHttpsConfigurator(new HttpsConfigurator(sslContext));
+            server = httpsServer;
+        } else {
+            server = HttpServer.create(inetSocketAddress, 0);
+        }
+        return server;
+    }
+
+    private KeyStore getKeyStore() throws KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException {
+        // needed to decrypt .pem files
+        if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null)
+            Security.addProvider(new BouncyCastleProvider());
+
+        ServiceLogicsModule serviceLM = getLogicsInstance().getBusinessLogics().serviceLM;
+        KeyStore keystore = KeyStore.getInstance("JKS");
+        try (DataSession session = createSession()) {
+            Boolean useKeystore = (Boolean) serviceLM.useKeystore.read(session);
+            if (useKeystore != null) {
+                keyPassword = getPassword(serviceLM.keyPassword.read(session));
+                char[] keystorePassword = getPassword(serviceLM.keystorePassword.read(session));
+
+                FileData keystoreFile = (FileData) serviceLM.keystore.read(session);
+                keystore.load(keystoreFile.getRawFile().getInputStream(), keystorePassword);
+            } else {
+                // Load private key from PEM file
+                FileData privateKeyFile = (FileData) serviceLM.privateKey.read(session);
+                PrivateKey privateKey;
+                try (PEMParser pemParser = new PEMParser(new InputStreamReader(privateKeyFile.getRawFile().getInputStream()))) {
+                    Object o = pemParser.readObject();
+                    PEMKeyPair pemKeyPair;
+                    if (o instanceof PEMKeyPair) {
+                        pemKeyPair = (PEMKeyPair) o;
+                    } else if (o instanceof PEMEncryptedKeyPair) {
+                        String privateKeyPassword = (String) serviceLM.privateKeyPassword.read(session);
+                        if (privateKeyPassword == null)
+                            throw new RuntimeException("PEMEncryptedKeyPair requires privateKeyPassword to be non-null");
+
+                        pemKeyPair = ((PEMEncryptedKeyPair) o)
+                                .decryptKeyPair(new JcePEMDecryptorProviderBuilder().build(privateKeyPassword.toCharArray()));
+                    } else {
+                        throw new RuntimeException("Invalid PEM file");
+                    }
+                    privateKey = new JcaPEMKeyConverter().getKeyPair(pemKeyPair).getPrivate();
+                }
+
+                // Load certificate chain from PEM file
+                FileData chainFile = (FileData) serviceLM.chain.read(session);
+                CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
+                X509Certificate[] chain = certFactory.generateCertificates(chainFile.getRawFile().getInputStream()).toArray(new X509Certificate[0]);
+
+                keystore.load(null, defaultKeystorePassword);
+                keystore.setKeyEntry("lsf", privateKey, defaultKeyPassword, chain);
+            }
+        } catch (SQLException | SQLHandledException e) {
+            throw new RuntimeException(e);
+        }
+        return keystore;
+    }
+
+    private char[] getPassword(Object passwordObject) {
+        return passwordObject != null ? ((String) passwordObject).toCharArray() : new char[0];
     }
 
     public ExternalHttpServer() {
@@ -121,10 +223,12 @@ public class ExternalHttpServer extends MonitorServer {
                 SessionInfo sessionInfo = new SessionInfo(hostName, address != null ? address.getHostAddress() : null, null, null, null, null, null, null);// client locale does not matter since we use anonymous authentication
 
                 String[] host = request.getRequestHeaders().getFirst("Host").split(":");
-                ExecInterface remoteExec = ExternalUtils.getExecInterface(AuthenticationToken.ANONYMOUS, sessionInfo, remoteLogics);
+                ExecInterface remoteExec = ExternalUtils.getExecInterface(getAuthToken(request), sessionInfo, remoteLogics);
+                ContentType requestContentType = ExternalUtils.parseContentType(getContentType(request));
                 ExternalUtils.ExternalResponse response = ExternalUtils.processRequest(remoteExec,
-                        request.getRequestBody(), getContentType(request), headerNames, headerValues, cookieNames, cookieValues, null, null,null,
-                        "http", request.getRequestMethod(), host[0], Integer.parseInt(host[1]), "", request.getRequestURI().getPath(), "", request.getRequestURI().getRawQuery(), null);
+                        request.getRequestBody(), requestContentType, headerNames, headerValues, cookieNames, cookieValues, null, null,null,
+                        useHTTPS ? "https" : "http", request.getRequestMethod(), host[0], host.length > 1 ? Integer.parseInt(host[1]) : null /*when using redirect from address without specifying a port, for example foo.bar immediately to port 7651, the port is not specified in request, and in this place when accessing host[1] the ArrayIndexOutOfBoundsException is received.*/,
+                        "", request.getRequestURI().getPath(), "", request.getRequestURI().getRawQuery(), null);
 
                 sendResponse(request, response);
             } catch (Exception e) {
@@ -137,6 +241,25 @@ public class ExternalHttpServer extends MonitorServer {
                 ThreadLocalContext.aspectAfterMonitorHTTP(ExternalHttpServer.this);
                 request.close();
             }
+        }
+
+        private AuthenticationToken getAuthToken(HttpExchange request) throws RemoteException {
+            AuthenticationToken token = AuthenticationToken.ANONYMOUS;
+
+            List<String> authHeaders = request.getRequestHeaders().get("Authorization");
+            String authHeader = authHeaders != null && !authHeaders.isEmpty() ? authHeaders.get(0) : null;
+
+            if (authHeader != null) {
+                if (authHeader.toLowerCase().startsWith("bearer ")) {
+                    token = new AuthenticationToken(authHeader.substring(7));
+                } else if (authHeader.toLowerCase().startsWith("basic ")) {
+                    String[] credentials = new String(Base64.getDecoder().decode(authHeader.substring(6))).split(":", 2);
+                    if (credentials.length == 2)
+                        token = remoteLogics.authenticateUser(new PasswordAuthentication(credentials[0], credentials[1]));
+                }
+            }
+
+            return token;
         }
 
         //we use hostMap and timeout because getHostName can be very slow
@@ -155,16 +278,14 @@ public class ExternalHttpServer extends MonitorServer {
             return hostName;
         }
 
-        private ContentType getContentType(HttpExchange request) {
+        private String getContentType(HttpExchange request) {
+            String contentType = null;
             List<String> contentTypeList = request.getRequestHeaders().get("Content-Type");
-            if (contentTypeList != null) {
-                for (String contentType : contentTypeList) {
-                    return ContentType.parse(contentType);
-                }
-            }
-            return null;
+            if (contentTypeList != null && !contentTypeList.isEmpty())
+                contentType = contentTypeList.get(0);
+            return contentType;
         }
-        
+
         private String[] getRequestHeaderValues(Headers headers, String[] headerNames) {
             String[] headerValuesArray = new String[headerNames.length];
             for (int i = 0; i < headerNames.length; i++) {

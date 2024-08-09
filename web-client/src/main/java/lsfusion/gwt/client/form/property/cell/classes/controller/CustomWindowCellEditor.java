@@ -45,7 +45,7 @@ public class CustomWindowCellEditor extends WindowValueCellEditor implements Cus
 
     @Override
     public void start(EventHandler handler, Element parent, RenderContext renderContext, boolean notFocusable, PValue oldValue) {
-        render(parent, null, oldValue, null, null);
+        render(parent, renderContext, oldValue, null, null);
     }
 
     @Override

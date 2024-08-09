@@ -1,22 +1,19 @@
 package lsfusion.server.logics.form.interactive.action.input;
 
-import lsfusion.server.logics.action.session.DataSession;
-import lsfusion.server.logics.action.session.change.modifier.Modifier;
+import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public class InputContext<P extends PropertyInterface> {
 
-    public final InputValueList<P> list;
+    public final InputValueList<P, ?> list;
     public final boolean newSession;
+    public final ExecutionContext<?> context;
     public final boolean strict;
-    public final DataSession session;
-    public final Modifier modifier;
 
-    public InputContext(InputValueList<P> list, boolean newSession, DataSession session, Modifier modifier, boolean strict) {
+    public InputContext(InputValueList<P, ?> list, boolean newSession, ExecutionContext<?> context, boolean strict) {
         this.list = list;
         this.newSession = newSession;
-        this.session = session;
-        this.modifier = modifier;
+        this.context = context;
         this.strict = strict;
     }
 }

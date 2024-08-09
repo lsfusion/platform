@@ -14,6 +14,7 @@ import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImOrderValueMap;
+import lsfusion.base.lambda.E2Callable;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.ModalityWindowFormType;
@@ -63,6 +64,7 @@ import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.property.LP;
+import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
@@ -92,10 +94,7 @@ import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.interactive.action.async.*;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInput;
-import lsfusion.server.logics.form.interactive.action.input.InputContext;
-import lsfusion.server.logics.form.interactive.action.input.InputListExpr;
-import lsfusion.server.logics.form.interactive.action.input.InputResult;
-import lsfusion.server.logics.form.interactive.action.input.InputValueList;
+import lsfusion.server.logics.form.interactive.action.input.*;
 import lsfusion.server.logics.form.interactive.changed.*;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
@@ -1019,7 +1018,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         BL.LM.eventSource.change(eventSource.toString(), this);
 
         BL.LM.dropBeforeCanceled(this);
-        fireFormChangeEvent(property, stack, keys, true);
+        fireChangeEvent(property, stack, keys, true);
         if(BL.LM.isBeforeCanceled(this))
             return;
 
@@ -1034,7 +1033,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         final ActionObjectInstance remappedEventAction = eventAction.getRemappedPropertyObject(keys, true);
         remappedEventAction.execute(FormInstance.this, stack, result, property, FormInstance.this);
 
-        fireFormChangeEvent(property, stack, keys, false);
+        fireChangeEvent(property, stack, keys, false);
     }
 
     public void pasteExternalTable(List<PropertyDrawInstance> properties, List<ImMap<ObjectInstance, DataObject>> columnKeys, List<List<byte[]>> values, List<ArrayList<String>> rawValues, ExecutionStack stack, FormInstanceContext context) throws SQLException, IOException, SQLHandledException {
@@ -1169,15 +1168,33 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return null;
     }
 
-    public static <P extends PropertyInterface> PropertyAsync<P>[] getAsyncValues(InputValueList<P> list, DataSession session, Modifier modifier, String value, int neededCount, AsyncMode asyncMode) throws SQLException, SQLHandledException {
-        return getAsyncValues(list, session.sql, session.env, session.baseClass, modifier, value, neededCount, asyncMode);
+    public static <P extends PropertyInterface> PropertyAsync<P>[] getAsyncValues(InputValueList<P, ?> list, ExecutionContext<?> context, String value, int neededCount, AsyncMode asyncMode) throws SQLException, SQLHandledException {
+        DataSession session = context.getSession();
+        return getAsyncValues(list, session.sql, session.env, session.baseClass, context.getModifier(), () -> context, value, neededCount, asyncMode);
     }
-    public static <P extends PropertyInterface> PropertyAsync<P>[] getAsyncValues(InputValueList<P> list, SQLSession sql, QueryEnvironment env, BaseClass baseClass, Modifier modifier, String value, int neededCount, AsyncMode asyncMode) throws SQLException, SQLHandledException {
+    public static <P extends PropertyInterface> PropertyAsync<P>[] getAsyncValues(InputValueList<P, ?> list, SQLSession sql, QueryEnvironment env, BaseClass baseClass, Modifier modifier, E2Callable<ExecutionContext<?>, SQLException, SQLHandledException> contextSupplier, String value, int neededCount, AsyncMode asyncMode) throws SQLException, SQLHandledException {
         Settings settings = Settings.get();
 
-        boolean highlight = list.isHighlight();
+        if(list instanceof InputActionValueList) {
+            ExecutionContext<?> context = contextSupplier.call();
+            ((InputActionValueList<P>) list).execute(value, context);
 
-        InputListExpr<P> listExprKeys = list.getListExpr(modifier, asyncMode);
+            BaseLogicsModule lm = context.getBL().LM;
+            ImOrderMap<ImMap<Integer, Object>, ImMap<Integer, Object>> asyncs = LP.readAll(new LP[]{lm.inputList, lm.displayInputList}, context.getEnv());
+
+            assert !asyncMode.isObjects();
+            ImMap<Integer, PropertyAsync<P>> resultList = asyncs.getMap().mapKeyValues(key -> (Integer) key.singleValue(), valueResult -> {
+                String rawString = (String) valueResult.get(0);
+                return new PropertyAsync<>(BaseUtils.nvl((String) valueResult.get(1), rawString), rawString, null);
+            });
+            return resultList.sort().valuesList().toArray(new PropertyAsync[resultList.size()]);
+        }
+
+        InputPropertyValueList<P> propertyList = (InputPropertyValueList<P>) list;
+
+        boolean highlight = propertyList.isHighlight();
+
+        InputListExpr<P> listExprKeys = propertyList.getListExpr(modifier, asyncMode);
 
         Expr listExpr = listExprKeys.expr;
         if(!value.isEmpty()) {
@@ -1194,7 +1211,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             double statDegree = settings.getStatDegree();
             int maxLimitRead = settings.getAsyncValuesMaxReadCount();
 
-            double estDistinctRate = (asyncMode.isValues() ? list.getSelectStat().getCount() : 1) * extraReadCoeff;
+            double estDistinctRate = (asyncMode.isValues() ? propertyList.getSelectStat().getCount() : 1) * extraReadCoeff;
             int estNeededRead = (int) BaseUtils.min(((double) neededCount * estDistinctRate), maxLimitRead);
             while (estNeededRead <= maxLimitRead) {
                 // t(o) = LIMIT estX BY t(o)
@@ -1300,7 +1317,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return new Pair<>(resultValues, count);
     }
 
-    public static <P extends PropertyInterface> ObjectValue getAsyncKey(InputValueList<P> list, DataSession session, Modifier modifier, ObjectValue value) throws SQLException, SQLHandledException {
+    public static <P extends PropertyInterface> ObjectValue getAsyncKey(InputPropertyValueList<P> list, DataSession session, Modifier modifier, ObjectValue value) throws SQLException, SQLHandledException {
         InputListExpr<P> listExprKeys = list.getListExpr(modifier, null);
         ImMap<P, DataObject> row = getAsyncKey(listExprKeys, session.sql, session.env, session.baseClass, value);
         if(row == null)
@@ -1326,15 +1343,17 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         }
         return result;
     }
-    private static <P extends PropertyInterface> boolean checkAsyncLength(InputValueList<P> list, String value, AsyncMode mode) {
+    private static <P extends PropertyInterface> boolean checkAsyncLength(InputValueList<P, ?> list, String value, AsyncMode mode) {
         Settings settings = Settings.get();
-        return value.length() <= settings.getAsyncValuesTooShortThreshold() && !mode.isObjects() && !list.getInterfaceCost().rows.less(new Stat(settings.getAsyncValuesTooShortDataCompletionCount()));
+        return list instanceof InputPropertyValueList && value.length() <= settings.getAsyncValuesTooShortThreshold() && !mode.isObjects() && !((InputPropertyValueList<P>)list).getInterfaceCost().rows.less(new Stat(settings.getAsyncValuesTooShortDataCompletionCount()));
     }
-    public <P extends PropertyInterface, X extends PropertyInterface> Async[] getAsyncValues(PropertyDrawInstance<P> propertyDraw, ImMap<ObjectInstance, ? extends ObjectValue> keys, String actionSID, String value, int neededCount, boolean optimistic, Supplier<Boolean> optimisticRun, FormInstanceContext context) throws SQLException, SQLHandledException {
-        InputValueList<X> listProperty;
+    public <P extends PropertyInterface, X extends PropertyInterface> Async[] getAsyncValues(PropertyDrawInstance<P> propertyDraw, ImMap<ObjectInstance, ? extends ObjectValue> keys, String actionSID, String value, int neededCount, boolean optimistic, Supplier<Boolean> optimisticRun, FormInstanceContext context, ExecutionStack stack) throws SQLException, SQLHandledException {
+        InputValueList<X, ?> listProperty;
         AsyncDataConverter<X> converter;
         AsyncMode asyncMode;
         boolean needRecheck = false;
+
+        FormEnvironment formEnv = new FormEnvironment(null, propertyDraw, this);
         if (actionSID.equals(INPUT)) {
             assert optimistic;
             InputContext<X> inputContext = ThreadLocalContext.lockInputContext();
@@ -1350,8 +1369,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                     return new Async[] {Async.NEEDMORE};
 
                 for(Property<X> changeProp : listProperty.getChangeProps())
-                    if (!inputContext.newSession && changeProp.hasChanges(inputContext.modifier))
-                        return convertPropertyAsyncs(converter, getAsyncValues(listProperty, inputContext.session, inputContext.modifier, value, neededCount, asyncMode));
+                    if (!inputContext.newSession && changeProp.hasChanges(inputContext.context.getModifier()))
+                        return convertPropertyAsyncs(converter, getAsyncValues(listProperty, inputContext.context, value, neededCount, asyncMode));
             } finally {
                 ThreadLocalContext.unlockInputContext();
             }
@@ -1379,7 +1398,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                             return null; // switching to pessimistic mode
                     } else {
                         if (updateAsyncPropertyChanges(changeProp)) // recheck changes since we're in a thread-safe mode
-                            return convertPropertyAsyncs(converter, getAsyncValues(listProperty, getSession(), getModifier(), value, neededCount, asyncMode));
+                            return convertPropertyAsyncs(converter, getAsyncValues(listProperty, new ExecutionContext(MapFact.EMPTY(), this, stack, formEnv), value, neededCount, asyncMode));
                     }
             }
         }
@@ -1389,7 +1408,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         if(!optimisticRun.get())
             return new Async[] {Async.CANCELED};
 
-        Async[] result = convertPropertyAsyncs(converter, logicsInstance.getDbManager().getAsyncValues(listProperty, getQueryEnv(), value, neededCount, asyncMode));
+        Async[] result = convertPropertyAsyncs(converter, logicsInstance.getDbManager().getAsyncValues(listProperty, getQueryEnv(), stack, formEnv, value, neededCount, asyncMode));
         if(needRecheck) // not sure yet, resending RECHECK
             result = BaseUtils.addElement(result, Async.RECHECK, Async[]::new);
         return result;
@@ -2240,16 +2259,16 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         GroupObjectValue updateGroupObject = null; // так как текущий groupObject идет относительно treeGroup, а не group
         for (GroupObjectInstance group : getOrderGroups()) {
             try {
-                ImMap<ObjectInstance, DataObject> selectObjects = group.updateKeys(session.sql, queryEnv, getModifier(), environmentIncrement, this, BL.LM.baseClass, isHidden(group), refresh, result, mChangedDrawProps, mChangedProps, this);
+                ImMap<ObjectInstance, DataObject> selectObjects = group.updateKeys(session.sql, queryEnv, getModifier(), environmentIncrement, this, BL.LM.baseClass, isHidden(group), refresh || group.toRefresh(), result, mChangedDrawProps, mChangedProps, this, getObjectEvents(stack, group));
                 if (selectObjects != null) // то есть нужно изменять объект
                     updateGroupObject = new GroupObjectValue(group, selectObjects);
 
-                if (group.getDownTreeGroups().size() == 0 && updateGroupObject != null) { // так как в tree группе currentObject друг на друга никак не влияют, то можно и нужно делать updateGroupObject в конце
+                if (group.getDownTreeGroups().isEmpty() && updateGroupObject != null) { // так как в tree группе currentObject друг на друга никак не влияют, то можно и нужно делать updateGroupObject в конце
                     updateGroupObject.group.update(session, result, this, updateGroupObject.value, stack);
                     updateGroupObject = null;
                 }
             } catch (EmptyStackException e) {
-                systemLogger.error("OBJECTS : " + group.toString() + " FORM " + entity.toString());
+                systemLogger.error("OBJECTS : " + group + " FORM " + entity.toString());
                 throw Throwables.propagate(e);
             }
         }
@@ -2690,6 +2709,26 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         fireEvent(object.entity, stack);
     }
 
+    private ChangeEvents getObjectEvents(ExecutionStack stack, GroupObjectInstance group) {
+        return new ChangeEvents() {
+            public void onFilterChanged() throws SQLException, SQLHandledException {
+                fireFilterChanged(group, stack, false);
+            }
+
+            public void onOrderChanged() throws SQLException, SQLHandledException {
+                fireOrderChanged(group, stack, false);
+            }
+        };
+    }
+
+    public void fireFilterChanged(GroupObjectInstance group, ExecutionStack stack, boolean user) throws SQLException, SQLHandledException {
+        fireOnUserActivity(stack, group, UserEventObject.Type.FILTER, user);
+    }
+
+    public void fireOrderChanged(GroupObjectInstance group, ExecutionStack stack, boolean user) throws SQLException, SQLHandledException {
+        fireOnUserActivity(stack, group, UserEventObject.Type.ORDER, user);
+    }
+
     public void fireOnInit(ExecutionStack stack) throws SQLException, SQLHandledException {
         fireEvent(FormEventType.INIT, stack);
     }
@@ -2736,15 +2775,15 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         fireEvent(FormEventType.DROP, stack);
     }
 
-    public void fireOnUserActivity(ExecutionStack stack, UserEventObject event) throws SQLException, SQLHandledException {
-        fireEvent(event, stack);
+    public void fireOnUserActivity(ExecutionStack stack, GroupObjectInstance groupObject, UserEventObject.Type type, boolean user) throws SQLException, SQLHandledException {
+        fireEvent(new UserEventObject(groupObject.getSID(), type, user), stack);
     }
 
-    public void fireFormEvent(ExecutionStack stack, FormEvent formEvent, PushAsyncResult pushedAsyncResult) throws SQLException, SQLHandledException {
+    public void fireEvent(ExecutionStack stack, FormEvent formEvent, PushAsyncResult pushedAsyncResult) throws SQLException, SQLHandledException {
         fireEvent(entity.getEventObject(formEvent), stack, null, pushedAsyncResult);
     }
 
-    public void fireFormChangeEvent(PropertyDrawInstance property, ExecutionStack stack, ImMap<ObjectInstance, ? extends ObjectValue> keys, boolean before) throws SQLException, SQLHandledException {
+    public void fireChangeEvent(PropertyDrawInstance property, ExecutionStack stack, ImMap<ObjectInstance, ? extends ObjectValue> keys, boolean before) throws SQLException, SQLHandledException {
         fireEvent(new FormChangeEvent(property.getEntity(), before), stack, keys);
     }
 
@@ -2770,12 +2809,12 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         Iterable<ActionObjectEntity<?>> actionsOnEvent = entity.getEventActionsListIt(eventObject);
         if (actionsOnEvent != null) {
             for (ActionObjectEntity<?> autoAction : actionsOnEvent) {
-                ActionObjectInstance<? extends PropertyInterface> autoInstance = instanceFactory.getInstance(autoAction);
-                if(keys != null) {
-                    autoInstance = autoInstance.getRemappedPropertyObject(keys, true);
-                }
-
                 if (securityPolicy.checkPropertyChangePermission(autoAction.property, autoAction.property)) { // для проверки null'ов и политики безопасности
+                    ActionObjectInstance<? extends PropertyInterface> autoInstance = instanceFactory.getInstance(autoAction);
+                    if(keys != null) {
+                        autoInstance = autoInstance.getRemappedPropertyObject(keys, true);
+                    }
+
                     mResult.exclAdd(autoInstance.getValueImplement(this));
                 }
             }

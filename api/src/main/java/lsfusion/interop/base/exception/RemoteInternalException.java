@@ -8,11 +8,17 @@ public class RemoteInternalException extends RemoteServerException {
     
     public String javaStack; // for backward deserialization
     private final String lsfStack;
+    public final Integer status;
 
     public RemoteInternalException(String message, String lsfStack) {
+        this(message, lsfStack, null);
+    }
+
+    public RemoteInternalException(String message, String lsfStack, Integer status) {
         super(message);
 
         this.lsfStack = lsfStack;
+        this.status = status;
     }
 
     // the same as in RemoteInternalDispatchException

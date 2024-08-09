@@ -5,26 +5,25 @@ import java.util.Objects;
 import static lsfusion.base.BaseUtils.nullEquals;
 
 public class UserEventObject {
-    public String groupObject;
-    public Type type;
+    public final String groupObject;
+    public final Type type;
+    public final boolean user;
 
-    public UserEventObject(String groupObject, Type type) {
+    public UserEventObject(String groupObject, Type type, boolean user) {
         this.groupObject = groupObject;
         this.type = type;
+        this.user = user;
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof UserEventObject) {
-            return nullEquals(groupObject, ((UserEventObject) obj).groupObject) && 
-                    nullEquals(type, ((UserEventObject) obj).type);
-        }
-        return super.equals(obj);
+        return this == obj || obj instanceof UserEventObject && groupObject.equals(((UserEventObject) obj).groupObject) &&
+                type.equals(((UserEventObject) obj).type) && user == ((UserEventObject) obj).user;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(groupObject);
+        return 31 * (31 * groupObject.hashCode() + type.hashCode()) + (user ? 1 : 0);
     }
     
     public enum Type {

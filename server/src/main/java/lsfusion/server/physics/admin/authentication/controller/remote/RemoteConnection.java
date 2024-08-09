@@ -29,6 +29,7 @@ import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
+import lsfusion.server.logics.action.flow.LSFStatusException;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.classes.data.StringClass;
@@ -50,7 +51,6 @@ import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletResponse;
 import java.lang.ref.WeakReference;
-import java.nio.charset.Charset;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
@@ -330,7 +330,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
                     if (action != null) {
                         return executeExternal(action, actionName, actionPathInfo, false, request);
                     } else {
-                        throw new RuntimeException(String.format("Action %s was not found", actionName));
+                        throw new LSFStatusException(String.format("Action %s was not found", actionName), 404);
                     }
                 } else {
                     throw new RuntimeException("Action was not specified");
@@ -339,14 +339,14 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     }
 
     @Override
-    public ExternalResponse eval(boolean action, Object paramScript, ExternalRequest request) {
-        String script = parseScript(paramScript, request.charsetName);
+    public ExternalResponse eval(boolean action, ExternalRequest.Param paramScript, ExternalRequest request) {
+        String script = parseScript(paramScript);
 
         return logFromExternalSystemRequest(() -> {
             if (script != null) {
                 LA<?> runAction = businessLogics.evaluateRun(script, action);
                 if(runAction != null) {
-                    return executeExternal(runAction, paramScript, null, true, request);
+                    return executeExternal(runAction, paramScript.value, null, true, request);
                 } else {
                     throw new RuntimeException("Action with name 'run' was not found");
                 }
@@ -356,9 +356,9 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         }, false, script, request);
     }
 
-    private String parseScript(Object paramScript, String charsetName) {
+    private String parseScript(ExternalRequest.Param paramScript) {
         try {
-            return paramScript != null ? StringClass.text.parseHTTP(paramScript, Charset.forName(charsetName)) : null;
+            return paramScript != null ? StringClass.text.parseHTTP(paramScript) : null;
         } catch (ParseException e) {
             return null;
         }
@@ -384,7 +384,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         };
 
         if(request.needNotificationId)
-            return new ResultExternalResponse(new Object[]{IntegerClass.instance.formatHTTP(RemoteNavigator.pushGlobalNotification(runnable), null)}, new String[0], new String[0], new String[0], new String[0], HttpServletResponse.SC_OK);
+            return new ResultExternalResponse(new Object[]{IntegerClass.instance.formatHTTP(RemoteNavigator.pushGlobalNotification(runnable))}, new String[0], new String[0], new String[0], new String[0], HttpServletResponse.SC_OK);
         else if(property.action.hasFlow(ChangeFlowType.INTERACTIVEWAIT)) {
 
             int mode = Settings.get().getExternalUINotificationMode();
@@ -426,7 +426,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     private void executeExternal(LA<?> property, ExternalRequest request, String actionPathInfo, ExecutionEnvironment env, ExecutionStack stack) throws SQLException, SQLHandledException, ParseException {
         writeRequestInfo(env, property.action, request, actionPathInfo);
 
-        property.execute(env, stack, CallHTTPAction.getParams(env.getSession(), property, request.params, request.queryParams, Charset.forName(request.charsetName)));
+        property.execute(env, stack, CallHTTPAction.getParams(env.getSession(), property, request.params, request.queryParams));
     }
 
     protected AuthenticationException authException;
@@ -440,7 +440,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
             forceAPI = annotation.equals("api");
         }
 
-        if(request.signature != null && logicsInstance.getSecurityManager().verifyData(ExternalUtils.generate(actionParam, script, request.params), request.signature))
+        if(request.signature != null && logicsInstance.getSecurityManager().verifyData(ExternalUtils.generate(actionParam, script, request.getParamValues()), request.signature))
             return;
 
         if(authException != null)
@@ -565,7 +565,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     }
 
     private Object formatReturnValue(Object returnValue, Property returnProperty) {
-        return returnProperty.getType().formatHTTP(returnValue, null);
+        return returnProperty.getType().formatHTTP(returnValue);
     }
 
     protected abstract ExecSession getExecSession() throws SQLException;
@@ -597,9 +597,10 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
 
                 if(externalResponse instanceof ExternalUtils.ResultExternalResponse) {
                     ExternalUtils.ResultExternalResponse result = (ExternalUtils.ResultExternalResponse) externalResponse;
+
                     requestLogMessage += getExternalSystemRequestsLogDetail(BaseUtils.toStringMap(request.headerNames, request.headerValues),
                             BaseUtils.toStringMap(request.cookieNames, request.cookieValues),
-                            request.body != null ? new String(request.body, Charset.forName(request.charsetName)) : null,
+                            request.body != null ? new String(request.body, ExternalUtils.getLoggingCharsetFromContentType(request.contentType)) : null,
                             null,
                             BaseUtils.toStringMap(result.headerNames, result.headerValues),
                             BaseUtils.toStringMap(result.cookieNames, result.cookieValues),

@@ -5,12 +5,14 @@ import lsfusion.base.Pair;
 import lsfusion.server.base.controller.thread.AssertSynchronized;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.logics.form.interactive.action.input.InputPropertyValueList;
 import lsfusion.server.logics.form.interactive.action.input.InputValueList;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.property.AsyncMode;
 import lsfusion.server.logics.form.interactive.property.PropertyAsync;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
@@ -49,13 +51,13 @@ public class FormInstanceContext extends ConnectionContext {
         return formEntity.getGlobalContext();
     }
 
-    private final Map<Pair<Property, DBManager.Param>, Pair<Integer, Integer>> values = new HashMap<>();
+    private final Map<Pair<ActionOrProperty, DBManager.Param>, Pair<Integer, Integer>> values = new HashMap<>();
     // assert that it is synchronized in all remote calls / form instancing
     @AssertSynchronized
 //    @ManualParamStrongLazy
-    public Pair<Integer, Integer> getValues(InputValueList propValues) {
+    public Pair<Integer, Integer> getValues(InputPropertyValueList propValues) {
         QueryEnvironment env = this.env;
-        Pair<Property, DBManager.Param> cacheKey = new Pair<>(propValues.getCacheKey(),
+        Pair<ActionOrProperty, DBManager.Param> cacheKey = new Pair<>(propValues.getCacheKey(),
                 propValues.getCacheParam("", 0, AsyncMode.OBJECTS, env));
                 // we need static neededCount to guarantee that getValues will be the same during the form lifecycle
                 // env can be null, because getEnvDepends should be empty (see getSelectProperty)
@@ -69,11 +71,11 @@ public class FormInstanceContext extends ConnectionContext {
 
     // assert that it is called during form instancing
     @AssertSynchronized
-    private Pair<Integer, Integer> readValues(InputValueList values, QueryEnvironment env) {
+    private Pair<Integer, Integer> readValues(InputPropertyValueList values, QueryEnvironment env) {
         int maxValuesNeeded = Settings.get().getMaxInterfaceStatForValueDropdown();
         PropertyAsync[] asyncValues;
         try {
-            asyncValues = dbManager.getAsyncValues(values, env, "", maxValuesNeeded + 1, AsyncMode.OBJECTS);
+            asyncValues = dbManager.getAsyncValues(values, env, null, null, "", maxValuesNeeded + 1, AsyncMode.OBJECTS);
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
