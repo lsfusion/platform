@@ -31,7 +31,7 @@ public abstract class ReadUserEventsAction<T> extends SystemExplicitAction {
         Object writeObject = null;
         if (!objects.isEmpty()) {
             // always writing JSON array for proper import into orders/filters form
-            writeObject = new JSONArray(objects);
+            writeObject = new JSONArray(objects).toString();
         }
         filterEventProperty.change(writeObject, context.getSession());
     }
