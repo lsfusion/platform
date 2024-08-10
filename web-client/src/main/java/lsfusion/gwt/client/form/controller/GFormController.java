@@ -295,7 +295,7 @@ public class GFormController implements EditManager {
         filterCheck.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
             @Override
             public void onValueChange(ValueChangeEvent<Boolean> e) {
-                setRegularFilter(filterGroup, e.getValue() != null && e.getValue() ? filter : null);
+                setRemoteRegularFilter(filterGroup, e.getValue() != null && e.getValue() ? filter : null);
             }
         });
         filterCheck.addStyleName("filter-group-check");
@@ -325,8 +325,7 @@ public class GFormController implements EditManager {
             GFormController.setBindingGroupObject(filterBox, filterGroup.groupObject);
             for(GInputBindingEvent bindingEvent : filter.bindingEvents) {
                 addRegularFilterBinding(bindingEvent, (event) -> {
-                    filterBox.setSelectedIndex(filterIndex + 1);
-                    setRegularFilter(filterGroup, filterIndex);
+                    setRegularFilter(filterGroup, filterBox, filterIndex);
                 }, filterBox, filterGroup.groupObject);
             }
         }
@@ -334,7 +333,7 @@ public class GFormController implements EditManager {
         filterBox.addChangeHandler(new ChangeHandler() {
             @Override
             public void onChange(ChangeEvent event) {
-                setRegularFilter(filterGroup, filterBox.getSelectedIndex() - 1);
+                setRemoteRegularFilter(filterGroup, filterBox.getSelectedIndex() - 1);
             }
         });
 
@@ -347,17 +346,21 @@ public class GFormController implements EditManager {
         }
     }
 
+    private void setRegularFilter(GRegularFilterGroup filterGroup, ListBox filterBox, int filterIndex) {
+        filterBox.setSelectedIndex(filterIndex + 1);
+        setRemoteRegularFilter(filterGroup, filterIndex);
+    }
+
     public void setRegularFilterIndex(Integer filterGroup, Integer index) {
         for(Map.Entry<GComponent, ComponentViewWidget> entry : formLayout.getBaseComponentViews().entrySet()) {
             GComponent component = entry.getKey();
             if (component instanceof GRegularFilterGroup && (filterGroup == null || filterGroup == component.ID)) {
                 Widget widget = entry.getValue().getSingleWidget().widget;
                 if (widget instanceof CheckBox) { //single filter
-                    ((CheckBox) widget).setValue(index > 0 ? true : null);
+                    ((CheckBox) widget).setValue(index > 0 ? true : null, true);
                 } else if (widget instanceof ListBox) { //multiple filter
-                    ((ListBox) widget).setSelectedIndex(index);
+                    setRegularFilter((GRegularFilterGroup) component, ((ListBox) widget), index - 1);
                 }
-                setRegularFilter((GRegularFilterGroup) component, -1);
             }
         }
     }
@@ -392,12 +395,8 @@ public class GFormController implements EditManager {
                 GwtClientUtils.setGridVisible(filterView, visible);
     }
 
-    private void setRegularFilter(GRegularFilterGroup filterGroup, int index) {
+    private void setRemoteRegularFilter(GRegularFilterGroup filterGroup, int index) {
         setRemoteRegularFilter(filterGroup, index == -1 ? null : filterGroup.filters.get(index));
-    }
-
-    private void setRegularFilter(GRegularFilterGroup filterGroup, GRegularFilter filter) {
-        setRemoteRegularFilter(filterGroup, filter);
     }
 
     private void initializeControllers() {
