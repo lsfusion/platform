@@ -4,6 +4,7 @@ import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.ui.HasAutoHorizontalAlignment;
 import com.google.gwt.user.client.ui.Label;
 import lsfusion.gwt.client.base.BaseImage;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -35,7 +36,11 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
                 img.removeClassName("selectedFileCellHasEdit");
             }
         }
-        element.appendChild(getDragDropLabel());
+
+        Element dragDropLabel = getDragDropLabel();
+        element.appendChild(dragDropLabel);
+        GwtClientUtils.setupFillParent(dragDropLabel);
+
         element.appendChild(img);
 
         return true;
@@ -44,7 +49,7 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
     private Element getDragDropLabel() {
         Label dropFilesLabel = new Label();
         dropFilesLabel.getElement().addClassName("drag-drop-label");
-        dropFilesLabel.setAutoHorizontalAlignment(HasAutoHorizontalAlignment.ALIGN_CENTER);
+//        dropFilesLabel.setAutoHorizontalAlignment(HasAutoHorizontalAlignment.ALIGN_CENTER);
         DataGrid.initSinkDragDropEvents(dropFilesLabel);
         return dropFilesLabel.getElement();
     }
@@ -54,6 +59,8 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
         element.getStyle().clearPadding();
         element.removeClassName("text-based-value-required");
         element.setTitle("");
+
+        GwtClientUtils.clearFillParentElement(element);
 
         return false;
     }
