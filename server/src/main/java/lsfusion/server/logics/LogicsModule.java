@@ -2164,8 +2164,18 @@ public abstract class LogicsModule {
     }
 
     @IdentityStrongLazy
-    public LA<?> addReadFilterGroupsAProp(Integer filterGroup, LP<?> toProperty) {
-        return addAction(null, new LA<>(new ReadFilterGroupsAction(filterGroup, toProperty)));
+    public LA<?> addReadFiltersGroupAProp(Integer filterGroup, LP<?> toProperty) {
+        return addAction(null, new LA<>(new ReadFiltersGroupAction(filterGroup, toProperty)));
+    }
+
+    @IdentityStrongLazy
+    public LA<?> addFilterPropertyAProp(Integer property, LP<?> fromProperty) {
+        return addAction(null, new LA<>(new FilterPropertyAction(property, fromProperty)));
+    }
+
+    @IdentityStrongLazy
+    public LA<?> addReadFiltersPropertyAProp(Integer property, LP<?> toProperty) {
+        return addAction(null, new LA<>(new ReadFiltersPropertyAction(property, toProperty)));
     }
 
     public static class ConstraintData {

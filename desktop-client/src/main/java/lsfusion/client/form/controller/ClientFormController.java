@@ -38,11 +38,13 @@ import lsfusion.client.form.filter.ClientRegularFilterWrapper;
 import lsfusion.client.form.filter.user.ClientFilter;
 import lsfusion.client.form.filter.user.ClientPropertyFilter;
 import lsfusion.client.form.filter.user.controller.FilterController;
+import lsfusion.client.form.filter.user.view.FilterConditionView;
 import lsfusion.client.form.filter.view.SingleFilterBox;
 import lsfusion.client.form.object.ClientCustomObjectValue;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.ClientObject;
+import lsfusion.client.form.object.table.controller.AbstractTableController;
 import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.client.form.object.table.grid.controller.GridController;
 import lsfusion.client.form.object.table.grid.user.design.GridUserPreferences;
@@ -561,6 +563,37 @@ public class ClientFormController implements AsyncListener {
                     return ((SingleFilterBox) widget).isSelected() ? 1 : 0;
                 } else if (widget instanceof ComboBoxWidget) { //multiple filter
                     return ((ComboBoxWidget) widget).getSelectedIndex();
+                }
+            }
+        }
+        return null;
+    }
+
+    public void setUserFilterValue(Integer property, String value) {
+        for(ClientPropertyDraw propertyDraw : getPropertyDraws()) {
+            if(propertyDraw.getID() == property) {
+                TableController controller = getGroupObjectLogicsSupplier(propertyDraw.groupObject);
+                if (controller instanceof AbstractTableController) {
+                    for (Map.Entry<ClientPropertyFilter, FilterConditionView> filterEntry : ((AbstractTableController) controller).filter.getConditionViews().entrySet()) {
+                        if (filterEntry.getKey().property.getID() == property) {
+                            filterEntry.getValue().setConditionValue(filterEntry.getKey(), value);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public String getUserFilterValue(Integer property) {
+        for (ClientPropertyDraw propertyDraw : getPropertyDraws()) {
+            if (propertyDraw.ID == property) {
+                TableController controller = getGroupObjectLogicsSupplier(propertyDraw.groupObject);
+                if (controller instanceof AbstractTableController) {
+                    for (Map.Entry<ClientPropertyFilter, FilterConditionView> filterEntry : ((AbstractTableController) controller).filter.getConditionViews().entrySet()) {
+                        if (filterEntry.getKey().property.ID == property) {
+                            return String.valueOf(filterEntry.getKey().value.value);
+                        }
+                    }
                 }
             }
         }

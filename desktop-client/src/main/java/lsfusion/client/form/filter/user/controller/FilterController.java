@@ -403,4 +403,8 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
     public boolean hasFilters() {
         return !conditionViews.isEmpty();
     }
+
+    public Map<ClientPropertyFilter, FilterConditionView> getConditionViews() {
+        return conditionViews;
+    }
 }

@@ -45,10 +45,7 @@ import lsfusion.gwt.client.form.design.view.*;
 import lsfusion.gwt.client.form.event.*;
 import lsfusion.gwt.client.form.filter.GRegularFilter;
 import lsfusion.gwt.client.form.filter.GRegularFilterGroup;
-import lsfusion.gwt.client.form.filter.user.GCompare;
-import lsfusion.gwt.client.form.filter.user.GFilter;
-import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
-import lsfusion.gwt.client.form.filter.user.GPropertyFilterDTO;
+import lsfusion.gwt.client.form.filter.user.*;
 import lsfusion.gwt.client.form.filter.user.controller.GFilterController;
 import lsfusion.gwt.client.form.filter.user.view.GFilterConditionView;
 import lsfusion.gwt.client.form.object.*;
@@ -374,6 +371,33 @@ public class GFormController implements EditManager {
                     return ((CheckBox) widget).getValue() ? 1 : 0;
                 } else if (widget instanceof ListBox) { //multiple filter
                     return ((ListBox) widget).getSelectedIndex();
+                }
+            }
+        }
+        return null;
+    }
+
+    public void setUserFilterValue(Integer property, String value) {
+        for (GPropertyDraw propertyDraw : getPropertyDraws()) {
+            if (propertyDraw.ID == property) {
+                GAbstractTableController controller = getGroupObjectController(propertyDraw.groupObject);
+                for (Map.Entry<GPropertyFilter, GFilterConditionView> filterEntry : controller.filter.getConditionViews().entrySet()) {
+                    if (filterEntry.getKey().property.ID == property) {
+                        filterEntry.getValue().setConditionValue(filterEntry.getKey(), PValue.getPValue(value));
+                    }
+                }
+            }
+        }
+    }
+
+    public String getUserFilterValue(Integer property) {
+        for(GPropertyDraw propertyDraw : getPropertyDraws()) {
+            if(propertyDraw.ID == property) {
+                GAbstractTableController controller = getGroupObjectController(propertyDraw.groupObject);
+                for(Map.Entry<GPropertyFilter, GFilterConditionView> filterEntry : controller.filter.getConditionViews().entrySet()) {
+                    if(filterEntry.getKey().property.ID == property) {
+                        return PValue.getStringValue(filterEntry.getKey().value.value);
+                    }
                 }
             }
         }

@@ -1,6 +1,6 @@
 package lsfusion.server.logics.form.interactive.action.userevent;
 
-import lsfusion.interop.action.ReadFilterGroupClientAction;
+import lsfusion.interop.action.ReadFilterPropertyClientAction;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.SystemExplicitAction;
@@ -9,24 +9,24 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 
 import java.sql.SQLException;
 
-public class ReadFilterGroupsAction extends SystemExplicitAction {
-    private final Integer filterGroup;
+public class ReadFiltersPropertyAction extends SystemExplicitAction {
+    private final Integer property;
     private final LP<?> toProperty;
 
-    public ReadFilterGroupsAction(Integer filterGroup, LP<?> toProperty) {
-        this.filterGroup = filterGroup;
+    public ReadFiltersPropertyAction(Integer property, LP<?> toProperty) {
+        this.property = property;
         this.toProperty = toProperty;
     }
 
     @Override
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
-        Integer index = (Integer) context.requestUserInteraction(new ReadFilterGroupClientAction(filterGroup));
+        String value = (String) context.requestUserInteraction(new ReadFilterPropertyClientAction(property));
 
         LP<?> targetProperty = toProperty;
         if (targetProperty == null) {
-            targetProperty = context.getBL().userEventsLM.filterGroups;
+            targetProperty = context.getBL().userEventsLM.filtersProperty;
         }
-        targetProperty.change(index, context.getSession());
+        targetProperty.change(value, context.getSession());
     }
 }
