@@ -4086,7 +4086,7 @@ readFiltersGroupActionDefinitionBody[List<TypedParameter> context, boolean dynam
 		$action = self.addScriptedReadFiltersGroupProp($fg.sid, $pu.propUsage);
 	}
 }
-    :   'FILTERGROUP'
+    :   'FILTERGROUPS'
         fg=formFilterGroupID
         ('TO' pu=propertyUsage)?
     ;
