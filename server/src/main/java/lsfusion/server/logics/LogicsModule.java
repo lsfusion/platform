@@ -2164,17 +2164,17 @@ public abstract class LogicsModule {
     }
 
     @IdentityStrongLazy
-    public LA<?> addReadFiltersGroupAProp(Integer filterGroup, LP<?> toProperty) {
-        return addAction(null, new LA<>(new ReadFiltersGroupAction(filterGroup, toProperty)));
+    public LA<?> addReadFilterGroupsAProp(Integer filterGroup, LP<?> toProperty) {
+        return addAction(null, new LA<>(new ReadFilterGroupsAction(filterGroup, toProperty)));
     }
 
     @IdentityStrongLazy
-    public LA<?> addFilterPropertyAProp(Integer property, LP<?> fromProperty) {
+    public LA<?> addFilterPropertyAProp(PropertyDrawEntity property, LP<?> fromProperty) {
         return addAction(null, new LA<>(new FilterPropertyAction(property, fromProperty)));
     }
 
     @IdentityStrongLazy
-    public LA<?> addReadFiltersPropertyAProp(Integer property, LP<?> toProperty) {
+    public LA<?> addReadFiltersPropertyAProp(PropertyDrawEntity property, LP<?> toProperty) {
         return addAction(null, new LA<>(new ReadFiltersPropertyAction(property, toProperty)));
     }
 

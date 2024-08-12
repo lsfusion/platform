@@ -569,37 +569,6 @@ public class ClientFormController implements AsyncListener {
         return null;
     }
 
-    public void setUserFilterValue(Integer property, String value) {
-        for(ClientPropertyDraw propertyDraw : getPropertyDraws()) {
-            if(propertyDraw.getID() == property) {
-                TableController controller = getGroupObjectLogicsSupplier(propertyDraw.groupObject);
-                if (controller instanceof AbstractTableController) {
-                    for (Map.Entry<ClientPropertyFilter, FilterConditionView> filterEntry : ((AbstractTableController) controller).filter.getConditionViews().entrySet()) {
-                        if (filterEntry.getKey().property.getID() == property) {
-                            filterEntry.getValue().setConditionValue(filterEntry.getKey(), value);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    public String getUserFilterValue(Integer property) {
-        for (ClientPropertyDraw propertyDraw : getPropertyDraws()) {
-            if (propertyDraw.ID == property) {
-                TableController controller = getGroupObjectLogicsSupplier(propertyDraw.groupObject);
-                if (controller instanceof AbstractTableController) {
-                    for (Map.Entry<ClientPropertyFilter, FilterConditionView> filterEntry : ((AbstractTableController) controller).filter.getConditionViews().entrySet()) {
-                        if (filterEntry.getKey().property.ID == property) {
-                            return String.valueOf(filterEntry.getKey().value.value);
-                        }
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
     private void addFilterView(ClientRegularFilterGroup filterGroup, Widget filterView) {
         FlexPanel filterPanel = new FlexPanel(false);
         filterPanel.setBorder(BorderFactory.createEmptyBorder(0, 2, 0 , 2));

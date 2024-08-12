@@ -354,14 +354,4 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     public GReadFilterGroupAction convertAction(ReadFilterGroupClientAction action) {
         return new GReadFilterGroupAction(action.filterGroup);
     }
-
-    @Converter(from = FilterPropertyClientAction.class)
-    public GFilterPropertyAction convertAction(FilterPropertyClientAction action) {
-        return new GFilterPropertyAction(action.filterGroup, action.value);
-    }
-
-    @Converter(from = ReadFilterPropertyClientAction.class)
-    public GReadFilterPropertyAction convertAction(ReadFilterPropertyClientAction action) {
-        return new GReadFilterPropertyAction(action.property);
-    }
 }

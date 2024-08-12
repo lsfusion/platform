@@ -9,11 +9,11 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 
 import java.sql.SQLException;
 
-public class ReadFiltersGroupAction extends SystemExplicitAction {
+public class ReadFilterGroupsAction extends SystemExplicitAction {
     private final Integer filterGroup;
     private final LP<?> toProperty;
 
-    public ReadFiltersGroupAction(Integer filterGroup, LP<?> toProperty) {
+    public ReadFilterGroupsAction(Integer filterGroup, LP<?> toProperty) {
         this.filterGroup = filterGroup;
         this.toProperty = toProperty;
     }
@@ -25,7 +25,7 @@ public class ReadFiltersGroupAction extends SystemExplicitAction {
 
         LP<?> targetProperty = toProperty;
         if (targetProperty == null) {
-            targetProperty = context.getBL().userEventsLM.filtersGroup;
+            targetProperty = context.getBL().userEventsLM.filterGroups;
         }
         targetProperty.change(index, context.getSession());
     }

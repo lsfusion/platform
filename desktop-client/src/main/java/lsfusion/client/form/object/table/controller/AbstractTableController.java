@@ -26,7 +26,7 @@ public abstract class AbstractTableController implements TableController {
 
     protected PanelController panel;
     protected final ToolbarView toolbarView;
-    public FilterController filter;
+    protected FilterController filter;
 
     public AbstractTableController(ClientFormController formController, ClientFormLayout formLayout, ClientToolbar toolbar) {
         this.formController = formController;

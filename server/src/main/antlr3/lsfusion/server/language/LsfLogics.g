@@ -3313,7 +3313,7 @@ leafKeepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [
 	|   filterADB=filterActionDefinitionBody[context, dynamic] { $action = $filterADB.action; }
 	|   readFiltersADB=readFiltersActionDefinitionBody[context, dynamic] { $action = $readFiltersADB.action; }
 	|   filterGroupADB=filterGroupActionDefinitionBody[context, dynamic] { $action = $filterGroupADB.action; }
-	|   readFiltersGroupADB=readFiltersGroupActionDefinitionBody[context, dynamic] { $action = $readFiltersGroupADB.action; }
+	|   readFilterGroupsADB=readFilterGroupsActionDefinitionBody[context, dynamic] { $action = $readFilterGroupsADB.action; }
     |   filterPropertyADB=filterPropertyActionDefinitionBody[context, dynamic] { $action = $filterPropertyADB.action; }
 	|   readFiltersPropertyADB=readFiltersPropertyActionDefinitionBody[context, dynamic] { $action = $readFiltersPropertyADB.action; }
 	|	mailADB=emailActionDefinitionBody[context, dynamic] { $action = $mailADB.action; }
@@ -4080,7 +4080,7 @@ readFiltersActionDefinitionBody[List<TypedParameter> context, boolean dynamic] r
          ('FROM' pu=propertyUsage)?
      ;
 
-readFiltersGroupActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
+readFilterGroupsActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @after {
 	if (inMainParseState()) {
 		$action = self.addScriptedReadFiltersGroupProp($fg.sid, $pu.propUsage);

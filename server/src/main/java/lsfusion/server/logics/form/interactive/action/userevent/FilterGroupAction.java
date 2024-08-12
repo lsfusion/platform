@@ -24,7 +24,7 @@ public class FilterGroupAction extends SystemExplicitAction {
     @Override
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         FormInstance formInstance = context.getFormInstance(true, true);
-        Integer index = nvl((Integer) nvl(fromProperty, formInstance.BL.userEventsLM.filtersGroup).read(context), 0);
+        Integer index = nvl((Integer) nvl(fromProperty, formInstance.BL.userEventsLM.filterGroups).read(context), 0);
         context.requestUserInteraction(new FilterGroupClientAction(filterGroup, index));
     }
 }

@@ -2,7 +2,7 @@ MODULE UserEvents;
 
 orders = DATA LOCAL JSON();
 filters = DATA LOCAL JSON();
-filtersGroup = DATA LOCAL INTEGER();
+filterGroups = DATA LOCAL INTEGER();
 filtersProperty = DATA LOCAL STRING();
 
 property = DATA LOCAL STRING(INTEGER);

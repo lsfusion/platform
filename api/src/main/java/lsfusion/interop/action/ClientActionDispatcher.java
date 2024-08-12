@@ -80,10 +80,6 @@ public interface ClientActionDispatcher {
 
     Integer execute(ReadFilterGroupClientAction action);
 
-    void execute(FilterPropertyClientAction action);
-
-    String execute(ReadFilterPropertyClientAction action);
-
     void execute(ClientWebAction action);
 
     EventBus getEventBus();

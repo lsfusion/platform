@@ -332,12 +332,6 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
         setValue(condition.value);
     }
 
-    public void setConditionValue(GPropertyFilter condition, PValue value) {
-        condition.value.setValue(value);
-        applyCondition(condition);
-        conditionChanged(false);
-    }
-
     public void setCompare(GCompare value) {
         compareView.setSelectedValue(value != null ? value : condition.property.getDefaultCompare());
     }

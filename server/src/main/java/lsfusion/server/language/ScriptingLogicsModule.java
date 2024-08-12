@@ -2706,11 +2706,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public LAWithParams addScriptedReadFiltersGroupProp(String fgName, NamedPropertyUsage propertyUsage)  throws ScriptingErrorLog.SemanticErrorException {
+    public LAWithParams addScriptedReadFilterGroupsProp(String fgName, NamedPropertyUsage propertyUsage)  throws ScriptingErrorLog.SemanticErrorException {
         RegularFilterGroupEntity filterGroup = getSeekFilterGroup(getFormFromSeekObjectName(fgName), fgName);
         if (filterGroup != null) {
             LP<?> targetProp = propertyUsage != null ? findLPNoParamsByPropertyUsage(propertyUsage) : null;
-            return new LAWithParams(addReadFiltersGroupAProp(filterGroup.getID(), targetProp), Collections.emptyList());
+            return new LAWithParams(addReadFilterGroupsAProp(filterGroup.getID(), targetProp), Collections.emptyList());
         } else {
             errLog.emitFilterGroupNotFoundError(parser, getSeekObjectName(fgName));
             return null;
@@ -2719,12 +2719,12 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LAWithParams addScriptedFilterPropertyProp(PropertyDrawEntity property, NamedPropertyUsage propertyUsage)  throws ScriptingErrorLog.SemanticErrorException {
             LP<?> fromProp = propertyUsage != null ? findLPNoParamsByPropertyUsage(propertyUsage) : null;
-            return new LAWithParams(addFilterPropertyAProp(property.getID(), fromProp), Collections.emptyList());
+            return new LAWithParams(addFilterPropertyAProp(property, fromProp), Collections.emptyList());
     }
 
     public LAWithParams addScriptedReadFiltersPropertyProp(PropertyDrawEntity property, NamedPropertyUsage propertyUsage)  throws ScriptingErrorLog.SemanticErrorException {
         LP<?> targetProp = propertyUsage != null ? findLPNoParamsByPropertyUsage(propertyUsage) : null;
-        return new LAWithParams(addReadFiltersPropertyAProp(property.getID(), targetProp), Collections.emptyList());
+        return new LAWithParams(addReadFiltersPropertyAProp(property, targetProp), Collections.emptyList());
     }
 
     public LAWithParams addScriptedEvalAction(LPWithParams property, List<LPWithParams> params, List<TypedParameter> contextParams, boolean action) throws ScriptingErrorLog.SemanticErrorException {

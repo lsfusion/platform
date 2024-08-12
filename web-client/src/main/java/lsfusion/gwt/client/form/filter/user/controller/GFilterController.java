@@ -413,8 +413,4 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
     
     public abstract void applyFilters(ArrayList<GPropertyFilter> conditions, ArrayList<GFilterConditionView> changed, boolean focusFirstComponent);
     public abstract void addBinding(GInputEvent event, GBindingEnv env, GFormController.BindingExec pressed, Widget component);
-
-    public Map<GPropertyFilter, GFilterConditionView> getConditionViews() {
-        return conditionViews;
-    }
 }

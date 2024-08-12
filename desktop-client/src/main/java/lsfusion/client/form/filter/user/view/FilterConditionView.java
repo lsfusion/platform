@@ -343,12 +343,6 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
         setNegation(condition.negation);
         setValue(condition.value);
     }
-
-    public void setConditionValue(ClientPropertyFilter condition, Object value) {
-        condition.value.setValue(value);
-        applyCondition(condition);
-        conditionChanged(false);
-    }
     
     public void setCompare(Compare value) {
         compareView.setSelectedValue(value != null ? value : condition.property.getDefaultCompare());

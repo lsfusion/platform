@@ -60,8 +60,4 @@ public interface GActionDispatcher {
     void execute(GFilterGroupAction action);
 
     Integer execute(GReadFilterGroupAction action);
-
-    void execute(GFilterPropertyAction action);
-
-    String execute(GReadFilterPropertyAction action);
 }

@@ -377,33 +377,6 @@ public class GFormController implements EditManager {
         return null;
     }
 
-    public void setUserFilterValue(Integer property, String value) {
-        for (GPropertyDraw propertyDraw : getPropertyDraws()) {
-            if (propertyDraw.ID == property) {
-                GAbstractTableController controller = getGroupObjectController(propertyDraw.groupObject);
-                for (Map.Entry<GPropertyFilter, GFilterConditionView> filterEntry : controller.filter.getConditionViews().entrySet()) {
-                    if (filterEntry.getKey().property.ID == property) {
-                        filterEntry.getValue().setConditionValue(filterEntry.getKey(), PValue.getPValue(value));
-                    }
-                }
-            }
-        }
-    }
-
-    public String getUserFilterValue(Integer property) {
-        for(GPropertyDraw propertyDraw : getPropertyDraws()) {
-            if(propertyDraw.ID == property) {
-                GAbstractTableController controller = getGroupObjectController(propertyDraw.groupObject);
-                for(Map.Entry<GPropertyFilter, GFilterConditionView> filterEntry : controller.filter.getConditionViews().entrySet()) {
-                    if(filterEntry.getKey().property.ID == property) {
-                        return PValue.getStringValue(filterEntry.getKey().value.value);
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
     private void addFilterView(GRegularFilterGroup filterGroup, Widget filterWidget) {
         formLayout.addBaseComponent(filterGroup, filterWidget, null);
 
