@@ -37,18 +37,23 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
             }
         }
 
-        Element dragDropLabel = getDragDropLabel();
+        Element dragDropLabel = getDragDropLabel(img);
         element.appendChild(dragDropLabel);
         GwtClientUtils.setupFillParent(dragDropLabel);
 
-        element.appendChild(img);
+        if(img != null) {
+            element.appendChild(img);
+        }
 
         return true;
     }
 
-    private Element getDragDropLabel() {
+    private Element getDragDropLabel(Element img) {
         Label dropFilesLabel = new Label();
         dropFilesLabel.getElement().addClassName("drag-drop-label");
+        if(img == null) {
+            dropFilesLabel.setText(REQUIRED_VALUE);
+        }
 //        dropFilesLabel.setAutoHorizontalAlignment(HasAutoHorizontalAlignment.ALIGN_CENTER);
         DataGrid.initSinkDragDropEvents(dropFilesLabel);
         return dropFilesLabel.getElement();
