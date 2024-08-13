@@ -4083,7 +4083,7 @@ readFiltersActionDefinitionBody[List<TypedParameter> context, boolean dynamic] r
 readFilterGroupsActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedReadFiltersGroupProp($fg.sid, $pu.propUsage);
+		$action = self.addScriptedReadFilterGroupsProp($fg.sid, $pu.propUsage);
 	}
 }
     :   'FILTERGROUPS'

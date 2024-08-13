@@ -724,11 +724,6 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     }
 
     @Override
-    public Integer execute(ReadFilterGroupClientAction action) {
-        return null;
-    }
-
-    @Override
     public EventBus getEventBus() {
         return MainFrame.instance.eventBus;
     }

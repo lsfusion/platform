@@ -102,9 +102,4 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
     public void execute(FilterGroupClientAction action) {
         getFormController().setRegularFilterIndex(action.filterGroup, action.index);
     }
-
-    @Override
-    public Integer execute(ReadFilterGroupClientAction action) {
-        return getFormController().getRegularFilterIndex(action.filterGroup);
-    }
 }

@@ -78,8 +78,6 @@ public interface ClientActionDispatcher {
 
     void execute(FilterGroupClientAction action);
 
-    Integer execute(ReadFilterGroupClientAction action);
-
     void execute(ClientWebAction action);
 
     EventBus getEventBus();

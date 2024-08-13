@@ -554,21 +554,6 @@ public class ClientFormController implements AsyncListener {
         }
     }
 
-    public Integer getRegularFilterIndex(Integer filterGroup) {
-        for(Map.Entry<ClientComponent, Widget> entry : formLayout.getBaseComponentViews().entrySet()) {
-            ClientComponent component = entry.getKey();
-            if (component instanceof ClientRegularFilterGroup && (filterGroup == null || filterGroup == component.getID())) {
-                Widget widget = ((FlexPanel) entry.getValue()).getWidget(0);
-                if (widget instanceof SingleFilterBox) { //single filter
-                    return ((SingleFilterBox) widget).isSelected() ? 1 : 0;
-                } else if (widget instanceof ComboBoxWidget) { //multiple filter
-                    return ((ComboBoxWidget) widget).getSelectedIndex();
-                }
-            }
-        }
-        return null;
-    }
-
     private void addFilterView(ClientRegularFilterGroup filterGroup, Widget filterView) {
         FlexPanel filterPanel = new FlexPanel(false);
         filterPanel.setBorder(BorderFactory.createEmptyBorder(0, 2, 0 , 2));

@@ -413,11 +413,6 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     public void execute(GFilterGroupAction action) {
     }
 
-    @Override
-    public Integer execute(GReadFilterGroupAction action) {
-        return null;
-    }
-
     private class JSExecutor {
         private final List<GClientWebAction> actions = new ArrayList<>();
 

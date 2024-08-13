@@ -362,21 +362,6 @@ public class GFormController implements EditManager {
         }
     }
 
-    public Integer getRegularFilterIndex(Integer filterGroup) {
-        for(Map.Entry<GComponent, ComponentViewWidget> entry : formLayout.getBaseComponentViews().entrySet()) {
-            GComponent component = entry.getKey();
-            if (component instanceof GRegularFilterGroup && (filterGroup == null || filterGroup == component.ID)) {
-                Widget widget = entry.getValue().getSingleWidget().widget;
-                if (widget instanceof CheckBox) { //single filter
-                    return ((CheckBox) widget).getValue() ? 1 : 0;
-                } else if (widget instanceof ListBox) { //multiple filter
-                    return ((ListBox) widget).getSelectedIndex();
-                }
-            }
-        }
-        return null;
-    }
-
     private void addFilterView(GRegularFilterGroup filterGroup, Widget filterWidget) {
         formLayout.addBaseComponent(filterGroup, filterWidget, null);
 
