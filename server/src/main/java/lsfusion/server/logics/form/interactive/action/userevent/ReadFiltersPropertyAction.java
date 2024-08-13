@@ -1,17 +1,14 @@
 package lsfusion.server.logics.form.interactive.action.userevent;
 
 import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.data.value.DataObject;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.SystemExplicitAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
-import lsfusion.server.logics.form.interactive.instance.filter.*;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.sql.SQLException;
 
@@ -30,18 +27,11 @@ public class ReadFiltersPropertyAction extends SystemExplicitAction {
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         FormInstance formInstance = context.getFormInstance(true, true);
 
-        new ReadFiltersAction(property.getToDraw(formInstance.entity), formInstance.BL.userEventsLM.filters).execute(context);
+        GroupObjectEntity toDraw = property.getToDraw(formInstance.entity);
+        String groupObject = formInstance.entity.getSID() + "." + toDraw.getSID();
+        context.getBL().userEventsLM.filtersPropertyAction.execute(context, new DataObject(groupObject), new DataObject(property.getSID()));
 
-        String value = null;
-        String filters = (String) formInstance.BL.userEventsLM.filters.read(context);
-        if(filters != null) {
-            JSONArray jsonArray = new JSONArray(filters);
-            value = jsonArray.getJSONObject(0).getString("value");
-        }
-        LP<?> targetProperty = toProperty;
-        if (targetProperty == null) {
-            targetProperty = context.getBL().userEventsLM.filtersProperty;
-        }
-        targetProperty.change(value, context.getSession());
+        String value = (String) context.getBL().userEventsLM.valueFiltersProperty.read(context);
+        nvl(toProperty, context.getBL().userEventsLM.filtersProperty).change(value, context.getSession());
     }
 }
