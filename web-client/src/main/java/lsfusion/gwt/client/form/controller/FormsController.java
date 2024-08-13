@@ -3,7 +3,6 @@ package lsfusion.gwt.client.form.controller;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Event;
@@ -343,19 +342,11 @@ public abstract class FormsController {
     }
 
     private void setLinkModeClassName(boolean linkMode) {
-        setGlobalClassName(linkMode, "linkMode");
+        GwtClientUtils.setGlobalClassName(linkMode, "linkMode");
     }
 
     private void updateFormsNotEmptyClassName() {
-        setGlobalClassName(!forms.isEmpty(), "forms-container-not-empty");
-    }
-
-    public static void setGlobalClassName(boolean set, String elementClass) {
-        Element globalElement = RootPanel.get().getElement();
-        if(set)
-            globalElement.addClassName(elementClass);
-        else
-            globalElement.removeClassName(elementClass);
+        GwtClientUtils.setGlobalClassName(!forms.isEmpty(), "forms-container-not-empty");
     }
 
     private static Timer editModeTimer;

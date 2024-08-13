@@ -118,6 +118,8 @@ public class LogicsSessionObject {
 
         ColorTheme colorTheme = BaseUtils.nvl(ColorTheme.get(json.optString("colorThemeString")), ColorTheme.DEFAULT);
         boolean useBootstrap = json.optBoolean("useBootstrap");
+
+        String currentSize = json.optString("currentSize");
         
         boolean verticalNavbar = json.optBoolean("verticalNavbar");
 
@@ -163,7 +165,7 @@ public class LogicsSessionObject {
 
         return new ClientSettings(localePreferences, currentUserName, fontSize, useBusyDialog, busyDialogTimeout, useRequestTimeout, devMode,
                 projectLSFDir, showDetailedInfo, showDetailedInfoDelay, suppressOnFocusChange, autoReconnectOnConnectionLost, forbidDuplicateForms, showNotDefinedStrings, pivotOnlySelectedColumn, matchSearchSeparator,
-                colorTheme, useBootstrap, colorPreferences, preDefinedDateRangesNames.toArray(new String[0]), useTextAsFilterSeparator, 
+                colorTheme, useBootstrap, currentSize, colorPreferences, preDefinedDateRangesNames.toArray(new String[0]), useTextAsFilterSeparator,
                 verticalNavbar, userFiltersManualApplyMode, disableActionsIfReadonly,
                 enableShowingRecentlyLogMessages, pushNotificationPublicKey, maxRequestQueueSize, maxStickyLeft, jasperReportsIgnorePageMargins);
     }

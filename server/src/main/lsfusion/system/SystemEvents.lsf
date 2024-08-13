@@ -580,6 +580,9 @@ onWebClientStarted() + {
     }
 }
 WHEN FORMS design CHANGED (size()) DO {
+    INTERNAL CLIENT 'setGlobalClassName' PARAMS NULL, 'size-' + getWord(staticName(currentSize()), '.', 2);
+    INTERNAL CLIENT 'setGlobalClassName' PARAMS TRUE, 'size-' + getWord(staticName(size()), '.', 2);
+
     saveCurrentSize(TRUE);
 }
 
