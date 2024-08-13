@@ -358,7 +358,7 @@ createScheduledTaskDetail '{scheduler.default.data.load.default.scheduled.task.d
     }
 }
 
-onStarted() + {
+onFinallyStarted() + {
     IF (NOT GROUP SUM 1 IF d IS ScheduledTask) AND actionCanonicalName('Service.recalculateStatsAction[]') AND actionCanonicalName('Service.vacuumDBAction[]') THEN {
         createScheduledTask ('{scheduler.default.data.load.default.service.db}', dateTimeToDateTime(currentDate(), 03:00), 86400, SchedulerStartType.afterStart);
         createScheduledTaskDetail ('{scheduler.default.data.load.default.service.db}', 1, 'Service.recalculateStatsAction[]');
