@@ -12,6 +12,8 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import java.sql.SQLException;
 import java.util.Map;
 
+import static lsfusion.base.BaseUtils.nvl;
+
 public class ReadFilterGroupsAction extends SystemExplicitAction {
     private final Integer filterGroup;
     private final LP<?> toProperty;
@@ -33,10 +35,6 @@ public class ReadFilterGroupsAction extends SystemExplicitAction {
             }
         }
 
-        LP<?> targetProperty = toProperty;
-        if (targetProperty == null) {
-            targetProperty = context.getBL().userEventsLM.filterGroups;
-        }
-        targetProperty.change(index, context.getSession());
+        nvl(toProperty, context.getBL().userEventsLM.filterGroups).change(index, context.getSession());
     }
 }

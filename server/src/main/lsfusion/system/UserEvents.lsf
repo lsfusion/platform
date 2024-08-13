@@ -23,8 +23,6 @@ FORM filters
     OBJECTS f = INTEGER EXTID 'value'
     PROPERTIES(f) property, negation, compare, value, or
     FILTERS property(f)
-    
-    PROPERTIES max = GROUP MAX f IF property(f)
 ;
 
 filterProperty(STRING groupObject, STRING property, STRING value) {
