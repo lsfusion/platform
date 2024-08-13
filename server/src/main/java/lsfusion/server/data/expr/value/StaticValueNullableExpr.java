@@ -135,7 +135,7 @@ public class StaticValueNullableExpr extends StaticNullableExpr implements Value
 
     @Override
     public boolean isAlwaysSafeString() {        
-        return true;
+        return false;
     }
 
     @Override
