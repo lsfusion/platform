@@ -135,7 +135,7 @@ public class StaticValueNullableExpr extends StaticNullableExpr implements Value
 
     @Override
     public boolean isAlwaysSafeString() {        
-        return false;
+        return false; // just like other values, laterals also should be passed to the recursive function as parameters
     }
 
     @Override
