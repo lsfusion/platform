@@ -209,7 +209,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         if(isShrinkOverflowVisible(context))
             return "visible";
 
-        return null;
+        return "auto";
     }
 
     public String getOverflowVert(FormInstanceContext context) {
@@ -220,7 +220,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         if(isShrinkOverflowVisible(context))
             return "visible";
 
-        return null;
+        return "auto";
     }
 
     public Boolean getAlignCaption() {
