@@ -4027,12 +4027,12 @@ expandCollapseObjectsList[List<TypedParameter> context, boolean dynamic] returns
 orderActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedOrderProp($gobj.sid, $pu.propUsage);
+		$action = self.addScriptedOrderProp($gobj.sid, $expr.property);
 	}
 }
     :   'ORDER'
         gobj=formGroupObjectID
-        ('FROM' pu=propertyUsage)?
+        ('FROM' expr=propertyExpression[context, dynamic])?
     ;
 
 readOrdersActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
@@ -4049,12 +4049,12 @@ readOrdersActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
  filterActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
  @after {
  	if (inMainParseState()) {
- 		$action = self.addScriptedFilterProp($gobj.sid, $pu.propUsage);
+ 		$action = self.addScriptedFilterProp($gobj.sid, $expr.property);
  	}
  }
      :   'FILTER'
          gobj=formGroupObjectID
-         ('FROM' pu=propertyUsage)?
+         ('FROM' expr=propertyExpression[context, dynamic])?
      ;
 
 readFiltersActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
@@ -4071,13 +4071,13 @@ readFiltersActionDefinitionBody[List<TypedParameter> context, boolean dynamic] r
  filterGroupActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
  @after {
  	if (inMainParseState()) {
- 		$action = self.addScriptedFilterGroupProp($fg.sid, $pu.propUsage);
+ 		$action = self.addScriptedFilterGroupProp($fg.sid, $expr.property);
  	}
  }
 
      :   'FILTERGROUP'
          fg=formFilterGroupID
-         ('FROM' pu=propertyUsage)?
+         ('FROM' expr=propertyExpression[context, dynamic])?
      ;
 
 readFilterGroupsActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
@@ -4097,13 +4097,13 @@ readFilterGroupsActionDefinitionBody[List<TypedParameter> context, boolean dynam
  }
  @after {
  	if (inMainParseState()) {
- 		$action = self.addScriptedFilterPropertyProp(propertyDraw, $pu.propUsage);
+ 		$action = self.addScriptedFilterPropertyProp(propertyDraw, $expr.property);
  	}
  }
 
      :   'FILTER' 'PROPERTY'
          fp=formPropertyID { propertyDraw = $fp.propertyDraw; }
-         ('FROM' pu=propertyUsage)?
+         ('FROM' expr=propertyExpression[context, dynamic])?
      ;
 
 readFiltersPropertyActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]

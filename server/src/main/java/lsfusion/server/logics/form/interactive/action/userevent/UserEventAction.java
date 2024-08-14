@@ -1,9 +1,11 @@
 package lsfusion.server.logics.form.interactive.action.userevent;
 
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.SystemExplicitAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
+import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.stat.struct.imports.hierarchy.json.JSONReader;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
@@ -19,15 +21,19 @@ public abstract class UserEventAction extends SystemExplicitAction {
     public static final String PROPERTY_KEY = "property";
     
     protected final GroupObjectEntity groupObject;
-    protected final LP<?> fromProperty;
 
-    public UserEventAction(GroupObjectEntity groupObject, LP<?> fromProperty) {
+    private final ClassPropertyInterface fromInterface;
+
+    public UserEventAction(GroupObjectEntity groupObject, ValueClass... valueClasses) {
+        super(valueClasses);
         this.groupObject = groupObject;
-        this.fromProperty = fromProperty;
+
+        ImOrderSet<ClassPropertyInterface> orderInterfaces = getOrderInterfaces();
+        this.fromInterface = orderInterfaces.get(0);
     }
     
-    protected List<JSONObject> readJSON(ExecutionContext<ClassPropertyInterface> context, LP<?> fallbackProperty) throws SQLException, SQLHandledException {
-        Object json = (fromProperty != null ? fromProperty : fallbackProperty).read(context);
+    protected List<JSONObject> readJSON(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+        Object json = context.getKeyObject(fromInterface);
         if (json instanceof String) {
             json = JSONReader.readObject((String) json);
         } 

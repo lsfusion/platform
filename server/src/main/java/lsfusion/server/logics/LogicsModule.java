@@ -2140,7 +2140,7 @@ public abstract class LogicsModule {
 
     @IdentityStrongLazy
     public LA addOrderAProp(GroupObjectEntity object, LP fromProperty) {
-        return addAction(null, new LA<>(new OrderAction(object, fromProperty)));
+        return addAction(null, new LA<>(new OrderAction(object, fromProperty.property.getValueClass(ClassType.typePolicy))));
     }
 
     @IdentityStrongLazy
@@ -2150,7 +2150,7 @@ public abstract class LogicsModule {
 
     @IdentityStrongLazy
     public LA addFilterAProp(GroupObjectEntity object, LP fromProperty) {
-        return addAction(null, new LA<>(new FilterAction(object, fromProperty)));
+        return addAction(null, new LA<>(new FilterAction(object, fromProperty.property.getValueClass(ClassType.typePolicy))));
     }
 
     @IdentityStrongLazy
@@ -2160,7 +2160,7 @@ public abstract class LogicsModule {
 
     @IdentityStrongLazy
     public LA<?> addFilterGroupAProp(Integer filterGroup, LP<?> fromProperty) {
-        return addAction(null, new LA<>(new FilterGroupAction(filterGroup, fromProperty)));
+        return addAction(null, new LA<>(new FilterGroupAction(filterGroup, fromProperty.property.getValueClass(ClassType.typePolicy))));
     }
 
     @IdentityStrongLazy
@@ -2170,7 +2170,7 @@ public abstract class LogicsModule {
 
     @IdentityStrongLazy
     public LA<?> addFilterPropertyAProp(PropertyDrawEntity property, LP<?> fromProperty) {
-        return addAction(null, new LA<>(new FilterPropertyAction(property, fromProperty)));
+        return addAction(null, new LA<>(new FilterPropertyAction(property, fromProperty.property.getValueClass(ClassType.typePolicy))));
     }
 
     @IdentityStrongLazy
