@@ -2737,7 +2737,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         ImList<Type> paramTypes = getTypesForEvalAction(params, contextParams);
 
-        return addScriptedJoinAProp(addAProp(new EvalAction(this, paramTypes, action)), BaseUtils.addList(property, params));
+        return addScriptedJoinAProp(addAProp(new EvalAction(paramTypes, action)), BaseUtils.addList(property, params));
     }
 
     public LAWithParams addScriptedChangePropertyAProp(List<TypedParameter> context, NamedPropertyUsage toPropertyUsage, List<LPWithParams> toPropertyMapping, LPWithParams fromProperty, LPWithParams whereProperty, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
@@ -5678,11 +5678,6 @@ public class ScriptingLogicsModule extends LogicsModule {
                 initNamespacesToModules(requiredModule, visitedModules);
             }
         }
-    }
-
-    @IdentityLazy
-    public LA<?> evaluateRun(String script, boolean action) {
-        return EvalUtils.evaluateAndFindAction(BL, this instanceof EvalScriptingLogicsModule ? (EvalScriptingLogicsModule) this : null, script, action);
     }
 
     protected LogicsModule getSysModule(String requiredModuleName) {

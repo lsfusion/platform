@@ -24,6 +24,7 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.lambda.SQLCallable;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.language.EvalScriptingLogicsModule;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.action.LA;
@@ -85,6 +86,7 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.value.NullValueProperty;
 import lsfusion.server.physics.admin.drilldown.action.LazyDrillDownAction;
 import lsfusion.server.physics.admin.drilldown.form.DrillDownFormEntity;
+import lsfusion.server.physics.admin.interpreter.EvalUtils;
 import lsfusion.server.physics.admin.log.form.LogFormEntity;
 import lsfusion.server.physics.admin.monitor.SystemEventsLogicsModule;
 import lsfusion.server.physics.dev.debug.ActionDebugger;
@@ -1309,5 +1311,10 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     @Override
     protected <T extends LAP<?, ?>> List<T> createLAPList() {
         return Collections.synchronizedList(super.createLAPList());
+    }
+
+    @IdentityLazy
+    public Pair<LA, EvalScriptingLogicsModule> evaluateRun(String script, EvalScriptingLogicsModule parentLM, boolean action) {
+        return EvalUtils.evaluateAndFindAction(BL, parentLM, script, action);
     }
 }
