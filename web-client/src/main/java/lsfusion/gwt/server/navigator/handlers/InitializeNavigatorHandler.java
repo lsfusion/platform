@@ -92,7 +92,7 @@ public class InitializeNavigatorHandler extends NavigatorActionHandler<Initializ
         return new GClientSettings(clientSettings.busyDialogTimeout, clientSettings.devMode, clientSettings.projectLSFDir, clientSettings.showDetailedInfo,
                 clientSettings.showDetailedInfoDelay, clientSettings.suppressOnFocusChange, clientSettings.autoReconnectOnConnectionLost,
                 clientSettings.forbidDuplicateForms, clientSettings.pivotOnlySelectedColumn, clientSettings.matchSearchSeparator, colorTheme, clientSettings.useBootstrap,
-                clientSettings.currentSize, getVersionedColorThemesCss(servlet), colorPreferences, localePreferences.dateFormat, localePreferences.timeFormat,
+                clientSettings.size, getVersionedColorThemesCss(servlet), colorPreferences, localePreferences.dateFormat, localePreferences.timeFormat,
                 localePreferences.twoDigitYearStart, servlet.staticImagesURL, clientSettings.preDefinedDateRangesNames, clientSettings.useTextAsFilterSeparator,
                 clientSettings.verticalNavbar, clientSettings.userFiltersManualApplyMode, clientSettings.disableActionsIfReadonly, clientSettings.enableShowingRecentlyLogMessages,
                 clientSettings.pushNotificationPublicKey, clientSettings.maxStickyLeft, clientSettings.jasperReportsIgnorePageMargins);

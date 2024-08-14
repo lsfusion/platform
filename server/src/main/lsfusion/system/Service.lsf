@@ -949,7 +949,7 @@ getClientSettings(User user) + WHEN user IS User THEN {
         projectLSFDir = projectLSFDir(),
         colorThemeString = IF (colorThemeStaticName()) THEN substrFrom(colorThemeStaticName(), strpos(colorThemeStaticName(), '.') + 1),
         useBootstrap = useBootstrap(),
-        currentSize = basicStaticName(size()), 
+        size = basicStaticName(size()), 
         selectedRowBackground = (OVERRIDE selectedRowBackgroundColor(user), selectedRowBackgroundColor()),
         selectedCellBackground = (OVERRIDE selectedCellBackgroundColor(user), selectedCellBackgroundColor()),
         focusedCellBackground = (OVERRIDE focusedCellBackgroundColor(user), focusedCellBackgroundColor()),

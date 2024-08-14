@@ -20,7 +20,7 @@ public class GClientSettings implements Serializable, IsSerializable {
     public String matchSearchSeparator;
     public GColorTheme colorTheme;
     public boolean useBootstrap;
-    public String currentSize;
+    public String size;
     public Map<String, String> versionedColorThemesCss;
     public GColorPreferences colorPreferences;
     public String dateFormat;
@@ -47,7 +47,7 @@ public class GClientSettings implements Serializable, IsSerializable {
 
     public GClientSettings(long busyDialogTimeout, boolean devMode, String projectLSFDir, boolean showDetailedInfo, int showDetailedInfoDelay, boolean suppressOnFocusChange,
                            boolean autoReconnectOnConnectionLost, boolean forbidDuplicateForms, boolean pivotOnlySelectedColumn,
-                           String matchSearchSeparator, GColorTheme colorTheme, boolean useBootstrap, String currentSize, Map<String, String> versionedColorThemesCss,
+                           String matchSearchSeparator, GColorTheme colorTheme, boolean useBootstrap, String size, Map<String, String> versionedColorThemesCss,
                            GColorPreferences colorPreferences, String dateFormat, String timeFormat, Integer twoDigitYearStart, String staticImagesURL,
                            String[] preDefinedDateRangesNames, boolean useTextAsFilterSeparator, boolean verticalNavbar, boolean userFiltersManualApplyMode,
                            boolean disableActionsIfReadonly, boolean enableShowingRecentlyLogMessages, String pushNotificationPublicKey,
@@ -65,7 +65,7 @@ public class GClientSettings implements Serializable, IsSerializable {
         this.colorTheme = colorTheme;
         this.versionedColorThemesCss = versionedColorThemesCss;
         this.useBootstrap = useBootstrap;
-        this.currentSize = currentSize;
+        this.size = size;
         this.colorPreferences = colorPreferences;
         this.dateFormat = dateFormat;
         this.timeFormat = timeFormat;
