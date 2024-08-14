@@ -26,33 +26,27 @@ FORM filters
 ;
 
 filterProperty(STRING groupObject, STRING property, STRING value) {
-    EVAL 'run() \{ FILTERS ' + groupObject + '; \}';
+    EVAL ACTION 'FILTERS ' + groupObject + ';';
 
     IMPORT filters FROM filters();
     
-    FOR(property(INTEGER f) == property) DO {
+    FOR property(INTEGER f) = property DO
         value(f) <- value;
-    } ELSE {
-        LOCAL max = INTEGER();
-        max() <- OVERRIDE (GROUP MAX INTEGER f IF property(f)) + 1, 0;
-        property(max()) <- property;
-        value(max()) <- value;
+    ELSE FOR INTEGER f = OVERRIDE (GROUP MAX INTEGER r IF property(r)) + 1, 0 DO {
+        property(f) <- property;
+        value(f) <- value;
     }
     
     EXPORT filters TO filters;
 
-    EVAL 'run() \{ FILTER ' + groupObject + '; \}';
+    EVAL ACTION 'FILTER ' + groupObject + ';';
 }
 
-valueFiltersProperty = DATA LOCAL STRING();
 filtersProperty(STRING groupObject, STRING property) {
-    EVAL 'run() \{ FILTERS ' + groupObject + '; \}';
+    EVAL ACTION 'FILTERS ' + groupObject + ';';
 
     IMPORT filters FROM filters();
     
-    FOR(property(INTEGER f)) DO {
-        IF(property(f) == property) THEN {
-            valueFiltersProperty() <- value(f);
-        }
-    }
+    FOR property(INTEGER f) = property DO
+        filtersProperty() <- value(f);
 }

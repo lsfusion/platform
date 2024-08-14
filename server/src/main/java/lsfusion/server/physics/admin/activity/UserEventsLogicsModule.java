@@ -15,7 +15,6 @@ public class UserEventsLogicsModule extends ScriptingLogicsModule {
     public LP filters;
     public LP filterGroups;
     public LP filtersProperty;
-    public LP valueFiltersProperty;
 
     public UserEventsLogicsModule(BusinessLogics BL, BaseLogicsModule baseModule) {
         super(baseModule, BL, "/system/UserEvents.lsf");
@@ -32,6 +31,5 @@ public class UserEventsLogicsModule extends ScriptingLogicsModule {
         filters = findProperty("filters[]");
         filterGroups = findProperty("filterGroups[]");
         filtersProperty = findProperty("filtersProperty[]");
-        valueFiltersProperty = findProperty("valueFiltersProperty[]");
     }
 }

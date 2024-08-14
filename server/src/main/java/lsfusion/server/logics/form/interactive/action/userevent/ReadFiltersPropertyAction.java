@@ -31,7 +31,7 @@ public class ReadFiltersPropertyAction extends SystemExplicitAction {
         String groupObject = formInstance.entity.getSID() + "." + toDraw.getSID();
         context.getBL().userEventsLM.filtersPropertyAction.execute(context, new DataObject(groupObject), new DataObject(property.getSID()));
 
-        String value = (String) context.getBL().userEventsLM.valueFiltersProperty.read(context);
-        nvl(toProperty, context.getBL().userEventsLM.filtersProperty).change(value, context.getSession());
+        if(toProperty != null)
+            toProperty.change((String) context.getBL().userEventsLM.filtersProperty.read(context), context);
     }
 }
