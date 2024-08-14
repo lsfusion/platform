@@ -125,7 +125,7 @@ dataScriptType = DATA ScriptType(Script);
 dataScriptType(Script s) <- ScriptType.action WHEN SET(s IS Script);
 selectedExecutionScriptType (ScriptType st, Script s) = st == dataScriptType(s);
 executionScriptTypeCaption (ScriptType st) = staticCaption(st);
-executionScriptTypeName (ScriptType st) = getWord(staticName(st),'.',2);
+executionScriptTypeName (ScriptType st) = basicStaticName(st);
 
 evalString = DATA LOCAL STRING();
 executeScript '{eval.execution}' (Script s) {

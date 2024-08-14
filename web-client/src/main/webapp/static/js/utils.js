@@ -396,3 +396,12 @@ function removeAttributeOrStyle(element, attribute, value) {
 function jsMapDelete(map, key) {
     return map.delete(key);
 }
+
+function setGlobalClassName(set, className) {
+    let root = document.documentElement;
+
+    if (set)
+        root.classList.add(className);
+    else
+        root.classList.remove(className);
+}

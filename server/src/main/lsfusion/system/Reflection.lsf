@@ -90,7 +90,7 @@ CLASS SelectType '{reflection.select}' {
     No '{reflection.select.type.no}'
 }
 select '{reflection.select}' = DATA SelectType (Property);
-nameSelect '{reflection.select}' (Property property) = getWord(staticName(select(property)),'.',2);
+nameSelect '{reflection.select}' (Property property) = basicStaticName(select(property));
 staticCaptionSelect '{reflection.select}' (Property property) = staticCaption(select(property));
 
 updateSelect  INTERNAL  'lsfusion.server.physics.admin.service.action.UpdateSelectAction' (Property, STRING);

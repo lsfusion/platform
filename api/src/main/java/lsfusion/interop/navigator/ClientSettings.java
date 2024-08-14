@@ -26,6 +26,7 @@ public class ClientSettings implements Serializable {
     public String matchSearchSeparator;
     public ColorTheme colorTheme;
     public boolean useBootstrap;
+    public String size;
     public ColorPreferences colorPreferences;
     public String[] preDefinedDateRangesNames;
     public boolean useTextAsFilterSeparator;
@@ -44,7 +45,7 @@ public class ClientSettings implements Serializable {
                           boolean useRequestTimeout, boolean devMode, String projectLSFDir, boolean showDetailedInfo, int showDetailedInfoDelay,
                           boolean suppressOnFocusChange, boolean autoReconnectOnConnectionLost, boolean forbidDuplicateForms,
                           boolean showNotDefinedStrings, boolean pivotOnlySelectedColumn, String matchSearchSeparator, ColorTheme colorTheme,
-                          boolean useBootstrap, ColorPreferences colorPreferences, String[] preDefinedDateRangesNames, boolean useTextAsFilterSeparator,
+                          boolean useBootstrap, String size, ColorPreferences colorPreferences, String[] preDefinedDateRangesNames, boolean useTextAsFilterSeparator,
                           boolean verticalNavbar, boolean userFiltersManualApplyMode, boolean disableActionsIfReadonly, boolean enableShowingRecentlyLogMessages,
                           String pushNotificationPublicKey, int maxRequestQueueSize, double maxStickyLeft, boolean jasperReportsIgnorePageMargins) {
         this.localePreferences = localePreferences;
@@ -65,6 +66,7 @@ public class ClientSettings implements Serializable {
         this.matchSearchSeparator = matchSearchSeparator;
         this.colorTheme = colorTheme;
         this.useBootstrap = useBootstrap;
+        this.size = size;
         this.colorPreferences = colorPreferences;
         this.preDefinedDateRangesNames = preDefinedDateRangesNames;
         this.useTextAsFilterSeparator = useTextAsFilterSeparator;

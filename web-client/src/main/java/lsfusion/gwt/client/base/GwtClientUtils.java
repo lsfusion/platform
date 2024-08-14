@@ -1814,4 +1814,9 @@ public class GwtClientUtils {
     public static native void setSrc(Element element, String src) /*-{
         element.src = src;
     }-*/;
+
+    public static native void setGlobalClassName (boolean set, String elementClass) /*-{
+        $wnd.setGlobalClassName(set, elementClass);
+    }-*/;
+
 }

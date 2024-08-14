@@ -209,6 +209,8 @@ copyToClipboard INTERNAL 'lsfusion.server.logics.classes.data.utils.string.CopyT
 
 array(STRING string, STRING delimeter, INTEGER row) = FORMULA STRING value 'unnest(string_to_array($string, $delimeter))';
 
+basicStaticName(StaticObject object) = getWord(staticName(object), '.', 2);
+
 // --------------------------------------------- Numeric operations --------------------------------- //
 floor = FORMULA 'floor($1)';
 floor = FORMULA NULL 'floor(($1)/notZero($2))*($2)';
