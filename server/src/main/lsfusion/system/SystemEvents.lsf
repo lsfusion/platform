@@ -100,7 +100,7 @@ captionTheme '{system.events.theme}' (DesignEnv d) = staticCaption(designEnvThem
 serverTheme '{system.events.theme}' = DATA Theme ();
 captionServerTheme '{system.events.theme}' = staticCaption(serverTheme());
 theme '{system.events.theme}' (DesignEnv d) = OVERRIDE designEnvTheme(d), serverTheme(), Theme.classic;
-nameTheme = STRING(getWord(staticName(theme(currentDesignEnv())), '.', 2));
+nameTheme = STRING(basicStaticName(theme(currentDesignEnv())));
 useBootstrap (DesignEnv d) = theme(d) != Theme.excel;
 useBootstrap() = useBootstrap(currentDesignEnv()) PREREAD;
 
@@ -580,6 +580,9 @@ onWebClientStarted() + {
     }
 }
 WHEN FORMS design CHANGED (size()) DO {
+    INTERNAL CLIENT 'setGlobalClassName' PARAMS NULL, 'size-' + basicStaticName(currentSize());
+    INTERNAL CLIENT 'setGlobalClassName' PARAMS TRUE, 'size-' + basicStaticName(size());
+
     saveCurrentSize(TRUE);
 }
 

@@ -70,6 +70,7 @@ public class MainFrame implements EntryPoint {
     public static boolean suppressOnFocusChange;
     public static boolean forbidDuplicateForms;
     public static boolean useBootstrap;
+    public static String size;
     public static long busyDialogTimeout;
     public static long updateRendererStateSetTimeout = 100;
     public static boolean pivotOnlySelectedColumn;
@@ -513,8 +514,9 @@ public class MainFrame implements EntryPoint {
 
         navigatorController.setRoot(result.root);
 
-        FormsController.setGlobalClassName(true, useBootstrap ? "nav-bootstrap" : "nav-excel");
-        FormsController.setGlobalClassName(true, mobile ? "nav-mobile" : "nav-desktop");
+        GwtClientUtils.setGlobalClassName(true, useBootstrap ? "nav-bootstrap" : "nav-excel");
+        GwtClientUtils.setGlobalClassName(true, mobile ? "nav-mobile" : "nav-desktop");
+        GwtClientUtils.setGlobalClassName(true, "size-" + size);
 //        FormsController.setGlobalClassName(contentWordWrap, "content-word-wrap");
 
         if (mobile) {
@@ -628,6 +630,7 @@ public class MainFrame implements EntryPoint {
                 busyDialogTimeout = Math.max(gClientSettings.busyDialogTimeout - 500, 500); // minimum timeout 500ms + there is still a delay of about 500ms
                 staticImagesURL = gClientSettings.staticImagesURL;
                 useBootstrap = gClientSettings.useBootstrap;
+                size = gClientSettings.size;
                 devMode = gClientSettings.devMode;
                 projectLSFDir = gClientSettings.projectLSFDir;
                 showDetailedInfo = gClientSettings.showDetailedInfo;
