@@ -2,9 +2,11 @@ package lsfusion.server.logics.form.interactive.action.userevent;
 
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
+import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.SystemExplicitAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
+import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
@@ -30,6 +32,6 @@ public class FilterPropertyAction extends SystemExplicitAction {
         GroupObjectEntity toDraw = property.getToDraw(formInstance.entity);
         String groupObject = formInstance.entity.getSID() + "." + toDraw.getSID();
         String value = (String) nvl(fromProperty, formInstance.BL.userEventsLM.filtersProperty).read(context);
-        context.getBL().userEventsLM.filterPropertyAction.execute(context, new DataObject(groupObject), new DataObject(property.getSID()), new DataObject(value));
+        context.getBL().userEventsLM.filterPropertyAction.execute(context, new DataObject(groupObject), new DataObject(property.getSID()), ObjectValue.getValue(value, StringClass.instance));
     }
 }
