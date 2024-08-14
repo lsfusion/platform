@@ -994,8 +994,7 @@ public class PropertyDrawView extends BaseComponentView {
 
         if(isProperty(context)) {
             Type type = getAssertValueType(context);
-            //see GTextBasedType.getVertTextAlignment
-            if (type != null && !(type instanceof TextBasedClass))
+            if (type != null)
                 return type.getValueAlignmentVert();
         }
 
