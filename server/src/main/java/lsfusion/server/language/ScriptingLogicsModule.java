@@ -2653,7 +2653,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             if(from == null) {
                 from = new LPWithParams(BL.userEventsLM.orders);
             }
-            return addScriptedJoinAProp(addOrderAProp(go, from.getLP()), Collections.singletonList(from));
+            return addScriptedJoinAProp(baseLM.addOrderAProp(go, from.getLP()), Collections.singletonList(from));
         } else {
             errLog.emitGroupObjectNotFoundError(parser, getSeekObjectName(goName));
             return null;
@@ -2665,7 +2665,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         if (go != null) {
             LP<?> targetProp = propertyUsage != null ? findLPNoParamsByPropertyUsage(propertyUsage) : null;
-            return new LAWithParams(addReadOrdersAProp(go, targetProp), Collections.emptyList());
+            return new LAWithParams(baseLM.addReadOrdersAProp(go, targetProp), Collections.emptyList());
         } else {
             errLog.emitGroupObjectNotFoundError(parser, getSeekObjectName(goName));
             return null;
@@ -2680,7 +2680,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             if(from == null) {
                 from = new LPWithParams(BL.userEventsLM.filters);
             }
-            return addScriptedJoinAProp(addFilterAProp(go, from.getLP()), Collections.singletonList(from));
+            return addScriptedJoinAProp(baseLM.addFilterAProp(go, from.getLP()), Collections.singletonList(from));
         } else {
             errLog.emitGroupObjectNotFoundError(parser, getSeekObjectName(goName));
             return null;
@@ -2692,7 +2692,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         if (go != null) {
             LP<?> targetProp = propertyUsage != null ? findLPNoParamsByPropertyUsage(propertyUsage) : null;
-            return new LAWithParams(addReadFiltersAProp(go, targetProp), Collections.emptyList());
+            return new LAWithParams(baseLM.addReadFiltersAProp(go, targetProp), Collections.emptyList());
         } else {
             errLog.emitGroupObjectNotFoundError(parser, getSeekObjectName(goName));
             return null;
@@ -2705,7 +2705,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             if(from == null) {
                 from = new LPWithParams(BL.userEventsLM.filterGroups);
             }
-            return addScriptedJoinAProp(addFilterGroupAProp(filterGroup.getID(), from.getLP()), Collections.singletonList(from));
+            return addScriptedJoinAProp(baseLM.addFilterGroupAProp(filterGroup.getID(), from.getLP()), Collections.singletonList(from));
         } else {
             errLog.emitFilterGroupNotFoundError(parser, getSeekObjectName(fgName));
             return null;
@@ -2716,7 +2716,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         RegularFilterGroupEntity filterGroup = getSeekFilterGroup(getFormFromSeekObjectName(fgName), fgName);
         if (filterGroup != null) {
             LP<?> targetProp = propertyUsage != null ? findLPNoParamsByPropertyUsage(propertyUsage) : null;
-            return new LAWithParams(addReadFilterGroupsAProp(filterGroup.getID(), targetProp), Collections.emptyList());
+            return new LAWithParams(baseLM.addReadFilterGroupsAProp(filterGroup.getID(), targetProp), Collections.emptyList());
         } else {
             errLog.emitFilterGroupNotFoundError(parser, getSeekObjectName(fgName));
             return null;
@@ -2727,12 +2727,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         if(from == null) {
             from = new LPWithParams(BL.userEventsLM.filtersProperty);
         }
-        return addScriptedJoinAProp(addFilterPropertyAProp(property, from.getLP()), Collections.singletonList(from));
+        return addScriptedJoinAProp(baseLM.addFilterPropertyAProp(property, from.getLP()), Collections.singletonList(from));
     }
 
     public LAWithParams addScriptedReadFiltersPropertyProp(PropertyDrawEntity property, NamedPropertyUsage propertyUsage)  throws ScriptingErrorLog.SemanticErrorException {
         LP<?> targetProp = propertyUsage != null ? findLPNoParamsByPropertyUsage(propertyUsage) : null;
-        return new LAWithParams(addReadFiltersPropertyAProp(property, targetProp), Collections.emptyList());
+        return new LAWithParams(baseLM.addReadFiltersPropertyAProp(property, targetProp), Collections.emptyList());
     }
 
     public LAWithParams addScriptedEvalAction(LPWithParams property, List<LPWithParams> params, List<TypedParameter> contextParams, boolean action) throws ScriptingErrorLog.SemanticErrorException {

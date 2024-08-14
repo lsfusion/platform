@@ -2138,46 +2138,6 @@ public abstract class LogicsModule {
         return addAction(null, new LA<>(expandProperty));
     }
 
-    @IdentityStrongLazy
-    public LA addOrderAProp(GroupObjectEntity object, LP fromProperty) {
-        return addAction(null, new LA<>(new OrderAction(object, fromProperty.property.getValueClass(ClassType.typePolicy))));
-    }
-
-    @IdentityStrongLazy
-    public LA addReadOrdersAProp(GroupObjectEntity object, LP toProperty) {
-        return addAction(null, new LA<>(new ReadOrdersAction(object, toProperty)));
-    }
-
-    @IdentityStrongLazy
-    public LA addFilterAProp(GroupObjectEntity object, LP fromProperty) {
-        return addAction(null, new LA<>(new FilterAction(object, fromProperty.property.getValueClass(ClassType.typePolicy))));
-    }
-
-    @IdentityStrongLazy
-    public LA addReadFiltersAProp(GroupObjectEntity object, LP toProperty) {
-        return addAction(null, new LA<>(new ReadFiltersAction(object, toProperty)));
-    }
-
-    @IdentityStrongLazy
-    public LA<?> addFilterGroupAProp(Integer filterGroup, LP<?> fromProperty) {
-        return addAction(null, new LA<>(new FilterGroupAction(filterGroup, fromProperty.property.getValueClass(ClassType.typePolicy))));
-    }
-
-    @IdentityStrongLazy
-    public LA<?> addReadFilterGroupsAProp(Integer filterGroup, LP<?> toProperty) {
-        return addAction(null, new LA<>(new ReadFilterGroupsAction(filterGroup, toProperty)));
-    }
-
-    @IdentityStrongLazy
-    public LA<?> addFilterPropertyAProp(PropertyDrawEntity property, LP<?> fromProperty) {
-        return addAction(null, new LA<>(new FilterPropertyAction(property, fromProperty.property.getValueClass(ClassType.typePolicy))));
-    }
-
-    @IdentityStrongLazy
-    public LA<?> addReadFiltersPropertyAProp(PropertyDrawEntity property, LP<?> toProperty) {
-        return addAction(null, new LA<>(new ReadFiltersPropertyAction(property, toProperty)));
-    }
-
     public static class ConstraintData {
         public final LP<?> message;
         public final DebugInfo.DebugPoint debugPoint;

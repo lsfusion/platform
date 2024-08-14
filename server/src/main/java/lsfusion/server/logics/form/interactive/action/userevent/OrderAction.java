@@ -2,7 +2,6 @@ package lsfusion.server.logics.form.interactive.action.userevent;
 
 import lsfusion.interop.action.OrderClientAction;
 import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;

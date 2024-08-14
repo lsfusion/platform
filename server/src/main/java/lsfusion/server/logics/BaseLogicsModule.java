@@ -58,11 +58,13 @@ import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelecto
 import lsfusion.server.logics.form.interactive.action.change.FormAddObjectAction;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.input.RequestResult;
+import lsfusion.server.logics.form.interactive.action.userevent.*;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
+import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.NavigatorFolder;
 import lsfusion.server.logics.navigator.window.AbstractWindow;
@@ -77,6 +79,7 @@ import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.classes.data.FormulaJoinProperty;
 import lsfusion.server.logics.property.classes.data.NotFormulaProperty;
 import lsfusion.server.logics.property.classes.infer.AlgType;
+import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.classes.user.ClassDataProperty;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
@@ -1135,6 +1138,46 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         String name = "_DELETE";
         makeActionPublic(res, name, cls.getResolveSet());
         return res;
+    }
+
+    @IdentityStrongLazy
+    public LA addOrderAProp(GroupObjectEntity object, LP fromProperty) {
+        return addAction(null, new LA<>(new OrderAction(object, fromProperty.property.getValueClass(ClassType.typePolicy))));
+    }
+
+    @IdentityStrongLazy
+    public LA addReadOrdersAProp(GroupObjectEntity object, LP toProperty) {
+        return addAction(null, new LA<>(new ReadOrdersAction(object, toProperty)));
+    }
+
+    @IdentityStrongLazy
+    public LA addFilterAProp(GroupObjectEntity object, LP fromProperty) {
+        return addAction(null, new LA<>(new FilterAction(object, fromProperty.property.getValueClass(ClassType.typePolicy))));
+    }
+
+    @IdentityStrongLazy
+    public LA addReadFiltersAProp(GroupObjectEntity object, LP toProperty) {
+        return addAction(null, new LA<>(new ReadFiltersAction(object, toProperty)));
+    }
+
+    @IdentityStrongLazy
+    public LA<?> addFilterGroupAProp(Integer filterGroup, LP<?> fromProperty) {
+        return addAction(null, new LA<>(new FilterGroupAction(filterGroup, fromProperty.property.getValueClass(ClassType.typePolicy))));
+    }
+
+    @IdentityStrongLazy
+    public LA<?> addReadFilterGroupsAProp(Integer filterGroup, LP<?> toProperty) {
+        return addAction(null, new LA<>(new ReadFilterGroupsAction(filterGroup, toProperty)));
+    }
+
+    @IdentityStrongLazy
+    public LA<?> addFilterPropertyAProp(PropertyDrawEntity property, LP<?> fromProperty) {
+        return addAction(null, new LA<>(new FilterPropertyAction(property, fromProperty.property.getValueClass(ClassType.typePolicy))));
+    }
+
+    @IdentityStrongLazy
+    public LA<?> addReadFiltersPropertyAProp(PropertyDrawEntity property, LP<?> toProperty) {
+        return addAction(null, new LA<>(new ReadFiltersPropertyAction(property, toProperty)));
     }
 
     private static String getClassPrefix(CustomClass cls) {
