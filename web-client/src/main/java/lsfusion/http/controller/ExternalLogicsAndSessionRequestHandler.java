@@ -1,21 +1,22 @@
 package lsfusion.http.controller;
 
 import lsfusion.base.col.heavy.OrderedMap;
+import lsfusion.base.file.StringWithFiles;
+import lsfusion.gwt.server.convert.ClientFormChangesToGwtConverter;
 import lsfusion.http.authentication.LSFAuthenticationToken;
 import lsfusion.http.provider.logics.LogicsProvider;
 import lsfusion.http.provider.navigator.NavigatorProviderImpl;
 import lsfusion.http.provider.session.SessionProvider;
 import lsfusion.http.provider.session.SessionSessionObject;
 import lsfusion.interop.logics.LogicsSessionObject;
-import lsfusion.interop.session.ExecInterface;
-import lsfusion.interop.session.ExternalHttpUtils;
-import lsfusion.interop.session.ExternalUtils;
+import lsfusion.interop.session.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.NameValuePair;
 import org.apache.hc.core5.http.message.BasicNameValuePair;
 import org.apache.hc.core5.net.URLEncodedUtils;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -32,12 +33,14 @@ import static java.util.Collections.list;
 
 public class ExternalLogicsAndSessionRequestHandler extends ExternalRequestHandler {
 
-    public ExternalLogicsAndSessionRequestHandler(LogicsProvider logicsProvider, SessionProvider sessionProvider) {
+    public ExternalLogicsAndSessionRequestHandler(LogicsProvider logicsProvider, SessionProvider sessionProvider, ServletContext servletContext) {
         super(logicsProvider);
         this.sessionProvider = sessionProvider;
+        this.servletContext = servletContext;
     }
 
     private final SessionProvider sessionProvider;
+    private final ServletContext servletContext;
 
     @Override
     protected void handleRequest(LogicsSessionObject sessionObject, HttpServletRequest request, HttpServletResponse response) throws Exception {
@@ -47,6 +50,8 @@ public class ExternalLogicsAndSessionRequestHandler extends ExternalRequestHandl
             String queryString = request.getQueryString();
             String query = queryString != null ? queryString : "";
             ContentType requestContentType = ExternalUtils.parseContentType(request.getContentType());
+
+            SessionInfo sessionInfo = NavigatorProviderImpl.getSessionInfo(request);
 
             String[] headerNames = list(request.getHeaderNames()).toArray(new String[0]);
             String[] headerValues = getRequestHeaderValues(request, headerNames);
@@ -67,17 +72,23 @@ public class ExternalLogicsAndSessionRequestHandler extends ExternalRequestHandl
                 if(sessionSessionObject == null)
                     sessionSessionObject = sessionProvider.createSession(sessionObject.remoteLogics, request, sessionID);
                 remoteExec = sessionSessionObject.remoteSession;
-            } else {
-                remoteExec = ExternalUtils.getExecInterface(LSFAuthenticationToken.getAppServerToken(),
-                        NavigatorProviderImpl.getSessionInfo(request), sessionObject.remoteLogics);
-            }
+            } else
+                remoteExec = ExternalUtils.getExecInterface(LSFAuthenticationToken.getAppServerToken(), sessionInfo, sessionObject.remoteLogics);
 
             String logicsHost = sessionObject.connection.host != null && !sessionObject.connection.host.equals("localhost") && !sessionObject.connection.host.equals("127.0.0.1")
                     ? sessionObject.connection.host : request.getServerName();
 
             InputStream requestInputStream = getRequestInputStream(request, requestContentType, query);
 
-            ExternalUtils.ExternalResponse externalResponse = ExternalUtils.processRequest(remoteExec, requestInputStream, requestContentType,
+            ConvertFileValue convertFileValue = value -> {
+                if(!(value instanceof StringWithFiles))
+                    return value;
+
+                StringWithFiles stringWithFiles = (StringWithFiles) value;
+                return ExternalUtils.convertFileValue(stringWithFiles.prefixes, ClientFormChangesToGwtConverter.convertFileValue(stringWithFiles.files, servletContext, sessionObject, sessionInfo));
+            };
+
+            ExternalUtils.ExternalResponse externalResponse = ExternalUtils.processRequest(remoteExec, convertFileValue, requestInputStream, requestContentType,
                     headerNames, headerValues, cookieNames, cookieValues, logicsHost, sessionObject.connection.port, sessionObject.connection.exportName,
                     request.getScheme(), request.getMethod(), request.getServerName(), request.getServerPort(), request.getContextPath(), request.getServletPath(),
                     request.getPathInfo() == null ? "" : request.getPathInfo(), query, request.getSession().getId());

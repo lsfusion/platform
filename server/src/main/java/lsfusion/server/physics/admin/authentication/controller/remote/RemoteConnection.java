@@ -19,6 +19,7 @@ import lsfusion.server.base.controller.thread.SyncType;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.action.LA;
@@ -384,7 +385,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         };
 
         if(request.needNotificationId)
-            return new ResultExternalResponse(new Object[]{IntegerClass.instance.formatHTTP(RemoteNavigator.pushGlobalNotification(runnable))}, new String[0], new String[0], new String[0], new String[0], HttpServletResponse.SC_OK);
+            return new ResultExternalResponse(new Object[]{formatReturnValue(RemoteNavigator.pushGlobalNotification(runnable), IntegerClass.instance)}, new String[0], new String[0], new String[0], new String[0], HttpServletResponse.SC_OK);
         else if(property.action.hasFlow(ChangeFlowType.INTERACTIVEWAIT)) {
 
             int mode = Settings.get().getExternalUINotificationMode();
@@ -564,8 +565,11 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         return new ResultExternalResponse(returns.toArray(), headerNames, headerValues, cookieNames, cookieValues, nvl(statusHttp, HttpServletResponse.SC_OK));
     }
 
+    private Object formatReturnValue(Object returnValue, Type type) {
+        return CallHTTPAction.formatHTTP(type, returnValue);
+    }
     private Object formatReturnValue(Object returnValue, Property returnProperty) {
-        return returnProperty.getType().formatHTTP(returnValue);
+        return formatReturnValue(returnValue, returnProperty.getType());
     }
 
     protected abstract ExecSession getExecSession() throws SQLException;
@@ -593,7 +597,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
 
             if (requestLogMessage != null && Settings.get().isLogFromExternalSystemRequestsDetail()) {
                 List<NameValuePair> queryParams = request.queryParams;
-                ExternalUtils.ExternalResponse externalResponse = ExternalUtils.getExternalResponse(execResult, queryParams != null ? queryParams : Collections.emptyList(), null);
+                ExternalUtils.ExternalResponse externalResponse = ExternalUtils.getExternalResponse(execResult, queryParams != null ? queryParams : Collections.emptyList(), null, logicsInstance.getRmiManager());
 
                 if(externalResponse instanceof ExternalUtils.ResultExternalResponse) {
                     ExternalUtils.ResultExternalResponse result = (ExternalUtils.ResultExternalResponse) externalResponse;

@@ -1,5 +1,6 @@
 package lsfusion.gwt.server.convert;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.file.*;
 import lsfusion.client.form.ClientFormChanges;
 import lsfusion.client.form.design.ClientComponent;
@@ -22,7 +23,9 @@ import lsfusion.gwt.client.form.property.cell.classes.*;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.http.provider.form.FormSessionObject;
+import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.logics.ServerSettings;
+import lsfusion.interop.session.SessionInfo;
 
 import javax.servlet.ServletContext;
 import java.awt.*;
@@ -212,6 +215,14 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
         }
 
         return (Serializable) value;
+    }
+
+    public static String[] convertFileValue(Serializable[] files, ServletContext servletContext, LogicsSessionObject sessionObject, SessionInfo sessionInfo) {
+        try {
+            return convertFileValue(convertFileValue(files, servletContext, sessionObject.getServerSettings(sessionInfo, null, false)));
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     // String | AppStaticImage

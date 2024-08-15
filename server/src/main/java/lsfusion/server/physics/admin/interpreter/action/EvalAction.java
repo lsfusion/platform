@@ -59,6 +59,8 @@ public class EvalAction<P extends PropertyInterface> extends SystemAction {
     }
     @Override
     public boolean hasFlow(ChangeFlowType type) {
+        if(type == ChangeFlowType.INTERACTIVEWAIT)
+            return false; // in the executeExternal usage it's better to be optimistic
         return true;
     }
 

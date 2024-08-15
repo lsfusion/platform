@@ -42,6 +42,7 @@
     <bean id="externalHandler" class="lsfusion.http.controller.ExternalLogicsAndSessionRequestHandler">
         <constructor-arg ref="logicsProvider"/>
         <constructor-arg ref="sessionProvider"/>
+        <constructor-arg ref="servletContext"/>
     </bean>
 
     <bean id="externalFormHandler" class="lsfusion.http.controller.ExternalFormRequestHandler">

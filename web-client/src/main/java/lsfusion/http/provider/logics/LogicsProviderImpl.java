@@ -127,11 +127,7 @@ public class LogicsProviderImpl extends AbstractLogicsProviderImpl implements In
         }
 
         public String[] convertFileValue(SessionInfo sessionInfo, Serializable[] files) throws RemoteException {
-            try {
-                return ClientFormChangesToGwtConverter.convertFileValue(ClientFormChangesToGwtConverter.convertFileValue(files, servletContext, sessionObject.getServerSettings(sessionInfo, null, false)));
-            } catch (IOException e) {
-                throw Throwables.propagate(e);
-            }
+            return ClientFormChangesToGwtConverter.convertFileValue(files, servletContext, sessionObject, sessionInfo);
         }
     }
 

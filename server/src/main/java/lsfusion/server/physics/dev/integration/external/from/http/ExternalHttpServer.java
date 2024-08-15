@@ -226,7 +226,7 @@ public class ExternalHttpServer extends MonitorServer {
                 ExecInterface remoteExec = ExternalUtils.getExecInterface(getAuthToken(request), sessionInfo, remoteLogics);
                 ContentType requestContentType = ExternalUtils.parseContentType(getContentType(request));
                 ExternalUtils.ExternalResponse response = ExternalUtils.processRequest(remoteExec,
-                        request.getRequestBody(), requestContentType, headerNames, headerValues, cookieNames, cookieValues, null, null,null,
+                        getLogicsInstance().getRmiManager(), request.getRequestBody(), requestContentType, headerNames, headerValues, cookieNames, cookieValues, null, null,null,
                         useHTTPS ? "https" : "http", request.getRequestMethod(), host[0], host.length > 1 ? Integer.parseInt(host[1]) : null /*when using redirect from address without specifying a port, for example foo.bar immediately to port 7651, the port is not specified in request, and in this place when accessing host[1] the ArrayIndexOutOfBoundsException is received.*/,
                         "", request.getRequestURI().getPath(), "", request.getRequestURI().getRawQuery(), null);
 
