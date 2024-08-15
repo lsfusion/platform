@@ -93,7 +93,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
             converter = needObjects ? values -> rMapObjects.result.crossJoin(values) : null;
             valuesMode = strictValues ? AsyncMode.STRICTVALUES : AsyncMode.VALUES;
         } else {
-            ActionObjectEntity<P> eventAction = (ActionObjectEntity<P>) this.entity.getEventAction(actionSID, context);
+            ActionObjectEntity<P> eventAction = (ActionObjectEntity<P>) this.entity.getCheckedEventAction(actionSID, context);
             ImMap<P, ObjectValue> mapValues = formInstance.instanceFactory.getInstanceMap(eventAction.mapping).mapValues(BaseUtils.<Function<ObjectInstance, ObjectValue>>immutableCast(valuesGetter));
 
             AsyncMapValue<P> asyncExec = (AsyncMapValue<P>) eventAction.property.getAsyncEventExec(this.entity.optimisticAsync);
