@@ -39,7 +39,6 @@ import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapChange;
 import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelector;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.input.InputFilterEntity;
-import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputPropertyListEntity;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.controller.init.Instantiable;
@@ -264,7 +263,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
     
     private boolean checkPermission(Action eventAction, String eventActionSID, FormInstanceContext context, SQLCallable<Boolean> checkReadOnly) throws SQLException, SQLHandledException {
-        SecurityPolicy securityPolicy = context.securityPolicy;
+        SecurityPolicy securityPolicy = context.securityPolicy == null ? new SecurityPolicy() : context.securityPolicy;
         if(EDIT_OBJECT.equals(eventActionSID))
             return securityPolicy.checkPropertyEditObjectsPermission(getSecurityProperty());
 
@@ -286,29 +285,23 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public ActionObjectEntity<?> getCheckedEventAction(String actionId, FormInstanceContext context) {
+        return getCheckedEventAction(actionId, context, null);
+    }
+    
+    public ActionObjectEntity<?> getCheckedEventAction(String actionId, FormInstanceContext context, SQLCallable<Boolean> checkReadOnly) {
         try {
-            return getCheckedEventAction(actionId, context, null);
+            ActionObjectEntity<?> explicitEventAction = getExplicitEventActionEntity(actionId, context);
+            ActionObjectEntity<?> eventAction = explicitEventAction != null ?
+                    explicitEventAction : getDefaultEventAction(actionId, context);
+
+            if (eventAction != null && !checkPermission(eventAction.property, actionId, context, checkReadOnly))
+                return null;
+        
+            return eventAction;
         } catch (SQLException | SQLHandledException e) {
             assert false;
             throw Throwables.propagate(e);
         }
-    }
-    
-    public ActionObjectEntity<?> getCheckedEventAction(String actionId, FormInstanceContext context, SQLCallable<Boolean> checkReadOnly) throws SQLException, SQLHandledException {
-        ActionObjectEntity<?> eventAction = getEventAction(actionId, context);
-
-        if (eventAction != null && !checkPermission(eventAction.property, actionId, context, checkReadOnly))
-            return null;
-        
-        return eventAction;
-    }
-
-    public <X extends PropertyInterface> ActionObjectEntity<?> getEventAction(String actionId, FormInstanceContext context) {
-        ActionObjectEntity<?> explicitEventAction = getExplicitEventActionEntity(actionId, context);
-        if (explicitEventAction != null)
-            return explicitEventAction;
-
-        return getDefaultEventAction(actionId, context);
     }
 
     private ActionObjectEntity<?> getExplicitEventActionEntity(String actionId, FormInstanceContext context) {
@@ -332,7 +325,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
                 return eventActionImplement.mapObjects(eventMapping);
 
             // if there is no explicit default handler, then generate one
-            ActionObjectEntity<?> eventAction = getEventAction(CHANGE, context);
+            ActionObjectEntity<?> eventAction = getCheckedEventAction(CHANGE, context);
             if (eventAction != null)
                 return eventAction.getGroupChange(getToDraw(context.entity), getReadOnly());
         } else { // default handler
