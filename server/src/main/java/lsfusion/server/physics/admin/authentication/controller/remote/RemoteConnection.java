@@ -36,6 +36,7 @@ import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.form.interactive.action.async.PushAsyncResult;
+import lsfusion.server.logics.form.interactive.changed.FormChanges;
 import lsfusion.server.logics.navigator.controller.env.*;
 import lsfusion.server.logics.navigator.controller.remote.RemoteNavigator;
 import lsfusion.server.logics.property.Property;
@@ -566,7 +567,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     }
 
     private Object formatReturnValue(Object returnValue, Type type) {
-        return CallHTTPAction.formatHTTP(type, returnValue);
+        return FormChanges.convertFileValue(type.formatHTTP(returnValue), getContext().getConnectionContext());
     }
     private Object formatReturnValue(Object returnValue, Property returnProperty) {
         return formatReturnValue(returnValue, returnProperty.getType());

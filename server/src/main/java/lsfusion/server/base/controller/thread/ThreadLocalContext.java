@@ -62,7 +62,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -285,15 +284,11 @@ public class ThreadLocalContext {
         if(EscapeUtils.containsHtmlTag(textMessage)) // optimization
             textMessage = htmlToPlainText(textMessage);
 
-        try {
-            ClientAction action = new MessageClientAction(FormChanges.convertFileValue(message, remoteContext), textMessage, caption, data, titles, type, !noWait);
-            if (noWait)
-                delayUserInteraction(action);
-            else
-                requestUserInteraction(action);
-        } catch (IOException e) {
-            throw Throwables.propagate(e);
-        }
+        ClientAction action = new MessageClientAction(FormChanges.convertFileValue(message, remoteContext), textMessage, caption, data, titles, type, !noWait);
+        if (noWait)
+            delayUserInteraction(action);
+        else
+            requestUserInteraction(action);
     }
 
     public static ConnectionContext getRemoteContext() {

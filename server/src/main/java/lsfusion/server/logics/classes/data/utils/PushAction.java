@@ -59,8 +59,7 @@ public class PushAction extends InternalAction {
             payload.put("push", pushJson);
 
             getPushService(context).send(new Notification(getSubscription(pushJson),
-                    (String) context.getRmiManager().convertFileValue(
-                        FormChanges.convertFileValue(payload.toString(), context.getRemoteContext()))), Encoding.AES128GCM); // Encoding.AES128GCM important!
+                    (String) context.convertFileValue(payload.toString())), Encoding.AES128GCM); // Encoding.AES128GCM important!
 
         } catch (JoseException | GeneralSecurityException | IOException | ExecutionException | InterruptedException |
                  ScriptingErrorLog.SemanticErrorException e) {
