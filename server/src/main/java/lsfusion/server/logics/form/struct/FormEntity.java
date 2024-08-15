@@ -759,7 +759,8 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     @IdentityLazy
     public boolean hasNoChange(FormChangeFlowType type) {
         for (PropertyDrawEntity property : getPropertyDrawsIt()) {
-            ActionObjectEntity<?> eventAction = property.getEventAction(CHANGE, FormInstanceContext.CACHE(this)); // in theory it is possible to support securityPolicy, but in this case we have to drag it through hasFlow + do some complex caching
+            // in theory it is possible to support securityPolicy, but in this case we have to drag it through hasFlow + do some complex caching
+            ActionObjectEntity<?> eventAction = property.getCheckedEventAction(CHANGE, FormInstanceContext.CACHE(this));
             if (eventAction != null && eventAction.property.hasFlow(type) && !eventAction.property.endsWithApplyAndNoChangesAfterBreaksBefore(type))
                 return false;
         }
@@ -1634,7 +1635,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         FormInstanceContext context = getGlobalContext();
         for(PropertyDrawEntity<?> propertyDraw : getPropertyDrawsIt()) {
             for(String changeEvent : propertyDraw.getAllPropertyEventActions(context)) {
-                ActionObjectEntity<?> editAction = propertyDraw.getEventAction(changeEvent, context);
+                ActionObjectEntity<?> editAction = propertyDraw.getCheckedEventAction(changeEvent, context);
                 if (editAction != null)
                     consumer.accept(editAction, propertyDraw);
             }
