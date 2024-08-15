@@ -11,6 +11,7 @@ import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PropertyReadType;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
+import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.lambda.SQLCallable;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInput;
@@ -34,12 +35,13 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.value.NullValueProperty;
 import lsfusion.server.physics.admin.Settings;
 
+import java.sql.SQLException;
 import java.util.function.Function;
 
 // представление св-ва
 public class PropertyDrawInstance<P extends PropertyInterface> extends CellInstance<PropertyDrawEntity<P>> implements AggrReaderInstance {
 
-    public ActionObjectInstance getEventAction(String actionId, FormInstanceContext context, FormInstance formInstance, SQLCallable<Boolean> checkReadOnly) {
+    public ActionObjectInstance getEventAction(String actionId, FormInstanceContext context, FormInstance formInstance, SQLCallable<Boolean> checkReadOnly) throws SQLException, SQLHandledException {
         ActionObjectEntity<?> eventAction = entity.getCheckedEventAction(actionId, context, checkReadOnly);
         if(eventAction != null)
             return formInstance.instanceFactory.getInstance(eventAction);

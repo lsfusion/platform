@@ -263,8 +263,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
     
     private boolean checkPermission(Action eventAction, String eventActionSID, FormInstanceContext context, SQLCallable<Boolean> checkReadOnly) throws SQLException, SQLHandledException {
-        SecurityPolicy securityPolicy = context.securityPolicy == null ? new SecurityPolicy() : context.securityPolicy;
-        if(EDIT_OBJECT.equals(eventActionSID))
+        SecurityPolicy securityPolicy = context.securityPolicy;
+        if(securityPolicy != null && EDIT_OBJECT.equals(eventActionSID))
             return securityPolicy.checkPropertyEditObjectsPermission(getSecurityProperty());
 
         ActionOrProperty securityProperty;
@@ -277,31 +277,30 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             securityProperty = eventAction;
         }
 
-        if(GROUP_CHANGE.equals(eventActionSID) && !securityPolicy.checkPropertyGroupChangePermission(securityProperty)) {
+        if(GROUP_CHANGE.equals(eventActionSID) && securityPolicy != null && !securityPolicy.checkPropertyGroupChangePermission(securityProperty))
             return false;
-        }
 
-        return securityPolicy.checkPropertyChangePermission(securityProperty, eventAction);
+        return securityPolicy == null || securityPolicy.checkPropertyChangePermission(securityProperty, eventAction);
     }
 
     public ActionObjectEntity<?> getCheckedEventAction(String actionId, FormInstanceContext context) {
-        return getCheckedEventAction(actionId, context, null);
-    }
-    
-    public ActionObjectEntity<?> getCheckedEventAction(String actionId, FormInstanceContext context, SQLCallable<Boolean> checkReadOnly) {
         try {
-            ActionObjectEntity<?> explicitEventAction = getExplicitEventActionEntity(actionId, context);
-            ActionObjectEntity<?> eventAction = explicitEventAction != null ?
-                    explicitEventAction : getDefaultEventAction(actionId, context);
-
-            if (eventAction != null && !checkPermission(eventAction.property, actionId, context, checkReadOnly))
-                return null;
-        
-            return eventAction;
+            return getCheckedEventAction(actionId, context, null);
         } catch (SQLException | SQLHandledException e) {
             assert false;
             throw Throwables.propagate(e);
         }
+    }
+    
+    public ActionObjectEntity<?> getCheckedEventAction(String actionId, FormInstanceContext context, SQLCallable<Boolean> checkReadOnly) throws SQLException, SQLHandledException {
+        ActionObjectEntity<?> explicitEventAction = getExplicitEventActionEntity(actionId, context);
+        ActionObjectEntity<?> eventAction = explicitEventAction != null ?
+                explicitEventAction : getDefaultEventAction(actionId, context);
+
+        if (eventAction != null && !checkPermission(eventAction.property, actionId, context, checkReadOnly))
+            return null;
+
+        return eventAction;
     }
 
     private ActionObjectEntity<?> getExplicitEventActionEntity(String actionId, FormInstanceContext context) {
