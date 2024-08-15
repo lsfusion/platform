@@ -283,36 +283,45 @@ public class FormChanges {
             return AppServerImage.getAppImage(((NeedImage) convertData).imageSupplier.apply((String)value).get(context));
         }
 
-        if (value instanceof String)
-            return convertFileValue((String) value, context);
-
-        return value;
+        return convertUnsafeFileValue(value, context);
     }
 
-    public static Object convertFileValue(String value, ConnectionContext context) throws IOException {
-        if(!value.contains(inlineFileSeparator)) // optimization
-            return value;
+    public static Object convertFileValue(Object value, ConnectionContext context) {
+        try {
+            return convertUnsafeFileValue(value, context);
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
+        }
+    }
 
-        String[] parts = value.split(inlineFileSeparator, -1);
-        int length = parts.length / 2;
-        String[] prefixes = new String[length + 1];
-        Serializable[] files = new Serializable[length];
-        for (int k = 0; k < length + 1; k++) {
-            prefixes[k] = parts[k * 2];
-            if (k * 2 + 1 < parts.length) {
-                String name = parts[k * 2 + 1];
-                if(name.startsWith(inlineSerializedImageSeparator)) {
-                    files[k] = IOUtils.deserializeAppImage(name.substring(inlineSerializedImageSeparator.length()));
-                } else if(name.startsWith(inlineImageSeparator)) {
-                    files[k] = AppServerImage.getAppImage(AppServerImage.createActionImage(name.substring(inlineImageSeparator.length())).get(context));
-                } else { // resource file
-                    Result<String> fullPath = new Result<>();
-                    files[k] = new StringWithFiles.File(ResourceUtils.findResourceAsFileData(name, false, true, fullPath, null), fullPath.result);
+    private static Object convertUnsafeFileValue(Object value, ConnectionContext context) throws IOException {
+        if(value instanceof String) {
+            String string = (String) value;
+            if (!string.contains(inlineFileSeparator)) // optimization
+                return string;
+
+            String[] parts = string.split(inlineFileSeparator, -1);
+            int length = parts.length / 2;
+            String[] prefixes = new String[length + 1];
+            Serializable[] files = new Serializable[length];
+            for (int k = 0; k < length + 1; k++) {
+                prefixes[k] = parts[k * 2];
+                if (k * 2 + 1 < parts.length) {
+                    String name = parts[k * 2 + 1];
+                    if (name.startsWith(inlineSerializedImageSeparator)) {
+                        files[k] = IOUtils.deserializeAppImage(name.substring(inlineSerializedImageSeparator.length()));
+                    } else if (name.startsWith(inlineImageSeparator)) {
+                        files[k] = AppServerImage.getAppImage(AppServerImage.createActionImage(name.substring(inlineImageSeparator.length())).get(context));
+                    } else { // resource file
+                        Result<String> fullPath = new Result<>();
+                        files[k] = new StringWithFiles.File(ResourceUtils.findResourceAsFileData(name, false, true, fullPath, null), fullPath.result);
+                    }
                 }
             }
-        }
 
-        return new StringWithFiles(prefixes, files, value);
+            return new StringWithFiles(prefixes, files, string);
+        }
+        return value;
     }
 
     private static ConvertData getConvertData(PropertyReaderInstance reader, FormInstanceContext context) {

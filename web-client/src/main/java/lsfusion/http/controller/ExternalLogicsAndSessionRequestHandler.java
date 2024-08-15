@@ -81,11 +81,11 @@ public class ExternalLogicsAndSessionRequestHandler extends ExternalRequestHandl
             InputStream requestInputStream = getRequestInputStream(request, requestContentType, query);
 
             ConvertFileValue convertFileValue = value -> {
-                if(!(value instanceof StringWithFiles))
-                    return value;
-
-                StringWithFiles stringWithFiles = (StringWithFiles) value;
-                return ExternalUtils.convertFileValue(stringWithFiles.prefixes, ClientFormChangesToGwtConverter.convertFileValue(stringWithFiles.files, servletContext, sessionObject, sessionInfo));
+                if(value instanceof StringWithFiles) {
+                    StringWithFiles stringWithFiles = (StringWithFiles) value;
+                    return ExternalUtils.convertFileValue(stringWithFiles.prefixes, ClientFormChangesToGwtConverter.convertFileValue(stringWithFiles.files, servletContext, sessionObject, sessionInfo));
+                }
+                return value;
             };
 
             ExternalUtils.ExternalResponse externalResponse = ExternalUtils.processRequest(remoteExec, convertFileValue, requestInputStream, requestContentType,

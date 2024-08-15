@@ -49,6 +49,7 @@ import lsfusion.server.logics.form.interactive.action.input.InputContext;
 import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputResult;
 import lsfusion.server.logics.form.interactive.action.input.RequestResult;
+import lsfusion.server.logics.form.interactive.changed.FormChanges;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
@@ -722,6 +723,10 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         if(list != null)
             inputContext = new InputContext<>(list.map(getKeys()), list.newSession, this, inputList.strict);
         return ThreadLocalContext.inputUserData(getSecurityProperty(), dataClass, oldValue, hasOldValue, inputContext, customChangeFunction, inputList, actions);
+    }
+
+    public Object convertFileValue(Object value) {
+        return getRmiManager().convertFileValue(FormChanges.convertFileValue(value, getRemoteContext()));
     }
 
     public FormInstance createFormInstance(FormEntity formEntity, ImSet<ObjectEntity> inputObjects, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, Boolean noCancel, ManageSessionType manageSession, boolean checkOnOk, boolean showDrop, boolean interactive, WindowFormType type, ImSet<ContextFilterInstance> contextFilters, boolean readonly) throws SQLException, SQLHandledException {
