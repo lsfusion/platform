@@ -7,6 +7,8 @@ import lsfusion.base.col.lru.LRUWSVSMap;
 import lsfusion.base.file.StringWithFiles;
 import lsfusion.base.remote.RMIUtils;
 import lsfusion.interop.logics.remote.RemoteClientInterface;
+import lsfusion.interop.session.ConvertFileValue;
+import lsfusion.interop.session.ExternalUtils;
 import lsfusion.interop.session.SessionInfo;
 import lsfusion.server.base.AppServerImage;
 import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
@@ -36,7 +38,7 @@ import java.util.List;
 import static lsfusion.server.physics.admin.log.ServerLoggers.startLog;
 import static lsfusion.server.physics.admin.log.ServerLoggers.startLogError;
 
-public class RmiManager extends LogicsManager implements InitializingBean {
+public class RmiManager extends LogicsManager implements InitializingBean, ConvertFileValue {
 
     @Override
     protected BusinessLogics getBusinessLogics() {
@@ -272,21 +274,11 @@ public class RmiManager extends LogicsManager implements InitializingBean {
     private final static LRUWSVSMap<RemoteClientInterface, Serializable, String> cachedConversions = new LRUWSVSMap<>(LRUUtil.G3);
     private final static SessionInfo sessionInfo = new SessionInfo(SystemUtils.getLocalHostName(), SystemUtils.getLocalHostIP(), null, null, null, null, null, null);
 
-    // should correspond PValue.convertFileValue
-    public String convertFileValue(String[] prefixes, String[] urls) {
-        StringBuilder result = new StringBuilder();
-        for (int j = 0; j < prefixes.length; j++) {
-            result.append(prefixes[j]);
-            if(j < urls.length) {
-                Serializable url = urls[j];
-                if(url instanceof String) // file
-                    result.append((String) url);
-            }
-        }
-        return result.toString();
-    }
+    public Object convertFileValue(Object value) {
+        if(!(value instanceof StringWithFiles))
+            return value;
 
-    public String convertFileValue(StringWithFiles stringWithFiles) {
+        StringWithFiles stringWithFiles = (StringWithFiles)value;
         return executeOnSomeClient(remoteClient -> {
             Serializable[] files = stringWithFiles.files;
             String[] convertedFiles = new String[files.length];
@@ -314,7 +306,7 @@ public class RmiManager extends LogicsManager implements InitializingBean {
                 }
             }
 
-            return convertFileValue(stringWithFiles.prefixes, convertedFiles);
+            return ExternalUtils.convertFileValue(stringWithFiles.prefixes, convertedFiles);
         });
     }
 }

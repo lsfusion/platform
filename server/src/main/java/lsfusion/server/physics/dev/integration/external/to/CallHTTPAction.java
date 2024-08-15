@@ -319,7 +319,11 @@ public abstract class CallHTTPAction extends CallAction {
 
     protected Object formatHTTP(ExecutionContext<PropertyInterface> context, PropertyInterface paramInterface) {
         ObjectValue value = context.getKeyValue(paramInterface);
-        return getParamType(paramInterface, value).formatHTTP(value.getValue());
+        return context.getRmiManager().convertFileValue(formatHTTP(getParamType(paramInterface, value), value.getValue()));
+    }
+
+    public static Object formatHTTP(Type type, Object value) {
+        return type.formatHTTP(value);
     }
 
     protected String replaceParams(ExecutionContext<PropertyInterface> context, CallHTTPAction.UrlProcessor urlProcessor, Result<ImOrderSet<PropertyInterface>> rNotUsedParams, Charset urlCharset) {

@@ -112,7 +112,7 @@ public class ExternalUtils {
         return cookie;
     }
 
-    public static ExternalResponse processRequest(ExecInterface remoteExec, InputStream is, ContentType requestContentType,
+    public static ExternalResponse processRequest(ExecInterface remoteExec, ConvertFileValue convertFileValue, InputStream is, ContentType requestContentType,
                                                   String[] headerNames, String[] headerValues, String[] cookieNames, String[] cookieValues, String logicsHost,
                                                   Integer logicsPort, String logicsExportName, String scheme, String method, String webHost, Integer webPort,
                                                   String contextPath, String servletPath, String pathInfo, String query, String sessionId) throws IOException, MessagingException {
@@ -162,14 +162,14 @@ public class ExternalUtils {
             }
         }
 
-        return getExternalResponse(execResult, queryParams, (returns.isEmpty() ? "export" : returns.get(0)));
+        return getExternalResponse(execResult, queryParams, (returns.isEmpty() ? "export" : returns.get(0)), convertFileValue);
     }
 
-    public static ExternalResponse getExternalResponse(lsfusion.interop.session.ExternalResponse execResult, List<NameValuePair> queryParams, String singleFileName) {
+    public static ExternalResponse getExternalResponse(lsfusion.interop.session.ExternalResponse execResult, List<NameValuePair> queryParams, String singleFileName, ConvertFileValue convertFileValue) {
         if(execResult instanceof lsfusion.interop.session.ResultExternalResponse) {
             lsfusion.interop.session.ResultExternalResponse resultExecResult = (lsfusion.interop.session.ResultExternalResponse) execResult;
             Result<String> singleFileExtension = singleFileName != null ? new Result<>() : null;
-            HttpEntity entity = getInputStreamFromList(resultExecResult, queryParams, singleFileExtension);
+            HttpEntity entity = getInputStreamFromList(resultExecResult, convertFileValue, queryParams, singleFileExtension);
 
             String contentDisposition = null;
             if (singleFileName != null && singleFileExtension.result != null) // если возвращается один файл, задаем ему имя
@@ -304,11 +304,19 @@ public class ExternalUtils {
         return mParamsList.immutableList();
     }
 
-    public static HttpEntity getInputStreamFromList(lsfusion.interop.session.ResultExternalResponse response, List<NameValuePair> queryParams, Result<String> singleFileExtension) {
-        Object[] results = response.results;
+    public static HttpEntity getInputStreamFromList(lsfusion.interop.session.ResultExternalResponse response, ConvertFileValue convertFileValue, List<NameValuePair> queryParams, Result<String> singleFileExtension) {
+        Object[] results = convertFileValue(convertFileValue, response.results);
+
         ContentType forceContentType = parseContentType(getHeaderValue(response.headerNames, response.headerValues, "Content-Type"));
         String returnMultiType = getParameterValue(queryParams, RETURNMULTITYPE_PARAM);
         return getInputStreamFromList(results, getBodyUrl(results, returnMultiType != null && returnMultiType.equals("bodyurl"), getCharsetFromContentType(forceContentType, true)), null, new ArrayList<>(), singleFileExtension, forceContentType);
+    }
+
+    private static Object[] convertFileValue(ConvertFileValue convertFileValue, Object[] results) {
+        Object[] convertedResults = new Object[results.length];
+        for(int i = 0; i < results.length; i++)
+            convertedResults[i] = convertFileValue.convertFileValue(results[i]);
+        return convertedResults;
     }
 
     // results byte[] || String, можно было бы попровать getRequestResult (по аналогии с getRequestParam) выделить общий, но там возвращаемые классы разные, нужны будут generic'и и оно того не стоит
@@ -405,6 +413,20 @@ public class ExternalUtils {
 
     public static FileData decodeFileData(String string, Charset encodeCharset) {
         return new FileData(new RawFileData(string.getBytes(encodeCharset)), "file");
+    }
+
+    // should correspond PValue.convertFileValue
+    public static String convertFileValue(String[] prefixes, String[] urls) {
+        StringBuilder result = new StringBuilder();
+        for (int j = 0; j < prefixes.length; j++) {
+            result.append(prefixes[j]);
+            if(j < urls.length) {
+                Serializable url = urls[j];
+                if(url != null) // file
+                    result.append((String) url);
+            }
+        }
+        return result.toString();
     }
 
     public static class ExternalResponse {
