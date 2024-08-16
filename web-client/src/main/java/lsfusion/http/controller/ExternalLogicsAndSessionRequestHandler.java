@@ -109,7 +109,7 @@ public class ExternalLogicsAndSessionRequestHandler extends ExternalRequestHandl
     private InputStream getRequestInputStream(HttpServletRequest request, ContentType contentType, String query) throws IOException {
         InputStream inputStream = request.getInputStream();
         if (contentType != null && ContentType.APPLICATION_FORM_URLENCODED.getMimeType().equals(contentType.getMimeType()) && inputStream.available() == 0) {
-            Charset charset = ExternalUtils.getCharsetFromContentType(contentType, true);
+            Charset charset = ExternalUtils.getBodyUrlCharset(contentType);
             List<NameValuePair> queryParams = URLEncodedUtils.parse(query, charset);
             StringBuilder bodyParams = new StringBuilder();
 

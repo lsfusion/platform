@@ -152,10 +152,10 @@ public abstract class CallHTTPAction extends CallAction {
                 if (method.hasBody()) {
                     ContentType forceContentType = ExternalUtils.parseContentType(headers.get("Content-Type"));
 
-                    Charset charsetFromContentType = ExternalUtils.getCharsetFromContentType(forceContentType, true);
-                    bodyUrl = getTransformedEncodedText(context, bodyUrlInterface, charsetFromContentType);
+                    Charset bodyCharset = ExternalUtils.getBodyUrlCharset(forceContentType);
+                    bodyUrl = getTransformedEncodedText(context, bodyUrlInterface, bodyCharset);
                     if(bodyUrl != null) {
-                        bodyUrl = replaceParams(context, createUrlProcessor(bodyUrl, noExec), rNotUsedParams, charsetFromContentType);
+                        bodyUrl = replaceParams(context, createUrlProcessor(bodyUrl, noExec), rNotUsedParams, bodyCharset);
                         if (!rNotUsedParams.result.isEmpty()) {
                             throw new RuntimeException("All params should be used in BODYURL");
                         }
@@ -173,7 +173,7 @@ public abstract class CallHTTPAction extends CallAction {
                         bodyParamHeadersList.add(bodyParamHeaders);
                     }
 
-                    HttpEntity entity = ExternalUtils.getInputStreamFromList(paramList, bodyUrl, bodyParamNames, bodyParamHeadersList, null, forceContentType);
+                    HttpEntity entity = ExternalUtils.getInputStreamFromList(paramList, bodyUrl, bodyParamNames, bodyParamHeadersList, null, forceContentType, ExternalUtils.getBodyCharset(forceContentType));
                     if (entity != null) {
                         body = IOUtils.readBytesFromHttpEntity(entity);
                         headers.put("Content-Type", entity.getContentType());
@@ -243,7 +243,7 @@ public abstract class CallHTTPAction extends CallAction {
         return connectionString.isEmpty() || connectionString.startsWith("/");
     }
 
-    public static ObjectValue[] getParams(DataSession session, LAP<?, ?> property, ExternalRequest.Param[] params, List<NameValuePair> queryParams) throws ParseException, SQLException, SQLHandledException {
+    public static ObjectValue[] getParams(DataSession session, LAP<?, ?> property, ExternalRequest.Param[] params, List<NameValuePair> queryParams, String queryParamsCharsetName) throws ParseException, SQLException, SQLHandledException {
         ValueClass[] classes = property.getInterfaceClasses(ClassType.parsePolicy);
         String[] names = property.getInterfaceNames();
         ObjectValue[] values = new ObjectValue[classes.length];
@@ -257,7 +257,7 @@ public abstract class CallHTTPAction extends CallAction {
             ExternalRequest.Param param = null;
             // if there are not enough parameters - looking for some in the query
             if(queryParams != null && paramName != null && interfacesSize - i > params.length - prmUsed)
-                param = ExternalRequest.getUrlParam(ExternalUtils.getParameterValue(queryParams, paramName));
+                param = ExternalRequest.getUrlParam(ExternalUtils.getParameterValue(queryParams, paramName), queryParamsCharsetName);
 
             // if we have not found one - using the next in the list
             if(param == null && prmUsed < params.length)

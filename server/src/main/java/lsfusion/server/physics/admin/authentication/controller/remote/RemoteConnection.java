@@ -428,7 +428,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     private void executeExternal(LA<?> property, ExternalRequest request, String actionPathInfo, ExecutionEnvironment env, ExecutionStack stack) throws SQLException, SQLHandledException, ParseException {
         writeRequestInfo(env, property.action, request, actionPathInfo);
 
-        property.execute(env, stack, CallHTTPAction.getParams(env.getSession(), property, request.params, request.queryParams));
+        property.execute(env, stack, CallHTTPAction.getParams(env.getSession(), property, request.params, request.queryParams, request.queryParamsCharsetName));
     }
 
     protected AuthenticationException authException;
