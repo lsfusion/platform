@@ -61,17 +61,17 @@ public abstract class StaticFormatFileClass extends FileClass<RawFileData> {
     }
 
     @Override
-    protected RawFileData parseHTTPNotNull(FileData b) {
+    protected RawFileData parseHTTPNotNull(FileData b, String charsetName) {
         return b.getRawFile();
     }
 
     @Override
-    protected FileData formatHTTPNotNull(RawFileData b) {
+    protected FileData formatHTTPNotNull(RawFileData b, Charset charset) {
         return new FileData(b, getOpenExtension(b));
     }
 
     @Override
-    protected RawFileData writePropNotNull(RawFileData value, String extension) {
+    protected RawFileData writePropNotNull(RawFileData value, String extension, String charset) {
         return value;
     }
 
@@ -129,6 +129,11 @@ public abstract class StaticFormatFileClass extends FileClass<RawFileData> {
     @Override
     protected byte[] getBytes(RawFileData value) {
         return value.getBytes();
+    }
+
+    @Override
+    protected RawFileData getRawFileData(RawFileData value) {
+        return value;
     }
 
     public abstract FormIntegrationType getIntegrationType();

@@ -1,7 +1,7 @@
 package lsfusion.server.logics.classes.data.file;
 
 import lsfusion.base.file.FileData;
-import lsfusion.base.file.RawFileData;
+import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.DBType;
 import lsfusion.server.data.type.exec.TypeEnvironment;
@@ -73,18 +73,13 @@ public abstract class AJSONClass extends FileBasedClass<String> implements DBTyp
     }
 
     @Override
-    protected String parseHTTPNotNull(FileData o) {
-        return new String(o.getRawFile().getBytes());
+    protected String parseHTTPNotNull(FileData o, String charsetName) {
+        return ExternalUtils.encodeFileData(o, charsetName);
     }
 
     @Override
-    protected FileData formatHTTPNotNull(String value) {
-        return new FileData(new RawFileData(value.getBytes()), "json");
-    }
-
-    @Override
-    protected String writePropNotNull(RawFileData value, String extension) {
-        return new String(value.getBytes());
+    protected FileData formatHTTPNotNull(String value, Charset charset) {
+        return ExternalUtils.decodeFileData(value, charset.name(), "json");
     }
 
     @Override

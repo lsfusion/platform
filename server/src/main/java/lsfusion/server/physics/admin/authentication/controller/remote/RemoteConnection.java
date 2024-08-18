@@ -53,6 +53,7 @@ import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletResponse;
 import java.lang.ref.WeakReference;
+import java.nio.charset.Charset;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
@@ -386,7 +387,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         };
 
         if(request.needNotificationId)
-            return new ResultExternalResponse(new Object[]{formatReturnValue(RemoteNavigator.pushGlobalNotification(runnable), IntegerClass.instance)}, new String[0], new String[0], new String[0], new String[0], HttpServletResponse.SC_OK);
+            return new ResultExternalResponse(new Object[]{formatReturnValue(RemoteNavigator.pushGlobalNotification(runnable), IntegerClass.instance, null)}, new String[0], new String[0], new String[0], new String[0], HttpServletResponse.SC_OK);
         else if(property.action.hasFlow(ChangeFlowType.INTERACTIVEWAIT)) {
 
             int mode = Settings.get().getExternalUINotificationMode();
@@ -415,7 +416,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
 
                     runnable.run(dataSession, getStack(), null);
 
-                    return readResult(request.returnNames, property.action, dataSession);
+                    return readResult(request.returnNames, request.queryParams, property.action, dataSession);
                 } finally {
                     execSession.close();
                 }
@@ -533,7 +534,20 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         }
     }
 
-    private ExternalResponse readResult(String[] returnNames, Action<?> property, DataSession dataSession) throws SQLException, SQLHandledException {
+    private ExternalResponse readResult(String[] returnNames, List<NameValuePair> queryParams, Action<?> property, DataSession dataSession) throws SQLException, SQLHandledException {
+
+        ImOrderMap<String, String> headers = CallHTTPAction.readPropertyValues(dataSession, businessLogics.LM.headersTo).toOrderMap();
+        String[] headerNames = headers.keyOrderSet().toArray(new String[headers.size()]);
+        String[] headerValues = headers.valuesList().toArray(new String[headers.size()]);
+        ImOrderMap<String, String> cookies = CallHTTPAction.readPropertyValues(dataSession, businessLogics.LM.cookiesTo).toOrderMap();
+        String[] cookieNames = cookies.keyOrderSet().toArray(new String[cookies.size()]);
+        String[] cookieValues = cookies.valuesList().toArray(new String[cookies.size()]);
+
+        Integer statusHttp = (Integer) businessLogics.LM.statusHttpTo.read(dataSession);
+
+        ExternalUtils.ResponseType responseType = ExternalUtils.getResponseType(queryParams, headerNames, headerValues);
+        Charset charset = responseType.charset;
+
         List<Object> returns = new ArrayList<>();
 
         LP[] returnProps;
@@ -547,30 +561,21 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
                 returnProps[i] = returnProperty;
             }
             for (LP<?> returnProp : returnProps)
-                returns.add(formatReturnValue(returnProp.read(dataSession), returnProp.property));
+                returns.add(formatReturnValue(returnProp.read(dataSession), returnProp.property, charset));
         } else {
             Result<SessionDataProperty> resultProp = new Result<>();
             ObjectValue objectValue = businessLogics.LM.getExportValueProperty().readFirstNotNull(dataSession, resultProp, property);
-            returns.add(formatReturnValue(objectValue.getValue(), resultProp.result));
+            returns.add(formatReturnValue(objectValue.getValue(), resultProp.result, charset));
         }
-
-        ImOrderMap<String, String> headers = CallHTTPAction.readPropertyValues(dataSession, businessLogics.LM.headersTo).toOrderMap();
-        String[] headerNames = headers.keyOrderSet().toArray(new String[headers.size()]);
-        String[] headerValues = headers.valuesList().toArray(new String[headers.size()]);
-        ImOrderMap<String, String> cookies = CallHTTPAction.readPropertyValues(dataSession, businessLogics.LM.cookiesTo).toOrderMap();
-        String[] cookieNames = cookies.keyOrderSet().toArray(new String[cookies.size()]);
-        String[] cookieValues = cookies.valuesList().toArray(new String[cookies.size()]);
-
-        Integer statusHttp = (Integer) businessLogics.LM.statusHttpTo.read(dataSession);
 
         return new ResultExternalResponse(returns.toArray(), headerNames, headerValues, cookieNames, cookieValues, nvl(statusHttp, HttpServletResponse.SC_OK));
     }
 
-    private Object formatReturnValue(Object returnValue, Type type) {
-        return FormChanges.convertFileValue(type.formatHTTP(returnValue), getContext().getConnectionContext());
+    private Object formatReturnValue(Object returnValue, Type type, Charset charset) {
+        return FormChanges.convertFileValue(type.formatHTTP(returnValue, charset), getContext().getConnectionContext());
     }
-    private Object formatReturnValue(Object returnValue, Property returnProperty) {
-        return formatReturnValue(returnValue, returnProperty.getType());
+    private Object formatReturnValue(Object returnValue, Property returnProperty, Charset charset) {
+        return formatReturnValue(returnValue, returnProperty.getType(), charset);
     }
 
     protected abstract ExecSession getExecSession() throws SQLException;

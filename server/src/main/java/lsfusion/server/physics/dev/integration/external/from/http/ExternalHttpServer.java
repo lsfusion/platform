@@ -1,6 +1,7 @@
 package lsfusion.server.physics.dev.integration.external.from.http;
 
 import com.sun.net.httpserver.*;
+import lsfusion.base.BaseUtils;
 import lsfusion.base.DaemonThreadFactory;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.file.FileData;
@@ -37,6 +38,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.nio.charset.Charset;
 import java.rmi.RemoteException;
 import java.security.*;
 import java.security.cert.CertificateException;
@@ -135,7 +137,7 @@ public class ExternalHttpServer extends MonitorServer {
                 // Load private key from PEM file
                 FileData privateKeyFile = (FileData) serviceLM.privateKey.read(session);
                 PrivateKey privateKey;
-                try (PEMParser pemParser = new PEMParser(new InputStreamReader(privateKeyFile.getRawFile().getInputStream()))) {
+                try (PEMParser pemParser = new PEMParser(new InputStreamReader(privateKeyFile.getRawFile().getInputStream(), ExternalUtils.hashCharset))) {
                     Object o = pemParser.readObject();
                     PEMKeyPair pemKeyPair;
                     if (o instanceof PEMKeyPair) {
@@ -253,7 +255,7 @@ public class ExternalHttpServer extends MonitorServer {
                 if (authHeader.toLowerCase().startsWith("bearer ")) {
                     token = new AuthenticationToken(authHeader.substring(7));
                 } else if (authHeader.toLowerCase().startsWith("basic ")) {
-                    String[] credentials = new String(Base64.getDecoder().decode(authHeader.substring(6))).split(":", 2);
+                    String[] credentials = BaseUtils.toHashString(Base64.getDecoder().decode(authHeader.substring(6))).split(":", 2);
                     if (credentials.length == 2)
                         token = remoteLogics.authenticateUser(new PasswordAuthentication(credentials[0], credentials[1]));
                 }
@@ -295,9 +297,10 @@ public class ExternalHttpServer extends MonitorServer {
         }
 
         private void sendErrorResponse(HttpExchange request, String response) throws IOException {
-            request.getResponseHeaders().add("Content-Type", "text/html; charset=utf-8");
+            Charset bodyCharset = ExternalUtils.defaultBodyCharset;
+            request.getResponseHeaders().add("Content-Type", "text/html; charset=" + bodyCharset.name());
             request.getResponseHeaders().add("Access-Control-Allow-Origin","*");
-            byte[] responseBytes = response.getBytes();
+            byte[] responseBytes = response.getBytes(bodyCharset);
             request.sendResponseHeaders(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, responseBytes.length);
             OutputStream os = request.getResponseBody();
             os.write(responseBytes);

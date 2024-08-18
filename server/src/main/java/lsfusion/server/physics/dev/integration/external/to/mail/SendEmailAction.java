@@ -7,7 +7,6 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
-import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.base.AppServerImage;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.query.build.QueryBuilder;
@@ -202,23 +201,8 @@ public class SendEmailAction extends SystemAction {
 
         for (PropertyInterfaceImplement inlineFile : this.inlineFiles) {
             ObjectValue inlineObject = inlineFile.readClasses(context);
-            if (inlineObject instanceof DataObject) {
-                Object inlineValue = inlineObject.getValue();
-                Type type = inlineObject.getType();
-                String inlineText;
-                if(type instanceof FileClass) {
-                    RawFileData rawFile;
-                    if (type instanceof DynamicFormatFileClass) {
-                        rawFile = ((FileData) inlineValue).getRawFile();
-                    } else {
-                        rawFile = (RawFileData) inlineValue;
-                    }
-                    inlineText = new String(rawFile.getBytes());
-                } else {
-                    inlineText = type.formatString(inlineValue, true);
-                }
-                customInlines.add(EscapeUtils.toHtml(inlineText));
-            }
+            if (inlineObject instanceof DataObject)
+                customInlines.add(EscapeUtils.toHtml(inlineObject.getType().formatEmail(inlineObject.getValue())));
         }
     }
 

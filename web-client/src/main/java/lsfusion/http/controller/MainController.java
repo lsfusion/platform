@@ -28,7 +28,6 @@ import lsfusion.interop.navigator.ClientSettings;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 import lsfusion.interop.session.ExternalRequest;
 import net.customware.gwt.dispatch.shared.general.StringResult;
-import org.apache.hc.core5.http.ContentType;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.http.MediaType;
@@ -45,7 +44,6 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -321,7 +319,7 @@ public class MainController {
         for (Pair<String, RawFileData> resource : resources) {
             String fullPath = resource.first;
             String extension = BaseUtils.getFileExtension(fullPath);
-            versionedResources.put(extension.equals("html") ? new String(resource.second.getBytes()) : FileUtils.saveWebFile(fullPath, resource.second, serverSettings, noAuth), extension);
+            versionedResources.put(extension.equals("html") ? resource.second.convertString() : FileUtils.saveWebFile(fullPath, resource.second, serverSettings, noAuth), extension);
         }
         return versionedResources;
     }

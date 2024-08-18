@@ -96,4 +96,13 @@ public abstract class FileClass<T> extends FileBasedClass<T> {
     public String formatStringSource(String valueSource, SQLSyntax syntax) {
         return "encode(" + valueSource + ", 'base64')";
     }
+
+    @Override
+    public String formatEmail(T value) {
+        if(value == null)
+            return null;
+        return getRawFileData(value).convertString();
+    }
+
+    protected abstract RawFileData getRawFileData(T value);
 }

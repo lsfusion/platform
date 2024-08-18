@@ -3,10 +3,12 @@ package lsfusion.base.file;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.SystemUtils;
 import lsfusion.base.mutability.TwinImmutableObject;
+import lsfusion.interop.session.ExternalUtils;
 import org.apache.commons.io.FileUtils;
 
 import javax.swing.*;
 import java.io.*;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
@@ -27,6 +29,10 @@ public class RawFileData extends TwinImmutableObject<RawFileData> implements Ser
         this.array = IOUtils.readBytesFromStream(stream);
     }
 
+    public RawFileData(InputStream stream, int len) throws IOException {
+        this.array = IOUtils.readBytesFromStream(stream, len);
+    }
+
     public RawFileData(ByteArrayOutputStream array) {
         this.array = array.toByteArray();
     }
@@ -35,14 +41,34 @@ public class RawFileData extends TwinImmutableObject<RawFileData> implements Ser
         this.array = IOUtils.getFileBytes(file);
     }
 
-    public RawFileData(String filePath) throws IOException {
+    public RawFileData(String filePath, boolean path) throws IOException {
         this.array = IOUtils.getFileBytes(filePath);
+        assert path;
     }
 
     public byte[] getBytes() {
         return array;
     }
-    
+
+    public RawFileData(String string, Charset charset) {
+        this(string.getBytes(charset));
+    }
+
+    public RawFileData(String string, String charset) {
+        this(BaseUtils.getSafeBytes(string, charset));
+    }
+
+    public String getString(Charset charset) {
+        return new String(getBytes(), charset);
+    }
+    public String getString(String charset) {
+        return BaseUtils.toSafeString(getBytes(), charset);
+    }
+
+    public String convertString() {
+        return getString(ExternalUtils.fileCharset);
+    }
+
     public int getLength() {
         return array.length;
     }
@@ -90,8 +116,6 @@ public class RawFileData extends TwinImmutableObject<RawFileData> implements Ser
     public int immutableHashCode() {
         return Arrays.hashCode(array);
     }
-
-    public static RawFileData impossible = new RawFileData(BaseUtils.impossibleString.getBytes());
 
     public static RawFileData toRawFileData(Object fileData) {
         return fileData instanceof RawFileData ? (RawFileData)fileData : fileData instanceof FileData ? ((FileData)fileData).getRawFile() : ((NamedFileData) fileData).getRawFile();

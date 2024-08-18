@@ -39,12 +39,12 @@ public class MessageAction extends SystemAction {
 
     public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         ObjectValue messageObject = context.getKeyValue(messageInterface);
-        String message = messageObject.getType().formatString(messageObject.getValue(), true);
+        String message = messageObject.getType().formatMessage(messageObject.getValue());
 
         String header = null;
         if(headerInterface != null) {
             ObjectValue headerObject = context.getKeyValue(headerInterface);
-            header = headerObject.getType().formatString(headerObject.getValue(), true);
+            header = headerObject.getType().formatMessage(headerObject.getValue());
         }
 
         showMessage(context, message, nvl(header, "lsFusion"));

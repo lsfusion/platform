@@ -59,6 +59,7 @@ import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
+import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -278,10 +279,9 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
             InputResult pushedInput = context.getPushedInput(returnString ? JSONTextClass.instance : JSONClass.instance, false);
             context.dropRequestCanceled(); // need this because in group change push request there is a request canceled check
             if(pushedInput != null) {
-                String charset = ExternalUtils.defaultXMLJSONCharset;
                 try {
                     // later maybe it makes sense to use simple new JSONObject() (since toString is used in getAsyncValues)
-                    JSONObject rootObject = JSONReader.toJSONObject(JSONReader.readRootObject(ImportAction.readFile(pushedInput.value, charset), null, charset), true);
+                    JSONObject rootObject = JSONReader.toJSONObject(InternalAction.readJSON(pushedInput.value), true);
                     if(rootObject != null)
                         change(rootObject, context);
                 } catch (IOException e) {

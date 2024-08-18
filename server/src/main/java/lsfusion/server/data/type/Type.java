@@ -3,7 +3,6 @@ package lsfusion.server.data.type;
 import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.file.RawFileData;
-import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.interop.session.ExternalRequest;
@@ -29,6 +28,7 @@ import org.apache.poi.ss.usermodel.CellValue;
 import org.json.JSONException;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
@@ -139,8 +139,9 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
     String formatXML(T object);
     void formatXLS(T object, Cell cell, ExportXLSWriter.Styles styles);
 
-    T parseNullableString(String s, boolean emptyIsNull) throws ParseException; // s - can be null
-    
+    String formatMessage(T object);
+    String formatEmail(T object); // inline'ing files as "html"
+
     T parseString(String s) throws ParseException; // s - not null (файлы decode'ся base64)
 
     String formatString(T value, boolean ui);
@@ -151,9 +152,9 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
 
     T parseHTTP(ExternalRequest.Param param) throws ParseException; // param.value - String or FileData, param.value - not null, nulls are decoded depending on type
 
-    Object formatHTTP(T value); // returns String or FileData (not null), null's encode'it depending on type
+    Object formatHTTP(T value, Charset charset); // returns String or FileData (not null), null's encode'it depending on type
 
-    T writeProp(RawFileData value, String extension);
+    T writeProp(RawFileData value, String extension, String charset);
 
     RawFileData readProp(T value, String charset);
 
