@@ -21,7 +21,7 @@ public class NamedFileData extends TwinImmutableObject<NamedFileData> implements
     public NamedFileData(byte[] array) {
         byte[] nameBytes = new byte[array[0]];
         System.arraycopy(array, 1, nameBytes, 0, nameBytes.length);
-        name = new String(nameBytes);
+        name = FileData.getNameString(nameBytes);
 
         byte[] fileDataArray = new byte[array.length - array[0] - 1];
         System.arraycopy(array, 1 + array[0], fileDataArray, 0, fileDataArray.length);
@@ -37,12 +37,12 @@ public class NamedFileData extends TwinImmutableObject<NamedFileData> implements
     }
 
     public int getLength() {
-        return name.getBytes().length + 1 + fileData.getLength();
+        return FileData.getNameBytes(name).length + 1 + fileData.getLength();
     }
 
     public byte[] getBytes() {
         byte[] fileBytes = fileData.getBytes();
-        byte[] nameBytes = name.getBytes();
+        byte[] nameBytes = FileData.getNameBytes(name);
         return Bytes.concat(new byte[] {(byte) nameBytes.length}, nameBytes, fileBytes);
     }
 

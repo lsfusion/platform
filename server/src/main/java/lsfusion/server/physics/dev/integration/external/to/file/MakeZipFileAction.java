@@ -60,7 +60,7 @@ public class MakeZipFileAction extends InternalAction {
                             FileData fileBytes = (FileData) result.getValue(i).get("zipping").getValue();
                             if(fileBytes == null) {
                                 String filePath = (String) result.getValue(i).get("zippingPath").getValue();
-                                fileBytes = new FileData(new RawFileData(IOUtils.getFileBytes(filePath)), BaseUtils.getFileExtension(filePath));
+                                fileBytes = new FileData(new RawFileData(filePath, true), BaseUtils.getFileExtension(filePath));
                             }
 
                             InputStream bis = fileBytes.getRawFile().getInputStream();

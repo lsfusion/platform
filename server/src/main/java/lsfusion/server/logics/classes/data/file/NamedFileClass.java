@@ -60,12 +60,12 @@ public class NamedFileClass extends AbstractDynamicFormatFileClass<NamedFileData
     }
 
     @Override
-    protected NamedFileData parseHTTPNotNull(FileData b) {
+    protected NamedFileData parseHTTPNotNull(FileData b, String charsetName) {
         return new NamedFileData(b, "file");
     }
 
     @Override
-    protected NamedFileData writePropNotNull(RawFileData value, String extension) {
+    protected NamedFileData writePropNotNull(RawFileData value, String extension, String charset) {
         return new NamedFileData(new FileData(value, extension), "file");
     }
 
@@ -75,7 +75,7 @@ public class NamedFileClass extends AbstractDynamicFormatFileClass<NamedFileData
     }
 
     @Override
-    protected FileData formatHTTPNotNull(NamedFileData b) {
+    protected FileData formatHTTPNotNull(NamedFileData b, Charset charset) {
         return new FileData(b.getRawFile(), b.getExtension());
     }
 
@@ -112,5 +112,10 @@ public class NamedFileClass extends AbstractDynamicFormatFileClass<NamedFileData
     @Override
     protected byte[] getBytes(NamedFileData value) {
         return value.getBytes();
+    }
+
+    @Override
+    protected RawFileData getRawFileData(NamedFileData value) {
+        return value.getRawFile();
     }
 }

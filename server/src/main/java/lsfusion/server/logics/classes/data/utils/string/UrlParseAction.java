@@ -1,6 +1,7 @@
 package lsfusion.server.logics.classes.data.utils.string;
 
 import com.google.common.base.Throwables;
+import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
@@ -22,7 +23,7 @@ public class UrlParseAction extends InternalAction {
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
         try {
             String url = (String) LM.findProperty("urlFormatted[]").read(context);
-            List<NameValuePair> params = URLEncodedUtils.parse(url, StandardCharsets.UTF_8);
+            List<NameValuePair> params = URLEncodedUtils.parse(url, ExternalUtils.defaultUrlCharset);
             String[] names = new String[params.size()];
             String[] values = new String[params.size()];
             for (int i = 0; i < params.size(); i++) {

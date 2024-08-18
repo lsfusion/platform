@@ -69,7 +69,7 @@ public abstract class ExportPlainAction<O extends ObjectSelector> extends Export
         for (Map.Entry<GroupObjectEntity, RawFileData> entry : files.entrySet()) {
             LP exportFile = exportFiles.get(entry.getKey() == null ? GroupObjectEntity.NULL : entry.getKey());
             if(exportFile != null)
-                writeResult(exportFile, staticType, context, entry.getValue());
+                writeResult(exportFile, staticType, context, entry.getValue(), charset);
         }
     }
 

@@ -236,9 +236,9 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
     public String signData(String message) {
         try {
             Mac sha256_HMAC = Mac.getInstance("HmacSHA256");
-            SecretKeySpec secretKeySpec = new SecretKeySpec(secret.getBytes(), "HmacSHA256");
+            SecretKeySpec secretKeySpec = new SecretKeySpec(BaseUtils.getHashBytes(secret), "HmacSHA256");
             sha256_HMAC.init(secretKeySpec);
-            byte[] hmacBytes = sha256_HMAC.doFinal(message.getBytes());
+            byte[] hmacBytes = sha256_HMAC.doFinal(BaseUtils.getHashBytes(message));
             return Base64.getUrlEncoder().withoutPadding().encodeToString(hmacBytes);
         } catch (NoSuchAlgorithmException | InvalidKeyException e) {
             throw Throwables.propagate(e);

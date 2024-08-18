@@ -34,7 +34,7 @@ public class OpenPathAction extends InternalAction {
             boolean noWait = context.getKeyValue(noWaitInterface).getValue() != null;
 
             if (source != null) {
-                OpenFileClientAction action = new OpenFileClientAction(new RawFileData(source),
+                OpenFileClientAction action = new OpenFileClientAction(new RawFileData(source, true),
                         name != null ? name : FilenameUtils.getBaseName(source), BaseUtils.getFileExtension(source));
                 if (noWait) {
                     context.delayUserInteraction(action);

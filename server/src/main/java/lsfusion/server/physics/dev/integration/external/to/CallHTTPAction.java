@@ -152,18 +152,19 @@ public abstract class CallHTTPAction extends CallAction {
                 if (method.hasBody()) {
                     ContentType forceContentType = ExternalUtils.parseContentType(headers.get("Content-Type"));
 
-                    Charset bodyCharset = ExternalUtils.getBodyUrlCharset(forceContentType);
-                    bodyUrl = getTransformedEncodedText(context, bodyUrlInterface, bodyCharset);
+                    Charset bodyUrlCharset = ExternalUtils.getBodyUrlCharset(forceContentType);
+                    bodyUrl = getTransformedEncodedText(context, bodyUrlInterface, bodyUrlCharset);
                     if(bodyUrl != null) {
-                        bodyUrl = replaceParams(context, createUrlProcessor(bodyUrl, noExec), rNotUsedParams, bodyCharset);
+                        bodyUrl = replaceParams(context, createUrlProcessor(bodyUrl, noExec), rNotUsedParams, bodyUrlCharset);
                         if (!rNotUsedParams.result.isEmpty()) {
                             throw new RuntimeException("All params should be used in BODYURL");
                         }
                     }
 
+                    Charset bodyCharset = ExternalUtils.getBodyCharset(forceContentType);
                     Object[] paramList = new Object[rNotUsedParams.result.size()];
                     for (int i = 0, size = rNotUsedParams.result.size(); i < size; i++)
-                        paramList[i] = formatHTTP(context, rNotUsedParams.result.get(i)); // пока в body ничего не кодируем (так как content-type'ы другие)
+                        paramList[i] = formatHTTP(context, rNotUsedParams.result.get(i), bodyCharset);
 
                     ImList<String> bodyParamNames = bodyParamNamesInterfaces.mapListValues(bodyParamNamesInterface -> (String) context.getKeyObject(bodyParamNamesInterface));
                     List<Map<String, String>> bodyParamHeadersList = new ArrayList<>();
@@ -173,7 +174,7 @@ public abstract class CallHTTPAction extends CallAction {
                         bodyParamHeadersList.add(bodyParamHeaders);
                     }
 
-                    HttpEntity entity = ExternalUtils.getInputStreamFromList(paramList, bodyUrl, bodyParamNames, bodyParamHeadersList, null, forceContentType, ExternalUtils.getBodyCharset(forceContentType));
+                    HttpEntity entity = ExternalUtils.getInputStreamFromList(paramList, bodyUrl, bodyParamNames, bodyParamHeadersList, null, forceContentType, bodyCharset);
                     if (entity != null) {
                         body = IOUtils.readBytesFromHttpEntity(entity);
                         headers.put("Content-Type", entity.getContentType());
@@ -317,9 +318,9 @@ public abstract class CallHTTPAction extends CallAction {
         return new ActionImplement<>(this, paramInterfaces.mapList(params).addExcl(queryInterface, query));
     }
 
-    protected Object formatHTTP(ExecutionContext<PropertyInterface> context, PropertyInterface paramInterface) {
+    protected Object formatHTTP(ExecutionContext<PropertyInterface> context, PropertyInterface paramInterface, Charset charset) {
         ObjectValue value = context.getKeyValue(paramInterface);
-        return context.convertFileValue(getParamType(paramInterface, value).formatHTTP(value.getValue()));
+        return context.convertFileValue(getParamType(paramInterface, value).formatHTTP(value.getValue(), charset));
     }
 
     protected String replaceParams(ExecutionContext<PropertyInterface> context, CallHTTPAction.UrlProcessor urlProcessor, Result<ImOrderSet<PropertyInterface>> rNotUsedParams, Charset urlCharset) {
@@ -327,7 +328,7 @@ public abstract class CallHTTPAction extends CallAction {
         MOrderExclSet<PropertyInterface> mNotUsedParams = rNotUsedParams != null ? SetFact.mOrderExclSetMax(orderInterfaces.size()) : null;
         for (int i = 0, size = orderInterfaces.size(); i < size ; i++) {
             PropertyInterface paramInterface = orderInterfaces.get(i);
-            Object value = formatHTTP(context, paramInterface);
+            Object value = formatHTTP(context, paramInterface, urlCharset);
 
             if (!urlProcessor.proceed(i, value, ExternalUtils.encodeUrlParam(urlCharset, value))) {
                 if(mNotUsedParams != null)

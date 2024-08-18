@@ -41,7 +41,7 @@ public abstract class FormStaticAction<O extends ObjectSelector, T extends FormS
         this.selectTop = selectTop;
     }
 
-    protected static void writeResult(LP<?> exportFile, FormStaticType staticType, ExecutionContext<ClassPropertyInterface> context, RawFileData singleFile) throws SQLException, SQLHandledException {
-        exportFile.change(exportFile.property.getType().writeProp(singleFile, staticType.getExtension()), context);
+    protected static void writeResult(LP<?> exportFile, FormStaticType staticType, ExecutionContext<ClassPropertyInterface> context, RawFileData singleFile, String charset) throws SQLException, SQLHandledException {
+        exportFile.change(exportFile.property.getType().writeProp(singleFile, staticType.getExtension(), charset), context);
     }
 }

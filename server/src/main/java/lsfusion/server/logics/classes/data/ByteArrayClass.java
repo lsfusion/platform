@@ -125,12 +125,12 @@ public class ByteArrayClass extends FileBasedClass<RawFileData> implements DBTyp
     }
 
     @Override
-    protected RawFileData parseHTTPNotNull(FileData b) {
+    protected RawFileData parseHTTPNotNull(FileData b, String charsetName) {
         return b.getRawFile();
     }
 
     @Override
-    protected FileData formatHTTPNotNull(RawFileData value) {
+    protected FileData formatHTTPNotNull(RawFileData value, Charset charset) {
         return new FileData(value, "bytea");
     }
 }

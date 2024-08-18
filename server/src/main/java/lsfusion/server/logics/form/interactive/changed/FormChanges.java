@@ -265,7 +265,7 @@ public class FormChanges {
     }
     public static Object convertFileValue(ConvertData convertData, Object value, ConnectionContext context) throws IOException {
         if(value instanceof FileData && convertData != null && ((FileData)value).getExtension().equals("resourceImage"))
-            value = new String(((FileData) value).getRawFile().getBytes());
+            value = ((FileData) value).getRawFile().convertString();
 
         if(value instanceof NamedFileData || value instanceof FileData || value instanceof RawFileData) {
             if(convertData != null) {

@@ -133,10 +133,10 @@ public class PostgreDataAdapter extends DataAdapter {
     protected void ensureSqlFuncs() throws IOException, SQLException {
         super.ensureSqlFuncs();
 
-        recursionString = IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/postgres/recursion.tsql"));
-        safeCastString = IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/postgres/safecast.tsql"));
-        safeCastIntString = IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/postgres/safecastint.tsql"));
-        safeCastStrString = IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/postgres/safecaststr.tsql"));
+        recursionString = readResource("/sql/postgres/recursion.tsql");
+        safeCastString = readResource("/sql/postgres/safecast.tsql");
+        safeCastIntString = readResource("/sql/postgres/safecastint.tsql");
+        safeCastStrString = readResource("/sql/postgres/safecaststr.tsql");
     }
 
     @Override

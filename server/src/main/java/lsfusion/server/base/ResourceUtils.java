@@ -8,6 +8,7 @@ import lsfusion.base.Result;
 import lsfusion.base.file.IOUtils;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.lambda.EFunction;
+import lsfusion.interop.session.ExternalUtils;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
@@ -256,7 +257,7 @@ public class ResourceUtils {
     }
 
     public static String findResourceAsString(String resourcePath, boolean nullIfNotExists, boolean multipleUsages, Result<String> fullPath, String optimisticFolder) {
-        return findResourceAs(resourcePath, stream -> IOUtils.readStreamToString(stream, "UTF-8"), cachedFoundResourcesAsStrings, nullIfNotExists, multipleUsages, fullPath, optimisticFolder);
+        return findResourceAs(resourcePath, stream -> IOUtils.readStreamToString(stream, ExternalUtils.resourceCharset.name()), cachedFoundResourcesAsStrings, nullIfNotExists, multipleUsages, fullPath, optimisticFolder);
     }
     public static RawFileData findResourceAsFileData(String resourcePath, boolean nullIfNotExists, boolean multipleUsages, Result<String> fullPath, String optimisticFolder) {
         return findResourceAs(resourcePath, RawFileData::new, cachedFoundResourcesAsFileDatas, nullIfNotExists, multipleUsages, fullPath, optimisticFolder);

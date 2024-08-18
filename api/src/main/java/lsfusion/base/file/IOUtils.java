@@ -2,6 +2,7 @@ package lsfusion.base.file;
 
 import com.google.common.base.Throwables;
 import com.jcraft.jsch.*;
+import lsfusion.interop.session.ExternalUtils;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.hc.core5.http.HttpEntity;
@@ -254,10 +255,10 @@ public class IOUtils {
     public static String serializeAppImage(AppImage image) throws IOException {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         writeAppImage(new DataOutputStream(outStream), image);
-        return outStream.toString();
+        return outStream.toString(ExternalUtils.imageCharset.name());
     }
 
     public static AppImage deserializeAppImage(String image) throws IOException {
-        return readAppImage(new DataInputStream(new ByteArrayInputStream(image.getBytes())));
+        return readAppImage(new DataInputStream(new ByteArrayInputStream(image.getBytes(ExternalUtils.imageCharset))));
     }
 }

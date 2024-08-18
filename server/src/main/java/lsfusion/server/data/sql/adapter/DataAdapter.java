@@ -1,6 +1,7 @@
 package lsfusion.server.data.sql.adapter;
 
 import lsfusion.base.Pair;
+import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.base.ResourceUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
@@ -29,6 +30,7 @@ import org.springframework.util.PropertyPlaceholderHelper;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -170,11 +172,18 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
         }
     }
 
+    public static String readResource(String path) throws IOException {
+        InputStream resourceAsStream = BusinessLogics.class.getResourceAsStream(path);
+        if(resourceAsStream == null)
+            return null;
+        return IOUtils.readStreamToString(resourceAsStream, ExternalUtils.resourceCharset.name());
+    }
+
     public static Set<String> disabledFunctions = new HashSet<>();
     protected void executeEnsure(List<String> functions) {
         functions.forEach(command -> {
             try {
-                executeEnsureWithException(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream(command)));
+                executeEnsureWithException(readResource(command));
             } catch (IOException | SQLException e) {
                 String name = new File(command).getName();
                 if (name.endsWith("_opt.sql")) {
@@ -260,7 +269,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
         throw new UnsupportedOperationException();
     }
     public void ensureScript(String script, Properties props) throws SQLException, IOException {
-        String scriptString = IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream(getPath() + script));
+        String scriptString = readResource(getPath() + script);
         executeEnsure(stringResolver.replacePlaceholders(scriptString, props));
     }
 

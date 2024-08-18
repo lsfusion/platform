@@ -2,6 +2,7 @@ package lsfusion.server.logics.form.stat.struct.imports.hierarchy.json;
 
 import lsfusion.base.ReflectionUtils;
 import lsfusion.base.file.RawFileData;
+import lsfusion.interop.session.ExternalUtils;
 import org.apache.commons.io.input.BOMInputStream;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -49,7 +50,7 @@ public class JSONReader {
 
     public static JSONObject read(String url) throws IOException, JSONException {
         try (InputStream is = new URL(url).openStream()) {
-            return new JSONObject(readAll(new BufferedReader(new InputStreamReader(is))));
+            return new JSONObject(readAll(new BufferedReader(new InputStreamReader(is, ExternalUtils.jsonCharset))));
         }
     }
 

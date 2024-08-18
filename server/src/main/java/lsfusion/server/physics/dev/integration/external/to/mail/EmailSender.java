@@ -5,6 +5,7 @@ import com.sun.mail.smtp.SMTPMessage;
 import com.sun.mail.util.MailSSLSocketFactory;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.file.RawFileData;
+import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.base.controller.thread.ExecutorFactory;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.physics.admin.log.ServerLoggers;
@@ -16,13 +17,9 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.util.ByteArrayDataSource;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -68,10 +65,12 @@ public class EmailSender {
             mailProps.setProperty("mail." + protocol + ".auth", "true");
         }
 
+        Charset charset = ExternalUtils.emailCharset;
+
         SMTPMessage message = new SMTPMessage(Session.getInstance(mailProps, null));
         message.setFrom();
         message.setSentDate(new java.util.Date());
-        message.setSubject(subject, "utf-8");
+        message.setSubject(subject, charset.name());
 
         for (Map.Entry<String, Message.RecipientType> recipient : recipients.entrySet()) {
             message.addRecipients(recipient.getValue(), recipient.getKey());
@@ -80,9 +79,9 @@ public class EmailSender {
         Multipart mp = new MimeMultipart();
         for(String inlineFile : inlineFiles)
             if(inlineFile != null)
-                setText(mp, inlineFile);
+                setText(mp, inlineFile, charset);
         for (AttachmentFile attachment : attachments)
-            attachFile(mp, attachment);
+            attachFile(mp, attachment, ExternalUtils.fileCharset);
 
         message.setContent(mp);
 
@@ -95,40 +94,20 @@ public class EmailSender {
         }
     }
 
-    private static void setText(Multipart mp, String text) throws MessagingException, IOException {
+    private static void setText(Multipart mp, String text, Charset charset) throws MessagingException, IOException {
         MimeBodyPart textPart = new MimeBodyPart();
-        textPart.setDataHandler(new DataHandler(new ByteArrayDataSource(text, "text/html; charset=utf-8")));
+        textPart.setDataHandler(new DataHandler(new ByteArrayDataSource(text, ExternalUtils.getHtmlContentType(charset).toString())));
         textPart.setDisposition(Part.INLINE);
         mp.addBodyPart(textPart);
     }
 
-    private static void attachFile(Multipart mp, AttachmentFile attachment) throws MessagingException, IOException {
-        ByteArrayDataSource dataSource = new ByteArrayDataSource(attachment.file.getInputStream(), getMimeType(attachment.extension));
+    private static void attachFile(Multipart mp, AttachmentFile attachment, Charset charset) throws MessagingException, IOException {
+        ByteArrayDataSource dataSource = new ByteArrayDataSource(attachment.file.getInputStream(), ExternalUtils.getContentType(attachment.extension, charset).toString());
         MimeBodyPart filePart = new MimeBodyPart();
         filePart.setDataHandler(new DataHandler(dataSource));
         filePart.setFileName(attachment.attachmentName);
         filePart.setHeader("Content-Transfer-Encoding", "base64");
         mp.addBodyPart(filePart);
-    }
-
-    private static String getMimeType(String extension) {
-        switch (extension) {
-            case "pdf":
-                return "application/pdf; charset=utf-8";
-            case "docx":
-                return "application/vnd.openxmlformats-officedocument.wordprocessingml.document; charset=utf-8";
-            case "rtf":
-                return "text/rtf; charset=utf-8";
-            case "xls":
-            case "xlsx":
-                return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet; charset=utf-8";
-            case "dbf":
-                return "application/dbf; charset=utf-8";
-            case "csv":
-                return "text/csv; charset=utf-8";
-            default:
-                return "text/html; charset=utf-8";
-        }
     }
 
     private static void processEmail(String subject, boolean syncType, String smtpHost, String smtpPort, String protocol,

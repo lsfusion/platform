@@ -1,6 +1,7 @@
 package lsfusion.http.controller.file;
 
 import lsfusion.gwt.server.FileUtils;
+import lsfusion.interop.session.ExternalUtils;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -23,7 +24,7 @@ public class UploadFileRequestHandler implements HttpRequestHandler {
 
             DiskFileItemFactory fileItemFactory = new DiskFileItemFactory();
             ServletFileUpload fileUpload = new ServletFileUpload(fileItemFactory);
-            request.setCharacterEncoding("UTF-8");
+            request.setCharacterEncoding(ExternalUtils.downloadCharset.name());
 
             List<FileItem> items = fileUpload.parseRequest(request);
 

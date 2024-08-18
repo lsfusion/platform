@@ -12,6 +12,7 @@ import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.navigator.ClientSettings;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 import lsfusion.interop.session.ExternalResponse;
+import lsfusion.interop.session.ExternalUtils;
 import lsfusion.interop.session.ResultExternalResponse;
 import lsfusion.interop.session.SessionInfo;
 import org.apache.commons.net.util.Base64;
@@ -91,7 +92,7 @@ public class LogicsSessionObject {
     private static List<Pair<String, RawFileData>> getFileData(JSONObject json, String field) {
         if (json.has(field)) {
             List<Pair<String, RawFileData>> resultFiles = new LinkedList<>();
-            getMapFromJSON(json.opt(field)).forEach((fileName, file) -> resultFiles.add(Pair.create(fileName, new RawFileData(new String(Base64.decodeBase64(file)).getBytes()))));
+            getMapFromJSON(json.opt(field)).forEach((fileName, file) -> resultFiles.add(Pair.create(fileName, new RawFileData(Base64.decodeBase64(file)))));
             return resultFiles;
         }
         return null;
@@ -206,6 +207,6 @@ public class LogicsSessionObject {
     }
 
     private static String getStringResult(ExternalResponse result) {
-        return new String(((FileData) ((ResultExternalResponse)result).results[0]).getRawFile().getBytes(), StandardCharsets.UTF_8);
+        return ((FileData) ((ResultExternalResponse)result).results[0]).getRawFile().getString(ExternalUtils.defaultBodyCharset); // because we don't send any charset and thus defaultBodyCharset will be used in the result
     }
 }

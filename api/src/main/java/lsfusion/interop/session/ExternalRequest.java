@@ -31,7 +31,7 @@ public class ExternalRequest implements Serializable {
         return new Param(value, false, charsetName);
     }
     public static Param getSystemParam(String value) {
-        return new Param(value, false, StandardCharsets.UTF_8.toString());
+        return new Param(value, false, ExternalUtils.javaCharset.name());
     }
     public Object[] getParamValues() {
         Object[] result = new Object[params.length];
