@@ -89,9 +89,18 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
     public void toggleControlsVisible() {
         setControlsVisible(!controlsVisible);
 
-        if (conditionViews.isEmpty() && controlsVisible && hasFiltersContainer()) {
+        if (controlsVisible && !hasNotFixedConditions() && hasFiltersContainer()) {
             addCondition();
         }
+    }
+
+    private boolean hasNotFixedConditions() {
+        for(GPropertyFilter condition : conditionViews.keySet()) {
+            if(!condition.isFixed()) {
+                return true;
+            }
+        }
+        return false;
     }
     
     private void hideControlsIfEmpty() {
