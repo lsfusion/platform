@@ -41,9 +41,8 @@ public class RawFileData extends TwinImmutableObject<RawFileData> implements Ser
         this.array = IOUtils.getFileBytes(file);
     }
 
-    public RawFileData(String filePath, boolean path) throws IOException {
+    public RawFileData(String filePath) throws IOException {
         this.array = IOUtils.getFileBytes(filePath);
-        assert path;
     }
 
     public byte[] getBytes() {
