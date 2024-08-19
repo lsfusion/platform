@@ -11,7 +11,7 @@ public class ZDateTimeIntervalClass extends IntervalClass<Instant> {
     public final static IntervalClass instance = new ZDateTimeIntervalClass();
 
     private ZDateTimeIntervalClass() {
-        super(LocalizedString.create("{classes.zoned.date.time.interval}"));
+        super(LocalizedString.create("{classes.date.with.time.with.zone.interval}"));
     }
 
     @Override

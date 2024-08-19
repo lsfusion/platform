@@ -14,7 +14,7 @@ public class DateTimeIntervalClass extends IntervalClass<LocalDateTime> {
     public final static IntervalClass instance = new DateTimeIntervalClass();
 
     private DateTimeIntervalClass() {
-        super(LocalizedString.create("{classes.date.time.interval}"));
+        super(LocalizedString.create("{classes.date.with.time.interval}"));
     }
 
     @Override

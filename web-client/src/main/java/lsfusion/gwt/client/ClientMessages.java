@@ -166,6 +166,10 @@ public interface ClientMessages extends Messages {
     String typeTextCaption();
     String typeObjectCaption();
     String typeTimeCaption();
+    String typeDateIntervalCaption();
+    String typeTimeIntervalCaption();
+    String typeDateTimeIntervalCaption();
+    String typeZDateTimeIntervalCaption();
     String typeExcelFileCaption();
     String typeImageCaption();
     String typePDFFileCaption();

@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.classes.data;
 
+import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 public class GZDateTimeIntervalType extends GDateTimeIntervalType {
@@ -25,5 +26,10 @@ public class GZDateTimeIntervalType extends GDateTimeIntervalType {
     @Override
     protected GADateType getTimeSeriesType() {
         return GZDateTimeType.instance;
+    }
+
+    @Override
+    public String toString() {
+        return ClientMessages.Instance.get().typeZDateTimeIntervalCaption();
     }
 }
