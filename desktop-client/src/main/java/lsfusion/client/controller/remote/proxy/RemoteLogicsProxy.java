@@ -1,5 +1,6 @@
 package lsfusion.client.controller.remote.proxy;
 
+import lsfusion.base.file.RawFileData;
 import lsfusion.client.navigator.controller.remote.proxy.RemoteNavigatorProxy;
 import lsfusion.client.session.remote.proxy.RemoteSessionProxy;
 import lsfusion.interop.connection.AuthenticationToken;
@@ -88,5 +89,13 @@ public class RemoteLogicsProxy<T extends RemoteLogicsInterface> extends PendingR
         logRemoteMethodStartVoidCall("registerClient");
         target.registerClient(client);
         logRemoteMethodEndVoidCall("registerClient");
+    }
+
+    @Override
+    public RawFileData getFile(String filePath) throws RemoteException {
+        logRemoteMethodStartVoidCall("getFile");
+        RawFileData fileData = target.getFile(filePath);
+        logRemoteMethodEndVoidCall("getFile");
+        return fileData;
     }
 }

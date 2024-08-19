@@ -3,7 +3,9 @@ package lsfusion.server.logics.controller.remote;
 import com.google.common.base.Throwables;
 import com.google.common.io.Resources;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.file.RawFileData;
 import lsfusion.base.lambda.CallableWithParam;
 import lsfusion.interop.base.exception.RemoteMessageException;
 import lsfusion.interop.connection.AuthenticationToken;
@@ -16,6 +18,7 @@ import lsfusion.interop.session.ExternalRequest;
 import lsfusion.interop.session.ExternalResponse;
 import lsfusion.interop.session.SessionInfo;
 import lsfusion.interop.session.remote.RemoteSessionInterface;
+import lsfusion.server.base.ResourceUtils;
 import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
 import lsfusion.server.base.controller.lifecycle.LifecycleListener;
 import lsfusion.server.base.controller.remote.RmiManager;
@@ -219,6 +222,11 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     @Override
     public void registerClient(RemoteClientInterface client) throws RemoteException {
         rmiManager.registerClient(client);
+    }
+
+    @Override
+    public RawFileData getFile(String filePath) throws RemoteException {
+        return ResourceUtils.findResourceAsFileData(filePath, true, true, new Result<>(), null);
     }
 }
 

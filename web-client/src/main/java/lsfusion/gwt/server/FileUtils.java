@@ -66,6 +66,7 @@ public class FileUtils {
     public static String STATIC_PATH = "static";
     public static String TEMP_PATH = "temp";
     public static String DEV_PATH = "dev";
+    public static String FILE_PATH = "file";
     // should correspond url-pattern for fileDownloadHandler, application context handler (in web.xml)
     public static String DOWNLOAD_HANDLER = "downloadFile";
 

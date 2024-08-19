@@ -1,5 +1,6 @@
 package lsfusion.interop.logics.remote;
 
+import lsfusion.base.file.RawFileData;
 import lsfusion.interop.base.remote.PendingRemoteInterface;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.authentication.Authentication;
@@ -40,5 +41,7 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
 
     List<String> saveAndGetCustomReportPathList(String formSID, boolean recreate) throws RemoteException;
 
-    void registerClient(RemoteClientInterface client) throws RemoteException;;
+    void registerClient(RemoteClientInterface client) throws RemoteException;
+
+    RawFileData getFile(String filePath) throws RemoteException;
 }
