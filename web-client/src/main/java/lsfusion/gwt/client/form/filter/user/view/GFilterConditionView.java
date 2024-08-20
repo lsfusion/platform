@@ -31,8 +31,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static lsfusion.gwt.client.view.StyleDefaults.COMPONENT_HEIGHT;
-
 public class GFilterConditionView extends FlexPanel implements HasNativeSID {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     public interface UIHandler {
@@ -200,7 +198,7 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
         };
         deleteButton.addStyleName("filter-button");
         deleteButton.setVisible(!isFixed() || controlsVisible);
-        rightPanel.add(deleteButton, GFlexAlignment.CENTER, 0, false, GSize.CONST(COMPONENT_HEIGHT));
+        rightPanel.add(deleteButton, GFlexAlignment.CENTER);
 
         junctionSeparator = GwtClientUtils.createVerticalSeparator(StyleDefaults.COMPONENT_HEIGHT);
         junctionSeparator.addStyleName("filter-separator");
