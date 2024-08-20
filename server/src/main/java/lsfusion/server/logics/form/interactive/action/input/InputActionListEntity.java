@@ -7,6 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.implement.ActionImplement;
+import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -33,7 +34,7 @@ public class InputActionListEntity<P extends PropertyInterface, V extends Proper
         return new InputActionListEntity<>(joinImplement.first, joinImplement.second, newSession);
     }
 
-    public InputActionValueList<P> map(ImMap<V, ? extends ObjectValue> map) {
+    public InputActionValueList<P> map(ImMap<V, ? extends ObjectValue> map, ImMap<V, PropertyObjectInterfaceInstance> mapObjects) {
         return new InputActionValueList<>(property, BaseUtils.immutableCast(mapValues.join(map)));
     }
 }
