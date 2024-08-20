@@ -619,6 +619,8 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
                 mResult.exclAdd(new ImageElementNavigator(navigatorElement.propertyImage, navigatorElement));
             if(navigatorElement.headerProperty != null)
                 mResult.exclAdd(new CaptionElementNavigator(navigatorElement.headerProperty, navigatorElement));
+            if(navigatorElement.showIfProperty != null)
+                mResult.exclAdd(new ShowIfElementNavigator(navigatorElement.showIfProperty, navigatorElement));
             if(navigatorElement.propertyElementClass != null)
                 mResult.exclAdd(new ClassElementNavigator(navigatorElement.propertyElementClass, navigatorElement));
         }

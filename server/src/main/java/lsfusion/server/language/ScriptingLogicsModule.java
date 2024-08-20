@@ -5243,6 +5243,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         public boolean parentWindow;
         public ImageOption imageOption;
         public LPWithParams headerProperty;
+        public LPWithParams showIfProperty;
 
         public LPWithParams elementClassProperty;
         public String elementClass;
@@ -5336,6 +5337,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         setNavigatorElementImage(element, options.imageOption);
         setNavigatorElementClass(element, options.elementClassProperty != null ? options.elementClassProperty.getLP().property : null, options.elementClass);
         setNavigatorElementHeader(element, options.headerProperty != null ? options.headerProperty.getLP().property : null);
+        setNavigatorElementShowIf(element, options.showIfProperty != null ? options.showIfProperty.getLP().property : null);
 
         ComplexLocation<NavigatorElement> location = options.location;
         if (parent != null && !(isEditOperation && location == null))
@@ -5411,6 +5413,11 @@ public class ScriptingLogicsModule extends LogicsModule {
     public void setNavigatorElementHeader(NavigatorElement element, Property headerProperty) {
         if (headerProperty != null)
             element.setHeaderProperty(headerProperty);
+    }
+
+    public void setNavigatorElementShowIf(NavigatorElement element, Property showIfProperty) {
+        if (showIfProperty != null)
+            element.setShowIfProperty(showIfProperty);
     }
 
     public LPWithParams propertyExpressionCreated(LPWithParams property, List<TypedParameter> context, boolean needFullContext) {

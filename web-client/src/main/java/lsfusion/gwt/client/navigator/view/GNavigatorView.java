@@ -83,21 +83,23 @@ public class GNavigatorView {
     GNavigatorElement firstFolder = null;
 
     private void addElement(final GNavigatorElement element, Set<GNavigatorElement> newElements, int step, Result<Integer> index) {
-        boolean active = window.allButtonsActive() || (element.isFolder() && element.equals(selected));
+        if (!element.hide) {
+            boolean active = window.allButtonsActive() || (element.isFolder() && element.equals(selected));
 
-        if (index.result < panel.getWidgetCount()) {
-            NavigatorImageButton button = (NavigatorImageButton) panel.getWidget(index.result);
-            button.change(element, step, active);
-        } else {
-            NavigatorImageButton button = new NavigatorImageButton(element, verticalTextAlign, step, active, this::selectElement);
-            panel.add(button);
-        }
-        index.set(index.result + 1);
+            if (index.result < panel.getWidgetCount()) {
+                NavigatorImageButton button = (NavigatorImageButton) panel.getWidget(index.result);
+                button.change(element, step, active);
+            } else {
+                NavigatorImageButton button = new NavigatorImageButton(element, verticalTextAlign, step, active, this::selectElement);
+                panel.add(button);
+            }
+            index.set(index.result + 1);
 
-        if (element.window == null || element.window.equals(window)) {
-            for (GNavigatorElement childEl : element.children) {
-                if (newElements.contains(childEl)) {
-                    addElement(childEl, newElements, step + 1, index);
+            if (element.window == null || element.window.equals(window)) {
+                for (GNavigatorElement childEl : element.children) {
+                    if (newElements.contains(childEl)) {
+                        addElement(childEl, newElements, step + 1, index);
+                    }
                 }
             }
         }
