@@ -208,6 +208,10 @@
             <artifactId>poi-scratchpad</artifactId>
         </dependency>
         <dependency>
+            <groupId>fr.opensagres.xdocreport</groupId>
+            <artifactId>fr.opensagres.poi.xwpf.converter.pdf</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.thavam</groupId>
             <artifactId>blocking-map</artifactId>
         </dependency>
