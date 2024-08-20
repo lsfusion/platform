@@ -2,10 +2,7 @@ package lsfusion.gwt.client.form.object.table.grid.user.toolbar.view;
 
 import com.google.gwt.event.dom.client.ClickHandler;
 import lsfusion.gwt.client.base.BaseStaticImage;
-import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.view.UnFocusableImageButton;
-
-import static lsfusion.gwt.client.view.StyleDefaults.COMPONENT_HEIGHT_STRING;
 
 public abstract class GToolbarButton extends UnFocusableImageButton {
     public GToolbarButton(BaseStaticImage image) {
