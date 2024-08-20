@@ -10,6 +10,7 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ThrowingFunction;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.key.KeyExpr;
+import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.stat.Cost;
 import lsfusion.server.data.stat.Stat;
@@ -18,8 +19,9 @@ import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.classes.data.DataClass;
+import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
+import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.form.interactive.property.AsyncMode;
-import lsfusion.server.logics.property.CurrentEnvironmentProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -30,11 +32,13 @@ import java.sql.SQLException;
 public class InputPropertyValueList<P extends PropertyInterface> extends InputValueList<P, Property<P>> {
 
     protected final ImOrderMap<PropertyInterfaceImplement<P>, Boolean> orders;
+    private final ImMap<P, PropertyObjectInterfaceInstance> mapObjects;
 
-    public InputPropertyValueList(Property<P> property, ImOrderMap<PropertyInterfaceImplement<P>, Boolean> orders, ImMap<P, ObjectValue> mapValues) {
+    public InputPropertyValueList(Property<P> property, ImOrderMap<PropertyInterfaceImplement<P>, Boolean> orders, ImMap<P, ObjectValue> mapValues, ImMap<P, PropertyObjectInterfaceInstance> mapObjects) {
         super(property, mapValues);
 
         this.orders = orders;
+        this.mapObjects = mapObjects;
     }
 
     public InputListExpr<P> getListExpr(Modifier modifier, AsyncMode asyncMode) throws SQLException, SQLHandledException {
@@ -59,7 +63,7 @@ public class InputPropertyValueList<P extends PropertyInterface> extends InputVa
     }
 
     private boolean isTooMayRows() {
-        return property.getInterfaceStat(mapValues.keys()).getCount() > Settings.get().getAsyncValuesMaxReadOrderCount();
+        return getInterfaceStat().getCount() > Settings.get().getAsyncValuesMaxReadOrderCount();
     }
 
     public P singleInterface() {
@@ -67,11 +71,11 @@ public class InputPropertyValueList<P extends PropertyInterface> extends InputVa
     }
 
     public Stat getSelectStat() {
-        return property.getSelectStat(mapValues.keys());
+        return property.getSelectStat(getInterfaceParams());
     }
 
-    private ImSet<P> getInterfaceParams() { // maybe classes from ObjectValue should be used with the proper caching
-        return mapValues.keys();
+    private ImMap<P, StaticParamNullableExpr> getInterfaceParams() { // maybe classes from ObjectValue should be used with the proper caching
+        return PropertyObjectInstance.getParamExprs(property, mapObjects);
     }
     public Stat getInterfaceStat() {
         return property.getInterfaceStat(getInterfaceParams());

@@ -22,6 +22,7 @@ import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.form.interactive.action.async.QuickAccess;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
+import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.property.JoinProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
@@ -34,6 +35,7 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;
 import java.util.Collections;
+import java.util.function.Function;
 
 public class InputPropertyListEntity<P extends PropertyInterface, V extends PropertyInterface> extends InputListEntity<P, V, Property<P>> {
 
@@ -81,8 +83,7 @@ public class InputPropertyListEntity<P extends PropertyInterface, V extends Prop
     }
 
     public ObjectValue readObject(ExecutionContext<V> context, ObjectValue userValue) throws SQLException, SQLHandledException {
-        ImMap<V, ? extends ObjectValue> map = context.getKeys();
-        return FormInstance.getAsyncKey(map(map), context.getSession(), context.getModifier(), userValue);
+        return FormInstance.getAsyncKey(map(context), context.getSession(), context.getModifier(), userValue);
     }
 
     public <J extends PropertyInterface, X extends PropertyInterface> InputPropertyListEntity<?, V> merge(Pair<InputFilterEntity<?, V>, ImOrderMap<InputOrderEntity<?, V>, Boolean>> filterAndOrders) {
@@ -148,8 +149,22 @@ public class InputPropertyListEntity<P extends PropertyInterface, V extends Prop
         return (InputPropertyListEntity<P, C>) super.map(map);
     }
 
-    public InputPropertyValueList<P> map(ImMap<V, ? extends ObjectValue> map) {
-        return new InputPropertyValueList<>(property, getOrderImplements(), BaseUtils.immutableCast(mapValues.join(map)));
+    @Override
+    public InputPropertyValueList<P> map(ExecutionContext<V> context) {
+        return (InputPropertyValueList<P>) super.map(context);
+    }
+
+    @Override
+    public InputPropertyValueList<P> map(ImMap<V, PropertyObjectInterfaceInstance> outerMapping, Function<PropertyObjectInterfaceInstance, ObjectValue> valuesGetter) {
+        return (InputPropertyValueList<P>) super.map(outerMapping, valuesGetter);
+    }
+
+    public InputPropertyValueList<P> map() {
+        return map(MapFact.EMPTY(), MapFact.EMPTY());
+    }
+
+    public InputPropertyValueList<P> map(ImMap<V, ? extends ObjectValue> map, ImMap<V, PropertyObjectInterfaceInstance> mapObjects) {
+        return new InputPropertyValueList<>(property, getOrderImplements(), BaseUtils.immutableCast(mapValues.join(map)), mapObjects != null ? mapValues.join(mapObjects) : null);
     }
 
     @IdentityInstanceLazy

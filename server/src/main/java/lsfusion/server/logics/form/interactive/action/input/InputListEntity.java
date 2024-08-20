@@ -1,28 +1,26 @@
 package lsfusion.server.logics.form.interactive.action.input;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.file.AppImage;
 import lsfusion.server.base.AppServerImage;
-import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.Action;
+import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.interactive.action.async.QuickAccess;
-import lsfusion.server.logics.property.JoinProperty;
+import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.infer.ClassType;
-import lsfusion.server.logics.property.implement.PropertyImplement;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
-import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+
+import java.util.function.Function;
 
 import static lsfusion.server.logics.property.oraction.PropertyInterface.getIdentityMap;
 
@@ -87,7 +85,21 @@ public abstract class InputListEntity<P extends PropertyInterface, V extends Pro
 
     protected abstract <C extends PropertyInterface> InputListEntity<?, C, ?> createJoin(ImMap<P, PropertyInterfaceImplement<C>> mappedValues);
 
-    public abstract InputValueList<P, ?> map(ImMap<V, ? extends ObjectValue> map);
+    public InputValueList<P, ?> map(ExecutionContext<V> context) {
+        ImMap<V, ? extends ObjectValue> values = context.getKeys();
+        ImMap<V, PropertyObjectInterfaceInstance> objectInstances = context.getObjectInstances();
+        if(objectInstances == null)
+            objectInstances = BaseUtils.immutableCast(values);
+        else
+            objectInstances = MapFact.override(values, objectInstances);
+        return map(values, objectInstances);
+    }
+
+    public InputValueList<P, ?> map(ImMap<V, PropertyObjectInterfaceInstance> outerMapping, Function<PropertyObjectInterfaceInstance, ObjectValue> valuesGetter) {
+        return map(outerMapping.mapValues(valuesGetter), outerMapping);
+    }
+
+    public abstract InputValueList<P, ?> map(ImMap<V, ? extends ObjectValue> map, ImMap<V, PropertyObjectInterfaceInstance> mapObjects);
 
     public ImMap<V, ValueClass> getInterfaceClasses() {
         return mapValues.innerCrossJoin(property.getInterfaceClasses(ClassType.wherePolicy));
