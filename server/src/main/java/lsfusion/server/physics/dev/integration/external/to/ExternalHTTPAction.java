@@ -10,8 +10,11 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public class ExternalHTTPAction extends CallHTTPAction {
 
-    public ExternalHTTPAction(boolean clientAction, ExternalHttpMethod method, ImList<Type> params, ImList<LP> targetPropList, int bodyParamNamesSize, ImList<LP> bodyParamHeadersPropertyList, LP headersProperty, LP cookiesProperty, LP headersToProperty, LP cookiesToProperty, boolean hasBodyUrl) {
-        super(clientAction, method, params, targetPropList, bodyParamNamesSize, bodyParamHeadersPropertyList, headersProperty, cookiesProperty, headersToProperty, cookiesToProperty, hasBodyUrl);
+    public ExternalHTTPAction(boolean clientAction, ExternalHttpMethod method, ImList<Type> params, ImList<LP> targetPropList,
+                              int bodyParamNamesSize, ImList<LP> bodyParamHeadersPropertyList, LP headersProperty, LP cookiesProperty,
+                              LP headersToProperty, LP cookiesToProperty, boolean noEncode, boolean hasBodyUrl) {
+        super(clientAction, method, params, targetPropList, bodyParamNamesSize, bodyParamHeadersPropertyList, headersProperty, cookiesProperty, headersToProperty, cookiesToProperty,
+                noEncode, hasBodyUrl);
     }
 
     @Override
