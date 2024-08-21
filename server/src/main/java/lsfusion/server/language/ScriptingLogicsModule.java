@@ -2083,7 +2083,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LAWithParams addScriptedExternalHTTPAction(boolean clientAction, ExternalHttpMethod method, LPWithParams connectionString, LPWithParams bodyUrl,
                                                       List<LPWithParams> bodyParamNames, List<NamedPropertyUsage> bodyParamHeadersList,
                                                       NamedPropertyUsage headers, NamedPropertyUsage cookies, NamedPropertyUsage headersTo, NamedPropertyUsage cookiesTo,
-                                                      List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
+                                                      boolean noEncode, List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList)
+            throws ScriptingErrorLog.SemanticErrorException {
         LP headersProperty = headers != null ? findLPStringParamByPropertyUsage(headers) : null;
         LP cookiesProperty = cookies != null ? findLPStringParamByPropertyUsage(cookies) : null;
         LP headersToProperty = headersTo != null ? findLPStringParamByPropertyUsage(headersTo) : null;
@@ -2095,7 +2096,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJoinAProp(addAProp(new ExternalHTTPAction(clientAction, method != null ? method : ExternalHttpMethod.POST,
                         getTypesForExternalAction(params, context), findLPsNoParamsByPropertyUsage(toPropertyUsageList), bodyParamNames.size(),
                         findLPsStringParamByPropertyUsage(bodyParamHeadersList), headersProperty, cookiesProperty, headersToProperty, cookiesToProperty,
-                        hasBodyUrl)),
+                        noEncode, hasBodyUrl)),
                 properties);
     }
 

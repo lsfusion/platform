@@ -3830,7 +3830,7 @@ externalActionDefinitionBody [List<TypedParameter> context, boolean dynamic] ret
         $action = self.addScriptedExternalUDPAction($type.clientAction, $type.conStr, params, context);
       } else if($type.format == ExternalFormat.HTTP) {
         $action = self.addScriptedExternalHTTPAction($type.clientAction, $type.method, $type.conStr, $type.bodyUrl, $type.bodyParamNames, $type.bodyParamHeadersList,
-            $type.headers, $type.cookies, $type.headersTo, $type.cookiesTo, params, context, $tl.propUsages);
+            $type.headers, $type.cookies, $type.headersTo, $type.cookiesTo, $type.noEncode, params, context, $tl.propUsages);
       } else if($type.format == ExternalFormat.LSF) {
         $action = self.addScriptedExternalLSFAction($type.conStr, $type.exec, $type.eval, $type.action, params, context, $tl.propUsages);
       }
@@ -3842,7 +3842,7 @@ externalActionDefinitionBody [List<TypedParameter> context, boolean dynamic] ret
 	    ('TO' tl = nonEmptyPropertyUsageList)?
 	;
 
-externalFormat [List<TypedParameter> context, boolean dynamic] returns [ExternalFormat format, ExternalHttpMethod method, boolean clientAction, LPWithParams conStr, LPWithParams bodyUrl, LPWithParams exec, List<LPWithParams> bodyParamNames = new ArrayList<>(), List<NamedPropertyUsage> bodyParamHeadersList = new ArrayList<>(), NamedPropertyUsage headers, NamedPropertyUsage cookies, NamedPropertyUsage headersTo, NamedPropertyUsage cookiesTo, boolean eval = false, boolean action = false, String charset]
+externalFormat [List<TypedParameter> context, boolean dynamic] returns [ExternalFormat format, ExternalHttpMethod method, boolean clientAction, LPWithParams conStr, LPWithParams bodyUrl, LPWithParams exec, List<LPWithParams> bodyParamNames = new ArrayList<>(), List<NamedPropertyUsage> bodyParamHeadersList = new ArrayList<>(), NamedPropertyUsage headers, NamedPropertyUsage cookies, NamedPropertyUsage headersTo, NamedPropertyUsage cookiesTo, boolean noEncode = false, boolean eval = false, boolean action = false, String charset]
 	:	'SQL'	{ $format = ExternalFormat.DB; } conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; } 'EXEC' execVal = propertyExpression[context, dynamic] { $exec = $execVal.property; }
     |	'TCP'	{ $format = ExternalFormat.TCP; } ('CLIENT' { $clientAction = true; })?
                 conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; }
@@ -3857,6 +3857,7 @@ externalFormat [List<TypedParameter> context, boolean dynamic] returns [External
 	            ('COOKIES' cookiesVal = propertyUsage { $cookies = $cookiesVal.propUsage; })?
 	            ('HEADERSTO' headersToVal = propertyUsage { $headersTo = $headersToVal.propUsage; })?
 	            ('COOKIESTO' cookiesToVal = propertyUsage { $cookiesTo = $cookiesToVal.propUsage; })?
+	            ('NOENCODE' { $noEncode = true; })?
 	|	'DBF'	{ $format = ExternalFormat.DBF; } conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; } 'APPEND' ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
 	|	'LSF'	{ $format = ExternalFormat.LSF; } conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; } ('EXEC' | ('EVAL' { $eval = true; } ('ACTION' { $action = true; })? )) execVal = propertyExpression[context, dynamic] { $exec = $execVal.property; }
 	|   'JAVA' 	{ $format = ExternalFormat.JAVA; } conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; }
