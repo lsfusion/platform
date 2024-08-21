@@ -225,12 +225,6 @@ showDesign() {
 designCaption = '{system.events.design}' IF NOT noSystemToolbarCaptions();
 designImage = iconIfAvailable('design.png','fa-solid fa-eye');
 
-NAVIGATOR {
-    NEW showDesign WINDOW system PARENT BEFORE administration HEADER designCaption() IMAGE designImage();
-    NEW toggleNavigatorPinMode WINDOW system PARENT BEFORE showDesign HEADER navigatorPinModeCaption() IMAGE navigatorPinModeImage() CLASS navigatorPinModeClass();
-    NEW toggleColorTheme WINDOW system PARENT BEFORE toggleNavigatorPinMode HEADER colorThemeCaption() IMAGE colorThemeImage();
-}
-
 paddingCss(Size s) = CASE
     WHEN s == Size.mini THEN 'mini-padding.css'
     WHEN s == Size.tiny THEN 'tiny-padding.css';
@@ -548,6 +542,12 @@ onClientStarted () + {
     IF isWeb() THEN {
         onWebClientStarted(); 
     }
+}
+
+NAVIGATOR {
+    NEW showDesign WINDOW system PARENT BEFORE administration HEADER designCaption() IMAGE designImage() SHOWIF isWeb();
+    NEW toggleNavigatorPinMode WINDOW system PARENT BEFORE showDesign HEADER navigatorPinModeCaption() IMAGE navigatorPinModeImage() CLASS navigatorPinModeClass();
+    NEW toggleColorTheme WINDOW system PARENT BEFORE toggleNavigatorPinMode HEADER colorThemeCaption() IMAGE colorThemeImage();
 }
 
 currentSize = DATA Size(Connection);

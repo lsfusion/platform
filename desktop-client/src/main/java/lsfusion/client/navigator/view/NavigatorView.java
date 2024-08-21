@@ -79,85 +79,87 @@ public class NavigatorView {
     ClientNavigatorElement firstFolder = null;
 
     private void addElement(ClientNavigatorElement element, Set<ClientNavigatorElement> newElements, int indent) {
-        ToggleButtonWidget button = new ToggleButtonWidget(wrapHtml(element.toString())) {
-            @Override
-            public void updateUI() {
-                super.updateUI();
-                ImageIcon icon = element.getImage();
-                if (icon != null) {
-                    setIcon(new IndentedIcon(icon, indent));
+        if (!element.hide) {
+            ToggleButtonWidget button = new ToggleButtonWidget(wrapHtml(element.toString())) {
+                @Override
+                public void updateUI() {
+                    super.updateUI();
+                    ImageIcon icon = element.getImage();
+                    if (icon != null) {
+                        setIcon(new IndentedIcon(icon, indent));
+                    }
+                    if (isSelected()) {
+                        setBorder(getSelectionBorder());
+                    } else {
+                        setBackground(null);
+                    }
                 }
-                if (isSelected()) {
-                    setBorder(getSelectionBorder());
-                } else {
-                    setBackground(null);
-                }
+            };
+            ImageIcon icon = element.getImage();
+            if (icon != null) {
+                button.setIcon(new IndentedIcon(icon, indent));
             }
-        };
-        ImageIcon icon = element.getImage();
-        if (icon != null) {
-            button.setIcon(new IndentedIcon(icon, indent));
-        }
 
-        LSFTooltipManager.initTooltip(button, element.getTooltip(), element.path, element.creationPath);
-        button.addMouseListener(new NavigatorMouseAdapter(element));
-        button.setVerticalTextPosition(window.verticalTextPosition);
-        button.setHorizontalTextPosition(window.horizontalTextPosition);
-        button.setVerticalAlignment(window.verticalAlignment);
-        button.setHorizontalAlignment(window.horizontalAlignment);
-        button.setFocusable(false);
-        button.getModel().setArmed(true);
-        if (window.isVertical()) {
-            button.setPreferredSize(new Dimension(button.getPreferredSize().width, SwingDefaults.getVerticalToolbarNavigatorButtonHeight()));
-        }
-
-        button.setBackground(null);
-        button.setBorder(getNormalBorder());
-
-        button.addItemListener(e -> {
-            if (e.getStateChange() == ItemEvent.SELECTED) {
-                button.setBorder(getSelectionBorder());
-            } else {
-                button.setBorder(getNormalBorder());
+            LSFTooltipManager.initTooltip(button, element.getTooltip(), element.path, element.creationPath);
+            button.addMouseListener(new NavigatorMouseAdapter(element));
+            button.setVerticalTextPosition(window.verticalTextPosition);
+            button.setHorizontalTextPosition(window.horizontalTextPosition);
+            button.setVerticalAlignment(window.verticalAlignment);
+            button.setHorizontalAlignment(window.horizontalAlignment);
+            button.setFocusable(false);
+            button.getModel().setArmed(true);
+            if (window.isVertical()) {
+                button.setPreferredSize(new Dimension(button.getPreferredSize().width, SwingDefaults.getVerticalToolbarNavigatorButtonHeight()));
             }
-        });
 
-        button.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                if (!button.isSelected()) {
+            button.setBackground(null);
+            button.setBorder(getNormalBorder());
+
+            button.addItemListener(e -> {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
                     button.setBorder(getSelectionBorder());
-                }
-                button.setBackground(getToggleButtonHoverBackground());
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                if (!button.isSelected()) {
-                    button.setBorder(getNormalBorder());
-                    button.setBackground(null);
                 } else {
-                    button.setBackground(getSelectionColor());
+                    button.setBorder(getNormalBorder());
+                }
+            });
+
+            button.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                    if (!button.isSelected()) {
+                        button.setBorder(getSelectionBorder());
+                    }
+                    button.setBackground(getToggleButtonHoverBackground());
+                }
+
+                @Override
+                public void mouseExited(MouseEvent e) {
+                    if (!button.isSelected()) {
+                        button.setBorder(getNormalBorder());
+                        button.setBackground(null);
+                    } else {
+                        button.setBackground(getSelectionColor());
+                    }
+                }
+            });
+
+            if (element instanceof ClientNavigatorFolder) {
+                if (window.showSelect && element.equals(getSelectedElement())) {
+                    button.setSelected(true);
+                }
+
+                if (window.isRoot() && firstFolder == null) {
+                    firstFolder = element;
                 }
             }
-        });
 
-        if(element instanceof ClientNavigatorFolder) {
-            if (window.showSelect && element.equals(getSelectedElement())) {
-                button.setSelected(true);
-            }
+            toolBarPanel.add(button, FlexAlignment.STRETCH, 0.0);
 
-            if (window.isRoot() && firstFolder == null) {
-                firstFolder = element;
-            }
-        }
-
-        toolBarPanel.add(button, FlexAlignment.STRETCH, 0.0);
-
-        if (element.window == null || element.window.equals(window)) {
-            for (ClientNavigatorElement childEl : element.children) {
-                if (newElements.contains(childEl)) {
-                    addElement(childEl, newElements, indent + 1);
+            if (element.window == null || element.window.equals(window)) {
+                for (ClientNavigatorElement childEl : element.children) {
+                    if (newElements.contains(childEl)) {
+                        addElement(childEl, newElements, indent + 1);
+                    }
                 }
             }
         }

@@ -37,13 +37,17 @@ public class ClientNavigatorChanges {
                 case 2:
                     propertyNavigator = new ClientClassElementNavigator(canonicalName);
                     break;
+                case 3:
+                    propertyNavigator = new ClientShowIfElementNavigator(canonicalName);
+                    break;
                 case 10:
                     propertyNavigator = new ClientClassWindowNavigator(canonicalName);
                     break;
                 default:
                     throw new UnsupportedOperationException("Unsupported ClientPropertyNavigator");
             }
-            properties.put(propertyNavigator, deserializeObject(inStream));
+            Object value = deserializeObject(inStream);
+            properties.put(propertyNavigator, value);
         }
     }
 }
