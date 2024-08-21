@@ -164,6 +164,7 @@ public class ObjectEntity extends IdentityObject implements OrderEntity<Property
         return noClasses;
     }
 
+    @IdentityInstanceLazy
     public StaticParamNullableExpr getParamExpr() {
         return new StaticParamNullableExpr(baseClass);
     }
