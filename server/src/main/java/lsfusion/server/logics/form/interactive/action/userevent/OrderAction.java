@@ -2,8 +2,8 @@ package lsfusion.server.logics.form.interactive.action.userevent;
 
 import lsfusion.interop.action.OrderClientAction;
 import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
+import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
@@ -19,14 +19,14 @@ import static lsfusion.base.BaseUtils.isRedundantString;
 public class OrderAction extends UserEventAction {
     public static final String DESC_KEY = "desc";
     
-    public OrderAction(GroupObjectEntity groupObject, LP<?> fromProperty) {
-        super(groupObject, fromProperty);
+    public OrderAction(GroupObjectEntity groupObject, ValueClass... valueClasses) {
+        super(groupObject, valueClasses);
     }
 
     @Override
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         FormInstance formInstance = context.getFormInstance(true, true);
-        List<JSONObject> objectList = readJSON(context, formInstance.BL.userEventsLM.orders);
+        List<JSONObject> objectList = readJSON(context);
         LinkedHashMap<Integer, Boolean> orders = new LinkedHashMap<>();
         if (objectList != null) {
             for (JSONObject jsonObject : objectList) {

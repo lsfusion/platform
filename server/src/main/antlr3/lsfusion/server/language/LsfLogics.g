@@ -3349,6 +3349,10 @@ leafKeepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [
 	|   readOrdersADB=readOrdersActionDefinitionBody[context, dynamic] { $action = $readOrdersADB.action; }
 	|   filterADB=filterActionDefinitionBody[context, dynamic] { $action = $filterADB.action; }
 	|   readFiltersADB=readFiltersActionDefinitionBody[context, dynamic] { $action = $readFiltersADB.action; }
+	|   filterGroupADB=filterGroupActionDefinitionBody[context, dynamic] { $action = $filterGroupADB.action; }
+	|   readFilterGroupsADB=readFilterGroupsActionDefinitionBody[context, dynamic] { $action = $readFilterGroupsADB.action; }
+    |   filterPropertyADB=filterPropertyActionDefinitionBody[context, dynamic] { $action = $filterPropertyADB.action; }
+	|   readFiltersPropertyADB=readFiltersPropertyActionDefinitionBody[context, dynamic] { $action = $readFiltersPropertyADB.action; }
 	|	mailADB=emailActionDefinitionBody[context, dynamic] { $action = $mailADB.action; }
 	|	evalADB=evalActionDefinitionBody[context, dynamic] { $action = $evalADB.action; }
 	|	readADB=readActionDefinitionBody[context, dynamic] { $action = $readADB.action; }
@@ -4060,12 +4064,12 @@ expandCollapseObjectsList[List<TypedParameter> context, boolean dynamic] returns
 orderActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedOrderProp($gobj.sid, $pu.propUsage);
+		$action = self.addScriptedOrderProp($gobj.sid, $expr.property);
 	}
 }
     :   'ORDER'
         gobj=formGroupObjectID
-        ('FROM' pu=propertyUsage)?
+        ('FROM' expr=propertyExpression[context, dynamic])?
     ;
 
 readOrdersActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
@@ -4082,12 +4086,12 @@ readOrdersActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
  filterActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
  @after {
  	if (inMainParseState()) {
- 		$action = self.addScriptedFilterProp($gobj.sid, $pu.propUsage);
+ 		$action = self.addScriptedFilterProp($gobj.sid, $expr.property);
  	}
  }
      :   'FILTER'
          gobj=formGroupObjectID
-         ('FROM' pu=propertyUsage)?
+         ('FROM' expr=propertyExpression[context, dynamic])?
      ;
 
 readFiltersActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
@@ -4100,6 +4104,59 @@ readFiltersActionDefinitionBody[List<TypedParameter> context, boolean dynamic] r
         gobj=formGroupObjectID
         ('TO' pu=propertyUsage)?
     ;
+
+ filterGroupActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
+ @after {
+ 	if (inMainParseState()) {
+ 		$action = self.addScriptedFilterGroupProp($fg.sid, $expr.property);
+ 	}
+ }
+
+     :   'FILTERGROUP'
+         fg=formFilterGroupID
+         ('FROM' expr=propertyExpression[context, dynamic])?
+     ;
+
+readFilterGroupsActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
+@after {
+	if (inMainParseState()) {
+		$action = self.addScriptedReadFilterGroupsProp($fg.sid, $pu.propUsage);
+	}
+}
+    :   'FILTERGROUPS'
+        fg=formFilterGroupID
+        ('TO' pu=propertyUsage)?
+    ;
+
+ filterPropertyActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
+ @init {
+     PropertyDrawEntity propertyDraw = null;
+ }
+ @after {
+ 	if (inMainParseState()) {
+ 		$action = self.addScriptedFilterPropertyProp(propertyDraw, $expr.property);
+ 	}
+ }
+
+     :   'FILTER' 'PROPERTY'
+         fp=formPropertyID { propertyDraw = $fp.propertyDraw; }
+         ('FROM' expr=propertyExpression[context, dynamic])?
+     ;
+
+readFiltersPropertyActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
+ @init {
+     PropertyDrawEntity propertyDraw = null;
+ }
+@after {
+	if (inMainParseState()) {
+		$action = self.addScriptedReadFiltersPropertyProp(propertyDraw, $pu.propUsage);
+	}
+}
+    :   'FILTERS' 'PROPERTY'
+        fp=formPropertyID { propertyDraw = $fp.propertyDraw; }
+        ('TO' pu=propertyUsage)?
+    ;
+
 
 changeClassActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams action]
 @init {
@@ -5645,6 +5702,10 @@ staticObjectID returns [String sid]
 	;
 
 formGroupObjectID returns [String sid]
+    :	(namespacePart=ID '.')? formPart=ID '.' namePart=ID { $sid = ($namespacePart != null ? $namespacePart.text + '.' : "") + $formPart.text + '.' + $namePart.text; }
+    ;
+
+formFilterGroupID returns [String sid]
     :	(namespacePart=ID '.')? formPart=ID '.' namePart=ID { $sid = ($namespacePart != null ? $namespacePart.text + '.' : "") + $formPart.text + '.' + $namePart.text; }
     ;
 

@@ -153,7 +153,7 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
         ImList<ObjectEntity> resolvedInputObjects = inputObjects.mapList(mapRevObjects);
 
         FormInstance newFormInstance = context.createFormInstance(form, resolvedInputObjects.getCol().toSet(), mapObjectValues, context.getSession(), syncType, noCancel, manageSession, checkOnOk, isShowDrop(), true, showFormType.getWindowType(), contextFilters, readOnly);
-        context.requestFormUserInteraction(newFormInstance, showFormType, forbidDuplicate, formId, context.stack);
+        context.requestFormUserInteraction(newFormInstance, showFormType, forbidDuplicate, formId);
 
         if (syncType) {
             FormCloseType formResult = newFormInstance.getFormResult();

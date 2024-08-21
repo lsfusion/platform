@@ -2,6 +2,8 @@ MODULE UserEvents;
 
 orders = DATA LOCAL JSON();
 filters = DATA LOCAL JSON();
+filterGroups = DATA LOCAL INTEGER();
+filtersProperty = DATA LOCAL STRING();
 
 property = DATA LOCAL STRING(INTEGER);
 desc = DATA LOCAL BOOLEAN(INTEGER);
@@ -22,3 +24,29 @@ FORM filters
     PROPERTIES(f) property, negation, compare, value, or
     FILTERS property(f)
 ;
+
+filterProperty(STRING groupObject, STRING property, STRING value) {
+    EVAL ACTION 'FILTERS ' + groupObject + ';';
+
+    IMPORT filters FROM filters();
+    
+    FOR property(INTEGER f) = property DO
+        value(f) <- value;
+    ELSE FOR INTEGER f = OVERRIDE (GROUP MAX INTEGER r IF property(r)) + 1, 0 DO {
+        property(f) <- property;
+        value(f) <- value;
+    }
+    
+    EXPORT filters TO filters;
+
+    EVAL ACTION 'FILTER ' + groupObject + ';';
+}
+
+filtersProperty(STRING groupObject, STRING property) {
+    EVAL ACTION 'FILTERS ' + groupObject + ';';
+
+    IMPORT filters FROM filters();
+    
+    FOR property(INTEGER f) = property DO
+        filtersProperty() <- value(f);
+}

@@ -76,6 +76,8 @@ public interface ClientActionDispatcher {
     
     void execute(FilterClientAction action);
 
+    void execute(FilterGroupClientAction action);
+
     void execute(ClientWebAction action);
 
     EventBus getEventBus();

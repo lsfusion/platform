@@ -643,7 +643,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return ThreadLocalContext.requestUserInteraction(action);
     }
 
-    public void requestFormUserInteraction(FormInstance remoteForm, ShowFormType showFormType, boolean forbidDuplicate, String formId, ExecutionStack stack) throws SQLException, SQLHandledException {
+    public void requestFormUserInteraction(FormInstance remoteForm, ShowFormType showFormType, boolean forbidDuplicate, String formId) throws SQLException, SQLHandledException {
         assertNotUserInteractionInTransaction();
         ThreadLocalContext.requestFormUserInteraction(remoteForm, showFormType, forbidDuplicate, formId, stack);
     }
