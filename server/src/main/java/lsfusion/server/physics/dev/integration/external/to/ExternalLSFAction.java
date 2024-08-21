@@ -18,7 +18,7 @@ public class ExternalLSFAction extends CallHTTPAction {
 
     // LSF constructor, assumes that the first param is the script
     public ExternalLSFAction(ImList<Type> paramTypes, ImList<LP> targetPropList, boolean eval, boolean action) {
-        super(false, ExternalHttpMethod.POST, ListFact.add(StringClass.text, paramTypes), targetPropList, 0, ListFact.EMPTY(), null, null, null, null, false);
+        super(false, ExternalHttpMethod.POST, ListFact.add(StringClass.text, paramTypes), targetPropList, 0, ListFact.EMPTY(), null, null, null, null, false,false);
 
         this.eval = eval;
         this.action = action;

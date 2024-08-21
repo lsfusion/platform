@@ -65,10 +65,12 @@ public abstract class CallHTTPAction extends CallAction {
     private LP<?> cookiesProperty;
     private LP headersToProperty;
     private LP cookiesToProperty;
+    private boolean noEncode;
 
     protected CallHTTPAction(boolean clientAction, ExternalHttpMethod method, ImList<Type> params, ImList<LP> targetPropList,
                           int bodyParamNamesSize, ImList<LP> bodyParamHeadersPropertyList,
-                          LP headersProperty, LP cookiesProperty, LP headersToProperty, LP cookiesToProperty, boolean hasBodyUrl) {
+                          LP headersProperty, LP cookiesProperty, LP headersToProperty, LP cookiesToProperty,
+                          boolean noEncode, boolean hasBodyUrl) {
         super((hasBodyUrl ? 2 : 1) + bodyParamNamesSize, params, targetPropList);
 
         this.clientAction = clientAction;
@@ -84,6 +86,7 @@ public abstract class CallHTTPAction extends CallAction {
         this.cookiesProperty = cookiesProperty;
         this.headersToProperty = headersToProperty;
         this.cookiesToProperty = cookiesToProperty;
+        this.noEncode = noEncode;
     }
 
     private String[] getResponseHeaderValues(Map<String, List<String>> responseHeaders, String[] headerNames) {
@@ -106,7 +109,7 @@ public abstract class CallHTTPAction extends CallAction {
             return null;
 
         String transformedText = getTransformedText(context, param);
-        if(transformedText != null) {
+        if(transformedText != null && !noEncode) {
             try {
                 transformedText = URIUtil.encodeQuery(transformedText, charset.toString());
             } catch (URIException e) {
