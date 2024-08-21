@@ -79,7 +79,8 @@ public abstract class GroupType implements AggrType {
             return true;
         }
         public String getSource(ImList<String> exprs, ImList<ClassReader> exprReaders, ImOrderMap<String, CompileOrder> orders, Type type, SQLSyntax syntax, TypeEnvironment typeEnv) {
-            return getAggrSource(type instanceof ConcatenateType && syntax.hasAggConcProblem() ? "MAXC" : "MAX", exprs.get(0), orders, syntax);
+            // in postgres somewhy in MAX function varchar is converted to text, and (anyelement, anyelement( functions can not implicitly cast text to varchar
+            return type.getCast(getAggrSource(type instanceof ConcatenateType && syntax.hasAggConcProblem() ? "MAXC" : "MAX", exprs.get(0), orders, syntax), syntax, typeEnv);
         }
         public String name() {
             return "MAX";
@@ -106,7 +107,8 @@ public abstract class GroupType implements AggrType {
             return true;
         }
         public String getSource(ImList<String> exprs, ImList<ClassReader> exprReaders, ImOrderMap<String, CompileOrder> orders, Type type, SQLSyntax syntax, TypeEnvironment typeEnv) {
-            return getAggrSource(type instanceof ConcatenateType && syntax.hasAggConcProblem() ? "MINC" : "MIN", exprs.get(0), orders, syntax);
+            // in postgres somewhy in MIN function varchar is converted to text, and (anyelement, anyelement( functions can not implicitly cast text to varchar
+            return type.getCast(getAggrSource(type instanceof ConcatenateType && syntax.hasAggConcProblem() ? "MINC" : "MIN", exprs.get(0), orders, syntax), syntax, typeEnv);
         }
         public String name() {
             return "MIN";
