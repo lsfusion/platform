@@ -59,8 +59,8 @@
         <jna.version>5.4.0</jna.version>
         <stax.version>1.2.0</stax.version>
         <shef.version>0.5</shef.version>
-        <imageio-jpeg.version>3.11.0</imageio-jpeg.version>
-        <imageio-webp.version>3.11.0</imageio-webp.version>
+        <imageio-jpeg.version>3.9.4</imageio-jpeg.version>
+        <imageio-webp.version>3.9.4</imageio-webp.version>
         <ojdbc14.version>11.2.0.4</ojdbc14.version>
         <informix.version>4.10.9</informix.version>
         <mysql.version>8.0.30</mysql.version>
