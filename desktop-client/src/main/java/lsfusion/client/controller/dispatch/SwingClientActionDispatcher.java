@@ -40,9 +40,6 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
 import java.awt.print.PrinterAbortException;
 import java.io.*;
 import java.rmi.RemoteException;
@@ -720,6 +717,10 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
 
     @Override
     public void execute(FilterClientAction action) {
+    }
+
+    @Override
+    public void execute(FilterGroupClientAction action) {
     }
 
     @Override

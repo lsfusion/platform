@@ -143,7 +143,7 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends ActionO
     }
 
     // using getParamExpr for objects and getInterfaceParamExprs for all the rest
-    private static <P extends PropertyInterface> ImMap<P, StaticParamNullableExpr> getParamExprs(Property<P> property, ImMap<P, PropertyObjectInterfaceInstance> outerMapping) {
+    public static <P extends PropertyInterface> ImMap<P, StaticParamNullableExpr> getParamExprs(Property<P> property, ImMap<P, PropertyObjectInterfaceInstance> outerMapping) {
         Result<ImMap<P, PropertyObjectInterfaceInstance>> rNotObjectsOuterMapping = new Result<>();
         ImMap<P, ObjectInstance> objectsOuterMapping = BaseUtils.immutableCast(outerMapping.splitKeys((p, po) -> po instanceof ObjectInstance, rNotObjectsOuterMapping));
         return objectsOuterMapping.mapValues(o -> o.entity.getParamExpr()).addExcl(property.getInterfaceParamExprs(rNotObjectsOuterMapping.result.keys()));
@@ -160,6 +160,6 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends ActionO
 
         if(innerMapping != null)
             innerMapping.set(BaseUtils.immutableCast(mapping.filterFnValues(gridObjects).toRevExclMap()));
-        return inputList.map(outerMapping.mapValues(valuesGetter));
+        return inputList.map(outerMapping, valuesGetter);
     }
 }

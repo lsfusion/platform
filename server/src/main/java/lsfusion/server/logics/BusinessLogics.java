@@ -210,10 +210,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         super(LOGICS_ORDER);
     }
 
-    // жестковато, но учитывая что пока есть несколько других кэшей со strong ref'ами на этот action, завязаных на IdentityLazy то цикл жизни у всех этих кэшей будет приблизительно одинаковый
-    @IdentityLazy
     public LA<?> evaluateRun(String script, boolean action) {
-        return LM.evaluateRun(script, action);
+        return LM.evaluateRun(script, null, action).first;
     }
 
     public void setTopModule(String topModule) {

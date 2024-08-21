@@ -32,15 +32,17 @@
         <com.healthmarketscience.version>3.0.1</com.healthmarketscience.version>
         <netty.version>3.2.1.Final</netty.version>
         <postgresql.version>42.7.3</postgresql.version>
-        <jasper.version>6.20.5</jasper.version>
+        <!-- don't forget to merge jasperreports_extension.properties file when updating jasperreports -->
+        <jasper.version>6.20.6</jasper.version>
         <jasper.htmlcomponent.version>6.20.5</jasper.htmlcomponent.version>
         <castor.core.version>1.4.1</castor.core.version>
         <ecj.version>3.17.0</ecj.version>
         <olap4j.version>1.2.0</olap4j.version>
         <apache.poi.version>4.1.2</apache.poi.version>
+        <opensagres.xdocreport.version>2.0.2</opensagres.xdocreport.version>
         <docking.frames.version>1.1.3p1</docking.frames.version>
         <jexcelapi.version>2.6.12</jexcelapi.version>
-        <batik.version>1.8</batik.version>
+        <batik.version>1.17</batik.version>
         <xmlgraphics.commons.version>2.6</xmlgraphics.commons.version>
         <barcode4j.version>2.1</barcode4j.version>
         <swingx.version>1.6.1</swingx.version>
@@ -48,7 +50,7 @@
         <flatlaf.version>1.5</flatlaf.version>
         <jhlabs.filters.version>2.0.235</jhlabs.filters.version>
         <jcalendar.version>1.4</jcalendar.version>
-        <jssc.version>2.9.4</jssc.version>
+        <jssc.version>2.9.6</jssc.version>
         <jserialcomm.version>2.11.0</jserialcomm.version>
         <mssql.version>4.0</mssql.version>
         <javax.mail.version>1.6.2</javax.mail.version>
@@ -62,7 +64,7 @@
         <ojdbc14.version>11.2.0.4</ojdbc14.version>
         <informix.version>4.10.9</informix.version>
         <mysql.version>8.0.30</mysql.version>
-        <slf4j.version>1.6.1</slf4j.version>
+        <slf4j.version>1.7.36</slf4j.version>
         <janino.version>3.0.12</janino.version>
         <commons.httpclient.version>3.1</commons.httpclient.version>
         <jdbf.version>2.2.1</jdbf.version>
@@ -80,7 +82,7 @@
         <jstl.version>1.2</jstl.version>
         <commons.fileupload.version>1.5</commons.fileupload.version>
         <url.rewriter.version>4.0.3</url.rewriter.version>
-        <scrimage.version>4.0.31</scrimage.version>
+        <scrimage.version>4.0.42</scrimage.version>
         <httpcomponents.client5.httpclient5.version>5.3.1</httpcomponents.client5.httpclient5.version>
 
         <!-- note: gwt jar-ки пропатчены, поэтому нельзя просто поменять эту версию на более новую, нужно сначала перенакатить патч... см. описание в jar-ках  -->
@@ -100,7 +102,7 @@
         <javax.ejb.api.version>3.2.2</javax.ejb.api.version>
 
         <javax.xml.bind.version>2.3.0</javax.xml.bind.version>
-        <jakarta.activation.version>1.2.1</jakarta.activation.version>
+        <jakarta.activation.version>2.1.3</jakarta.activation.version>
         <javax.activation.version>1.1.1</javax.activation.version>
         
         <javax.servlet.api.version>4.0.1</javax.servlet.api.version>
@@ -108,7 +110,7 @@
 
         <com.google.zxing.version>3.4.1-patched</com.google.zxing.version>
 
-        <tess4j.version>4.3.1</tess4j.version>
+        <tess4j.version>4.6.1</tess4j.version>
         <pdfbox.version>2.0.24</pdfbox.version>
         <web.push.version>5.1.1</web.push.version>
         <bouncycastle.version>1.78.1</bouncycastle.version>
@@ -258,6 +260,11 @@
                 <version>${apache.poi.version}</version>
             </dependency>
             <dependency>
+                <groupId>fr.opensagres.xdocreport</groupId>
+                <artifactId>fr.opensagres.poi.xwpf.converter.pdf</artifactId>
+                <version>${opensagres.xdocreport.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>bibliothek.gui</groupId>
                 <artifactId>dockingFramesCore</artifactId>
                 <version>${docking.frames.version}</version>
@@ -382,6 +389,11 @@
                 <groupId>mysql</groupId>
                 <artifactId>mysql-connector-java</artifactId>
                 <version>${mysql.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>

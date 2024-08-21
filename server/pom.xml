@@ -208,6 +208,10 @@
             <artifactId>poi-scratchpad</artifactId>
         </dependency>
         <dependency>
+            <groupId>fr.opensagres.xdocreport</groupId>
+            <artifactId>fr.opensagres.poi.xwpf.converter.pdf</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.thavam</groupId>
             <artifactId>blocking-map</artifactId>
         </dependency>
@@ -269,7 +273,7 @@
         <dependency>
             <groupId>com.google.maps</groupId>
             <artifactId>google-maps-services</artifactId>
-            <version>0.18.0</version>
+            <version>0.18.2</version>
         </dependency>
         <dependency>
             <groupId>org.jsoup</groupId>
@@ -287,7 +291,7 @@
         <dependency>
             <groupId>com.monitorjbl</groupId>
             <artifactId>xlsx-streamer</artifactId>
-            <version>2.1.0</version>
+            <version>2.2.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>

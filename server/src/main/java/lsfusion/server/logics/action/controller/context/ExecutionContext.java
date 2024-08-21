@@ -45,10 +45,7 @@ import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.controller.manager.RestartManager;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.action.async.*;
-import lsfusion.server.logics.form.interactive.action.input.InputContext;
-import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
-import lsfusion.server.logics.form.interactive.action.input.InputResult;
-import lsfusion.server.logics.form.interactive.action.input.RequestResult;
+import lsfusion.server.logics.form.interactive.action.input.*;
 import lsfusion.server.logics.form.interactive.changed.FormChanges;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
@@ -646,7 +643,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return ThreadLocalContext.requestUserInteraction(action);
     }
 
-    public void requestFormUserInteraction(FormInstance remoteForm, ShowFormType showFormType, boolean forbidDuplicate, String formId, ExecutionStack stack) throws SQLException, SQLHandledException {
+    public void requestFormUserInteraction(FormInstance remoteForm, ShowFormType showFormType, boolean forbidDuplicate, String formId) throws SQLException, SQLHandledException {
         assertNotUserInteractionInTransaction();
         ThreadLocalContext.requestFormUserInteraction(remoteForm, showFormType, forbidDuplicate, formId, stack);
     }
@@ -721,7 +718,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 
         InputContext<T> inputContext = null;
         if(list != null)
-            inputContext = new InputContext<>(list.map(getKeys()), list.newSession, this, inputList.strict);
+            inputContext = new InputContext<>(list.map(this), list.newSession, this, inputList.strict);
         return ThreadLocalContext.inputUserData(getSecurityProperty(), dataClass, oldValue, hasOldValue, inputContext, customChangeFunction, inputList, actions);
     }
 

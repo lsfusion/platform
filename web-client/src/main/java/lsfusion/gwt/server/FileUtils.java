@@ -305,7 +305,7 @@ public class FileUtils {
     private static EConsumer<OutputStream, IOException> getGifIconSaver(byte[] imageBytes, boolean filter, ServletContext servletContext, ColorTheme colorTheme) {
         return outputStream -> {
             AnimatedGif gif = AnimatedGifReader.read(ImageSource.of(imageBytes));
-            StreamingGifWriter writer = new StreamingGifWriter(gif.getDelay(0), gif.getLoopCount() == 0);
+            StreamingGifWriter writer = new StreamingGifWriter(gif.getDelay(0), gif.getLoopCount() == 0, false);
             StreamingGifWriter.GifStream gifStream = writer.prepareStream(outputStream, gif.getFrame(0).getType());
             for (int i = 0; i < gif.getFrameCount(); i++) {
                 ImmutableImage frame = gif.getFrame(i);

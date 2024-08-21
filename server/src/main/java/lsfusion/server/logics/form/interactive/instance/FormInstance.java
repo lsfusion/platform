@@ -946,7 +946,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     public List<RegularFilterGroupInstance> regularFilterGroups = new ArrayList<>();
-    private Map<RegularFilterGroupInstance, RegularFilterInstance> regularFilterValues = new HashMap<>();
+    public Map<RegularFilterGroupInstance, RegularFilterInstance> regularFilterValues = new HashMap<>();
 
     public void setRegularFilter(RegularFilterGroupInstance filterGroup, int filterId) {
         setRegularFilter(filterGroup, filterGroup.getFilter(filterId));

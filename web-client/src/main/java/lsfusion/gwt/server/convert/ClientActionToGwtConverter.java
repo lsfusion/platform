@@ -344,4 +344,9 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         }
         return new GFilterAction(action.goID, filters);
     }
+
+    @Converter(from = FilterGroupClientAction.class)
+    public GFilterGroupAction convertAction(FilterGroupClientAction action) {
+        return new GFilterGroupAction(action.filterGroup, action.index);
+    }
 }

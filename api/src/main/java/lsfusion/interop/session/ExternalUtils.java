@@ -285,10 +285,20 @@ public class ExternalUtils {
 
     // REQUEST BODY
     public static Charset getBodyUrlCharset(ContentType contentType) {
-        return contentType != null ? contentType.getCharset() : defaultBodyUrlCharset;
+        if(contentType != null) {
+            Charset charset = contentType.getCharset();
+            if(charset != null)
+                return charset;
+        }
+        return defaultBodyUrlCharset;
     }
     public static Charset getBodyCharset(ContentType contentType) {
-        return contentType != null ? contentType.getCharset() : defaultBodyCharset;
+        if(contentType != null) {
+            Charset charset = contentType.getCharset();
+            if(charset != null)
+                return charset;
+        }
+        return defaultBodyCharset;
     }
 
     // returns FileData for FILE or String for other classes, contentType can be null if there are no parameters

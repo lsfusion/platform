@@ -8,6 +8,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.lambda.Processor;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.language.EvalScriptingLogicsModule;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.session.classes.change.UpdateCurrentClassesSession;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
@@ -18,9 +19,14 @@ import java.util.List;
 public class TopExecutionStack implements NewThreadExecutionStack {
 
     private final String threadId;
+    private final EvalScriptingLogicsModule evalLM;
 
     public TopExecutionStack(String threadId) {
+        this(threadId, null);
+    }
+    public TopExecutionStack(String threadId, EvalScriptingLogicsModule evalLM) {
         this.threadId = threadId;
+        this.evalLM = evalLM;
     }
 
     @Override
@@ -71,5 +77,10 @@ public class TopExecutionStack implements NewThreadExecutionStack {
     @Override
     public String toString() {
         return threadId + "@" + System.identityHashCode(this);
+    }
+
+    @Override
+    public EvalScriptingLogicsModule getEvalLM() {
+        return evalLM;
     }
 }

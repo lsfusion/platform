@@ -105,6 +105,7 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.CCCContextFilterEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
+import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
@@ -2602,6 +2603,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         return form.getNFGroupObject(getSeekObjectName(formObjectName), getVersion());
     }
 
+    private RegularFilterGroupEntity getSeekFilterGroup(FormEntity form, String formFilterGroupName) {
+        return form.getNFRegularFilterGroup(getSeekObjectName(formFilterGroupName), getVersion());
+    }
+
     private String getSeekObjectName(String formObjectName) {
         int pointPos = formObjectName.lastIndexOf('.');
         assert pointPos > 0;
@@ -2677,12 +2682,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public LAWithParams addScriptedOrderProp(String goName, NamedPropertyUsage propertyUsage)  throws ScriptingErrorLog.SemanticErrorException {
+    public LAWithParams addScriptedOrderProp(String goName, LPWithParams from)  throws ScriptingErrorLog.SemanticErrorException {
         GroupObjectEntity go = getSeekGroupObject(getFormFromSeekObjectName(goName), goName);
 
         if (go != null) {
-            LP<?> fromProp = propertyUsage != null ? findLPNoParamsByPropertyUsage(propertyUsage) : null;
-            return new LAWithParams(addOrderAProp(go, fromProp), Collections.emptyList());
+            if(from == null) {
+                from = new LPWithParams(BL.userEventsLM.orders);
+            }
+            return addScriptedJoinAProp(baseLM.addOrderAProp(go, from.getLP()), Collections.singletonList(from));
         } else {
             errLog.emitGroupObjectNotFoundError(parser, getSeekObjectName(goName));
             return null;
@@ -2694,20 +2701,22 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         if (go != null) {
             LP<?> targetProp = propertyUsage != null ? findLPNoParamsByPropertyUsage(propertyUsage) : null;
-            return new LAWithParams(addReadOrdersAProp(go, targetProp), Collections.emptyList());
+            return new LAWithParams(baseLM.addReadOrdersAProp(go, targetProp), Collections.emptyList());
         } else {
             errLog.emitGroupObjectNotFoundError(parser, getSeekObjectName(goName));
             return null;
         }
     }
 
-    public LAWithParams addScriptedFilterProp(String goName, NamedPropertyUsage propertyUsage)  throws ScriptingErrorLog.SemanticErrorException {
+    public LAWithParams addScriptedFilterProp(String goName, LPWithParams from)  throws ScriptingErrorLog.SemanticErrorException {
         FormEntity form = getFormFromSeekObjectName(goName);
         GroupObjectEntity go = getSeekGroupObject(form, goName);
 
         if (go != null) {
-            LP<?> fromProp = propertyUsage != null ? findLPNoParamsByPropertyUsage(propertyUsage) : null;
-            return new LAWithParams(addFilterAProp(go, fromProp), Collections.emptyList());
+            if(from == null) {
+                from = new LPWithParams(BL.userEventsLM.filters);
+            }
+            return addScriptedJoinAProp(baseLM.addFilterAProp(go, from.getLP()), Collections.singletonList(from));
         } else {
             errLog.emitGroupObjectNotFoundError(parser, getSeekObjectName(goName));
             return null;
@@ -2719,11 +2728,47 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         if (go != null) {
             LP<?> targetProp = propertyUsage != null ? findLPNoParamsByPropertyUsage(propertyUsage) : null;
-            return new LAWithParams(addReadFiltersAProp(go, targetProp), Collections.emptyList());
+            return new LAWithParams(baseLM.addReadFiltersAProp(go, targetProp), Collections.emptyList());
         } else {
             errLog.emitGroupObjectNotFoundError(parser, getSeekObjectName(goName));
             return null;
         }
+    }
+
+    public LAWithParams addScriptedFilterGroupProp(String fgName, LPWithParams from)  throws ScriptingErrorLog.SemanticErrorException {
+        RegularFilterGroupEntity filterGroup = getSeekFilterGroup(getFormFromSeekObjectName(fgName), fgName);
+        if (filterGroup != null) {
+            if(from == null) {
+                from = new LPWithParams(BL.userEventsLM.filterGroups);
+            }
+            return addScriptedJoinAProp(baseLM.addFilterGroupAProp(filterGroup.getID(), from.getLP()), Collections.singletonList(from));
+        } else {
+            errLog.emitFilterGroupNotFoundError(parser, getSeekObjectName(fgName));
+            return null;
+        }
+    }
+
+    public LAWithParams addScriptedReadFilterGroupsProp(String fgName, NamedPropertyUsage propertyUsage)  throws ScriptingErrorLog.SemanticErrorException {
+        RegularFilterGroupEntity filterGroup = getSeekFilterGroup(getFormFromSeekObjectName(fgName), fgName);
+        if (filterGroup != null) {
+            LP<?> targetProp = propertyUsage != null ? findLPNoParamsByPropertyUsage(propertyUsage) : null;
+            return new LAWithParams(baseLM.addReadFilterGroupsAProp(filterGroup.getID(), targetProp), Collections.emptyList());
+        } else {
+            errLog.emitFilterGroupNotFoundError(parser, getSeekObjectName(fgName));
+            return null;
+        }
+    }
+
+    public LAWithParams addScriptedFilterPropertyProp(PropertyDrawEntity property, LPWithParams from)  throws ScriptingErrorLog.SemanticErrorException {
+        if(from == null) {
+            from = new LPWithParams(BL.userEventsLM.filtersProperty);
+        }
+        return addScriptedJoinAProp(baseLM.addFilterPropertyAProp(property, from.getLP()), Collections.singletonList(from));
+    }
+
+    public LAWithParams addScriptedReadFiltersPropertyProp(PropertyDrawEntity property, NamedPropertyUsage propertyUsage)  throws ScriptingErrorLog.SemanticErrorException {
+        LP<?> targetProp = propertyUsage != null ? findLPNoParamsByPropertyUsage(propertyUsage) : null;
+        return new LAWithParams(baseLM.addReadFiltersPropertyAProp(property, targetProp), Collections.emptyList());
     }
 
     public LAWithParams addScriptedEvalAction(LPWithParams property, List<LPWithParams> params, List<TypedParameter> contextParams, boolean action) throws ScriptingErrorLog.SemanticErrorException {
@@ -2736,7 +2781,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         ImList<Type> paramTypes = getTypesForEvalAction(params, contextParams);
 
-        return addScriptedJoinAProp(addAProp(new EvalAction(this, paramTypes, action)), BaseUtils.addList(property, params));
+        return addScriptedJoinAProp(addAProp(new EvalAction(paramTypes, action)), BaseUtils.addList(property, params));
     }
 
     public LAWithParams addScriptedChangePropertyAProp(List<TypedParameter> context, NamedPropertyUsage toPropertyUsage, List<LPWithParams> toPropertyMapping, LPWithParams fromProperty, LPWithParams whereProperty, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
@@ -5700,11 +5745,6 @@ public class ScriptingLogicsModule extends LogicsModule {
                 initNamespacesToModules(requiredModule, visitedModules);
             }
         }
-    }
-
-    @IdentityLazy
-    public LA<?> evaluateRun(String script, boolean action) {
-        return EvalUtils.evaluateAndFindAction(BL, this instanceof EvalScriptingLogicsModule ? (EvalScriptingLogicsModule) this : null, script, action);
     }
 
     protected LogicsModule getSysModule(String requiredModuleName) {
