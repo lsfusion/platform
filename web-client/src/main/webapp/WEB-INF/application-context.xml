@@ -37,9 +37,7 @@
 
     <bean id="fileUploadHandler" class="lsfusion.http.controller.file.UploadFileRequestHandler" />
 
-    <bean id="fileDownloadHandler" class="lsfusion.http.controller.file.DownloadFileRequestHandler">
-        <constructor-arg ref="logicsProvider"/>
-    </bean>
+    <bean id="fileDownloadHandler" class="lsfusion.http.controller.file.DownloadFileRequestHandler" />
 
     <bean id="externalHandler" class="lsfusion.http.controller.ExternalLogicsAndSessionRequestHandler">
         <constructor-arg ref="logicsProvider"/>
