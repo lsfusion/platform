@@ -13,14 +13,10 @@ import static lsfusion.gwt.client.base.view.ColorUtils.*;
 public class StyleDefaults {
     public static int maxMobileWidthHeight = 570;
 
-    public static final int VALUE_HEIGHT = 20;
-    public static final String VALUE_HEIGHT_STRING = VALUE_HEIGHT + "px";
-
-    public static final int COMPONENT_HEIGHT = VALUE_HEIGHT + 2; // 2 for borders
+    public static final int COMPONENT_HEIGHT = 22;
     public static final String COMPONENT_HEIGHT_STRING = COMPONENT_HEIGHT + "px";
 
     public static final int CELL_HORIZONTAL_PADDING = 3;
-    public static final int CELL_VERTICAL_PADDING = 2;
     public static final int BUTTON_HORIZONTAL_PADDING = 14;
 
     private static int[] componentBackgroundRGB;

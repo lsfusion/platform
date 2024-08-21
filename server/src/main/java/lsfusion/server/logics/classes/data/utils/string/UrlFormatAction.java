@@ -2,6 +2,7 @@ package lsfusion.server.logics.classes.data.utils.string;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
+import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
@@ -22,7 +23,7 @@ public class UrlFormatAction extends InternalAction {
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
         try {
             ImOrderMap<String, String> params = CallHTTPAction.readPropertyValues(context.getSession(), findProperty("urlParsed[TEXT]")).toOrderMap();
-            findProperty("urlFormatted[]").change(URLEncodedUtils.format(params.mapOrderSetValues(BasicNameValuePair::new).toJavaList(), StandardCharsets.UTF_8), context);
+            findProperty("urlFormatted[]").change(URLEncodedUtils.format(params.mapOrderSetValues(BasicNameValuePair::new).toJavaList(), ExternalUtils.defaultUrlCharset), context);
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }

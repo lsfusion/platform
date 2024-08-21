@@ -93,15 +93,15 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
             converter = needObjects ? values -> rMapObjects.result.crossJoin(values) : null;
             valuesMode = strictValues ? AsyncMode.STRICTVALUES : AsyncMode.VALUES;
         } else {
-            ActionObjectEntity<P> eventAction = (ActionObjectEntity<P>) this.entity.getEventAction(actionSID, context);
-            ImMap<P, ObjectValue> mapValues = formInstance.instanceFactory.getInstanceMap(eventAction.mapping).mapValues(BaseUtils.<Function<ObjectInstance, ObjectValue>>immutableCast(valuesGetter));
+            ActionObjectEntity<P> eventAction = (ActionObjectEntity<P>) this.entity.getCheckedEventAction(actionSID, context);
 
             AsyncMapValue<P> asyncExec = (AsyncMapValue<P>) eventAction.property.getAsyncEventExec(this.entity.optimisticAsync);
             Pair<InputListEntity<X, P, ?>, AsyncDataConverter<X>> asyncValueList = asyncExec.getAsyncValueList(value);
             InputListEntity<X, P, ?> listEntity = asyncValueList.first;
             converter = asyncValueList.second;
 
-            list = listEntity.map(mapValues);
+            ImRevMap<P, PropertyObjectInterfaceInstance> outerMapping = BaseUtils.immutableCast(formInstance.instanceFactory.getInstanceMap(eventAction.mapping));
+            list = listEntity.map(outerMapping, valuesGetter);
             newSession = listEntity.newSession;
             if(asyncExec instanceof AsyncMapInput)
                 valuesMode = AsyncMapInput.getAsyncMode(((AsyncMapInput<P>) asyncExec).strict);

@@ -114,6 +114,18 @@ public class GwtClientUtils {
         return (InputElement) input;
     };
 
+    public static InputElement createImageElement(String type) {
+        Element element = Document.get().createElement(type);
+        if (type.equals("video")) {
+            //show controls
+            element.setAttribute("controls", "");
+        } else if(type.equals("iframe")) {
+            //need for the pdf controls to work
+            element.getStyle().setPosition(Style.Position.RELATIVE);
+        }
+        return (InputElement) element;
+    }
+
     public native static Element createFocusElement(String tag) /*-{
         return $wnd.createFocusElement(tag);
     }-*/;
@@ -519,6 +531,121 @@ public class GwtClientUtils {
 //        element.getStyle().clearHeight();
 //        element.getStyle().clearProperty("boxSizing");
     }
+
+    public static void setupValueOverflowHorz(Element element, String valueOverflowHorz) {
+        if (valueOverflowHorz != null) {
+            switch (valueOverflowHorz) {
+                case "auto":
+                    element.addClassName("prop-value-overflow-horz-auto");
+                    break;
+                case "clip":
+                    element.addClassName("prop-value-overflow-horz-clip");
+                    break;
+                case "visible":
+                    element.addClassName("prop-value-overflow-horz-visible");
+                    break;
+            }
+        }
+    }
+
+    public static void clearValueOverflowHorz(Element element, String valueOverflowHorz) {
+        if (valueOverflowHorz != null) {
+            switch (valueOverflowHorz) {
+                case "auto":
+                    element.removeClassName("prop-value-overflow-horz-auto");
+                    break;
+                case "clip":
+                    element.removeClassName("prop-value-overflow-horz-clip");
+                    break;
+                case "visible":
+                    element.removeClassName("prop-value-overflow-horz-visible");
+                    break;
+            }
+        }
+    }
+
+    public static void setupValueOverflowVert(Element element, String valueOverflowVert) {
+        if (valueOverflowVert != null) {
+            switch (valueOverflowVert) {
+                case "auto":
+                    element.addClassName("prop-value-overflow-vert-auto");
+                    break;
+                case "clip":
+                    element.addClassName("prop-value-overflow-vert-clip");
+                    break;
+                case "visible":
+                    element.addClassName("prop-value-overflow-vert-visible");
+                    break;
+            }
+        }
+    }
+
+    public static void clearValueOverflowVert(Element element, String valueOverflowVert) {
+        if (valueOverflowVert != null) {
+            switch (valueOverflowVert) {
+                case "auto":
+                    element.removeClassName("prop-value-overflow-vert-auto");
+                    break;
+                case "clip":
+                    element.removeClassName("prop-value-overflow-vert-clip");
+                    break;
+                case "visible":
+                    element.removeClassName("prop-value-overflow-vert-visible");
+                    break;
+            }
+        }
+    }
+
+    public static void setupValueShrinkHorz(Element element, boolean valueShrinkHorz) {
+        if (valueShrinkHorz) {
+            element.addClassName("prop-value-shrink-horz");
+        }
+    }
+
+    public static void clearValueShrinkHorz(Element element, boolean valueShrinkHorz) {
+        if (valueShrinkHorz) {
+            element.removeClassName("prop-value-shrink-horz");
+        }
+    }
+
+    public static void setupValueShrinkVert(Element element, boolean valueShrinkVert) {
+        if (valueShrinkVert) {
+            element.addClassName("prop-value-shrink-vert");
+        }
+    }
+
+    public static void clearValueShrinkVert(Element element, boolean valueShrinkVert) {
+        if (valueShrinkVert) {
+            element.removeClassName("prop-value-shrink-vert");
+        }
+    }
+
+    public static void setupOverflowHorz(Element element, String overflowHorz) {
+        if(overflowHorz != null) {
+            switch (overflowHorz) { //visible is default value
+                case "auto":
+                    element.addClassName("comp-shrink-horz-auto");
+                    break;
+                case "clip":
+                    element.addClassName("comp-shrink-horz-clip");
+                    break;
+            }
+        }
+    }
+
+    public static void setupOverflowVert(Element element, String overflowVert) {
+        if(overflowVert != null) {
+            switch (overflowVert) { //visible is default value
+                case "auto":
+                    element.addClassName("comp-shrink-vert-auto");
+                    break;
+                case "clip":
+                    element.addClassName("comp-shrink-vert-clip");
+                    break;
+            }
+        }
+    }
+
 
     /*--- tippy methods ---*/
 
@@ -1683,4 +1810,13 @@ public class GwtClientUtils {
     public static native void removeAttributeOrStyle(Element element, String attribute) /*-{
         $wnd.removeAttributeOrStyle(element, attribute);
     }-*/;
+
+    public static native void setSrc(Element element, String src) /*-{
+        element.src = src;
+    }-*/;
+
+    public static native void setGlobalClassName (boolean set, String elementClass) /*-{
+        $wnd.setGlobalClassName(set, elementClass);
+    }-*/;
+
 }

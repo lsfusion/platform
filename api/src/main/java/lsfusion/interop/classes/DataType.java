@@ -60,4 +60,6 @@ public class DataType {
     public final static byte TSQUERY = 57;
     public final static byte HTMLSTRING = 58;
     public final static byte JSONTEXT = 59;
+    public final static byte VIDEO = 60;
+    public final static byte VIDEOLINK = 61;
 }

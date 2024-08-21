@@ -7,6 +7,11 @@ import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
 public class GImageLinkType extends GLinkType {
     @Override
+    public String getExtension() {
+        return "jpg";
+    }
+
+    @Override
     public CellRenderer createCellRenderer(GPropertyDraw property) {
         return new ImageLinkCellRenderer(property);
     }

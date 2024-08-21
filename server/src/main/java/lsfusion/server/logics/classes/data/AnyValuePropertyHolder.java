@@ -54,6 +54,7 @@ public class AnyValuePropertyHolder {
     private final LP wordFileProperty;
     private final LP imageFileProperty;
     private final LP pdfFileProperty;
+    private final LP videoFileProperty;
     private final LP dbfFileProperty;
     private final LP rawFileProperty;
     private final LP customFileProperty;
@@ -68,6 +69,7 @@ public class AnyValuePropertyHolder {
     private final LP wordLinkProperty;
     private final LP imageLinkProperty;
     private final LP pdfLinkProperty;
+    private final LP videoLinkProperty;
     private final LP dbfLinkProperty;
     private final LP rawLinkProperty;
     private final LP customLinkProperty;
@@ -84,10 +86,10 @@ public class AnyValuePropertyHolder {
                                   LP<?> intProperty, LP<?> longProperty, LP<?> doubleProperty, LP<?> numericProperty, LP<?> yearProperty, LP<?> dateTimeProperty,
                                   LP<?> zDateTimeProperty, LP<?> intervalDateProperty, LP<?> intervalDateTimeProperty, LP<?> intervalTimeProperty, LP<?> intervalZDateTimeProperty,
                                   LP<?> logicalProperty, LP<?> tLogicalProperty, LP<?> dateProperty, LP<?> timeProperty, LP<?> colorProperty, LP<?> jsonProperty, LP<?> jsonTextProperty,
-                                  LP<?> wordFileProperty, LP<?> imageFileProperty, LP<?> pdfFileProperty, LP<?> dbfFileProperty,
+                                  LP<?> wordFileProperty, LP<?> imageFileProperty, LP<?> pdfFileProperty, LP<?> videoFileProperty, LP<?> dbfFileProperty,
                                   LP<?> rawFileProperty, LP<?> customFileProperty, LP<?> excelFileProperty, LP<?> textFileProperty, LP<?> csvFileProperty,
                                   LP<?> htmlFileProperty, LP<?> jsonFileProperty, LP<?> xmlFileProperty, LP<?> tableFileProperty, LP<?> namedFileProperty,
-                                  LP<?> wordLinkProperty, LP<?> imageLinkProperty, LP<?> pdfLinkProperty, LP<?> dbfLinkProperty, LP<?> rawLinkProperty,
+                                  LP<?> wordLinkProperty, LP<?> imageLinkProperty, LP<?> pdfLinkProperty, LP<?> videoLinkProperty, LP<?> dbfLinkProperty, LP<?> rawLinkProperty,
                                   LP<?> customLinkProperty, LP<?> excelLinkProperty, LP<?> textLinkProperty, LP<?> csvLinkProperty,
                                   LP<?> htmlLinkProperty, LP<?> jsonLinkProperty, LP<?> xmlLinkProperty, LP<?> tableLinkProperty, LP<?> tsVectorProperty) {
         assert objectProperty.property.getType() == ObjectType.instance
@@ -117,6 +119,7 @@ public class AnyValuePropertyHolder {
                 && wordFileProperty.property.getType() == WordClass.get()
                 && imageFileProperty.property.getType() == ImageClass.get()
                 && pdfFileProperty.property.getType() == PDFClass.get()
+                && videoFileProperty.property.getType() == VideoClass.get()
                 && dbfFileProperty.property.getType() == DBFClass.get()
                 && rawFileProperty.property.getType() == CustomStaticFormatFileClass.get()
                 && customFileProperty.property.getType() == DynamicFormatFileClass.get()
@@ -131,6 +134,7 @@ public class AnyValuePropertyHolder {
                 && wordLinkProperty.property.getType() == WordLinkClass.get(false)
                 && imageLinkProperty.property.getType() == ImageLinkClass.get(false)
                 && pdfLinkProperty.property.getType() == PDFLinkClass.get(false)
+                && videoLinkProperty.property.getType() == VideoLinkClass.get(false)
                 && dbfLinkProperty.property.getType() == DBFLinkClass.get(false)
                 && rawLinkProperty.property.getType() == CustomStaticFormatLinkClass.get()
                 && customLinkProperty.property.getType() == DynamicFormatLinkClass.get(false)
@@ -171,6 +175,7 @@ public class AnyValuePropertyHolder {
         this.wordFileProperty = wordFileProperty;
         this.imageFileProperty = imageFileProperty;
         this.pdfFileProperty = pdfFileProperty;
+        this.videoFileProperty = videoFileProperty;
         this.dbfFileProperty = dbfFileProperty;
         this.rawFileProperty = rawFileProperty;
         this.customFileProperty = customFileProperty;
@@ -185,6 +190,7 @@ public class AnyValuePropertyHolder {
         this.wordLinkProperty = wordLinkProperty;
         this.imageLinkProperty = imageLinkProperty;
         this.pdfLinkProperty = pdfLinkProperty;
+        this.videoLinkProperty = videoLinkProperty;
         this.dbfLinkProperty = dbfLinkProperty;
         this.rawLinkProperty = rawLinkProperty;
         this.customLinkProperty = customLinkProperty;
@@ -250,6 +256,8 @@ public class AnyValuePropertyHolder {
             return imageFileProperty;
         } else if (valueType instanceof PDFClass) {
             return pdfFileProperty;
+        } else if (valueType instanceof VideoClass) {
+            return videoFileProperty;
         } else if (valueType instanceof DBFClass) {
             return dbfFileProperty;
         } else if (valueType instanceof CustomStaticFormatFileClass) {
@@ -280,6 +288,8 @@ public class AnyValuePropertyHolder {
             return imageLinkProperty;
         } else if (valueType instanceof PDFLinkClass) {
             return pdfLinkProperty;
+        } else if (valueType instanceof VideoLinkClass) {
+            return videoLinkProperty;
         } else if (valueType instanceof DBFLinkClass) {
             return dbfLinkProperty;
         } else if (valueType instanceof CustomStaticFormatLinkClass) {
@@ -313,7 +323,7 @@ public class AnyValuePropertyHolder {
     public ImOrderSet<SessionDataProperty> getProps() {
         return SetFact.toOrderExclSet(
                 // files
-                customFileProperty, rawFileProperty, wordFileProperty, imageFileProperty, pdfFileProperty, dbfFileProperty, excelFileProperty,
+                customFileProperty, rawFileProperty, wordFileProperty, imageFileProperty, pdfFileProperty, videoFileProperty, dbfFileProperty, excelFileProperty,
                 textFileProperty, csvFileProperty, htmlFileProperty, jsonFileProperty, xmlFileProperty, tableFileProperty, namedFileProperty,
                 // strings
                 textProperty, richTextProperty, htmlTextProperty, stringProperty, bpStringProperty,
@@ -323,7 +333,7 @@ public class AnyValuePropertyHolder {
                 dateTimeProperty, zDateTimeProperty, intervalDateProperty, intervalDateTimeProperty, intervalTimeProperty,
                 intervalZDateTimeProperty, dateProperty, timeProperty, yearProperty,
                 // links
-                customLinkProperty, rawLinkProperty, wordLinkProperty, imageLinkProperty, pdfLinkProperty, dbfLinkProperty, excelLinkProperty,
+                customLinkProperty, rawLinkProperty, wordLinkProperty, imageLinkProperty, pdfLinkProperty, videoLinkProperty, dbfLinkProperty, excelLinkProperty,
                 textLinkProperty, csvLinkProperty, htmlLinkProperty, jsonLinkProperty, xmlLinkProperty, tableLinkProperty,
                 // others
                 logicalProperty, tLogicalProperty, colorProperty, jsonProperty, jsonTextProperty, objectProperty, tsVectorProperty

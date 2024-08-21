@@ -51,4 +51,19 @@ public class PDFClass extends StaticFormatFileClass {
     public FormIntegrationType getIntegrationType() {
         throw new UnsupportedOperationException();
     }
+
+    @Override
+    public String getValueAlignmentHorz() {
+        return "stretch";
+    }
+
+    @Override
+    public String getValueAlignmentVert() {
+        return "stretch";
+    }
+
+    @Override
+    public boolean getValueShrinkHorz() {
+        return true;
+    }
 }

@@ -99,7 +99,7 @@ public abstract class InternalAction extends ExplicitAction {
     }
 
     public static Object readJSON(ObjectValue result) throws IOException {
-        String charset = ExternalUtils.defaultXMLJSONCharset;
+        String charset = ExternalUtils.jsonCharset.toString();
         return JSONReader.readObject(ImportAction.readFile(result, charset), charset);
     }
 

@@ -79,17 +79,17 @@ public class DynamicFormatFileClass extends AbstractDynamicFormatFileClass<FileD
     }
 
     @Override
-    protected FileData parseHTTPNotNull(FileData b) {
+    protected FileData parseHTTPNotNull(FileData b, String charsetName) {
         return b;
     }
 
     @Override
-    protected FileData formatHTTPNotNull(FileData b) {
+    protected FileData formatHTTPNotNull(FileData b, Charset charset) {
         return b;
     }
 
     @Override
-    public FileData writePropNotNull(RawFileData value, String extension) {
+    public FileData writePropNotNull(RawFileData value, String extension, String charset) {
         return new FileData(value, extension);
     }
 
@@ -131,5 +131,10 @@ public class DynamicFormatFileClass extends AbstractDynamicFormatFileClass<FileD
     @Override
     protected byte[] getBytes(FileData value) {
         return value.getBytes();
+    }
+
+    @Override
+    protected RawFileData getRawFileData(FileData value) {
+        return value.getRawFile();
     }
 }

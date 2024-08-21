@@ -58,12 +58,8 @@ public class PushAction extends InternalAction {
             JSONObject pushJson = new JSONObject((String) context.getKeyValue(pushInterface).getValue());
             payload.put("push", pushJson);
 
-            String payloadString = payload.toString();
-            Object convertedPayload = FormChanges.convertFileValue(payload.toString(), context.getRemoteContext());
-            if (convertedPayload instanceof StringWithFiles)
-                payloadString = context.getRmiManager().convertFileValue((StringWithFiles) convertedPayload);
-
-            getPushService(context).send(new Notification(getSubscription(pushJson), payloadString), Encoding.AES128GCM); // Encoding.AES128GCM important!
+            getPushService(context).send(new Notification(getSubscription(pushJson),
+                    (String) context.convertFileValue(payload.toString())), Encoding.AES128GCM); // Encoding.AES128GCM important!
 
         } catch (JoseException | GeneralSecurityException | IOException | ExecutionException | InterruptedException |
                  ScriptingErrorLog.SemanticErrorException e) {

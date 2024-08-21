@@ -6,18 +6,19 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
-import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.order.PartitionCalc;
 import lsfusion.server.data.expr.query.order.PartitionParam;
 import lsfusion.server.data.expr.query.order.PartitionToken;
 import lsfusion.server.data.query.compile.CompileOrder;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
+import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.exec.TypeEnvironment;
-import lsfusion.server.data.where.Where;
+import lsfusion.server.logics.classes.data.DataClass;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public abstract class PartitionType implements AggrType {
 
@@ -56,7 +57,60 @@ public abstract class PartitionType implements AggrType {
         protected PartitionCalc getPartitionCalc(SQLSyntax syntax, Type type, TypeEnvironment typeEnv, MExclSet<PartitionCalc> mCalcTokens, ImList<PartitionToken> exprs, ImOrderMap<PartitionToken, CompileOrder> orders, ImSet<PartitionToken> partitions) {
             return new PartitionCalc(new PartitionCalc.Aggr("lag", exprs, orders, partitions));
         }
+        public boolean canBeNull() {
+            return true;
+        }
+        public boolean isSelect() {
+            return true;
+        }
     };
+
+    public static class Custom extends PartitionType {
+        public final String aggrFunc;
+
+        public final DataClass dataClass;
+        public final boolean valueNull;
+
+        public Custom(String aggrFunc, DataClass dataClass, boolean valueNull) {
+            this.aggrFunc = aggrFunc;
+
+            this.dataClass = dataClass;
+            this.valueNull = valueNull;
+        }
+
+        @Override
+        protected PartitionCalc getPartitionCalc(SQLSyntax syntax, Type type, TypeEnvironment typeEnv, MExclSet<PartitionCalc> mCalcTokens, ImList<PartitionToken> exprs, ImOrderMap<PartitionToken, CompileOrder> orders, ImSet<PartitionToken> partitions) {
+            return new PartitionCalc(new PartitionCalc.Aggr(aggrFunc, exprs, orders, partitions));
+        }
+
+        public Type getType(Type exprType) {
+            if(dataClass != null)
+                return dataClass;
+
+            return super.getType(exprType);
+        }
+        public Stat getTypeStat(Stat typeStat, boolean forJoin) {
+            if(dataClass != null)
+                return dataClass.getTypeStat(forJoin);
+
+            return super.getTypeStat(typeStat, forJoin);
+        }
+
+        public boolean canBeNull() {
+            return valueNull;
+        }
+
+        public boolean equals(Object o) {
+            return this == o || o instanceof Custom && aggrFunc.equals(((Custom) o).aggrFunc)  && BaseUtils.nullEquals(dataClass, ((GroupType.Custom) o).dataClass) && valueNull == ((GroupType.Custom) o).valueNull;
+        }
+
+        public int hashCode() {
+            return Objects.hash(aggrFunc, dataClass, valueNull);
+        }
+    }
+    public static PartitionType CUSTOM(String aggrFunc, DataClass dataClass, boolean valueNull) {
+        return new Custom(aggrFunc, dataClass, valueNull);
+    }
 
     public final static PartitionType DISTR_CUM_PROPORTION = distrCumProportion(0); // кривовато немного, потом надо будет переделать
     
@@ -97,39 +151,6 @@ public abstract class PartitionType implements AggrType {
         }
 
         return result;
-    }
-
-    public boolean isSelect() {
-        return this== previous() || this== distrRestrict() || this== distrRestrictOver();
-    }
-
-    public boolean canBeNull() { // может возвращать null если само выражение не null
-        return this== previous() || this== distrRestrict() || this== distrRestrictOver();
-    }
-
-    public boolean isSelectNotInWhere() { // в общем то оптимизационная вещь потом можно убрать
-//        assert isSelect();
-        return false;
-    }
-
-    public Type getType(Type exprType) {
-        return exprType;
-    }
-
-    public int getMainIndex() {
-        return 0;
-    }
-
-    public Where getWhere(ImList<Expr> exprs) {
-        return Expr.getWhere(exprs);
-    }
-
-    public ImList<Expr> followFalse(Where falseWhere, ImList<Expr> exprs, boolean pack) {
-        return falseWhere.followFalse(exprs, pack);
-    }
-
-    public Expr getMainExpr(ImList<Expr> exprs) {
-        return exprs.get(0);
     }
 
     private static class DistrCumPartitionType extends PartitionType {
@@ -184,6 +205,12 @@ public abstract class PartitionType implements AggrType {
                 String over = "CASE WHEN prm5=1 THEN (CASE WHEN prm4 IS NULL OR prm2 < 0 THEN prm2 ELSE (CASE WHEN prm2 > prm4 THEN prm2-prm4 ELSE 0 END) END) ELSE 0 END"; // первый ряд, если нет positive или prm2 - negative, тогда догоняем до prm2, иначе, если prm2 > общей суммы надо дорасписать разницу, иначе все уже расписано
                 return new PartitionCalc("(" + syntax.getNotZero("(" + syntax.isNULL(posDistrMin + ",0", true) + "+" + over + ")", type, typeEnv) + ")", new PartitionToken[]{exprs.get(0), exprs.get(1)}, sumRestr, sumTot, restrNumber);
             }
+        }
+        public boolean isSelect() {
+            return true;
+        }
+        public boolean canBeNull() {
+            return true;
         }
 
         public final static PartitionType DISTR_RESTRICT = new DistrRestrPartitionType(false);

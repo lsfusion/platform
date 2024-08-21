@@ -94,8 +94,8 @@ public abstract class LinkClass extends DataClass<String> {
     }
     
     @Override
-    public FlexAlignment getValueAlignment() {
-        return FlexAlignment.CENTER;
+    public String getValueAlignmentHorz() {
+        return "center";
     }
 
     @Override

@@ -1,5 +1,6 @@
 package lsfusion.client.classes.data;
 
+import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.classes.controller.IntervalPropertyEditor;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
@@ -41,5 +42,9 @@ public class ClientTimeIntervalClass extends ClientIntervalClass {
     @Override
     protected String format(Long epoch) {
         return ClientTimeClass.instance.formatString(epochToLocalDateTime(epoch).toLocalTime());
+    }
+
+    public String toString() {
+        return ClientResourceBundle.getString("logics.classes.time.interval");
     }
 }

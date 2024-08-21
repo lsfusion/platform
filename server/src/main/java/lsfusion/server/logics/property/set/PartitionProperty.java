@@ -155,6 +155,6 @@ public class PartitionProperty<T extends PropertyInterface> extends SimpleIncrem
         return inferInnerInterfaceClasses(props.addList(partitions.toList()), partitionType.isSelect(), commonValue, orders, ordersNotNull, -1, inferType);
     }
     public ExClassSet inferInnerValueClass(final ImMap<T, ExClassSet> commonClasses, InferType inferType) {
-        return inferInnerValueClass(props, commonClasses, partitionType, inferType);
+        return inferInnerValueClass(props, orders, commonClasses, partitionType, inferType);
     }
 }

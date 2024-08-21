@@ -110,13 +110,6 @@ public abstract class GType implements Serializable {
         return this;
     }
 
-    public Style.TextAlign getHorzTextAlignment() {
-        return Style.TextAlign.LEFT;
-    }
-    public String getVertTextAlignment(boolean isInput) {
-        return "center";
-    }
-
     private final static GInputType inputType = new GInputType("text");
     public GInputType getValueInputType() {
         return inputType;

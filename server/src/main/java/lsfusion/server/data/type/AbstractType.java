@@ -4,7 +4,6 @@ import com.google.common.base.Throwables;
 import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
-import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.session.ExternalRequest;
 import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.data.sql.SQLSession;
@@ -27,7 +26,6 @@ import org.json.JSONObject;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.sql.PreparedStatement;
@@ -69,8 +67,23 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     }
 
     @Override
-    public FlexAlignment getValueAlignment() {
-        return FlexAlignment.START;
+    public String getValueAlignmentHorz() {
+        return "start";
+    }
+
+    @Override
+    public String getValueAlignmentVert() {
+        return "center";
+    }
+
+    @Override
+    public String getValueOverflowHorz() {
+        return "clip";
+    }
+
+    @Override
+    public boolean getValueShrinkHorz() {
+        return false;
     }
 
     protected static boolean isParseNullValue(String value) {
@@ -92,7 +105,7 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     public T parseHTTP(ExternalRequest.Param param) throws ParseException {
         Object value = param.value;
         if(value instanceof FileData)
-            value = ExternalUtils.encodeFileData((FileData) value, Charset.forName(param.charsetName));
+            value = ExternalUtils.encodeFileData((FileData) value, param.charsetName);
 
         String s = (String) value;
         if(isParseNullValue(s))
@@ -101,24 +114,24 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     }
 
     @Override
-    public Object formatHTTP(T value) {
+    public Object formatHTTP(T value, Charset charset) {
         if(value == null)
             return getParseNullValue();
         return formatString(value);
     }
 
     @Override
-    public T writeProp(RawFileData value, String extension) {
+    public T writeProp(RawFileData value, String extension, String charset) {
         if(value == null)
             return null;
-        return writePropNotNull(value, extension);
+        return writePropNotNull(value, extension, charset);
     }
 
-    protected T writePropNotNull(RawFileData value, String extension) {
+    protected T writePropNotNull(RawFileData value, String extension, String charset) {
         try {
-            return parseString(new String(value.getBytes()));
+            return parseString(value.getString(charset));
         } catch (ParseException e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
     }
 
@@ -130,11 +143,7 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     }
 
     public RawFileData readPropNotNull(T value, String charset) {
-        try {
-            return new RawFileData(formatString(value).getBytes(charset));
-        } catch (UnsupportedEncodingException e) {
-            throw Throwables.propagate(e);
-        }
+        return new RawFileData(formatString(value), charset);
     }
 
     public T parseNullableString(String string, boolean emptyIsNull) throws ParseException {
@@ -219,6 +228,16 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     @Override
     public String formatXML(T object) {
         return formatNullableString(object, true);
+    }
+
+    @Override
+    public String formatMessage(T object) {
+        return formatString(object, true);
+    }
+
+    @Override
+    public String formatEmail(T object) {
+        return formatString(object, true);
     }
 
     @Override

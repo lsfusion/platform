@@ -38,27 +38,37 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static lsfusion.base.BaseUtils.*;
-import static org.apache.hc.core5.http.ContentType.APPLICATION_FORM_URLENCODED;
 
 public class ExternalUtils {
 
     public static final String defaultCSVSeparator = ";";
+
+    // CHARSETS
+
+    // "bytes-to-string" charsets
+    public static Charset fileCharset = StandardCharsets.UTF_8; // when "data" files are converted to strings (should match cast)
+    public static Charset resourceCharset = StandardCharsets.UTF_8; // when "disk" (usually "resource") files are converted (read) to strings
+    public static Charset printCharset = StandardCharsets.UTF_8; // when "printed" files are converted to string
+    public static Charset downloadCharset = StandardCharsets.UTF_8; // when file ("disk" or "data" or "printed") is downloaded to the client
+    public static Charset jsonCharset = StandardCharsets.UTF_8; // when json file comes from the "unknown" place (i.e javascript client, url.openStream, etc.)
+
+    // reversed ("string-to/from-bytes") charsets
     public static final String defaultCSVCharset = "UTF-8";
     public static final String defaultXMLJSONCharset = "UTF-8";
     public static final String defaultDBFCharset = "CP1251";
 
-    public static final Charset stringCharset = StandardCharsets.UTF_8;
-
     public static Charset defaultUrlCharset = StandardCharsets.UTF_8;
-    public static Charset defaultBodyUrlCharset = StandardCharsets.ISO_8859_1;
-    public static Charset defaultBodyCharset = StandardCharsets.ISO_8859_1;
+    public static Charset defaultCookieCharset = StandardCharsets.UTF_8;
+    public static Charset defaultBodyUrlCharset = StandardCharsets.UTF_8;
+    public static Charset defaultBodyCharset = StandardCharsets.UTF_8;
 
-    public static final ContentType TEXT_PLAIN = ContentType.create(
-            "text/plain", stringCharset);
-    public static final ContentType MULTIPART_MIXED = ContentType.create(
-            "multipart/mixed", stringCharset);
-    public static final ContentType APPLICATION_OCTET_STREAM = ContentType.create(
-            "application/octet-stream");
+    public static Charset hashCharset = StandardCharsets.UTF_8;
+    public static Charset imageCharset = StandardCharsets.UTF_8;
+    public static Charset fileDataNameCharset = StandardCharsets.UTF_8; // file types name encoding
+
+    // "string-to-bytes" charsets
+    public static Charset javaCharset = StandardCharsets.UTF_8;
+    public static Charset emailCharset = StandardCharsets.UTF_8;
 
     public static final String ACTION_CN_PARAM = "action";
     public static final String SCRIPT_PARAM = "script";
@@ -94,7 +104,7 @@ public class ExternalUtils {
     public static String encodeCookie(String cookie, int version) {
         if(version == 0) {
             try {
-                return URLEncoder.encode(cookie, "UTF-8");
+                return URLEncoder.encode(cookie, defaultCookieCharset.name());
             } catch (UnsupportedEncodingException e) {
                 throw Throwables.propagate(e);
             }
@@ -104,7 +114,7 @@ public class ExternalUtils {
     public static String decodeCookie(String cookie, int version) {
         if(version == 0) {
             try {
-                return URLDecoder.decode(cookie, "UTF-8");
+                return URLDecoder.decode(cookie, defaultCookieCharset.name());
             } catch (UnsupportedEncodingException e) {
                 throw Throwables.propagate(e);
             }
@@ -112,16 +122,18 @@ public class ExternalUtils {
         return cookie;
     }
 
-    public static ExternalResponse processRequest(ExecInterface remoteExec, InputStream is, ContentType requestContentType,
+    public static ExternalResponse processRequest(ExecInterface remoteExec, ConvertFileValue convertFileValue, InputStream is, ContentType requestContentType,
                                                   String[] headerNames, String[] headerValues, String[] cookieNames, String[] cookieValues, String logicsHost,
                                                   Integer logicsPort, String logicsExportName, String scheme, String method, String webHost, Integer webPort,
                                                   String contextPath, String servletPath, String pathInfo, String query, String sessionId) throws IOException, MessagingException {
-        List<NameValuePair> queryParams = URLEncodedUtils.parse(query, ExternalUtils.defaultUrlCharset);
+        Charset urlCharset = ExternalUtils.defaultUrlCharset;
+        String urlCharsetName = urlCharset.toString();
+        List<NameValuePair> queryParams = URLEncodedUtils.parse(query, urlCharset);
 
         ImList<String> queryActionParams = getParameterValues(queryParams, PARAMS_PARAM);
         byte[] body = IOUtils.readBytesFromStream(is);
         ImList<ExternalRequest.Param> bodyActionParams = getListFromInputStream(body, requestContentType);
-        ImList<ExternalRequest.Param> paramsList = ListFact.add(queryActionParams.mapListValues(ExternalRequest::getUrlParam), bodyActionParams);
+        ImList<ExternalRequest.Param> paramsList = ListFact.add(queryActionParams.mapListValues(value -> ExternalRequest.getUrlParam(value, urlCharsetName)), bodyActionParams);
         
         ImList<String> returns = getParameterValues(queryParams, RETURN_PARAM);
 
@@ -130,7 +142,7 @@ public class ExternalUtils {
         boolean needNotificationId = getHeaderValue(headerNames, headerValues, NEED_NOTIFICATION_ID_HEADER) != null;
 
         ExternalRequest request = new ExternalRequest(returns.toArray(new String[0]), paramsList.toArray(new ExternalRequest.Param[paramsList.size()]),
-                queryParams, headerNames, headerValues, cookieNames,
+                queryParams, urlCharsetName, headerNames, headerValues, cookieNames,
                 cookieValues, logicsHost, logicsPort, logicsExportName, scheme, method, webHost, webPort, contextPath,
                 servletPath, pathInfo, query, requestContentType != null ? requestContentType.toString() : null, sessionId, body, signature, needNotificationId);
 
@@ -148,7 +160,7 @@ public class ExternalUtils {
                     request.params = paramsList.toArray(new ExternalRequest.Param[paramsList.size()]);
                 }
             } else
-                paramScript = ExternalRequest.getUrlParam(script);
+                paramScript = ExternalRequest.getUrlParam(script, urlCharsetName);
             execResult = remoteExec.eval(isEvalAction, paramScript, request);
         } else if (path.endsWith("/exec")) {
             String action = getParameterValue(queryParams, ACTION_CN_PARAM);
@@ -162,14 +174,14 @@ public class ExternalUtils {
             }
         }
 
-        return getExternalResponse(execResult, queryParams, (returns.isEmpty() ? "export" : returns.get(0)));
+        return getExternalResponse(execResult, queryParams, (returns.isEmpty() ? "export" : returns.get(0)), convertFileValue);
     }
 
-    public static ExternalResponse getExternalResponse(lsfusion.interop.session.ExternalResponse execResult, List<NameValuePair> queryParams, String singleFileName) {
+    public static ExternalResponse getExternalResponse(lsfusion.interop.session.ExternalResponse execResult, List<NameValuePair> queryParams, String singleFileName, ConvertFileValue convertFileValue) {
         if(execResult instanceof lsfusion.interop.session.ResultExternalResponse) {
             lsfusion.interop.session.ResultExternalResponse resultExecResult = (lsfusion.interop.session.ResultExternalResponse) execResult;
             Result<String> singleFileExtension = singleFileName != null ? new Result<>() : null;
-            HttpEntity entity = getInputStreamFromList(resultExecResult, queryParams, singleFileExtension);
+            HttpEntity entity = getInputStreamFromList(resultExecResult, convertFileValue, queryParams, singleFileExtension);
 
             String contentDisposition = null;
             if (singleFileName != null && singleFileExtension.result != null) // если возвращается один файл, задаем ему имя
@@ -196,19 +208,24 @@ public class ExternalUtils {
         return bodyUrl;
     }
 
-    public static ContentType getContentType(String extension) {
-        String mimeType = MIMETypeUtils.MIMETypeForFileExtension(extension);
-        String charset = null;
-        switch (extension) {
-            case "csv":
-                charset = defaultCSVCharset;
-                break;
-            case "json":
-            case "xml":
-                charset = defaultXMLJSONCharset;
-                break;
-        }
-        return charset != null ? ContentType.create(mimeType, charset) : ContentType.create(mimeType);
+    private static ContentType getUrlEncodedContentType(Charset charset) {
+        return ContentType.create(ContentType.APPLICATION_FORM_URLENCODED.getMimeType(), charset);
+    }
+
+    private static ContentType getStringContentType(Charset charset) {
+        return ContentType.create(ContentType.TEXT_PLAIN.getMimeType(), charset);
+    }
+
+    public static ContentType getHtmlContentType(Charset charset) {
+        return ContentType.create(ContentType.TEXT_HTML.getMimeType(), charset);
+    }
+
+    private static ContentType getMultipartContentType(Charset charset) {
+        return ContentType.create(ContentType.MULTIPART_MIXED.getMimeType(), charset);
+    }
+
+    public static ContentType getContentType(String extension, Charset charset) {
+        return ContentType.create(MIMETypeUtils.MIMETypeForFileExtension(extension), charset);
     }
 
     public static String getExtensionFromContentType(ContentType contentType) {
@@ -239,14 +256,14 @@ public class ExternalUtils {
 
     private static ExternalRequest.Param getRequestParam(Object object, ContentType contentType, boolean convertedToString) {
         assert object instanceof byte[] || (object instanceof String && convertedToString);
-        Charset charset = getCharsetFromContentType(contentType, false);
+        Charset charset = getBodyCharset(contentType);
 
         String extension = contentType != null ? getExtensionFromContentType(contentType) : null;
         Object value;
         if(extension != null) { // FILE
             RawFileData file;
             if(contentType.getMimeType().startsWith("text/") && convertedToString) //humanReadable
-                file = new RawFileData(((String)object).getBytes(charset));
+                file = new RawFileData((String)object, charset);
             else
                 file = new RawFileData((byte[])object);
             value = new FileData(file, extension);
@@ -259,7 +276,7 @@ public class ExternalUtils {
     }
 
     public static Charset getLoggingCharsetFromContentType(String contentType) {
-        return getCharsetFromContentType(parseContentType(contentType), false);
+        return getBodyCharset(parseContentType(contentType));
     }
 
     public static ContentType parseContentType(String contentType) {
@@ -267,13 +284,21 @@ public class ExternalUtils {
     }
 
     // REQUEST BODY
-    public static Charset getCharsetFromContentType(ContentType contentType, boolean url) {
-        Charset charset = null;
-        if(contentType != null)
-            charset = contentType.getCharset();
-        if(charset == null)
-            charset = url ? defaultBodyUrlCharset : defaultBodyCharset;
-        return charset;
+    public static Charset getBodyUrlCharset(ContentType contentType) {
+        if(contentType != null) {
+            Charset charset = contentType.getCharset();
+            if(charset != null)
+                return charset;
+        }
+        return defaultBodyUrlCharset;
+    }
+    public static Charset getBodyCharset(ContentType contentType) {
+        if(contentType != null) {
+            Charset charset = contentType.getCharset();
+            if(charset != null)
+                return charset;
+        }
+        return defaultBodyCharset;
     }
 
     // returns FileData for FILE or String for other classes, contentType can be null if there are no parameters
@@ -293,8 +318,8 @@ public class ExternalUtils {
                 else
                     mParamsList.add(getRequestParam(param, partContentType, true)); // multipart автоматически text/* возвращает как String
             }
-        } else if(mimeType != null && mimeType.equalsIgnoreCase(APPLICATION_FORM_URLENCODED.getMimeType())) {
-            Charset charset = getCharsetFromContentType(contentType, true);
+        } else if(mimeType != null && mimeType.equalsIgnoreCase(ContentType.APPLICATION_FORM_URLENCODED.getMimeType())) {
+            Charset charset = getBodyUrlCharset(contentType);
             List<NameValuePair> params = URLEncodedUtils.parse(new String(bytes, charset), charset);
             for(NameValuePair param : params)
                 mParamsList.add(ExternalRequest.getBodyUrlParam(param.getValue(), charset.toString()));
@@ -304,22 +329,54 @@ public class ExternalUtils {
         return mParamsList.immutableList();
     }
 
-    public static HttpEntity getInputStreamFromList(lsfusion.interop.session.ResultExternalResponse response, List<NameValuePair> queryParams, Result<String> singleFileExtension) {
-        Object[] results = response.results;
-        ContentType forceContentType = parseContentType(getHeaderValue(response.headerNames, response.headerValues, "Content-Type"));
-        String returnMultiType = getParameterValue(queryParams, RETURNMULTITYPE_PARAM);
-        return getInputStreamFromList(results, getBodyUrl(results, returnMultiType != null && returnMultiType.equals("bodyurl"), getCharsetFromContentType(forceContentType, true)), null, new ArrayList<>(), singleFileExtension, forceContentType);
+    public static class ResponseType {
+        public final ContentType forceContentType;
+        public final boolean returnBodyUrl;
+        public final Charset charset;
+
+        public ResponseType(ContentType forceContentType, boolean returnBodyUrl, Charset charset) {
+            this.forceContentType = forceContentType;
+            this.returnBodyUrl = returnBodyUrl;
+            this.charset = charset;
+        }
+    }
+
+    public static ResponseType getResponseType(List<NameValuePair> queryParams, String[] headerNames, String[] headerValues) {
+        ContentType forceContentType = parseContentType(getHeaderValue(headerNames, headerValues, "Content-Type"));
+
+        boolean returnBodyUrl = false;
+        if(queryParams != null) {
+            String returnMultiType = getParameterValue(queryParams, RETURNMULTITYPE_PARAM);
+            returnBodyUrl = returnMultiType != null && returnMultiType.equals("bodyurl");
+        }
+
+        Charset charset = returnBodyUrl ? getBodyUrlCharset(forceContentType) : getBodyCharset(forceContentType);
+        return new ResponseType(forceContentType, returnBodyUrl, charset);
+    }
+
+    public static HttpEntity getInputStreamFromList(lsfusion.interop.session.ResultExternalResponse response, ConvertFileValue convertFileValue, List<NameValuePair> queryParams, Result<String> singleFileExtension) {
+        Object[] results = convertFileValue(convertFileValue, response.results);
+
+        ResponseType responseType = getResponseType(queryParams, response.headerNames, response.headerValues);
+        return getInputStreamFromList(results, getBodyUrl(results, responseType.returnBodyUrl, responseType.charset), null, new ArrayList<>(), singleFileExtension, responseType.forceContentType, responseType.charset);
+    }
+
+    private static Object[] convertFileValue(ConvertFileValue convertFileValue, Object[] results) {
+        Object[] convertedResults = new Object[results.length];
+        for(int i = 0; i < results.length; i++)
+            convertedResults[i] = convertFileValue.convertFileValue(results[i]);
+        return convertedResults;
     }
 
     // results byte[] || String, можно было бы попровать getRequestResult (по аналогии с getRequestParam) выделить общий, но там возвращаемые классы разные, нужны будут generic'и и оно того не стоит
-    public static HttpEntity getInputStreamFromList(Object[] results, String bodyUrl, ImList<String> bodyParamNames, List<Map<String, String>> bodyParamHeadersList, Result<String> singleFileExtension, ContentType forceContentType) {
+    public static HttpEntity getInputStreamFromList(Object[] results, String bodyUrl, ImList<String> bodyParamNames, List<Map<String, String>> bodyParamHeadersList, Result<String> singleFileExtension, ContentType forceContentType, Charset charset) {
         HttpEntity entity;
         int paramCount = results.length;
         if (paramCount > 1 || (bodyParamNames != null && !bodyParamNames.isEmpty())) {
             MultipartEntityBuilder builder = MultipartEntityBuilder.create();
             //Default mode is STRICT, which uses only US-ASCII. EXTENDED mode allows UTF-8.
             builder.setMode(HttpMultipartMode.EXTENDED);
-            builder.setContentType(nvl(forceContentType, ExternalUtils.MULTIPART_MIXED));
+            builder.setContentType(nvl(forceContentType, getMultipartContentType(charset)));
             for (int i = 0; i < paramCount; i++) {
                 Object value = results[i];
                 String[] bodyParamName = trimToEmpty(bodyParamNames != null && i < bodyParamNames.size() ? bodyParamNames.get(i) : null).split(";");
@@ -328,9 +385,9 @@ public class ExternalUtils {
                 if (value instanceof FileData) {
                     String fileName = bodyParamName.length < 2 || isEmpty(bodyParamName[1]) ? "filename" : bodyParamName[1];
                     String extension = ((FileData) value).getExtension();
-                    formBodyPart = FormBodyPartBuilder.create(bodyPartName, new ByteArrayBody(((FileData) value).getRawFile().getBytes(), getContentType(extension), fileName)).build();
+                    formBodyPart = FormBodyPartBuilder.create(bodyPartName, new ByteArrayBody(((FileData) value).getRawFile().getBytes(), getContentType(extension, charset), fileName)).build();
                 } else {
-                    formBodyPart = FormBodyPartBuilder.create(bodyPartName, new StringBody((String) value, ExternalUtils.TEXT_PLAIN)).build();
+                    formBodyPart = FormBodyPartBuilder.create(bodyPartName, new StringBody((String) value, getStringContentType(charset))).build();
                 }
                 Map<String, String> bodyParamHeaders = bodyParamHeadersList.size() > i ? bodyParamHeadersList.get(i) : null;
                 if(bodyParamHeaders != null) {
@@ -345,14 +402,14 @@ public class ExternalUtils {
             Object value = BaseUtils.single(results);
             if (value instanceof FileData) {
                 String extension = ((FileData) value).getExtension();
-                entity = new ByteArrayEntity(((FileData) value).getRawFile().getBytes(), nvl(forceContentType, getContentType(extension)));
+                entity = new ByteArrayEntity(((FileData) value).getRawFile().getBytes(), nvl(forceContentType, getContentType(extension, charset)));
                 if(singleFileExtension != null)
                     singleFileExtension.set(extension);
             } else {
-                entity = new StringEntity((String) value, nvl(forceContentType, ExternalUtils.TEXT_PLAIN));
+                entity = new StringEntity((String) value, nvl(forceContentType, getStringContentType(charset)));
             }
         } else {
-            entity = bodyUrl != null ? new StringEntity(bodyUrl, nvl(forceContentType, APPLICATION_FORM_URLENCODED)) : null;
+            entity = bodyUrl != null ? new StringEntity(bodyUrl, nvl(forceContentType, getUrlEncodedContentType(charset))) : null;
         }
         return entity;
     }
@@ -387,24 +444,39 @@ public class ExternalUtils {
 
     public static String encodeUrlParam(Charset urlEncodeCharset, Object value) {
         String stringValue;
+        String charsetName = urlEncodeCharset.name();
         if(value instanceof FileData)
-            stringValue = encodeFileData((FileData) value, urlEncodeCharset);
+            stringValue = encodeFileData((FileData) value, charsetName);
         else
             stringValue = (String) value;
 
         try {
-            return URLEncoder.encode(stringValue, urlEncodeCharset.name());
+            return URLEncoder.encode(stringValue, charsetName);
         } catch (UnsupportedEncodingException e) {
             throw Throwables.propagate(e);
         }
     }
 
-    public static String encodeFileData(FileData fileData, Charset encodeCharset) {
-        return new String(fileData.getRawFile().getBytes(), encodeCharset);
+    public static String encodeFileData(FileData fileData, String encodeCharset) {
+        return fileData.getRawFile().getString(encodeCharset);
     }
 
-    public static FileData decodeFileData(String string, Charset encodeCharset) {
-        return new FileData(new RawFileData(string.getBytes(encodeCharset)), "file");
+    public static FileData decodeFileData(String string, String encodeCharset, String extension) {
+        return new FileData(new RawFileData(string, encodeCharset), extension);
+    }
+
+    // should correspond PValue.convertFileValue
+    public static String convertFileValue(String[] prefixes, String[] urls) {
+        StringBuilder result = new StringBuilder();
+        for (int j = 0; j < prefixes.length; j++) {
+            result.append(prefixes[j]);
+            if(j < urls.length) {
+                Serializable url = urls[j];
+                if(url != null) // file
+                    result.append((String) url);
+            }
+        }
+        return result.toString();
     }
 
     public static class ExternalResponse {

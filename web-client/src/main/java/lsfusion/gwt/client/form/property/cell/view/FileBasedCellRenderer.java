@@ -4,6 +4,7 @@ import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.ui.HasAutoHorizontalAlignment;
 import com.google.gwt.user.client.ui.Label;
 import lsfusion.gwt.client.base.BaseImage;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -29,38 +30,32 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
 
             img = (value != null ? getBaseImage(value) : StaticImage.EMPTY).createImage();
 
-            Style imgStyle = img.getStyle();
-            imgStyle.setVerticalAlign(Style.VerticalAlign.MIDDLE);
-            imgStyle.setProperty("maxWidth", "100%");
-            imgStyle.setProperty("maxHeight", "100%");
-
             if(property.hasEditObjectAction && value != null) {
                 img.addClassName("selectedFileCellHasEdit");
             } else {
                 img.removeClassName("selectedFileCellHasEdit");
             }
         }
-        element.appendChild(wrapImage(img));
+
+        Element dragDropLabel = getDragDropLabel(img);
+        element.appendChild(dragDropLabel);
+        GwtClientUtils.setupFillParent(dragDropLabel);
+
+        if(img != null) {
+            element.appendChild(img);
+        }
 
         return true;
     }
 
-    private Element wrapImage(Element img) {
+    private Element getDragDropLabel(Element img) {
         Label dropFilesLabel = new Label();
-        dropFilesLabel.setAutoHorizontalAlignment(HasAutoHorizontalAlignment.ALIGN_CENTER);
-        dropFilesLabel.setWidth("100%");
-        dropFilesLabel.setHeight("100%");
-
-        DataGrid.initSinkDragDropEvents(dropFilesLabel);
-
-        Element dropFilesLabelElement = dropFilesLabel.getElement();
-
-        if(img != null) {
-            dropFilesLabelElement.appendChild(img);
-        } else {
+        dropFilesLabel.getElement().addClassName("drag-drop-label");
+        if(img == null) {
             dropFilesLabel.setText(REQUIRED_VALUE);
         }
-
+//        dropFilesLabel.setAutoHorizontalAlignment(HasAutoHorizontalAlignment.ALIGN_CENTER);
+        DataGrid.initSinkDragDropEvents(dropFilesLabel);
         return dropFilesLabel.getElement();
     }
 
@@ -69,6 +64,8 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
         element.getStyle().clearPadding();
         element.removeClassName("text-based-value-required");
         element.setTitle("");
+
+        GwtClientUtils.clearFillParentElement(element);
 
         return false;
     }

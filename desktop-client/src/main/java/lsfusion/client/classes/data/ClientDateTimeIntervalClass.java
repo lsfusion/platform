@@ -1,5 +1,6 @@
 package lsfusion.client.classes.data;
 
+import lsfusion.client.ClientResourceBundle;
 import lsfusion.interop.classes.DataType;
 
 import java.text.ParseException;
@@ -30,5 +31,9 @@ public class ClientDateTimeIntervalClass extends ClientIntervalClass {
     @Override
     protected String format(Long epoch) {
         return ClientDateTimeClass.instance.formatString(epochToLocalDateTime(epoch));
+    }
+
+    public String toString() {
+        return ClientResourceBundle.getString("logics.classes.date.with.time.interval");
     }
 }

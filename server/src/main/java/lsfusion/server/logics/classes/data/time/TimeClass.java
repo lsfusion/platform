@@ -127,8 +127,8 @@ public class TimeClass extends HasTimeClass<LocalTime> {
     }
 
     @Override
-    public FlexAlignment getValueAlignment() {
-        return FlexAlignment.END;
+    public String getValueAlignmentHorz() {
+        return "end";
     }
 
     @Override

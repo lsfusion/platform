@@ -112,6 +112,7 @@ grammar LsfLogics;
 	package lsfusion.server.language; 
 	import lsfusion.server.language.ScriptingLogicsModule;
 	import lsfusion.server.language.ScriptParser;
+	import lsfusion.server.language.ScriptedStringUtils;
 }
 
 @lexer::members {
@@ -142,6 +143,10 @@ grammar LsfLogics;
 		}
 		return true;
 	}	
+
+    private boolean isRawStringSpecialChar(int ch) {
+    	return ScriptedStringUtils.isRawStringSpecialChar(ch);
+    }
 }
 
 @members {
@@ -1947,7 +1952,7 @@ groupCDPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns
 	;
 	
 groupPropertyBodyDefinition[List<TypedParameter> context] returns [GroupingType type, List<LPWithParams> mainProps = new ArrayList<>(), List<LPWithParams> orderProps = new ArrayList<>(), boolean ascending = true, LPWithParams whereProp = null]
-	:	
+	:
     	(
     	    gt=groupingType { $type = $gt.type; }
             mainList=nonEmptyPropertyExpressionList[context, true] { $mainProps = $mainList.props; }
@@ -1956,10 +1961,29 @@ groupPropertyBodyDefinition[List<TypedParameter> context] returns [GroupingType 
             mainList=nonEmptyPropertyExpressionList[context, true] { $mainProps = $mainList.props; }
             ('ORDER' ('DESC' { $ascending = false; } )?
             orderList=nonEmptyPropertyExpressionList[context, true] { $orderProps = $orderList.props; })
+        |
+            { boolean setOrdered = false; }
+            gct = aggrCustomType
+            (
+                mainList=nonEmptyPropertyExpressionList[context, true] { $mainProps = $mainList.props; }
+                (('WITHIN' { setOrdered = true; })? 'ORDER' ('DESC' { $ascending = false; } )?
+                orderList=nonEmptyPropertyExpressionList[context, true] { $orderProps = $orderList.props; })?
+                |
+                ('WITHIN' { setOrdered = true; })? 'ORDER' ('DESC' { $ascending = false; } )?
+                orderList=nonEmptyPropertyExpressionList[context, true] { $orderProps = $orderList.props; }
+            )
+            { $type = new CustomGroupingType($gct.func, setOrdered, $gct.cls, $gct.valueNull); }
         )
         ('WHERE' whereExpr=propertyExpression[context, true] { $whereProp = $whereExpr.property; } )?
     ;
 
+aggrCustomType returns [DataClass cls = null, String func = null, boolean valueNull = false]
+    :
+        'CUSTOM'
+        ('NULL' { $valueNull = true; } )?
+        (clsName = primitiveType { if(inMainParseState()) $cls = (DataClass)self.findClass($clsName.text); })?
+        t = stringLiteral { $func = $t.val; }
+    ;
 
 groupingType returns [GroupingType type]
 	:	'SUM' 	{ $type = GroupingType.SUM; }
@@ -1981,6 +2005,7 @@ partitionPropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 	List<LPWithParams> paramProps = new ArrayList<>();
 	NamedPropertyUsage pUsage = null;
 	PartitionType type = null;
+	int exprCnt = 1;
 	int groupExprCnt = 0;
 	boolean strict = false;
 	int precision = 0;
@@ -1989,27 +2014,39 @@ partitionPropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 }
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedPartitionProp(type, pUsage, strict, precision, ascending, useLast, groupExprCnt, paramProps, context);
+		$property = self.addScriptedPartitionProp(type, pUsage, strict, precision, ascending, useLast, exprCnt, groupExprCnt, paramProps, context);
 	}
 }
-	:	'PARTITION' 
-		(
-			(	'SUM'	{ type = PartitionType.sum(); } 
-			|	'PREV'	{ type = PartitionType.previous(); }
-			)
-		|	'UNGROUP'
-			ungroupProp=propertyUsage { pUsage = $ungroupProp.propUsage; }
-			(	'PROPORTION' { type = PartitionType.distrCumProportion(); } 
-				('STRICT' { strict = true; })? 
-				'ROUND' '(' prec=intLiteral ')' { precision = $prec.val; }
-			|	'LIMIT' { type = PartitionType.distrRestrict(); } 
-				('STRICT' { strict = true; })? 
-			)
-		)
-		expr=propertyExpression[context, dynamic] { paramProps.add($expr.property); }
-		(	'ORDER' ('DESC' { ascending = false; } )?
-			orderList=nonEmptyPropertyExpressionList[context, dynamic] { paramProps.addAll($orderList.props); }
-		)? 
+	:	'PARTITION' (
+            (
+                (	'SUM'	{ type = PartitionType.sum(); }
+                |	'PREV'	{ type = PartitionType.previous(); }
+                )
+            |	'UNGROUP'
+                ungroupProp=propertyUsage { pUsage = $ungroupProp.propUsage; }
+                (	'PROPORTION' { type = PartitionType.distrCumProportion(); }
+                    ('STRICT' { strict = true; })?
+                    'ROUND' '(' prec=intLiteral ')' { precision = $prec.val; }
+                |	'LIMIT' { type = PartitionType.distrRestrict(); }
+                    ('STRICT' { strict = true; })?
+                )
+            )
+            expr=propertyExpression[context, dynamic] { paramProps.add($expr.property); }
+            (	'ORDER' ('DESC' { ascending = false; } )?
+                orderList=nonEmptyPropertyExpressionList[context, dynamic] { paramProps.addAll($orderList.props); }
+            )?
+            |
+            gct = aggrCustomType { type = PartitionType.CUSTOM($gct.func, $gct.cls, $gct.valueNull); }
+            (
+                mainList=nonEmptyPropertyExpressionList[context, true] { paramProps.addAll($mainList.props); exprCnt = $mainList.props.size(); }
+                ('ORDER' ('DESC' { ascending = false; } )?
+                orderList=nonEmptyPropertyExpressionList[context, true] { paramProps.addAll($orderList.props); })?
+                |
+                { exprCnt = 0; }
+                'ORDER' ('DESC' { ascending = false; } )?
+                orderList=nonEmptyPropertyExpressionList[context, true] { paramProps.addAll($orderList.props); }
+            )
+        )
 		('WINDOW' 'EXCEPTLAST' { useLast = false; })?
 		(	'BY'
 			exprList=nonEmptyPropertyExpressionList[context, dynamic] { paramProps.addAll(0, $exprList.props); }
@@ -5438,6 +5475,7 @@ metaCodeLiteral returns [String sid]
 
 metaCodeStringLiteral returns [String val]
 	:	slit=multilineStringLiteral { $val = $slit.val; }
+	|   rslit=rawMultilineStringLiteral { $val = $rslit.val; }
 	;
 
 metaCodeNonStringLiteral
@@ -5623,6 +5661,7 @@ constantProperty[List<TypedParameter> context, boolean dynamic] returns [LPWithP
 expressionLiteral returns [ScriptingLogicsModule.ConstType cls, Object value]
 	:	cl=commonLiteral { $cls = $cl.cls; $value = $cl.value; } 	
 	|	str=multilineStringLiteral { $cls = ScriptingLogicsModule.ConstType.STRING; $value = $str.val; }
+	|   rstr=rawMultilineStringLiteral { $cls = ScriptingLogicsModule.ConstType.RSTRING; $value = $rstr.val; }
 	;
 
 commonLiteral returns [ScriptingLogicsModule.ConstType cls, Object value]
@@ -5734,6 +5773,10 @@ multilineStringLiteral returns [String val]
 	:	s=STRING_LITERAL { $val = self.removeCarriageReturn($s.text); }
 	;
 
+rawMultilineStringLiteral returns [String val]
+	:   rs=RAW_STRING_LITERAL { $val = self.removeCarriageReturn($rs.text); }
+	;
+
 stringLiteral returns [String val]
 	:	s=stringLiteralNoID { $val = $s.val; }
     |   id=ID { $val = null; }
@@ -5747,9 +5790,12 @@ primitiveType returns [String val]
 // it makes sense to be synchronized with noIDCheck in LSF.bnf in idea-plugin
 localizedStringLiteralNoID returns [LocalizedString val]
 	:	s=multilineStringLiteral { $val = self.transformLocalizedStringLiteral($s.val); }
+	|   rs=rawMultilineStringLiteral { $val = self.getRawLocalizedStringLiteralText($rs.text); }
 	;
+	
 stringLiteralNoID returns [String val]
 	:	s=multilineStringLiteral { $val = self.transformStringLiteral($s.text); }
+	|   rs=rawMultilineStringLiteral { $val = self.getRawStringLiteralText($rs.text); }
 	;
 
 localizedStringLiteral returns [LocalizedString val]
@@ -5874,6 +5920,9 @@ fragment STR_LITERAL_CHAR
 	| 	{input.LA(1) == '$' && input.LA(2) != '{'}?=> '$'
 	;
 
+fragment SIMPLE_RAW_STR_LITERAL_CHAR: ~('\'');
+fragment RAW_STR_SPECIAL_CHAR: ~(NEXT_ID_LETTER|SPACE|'\n'|'\''|'+'|'*'|','|'='|'<'|'>'|'('|')'|'['|']'|'{'|'}'|'#');
+
 fragment ESCAPED_STR_LITERAL_CHAR:	('\\'.) | ~('\\'|'{'|'}');
 fragment BLOCK: '{' (BLOCK | ESCAPED_STR_LITERAL_CHAR)* '}';
 fragment INTERPOLATION_BLOCK: '${' (BLOCK | ESCAPED_STR_LITERAL_CHAR)* '}';
@@ -5891,9 +5940,9 @@ fragment STRING_META_FRAGMENT : ('###' | '##')? (NEXTID_FRAGMENT ('###' | '##'))
 fragment INTERVAL_TYPE : 'DATE' | 'DATETIME' | 'TIME' | 'ZDATETIME';
 
 PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'TBOOLEAN' | 'DATE' | ('DATETIME' ('[' '0'..'6' ']')?) | ('ZDATETIME' ('[' '0'..'6' ']')?) | 'YEAR'
-                |   'TEXT' | 'RICHTEXT' | 'HTMLTEXT' | ('TIME' ('[' '0'..'6' ']')?) | 'WORDFILE' | 'IMAGEFILE' | 'PDFFILE' | 'DBFFILE' | 'RAWFILE'
+                |   'TEXT' | 'RICHTEXT' | 'HTMLTEXT' | ('TIME' ('[' '0'..'6' ']')?) | 'WORDFILE' | 'IMAGEFILE' | 'PDFFILE' | 'VIDEOFILE' | 'DBFFILE' | 'RAWFILE'
 				| 	'FILE' | 'EXCELFILE' | 'TEXTFILE' | 'CSVFILE' | 'HTMLFILE' | 'JSONFILE' | 'XMLFILE' | 'TABLEFILE' | 'NAMEDFILE'
-				|   'WORDLINK' | 'IMAGELINK' | 'PDFLINK' | 'DBFLINK'
+				|   'WORDLINK' | 'IMAGELINK' | 'PDFLINK' | 'VIDEOLINK' | 'DBFLINK'
 				|   'RAWLINK' | 'LINK' | 'EXCELLINK' | 'TEXTLINK' | 'CSVLINK' | 'HTMLLINK' | 'JSONLINK' | 'XMLLINK' | 'TABLELINK'
 				|   ('BPSTRING' ('[' DIGITS ']')?) | ('BPISTRING' ('[' DIGITS ']')?)
 				|	('STRING' ('[' DIGITS ']')?) | ('ISTRING' ('[' DIGITS ']')?) | 'NUMERIC' ('[' DIGITS ',' DIGITS ']')? | 'COLOR'
@@ -5909,6 +5958,13 @@ ID				:	ID_META_FRAGMENT;
 STRING_LITERAL	:	STRING_META_FRAGMENT;
 WS				:	(NEWLINE | SPACE) { $channel=HIDDEN; };
 COLOR_LITERAL 	:	'#' HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT;
+RAW_STRING_LITERAL:		('r'|'R') '\'' SIMPLE_RAW_STR_LITERAL_CHAR* '\''
+				  |  	(   {(input.LA(1) == 'r' || input.LA(1) == 'R') && isRawStringSpecialChar(input.LA(2)) && input.LA(3) == '\''}?=>
+				            ('r'|'R') c=RAW_STR_SPECIAL_CHAR '\'' { Character ch = $c.text.charAt(0); }
+	                    	({input.LA(1) != '\'' || input.LA(2) != ch}?=> .)*
+	                    	'\'' RAW_STR_SPECIAL_CHAR
+	                    )
+				  ;
 COMMENTS		:	'//' ~('\n')* ('\n' | EOF) { $channel=HIDDEN; };
 MULTILINE_COMMENTS	:	'/*' .* '*/' { $channel=HIDDEN; };	 
 UINT_LITERAL 	:	DIGITS;

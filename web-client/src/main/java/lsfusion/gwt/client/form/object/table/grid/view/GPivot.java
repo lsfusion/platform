@@ -674,8 +674,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             inclusions: inclusions,
             sortCols: sortCols,
             showUI:showUI,
-            valueHeight:@lsfusion.gwt.client.view.StyleDefaults::VALUE_HEIGHT,
-            componentHeightString:@lsfusion.gwt.client.view.StyleDefaults::COMPONENT_HEIGHT_STRING,
             cellHorizontalPadding:@lsfusion.gwt.client.view.StyleDefaults::CELL_HORIZONTAL_PADDING,
             columnAttributeName:@lsfusion.gwt.client.form.object.table.grid.view.GPivot::COLUMN,
             toImageButtonOptions: instance.@GPivot::getToImageButtonOptions(*)(),
@@ -1276,16 +1274,17 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     }
 
     public static void setTableToExcelPropertyAttributes(Element element, PValue value, GPropertyDraw property) {
-        Style.TextAlign textAlignStyle = property.getHorzTextAlignment(RendererType.PIVOT);
+        String textAlignStyle = property.getHorzTextAlignment();
         if (textAlignStyle != null) {
             switch (textAlignStyle) {
-                case LEFT:
+                case "start":
                     element.setAttribute("data-a-h", "left");
                     break;
-                case CENTER:
+                case "center":
+                case "stretch":
                     element.setAttribute("data-a-h", "center");
                     break;
-                case RIGHT:
+                case "end":
                     element.setAttribute("data-a-h", "right");
                     break;
             }

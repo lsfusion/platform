@@ -100,7 +100,7 @@ captionTheme '{system.events.theme}' (DesignEnv d) = staticCaption(designEnvThem
 serverTheme '{system.events.theme}' = DATA Theme ();
 captionServerTheme '{system.events.theme}' = staticCaption(serverTheme());
 theme '{system.events.theme}' (DesignEnv d) = OVERRIDE designEnvTheme(d), serverTheme(), Theme.classic;
-nameTheme = STRING(getWord(staticName(theme(currentDesignEnv())), '.', 2));
+nameTheme = STRING(basicStaticName(theme(currentDesignEnv())));
 useBootstrap (DesignEnv d) = theme(d) != Theme.excel;
 useBootstrap() = useBootstrap(currentDesignEnv()) PREREAD;
 
@@ -580,6 +580,9 @@ onWebClientStarted() + {
     }
 }
 WHEN FORMS design CHANGED (size()) DO {
+    INTERNAL CLIENT 'setGlobalClassName' PARAMS NULL, 'size-' + basicStaticName(currentSize());
+    INTERNAL CLIENT 'setGlobalClassName' PARAMS TRUE, 'size-' + basicStaticName(size());
+
     saveCurrentSize(TRUE);
 }
 
@@ -919,6 +922,16 @@ onClientStarted() + {
         changePassword();
     } 
 }
+
+lastConnection= GROUP LAST Connection connection ORDER connection BY computer(connection), clientType(connection);
+javaVersionNativeDesctop '{system.events.java.version.connection} ({system.events.client.type.native.desktop})' (Computer c)= javaVersion(lastConnection(c, ClientType.nativeDesktop));
+javaVersionNativeMobile '{system.events.java.version.connection} ({system.events.client.type.native.mobile})' (Computer c)= javaVersion(lastConnection(c, ClientType.nativeMobile));
+javaVersionWebDesctop '{system.events.java.version.connection} ({system.events.client.type.web.desktop})' (Computer c)= javaVersion(lastConnection(c, ClientType.webDesktop));
+javaVersionWebMobile '{system.events.java.version.connection} ({system.events.client.type.web.mobile})' (Computer c)= javaVersion(lastConnection(c, ClientType.webMobile));
+
+EXTEND FORM computers
+    PROPERTIES(c) READONLY javaVersionNativeDesctop, javaVersionNativeMobile, javaVersionWebDesctop, javaVersionWebMobile
+;
 
 // NOTIFY, PUSH, SHARE actions
 

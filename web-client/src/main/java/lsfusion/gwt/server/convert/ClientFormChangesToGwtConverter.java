@@ -1,5 +1,6 @@
 package lsfusion.gwt.server.convert;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.file.*;
 import lsfusion.client.form.ClientFormChanges;
 import lsfusion.client.form.design.ClientComponent;
@@ -22,7 +23,9 @@ import lsfusion.gwt.client.form.property.cell.classes.*;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.http.provider.form.FormSessionObject;
+import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.logics.ServerSettings;
+import lsfusion.interop.session.SessionInfo;
 
 import javax.servlet.ServletContext;
 import java.awt.*;
@@ -195,7 +198,7 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
     // AppFileImage, String | AppStaticImage, GStringWithFiles (String | AppStaticImage)
     public static Serializable convertFileValue(Object value, FormSessionObject sessionObject, ServletContext servletContext, ServerSettings serverSettings) throws IOException {
         if(value instanceof AppFileDataImage) { // dynamic image
-            return new AppFileImage(convertFileValue(((AppFileDataImage) value).data, sessionObject));
+            return new AppFileImage(convertFileValue(((AppFileDataImage) value).data, sessionObject), getExtension(((AppFileDataImage) value).data));
         }
 
         if (value instanceof FileData || value instanceof NamedFileData || value instanceof RawFileData) {
@@ -212,6 +215,14 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
         }
 
         return (Serializable) value;
+    }
+
+    public static String[] convertFileValue(Serializable[] files, ServletContext servletContext, LogicsSessionObject sessionObject, SessionInfo sessionInfo) {
+        try {
+            return convertFileValue(convertFileValue(files, servletContext, sessionObject.getServerSettings(sessionInfo, null, false)));
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     // String | AppStaticImage
@@ -241,18 +252,25 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
 
 
     private static String convertFileValue(Object value, FormSessionObject sessionObject) {
-        String displayName = null;
+        String displayName = value instanceof NamedFileData ? ((NamedFileData) value).getName() : null;
+        return FileUtils.saveFormFile(getFileData(value), displayName, sessionObject != null ? sessionObject.savedTempFiles : null);
+    }
+
+    private static String getExtension(Object value) {
+        return getFileData(value).getExtension();
+    }
+
+    private static FileData getFileData(Object value) {
         FileData fileData;
-        if(value instanceof NamedFileData) {
-            displayName = ((NamedFileData) value).getName();
+        if (value instanceof NamedFileData) {
             fileData = ((NamedFileData) value).getFileData();
-        } else if(value instanceof FileData) {
+        } else if (value instanceof FileData) {
             fileData = (FileData) value;
         } else { // it's a really rare case see FormChanges.convertFileValue - when there is no static file class, but still we get rawFileData
             fileData = new FileData((RawFileData) value, "");
         }
 
-        return FileUtils.saveFormFile(fileData, displayName, sessionObject != null ? sessionObject.savedTempFiles : null);
+        return fileData;
     }
 
     @Converter(from = Color.class)

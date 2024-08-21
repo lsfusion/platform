@@ -3,12 +3,9 @@ package lsfusion.gwt.client.form.filter.user.view;
 import com.google.gwt.event.dom.client.ClickHandler;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.StaticImage;
-import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
-
-import static lsfusion.gwt.client.view.StyleDefaults.COMPONENT_HEIGHT;
 
 public class GFilterControlsView extends FlexPanel {
     private static final ClientMessages messages = ClientMessages.Instance.get();
@@ -20,8 +17,6 @@ public class GFilterControlsView extends FlexPanel {
         this.handler = handler;
         addStyleName("filter-controls btn-group btn-toolbar");
         
-        GSize buttonFlexBasis = GSize.CONST(COMPONENT_HEIGHT);
-        
         if (handler.hasFiltersContainer()) {
             GToolbarButton addConditionButton = new GToolbarButton(StaticImage.ADD_FILTER, messages.formFilterAddCondition()) {
                 @Override
@@ -30,7 +25,7 @@ public class GFilterControlsView extends FlexPanel {
                 }
             };
             addConditionButton.addStyleName("filter-button");
-            add(addConditionButton, GFlexAlignment.CENTER, 0, false, buttonFlexBasis);
+            add(addConditionButton, GFlexAlignment.CENTER);
         }
 
         applyButton = new GToolbarButton(StaticImage.OK, messages.formFilterApply()) {
@@ -40,7 +35,7 @@ public class GFilterControlsView extends FlexPanel {
             }
         };
         applyButton.addStyleName("filter-button");
-        add(applyButton, GFlexAlignment.CENTER, 0, false, buttonFlexBasis);
+        add(applyButton, GFlexAlignment.CENTER);
 
         GToolbarButton resetConditionsButton = new GToolbarButton(StaticImage.RESET_FILTERS, messages.formFilterResetConditions()) {
             @Override
@@ -51,7 +46,7 @@ public class GFilterControlsView extends FlexPanel {
             }
         };
         resetConditionsButton.addStyleName("filter-button");
-        add(resetConditionsButton, GFlexAlignment.CENTER, 0, false, buttonFlexBasis);
+        add(resetConditionsButton, GFlexAlignment.CENTER);
     }
 
     public void setApplyEnabled(boolean enabled) {

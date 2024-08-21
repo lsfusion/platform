@@ -79,6 +79,13 @@ resource '{utils.resource.file}' = DATA LOCAL FILE ();
 resourcePath '{utils.resource.file.path}' = DATA LOCAL STRING ();
 readResource '{utils.read.resource}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.ReadResourceAction' (STRING);
 
+getCachedResource(STRING path) {
+    readResource(path);
+    exportFile() <- resource();
+    headersTo('Cache-Control') <- 'public, max-age=86400';
+    headersTo('Content-Disposition') <- 'inline';
+} @@api;
+
 resourcePaths = DATA LOCAL STRING (STRING);
 readResourcePaths  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.ReadResourcePathsAction' (STRING);
 
@@ -118,6 +125,8 @@ sheetNames '{utils.excel.sheet.names}' (EXCELFILE file)  INTERNAL 'lsfusion.serv
 // ---------------------------------- Pdf file actions  ---------------------------------- //
 pagesCountPdf '{utils.pdf.pages.count}' = DATA LOCAL INTEGER ();
 pagesCountPdf '{utils.pdf.pages.count}'  INTERNAL  'lsfusion.server.logics.classes.data.utils.pdf.PagesCountPdfAction' (PDFFILE);
+
+wordToPdf INTERNAL  'lsfusion.server.logics.classes.data.utils.pdf.WordToPdfAction' (WORDFILE);
 
 // ---------------------------------- Generate password  ---------------------------------- //
 generatedPassword '{utils.generated.password}' = DATA LOCAL TEXT();
@@ -208,6 +217,8 @@ escapeXMLValue(TEXT t) = replace(replace(replace(replace(replace(t, '&', '&amp;'
 copyToClipboard INTERNAL 'lsfusion.server.logics.classes.data.utils.string.CopyToClipboardAction' (TEXT);
 
 array(STRING string, STRING delimeter, INTEGER row) = FORMULA STRING value 'unnest(string_to_array($string, $delimeter))';
+
+basicStaticName(StaticObject object) = getWord(staticName(object), '.', 2);
 
 // --------------------------------------------- Numeric operations --------------------------------- //
 floor = FORMULA 'floor($1)';

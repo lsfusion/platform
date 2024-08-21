@@ -65,15 +65,12 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
                 used.size() + (ordersNotNull ? orders.size() : 0), skipNotNull, inferType, false);
     }
 
-    protected <I extends PropertyInterface> ExClassSet inferInnerValueClass(ImList<PropertyInterfaceImplement<I>> used, ImMap<I, ExClassSet> inferred, AggrType aggrType, InferType inferType) {
-        ExClassSet valueClass = used.get(aggrType.getMainIndex()).mapInferValueClass(inferred, inferType);
+    protected <I extends PropertyInterface> ExClassSet inferInnerValueClass(ImList<PropertyInterfaceImplement<I>> props, ImOrderMap<PropertyInterfaceImplement<I>,Boolean> orders, ImMap<I, ExClassSet> inferred, AggrType aggrType, InferType inferType) {
+        ExClassSet valueClass = aggrType.getMain(props, orders).mapInferValueClass(inferred, inferType);
         if(aggrType.isSelect())
             return valueClass;
+        assert valueClass != null || inferType == InferType.resolve();
 
-        if(valueClass == null) {
-            assert inferType == InferType.resolve();
-            return null;
-        }
         return ExClassSet.toExType(aggrType.getType(ExClassSet.fromExType(valueClass)));
     }
 

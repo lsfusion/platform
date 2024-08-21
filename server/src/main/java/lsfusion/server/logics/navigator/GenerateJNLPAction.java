@@ -6,6 +6,8 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.IOUtils;
 import lsfusion.base.file.RawFileData;
+import lsfusion.interop.session.ExternalUtils;
+import lsfusion.server.data.sql.adapter.DataAdapter;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
@@ -66,7 +68,7 @@ public class GenerateJNLPAction extends InternalAction {
             Integer port = (Integer) LM.baseLM.appPort.read(context);
             String exportName = (String) LM.baseLM.exportName.read(context);
             
-            String jnlpString = IOUtils.readStreamToString(getClass().getResourceAsStream("/client.jnlp"));
+            String jnlpString = DataAdapter.readResource("/client.jnlp");
             jnlpString = jnlpString.replace("${jnlp.codebase}", !isRedundantString(codebaseUrl) ? codebaseUrl : DEFAULT_CODEBASE_URL) 
                     .replace("${jnlp.url}", !isRedundantString(jnlpUrl) ? jnlpUrl : DEFAULT_JNLP_URL)
                     .replace("${jnlp.appName}", "lsFusion")
@@ -85,7 +87,7 @@ public class GenerateJNLPAction extends InternalAction {
             findProperty("headersTo[TEXT]").change("attachment; filename=\"client.jnlp\"", context, new DataObject("Content-Disposition", StringClass.text));
             //without empty cache-control no application is created
             findProperty("headersTo[TEXT]").change("", context, new DataObject("Cache-Control", StringClass.text)); // with Cache-Control 'no-cache, no-store' application won't install
-            findProperty("exportFile[]").change(new FileData(new RawFileData(jnlpString.getBytes()), "jnlp"), context);
+            findProperty("exportFile[]").change(new FileData(new RawFileData(jnlpString, ExternalUtils.resourceCharset), "jnlp"), context);
         } catch (Exception e) {
             Throwables.propagate(e);
         }

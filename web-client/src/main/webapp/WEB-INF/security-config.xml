@@ -36,6 +36,9 @@
     <http pattern="/downloadFile/**" auto-config="false" disable-url-rewriting="true" entry-point-ref="restAuthenticationEntryPoint">
         <intercept-url pattern="/**" access="isAuthenticated()"/>
         <csrf disabled="true"/>
+        <headers>
+            <frame-options policy="SAMEORIGIN" value="SAMEORIGIN "/>
+        </headers>
     </http>
 
     <http pattern="/forgot-password" security="none"/>

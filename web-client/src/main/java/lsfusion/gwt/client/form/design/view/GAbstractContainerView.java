@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.design.view;
 
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.BaseImage;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.form.design.GComponent;
@@ -112,12 +113,13 @@ public abstract class GAbstractContainerView {
         GComponent child = children.get(index);
         boolean shrink = child.isShrink();
         boolean alignShrink = child.isAlignShrink();
-        boolean shrinkOverflowVisible = child.isShrinkOverflowVisible();
 
-        if((child.getWidth() != null || (!vertical ? shrink : alignShrink) || fixFlexBasis) && !shrinkOverflowVisible)
-            view.getElement().addClassName("comp-shrink-horz");
-        if((child.getHeight() != null || (vertical ? shrink : alignShrink) || fixFlexBasis) && !shrinkOverflowVisible)
-            view.getElement().addClassName("comp-shrink-vert");
+        if((child.getWidth() != null || (!vertical ? shrink : alignShrink) || fixFlexBasis)) {
+            GwtClientUtils.setupOverflowHorz(view.getElement(), child.getOverflowHorz());
+        }
+        if((child.getHeight() != null || (vertical ? shrink : alignShrink) || fixFlexBasis)) {
+            GwtClientUtils.setupOverflowVert(view.getElement(), child.getOverflowVert());
+        }
 
         if(child instanceof GContainer)
             GFormLayout.updateComponentClass(((GContainer) child).valueClass, view, "value");

@@ -28,7 +28,6 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.io.*;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 public abstract class ExportHierarchicalAction<T extends Node<T>, O extends ObjectSelector> extends ExportAction<O> {
@@ -89,7 +88,7 @@ public abstract class ExportHierarchicalAction<T extends Node<T>, O extends Obje
         try (PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(outputStream, charset)))) {
             writeRootNode(out, rootNode);
         }
-        writeResult(exportFile, staticType, context, new RawFileData(outputStream));
+        writeResult(exportFile, staticType, context, new RawFileData(outputStream), charset);
     }
 
     protected abstract T createRootNode(String root, String tag);

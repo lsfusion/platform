@@ -12,6 +12,7 @@ import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.object.table.grid.view.GPivot;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
@@ -44,8 +45,8 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         GSize valueHeight = property.getValueHeight(font, false, true);
         if(valueHeight != null) // this way we can avoid prop-size-value fill-parent-perc conflict (see the css file) in most cases
             element.addClassName("prop-size-value");
-        if(!property.isShrinkOverflowVisible())
-            element.addClassName("prop-value-shrink");
+
+        CellRenderer.setupValueOverflowShrink(element, property);
 
         FlexPanel.setGridHeight(element, valueHeight);
 
@@ -67,7 +68,9 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         }
 
         element.removeClassName("prop-class-value");
-        element.removeClassName("prop-value-shrink");
+
+        CellRenderer.clearValueOverflowShrink(element, property);
+
         FlexPanel.setGridHeight(element, (GSize)null);
 
         return false;

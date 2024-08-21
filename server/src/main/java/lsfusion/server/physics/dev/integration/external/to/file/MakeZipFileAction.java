@@ -7,7 +7,6 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.file.FileData;
-import lsfusion.base.file.IOUtils;
 import lsfusion.base.file.RawFileData;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.query.build.QueryBuilder;
@@ -60,7 +59,7 @@ public class MakeZipFileAction extends InternalAction {
                             FileData fileBytes = (FileData) result.getValue(i).get("zipping").getValue();
                             if(fileBytes == null) {
                                 String filePath = (String) result.getValue(i).get("zippingPath").getValue();
-                                fileBytes = new FileData(new RawFileData(IOUtils.getFileBytes(filePath)), BaseUtils.getFileExtension(filePath));
+                                fileBytes = new FileData(new RawFileData(filePath), BaseUtils.getFileExtension(filePath));
                             }
 
                             InputStream bis = fileBytes.getRawFile().getInputStream();

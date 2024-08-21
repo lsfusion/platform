@@ -6,6 +6,7 @@ import lsfusion.base.SystemUtils;
 import lsfusion.base.file.IOUtils;
 import lsfusion.base.remote.RMIUtils;
 import lsfusion.server.base.controller.thread.ThreadUtils;
+import lsfusion.server.data.sql.adapter.DataAdapter;
 import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.log4j.Logger;
@@ -80,9 +81,9 @@ public class BusinessLogicsBootstrap {
 
     private static String getSettingsPath() throws IOException {
         String settingsPath = null;
-        InputStream settingsStream = BusinessLogicsBootstrap.class.getResourceAsStream("/lsfusion.properties");
-        if (settingsStream != null) {
-            Scanner scanner = new Scanner(IOUtils.readStreamToString(settingsStream));
+        String settings = DataAdapter.readResource("/lsfusion.properties");
+        if (settings != null) {
+            Scanner scanner = new Scanner(settings);
             while (scanner.hasNextLine()) {
                 Pattern p = Pattern.compile("logics\\.lsfusionXMLPath=(.*)");
                 Matcher m = p.matcher(scanner.nextLine());

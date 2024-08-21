@@ -4,12 +4,14 @@ import com.google.common.io.ByteStreams;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.MIMETypeUtils;
 import lsfusion.gwt.server.FileUtils;
+import lsfusion.interop.session.ExternalUtils;
 import org.apache.commons.httpclient.util.URIUtil;
 import org.springframework.web.HttpRequestHandler;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.nio.charset.Charset;
 
 public class DownloadFileRequestHandler implements HttpRequestHandler {
 
@@ -40,9 +42,10 @@ public class DownloadFileRequestHandler implements HttpRequestHandler {
         if(version != null)
             fileName = BaseUtils.replaceFileNameAndExtension(fileName, version);
 
-        response.setContentType(MIMETypeUtils.MIMETypeForFileExtension(extension));
+        Charset charset = ExternalUtils.downloadCharset;
+        response.setContentType(ExternalUtils.getContentType(extension, charset).toString());
         //inline = open in browser, attachment = download
-        response.addHeader("Content-Disposition", "inline; filename*=UTF-8''" + URIUtil.encodeQuery(getFileName(displayName, extension)));
+        response.addHeader("Content-Disposition", "inline; filename*=" + charset.name() + "''" + URIUtil.encodeQuery(getFileName(displayName, extension)));
         // expiration will be set in urlRewrite.xml /downloadFile (just to have it at one place)
 
         // in theory e-tag and last modified may be send but since we're using "version" it's not that necessary

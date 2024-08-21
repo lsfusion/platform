@@ -5,6 +5,8 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.base.file.IOUtils;
+import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.query.build.QueryBuilder;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -23,8 +25,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-
-import static lsfusion.base.file.IOUtils.readFileToString;
 
 public class BackupAction extends InternalAction {
 
@@ -77,7 +77,7 @@ public class BackupAction extends InternalAction {
 
                 context.getDbManager().backupDB(context, backupFileName, threadCount, excludeTables);
 
-                findProperty("log[Backup]").change(readFileToString(backupFileLogPath), newContext, backupObject);
+                findProperty("log[Backup]").change(IOUtils.readFileToString(backupFileLogPath, ExternalUtils.resourceCharset.name()), newContext, backupObject);
                 newContext.apply();
             }
         } catch (Exception e) {

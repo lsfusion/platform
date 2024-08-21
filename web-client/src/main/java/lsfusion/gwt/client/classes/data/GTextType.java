@@ -52,11 +52,6 @@ public class GTextType extends GStringType {
         return ClientMessages.Instance.get().typeTextCaption() + (type != null ? " " + type : "");
     }
 
-    @Override
-    public String getVertTextAlignment(boolean isInput) {
-        return "top";
-    }
-
     private final static GInputType inputType = new GInputType("textarea");
     @Override
     public GInputType getValueInputType() {

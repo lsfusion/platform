@@ -17,6 +17,7 @@ import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.lambda.set.MergeFunctionSet;
 import lsfusion.base.lambda.set.RemoveFunctionSet;
 import lsfusion.base.mutability.TwinImmutableObject;
+import lsfusion.interop.session.ExternalUtils;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
@@ -26,7 +27,6 @@ import java.io.*;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -251,7 +251,7 @@ public class BaseUtils {
 
         if (objectType == 6) {
             int len = inStream.readInt();
-            return new RawFileData(IOUtils.readBytesFromStream(inStream, len));
+            return new RawFileData(inStream, len);
         }
 
         if (objectType == 7) {
@@ -300,7 +300,7 @@ public class BaseUtils {
                 if(inStream.readBoolean()) {
                     String name = inStream.readUTF();
                     int fileLength = inStream.readInt();
-                    files[i] = new StringWithFiles.File(new RawFileData(IOUtils.readBytesFromStream(inStream, fileLength)), name);
+                    files[i] = new StringWithFiles.File(new RawFileData(inStream, fileLength), name);
                 } else
                     files[i] = IOUtils.readAppImage(inStream);
             }
@@ -1170,6 +1170,29 @@ public class BaseUtils {
         return new String(chars);
     }
 
+    public static byte[] getSafeBytes(String string, String charset) {
+        try {
+            return string.getBytes(charset);
+        } catch (UnsupportedEncodingException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+    public static String toSafeString(byte[] array, String charset) {
+        try {
+            return new String(array, charset);
+        } catch (UnsupportedEncodingException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    // base64 encodings
+    public static byte[] getHashBytes(String string) {
+        return string.getBytes(ExternalUtils.hashCharset);
+    }
+    public static String toHashString(byte[] array) {
+        return new String(array, ExternalUtils.hashCharset);
+    }
+
     public static String truncate(String s, int length) {
         return length < s.length() ? s.substring(0, length) : s;
     }
@@ -1793,12 +1816,12 @@ public class BaseUtils {
     }
 
     public static String calculateBase64Hash(String algorithm, String input, String salt) throws RuntimeException {
-        return new String(Base64.encodeBase64(calculateHash(algorithm, input, salt)), StandardCharsets.UTF_8);
+        return toHashString(Base64.encodeBase64(calculateHash(algorithm, input, salt)));
     }
 
     public static byte[] calculateHash(String algorithm, String input, String salt) throws RuntimeException {
         try {
-            return MessageDigest.getInstance(algorithm).digest(mergePasswordAndSalt(input, salt).getBytes(StandardCharsets.UTF_8));
+            return MessageDigest.getInstance(algorithm).digest(mergePasswordAndSalt(input, salt).getBytes(ExternalUtils.hashCharset));
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }

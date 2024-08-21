@@ -2,7 +2,6 @@ package lsfusion.gwt.client.form.property;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
-import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.*;
@@ -409,7 +408,14 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public boolean panelColumnVertical;
     
-    public GFlexAlignment valueAlignment;
+    public String valueAlignmentHorz;
+    public String valueAlignmentVert;
+
+    public String valueOverflowHorz;
+    public String valueOverflowVert;
+
+    public boolean valueShrinkHorz;
+    public boolean valueShrinkVert;
 
     public String comment;
     public String commentElementClass;
@@ -760,25 +766,31 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GFlexAlignment getAlignment() {
         return alignment;
     }
-    
-    public Style.TextAlign getHorzTextAlignment(RendererType rendererType) {
-        if (valueAlignment != null) {
-            switch (valueAlignment) {
-                case START:
-                    return Style.TextAlign.LEFT;
-                case CENTER:
-                case STRETCH:
-                    return Style.TextAlign.CENTER;
-                case END:
-                    return Style.TextAlign.RIGHT;
-            }
-        }
-        return getRenderType(rendererType).getHorzTextAlignment();
+
+    public String getHorzTextAlignment() {
+        return valueAlignmentHorz;
     }
 
-    public String getVertTextAlignment(boolean isInput, RendererType rendererType) {
-        return getRenderType(rendererType).getVertTextAlignment(isInput);
+    public String getVertTextAlignment() {
+        return valueAlignmentVert;
     }
+
+    public String getValueOverflowHorz() {
+        return valueOverflowHorz;
+    }
+
+    public String getValueOverflowVert() {
+        return valueOverflowVert;
+    }
+
+    public boolean getValueShrinkHorz() {
+        return valueShrinkHorz;
+    }
+
+    public boolean getValueShrinkVert() {
+        return valueShrinkVert;
+    }
+
 
     public static ArrayList<GGroupObjectValue> getColumnKeys(GPropertyDraw property, NativeSIDMap<GGroupObject, ArrayList<GGroupObjectValue>> currentGridObjects) {
         ArrayList<GGroupObjectValue> columnKeys = GGroupObjectValue.SINGLE_EMPTY_KEY_LIST;

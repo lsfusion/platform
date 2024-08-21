@@ -11,21 +11,21 @@ public class WriteToComPortClientAction implements ClientAction {
     public RawFileData file;
     public int baudRate;
     public int comPort;
-    public boolean useJSerialComm;
+    public boolean useJssc;
 
-    public WriteToComPortClientAction(RawFileData file, int baudRate, int comPort, boolean useJSerialComm) {
+    public WriteToComPortClientAction(RawFileData file, int baudRate, int comPort, boolean useJssc) {
         this.file = file;
         this.baudRate = baudRate;
         this.comPort = comPort;
-        this.useJSerialComm = useJSerialComm;
+        this.useJssc = useJssc;
     }
 
     @Override
     public Object dispatch(ClientActionDispatcher dispatcher) {
-        if(useJSerialComm) {
-            return SerialPortHandler2.writeBytes("COM" + comPort, baudRate, file.getBytes());
-        } else {
+        if(useJssc) {
             return SerialPortHandler.writeBytes("COM" + comPort, baudRate, file.getBytes());
+        } else {
+            return SerialPortHandler2.writeBytes("COM" + comPort, baudRate, file.getBytes());
         }
     }
 }

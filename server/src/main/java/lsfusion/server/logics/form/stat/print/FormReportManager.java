@@ -252,7 +252,7 @@ public abstract class FormReportManager extends FormDataManager {
                 FileData fileReport = (FileData) readReport;
                 RawFileData rawFile = fileReport.getRawFile();
                 if(fileReport.getExtension().equals("path"))
-                    readReport = new String(rawFile.getBytes());
+                    readReport = rawFile.convertString();
                 else
                     readReport = rawFile;
             }

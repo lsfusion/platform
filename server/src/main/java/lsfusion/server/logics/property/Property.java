@@ -1872,7 +1872,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
                 return null;
 
             return getSelectProperty(baseLM, mapPropertyInterfaces, innerInterfaces, name, selected, filterSelected, where, orders);
-        }, new Pair<>(nameType.getAverageCharLength() * whereCount, whereCount), readEntity != null ? ListFact.singleton(readEntity.map(MapFact.EMPTY())) : null, multi, nameType instanceof HTMLStringClass || nameType instanceof HTMLTextClass, notNull);
+        }, new Pair<>(nameType.getAverageCharLength() * whereCount, whereCount), readEntity != null ? ListFact.singleton(readEntity.map()) : null, multi, nameType instanceof HTMLStringClass || nameType instanceof HTMLTextClass, notNull);
     }
 
     private static <I extends PropertyInterface, T extends PropertyInterface, W extends PropertyInterface> PropertyMapImplement<?, T> getSelectProperty(BaseLogicsModule baseLM, ImRevMap<T, I> mapPropertyInterfaces, ImSet<I> innerInterfaces, PropertyMapImplement<?, I> name, PropertyInterfaceImplement<I> selected, boolean filterSelected, PropertyMapImplement<W, I> where, ImOrderMap<? extends PropertyInterfaceImplement<I>, Boolean> orders) {
@@ -2555,11 +2555,11 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return getInterfaceStat(MapFact.EMPTYREV(), alotHeur);
     }
     
-    protected Stat getInterfaceStat(ImMap<T, StaticParamNullableExpr> fixedExprs) {
+    public Stat getInterfaceStat(ImMap<T, StaticParamNullableExpr> fixedExprs) {
         return getInterfaceStat(fixedExprs, false);
     }
 
-    private Cost getInterfaceCost(ImMap<T, StaticParamNullableExpr> fixedExprs) {
+    public Cost getInterfaceCost(ImMap<T, StaticParamNullableExpr> fixedExprs) {
         return getInterfaceCostStat(fixedExprs, false).second;
     }
 
@@ -2588,7 +2588,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return new Pair<>(statRows.getRows(), statRows.getCost());
     }
 
-    protected Stat getSelectStat(ImMap<T, StaticParamNullableExpr> fixedExprs) {
+    public Stat getSelectStat(ImMap<T, StaticParamNullableExpr> fixedExprs) {
         // we can't use MATCH here, because there is a bug, that now MATCH, CONTAINS stats is not calculate properly if the expr is not indexed
         // it's not clear how to fix this, because the table join cost is calculated based on stat, without knowing how this stat was obtained
         // for INTERVAL it could be fixed by removing isIndexed check, but for MATCH, CONTAINS we need to know what type of index we should use (it may be solved with some virtual join probably)
@@ -2620,14 +2620,6 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
     public Stat getInterfaceStat(ImSet<T> interfaces) {
         return getInterfaceStat(getInterfaceParamExprs(interfaces));
-    }
-
-    public Cost getInterfaceCost(ImSet<T> interfaces) {
-        return getInterfaceCost(getInterfaceParamExprs(interfaces));
-    }
-
-    public Stat getSelectStat(ImSet<T> fixedInterfaces) {
-        return getSelectStat(getInterfaceParamExprs(fixedInterfaces));
     }
 
     public Cost getSelectCost(ImMap<T, StaticParamNullableExpr> fixedInterfaces) {
