@@ -26,6 +26,7 @@ public abstract class ClientNavigatorElement {
     public String creationPath;
     public String path;
     public String caption;
+    public boolean hide;
 
     public String elementClass;
 

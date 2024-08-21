@@ -49,6 +49,7 @@ public abstract class NavigatorElement {
 
     // need supplier to have relevant form captions
     public Property headerProperty;
+    public Property showIfProperty;
     public Supplier<LocalizedString> caption;
 
     public Property propertyImage;
@@ -245,6 +246,10 @@ public abstract class NavigatorElement {
 
     public void setHeaderProperty(Property headerProperty) {
         this.headerProperty = headerProperty;
+    }
+
+    public void setShowIfProperty(Property showIfProperty) {
+        this.showIfProperty = showIfProperty;
     }
 
     public void finalizeAroundInit(BaseLogicsModule LM) {

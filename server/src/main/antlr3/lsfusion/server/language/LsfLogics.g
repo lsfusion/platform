@@ -5152,6 +5152,7 @@ navigatorElementOptions returns [NavigatorElementOptions options]
 	        }
 	    }
 	|   'HEADER' headerExpr = propertyExpression[null, false] { $options.headerProperty = $headerExpr.property; }
+	|   'SHOWIF' showIfExpr = propertyExpression[null, false] { $options.showIfProperty = $showIfExpr.property; }
 	)*
 	;
 

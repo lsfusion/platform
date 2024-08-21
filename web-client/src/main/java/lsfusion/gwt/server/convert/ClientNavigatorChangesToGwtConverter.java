@@ -3,10 +3,7 @@ package lsfusion.gwt.server.convert;
 import lsfusion.client.navigator.*;
 import lsfusion.client.navigator.window.ClientClassWindowNavigator;
 import lsfusion.gwt.client.GNavigatorChangesDTO;
-import lsfusion.gwt.client.navigator.GCaptionElementNavigator;
-import lsfusion.gwt.client.navigator.GClassElementNavigator;
-import lsfusion.gwt.client.navigator.GImageElementNavigator;
-import lsfusion.gwt.client.navigator.GPropertyNavigator;
+import lsfusion.gwt.client.navigator.*;
 import lsfusion.gwt.client.navigator.window.GClassWindowNavigator;
 import lsfusion.gwt.server.MainDispatchServlet;
 
@@ -64,5 +61,11 @@ public class ClientNavigatorChangesToGwtConverter extends ObjectConverter {
     @Converter(from = ClientClassWindowNavigator.class)
     public GClassWindowNavigator convertClassWindowNavigator(ClientClassWindowNavigator imageElementNavigator) {
         return new GClassWindowNavigator(imageElementNavigator.canonicalName);
+    }
+
+    @Cached
+    @Converter(from = ClientShowIfElementNavigator.class)
+    public GShowIfElementNavigator convertShowIfElementNavigator(ClientShowIfElementNavigator showIfElementNavigator) {
+        return new GShowIfElementNavigator(showIfElementNavigator.canonicalName);
     }
 }
