@@ -3850,14 +3850,16 @@ externalFormat [List<TypedParameter> context, boolean dynamic] returns [External
 	            conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; }
 	|	'HTTP'	{ $format = ExternalFormat.HTTP; } ('CLIENT' { $clientAction = true; })?
 	            (methodVal = externalHttpMethod { $method = $methodVal.method; })? conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; }
-	            ('BODYURL' bodyUrlVal = propertyExpression[context, dynamic] { $bodyUrl = $bodyUrlVal.property; })?
-	            ('BODYPARAMNAMES' firstName=propertyExpression[context, dynamic] { $bodyParamNames.add($firstName.property); } (',' nextName=propertyExpression[context, dynamic] { $bodyParamNames.add($nextName.property); })*)?
-                ('BODYPARAMHEADERS' firstProp = propertyUsage { $bodyParamHeadersList.add($firstProp.propUsage); } (',' nextProp = propertyUsage { $bodyParamHeadersList.add($nextProp.propUsage); })*)?
-	            ('HEADERS' headersVal = propertyUsage { $headers = $headersVal.propUsage; })?
-	            ('COOKIES' cookiesVal = propertyUsage { $cookies = $cookiesVal.propUsage; })?
-	            ('HEADERSTO' headersToVal = propertyUsage { $headersTo = $headersToVal.propUsage; })?
-	            ('COOKIESTO' cookiesToVal = propertyUsage { $cookiesTo = $cookiesToVal.propUsage; })?
-	            ('NOENCODE' { $noEncode = true; })?
+	            (
+	                'BODYURL' bodyUrlVal = propertyExpression[context, dynamic] { $bodyUrl = $bodyUrlVal.property; }
+	            |   'BODYPARAMNAMES' firstName=propertyExpression[context, dynamic] { $bodyParamNames.add($firstName.property); } (',' nextName=propertyExpression[context, dynamic] { $bodyParamNames.add($nextName.property); })*
+	            |   'BODYPARAMHEADERS' firstProp = propertyUsage { $bodyParamHeadersList.add($firstProp.propUsage); } (',' nextProp = propertyUsage { $bodyParamHeadersList.add($nextProp.propUsage); })*
+	            |   'HEADERS' headersVal = propertyUsage { $headers = $headersVal.propUsage; }
+	            |   'COOKIES' cookiesVal = propertyUsage { $cookies = $cookiesVal.propUsage; }
+	            |   'HEADERSTO' headersToVal = propertyUsage { $headersTo = $headersToVal.propUsage; }
+	            |   'COOKIESTO' cookiesToVal = propertyUsage { $cookiesTo = $cookiesToVal.propUsage; }
+	            |   'NOENCODE' { $noEncode = true; }
+	            )*
 	|	'DBF'	{ $format = ExternalFormat.DBF; } conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; } 'APPEND' ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
 	|	'LSF'	{ $format = ExternalFormat.LSF; } conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; } ('EXEC' | ('EVAL' { $eval = true; } ('ACTION' { $action = true; })? )) execVal = propertyExpression[context, dynamic] { $exec = $execVal.property; }
 	|   'JAVA' 	{ $format = ExternalFormat.JAVA; } conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; }
