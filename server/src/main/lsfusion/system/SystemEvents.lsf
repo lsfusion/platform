@@ -2,6 +2,8 @@ MODULE SystemEvents;
 
 REQUIRE System, Reflection, Time;
 
+// some extracted from onStarted() important things needed for early [anonymous] login on server with lightStart on (first of all for tryonline logics) 
+onInit ABSTRACT LIST ();
 onStarted  ABSTRACT LIST ( );
 onClientStarted ABSTRACT LIST ();
 onDesktopClientStarted  ABSTRACT LIST ( );
