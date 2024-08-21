@@ -304,4 +304,8 @@ public class ClientFormLayout extends PanelWidget {
     public void setBlocked(boolean blocked) {
         this.blocked = blocked;
     }
+
+    public Map<ClientComponent, Widget> getBaseComponentViews() {
+        return baseComponentViews;
+    }
 }

@@ -38,11 +38,13 @@ import lsfusion.client.form.filter.ClientRegularFilterWrapper;
 import lsfusion.client.form.filter.user.ClientFilter;
 import lsfusion.client.form.filter.user.ClientPropertyFilter;
 import lsfusion.client.form.filter.user.controller.FilterController;
+import lsfusion.client.form.filter.user.view.FilterConditionView;
 import lsfusion.client.form.filter.view.SingleFilterBox;
 import lsfusion.client.form.object.ClientCustomObjectValue;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.ClientObject;
+import lsfusion.client.form.object.table.controller.AbstractTableController;
 import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.client.form.object.table.grid.controller.GridController;
 import lsfusion.client.form.object.table.grid.user.design.GridUserPreferences;
@@ -94,8 +96,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static lsfusion.base.BaseUtils.nvl;
-import static lsfusion.base.BaseUtils.serializeObject;
+import static lsfusion.base.BaseUtils.*;
 import static lsfusion.client.ClientResourceBundle.getString;
 
 public class ClientFormController implements AsyncListener {
@@ -530,6 +531,20 @@ public class ClientFormController implements AsyncListener {
                     return true;
                 }
             });
+        }
+    }
+
+    public void setRegularFilterIndex(Integer filterGroup, Integer index) {
+        for (Map.Entry<ClientComponent, Widget> entry : formLayout.getBaseComponentViews().entrySet()) {
+            ClientComponent component = entry.getKey();
+            if (component instanceof ClientRegularFilterGroup && (filterGroup == null || filterGroup == component.getID())) {
+                Widget widget = ((FlexPanel) entry.getValue()).getWidget(0);
+                if (widget instanceof SingleFilterBox) { //single filter
+                    ((SingleFilterBox) widget).forceSelect(index > 0);
+                } else if (widget instanceof ComboBoxWidget) { //multiple filter
+                    ((ComboBoxWidget) widget).setSelectedIndex(index);
+                }
+            }
         }
     }
 
@@ -1574,7 +1589,7 @@ public class ClientFormController implements AsyncListener {
             return;
         threadSettingRegularFilter.set(true);
         try {
-            rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("setRegularFilter - " + filterGroup.getLogName()) {
+            rmiQueue.adaptiveSyncRequest(new ProcessServerResponseRmiRequest("setRegularFilter - " + filterGroup.getLogName()) {
                 @Override
                 protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
                     return remoteForm.setRegularFilter(requestIndex, lastReceivedRequestIndex, filterGroup.getID(), (filter == null) ? -1 : filter.getID());

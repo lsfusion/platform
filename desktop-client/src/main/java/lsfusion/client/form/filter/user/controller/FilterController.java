@@ -112,11 +112,20 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
     public void toggleControlsVisible() {
         setControlsVisible(!controlsVisible);
         
-        if (conditionViews.isEmpty() && controlsVisible) {
+        if (controlsVisible && !hasNotFixedConditions()) {
             addCondition();
         }
     }
-    
+
+    private boolean hasNotFixedConditions() {
+        for(ClientPropertyFilter condition : conditionViews.keySet()) {
+            if(!condition.isFixed()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void hideControlsIfEmpty() {
         if (conditionViews.isEmpty()) {
             setControlsVisible(false);

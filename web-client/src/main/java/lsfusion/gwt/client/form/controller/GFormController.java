@@ -41,17 +41,11 @@ import lsfusion.gwt.client.form.controller.dispatch.GFormActionDispatcher;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.design.view.CustomContainerView;
-import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
-import lsfusion.gwt.client.form.design.view.GFormLayout;
-import lsfusion.gwt.client.form.design.view.TabbedContainerView;
+import lsfusion.gwt.client.form.design.view.*;
 import lsfusion.gwt.client.form.event.*;
 import lsfusion.gwt.client.form.filter.GRegularFilter;
 import lsfusion.gwt.client.form.filter.GRegularFilterGroup;
-import lsfusion.gwt.client.form.filter.user.GCompare;
-import lsfusion.gwt.client.form.filter.user.GFilter;
-import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
-import lsfusion.gwt.client.form.filter.user.GPropertyFilterDTO;
+import lsfusion.gwt.client.form.filter.user.*;
 import lsfusion.gwt.client.form.filter.user.controller.GFilterController;
 import lsfusion.gwt.client.form.filter.user.view.GFilterConditionView;
 import lsfusion.gwt.client.form.object.*;
@@ -298,7 +292,7 @@ public class GFormController implements EditManager {
         filterCheck.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
             @Override
             public void onValueChange(ValueChangeEvent<Boolean> e) {
-                setRegularFilter(filterGroup, e.getValue() != null && e.getValue() ? filter : null);
+                setRemoteRegularFilter(filterGroup, e.getValue() != null && e.getValue() ? filter : null);
             }
         });
         filterCheck.addStyleName("filter-group-check");
@@ -328,8 +322,7 @@ public class GFormController implements EditManager {
             GFormController.setBindingGroupObject(filterBox, filterGroup.groupObject);
             for(GInputBindingEvent bindingEvent : filter.bindingEvents) {
                 addRegularFilterBinding(bindingEvent, (event) -> {
-                    filterBox.setSelectedIndex(filterIndex + 1);
-                    setRegularFilter(filterGroup, filterIndex);
+                    setRegularFilter(filterGroup, filterBox, filterIndex);
                 }, filterBox, filterGroup.groupObject);
             }
         }
@@ -337,7 +330,7 @@ public class GFormController implements EditManager {
         filterBox.addChangeHandler(new ChangeHandler() {
             @Override
             public void onChange(ChangeEvent event) {
-                setRegularFilter(filterGroup, filterBox.getSelectedIndex() - 1);
+                setRemoteRegularFilter(filterGroup, filterBox.getSelectedIndex() - 1);
             }
         });
 
@@ -347,6 +340,25 @@ public class GFormController implements EditManager {
         addFilterView(filterGroup, filterBox);
         if (filterGroup.defaultFilterIndex >= 0) {
             filterBox.setSelectedIndex(filterGroup.defaultFilterIndex + 1);
+        }
+    }
+
+    private void setRegularFilter(GRegularFilterGroup filterGroup, ListBox filterBox, int filterIndex) {
+        filterBox.setSelectedIndex(filterIndex + 1);
+        setRemoteRegularFilter(filterGroup, filterIndex);
+    }
+
+    public void setRegularFilterIndex(Integer filterGroup, Integer index) {
+        for(Map.Entry<GComponent, ComponentViewWidget> entry : formLayout.getBaseComponentViews().entrySet()) {
+            GComponent component = entry.getKey();
+            if (component instanceof GRegularFilterGroup && (filterGroup == null || filterGroup == component.ID)) {
+                Widget widget = entry.getValue().getSingleWidget().widget;
+                if (widget instanceof CheckBox) { //single filter
+                    ((CheckBox) widget).setValue(index > 0 ? true : null, true);
+                } else if (widget instanceof ListBox) { //multiple filter
+                    setRegularFilter((GRegularFilterGroup) component, ((ListBox) widget), index - 1);
+                }
+            }
         }
     }
 
@@ -365,12 +377,8 @@ public class GFormController implements EditManager {
                 GwtClientUtils.setGridVisible(filterView, visible);
     }
 
-    private void setRegularFilter(GRegularFilterGroup filterGroup, int index) {
+    private void setRemoteRegularFilter(GRegularFilterGroup filterGroup, int index) {
         setRemoteRegularFilter(filterGroup, index == -1 ? null : filterGroup.filters.get(index));
-    }
-
-    private void setRegularFilter(GRegularFilterGroup filterGroup, GRegularFilter filter) {
-        setRemoteRegularFilter(filterGroup, filter);
     }
 
     private void initializeControllers() {

@@ -97,4 +97,9 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
     public void execute(FilterClientAction action) {
         getFormController().changePropertyFilters(action.goID, action.filters);
     }
+
+    @Override
+    public void execute(FilterGroupClientAction action) {
+        getFormController().setRegularFilterIndex(action.filterGroup, action.index);
+    }
 }
