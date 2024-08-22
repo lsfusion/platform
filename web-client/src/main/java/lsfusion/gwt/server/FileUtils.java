@@ -67,7 +67,7 @@ public class FileUtils {
     public static String TEMP_PATH = "temp";
     public static String DEV_PATH = "dev";
     // should correspond url-pattern for fileDownloadHandler, application context handler (in web.xml)
-    public static String DOWNLOAD_HANDLER = "downloadFile";
+    public static String DOWNLOAD_HANDLER = "file";
 
     private static final ScheduledExecutorService closeExecutor = Executors.newScheduledThreadPool(5);
     private static void scheduleCloseFile(File file, long delay) {
