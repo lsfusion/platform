@@ -1,5 +1,7 @@
 MODULE OpenCV;
 
+REQUIRE SystemEvents;
+
 //need tess4j in pom.xml
 
 //file, threshold
@@ -11,6 +13,8 @@ tessDatPath 'Tess DataPath' = DATA STRING[200]();
 imageToString INTERNAL  'lsfusion.server.logics.classes.data.utils.image.opencv.ImageToStringAction' (FILE, STRING[3], INTEGER, INTEGER);
 imageToStringResult = DATA LOCAL TEXT();
 
+imageToString (FILE file, STRING[3] language) { imageToString(file, language, NULL, NULL); }
+
 EXTEND FORM options PROPERTIES tessDatPath();
 DESIGN options { 
     pane { 
@@ -20,3 +24,15 @@ DESIGN options {
         } 
     } 
 }
+
+onStarted() + {
+    EVAL 'run() INTERNAL <\{ 
+        java.io.File tmpFolder = net.sourceforge.tess4j.util.LoadLibs.extractTessResources("win32-x86-64"); 
+        lsfusion.base.SystemUtils.setLibraryPath(tmpFolder.getPath(), "java.library.path"); 
+    \}>;';
+}
+
+// to use :
+// add to classpath tess4j.jar or in maven with scope "compile"
+// download data https://github.com/tesseract-ocr/tessdata_best to a directory
+// set the property tessDatPath in options form to this directory
