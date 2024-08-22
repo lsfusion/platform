@@ -82,6 +82,8 @@ public class ExternalHttpServer extends MonitorServer {
             server.setExecutor(Executors.newFixedThreadPool(Settings.get().getExternalHttpServerThreadCount(), new DaemonThreadFactory("externalHttpServer-daemon")));
 
             server.start();
+        } catch (ExternalServerException externalServerException) {
+            ServerLoggers.systemLogger.error("External server has not been started. " + externalServerException.getMessage());
         } catch (Exception e) {
             if (server != null)
                 server.stop(0);
@@ -94,7 +96,7 @@ public class ExternalHttpServer extends MonitorServer {
     private final char[] defaultKeyPassword = getPassword(null);
     private static final String SECURITY_ALGORITHM = "SunX509";
 
-    protected HttpServer initServer(boolean useHTTPS, InetSocketAddress inetSocketAddress) throws IOException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException, KeyManagementException, CertificateException {
+    protected HttpServer initServer(boolean useHTTPS, InetSocketAddress inetSocketAddress) throws IOException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException, KeyManagementException, CertificateException, ExternalServerException {
 
         HttpServer server;
         if (useHTTPS) {
@@ -118,7 +120,13 @@ public class ExternalHttpServer extends MonitorServer {
         return server;
     }
 
-    private KeyStore getKeyStore() throws KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException {
+    static class ExternalServerException extends Exception {
+        public ExternalServerException(String message) {
+            super(message);
+        }
+    }
+
+    private KeyStore getKeyStore() throws KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException, ExternalServerException {
         // needed to decrypt .pem files
         if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null)
             Security.addProvider(new BouncyCastleProvider());
@@ -132,10 +140,16 @@ public class ExternalHttpServer extends MonitorServer {
                 char[] keystorePassword = getPassword(serviceLM.keystorePassword.read(session));
 
                 FileData keystoreFile = (FileData) serviceLM.keystore.read(session);
+                if (keystoreFile == null)
+                    throw new ExternalServerException("Using external HTTPS server requires .jks file be loaded");
+
                 keystore.load(keystoreFile.getRawFile().getInputStream(), keystorePassword);
             } else {
                 // Load private key from PEM file
                 FileData privateKeyFile = (FileData) serviceLM.privateKey.read(session);
+                if (privateKeyFile == null)
+                    throw new ExternalServerException("Using external HTTPS server requires the privateKey-file be loaded");
+
                 PrivateKey privateKey;
                 try (PEMParser pemParser = new PEMParser(new InputStreamReader(privateKeyFile.getRawFile().getInputStream(), ExternalUtils.hashCharset))) {
                     Object o = pemParser.readObject();
@@ -145,18 +159,21 @@ public class ExternalHttpServer extends MonitorServer {
                     } else if (o instanceof PEMEncryptedKeyPair) {
                         String privateKeyPassword = (String) serviceLM.privateKeyPassword.read(session);
                         if (privateKeyPassword == null)
-                            throw new RuntimeException("PEMEncryptedKeyPair requires privateKeyPassword to be non-null");
+                            throw new ExternalServerException("PEMEncryptedKeyPair requires privateKeyPassword to be non-null");
 
                         pemKeyPair = ((PEMEncryptedKeyPair) o)
                                 .decryptKeyPair(new JcePEMDecryptorProviderBuilder().build(privateKeyPassword.toCharArray()));
                     } else {
-                        throw new RuntimeException("Invalid PEM file");
+                        throw new ExternalServerException("Invalid PEM file");
                     }
                     privateKey = new JcaPEMKeyConverter().getKeyPair(pemKeyPair).getPrivate();
                 }
 
                 // Load certificate chain from PEM file
                 FileData chainFile = (FileData) serviceLM.chain.read(session);
+                if (chainFile == null)
+                    throw new ExternalServerException("Using external HTTPS server requires that the certificateChain-file be loaded");
+
                 CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
                 X509Certificate[] chain = certFactory.generateCertificates(chainFile.getRawFile().getInputStream()).toArray(new X509Certificate[0]);
 
