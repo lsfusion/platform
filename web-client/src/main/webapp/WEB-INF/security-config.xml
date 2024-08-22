@@ -31,9 +31,9 @@
     </http>
 
     <!-- we need to download logo and icon -->
-    <http pattern="/downloadFile/static/noauth/**" security="none"/>
+    <http pattern="/file/static/noauth/**" security="none"/>
 
-    <http pattern="/downloadFile/**" auto-config="false" disable-url-rewriting="true" entry-point-ref="restAuthenticationEntryPoint">
+    <http pattern="/file/**" auto-config="false" disable-url-rewriting="true" entry-point-ref="restAuthenticationEntryPoint">
         <intercept-url pattern="/**" access="isAuthenticated()"/>
         <csrf disabled="true"/>
         <headers>

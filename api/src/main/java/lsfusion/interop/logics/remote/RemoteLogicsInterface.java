@@ -40,5 +40,5 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
 
     List<String> saveAndGetCustomReportPathList(String formSID, boolean recreate) throws RemoteException;
 
-    void registerClient(RemoteClientInterface client) throws RemoteException;;
+    void registerClient(RemoteClientInterface client) throws RemoteException;
 }

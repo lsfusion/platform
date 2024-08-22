@@ -2,8 +2,8 @@ package lsfusion.http.controller.file;
 
 import com.google.common.io.ByteStreams;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.MIMETypeUtils;
 import lsfusion.gwt.server.FileUtils;
+import lsfusion.http.controller.MainController;
 import lsfusion.interop.session.ExternalUtils;
 import org.apache.commons.httpclient.util.URIUtil;
 import org.springframework.web.HttpRequestHandler;
@@ -30,8 +30,11 @@ public class DownloadFileRequestHandler implements HttpRequestHandler {
             staticFile = false;
         else if(pathInfo.startsWith(prefix = "/" + FileUtils.DEV_PATH + "/"))
             staticFile = true;
-        else
-            throw new UnsupportedOperationException("Path info : " + pathInfo);
+        else {
+            response.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY);
+            response.setHeader("Location", MainController.getURLPreservingParameters("/exec?action=getResource&p=" + pathInfo.replaceFirst("/", ""), null, request));
+            return;
+        }
         String fileName = pathInfo.substring(prefix.length());
 
         String extension = BaseUtils.getFileExtension(fileName);
@@ -46,7 +49,7 @@ public class DownloadFileRequestHandler implements HttpRequestHandler {
         response.setContentType(ExternalUtils.getContentType(extension, charset).toString());
         //inline = open in browser, attachment = download
         response.addHeader("Content-Disposition", "inline; filename*=" + charset.name() + "''" + URIUtil.encodeQuery(getFileName(displayName, extension)));
-        // expiration will be set in urlRewrite.xml /downloadFile (just to have it at one place)
+        // expiration will be set in urlRewrite.xml /file (just to have it at one place)
 
         // in theory e-tag and last modified may be send but since we're using "version" it's not that necessary
 

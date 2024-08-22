@@ -90,7 +90,7 @@
     <servlet-mapping>
         <servlet-name>fileDownloadHandler</servlet-name>
         <!-- should correspond DOWNLOAD_HANDLER in FileUtils-->
-        <url-pattern>/downloadFile/*</url-pattern>
+        <url-pattern>/file/*</url-pattern>
     </servlet-mapping>
 
     <!--spring MVC-->
@@ -158,7 +158,7 @@
         <url-pattern>/eval/*</url-pattern>
         <url-pattern>/form</url-pattern>
         <url-pattern>/uploadFile</url-pattern>
-        <url-pattern>/downloadFile/*</url-pattern>
+        <url-pattern>/file/*</url-pattern>
         <url-pattern>/login</url-pattern>
         <url-pattern>/login_check</url-pattern>
         <url-pattern>/main</url-pattern>
