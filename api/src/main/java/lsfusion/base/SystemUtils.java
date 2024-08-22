@@ -309,7 +309,7 @@ public class SystemUtils {
         }
     }
 
-    private static void setLibraryPath(String path, String property) {
+    public static void setLibraryPath(String path, String property) {
         String libraryPath = System.getProperty(property);
         if (libraryPath == null) {
             System.setProperty(property, path);
