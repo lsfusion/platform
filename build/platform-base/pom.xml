@@ -110,8 +110,8 @@
 
         <com.google.zxing.version>3.4.1-patched</com.google.zxing.version>
 
-        <tess4j.version>4.6.1</tess4j.version>
-        <pdfbox.version>2.0.24</pdfbox.version>
+        <tess4j.version>5.13.0</tess4j.version>
+        <pdfbox.version>2.0.32</pdfbox.version>
         <web.push.version>5.1.1</web.push.version>
         <bouncycastle.version>1.78.1</bouncycastle.version>
     </properties>
