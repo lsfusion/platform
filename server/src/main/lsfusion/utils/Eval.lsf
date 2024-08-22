@@ -47,6 +47,8 @@ DESIGN exception {
                     width = 100;
                     fill = 1;
                     MOVE PROPERTY(valueJavaStack) {
+                        caption = '';
+                        fill = 1;
                         alignShrink = FALSE;
                         valueHeight = -1;
                         valueWidth = -1;
@@ -57,6 +59,8 @@ DESIGN exception {
                     width = 100;
                     fill = 1;
                     MOVE PROPERTY(valueLsfStack) {
+                        caption = '';
+                        fill = 1;
                         alignShrink = FALSE;
                         valueHeight = -1;
                         valueWidth = -1;
