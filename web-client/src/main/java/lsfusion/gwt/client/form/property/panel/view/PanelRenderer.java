@@ -43,8 +43,8 @@ public abstract class PanelRenderer {
         setComment(property.comment);
         setCommentElementClass(property.commentElementClass);
 
-        Widget labelWidget = getTooltipWidget();
-        tippy = TooltipManager.initTooltip(labelWidget, tooltipHelper = new TooltipManager.TooltipHelper() {
+        Widget tooltipWidget = getTooltipWidget();
+        tippy = TooltipManager.initTooltip(tooltipWidget, tooltipHelper = new TooltipManager.TooltipHelper() {
             public String getTooltip(String dynamicTooltip) {
                 if(value.isEditing)
                     return null;
@@ -64,8 +64,12 @@ public abstract class PanelRenderer {
                 return property.formPath;
             }
         });
-        if (this.property.captionFont != null)
-            GFormController.setFont(labelWidget.getElement(), this.property.captionFont);
+        if (this.property.captionFont != null) {
+            Widget labelWidget = getLabelWidget();
+            if (labelWidget != null) {
+                GFormController.setFont(labelWidget.getElement(), this.property.captionFont);
+            }
+        }
     }
 
     public abstract ComponentViewWidget getComponentViewWidget();
@@ -117,6 +121,10 @@ public abstract class PanelRenderer {
             this.tooltip = tooltip;
             TooltipManager.updateContent(tippy, tooltipHelper, tooltip);
         }
+    }
+    
+    protected Widget getLabelWidget() {
+        return null;
     }
 
     protected Widget getTooltipWidget() {
