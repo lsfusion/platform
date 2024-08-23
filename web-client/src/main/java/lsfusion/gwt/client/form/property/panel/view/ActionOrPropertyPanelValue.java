@@ -73,6 +73,13 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
     }
 
     @Override
+    public void startEditing() {
+        super.startEditing();
+        
+        controller.startEditing(columnKey);
+    }
+
+    @Override
     public void stopEditing() {
         super.stopEditing();
 

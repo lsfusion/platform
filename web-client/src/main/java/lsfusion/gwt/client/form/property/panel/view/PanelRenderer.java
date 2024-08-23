@@ -128,7 +128,16 @@ public abstract class PanelRenderer {
     protected abstract void setCommentText(String text);
     protected abstract void setCommentClasses(String classes);
 
+    public void startEditing() {
+        if (getTooltipWidget() == value) {
+            GwtClientUtils.disableTippy(tippy);
+        }
+    }
+                         
     public void stopEditing() {
+        if (getTooltipWidget() == value) {
+            GwtClientUtils.enableTippy(tippy);
+        }
     }
 
     public void onBinding(Event event) {

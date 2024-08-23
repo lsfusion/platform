@@ -736,6 +736,14 @@ public class GwtClientUtils {
         }
     };
 
+    public static native void enableTippy(JavaScriptObject tippy)/*-{
+        tippy.enable();
+    }-*/;
+
+    public static native void disableTippy(JavaScriptObject tippy)/*-{
+        tippy.disable();
+    }-*/;
+
     public static native void updateTippyContent(JavaScriptObject tippy, Element content)/*-{
         tippy.setContent(content);
         if(content == null)
