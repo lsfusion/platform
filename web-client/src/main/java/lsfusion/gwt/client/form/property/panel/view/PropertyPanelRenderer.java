@@ -167,6 +167,11 @@ public class PropertyPanelRenderer extends PanelRenderer {
     }
 
     @Override
+    protected Widget getLabelWidget() {
+        return label;
+    }
+
+    @Override
     protected Widget getTooltipWidget() {
         return label != null ? label : (comment != null ? comment : super.getTooltipWidget());
     }
