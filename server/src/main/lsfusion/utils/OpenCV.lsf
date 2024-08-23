@@ -25,11 +25,10 @@ DESIGN options {
     } 
 }
 
+initializeOpenCV INTERNAL 'lsfusion.server.logics.classes.data.utils.image.opencv.InitializeOpenCVAction' ();
+
 onStarted() + {
-    EVAL 'run() INTERNAL <\{ 
-        java.io.File tmpFolder = net.sourceforge.tess4j.util.LoadLibs.extractTessResources("win32-x86-64"); 
-        lsfusion.base.SystemUtils.setLibraryPath(tmpFolder.getPath(), "java.library.path"); 
-    \}>;';
+    initializeOpenCV();
 }
 
 // to use :
