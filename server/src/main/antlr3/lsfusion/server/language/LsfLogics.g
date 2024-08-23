@@ -5908,13 +5908,13 @@ multOperand
 /////////////////////////////////////////////////////////////////////////////////
 	
 fragment NEWLINE	:	'\r'?'\n'; 
-fragment SPACE		:	(' '|'\t');
+fragment SPACE		:	(' '|'\t'); // If this fragment is changed then it is necessary to manually change the file createLsfJSLogics_g4.sh in the jenkins project.
 fragment DIGIT		:	'0'..'9';
 fragment DIGITS		:	('0'..'9')+;
 fragment EDIGITS	:	('0'..'9')*;
 fragment HEX_DIGIT	: 	'0'..'9' | 'a'..'f' | 'A'..'F';
 fragment FIRST_ID_LETTER	: ('a'..'z'|'A'..'Z');
-fragment NEXT_ID_LETTER		: ('a'..'z'|'A'..'Z'|'_'|'0'..'9');
+fragment NEXT_ID_LETTER		: ('a'..'z'|'A'..'Z'|'_'|'0'..'9'); // If this fragment is changed then it is necessary to manually change the file createLsfJSLogics_g4.sh in the jenkins project.
 fragment OPEN_CODE_BRACKET	: '<{';
 fragment CLOSE_CODE_BRACKET : '}>';
 
