@@ -42,6 +42,10 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
             }
 
             @Override
+            public void startEditing(GGroupObjectValue columnKey) {
+            }
+
+            @Override
             public void stopEditing(GGroupObjectValue columnKey) {
             }
 
