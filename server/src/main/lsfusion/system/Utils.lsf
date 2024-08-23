@@ -126,6 +126,7 @@ sheetNames '{utils.excel.sheet.names}' (EXCELFILE file)  INTERNAL 'lsfusion.serv
 pagesCountPdf '{utils.pdf.pages.count}' = DATA LOCAL INTEGER ();
 pagesCountPdf '{utils.pdf.pages.count}'  INTERNAL  'lsfusion.server.logics.classes.data.utils.pdf.PagesCountPdfAction' (PDFFILE);
 
+pdfToString INTERNAL 'lsfusion.server.logics.classes.data.utils.pdf.PdfToStringAction' (PDFFILE, BOOLEAN);
 wordToPdf INTERNAL  'lsfusion.server.logics.classes.data.utils.pdf.WordToPdfAction' (WORDFILE);
 
 // ---------------------------------- Generate password  ---------------------------------- //
