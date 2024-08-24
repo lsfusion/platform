@@ -178,10 +178,21 @@ repeat (TEXT p1, INTEGER p2) = FORMULA TEXT PG 'repeat($1,$2)', MS 'REPLICATE ($
 
 onlyDigits (TEXT p1) = FORMULA NULL BOOLEAN PG 'CASE WHEN trim($1) ~ \'^[0-9]*$\' THEN 1 ELSE NULL END', MS 'CASE WHEN ltrim($1) NOT LIKE \'%[^0-9]%\' THEN 1 ELSE NULL END';
 
-encode = FORMULA TEXT 'encode(($1),($2))';
-decode = FORMULA RAWFILE 'decode(($1),($2))';
-encodeText = FORMULA TEXT 'encode(convert_to(($1),\'UTF8\'),($2))';
-decodeText = FORMULA TEXT 'convert_from(decode(($1),($2)), \'UTF8\')';
+encode (RAWFILE f, STRING encoding) = FORMULA TEXT 'encode(($1),($2))';
+decode (STRING s, STRING encoding) = FORMULA RAWFILE 'decode(($1),($2))';
+encodeBase64 (RAWFILE f) = encode(f, 'base64');
+decodeBase64 (STRING s) = decode(s, 'base64');
+
+encode (STRING f, STRING encoding) = encode(RAWFILE(f), encoding);
+encode (FILE f, STRING encoding) = encode(RAWFILE(f), encoding); 
+encode (NAMEDFILE f, STRING encoding) = encode(RAWFILE(f), encoding);
+
+encodeBase64 (STRING f) = encodeBase64(RAWFILE(f));
+encodeBase64 (FILE f) = encodeBase64(RAWFILE(f));
+encodeBase64 (NAMEDFILE f) = encodeBase64(RAWFILE(f));
+
+encodeText = FORMULA TEXT 'encode(convert_to(($1),\'UTF8\'),($2))'; // deprecated
+decodeText = FORMULA TEXT 'convert_from(decode(($1),($2)), \'UTF8\')'; // deprecated
 
 encodedBase64 = DATA LOCAL TEXT();
 encodeBase64  INTERNAL  'lsfusion.server.logics.classes.data.utils.string.EncodeBase64Action' (TEXT);
