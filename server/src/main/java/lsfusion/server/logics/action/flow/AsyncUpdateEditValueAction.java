@@ -24,7 +24,7 @@ public class AsyncUpdateEditValueAction extends SystemAction {
     public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) {
         Object updatedValue = context.getSingleKeyObject();
         try {
-            context.delayUserInteraction(new UpdateEditValueClientAction(FormChanges.serializeConvertFileValue(updatedValue, context.getRemoteContext())));
+            context.delayUserInteraction(new UpdateEditValueClientAction(FormChanges.serializeConvertFileValue(updatedValue, context)));
         } catch (IOException e) {
             Throwables.propagate(e);
         }

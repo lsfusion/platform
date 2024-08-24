@@ -193,10 +193,10 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
     }
 
     public static Serializable convertFileValue(Object value, FormSessionObject sessionObject, MainDispatchServlet servlet, String sessionID) throws IOException {
-        return convertFileValue(value, sessionObject, servlet.getServletContext(), servlet.getServerSettings(sessionID));
+        return convertFileValue((Serializable) value, sessionObject, servlet.getServletContext(), servlet.getServerSettings(sessionID));
     }
     // AppFileImage, String | AppStaticImage, GStringWithFiles (String | AppStaticImage)
-    public static Serializable convertFileValue(Object value, FormSessionObject sessionObject, ServletContext servletContext, ServerSettings serverSettings) throws IOException {
+    public static Serializable convertFileValue(Serializable value, FormSessionObject sessionObject, ServletContext servletContext, ServerSettings serverSettings) throws IOException {
         if(value instanceof AppFileDataImage) { // dynamic image
             return new AppFileImage(convertFileValue(((AppFileDataImage) value).data, sessionObject), getExtension(((AppFileDataImage) value).data));
         }
@@ -209,33 +209,32 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
             return FileUtils.createImageFile(servletContext, serverSettings, (AppImage) value, false);
         }
 
-        if (value instanceof StringWithFiles) {
-            StringWithFiles stringWithFiles = (StringWithFiles) value;
-            return new GStringWithFiles(stringWithFiles.prefixes, convertFileValue(stringWithFiles.files, servletContext, serverSettings), stringWithFiles.rawString);
+        if(value instanceof StringWithFiles.Resource) { // resource file
+            StringWithFiles.Resource file = (StringWithFiles.Resource) value;
+            return FileUtils.saveWebFile(file.name, file.raw, serverSettings, false);
         }
 
-        return (Serializable) value;
+        if (value instanceof StringWithFiles) {
+            StringWithFiles stringWithFiles = (StringWithFiles) value;
+            return new GStringWithFiles(stringWithFiles.prefixes, convertFileValue(stringWithFiles.files, servletContext, serverSettings, sessionObject), stringWithFiles.rawString);
+        }
+
+        return value;
     }
 
     public static String[] convertFileValue(Serializable[] files, ServletContext servletContext, LogicsSessionObject sessionObject, SessionInfo sessionInfo) {
         try {
-            return convertFileValue(convertFileValue(files, servletContext, sessionObject.getServerSettings(sessionInfo, null, false)));
+            return convertFileValue(convertFileValue(files, servletContext, sessionObject.getServerSettings(sessionInfo, null, false), null));
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }
     }
 
     // String | AppStaticImage
-    public static Serializable[] convertFileValue(Serializable[] files, ServletContext servletContext, ServerSettings serverSettings) throws IOException {
+    public static Serializable[] convertFileValue(Serializable[] files, ServletContext servletContext, ServerSettings serverSettings, FormSessionObject formSessionObject) throws IOException {
         Serializable[] urls = new Serializable[files.length];
-        for (int k = 0; k < files.length; k++) {
-            Serializable data = files[k];
-            if(data instanceof StringWithFiles.File) { // resource file
-                StringWithFiles.File file = (StringWithFiles.File) data;
-                urls[k] = FileUtils.saveWebFile(file.name, file.raw, serverSettings, false);
-            } else // static image
-                urls[k] = FileUtils.createImageFile(servletContext, serverSettings, (AppImage) data, false);;
-        }
+        for (int k = 0; k < files.length; k++)
+            urls[k] = convertFileValue(files[k], formSessionObject, servletContext, serverSettings);
         return urls;
     }
 
@@ -251,26 +250,23 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
    }
 
 
-    private static String convertFileValue(Object value, FormSessionObject sessionObject) {
+    private static String convertFileValue(Serializable value, FormSessionObject sessionObject) {
         String displayName = value instanceof NamedFileData ? ((NamedFileData) value).getName() : null;
         return FileUtils.saveFormFile(getFileData(value), displayName, sessionObject != null ? sessionObject.savedTempFiles : null);
     }
 
-    private static String getExtension(Object value) {
+    private static String getExtension(Serializable value) {
         return getFileData(value).getExtension();
     }
 
-    private static FileData getFileData(Object value) {
-        FileData fileData;
+    private static FileData getFileData(Serializable value) {
         if (value instanceof NamedFileData) {
-            fileData = ((NamedFileData) value).getFileData();
+            return ((NamedFileData) value).getFileData();
         } else if (value instanceof FileData) {
-            fileData = (FileData) value;
+            return (FileData) value;
         } else { // it's a really rare case see FormChanges.convertFileValue - when there is no static file class, but still we get rawFileData
-            fileData = new FileData((RawFileData) value, "");
+            return new FileData((RawFileData) value, "");
         }
-
-        return fileData;
     }
 
     @Converter(from = Color.class)

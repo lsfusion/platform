@@ -16,13 +16,13 @@ public class JSONClass extends AJSONClass {
     public final static JSONClass instance = new JSONClass();
 
     @Override
-    public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom, boolean isArith) {
+    public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom, CastType castType) {
         if (typeFrom instanceof StaticFormatFileClass) {
             return "cast_static_file_to_json(" + value + ")";
         } else if (typeFrom instanceof DynamicFormatFileClass) {
             return "cast_dynamic_file_to_json(" + value + ")";
         }
-        return super.getCast(value, syntax, typeEnv, typeFrom, isArith);
+        return super.getCast(value, syntax, typeEnv, typeFrom, castType);
     }
 
     static {

@@ -110,6 +110,11 @@ public class ByteArrayClass extends FileBasedClass<RawFileData> implements DBTyp
         return value != null ? Base64.encodeBase64StringUnChunked(value.getBytes()) : null;
     }
 
+    @Override
+    public String formatStringSource(String valueSource, SQLSyntax syntax) {
+        return "encode(" + valueSource + ", 'base64')";
+    }
+
     public String getSID() {
         return "ByteArrayClass";
     }

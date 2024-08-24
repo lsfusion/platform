@@ -8,7 +8,7 @@ import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class PDFClass extends StaticFormatFileClass {
+public class PDFClass extends RenderedClass {
 
     protected String getFileSID() {
         return "PDFFILE";

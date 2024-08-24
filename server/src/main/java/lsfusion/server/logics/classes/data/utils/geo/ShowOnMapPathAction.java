@@ -14,7 +14,9 @@ import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
+import lsfusion.server.physics.dev.integration.external.to.file.open.OpenLinkAction;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -67,11 +69,10 @@ public class ShowOnMapPathAction extends GeoAction {
             if (index <= result.values().size())
                 context.messageError("Не все координаты проставлены", "Ошибка");
             else
-                context.requestUserInteraction(new OpenUriClientAction(new URI((isYandex ?
+                OpenLinkAction.execute(isYandex ?
                         ("https://maps.yandex.ru/?rtt=auto&rtm=atm&rtext=" + uri + firstLatLong) :
-                        ("https://www.google.com/maps/dir/" + uri + firstLatLong)))));
-
-        } catch (SQLException | URISyntaxException | ScriptingErrorLog.SemanticErrorException ignored) {
+                        ("https://www.google.com/maps/dir/" + uri + firstLatLong), context, false, true);
+        } catch (SQLException | ScriptingErrorLog.SemanticErrorException | IOException ignored) {
         }
 
     }

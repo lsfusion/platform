@@ -115,11 +115,11 @@ public class TSVectorClass extends DataClass<Array> implements DBType {
     }
 
     @Override
-    public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom, boolean isArith) {
+    public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom, CastType castType) {
         if(typeFrom instanceof StringClass) {
             String language = Settings.get().getTsVectorDictionaryLanguage();
             return "to_tsvector('" + language + "'::regconfig, " + value + ")";
         }
-        return super.getCast(value, syntax, typeEnv, typeFrom, isArith);
+        return super.getCast(value, syntax, typeEnv, typeFrom, castType);
     }
 }

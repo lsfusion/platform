@@ -69,7 +69,7 @@ public class InternalClientAction extends CallAction {
             for (int i = resourceName != null ? 0 : 1; i < orderInterfaces.size(); i++) {
                 PropertyInterface orderInterface = orderInterfaces.get(i);
                 ObjectValue objectValue = context.getKeys().get(orderInterface);
-                values.add(FormChanges.serializeConvertFileValue(objectValue.getValue(), context.getRemoteContext()));
+                values.add(FormChanges.serializeConvertFileValue(objectValue.getValue(), context));
                 types.add(TypeSerializer.serializeType(objectValue.getType()));
             }
             returnType = targetProp != null ? TypeSerializer.serializeType(targetProp.property.getType()) : null;

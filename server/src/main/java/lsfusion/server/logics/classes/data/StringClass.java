@@ -55,13 +55,14 @@ public class StringClass extends TextBasedClass<String> implements DBType {
     }
 
     @Override
-    public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom, boolean isArith) {
-        if (typeFrom instanceof TXTClass || typeFrom instanceof CSVClass || typeFrom instanceof HTMLClass || typeFrom instanceof JSONFileClass || typeFrom instanceof XMLClass) {
-            return "cast_file_to_string(" + value + ")";
-        }
-        String result = super.getCast(value, syntax, typeEnv, typeFrom, isArith);
+    public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom, CastType castType) {
+        if(typeFrom instanceof FileClass)
+            return "cast_file_to_string(" + ((FileClass) typeFrom).getCastToStatic(value) + ")";
+
+        String result = super.getCast(value, syntax, typeEnv, typeFrom, castType);
         if(typeFrom instanceof StringClass && !blankPadded && ((StringClass) typeFrom).blankPadded && syntax.doesNotTrimWhenCastToVarChar())
             result = ((StringClass)typeFrom).getRTrim(result);
+
         return result;
     }
 

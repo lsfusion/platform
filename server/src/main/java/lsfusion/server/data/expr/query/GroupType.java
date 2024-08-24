@@ -374,7 +374,7 @@ public abstract class GroupType implements AggrType {
             ClassReader reader = readers.get(i);
             if(reader instanceof Type) {
                 if(resultType instanceof AJSONClass)
-                    value = resultType.getCast(value, syntax, typeEnv, (Type) reader);
+                    value = resultType.getCast(value, syntax, typeEnv, (Type) reader, Type.CastType.TOSTRING);
                 else
                     value = SumFormulaImpl.castToVarString(value, ((StringClass) resultType), (Type) reader, syntax, typeEnv);
             }

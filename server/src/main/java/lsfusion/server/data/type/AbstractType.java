@@ -236,11 +236,6 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     }
 
     @Override
-    public String formatEmail(T object) {
-        return formatString(object, true);
-    }
-
-    @Override
     public void formatXLS(T object, Cell cell, ExportXLSWriter.Styles styles) {
         String formatted = formatNullableString(object, false); // xls supports nulls
         if(formatted != null)

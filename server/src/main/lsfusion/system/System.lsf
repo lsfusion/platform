@@ -183,30 +183,27 @@ lsfParams(STRING s) = ABSTRACT VALUE STRING(STRING);
 
 // ----------------------------------- open files ----------------------------------- //
 
-//source path, name, noWait
-open '{system.open.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenPathAction' (ISTRING[255], ISTRING[255], BOOLEAN);
-open '{system.open.file}' (ISTRING[255] source, ISTRING[255] name)  { open(source, name, NULL); }
-open '{system.open.file}' (ISTRING[255] source, BOOLEAN noWait)  { open(source, NULL, noWait); }
-open '{system.open.file}' (ISTRING[255] source)  { open(source, NULL, NULL); }
-//source file, name, noWait
-open '{system.open.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenFileAction' (FILE, ISTRING[255], BOOLEAN);
-open '{system.open.file}' (FILE source, ISTRING[255] name)  { open(source, name, NULL); }
+open '{system.open.file}'  INTERNAL 'lsfusion.server.physics.dev.integration.external.to.file.open.OpenAction' (STRING, STRING, BOOLEAN);
+open '{system.open.file}' (STRING source, STRING name)  { open(source, name, NULL); }
+open '{system.open.file}' (STRING source, BOOLEAN noWait)  { open(source, NULL, noWait); }
+open '{system.open.file}' (STRING source)  { open(source, NULL, NULL); }
+
+open '{system.open.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenFileAction' (FILE, STRING, BOOLEAN);
+open '{system.open.file}' (FILE source, STRING name)  { open(source, name, NULL); }
 open '{system.open.file}' (FILE source, BOOLEAN noWait)  { open(source, NULL, noWait); }
 open '{system.open.file}' (FILE source)  { open(source, NULL, NULL); }
-//source namedFile, noWait
+
 open '{system.open.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenNamedFileAction' (NAMEDFILE, BOOLEAN);
 open '{system.open.file}' (NAMEDFILE source)  { open(source, NULL); }
-//source rawFile, name, noWait
-open '{system.open.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenRawFileAction' (RAWFILE, ISTRING[255], BOOLEAN);
-open '{system.open.file}' (RAWFILE source, ISTRING[255] name)  { open(source, name, NULL); }
+
+open '{system.open.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenRawFileAction' (RAWFILE, STRING, BOOLEAN);
+open '{system.open.file}' (RAWFILE source, STRING name)  { open(source, name, NULL); }
 open '{system.open.file}' (RAWFILE source, BOOLEAN noWait)  { open(source, NULL, noWait); }
 open '{system.open.file}' (RAWFILE source)  { open(source, NULL, NULL); }
-//source link, noWait
-open '{system.open.link}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenLinkAction' (LINK, BOOLEAN);
-open '{system.open.file}' (LINK source)  { open(source, NULL); }
-//source rawLink, noWait
-open '{system.open.link}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenRawLinkAction' (RAWLINK, BOOLEAN);
-open '{system.open.file}' (RAWLINK source)  { open(source, NULL); }
+
+openLink '{system.open.link}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenLinkAction' (STRING, BOOLEAN, BOOLEAN);
+openLink '{system.open.link}' (STRING source, BOOLEAN noWait)  { openLink(source, noWait, NULL); }
+openLink '{system.open.link}' (STRING source)  { openLink(source, NULL); }
 
 // ----------------------------------- open html link in tab ----------------------------------- //
 

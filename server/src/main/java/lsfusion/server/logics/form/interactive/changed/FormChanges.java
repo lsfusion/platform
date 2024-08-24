@@ -18,6 +18,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ConcreteClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.DataClass;
@@ -252,6 +253,9 @@ public class FormChanges {
         }
     }
 
+    public static byte[] serializeConvertFileValue(Object value, ExecutionContext context) throws IOException {
+        return serializeConvertFileValue(value, context.getRemoteContext());
+    }
     public static byte[] serializeConvertFileValue(Object value, ConnectionContext context) throws IOException {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         serializeConvertFileValue(value, new DataOutputStream(outStream), context);
@@ -268,13 +272,8 @@ public class FormChanges {
             value = ((FileData) value).getRawFile().convertString();
 
         if(value instanceof NamedFileData || value instanceof FileData || value instanceof RawFileData) {
-            if(convertData != null) {
-                if(value instanceof RawFileData && convertData.type instanceof StaticFormatFileClass)
-                    value = new FileData((RawFileData) value, ((StaticFormatFileClass) convertData.type).getExtension());
-                if(convertData instanceof NeedImage)
-                    return new AppFileDataImage((Serializable) value);
-                return value;
-            }
+            if(convertData != null)
+                return convertRawFileData(convertData.type, (Serializable) value, convertData instanceof NeedImage);
 
             return true;
         }
@@ -284,6 +283,14 @@ public class FormChanges {
         }
 
         return convertUnsafeFileValue(value, context);
+    }
+
+    private static Serializable convertRawFileData(Type type, Serializable value, boolean needImage) {
+        if(value instanceof RawFileData && type instanceof StaticFormatFileClass)
+            value = new FileData((RawFileData) value, ((StaticFormatFileClass) type).getExtension());
+        if(needImage)
+            return new AppFileDataImage(value);
+        return value;
     }
 
     public static Object convertFileValue(Object value, ConnectionContext context) {
@@ -304,6 +311,7 @@ public class FormChanges {
             int length = parts.length / 2;
             String[] prefixes = new String[length + 1];
             Serializable[] files = new Serializable[length];
+            boolean[] removeRaw = null;
             for (int k = 0; k < length + 1; k++) {
                 prefixes[k] = parts[k * 2];
                 if (k * 2 + 1 < parts.length) {
@@ -312,16 +320,38 @@ public class FormChanges {
                         files[k] = IOUtils.deserializeAppImage(name.substring(inlineSerializedImageSeparator.length()));
                     } else if (name.startsWith(inlineImageSeparator)) {
                         files[k] = AppServerImage.getAppImage(AppServerImage.createActionImage(name.substring(inlineImageSeparator.length())).get(context));
+                    } else if (name.startsWith(inlineDataFileSeparator)) {
+                        int separatorLength = inlineDataFileSeparator.length();
+                        int endFileType = name.indexOf(inlineDataFileSeparator, separatorLength);
+                        boolean needImage = name.charAt(separatorLength) == '1';
+                        FileClass file = FileClass.deserializeString(name.substring(separatorLength + 1, endFileType));
+                        files[k] = convertRawFileData(file, (Serializable) file.parseString(name.substring(endFileType + separatorLength)), needImage);
+
+                        if(removeRaw == null)
+                            removeRaw = new boolean[parts.length];
+                        removeRaw[k * 2 + 1] = true;
                     } else { // resource file
                         Result<String> fullPath = new Result<>();
-                        files[k] = new StringWithFiles.File(ResourceUtils.findResourceAsFileData(name, false, true, fullPath, null), fullPath.result);
+                        files[k] = new StringWithFiles.Resource(ResourceUtils.findResourceAsFileData(name, false, true, fullPath, null), fullPath.result);
                     }
                 }
             }
 
-            return new StringWithFiles(prefixes, files, string);
+            return new StringWithFiles(prefixes, files, removeRaw != null ? getRawString(parts, removeRaw) : string);
         }
         return value;
+    }
+
+    // we need to remove files from strings, because otherwise writeUTF will fail
+    private static String getRawString(String[] parts, boolean[] removeRaw) {
+        StringBuilder rawString = new StringBuilder();
+        for(int i = 0; i < parts.length; i++) {
+            if(i > 0)
+                rawString.append(inlineFileSeparator);
+            if(!removeRaw[i])
+                rawString.append(parts[i]);
+        }
+        return rawString.toString();
     }
 
     private static ConvertData getConvertData(PropertyReaderInstance reader, FormInstanceContext context) {
@@ -330,7 +360,7 @@ public class FormChanges {
         if (reader instanceof PropertyDrawInstance && ((PropertyDrawInstance<?>) reader).isProperty(context)) {
             PropertyDrawEntity<?> propertyDraw = ((PropertyDrawInstance<?>) reader).entity;
             readerType = readType.get();
-            if (readerType instanceof ImageClass || readerType instanceof ExcelClass || readerType instanceof PDFClass || readerType instanceof VideoClass || (propertyDraw.isPredefinedImage() && propertyDraw.needImage(context)))
+            if (readerType instanceof RenderedClass || (propertyDraw.isPredefinedImage() && propertyDraw.needImage(context)))
                 return getNeedImage(readerType, propertyDraw, context);
             else if (readerType instanceof FileClass && propertyDraw.needFile(context)) // if there is a custom function, we want file to be send to web-server as a link
                 return new NeedFile(readerType);

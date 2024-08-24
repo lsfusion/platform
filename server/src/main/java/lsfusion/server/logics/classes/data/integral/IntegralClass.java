@@ -1,7 +1,6 @@
 package lsfusion.server.logics.classes.data.integral;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.DBType;
 import lsfusion.server.data.type.ObjectType;
@@ -45,8 +44,8 @@ public abstract class IntegralClass<T extends Number> extends TextBasedClass<T> 
         return this;
     }
 
-    public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom, boolean isArith) {
-        boolean isInt = isArith || typeFrom instanceof IntegralClass || typeFrom instanceof ObjectType;
+    public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom, CastType castType) {
+        boolean isInt = castType.isArith() || typeFrom instanceof IntegralClass || typeFrom instanceof ObjectType;
         boolean isStr = typeFrom instanceof StringClass;
         if(!(isInt && Settings.get().getSafeCastIntType() == 2)) {
             if(typeFrom != null && equalsDB(typeFrom))
@@ -57,22 +56,22 @@ public abstract class IntegralClass<T extends Number> extends TextBasedClass<T> 
             return syntax.getSafeCastNameFnc(this, sourceType) + "(" + value + ")";
         }
 
-        return super.getCast(value, syntax, typeEnv, typeFrom, isArith);
+        return super.getCast(value, syntax, typeEnv, typeFrom, castType);
     }
 
     @Override
-    public boolean isCastNotNull(Type typeFrom, boolean isArith) {
+    public boolean isCastNotNull(Type typeFrom, CastType castType) {
         if(typeFrom == null) // we don't know the type it can be any type
             return true;
 
         if(equalsDB(typeFrom))
             return false;
 
-        boolean isInt = isArith || typeFrom instanceof IntegralClass || typeFrom instanceof ObjectType;
+        boolean isInt = castType.isArith() || typeFrom instanceof IntegralClass || typeFrom instanceof ObjectType;
         if(!(isInt && Settings.get().getSafeCastIntType() == 2))
             return true;
 
-        return super.isCastNotNull(typeFrom);
+        return super.isCastNotNull(typeFrom, castType);
     }
 
     @Override

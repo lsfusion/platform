@@ -64,7 +64,7 @@ public class DynamicFormatFileClass extends AbstractDynamicFormatFileClass<FileD
     }
 
     @Override
-    public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom, boolean isArith) {
+    public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom, CastType castType) {
         if (typeFrom instanceof NamedFileClass) {
             return "cast_named_file_to_dynamic_file(" + value + ")";
         } else if (typeFrom instanceof StaticFormatFileClass) {
@@ -75,7 +75,7 @@ public class DynamicFormatFileClass extends AbstractDynamicFormatFileClass<FileD
         } else if (typeFrom instanceof JSONTextClass) { // important to make auto import work (it uses extension(FILE()))
             return "cast_json_text_to_dynamic_file(" + value + ")";
         }
-        return super.getCast(value, syntax, typeEnv, typeFrom, isArith);
+        return super.getCast(value, syntax, typeEnv, typeFrom, castType);
     }
 
     @Override
@@ -124,17 +124,17 @@ public class DynamicFormatFileClass extends AbstractDynamicFormatFileClass<FileD
     }
 
     @Override
-    public FileData parseString(String s) {
-        return new FileData(Base64.decodeBase64(s));
-    }
-
-    @Override
-    protected byte[] getBytes(FileData value) {
-        return value.getBytes();
+    protected FileData getValue(RawFileData data) {
+        return new FileData(data, "dat");
     }
 
     @Override
     protected RawFileData getRawFileData(FileData value) {
         return value.getRawFile();
+    }
+
+    @Override
+    public String getCastToStatic(String value) {
+        return "cast_dynamic_file_to_static_file(" + value + ")";
     }
 }

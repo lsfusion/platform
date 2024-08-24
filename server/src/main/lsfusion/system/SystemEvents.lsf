@@ -414,6 +414,7 @@ pathInfo '{system.events.path.info.connection}' = DATA STRING (Connection);
 query '{system.events.query.connection}' = DATA STRING (Connection);
 scheme '{system.events.context.path.scheme}' = DATA STRING (Connection);
 webPath(Connection c) = scheme(c) + '://' + webHost(c) + ':' + webPort(c) + contextPath(c);
+link(Connection cn, STRING relativeUrl) = LINK(CONCAT '&', webPath(cn) + relativeUrl, notEmpty(query(cn)));
 
 user '{system.events.user.connection}' = DATA CustomUser (Connection);
 userLogin '{system.events.user.login.connection}' (Connection connection) = login(user(connection));
@@ -504,6 +505,7 @@ EXTEND FORM customUsers PROPERTIES(u) GRID reconnect, shutdown;
 @defineLog (Connection, '{system.events.define.log.of.connections}', log, connectDate);
 
 currentConnection = NATIVE Connection ();
+link(STRING relativeUrl) = link(currentConnection(), relativeUrl);
 
 clientType = DATA ClientType (Connection);
 nameClientType '{system.events.client.type}' (Connection connection) = staticCaption(clientType(connection));
@@ -958,11 +960,8 @@ share(STRING url, STRING text, STRING title) {
         SHOW shareUrlForm OBJECTS share = url POPUP;
 }
 
-share(Connection cn, STRING url) = CONCAT '&', webPath(cn) + url, notEmpty(query(cn));
-
-shareAction(STRING url) = share(currentConnection(), url);
-shareAction(STRING url) {
-    share(shareAction(url), 'The link to share the form', 'Share');
+shareAction(STRING relativeUrl) {
+    share(link(relativeUrl), 'The link to share the form', 'Share');
 }
 
 //VAPID key gen: https://tools.reactpwa.com/vapid

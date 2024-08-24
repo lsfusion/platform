@@ -16,7 +16,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class ImageClass extends StaticFormatFileClass {
+public class ImageClass extends RenderedClass {
 
     protected String getFileSID() {
         return "IMAGEFILE";

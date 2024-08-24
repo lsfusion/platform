@@ -45,19 +45,17 @@ public abstract class StaticFormatFileClass extends FileClass<RawFileData> {
     }
 
     @Override
-    public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom, boolean isArith) {
-        if (typeFrom instanceof StringClass) {
+    public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom, CastType castType) {
+        if (typeFrom instanceof StringClass)
             return "cast_string_to_file(" + value + ")";
-        } else if (typeFrom instanceof NamedFileClass) {
-            return "cast_named_file_to_static_file(" + value + ")";
-        }else if (typeFrom instanceof DynamicFormatFileClass) {
-            return "cast_dynamic_file_to_static_file(" + value + ")";
-        }else if (typeFrom instanceof JSONClass) {
+        if (typeFrom instanceof FileClass)
+            return ((FileClass)typeFrom).getCastToStatic(value);
+        if (typeFrom instanceof JSONClass)
             return "cast_json_to_static_file(" + value + ")";
-        }else if (typeFrom instanceof JSONTextClass) {
+        if (typeFrom instanceof JSONTextClass)
             return "cast_json_text_to_static_file(" + value + ")";
-        }
-        return super.getCast(value, syntax, typeEnv, typeFrom, isArith);
+
+        return super.getCast(value, syntax, typeEnv, typeFrom, castType);
     }
 
     @Override
@@ -122,17 +120,18 @@ public abstract class StaticFormatFileClass extends FileClass<RawFileData> {
         return value.getLength();
     }
 
-    public RawFileData parseString(String s) {
-        return new RawFileData(Base64.decodeBase64(s));
-    }
-
     @Override
-    protected byte[] getBytes(RawFileData value) {
-        return value.getBytes();
+    protected RawFileData getValue(RawFileData data) {
+        return data;
     }
 
     @Override
     protected RawFileData getRawFileData(RawFileData value) {
+        return value;
+    }
+
+    @Override
+    public String getCastToStatic(String value) {
         return value;
     }
 

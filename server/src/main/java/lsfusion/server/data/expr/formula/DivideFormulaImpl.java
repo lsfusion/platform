@@ -54,7 +54,7 @@ public class DivideFormulaImpl extends ScaleFormulaImpl {
                         src2 = type2.getCast(src2, syntax, env);
                 }
 
-                return type.getArithCast("(" + src1 + "/" + syntax.getNotZero(src2, type, env) + ")", syntax, env);
+                return type.getCast("(" + src1 + "/" + syntax.getNotZero(src2, type, env) + ")", syntax, env, null, Type.CastType.ARITH);
             }
             return null;
         }

@@ -10,18 +10,18 @@ public class StringWithFiles implements Serializable {
     public String rawString;
 
     // resource file - file + relative path in the resources
-    public static class File implements Serializable {
+    public static class Resource implements Serializable {
         public final String name;
         public final RawFileData raw;
 
-        public File(RawFileData raw, String name) {
+        public Resource(RawFileData raw, String name) {
             this.name = name;
             this.raw = raw;
         }
 
         @Override
         public boolean equals(Object o) {
-            return this == o || o instanceof File && name.equals(((File) o).name) && raw.equals(((File) o).raw);
+            return this == o || o instanceof Resource && name.equals(((Resource) o).name) && raw.equals(((Resource) o).raw);
         }
 
         @Override

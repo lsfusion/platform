@@ -47,20 +47,18 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
         return typeFrom != null && getDBType().equals(typeFrom.getDBType());
     }
 
-    default boolean isCastNotNull(Type typeFrom) {
-        return isCastNotNull(typeFrom, false);
-    }
-    default String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom) {
-        return getCast(value, syntax, typeEnv, typeFrom, false);
+    enum CastType {
+        ARITH, MAX, TOSTRING, CAST;
+
+        public boolean isArith() {
+            return this == ARITH;
+        }
     }
 
-    default String getArithCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv) {
-        return getCast(value, syntax, typeEnv, null, true);
-    }
-    default boolean isCastNotNull(Type typeFrom, boolean isArith) { // returns true if cast can return NULL for the non-NULL value
+    default boolean isCastNotNull(Type typeFrom, CastType castType) { // returns true if cast can return NULL for the non-NULL value
         return false;
     }
-    default String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom, boolean isArith) {
+    default String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom, CastType castType) {
         if(typeFrom != null && equalsDB(typeFrom))
             return value;
 
@@ -140,7 +138,6 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
     void formatXLS(T object, Cell cell, ExportXLSWriter.Styles styles);
 
     String formatMessage(T object);
-    String formatEmail(T object); // inline'ing files as "html"
 
     T parseString(String s) throws ParseException; // s - not null (файлы decode'ся base64)
 

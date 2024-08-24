@@ -49,7 +49,7 @@ public class SumFormulaImpl extends ArithmeticFormulaImpl {
     
     public static String castToVarString(String source, StringClass resultType, Type operandType, SQLSyntax syntax, TypeEnvironment typeEnv) {
         if(!(operandType instanceof StringClass) || syntax.doesNotTrimWhenSumStrings())
-            source = resultType.toVar().getCast(source, syntax, typeEnv, operandType);
+            source = resultType.toVar().getCast(source, syntax, typeEnv, operandType, Type.CastType.TOSTRING);
         return source;
     }
 

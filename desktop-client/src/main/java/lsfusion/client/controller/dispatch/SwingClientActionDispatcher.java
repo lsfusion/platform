@@ -32,7 +32,9 @@ import lsfusion.interop.form.ShowFormType;
 import lsfusion.interop.form.event.EventBus;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportGenerator;
+import lsfusion.interop.session.ExternalUtils;
 import net.sf.jasperreports.engine.JRException;
+import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.commons.io.FileUtils;
 
 import javax.sound.sampled.AudioInputStream;
@@ -42,6 +44,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.print.PrinterAbortException;
 import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Paths;
 import java.rmi.RemoteException;
 import java.text.DecimalFormat;
 import java.util.Arrays;
@@ -516,6 +521,25 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
                 BaseUtils.openFile(action.file, action.name, action.extension);
             }
         } catch (IOException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    @Override
+    public void execute(OpenUriClientAction action) {
+        try {
+            String uriString = BaseUtils.deserializeObject(action.uri).toString();
+            if(!action.noEncode)
+                uriString = URIUtil.encodeQuery(uriString, ExternalUtils.defaultUrlCharset.name());
+
+            URI uri = new URI(uriString);
+            Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
+            if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
+                if (uri.getScheme() != null && uri.getScheme().equals("file"))
+                    uri = Paths.get(uri).normalize().toUri();
+                desktop.browse(uri);
+            }
+        } catch (IOException | URISyntaxException e) {
             throw Throwables.propagate(e);
         }
     }

@@ -6,7 +6,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.classes.data.DataClass;
 
 public class CastFormulaImpl implements FormulaJoinImpl {
-    private DataClass castClass;
+    private final DataClass castClass;
 
     public CastFormulaImpl(DataClass castClass) {
         this.castClass = castClass;
@@ -15,7 +15,7 @@ public class CastFormulaImpl implements FormulaJoinImpl {
     @Override
     public String getSource(ExprSource source) {
         assert source.getExprCount() == 1;
-        return castClass.getCast(source.getSource(0), source.getSyntax(), source.getMEnv(), source.getType(0));
+        return castClass.getCast(source.getSource(0), source.getSyntax(), source.getMEnv(), source.getType(0), Type.CastType.CAST);
     }
 
     @Override
@@ -30,10 +30,10 @@ public class CastFormulaImpl implements FormulaJoinImpl {
 
     @Override
     public boolean equals(Object obj) {
-        return castClass.equals(((CastFormulaImpl)obj).castClass);
+        return this == obj || obj instanceof CastFormulaImpl && castClass.equals(((CastFormulaImpl)obj).castClass);
     }
 
     public boolean hasNotNull(ImList<BaseExpr> exprs) {
-        return castClass.isCastNotNull(exprs.get(0).getSelfType());
+        return castClass.isCastNotNull(exprs.get(0).getSelfType(), Type.CastType.CAST);
     }
 }
