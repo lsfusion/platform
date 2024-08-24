@@ -2,8 +2,10 @@ package lsfusion.gwt.client.classes.data.link;
 
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.classes.data.GDataType;
+import lsfusion.gwt.client.classes.data.GStringType;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.filter.user.GCompare;
+import lsfusion.gwt.client.form.property.GExtInt;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.async.GInputList;
@@ -15,11 +17,7 @@ import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
-import java.text.ParseException;
-
-import static lsfusion.gwt.client.form.filter.user.GCompare.EQUALS;
-
-public abstract class GLinkType extends GDataType {
+public abstract class GLinkType extends GStringType {
     public boolean multiple;
     public String description;
 
@@ -27,22 +25,14 @@ public abstract class GLinkType extends GDataType {
     }
 
     public GLinkType(boolean multiple) {
+        super(GExtInt.UNLIMITED, false, false);
+
         this.multiple = multiple;
     }
 
     //should be same as in server FileClasses
     public String getExtension() {
         return null;
-    }
-
-    @Override
-    public GCompare[] getFilterCompares() {
-        return new GCompare[] {EQUALS};
-    }
-
-    @Override
-    public PValue parseString(String s, String pattern) throws ParseException {
-        return PValue.getPValue(s);
     }
 
     @Override
@@ -53,10 +43,5 @@ public abstract class GLinkType extends GDataType {
     @Override
     public CellRenderer createCellRenderer(GPropertyDraw property) {
         return new LinkCellRenderer(property);
-    }
-
-    @Override
-    public GSize getDefaultWidth(GFont font, GPropertyDraw propertyDraw, boolean needNotNull, boolean globalCaptionIsDrawn) {
-        return GSize.CONST(50);
     }
 }

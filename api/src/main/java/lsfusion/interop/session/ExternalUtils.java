@@ -63,7 +63,7 @@ public class ExternalUtils {
     public static Charset defaultBodyCharset = StandardCharsets.UTF_8;
 
     public static Charset hashCharset = StandardCharsets.UTF_8;
-    public static Charset imageCharset = StandardCharsets.UTF_8;
+    public static Charset serializeCharset = StandardCharsets.UTF_8;
     public static Charset fileDataNameCharset = StandardCharsets.UTF_8; // file types name encoding
 
     // "string-to-bytes" charsets

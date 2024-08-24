@@ -202,7 +202,7 @@ public class SendEmailAction extends SystemAction {
         for (PropertyInterfaceImplement inlineFile : this.inlineFiles) {
             ObjectValue inlineObject = inlineFile.readClasses(context);
             if (inlineObject instanceof DataObject)
-                customInlines.add(EscapeUtils.toHtml(inlineObject.getType().formatEmail(inlineObject.getValue())));
+                customInlines.add(EscapeUtils.toHtml(inlineObject.getType().formatMessage(inlineObject.getValue())));
         }
     }
 

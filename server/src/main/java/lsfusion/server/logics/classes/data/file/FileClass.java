@@ -1,18 +1,19 @@
 package lsfusion.server.logics.classes.data.file;
 
-import lsfusion.base.file.FileData;
+import com.google.common.base.Throwables;
+import lsfusion.base.file.IOUtils;
 import lsfusion.base.file.RawFileData;
-import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.DBType;
+import lsfusion.server.data.type.TypeSerializer;
 import lsfusion.server.data.type.exec.TypeEnvironment;
+import lsfusion.server.language.ScriptedStringUtils;
 import lsfusion.server.logics.classes.data.ByteArrayClass;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.apache.commons.net.util.Base64;
 
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 
 
 public abstract class FileClass<T> extends FileBasedClass<T> {
@@ -88,21 +89,52 @@ public abstract class FileClass<T> extends FileBasedClass<T> {
     }
 
     public String formatString(T value, boolean ui) {
-        return value != null ? Base64.encodeBase64StringUnChunked(getBytes(value)) : null;
+        return value != null ? Base64.encodeBase64StringUnChunked(getRawFileData(value).getBytes()) : null;
     }
-    protected abstract byte[] getBytes(T value);
+
+    public T parseString(String s) {
+        return getValue(new RawFileData(Base64.decodeBase64(s)));
+    }
+
+    public abstract String getCastToStatic(String value);
+
+    public String getCastToConvert(boolean needImage, String value, SQLSyntax syntax) {
+        String stringConcatenate = syntax.getStringConcatenate();
+        return "'" + ScriptedStringUtils.wrapFile((needImage ? "1" : "0") + serializeString(), "'" + stringConcatenate + getEncode(value, syntax) + stringConcatenate + "'") + "'";
+    }
 
     @Override
     public String formatStringSource(String valueSource, SQLSyntax syntax) {
-        return "encode(" + valueSource + ", 'base64')";
+        return getEncode(valueSource, syntax);
+    }
+
+    private String getEncode(String valueSource, SQLSyntax syntax) {
+        return "encode(" + getCastToStatic(valueSource) + ", 'base64')";
     }
 
     @Override
-    public String formatEmail(T value) {
-        if(value == null)
+    public String formatMessage(T object) {
+        if(object == null)
             return null;
-        return getRawFileData(value).convertString();
+        return getRawFileData(object).convertString();
     }
 
     protected abstract RawFileData getRawFileData(T value);
+    protected abstract T getValue(RawFileData data);
+
+
+    public String serializeString() {
+        try {
+            ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+            serialize(new DataOutputStream(outStream));
+            return IOUtils.serializeStream(outStream);
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    public static <T> FileClass<T> deserializeString(String image) throws IOException {
+        DataInputStream dataStream = new DataInputStream(IOUtils.deserializeStream(image));
+        return (FileClass) TypeSerializer.deserializeDataClass(dataStream);
+    }
 }

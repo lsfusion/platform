@@ -296,14 +296,8 @@ public class BaseUtils {
                 prefixes[i] = inStream.readUTF();
             }
             Serializable[] files = new Serializable[size];
-            for(int i = 0; i < size; i++) {
-                if(inStream.readBoolean()) {
-                    String name = inStream.readUTF();
-                    int fileLength = inStream.readInt();
-                    files[i] = new StringWithFiles.File(new RawFileData(inStream, fileLength), name);
-                } else
-                    files[i] = IOUtils.readAppImage(inStream);
-            }
+            for(int i = 0; i < size; i++)
+                files[i] = (Serializable) deserializeObject(inStream);
             String rawString = inStream.readUTF();
 
             return new StringWithFiles(prefixes, files, rawString);
@@ -319,6 +313,12 @@ public class BaseUtils {
 
         if (objectType == 18) {
             return IOUtils.readAppFileDataImage(inStream);
+        }
+
+        if(objectType == 19) {
+            String name = inStream.readUTF();
+            int fileLength = inStream.readInt();
+            return new StringWithFiles.Resource(new RawFileData(inStream, fileLength), name);
         }
 
         throw new IOException();
@@ -479,21 +479,8 @@ public class BaseUtils {
             for(String prefix : stringWithFiles.prefixes) {
                 outStream.writeUTF(prefix);
             }
-            for(Serializable data : stringWithFiles.files) {
-                if (data instanceof StringWithFiles.File) {
-                    outStream.writeBoolean(true);
-
-                    StringWithFiles.File file = (StringWithFiles.File) data;
-                    outStream.writeUTF(file.name);
-                    byte[] obj = file.raw.getBytes();
-                    outStream.writeInt(obj.length);
-                    outStream.write(obj);
-                } else { // it's an image
-                    outStream.writeBoolean(false);
-
-                    IOUtils.writeAppImage(outStream, (AppImage) data);
-                }
-            }
+            for(Serializable data : stringWithFiles.files)
+                serializeObject(outStream, data);
             outStream.writeUTF(stringWithFiles.rawString);
             return;
         }
@@ -514,6 +501,15 @@ public class BaseUtils {
             outStream.writeByte(18);
             IOUtils.writeAppFileDataImage(outStream, (AppFileDataImage) object);
             return;
+        }
+
+        if (object instanceof StringWithFiles.Resource) {
+            outStream.writeByte(19);
+            StringWithFiles.Resource file = (StringWithFiles.Resource) object;
+            outStream.writeUTF(file.name);
+            byte[] obj = file.raw.getBytes();
+            outStream.writeInt(obj.length);
+            outStream.write(obj);
         }
 
         throw new IOException();
@@ -2072,6 +2068,8 @@ public class BaseUtils {
     public static final String inlineImageSeparator = "<GFDTRGDFSAFADXZW/>";
 
     public static final String inlineSerializedImageSeparator = "<DFSRKNFDVSDRRES/>";
+
+    public static final String inlineDataFileSeparator = "<FDDGRTFSJAOWMDSKCCXA/>"; // we want separators as tags to have no problem with ts vectors
 
     public static Object executeWithTimeout(Callable<Object> callable, Integer timeout) {
         if (timeout != null) {

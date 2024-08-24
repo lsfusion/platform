@@ -6,7 +6,7 @@ import lsfusion.server.logics.classes.data.DataClass;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class ImageLinkClass extends StaticFormatLinkClass {
+public class ImageLinkClass extends RenderedLinkClass {
 
     protected String getFileSID() {
         return "IMAGELINK";

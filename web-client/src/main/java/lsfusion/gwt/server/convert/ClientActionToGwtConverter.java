@@ -220,8 +220,8 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     }
 
     @Converter(from = OpenUriClientAction.class)
-    public GOpenUriAction convertAction(OpenUriClientAction action) {
-        return new GOpenUriAction(action.uri.toString());
+    public GOpenUriAction convertAction(OpenUriClientAction action, FormSessionObject formSessionObject, MainDispatchServlet servlet) throws IOException {
+        return new GOpenUriAction((Serializable) deserializeServerValue(action.uri, formSessionObject, servlet), action.noEncode);
     }
 
     @Converter(from = EditNotPerformedClientAction.class)

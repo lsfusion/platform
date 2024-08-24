@@ -37,7 +37,7 @@ public class DynamicFormatLinkClass extends LinkClass {
     }
 
     public DataClass getCompatible(DataClass compClass, boolean or) {
-        return compClass instanceof DynamicFormatLinkClass ? this : null;
+        return compClass instanceof DynamicFormatLinkClass ? this : super.getCompatible(compClass, or);
     }
 
     public byte getTypeID() {

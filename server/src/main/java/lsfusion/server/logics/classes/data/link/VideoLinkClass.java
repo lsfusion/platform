@@ -6,7 +6,7 @@ import lsfusion.server.logics.classes.data.DataClass;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class VideoLinkClass extends StaticFormatLinkClass {
+public class VideoLinkClass extends RenderedLinkClass {
 
     protected String getFileSID() {
         return "VIDEOLINK";

@@ -8,7 +8,7 @@ import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class VideoClass extends StaticFormatFileClass {
+public class VideoClass extends RenderedClass {
 
     protected String getFileSID() {
         return "VIDEOFILE";

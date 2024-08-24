@@ -46,7 +46,7 @@ public interface BaseImage extends Serializable {
             return "<i class=\"" + ((BaseStaticImage) this).getFontClasses() + " wrap-text-img\"></i>";
         else {
             String tag = getTag();
-            return "<" + tag + "src=\"" + getImageElementSrc(true) + "\" class=\"wrap-text-img\"></" + tag + ">";
+            return "<" + tag + " src=\"" + getImageElementSrc(true) + "\" class=\"wrap-text-img\"></" + tag + ">";
         }
     }
     default Element createImage() {

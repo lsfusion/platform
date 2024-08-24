@@ -75,7 +75,6 @@ import lsfusion.server.logics.form.interactive.action.focus.FocusAction;
 import lsfusion.server.logics.form.interactive.action.input.*;
 import lsfusion.server.logics.form.interactive.action.seek.SeekGroupObjectAction;
 import lsfusion.server.logics.form.interactive.action.seek.SeekObjectAction;
-import lsfusion.server.logics.form.interactive.action.userevent.*;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.dialogedit.ClassFormEntity;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;

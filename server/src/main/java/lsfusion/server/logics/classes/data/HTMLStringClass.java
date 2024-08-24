@@ -2,7 +2,10 @@ package lsfusion.server.logics.classes.data;
 
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.property.ExtInt;
+import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.data.type.exec.TypeEnvironment;
+import lsfusion.server.logics.classes.data.file.FileClass;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -33,6 +36,14 @@ public class HTMLStringClass extends StringClass {
     @Override
     public DataClass getCompatible(DataClass compClass, boolean or) {
         return compClass instanceof HTMLStringClass ? this : super.getCompatible(compClass, or);
+    }
+
+    @Override
+    public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom, CastType castType) {
+        if(typeFrom instanceof FileClass)
+            return ((FileClass) typeFrom).getCastToConvert(true, value, syntax);
+
+        return super.getCast(value, syntax, typeEnv, typeFrom, castType);
     }
 
     @Override

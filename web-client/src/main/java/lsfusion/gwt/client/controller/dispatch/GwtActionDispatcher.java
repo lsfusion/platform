@@ -3,6 +3,7 @@ package lsfusion.gwt.client.controller.dispatch;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.http.client.URL;
 import com.google.gwt.media.client.Audio;
 import com.google.gwt.typedarrays.client.Uint8ArrayNative;
 import com.google.gwt.typedarrays.shared.ArrayBuffer;
@@ -345,7 +346,10 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     @Override
     public void execute(GOpenUriAction action) {
-        Window.open(action.uri, "_blank", "");
+        String url = PValue.getStringValue(PValue.convertFileValue(action.uri));
+        if(!action.noEncode)
+            url = URL.encodeQueryString(url);
+        Window.open(url, "_blank", "");
     }
 
     @Override

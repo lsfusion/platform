@@ -272,7 +272,7 @@ public interface PValue {
                     if(url instanceof String) // file
                         result.append(GwtClientUtils.getAppStaticWebURL((String) url));
                     else {
-                        AppStaticImage image = (AppStaticImage) url;
+                        AppBaseImage image = (AppBaseImage) url;
                         if(image != null)
                             result.append(image.createImageHTML());
                     }

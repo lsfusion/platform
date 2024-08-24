@@ -1,14 +1,18 @@
 package lsfusion.gwt.client.action;
 
+import java.io.Serializable;
+
 public class GOpenUriAction extends GExecuteAction {
-    public String uri;
+    public Serializable uri;
+    public boolean noEncode;
 
     //needed for it to be gwt-serializable
     @SuppressWarnings("UnusedDeclaration")
     public GOpenUriAction() {}
 
-    public GOpenUriAction(String uri) {
+    public GOpenUriAction(Serializable uri, boolean noEncode) {
         this.uri = uri;
+        this.noEncode = noEncode;
     }
 
     @Override

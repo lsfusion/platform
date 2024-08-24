@@ -5,12 +5,8 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.view.ImageCellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
-public class GImageType extends GFileType {
-    @Override
-    public CellRenderer createCellRenderer(GPropertyDraw property) {
-        return new ImageCellRenderer(property);
-    }
-    
+public class GImageType extends GRenderedType {
+
     public String extension;
 
     public GImageType() {

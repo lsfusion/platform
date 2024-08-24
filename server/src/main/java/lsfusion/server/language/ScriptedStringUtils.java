@@ -296,7 +296,17 @@ public class ScriptedStringUtils {
         return true;
     }
 
-    private enum StringInterpolateState { PLAIN, INTERPOLATION, INLINE, RESOURCE, IMAGE }
+    private enum StringInterpolateState {
+        PLAIN, INTERPOLATION, INLINE, RESOURCE, IMAGE;
+
+        public boolean isInterpolation() {
+            return this == INTERPOLATION;
+        }
+
+        public int getLength() {
+            return this == INTERPOLATION ? 1 : 2;
+        }
+    }
 
     public static List<String> parseStringInterpolateProp(String source) throws TransformationError {
         List<String> literals = new ArrayList<>();
@@ -322,19 +332,19 @@ public class ScriptedStringUtils {
                 currentLiteral += nextc;
                 ++pos;
             } else if (newState != StringInterpolateState.PLAIN) {
-                boolean isInterpolationState = newState == StringInterpolateState.INTERPOLATION;
+                boolean isInterpolationState = newState.isInterpolation();
                 if (nestingDepth == 0) {
                     currentLiteral = flushCurrentLiteral(literals, currentLiteral);
                     state = newState;
                 } else {
-                    currentLiteral += source.substring(pos, pos + (isInterpolationState ? 2 : 3));
+                    currentLiteral += source.substring(pos, pos + 1 + newState.getLength());
                 }
                 if (isInterpolationState) {
                     ++nestingInterpolationDepth;
                 }
                 ++nestingDepth;
                 interpolationMarks.push(isInterpolationState);
-                pos += (isInterpolationState ? 1 : 2);
+                pos += newState.getLength();
             } else if (c == OPEN_CH) {
                 ++nestingDepth;
                 currentLiteral += c;
@@ -383,6 +393,10 @@ public class ScriptedStringUtils {
         return inlineFileSeparator + inlineImageSeparator + currentLiteral + inlineFileSeparator;
     }
 
+    public static String wrapFile(String fileType, String data) {
+        return inlineFileSeparator + inlineDataFileSeparator + fileType + inlineDataFileSeparator + data + inlineFileSeparator;
+    }
+
     public static String wrapSerializedImage(String currentLiteral) {
         return inlineFileSeparator + inlineSerializedImageSeparator + currentLiteral + inlineFileSeparator;
     }
@@ -409,7 +423,7 @@ public class ScriptedStringUtils {
             if (!insideSpecialState && state != StringInterpolateState.PLAIN) {
                 insideSpecialState = true;
                 nestingDepth = 1;
-                int end = i + (state == StringInterpolateState.INTERPOLATION ? 1 : 2);
+                int end = i + state.getLength();
                 builder.append(content, i, end+1);
                 i = end;
             } else {
