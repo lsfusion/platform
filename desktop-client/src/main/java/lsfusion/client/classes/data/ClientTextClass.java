@@ -29,16 +29,10 @@ public class ClientTextClass extends ClientStringClass implements ClientTypeClas
     }
 
     @Override
-    public void serialize(DataOutputStream outStream) throws IOException {
-        outStream.writeByte(getTypeClass().getTypeId());
-    }
-
-    @Override
     public ClientTypeClass getTypeClass() {
         return this;
     }
 
-    @Override
     public byte getTypeId() {
         return DataType.TEXT;
     }

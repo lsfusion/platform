@@ -6,14 +6,15 @@ import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.logics.classes.data.file.FileClass;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class HTMLStringClass extends StringClass {
+public class HTMLStringClass extends AStringClass {
 
     public HTMLStringClass() {
-        super(false, ExtInt.UNLIMITED, false);
+        super(LocalizedString.create("HTML"), false, ExtInt.UNLIMITED, false);
     }
 
     public final static HTMLStringClass instance = new HTMLStringClass();
@@ -24,18 +25,13 @@ public class HTMLStringClass extends StringClass {
     }
 
     @Override
-    public void serialize(DataOutputStream outStream) throws IOException {
-        outStream.writeByte(getTypeID());
-    }
-
-    @Override
     public String getSID() {
         return "HTML";
     }
 
     @Override
     public DataClass getCompatible(DataClass compClass, boolean or) {
-        return compClass instanceof HTMLStringClass ? this : super.getCompatible(compClass, or);
+        return compClass instanceof HTMLStringClass ? this : null;
     }
 
     @Override

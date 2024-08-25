@@ -7,7 +7,6 @@ import lsfusion.interop.form.property.ExtInt;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class ClientTypeSerializer {
@@ -26,16 +25,6 @@ public class ClientTypeSerializer {
                 throw new UnsupportedOperationException("Concatenate Type is not supported yet");
         }
         throw new RuntimeException("Deserialize error");
-    }
-
-    public static void serializeClientType(DataOutputStream outStream, ClientType type) throws IOException {
-        if (type instanceof ClientObjectClass)
-            outStream.writeByte(0);
-        else if (type instanceof ClientDataClass) {
-            outStream.writeByte(1);
-            ((ClientClass) type).serialize(outStream);
-        } else
-            throw new UnsupportedOperationException("Concatenate Type is not supported yet");
     }
 
     public static ClientObjectClass deserializeClientObjectClass(DataInputStream inStream) throws IOException {

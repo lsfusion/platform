@@ -87,10 +87,6 @@ public class ClientObjectType implements ClientType, ClientTypeClass {
         return ClientResourceBundle.getString("logics.object");
     }
 
-    public ClientType getDefaultType() {
-        return this;
-    }
-
     @Override
     public Compare[] getFilterCompares() {
         return new Compare[] {EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS};

@@ -1,6 +1,7 @@
 package lsfusion.client.classes.data.link;
 
 import lsfusion.client.classes.ClientTypeClass;
+import lsfusion.client.classes.data.ClientAStringClass;
 import lsfusion.client.classes.data.ClientDataClass;
 import lsfusion.client.classes.data.ClientStringClass;
 import lsfusion.client.form.property.ClientPropertyDraw;
@@ -14,7 +15,7 @@ import java.text.ParseException;
 
 import static lsfusion.interop.form.property.Compare.EQUALS;
 
-public abstract class ClientLinkClass extends ClientStringClass implements ClientTypeClass {
+public abstract class ClientLinkClass extends ClientAStringClass implements ClientTypeClass {
 
     public final boolean multiple;
 
@@ -22,12 +23,5 @@ public abstract class ClientLinkClass extends ClientStringClass implements Clien
         super(false, false, ExtInt.UNLIMITED);
 
         this.multiple = multiple;
-    }
-
-    @Override
-    public void serialize(DataOutputStream outStream) throws IOException {
-        outStream.writeByte(getTypeClass().getTypeId());
-
-        outStream.writeBoolean(multiple);
     }
 }

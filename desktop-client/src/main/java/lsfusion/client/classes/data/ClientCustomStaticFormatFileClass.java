@@ -39,12 +39,6 @@ public class ClientCustomStaticFormatFileClass extends ClientStaticFormatFileCla
         return DataType.CUSTOMSTATICFORMATFILE;
     }
 
-    public void serialize(DataOutputStream outStream) throws IOException {
-        super.serialize(outStream);
-
-        //todo:
-    }
-
     public String formatString(Object obj) throws ParseException {
         return filterDescription;
     }

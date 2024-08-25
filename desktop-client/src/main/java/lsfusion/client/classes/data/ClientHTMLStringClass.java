@@ -16,7 +16,7 @@ import java.awt.*;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class ClientHTMLStringClass extends ClientStringClass implements ClientTypeClass {
+public class ClientHTMLStringClass extends ClientAStringClass implements ClientTypeClass {
 
 
     public final static ClientHTMLStringClass instance = new ClientHTMLStringClass();
@@ -25,18 +25,11 @@ public class ClientHTMLStringClass extends ClientStringClass implements ClientTy
         super(false, false, ExtInt.UNLIMITED);
     }
 
-
-    @Override
-    public void serialize(DataOutputStream outStream) throws IOException {
-        outStream.writeByte(getTypeClass().getTypeId());
-    }
-
     @Override
     public ClientTypeClass getTypeClass() {
         return this;
     }
 
-    @Override
     public byte getTypeId() {
         return DataType.HTMLSTRING;
     }

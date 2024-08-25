@@ -41,7 +41,6 @@ public class ClientColorClass extends ClientDataClass implements ClientTypeClass
         return "#" + Integer.toHexString(((Color) obj).getRGB()).substring(2, 8);
     }
 
-    @Override
     public byte getTypeId() {
         return DataType.COLOR;
     }

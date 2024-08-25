@@ -347,8 +347,9 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     @Override
     public void execute(GOpenUriAction action) {
         String url = PValue.getStringValue(PValue.convertFileValue(action.uri));
-        if(!action.noEncode)
-            url = URL.encodeQueryString(url);
+        // we don't need to encode because it seems that the browser encodes the url itself
+//        if(!action.noEncode)
+//            url = URL.encodeQueryString(url);
         Window.open(url, "_blank", "");
     }
 

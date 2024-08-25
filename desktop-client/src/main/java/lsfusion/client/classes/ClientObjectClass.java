@@ -25,7 +25,6 @@ public class ClientObjectClass extends ClientClass {
         this.caption = caption;
     }
 
-    @Override
     public void serialize(DataOutputStream outStream) throws IOException {
         outStream.writeByte(DataType.OBJECT);
         outStream.writeLong(ID);

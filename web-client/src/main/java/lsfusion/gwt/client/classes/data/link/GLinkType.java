@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.classes.data.link;
 
 import lsfusion.gwt.client.base.size.GSize;
+import lsfusion.gwt.client.classes.data.GAStringType;
 import lsfusion.gwt.client.classes.data.GDataType;
 import lsfusion.gwt.client.classes.data.GStringType;
 import lsfusion.gwt.client.form.design.GFont;
@@ -17,7 +18,7 @@ import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
-public abstract class GLinkType extends GStringType {
+public abstract class GLinkType extends GAStringType {
     public boolean multiple;
     public String description;
 

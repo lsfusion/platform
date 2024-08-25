@@ -413,8 +413,13 @@ servletPath '{system.events.context.path.connection}' = DATA STRING (Connection)
 pathInfo '{system.events.path.info.connection}' = DATA STRING (Connection);
 query '{system.events.query.connection}' = DATA STRING (Connection);
 scheme '{system.events.context.path.scheme}' = DATA STRING (Connection);
-webPath(Connection c) = scheme(c) + '://' + webHost(c) + ':' + webPort(c) + contextPath(c);
-link(Connection cn, STRING relativeUrl) = LINK(CONCAT '&', webPath(cn) + relativeUrl, notEmpty(query(cn)));
+
+origin(Connection c) = scheme(c) + '://' + webHost(c) + ':' + webPort(c); 
+webPath(Connection c) = origin(c) + contextPath(c);
+
+originUrl(Connection cn, STRING relativeUrl) = origin(cn) + relativeUrl;
+contextUrl(Connection cn, STRING relativeUrl) = CONCAT '&', webPath(cn) + relativeUrl, notEmpty(query(cn));
+originUrl(Connection cn, LINK relativeLink) = LINK(originUrl(cn, STRING(relativeLink))); 
 
 user '{system.events.user.connection}' = DATA CustomUser (Connection);
 userLogin '{system.events.user.login.connection}' (Connection connection) = login(user(connection));
@@ -505,7 +510,9 @@ EXTEND FORM customUsers PROPERTIES(u) GRID reconnect, shutdown;
 @defineLog (Connection, '{system.events.define.log.of.connections}', log, connectDate);
 
 currentConnection = NATIVE Connection ();
-link(STRING relativeUrl) = link(currentConnection(), relativeUrl);
+originUrl(STRING relativeUrl) = originUrl(currentConnection(), relativeUrl);
+contextUrl(STRING relativeUrl) = contextUrl(currentConnection(), relativeUrl);
+originUrl(LINK relativeLink) = originUrl(currentConnection(), relativeLink);
 
 clientType = DATA ClientType (Connection);
 nameClientType '{system.events.client.type}' (Connection connection) = staticCaption(clientType(connection));
@@ -961,7 +968,7 @@ share(STRING url, STRING text, STRING title) {
 }
 
 shareAction(STRING relativeUrl) {
-    share(link(relativeUrl), 'The link to share the form', 'Share');
+    share(contextUrl(relativeUrl), 'The link to share the form', 'Share');
 }
 
 //VAPID key gen: https://tools.reactpwa.com/vapid

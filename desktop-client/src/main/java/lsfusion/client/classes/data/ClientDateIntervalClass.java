@@ -10,7 +10,6 @@ import static lsfusion.base.DateConverter.*;
 public class ClientDateIntervalClass extends ClientIntervalClass {
 
     public final static ClientIntervalClass instance = new ClientDateIntervalClass();
-    @Override
     public byte getTypeId() {
         return DataType.DATEINTERVAL;
     }
