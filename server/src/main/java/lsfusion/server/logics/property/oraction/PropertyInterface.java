@@ -7,7 +7,7 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.identity.IdentityObject;
-import lsfusion.server.base.caches.LazyInit;
+import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.PullExpr;
 import lsfusion.server.data.expr.query.GroupType;
@@ -112,7 +112,7 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
     }
 
     // для того чтобы "попробовать" изменения (на самом деле для кэша)
-    @LazyInit
+    @NFLazy
     public Expr getChangeExpr() {
         if(changeExpr==null)
             changeExpr = new PullExpr(ID);

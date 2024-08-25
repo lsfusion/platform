@@ -19,6 +19,7 @@ import lsfusion.server.base.caches.*;
 import lsfusion.server.base.controller.stack.StackMessage;
 import lsfusion.server.base.controller.stack.ThisMessage;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
+import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.QueryEnvironment;
@@ -1602,7 +1603,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     // для того чтобы "попробовать" изменения (на самом деле для кэша)
-    @LazyInit
+    @NFLazy
     public Expr getChangeExpr() {
         if(changeExpr == null)
             changeExpr = new PullExpr(-128);
