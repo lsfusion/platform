@@ -26,10 +26,6 @@ public class ClientCustomStaticFormatLinkClass extends ClientStaticFormatLinkCla
         return DataType.CUSTOMSTATICFORMATLINK;
     }
 
-    public void serialize(DataOutputStream outStream) throws IOException {
-        super.serialize(outStream);
-    }
-
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
         return new LinkPropertyRenderer(property);
     }

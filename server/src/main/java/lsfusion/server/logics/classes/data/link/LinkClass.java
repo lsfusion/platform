@@ -4,18 +4,19 @@ import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.exec.TypeEnvironment;
-import lsfusion.server.logics.classes.data.StringClass;
+import lsfusion.server.logics.classes.data.AStringClass;
 import lsfusion.server.logics.classes.data.file.FileClass;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public abstract class LinkClass extends StringClass {
+public abstract class LinkClass extends AStringClass {
 
     public final boolean multiple;
 
     protected LinkClass(boolean multiple) {
-        super(false, ExtInt.UNLIMITED, false);
+        super(LocalizedString.create("{classes.link}"), false, ExtInt.UNLIMITED, false);
 
         this.multiple = multiple;
     }
@@ -39,10 +40,9 @@ public abstract class LinkClass extends StringClass {
 
     @Override
     public void serialize(DataOutputStream outStream) throws IOException {
-        outStream.writeByte(getTypeID());
+        super.serialize(outStream);
         outStream.writeBoolean(multiple);
     }
-
 
     @Override
     public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom, CastType castType) {

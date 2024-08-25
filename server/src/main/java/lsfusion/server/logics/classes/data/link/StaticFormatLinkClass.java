@@ -28,7 +28,7 @@ public abstract class StaticFormatLinkClass extends LinkClass {
     @Override
     public DataClass getCompatible(DataClass compClass, boolean or) {
         if(!(compClass instanceof StaticFormatLinkClass))
-            return super.getCompatible(compClass, or);
+            return null;
 
         StaticFormatLinkClass staticFileClass = (StaticFormatLinkClass)compClass;
         if(!(multiple == staticFileClass.multiple))

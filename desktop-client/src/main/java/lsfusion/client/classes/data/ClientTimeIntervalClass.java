@@ -17,7 +17,6 @@ public class ClientTimeIntervalClass extends ClientIntervalClass {
 
     public final static ClientTimeIntervalClass instance = new ClientTimeIntervalClass();
 
-    @Override
     public byte getTypeId() {
         return DataType.TIMEINTERVAL;
     }

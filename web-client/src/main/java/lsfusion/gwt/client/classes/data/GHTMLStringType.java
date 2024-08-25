@@ -12,7 +12,7 @@ import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
-public class GHTMLStringType extends GStringType {
+public class GHTMLStringType extends GAStringType {
 
     public static final GHTMLStringType instance = new GHTMLStringType();
 
@@ -25,11 +25,7 @@ public class GHTMLStringType extends GStringType {
         return new HTMLTextCellRenderer(property);
     }
 
-    @Override
-    public GType getFilterMatchType() {
-        return this;
-    }
-//
+    //
 //    @Override
 //    public InputElement createTextInputElement() {
 //        return Document.get().createTextAreaElement().cast();

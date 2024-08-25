@@ -1602,7 +1602,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return interfaces.mapValues((Function<T, Expr>) PropertyInterface::getChangeExpr);
     }
 
-    // для того чтобы "попробовать" изменения (на самом деле для кэша)
+    // actually it is strong lazy
     @NFLazy
     public Expr getChangeExpr() {
         if(changeExpr == null)

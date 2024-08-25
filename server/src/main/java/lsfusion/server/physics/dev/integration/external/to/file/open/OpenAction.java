@@ -37,21 +37,16 @@ public class OpenAction extends InternalAction {
         try {
             ObjectValue sourceObject = context.getKeyValue(sourceInterface);
             String source = (String) sourceObject.getValue();
+            String name = (String) context.getKeyValue(nameInterface).getValue();
             boolean noWait = context.getKeyValue(noWaitInterface).getValue() != null;
 
-            Type sourceType = sourceObject.getType();
-            if (sourceType instanceof LinkClass) { // backward compatibility
-                OpenLinkAction.execute(source, context, noWait, true);
-            } else {
-                String name = (String) context.getKeyValue(nameInterface).getValue();
-                if (source != null) {
-                    OpenFileClientAction action = new OpenFileClientAction(new RawFileData(source),
-                            name != null ? name : FilenameUtils.getBaseName(source), BaseUtils.getFileExtension(source));
-                    if (noWait) {
-                        context.delayUserInteraction(action);
-                    } else {
-                        context.requestUserInteraction(action);
-                    }
+            if (source != null) {
+                OpenFileClientAction action = new OpenFileClientAction(new RawFileData(source),
+                        name != null ? name : FilenameUtils.getBaseName(source), BaseUtils.getFileExtension(source));
+                if (noWait) {
+                    context.delayUserInteraction(action);
+                } else {
+                    context.requestUserInteraction(action);
                 }
             }
         } catch (Exception e) {

@@ -22,10 +22,6 @@ public class ClientNumericClass extends ClientDoubleClass {
             return DataType.NUMERIC;
         }
 
-        public ClientNumericClass getDefaultType() {
-            return new ClientNumericClass(new ExtInt(10), new ExtInt(2));
-        }
-
         @Override
         public String toString() {
             return ClientResourceBundle.getString("logics.classes.number");
@@ -53,14 +49,6 @@ public class ClientNumericClass extends ClientDoubleClass {
     @Override
     public ClientTypeClass getTypeClass() {
         return type;
-    }
-
-    @Override
-    public void serialize(DataOutputStream outStream) throws IOException {
-        super.serialize(outStream);
-
-        precision.serialize(outStream);
-        scale.serialize(outStream);
     }
 
     public NumberFormat getDefaultFormat() {

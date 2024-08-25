@@ -10,7 +10,6 @@ public class ClientZDateTimeIntervalClass extends ClientIntervalClass {
 
     public final static ClientZDateTimeIntervalClass instance = new ClientZDateTimeIntervalClass();
 
-    @Override
     public byte getTypeId() {
         return DataType.ZDATETIMEINTERVAL;
     }

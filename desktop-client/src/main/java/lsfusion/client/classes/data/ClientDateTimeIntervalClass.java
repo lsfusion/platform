@@ -13,7 +13,6 @@ public class ClientDateTimeIntervalClass extends ClientIntervalClass {
 
     public final static ClientDateTimeIntervalClass instance = new ClientDateTimeIntervalClass();
 
-    @Override
     public byte getTypeId() {
         return DataType.DATETIMEINTERVAL;
     }

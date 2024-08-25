@@ -18,19 +18,12 @@ import lsfusion.client.form.property.table.view.AsyncChangeInterface;
 import lsfusion.interop.form.property.Compare;
 
 import java.awt.*;
-import java.io.DataOutputStream;
-import java.io.IOException;
 
 import static lsfusion.interop.form.property.Compare.*;
 
 public abstract class ClientDataClass extends ClientClass implements ClientType {
 
     protected ClientDataClass() {
-    }
-
-    @Override
-    public void serialize(DataOutputStream outStream) throws IOException {
-        outStream.writeByte(getTypeClass().getTypeId());
     }
 
     public boolean hasChildren() {
@@ -82,12 +75,6 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
 
     public String getConfirmMessage() {
         return ClientResourceBundle.getString("logics.classes.do.you.really.want.to.edit.property");
-    }
-
-    // за исключение классов динамической ширины - так как нету множественного наследования и не хочется каждому прописывать
-    @SuppressWarnings("UnusedDeclaration")
-    public ClientType getDefaultType() {
-        return this;
     }
 
     public ClientTypeClass getTypeClass() {

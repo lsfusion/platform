@@ -22,42 +22,12 @@ import static java.lang.Math.pow;
 import static java.lang.Math.round;
 import static lsfusion.gwt.client.form.filter.user.GCompare.*;
 
-public class GStringType extends GTextBasedType {
-
-    public boolean blankPadded;
-    public boolean caseInsensitive;
-    protected GExtInt length = new GExtInt(50);
-
-    @Override
-    public GCompare[] getFilterCompares() {
-        return new GCompare[] {EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, CONTAINS, MATCH};
-    }
-
-    @Override
-    public PValue parseString(String s, String pattern) throws ParseException {
-        return PValue.getPValue(s);
-    }
+public class GStringType extends GAStringType {
 
     public GStringType() {}
 
     public GStringType(GExtInt length, boolean caseInsensitive, boolean blankPadded) {
-
-        this.blankPadded = blankPadded;
-        this.caseInsensitive = caseInsensitive;
-        this.length = length;
-    }
-
-    @Override
-    public int getDefaultCharWidth() {
-        if(length.isUnlimited())
-            return 15;
-
-        return getScaledCharWidth(length.getValue());
-    }
-
-    // the same is on the server
-    private static int getScaledCharWidth(int lengthValue) {
-        return lengthValue <= 12 ? Math.max(lengthValue, 1) : (int) round(12 + pow(lengthValue - 12, 0.7));
+        super(length, caseInsensitive, blankPadded);
     }
 
     @Override

@@ -27,27 +27,12 @@ import java.util.Collection;
 import static java.lang.Math.max;
 import static lsfusion.base.BaseUtils.cmp;
 
-public class StringClass extends TextBasedClass<String> implements DBType {
+public class StringClass extends AStringClass implements DBType {
 
     private final static Collection<StringClass> strings = new ArrayList<>();
 
     public final static StringClass text = getv(true, ExtInt.UNLIMITED);
     public final static StringClass instance = getv(ExtInt.UNLIMITED);
-    public final boolean blankPadded;
-    public final boolean caseInsensitive;
-    public final ExtInt length;
-
-    public Class getReportJavaClass() {
-        return String.class;
-    }
-
-    public String getDefaultValue() {
-        return "";
-    }
-
-    public String getString(Object value, SQLSyntax syntax) {
-        return "'" + value + "'";
-    }
 
     public String getRTrim(String value) {
         assert blankPadded;
@@ -67,19 +52,6 @@ public class StringClass extends TextBasedClass<String> implements DBType {
     }
 
     @Override
-    public boolean isSafeType() { // при полиморфных функциях странно себя ведет без explicit cast'а
-        return false;
-    }
-
-    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
-        statement.setString(num, (String) value);
-    }
-
-    public String parseString(String s) {
-        return s.replace("\u0000", "");
-    }
-
-    @Override
     public void serialize(DataOutputStream outStream) throws IOException {
         super.serialize(outStream);
         outStream.writeBoolean(blankPadded);
@@ -93,22 +65,7 @@ public class StringClass extends TextBasedClass<String> implements DBType {
     }
 
     protected StringClass(LocalizedString caption, boolean blankPadded, ExtInt length, boolean caseInsensitive) {
-        super(caption);
-        this.blankPadded = blankPadded;
-        this.length = length;
-        this.caseInsensitive = caseInsensitive;
-
-//        assert !blankPadded || !this.length.isUnlimited();
-    }
-
-    public int getReportMinimumWidth() {
-        return 30;
-    }
-
-    public int getReportPreferredWidth() {
-        if(length.isUnlimited())
-            return 200;
-        return Math.min(200, max(30, length.getValue() * 2));
+        super(caption, blankPadded, length, caseInsensitive);
     }
 
     public byte getTypeID() {
@@ -126,102 +83,6 @@ public class StringClass extends TextBasedClass<String> implements DBType {
                    length.cmp(stringClass.length, or));
     }
 
-    private boolean isDBType() {
-        return !caseInsensitive && getClass() == StringClass.class;
-    }
-    @Override
-    public DBType getDBType() {
-        if(isDBType()) // optimization
-            return this;
-
-        return get(blankPadded, false, length);
-    }
-
-    public String getDBString(SQLSyntax syntax, TypeEnvironment typeEnv) {
-        assert isDBType();
-        boolean isUnlimited = length.isUnlimited();
-        if(blankPadded) {
-            if(isUnlimited)
-                return syntax.getBPTextType();
-            int lengthValue = length.getValue();
-            return syntax.getStringType(lengthValue==0 ? 1 : lengthValue);
-        }
-        if(isUnlimited)
-            return syntax.getTextType();
-        int lengthValue = length.getValue();
-        return syntax.getVarStringType(lengthValue==0? 1 : lengthValue);
-    }
-
-    public String getDotNetType(SQLSyntax syntax, TypeEnvironment typeEnv) {
-        return "SqlString";
-    }
-
-    public String getDotNetRead(String reader) {
-        return reader + ".ReadString()";
-    }
-    public String getDotNetWrite(String writer, String value) {
-        return writer + ".Write(" + value + ");";
-    }
-
-    @Override
-    public int getBaseDotNetSize() {
-        if(length.isUnlimited())
-            return 400;
-        return length.getValue() * 4 + 5;
-    }
-
-    public int getSQL(SQLSyntax syntax) {
-        boolean isUnlimited = length.isUnlimited();
-        if(blankPadded) {
-            if(isUnlimited)
-                return syntax.getBPTextSQL();
-            return syntax.getStringSQL();
-        }
-        if(isUnlimited)
-            return syntax.getTextSQL();
-        return syntax.getVarStringSQL();
-    }
-
-    public boolean isSafeString(Object value) {
-        if(value == null)
-            return false;
-
-        assert value instanceof String;
-        String string = value.toString();
-        return !string.contains("'") && !string.contains("\\");
-    }
-
-    public String read(Object value) {
-        if (value == null) return null;
-
-        if(blankPadded) {
-            if(length.isUnlimited())
-                return ((String)value);
-//            return BaseUtils.padr((String) value, length.getValue());
-            return BaseUtils.rtrim(BaseUtils.truncate((String) value, length.getValue()));
-        }
-
-        if(length.isUnlimited())
-            return (String) value;
-        return BaseUtils.truncate((String) value, length.getValue());
-    }
-
-    @Override
-    public String read(ResultSet set, SQLSyntax syntax, String name) throws SQLException {
-        return read(set.getString(name));
-    }
-
-    @Override
-    public ExtInt getCharLength() {
-        return length;
-    }
-
-    @Override
-    public int getSize(String value) {
-        assert length.isUnlimited();
-        return value.length();
-    }
-
     @Override
     public String getSID() {
         return (!blankPadded ? "" : "BP") + (caseInsensitive ? "I" : "") + "STRING" + (length.isUnlimited() ? "" : "_" + length);
@@ -237,18 +98,6 @@ public class StringClass extends TextBasedClass<String> implements DBType {
         }
     }
     
-    @Override
-    public Stat getTypeStat() {
-        if(length.isUnlimited())
-            return new Stat(100, 400);
-        return new Stat(100, length.getValue());
-    }
-
-    public boolean calculateStat() {
-        return true; // we need stats at least for isValueUnique heuristics
-//        return length.less(new ExtInt(400));
-    }
-
     public StringClass extend(int times) {
         if(length.isUnlimited())
             return this;
@@ -339,31 +188,7 @@ public class StringClass extends TextBasedClass<String> implements DBType {
     }
 
     @Override
-    public boolean fixedSize() {
-        return false;
-    }
-
-    @Override
-    public OverJDBField formatDBF(String fieldName) throws JDBFException {
-        ExtInt charLength = getCharLength();
-        return OverJDBField.createField(fieldName, 'C', Math.min(charLength.isUnlimited() ? Integer.MAX_VALUE : charLength.getValue(), 253), 0);
-    }
-
-    @Override
-    public boolean isFlex() {
-        return true;
-    }
-
-    @Override
     public ValueClass getFilterMatchValueClass() {
         return text;
-    }
-
-    @Override
-    public Compare getDefaultCompare() {
-        if(caseInsensitive || Settings.get().isDefaultCompareForStringContains())
-            return Settings.get().isDefaultCompareSearchInsteadOfContains() ? Compare.MATCH : Compare.CONTAINS;
-
-        return super.getDefaultCompare();
     }
 }

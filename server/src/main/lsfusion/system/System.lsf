@@ -201,9 +201,13 @@ open '{system.open.file}' (RAWFILE source, STRING name)  { open(source, name, NU
 open '{system.open.file}' (RAWFILE source, BOOLEAN noWait)  { open(source, NULL, noWait); }
 open '{system.open.file}' (RAWFILE source)  { open(source, NULL, NULL); }
 
-openLink '{system.open.link}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenLinkAction' (STRING, BOOLEAN, BOOLEAN);
-openLink '{system.open.link}' (STRING source, BOOLEAN noWait)  { openLink(source, noWait, NULL); }
-openLink '{system.open.link}' (STRING source)  { openLink(source, NULL); }
+open '{system.open.link}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.open.OpenLinkAction' (LINK, BOOLEAN, BOOLEAN);
+open '{system.open.link}' (LINK source, BOOLEAN noWait)  { open(source, noWait, NULL); }
+open '{system.open.link}' (LINK source)  { open(source, NULL); }
+
+open '{system.open.link}' (RAWLINK source, BOOLEAN noWait, BOOLEAN noEncode) { open(LINK(source), noWait, noEncode); }
+open '{system.open.link}' (RAWLINK source, BOOLEAN noWait)  { open(source, noWait, NULL); }
+open '{system.open.link}' (RAWLINK source)  { open(source, NULL); }
 
 // ----------------------------------- open html link in tab ----------------------------------- //
 
@@ -252,6 +256,7 @@ exportDate = DATA LOCAL DATE ();
 exportTime = DATA LOCAL TIME ();
 exportColor = DATA LOCAL COLOR ();
 exportJSON = DATA LOCAL JSON ();
+exportHTML = DATA LOCAL HTML ();
 exportJSONText = DATA LOCAL JSONTEXT ();
 exportWordFile = DATA LOCAL WORDFILE ();
 exportImageFile = DATA LOCAL IMAGEFILE ();
@@ -352,6 +357,7 @@ requestedDate = DATA LOCAL NESTED DATE ();
 requestedTime = DATA LOCAL NESTED TIME ();
 requestedColor = DATA LOCAL NESTED COLOR ();
 requestedJSON = DATA LOCAL NESTED JSON ();
+requestedHTML = DATA LOCAL NESTED HTML ();
 requestedJSONText = DATA LOCAL NESTED JSONTEXT ();
 requestedWordFile = DATA LOCAL NESTED WORDFILE ();
 requestedImageFile = DATA LOCAL NESTED IMAGEFILE ();

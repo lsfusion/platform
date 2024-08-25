@@ -111,7 +111,7 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         return ID-o.ID;
     }
 
-    // для того чтобы "попробовать" изменения (на самом деле для кэша)
+    // actually it is strong lazy
     @NFLazy
     public Expr getChangeExpr() {
         if(changeExpr==null)

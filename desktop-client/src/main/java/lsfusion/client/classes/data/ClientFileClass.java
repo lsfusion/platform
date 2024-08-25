@@ -22,14 +22,6 @@ public abstract class ClientFileClass extends ClientDataClass implements ClientT
     }
 
     @Override
-    public void serialize(DataOutputStream outStream) throws IOException {
-        super.serialize(outStream);
-
-        outStream.writeBoolean(multiple);
-        outStream.writeBoolean(storeName);
-    }
-
-    @Override
     public int getDefaultWidth(FontMetrics fontMetrics, ClientPropertyDraw property) {
         return 18;
     }

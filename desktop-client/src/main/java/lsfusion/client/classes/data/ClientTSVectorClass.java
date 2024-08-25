@@ -33,7 +33,6 @@ public class ClientTSVectorClass extends ClientDataClass implements ClientTypeCl
         return obj.toString();
     }
 
-    @Override
     public byte getTypeId() {
         return DataType.TSVECTOR;
     }

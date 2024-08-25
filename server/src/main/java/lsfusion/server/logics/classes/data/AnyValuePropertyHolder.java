@@ -50,6 +50,7 @@ public class AnyValuePropertyHolder {
     private final LP timeProperty;
     private final LP colorProperty;
     private final LP jsonProperty;
+    private final LP htmlStringProperty;
     private final LP jsonTextProperty;
     private final LP wordFileProperty;
     private final LP imageFileProperty;
@@ -85,7 +86,7 @@ public class AnyValuePropertyHolder {
     public AnyValuePropertyHolder(LP<?> objectProperty, LP<?> stringProperty, LP<?> bpStringProperty, LP<?> textProperty, LP<?> richTextProperty, LP<?> htmlTextProperty,
                                   LP<?> intProperty, LP<?> longProperty, LP<?> doubleProperty, LP<?> numericProperty, LP<?> yearProperty, LP<?> dateTimeProperty,
                                   LP<?> zDateTimeProperty, LP<?> intervalDateProperty, LP<?> intervalDateTimeProperty, LP<?> intervalTimeProperty, LP<?> intervalZDateTimeProperty,
-                                  LP<?> logicalProperty, LP<?> tLogicalProperty, LP<?> dateProperty, LP<?> timeProperty, LP<?> colorProperty, LP<?> jsonProperty, LP<?> jsonTextProperty,
+                                  LP<?> logicalProperty, LP<?> tLogicalProperty, LP<?> dateProperty, LP<?> timeProperty, LP<?> colorProperty, LP<?> jsonProperty, LP<?> htmlStringProperty, LP<?> jsonTextProperty,
                                   LP<?> wordFileProperty, LP<?> imageFileProperty, LP<?> pdfFileProperty, LP<?> videoFileProperty, LP<?> dbfFileProperty,
                                   LP<?> rawFileProperty, LP<?> customFileProperty, LP<?> excelFileProperty, LP<?> textFileProperty, LP<?> csvFileProperty,
                                   LP<?> htmlFileProperty, LP<?> jsonFileProperty, LP<?> xmlFileProperty, LP<?> tableFileProperty, LP<?> namedFileProperty,
@@ -115,6 +116,7 @@ public class AnyValuePropertyHolder {
                 && timeProperty.property.getType().getCompatible(TimeClass.instance) != null
                 && colorProperty.property.getType() == ColorClass.instance
                 && jsonProperty.property.getType() == JSONClass.instance
+                && htmlStringProperty.property.getType() == HTMLStringClass.instance
                 && jsonTextProperty.property.getType() == JSONTextClass.instance
                 && wordFileProperty.property.getType() == WordClass.get()
                 && imageFileProperty.property.getType() == ImageClass.get()
@@ -171,6 +173,7 @@ public class AnyValuePropertyHolder {
         this.timeProperty = timeProperty;
         this.colorProperty = colorProperty;
         this.jsonProperty = jsonProperty;
+        this.htmlStringProperty = htmlStringProperty;
         this.jsonTextProperty = jsonTextProperty;
         this.wordFileProperty = wordFileProperty;
         this.imageFileProperty = imageFileProperty;
@@ -248,6 +251,8 @@ public class AnyValuePropertyHolder {
             return colorProperty;
         } else if (valueType instanceof JSONClass) {
             return jsonProperty;
+        } else if (valueType instanceof HTMLStringClass) {
+            return htmlStringProperty;
         } else if (valueType instanceof JSONTextClass) {
             return jsonTextProperty;
         } else if (valueType instanceof WordClass) {
