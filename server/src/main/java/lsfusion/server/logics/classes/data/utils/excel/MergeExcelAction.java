@@ -41,8 +41,8 @@ public class MergeExcelAction extends InternalAction {
             RawFileData destinationFile = (RawFileData) destinationObject.object;
             RawFileData sourceFile = (RawFileData) sourceObject.object;
 
-            String sourceExtension = ((StaticFormatFileClass)sourceObject.objectClass.getType()).getOpenExtension(sourceFile);
-            String destinationExtension = ((StaticFormatFileClass)destinationObject.objectClass.getType()).getOpenExtension(destinationFile);
+            String sourceExtension = ((StaticFormatFileClass)sourceObject.objectClass.getType()).getExtension(sourceFile);
+            String destinationExtension = ((StaticFormatFileClass)destinationObject.objectClass.getType()).getExtension(destinationFile);
             if(sourceExtension.equals(destinationExtension)) {
                 byte[] fileBytes = null;
 

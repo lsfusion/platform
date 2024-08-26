@@ -287,7 +287,7 @@ public class FormChanges {
 
     private static Serializable convertRawFileData(Type type, Serializable value, boolean needImage) {
         if(value instanceof RawFileData && type instanceof StaticFormatFileClass)
-            value = new FileData((RawFileData) value, ((StaticFormatFileClass) type).getExtension());
+            value = ((StaticFormatFileClass) type).getFileData((RawFileData) value);
         if(needImage)
             return new AppFileDataImage(value);
         return value;

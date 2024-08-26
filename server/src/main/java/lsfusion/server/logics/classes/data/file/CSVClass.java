@@ -39,10 +39,6 @@ public class CSVClass extends HumanReadableFileClass {
         return DataType.CSV;
     }
 
-    public String getOpenExtension(RawFileData file) {
-        return "csv";
-    }
-
     @Override
     public String getExtension() {
         return "csv";

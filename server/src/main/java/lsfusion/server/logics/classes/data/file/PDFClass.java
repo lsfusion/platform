@@ -38,10 +38,6 @@ public class PDFClass extends RenderedClass {
         return DataType.PDF;
     }
 
-    public String getOpenExtension(RawFileData file) {
-        return "pdf";
-    }
-
     @Override
     public String getExtension() {
         return "pdf";

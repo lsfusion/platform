@@ -38,10 +38,6 @@ public class VideoClass extends RenderedClass {
         return DataType.VIDEO;
     }
 
-    public String getOpenExtension(RawFileData file) {
-        return "mp4";
-    }
-
     @Override
     public String getExtension() {
         return "mp4";

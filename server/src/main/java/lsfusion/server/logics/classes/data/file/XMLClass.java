@@ -39,10 +39,6 @@ public class XMLClass extends HumanReadableFileClass {
         return DataType.XML;
     }
 
-    public String getOpenExtension(RawFileData file) {
-        return "xml";
-    }
-
     @Override
     public String getExtension() {
         return "xml";

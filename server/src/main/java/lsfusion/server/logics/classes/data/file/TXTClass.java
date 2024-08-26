@@ -39,10 +39,6 @@ public class TXTClass extends HumanReadableFileClass {
         return DataType.TXT;
     }
 
-    public String getOpenExtension(RawFileData file) {
-        return "txt";
-    }
-
     @Override
     public String getExtension() {
         return "txt";

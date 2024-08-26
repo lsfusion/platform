@@ -53,8 +53,7 @@ public class NamedFileClass extends AbstractDynamicFormatFileClass<NamedFileData
         if (typeFrom instanceof DynamicFormatFileClass) {
             return "cast_dynamic_file_to_named_file(" + value + ", null)";
         } else if (typeFrom instanceof StaticFormatFileClass) {
-            String extension = ((StaticFormatFileClass) typeFrom).getExtension();
-            return "cast_static_file_to_named_file(" + value + ", null, " + (extension != null ? ("'" + extension + "'") : "null") + ")";
+            return "cast_static_file_to_named_file(" + value + ", null, '" + ((StaticFormatFileClass) typeFrom).getExtension() + "')";
         }
         return super.getCast(value, syntax, typeEnv, typeFrom, castType);
     }
@@ -76,7 +75,7 @@ public class NamedFileClass extends AbstractDynamicFormatFileClass<NamedFileData
 
     @Override
     protected FileData formatHTTPNotNull(NamedFileData b, Charset charset) {
-        return new FileData(b.getRawFile(), b.getExtension());
+        return b.getFileData();
     }
 
     @Override

@@ -41,7 +41,7 @@ public class ProtectExcelAction extends InternalAction {
 
         try {
             RawFileData file = (RawFileData) fileObject.object;
-            String extension = ((StaticFormatFileClass)fileObject.objectClass.getType()).getOpenExtension(file);
+            String extension = ((StaticFormatFileClass)fileObject.objectClass.getType()).getExtension(file);
             RawFileData protectedFile = null;
             switch (extension) {
                 case "xls": {

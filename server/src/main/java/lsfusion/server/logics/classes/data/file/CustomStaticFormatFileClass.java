@@ -22,9 +22,11 @@ public class CustomStaticFormatFileClass extends StaticFormatFileClass {
         return isRawFile() ? "RAWFILE" : "FILE";
     }
 
+    @Deprecated
     public static CustomStaticFormatFileClass get(String description, String extensions) {
         return get(false, false, description, extensions);
     }
+    @Deprecated
     public static CustomStaticFormatFileClass get(boolean multiple, boolean storeName, String description, String extensions) {
         return get(multiple, storeName, description, SetFact.toExclSet(extensions.split(" ")));
     }
@@ -58,13 +60,8 @@ public class CustomStaticFormatFileClass extends StaticFormatFileClass {
     }
 
     @Override
-    public String getOpenExtension(RawFileData file) {
+    public String getExtension() {
         return filterExtensions.get(0);
-    }
-
-    @Override
-    protected ImSet<String> getExtensions() {
-        return filterExtensions;
     }
 
     @Override

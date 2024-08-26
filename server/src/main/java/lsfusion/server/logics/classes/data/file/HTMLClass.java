@@ -38,10 +38,6 @@ public class HTMLClass extends HumanReadableFileClass {
         return DataType.HTML;
     }
 
-    public String getOpenExtension(RawFileData file) {
-        return "html";
-    }
-
     @Override
     public String getExtension() {
         return "html";

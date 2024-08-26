@@ -39,10 +39,6 @@ public class TableClass extends StaticFormatFileClass {
         return DataType.TABLE;
     }
 
-    public String getOpenExtension(RawFileData file) {
-        return "table";
-    }
-
     @Override
     public String getExtension() {
         return "table";

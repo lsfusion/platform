@@ -38,10 +38,6 @@ public class DBFClass extends StaticFormatFileClass {
         return DataType.DBF;
     }
 
-    public String getOpenExtension(RawFileData file) {
-        return "dbf";
-    }
-
     @Override
     public String getExtension() {
         return "dbf";
