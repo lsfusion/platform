@@ -413,7 +413,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                     } else {
                         startLogDebug(String.format("Property '%s' is not found when applying security policy", canonicalName));
                     }
-                } catch (Exception ignored) {
+                } catch (Throwable ignored) {
                 }
 
             }
