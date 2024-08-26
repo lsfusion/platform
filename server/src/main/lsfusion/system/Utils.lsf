@@ -191,6 +191,9 @@ encodeBase64 (STRING f) = encodeBase64(RAWFILE(f));
 encodeBase64 (FILE f) = encodeBase64(RAWFILE(f));
 encodeBase64 (NAMEDFILE f) = encodeBase64(RAWFILE(f));
 
+encodeBytes = FORMULA TEXT 'encode(($1),($2))';
+encodeBytesBase64(bytes) = encodeBytes(bytes, 'base64');
+
 encodeText = FORMULA TEXT 'encode(convert_to(($1),\'UTF8\'),($2))'; // deprecated
 decodeText = FORMULA TEXT 'convert_from(decode(($1),($2)), \'UTF8\')'; // deprecated
 

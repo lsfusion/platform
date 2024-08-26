@@ -501,8 +501,8 @@ getServerSettings() + WHEN TRUE THEN {
     }
     
     generateJnlpUrls();
-    EXPORT JSON FROM logicsName(), displayName(), logicsLogo = FILE(logicsLogo()), logicsIcon = FILE(logicsIcon()),
-    PWAIcon = FILE(PWAIcon()), platformVersion(), apiVersion(), inDevMode(),
+    EXPORT JSON FROM logicsName(), displayName(), logicsLogo = encodeBytesBase64(FILE(logicsLogo())), logicsIcon = encodeBytesBase64(FILE(logicsIcon())),
+    PWAIcon = encodeBytesBase64(FILE(PWAIcon())), platformVersion(), apiVersion(), inDevMode(),
     sessionConfigTimeout=INTEGER(valueSetting('sessionConfigTimeout')), anonymousUI=(valueSetting('enableUI')='2'),
     jnlpUrls=exportText(),
     disableRegistration=disableRole('selfRegister'),
