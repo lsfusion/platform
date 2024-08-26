@@ -14,8 +14,6 @@ import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 import java.util.Objects;
 
-import static lsfusion.gwt.client.view.StyleDefaults.CELL_HORIZONTAL_PADDING;
-
 // the renderer which may be renderered as plain input (or td in table)
 public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
 
