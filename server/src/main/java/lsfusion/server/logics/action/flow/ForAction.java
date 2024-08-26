@@ -185,14 +185,17 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
                     ExecutionStackAspect.popProgressStackItem(stackItem);
                     stackItem = ExecutionStackAspect.pushProgressStackItem(progressCaption, i + 1, rowUpdate.rows.size());
 
-                    FlowResult actionResult = executeFor(overrideMoreSessionUsages && (recursive || i < size - 1) // is not last 
+                    boolean isLast = i == size - 1;
+                    FlowResult actionResult = executeFor(overrideMoreSessionUsages && (recursive || !isLast) // is not last
                                                         ? context.override(true): context, newValues);
                     if (actionResult != FlowResult.FINISH) {
                         if (actionResult != FlowResult.BREAK) {
                             result = actionResult;
                         }
-                        if(actionResult != FlowResult.CONTINUE) {
+                        if (actionResult != FlowResult.CONTINUE) {
                             break RECURSIVE;
+                        } else if (isLast) {
+                            result = FlowResult.FINISH;
                         }
                     }
                 }
