@@ -683,7 +683,6 @@ callWithJQuery ($) ->
             filter: -> true
             sorters: {}
             valueHeight: null
-            cellHorizontalPadding: null
             attach : null
             getDisplayColor: null
 

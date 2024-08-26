@@ -373,13 +373,6 @@ public class GwtClientUtils {
         return separator;
     }
 
-    public static Widget createVerticalSeparator(int height) {
-        SimplePanel separator = new SimplePanel();
-        separator.setHeight(height + "px");
-        separator.addStyleName("verticalSeparator");
-        return separator;
-    }
-
     public static Widget createHorizontalSeparator() {
         SimplePanel separator = new SimplePanel();
         separator.addStyleName("horizontalSeparator");

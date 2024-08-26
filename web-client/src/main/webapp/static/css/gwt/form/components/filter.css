@@ -52,7 +52,8 @@
 }
 
 .filter-separator {
-    margin: 0 0.4375rem 0 0.75rem;
+    border-left: 1px solid var(--panel-border-color);
+    margin: 0.875rem 0.4375rem 0.875rem 0.75rem;
 }
 
 .filter-controls {

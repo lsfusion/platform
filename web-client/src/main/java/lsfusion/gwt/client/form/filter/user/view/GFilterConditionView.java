@@ -3,13 +3,12 @@ package lsfusion.gwt.client.form.filter.user.view;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.jsni.HasNativeSID;
-import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.design.view.ComponentWidget;
@@ -24,7 +23,6 @@ import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.view.Column;
 import lsfusion.gwt.client.view.MainFrame;
-import lsfusion.gwt.client.view.StyleDefaults;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -200,9 +198,9 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
         deleteButton.setVisible(!isFixed() || controlsVisible);
         rightPanel.add(deleteButton, GFlexAlignment.CENTER);
 
-        junctionSeparator = GwtClientUtils.createVerticalSeparator(StyleDefaults.COMPONENT_HEIGHT);
+        junctionSeparator = new SimplePanel();
         junctionSeparator.addStyleName("filter-separator");
-        rightPanel.addCentered(junctionSeparator);
+        rightPanel.addStretched(junctionSeparator);
 
         junctionView = new GToolbarButton(
                 MainFrame.useTextAsFilterSeparator ? messages.formFilterConditionViewAnd() : null,
