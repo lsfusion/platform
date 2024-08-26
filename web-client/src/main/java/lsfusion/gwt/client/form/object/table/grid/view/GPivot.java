@@ -1547,7 +1547,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     }
 
     private int getColumnMapWidth(String column) {
-        return columnMap.get(column).property.getValueWidthWithPadding(font, RendererType.PIVOT).getPivotSize();
+        return columnMap.get(column).property.getValueWidth(font, true, true).getPivotSize();
     }
 
     public int getColumnWidth(boolean isValueColumn, JsArrayMixed colKeyValues, JsArrayString axisValues, boolean isArrow, int arrowLevels) {

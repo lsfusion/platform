@@ -49,11 +49,6 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
     }
 
     @Override
-    public int getWidthPadding() {
-        return CELL_HORIZONTAL_PADDING;
-    }
-
-    @Override
     protected Object getExtraValue(UpdateContext updateContext) {
         return new ExtraValue(updateContext.getPlaceholder(), updateContext.getPattern());
     }

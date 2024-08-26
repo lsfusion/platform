@@ -65,11 +65,6 @@ public class ActionCellRenderer extends CellRenderer {
     }
 
     @Override
-    public int getWidthPadding() {
-        return BUTTON_HORIZONTAL_PADDING;
-    }
-
-    @Override
     protected boolean renderedLoadingContent(UpdateContext updateContext) {
         return hasImage(updateContext) && property.isLoadingReplaceImage();
     }
