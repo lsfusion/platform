@@ -22,8 +22,6 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
-import lsfusion.server.logics.classes.data.file.DynamicFormatFileClass;
-import lsfusion.server.logics.classes.data.file.FileClass;
 import lsfusion.server.logics.classes.data.file.StaticFormatFileClass;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -233,17 +231,14 @@ public class SendEmailAction extends SystemAction {
 
     private EmailSender.AttachmentFile getAttachFile(ObjectValue fileObject, String name) {
         Type objectType = fileObject.getType();
-        RawFileData rawFile;
-        String extension;
-        if (objectType instanceof StaticFormatFileClass) {
-            rawFile = (RawFileData) fileObject.getValue();
-            extension = ((StaticFormatFileClass) objectType).getOpenExtension(rawFile);
-        } else {
-            FileData file = (FileData) fileObject.getValue();
-            rawFile = file.getRawFile();
-            extension = file.getExtension();
-        }
-        return new EmailSender.AttachmentFile(rawFile, name + "." + extension, extension);
+        FileData file;
+        Object fileValue = fileObject.getValue();
+        if (objectType instanceof StaticFormatFileClass)
+            file = ((StaticFormatFileClass) objectType).getFileData((RawFileData) fileValue);
+        else
+            file = (FileData) fileValue;
+        String extension = file.getExtension();
+        return new EmailSender.AttachmentFile(file.getRawFile(), name + "." + extension, extension);
     }
 
     private void logErrorAndShowMessage(ExecutionContext context, String errorMessage) {

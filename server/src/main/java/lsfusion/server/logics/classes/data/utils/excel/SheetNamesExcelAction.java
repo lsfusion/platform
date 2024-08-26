@@ -42,7 +42,7 @@ public class SheetNamesExcelAction extends InternalAction {
             if (fileObject instanceof DataObject) {
 
                 RawFileData file = (RawFileData) fileObject.getValue();
-                String extension = ((StaticFormatFileClass) ((DataObject) fileObject).objectClass.getType()).getOpenExtension(file);
+                String extension = ((StaticFormatFileClass) ((DataObject) fileObject).objectClass.getType()).getExtension(file);
                 if (extension != null) {
                     Workbook wb = extension.equals("xls") ? new HSSFWorkbook(file.getInputStream()) : extension.equals("xlsx") ? new XSSFWorkbook(file.getInputStream()) : null;
                     if (wb != null) {

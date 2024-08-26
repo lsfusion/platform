@@ -46,16 +46,16 @@ public class ImageClass extends RenderedClass {
         return DataType.IMAGE;
     }
 
-    public String getOpenExtension(RawFileData file) {
-        String extension = null;
+    public String getExtension(RawFileData file) {
         if (file.getBytes().length >= 2) {
             if (file.getBytes()[0] == (byte) 0x89 && file.getBytes()[1] == (byte) 0x50) {
-                extension = "png";
+                return "png";
             } else if (file.getBytes()[0] == (byte) 0x42 && file.getBytes()[1] == (byte) 0x4D) {
-                extension = "bmp";
+                return "bmp";
             }
         }
-        return extension == null ? "jpg" : extension;
+
+        return super.getExtension(file);
     }
 
     @Override
@@ -92,7 +92,7 @@ public class ImageClass extends RenderedClass {
     public void formatXLS(RawFileData object, Cell cell, ExportXLSWriter.Styles styles) {
 
         if (object != null) {
-            String extension = getOpenExtension(object);
+            String extension = getExtension(object);
             int format = extension.equals("jpg") ? Workbook.PICTURE_TYPE_JPEG : extension.equals("png") ? Workbook.PICTURE_TYPE_PNG : 0;
             if (format != 0) {
                 int inputImagePicture = cell.getSheet().getWorkbook().addPicture(object.getBytes(), format);

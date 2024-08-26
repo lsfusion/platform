@@ -1,7 +1,5 @@
 package lsfusion.server.logics.classes.data.file;
 
-import lsfusion.base.col.SetFact;
-import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
@@ -12,7 +10,6 @@ import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
-import org.apache.commons.net.util.Base64;
 
 import java.nio.charset.Charset;
 import java.sql.PreparedStatement;
@@ -21,14 +18,18 @@ import java.sql.SQLException;
 
 public abstract class StaticFormatFileClass extends FileClass<RawFileData> {
 
-    public abstract String getOpenExtension(RawFileData file);
+    public String getExtension(RawFileData file) {
+        return getExtension();
+    }
 
     protected StaticFormatFileClass(boolean multiple, boolean storeName) {
         super(multiple, storeName);
     }
 
-    public String getExtension() {
-        return null;
+    public abstract String getExtension();
+
+    public FileData getFileData(RawFileData file) {
+        return new FileData(file, getExtension(file));
     }
 
     public RawFileData getDefaultValue() {
@@ -65,7 +66,7 @@ public abstract class StaticFormatFileClass extends FileClass<RawFileData> {
 
     @Override
     protected FileData formatHTTPNotNull(RawFileData b, Charset charset) {
-        return new FileData(b, getOpenExtension(b));
+        return getFileData(b);
     }
 
     @Override
@@ -77,10 +78,6 @@ public abstract class StaticFormatFileClass extends FileClass<RawFileData> {
     public RawFileData readPropNotNull(RawFileData value, String charset) {
         return value;
     }
-
-    protected ImSet<String> getExtensions() {
-        return SetFact.singleton(getExtension());
-    } 
 
     @Override
     public DataClass getCompatible(DataClass compClass, boolean or) {

@@ -39,10 +39,6 @@ public class JSONFileClass extends HumanReadableFileClass {
         return DataType.JSONFILE;
     }
 
-    public String getOpenExtension(RawFileData file) {
-        return "json";
-    }
-
     @Override
     public String getExtension() {
         return "json";

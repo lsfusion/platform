@@ -44,33 +44,25 @@ public class WriteAction extends SystemAction {
         assert pathObject.getType() instanceof StringClass;
 
         if(sourceObject instanceof DataObject && pathObject instanceof DataObject) {
+            String path = (String) pathObject.getValue();
+            Object source = sourceObject.getValue();
 
-            String path = (String) ((DataObject) pathObject).object;
-
-            String extension = null;
-            RawFileData rawFileData = null;
-            if (((DataObject) sourceObject).object != null) {
-                if (sourcePropertyType instanceof StaticFormatFileClass) {
-                    rawFileData = (RawFileData) ((DataObject) sourceObject).object;
-                    extension = ((StaticFormatFileClass) sourcePropertyType).getOpenExtension(rawFileData);
-                } else {
-                    extension = ((FileData) ((DataObject) sourceObject).object).getExtension();
-                    rawFileData = ((FileData) ((DataObject) sourceObject).object).getRawFile();
-                }
-            }
+            FileData fileData;
+            if (sourcePropertyType instanceof StaticFormatFileClass) {
+                fileData = ((StaticFormatFileClass) sourcePropertyType).getFileData((RawFileData) source);
+            } else
+                fileData = (FileData) source;
             try {
-                if (rawFileData != null) {
-                    if (clientAction) {
-                        if (append && dialog) {
-                            throw new RuntimeException("APPEND is not supported in WRITE CLIENT DIALOG");
-                        } else {
-                            context.requestUserInteraction(new WriteClientAction(rawFileData, path, extension, append, dialog));
-                        }
+                String extension = fileData.getExtension();
+                RawFileData rawFileData = fileData.getRawFile();
+                if (clientAction) {
+                    if (append && dialog) {
+                        throw new RuntimeException("APPEND is not supported in WRITE CLIENT DIALOG");
                     } else {
-                        WriteUtils.write(rawFileData, path, extension, false, append);
+                        context.requestUserInteraction(new WriteClientAction(rawFileData, path, extension, append, dialog));
                     }
                 } else {
-                    throw new RuntimeException("File bytes not specified");
+                    WriteUtils.write(rawFileData, path, extension, false, append);
                 }
             } catch (Exception e) {
                 throw Throwables.propagate(e);

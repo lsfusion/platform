@@ -41,12 +41,13 @@ public class ExcelClass extends StaticFormatFileClass {
         return DataType.EXCEL;
     }
 
-    public String getOpenExtension(RawFileData file) {
+    public String getExtension(RawFileData file) {
         try {
-            return DocumentFactoryHelper.hasOOXMLHeader(file.getInputStream()) ? "xlsx" : "xls";
+            if(DocumentFactoryHelper.hasOOXMLHeader(file.getInputStream()))
+                return "xlsx";
         } catch (IOException e) {
-            return "xls";
         }
+        return super.getExtension(file);
     }
 
     @Override

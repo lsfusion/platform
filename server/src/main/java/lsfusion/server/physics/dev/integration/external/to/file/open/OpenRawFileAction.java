@@ -37,7 +37,7 @@ public class OpenRawFileAction extends InternalAction {
             boolean noWait = context.getKeyValue(noWaitInterface).getValue() != null;
 
             if (sourceObject instanceof DataObject && source != null) {
-                String extension = BaseUtils.firstWord(((StaticFormatFileClass) ((DataObject) sourceObject).objectClass).getOpenExtension(source), ",");
+                String extension = BaseUtils.firstWord(((StaticFormatFileClass) ((DataObject) sourceObject).objectClass).getExtension(source), ",");
                 OpenFileClientAction action = new OpenFileClientAction(source, name, extension);
                 if (noWait) {
                     context.delayUserInteraction(action);

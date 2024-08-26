@@ -41,12 +41,13 @@ public class WordClass extends StaticFormatFileClass {
         return DataType.WORD;
     }
 
-    public String getOpenExtension(RawFileData file) {
+    public String getExtension(RawFileData file) {
         try {
-            return DocumentFactoryHelper.hasOOXMLHeader(file.getInputStream()) ? "docx" : "doc";
+            if(DocumentFactoryHelper.hasOOXMLHeader(file.getInputStream()))
+                return "docx";
         } catch (IOException e) {
-            return "doc";
         }
+        return super.getExtension(file);
     }
 
     @Override
