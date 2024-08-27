@@ -557,7 +557,12 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                     BL.schedulerLM.exceptionOccurredScheduledTaskLog.change(true, session, taskLogObject);
                 BL.schedulerLM.resultScheduledTaskLog.change(result, session, taskLogObject);
 
-                session.applyException(BL, stack);
+                try {
+                    session.sql.ignoreThreadInterrupted = true;
+                    session.applyException(BL, stack);
+                } finally {
+                    session.sql.ignoreThreadInterrupted = false;
+                }
 
                 return (long)taskLogObject.object;
             } catch (Exception le) {
