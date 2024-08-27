@@ -1,5 +1,6 @@
 package lsfusion.server.logics.classes.data.file;
 
+import lsfusion.base.Result;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
@@ -7,7 +8,9 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.logics.BaseLogicsModule;
+import lsfusion.server.logics.classes.data.AStringClass;
 import lsfusion.server.logics.classes.data.DataClass;
+import lsfusion.server.logics.classes.data.HTMLStringClass;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 
@@ -47,16 +50,30 @@ public abstract class StaticFormatFileClass extends FileClass<RawFileData> {
 
     @Override
     public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom, CastType castType) {
-        if (typeFrom instanceof StringClass)
-            return "cast_string_to_file(" + value + ")";
         if (typeFrom instanceof FileClass)
             return ((FileClass)typeFrom).getCastToStatic(value);
-        if (typeFrom instanceof JSONClass)
-            return "cast_json_to_static_file(" + value + ")";
-        if (typeFrom instanceof JSONTextClass)
-            return "cast_json_text_to_static_file(" + value + ")";
+
+        String castValue = getCastToStatic(typeFrom, value, null);
+        if (castValue != null)
+            return castValue;
 
         return super.getCast(value, syntax, typeEnv, typeFrom, castType);
+    }
+
+    public static String getCastToStatic(Type typeFrom, String value, Result<String> rExtension) {
+        if (typeFrom instanceof AStringClass) {
+            if(rExtension != null) rExtension.set(typeFrom instanceof HTMLStringClass ? "html" : "");
+            return "cast_string_to_file(" + value + ")";
+        } else if (typeFrom instanceof AJSONClass) {
+            if(rExtension != null) rExtension.set("json");
+            return ((AJSONClass) typeFrom).getCastToStatic(value);
+        } else if (typeFrom instanceof StaticFormatFileClass) {
+            if(rExtension != null) rExtension.set(((StaticFormatFileClass) typeFrom).getExtension());
+            return value;
+        }
+        assert !(typeFrom instanceof FileClass);
+
+        return null;
     }
 
     @Override

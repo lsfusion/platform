@@ -1,5 +1,6 @@
 package lsfusion.server.logics.classes.data.file;
 
+import lsfusion.base.Result;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.classes.DataType;
@@ -67,13 +68,14 @@ public class DynamicFormatFileClass extends AbstractDynamicFormatFileClass<FileD
     public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom, CastType castType) {
         if (typeFrom instanceof NamedFileClass) {
             return "cast_named_file_to_dynamic_file(" + value + ")";
-        } else if (typeFrom instanceof StaticFormatFileClass) {
-            return "cast_static_file_to_dynamic_file(" + value + ", '" + ((StaticFormatFileClass) typeFrom).getExtension() + "')";
-        } else if (typeFrom instanceof JSONClass) { // important to make auto import work (it uses extension(FILE()))
-            return "cast_json_to_dynamic_file(" + value + ")";
-        } else if (typeFrom instanceof JSONTextClass) { // important to make auto import work (it uses extension(FILE()))
-            return "cast_json_text_to_dynamic_file(" + value + ")";
-        }
+        } else if(typeFrom instanceof DynamicFormatFileClass)
+            return value;
+
+        Result<String> rExtension = new Result<>();
+        String castValue = StaticFormatFileClass.getCastToStatic(typeFrom, value, rExtension);
+        if(castValue != null)
+            return "cast_static_file_to_dynamic_file(" + value + ", '" + rExtension.result + "')";
+
         return super.getCast(value, syntax, typeEnv, typeFrom, castType);
     }
 

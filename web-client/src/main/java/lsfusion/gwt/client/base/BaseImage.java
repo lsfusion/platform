@@ -32,10 +32,16 @@ public interface BaseImage extends Serializable {
 
     default String getTag(String extension) {
         switch (extension) {
+            case "html":
             case "pdf":
                 return "iframe";
             case "mp4":
+            case "webm":
+            case "ogg":
                 return "video";
+            case "mpeg":
+            case "wav":
+                return "audio";
             default:
                 return "img";
         }
