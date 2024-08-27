@@ -2,8 +2,8 @@
 /* PADDINGS */
 
 .tab-bar {
-    --tab-bar-horz-padding: var(--border-cont-horz-padding);
-    --tab-bar-vert-padding: var(--border-cont-vert-padding);
+    --tab-bar-horz-padding: var(--border-cont-padding);
+    --tab-bar-vert-padding: var(--border-cont-padding);
 }
 
 /* main direction */
@@ -45,7 +45,7 @@
 
 /* ??? not sure that this is needed ??? */
 /*.tab-panel-horz > .tab-pane {*/
-/*    padding-left: var(--border-cont-horz-padding);*/
+/*    padding-left: var(--border-cont-padding);*/
 /*}*/
 
 .tab-panel {

@@ -1,6 +1,6 @@
 
 .left-border {
-    padding-left: var(--border-cont-horz-padding);
+    padding-left: var(--border-cont-padding);
 
     /* borders in bootstrap give pretty good design */
     /* "adding" border */
@@ -9,15 +9,15 @@
 
 /* it makes sense to use padding when there is no border, otherwise scrolling will be odd (for example in toolbar), as well as background */
 .right-margin {
-    margin-right: var(--border-cont-horz-padding);
+    margin-right: var(--border-cont-padding);
 }
 
 .right-padding {
-    padding-right: var(--border-cont-vert-padding);
+    padding-right: var(--border-cont-padding);
 }
 
 .top-border {
-    padding-top: var(--border-cont-vert-padding);
+    padding-top: var(--border-cont-padding);
 
     border-top: var(--border-width) solid var(--panel-border-color);
 }
@@ -26,29 +26,29 @@
 .bottom-margin,
 .bottom-margin.nav /* nov sets margin-bottom:0 somewhy */
 {
-    margin-bottom: var(--border-cont-vert-padding);
+    margin-bottom: var(--border-cont-padding);
 }
 
 .bottom-padding {
-    padding-bottom: var(--border-cont-vert-padding);
+    padding-bottom: var(--border-cont-padding);
 }
 
 .left-border-wrap {
-    padding-left: var(--border-cont-horz-padding);
+    padding-left: var(--border-cont-padding);
 
     /* borders in bootstrap give pretty good design */
     /* "adding" border */
     border-left: var(--border-width) solid var(--panel-border-color);
 
-    margin-left: calc(0px - var(--border-width) - var(--border-cont-horz-padding));
+    margin-left: calc(0px - var(--border-width) - var(--border-cont-padding));
 }
 
 .flex-horz-border-wrap {
-    column-gap: calc(var(--border-cont-horz-padding) + var(--border-cont-horz-padding));
+    column-gap: calc(var(--border-cont-padding) + var(--border-cont-padding));
 }
 
 .flex-horz-margin-wrap {
-    column-gap: var(--border-cont-horz-padding);
+    column-gap: var(--border-cont-padding);
 }
 
 /* form main shrinked (needs scrolling / padding) container */
@@ -56,7 +56,7 @@
     overflow: auto;
 }
 :not(.form-embedded) > .form-shrink-padded-container { /* we don't want paddings in the embedded form*/
-    padding: var(--border-cont-vert-padding) var(--border-cont-horz-padding);
+    padding: var(--border-cont-padding);
 }
 
 /* we want header to also have at least double cont vert padding, to be consistent with bottom / left / right borders */
@@ -72,7 +72,7 @@
 }
 
 .caption-panel-header {
-    min-height: calc(var(--border-cont-vert-padding) + var(--border-cont-vert-padding));
+    min-height: calc(var(--border-cont-padding) + var(--border-cont-padding));
     display: flex;
     align-items: center;
 }
