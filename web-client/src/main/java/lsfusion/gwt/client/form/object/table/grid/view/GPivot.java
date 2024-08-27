@@ -674,7 +674,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             inclusions: inclusions,
             sortCols: sortCols,
             showUI:showUI,
-            cellHorizontalPadding:@lsfusion.gwt.client.view.StyleDefaults::CELL_HORIZONTAL_PADDING,
             columnAttributeName:@lsfusion.gwt.client.form.object.table.grid.view.GPivot::COLUMN,
             toImageButtonOptions: instance.@GPivot::getToImageButtonOptions(*)(),
             onRefresh: function (config) {
@@ -1548,7 +1547,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     }
 
     private int getColumnMapWidth(String column) {
-        return columnMap.get(column).property.getValueWidthWithPadding(font, RendererType.PIVOT).getPivotSize();
+        return columnMap.get(column).property.getValueWidth(font, true, true).getPivotSize();
     }
 
     public int getColumnWidth(boolean isValueColumn, JsArrayMixed colKeyValues, JsArrayString axisValues, boolean isArrow, int arrowLevels) {

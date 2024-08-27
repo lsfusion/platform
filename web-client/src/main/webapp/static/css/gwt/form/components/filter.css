@@ -51,10 +51,6 @@
     margin-left: 0.1875rem;
 }
 
-.filter-separator {
-    margin: 0 0.4375rem 0 0.75rem;
-}
-
 .filter-controls {
     margin: var(--border-comp-vert-padding) 0;
 }

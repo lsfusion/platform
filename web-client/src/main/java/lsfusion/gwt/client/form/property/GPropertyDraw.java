@@ -813,12 +813,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         controller.getPropertyController(this).updateProperty(this, getColumnKeys(this, controller.getCurrentGridObjects()), updateKeys, values);
     }
 
-    // not null
-    // padding has to be included for grid column for example, and not for panel property (since flex, width, min-width, etc. doesn't include padding)
-    public GSize getValueWidthWithPadding(GFont parentFont, RendererType rendererType) {
-        return getValueWidth(parentFont, true, true).add(getCellRenderer(rendererType).getWidthPadding() * 2);
-    }
-
     public boolean hasAutoSize() {
         return valueWidth == -1 || valueHeight == -1;
     }

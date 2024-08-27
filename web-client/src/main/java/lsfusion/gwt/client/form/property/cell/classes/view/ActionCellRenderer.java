@@ -10,8 +10,6 @@ import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
-import static lsfusion.gwt.client.view.StyleDefaults.BUTTON_HORIZONTAL_PADDING;
-
 // actually extends TextBasedCellRenderer for optimization purposes, when there are no images
 public class ActionCellRenderer extends CellRenderer {
 
@@ -62,11 +60,6 @@ public class ActionCellRenderer extends CellRenderer {
 //            return true;
 //            }
         return false;
-    }
-
-    @Override
-    public int getWidthPadding() {
-        return BUTTON_HORIZONTAL_PADDING;
     }
 
     @Override
