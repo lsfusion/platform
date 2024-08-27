@@ -39,10 +39,7 @@ import org.apache.poi.hmef.Attachment;
 import org.apache.poi.hmef.HMEFMessage;
 
 import javax.mail.*;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
-import javax.mail.internet.MimeUtility;
+import javax.mail.internet.*;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -445,8 +442,8 @@ public class EmailReceiver {
                         body = parseIMAPInputStream(bp, (IMAPInputStream) content);
                         ServerLoggers.mailLogger.info(prefix + "attachment is IMAPInputStream, length: " + (body != null ? body.length() : "0"));
                     } else {
-                        body = String.valueOf(content);
-                        ServerLoggers.mailLogger.info(prefix + "attachment is String, length: " + (body != null ? body.length() : "0"));
+                        body = parseContent(content);
+                        ServerLoggers.mailLogger.info(prefix + "attachment is String, length: " + body.length());
                     }
                 } catch (IOException e) {
                     throw new RuntimeException("Email subject: " + subjectEmail, e);
@@ -454,6 +451,11 @@ public class EmailReceiver {
             }
         }
         return new MultipartBody(body, attachments);
+    }
+
+    //pgsql doesn't support string with 0x00, throws ERROR: invalid byte sequence for encoding "UTF8": 0x00
+    private static String parseContent(Object content) {
+        return String.valueOf(content).replace("\u0000", "");
     }
 
     private static Object getBodyPartContent(BodyPart bp) throws MessagingException, IOException {
