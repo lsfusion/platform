@@ -14,6 +14,9 @@
     --border-cont-horz-padding: 1rem;
     --border-cont-vert-padding: 1rem;
 
+    --filter-separator-horz-margin: var(--border-padding);
+    --filter-separator-vert-margin: 0.8rem;
+
     /* should correspond to $table-border-width bootstrap scss variable */
     --table-outline-width: 1px;
 
