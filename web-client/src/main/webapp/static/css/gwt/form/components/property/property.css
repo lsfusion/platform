@@ -65,7 +65,7 @@ a.text-based-prop-value { /* we have to set cursor pointer for a since we don't 
     cursor: pointer;
 }
 
-.prop-display-flex.form-control, .prop-display-flex.btn {
+.prop-display-flex, .prop-display-flex.form-control, .prop-display-flex.btn {
     display: flex;
 }
 
