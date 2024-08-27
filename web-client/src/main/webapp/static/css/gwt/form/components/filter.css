@@ -51,11 +51,6 @@
     margin-left: 0.1875rem;
 }
 
-.filter-separator {
-    border-left: 1px solid var(--panel-border-color);
-    margin: var(--filter-separator-vert-margin) var(--filter-separator-horz-margin);
-}
-
 .filter-controls {
     margin: var(--border-comp-vert-padding) 0;
 }
