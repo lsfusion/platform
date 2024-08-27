@@ -54,5 +54,8 @@
 
 :root {
     --border-padding: 0.25rem;
-    --border-cont-padding: 0.333rem;
+    --border-cont-horz-padding: 0.333rem;
+    --border-cont-vert-padding: 0.333rem;
+
+    --filter-separator-vert-margin: 0.4375rem;
 }

@@ -5,7 +5,8 @@
     --border-comp-vert-padding: var(--border-padding);
     --border-label-horz-padding: var(--border-padding);
     --border-label-vert-padding: var(--border-padding);
-    --border-cont-padding: var(--border-padding);
+    --border-cont-horz-padding: var(--border-padding);
+    --border-cont-vert-padding: var(--border-padding);
 
     --text-color: var(--excel-text-color);
     --background-color: var(--excel-background-color);

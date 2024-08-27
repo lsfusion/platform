@@ -13,7 +13,7 @@
 
 .caption-panel-header-line {
     /* we want some extra padding because in bootstrap h6 is used and it's not needed */
-    padding: var(--border-cont-padding);
+    padding: var(--border-cont-vert-padding) var(--border-cont-horz-padding);
 
     align-items: center;
 }
@@ -74,5 +74,5 @@
 
 /* just like in the clobal tab panel we want the top padding to come from the "header" */
 .modal-body {
-    padding-top: var(--border-cont-padding);
+    padding-top: var(--border-cont-vert-padding);
 }

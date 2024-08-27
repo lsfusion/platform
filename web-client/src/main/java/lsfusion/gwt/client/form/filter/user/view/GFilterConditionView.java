@@ -200,8 +200,7 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
 
         junctionSeparator = new SimplePanel();
         junctionSeparator.addStyleName("filter-separator");
-        junctionSeparator.getElement().setInnerText("｜");
-        rightPanel.addCentered(junctionSeparator);
+        rightPanel.addStretched(junctionSeparator);
 
         junctionView = new GToolbarButton(
                 MainFrame.useTextAsFilterSeparator ? messages.formFilterConditionViewAnd() : null,
