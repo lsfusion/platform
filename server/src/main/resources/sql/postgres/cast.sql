@@ -28,20 +28,6 @@ $$ LANGUAGE 'plpgsql' IMMUTABLE;
 
 --json (jsonb)
 
-CREATE OR REPLACE FUNCTION cast_json_to_dynamic_file(json jsonb) RETURNS bytea AS
-$$
-BEGIN
-	RETURN chr(octet_length('json'))::bytea || convert_to('json', 'UTF-8') || convert_to(json::text,'UTF-8');
-END;
-$$ LANGUAGE 'plpgsql' IMMUTABLE;
-
-CREATE OR REPLACE FUNCTION cast_dynamic_file_to_json(file bytea) RETURNS jsonb AS
-$$
-BEGIN
-	RETURN convert_from(substring(file, (get_byte(file, 0) + 2)),'UTF-8')::jsonb; -- index in substring is 1-based
-END;
-$$ LANGUAGE 'plpgsql' IMMUTABLE;
-
 CREATE OR REPLACE FUNCTION cast_json_to_static_file(json jsonb) RETURNS bytea AS
 $$
 BEGIN
@@ -57,20 +43,6 @@ END;
 $$ LANGUAGE 'plpgsql' IMMUTABLE;
 
 --json string (json)
-
-CREATE OR REPLACE FUNCTION cast_json_text_to_dynamic_file(json json) RETURNS bytea AS
-$$
-BEGIN
-RETURN chr(octet_length('json'))::bytea || convert_to('json', 'UTF-8') || convert_to(json::text,'UTF-8');
-END;
-$$ LANGUAGE 'plpgsql' IMMUTABLE;
-
-CREATE OR REPLACE FUNCTION cast_dynamic_file_to_json_text(file bytea) RETURNS json AS
-$$
-BEGIN
-RETURN convert_from(substring(file, (get_byte(file, 0) + 2)),'UTF-8')::json; -- index in substring is 1-based
-END;
-$$ LANGUAGE 'plpgsql' IMMUTABLE;
 
 CREATE OR REPLACE FUNCTION cast_json_text_to_static_file(json json) RETURNS bytea AS
 $$

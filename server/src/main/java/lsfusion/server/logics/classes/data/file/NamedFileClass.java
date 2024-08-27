@@ -1,5 +1,6 @@
 package lsfusion.server.logics.classes.data.file;
 
+import lsfusion.base.Result;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.NamedFileData;
 import lsfusion.base.file.RawFileData;
@@ -52,9 +53,14 @@ public class NamedFileClass extends AbstractDynamicFormatFileClass<NamedFileData
     public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom, CastType castType) {
         if (typeFrom instanceof DynamicFormatFileClass) {
             return "cast_dynamic_file_to_named_file(" + value + ", null)";
-        } else if (typeFrom instanceof StaticFormatFileClass) {
-            return "cast_static_file_to_named_file(" + value + ", null, '" + ((StaticFormatFileClass) typeFrom).getExtension() + "')";
-        }
+        } else if(typeFrom instanceof NamedFileClass)
+            return value;
+
+        Result<String> rExtension = new Result<>();
+        String castValue = StaticFormatFileClass.getCastToStatic(typeFrom, value, rExtension);
+        if(castValue != null)
+            return "cast_static_file_to_named_file(" + value + ", null, '" + rExtension.result + "')";
+
         return super.getCast(value, syntax, typeEnv, typeFrom, castType);
     }
 

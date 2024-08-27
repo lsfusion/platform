@@ -4,6 +4,7 @@ import lsfusion.base.file.FileData;
 import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.DBType;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.postgresql.util.PGobject;
@@ -23,6 +24,18 @@ public abstract class AJSONClass extends FileBasedClass<String> implements DBTyp
     public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
         statement.setObject(num, value, Types.OTHER);
     }
+
+    @Override
+    public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom, CastType castType) {
+        if (typeFrom instanceof FileClass)
+            return getCastFromStatic(((FileClass<?>) typeFrom).getCastToStatic(value));
+
+        return super.getCast(value, syntax, typeEnv, typeFrom, castType);
+    }
+
+    public abstract String getCastFromStatic(String value);
+    public abstract String getCastToStatic(String value);
+
 
     @Override
     protected int getBaseDotNetSize() {
