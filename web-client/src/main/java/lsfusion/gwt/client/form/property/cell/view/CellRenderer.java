@@ -117,8 +117,6 @@ public abstract class CellRenderer {
         return false;
     }
 
-    // should be consistent with getWidthPadding and getHeightPadding
-    // and with TextBasedCellEditor.renderStaticContent
     public void render(Element element, RenderContext renderContext) {
         boolean renderedAlignment = renderContent(element, renderContext);
         GFormController.setFont(element, GFormController.getFont(property, renderContext));
@@ -670,10 +668,6 @@ public abstract class CellRenderer {
     public abstract boolean renderContent(Element element, RenderContext renderContext);
     public abstract boolean updateContent(Element element, PValue value, Object extraValue, UpdateContext updateContext);
     public abstract boolean clearRenderContent(Element element, RenderContext renderContext);
-
-    public int getWidthPadding() {
-        return 0;
-    }
 
     public abstract String format(PValue value, RendererType rendererType, String pattern);
 
