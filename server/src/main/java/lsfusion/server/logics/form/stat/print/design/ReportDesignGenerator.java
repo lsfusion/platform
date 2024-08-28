@@ -343,7 +343,7 @@ public class ReportDesignGenerator {
             dataField.setPatternExpression(ReportUtils.createExpression(pattern, reportField.valueClass));
         } else {
             if (needToConvertExcelDateTime(reportField)) {
-                dataField.setExpression(ReportUtils.createConvertExcelDateTimeExpression(reportField.sID, reportField.valueClass));
+                dataField.setExpression(ReportUtils.createConvertExcelDateTimeExpression(reportField.sID, reportField.valueClass, pattern));
             }
             dataField.setPattern(pattern);
         }
