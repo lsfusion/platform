@@ -60,7 +60,7 @@ public class StaticValueExpr extends AbstractValueExpr<StaticClass> {
     }
     
     public boolean isZero() {
-        return objectClass.isZero(object);
+        return objectClass instanceof IntegralClass && ((IntegralClass<?>) objectClass).isZero(object);
     }
 
     private Object getAdjustObject(Object object) {

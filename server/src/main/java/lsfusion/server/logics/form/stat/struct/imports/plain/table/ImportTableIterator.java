@@ -38,7 +38,9 @@ public class ImportTableIterator extends ImportPlainIterator {
 
     @Override
     protected Object getPropValue(String name, Type type) {
-        return type.read(row.get(name));
+        // actuall readResult already is made in serializeJDBC, so doesn't make sense to call readResult
+        return row.get(name);
+//        return ((AbstractType)type).readResult(row.get(name));
     }
 
     @Override

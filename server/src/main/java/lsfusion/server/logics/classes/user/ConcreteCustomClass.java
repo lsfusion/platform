@@ -365,10 +365,6 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         return ThreadLocalContext.localize(getCaption());
     }
 
-    public boolean isZero(Object object) {
-        return false;
-    }
-    
     public void updateStat(ImMap<Long, Integer> classStats) {
         stat = classStats.get(ID);
     }

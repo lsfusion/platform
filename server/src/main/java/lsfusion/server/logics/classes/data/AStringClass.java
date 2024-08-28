@@ -124,7 +124,7 @@ public abstract class AStringClass extends TextBasedClass<String> {
 
     @Override
     public String read(ResultSet set, SQLSyntax syntax, String name) throws SQLException {
-        return read(set.getString(name));
+        return readResult(set.getString(name));
     }
 
     @Override

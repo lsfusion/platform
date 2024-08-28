@@ -80,11 +80,11 @@ public abstract class IntegralClass<T extends Number> extends TextBasedClass<T> 
     }
     
     public Number getSafeInfiniteValue() { // бесконечное число которое можно сколько угодно суммировать и не выйти за тип
-        return read(Math.round(Math.sqrt(getInfiniteValue(false).doubleValue())));
+        return readNumber(Math.round(Math.sqrt(getInfiniteValue(false).doubleValue())));
     }
     
     public Number div(Number obj, int div) {
-        return read(obj.doubleValue() / 2);
+        return readNumber(obj.doubleValue() / 2);
     }
 
     public abstract int getWhole();
@@ -136,7 +136,7 @@ public abstract class IntegralClass<T extends Number> extends TextBasedClass<T> 
         return true;
     }
     public String getString(Object value, SQLSyntax syntax) {
-        if (isNegative(read(value)))
+        if (isNegative(readNumber(value)))
             return "(" + value.toString() + ")";
         else
             return value.toString();
@@ -144,9 +144,12 @@ public abstract class IntegralClass<T extends Number> extends TextBasedClass<T> 
     protected abstract boolean isNegative(T value);
     public abstract boolean isPositive(T obj);
 
-    @Override
-    public boolean isValueZero(T value) {
-        double doubleValue = value.doubleValue();
+    public T readNumber(Object obj) {
+        return read(obj);
+    }
+
+    public boolean isZero(Object object) {
+        double doubleValue = readNumber(object).doubleValue();
         return doubleValue > -0.0005 && doubleValue < 0.0005;
     }
 

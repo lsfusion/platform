@@ -234,7 +234,7 @@ public class SessionRows extends SessionData<SessionRows> {
         ObjectValue value = map.get(property);
         if(value instanceof DataObject) {
             DataObject dataValue = (DataObject) value;
-            Long read = ObjectType.idClass.read(dataValue.object);
+            Long read = (Long) dataValue.object;
             assert shifts.length > 0;
             long calcshift = 0; long aggsh = 0;
 

@@ -121,7 +121,7 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     }
 
     @Override
-    public T writeProp(RawFileData value, String extension, String charset) {
+    public T parseFile(RawFileData value, String extension, String charset) {
         if(value == null)
             return null;
         return writePropNotNull(value, extension, charset);
@@ -136,7 +136,7 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     }
 
     @Override
-    public RawFileData readProp(T value, String charset) {
+    public RawFileData formatFile(T value, String charset) {
         if(value == null)
             return null;
         return readPropNotNull(value, charset);
@@ -242,6 +242,9 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
             cell.setCellValue(formatted);
     }
 
+    public T readResult(Object object) {
+        return read(object);
+    }
     protected T readDBF(Object object) {
         return read(object);
     }
@@ -253,7 +256,7 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     }
 
     public T read(ResultSet set, SQLSyntax syntax, String name) throws SQLException {
-        return read(set.getObject(name));
+        return readResult(set.getObject(name));
     }
 
     public boolean isSafeString(Object value) {

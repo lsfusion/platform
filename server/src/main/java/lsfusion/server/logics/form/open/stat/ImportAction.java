@@ -58,7 +58,7 @@ public abstract class ImportAction extends SystemAction {
 
     public static RawFileData readFile(ObjectValue value, String charset) {
         if(value instanceof DataObject)
-            return ((DataObject) value).objectClass.getType().readProp(((DataObject) value).object, charset);
+            return ((DataObject) value).objectClass.getType().formatFile(((DataObject) value).object, charset);
         return null;
     }
 

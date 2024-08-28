@@ -1006,7 +1006,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 DataObject addObject = session.addObject(businessLogics.authenticationLM.computer);
                 businessLogics.authenticationLM.hostnameComputer.change(strHostName, session, addObject);
                 apply(session, stack);
-                return new DataObject(addObject.object, businessLogics.authenticationLM.computer); // to update classes after apply
+                return new DataObject((Long)addObject.object, businessLogics.authenticationLM.computer); // to update classes after apply
             }
 
             logger.debug("Begin user session " + strHostName + " " + result);
