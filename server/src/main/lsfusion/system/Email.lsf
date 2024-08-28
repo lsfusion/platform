@@ -204,7 +204,8 @@ FORM mail '{email.form.mail}'
     
     OBJECTS e=Email LAST
     PROPERTIES(e) READONLY subject, fromAddress, toAddress, dateTimeSent, 
-                           dateTimeReceived, importErrors, openEMLFile CHANGEABLE GRID, '' = message PANEL
+                           dateTimeReceived, importErrors, openEMLFile CHANGEABLE GRID
+    PROPERTIES READONLY message '' = HTML(HTMLFILE(message(e))) PANEL
     PROPERTIES(e) NEWSESSION DELETE
     PROPERTIES(a) receiveEmailAction TOOLBAR DRAW e 
     FILTERS account(e) = a, dateTimeReceived(e)
@@ -229,9 +230,10 @@ DESIGN mail {
             tabbed = TRUE;
             NEW message {
                 height = 200;
+                fill = 1;
                 caption = '{email.form.mail.caption.message}';
-                MOVE PROPERTY(message(e)) {
-                    autoSize = TRUE;
+                MOVE PROPERTY(message) {
+                    fill = 1;
                 }
             }
             NEW attachments {
