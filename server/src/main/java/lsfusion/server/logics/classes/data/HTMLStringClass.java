@@ -8,9 +8,6 @@ import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.logics.classes.data.file.FileClass;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
-import java.io.DataOutputStream;
-import java.io.IOException;
-
 public class HTMLStringClass extends AStringClass {
 
     public HTMLStringClass() {
@@ -50,5 +47,20 @@ public class HTMLStringClass extends AStringClass {
     @Override
     public boolean markupHtml() {
         return true;
+    }
+
+    @Override
+    public String getValueAlignmentHorz() {
+        return "stretch";
+    }
+
+    @Override
+    public String getValueAlignmentVert() {
+        return "stretch";
+    }
+
+    @Override
+    public String getValueOverflowHorz() {
+        return "auto";
     }
 }
