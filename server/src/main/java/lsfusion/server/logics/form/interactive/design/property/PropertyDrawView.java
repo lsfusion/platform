@@ -1005,14 +1005,14 @@ public class PropertyDrawView extends BaseComponentView {
         if(valueOverflowHorz != null)
             return valueOverflowHorz;
 
+        if(isShrinkOverflowVisible(context))
+            return "visible";
+
         if(isProperty(context)) {
             Type type = getAssertValueType(context);
             if (type != null)
                 return type.getValueOverflowHorz();
         }
-
-        if(isShrinkOverflowVisible(context))
-            return "visible";
 
         return "clip";
     }
