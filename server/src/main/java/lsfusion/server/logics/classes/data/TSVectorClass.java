@@ -81,7 +81,7 @@ public class TSVectorClass extends DataClass<Array> implements DBType {
         Array array = set.getArray(name);
         if(set.wasNull())
             return null;
-        return read(array);
+        return readResult(array);
     }
 
     @Override

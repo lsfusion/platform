@@ -76,8 +76,7 @@ public abstract class CallDBAction extends CallAction {
             if (paramValue instanceof DataObject) {
                 DataClass paramClass = (DataClass) ((DataObject) paramValue).objectClass;
                 if (paramClass instanceof DynamicFormatFileClass) {
-                    DynamicFormatFileClass fileParamClass = (DynamicFormatFileClass) paramClass;
-                    FileData fileData = fileParamClass.read(paramValue.getValue());
+                    FileData fileData = (FileData) paramValue.getValue();
                     String extension = fileData.getExtension();
                     if (extension.equals("jdbc")) { // значит таблица
                         JDBCTable jdbcTable = JDBCTable.deserializeJDBC(fileData.getRawFile());

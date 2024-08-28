@@ -176,7 +176,7 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
 
         synchronized (navigators) {
             if (newConnection != null) {
-                navigator.setConnection(new DataObject(newConnection.object, businessLogics.systemEventsLM.connection)); // to update classes after apply
+                navigator.setConnection(new DataObject((Long) newConnection.object, businessLogics.systemEventsLM.connection)); // to update classes after apply
             }
             navigators.add(navigator);
         }

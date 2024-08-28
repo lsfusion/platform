@@ -12,6 +12,7 @@ import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.data.DataClass;
+import lsfusion.server.logics.classes.data.integral.IntegralClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.form.stat.struct.hierarchy.ImportData;
 import lsfusion.server.logics.form.struct.FormEntity;
@@ -116,6 +117,6 @@ public class FormImportData implements ImportData {
         // integer
         int result = BaseUtils.nvl(indexes.get(object), 0);
         indexes.add(object, result + 1);
-        return ((DataClass)object.baseClass).read(result);
+        return ((IntegralClass)object.baseClass).readNumber(result);
     }
 }

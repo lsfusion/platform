@@ -81,10 +81,6 @@ public class ValueExpr extends AbstractValueExpr<ConcreteClass> implements Value
     public ValueExpr(Long object, ConcreteObjectClass objectClass) {
         this((Object)object, (ConcreteClass)objectClass);
     }
-    public ValueExpr(Integer object, ConcreteObjectClass objectClass) {
-        this((Object)object, (ConcreteClass)objectClass);
-        throw new UnsupportedOperationException();// should be long
-    }
 
     @Override
     public String toDebugString(Map<String, String> sessionDebugInfo) {

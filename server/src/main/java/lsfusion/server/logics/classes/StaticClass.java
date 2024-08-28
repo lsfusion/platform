@@ -8,6 +8,4 @@ public interface StaticClass extends ConcreteValueClass {
     Expr getStaticExpr(Object value);
 
     ResolveClassSet getResolveSet();
-
-    boolean isZero(Object object);
 }

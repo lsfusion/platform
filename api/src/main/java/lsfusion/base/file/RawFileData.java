@@ -21,28 +21,28 @@ public class RawFileData extends TwinImmutableObject<RawFileData> implements Ser
     private final byte[] array;
 
     public RawFileData(byte[] array) {
-        assert array != null;
         this.array = array;
+        assert array != null;
     }
 
     public RawFileData(InputStream stream) throws IOException {
-        this.array = IOUtils.readBytesFromStream(stream);
+        this(IOUtils.readBytesFromStream(stream));
     }
 
     public RawFileData(InputStream stream, int len) throws IOException {
-        this.array = IOUtils.readBytesFromStream(stream, len);
+        this(IOUtils.readBytesFromStream(stream, len));
     }
 
     public RawFileData(ByteArrayOutputStream array) {
-        this.array = array.toByteArray();
+        this(array.toByteArray());
     }
     
     public RawFileData(File file) throws IOException {
-        this.array = IOUtils.getFileBytes(file);
+        this(IOUtils.getFileBytes(file));
     }
 
     public RawFileData(String filePath) throws IOException {
-        this.array = IOUtils.getFileBytes(filePath);
+        this(IOUtils.getFileBytes(filePath));
     }
 
     public byte[] getBytes() {

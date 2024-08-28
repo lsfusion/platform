@@ -122,7 +122,7 @@ public class NumericClass extends IntegralClass<BigDecimal> {
 
     @Override
     public BigDecimal read(ResultSet set, SQLSyntax syntax, String name) throws SQLException {
-        return read(set.getBigDecimal(name));
+        return readResult(set.getBigDecimal(name));
     }
 
     public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
@@ -159,7 +159,7 @@ public class NumericClass extends IntegralClass<BigDecimal> {
     }
 
     public BigDecimal getDefaultValue() {
-        return read(new BigDecimal("0.0"));
+        return readNumber(new BigDecimal("0.0"));
     }
 
     public BigDecimal parseString(String s) throws ParseException {

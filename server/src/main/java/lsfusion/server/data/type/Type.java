@@ -122,24 +122,29 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
     boolean getValueShrinkHorz();
 
     T parseDBF(CustomDbfRecord dbfRecord, String fieldName, String charset) throws ParseException, java.text.ParseException, IOException;
-    T parseJSON(Object value) throws ParseException, JSONException;
+    T parseJSON(Object value) throws ParseException, JSONException; // Number, String, Boolean
     T parseCSV(String value) throws ParseException;
     T parseXML(String value) throws ParseException;
     T parseXLS(Cell cell, CellValue formulaValue) throws ParseException;
+    T parseString(String s) throws ParseException; // s - not null (файлы decode'ся base64)
+    T parseHTTP(ExternalRequest.Param param) throws ParseException; // param.value - String or FileData, param.value - not null, nulls are decoded depending on type
+    T parseFile(RawFileData value, String extension, String charset);
 
     T parsePaste(String value) throws ParseException;
 
+    T read(Object value); // it is also a sort of parsing, but some "really close" types instead of strings
+
     OverJDBField formatDBF(String fieldName) throws JDBFException;
-    Object formatJSON(T object);
+    Object formatJSON(T object); // returns Number, String, Boolean
     String formatJSONSource(String valueSource, SQLSyntax syntax); // should correspond formatJSON
     String getJSONType();
     String formatCSV(T object);
     String formatXML(T object);
     void formatXLS(T object, Cell cell, ExportXLSWriter.Styles styles);
+    Object formatHTTP(T value, Charset charset); // returns String or FileData (not null), null's encode'it depending on type
+    RawFileData formatFile(T value, String charset);
 
     String formatMessage(T object);
-
-    T parseString(String s) throws ParseException; // s - not null (файлы decode'ся base64)
 
     String formatString(T value, boolean ui);
     default String formatString(T value) { // Returns null if passed null (files are base64 encoded)
@@ -147,19 +152,9 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
     }
     String formatStringSource(String valueSource, SQLSyntax syntax); // should correspond formatString
 
-    T parseHTTP(ExternalRequest.Param param) throws ParseException; // param.value - String or FileData, param.value - not null, nulls are decoded depending on type
-
-    Object formatHTTP(T value, Charset charset); // returns String or FileData (not null), null's encode'it depending on type
-
-    T writeProp(RawFileData value, String extension, String charset);
-
-    RawFileData readProp(T value, String charset);
-
     AndClassSet getBaseClassSet(BaseClass baseClass);
 
     String getSID();
-
-    T read(Object value);
 
     default boolean useInputTag(boolean isPanel, boolean useBootstrap, Type changeType) {
         return false;

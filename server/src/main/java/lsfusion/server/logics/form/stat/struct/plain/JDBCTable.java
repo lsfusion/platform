@@ -15,6 +15,7 @@ import lsfusion.base.file.RawFileData;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
+import lsfusion.server.data.type.AbstractType;
 import lsfusion.server.data.type.DBType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeSerializer;
@@ -220,7 +221,7 @@ public class JDBCTable {
                 Type type = types.get(i);
                 if(type instanceof IntegerClass && value instanceof Boolean) // для tinyint выставляется IntegerClass, а jdbc driver для tinyint(1) может вернуть Boolean, а в read это пока не кладем 
                     value = (Boolean) value ? 1 : 0;
-                BaseUtils.serializeObject(o, type.read(value));
+                BaseUtils.serializeObject(o, ((AbstractType)type).readResult(value));
             }
         }
         o.writeBoolean(false);

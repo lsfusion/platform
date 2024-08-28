@@ -129,7 +129,7 @@ public class ColorClass extends DataClass<Color> {
         int anInt = set.getInt(name);
         if(set.wasNull())
             return null;
-        return read(anInt);
+        return readResult(anInt);
     }
 
     public String getInputType(FormInstanceContext context) {

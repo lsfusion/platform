@@ -148,7 +148,7 @@ public class IDTable extends DBTable {
         try {
             dataSession.startTransaction(DBManager.getTIL(), OperationOwner.unknown);
 
-            freeID = ObjectType.idClass.read(getGenerateQuery(idType).execute(dataSession, OperationOwner.unknown).singleValue().get(value)) + 1; // замещаем
+            freeID = (Long) getGenerateQuery(idType).execute(dataSession, OperationOwner.unknown).singleValue().get(value) + 1; // замещаем
 
             QueryBuilder<KeyField, PropertyField> updateQuery = new QueryBuilder<>(this, MapFact.singleton(key, new DataObject(idType, idTypeClass)));
             updateQuery.addProperty(value, new ValueExpr(freeID + count - 1, SystemClass.instance));
