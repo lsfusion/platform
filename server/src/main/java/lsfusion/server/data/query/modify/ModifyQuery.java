@@ -2,8 +2,10 @@ package lsfusion.server.data.query.modify;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
+import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImCol;
+import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.OperationOwner;
@@ -175,12 +177,12 @@ public class ModifyQuery {
     }
 
     public static SQLExecute getInsertSelect(String name, IQuery<KeyField, PropertyField> query, QueryEnvironment env, TableOwner owner, SQLSyntax syntax, SQLSessionContextProvider userProvider, StoredTable table, RegisterChange change) {
-        return getInsertSelect(name, query, env, owner, syntax, userProvider, table, change, 0);
+        return getInsertSelect(name, query, env, owner, syntax, userProvider, table, change, MapFact.EMPTYORDER(), 0);
     }
 
-    public static SQLExecute getInsertSelect(String name, IQuery<KeyField, PropertyField> query, QueryEnvironment env, TableOwner owner, SQLSyntax syntax, SQLSessionContextProvider userProvider, StoredTable table, RegisterChange change, int selectTop) {
+    public static SQLExecute getInsertSelect(String name, IQuery<KeyField, PropertyField> query, QueryEnvironment env, TableOwner owner, SQLSyntax syntax, SQLSessionContextProvider userProvider, StoredTable table, RegisterChange change, ImOrderMap<PropertyField, Boolean> orders, int selectTop) {
         CompileOptions<PropertyField> options = new CompileOptions<>(syntax, table != null ? table.getPropTypes() : null, selectTop);
-        CompiledQuery<KeyField, PropertyField> changeCompile = query.compile(options);
+        CompiledQuery<KeyField, PropertyField> changeCompile = query.compile(orders, options);
 
         SQLDML dml = changeCompile.sql.getInsertDML(name, changeCompile.keyOrder, changeCompile.propertyOrder, true, changeCompile.keyOrder.mapOrder(changeCompile.keyNames), changeCompile.propertyOrder.mapOrder(changeCompile.propertyNames), syntax);
         return new SQLExecute(dml, changeCompile.getQueryParams(env, selectTop), changeCompile.getQueryExecEnv(userProvider), env.getTransactTimeout(), env.getOpOwner(), owner, change, new SQLDebugInfo<>(query, options));
