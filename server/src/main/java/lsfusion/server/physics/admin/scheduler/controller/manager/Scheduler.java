@@ -501,7 +501,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
             ExecutionStack stack = getStack(); // иначе assertion'ы внутри с проверкой контекста валятся
 
             Long taskLogId = null;
-            Exception exception = null;
+            Throwable throwable = null;
 
             String taskCaption = detail.getCaption();
             
@@ -541,14 +541,14 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                 taskLogId = logFinishTask(taskCaption, stack, applyResult);
                 
                 return applyResult == null;
-            } catch (Exception e) {
-                taskLogId = logExceptionTask(taskCaption, e, stack);
-                exception = e;
+            } catch (Throwable t) {
+                taskLogId = logExceptionTask(taskCaption, t, stack);
+                throwable = t;
                 return false;
             } finally {
                 ImList<AbstractContext.LogMessage> logMessages = ThreadLocalContext.popLogMessage();
-                if(exception != null)
-                    logMessages = logMessages.addList(new AbstractContext.LogMessage(ExceptionUtils.toString(exception), true, ExecutionStackAspect.getExceptionStackTrace()));
+                if(throwable != null)
+                    logMessages = logMessages.addList(new AbstractContext.LogMessage(ExceptionUtils.toString(throwable), true, ExecutionStackAspect.getExceptionStackTrace()));
                 if(taskLogId != null)
                     logClientTasks(logMessages, taskLogId, taskCaption, stack);
             }
@@ -566,17 +566,17 @@ public class Scheduler extends MonitorServer implements InitializingBean {
             return logTask(taskCaption, applyResult == null ? ServerResourceBundle.getString("scheduler.finished.successfully") : BaseUtils.truncate(applyResult, 200), "exception", stack, null);
         }
 
-        private Long logExceptionTask(String taskCaption, Exception e, ExecutionStack stack) {
-            return logTask(taskCaption, BaseUtils.truncate(String.valueOf(e), 200), "exception", stack, e);
+        private Long logExceptionTask(String taskCaption, Throwable t, ExecutionStack stack) {
+            return logTask(taskCaption, BaseUtils.truncate(String.valueOf(t), 200), "exception", stack, t);
         }
 
-        private Long logTask(String message, String result, String phase, ExecutionStack stack, Exception e) {
-            return logTask(message, result, phase, stack, e, false);
+        private Long logTask(String message, String result, String phase, ExecutionStack stack, Throwable t) {
+            return logTask(message, result, phase, stack, t, false);
         }
 
-        private Long logTask(String message, String result, String phase, ExecutionStack stack, Exception e, boolean error) {
-            if(e != null)
-                schedulerLogger.error("Exception in task : " + message + " - " + result, e);
+        private Long logTask(String message, String result, String phase, ExecutionStack stack, Throwable t, boolean error) {
+            if(t != null)
+                schedulerLogger.error("Exception in task : " + message + " - " + result, t);
             else
                 schedulerLogger.info("Task " + message + " - " + result + " " + phase);
             
@@ -586,7 +586,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                 BL.schedulerLM.scheduledTaskScheduledTaskLog.change(new DataObject(scheduledTaskObject.getValue(), BL.schedulerLM.userScheduledTask), (ExecutionEnvironment) session, taskLogObject);
                 BL.schedulerLM.propertyScheduledTaskLog.change(message, session, taskLogObject);
                 BL.schedulerLM.dateScheduledTaskLog.change(LocalDateTime.now(), session, taskLogObject);
-                if(e != null || error)
+                if(t != null || error)
                     BL.schedulerLM.exceptionOccurredScheduledTaskLog.change(true, session, taskLogObject);
                 BL.schedulerLM.resultScheduledTaskLog.change(result, session, taskLogObject);
 
