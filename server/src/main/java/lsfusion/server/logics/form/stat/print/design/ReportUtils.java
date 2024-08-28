@@ -85,18 +85,22 @@ class ReportUtils {
     }
 
     //jasper reports doesn't know how to format java.time classes, so we convert it to java.sql classes
-    public static JRDesignExpression createConvertExcelDateTimeExpression(String fieldName, Class cls) {
+    public static JRDesignExpression createConvertExcelDateTimeExpression(String fieldName, Class cls, String pattern) {
         String text = null;
         if (cls == LocalDate.class) {
-            text = String.format("java.sql.Date.valueOf($F{%s})", fieldName);
+            text = pattern != null ? getPatternExpression(fieldName, pattern) : String.format("java.sql.Date.valueOf($F{%s})", fieldName);
         } else if (cls == LocalTime.class) {
-            text = String.format("java.sql.Time.valueOf($F{%s})", fieldName);
+            text = pattern != null ? getPatternExpression(fieldName, pattern)  : String.format("java.sql.Time.valueOf($F{%s})", fieldName);
         } else if (cls == LocalDateTime.class) {
-            text = String.format("java.sql.Timestamp.valueOf($F{%s})", fieldName);
+            text = pattern != null ? getPatternExpression(fieldName, pattern)  : String.format("java.sql.Timestamp.valueOf($F{%s})", fieldName);
         } else if (cls == Instant.class) {
-            text = String.format("java.sql.Timestamp.from($F{%s})", fieldName);
+            text = pattern != null ? getPatternExpression(fieldName, pattern)  : String.format("java.sql.Timestamp.from($F{%s})", fieldName);
         }
         return text != null ? new JRDesignExpression(text) : null;
+    }
+
+    private static String getPatternExpression(String fieldName, String pattern) {
+        return String.format("$F{%s}.format(java.time.format.DateTimeFormatter.ofPattern(\"%s\"))", fieldName, pattern);
     }
     
     public static final String EXCEL_SEPARATOR_PROBLEM_REGEX = ".*\\.#+";
