@@ -57,8 +57,4 @@ public class HTMLClass extends HumanReadableFileClass {
         return "stretch";
     }
 
-    @Override
-    public String getValueOverflowHorz() {
-        return "auto";
-    }
 }

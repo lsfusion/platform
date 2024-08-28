@@ -59,8 +59,4 @@ public class HTMLStringClass extends AStringClass {
         return "stretch";
     }
 
-    @Override
-    public String getValueOverflowHorz() {
-        return "auto";
-    }
 }
