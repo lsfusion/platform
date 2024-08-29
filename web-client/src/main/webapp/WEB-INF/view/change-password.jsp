@@ -62,17 +62,20 @@
                         </div>
                         <input name="submit" type="submit" class="action-button round blue" id="submit" disabled
                                value="<%= ServerMessages.getString(request, "password.new.confirm") %>"/>
-                        <c:if test="${not empty SPRING_SECURITY_LAST_EXCEPTION}">
-                            <div class="error-block round full-width-box">
-                                    ${SPRING_SECURITY_LAST_EXCEPTION}
-                            </div>
-                            <c:remove var="SPRING_SECURITY_LAST_EXCEPTION" scope="session"/>
-                        </c:if>
                     </fieldset>
                 </form>
+                <c:if test="${not empty SPRING_SECURITY_LAST_EXCEPTION}">
+                    <div class="error-block round">
+                            ${SPRING_SECURITY_LAST_EXCEPTION}
+                    </div>
+                    <c:remove var="SPRING_SECURITY_LAST_EXCEPTION" scope="session"/>
+                </c:if>
             </div>
             <div class="footer">
                 <a class="main-page-link link" href="${loginPage}"><%= ServerMessages.getString(request, "login.page") %></a>
+                <div class="client-version">
+                    ${apiVersion}
+                </div>
             </div>
         </div>
     </body>

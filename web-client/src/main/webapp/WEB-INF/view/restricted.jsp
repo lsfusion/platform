@@ -24,7 +24,11 @@
                     <%= ServerMessages.getString(request, "login.caused") %>: ${error}
                 </div>
             </div>
-            <div class="footer"></div>
+            <div class="footer">
+                <div class="client-version">
+                    ${apiVersion}
+                </div>
+            </div>
         </div>
     </body>
 </html>

@@ -248,6 +248,7 @@ public class MainController {
         model.addAttribute("logicsLogo", getLogicsLogo(serverSettings));
         model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
         model.addAttribute("loginPage", getDirectUrl("/login", Collections.singletonList("token"), null, request));
+        model.addAttribute("apiVersion", BaseUtils.getPlatformVersion() + " (" + BaseUtils.getApiVersion() + ")");
 
         if (noAuth){
             model.addAttribute("noAuthResourcesBeforeSystem", getSavedNoAuthResources(serverSettings, true));

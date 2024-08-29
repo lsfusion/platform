@@ -41,17 +41,20 @@
                         </div>
                         <input name="submit" type="submit" class="action-button round blue"
                                value="<%= ServerMessages.getString(request, "password.reset") %>"/>
-                        <c:if test="${not empty RESET_PASSWORD_EXCEPTION}">
-                            <div class="error-block round full-width-box">
-                                    ${sessionScope["RESET_PASSWORD_EXCEPTION"]}
-                            </div>
-                            <c:remove var="RESET_PASSWORD_EXCEPTION" scope="session"/>
-                        </c:if>
                     </fieldset>
                 </form>
+                <c:if test="${not empty RESET_PASSWORD_EXCEPTION}">
+                    <div class="error-block round">
+                            ${sessionScope["RESET_PASSWORD_EXCEPTION"]}
+                    </div>
+                    <c:remove var="RESET_PASSWORD_EXCEPTION" scope="session"/>
+                </c:if>
             </div>
             <div class="footer">
                 <a class="main-page-link link" href="${loginPage}"><%= ServerMessages.getString(request, "login.page") %></a>
+                <div class="client-version">
+                    ${apiVersion}
+                </div>
             </div>
         </div>
     </body>
