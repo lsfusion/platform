@@ -45,11 +45,11 @@ public abstract class Compared<T extends PropertyInterface> {
     }
     
     public boolean intersect(ImSet<T> interfaces) {
-        return first.getInterfaces().toSet().intersect(interfaces) || second.getInterfaces().toSet().intersect(interfaces);
+        return first.getInterfaces().intersect(interfaces) || second.getInterfaces().intersect(interfaces);
     }
 
     public boolean keep(ImSet<T> interfaces) {
-        return interfaces.containsAll(first.getInterfaces().toSet()) && interfaces.containsAll(second.getInterfaces().toSet());
+        return interfaces.containsAll(first.getInterfaces()) && interfaces.containsAll(second.getInterfaces());
     }
 
     public static <T extends PropertyInterface> ImSet<Compared<T>> remove(ImSet<Compared<T>> compareds, final ImSet<T> remove) {
