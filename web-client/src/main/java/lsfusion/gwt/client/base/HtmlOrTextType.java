@@ -1,28 +1,34 @@
 package lsfusion.gwt.client.base;
 
+import com.google.gwt.core.client.JsArrayString;
+
 public abstract class HtmlOrTextType {
 
-    public String getCssClass() {
+    public JsArrayString getCssClasses() {
+        String mainClass;
+        String extraClass = null;
+
         boolean collapse = isCollapse();
-        boolean wrap = isWrap();
-        boolean wrapWordBreak = isWrapWordBreak();
-        if(wrap) {
-            if(collapse) {
-                assert !wrapWordBreak;
-                return "html-or-text-wrap-collapse";
-            }
+        if(isWrap()) {
+            mainClass = collapse ? "html-or-text-wrap-collapse" : "html-or-text-wrap";
 
-            if(wrapWordBreak)
-                return "html-or-text-wrap-wordbreak";
-
-            return "html-or-text-wrap";
+            if(isWrapWordBreak())
+                extraClass = "html-or-text-wrap-wordbreak";
         } else {
-            assert !wrapWordBreak;
-            if(collapse)
-                return "html-or-text-collapse";
+            mainClass = collapse ? "html-or-text-collapse" : "html-or-text";
 
-            return "html-or-text";
+            if(isEllipsis())
+                extraClass = "html-or-text-ellipsis";
         }
+
+        if(extraClass != null)
+            return GwtClientUtils.toArray(mainClass, extraClass);
+
+        return GwtClientUtils.toArray(mainClass);
+    }
+
+    protected boolean isEllipsis() {
+        return false;
     }
 
     protected boolean isCollapse() {

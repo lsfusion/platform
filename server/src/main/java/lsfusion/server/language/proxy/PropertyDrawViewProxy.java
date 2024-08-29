@@ -329,6 +329,10 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.wrapWordBreak = wrapWordBreak;
     }
 
+    public void setEllipsis(boolean ellipsis) {
+        target.ellipsis = ellipsis;
+    }
+
     public void setCollapse(boolean collapse) {
         target.collapse = collapse;
     }

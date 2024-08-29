@@ -86,6 +86,10 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         GwtClientUtils.setZeroZIndex(getElement());
     }
 
+    public static Element renderTD(Element th, boolean defaultHeaderHeight, Boolean sortDir, String caption) {
+        return GGridPropertyTableHeader.renderTD(th, defaultHeaderHeight ? GGridPropertyTableHeader.DEFAULT_HEADER_HEIGHT : null, sortDir, caption, null, null, true);
+    }
+
     // in theory we can order all properties once, but so far there is no full list of properties
     private void fillPropertiesOrder(List<GPropertyDraw> properties, List<GPropertyDraw> propertiesList, Set<GPropertyDraw> propertiesSet) {
         for (GPropertyDraw property : properties) {
@@ -1222,7 +1226,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             Boolean sortDir = sortCol != null ? sortCol.getDirection() : null;
             if(lastRenderCol != null && lastRenderCol.equals(COLUMN)) { // value is a column name
                 if(value != null) {
-                    GGridPropertyTableHeader.renderTD(jsElement, true, sortDir, fromObject(value).toString());
+                    renderTD(jsElement, true, sortDir, fromObject(value).toString());
                     setTableToExcelCenterAlignment(jsElement);
                 }
             } else {
@@ -1258,7 +1262,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             Boolean sortDir = sortCol != null ? sortCol.getDirection() : null;
             // value is a column name, render with rowHeight to make cal attr header to be responsible for the height
             String valueString = fromObject(value).toString();
-            GGridPropertyTableHeader.renderTD(jsElement, false, sortDir, valueString);
+            renderTD(jsElement, false, sortDir, valueString);
 
             if (value != null) {
                 jsElement.setTitle(valueString);
@@ -2092,7 +2096,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             unwrapOthers(rendererElement, th);
         }
         th.removeAllChildren();
-        GGridPropertyTableHeader.renderTD(th, false, shiftKey ? null : sortCol == null || !sortCol.getDirection(), columnCaption);
+        renderTD(th, false, shiftKey ? null : sortCol == null || !sortCol.getDirection(), columnCaption);
 
         //modifySortCols should be rendered immediately, because updateView without DeferredRunner will lead to layout shift
         updateViewLater();

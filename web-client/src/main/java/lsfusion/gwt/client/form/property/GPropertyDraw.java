@@ -65,6 +65,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public boolean wrap;
     public boolean wrapWordBreak;
     public boolean collapse;
+    public boolean ellipsis;
 
     public boolean clearText;
     public boolean notSelectAll;
@@ -870,6 +871,11 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             protected boolean isCollapse() {
                 return collapse;
             }
+
+            @Override
+            protected boolean isEllipsis() {
+                return ellipsis;
+            }
         };
     }
 
@@ -888,6 +894,11 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             @Override
             protected boolean isCollapse() {
                 return collapse;
+            }
+
+            @Override
+            protected boolean isEllipsis() {
+                return ellipsis;
             }
         };
     }
