@@ -69,8 +69,11 @@ public class SignatureMatcher {
     }
 
     private static boolean isClassesEqualsCompatible(ResolveClassSet interfaceClass, ResolveClassSet paramClass) {
-        if (interfaceClass == null || paramClass == null) return true;
-        
+        if(interfaceClass == null && paramClass == null)
+            return true;
+        if(interfaceClass == null || paramClass == null)
+            return false;
+
         return interfaceClass.equalsCompatible(paramClass);
     }
 

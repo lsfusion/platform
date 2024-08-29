@@ -15,8 +15,8 @@ public abstract class ModuleEqualLAPFinder<L extends LAP<?, ?>> extends ModulePr
         if (!isFiltered(property)) {
             List<ResolveClassSet> paramClasses = module.getParamClasses(property);
             boolean equals = SignatureMatcher.isEqualsCompatible(paramClasses, signature); // чтобы не вызывать ветку в ResolveOrObjectClassSet.containsAll
-            assert equals == (SignatureMatcher.isCompatible(paramClasses, signature, false, false) &&
-                              SignatureMatcher.isCompatible(signature, paramClasses, false, false));
+            assert equals == (SignatureMatcher.isCompatible(paramClasses, signature, false, true) &&
+                              SignatureMatcher.isCompatible(signature, paramClasses, false, true));
             return equals;
         }
         return false;
