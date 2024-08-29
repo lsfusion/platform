@@ -157,14 +157,14 @@ function containsHtmlTag(value) {
 }
 
 // actually it is also data, however usually it's metadata
-function initCaptionHtmlOrText(element, cssClass) {
-    initHtmlOrText(element, cssClass);
+function initCaptionHtmlOrText(element, cssClasses) {
+    initHtmlOrText(element, cssClasses);
 }
-function initDataHtmlOrText(element, cssClass) {
-    initHtmlOrText(element, cssClass);
+function initDataHtmlOrText(element, cssClasses) {
+    initHtmlOrText(element, cssClasses);
 }
-function clearDataHtmlOrText(element, cssClass) {
-    clearHtmlOrText(element, cssClass);
+function clearDataHtmlOrText(element, cssClasses) {
+    clearHtmlOrText(element, cssClasses);
 }
 function setCaptionHtmlOrText(element, value) {
     setHtmlOrText(element, value, containsHtmlTag(value));
@@ -176,15 +176,15 @@ function setDataHtmlOrText(element, value, html) {
     setHtmlOrText(element, value, html)
 }
 
-function initHtmlOrText(element, cssClass) {
-    element.classList.add(cssClass);
+function initHtmlOrText(element, cssClasses) {
+    element.classList.add(...cssClasses);
 }
-function clearHtmlOrText(element, cssClass) {
+function clearHtmlOrText(element, cssClasses) {
     element.classList.remove("html-or-text-no-multi-line");
 
     element.classList.remove("html-or-text-is-html");
 
-    element.classList.remove(cssClass);
+    element.classList.remove(...cssClasses);
 }
 
 function setHtmlOrText(element, value, html) {

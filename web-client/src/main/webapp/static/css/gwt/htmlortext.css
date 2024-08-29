@@ -2,13 +2,9 @@
 
 /* collapse fallback: no collapse (white-space preserve) is gives pretty awkward behaviour in custom htmls, so we fallback it to collapse ones */
 .html-or-text-wrap,
-.html-or-text-wrap-collapse, /* optimization fallback */
-.html-or-text-wrap-wordbreak {
+.html-or-text-wrap-collapse /* optimization fallback */
+{
     white-space: pre-wrap;
-}
-
-.html-or-text-wrap-wordbreak {
-    word-break: break-word;
 }
 
 .html-or-text,
@@ -31,4 +27,12 @@
 .html-or-text.html-or-text-is-html /* collapse fallback */
 {
     white-space: nowrap;
+}
+
+.html-or-text-wrap-wordbreak {
+    word-break: break-word;
+}
+
+.html-or-text-ellipsis {
+    text-overflow: ellipsis;
 }

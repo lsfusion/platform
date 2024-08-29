@@ -132,6 +132,7 @@ public class PropertyDrawView extends BaseComponentView {
     public Boolean wrap;
     public Boolean wrapWordBreak;
     public Boolean collapse;
+    public Boolean ellipsis;
 
     public boolean clearText;
     public boolean notSelectAll;
@@ -284,6 +285,13 @@ public class PropertyDrawView extends BaseComponentView {
             return wrapWordBreak;
 
         return false;
+    }
+
+    public boolean isEllipsis(FormInstanceContext context) {
+        if (ellipsis != null)
+            return ellipsis;
+
+        return true;
     }
 
     // we force optimistic async event scheme for external calls (since this calls assume that async push should exist)
@@ -656,6 +664,7 @@ public class PropertyDrawView extends BaseComponentView {
         outStream.writeBoolean(isWrap(pool.context));
         outStream.writeBoolean(isWrapWordBreak(pool.context));
         outStream.writeBoolean(isCollapse(pool.context));
+        outStream.writeBoolean(isEllipsis(pool.context));
 
         outStream.writeBoolean(clearText);
         outStream.writeBoolean(notSelectAll);

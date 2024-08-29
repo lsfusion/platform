@@ -190,6 +190,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public boolean wrap;
     public boolean wrapWordBreak;
     public boolean collapse;
+    public boolean ellipsis;
 
     public boolean clearText;
     public boolean notSelectAll;
@@ -704,6 +705,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         wrap = inStream.readBoolean();
         wrapWordBreak = inStream.readBoolean();
         collapse = inStream.readBoolean();
+        ellipsis = inStream.readBoolean();
 
         clearText = inStream.readBoolean();
         notSelectAll = inStream.readBoolean();

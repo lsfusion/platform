@@ -141,10 +141,6 @@ public class GGridPropertyTableHeader extends Header<String> {
 
     public final static GSize DEFAULT_HEADER_HEIGHT = GSize.CONST(34);
 
-    public static Element renderTD(Element th, boolean defaultHeaderHeight, Boolean sortDir, String caption) {
-        return renderTD(th, defaultHeaderHeight ? DEFAULT_HEADER_HEIGHT : null, sortDir, caption, null, null, true);
-    }
-
     public static Element renderTD(Element th, GSize height, Boolean sortDir, String caption, String captionElementClass, AppBaseImage image, boolean tableToExcel) {
 //        if(height != null)
 //            GPropertyTableBuilder.setRowHeight(th, height, tableToExcel);

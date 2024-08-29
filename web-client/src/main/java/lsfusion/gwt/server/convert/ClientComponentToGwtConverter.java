@@ -281,6 +281,7 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         propertyDraw.wrap = clientPropertyDraw.wrap;
         propertyDraw.wrapWordBreak = clientPropertyDraw.wrapWordBreak;
         propertyDraw.collapse = clientPropertyDraw.collapse;
+        propertyDraw.ellipsis = clientPropertyDraw.ellipsis;
 
         propertyDraw.clearText = clientPropertyDraw.clearText;
         propertyDraw.notSelectAll = clientPropertyDraw.notSelectAll;

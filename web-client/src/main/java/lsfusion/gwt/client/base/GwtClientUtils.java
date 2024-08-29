@@ -1271,6 +1271,17 @@ public class GwtClientUtils {
             list.add(array.get(i));
         return list;
     }
+    public static JsArrayString toArray(String element) {
+        JsArrayString jsArray = JsArrayString.createArray().cast();
+        jsArray.push(element);
+        return jsArray;
+    }
+    public static JsArrayString toArray(String element1, String element2) {
+        JsArrayString jsArray = JsArrayString.createArray().cast();
+        jsArray.push(element1);
+        jsArray.push(element2);
+        return jsArray;
+    }
 
     public static String[] toJavaArray(JsArrayString jsArray) {
         String[] array = new String[jsArray.length()];
@@ -1757,16 +1768,16 @@ public class GwtClientUtils {
 
 
     public static void initCaptionHtmlOrText(Element element, CaptionHtmlOrTextType type) {
-        initCaptionHtmlOrText(element, type.getCssClass());
+        initCaptionHtmlOrText(element, type.getCssClasses());
     }
     public static void initDataHtmlOrText(Element element, DataHtmlOrTextType type) {
-        initDataHtmlOrText(element, type.getCssClass());
+        initDataHtmlOrText(element, type.getCssClasses());
     }
-    private static native void initCaptionHtmlOrText(Element element, String cssClass) /*-{
-        $wnd.initCaptionHtmlOrText(element, cssClass);
+    private static native void initCaptionHtmlOrText(Element element, JsArrayString cssClasses) /*-{
+        $wnd.initCaptionHtmlOrText(element, cssClasses);
     }-*/;
-    public static native void initDataHtmlOrText(Element element, String cssClass) /*-{
-        $wnd.initDataHtmlOrText(element, cssClass);
+    public static native void initDataHtmlOrText(Element element, JsArrayString cssClasses) /*-{
+        $wnd.initDataHtmlOrText(element, cssClasses);
     }-*/;
     // elements used in this set method should be created with initCaptionHtmlOrText
     public static native boolean setCaptionHtmlOrText(Element element, String value) /*-{
@@ -1779,10 +1790,10 @@ public class GwtClientUtils {
         $wnd.setDataHtmlOrText(element, value, html);
     }-*/;
     public static void clearDataHtmlOrText(Element element, DataHtmlOrTextType type) {
-        clearDataHtmlOrText(element, type.getCssClass());
+        clearDataHtmlOrText(element, type.getCssClasses());
     }
-    private static native void clearDataHtmlOrText(Element element, String cssClass) /*-{
-        $wnd.clearDataHtmlOrText(element, cssClass);
+    private static native void clearDataHtmlOrText(Element element, JsArrayString cssClasses) /*-{
+        $wnd.clearDataHtmlOrText(element, cssClasses);
     }-*/;
 
     public static native void setMask(Element element, JavaScriptObject options)/*-{
