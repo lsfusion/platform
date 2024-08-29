@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.base;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.Event;
@@ -27,20 +26,24 @@ public class FocusUtils {
         return lastBlurredElement;
     }
 
-    private static boolean lastBlurred = false;
     public static boolean focusLastBlurredElement(EventHandler focusEventHandler, Element focusEventElement) {
         // in theory we also have to check if focused element still visible, isShowing in GwtClientUtils but now it's assumed that it is always visible
         if(lastBlurredElement != null && focusReason == null && lastBlurredElement != focusEventElement) { // return focus back where it was
             focusEventHandler.consume();
-            try {
-                lastBlurred = true;
-                focus(lastBlurredElement, Reason.RESTOREFOCUS);
-            } finally {
-                lastBlurred = false;
-            }
+            runWithSuppressBlur(() -> focus(lastBlurredElement, Reason.RESTOREFOCUS));
             return true;
         }
         return false;
+    }
+
+    public static boolean suppressBlur = false;
+    public static void runWithSuppressBlur(Runnable runnable) {
+        try {
+            suppressBlur = true;
+            runnable.run();
+        } finally {
+            suppressBlur = false;
+        }
     }
 
     public static boolean isSuppressOnFocusChange(Element element) {
@@ -232,7 +235,7 @@ public class FocusUtils {
     }-*/;
 
     public static boolean isFakeBlur(NativeEvent event, Element blur) {
-        if(lastBlurred)
+        if(suppressBlur)
             return true;
 
         EventTarget focus = event.getRelatedEventTarget();
