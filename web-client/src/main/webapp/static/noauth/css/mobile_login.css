@@ -129,7 +129,7 @@ fieldset {
     border: 1px solid #ff0000;
     padding: 1.1em;
     text-align: left;
-    margin: 1.5em auto 0;
+    margin: 1em;
     overflow-wrap: break-word;
 }
 
@@ -181,4 +181,10 @@ details summary::-webkit-details-marker {
     color: #2069b4;
     text-decoration: underline;
     font-size: 1em;
+}
+
+.client-version {
+    align-self: center;
+    font-size: 0.5em;
+    opacity: 0.5;
 }

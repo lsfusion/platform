@@ -75,18 +75,21 @@
                             <input type="email" id="email" name="email" class="round full-width-box" required="required" value="${email}"/>
                         </div>
                         <input name="submit" type="submit" class="action-button round blue" id="submit" value="<%= ServerMessages.getString(request, "registration") %>"/>
-                        <c:if test="${not empty REGISTRATION_EXCEPTION}">
-                            <div class="error-block round full-width-box">
-                                <%= ServerMessages.getString(request, "registration.not.successful") %><br/>
-                                <%= ServerMessages.getString(request, "login.caused") %>: ${sessionScope["REGISTRATION_EXCEPTION"].message}
-                            </div>
-                            <c:remove var="REGISTRATION_EXCEPTION" scope="session"/>
-                        </c:if>
                     </fieldset>
                 </form>
+                <c:if test="${not empty REGISTRATION_EXCEPTION}">
+                    <div class="error-block round">
+                        <%= ServerMessages.getString(request, "registration.not.successful") %><br/>
+                        <%= ServerMessages.getString(request, "login.caused") %>: ${sessionScope["REGISTRATION_EXCEPTION"].message}
+                    </div>
+                    <c:remove var="REGISTRATION_EXCEPTION" scope="session"/>
+                </c:if>
             </div>
             <div class="footer">
                 <a class="main-page-link link" href="${loginPage}"><%= ServerMessages.getString(request, "login.page") %></a>
+                <div class="client-version">
+                    ${apiVersion}
+                </div>
             </div>
         </div>
     </body>

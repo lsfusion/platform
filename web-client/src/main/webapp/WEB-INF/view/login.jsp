@@ -59,19 +59,19 @@
                             <input type="password" id="password" name="password" class="round full-width-box"/>
                         </div>
                         <input name="submit" type="submit" class="action-button round blue" value="<%= ServerMessages.getString(request, "sign.in") %>"/>
-                        <c:if test="${not empty SPRING_SECURITY_LAST_EXCEPTION}">
-                            <%
-                                if (session.getAttribute("SPRING_SECURITY_LAST_EXCEPTION") instanceof Exception) {
-                                    session.setAttribute("SPRING_SECURITY_LAST_EXCEPTION", ((Exception) session.getAttribute("SPRING_SECURITY_LAST_EXCEPTION")).getMessage());
-                                }
-                            %>
-                            <div class="error-block round full-width-box">
-                                ${SPRING_SECURITY_LAST_EXCEPTION}
-                            </div>
-                            <c:remove var="SPRING_SECURITY_LAST_EXCEPTION" scope="session"/>
-                        </c:if>
                     </fieldset>
                 </form>
+                <c:if test="${not empty SPRING_SECURITY_LAST_EXCEPTION}">
+                    <%
+                        if (session.getAttribute("SPRING_SECURITY_LAST_EXCEPTION") instanceof Exception) {
+                            session.setAttribute("SPRING_SECURITY_LAST_EXCEPTION", ((Exception) session.getAttribute("SPRING_SECURITY_LAST_EXCEPTION")).getMessage());
+                        }
+                    %>
+                    <div class="error-block round">
+                            ${SPRING_SECURITY_LAST_EXCEPTION}
+                    </div>
+                    <c:remove var="SPRING_SECURITY_LAST_EXCEPTION" scope="session"/>
+                </c:if>
                 <c:if test="${! disableRegistration}">
                     <div class="reg-block">
                         <%= ServerMessages.getString(request, "no.account") %>
@@ -93,6 +93,9 @@
             <div class="footer">
                 <div class="desktop-link link">
                     ${jnlpUrls}
+                </div>
+                <div class="client-version">
+                    ${apiVersion}
                 </div>
             </div>
         </div>
