@@ -80,9 +80,9 @@ public class Inferred<T extends PropertyInterface> {
         ImMap<Compared<T>, ImSet<T>> comparedInterfaces = compared.mapValues((Compared<T> value) -> {
             ImSet<T> interfaces = SetFact.EMPTY();
             if (value.first.mapNeedInferredForValueClass(inferType))
-                interfaces = interfaces.merge(value.first.getInterfaces().toSet());
+                interfaces = interfaces.merge(value.first.getInterfaces());
             if (value.second.mapNeedInferredForValueClass(inferType))
-                interfaces = interfaces.merge(value.second.getInterfaces().toSet());
+                interfaces = interfaces.merge(value.second.getInterfaces());
             return interfaces;
         });
         

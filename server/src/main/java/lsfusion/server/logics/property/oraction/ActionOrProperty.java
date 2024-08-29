@@ -905,7 +905,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     }
 
     protected boolean checkProps(ImCol<? extends PropertyInterfaceImplement<T>> col) {
-        return col.filterCol(element -> !interfaces.containsAll(element.getInterfaces().toSet())).isEmpty();
+        return col.filterCol(element -> !interfaces.containsAll(element.getInterfaces())).isEmpty();
     }
     protected boolean checkActions(ImCol<ActionMapImplement<?, T>> col) {
         return col.filterCol(element -> !interfaces.containsAll(element.mapping.valuesSet())).isEmpty();

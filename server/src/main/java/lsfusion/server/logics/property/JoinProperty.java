@@ -79,8 +79,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
 
         if(toNull && implement.property.isNotNull(AlgType.actionType))
             for(PropertyInterfaceImplement<Interface> mapImpl : implement.mapping.valueIt()) {
-                if(mapImpl.getInterfaces().containsAll(changeProperty.getInterfaces()) &&
-                    mapImpl.mapChangedWhen(toNull, changeProperty))
+                if(mapImpl.mapChangedWhen(toNull, changeProperty))
                     return true;
             }
 

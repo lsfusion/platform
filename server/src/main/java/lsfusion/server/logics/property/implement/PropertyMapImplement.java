@@ -312,11 +312,11 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
 
     @Override
     public boolean mapChangedWhen(boolean toNull, PropertyInterfaceImplement<T> changeProperty) {
-         return property.isChangedWhen(toNull, changeProperty.map(mapping.reverse()));
+         return getInterfaces().containsAll(changeProperty.getInterfaces()) && property.isChangedWhen(toNull, changeProperty.map(mapping.reverse()));
     }
     @Override
     public boolean mapIsExplicitNot(PropertyInterfaceImplement<T> where) {
-        return property.isNot(where.map(mapping.reverse()));
+        return getInterfaces().containsAll(where.getInterfaces()) && property.isNot(where.map(mapping.reverse()));
     }
 
     @Override
