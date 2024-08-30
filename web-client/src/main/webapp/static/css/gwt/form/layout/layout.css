@@ -2,11 +2,11 @@
 .oppositeSizeCssFixPanel {
 }
 
-.intr-shrink-width {
+.intr-shrink-width,.prop-value-shrink-horz>* > :not(.property-toolbar) {
     max-width: -webkit-fill-available;
     max-width: -moz-available;
 }
-.intr-stretch-width, .prop-value-shrink-horz>* > :not(.property-toolbar) {
+.intr-stretch-width {
     min-width: -webkit-fill-available;
     min-width: -moz-available;
 }
