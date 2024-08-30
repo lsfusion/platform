@@ -78,7 +78,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
         R empty();
         R singleRow(ImMap<KeyField, DataObject> keyValues, ImMap<PropertyField, ObjectValue> propValues) throws SQLException, SQLHandledException;
     }
-    private static <R> R readSingleValues(SQLSession session, BaseClass baseClass, QueryEnvironment env, IQuery<KeyField, PropertyField> query, Result<IQuery<KeyField, PropertyField>> pullQuery, Result<ImMap<KeyField, DataObject>> keyValues, Result<ImMap<PropertyField, ObjectValue>> propValues, ResultSingleValues<R> resultRead) throws SQLException, SQLHandledException {
+    private static <R> R readSingleValues(SQLSession session, BaseClass baseClass, QueryEnvironment env, IQuery<KeyField, PropertyField> query, Result<IQuery<KeyField, PropertyField>> pullQuery, Result<ImSet<PropertyField>> pullOrder, Result<ImMap<KeyField, DataObject>> keyValues, Result<ImMap<PropertyField, ObjectValue>> propValues, ResultSingleValues<R> resultRead) throws SQLException, SQLHandledException {
         IQuery.PullValues<KeyField, PropertyField> pullValues = query.pullValues();
         query = pullValues.query;
         ImMap<KeyField, Expr> keyExprValues = pullValues.pullKeys;
@@ -114,6 +114,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
         }
 
         pullQuery.set(query);
+        pullOrder.set(propExprValues.keys());
         return null;
     }
     
@@ -147,7 +148,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
         return map.mapOrderKeys(value -> castTypes(value, typeGetter));
     }
 
-    private static SessionData write(final SQLSession session, final ImOrderSet<KeyField> keys, final ImSet<PropertyField> properties, IQuery<KeyField, PropertyField> query, BaseClass baseClass, final QueryEnvironment env, final TableOwner owner, boolean updateClasses, final ImOrderMap<PropertyField, Boolean> orders, final int selectTop) throws SQLException, SQLHandledException {
+    private static SessionData write(final SQLSession session, final ImOrderSet<KeyField> keys, final ImSet<PropertyField> properties, IQuery<KeyField, PropertyField> query, BaseClass baseClass, final QueryEnvironment env, final TableOwner owner, boolean updateClasses, ImOrderMap<PropertyField, Boolean> orders, final int selectTop) throws SQLException, SQLHandledException {
 
         assert properties.equals(query.getProperties());
 
@@ -156,7 +157,8 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
 
         if(!Settings.get().isDisableReadSingleValues()) {
             Result<IQuery<KeyField, PropertyField>> pullQuery = new Result<>();
-            SessionRows singleResult = readSingleValues(session, baseClass, env, query, pullQuery, keyValues, propValues, new ResultSingleValues<SessionRows>() {
+            Result<ImSet<PropertyField>> pullOrder = new Result<>();
+            SessionRows singleResult = readSingleValues(session, baseClass, env, query, pullQuery, pullOrder, keyValues, propValues, new ResultSingleValues<SessionRows>() {
                 public SessionRows empty() {
                     return new SessionRows(keys, properties);
                 }
@@ -168,15 +170,17 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
             if(singleResult!=null)
                 return singleResult;
             query = pullQuery.result;
+            orders = orders.removeOrder(pullOrder.result);
         }
 
         final OperationOwner opOwner = env.getOpOwner();
 
         final IQuery<KeyField, PropertyField> insertQuery = query;
+        final ImOrderMap<PropertyField, Boolean> insertOrders = orders;
         SessionTable table = session.createTemporaryTable(keys.filterOrderIncl(query.getMapKeys().keys()), query.getProperties(), null, null, null, new FillTemporaryTable() { // статистика обновится в readSingleValues / removeFields
             public Integer fill(String name) throws SQLException, SQLHandledException {
 //                ServerLoggers.assertLog(session.getCount(name, opOwner)==0, "TEMPORARY TABLE SHOULD BE EMPTY");
-                return session.insertSessionSelect(name, insertQuery, env, owner, orders, selectTop);
+                return session.insertSessionSelect(name, insertQuery, env, owner, insertOrders, selectTop);
             }
         }, getQueryClasses(query), owner, opOwner);
 
@@ -234,7 +238,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
 
     public SessionData modifyRows(final SQLSession session, final IQuery<KeyField, PropertyField> query, BaseClass baseClass, final Modify type, final QueryEnvironment env, final TableOwner owner, final Result<Boolean> changed, boolean updateClasses) throws SQLException, SQLHandledException {
         if(!Settings.get().isDisableReadSingleValues()) {
-            SessionData singleResult = readSingleValues(session, baseClass, env, query, new Result<>(), new Result<>(),
+            SessionData singleResult = readSingleValues(session, baseClass, env, query, new Result<>(), new Result<>(), new Result<>(),
                     new Result<>(), new ResultSingleValues<SessionData>() {
                 public SessionData empty() {
                     return SessionData.this;
