@@ -92,7 +92,17 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
         return null;
     }
 
-    void fillReportDrawField(ReportDrawField reportField);
+    default String getDefaultPattern() {
+        return null;
+    }
+
+    default void fillReportDrawField(ReportDrawField reportField) {
+        fillReportDrawField(reportField, getDefaultPattern());
+    }
+
+    default void fillReportDrawField(ReportDrawField reportField, String pattern) {
+        reportField.pattern = pattern;
+    }
     
     boolean isFlex();
 

@@ -53,11 +53,16 @@ public class DateTimeClass extends HasTimeClass<LocalDateTime> {
     }
 
     @Override
-    public void fillReportDrawField(ReportDrawField reportField) {
-        super.fillReportDrawField(reportField);
+    public String getDefaultPattern() {
+        LocalePreferences localePreferences = ThreadLocalContext.get().getLocalePreferences();
+        return localePreferences != null ? localePreferences.dateTimeFormat : ThreadLocalContext.getTFormats().dateTimePattern;
+    }
+
+    @Override
+    public void fillReportDrawField(ReportDrawField reportField, String pattern) {
+        super.fillReportDrawField(reportField, pattern);
 
         reportField.alignment = HorizontalTextAlignEnum.RIGHT;
-        reportField.pattern = ThreadLocalContext.getTFormats().dateTimePattern; // dateTimePattern;
     }
 
     public byte getTypeID() {

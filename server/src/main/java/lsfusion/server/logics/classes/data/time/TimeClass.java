@@ -56,10 +56,9 @@ public class TimeClass extends HasTimeClass<LocalTime> {
     }
 
     @Override
-    public void fillReportDrawField(ReportDrawField reportField) {
-        super.fillReportDrawField(reportField);
-
-        reportField.pattern = ThreadLocalContext.getTFormats().timePattern; // timePattern;
+    public String getDefaultPattern() {
+        LocalePreferences localePreferences = ThreadLocalContext.get().getLocalePreferences();
+        return localePreferences != null ? localePreferences.timeFormat : ThreadLocalContext.getTFormats().timePattern;
     }
 
     public LocalTime parseString(String s) throws ParseException {

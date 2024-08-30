@@ -52,8 +52,9 @@ public class LogicalClass extends DataClass<Boolean> {
         return Boolean.class;
     }
 
-    public void fillReportDrawField(ReportDrawField reportField) {
-        super.fillReportDrawField(reportField);
+    @Override
+    public void fillReportDrawField(ReportDrawField reportField, String pattern) {
+        super.fillReportDrawField(reportField, pattern);
 
         reportField.alignment = HorizontalTextAlignEnum.CENTER;
     }

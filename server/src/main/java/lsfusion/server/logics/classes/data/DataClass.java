@@ -205,7 +205,9 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
         return 50;
     }
 
-    public void fillReportDrawField(ReportDrawField reportField) {
+    @Override
+    public void fillReportDrawField(ReportDrawField reportField, String pattern) {
+        super.fillReportDrawField(reportField, pattern);
         reportField.valueClass = getReportJavaClass();
         reportField.alignment = HorizontalTextAlignEnum.LEFT;
         reportField.markupHtml = markupHtml();

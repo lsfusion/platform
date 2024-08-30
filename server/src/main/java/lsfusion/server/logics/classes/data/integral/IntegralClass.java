@@ -33,8 +33,9 @@ public abstract class IntegralClass<T extends Number> extends TextBasedClass<T> 
         super(caption);
     }
 
-    public void fillReportDrawField(ReportDrawField reportField) {
-        super.fillReportDrawField(reportField);
+    @Override
+    public void fillReportDrawField(ReportDrawField reportField, String pattern) {
+        super.fillReportDrawField(reportField, pattern);
 
         reportField.alignment = HorizontalTextAlignEnum.RIGHT;
     }

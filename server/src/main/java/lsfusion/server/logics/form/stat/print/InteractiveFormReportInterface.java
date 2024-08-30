@@ -51,6 +51,11 @@ public class InteractiveFormReportInterface extends InteractiveFormDataInterface
         return form.getUserWidth(getInstance(entity, form), preferences);
     }
 
+    @Override
+    public String getUserPattern(PropertyDrawEntity entity) {
+        return form.getUserPattern(getInstance(entity, form), preferences);
+    }
+
     private static final String tablePrefix = "table";
     private String getReportPrefix(Integer groupId) {
         return groupId == null ? "" : tablePrefix + getFormEntity().getGroupObject(groupId).getSID() + "_";

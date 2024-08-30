@@ -2036,6 +2036,18 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return propertyPreferences.userWidth;
     }
 
+    public String getUserPattern(PropertyDrawInstance instance, FormUserPreferences preferences) {
+        GroupObjectUserPreferences groupPreferences = getGroupPreferences(instance.toDraw, preferences);
+        if (groupPreferences == null)
+            return null;
+
+        ColumnUserPreferences propertyPreferences = getPropertyPreferences(instance, groupPreferences);
+        if (propertyPreferences == null)
+            return null;
+
+        return propertyPreferences.userPattern;
+    }
+
     private ColumnUserPreferences getPropertyPreferences(PropertyDrawInstance instance, GroupObjectUserPreferences groupPreferences) {
         ColumnUserPreferences propertyPreferences = groupPreferences.getColumnUserPreferences().get(instance.getSID());
         if(propertyPreferences == null) 
