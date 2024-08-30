@@ -192,7 +192,10 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
                 } else {
                     cellValue = BigDecimal.valueOf(formulaValue.getNumberValue()).stripTrailingZeros().toPlainString();
                 }
-                break;        
+                break;
+            case ERROR:
+                cellValue = null;
+                break;
             default:
                 cellValue = formulaValue.formatAsString();
         }
