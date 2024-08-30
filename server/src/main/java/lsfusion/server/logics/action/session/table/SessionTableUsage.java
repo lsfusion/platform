@@ -119,8 +119,7 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
     public SessionTableUsage(String debugInfo, SQLSession sql, final Query<K, V> query, BaseClass baseClass, QueryEnvironment env,
                              final ImMap<K, Type> keyTypes, final ImMap<V, Type> propertyTypes, ImOrderMap<V, Boolean> orders, int selectTop) throws SQLException, SQLHandledException { // здесь порядок особо не важен, так как assert что getUsage'а не будет
         this(debugInfo, query.mapKeys.keys().toOrderSet(), query.properties.keys().toOrderSet(), keyTypes::get, propertyTypes::get);
-        ImRevMap<V, PropertyField> reverseMapProps = mapProps.reverse();
-        writeRows(sql, query, baseClass, env, SessionTable.matExprLocalQuery, orders.mapOrderKeys(reverseMapProps::get), selectTop);
+        writeRows(sql, query, baseClass, env, SessionTable.matExprLocalQuery, orders, selectTop);
     }
 
     public Join<V> join(ImMap<K, ? extends Expr> joinImplement) {
@@ -216,9 +215,10 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
         return query.map(mapKeys, mapProps);
     }
 
-    public void writeRows(SQLSession session, IQuery<K, V> query, BaseClass baseClass, QueryEnvironment env, boolean updateClasses, ImOrderMap<PropertyField, Boolean> orders, int selectTop) throws SQLException, SQLHandledException {
+    public void writeRows(SQLSession session, IQuery<K, V> query, BaseClass baseClass, QueryEnvironment env, boolean updateClasses, ImOrderMap<V, Boolean> orders, int selectTop) throws SQLException, SQLHandledException {
         try {
-            table = table.rewrite(session, fullMap(query), baseClass, env, this, updateClasses, orders, selectTop);
+            ImRevMap<V, PropertyField> reverseMapProps = mapProps.reverse();
+            table = table.rewrite(session, fullMap(query), baseClass, env, this, updateClasses, orders.mapOrderKeys(reverseMapProps::get), selectTop);
         } catch (Throwable t) {
             aspectException(session, env.getOpOwner());
             throw ExceptionUtils.propagate(t, SQLException.class, SQLHandledException.class);
