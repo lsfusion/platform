@@ -24,7 +24,7 @@ public class ImageHtmlOrTextType extends CaptionHtmlOrTextType {
     }
 
     @Override
-    protected boolean isWrap() {
+    public boolean isWrap() {
         return super.isWrap() || this == MAP || this == CALENDAR || this == GRID_CAPTION || this == PANEL_CAPTION_VERT;
     }
 

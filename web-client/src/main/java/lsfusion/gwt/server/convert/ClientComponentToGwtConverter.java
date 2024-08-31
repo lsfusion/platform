@@ -377,6 +377,7 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         propertyDraw.foregroundReader = convertForegroundReader(clientPropertyDraw.foregroundReader);
         propertyDraw.imageReader = convertImageReader(clientPropertyDraw.imageReader);
         propertyDraw.hasDynamicImage = clientPropertyDraw.hasDynamicImage;
+        propertyDraw.hasDynamicCaption = clientPropertyDraw.hasDynamicCaption;
         propertyDraw.commentReader = convertExtraPropReader(clientPropertyDraw.commentReader);
         propertyDraw.commentElementClassReader = convertExtraPropReader(clientPropertyDraw.commentElementClassReader);
         propertyDraw.placeholderReader = convertExtraPropReader(clientPropertyDraw.placeholderReader);

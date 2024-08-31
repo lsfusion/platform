@@ -86,10 +86,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         GwtClientUtils.setZeroZIndex(getElement());
     }
 
-    public static Element renderTD(Element th, boolean defaultHeaderHeight, Boolean sortDir, String caption) {
-        return GGridPropertyTableHeader.renderTD(th, defaultHeaderHeight ? GGridPropertyTableHeader.DEFAULT_HEADER_HEIGHT : null, sortDir, caption, null, null, true);
-    }
-
     // in theory we can order all properties once, but so far there is no full list of properties
     private void fillPropertiesOrder(List<GPropertyDraw> properties, List<GPropertyDraw> propertiesList, Set<GPropertyDraw> propertiesSet) {
         for (GPropertyDraw property : properties) {
@@ -1203,7 +1199,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         return font;
     }
 
-    public void renderColAttrCell(Element jsElement, JavaScriptObject value, JsArrayMixed colKeyValues, Boolean isSubtotal, Boolean isExpanded, Boolean isArrow) {
+    public void renderColAttrCell(Element jsElement, boolean rerender, JavaScriptObject value, JsArrayMixed colKeyValues, Boolean isSubtotal, Boolean isExpanded, Boolean isArrow) {
         if (isArrow) {
             GPropertyTableBuilder.renderTD(jsElement);
             renderArrow(jsElement, getTreeColumnValue(0, isExpanded, false, false, null));
@@ -1226,12 +1222,12 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             Boolean sortDir = sortCol != null ? sortCol.getDirection() : null;
             if(lastRenderCol != null && lastRenderCol.equals(COLUMN)) { // value is a column name
                 if(value != null) {
-                    renderTD(jsElement, true, sortDir, fromObject(value).toString());
+                    GGridPropertyTableHeader.renderTD(jsElement, rerender, true, sortDir, fromObject(value).toString());
                     setTableToExcelCenterAlignment(jsElement);
                 }
             } else {
                 if (isLastCol && sortDir != null) { // last column may have a sortDir
-                    jsElement = GwtClientUtils.wrapDiv(jsElement); // we need to wrap jsElement since all other wraps modify upper container
+                    jsElement = GGridPropertyTableHeader.wrapDiv(jsElement); // we need to wrap jsElement since all other wraps modify upper container
 
                     jsElement = GGridPropertyTableHeader.wrapSortImg(jsElement, sortDir);
                 }
@@ -1247,7 +1243,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         setTableToExcelColorAttributes(jsElement, null);
     }
     
-    public void renderAxisCell(Element jsElement, JavaScriptObject value, String attrName, Boolean isExpanded, Boolean isArrow) {
+    public void renderAxisCell(Element jsElement, boolean rerender, JavaScriptObject value, String attrName, Boolean isExpanded, Boolean isArrow) {
         if (isArrow) {
             GPropertyTableBuilder.renderTD(jsElement);
             Boolean isColumn = attrName.equals(COLUMN);
@@ -1262,7 +1258,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             Boolean sortDir = sortCol != null ? sortCol.getDirection() : null;
             // value is a column name, render with rowHeight to make cal attr header to be responsible for the height
             String valueString = fromObject(value).toString();
-            renderTD(jsElement, false, sortDir, valueString);
+            GGridPropertyTableHeader.renderTD(jsElement, rerender, false, sortDir, valueString);
 
             if (value != null) {
                 jsElement.setTitle(valueString);
@@ -1923,11 +1919,11 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             },
 
             renderColAttrHeaderCell: function (element, value, colKeyValues, isSubtotal, isExpanded, isArrow) {
-                instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::renderColAttrCell(*)(element, value, colKeyValues, isSubtotal, isExpanded, isArrow);
+                instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::renderColAttrCell(*)(element, false, value, colKeyValues, isSubtotal, isExpanded, isArrow);
             },
 
             renderAxisHeaderCell: function (element, value, attrName, isExpanded, isArrow) {
-                instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::renderAxisCell(*)(element, value, attrName, isExpanded, isArrow);
+                instance.@lsfusion.gwt.client.form.object.table.grid.view.GPivot::renderAxisCell(*)(element, false, value, attrName, isExpanded, isArrow);
             },
             
             getColumnWidth: function (isAttributeColumn, colKeyValues, axisValues, isArrow, arrowLevels) {
@@ -2073,8 +2069,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
                 if (!shiftKey && !ctrlKey) {
                     unwrapOthers(rendererElement, th);
                 }
-                th.removeAllChildren();
-                renderColAttrCell(th, getRawObjectValue(columnKeyValues, columnKeyValues.length() - 1), columnKeyValues, isSubtotal, false, false);
+                renderColAttrCell(th, true, getRawObjectValue(columnKeyValues, columnKeyValues.length() - 1), columnKeyValues, isSubtotal, false, false);
 
                 //modifySortCols should be rendered immediately, because updateView without DeferredRunner will lead to layout shift
                 updateViewLater();
@@ -2095,8 +2090,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         if (!shiftKey && !ctrlKey) {
             unwrapOthers(rendererElement, th);
         }
-        th.removeAllChildren();
-        renderTD(th, false, shiftKey ? null : sortCol == null || !sortCol.getDirection(), columnCaption);
+        GGridPropertyTableHeader.renderTD(th, true, false, shiftKey ? null : sortCol == null || !sortCol.getDirection(), columnCaption);
 
         //modifySortCols should be rendered immediately, because updateView without DeferredRunner will lead to layout shift
         updateViewLater();

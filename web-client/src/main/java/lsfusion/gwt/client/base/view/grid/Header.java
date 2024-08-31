@@ -37,7 +37,7 @@ public abstract class Header<H> {
         //do nothing by default
     }
 
-    public abstract void renderAndUpdateDom(TableCellElement th);
+    public abstract void renderAndUpdateDom(TableCellElement th, boolean rerender);
 
     public abstract void updateDom(TableCellElement th);
 }

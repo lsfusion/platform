@@ -304,6 +304,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GEditBindingMap editBindingMap;
 
     public boolean hasDynamicImage;
+    public boolean hasDynamicCaption;
     public Boolean focusable;
     public boolean checkEquals;
     public GPropertyEditType editType = GPropertyEditType.EDITABLE;
@@ -324,8 +325,11 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         assert isAction();
         return appImage != null;
     }
-    public boolean hasDynamicImage() { // when it's an action and has dynamic image
+    public boolean hasDynamicImage() {
         return hasDynamicImage;
+    }
+    public boolean hasDynamicCaption() {
+        return hasDynamicCaption;
     }
 
     public ArrayList<GInputBindingEvent> bindingEvents = new ArrayList<>();
@@ -792,7 +796,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return valueShrinkVert;
     }
 
-
     public static ArrayList<GGroupObjectValue> getColumnKeys(GPropertyDraw property, NativeSIDMap<GGroupObject, ArrayList<GGroupObjectValue>> currentGridObjects) {
         ArrayList<GGroupObjectValue> columnKeys = GGroupObjectValue.SINGLE_EMPTY_KEY_LIST;
         if (property.columnGroupObjects != null) {
@@ -815,7 +818,15 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     public boolean hasAutoSize() {
-        return valueWidth == -1 || valueHeight == -1;
+        return hasAutoWidth() || hasAutoHeight();
+    }
+
+    public boolean hasAutoWidth() {
+        return valueWidth == -1 && charWidth == 0;
+    }
+
+    public boolean hasAutoHeight() {
+        return valueHeight == -1 && charHeight == 0;
     }
 
     // not null
@@ -823,7 +834,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         if (valueWidth >= 0)
             return GSize.getValueSize(valueWidth);
 
-        if(!needNotNull && valueWidth == -1 && charWidth == 0)
+        if(!needNotNull && hasAutoWidth())
             return null;
 
         return getValueType().getValueWidth(getFont(parentFont), this, needNotNull, globalCaptionIsDrawn);
@@ -834,7 +845,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         if (valueHeight >= 0)
             return GSize.getValueSize(valueHeight);
 
-        if(!needNotNull && valueHeight == -1 && charHeight == 0)
+        if(!needNotNull && hasAutoHeight())
             return null;
 
         return getValueType().getValueHeight(getFont(parentFont), this, needNotNull, globalCaptionIsDrawn);
@@ -858,7 +869,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             }
 
             @Override
-            protected boolean isWrap() {
+            public boolean isWrap() {
                 return wrap;
             }
 

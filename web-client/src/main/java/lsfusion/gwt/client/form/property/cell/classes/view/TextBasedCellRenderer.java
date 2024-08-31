@@ -57,7 +57,7 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
             return true;
 
         // td always respects the inner text height, so if it is multi line and not autosized, we have wrap the content into a div
-        if (isMultiLine() && property.valueHeight != -1)
+        if (isMultiLine() && !property.hasAutoHeight())
             return false;
 
         // input we have to render in td, since input is a void element, and it can not have children (and they are needed for the toolbar)

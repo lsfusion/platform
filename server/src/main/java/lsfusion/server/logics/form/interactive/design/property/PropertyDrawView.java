@@ -638,6 +638,7 @@ public class PropertyDrawView extends BaseComponentView {
         outStream.writeBoolean(hasEditObjectAction(pool.context));
         outStream.writeBoolean(hasChangeAction(pool.context));
         outStream.writeBoolean(entity.hasDynamicImage());
+        outStream.writeBoolean(entity.hasDynamicCaption());
 
         ActionOrProperty inheritedProperty = entity.getInheritedProperty();
         outStream.writeBoolean(inheritedProperty instanceof Property && ((Property<?>) inheritedProperty).disableInputList);

@@ -8,7 +8,7 @@ public class CaptionHtmlOrTextType extends HtmlOrTextType {
     public static final CaptionHtmlOrTextType ASYNCVALUES = new CaptionHtmlOrTextType();
 
     @Override
-    protected boolean isWrap() {
+    public boolean isWrap() {
         return this == COMMENT_VERT || this == MESSAGE;
     }
 

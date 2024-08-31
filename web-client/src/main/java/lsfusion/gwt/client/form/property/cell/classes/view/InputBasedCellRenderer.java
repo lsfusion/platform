@@ -188,7 +188,7 @@ public abstract class InputBasedCellRenderer extends CellRenderer {
         boolean isInputStretch = isInput && inputType.isStretch();
         if(isTDOrTH || isInputStretch) {
             // actually when there is no text but stretch then it doesn't need to be set, but it won't break anything (and for fonts we don't do that)
-            renderTextAlignment(property, isInputStretch ? inputElement : element, isInputStretch, renderContext.getRendererType());
+            renderTextAlignment(isInputStretch ? inputElement : element, property.getHorzTextAlignment(), property.getVertTextAlignment());
             renderedAlignment = true;
         }
 
@@ -215,8 +215,8 @@ public abstract class InputBasedCellRenderer extends CellRenderer {
 //            renderedAlignment = true;
         } else {
 //            if(isTDOrTH || isInput) {
-            clearRenderTextAlignment(property, element, isInput, renderContext.getRendererType());
-//                renderedAlignment = true;
+            clearRenderTextAlignment(element, property.getHorzTextAlignment(), property.getVertTextAlignment());
+            //                renderedAlignment = true;
 //            }
         }
 

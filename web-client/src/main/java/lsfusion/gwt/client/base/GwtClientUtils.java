@@ -525,9 +525,9 @@ public class GwtClientUtils {
 //        element.getStyle().clearProperty("boxSizing");
     }
 
-    public static void setupValueOverflowHorz(Element element, String valueOverflowHorz) {
-        if (valueOverflowHorz != null) {
-            switch (valueOverflowHorz) {
+    public static void renderValueOverflow(Element element, String overflowHorz, String overflowVert) {
+        if (overflowHorz != null) {
+            switch (overflowHorz) {
                 case "auto":
                     element.addClassName("prop-value-overflow-horz-auto");
                     break;
@@ -539,27 +539,9 @@ public class GwtClientUtils {
                     break;
             }
         }
-    }
 
-    public static void clearValueOverflowHorz(Element element, String valueOverflowHorz) {
-        if (valueOverflowHorz != null) {
-            switch (valueOverflowHorz) {
-                case "auto":
-                    element.removeClassName("prop-value-overflow-horz-auto");
-                    break;
-                case "clip":
-                    element.removeClassName("prop-value-overflow-horz-clip");
-                    break;
-                case "visible":
-                    element.removeClassName("prop-value-overflow-horz-visible");
-                    break;
-            }
-        }
-    }
-
-    public static void setupValueOverflowVert(Element element, String valueOverflowVert) {
-        if (valueOverflowVert != null) {
-            switch (valueOverflowVert) {
+        if (overflowVert != null) {
+            switch (overflowVert) {
                 case "auto":
                     element.addClassName("prop-value-overflow-vert-auto");
                     break;
@@ -573,9 +555,23 @@ public class GwtClientUtils {
         }
     }
 
-    public static void clearValueOverflowVert(Element element, String valueOverflowVert) {
-        if (valueOverflowVert != null) {
-            switch (valueOverflowVert) {
+    public static void clearValueOverflow(Element element, String overflowHorz, String overflowVert) {
+        if (overflowHorz != null) {
+            switch (overflowHorz) {
+                case "auto":
+                    element.removeClassName("prop-value-overflow-horz-auto");
+                    break;
+                case "clip":
+                    element.removeClassName("prop-value-overflow-horz-clip");
+                    break;
+                case "visible":
+                    element.removeClassName("prop-value-overflow-horz-visible");
+                    break;
+            }
+        }
+
+        if (overflowVert != null) {
+            switch (overflowVert) {
                 case "auto":
                     element.removeClassName("prop-value-overflow-vert-auto");
                     break;
@@ -589,26 +585,20 @@ public class GwtClientUtils {
         }
     }
 
-    public static void setupValueShrinkHorz(Element element, boolean valueShrinkHorz) {
-        if (valueShrinkHorz) {
+    public static void renderValueShrinkHorz(Element element, boolean shrinkHorz, boolean shrinkVert) {
+        if (shrinkHorz) {
             element.addClassName("prop-value-shrink-horz");
         }
-    }
-
-    public static void clearValueShrinkHorz(Element element, boolean valueShrinkHorz) {
-        if (valueShrinkHorz) {
-            element.removeClassName("prop-value-shrink-horz");
-        }
-    }
-
-    public static void setupValueShrinkVert(Element element, boolean valueShrinkVert) {
-        if (valueShrinkVert) {
+        if (shrinkVert) {
             element.addClassName("prop-value-shrink-vert");
         }
     }
 
-    public static void clearValueShrinkVert(Element element, boolean valueShrinkVert) {
-        if (valueShrinkVert) {
+    public static void clearValueShrinkHorz(Element element, boolean shrinkHorz, boolean shrinkVert) {
+        if (shrinkHorz) {
+            element.removeClassName("prop-value-shrink-horz");
+        }
+        if (shrinkVert) {
             element.removeClassName("prop-value-shrink-vert");
         }
     }
@@ -1329,15 +1319,6 @@ public class GwtClientUtils {
 
     public static String formatInterval(String left, String right) {
         return left + " - " + right;
-    }
-
-    //  will wrap with div, because otherwise other wrappers will add and not remove classes after update
-    public static Element wrapDiv(Element th) {
-        Element wrappedTh = Document.get().createDivElement();
-        wrappedTh.addClassName("wrap-div");
-        th.appendChild(wrappedTh);
-
-        return wrappedTh;
     }
 
     public static boolean nullEquals(Object obj1, Object obj2) {

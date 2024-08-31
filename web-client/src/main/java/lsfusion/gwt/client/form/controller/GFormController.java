@@ -2302,10 +2302,10 @@ public class GFormController implements EditManager {
 
             // we need to do it before clearRender to have actual sizes + we need to remove paddings since we're setting width for wrapped component
             Integer renderedWidth = null;
-            if(property.valueWidth == -1)
+            if(property.hasAutoWidth())
                 renderedWidth = GwtClientUtils.getWidth(element);
             Integer renderedHeight = null;
-            if(property.valueHeight == -1)
+            if(property.hasAutoHeight())
                 renderedHeight = GwtClientUtils.getHeight(element);
 
             cellRenderer.clearRender(element, renderContext); // dropping previous render

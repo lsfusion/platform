@@ -123,12 +123,16 @@ public abstract class CellRenderer {
 
 //        BaseImage.setClasses(element, getValueElementClass());
 
+        // ? getSizeElement ?
+        GwtClientUtils.renderValueOverflow(element, property.getValueOverflowHorz(), property.getValueOverflowVert());
+        GwtClientUtils.renderValueShrinkHorz(element, property.getValueShrinkHorz(), property.getValueShrinkVert());
+
 //        SimpleTextBasedCellRenderer.getSizeElement(element).addClassName("prop-value-shrink");
 
         if(!renderedAlignment) {
             assert !GwtClientUtils.isTDorTH(element);
 //            assert !InputBasedCellRenderer.isToolbarContainer(element); // broken when isInputStretchText
-            renderFlexAlignment(property, element, renderContext.getRendererType());
+            renderFlexAlignment(element, property.getHorzTextAlignment(), property.getVertTextAlignment());
         }
     }
 
@@ -141,10 +145,9 @@ public abstract class CellRenderer {
             element.removeClassName("selectedCellHasEdit");
     }
 
-    private static void renderFlexAlignment(GPropertyDraw property, Element element, RendererType rendererType) {
+    public static void renderFlexAlignment(Element element, String horzTextAlignment, String vertAlignment) {
         element.addClassName("prop-display-flex");
 
-        String horzTextAlignment = property.getHorzTextAlignment();
         switch(horzTextAlignment) {
             case "start":
                 element.addClassName("prop-flex-horz-start");
@@ -160,7 +163,6 @@ public abstract class CellRenderer {
                 break;
         }
 
-        String vertAlignment = property.getVertTextAlignment(); // here we don't care about baseline / center
         switch (vertAlignment) {
             case "start":
                 element.addClassName("prop-flex-vert-start");
@@ -177,11 +179,7 @@ public abstract class CellRenderer {
         }
     }
 
-    public static void renderTextAlignment(GPropertyDraw property, Element element, boolean isInput, RendererType rendererType) {
-//        assert GwtClientUtils.isTDorTH(element) || GwtClientUtils.isInput(element);
-//        assert isInput == GwtClientUtils.isInput(element);
-
-        String horzTextAlignment = property.getHorzTextAlignment();
+    public static void renderTextAlignment(Element element, String horzTextAlignment, String vertAlignment) {
         switch(horzTextAlignment) {
             case "start":
                 element.addClassName("prop-text-horz-start");
@@ -195,7 +193,6 @@ public abstract class CellRenderer {
                 break;
         }
 
-        String vertAlignment = property.getVertTextAlignment();
         switch (vertAlignment) {
             case "start":
                 element.addClassName("prop-text-vert-start");
@@ -224,9 +221,12 @@ public abstract class CellRenderer {
         }
 
 //        SimpleTextBasedCellRenderer.getSizeElement(element).removeClassName("prop-value-shrink");
+        /* ? getSizeElement */
+        GwtClientUtils.clearValueOverflow(element, property.getValueOverflowHorz(), property.getValueOverflowVert());
+        GwtClientUtils.clearValueShrinkHorz(element, property.getValueShrinkHorz(), property.getValueShrinkVert());
 
         if (!renderedAlignment)
-            clearRenderFlexAlignment(property, element, renderContext.getRendererType());
+            clearRenderFlexAlignment(element, property.getHorzTextAlignment(), property.getVertTextAlignment());
 
         // update
         GFormController.clearColors(element);
@@ -242,8 +242,8 @@ public abstract class CellRenderer {
         }
         element.setPropertyObject(RENDERED, null);
     }
-    public static void clearRenderTextAlignment(GPropertyDraw property, Element element, boolean isInput, RendererType rendererType) {
-        String horzTextAlignment = property.getHorzTextAlignment();
+
+    public static void clearRenderTextAlignment(Element element, String horzTextAlignment, String vertAlignment) {
         switch(horzTextAlignment) {
             case "start":
                 element.removeClassName("prop-text-horz-start");
@@ -257,7 +257,6 @@ public abstract class CellRenderer {
                 break;
         }
 
-        String vertAlignment = property.getVertTextAlignment();
         switch (vertAlignment) {
             case "start":
                 element.removeClassName("prop-text-vert-start");
@@ -271,10 +270,10 @@ public abstract class CellRenderer {
                 break;
         }
     }
-    private static void clearRenderFlexAlignment(GPropertyDraw property, Element element, RendererType rendererType) {
+
+    public static void clearRenderFlexAlignment(Element element, String horzTextAlignment, String vertAlignment) {
         element.removeClassName("prop-display-flex");
 
-        String horzTextAlignment = property.getHorzTextAlignment();
         switch(horzTextAlignment) {
             case "start":
                 element.removeClassName("prop-flex-horz-start");
@@ -290,7 +289,6 @@ public abstract class CellRenderer {
                 break;
         }
 
-        String vertAlignment = property.getVertTextAlignment(); // here we don't care about baseline / center
         switch (vertAlignment) {
             case "top":
                 element.removeClassName("prop-flex-vert-start");
@@ -305,20 +303,6 @@ public abstract class CellRenderer {
                 element.removeClassName("prop-flex-vert-end");
                 break;
         }
-    }
-
-    public static void setupValueOverflowShrink(Element element, GPropertyDraw property) {
-        GwtClientUtils.setupValueOverflowHorz(element, property.getValueOverflowHorz());
-        GwtClientUtils.setupValueOverflowVert(element, property.getValueOverflowVert());
-        GwtClientUtils.setupValueShrinkHorz(element, property.getValueShrinkHorz());
-        GwtClientUtils.setupValueShrinkVert(element, property.getValueShrinkVert());
-    }
-
-    public static void clearValueOverflowShrink(Element element, GPropertyDraw property) {
-        GwtClientUtils.clearValueOverflowHorz(element, property.getValueOverflowHorz());
-        GwtClientUtils.clearValueOverflowVert(element, property.getValueOverflowVert());
-        GwtClientUtils.clearValueShrinkHorz(element, property.getValueShrinkHorz());
-        GwtClientUtils.clearValueShrinkVert(element, property.getValueShrinkVert());
     }
 
     protected boolean renderedLoadingContent(UpdateContext updateContext) {

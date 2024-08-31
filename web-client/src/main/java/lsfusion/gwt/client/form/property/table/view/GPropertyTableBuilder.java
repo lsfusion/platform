@@ -10,7 +10,6 @@ import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.RowIndexHolder;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.object.table.grid.view.GPivot;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
@@ -36,19 +35,18 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         return GwtClientUtils.isTDorTH(element) && !property.getCellRenderer(rendererType).canBeRenderedInTD();
     }
 
+    // pretty similar to GGridPropertyTableHeader.renderTD
     public static Element renderSized(Element element, GPropertyDraw property, GFont font, RendererType rendererType) {
+        // not td/th only in one very rare case - sorted last column value in pivot
         if(needWrap(element, property, rendererType)) {
             element = wrapSized(element, property.getCellRenderer(rendererType).createRenderElement(rendererType));
         }
 
         // we need to set the size to the "render" element to avoid problems with padding
         GSize valueHeight = property.getValueHeight(font, false, true);
+        FlexPanel.setGridHeight(element, valueHeight);
         if(valueHeight != null) // this way we can avoid prop-size-value fill-parent-perc conflict (see the css file) in most cases
             element.addClassName("prop-size-value");
-
-        CellRenderer.setupValueOverflowShrink(element, property);
-
-        FlexPanel.setGridHeight(element, valueHeight);
 
         return element;
     }
@@ -69,14 +67,12 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
 
         element.removeClassName("prop-class-value");
 
-        CellRenderer.clearValueOverflowShrink(element, property);
-
         FlexPanel.setGridHeight(element, (GSize)null);
 
         return false;
     }
 
-    private static Element wrapSized(Element element, Element renderElement) {
+    public static Element wrapSized(Element element, Element renderElement) {
 //        assert GwtClientUtils.isTDorTH(element);
         // the thing is that td ignores min-height (however height in td works just like min-height)
         // and we want height in table div work as min-height (i.e. to stretch)
@@ -274,11 +270,5 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         element.getStyle().setVerticalAlign(Style.VerticalAlign.MIDDLE);
     }
 
-    public static void setRowHeight(Element td, GSize height, boolean tableToExcel) {
-        if(tableToExcel) {
-            GPivot.setTableToExcelRowHeight(td, height);
-        }
-        FlexPanel.setGridHeight(td, height);
-    }
 }
 

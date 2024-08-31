@@ -61,6 +61,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public ReadOnlyReader readOnlyReader = new ReadOnlyReader();
     public ImageReader imageReader = new ImageReader();
     public boolean hasDynamicImage;
+    public boolean hasDynamicCaption;
 
     public ExtraPropReader commentReader = new ExtraPropReader(COMMENT);
     public ExtraPropReader commentElementClassReader = new ExtraPropReader(COMMENTELEMENTCLASS);
@@ -686,6 +687,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         hasEditObjectAction = inStream.readBoolean();
         hasChangeAction = inStream.readBoolean();
         hasDynamicImage = inStream.readBoolean();
+        hasDynamicCaption = inStream.readBoolean();
 
         disableInputList = inStream.readBoolean();
 

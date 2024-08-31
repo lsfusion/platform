@@ -17,10 +17,11 @@ public class ActionCellRenderer extends CellRenderer {
         super(property);
     }
 
-    @Override
-    public boolean canBeRenderedInTD() {
-        return false; // since for now we want button element
-    }
+    // since for now we want button element
+//    @Override
+//    public boolean canBeRenderedInTD() {
+//        return false;
+//    }
 
     private boolean hasImage(boolean globalCaptionIsDrawn) {
         return globalCaptionIsDrawn || property.hasStaticImage() || property.hasDynamicImage();
