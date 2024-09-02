@@ -21,11 +21,6 @@ public abstract class LinkClass extends AStringClass {
         this.multiple = multiple;
     }
 
-    @Override
-    public String getValueAlignmentHorz() {
-        return "center";
-    }
-
     protected abstract String getFileSID();
 
     @Override
