@@ -348,7 +348,8 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
 
         boolean patternMismatch = isPatternMismatch(inputElement);
         if (patternMismatch) {
-            reportValidity(inputElement);
+            //reportValidity is processed by jQuery and creates a new blur event, which we don't want to handle in order to avoid recursion.
+            FocusUtils.runWithSuppressBlur(() -> reportValidity(inputElement));
             throw new InvalidEditException(true);
         }
 
