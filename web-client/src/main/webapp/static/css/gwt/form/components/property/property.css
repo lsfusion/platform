@@ -140,7 +140,8 @@ input.prop-text-vert-center {
 }
 
 .cell-with-background .btn,
-.cell-with-background .ms-choice{
+.cell-with-background .ms-choice,
+.cell-with-background .selectize-input {
     background-color: var(--bs-table-bg);
     --component-background-color: var(--bs-table-bg);
 }
