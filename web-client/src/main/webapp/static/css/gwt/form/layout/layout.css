@@ -2,7 +2,7 @@
 .oppositeSizeCssFixPanel {
 }
 
-.intr-shrink-width,.prop-value-shrink-horz>* > :not(.property-toolbar) {
+.intr-shrink-width,.prop-value-shrink-horz > *:not(.property-toolbar) { /* toolbar has max-width: 50% and in general it's own layouting */
     max-width: -webkit-fill-available;
     max-width: -moz-available;
 }
@@ -10,7 +10,7 @@
     min-width: -webkit-fill-available;
     min-width: -moz-available;
 }
-.intr-shrink-height,.prop-value-shrink-vert>* > :not(.property-toolbar) {
+.intr-shrink-height,.prop-value-shrink-vert > *:not(.property-toolbar) { /* see width */
     max-height: -webkit-fill-available;
     max-height: -moz-available;
 }
