@@ -201,7 +201,7 @@ To access design components, you can use their names or address property compone
 |`placeholder`|Placeholder of a property or action|String literal|placeholder of a property or action|`'Placeholder'`|
 |`tooltip`|The tip to be shown when the cursor hovers over the caption of a property or action|String literal|Default tooltip|`'Tip'`|
 |`valueTooltip`|The tip to be shown when the cursor hovers over the value of a property|String literal|Default tooltip|`'Tip'`|
-|`valueAlignment`|Component value alignment. Acceptable values: `START` (at the beginning), `CENTER` (in the center), `END` (at the end), `STRETCH` (stretched). **deprecated since version 6, use `valueAlignmentHorz`**|Alignment type|`START`|`STRETCH`|
+|`valueAlignment`|Component value alignment. Acceptable values: `START` (at the beginning), `CENTER` (in the center), `END` (at the end), `STRETCH` (stretched).<br/>**deprecated since version 6, use `valueAlignmentHorz`**|Alignment type|`START`|`STRETCH`|
 |`valueAlignmentHorz`|Component value alignment horizontal. Acceptable values: `START` (at the beginning), `CENTER` (in the center), `END` (at the end), `STRETCH` (stretched).|Alignment type|`START`|`STRETCH`|
 |`valueAlignmentVert`|Component value alignment vertical. Acceptable values: `START` (at the beginning), `CENTER` (in the center), `END` (at the end), `STRETCH` (stretched).|Alignment type|`START`|`STRETCH`|
 |`valueOverflowHorz`|todo|String literal|`auto`|`auto`<br/>`clip`<br/>`visible`|
@@ -222,7 +222,7 @@ To access design components, you can use their names or address property compone
 |---|---|---|---|---|
 |`visible`|Specifying the visibility of the component|Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
 |`showViews`|Show the view buttons|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
-|`showGroup`|Show the view buttons|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
+|`showGroup`|Show the view buttons<br/>**deprecated since version 6, use `showViews`**|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
 |`showFilters`|Show the filters setting button|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
 |`showSettings`|Show the table setting button|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
 |`showCountQuantity`|Show the row quantity calculation button|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
@@ -295,7 +295,7 @@ To access design components, you can use their names or address property compone
     - `GRID` - a table component
     - `TOOLBARSYSTEM` - a system toolbar (number of records, group change, etc.).
     - `FILTERGROUPS` - contains filter group components
-    - `FILTERS` - a component that displays custom filters<br/>**deprecated since version 5, use `FILTERS`**
+    - `FILTERS` - a component that displays custom filters
 
 ## Examples
 
