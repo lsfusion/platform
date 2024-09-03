@@ -23,6 +23,11 @@ public class ToolbarViewProxy extends ComponentViewProxy<ToolbarView> {
         target.showGroupReport = showGroup;
     }
 
+    //future compatibility
+    public void setShowViews(boolean showViews) {
+        setShowGroup(showViews);
+    }
+
     public void setShowPrintGroupXls(boolean showPrintGroupXls) {
         target.showXls = showPrintGroupXls;
     }
