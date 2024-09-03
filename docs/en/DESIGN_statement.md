@@ -221,11 +221,14 @@ To access design components, you can use their names or address property compone
 |Property name|Description|Value type|Default value|Examples|
 |---|---|---|---|---|
 |`visible`|Specifying the visibility of the component|Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
+|`showViewButtonGroup`|Show the view buttons|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
+|`showGroup`|Show the view buttons|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
+|`showFilters`|Show the filters setting button|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
+|`showSettings`|Show the table setting button|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
 |`showCountQuantity`|Show the row quantity calculation button|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
 |`showCalculateSum`|Show the column sum calculation button|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
-|`showGroup`|Show the grouping report button|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
 |`showPrintGroupXls`|Show the XLS export button|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
-|`showSettings`|Show the table setting button|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
+|`showManualUpdate`|Show the manual update button|Extended Boolean literal|`TRUE`|`TRUE`<br/>`FALSE`|
 
 ### Grid properties
 
