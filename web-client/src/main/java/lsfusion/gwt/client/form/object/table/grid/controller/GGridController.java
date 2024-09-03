@@ -127,14 +127,16 @@ public class GGridController extends GAbstractTableController {
     private GGridUserPreferences[] userPreferences;
     private void setGridTableView() {
         changeTableView(new GGridTable(formController, this, gridView, userPreferences));
-        gridTableButton.showBackground(true);
-        pivotTableButton.showBackground(false);
-        if(mapTableButton != null)
-            mapTableButton.showBackground(false);
-        if (customViewButton != null)
-            customViewButton.showBackground(false);
-        if (calendarTableButton != null)
-            calendarTableButton.showBackground(false);
+        if(groupObject.toolbar.showViewButtonGroup) {
+            gridTableButton.showBackground(true);
+            pivotTableButton.showBackground(false);
+            if (mapTableButton != null)
+                mapTableButton.showBackground(false);
+            if (customViewButton != null)
+                customViewButton.showBackground(false);
+            if (calendarTableButton != null)
+                calendarTableButton.showBackground(false);
+        }
     }
     private void setPivotTableView() {
         changeTableView(new GPivot(formController, this, getSelectedProperty(), gridView));
@@ -194,12 +196,14 @@ public class GGridController extends GAbstractTableController {
     private boolean manual;
     private void setUpdateMode(boolean manual) {
         this.manual = manual;
-        if(manual) {
-            forceUpdateTableButton.setVisible(true);
-            forceUpdateTableButton.setEnabled(false);
-        } else
-            forceUpdateTableButton.setVisible(false);
-        manualUpdateTableButton.showBackground(manual);
+        if(groupObject.toolbar.showManualUpdate) {
+            if (manual) {
+                forceUpdateTableButton.setVisible(true);
+                forceUpdateTableButton.setEnabled(false);
+            } else
+                forceUpdateTableButton.setVisible(false);
+            manualUpdateTableButton.showBackground(manual);
+        }
     }
 
     private void changeTableView(GTableView table) {
@@ -229,70 +233,72 @@ public class GGridController extends GAbstractTableController {
     protected void configureToolbar() {
         assert isList();
 
-        GToolbarButtonGroup viewButtonGroup = new GToolbarButtonGroup();
-        gridTableButton = new GToolbarButton(StaticImage.GRID, messages.formGridTableView()) {
-            @Override
-            public ClickHandler getClickHandler() {
-                return event -> {
-                    changeMode(() -> setGridTableView(), GListViewType.GRID, false);
+        if(groupObject.toolbar.showViewButtonGroup) {
+            GToolbarButtonGroup viewButtonGroup = new GToolbarButtonGroup();
+            gridTableButton = new GToolbarButton(StaticImage.GRID, messages.formGridTableView()) {
+                @Override
+                public ClickHandler getClickHandler() {
+                    return event -> {
+                        changeMode(() -> setGridTableView(), GListViewType.GRID, false);
+                    };
+                }
+            };
+            viewButtonGroup.add(gridTableButton);
+
+            pivotTableButton = new GToolbarButton(StaticImage.PIVOT, messages.formGridPivotView()) {
+                @Override
+                public ClickHandler getClickHandler() {
+                    return event -> {
+                        changeMode(() -> setPivotTableView(), GListViewType.PIVOT, true); // we need to make a call to get columns to init default config
+                    };
+                }
+            };
+            viewButtonGroup.add(pivotTableButton);
+
+            if (groupObject.customRenderFunction != null) {
+                customViewButton = new GToolbarButton(StaticImage.CUSTOMVIEW, messages.formGridCustomView()) {
+                    @Override
+                    public ClickHandler getClickHandler() {
+                        return event -> {
+                            changeMode(() -> setCustomTableView(), GListViewType.CUSTOM, false);
+                        };
+                    }
                 };
+                viewButtonGroup.add(customViewButton);
             }
-        };
-        viewButtonGroup.add(gridTableButton);
 
-        pivotTableButton = new GToolbarButton(StaticImage.PIVOT, messages.formGridPivotView()) {
-            @Override
-            public ClickHandler getClickHandler() {
-                return event -> {
-                    changeMode(() -> setPivotTableView(), GListViewType.PIVOT, true); // we need to make a call to get columns to init default config
+            if (groupObject.isMap) {
+                mapTableButton = new GToolbarButton(StaticImage.MAP, messages.formGridMapView()) {
+                    @Override
+                    public ClickHandler getClickHandler() {
+                        return event -> {
+                            changeMode(() -> setMapTableView(), GListViewType.MAP, false);
+                        };
+                    }
                 };
+                viewButtonGroup.add(mapTableButton);
             }
-        };
-        viewButtonGroup.add(pivotTableButton);
 
-        if (groupObject.customRenderFunction != null){
-            customViewButton = new GToolbarButton(StaticImage.CUSTOMVIEW, messages.formGridCustomView()) {
-                @Override
-                public ClickHandler getClickHandler() {
-                    return event -> {
-                        changeMode(() -> setCustomTableView(), GListViewType.CUSTOM, false);
-                    };
-                }
-            };
-            viewButtonGroup.add(customViewButton);
+            if (getCalendarDateType() != null) {
+                calendarTableButton = new GToolbarButton(StaticImage.CALENDAR, messages.formGridCalendarView()) {
+                    @Override
+                    public ClickHandler getClickHandler() {
+                        return event -> {
+                            changeMode(() -> setCalendarTableView(), GListViewType.CALENDAR, false);
+                        };
+                    }
+                };
+                viewButtonGroup.add(calendarTableButton);
+            }
+
+            addToToolbar(viewButtonGroup);
         }
 
-        if(groupObject.isMap) {
-            mapTableButton = new GToolbarButton(StaticImage.MAP, messages.formGridMapView()) {
-                @Override
-                public ClickHandler getClickHandler() {
-                    return event -> {
-                        changeMode(() -> setMapTableView(), GListViewType.MAP, false);
-                    };
-                }
-            };
-            viewButtonGroup.add(mapTableButton);
-        }
-
-        if(getCalendarDateType() != null) {
-            calendarTableButton = new GToolbarButton(StaticImage.CALENDAR, messages.formGridCalendarView()) {
-                @Override
-                public ClickHandler getClickHandler() {
-                    return event -> {
-                        changeMode(() -> setCalendarTableView(), GListViewType.CALENDAR, false);
-                    };
-                }
-            };
-            viewButtonGroup.add(calendarTableButton);
-        }
-
-        addToToolbar(viewButtonGroup);
-
-        if (showFilter()) {
+        if (groupObject.toolbar.showFilters && showFilter()) {
             initFilters();
         }
 
-        if (groupObject.toolbar.showGridSettings) {
+        if (groupObject.toolbar.showSettings) {
             GToolbarButtonGroup settingsButtonGroup = new GToolbarButtonGroup();
 
             settingsButton = new GToolbarButton(StaticImage.USERPREFERENCES, messages.formGridPreferences()) {
@@ -356,31 +362,30 @@ public class GGridController extends GAbstractTableController {
             addToToolbar(printButtonGroup);
         }
 
-        GToolbarButtonGroup updateButtonGroup = new GToolbarButtonGroup();
+        if (groupObject.toolbar.showManualUpdate) {
+            GToolbarButtonGroup updateButtonGroup = new GToolbarButtonGroup();
 
-        manualUpdateTableButton = new GToolbarButton(StaticImage.UPDATE, messages.formGridManualUpdate()) {
-            @Override
-            public ClickHandler getClickHandler() {
-                return event -> {
-                    setUpdateMode(!manual);
-                    formController.changeMode(groupObject, false, null, null, 0, null, null, false, manual ? GUpdateMode.MANUAL : GUpdateMode.AUTO, null);
-                };
-            }
-        };
-        updateButtonGroup.add(manualUpdateTableButton);
+            manualUpdateTableButton = new GToolbarButton(StaticImage.UPDATE, messages.formGridManualUpdate()) {
+                @Override
+                public ClickHandler getClickHandler() {
+                    return event -> {
+                        setUpdateMode(!manual);
+                        formController.changeMode(groupObject, false, null, null, 0, null, null, false, manual ? GUpdateMode.MANUAL : GUpdateMode.AUTO, null);
+                    };
+                }
+            };
+            updateButtonGroup.add(manualUpdateTableButton);
 
-        forceUpdateTableButton = new GToolbarButton(messages.formGridUpdate(), StaticImage.OK, messages.formGridUpdate(), false) {
-            @Override
-            public ClickHandler getClickHandler() {
-                return event -> {
-                    formController.changeMode(groupObject, false, null, null, 0, null, null, false, GUpdateMode.FORCE, null);
-                };
-            }
-        };
-//        forceUpdateTableButton.addStyleName("actionPanelRendererValue");
-        updateButtonGroup.add(forceUpdateTableButton);
+            forceUpdateTableButton = new GToolbarButton(messages.formGridUpdate(), StaticImage.OK, messages.formGridUpdate(), false) {
+                @Override
+                public ClickHandler getClickHandler() {
+                    return event -> formController.changeMode(groupObject, false, null, null, 0, null, null, false, GUpdateMode.FORCE, null);
+                }
+            };
+            updateButtonGroup.add(forceUpdateTableButton);
 
-        addToToolbar(updateButtonGroup);
+            addToToolbar(updateButtonGroup);
+        }
     }
 
     public void showRecordQuantity(int quantity) {
