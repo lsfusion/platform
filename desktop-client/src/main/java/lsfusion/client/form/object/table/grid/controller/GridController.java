@@ -114,7 +114,7 @@ public class GridController extends AbstractTableController {
     }
 
     private void configureToolbar() {
-        if (groupObject.toolbar.showGroupReport && table instanceof GridTable) {
+        if (groupObject.toolbar.showViews && table instanceof GridTable) {
             addToToolbar(new GroupingButton((GridTable) table) {
                 @Override
                 public List<FormGrouping> readGroupings() {
@@ -135,7 +135,7 @@ public class GridController extends AbstractTableController {
             addToolbarSeparator();
         }
 
-        if (table instanceof GridTable) {
+        if (groupObject.toolbar.showFilters && table instanceof GridTable) {
             initFilterButtons();
             addToolbarSeparator();
         }
@@ -175,9 +175,9 @@ public class GridController extends AbstractTableController {
         }
 
         boolean showCalculateSum = groupObject.toolbar.showCalculateSum && table instanceof GridTable;
-        if(groupObject.toolbar.showCountRows || showCalculateSum) {
+        if(groupObject.toolbar.showCountQuantity || showCalculateSum) {
 
-            if (groupObject.toolbar.showCountRows) {
+            if (groupObject.toolbar.showCountQuantity) {
                 addToToolbar(new CountQuantityButton() {
                     public void addListener() {
                         addActionListener(e -> RmiQueue.runAction(() -> {
@@ -215,7 +215,7 @@ public class GridController extends AbstractTableController {
             addToolbarSeparator();
         }
 
-        if(groupObject.toolbar.showXls) {
+        if(groupObject.toolbar.showPrintGroupXls) {
             addToToolbar(new ToolbarGridButton(PRINT_XLS_ICON_PATH, getString("form.grid.export.to.xlsx")) {
                 @Override
                 public void addListener() {
@@ -226,25 +226,27 @@ public class GridController extends AbstractTableController {
             addToolbarSeparator();
         }
 
-        manualUpdateTableButton = new ToolbarGridButton(UPDATE_ICON_PATH, getString("form.grid.manual.update")) {
-            @Override
-            public void addListener() {
-                addActionListener(e -> RmiQueue.runAction(() -> {
-                    setUpdateMode(!manual);
-                    formController.changeMode(groupObject, manual ? UpdateMode.MANUAL : UpdateMode.AUTO);
-                }));
-            }
-        };
-        addToToolbar(manualUpdateTableButton);
+        if (groupObject.toolbar.showManualUpdate) {
+            manualUpdateTableButton = new ToolbarGridButton(UPDATE_ICON_PATH, getString("form.grid.manual.update")) {
+                @Override
+                public void addListener() {
+                    addActionListener(e -> RmiQueue.runAction(() -> {
+                        setUpdateMode(!manual);
+                        formController.changeMode(groupObject, manual ? UpdateMode.MANUAL : UpdateMode.AUTO);
+                    }));
+                }
+            };
+            addToToolbar(manualUpdateTableButton);
 
-        forceUpdateTableButton = new ThemedFlatRolloverButton(OK_ICON_PATH, getString("form.grid.update"));
-        forceUpdateTableButton.setAlignmentY(Component.TOP_ALIGNMENT);
-        forceUpdateTableButton.addActionListener(e -> RmiQueue.runAction(() -> {
-            formController.changeMode(groupObject, UpdateMode.FORCE);
-        }));
-        forceUpdateTableButton.setFocusable(false);
-        forceUpdateTableButton.setVisible(false);
-        addToToolbar(forceUpdateTableButton);
+            forceUpdateTableButton = new ThemedFlatRolloverButton(OK_ICON_PATH, getString("form.grid.update"));
+            forceUpdateTableButton.setAlignmentY(Component.TOP_ALIGNMENT);
+            forceUpdateTableButton.addActionListener(e -> RmiQueue.runAction(() -> {
+                formController.changeMode(groupObject, UpdateMode.FORCE);
+            }));
+            forceUpdateTableButton.setFocusable(false);
+            forceUpdateTableButton.setVisible(false);
+            addToToolbar(forceUpdateTableButton);
+        }
     }
 
     private boolean manual;

@@ -12,11 +12,13 @@ public class ClientToolbar extends ClientComponent {
 
     public boolean visible = true;
 
-    public boolean showCountRows = true;
-    public boolean showCalculateSum = true;
-    public boolean showGroupReport = true;
-    public boolean showXls = true;
+    public boolean showViews = true;
+    public boolean showFilters = true;
     public boolean showSettings = true;
+    public boolean showCountQuantity = true;
+    public boolean showCalculateSum = true;
+    public boolean showPrintGroupXls = true;
+    public boolean showManualUpdate = true;
 
     public ClientToolbar() {
     }
@@ -27,11 +29,13 @@ public class ClientToolbar extends ClientComponent {
 
         outStream.writeBoolean(visible);
 
-        outStream.writeBoolean(showCountRows);
-        outStream.writeBoolean(showCalculateSum);
-        outStream.writeBoolean(showGroupReport);
-        outStream.writeBoolean(showXls);
+        outStream.writeBoolean(showViews);
+        outStream.writeBoolean(showFilters);
         outStream.writeBoolean(showSettings);
+        outStream.writeBoolean(showCountQuantity);
+        outStream.writeBoolean(showCalculateSum);
+        outStream.writeBoolean(showPrintGroupXls);
+        outStream.writeBoolean(showManualUpdate);
     }
 
     @Override
@@ -40,65 +44,13 @@ public class ClientToolbar extends ClientComponent {
 
         visible = inStream.readBoolean();
 
-        showCountRows = inStream.readBoolean();
-        showCalculateSum = inStream.readBoolean();
-        showGroupReport = inStream.readBoolean();
-        showXls = inStream.readBoolean();
+        showViews = inStream.readBoolean();
+        showFilters = inStream.readBoolean();
         showSettings = inStream.readBoolean();
-    }
-
-    public boolean getVisible() {
-        return visible;
-    }
-
-    public void setVisible(boolean visible) {
-        this.visible = visible;
-        updateDependency(this, "visible");
-    }
-
-    public boolean getShowXls() {
-        return showXls;
-    }
-
-    public void setShowXls(boolean showXls) {
-        this.showXls = showXls;
-        updateDependency(this, "showXls");
-    }
-
-    public boolean getShowSettings() {
-        return showSettings;
-    }
-
-    public void setShowSettings(boolean showSettings) {
-        this.showSettings = showSettings;
-        updateDependency(this, "showSettings");
-    }
-
-    public boolean getShowCountRows() {
-        return showCountRows;
-    }
-
-    public void setShowCountRows(boolean showCountRows) {
-        this.showCountRows = showCountRows;
-        updateDependency(this, "showCountRows");
-    }
-
-    public boolean getShowCalculateSum() {
-        return showCalculateSum;
-    }
-
-    public void setShowCalculateSum(boolean showCalculateSum) {
-        this.showCalculateSum = showCalculateSum;
-        updateDependency(this, "showCalculateSum");
-    }
-
-    public boolean getShowGroupReport() {
-        return showGroupReport;
-    }
-
-    public void setShowGroupReport(boolean showGroupButton) {
-        this.showGroupReport = showGroupButton;
-        updateDependency(this, "showGroupReport");
+        showCountQuantity = inStream.readBoolean();
+        showCalculateSum = inStream.readBoolean();
+        showPrintGroupXls = inStream.readBoolean();
+        showManualUpdate = inStream.readBoolean();
     }
 
     @Override
