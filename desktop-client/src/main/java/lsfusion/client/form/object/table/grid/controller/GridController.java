@@ -114,7 +114,7 @@ public class GridController extends AbstractTableController {
     }
 
     private void configureToolbar() {
-        if (groupObject.toolbar.showViewButtonGroup && table instanceof GridTable) {
+        if (groupObject.toolbar.showViews && table instanceof GridTable) {
             addToToolbar(new GroupingButton((GridTable) table) {
                 @Override
                 public List<FormGrouping> readGroupings() {

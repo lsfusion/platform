@@ -209,7 +209,7 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         GToolbar toolbar = initGwtComponent(clientToolbar, new GToolbar());
         toolbar.visible = clientToolbar.visible;
 
-        toolbar.showViewButtonGroup = clientToolbar.showViewButtonGroup;
+        toolbar.showViews = clientToolbar.showViews;
         toolbar.showFilters = clientToolbar.showFilters;
         toolbar.showSettings = clientToolbar.showSettings;
         toolbar.showCountQuantity = clientToolbar.showCountQuantity;

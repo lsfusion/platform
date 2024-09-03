@@ -15,12 +15,12 @@ public class ToolbarViewProxy extends ComponentViewProxy<ToolbarView> {
     @Deprecated
     @SuppressWarnings("unused")
     public void setShowGroup(boolean showGroup) {
-        setShowViewButtonGroup(showGroup);
+        setShowViews(showGroup);
     }
 
     @SuppressWarnings("unused")
-    public void setShowViewButtonGroup(boolean showViewButtonGroup) {
-        target.showViewButtonGroup = showViewButtonGroup;
+    public void setShowViews(boolean showViews) {
+        target.showViews = showViews;
     }
 
     @SuppressWarnings("unused")

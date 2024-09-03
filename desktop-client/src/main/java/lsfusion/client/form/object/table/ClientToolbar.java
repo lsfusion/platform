@@ -12,7 +12,7 @@ public class ClientToolbar extends ClientComponent {
 
     public boolean visible = true;
 
-    public boolean showViewButtonGroup = true;
+    public boolean showViews = true;
     public boolean showFilters = true;
     public boolean showSettings = true;
     public boolean showCountQuantity = true;
@@ -29,7 +29,7 @@ public class ClientToolbar extends ClientComponent {
 
         outStream.writeBoolean(visible);
 
-        outStream.writeBoolean(showViewButtonGroup);
+        outStream.writeBoolean(showViews);
         outStream.writeBoolean(showFilters);
         outStream.writeBoolean(showSettings);
         outStream.writeBoolean(showCountQuantity);
@@ -44,7 +44,7 @@ public class ClientToolbar extends ClientComponent {
 
         visible = inStream.readBoolean();
 
-        showViewButtonGroup = inStream.readBoolean();
+        showViews = inStream.readBoolean();
         showFilters = inStream.readBoolean();
         showSettings = inStream.readBoolean();
         showCountQuantity = inStream.readBoolean();

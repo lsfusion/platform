@@ -127,7 +127,7 @@ public class GGridController extends GAbstractTableController {
     private GGridUserPreferences[] userPreferences;
     private void setGridTableView() {
         changeTableView(new GGridTable(formController, this, gridView, userPreferences));
-        if(groupObject.toolbar.showViewButtonGroup) {
+        if(groupObject.toolbar.showViews) {
             gridTableButton.showBackground(true);
             pivotTableButton.showBackground(false);
             if (mapTableButton != null)
@@ -233,7 +233,7 @@ public class GGridController extends GAbstractTableController {
     protected void configureToolbar() {
         assert isList();
 
-        if(groupObject.toolbar.showViewButtonGroup) {
+        if(groupObject.toolbar.showViews) {
             GToolbarButtonGroup viewButtonGroup = new GToolbarButtonGroup();
             gridTableButton = new GToolbarButton(StaticImage.GRID, messages.formGridTableView()) {
                 @Override
