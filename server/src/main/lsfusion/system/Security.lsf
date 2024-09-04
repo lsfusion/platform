@@ -99,7 +99,7 @@ TABLE userRoleActionOrProperty (UserRole, ActionOrProperty);
 TABLE userRolePropertyGroup (UserRole, PropertyGroup);
 
 updatePermissionUserRoleNavigatorElement  INTERNAL 'lsfusion.server.logics.navigator.UpdatePermissionAction' (UserRole, STRING, STRING);
-updatePermissionUserRoleActionOrProperty  INTERNAL 'lsfusion.server.logics.property.UpdatePermissionAction' (UserRole, STRING, STRING, STRING);
+updatePermissionUserRoleActionOrProperty  INTERNAL 'lsfusion.server.logics.property.UpdatePermissionAction' (UserRole, STRING, BOOLEAN, STRING, STRING);
 dropCachedSecurityPolicy  INTERNAL 'lsfusion.server.logics.DropCachedSecurityPolicyAction' (UserRole);
 
 META initPropertyPermission (type, caption)
@@ -121,7 +121,7 @@ META initPropertyPermission (type, caption)
         dropCachedSecurityPolicy(ur);
     WHEN UserRole ur IS UserRole AND (GROUP SUM 1 IF CHANGED(permission###type(ur, ActionOrProperty p))) <= 100 NOINLINE DO
         FOR CHANGED (permission###type(ur, ActionOrProperty p)) DO
-            updatePermissionUserRoleActionOrProperty(ur, canonicalName(p), staticName(permission###type(ur, p)), ''##type);
+            updatePermissionUserRoleActionOrProperty(ur, canonicalName(p), isProperty(p), staticName(permission###type(ur, p)), ''##type);
             
     namePermission###type (UserRole ur, ActionOrProperty p) = staticName(permission###type(ur, p));
     captionPermission###type caption (UserRole ur, ActionOrProperty p) = staticCaption(OVERRIDE permission###type(ur, p), Permission.default) CHARWIDTH 10;
