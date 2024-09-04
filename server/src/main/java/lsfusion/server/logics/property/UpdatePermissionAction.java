@@ -15,6 +15,8 @@ import java.util.Iterator;
 public class UpdatePermissionAction extends InternalAction {
     private final ClassPropertyInterface userRoleInterface;
     private final ClassPropertyInterface canonicalNameActionOrPropertyInterface;
+    
+    private final ClassPropertyInterface isPropertyInterface;
     private final ClassPropertyInterface staticNamePermissionInterface;
     private final ClassPropertyInterface typeInterface;
 
@@ -24,6 +26,7 @@ public class UpdatePermissionAction extends InternalAction {
         Iterator<ClassPropertyInterface> i = getOrderInterfaces().iterator();
         userRoleInterface = i.next();
         canonicalNameActionOrPropertyInterface = i.next();
+        isPropertyInterface = i.next();
         staticNamePermissionInterface = i.next();
         typeInterface = i.next();
 
@@ -33,8 +36,9 @@ public class UpdatePermissionAction extends InternalAction {
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
 
         Long userRole = (Long) context.getKeyValue(userRoleInterface).getValue();
-        String actionOrProperty = (String) context.getKeyValue(canonicalNameActionOrPropertyInterface).getValue();
-        if(userRole != null && actionOrProperty != null) {
+        String actionOrPropertyCN = (String) context.getKeyValue(canonicalNameActionOrPropertyInterface).getValue();
+        boolean isProperty = context.getKeyValue(isPropertyInterface).getValue() != null;
+        if(userRole != null && actionOrPropertyCN != null) {
             String permission = (String) context.getKeyValue(staticNamePermissionInterface).getValue();
             String type = (String) context.getKeyValue(typeInterface).getValue();
             SecurityManager securityManager = context.getLogicsInstance().getSecurityManager();
@@ -49,7 +53,9 @@ public class UpdatePermissionAction extends InternalAction {
                     default: esp = null;
                 }
                 if (esp != null) {
-                    LAP property = context.getBL().findPropertyElseAction(actionOrProperty);
+                    LAP<?,?> property = isProperty ?
+                                            context.getBL().findProperty(actionOrPropertyCN) :
+                                            context.getBL().findAction(actionOrPropertyCN);
                     if (property != null) {
                         esp.setPermission(property.getActionOrProperty(), securityManager.getPermissionValue(permission));
                     }

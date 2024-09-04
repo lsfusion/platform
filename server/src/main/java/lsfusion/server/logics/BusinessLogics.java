@@ -1772,11 +1772,11 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
     
     public LP<?> findProperty(String canonicalName) {
-        return BusinessLogicsResolvingUtils.findPropertyByCanonicalName(this, canonicalName, new ModuleEqualLPFinder(false));
+        return BusinessLogicsResolvingUtils.findPropertyByCanonicalName(this, canonicalName);
     }
     
     public LA<?> findAction(String canonicalName) {
-        return BusinessLogicsResolvingUtils.findPropertyByCanonicalName(this, canonicalName, new ModuleEqualLAFinder());
+        return BusinessLogicsResolvingUtils.findActionByCanonicalName(this, canonicalName);
     }
     
     public LA<?> findActionByCompoundName(String compoundName) {
