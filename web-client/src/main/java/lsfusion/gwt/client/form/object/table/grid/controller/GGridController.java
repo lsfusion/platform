@@ -127,37 +127,15 @@ public class GGridController extends GAbstractTableController {
     private GGridUserPreferences[] userPreferences;
     private void setGridTableView() {
         changeTableView(new GGridTable(formController, this, gridView, userPreferences));
-        if(groupObject.toolbar.showViews) {
-            gridTableButton.showBackground(true);
-            pivotTableButton.showBackground(false);
-            if (mapTableButton != null)
-                mapTableButton.showBackground(false);
-            if (customViewButton != null)
-                customViewButton.showBackground(false);
-            if (calendarTableButton != null)
-                calendarTableButton.showBackground(false);
-        }
+        updateViewButtonsBackground(false, true, false, false, false);
     }
     private void setPivotTableView() {
         changeTableView(new GPivot(formController, this, getSelectedProperty(), gridView));
-        pivotTableButton.showBackground(true);
-        gridTableButton.showBackground(false);
-        if(mapTableButton != null)
-            mapTableButton.showBackground(false);
-        if (customViewButton != null)
-            customViewButton.showBackground(false);
-        if (calendarTableButton != null)
-            calendarTableButton.showBackground(false);
+        updateViewButtonsBackground(false, false, true, false, false);
     }
     private void setMapTableView() {
         changeTableView(new GMap(formController, this, gridView));
-        mapTableButton.showBackground(true);
-        gridTableButton.showBackground(false);
-        pivotTableButton.showBackground(false);
-        if (customViewButton != null)
-            customViewButton.showBackground(false);
-        if (calendarTableButton != null)
-            calendarTableButton.showBackground(false);
+        updateViewButtonsBackground(true, false, false, false, false);
     }
 
     private String getCalendarDateType() {
@@ -173,24 +151,24 @@ public class GGridController extends GAbstractTableController {
 
     private void setCalendarTableView() {
         changeTableView(new GCalendar(formController, this, gridView, getCalendarDateType()));
-        calendarTableButton.showBackground(true);
-        pivotTableButton.showBackground(false);
-        gridTableButton.showBackground(false);
-        if(mapTableButton != null)
-            mapTableButton.showBackground(false);
-        if (customViewButton != null)
-            customViewButton.showBackground(false);
+        updateViewButtonsBackground(false, false, false, false, true);
     }
 
     private void setCustomTableView() {
         changeTableView(new GCustom(formController, this, gridView, groupObject.customRenderFunction));
-        if(mapTableButton != null)
-            mapTableButton.showBackground(false);
-        if (calendarTableButton != null)
-            calendarTableButton.showBackground(false);
-        gridTableButton.showBackground(false);
-        pivotTableButton.showBackground(false);
-        customViewButton.showBackground(true);
+        updateViewButtonsBackground(false, false, true, true, false);
+    }
+
+    private void updateViewButtonsBackground(boolean map, boolean grid, boolean pivot, boolean custom, boolean calendar) {
+        if (groupObject.toolbar.showViews) {
+            mapTableButton.showBackground(map);
+            gridTableButton.showBackground(grid);
+            pivotTableButton.showBackground(pivot);
+            if (customViewButton != null)
+                customViewButton.showBackground(custom);
+            if (calendarTableButton != null)
+                calendarTableButton.showBackground(calendar);
+        }
     }
 
     private boolean manual;
@@ -598,7 +576,7 @@ public class GGridController extends GAbstractTableController {
 
     private void update(long requestIndex, Boolean updateState) {
         if (isList()) {
-            if(updateState != null)
+            if(updateState != null && groupObject.toolbar.showManualUpdate)
                 forceUpdateTableButton.setEnabled(updateState);
             table.update(updateState);
 
