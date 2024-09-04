@@ -114,6 +114,7 @@ public class ThreadUtils {
                 && !stackTrace.startsWith("sun.awt.windows.WToolkit.eventLoop")
                 && (ignoreSocketRead || !stackTrace.contains("java.net.SocketInputStream.socketRead0"))
                 && !stackTrace.contains("sun.nio.ch.Net.poll") //java 17
+                && !stackTrace.contains("sun.nio.ch.WEPoll.wait") //java 21
                 && !stackTrace.startsWith("sun.management.ThreadImpl.dumpThreads0")
                 && !stackTrace.startsWith("java.net.SocketOutputStream.socketWrite")
                 && !stackTrace.startsWith("java.net.PlainSocketImpl")
