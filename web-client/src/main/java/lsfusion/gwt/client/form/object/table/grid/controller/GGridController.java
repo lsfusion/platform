@@ -127,15 +127,15 @@ public class GGridController extends GAbstractTableController {
     private GGridUserPreferences[] userPreferences;
     private void setGridTableView() {
         changeTableView(new GGridTable(formController, this, gridView, userPreferences));
-        updateViewButtonsBackground(false, true, false, false, false);
+        updateViewButtonsBackground(true, false, false, false, false);
     }
     private void setPivotTableView() {
         changeTableView(new GPivot(formController, this, getSelectedProperty(), gridView));
-        updateViewButtonsBackground(false, false, true, false, false);
+        updateViewButtonsBackground(false, true, false, false, false);
     }
     private void setMapTableView() {
         changeTableView(new GMap(formController, this, gridView));
-        updateViewButtonsBackground(true, false, false, false, false);
+        updateViewButtonsBackground(false, false, true, false, false);
     }
 
     private String getCalendarDateType() {
@@ -156,14 +156,15 @@ public class GGridController extends GAbstractTableController {
 
     private void setCustomTableView() {
         changeTableView(new GCustom(formController, this, gridView, groupObject.customRenderFunction));
-        updateViewButtonsBackground(false, false, true, true, false);
+        updateViewButtonsBackground(false, false, false, true, false);
     }
 
-    private void updateViewButtonsBackground(boolean map, boolean grid, boolean pivot, boolean custom, boolean calendar) {
+    private void updateViewButtonsBackground(boolean grid, boolean pivot, boolean map, boolean custom, boolean calendar) {
         if (groupObject.toolbar.showViews) {
-            mapTableButton.showBackground(map);
             gridTableButton.showBackground(grid);
             pivotTableButton.showBackground(pivot);
+            if (mapTableButton != null)
+                mapTableButton.showBackground(map);
             if (customViewButton != null)
                 customViewButton.showBackground(custom);
             if (calendarTableButton != null)
