@@ -49,13 +49,14 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     private FlexAlignment alignment = null;
     protected Boolean shrink = null;
     protected Boolean alignShrink = null;
-    protected Boolean alignCaption = null;
+    public Boolean alignCaption = null;
     protected String overflowHorz;
     protected String overflowVert;
 
-    public Boolean panelCaptionVertical;
-    public Boolean panelCaptionLast;
-    public FlexAlignment panelCaptionAlignment;
+    public Boolean captionVertical;
+    public Boolean captionLast;
+    public FlexAlignment captionAlignmentHorz;
+    public FlexAlignment captionAlignmentVert;
 
     public PropertyObjectEntity<?> showIf;
 
@@ -81,40 +82,48 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         return -1;
     }
 
-    protected boolean isDefaultPanelCaptionVertical(FormInstanceContext context) {
+    protected boolean isDefaultCaptionVertical(FormInstanceContext context) {
         return true;
     }
 
-    protected boolean isDefaultPanelCaptionLast(FormInstanceContext context) {
+    protected boolean isDefaultCaptionLast(FormInstanceContext context) {
         return false;
     }
 
-    protected FlexAlignment getDefaultPanelCaptionAlignment(FormInstanceContext context) {
-        if(!isPanelCaptionVertical(context))
-           return FlexAlignment.CENTER;
-
+    protected FlexAlignment getDefaultCaptionAlignmentHorz(FormInstanceContext context) {
         return FlexAlignment.START;
     }
 
-    protected boolean isPanelCaptionVertical(FormInstanceContext context) {
-        if(panelCaptionVertical != null)
-            return panelCaptionVertical;
-
-        return isDefaultPanelCaptionVertical(context);
+    protected FlexAlignment getDefaultCaptionAlignmentVert(FormInstanceContext context) {
+       return FlexAlignment.CENTER;
     }
 
-    protected boolean isPanelCaptionLast(FormInstanceContext context) {
-        if(panelCaptionLast != null)
-            return panelCaptionLast;
+    protected boolean isCaptionVertical(FormInstanceContext context) {
+        if(captionVertical != null)
+            return captionVertical;
 
-        return isDefaultPanelCaptionLast(context);
+        return isDefaultCaptionVertical(context);
     }
 
-    protected FlexAlignment getPanelCaptionAlignment(FormInstanceContext context) {
-        if(panelCaptionAlignment != null)
-            return panelCaptionAlignment;
+    protected boolean isCaptionLast(FormInstanceContext context) {
+        if(captionLast != null)
+            return captionLast;
 
-        return getDefaultPanelCaptionAlignment(context);
+        return isDefaultCaptionLast(context);
+    }
+
+    protected FlexAlignment getCaptionAlignmentHorz(FormInstanceContext context) {
+        if(captionAlignmentHorz != null)
+            return captionAlignmentHorz;
+
+        return getDefaultCaptionAlignmentHorz(context);
+    }
+
+    protected FlexAlignment getCaptionAlignmentVert(FormInstanceContext context) {
+        if(captionAlignmentVert != null)
+            return captionAlignmentVert;
+
+        return getDefaultCaptionAlignmentVert(context);
     }
 
     public String getElementClass(FormInstanceContext context) {
@@ -283,10 +292,6 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
 
     public void setPropertyElementClass(PropertyObjectEntity<?> propertyElementClass) {
         this.propertyElementClass = propertyElementClass;
-    }
-
-    public void setAlignCaption(boolean alignCaption) {
-        this.alignCaption = alignCaption;
     }
 
     public void setOverflowHorz(String overflowHorz) {
@@ -469,7 +474,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         pool.writeObject(outStream, getAlignment(pool.context));
         outStream.writeBoolean(isShrink(pool.context));
         outStream.writeBoolean(isAlignShrink(pool.context));
-        pool.writeObject(outStream, alignCaption);
+        pool.writeObject(outStream, getAlignCaption());
         pool.writeString(outStream, getOverflowHorz(pool.context));
         pool.writeString(outStream, getOverflowVert(pool.context));
 
@@ -478,9 +483,10 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         outStream.writeInt(marginLeft);
         outStream.writeInt(marginRight);
 
-        outStream.writeBoolean(isPanelCaptionVertical(pool.context));
-        outStream.writeBoolean(isPanelCaptionLast(pool.context));
-        pool.writeObject(outStream, getPanelCaptionAlignment(pool.context));
+        outStream.writeBoolean(isCaptionVertical(pool.context));
+        outStream.writeBoolean(isCaptionLast(pool.context));
+        pool.writeObject(outStream, getCaptionAlignmentHorz(pool.context));
+        pool.writeObject(outStream, getCaptionAlignmentVert(pool.context));
 
         outStream.writeBoolean(defaultComponent);
 

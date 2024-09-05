@@ -173,22 +173,23 @@ public abstract class InputBasedCellRenderer extends CellRenderer {
         GFullInputType fullInputType = isInput ? getInputType(rendererType) : null;
         GInputType inputType = isInput ? fullInputType.inputType : null;
 
-        if(isInput && (isTDOrTH || isToolbarContainer)) {
-            // assert isTDOrTH != isToolbarContainer(element);
-            inputElement = InputBasedCellRenderer.createInputElement(fullInputType);
-            appendInputElement(element, inputElement, renderContext.isInputRemoveAllPMB(), isToolbarContainer, inputType); // isTDorTH -> isInputRemoveAllPMB - for the filter
-        } else {
-            if(isInput)
+        if(isInput) {
+            if (isTDOrTH || isToolbarContainer) {
+                // assert isTDOrTH != isToolbarContainer(element);
+                inputElement = InputBasedCellRenderer.createInputElement(fullInputType);
+                appendInputElement(element, inputElement, renderContext.isInputRemoveAllPMB(), isToolbarContainer, inputType); // isTDorTH -> isInputRemoveAllPMB - for the filter
+            } else
                 inputElement = (InputElement) element;
         }
 
-        // otherwise we'll use flex alignment (and text alignment would also do)
-        // there is some difference in div between align-items center and vertical align baseline / middle, and align items center seems to be more accurate (and better match input vertical align baseline / middle)
+        // somewhy text alignment also works for input (but doesn't work for div), however:
+        // there is some difference between align-items center (flex) and vertical align baseline / middle (text), and align items center seems to be more accurate (and better match input vertical align baseline / middle)
         boolean renderedAlignment = false;
         boolean isInputStretch = isInput && inputType.isStretch();
-        if(isTDOrTH || isInputStretch) {
+        if(isTDOrTH || isInputStretch) { // || property.ellipsis also the problem is that vertical-align works only for table-cell and inline displays, which is not what we have, so we can't render text alignment for regular divs to provide ellipsis for example
+            // in theory when we have not stretched input but have alignment stretch, we could have used flex-alignment stretch, but in that case we would have to create extra div
             // actually when there is no text but stretch then it doesn't need to be set, but it won't break anything (and for fonts we don't do that)
-            renderTextAlignment(property, isInputStretch ? inputElement : element, isInputStretch, renderContext.getRendererType());
+            renderTextAlignment(isInputStretch ? inputElement : element, property.getHorzTextAlignment(), property.getVertTextAlignment());
             renderedAlignment = true;
         }
 
@@ -215,8 +216,8 @@ public abstract class InputBasedCellRenderer extends CellRenderer {
 //            renderedAlignment = true;
         } else {
 //            if(isTDOrTH || isInput) {
-            clearRenderTextAlignment(property, element, isInput, renderContext.getRendererType());
-//                renderedAlignment = true;
+            clearRenderTextAlignment(element, property.getHorzTextAlignment(), property.getVertTextAlignment());
+            //                renderedAlignment = true;
 //            }
         }
 

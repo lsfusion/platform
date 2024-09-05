@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
+import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.session.ExternalRequest;
 import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.data.sql.SQLSession;
@@ -67,13 +68,13 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     }
 
     @Override
-    public String getValueAlignmentHorz() {
-        return "start";
+    public FlexAlignment getValueAlignmentHorz() {
+        return FlexAlignment.START;
     }
 
     @Override
-    public String getValueAlignmentVert() {
-        return "center";
+    public FlexAlignment getValueAlignmentVert() {
+        return FlexAlignment.CENTER;
     }
 
     @Override
@@ -83,6 +84,11 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
 
     @Override
     public boolean getValueShrinkHorz() {
+        return false;
+    }
+
+    @Override
+    public boolean getValueShrinkVert() {
         return false;
     }
 

@@ -154,8 +154,8 @@ public class LogicalClass extends DataClass<Boolean> {
     }
 
     @Override
-    public String getValueAlignmentHorz() {
-        return "center";
+    public FlexAlignment getValueAlignmentHorz() {
+        return FlexAlignment.CENTER;
     }
 
     @Override

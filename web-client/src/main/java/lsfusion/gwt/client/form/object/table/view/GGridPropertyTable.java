@@ -624,15 +624,13 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     protected void updatePropertyHeader(GGroupObjectValue columnKey, GPropertyDraw property, int index) {
         String columnCaption = getPropertyCaption(property, columnKey);
-        String columnTooltip = getPropertyTooltip(property, columnKey);
         GGridPropertyTableHeader header = getGridHeader(index);
         if(header != null) {
             header.setCaption(columnCaption, property.notNull, property.hasChangeAction);
             header.setCaptionElementClass(getCaptionElementClass(property, columnKey));
             header.setImage(!property.isAction() ? getPropertyImage(property, columnKey) : null);
             header.setPaths(property.path, property.creationPath, property.formPath);
-            header.setTooltip(property.getTooltip(nvl(columnTooltip, columnCaption)));
-            header.setHeaderHeight(property.getHeaderCaptionHeight(this));
+            header.setTooltip(property.getTooltip(nvl(getPropertyTooltip(property, columnKey), columnCaption)));
         } else
             assert property.ignoreHasHeaders || columnCaption == null || columnCaption.isEmpty();
     }

@@ -1,5 +1,6 @@
 package lsfusion.server.logics.classes.data.time;
 
+import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.server.data.type.DBType;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.TextBasedClass;
@@ -19,4 +20,9 @@ public abstract class TimeSeriesClass<T> extends TextBasedClass<T> implements DB
     public abstract String getIntervalProperty();
     public abstract String getFromIntervalProperty();
     public abstract String getToIntervalProperty();
+
+    @Override
+    public FlexAlignment getValueAlignmentHorz() {
+        return FlexAlignment.END;
+    }
 }

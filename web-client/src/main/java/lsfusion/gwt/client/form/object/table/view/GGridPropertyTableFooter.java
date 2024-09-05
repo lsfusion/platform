@@ -68,7 +68,7 @@ public class GGridPropertyTableFooter extends Header<String> implements RenderCo
     }
 
     @Override
-    public void renderAndUpdateDom(TableCellElement th) {
+    public void renderAndUpdateDom(TableCellElement th, boolean rerender) {
         if (sticky) {
             th.addClassName("dataGridStickyFooter");
             th.addClassName("background-inherit");

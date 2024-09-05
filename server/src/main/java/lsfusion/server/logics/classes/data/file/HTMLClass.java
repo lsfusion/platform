@@ -1,5 +1,6 @@
 package lsfusion.server.logics.classes.data.file;
 
+import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.classes.DataType;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
@@ -48,13 +49,13 @@ public class HTMLClass extends HumanReadableFileClass {
     }
 
     @Override
-    public String getValueAlignmentHorz() {
-        return "stretch";
+    public FlexAlignment getValueAlignmentHorz() {
+        return FlexAlignment.STRETCH;
     }
 
     @Override
-    public String getValueAlignmentVert() {
-        return "stretch";
+    public FlexAlignment getValueAlignmentVert() {
+        return FlexAlignment.STRETCH;
     }
 
 }

@@ -15,6 +15,7 @@ import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.ColorUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
+import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
@@ -75,8 +76,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         tree = new GTreeTableTree(iform);
 
         Column<GTreeGridRecord, Object> column = new ExpandTreeColumn();
-        GGridPropertyTableHeader header = noHeaders ? null : new GGridPropertyTableHeader(this, messages.formTree(), null, null, null, false);
-        addColumn(column, header, null);
+        GGridPropertyTableHeader header = noHeaders ? null : new GGridPropertyTableHeader(this, messages.formTree(), null, null, null, false, null);
+        insertColumn(getColumnCount(), column, header, null);
 
         hierarchicalWidth = treeGroup.getExpandWidth();
 
@@ -158,10 +159,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
             if (index > -1) {
                 GridColumn gridColumn = new GridColumn(property);
-                String propertyCaption = property.caption;
-                String captionElementClass = property.captionElementClass;
-                AppBaseImage propertyImage = !property.isAction() ? property.appImage : null;
-                GGridPropertyTableHeader header = noHeaders ? null : new GGridPropertyTableHeader(this, propertyCaption, captionElementClass, propertyImage, property.getTooltip(propertyCaption), gridColumn.isSticky());
+//                String propertyCaption = property.caption;
+//                String captionElementClass = property.captionElementClass;
+//                AppBaseImage propertyImage = !property.isAction() ? property.appImage : null;
+//                String tooltip = property.getTooltip(propertyCaption);
+                GGridPropertyTableHeader header = noHeaders ? null : new GGridPropertyTableHeader(this, property, gridColumn);
                 GGridPropertyTableFooter footer = noFooters ? null : new GGridPropertyTableFooter(this, property, null, null, gridColumn.isSticky(), form);
 
                 insertColumn(index, gridColumn, header, footer);
@@ -179,7 +181,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     private final static String TREE_NODE_ATTRIBUTE = "__tree_node";
 
     public static void renderExpandDom(Element cellElement, GTreeColumnValue treeValue) {
-        GPropertyTableBuilder.setRowHeight(cellElement, GSize.ZERO, false); // somewhy it's needed for proper indent showing
+        FlexPanel.setGridHeight(cellElement, GSize.ZERO); // somewhy it's needed for proper indent showing
         for (int i = 0; i <= treeValue.level; i++) {
             DivElement img = createIndentElement(cellElement);
             updateIndentElement(img, treeValue, i);

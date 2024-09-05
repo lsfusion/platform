@@ -15,8 +15,8 @@ public class CollapsiblePanel extends CaptionPanel {
 
     private final Consumer<Boolean> onCollapseHandler;
 
-    public CollapsiblePanel(Widget header, boolean border, Consumer<Boolean> onCollapseHandler, boolean vertical, boolean last, GFlexAlignment alignment) {
-        super(header, border, vertical, last, alignment);
+    public CollapsiblePanel(Widget header, boolean border, Consumer<Boolean> onCollapseHandler, boolean vertical, boolean last, GFlexAlignment alignmentHorz, GFlexAlignment alignmentVert) {
+        super(header, border, vertical, last, alignmentHorz, alignmentVert);
 
         this.onCollapseHandler = onCollapseHandler;
         this.last = last;

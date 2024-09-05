@@ -8,6 +8,7 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.controller.TextBasedCellEditor;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
@@ -57,7 +58,7 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
             return true;
 
         // td always respects the inner text height, so if it is multi line and not autosized, we have wrap the content into a div
-        if (isMultiLine() && property.valueHeight != -1)
+        if (isMultiLine() && !property.hasAutoHeight())
             return false;
 
         // input we have to render in td, since input is a void element, and it can not have children (and they are needed for the toolbar)
@@ -69,7 +70,10 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
     public boolean renderContent(Element element, RenderContext renderContext) {
         boolean renderedAlignment = super.renderContent(element, renderContext);
 
-        GwtClientUtils.initDataHtmlOrText(getMainElement(element), property.getDataHtmlOrTextType());
+        Element mainElement = getMainElement(element);
+        GwtClientUtils.initDataHtmlOrText(mainElement, property.getDataHtmlOrTextType());
+        if(!renderedAlignment) // not rendered text alignment
+            CellRenderer.renderWrapTextAlignment(mainElement, property.getHorzTextAlignment(), property.getVertTextAlignment());
 
         // TEXT PART
         setTextPadding(getSizeElement(element));

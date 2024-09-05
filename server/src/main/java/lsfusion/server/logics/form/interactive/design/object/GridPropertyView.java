@@ -12,7 +12,7 @@ import java.io.IOException;
 
 public abstract class GridPropertyView extends BaseComponentView {
 
-    public int headerHeight = 54; // actually it is the max height
+    public Integer headerHeight; // actually it is the max height
 
     public Boolean resizeOverflow; // actually it is the max height
 
@@ -43,6 +43,13 @@ public abstract class GridPropertyView extends BaseComponentView {
         if(container != null && container.isWrap())
             return true;
         return super.isDefaultShrink(context, explicit);
+    }
+
+    public int getHeaderHeight() {
+        if(headerHeight != null)
+            return headerHeight;
+
+        return -1;
     }
 
     @Override
@@ -89,7 +96,7 @@ public abstract class GridPropertyView extends BaseComponentView {
         if(boxed != null)
             outStream.writeBoolean(boxed);
 
-        outStream.writeInt(headerHeight);
+        outStream.writeInt(getHeaderHeight());
 
         outStream.writeBoolean(resizeOverflow != null);
         if(resizeOverflow != null)
