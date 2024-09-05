@@ -1,5 +1,6 @@
 package lsfusion.server.logics.classes.data;
 
+import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
@@ -50,13 +51,13 @@ public class HTMLStringClass extends AStringClass {
     }
 
     @Override
-    public String getValueAlignmentHorz() {
-        return "stretch";
+    public FlexAlignment getValueAlignmentHorz() {
+        return FlexAlignment.STRETCH;
     }
 
     @Override
-    public String getValueAlignmentVert() {
-        return "stretch";
+    public FlexAlignment getValueAlignmentVert() {
+        return FlexAlignment.STRETCH;
     }
 
 }

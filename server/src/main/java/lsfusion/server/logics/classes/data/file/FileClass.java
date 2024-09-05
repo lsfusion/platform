@@ -3,6 +3,7 @@ package lsfusion.server.logics.classes.data.file;
 import com.google.common.base.Throwables;
 import lsfusion.base.file.IOUtils;
 import lsfusion.base.file.RawFileData;
+import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.DBType;
@@ -59,8 +60,8 @@ public abstract class FileClass<T> extends FileBasedClass<T> {
     }
 
     @Override
-    public String getValueAlignmentHorz() {
-        return "center";
+    public FlexAlignment getValueAlignmentHorz() {
+        return FlexAlignment.CENTER;
     }
 
     protected abstract String getFileSID();

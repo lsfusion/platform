@@ -1,5 +1,6 @@
 package lsfusion.server.logics.classes.data.link;
 
+import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.Type;

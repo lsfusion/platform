@@ -15,6 +15,7 @@ import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
 import lsfusion.gwt.client.base.size.GSize;
+import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.PopupOwner;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.classes.GObjectType;
@@ -84,6 +85,15 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         MainFrame.addColorThemeChangeListener(this);
 
         GwtClientUtils.setZeroZIndex(getElement());
+    }
+
+    public void renderTD(Element th, boolean rerender, boolean defaultHeaderHeight, Boolean sortDir, JavaScriptObject captionValue) {
+        String caption = fromObject(captionValue).toString();
+        Column column = columnMap.get(caption);
+
+        GGridPropertyTableHeader.renderTD(th, rerender, sortDir, caption, null, null, true, column.property, defaultHeaderHeight ? GGridPropertyTableHeader.DEFAULT_HEADER_HEIGHT : null);
+
+        th.setTitle(caption);
     }
 
     // in theory we can order all properties once, but so far there is no full list of properties
@@ -1222,7 +1232,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             Boolean sortDir = sortCol != null ? sortCol.getDirection() : null;
             if(lastRenderCol != null && lastRenderCol.equals(COLUMN)) { // value is a column name
                 if(value != null) {
-                    GGridPropertyTableHeader.renderTD(jsElement, rerender, true, sortDir, fromObject(value).toString());
+                    renderTD(jsElement, rerender, true, sortDir, value);
                     setTableToExcelCenterAlignment(jsElement);
                 }
             } else {
@@ -1256,13 +1266,9 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         } else {
             SortCol sortCol = findSortCol(config.getArrayMixed("sortCols"), attrName);
             Boolean sortDir = sortCol != null ? sortCol.getDirection() : null;
+            assert attrName.equals(GStateTableView.fromObject(value).toString());
             // value is a column name, render with rowHeight to make cal attr header to be responsible for the height
-            String valueString = fromObject(value).toString();
-            GGridPropertyTableHeader.renderTD(jsElement, rerender, false, sortDir, valueString);
-
-            if (value != null) {
-                jsElement.setTitle(valueString);
-            }
+            renderTD(jsElement, rerender, false, sortDir, value);
         }
         setTableToExcelCenterAlignment(jsElement);
         setTableToExcelColorAttributes(jsElement, null);
@@ -1273,17 +1279,17 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     }
 
     public static void setTableToExcelPropertyAttributes(Element element, PValue value, GPropertyDraw property) {
-        String textAlignStyle = property.getHorzTextAlignment();
+        GFlexAlignment textAlignStyle = property.getHorzTextAlignment();
         if (textAlignStyle != null) {
             switch (textAlignStyle) {
-                case "start":
+                case START:
                     element.setAttribute("data-a-h", "left");
                     break;
-                case "center":
-                case "stretch":
+                case CENTER:
+                case STRETCH:
                     element.setAttribute("data-a-h", "center");
                     break;
-                case "end":
+                case END:
                     element.setAttribute("data-a-h", "right");
                     break;
             }
@@ -2063,17 +2069,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
 
     private void colAttrHeaderClickAction(JsArrayMixed columnKeyValues, Element th, Boolean isSubtotal, boolean ctrlKey, boolean shiftKey, boolean dblClick) {
         if(dblClick) {
-            if (isSortColumn(isSubtotal, columnKeyValues)) {
-                saveScrollLeft();
-                modifySortCols(columnKeyValues, ctrlKey, shiftKey);
-                if (!shiftKey && !ctrlKey) {
-                    unwrapOthers(rendererElement, th);
-                }
-                renderColAttrCell(th, true, getRawObjectValue(columnKeyValues, columnKeyValues.length() - 1), columnKeyValues, isSubtotal, false, false);
-
-                //modifySortCols should be rendered immediately, because updateView without DeferredRunner will lead to layout shift
-                updateViewLater();
-            }
+            colAttrHeaderDblClickAction(columnKeyValues, th, isSubtotal, ctrlKey, shiftKey);
         } else {
             if(FormsController.isLinkMode() && columnKeyValues.length() > 0) {
                 Column column = columnMap.get(config.getArrayString("cols").get(columnKeyValues.length() - 1));
@@ -2085,12 +2081,26 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         }
     }
 
+    private void colAttrHeaderDblClickAction(JsArrayMixed columnKeyValues, Element th, Boolean isSubtotal, boolean ctrlKey, boolean shiftKey) {
+        if (isSortColumn(isSubtotal, columnKeyValues)) {
+            saveScrollLeft();
+            modifySortCols(columnKeyValues, ctrlKey, shiftKey);
+            if (!shiftKey && !ctrlKey) {
+                unwrapOthers(rendererElement, th);
+            }
+            renderColAttrCell(th, true, getRawObjectValue(columnKeyValues, columnKeyValues.length() - 1), columnKeyValues, isSubtotal, false, false);
+
+            //modifySortCols should be rendered immediately, because updateView without DeferredRunner will lead to layout shift
+            updateViewLater();
+        }
+    }
+
     private void rowAxisHeaderDblClickAction(String attrName, Element th, String columnCaption, boolean ctrlKey, boolean shiftKey) {
-        SortCol sortCol = modifySortCols(attrName, ctrlKey, shiftKey);
+        modifySortCols(attrName, ctrlKey, shiftKey);
         if (!shiftKey && !ctrlKey) {
             unwrapOthers(rendererElement, th);
         }
-        GGridPropertyTableHeader.renderTD(th, true, false, shiftKey ? null : sortCol == null || !sortCol.getDirection(), columnCaption);
+        renderAxisCell(th, true, fromString(columnCaption), attrName, false, false);
 
         //modifySortCols should be rendered immediately, because updateView without DeferredRunner will lead to layout shift
         updateViewLater();

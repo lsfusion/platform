@@ -6,6 +6,7 @@ import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.resize.ResizeHandler;
 import lsfusion.gwt.client.base.view.FlexPanel;
+import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.PopupOwner;
 import lsfusion.gwt.client.base.view.grid.Header;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -19,6 +20,7 @@ import static com.google.gwt.dom.client.BrowserEvents.DBLCLICK;
 import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 import static lsfusion.gwt.client.base.GwtSharedUtils.nullEquals;
+import static lsfusion.gwt.client.form.property.cell.view.CellRenderer.renderTextAlignment;
 
 public class GGridPropertyTableHeader extends Header<String> {
 
@@ -45,24 +47,20 @@ public class GGridPropertyTableHeader extends Header<String> {
     private boolean notNull;
     private boolean hasChangeAction;
 
-    private GSize headerHeight;
-
     private boolean sticky;
-    private boolean hasDynamicImage;
-    private boolean hasDynamicCaption;
+    private GPropertyDraw property;
 
     public GGridPropertyTableHeader(GGridPropertyTable table, GPropertyDraw property, GGridPropertyTable.GridPropertyColumn column) {
-        this(table, null, null, null, null, column.isSticky(), property.hasDynamicImage(), property.hasDynamicCaption());
+        this(table, null, null, null, null, column.isSticky(), property);
     }
-    public GGridPropertyTableHeader(GGridPropertyTable table, String caption, String captionElementClass, AppBaseImage image, String tooltip, boolean sticky, boolean hasDynamicImage, boolean hasDynamicCaption) {
+    public GGridPropertyTableHeader(GGridPropertyTable table, String caption, String captionElementClass, AppBaseImage image, String tooltip, boolean sticky, GPropertyDraw property) {
         this.caption = caption;
         this.captionElementClass = captionElementClass;
         this.image = image;
         this.table = table;
         this.tooltip = tooltip;
         this.sticky = sticky;
-        this.hasDynamicImage = hasDynamicImage;
-        this.hasDynamicCaption = hasDynamicCaption;
+        this.property = property;
 
         tooltipHelper = new TooltipManager.TooltipHelper() {
             @Override
@@ -111,10 +109,6 @@ public class GGridPropertyTableHeader extends Header<String> {
         this.tooltip = tooltip;
     }
 
-    public void setHeaderHeight(GSize headerHeight) {
-        this.headerHeight = headerHeight;
-    }
-
     @Override
     public void onBrowserEvent(Element target, NativeEvent event) {
         Supplier<Integer> childIndex = () -> table.getHeaderIndex(this);
@@ -135,7 +129,7 @@ public class GGridPropertyTableHeader extends Header<String> {
     public void renderAndUpdateDom(TableCellElement th, boolean rerender) {
         Boolean sortDir = table.getSortDirection(this);
 
-        this.renderedCaptionElement = renderTD(th, rerender, headerHeight, sortDir, caption, captionElementClass, image, false, hasDynamicImage, hasDynamicCaption);
+        this.renderedCaptionElement = renderTD(th, rerender,  sortDir, caption, captionElementClass, image, false, property, table.getHeaderHeight());
         if(!rerender)
             tippy = TooltipManager.initTooltip(new PopupOwner(table.getPopupOwnerWidget(), th), tooltipHelper);
         renderedSortDir = sortDir;
@@ -158,37 +152,24 @@ public class GGridPropertyTableHeader extends Header<String> {
 
     public final static GSize DEFAULT_HEADER_HEIGHT = GSize.CONST(34);
 
-    public static void renderTD(Element th, boolean rerender, boolean defaultHeaderHeight, Boolean sortDir, String caption) {
-        renderTD(th, rerender, defaultHeaderHeight ? DEFAULT_HEADER_HEIGHT : null, sortDir, caption, null, null, true, false, false);
-    }
-
-    private static boolean needWrap(Element element, Boolean sortDir, String caption, boolean hasDynamicCaption, AppBaseImage image, boolean hasDynamicImage, ImageHtmlOrTextType textType, GSize height) {
-        // we need to wrap in div, since we don't want to modify th itself (it's not recreated every time for grid) + setting display flex for th breaks layouting + for th it's unclear how to make it clip text that doesn't fit height (even max-height)
-
-        if(!GwtClientUtils.isTDorTH(element))
-            return false;
-
-        if(sortDir != null)
-            return true;
-
-        if(image != null || hasDynamicImage)
-            return true;
-
-        if((caption != null && GwtClientUtils.containsHtmlTag(caption)) || hasDynamicCaption)
-            return true;
-
-        if(textType.isWrap() && height != null) // similar to TextBasedCellRenderer.canBeRenderedInTdCheck, height in td works as min-height
-            return true;
-
-        return false;
-    }
-
     // pretty similar to GGridPropertyTableBuilder.renderSized
-    public static Element renderTD(Element th, boolean rerender, GSize height, Boolean sortDir, String caption, String captionElementClass, AppBaseImage image, boolean tableToExcel, boolean hasDynamicImage, boolean hasDynamicCaption) {
+    public static Element renderTD(Element th, boolean rerender, Boolean sortDir, String caption, String captionElementClass, AppBaseImage image, boolean tableToExcel, GPropertyDraw property, GSize defaultHeight) {
+        GSize height = property != null ? property.getCaptionHeight() : null;
+        if(height == null)
+            height = defaultHeight;
+
+        ImageHtmlOrTextType textType = property != null ? property.getCaptionHtmlOrTextType() : ImageHtmlOrTextType.OTHER;
+
+        boolean hasDynamicImage = property != null && property.hasDynamicImage();
+        boolean hasDynamicCaption = property != null && property.hasDynamicCaption();
+
+        GFlexAlignment horzTextAlignment = property != null ? property.getCaptionAlignmentHorz() : GFlexAlignment.START;
+        GFlexAlignment vertTextAlignment = property != null ? property.getCaptionAlignmentVert() : GFlexAlignment.END;
+
         if(rerender) { // assert that property is the same (except order), so we don't clear (including clearFlexAlignment and clearTextAlignment) anything (however filling some props classes one more time, but it doesn't matter)
             GwtClientUtils.removeAllChildren(th);
 
-            CellRenderer.clearRenderTextAlignment(th, "start", "end");
+            CellRenderer.clearRenderTextAlignment(th, horzTextAlignment, vertTextAlignment);
 
             FlexPanel.setGridHeight(th, null);
 
@@ -196,28 +177,43 @@ public class GGridPropertyTableHeader extends Header<String> {
             GwtClientUtils.clearValueShrinkHorz(th, true, true);
         }
 
-//        if(height != null)
-//            GPropertyTableBuilder.setRowHeight(th, height, tableToExcel);
-        ImageHtmlOrTextType textType = ImageHtmlOrTextType.GRID_CAPTION;
+        boolean noImage = sortDir == null && image == null && !hasDynamicImage;
+        boolean canBeHTML = !(caption != null && GwtClientUtils.containsHtmlTag(caption)); // && !hasDynamicCaption;
+        boolean simpleText = noImage && canBeHTML;
 
-        if(needWrap(th, sortDir, caption, hasDynamicCaption, image, hasDynamicImage, textType, height)) {
+        int wrap = textType.getWrap();
+        boolean isWrap = wrap != 1;
+        boolean wrapFixed = isWrap && wrap != -1;
+
+        boolean isTDorTH = GwtClientUtils.isTDorTH(th);
+        boolean needWrap = isTDorTH && // have display:td
+                        (!simpleText // we'll have to change the display
+                        || isWrap && height != null // similar to TextBasedCellRenderer.canBeRenderedInTdCheck, height in td works as min-height
+                        || wrapFixed); // we have to change the display
+        if(needWrap) {
             th = wrapDiv(th);
-
-            CellRenderer.renderFlexAlignment(th, "start", "end");
-        } else
-            CellRenderer.renderTextAlignment(th, "start", "end");
+            isTDorTH = false;
+        }
 
         FlexPanel.setGridHeight(th, height);
-
         th.addClassName("caption-grid-header");
 
-        GwtClientUtils.renderValueShrinkHorz(th, true, true);
+        Element renderElement = th;
 
-        // if image or sortDir we still need to wrap image text, because there is a conflict between flexAlignment and wrap-img-* (including sortImg) css classes
-        if(sortDir != null || image != null || hasDynamicImage)
+        boolean renderedAlignment = false;
+        if(isTDorTH) { //  || (simpleText && ((property != null && property.captionEllipsis) && !wrapFixed))) { also the problem is that vertical-align works only for table-cell and inline displays, which is not what we have, so we can't render text alignment for regular divs to provide ellipsis for example
+            assert simpleText;
+            renderTextAlignment(renderElement, horzTextAlignment, vertTextAlignment);
+            renderedAlignment = true;
+        }
+
+        GwtClientUtils.renderValueShrinkHorz(th, !simpleText, true); // shrinkHorz = true "breaks" word-break in text
+
+        // we'll render alignment with flex, and in all not simple text cases (will be wrap-img) we'll have to change the display
+        if(!renderedAlignment && (!noImage || wrapFixed || (isWrap && !vertTextAlignment.equals(GFlexAlignment.START)))) // the last check is need to align start when the text doesn't fit
             th = wrapImageText(th);
 
-        if(sortDir != null)
+        if (sortDir != null)
             th = wrapSortImg(th, sortDir);
 
         BaseImage.initImageText(th, textType);
@@ -225,13 +221,19 @@ public class GGridPropertyTableHeader extends Header<String> {
         renderCaptionElementClass(th, captionElementClass);
         renderImage(th, image);
 
+        if(!renderedAlignment) {
+            // we need this if text is wrapped or there are line breaks
+            CellRenderer.renderWrapTextAlignment(th, horzTextAlignment, vertTextAlignment);
+
+            CellRenderer.renderFlexAlignment(renderElement, horzTextAlignment, vertTextAlignment);
+        }
+
         return th;
     }
 
     public static Element wrapImageText(Element th) {
         Element wrappedTh = Document.get().createDivElement();
         th.appendChild(wrappedTh);
-
         return wrappedTh;
     }
 

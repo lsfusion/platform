@@ -76,7 +76,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         tree = new GTreeTableTree(iform);
 
         Column<GTreeGridRecord, Object> column = new ExpandTreeColumn();
-        GGridPropertyTableHeader header = noHeaders ? null : new GGridPropertyTableHeader(this, messages.formTree(), null, null, null, false, false, false);
+        GGridPropertyTableHeader header = noHeaders ? null : new GGridPropertyTableHeader(this, messages.formTree(), null, null, null, false, null);
         insertColumn(getColumnCount(), column, header, null);
 
         hierarchicalWidth = treeGroup.getExpandWidth();

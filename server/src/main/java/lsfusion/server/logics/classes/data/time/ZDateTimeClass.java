@@ -122,11 +122,6 @@ public class ZDateTimeClass extends HasTimeClass<Instant> {
         return new ExtInt(25);
     }
 
-    @Override
-    public String getValueAlignmentHorz() {
-        return "end";
-    }
-
     public boolean isSafeString(Object value) {
         return false;
     }

@@ -176,7 +176,7 @@ public class GFormLayout extends ResizableComplexPanel {
         }
 
         Widget viewWidget = containerView.getView();
-        add(container, new ComponentWidget(viewWidget, captionWidget), null);
+        add(container, new ComponentWidget(viewWidget, captionWidget != null ? new CaptionWidget(captionWidget, container.captionAlignmentHorz, container.captionAlignmentVert) : null), null);
 
         // debug info
         viewWidget.getElement().setAttribute("lsfusion-container-type", container.getContainerType());

@@ -1,6 +1,7 @@
 package lsfusion.server.logics.classes.data.integral;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.DBType;
 import lsfusion.server.data.type.ObjectType;
@@ -201,8 +202,8 @@ public abstract class IntegralClass<T extends Number> extends TextBasedClass<T> 
     }
 
     @Override
-    public String getValueAlignmentHorz() {
-        return "end";
+    public FlexAlignment getValueAlignmentHorz() {
+        return FlexAlignment.END;
     }
 
     protected boolean isEmptyString(String s) {

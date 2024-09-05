@@ -41,19 +41,20 @@ public abstract class LayoutContainerView extends GAbstractContainerView {
         GComponent child = children.get(index);
         boolean border = child instanceof GContainer && ((GContainer) child).hasBorder();
         if(!(alignCaptions && child.isAlignCaption()) && ((childCaption = childrenCaptions.get(index)) != null || border)) {
+            GFlexAlignment captionAlignmentHorz = childCaption != null ? childCaption.horzAlignment : null;
+            GFlexAlignment captionAlignmentVert = childCaption != null ? childCaption.vertAlignment : null;
             Widget childCaptionWidget = childCaption != null ? childCaption.widget.widget : null;
 
-            boolean panelCaptionVertical = child.panelCaptionVertical;
-            boolean panelCaptionLast = child.isPanelCaptionLast();
-            GFlexAlignment panelCaptionAlignment = child.getPanelCaptionAlignment();
+            boolean captionVertical = child.captionVertical;
+            boolean captionLast = child.isCaptionLast();
             if (child instanceof GContainer) {
                 if (((GContainer) child).popup) {
                     return childCaptionWidget;
                 } else if (((GContainer) child).collapsible) {
-                    return new CollapsiblePanel(childCaptionWidget, border, collapsed -> formController.setContainerCollapsed((GContainer) child, collapsed), panelCaptionVertical, panelCaptionLast, panelCaptionAlignment);
+                    return new CollapsiblePanel(childCaptionWidget, border, collapsed -> formController.setContainerCollapsed((GContainer) child, collapsed), captionVertical, captionLast, captionAlignmentHorz, captionAlignmentVert);
                 }
             }
-            return new CaptionPanel(childCaptionWidget, border, panelCaptionVertical, panelCaptionLast, panelCaptionAlignment);
+            return new CaptionPanel(childCaptionWidget, border, captionVertical, captionLast, captionAlignmentHorz, captionAlignmentVert);
         }
         return null;
     }

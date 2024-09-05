@@ -278,11 +278,11 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
     }
 
     public void setValueAlignmentHorz(FlexAlignment valueAlignmentHorz) {
-        target.valueAlignmentHorz = flexAlignmentToString(valueAlignmentHorz);
+        target.valueAlignmentHorz = valueAlignmentHorz;
     }
 
     public void setValueAlignmentVert(FlexAlignment valueAlignmentVert) {
-        target.valueAlignmentVert = flexAlignmentToString(valueAlignmentVert);
+        target.valueAlignmentVert = valueAlignmentVert;
     }
 
     private String flexAlignmentToString(FlexAlignment flexAlignment) {
@@ -321,8 +321,12 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.valueShrinkVert = valueShrinkVert;
     }
 
-    public void setWrap(boolean wrap) {
+    public void setWrap(int wrap) {
         target.wrap = wrap;
+    }
+
+    public void setWrap(boolean wrap) {
+        target.wrap = wrap ? -1 : 1;
     }
 
     public void setWrapWordBreak(boolean wrapWordBreak) {
@@ -335,6 +339,26 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
 
     public void setCollapse(boolean collapse) {
         target.collapse = collapse;
+    }
+
+    public void setCaptionWrap(int wrap) {
+        target.captionWrap = wrap;
+    }
+
+    public void setCaptionWrap(boolean wrap) {
+        target.captionWrap = wrap ? -1 : 1;
+    }
+
+    public void setCaptionWrapWordBreak(boolean wrapWordBreak) {
+        target.captionWrapWordBreak = wrapWordBreak;
+    }
+
+    public void setCaptionEllipsis(boolean ellipsis) {
+        target.captionEllipsis = ellipsis;
+    }
+
+    public void setCaptionCollapse(boolean collapse) {
+        target.captionCollapse = collapse;
     }
 
     public void setClearText(boolean clearText) {

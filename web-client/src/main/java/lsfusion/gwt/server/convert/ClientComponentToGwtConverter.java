@@ -110,9 +110,10 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         FontInfo captionFont = clientComponent.design.getCaptionFont();
         component.captionFont = convertFont(captionFont);
 
-        component.panelCaptionVertical = clientComponent.panelCaptionVertical;
-        component.panelCaptionLast = clientComponent.panelCaptionLast;
-        component.panelCaptionAlignment = convertFlexAlignment(clientComponent.panelCaptionAlignment);
+        component.captionVertical = clientComponent.captionVertical;
+        component.captionLast = clientComponent.captionLast;
+        component.captionAlignmentHorz = convertFlexAlignment(clientComponent.captionAlignmentHorz);
+        component.captionAlignmentVert = convertFlexAlignment(clientComponent.captionAlignmentVert);
 
         return component;
     }
@@ -286,6 +287,11 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         propertyDraw.collapse = clientPropertyDraw.collapse;
         propertyDraw.ellipsis = clientPropertyDraw.ellipsis;
 
+        propertyDraw.captionWrap = clientPropertyDraw.captionWrap;
+        propertyDraw.captionWrapWordBreak = clientPropertyDraw.captionWrapWordBreak;
+        propertyDraw.captionCollapse = clientPropertyDraw.captionCollapse;
+        propertyDraw.captionEllipsis = clientPropertyDraw.captionEllipsis;
+
         propertyDraw.clearText = clientPropertyDraw.clearText;
         propertyDraw.notSelectAll = clientPropertyDraw.notSelectAll;
         propertyDraw.tableName = clientPropertyDraw.tableName;
@@ -414,8 +420,8 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
 
         propertyDraw.panelColumnVertical = clientPropertyDraw.panelColumnVertical;
         
-        propertyDraw.valueAlignmentHorz = clientPropertyDraw.valueAlignmentHorz;
-        propertyDraw.valueAlignmentVert = clientPropertyDraw.valueAlignmentVert;
+        propertyDraw.valueAlignmentHorz = convertFlexAlignment(clientPropertyDraw.valueAlignmentHorz);
+        propertyDraw.valueAlignmentVert = convertFlexAlignment(clientPropertyDraw.valueAlignmentVert);
 
         propertyDraw.valueOverflowHorz = clientPropertyDraw.valueOverflowHorz;
         propertyDraw.valueOverflowVert = clientPropertyDraw.valueOverflowVert;

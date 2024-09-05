@@ -3,6 +3,7 @@ package lsfusion.server.data.type;
 import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.file.RawFileData;
+import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.interop.session.ExternalRequest;
@@ -114,12 +115,13 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
     }
     ExtInt getCharLength();
 
-    String getValueAlignmentHorz();
-    String getValueAlignmentVert();
+    FlexAlignment getValueAlignmentHorz();
+    FlexAlignment getValueAlignmentVert();
 
     String getValueOverflowHorz();
 
     boolean getValueShrinkHorz();
+    boolean getValueShrinkVert();
 
     T parseDBF(CustomDbfRecord dbfRecord, String fieldName, String charset) throws ParseException, java.text.ParseException, IOException;
     T parseJSON(Object value) throws ParseException, JSONException; // Number, String, Boolean

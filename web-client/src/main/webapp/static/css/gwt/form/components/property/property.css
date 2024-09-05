@@ -82,9 +82,8 @@ a.text-based-prop-value { /* we have to set cursor pointer for a since we don't 
 {
     justify-content: center;
 }
-.prop-flex-horz-stretch>*,
-.prop-flex-horz-stretch.wrap-text-not-empty.wrap-img-horz>*,
-.prop-flex-vert-stretch.wrap-text-not-empty.wrap-img-vert>*
+.prop-flex-horz-stretch:not(.wrap-text-not-empty.wrap-img-vert)>*,
+.prop-flex-vert-stretch:not(.wrap-text-not-empty.wrap-img-horz)>*
 {
     flex-grow: 1;
     flex-shrink: 1;

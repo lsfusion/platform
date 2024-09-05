@@ -49,15 +49,15 @@ public class DataPanelView extends FlexPanel implements PanelView {
     private Boolean labelMarginRight = null;
 
     public DataPanelView(final ClientFormController iform, final ClientPropertyDraw property, ClientGroupObjectValue icolumnKey, LinearCaptionContainer captionContainer) {
-        super(property.panelCaptionVertical, FlexAlignment.CENTER);
+        super(property.captionVertical, FlexAlignment.CENTER);
 
         form = iform;
         this.property = property;
         columnKey = icolumnKey;
         simpleDispatcher = form.getSimpleChangePropertyDispatcher();
 
-        vertical = property.panelCaptionVertical;
-        tableFirst = property.isPanelCaptionLast();
+        vertical = property.captionVertical;
+        tableFirst = property.isCaptionLast();
 
         //игнорируем key.readOnly, чтобы разрешить редактирование,
         //readOnly будет проверяться на уровне сервера и обрезаться возвратом пустого changeType
@@ -78,7 +78,7 @@ public class DataPanelView extends FlexPanel implements PanelView {
         }
 
         if (!tableFirst && captionContainer == null) {
-            add(label, property.getPanelCaptionAlignment(), 0.0, vertical ? captionHeight : captionWidth);
+            add(label, property.getCaptionAlignmentHorz(), 0.0, vertical ? captionHeight : captionWidth);
         }
 
         transparentResize = true;
@@ -95,10 +95,10 @@ public class DataPanelView extends FlexPanel implements PanelView {
         }
 
         if(captionContainer != null && valueSizes != null)
-            captionContainer.put(label, new Pair<>(captionWidth, captionHeight), valueSizes, property.getPanelCaptionAlignment());
+            captionContainer.put(label, new Pair<>(captionWidth, captionHeight), valueSizes, property.getCaptionAlignmentHorz());
 
         if (tableFirst && captionContainer == null) {
-            add(label, property.getPanelCaptionAlignment(), 0.0, vertical ? captionHeight : captionWidth);
+            add(label, property.getCaptionAlignmentHorz(), 0.0, vertical ? captionHeight : captionWidth);
         }
 
         if (!vertical)
@@ -267,7 +267,7 @@ public class DataPanelView extends FlexPanel implements PanelView {
     public void setLabelText(String text) {
         label.setText(text);
 
-        if (!property.panelCaptionVertical) {
+        if (!property.captionVertical) {
             if (BaseUtils.isRedundantString(text)) {
                 label.setBorder(BorderFactory.createEmptyBorder());
             } else {

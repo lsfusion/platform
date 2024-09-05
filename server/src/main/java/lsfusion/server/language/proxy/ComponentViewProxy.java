@@ -66,7 +66,7 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> im
     }
 
     public void setAlignCaption(boolean alignCaption) {
-        target.setAlignCaption(alignCaption);
+        target.alignCaption = alignCaption;
     }
 
     public void setOverflowHorz(String overflowHorz) {
@@ -170,17 +170,37 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> im
         }
     }
 
+    // deprecated
     public void setPanelCaptionVertical(boolean panelCaptionVertical) {
-        target.panelCaptionVertical = panelCaptionVertical;
+        target.captionVertical = panelCaptionVertical;
     }
 
+    // deprecated
     public void setPanelCaptionLast(boolean panelCaptionLast) {
-        target.panelCaptionLast = panelCaptionLast;
+        target.captionLast = panelCaptionLast;
     }
 
+    // deprecated
     public void setPanelCaptionAlignment(FlexAlignment panelCaptionAlignment) {
-        target.panelCaptionAlignment = panelCaptionAlignment;
+        target.captionAlignmentHorz = panelCaptionAlignment;
     }
+
+    public void setCaptionVertical(boolean captionVertical) {
+        target.captionVertical = captionVertical;
+    }
+
+    public void setCaptionLast(boolean captionLast) {
+        target.captionLast = captionLast;
+    }
+
+    public void setCaptionAlignmentHorz(FlexAlignment captionAlignment) {
+        target.captionAlignmentHorz = captionAlignment;
+    }
+
+    public void setCaptionAlignmentVert(FlexAlignment captionAlignment) {
+        target.captionAlignmentVert = captionAlignment;
+    }
+
 
     public void setShowIf(PropertyObjectEntity<?> showIf) {
         target.setShowIf(showIf);

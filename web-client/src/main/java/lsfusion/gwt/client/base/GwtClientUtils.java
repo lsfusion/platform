@@ -1749,16 +1749,16 @@ public class GwtClientUtils {
 
 
     public static void initCaptionHtmlOrText(Element element, CaptionHtmlOrTextType type) {
-        initCaptionHtmlOrText(element, type.getCssClasses());
+        initCaptionHtmlOrText(element, type.getRenderer());
     }
     public static void initDataHtmlOrText(Element element, DataHtmlOrTextType type) {
-        initDataHtmlOrText(element, type.getCssClasses());
+        initDataHtmlOrText(element, type.getRenderer());
     }
-    private static native void initCaptionHtmlOrText(Element element, JsArrayString cssClasses) /*-{
-        $wnd.initCaptionHtmlOrText(element, cssClasses);
+    private static native void initCaptionHtmlOrText(Element element, JavaScriptObject renderer) /*-{
+        $wnd.initCaptionHtmlOrText(element, renderer);
     }-*/;
-    public static native void initDataHtmlOrText(Element element, JsArrayString cssClasses) /*-{
-        $wnd.initDataHtmlOrText(element, cssClasses);
+    public static native void initDataHtmlOrText(Element element, JavaScriptObject renderer) /*-{
+        $wnd.initDataHtmlOrText(element, renderer);
     }-*/;
     // elements used in this set method should be created with initCaptionHtmlOrText
     public static native boolean setCaptionHtmlOrText(Element element, String value) /*-{
@@ -1771,10 +1771,10 @@ public class GwtClientUtils {
         $wnd.setDataHtmlOrText(element, value, html);
     }-*/;
     public static void clearDataHtmlOrText(Element element, DataHtmlOrTextType type) {
-        clearDataHtmlOrText(element, type.getCssClasses());
+        clearDataHtmlOrText(element, type.getRenderer());
     }
-    private static native void clearDataHtmlOrText(Element element, JsArrayString cssClasses) /*-{
-        $wnd.clearDataHtmlOrText(element, cssClasses);
+    private static native void clearDataHtmlOrText(Element element, JavaScriptObject renderer) /*-{
+        $wnd.clearDataHtmlOrText(element, renderer);
     }-*/;
 
     public static native void setMask(Element element, JavaScriptObject options)/*-{

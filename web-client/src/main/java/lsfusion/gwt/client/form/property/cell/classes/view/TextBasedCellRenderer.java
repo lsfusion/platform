@@ -8,6 +8,7 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.controller.TextBasedCellEditor;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
@@ -69,7 +70,10 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
     public boolean renderContent(Element element, RenderContext renderContext) {
         boolean renderedAlignment = super.renderContent(element, renderContext);
 
-        GwtClientUtils.initDataHtmlOrText(getMainElement(element), property.getDataHtmlOrTextType());
+        Element mainElement = getMainElement(element);
+        GwtClientUtils.initDataHtmlOrText(mainElement, property.getDataHtmlOrTextType());
+        if(!renderedAlignment) // not rendered text alignment
+            CellRenderer.renderWrapTextAlignment(mainElement, property.getHorzTextAlignment(), property.getVertTextAlignment());
 
         // TEXT PART
         setTextPadding(getSizeElement(element));

@@ -21,7 +21,6 @@ import lsfusion.gwt.client.form.event.*;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.async.*;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.view.InputBasedCellRenderer;
@@ -62,10 +61,15 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public boolean customNeedPlaceholder;
     public boolean customNeedReadonly;
 
-    public boolean wrap;
+    public int wrap;
     public boolean wrapWordBreak;
     public boolean collapse;
     public boolean ellipsis;
+
+    public int captionWrap;
+    public boolean captionWrapWordBreak;
+    public boolean captionCollapse;
+    public boolean captionEllipsis;
 
     public boolean clearText;
     public boolean notSelectAll;
@@ -413,8 +417,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public boolean panelColumnVertical;
     
-    public String valueAlignmentHorz;
-    public String valueAlignmentVert;
+    public GFlexAlignment valueAlignmentHorz;
+    public GFlexAlignment valueAlignmentVert;
 
     public String valueOverflowHorz;
     public String valueOverflowVert;
@@ -768,15 +772,11 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return panelCommentAlignment;
     }
 
-    public GFlexAlignment getAlignment() {
-        return alignment;
-    }
-
-    public String getHorzTextAlignment() {
+    public GFlexAlignment getHorzTextAlignment() {
         return valueAlignmentHorz;
     }
 
-    public String getVertTextAlignment() {
+    public GFlexAlignment getVertTextAlignment() {
         return valueAlignmentVert;
     }
 
@@ -861,15 +861,41 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return null;
     }
 
-    public ImageHtmlOrTextType getImageHtmlOrTextType() {
+    public ImageHtmlOrTextType getCaptionHtmlOrTextType() {
+        // property / action grid caption
         return new ImageHtmlOrTextType() {
             @Override
-            public boolean isImageVertical() {
-                return panelCaptionVertical;
+            protected boolean isEllipsis() {
+                return captionEllipsis;
             }
 
             @Override
-            public boolean isWrap() {
+            protected boolean isCollapse() {
+                return captionCollapse;
+            }
+
+            @Override
+            public int getWrap() {
+                return captionWrap;
+            }
+
+            @Override
+            protected boolean isWrapWordBreak() {
+                return captionWrapWordBreak;
+            }
+        };
+    }
+
+    // not clear if it is caption, or data (however rendered as caption)
+    public ImageHtmlOrTextType getActionHtmlOrTextType() {
+        return new ImageHtmlOrTextType() {
+            @Override
+            public boolean isImageVertical() {
+                return captionVertical;
+            }
+
+            @Override
+            public int getWrap() {
                 return wrap;
             }
 
@@ -893,7 +919,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public DataHtmlOrTextType getDataHtmlOrTextType() {
         return new DataHtmlOrTextType() {
             @Override
-            protected boolean isWrap() {
+            public int getWrap() {
                 return wrap;
             }
 
@@ -928,14 +954,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return null;
     }
 
-    public GSize getHeaderCaptionHeight(GGridPropertyTable table) {
-        GSize headerHeight = table.getHeaderHeight();
-        if(headerHeight != null)
-            return headerHeight;
-
-        return getCaptionHeight();
-    }
-
     public GFormatType getFormatType(RendererType rendererType) {
         GType renderType = getRenderType(rendererType);
         return (renderType instanceof GObjectType ? GLongType.instance : ((GFormatType) renderType));
@@ -963,7 +981,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     @Override
     public boolean isDefautAlignCaption() {
-        return caption != null && !hasColumnGroupObjects() && ((!isAction() && !panelCaptionVertical && !isPanelBoolean()) || isTab());
+        return caption != null && !hasColumnGroupObjects() && ((!isAction() && !captionVertical && !isPanelBoolean()) || isTab());
     }
 
     public boolean isInline() {
