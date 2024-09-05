@@ -17,12 +17,12 @@ public class RichTextCellRenderer extends TextCellRenderer {
         String innerText = value != null ? format(value, updateContext.getRendererType(), updateContext.getPattern()) : "";
 
         element.setTitle(innerText);
-        initQuill(element, innerText);
+        initQuill(element, innerText, property.valueHeight == -1);
 
         return true;
     }
 
-    protected native void initQuill(Element element, String innerText)/*-{
+    protected native void initQuill(Element element, String innerText, boolean autoSizedY)/*-{
         var toolbarOptions = [
             ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
             ['link', 'image'],
@@ -55,6 +55,10 @@ public class RichTextCellRenderer extends TextCellRenderer {
 
         element.quill = quill;
 
+        if (autoSizedY) {
+            element.getElementsByClassName("ql-editor")[0].classList.add("auto-sized-y")
+        }
+        
         // quill editor bubble theme does not support opening links from edit mode.
         // https://github.com/quilljs/quill/issues/857
         // open links programmatically on ctrl+click
