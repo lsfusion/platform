@@ -36,7 +36,7 @@ public class FocusUtils {
         return false;
     }
 
-    public static boolean suppressBlur = false;
+    private static boolean suppressBlur = false;
     public static void runWithSuppressBlur(Runnable runnable) {
         try {
             suppressBlur = true;
@@ -44,6 +44,13 @@ public class FocusUtils {
         } finally {
             suppressBlur = false;
         }
+    }
+
+    public static void enableSuppressBlur() {
+        suppressBlur = true;
+    }
+    public static void disableSuppressBlur() {
+        suppressBlur = false;
     }
 
     public static boolean isSuppressOnFocusChange(Element element) {
