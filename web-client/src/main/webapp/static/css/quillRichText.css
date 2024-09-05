@@ -17,6 +17,15 @@
     visibility: hidden;
 }
 
+/* renderer in panel overlaps other components */
+.ql-container {
+    height: unset;
+}
+
+.ql-editor[contenteditable="false"], .ql-editor[contenteditable="true"].auto-sized-y {
+    overflow-y: visible;
+}
+
 .ql-editor {
     width: 100%;
     padding: 1px 0;
