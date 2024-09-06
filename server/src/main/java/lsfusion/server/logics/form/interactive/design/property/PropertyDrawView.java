@@ -224,8 +224,10 @@ public class PropertyDrawView extends BaseComponentView {
 //        if(!entity.isList(context) && isCaptionVertical(context))
 //            return FlexAlignment.CENTER;
 
-        return getValueAlignmentHorz(context);
-//        return FlexAlignment.START;
+        if(entity.isList(context))
+            return getValueAlignmentHorz(context);
+
+        return FlexAlignment.START;
     }
 
     @Override
