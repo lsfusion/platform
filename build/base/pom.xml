@@ -36,6 +36,7 @@
         <lsfusion.version>5.2-SNAPSHOT</lsfusion.version>
 
         <google.guava.version>19.0</google.guava.version>
+        <postgresql.version>42.2.8</postgresql.version>
     </properties>
 
     <repositories>
