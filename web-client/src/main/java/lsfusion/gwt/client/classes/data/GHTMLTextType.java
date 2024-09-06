@@ -23,6 +23,6 @@ public class GHTMLTextType extends GTextType {
 
     @Override
     public RequestValueCellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, GInputListAction[] inputListActions, EditContext editContext) {
-        return new HTMLTextCellEditor(editManager);
+        return new HTMLTextCellEditor(editManager, editProperty.valueHeight == -1);
     }
 }

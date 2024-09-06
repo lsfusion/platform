@@ -10,9 +10,11 @@ import lsfusion.gwt.client.view.MainFrame;
 
 public class HTMLTextCellEditor extends RequestReplaceValueCellEditor {
     private final String colorThemeName;
+    private final boolean autoSizedY;
 
-    public HTMLTextCellEditor(EditManager editManager) {
+    public HTMLTextCellEditor(EditManager editManager, boolean autoSizedY) {
         super(editManager);
+        this.autoSizedY = autoSizedY;
         this.colorThemeName = MainFrame.colorTheme.name();
     }
 
@@ -28,7 +30,7 @@ public class HTMLTextCellEditor extends RequestReplaceValueCellEditor {
 
     @Override
     public void start(EventHandler handler, Element parent, RenderContext renderContext, boolean notFocusable, PValue oldValue) {
-        initAceEditor(parent, PValue.getStringValue(oldValue), colorThemeName);
+        initAceEditor(parent, PValue.getStringValue(oldValue), colorThemeName, autoSizedY);
     }
 
     @Override
@@ -54,13 +56,19 @@ public class HTMLTextCellEditor extends RequestReplaceValueCellEditor {
         }
     }-*/;
 
-    protected native void initAceEditor(Element element, String oldValue, String colorTheme)/*-{
+    protected native void initAceEditor(Element element, String oldValue, String colorTheme, boolean autoSizedY)/*-{
         var aceEditor = $wnd.ace.edit(element, {
             enableLiveAutocompletion: true,
             mode: 'ace/mode/html',
             theme: colorTheme === 'LIGHT' ? 'ace/theme/chrome' : 'ace/theme/ambiance',
             showPrintMargin: false
         });
+        if (autoSizedY) {
+            aceEditor.setOptions({
+                // https://stackoverflow.com/questions/11584061/automatically-adjust-height-to-contents-in-ace-cloud-9-editor
+                maxLines: Infinity
+            });
+        }
         element.aceEditor = aceEditor;
         aceEditor.setValue(oldValue != null ? oldValue : '');
         aceEditor.focus();
