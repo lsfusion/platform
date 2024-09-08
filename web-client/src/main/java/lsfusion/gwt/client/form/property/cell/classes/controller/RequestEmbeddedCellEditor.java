@@ -26,7 +26,7 @@ public interface RequestEmbeddedCellEditor extends RequestCellEditor {
                 handler.consume();
                 cancel(CancelReason.ESCAPE_PRESSED);
             }
-        } else if ((DataGrid.FOCUSCHANGEOUT.equals(type) && !FocusUtils.isFakeBlur(event, parent)) || DataGrid.FOCUSOUT.equals(type))
+        } else if ((DataGrid.FOCUSCHANGEOUT.equals(type) || DataGrid.FOCUSOUT.equals(type)) && !FocusUtils.isFakeBlur(event, parent))
             commit(parent, CommitReason.BLURRED);
     }
 

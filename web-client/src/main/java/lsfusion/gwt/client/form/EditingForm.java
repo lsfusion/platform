@@ -45,6 +45,11 @@ public abstract class EditingForm extends FormContainer {
         @Override
         public void start(EventHandler handler, Element parent, RenderContext renderContext, boolean notFocusable, PValue oldValue) {
         }
+
+        @Override
+        public void stop(Element parent, boolean cancel, boolean blurred) {
+            removeContent();
+        }
     }
 
     protected abstract CellEditor createCellEditor();
@@ -106,17 +111,12 @@ public abstract class EditingForm extends FormContainer {
         if(!async)
             form.checkCommitEditing(); // we need to check commit editing, otherwise form will be in editing mode, and for example ClosePressed won't be flushed
 
-        FocusUtils.startFocusTransaction(getContentElement());
-        removeContent();
-
         if(editFormCloseReason instanceof CommitReason)
             contextForm.commitEditing(new GUserInputResult(), (CommitReason) editFormCloseReason);
         else
             contextForm.cancelEditing((CancelReason) editFormCloseReason);
 
         finishedEditing = true;
-
-        FocusUtils.endFocusTransaction();
     }
 
     @Override

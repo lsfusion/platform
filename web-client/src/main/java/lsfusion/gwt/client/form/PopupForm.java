@@ -44,6 +44,8 @@ public class PopupForm extends EditingForm {
 
         @Override
         public void stop(Element parent, boolean cancel, boolean blurred) {
+            super.stop(parent, cancel, blurred);
+
             onBlur(true);
 
             if(prevForm != null)
