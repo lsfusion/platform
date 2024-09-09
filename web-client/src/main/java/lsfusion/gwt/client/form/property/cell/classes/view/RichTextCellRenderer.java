@@ -50,6 +50,32 @@ public class RichTextCellRenderer extends TextCellRenderer {
             readOnly: true
         });
 
+        //The image selection dialog triggers a blur event, which ends the editor editing.
+        // Need to enable suppressBlur before image dialog and then disable it
+        // either after inserting the image or after canceling the insertion
+        // (when the user closes the image selection dialog or clicks the cancel button).
+        var renderer = this;
+        var toolbar = quill.getModule('toolbar');
+        toolbar.addHandler("image", function () {
+            renderer.@RichTextCellRenderer::enableSuppressBlur()();
+            toolbar.options.handlers.image.call(toolbar);
+
+            var inputElement = toolbar.container.querySelector("input");
+            inputElement.oncancel = function () {
+                renderer.@RichTextCellRenderer::disableSuppressBlur()();
+            }
+        })
+
+        quill.on('text-change', function(delta, oldDelta, source) {
+            if (delta.ops && delta.ops.length > 0) {
+                delta.ops.forEach(function(op) {
+                    if (op.insert && op.insert.image) {// check if image inserted
+                        renderer.@RichTextCellRenderer::disableSuppressBlur()();
+                    }
+                });
+            }
+        });
+
         if (innerText != null)
             quill.root.innerHTML = innerText.includes('<div') ? innerText.replaceAll('<div', '<p').replaceAll('</div>', '</p>') : innerText;
 
@@ -83,6 +109,20 @@ public class RichTextCellRenderer extends TextCellRenderer {
             Quill.register(blot, true);
         }
     }-*/;
+
+    private boolean fileDialog = false;
+    private native void enableSuppressBlur()/*-{
+        this.@RichTextCellRenderer::fileDialog = true;
+        @lsfusion.gwt.client.base.FocusUtils::enableSuppressBlur()();
+    }-*/;
+
+    private native void disableSuppressBlur()/*-{
+        if(this.@RichTextCellRenderer::fileDialog) {
+            this.@RichTextCellRenderer::fileDialog = false;
+            @lsfusion.gwt.client.base.FocusUtils::disableSuppressBlur()();
+        }
+    }-*/;
+
 
     @Override
     public boolean isCustomRenderer() {
