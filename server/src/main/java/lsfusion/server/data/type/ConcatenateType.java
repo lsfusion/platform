@@ -215,6 +215,7 @@ public class ConcatenateType extends AbstractType<Object[]> implements DBType {
         throw new RuntimeException("not supported");
     }
 
+    @Override
     public void fillReportDrawField(ReportDrawField reportField) {
         throw new RuntimeException("not supported");
     }

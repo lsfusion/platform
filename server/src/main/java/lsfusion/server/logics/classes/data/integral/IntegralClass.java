@@ -34,6 +34,7 @@ public abstract class IntegralClass<T extends Number> extends TextBasedClass<T> 
         super(caption);
     }
 
+    @Override
     public void fillReportDrawField(ReportDrawField reportField) {
         super.fillReportDrawField(reportField);
 

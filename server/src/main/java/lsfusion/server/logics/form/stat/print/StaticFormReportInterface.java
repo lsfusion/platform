@@ -51,6 +51,11 @@ public class StaticFormReportInterface extends StaticFormDataInterface implement
     }
 
     @Override
+    public String getUserPattern(PropertyDrawEntity entity) {
+        return null;
+    }
+
+    @Override
     public String getReportPrefix() {
         return "";
     }

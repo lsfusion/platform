@@ -21,5 +21,6 @@ public interface FormReportInterface extends FormDataInterface {
 
     FontInfo getUserFont(GroupObjectEntity entity);
     Integer getUserWidth(PropertyDrawEntity entity);
+    String getUserPattern(PropertyDrawEntity entity);
     ImOrderSet<PropertyDrawEntity> getUserOrder(GroupObjectEntity entity, ImOrderSet<PropertyDrawEntity> properties); // with user order
 }

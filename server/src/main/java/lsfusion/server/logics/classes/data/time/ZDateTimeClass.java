@@ -56,11 +56,17 @@ public class ZDateTimeClass extends HasTimeClass<Instant> {
         return java.time.Instant.class;
     }
 
+    @Override
+    public String getDefaultPattern() {
+        LocalePreferences localePreferences = ThreadLocalContext.get().getLocalePreferences();
+        return localePreferences != null ? localePreferences.dateTimeFormat : ThreadLocalContext.getTFormats().zDateTimePattern;
+    }
+
+    @Override
     public void fillReportDrawField(ReportDrawField reportField) {
         super.fillReportDrawField(reportField);
 
         reportField.alignment = HorizontalTextAlignEnum.RIGHT;
-        reportField.pattern = ThreadLocalContext.getTFormats().zDateTimePattern;
     }
 
     public byte getTypeID() {
