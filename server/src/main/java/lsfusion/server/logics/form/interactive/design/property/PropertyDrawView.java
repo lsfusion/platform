@@ -471,12 +471,17 @@ public class PropertyDrawView extends BaseComponentView {
         }
         setupShowIf(reportField);
 
-        type.fillReportDrawField(reportField, getReportPattern(type));
+        type.fillReportDrawField(reportField);
+
+        String reportPattern = getReportPattern();
+        if(reportPattern != null)
+            reportField.pattern = reportPattern;
+
         return reportField;
     }
 
-    private String getReportPattern(Type type) {
-        return pattern != null ? pattern.getSourceString() : type.getDefaultPattern();
+    private String getReportPattern() {
+        return pattern != null ? pattern.getSourceString() : null;
     }
 
     private void setupGeometry(ReportDrawField reportField, int scale) {

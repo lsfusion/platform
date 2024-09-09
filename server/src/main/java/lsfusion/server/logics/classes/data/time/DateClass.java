@@ -53,8 +53,8 @@ public class DateClass extends TimeSeriesClass<LocalDate> {
         return localePreferences != null ? localePreferences.dateFormat : ThreadLocalContext.getTFormats().datePattern;
     }
 
-    public void fillReportDrawField(ReportDrawField reportField, String pattern) {
-        super.fillReportDrawField(reportField, pattern);
+    public void fillReportDrawField(ReportDrawField reportField) {
+        super.fillReportDrawField(reportField);
 
         reportField.alignment = HorizontalTextAlignEnum.RIGHT;
     }

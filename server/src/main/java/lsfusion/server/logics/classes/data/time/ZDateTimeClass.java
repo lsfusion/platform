@@ -63,8 +63,8 @@ public class ZDateTimeClass extends HasTimeClass<Instant> {
     }
 
     @Override
-    public void fillReportDrawField(ReportDrawField reportField, String pattern) {
-        super.fillReportDrawField(reportField, pattern);
+    public void fillReportDrawField(ReportDrawField reportField) {
+        super.fillReportDrawField(reportField);
 
         reportField.alignment = HorizontalTextAlignEnum.RIGHT;
     }

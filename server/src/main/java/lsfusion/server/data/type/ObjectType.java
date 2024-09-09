@@ -103,8 +103,7 @@ public class ObjectType extends AbstractType<Long> {
     public int getReportMinimumWidth() { return getReportPreferredWidth(); }
 
     @Override
-    public void fillReportDrawField(ReportDrawField reportField, String pattern) {
-        super.fillReportDrawField(reportField, pattern);
+    public void fillReportDrawField(ReportDrawField reportField) {
         reportField.valueClass = Long.class;
         reportField.alignment = HorizontalTextAlignEnum.RIGHT;
     }
