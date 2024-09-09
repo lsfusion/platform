@@ -17,10 +17,11 @@ public class ActionCellRenderer extends CellRenderer {
         super(property);
     }
 
-    @Override
-    public boolean canBeRenderedInTD() {
-        return false; // since for now we want button element
-    }
+    // since for now we want button element
+//    @Override
+//    public boolean canBeRenderedInTD() {
+//        return false;
+//    }
 
     private boolean hasImage(boolean globalCaptionIsDrawn) {
         return globalCaptionIsDrawn || property.hasStaticImage() || property.hasDynamicImage();
@@ -35,7 +36,7 @@ public class ActionCellRenderer extends CellRenderer {
         if(property.hasChangeAction)
             element.addClassName("btn");
 
-        BaseImage.initImageText(element, property.getImageHtmlOrTextType());
+        BaseImage.initImageText(element, property.getActionHtmlOrTextType());
 
         // we can't use text alignment for several reasons:
         // button does not support vertical-align

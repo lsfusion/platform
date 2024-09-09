@@ -61,6 +61,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public ReadOnlyReader readOnlyReader = new ReadOnlyReader();
     public ImageReader imageReader = new ImageReader();
     public boolean hasDynamicImage;
+    public boolean hasDynamicCaption;
 
     public ExtraPropReader commentReader = new ExtraPropReader(COMMENT);
     public ExtraPropReader commentElementClassReader = new ExtraPropReader(COMMENTELEMENTCLASS);
@@ -138,8 +139,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public boolean panelColumnVertical;
 
-    public String valueAlignmentHorz;
-    public String valueAlignmentVert;
+    public FlexAlignment valueAlignmentHorz;
+    public FlexAlignment valueAlignmentVert;
 
     public String valueOverflowHorz;
     public String valueOverflowVert;
@@ -187,10 +188,15 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public String columnsName;
     public List<ClientGroupObject> columnGroupObjects = new ArrayList<>();
 
-    public boolean wrap;
+    public int wrap;
     public boolean wrapWordBreak;
     public boolean collapse;
     public boolean ellipsis;
+
+    public int captionWrap;
+    public boolean captionWrapWordBreak;
+    public boolean captionCollapse;
+    public boolean captionEllipsis;
 
     public boolean clearText;
     public boolean notSelectAll;
@@ -361,12 +367,12 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public Integer getSwingValueAlignmentHorz() {
         if (valueAlignmentHorz != null) {
             switch (valueAlignmentHorz) {
-                case "center":
-                case "stretch":
+                case CENTER:
+                case STRETCH:
                     return SwingConstants.CENTER;
-                case "end":
+                case END:
                     return SwingConstants.RIGHT;
-                case "start":
+                case START:
                     return SwingConstants.LEFT;
             }
         }
@@ -455,12 +461,12 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return changeType != null && baseType.getTypeClass() == changeType.getTypeClass();
     }
 
-    public boolean isPanelCaptionLast() {
-        return panelCaptionLast;
+    public boolean isCaptionLast() {
+        return captionLast;
     }
 
-    public FlexAlignment getPanelCaptionAlignment() {
-        return panelCaptionAlignment;
+    public FlexAlignment getCaptionAlignmentHorz() {
+        return captionAlignmentHorz;
     }
 
     public boolean isPanelCommentFirst() {
@@ -562,14 +568,15 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         pool.writeObject(outStream, focusable);
 
-        outStream.writeBoolean(panelCaptionVertical);
-        pool.writeObject(outStream, panelCaptionLast);
-        pool.writeObject(outStream, panelCaptionAlignment);
+        outStream.writeBoolean(captionVertical);
+        pool.writeObject(outStream, captionLast);
+        pool.writeObject(outStream, captionAlignmentHorz);
+        pool.writeObject(outStream, captionAlignmentVert);
 
         outStream.writeBoolean(panelColumnVertical);
 
-        pool.writeString(outStream, valueAlignmentHorz);
-        pool.writeString(outStream, valueAlignmentVert);
+        pool.writeObject(outStream, valueAlignmentHorz);
+        pool.writeObject(outStream, valueAlignmentVert);
 
         pool.writeString(outStream, valueOverflowHorz);
         pool.writeString(outStream, valueOverflowVert);
@@ -629,8 +636,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         panelColumnVertical = inStream.readBoolean();
 
-        valueAlignmentHorz = pool.readString(inStream);
-        valueAlignmentVert = pool.readString(inStream);
+        valueAlignmentHorz = pool.readObject(inStream);
+        valueAlignmentVert = pool.readObject(inStream);
 
         valueOverflowHorz = pool.readString(inStream);
         valueOverflowVert = pool.readString(inStream);
@@ -686,6 +693,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         hasEditObjectAction = inStream.readBoolean();
         hasChangeAction = inStream.readBoolean();
         hasDynamicImage = inStream.readBoolean();
+        hasDynamicCaption = inStream.readBoolean();
 
         disableInputList = inStream.readBoolean();
 
@@ -702,10 +710,15 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         checkEquals = inStream.readBoolean();
 
-        wrap = inStream.readBoolean();
+        wrap = inStream.readInt();
         wrapWordBreak = inStream.readBoolean();
         collapse = inStream.readBoolean();
         ellipsis = inStream.readBoolean();
+
+        captionWrap = inStream.readInt();
+        captionWrapWordBreak = inStream.readBoolean();
+        captionCollapse = inStream.readBoolean();
+        captionEllipsis = inStream.readBoolean();
 
         clearText = inStream.readBoolean();
         notSelectAll = inStream.readBoolean();

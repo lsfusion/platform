@@ -49,6 +49,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LP numberProperty;
     public LP dbNameProperty;
     public LP canonicalNameActionOrProperty;
+    public LP isProperty;
     public LP canonicalNameAction;
     public LP canonicalNameProperty;
     public LP loggableProperty;
@@ -254,6 +255,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         numberProperty = findProperty("number[ActionOrProperty]");
         dbNameProperty = findProperty("dbName[Property]");
         canonicalNameActionOrProperty = findProperty("canonicalName[ActionOrProperty]");
+        isProperty = findProperty("isProperty[ActionOrProperty]");
         canonicalNameAction = findProperty("canonicalName[Action]");
         canonicalNameProperty = findProperty("canonicalName[Property]");
         loggableProperty = findProperty("loggable[Property]");

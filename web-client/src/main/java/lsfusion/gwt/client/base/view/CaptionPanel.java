@@ -12,7 +12,7 @@ public class CaptionPanel extends FlexPanel {
     private boolean waitingForElement;
     private Widget waitingHeaderLine;
 
-    public CaptionPanel(Widget header, boolean border, boolean vertical, boolean last, GFlexAlignment alignment) {
+    public CaptionPanel(Widget header, boolean border, boolean vertical, boolean last, GFlexAlignment alignmentHorz, GFlexAlignment alignmentVert) {
         super(vertical);
 
         this.border = border;
@@ -29,7 +29,7 @@ public class CaptionPanel extends FlexPanel {
             headerLine.setWidget(header);
             headerLine.addStyleName("caption-panel-header-line");
             headerLine.addStyleName(vertical ? "caption-panel-header-line-vert" : "caption-panel-header-line-horz");
-            FlexPanelImpl.get().setFlexContentAlignment(headerLine.getElement(), alignment);
+            FlexPanelImpl.get().setFlexContentAlignment(headerLine.getElement(), vertical ? alignmentHorz : alignmentVert);
 
 //        }
 
@@ -55,7 +55,7 @@ public class CaptionPanel extends FlexPanel {
         this(caption, null, content);
     }
     public CaptionPanel(String caption, BaseImage image, Widget content) {
-        this(createCaptionWidget(caption, image), false, true, false, GFlexAlignment.STRETCH);
+        this(createCaptionWidget(caption, image), false, true, false, GFlexAlignment.STRETCH, GFlexAlignment.STRETCH);
 
         addFill(content);
     }

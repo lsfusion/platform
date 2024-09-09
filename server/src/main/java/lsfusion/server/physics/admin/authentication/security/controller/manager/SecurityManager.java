@@ -385,6 +385,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             KeyExpr actionOrPropertyExpr = new KeyExpr("actionOrProperty");
             query = new QueryBuilder<>(MapFact.singletonRev("actionOrProperty", actionOrPropertyExpr));
             query.addProperty("canonicalName", reflectionLM.canonicalNameActionOrProperty.getExpr(session.getModifier(), actionOrPropertyExpr));
+            query.addProperty("isProperty", reflectionLM.isProperty.getExpr(session.getModifier(), actionOrPropertyExpr));
             query.addProperty("permissionView", securityLM.permissionViewUserRoleActionOrProperty.getExpr(session.getModifier(), userRoleObject.getExpr(), actionOrPropertyExpr));
             query.addProperty("permissionChange", securityLM.permissionChangeUserRoleActionOrProperty.getExpr(session.getModifier(), userRoleObject.getExpr(), actionOrPropertyExpr));
             query.addProperty("permissionEditObjects", securityLM.permissionEditObjectsUserRoleActionOrProperty.getExpr(session.getModifier(), userRoleObject.getExpr(), actionOrPropertyExpr));
@@ -401,8 +402,9 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             for (ImMap<Object, Object> entry : queryResult.values()) {
 
                 String canonicalName = (String) entry.get("canonicalName");
+                boolean isProperty = entry.get("isProperty") != null;
                 try {
-                    LAP<?, ?> property = businessLogics.findPropertyElseAction(canonicalName);
+                    LAP<?, ?> property = isProperty ? businessLogics.findProperty(canonicalName) : businessLogics.findAction(canonicalName);
 
                     if (property != null) {
                         ActionOrProperty<?> actionOrProperty = property.getActionOrProperty();

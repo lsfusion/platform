@@ -117,7 +117,7 @@ public abstract class InputBasedCellEditor extends RequestReplaceValueCellEditor
         inputElementType = editInputType;
         InputBasedCellRenderer.appendInputElement(cellParent, inputElement, true, false, editInputType);
         if(editInputType.isStretchText())
-            CellRenderer.renderTextAlignment(property, inputElement, true, rendererType);
+            CellRenderer.renderTextAlignment(inputElement, property.getHorzTextAlignment(), property.getVertTextAlignment());
         GFormController.setFont(inputElement, GFormController.getFont(property, renderContext));
 
         // input doesn't respect justify-content, stretch, plus we want to include paddings in input (to avoid having "selection border")

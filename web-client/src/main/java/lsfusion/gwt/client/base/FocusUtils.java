@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.base;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.Event;
@@ -27,20 +26,31 @@ public class FocusUtils {
         return lastBlurredElement;
     }
 
-    private static boolean lastBlurred = false;
     public static boolean focusLastBlurredElement(EventHandler focusEventHandler, Element focusEventElement) {
         // in theory we also have to check if focused element still visible, isShowing in GwtClientUtils but now it's assumed that it is always visible
         if(lastBlurredElement != null && focusReason == null && lastBlurredElement != focusEventElement) { // return focus back where it was
             focusEventHandler.consume();
-            try {
-                lastBlurred = true;
-                focus(lastBlurredElement, Reason.RESTOREFOCUS);
-            } finally {
-                lastBlurred = false;
-            }
+            runWithSuppressBlur(() -> focus(lastBlurredElement, Reason.RESTOREFOCUS));
             return true;
         }
         return false;
+    }
+
+    private static boolean suppressBlur = false;
+    public static void runWithSuppressBlur(Runnable runnable) {
+        try {
+            suppressBlur = true;
+            runnable.run();
+        } finally {
+            suppressBlur = false;
+        }
+    }
+
+    public static void enableSuppressBlur() {
+        suppressBlur = true;
+    }
+    public static void disableSuppressBlur() {
+        suppressBlur = false;
     }
 
     public static boolean isSuppressOnFocusChange(Element element) {
@@ -231,14 +241,17 @@ public class FocusUtils {
         });
     }-*/;
 
+    private static boolean removingFocus;
+
     public static boolean isFakeBlur(NativeEvent event, Element blur) {
-        if(lastBlurred)
+        if(suppressBlur)
             return true;
 
         EventTarget focus = event.getRelatedEventTarget();
-        if(focus == null) {
+        if(focus == null || removingFocus) {
             // if we're in focus transaction then there are some manipulations in the focusTransaction elements, so we pend all blur events from there
-            if(focusTransaction != null && isFakeBlurInner(focusTransaction, blur)) { // element might be removed
+            // we need to do for parent elements, not inner (because they can rely on that, for example, for removing its dropdowns, etc.)
+            if(focusTransaction != null && isFakeBlurInner(blur, focusTransaction)) { // element might be removed
                 pendingBlurElements.add(blur);
                 return true;
             }
@@ -284,11 +297,23 @@ public class FocusUtils {
         partner.setPropertyObject("focusPartner", element);
         partner.setTabIndex(-1); // we need focus partner to get focus, otherwise it will go to the body element
         setOnFocusOut(partner, event -> {
+            // maybe it makes sense to check here that element is not inside focusTransaction
+
             // we need to return focus to the element and then to the event.relatedEventTarget (getFocusedElement ?)
             EventTarget newFocus = event.getRelatedEventTarget();
-            Element newFocusElement = newFocus != null ? Element.as(newFocus) : RootPanel.getBodyElement();
-//            assert newFocusElement == FocusUtils.getFocusedElement();
-            triggerFocus(reason -> focusInOut(element, reason), newFocusElement);
+            //            assert newFocusElement == FocusUtils.getFocusedElement();
+
+            // the trick here is that target is null when the focused element is removed, and we need to emulate this somehow to make focus transaction work, when focus partner is removed
+            try {
+                triggerFocus(reason -> {
+                    focusInOut(element, reason);
+                    if (newFocus == null)
+                        removingFocus = true;
+                }, newFocus == null ? RootPanel.getBodyElement() : Element.as(newFocus));
+            } finally {
+                if(newFocus == null)
+                    removingFocus = false;
+            }
         });
     }
 

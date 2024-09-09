@@ -12,15 +12,13 @@ import java.io.IOException;
 public class ToolbarView extends BaseComponentView {
     public boolean visible = true;
 
-    public boolean showCountRows = true;
-    public boolean showCalculateSum = true;
-    public boolean showGroupReport = true;
-    public boolean showXls = true;
+    public boolean showViews = true;
+    public boolean showFilters = true;
     public boolean showSettings = true;
-
-    public ToolbarView() {
-
-    }
+    public boolean showCountQuantity = true;
+    public boolean showCalculateSum = true;
+    public boolean showPrintGroupXls = true;
+    public boolean showManualUpdate = true;
 
     public ToolbarView(int ID) {
         super(ID);
@@ -32,11 +30,13 @@ public class ToolbarView extends BaseComponentView {
 
         outStream.writeBoolean(visible);
 
-        outStream.writeBoolean(showCountRows);
-        outStream.writeBoolean(showCalculateSum);
-        outStream.writeBoolean(showGroupReport);
-        outStream.writeBoolean(showXls);
+        outStream.writeBoolean(showViews);
+        outStream.writeBoolean(showFilters);
         outStream.writeBoolean(showSettings);
+        outStream.writeBoolean(showCountQuantity);
+        outStream.writeBoolean(showCalculateSum);
+        outStream.writeBoolean(showPrintGroupXls);
+        outStream.writeBoolean(showManualUpdate);
     }
 
     @Override
@@ -45,11 +45,13 @@ public class ToolbarView extends BaseComponentView {
 
         visible = inStream.readBoolean();
 
-        showCountRows = inStream.readBoolean();
-        showCalculateSum = inStream.readBoolean();
-        showGroupReport = inStream.readBoolean();
-        showXls = inStream.readBoolean();
+        showViews = inStream.readBoolean();
+        showFilters = inStream.readBoolean();
         showSettings = inStream.readBoolean();
+        showCountQuantity = inStream.readBoolean();
+        showCalculateSum = inStream.readBoolean();
+        showPrintGroupXls = inStream.readBoolean();
+        showManualUpdate = inStream.readBoolean();
     }
 
     @Override

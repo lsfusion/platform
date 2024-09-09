@@ -203,8 +203,6 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
         Element sizeElement = InputBasedCellRenderer.getSizeElement(renderElement);
         sizeElement.addClassName("prop-size-value");
 
-        CellRenderer.setupValueOverflowShrink(sizeElement, property);
-
         if(sizeElement != renderElement) {
             FlexPanel.setPanelWidth(sizeElement, valueWidth);
             FlexPanel.setPanelHeight(sizeElement, valueHeight);

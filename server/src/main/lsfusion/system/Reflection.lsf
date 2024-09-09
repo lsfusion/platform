@@ -74,6 +74,8 @@ caption '{reflection.caption.action.or.property}' = DATA ISTRING[250] (ActionOrP
 annotation '{reflection.annotation.action.or.property}' = DATA STRING[100] (ActionOrProperty);
 class '{reflection.class.action.or.property}' = DATA STRING[100] (ActionOrProperty);
 
+isProperty(ActionOrProperty aop) = aop IS Property;
+
 dbName '{reflection.db.name.property}' = DATA STRING[100] (Property) IN base;
 leftTo = FORMULA PG 'left($1, strpos($1, $2) - 1)', MS 'LEFT($1, CHARINDEX($2, $1) - 1)';
 loggable '{reflection.loggable.property}' = DATA BOOLEAN (Property);

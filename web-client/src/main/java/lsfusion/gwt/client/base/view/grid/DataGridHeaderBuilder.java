@@ -120,7 +120,7 @@ public abstract class DataGridHeaderBuilder<T> implements HeaderBuilder<T> {
      */
     protected final <H> void renderHeader(TableCellElement th, Header<H> header) {
         th.setPropertyObject(HEADER_ATTRIBUTE, header);
-        header.renderAndUpdateDom(th);
+        header.renderAndUpdateDom(th, false);
     }
 
     public Header<?> getHeader(Element elem) {

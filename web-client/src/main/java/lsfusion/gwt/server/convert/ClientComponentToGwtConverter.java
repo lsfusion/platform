@@ -110,9 +110,10 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         FontInfo captionFont = clientComponent.design.getCaptionFont();
         component.captionFont = convertFont(captionFont);
 
-        component.panelCaptionVertical = clientComponent.panelCaptionVertical;
-        component.panelCaptionLast = clientComponent.panelCaptionLast;
-        component.panelCaptionAlignment = convertFlexAlignment(clientComponent.panelCaptionAlignment);
+        component.captionVertical = clientComponent.captionVertical;
+        component.captionLast = clientComponent.captionLast;
+        component.captionAlignmentHorz = convertFlexAlignment(clientComponent.captionAlignmentHorz);
+        component.captionAlignmentVert = convertFlexAlignment(clientComponent.captionAlignmentVert);
 
         return component;
     }
@@ -208,11 +209,14 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
     public GToolbar convertToolbar(ClientToolbar clientToolbar) {
         GToolbar toolbar = initGwtComponent(clientToolbar, new GToolbar());
         toolbar.visible = clientToolbar.visible;
-        toolbar.showCountQuantity = clientToolbar.showCountRows;
+
+        toolbar.showViews = clientToolbar.showViews;
+        toolbar.showFilters = clientToolbar.showFilters;
+        toolbar.showSettings = clientToolbar.showSettings;
+        toolbar.showCountQuantity = clientToolbar.showCountQuantity;
         toolbar.showCalculateSum = clientToolbar.showCalculateSum;
-        toolbar.showGroup = clientToolbar.showGroupReport;
-        toolbar.showPrintGroupXls = clientToolbar.showXls;
-        toolbar.showGridSettings = clientToolbar.showSettings;
+        toolbar.showPrintGroupXls = clientToolbar.showPrintGroupXls;
+        toolbar.showManualUpdate = clientToolbar.showManualUpdate;
         return toolbar;
     }
 
@@ -282,6 +286,11 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         propertyDraw.wrapWordBreak = clientPropertyDraw.wrapWordBreak;
         propertyDraw.collapse = clientPropertyDraw.collapse;
         propertyDraw.ellipsis = clientPropertyDraw.ellipsis;
+
+        propertyDraw.captionWrap = clientPropertyDraw.captionWrap;
+        propertyDraw.captionWrapWordBreak = clientPropertyDraw.captionWrapWordBreak;
+        propertyDraw.captionCollapse = clientPropertyDraw.captionCollapse;
+        propertyDraw.captionEllipsis = clientPropertyDraw.captionEllipsis;
 
         propertyDraw.clearText = clientPropertyDraw.clearText;
         propertyDraw.notSelectAll = clientPropertyDraw.notSelectAll;
@@ -374,6 +383,7 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         propertyDraw.foregroundReader = convertForegroundReader(clientPropertyDraw.foregroundReader);
         propertyDraw.imageReader = convertImageReader(clientPropertyDraw.imageReader);
         propertyDraw.hasDynamicImage = clientPropertyDraw.hasDynamicImage;
+        propertyDraw.hasDynamicCaption = clientPropertyDraw.hasDynamicCaption;
         propertyDraw.commentReader = convertExtraPropReader(clientPropertyDraw.commentReader);
         propertyDraw.commentElementClassReader = convertExtraPropReader(clientPropertyDraw.commentElementClassReader);
         propertyDraw.placeholderReader = convertExtraPropReader(clientPropertyDraw.placeholderReader);
@@ -410,8 +420,8 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
 
         propertyDraw.panelColumnVertical = clientPropertyDraw.panelColumnVertical;
         
-        propertyDraw.valueAlignmentHorz = clientPropertyDraw.valueAlignmentHorz;
-        propertyDraw.valueAlignmentVert = clientPropertyDraw.valueAlignmentVert;
+        propertyDraw.valueAlignmentHorz = convertFlexAlignment(clientPropertyDraw.valueAlignmentHorz);
+        propertyDraw.valueAlignmentVert = convertFlexAlignment(clientPropertyDraw.valueAlignmentVert);
 
         propertyDraw.valueOverflowHorz = clientPropertyDraw.valueOverflowHorz;
         propertyDraw.valueOverflowVert = clientPropertyDraw.valueOverflowVert;

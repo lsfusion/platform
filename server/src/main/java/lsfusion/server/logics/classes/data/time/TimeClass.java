@@ -126,11 +126,6 @@ public class TimeClass extends HasTimeClass<LocalTime> {
     }
 
     @Override
-    public String getValueAlignmentHorz() {
-        return "end";
-    }
-
-    @Override
     public boolean isSafeType() {
         return false;
     }

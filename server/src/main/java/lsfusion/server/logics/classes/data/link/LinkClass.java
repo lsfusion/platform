@@ -1,5 +1,6 @@
 package lsfusion.server.logics.classes.data.link;
 
+import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.Type;
@@ -19,11 +20,6 @@ public abstract class LinkClass extends AStringClass {
         super(LocalizedString.create("{classes.link}"), false, ExtInt.UNLIMITED, false);
 
         this.multiple = multiple;
-    }
-
-    @Override
-    public String getValueAlignmentHorz() {
-        return "center";
     }
 
     protected abstract String getFileSID();

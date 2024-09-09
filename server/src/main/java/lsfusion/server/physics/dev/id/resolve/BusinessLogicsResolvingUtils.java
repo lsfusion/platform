@@ -1,7 +1,10 @@
 package lsfusion.server.physics.dev.id.resolve;
 
+import lsfusion.server.language.action.LA;
+import lsfusion.server.language.property.LP;
 import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
 import lsfusion.server.physics.dev.id.name.CompoundNameUtils;
@@ -86,18 +89,32 @@ public class BusinessLogicsResolvingUtils {
         }
     }
 
-    public static <L extends LAP<?,?>> L findPropertyByCanonicalName(BusinessLogics BL, String canonicalName, ModuleEqualLAPFinder<L> finder) {
+    public static LP<?> findPropertyByCanonicalName(BusinessLogics BL, String canonicalName) {
         PropertyCanonicalNameParser parser = new PropertyCanonicalNameParser(BL, canonicalName);
-        List<ResolveClassSet> signature;
-        try {
-            signature = parser.getSignature();
-        } catch (CanonicalNameUtils.ParseException e) { // class can be missing
-            return null;
+        String namespace = parser.getNamespace();
+        String name = parser.getName();
+        for (LogicsModule module : BL.getNamespaceModules(namespace)) {
+            for (LP<?> lp : module.getNamedProperties(name)) {
+                if (lp.getActionOrProperty().getCanonicalName().equals(canonicalName)) {
+                    return lp;
+                }
+            }
         }
-        List<FoundItem<L>> foundElements = findProperties(BL, parser.getNamespace(), parser.getName(),
-                signature, finder);
-        assert foundElements.size() <= 1;
-        return foundElements.size() == 0 ? null : foundElements.get(0).value;
+        return null;
+    }
+    
+    public static LA<?> findActionByCanonicalName(BusinessLogics BL, String canonicalName) {
+        PropertyCanonicalNameParser parser = new PropertyCanonicalNameParser(BL, canonicalName);
+        String namespace = parser.getNamespace();
+        String name = parser.getName();
+        for (LogicsModule module : BL.getNamespaceModules(namespace)) {
+            for (LA<?> la : module.getNamedActions(name)) {
+                if (la.getActionOrProperty().getCanonicalName().equals(canonicalName)) {
+                    return la;
+                }
+            }
+        }
+        return null;
     }
     
     public static <L extends LAP<?,?>> L findLAPByCompoundName(BusinessLogics BL, String compoundName, ModuleLAPFinder<L> moduleLAPFinder) {

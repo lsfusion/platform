@@ -15,7 +15,11 @@ public class LinkCellRenderer extends StringBasedCellRenderer {
     @Override
     public boolean updateContent(Element element, PValue value, Object extraValue, UpdateContext updateContext) {
         String url = PValue.getStringValue(value);
-        element.setAttribute("href", url != null ? url : "");
+        if(url != null) {
+            element.setAttribute("href", url);
+        } else {
+            element.removeAttribute("href");
+        }
         return super.updateContent(element, value, extraValue, updateContext);
     }
 }

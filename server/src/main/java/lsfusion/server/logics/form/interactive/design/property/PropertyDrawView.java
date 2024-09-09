@@ -10,6 +10,7 @@ import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.print.ReportFieldExtraType;
 import lsfusion.interop.form.property.Compare;
+import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.base.AppServerImage;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.type.Type;
@@ -103,8 +104,8 @@ public class PropertyDrawView extends BaseComponentView {
 
     public boolean panelColumnVertical = false;
 
-    public String valueAlignmentHorz;
-    public String valueAlignmentVert;
+    public FlexAlignment valueAlignmentHorz;
+    public FlexAlignment valueAlignmentVert;
 
     public String valueOverflowHorz;
     public String valueOverflowVert;
@@ -129,10 +130,15 @@ public class PropertyDrawView extends BaseComponentView {
     public LocalizedString caption;
     public AppServerImage.Reader image;
 
-    public Boolean wrap;
+    public Integer wrap;
     public Boolean wrapWordBreak;
     public Boolean collapse;
     public Boolean ellipsis;
+
+    public Integer captionWrap;
+    public Boolean captionWrapWordBreak;
+    public Boolean captionCollapse;
+    public Boolean captionEllipsis;
 
     public boolean clearText;
     public boolean notSelectAll;
@@ -195,8 +201,10 @@ public class PropertyDrawView extends BaseComponentView {
         return -2;
     }
 
+    public static final boolean moreInfo = false;
+
     @Override
-    protected boolean isDefaultPanelCaptionVertical(FormInstanceContext context) {
+    protected boolean isDefaultCaptionVertical(FormInstanceContext context) {
         return false;
     }
 
@@ -205,12 +213,28 @@ public class PropertyDrawView extends BaseComponentView {
     }
 
     @Override
-    protected boolean isDefaultPanelCaptionLast(FormInstanceContext context) {
-        return isPanelBoolean(context) && !isPanelCaptionVertical(context);
+    protected boolean isDefaultCaptionLast(FormInstanceContext context) {
+        // the main problem here is that in the boolean default caption last we don't know if it's gonna be aligned, so we'll use that hack in PropertyPanelRenderer.initCaption for now (until we'll move isAlignCaptions to the server)
+        return isPanelBoolean(context) && !isCaptionVertical(context);
     }
 
     @Override
-    protected FlexAlignment getDefaultPanelCaptionAlignment(FormInstanceContext context) {
+    protected FlexAlignment getDefaultCaptionAlignmentHorz(FormInstanceContext context) {
+        // not sure that this is needed if we decide to maintain grid horz alignments to start
+//        if(!entity.isList(context) && isCaptionVertical(context))
+//            return FlexAlignment.CENTER;
+
+        if(entity.isList(context))
+            return getValueAlignmentHorz(context);
+
+        return FlexAlignment.START;
+    }
+
+    @Override
+    protected FlexAlignment getDefaultCaptionAlignmentVert(FormInstanceContext context) {
+//        if(entity.isList(context))
+//            return FlexAlignment.END;
+
         return FlexAlignment.CENTER;
     }
 
@@ -245,26 +269,36 @@ public class PropertyDrawView extends BaseComponentView {
         return -1;
     }
 
-    public int getCaptionHeight(FormEntity entity) {
+    public int getCaptionHeight(FormInstanceContext context) {
         if(captionHeight != null)
             return captionHeight;
 
-        return -1;
+        return moreInfo && entity.isList(context) ? 54 : -1; // we need fixed height to set wrap -1 to avoid ellipsis
     }
 
-    public boolean isWrap(FormInstanceContext context) {
+    public int getWrap(FormInstanceContext context) {
         if (wrap != null)
             return wrap;
 
         if (isProperty(context)) {
             Type type = getAssertCellType(context);
             if (type instanceof TextClass)
-                return true;
+                return -1;
 
-            return context.contentWordWrap;
+            return context.contentWordWrap ? -1 : 1;
         }
 
-        return false;
+        return 1;
+    }
+
+    public int getCaptionWrap(FormInstanceContext context) {
+        if (captionWrap != null)
+            return captionWrap;
+
+        if(entity.isList(context))
+            return moreInfo ? -1 : 3;
+        else
+            return isCaptionVertical(context) ? -1 : 1;
     }
 
     public boolean isCollapse(FormInstanceContext context) {
@@ -280,18 +314,47 @@ public class PropertyDrawView extends BaseComponentView {
         return true;
     }
 
+    public boolean isCaptionCollapse(FormInstanceContext context) {
+        if (captionCollapse != null)
+            return captionCollapse;
+
+        return false;
+    }
+
     public boolean isWrapWordBreak(FormInstanceContext context) {
         if (wrapWordBreak != null)
             return wrapWordBreak;
 
-        return false;
+        return moreInfo;
     }
+
+    public boolean isCaptionWrapWordBreak(FormInstanceContext context) {
+        if (captionWrapWordBreak != null)
+            return captionWrapWordBreak;
+
+        return true; // moreInfo; false looks odd with wrap 2, 3 // && entity.isList(context);
+    }
+
+    private static final ExtInt ELLIPSIS_LIMIT = new ExtInt(40);
 
     public boolean isEllipsis(FormInstanceContext context) {
         if (ellipsis != null)
             return ellipsis;
 
-        return true;
+        if (!moreInfo && isProperty(context)) {
+            Type type = getAssertCellType(context);
+            if (type instanceof StringClass && ELLIPSIS_LIMIT.less(type.getCharLength()))
+                return true;
+        }
+
+        return false;
+    }
+
+    public boolean isCaptionEllipsis(FormInstanceContext context) {
+        if (captionEllipsis != null)
+            return captionEllipsis;
+
+        return !moreInfo;
     }
 
     // we force optimistic async event scheme for external calls (since this calls assume that async push should exist)
@@ -554,7 +617,7 @@ public class PropertyDrawView extends BaseComponentView {
         outStream.writeInt(getValueHeight(pool.context));
 
         outStream.writeInt(getCaptionWidth(pool.context.entity));
-        outStream.writeInt(getCaptionHeight(pool.context.entity));
+        outStream.writeInt(getCaptionHeight(pool.context));
 
         pool.writeObject(outStream, changeKey);
         pool.writeInt(outStream, changeKeyPriority);
@@ -573,14 +636,14 @@ public class PropertyDrawView extends BaseComponentView {
 
         outStream.writeBoolean(panelColumnVertical);
         
-        pool.writeString(outStream, getValueAlignmentHorz(pool.context));
-        pool.writeString(outStream, getValueAlignmentVert(pool.context));
+        pool.writeObject(outStream, getValueAlignmentHorz(pool.context));
+        pool.writeObject(outStream, getValueAlignmentVert(pool.context));
 
         pool.writeString(outStream, getValueOverflowHorz(pool.context));
         pool.writeString(outStream, getValueOverflowVert(pool.context));
 
         pool.writeBoolean(outStream, getValueShrinkHorz(pool.context));
-        pool.writeBoolean(outStream, getValueShrinkVert());
+        pool.writeBoolean(outStream, getValueShrinkVert(pool.context));
 
         pool.writeString(outStream, ThreadLocalContext.localize(comment));
         pool.writeString(outStream, getCommentElementClass(pool.context));
@@ -645,6 +708,7 @@ public class PropertyDrawView extends BaseComponentView {
         outStream.writeBoolean(hasEditObjectAction(pool.context));
         outStream.writeBoolean(hasChangeAction(pool.context));
         outStream.writeBoolean(entity.hasDynamicImage());
+        outStream.writeBoolean(entity.hasDynamicCaption());
 
         ActionOrProperty inheritedProperty = entity.getInheritedProperty();
         outStream.writeBoolean(inheritedProperty instanceof Property && ((Property<?>) inheritedProperty).disableInputList);
@@ -668,10 +732,15 @@ public class PropertyDrawView extends BaseComponentView {
 
         outStream.writeBoolean(isProperty(pool.context));
 
-        outStream.writeBoolean(isWrap(pool.context));
+        outStream.writeInt(getWrap(pool.context));
         outStream.writeBoolean(isWrapWordBreak(pool.context));
         outStream.writeBoolean(isCollapse(pool.context));
         outStream.writeBoolean(isEllipsis(pool.context));
+
+        outStream.writeInt(getCaptionWrap(pool.context));
+        outStream.writeBoolean(isCaptionWrapWordBreak(pool.context));
+        outStream.writeBoolean(isCaptionCollapse(pool.context));
+        outStream.writeBoolean(isCaptionEllipsis(pool.context));
 
         outStream.writeBoolean(clearText);
         outStream.writeBoolean(notSelectAll);
@@ -986,7 +1055,7 @@ public class PropertyDrawView extends BaseComponentView {
         return null;
     }
 
-    public String getValueAlignmentHorz(FormInstanceContext context) {
+    public FlexAlignment getValueAlignmentHorz(FormInstanceContext context) {
         if(valueAlignmentHorz != null)
             return valueAlignmentHorz;
 
@@ -994,13 +1063,13 @@ public class PropertyDrawView extends BaseComponentView {
             Type type = getAssertValueType(context);
             if (type != null)
                 return type.getValueAlignmentHorz();
-            return "start";
+            return FlexAlignment.START;
         }
 
-        return "center";
+        return FlexAlignment.CENTER;
     }
 
-    public String getValueAlignmentVert(FormInstanceContext context) {
+    public FlexAlignment getValueAlignmentVert(FormInstanceContext context) {
         if (valueAlignmentVert != null)
             return valueAlignmentVert;
 
@@ -1010,7 +1079,7 @@ public class PropertyDrawView extends BaseComponentView {
                 return type.getValueAlignmentVert();
         }
 
-        return "center";
+        return FlexAlignment.CENTER;
     }
 
     public String getValueOverflowHorz(FormInstanceContext context) {
@@ -1052,9 +1121,15 @@ public class PropertyDrawView extends BaseComponentView {
         return false;
     }
 
-    public boolean getValueShrinkVert() {
+    public boolean getValueShrinkVert(FormInstanceContext context) {
         if(valueShrinkVert != null)
             return valueShrinkVert;
+
+        if (isProperty(context)) {
+            Type type = getAssertValueType(context);
+            if (type != null)
+                return type.getValueShrinkVert();
+        }
 
         return false;
     }

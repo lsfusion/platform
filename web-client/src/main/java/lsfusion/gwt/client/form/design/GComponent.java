@@ -23,9 +23,10 @@ public class GComponent implements Serializable {
     public int width = -1;
     public int height = -1;
 
-    public boolean panelCaptionVertical;
-    public boolean panelCaptionLast;
-    public GFlexAlignment panelCaptionAlignment;
+    public boolean captionVertical;
+    public boolean captionLast;
+    public GFlexAlignment captionAlignmentHorz;
+    public GFlexAlignment captionAlignmentVert;
 
     public int span = 1;
 
@@ -109,12 +110,16 @@ public class GComponent implements Serializable {
         return alignment;
     }
 
-    public boolean isPanelCaptionLast() {
-        return panelCaptionLast;
+    public boolean isCaptionLast() {
+        return captionLast;
     }
 
-    public GFlexAlignment getPanelCaptionAlignment() {
-        return panelCaptionAlignment;
+    public GFlexAlignment getCaptionAlignmentHorz() {
+        return captionAlignmentHorz;
+    }
+
+    public GFlexAlignment getCaptionAlignmentVert() {
+        return captionAlignmentVert;
     }
 
     public boolean isShrink() {

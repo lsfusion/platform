@@ -1,5 +1,6 @@
 package lsfusion.server.logics.classes.data;
 
+import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.logics.classes.ValueClass;
@@ -59,7 +60,7 @@ public class TextClass extends StringClass {
     }
 
     @Override
-    public String getValueAlignmentVert() {
-        return "start";
+    public FlexAlignment getValueAlignmentVert() {
+        return FlexAlignment.START;
     }
 }

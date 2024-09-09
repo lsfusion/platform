@@ -21,7 +21,6 @@ import lsfusion.gwt.client.form.event.*;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.async.*;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.view.InputBasedCellRenderer;
@@ -62,10 +61,15 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public boolean customNeedPlaceholder;
     public boolean customNeedReadonly;
 
-    public boolean wrap;
+    public int wrap;
     public boolean wrapWordBreak;
     public boolean collapse;
     public boolean ellipsis;
+
+    public int captionWrap;
+    public boolean captionWrapWordBreak;
+    public boolean captionCollapse;
+    public boolean captionEllipsis;
 
     public boolean clearText;
     public boolean notSelectAll;
@@ -304,6 +308,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GEditBindingMap editBindingMap;
 
     public boolean hasDynamicImage;
+    public boolean hasDynamicCaption;
     public Boolean focusable;
     public boolean checkEquals;
     public GPropertyEditType editType = GPropertyEditType.EDITABLE;
@@ -324,8 +329,11 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         assert isAction();
         return appImage != null;
     }
-    public boolean hasDynamicImage() { // when it's an action and has dynamic image
+    public boolean hasDynamicImage() {
         return hasDynamicImage;
+    }
+    public boolean hasDynamicCaption() {
+        return hasDynamicCaption;
     }
 
     public ArrayList<GInputBindingEvent> bindingEvents = new ArrayList<>();
@@ -409,8 +417,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public boolean panelColumnVertical;
     
-    public String valueAlignmentHorz;
-    public String valueAlignmentVert;
+    public GFlexAlignment valueAlignmentHorz;
+    public GFlexAlignment valueAlignmentVert;
 
     public String valueOverflowHorz;
     public String valueOverflowVert;
@@ -764,15 +772,11 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return panelCommentAlignment;
     }
 
-    public GFlexAlignment getAlignment() {
-        return alignment;
-    }
-
-    public String getHorzTextAlignment() {
+    public GFlexAlignment getHorzTextAlignment() {
         return valueAlignmentHorz;
     }
 
-    public String getVertTextAlignment() {
+    public GFlexAlignment getVertTextAlignment() {
         return valueAlignmentVert;
     }
 
@@ -791,7 +795,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public boolean getValueShrinkVert() {
         return valueShrinkVert;
     }
-
 
     public static ArrayList<GGroupObjectValue> getColumnKeys(GPropertyDraw property, NativeSIDMap<GGroupObject, ArrayList<GGroupObjectValue>> currentGridObjects) {
         ArrayList<GGroupObjectValue> columnKeys = GGroupObjectValue.SINGLE_EMPTY_KEY_LIST;
@@ -815,7 +818,15 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     public boolean hasAutoSize() {
-        return valueWidth == -1 || valueHeight == -1;
+        return hasAutoWidth() || hasAutoHeight();
+    }
+
+    public boolean hasAutoWidth() {
+        return valueWidth == -1 && charWidth == 0;
+    }
+
+    public boolean hasAutoHeight() {
+        return valueHeight == -1 && charHeight == 0;
     }
 
     // not null
@@ -823,7 +834,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         if (valueWidth >= 0)
             return GSize.getValueSize(valueWidth);
 
-        if(!needNotNull && valueWidth == -1 && charWidth == 0)
+        if(!needNotNull && hasAutoWidth())
             return null;
 
         return getValueType().getValueWidth(getFont(parentFont), this, needNotNull, globalCaptionIsDrawn);
@@ -834,7 +845,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         if (valueHeight >= 0)
             return GSize.getValueSize(valueHeight);
 
-        if(!needNotNull && valueHeight == -1 && charHeight == 0)
+        if(!needNotNull && hasAutoHeight())
             return null;
 
         return getValueType().getValueHeight(getFont(parentFont), this, needNotNull, globalCaptionIsDrawn);
@@ -850,15 +861,41 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return null;
     }
 
-    public ImageHtmlOrTextType getImageHtmlOrTextType() {
+    public ImageHtmlOrTextType getCaptionHtmlOrTextType() {
+        // property / action grid caption
         return new ImageHtmlOrTextType() {
             @Override
-            public boolean isImageVertical() {
-                return panelCaptionVertical;
+            protected boolean isEllipsis() {
+                return captionEllipsis;
             }
 
             @Override
-            protected boolean isWrap() {
+            protected boolean isCollapse() {
+                return captionCollapse;
+            }
+
+            @Override
+            public int getWrap() {
+                return captionWrap;
+            }
+
+            @Override
+            protected boolean isWrapWordBreak() {
+                return captionWrapWordBreak;
+            }
+        };
+    }
+
+    // not clear if it is caption, or data (however rendered as caption)
+    public ImageHtmlOrTextType getActionHtmlOrTextType() {
+        return new ImageHtmlOrTextType() {
+            @Override
+            public boolean isImageVertical() {
+                return captionVertical;
+            }
+
+            @Override
+            public int getWrap() {
                 return wrap;
             }
 
@@ -882,7 +919,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public DataHtmlOrTextType getDataHtmlOrTextType() {
         return new DataHtmlOrTextType() {
             @Override
-            protected boolean isWrap() {
+            public int getWrap() {
                 return wrap;
             }
 
@@ -917,14 +954,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return null;
     }
 
-    public GSize getHeaderCaptionHeight(GGridPropertyTable table) {
-        GSize headerHeight = table.getHeaderHeight();
-        if(headerHeight != null)
-            return headerHeight;
-
-        return getCaptionHeight();
-    }
-
     public GFormatType getFormatType(RendererType rendererType) {
         GType renderType = getRenderType(rendererType);
         return (renderType instanceof GObjectType ? GLongType.instance : ((GFormatType) renderType));
@@ -952,7 +981,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     @Override
     public boolean isDefautAlignCaption() {
-        return caption != null && !hasColumnGroupObjects() && ((!isAction() && !panelCaptionVertical && !isPanelBoolean()) || isTab());
+        return caption != null && !hasColumnGroupObjects() && ((!isAction() && !captionVertical && !isPanelBoolean()) || isTab());
     }
 
     public boolean isInline() {

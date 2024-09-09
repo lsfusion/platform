@@ -1,5 +1,6 @@
 package lsfusion.server.logics.classes.data.time;
 
+import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.server.data.type.DBType;
 import lsfusion.server.logics.classes.data.TextBasedClass;
 import lsfusion.server.logics.form.stat.print.design.ReportDrawField;
@@ -26,5 +27,10 @@ public abstract class TimeSeriesClass<T> extends TextBasedClass<T> implements DB
         super.fillReportDrawField(reportField);
 
         reportField.pattern = getDefaultPattern();
+    }
+
+    @Override
+    public FlexAlignment getValueAlignmentHorz() {
+        return FlexAlignment.END;
     }
 }

@@ -137,7 +137,7 @@ public class ColorClass extends DataClass<Color> {
     }
 
     @Override
-    public String getValueAlignmentHorz() {
-        return "center";
+    public FlexAlignment getValueAlignmentHorz() {
+        return FlexAlignment.CENTER;
     }
 }

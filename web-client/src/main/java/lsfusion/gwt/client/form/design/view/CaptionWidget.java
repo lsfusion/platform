@@ -13,9 +13,8 @@ public class CaptionWidget {
 
     public GFlexAlignment valueAlignmentVert;
 
-    public CaptionWidget(Widget widget) {
-        this(new SizedWidget(widget), GFlexAlignment.START, GFlexAlignment.CENTER, GFlexAlignment.STRETCH);
-
+    public CaptionWidget(Widget widget, GFlexAlignment horzAlignment, GFlexAlignment vertAlignment) {
+        this(new SizedWidget(widget), horzAlignment, vertAlignment, GFlexAlignment.STRETCH);
     }
     public CaptionWidget(SizedWidget widget, GFlexAlignment horzAlignment, GFlexAlignment vertAlignment, GFlexAlignment valueAlignmentVert) {
         this.widget = widget;

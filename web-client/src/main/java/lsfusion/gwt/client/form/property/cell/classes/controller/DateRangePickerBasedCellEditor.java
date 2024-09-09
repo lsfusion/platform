@@ -6,6 +6,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
+import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.SimpleDatePatternConverter;
@@ -107,7 +108,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
         return this.@DateRangePickerBasedCellEditor::getPickerObject()().container.get(0);
     }-*/;
 
-    private String getHorzTextAlignment() {
+    private GFlexAlignment getHorzTextAlignment() {
         return property.getHorzTextAlignment(); // should be taken from RenderContext, but for now this would do
     }
 

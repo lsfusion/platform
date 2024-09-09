@@ -136,6 +136,9 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public boolean hasDynamicImage() {
         return getPropertyExtra(IMAGE) != null;
     }
+    public boolean hasDynamicCaption() {
+        return getPropertyExtra(CAPTION) != null;
+    }
 
     public Group group;
     

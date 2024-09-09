@@ -571,16 +571,6 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     }
 
     /**
-     * Adds a column to the end of the table with an associated header.
-     *
-     * @param col    the column to be added
-     * @param header the associated {@link Header}
-     */
-    public void addColumn(Column<T, ?> col, Header<?> header, Header<?> footer) {
-        insertColumn(getColumnCount(), col, header, footer);
-    }
-
-    /**
      * Inserts a column into the table at the specified index with an associated
      * header.
      *

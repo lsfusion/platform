@@ -72,7 +72,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
         SizedWidget sizedLabel = null;
         if(property.caption != null) {
             label = GFormLayout.createLabelCaptionWidget();
-            BaseImage.initImageText(label, null, property.appImage, property.panelCaptionVertical ? ImageHtmlOrTextType.PANEL_CAPTION_VERT : ImageHtmlOrTextType.PANEL_CAPTION_HORZ);
+            BaseImage.initImageText(label, null, property.appImage, property.getCaptionHtmlOrTextType());
             label.addStyleName("panel-property-label");
 
             label.getElement().setAttribute("for", globalID);
@@ -88,8 +88,9 @@ public class PropertyPanelRenderer extends PanelRenderer {
             sizedLabel = new SizedWidget(label, property.getCaptionWidth(), property.getCaptionHeight());
         }
 
-        GFlexAlignment panelCaptionAlignment = property.getPanelCaptionAlignment(); // vertical alignment
-        boolean captionLast = property.isPanelCaptionLast();
+        GFlexAlignment captionAlignmentHorz = property.getCaptionAlignmentHorz(); // vertical alignment
+        GFlexAlignment captionAlignmentVert = property.getCaptionAlignmentVert(); // vertical alignment
+        boolean captionLast = property.isCaptionLast();
 
         GFlexAlignment panelValueAlignment = property.getPanelValueAlignment(); // vertical alignment
 
@@ -98,8 +99,8 @@ public class PropertyPanelRenderer extends PanelRenderer {
 
         boolean isAlignCaption = property.isAlignCaption() && captionContainer != null;
         boolean inline = !isAlignCaption && property.isInline();
-        boolean verticalDiffers = property.caption != null && property.comment != null && !inline && property.panelCaptionVertical != property.panelCommentVertical;
-        boolean panelVertical = property.caption != null ? property.panelCaptionVertical : property.panelCommentVertical;
+        boolean verticalDiffers = property.caption != null && property.comment != null && !inline && property.captionVertical != property.panelCommentVertical;
+        boolean panelVertical = property.caption != null ? property.captionVertical : property.panelCommentVertical;
 
         SizedWidget sizedComment = null;
         if(property.comment != null) {
@@ -125,17 +126,17 @@ public class PropertyPanelRenderer extends PanelRenderer {
         }
 
         if (isAlignCaption) { // align caption
-            if(!panelCaptionAlignment.equals(GFlexAlignment.END))
-                captionLast = false; // it's odd having caption last for alignments other than END
+            if(captionLast && property.isPanelBoolean()) // the main problem here is that in the boolean default caption last we don't know if it's gonna be aligned, so we'll use that hack for now (until we'll move isAlignCaptions to the server)
+                captionLast = false;
 
-            captionContainer.set(new CaptionWidget(captionLast ? valuePanel : sizedLabel, GFlexAlignment.START, panelCaptionAlignment, panelValueAlignment));
+            captionContainer.set(new CaptionWidget(captionLast ? valuePanel : sizedLabel, captionAlignmentHorz, captionAlignmentVert, panelValueAlignment));
             return (captionLast ? sizedLabel : valuePanel).view;
         }
 
         InlineComponentViewWidget componentViewWidget = new InlineComponentViewWidget(panelVertical);
 
         if (sizedLabel != null && !captionLast)
-            componentViewWidget.add(sizedLabel, panelCaptionAlignment, false, "caption");
+            componentViewWidget.add(sizedLabel, panelVertical ? captionAlignmentHorz : captionAlignmentVert, false, "caption");
 
         if (sizedComment != null && commentFirst && !verticalDiffers)
             componentViewWidget.add(sizedComment, panelCommentAlignment, false, "comment");
@@ -146,7 +147,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
             componentViewWidget.add(sizedComment, panelCommentAlignment, false, "comment");
 
         if (sizedLabel != null && captionLast)
-            componentViewWidget.add(sizedLabel, panelCaptionAlignment, false, "caption");
+            componentViewWidget.add(sizedLabel, panelVertical ? captionAlignmentHorz : captionAlignmentVert, false, "caption");
 
         if(inline)
             return componentViewWidget;

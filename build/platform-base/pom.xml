@@ -31,7 +31,6 @@
         <com.jcraft.version>0.1.54</com.jcraft.version>
         <com.healthmarketscience.version>3.0.1</com.healthmarketscience.version>
         <netty.version>3.2.1.Final</netty.version>
-        <postgresql.version>42.7.3</postgresql.version>
         <!-- don't forget to merge jasperreports_extension.properties file when updating jasperreports -->
         <jasper.version>6.20.6</jasper.version>
         <jasper.htmlcomponent.version>6.20.5</jasper.htmlcomponent.version>
@@ -205,11 +204,6 @@
                 <groupId>org.jboss.netty</groupId>
                 <artifactId>netty</artifactId>
                 <version>${netty.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.postgresql</groupId>
-                <artifactId>postgresql</artifactId>
-                <version>${postgresql.version}</version>
             </dependency>
             <dependency>
                 <groupId>net.sf.jasperreports</groupId>

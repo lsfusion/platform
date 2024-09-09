@@ -19,7 +19,7 @@ public abstract class ImageButton extends FormButton {
 
         this.vertical = vertical;
 
-        BaseImage.initImageText(this, caption, image, this.vertical ? ImageHtmlOrTextType.BUTTON_VERT : ImageHtmlOrTextType.BUTTON_HORZ);
+        BaseImage.initImageText(this, caption, image, ImageHtmlOrTextType.BUTTON(this.vertical));
     }
 
     protected abstract BaseImage getImage();
