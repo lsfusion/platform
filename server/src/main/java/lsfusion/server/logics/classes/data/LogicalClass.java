@@ -52,6 +52,7 @@ public class LogicalClass extends DataClass<Boolean> {
         return Boolean.class;
     }
 
+    @Override
     public void fillReportDrawField(ReportDrawField reportField) {
         super.fillReportDrawField(reportField);
 

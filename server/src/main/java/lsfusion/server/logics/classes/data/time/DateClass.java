@@ -47,11 +47,16 @@ public class DateClass extends TimeSeriesClass<LocalDate> {
         return java.time.LocalDate.class;
     }
 
+    @Override
+    public String getDefaultPattern() {
+        LocalePreferences localePreferences = ThreadLocalContext.get().getLocalePreferences();
+        return localePreferences != null ? localePreferences.dateFormat : ThreadLocalContext.getTFormats().datePattern;
+    }
+
     public void fillReportDrawField(ReportDrawField reportField) {
         super.fillReportDrawField(reportField);
 
         reportField.alignment = HorizontalTextAlignEnum.RIGHT;
-        reportField.pattern = ThreadLocalContext.getTFormats().datePattern;
     }
 
     public byte getTypeID() {

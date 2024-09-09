@@ -162,6 +162,11 @@ public class ReportDesignGenerator {
             Integer widthUser = formInterface.getUserWidth(prop);
             if (widthUser != null)
                 reportField.setWidthUser(widthUser);
+
+            String userPattern = formInterface.getUserPattern(prop);
+            if(userPattern != null)
+                reportField.pattern = userPattern;
+
             return reportField;
         });
     }
