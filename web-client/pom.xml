@@ -368,5 +368,11 @@
             <artifactId>xalan</artifactId>
             <version>2.7.3</version>
         </dependency>
+        <!--https://stackoverflow.com/questions/76555759/java-lang-classnotfoundexception-org-apache-xml-serializer-outputpropertiesfact-->
+        <dependency>
+            <groupId>xalan</groupId>
+            <artifactId>serializer</artifactId>
+            <version>2.7.3</version>
+        </dependency>
     </dependencies>
 </project>
