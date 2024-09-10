@@ -584,8 +584,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     public void updateLoadings(GPropertyDraw property, NativeHashMap<GGroupObjectValue, PValue> propLoadings) {
         // here can be leaks because of nulls (so in theory nulls better to be removed)
-        GwtSharedUtils.putUpdate(loadings, property, propLoadings, true);
-
+        GwtSharedUtils.putUpdate(loadings, property, propLoadings, loadings.containsKey(property));
         dataUpdated = true;
     }
 
