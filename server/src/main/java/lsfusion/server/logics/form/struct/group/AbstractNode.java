@@ -64,7 +64,7 @@ public abstract class AbstractNode extends ImmutableObject {
         }
 
         public ImRevMap<ValueClassWrapper, ValueClassWrapper> map(CacheEntry entry) {
-            if(!(mapClasses.size() == entry.mapClasses.size() && BaseUtils.hashEquals(node, entry.node) && BaseUtils.hashEquals(isNoAny, entry.isNoAny)))
+            if(!(mapClasses.size() == entry.mapClasses.size() && BaseUtils.hashEquals(node, entry.node) && isNoAny == entry.isNoAny))
                 return null;
 
             MRevMap<ValueClassWrapper, ValueClassWrapper> mResult = MapFact.mRevMap();
