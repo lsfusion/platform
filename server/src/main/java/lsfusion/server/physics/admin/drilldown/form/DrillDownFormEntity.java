@@ -99,4 +99,9 @@ public class DrillDownFormEntity<I extends PropertyInterface, P extends Property
     public boolean needsToBeSynchronized() {
         return false;
     }
+
+    @Override
+    protected boolean isNoAny() {
+        return true; //need to show less properties on drillDown forms
+    }
 }

@@ -397,28 +397,29 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         return SetFact.singletonOrder(this);
     }
 
-    public ImList<ActionOrPropertyClassImplement> getActionOrProperties(ImSet<ValueClassWrapper> valueClasses, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses) {
+    @Override
+    public ImList<ActionOrPropertyClassImplement> getActionOrProperties(ImSet<ValueClassWrapper> valueClasses, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses, boolean isNoAny) {
         if(valueClasses.size() == 1) { // optimization primarily for DrillDown
-            if(interfaces.size() == 1 && isInValueClassInterface(getOrderInterfaces(), valueClasses.toOrderSet()))
+            if(interfaces.size() == 1 && isInValueClassInterface(getOrderInterfaces(), valueClasses.toOrderSet(), isNoAny))
                 return ListFact.singleton(createClassImplement(valueClasses.toOrderSet(), SetFact.singletonOrder(interfaces.single())));
             return ListFact.EMPTY();
         }
 
-        return super.getActionOrProperties(valueClasses, mapClasses);
+        return super.getActionOrProperties(valueClasses, mapClasses, isNoAny);
     }
 
     @Override
-    public ImList<ActionOrPropertyClassImplement> calcActionOrProperties(ImSet<ValueClassWrapper> valueClasses, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses) {
-        return getActionOrProperties(FormEntity.getSubsets(valueClasses));
+    public ImList<ActionOrPropertyClassImplement> calcActionOrProperties(ImSet<ValueClassWrapper> valueClasses, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses, boolean isNoAny) {
+        return getActionOrProperties(FormEntity.getSubsets(valueClasses), isNoAny);
     }
 
-    private ImList<ActionOrPropertyClassImplement> getActionOrProperties(ImCol<ImSet<ValueClassWrapper>> classLists) {
+    private ImList<ActionOrPropertyClassImplement> getActionOrProperties(ImCol<ImSet<ValueClassWrapper>> classLists, boolean isNoAny) {
         MList<ActionOrPropertyClassImplement> mResultList = ListFact.mList();
         for (ImSet<ValueClassWrapper> classes : classLists) {
             if (interfaces.size() == classes.size()) {
                 final ImOrderSet<ValueClassWrapper> orderClasses = classes.toOrderSet();
                 for (ImOrderSet<T> mapping : new ListPermutations<>(getOrderInterfaces())) {
-                    if (isInValueClassInterface(mapping, orderClasses)) {
+                    if (isInValueClassInterface(mapping, orderClasses, isNoAny)) {
                         mResultList.add(createClassImplement(orderClasses, mapping));
                     }
                 }
@@ -427,7 +428,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         return mResultList.immutableList();
     }
 
-    private boolean isInValueClassInterface(ImOrderSet<T> mapping, ImOrderSet<ValueClassWrapper> orderClasses) {
+    private boolean isInValueClassInterface(ImOrderSet<T> mapping, ImOrderSet<ValueClassWrapper> orderClasses, boolean isNoAny) {
         // if isAny true for very abstract classes (for example Object) there are too many props added, which has a really bad performance
         int classCount = 0;
         for(ValueClassWrapper orderClass : orderClasses) {
@@ -435,7 +436,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             if(valueClass instanceof CustomClass)
                 classCount += ((CustomClass) valueClass).getAllChildren().size();
         }
-        boolean isAny = false; //previously there was optimization isAny = classCount < 100;
+        boolean isAny = !isNoAny && classCount < 100;
         return isInInterface(mapping.mapOrderValues((i, value) -> orderClasses.get(i).valueClass.getUpSet()), isAny);
     }
 
