@@ -53,16 +53,18 @@ public abstract class AbstractNode extends ImmutableObject {
     private static class CacheEntry {
         private final AbstractNode node;
         private final ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses;
+        private final boolean isNoAny;
 
         private ImList<ActionOrPropertyClassImplement> result;
 
-        public CacheEntry(AbstractNode node, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses) {
+        public CacheEntry(AbstractNode node, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses, boolean isNoAny) {
             this.node = node;
             this.mapClasses = mapClasses;
+            this.isNoAny = isNoAny;
         }
 
         public ImRevMap<ValueClassWrapper, ValueClassWrapper> map(CacheEntry entry) {
-            if(!(mapClasses.size() == entry.mapClasses.size() && BaseUtils.hashEquals(node, entry.node)))
+            if(!(mapClasses.size() == entry.mapClasses.size() && BaseUtils.hashEquals(node, entry.node) && BaseUtils.hashEquals(isNoAny, entry.isNoAny)))
                 return null;
 
             MRevMap<ValueClassWrapper, ValueClassWrapper> mResult = MapFact.mRevMap();
@@ -83,14 +85,14 @@ public abstract class AbstractNode extends ImmutableObject {
                 result += mapClasses.getKey(i).hashCode() ^ mapClasses.getValue(i).size();
             }
 
-            return 31 * result + node.hashCode();
+            return 31 * (31 * result + node.hashCode()) + (isNoAny ? 1 : 0);
         }
     }
     final static LRUSVSMap<Integer, MAddCol<CacheEntry>> hashProps = new LRUSVSMap<>(LRUUtil.G2);
 
     @ManualLazy
     public ImList<ActionOrPropertyClassImplement> getActionOrProperties(ImSet<ValueClassWrapper> valueClasses, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses, boolean isNoAny) {
-        CacheEntry entry = new CacheEntry(this, mapClasses); // кэширование
+        CacheEntry entry = new CacheEntry(this, mapClasses, isNoAny); // кэширование
         int hash = entry.hash();
         MAddCol<CacheEntry> col = hashProps.get(hash);
         if(col == null) {
