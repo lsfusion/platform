@@ -187,10 +187,10 @@ public class Group extends AbstractNode {
     }
 
     @Override
-    public ImList<ActionOrPropertyClassImplement> calcActionOrProperties(ImSet<ValueClassWrapper> valueClasses, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses) {
+    public ImList<ActionOrPropertyClassImplement> calcActionOrProperties(ImSet<ValueClassWrapper> valueClasses, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses, boolean isNoAny) {
         MList<ActionOrPropertyClassImplement> mResult = ListFact.mList();
         for (AbstractNode child : getChildrenListIt()) {
-            mResult.addAll(child.getActionOrProperties(valueClasses, mapClasses));
+            mResult.addAll(child.getActionOrProperties(valueClasses, mapClasses, isNoAny));
         }
         return mResult.immutableList();
     }

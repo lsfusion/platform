@@ -89,7 +89,7 @@ public abstract class AbstractNode extends ImmutableObject {
     final static LRUSVSMap<Integer, MAddCol<CacheEntry>> hashProps = new LRUSVSMap<>(LRUUtil.G2);
 
     @ManualLazy
-    public ImList<ActionOrPropertyClassImplement> getActionOrProperties(ImSet<ValueClassWrapper> valueClasses, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses) {
+    public ImList<ActionOrPropertyClassImplement> getActionOrProperties(ImSet<ValueClassWrapper> valueClasses, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses, boolean isNoAny) {
         CacheEntry entry = new CacheEntry(this, mapClasses); // кэширование
         int hash = entry.hash();
         MAddCol<CacheEntry> col = hashProps.get(hash);
@@ -107,7 +107,7 @@ public abstract class AbstractNode extends ImmutableObject {
             }
         }
 
-        ImList<ActionOrPropertyClassImplement> result = calcActionOrProperties(valueClasses, mapClasses);
+        ImList<ActionOrPropertyClassImplement> result = calcActionOrProperties(valueClasses, mapClasses, isNoAny);
 
         entry.result = result;
         synchronized (col) {
@@ -117,5 +117,5 @@ public abstract class AbstractNode extends ImmutableObject {
         return result;
     }
 
-    public abstract ImList<ActionOrPropertyClassImplement> calcActionOrProperties(ImSet<ValueClassWrapper> valueClasses, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses);
+    public abstract ImList<ActionOrPropertyClassImplement> calcActionOrProperties(ImSet<ValueClassWrapper> valueClasses, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses, boolean isNoAny);
 }
