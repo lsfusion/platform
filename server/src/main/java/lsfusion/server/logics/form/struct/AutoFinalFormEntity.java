@@ -42,7 +42,11 @@ public class AutoFinalFormEntity extends AutoFormEntity {
     }
 
     private ImList<ActionOrPropertyClassImplement> getActionOrProperties(Group group, ImSet<ValueClassWrapper> classes) {
-        return group.getActionOrProperties(classes, classes.group(key -> key.valueClass));
+        return group.getActionOrProperties(classes, classes.group(key -> key.valueClass), isNoAny());
+    }
+
+    protected boolean isNoAny() {
+        return false;
     }
 
     public void addPropertyDraw(ObjectEntity object, Group group) {
