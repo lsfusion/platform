@@ -20,6 +20,8 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.*;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.classes.data.link.LinkClass;
+import lsfusion.server.logics.classes.data.time.IntervalClass;
+import lsfusion.server.logics.classes.data.time.TimeSeriesClass;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncInput;
 import lsfusion.server.logics.form.interactive.action.async.AsyncNoWaitExec;
@@ -224,8 +226,16 @@ public class PropertyDrawView extends BaseComponentView {
 //        if(!entity.isList(context) && isCaptionVertical(context))
 //            return FlexAlignment.CENTER;
 
-        if(entity.isList(context))
+        if(entity.isList(context)) {
+            if (isProperty(context)) {
+                Type type = getAssertValueType(context);
+                // if we have "fixed size type" we want also start caption alignment
+                if (type instanceof TimeSeriesClass || type instanceof IntervalClass)
+                    return FlexAlignment.START;
+            }
+
             return getValueAlignmentHorz(context);
+        }
 
         return FlexAlignment.START;
     }
