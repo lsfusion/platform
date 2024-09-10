@@ -50,6 +50,8 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
     }
 
     public static SessionInfo getSessionInfo(HttpServletRequest request) {
+        Locale clientLocale = LocaleContextHolder.getLocale();
+
         String hostName = ExternalLogicsAndSessionRequestHandler.getRequestCookies(request).get(ServerUtils.HOSTNAME_COOKIE_NAME);
         if(hostName == null)
             hostName = request.getRemoteHost();
@@ -60,7 +62,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
 
         Cookie colorTheme = WebUtils.getCookie(request, "LSFUSION_CLIENT_COLOR_THEME");
 
-        return new SessionInfo(hostName, request.getRemoteAddr(), null, null, timeZone != null ? TimeZone.getTimeZone(URLDecoder.decode(timeZone.getValue())) : null,
+        return new SessionInfo(hostName, request.getRemoteAddr(), clientLocale.getLanguage(), clientLocale.getCountry(), timeZone != null ? TimeZone.getTimeZone(URLDecoder.decode(timeZone.getValue())) : null,
                 dateFormat != null ? URLDecoder.decode(dateFormat.getValue()) : null, timeFormat != null ? URLDecoder.decode(timeFormat.getValue()) : null,
                 colorTheme != null ? colorTheme.getValue() : null, MainController.getExternalRequest(new ExternalRequest.Param[0], request));
     }
