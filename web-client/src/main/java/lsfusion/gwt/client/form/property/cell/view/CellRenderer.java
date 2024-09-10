@@ -187,11 +187,11 @@ public abstract class CellRenderer {
 
     public static void renderTextAlignment(Element element, GFlexAlignment horzAlignment, GFlexAlignment vertAlignment) {
         switch(horzAlignment) {
+            case STRETCH:
             case START:
                 element.addClassName("prop-text-horz-start");
                 break;
             case CENTER:
-            case STRETCH:
                 element.addClassName("prop-text-horz-center");
                 break;
             case END:
@@ -200,11 +200,11 @@ public abstract class CellRenderer {
         }
 
         switch (vertAlignment) {
+            case STRETCH:
             case START:
                 element.addClassName("prop-text-vert-start");
                 break;
             case CENTER:
-            case STRETCH:
                 element.addClassName("prop-text-vert-center");
                 break;
             case END:

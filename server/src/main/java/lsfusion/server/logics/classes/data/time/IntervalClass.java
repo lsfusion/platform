@@ -1,5 +1,6 @@
 package lsfusion.server.logics.classes.data.time;
 
+import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.DBType;
 import lsfusion.server.data.type.exec.TypeEnvironment;
@@ -102,6 +103,11 @@ public abstract class IntervalClass<T> extends TextBasedClass<BigDecimal> {
     public BigDecimal getDefaultValue() {
         long time = new Date().getTime();
         return new BigDecimal(time + "." + time);
+    }
+
+    @Override
+    public FlexAlignment getValueAlignmentHorz() {
+        return FlexAlignment.END;
     }
 
     @Override
