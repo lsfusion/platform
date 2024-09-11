@@ -643,6 +643,7 @@ public class MainFrame implements EntryPoint {
                 changeColorTheme(gClientSettings.colorTheme);
                 colorPreferences = gClientSettings.colorPreferences;
                 StyleDefaults.init();
+                Document.get().getDocumentElement().setAttribute("lang", gClientSettings.language);
                 dateFormat = gClientSettings.dateFormat;
                 timeFormat = gClientSettings.timeFormat;
                 dateTimeFormat = gClientSettings.dateFormat + " " + gClientSettings.timeFormat;
