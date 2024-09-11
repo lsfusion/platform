@@ -29,7 +29,9 @@ public class GTreeTableTree {
 
     public int getPropertyIndex(GPropertyDraw propertyDraw) {
         ArrayList<GPropertyDraw> properties = groupProperties.get(propertyDraw.groupObject);
-        return properties.indexOf(propertyDraw);
+        int index = properties.indexOf(propertyDraw);
+        //first column in tree is 'tree'
+        return index == -1 ? -1 : index + 1;
     }
 
     public int updateProperty(GPropertyDraw property) {
