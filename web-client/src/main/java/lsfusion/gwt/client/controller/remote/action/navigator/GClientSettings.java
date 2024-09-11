@@ -23,6 +23,7 @@ public class GClientSettings implements Serializable, IsSerializable {
     public String size;
     public Map<String, String> versionedColorThemesCss;
     public GColorPreferences colorPreferences;
+    public String language;
     public String dateFormat;
     public String timeFormat;
     public Integer twoDigitYearStart;
@@ -48,7 +49,7 @@ public class GClientSettings implements Serializable, IsSerializable {
     public GClientSettings(long busyDialogTimeout, boolean devMode, String projectLSFDir, boolean showDetailedInfo, int showDetailedInfoDelay, boolean suppressOnFocusChange,
                            boolean autoReconnectOnConnectionLost, boolean forbidDuplicateForms, boolean pivotOnlySelectedColumn,
                            String matchSearchSeparator, GColorTheme colorTheme, boolean useBootstrap, String size, Map<String, String> versionedColorThemesCss,
-                           GColorPreferences colorPreferences, String dateFormat, String timeFormat, Integer twoDigitYearStart, String staticImagesURL,
+                           GColorPreferences colorPreferences, String language, String dateFormat, String timeFormat, Integer twoDigitYearStart, String staticImagesURL,
                            String[] preDefinedDateRangesNames, boolean useTextAsFilterSeparator, boolean verticalNavbar, boolean userFiltersManualApplyMode,
                            boolean disableActionsIfReadonly, boolean enableShowingRecentlyLogMessages, String pushNotificationPublicKey,
                            double maxStickyLeft, boolean jasperReportsIgnorePageMargins) {
@@ -67,6 +68,7 @@ public class GClientSettings implements Serializable, IsSerializable {
         this.useBootstrap = useBootstrap;
         this.size = size;
         this.colorPreferences = colorPreferences;
+        this.language = language;
         this.dateFormat = dateFormat;
         this.timeFormat = timeFormat;
         this.twoDigitYearStart = twoDigitYearStart;

@@ -207,7 +207,7 @@ public class GGridPropertyTableHeader extends Header<String> {
             renderedAlignment = true;
         }
 
-        GwtClientUtils.renderValueShrinkHorz(th, !simpleText, true); // shrinkHorz = true "breaks" word-break in text
+        GwtClientUtils.renderValueShrinkHorz(th, true, true);
 
         // we'll render alignment with flex, and in all not simple text cases (will be wrap-img) we'll have to change the display
         if(!renderedAlignment && (!noImage || wrapFixed || (isWrap && !vertTextAlignment.equals(GFlexAlignment.START)))) // the last check is need to align start when the text doesn't fit

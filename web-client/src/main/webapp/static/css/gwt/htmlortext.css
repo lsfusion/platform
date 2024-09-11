@@ -5,6 +5,8 @@
 .html-or-text-wrap-collapse /* optimization fallback */
 {
     white-space: pre-wrap;
+    hyphens: auto;
+    overflow-wrap: normal; /* it seems that user agent sometimes by default sets it to break-word, word-break in html-or-text-wrap-wordbreak will change it if needed (actually it will be ignored) */
 }
 
 .html-or-text,
