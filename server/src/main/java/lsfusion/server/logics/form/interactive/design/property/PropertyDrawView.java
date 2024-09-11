@@ -342,7 +342,7 @@ public class PropertyDrawView extends BaseComponentView {
         if (captionWrapWordBreak != null)
             return captionWrapWordBreak;
 
-        return true; // moreInfo; false looks odd with wrap 2, 3 // && entity.isList(context);
+        return false; // moreInfo; false looks odd with wrap 2, 3 // && entity.isList(context);
     }
 
     private static final ExtInt ELLIPSIS_LIMIT = new ExtInt(40);
