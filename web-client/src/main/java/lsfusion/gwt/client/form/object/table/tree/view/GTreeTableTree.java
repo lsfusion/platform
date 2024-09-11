@@ -31,7 +31,7 @@ public class GTreeTableTree {
         ArrayList<GPropertyDraw> properties = groupProperties.get(propertyDraw.groupObject);
         int index = properties.indexOf(propertyDraw);
         //first column in tree is 'tree'
-        return index != -1 ? (index + 1) : index;
+        return index == -1 ? -1 : index + 1;
     }
 
     public int updateProperty(GPropertyDraw property) {
