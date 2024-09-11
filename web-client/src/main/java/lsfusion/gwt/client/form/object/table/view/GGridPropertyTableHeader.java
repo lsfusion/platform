@@ -164,7 +164,7 @@ public class GGridPropertyTableHeader extends Header<String> {
         boolean hasDynamicCaption = property != null && property.hasDynamicCaption();
 
         GFlexAlignment horzTextAlignment = property != null ? property.getCaptionAlignmentHorz() : GFlexAlignment.START;
-        GFlexAlignment vertTextAlignment = property != null ? property.getCaptionAlignmentVert() : GFlexAlignment.END;
+        GFlexAlignment vertTextAlignment = property != null ? property.getCaptionAlignmentVert() : GFlexAlignment.CENTER;
 
         if(rerender) { // assert that property is the same (except order), so we don't clear (including clearFlexAlignment and clearTextAlignment) anything (however filling some props classes one more time, but it doesn't matter)
             GwtClientUtils.removeAllChildren(th);

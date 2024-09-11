@@ -33,7 +33,6 @@
 
 .html-or-text-wrap-wordbreak {
     word-break: break-word;
-    hyphens: auto;
 }
 
 .html-or-text-ellipsis {
