@@ -85,6 +85,8 @@ public class MainFrame implements EntryPoint {
     
     public static GColorPreferences colorPreferences;
 
+    public static boolean hasCapitalHyphensProblem; // first capital is not hyphenized
+
     public static String dateFormat;
     public static String timeFormat;
     public static String dateTimeFormat;
@@ -643,7 +645,9 @@ public class MainFrame implements EntryPoint {
                 changeColorTheme(gClientSettings.colorTheme);
                 colorPreferences = gClientSettings.colorPreferences;
                 StyleDefaults.init();
-                Document.get().getDocumentElement().setAttribute("lang", gClientSettings.language);
+                String language = gClientSettings.language;
+                Document.get().getDocumentElement().setAttribute("lang", language);
+                hasCapitalHyphensProblem = language != null && language.equals("en");
                 dateFormat = gClientSettings.dateFormat;
                 timeFormat = gClientSettings.timeFormat;
                 dateTimeFormat = gClientSettings.dateFormat + " " + gClientSettings.timeFormat;

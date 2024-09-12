@@ -1749,13 +1749,13 @@ public class GwtClientUtils {
 
 
     public static void initCaptionHtmlOrText(Element element, CaptionHtmlOrTextType type) {
-        initCaptionHtmlOrText(element, type.getRenderer());
+        initCaptionHtmlOrText(element, type.getRenderer(), MainFrame.hasCapitalHyphensProblem && type.getWrap() != 1);
     }
     public static void initDataHtmlOrText(Element element, DataHtmlOrTextType type) {
         initDataHtmlOrText(element, type.getRenderer());
     }
-    private static native void initCaptionHtmlOrText(Element element, JavaScriptObject renderer) /*-{
-        $wnd.initCaptionHtmlOrText(element, renderer);
+    private static native void initCaptionHtmlOrText(Element element, JavaScriptObject renderer, boolean hasCapitalHyphensProblem) /*-{
+        $wnd.initCaptionHtmlOrText(element, renderer, hasCapitalHyphensProblem);
     }-*/;
     public static native void initDataHtmlOrText(Element element, JavaScriptObject renderer) /*-{
         $wnd.initDataHtmlOrText(element, renderer);
