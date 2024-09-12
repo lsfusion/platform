@@ -157,7 +157,8 @@ function containsHtmlTag(value) {
 }
 
 // actually it is also data, however usually it's metadata
-function initCaptionHtmlOrText(element, renderer) {
+function initCaptionHtmlOrText(element, renderer, hasCapitalHyphensProblem) {
+    element.hasCapitalHyphensProblem = hasCapitalHyphensProblem;
     initHtmlOrText(element, renderer);
 }
 function initDataHtmlOrText(element, renderer) {
@@ -166,11 +167,64 @@ function initDataHtmlOrText(element, renderer) {
 function clearDataHtmlOrText(element, renderer) {
     clearHtmlOrText(element, renderer);
 }
+
+const englishVowels = ['a', 'e', 'i', 'o', 'u'];
+
+function getFirstWord(text) {
+    const length = text.length;
+    let i = 0;
+
+    // Iterate through the string to find the first non-letter character
+    while (i < length && ((text[i] >= 'A' && text[i] <= 'Z') || (text[i] >= 'a' && text[i] <= 'z'))) {
+        i++;
+    }
+
+    // Return the substring from the start to the first non-letter character
+    return text.slice(0, i);
+}
+
+// the problem that some languages doesnot hyphenate capital words (because consider them "names"), but all captions usually starts with capitals so we have to hyphenate first word manually
+function fixHyphens(element, value) {
+    if (element.hasCapitalHyphensProblem && value != null && value.length >= 6) {
+        let firstLetter = value.charAt(0);
+        if (firstLetter === firstLetter.toUpperCase() && firstLetter !== firstLetter.toLowerCase()) {
+            let firstWord = getFirstWord(value);
+            if(firstWord.length >= 6) {
+                let transformedValue = firstWord.slice(0, 3);
+                let i = 3; // we don't want split when there are less or equal than 2 letters in the beginning
+                let nextChar;
+                // looking for not vowel
+                while (i < firstWord.length && englishVowels.includes(nextChar = firstWord.charAt(i))) {
+                    transformedValue += nextChar;
+                    i++;
+                }
+                let nonVowelChar = nextChar; // next is non-vowel
+                // looking for vowel
+                while (i + 1 < firstWord.length && !englishVowels.includes(nextChar = firstWord.charAt(i + 1))) {
+                    transformedValue += nonVowelChar;
+                    i++;
+                    nonVowelChar = nextChar;
+                }
+                if (i + 2 < firstWord.length) {  // we don't want split when there are less or equal than 2 letters in the end
+                    // let vowelChar = nextChar; // next is vowel-char, but we just slice form the nonVowel
+                    // if (value !== transformedValue + value.slice(i))
+                    //     throw new Error("bug");
+                    return transformedValue + '\u00AD' + value.slice(i);
+                }
+            }
+        }
+    }
+    return value;
+}
 function setCaptionHtmlOrText(element, value) {
-    setHtmlOrText(element, value, containsHtmlTag(value));
+    let html = containsHtmlTag(value);
+    if(!html)
+        value = fixHyphens(element, value);
+
+    setHtmlOrText(element, value, html);
 }
 function setCaptionNodeText(node, value) {
-    setNodeText(node, value);
+    setNodeText(node, fixHyphens(node.parentElement, value));
 }
 function setDataHtmlOrText(element, value, html) {
     setHtmlOrText(element, value, html)
