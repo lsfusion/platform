@@ -36,7 +36,7 @@ public class CheckCurrentDateDependsAction extends InternalAction {
         DataObject propertyObject = context.getDataKeyValue(propertyInterface);
 
         boolean allow = true;
-        Property<?> property = BL.findProperty((String) BL.reflectionLM.canonicalNameProperty.read(context, propertyObject)).property;
+        Property<?> property = BL.findProperty(((String) BL.reflectionLM.canonicalNameProperty.read(context, propertyObject)).trim()).property;
         if (Property.depends(property, BL.timeLM.currentDate.property)) {
             allow = JOptionPane.YES_OPTION == (Integer) context.requestUserInteraction(
                     new ConfirmClientAction(localize("{security.property.depends.on.current.date}"),
