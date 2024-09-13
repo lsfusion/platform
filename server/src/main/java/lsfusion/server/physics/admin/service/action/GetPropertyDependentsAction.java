@@ -27,7 +27,7 @@ public class GetPropertyDependentsAction extends InternalAction {
         ObjectValue propertyObject = getParamValue(0, context);
         boolean dependencies = getParam(1, context) != null;
         BusinessLogics BL = context.getBL();
-        Property<?> property = BL.findProperty((String) BL.reflectionLM.canonicalNameProperty.read(context, propertyObject)).property;
+        Property<?> property = BL.findProperty(((String) BL.reflectionLM.canonicalNameProperty.read(context, propertyObject)).trim()).property;
         List<AggregateProperty> properties = context.getDbManager().getDependentProperties(context.getSession(), property, new HashSet<>(), dependencies);
 
         for(int i = 0; i < properties.size(); i++) {
