@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.base.resize;
 
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style;
@@ -61,6 +62,7 @@ public class ResizeHandler implements Event.NativePreviewHandler {
                         helper.isVertical() ? Style.Cursor.ROW_RESIZE : Style.Cursor.COL_RESIZE);
                 if (eventType.equals(MOUSEDOWN)) {
                     resizeHandler = new ResizeHandler(helper, resizedChild.index);
+                    disableSelection();
 
                     // if we're not propagating native event, then BLUR event is also canceled and for example editing is not finished
                     // in all other cases it doesn't matter, since there is no stop propagation for MOUSEDOWN event, and it is the only known problem with preventing default (except expand tree but it seems that in grid everything works fine anyway)
@@ -196,6 +198,7 @@ public class ResizeHandler implements Event.NativePreviewHandler {
         } else if (nativeEvent.getType().equals(MOUSEUP)) {
             previewHandlerReg.removeHandler();
             resizeHandler = null;
+            enableSelection();
         }
     }
 
@@ -205,5 +208,13 @@ public class ResizeHandler implements Event.NativePreviewHandler {
             double restDelta = helper.resizeChild(index, dragX);
             initialMouse += dragX - Math.round(restDelta);
         }
+    }
+
+    private static void disableSelection() {
+        Document.get().getBody().addClassName("no-select");
+    }
+
+    private static void enableSelection() {
+        Document.get().getBody().removeClassName("no-select");
     }
 }
