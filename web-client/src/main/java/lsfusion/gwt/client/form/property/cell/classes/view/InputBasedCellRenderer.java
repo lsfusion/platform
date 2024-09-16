@@ -105,11 +105,14 @@ public abstract class InputBasedCellRenderer extends CellRenderer {
         return element;
     }
 
-    public static InputElement createInputElement(GFullInputType type) {
+    public static InputElement createInputElement(GPropertyDraw property, GFullInputType type) {
         GInputType inputType = type.inputType;
         InputElement inputElement = GwtClientUtils.createInputElement(inputType.getName());
         if(inputType.isNumber() && type.type instanceof GIntegralType)
             inputElement.setAttribute("step", ((GIntegralType) type.type).getStep());
+        if (inputType.isMultilineText() && property.hasAutoHeight()) {
+            autosizeTextarea(inputElement);
+        }
         return inputElement;
     }
     public static GFullInputType getInputType(GPropertyDraw property, RendererType rendererType) {
@@ -122,6 +125,10 @@ public abstract class InputBasedCellRenderer extends CellRenderer {
         }
         return new GFullInputType(inputType, renderType);
     }
+
+    public static native void autosizeTextarea(Element input) /*-{
+        $wnd.autosize(input);
+    }-*/;
 
     private final static String toolbarContainerProp = "toolbarContainer";
 
@@ -155,7 +162,7 @@ public abstract class InputBasedCellRenderer extends CellRenderer {
                 setToolbarContainer(toolbarContainer);
                 return toolbarContainer;
             } else
-                return InputBasedCellRenderer.createInputElement(getInputType(rendererType));
+                return InputBasedCellRenderer.createInputElement(property, getInputType(rendererType));
         }
 
         return super.createRenderElement(rendererType);
@@ -176,7 +183,7 @@ public abstract class InputBasedCellRenderer extends CellRenderer {
         if(isInput) {
             if (isTDOrTH || isToolbarContainer) {
                 // assert isTDOrTH != isToolbarContainer(element);
-                inputElement = InputBasedCellRenderer.createInputElement(fullInputType);
+                inputElement = InputBasedCellRenderer.createInputElement(property, fullInputType);
                 appendInputElement(element, inputElement, renderContext.isInputRemoveAllPMB(), isToolbarContainer, inputType); // isTDorTH -> isInputRemoveAllPMB - for the filter
             } else
                 inputElement = (InputElement) element;
