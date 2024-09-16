@@ -510,6 +510,7 @@ public class BaseUtils {
             byte[] obj = file.raw.getBytes();
             outStream.writeInt(obj.length);
             outStream.write(obj);
+            return;
         }
 
         throw new IOException();
