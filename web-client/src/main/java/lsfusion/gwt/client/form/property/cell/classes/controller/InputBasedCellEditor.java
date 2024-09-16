@@ -111,7 +111,7 @@ public abstract class InputBasedCellEditor extends RequestReplaceValueCellEditor
 
         RendererType rendererType = renderContext.getRendererType();
         GFullInputType editFullInputType = InputBasedCellRenderer.getInputType(property, rendererType);
-        inputElement = InputBasedCellRenderer.createInputElement(editFullInputType);
+        inputElement = InputBasedCellRenderer.createInputElement(property, editFullInputType);
 
         GInputType editInputType = editFullInputType.inputType;
         inputElementType = editInputType;

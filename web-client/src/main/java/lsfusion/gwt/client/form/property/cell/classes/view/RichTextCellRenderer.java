@@ -17,7 +17,7 @@ public class RichTextCellRenderer extends TextCellRenderer {
         String innerText = value != null ? format(value, updateContext.getRendererType(), updateContext.getPattern()) : "";
 
         element.setTitle(innerText);
-        initQuill(element, innerText, property.valueHeight == -1);
+        initQuill(element, innerText, property.hasAutoHeight());
 
         return true;
     }
