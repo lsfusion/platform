@@ -9,6 +9,7 @@ import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.PopupOwner;
 import lsfusion.gwt.client.base.view.grid.Header;
+import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.panel.view.PropertyPanelRenderer;
@@ -129,7 +130,7 @@ public class GGridPropertyTableHeader extends Header<String> {
     public void renderAndUpdateDom(TableCellElement th, boolean rerender) {
         Boolean sortDir = table.getSortDirection(this);
 
-        this.renderedCaptionElement = renderTD(th, rerender,  sortDir, caption, captionElementClass, image, false, property, table.getHeaderHeight());
+        this.renderedCaptionElement = renderTD(th, rerender,  sortDir, caption, captionElementClass, image, false, property, table.getUserHeaderHeight(), table.getGrid());
         if(!rerender)
             tippy = TooltipManager.initTooltip(new PopupOwner(table.getPopupOwnerWidget(), th), tooltipHelper);
         renderedSortDir = sortDir;
@@ -153,10 +154,10 @@ public class GGridPropertyTableHeader extends Header<String> {
     public final static GSize DEFAULT_HEADER_HEIGHT = GSize.CONST(34);
 
     // pretty similar to GGridPropertyTableBuilder.renderSized
-    public static Element renderTD(Element th, boolean rerender, Boolean sortDir, String caption, String captionElementClass, AppBaseImage image, boolean tableToExcel, GPropertyDraw property, GSize defaultHeight) {
+    public static Element renderTD(Element th, boolean rerender, Boolean sortDir, String caption, String captionElementClass, AppBaseImage image, boolean tableToExcel, GPropertyDraw property, GSize gridUserHeight, GGridProperty grid) {
         GSize height = property != null ? property.getCaptionHeight() : null;
         if(height == null)
-            height = defaultHeight;
+            height = gridUserHeight != null ? gridUserHeight : grid.getCaptionHeight();
 
         ImageHtmlOrTextType textType = property != null ? property.getCaptionHtmlOrTextType() : ImageHtmlOrTextType.OTHER;
 
@@ -181,9 +182,8 @@ public class GGridPropertyTableHeader extends Header<String> {
         boolean canBeHTML = !(caption != null && GwtClientUtils.containsHtmlTag(caption)); // && !hasDynamicCaption;
         boolean simpleText = noImage && canBeHTML;
 
-        int wrap = textType.getWrap();
-        boolean isWrap = wrap != 1;
-        boolean wrapFixed = isWrap && wrap != -1;
+        boolean isWrap = textType.isWrap();
+        boolean wrapFixed = isWrap && textType.getWrapLines() != -1;
 
         boolean isTDorTH = GwtClientUtils.isTDorTH(th);
         boolean needWrap = isTDorTH && // have display:td

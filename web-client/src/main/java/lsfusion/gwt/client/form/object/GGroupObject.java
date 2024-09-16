@@ -84,19 +84,17 @@ public class GGroupObject implements Serializable, HasNativeSID {
         this.rowMaxHeight = rowMaxHeight;
     }
 
-    public Pair<GSize, GSize> getSize(int lines, int columns, boolean extraColumn, GSize headerHeight) {
+    public Pair<GSize, GSize> getSize(int lines, int columns, GSize extraWidth, GSize headerHeight) {
         if(lines == -1)
             lines = 5;
 
         int columnCount = this.columnCount;
-        if(extraColumn)
-            columnCount++;
         if(columns == -1)
             columns = Math.min(columnCount <= 3 ? columnCount : (int) round(3 + pow(columnCount - 6, 0.7)), 6);
 
         Pair<GSize, GSize> gridPaddings = GFontMetrics.getGridPaddings(lines, columns, hasHeaders, hasFooters);
         return new Pair<>(
-                columnCount > 0 ? columnSumWidth.scale(columns).div(columnCount).add(gridPaddings.first) : GSize.ZERO,
+                (columnCount > 0 ? columnSumWidth.scale(columns).div(columnCount).add(gridPaddings.first) : GSize.ZERO).add(extraWidth),
                 getRowMaxHeight().scale(lines).add(gridPaddings.second).add(
                         headerHeight != null ? headerHeight : GGridPropertyTableHeader.DEFAULT_HEADER_HEIGHT)); // actually it is the max header height, so it's not that accurate, however for now it doesn't matter that much
     }

@@ -631,7 +631,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     public static class DrawOptions {
         
         // свойства, но пока реализовано как для всех
-        private int charWidth;
+        private Integer charWidth;
         private Integer valueWidth;
         private Integer valueHeight;
         private Integer captionWidth;
@@ -687,7 +687,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         }
 
         public void proceedDefaultDesign(PropertyDrawView propertyView) {
-            if(propertyView.charWidth == 0)
+            if(propertyView.charWidth == null)
                 propertyView.setCharWidth(charWidth);
             if(propertyView.getValueFlex() == null)
                 propertyView.setValueFlex(valueFlex);
@@ -735,7 +735,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         }
         
         public void inheritDrawOptions(DrawOptions options) {
-            if(charWidth == 0)
+            if(charWidth == null)
                 setCharWidth(options.charWidth);
 
             if(defaultCompare == null)
@@ -807,7 +807,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         }
 
 
-        public void setCharWidth(int charWidth) {
+        public void setCharWidth(Integer charWidth) {
             this.charWidth = charWidth;
         }
         public void setValueFlex(Boolean flex) {

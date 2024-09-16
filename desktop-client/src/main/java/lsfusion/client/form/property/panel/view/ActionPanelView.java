@@ -258,7 +258,7 @@ public class ActionPanelView extends ButtonWidget implements PanelView, EditProp
     public Dimension getPreferredSize() {
         Dimension baseSize = super.getPreferredSize();
         int propertyValueWidth = property.getValueWidth();
-        if (propertyValueWidth == -1 && property.charWidth > 0) { // preferred width is perfect otherwise
+        if (propertyValueWidth == -1 && property.charWidth >= 0) { // preferred width is perfect otherwise
             propertyValueWidth = property.getValueWidth(this);
         }
         int borderCorrection = SwingDefaults.getButtonBorderWidth() * 2;

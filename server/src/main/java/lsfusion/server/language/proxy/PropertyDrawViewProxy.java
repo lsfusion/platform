@@ -69,6 +69,9 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
     public void setCaptionHeight(int prefHeight) {
         target.captionHeight = prefHeight;
     }
+    public void setCaptionCharHeight(int prefHeight) {
+        target.captionCharHeight = prefHeight;
+    }
     public void setCaptionWidth(int prefWidth) {
         target.captionWidth = prefWidth;
     }
@@ -321,12 +324,8 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.valueShrinkVert = valueShrinkVert;
     }
 
-    public void setWrap(int wrap) {
-        target.wrap = wrap;
-    }
-
     public void setWrap(boolean wrap) {
-        target.wrap = wrap ? -1 : 1;
+        target.wrap = wrap;
     }
 
     public void setWrapWordBreak(boolean wrapWordBreak) {
@@ -341,12 +340,8 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.collapse = collapse;
     }
 
-    public void setCaptionWrap(int wrap) {
-        target.captionWrap = wrap;
-    }
-
     public void setCaptionWrap(boolean wrap) {
-        target.captionWrap = wrap ? -1 : 1;
+        target.captionWrap = wrap;
     }
 
     public void setCaptionWrapWordBreak(boolean wrapWordBreak) {

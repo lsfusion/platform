@@ -14,7 +14,8 @@ import java.util.Map;
 
 public abstract class ClientGridProperty extends ClientComponent {
 
-    public int headerHeight;
+    public int captionHeight;
+    public int captionCharHeight;
 
     public Boolean resizeOverflow;
 
@@ -52,7 +53,8 @@ public abstract class ClientGridProperty extends ClientComponent {
         // GridProperty
         boxed = inStream.readBoolean() ? inStream.readBoolean() : null;
 
-        headerHeight = inStream.readInt();
+        captionHeight = inStream.readInt();
+        captionCharHeight = inStream.readInt();
 
         resizeOverflow = inStream.readBoolean() ? inStream.readBoolean() : null;
 

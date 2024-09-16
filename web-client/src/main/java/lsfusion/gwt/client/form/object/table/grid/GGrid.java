@@ -1,8 +1,6 @@
 package lsfusion.gwt.client.form.object.table.grid;
 
-import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.size.GSize;
-import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.table.grid.view.GTableView;
@@ -10,35 +8,21 @@ import lsfusion.gwt.client.form.object.table.grid.view.GTableView;
 public class GGrid extends GGridProperty {
     public GGroupObject groupObject;
     public boolean quickSearch;
-    public int headerHeight;
 
     public Boolean resizeOverflow;
 
-    public GSize getHeaderHeight() {
-        if(headerHeight >= 0)
-            return GSize.getValueSize(headerHeight);
-        return null;
-    }
-
     public GContainer record;
-
-    public int lineWidth;
-    public int lineHeight;
 
     public Boolean boxed;
 
     @Override
-    protected GSize getDefaultWidth() {
-        return getDefaultSize().first;
+    protected GGroupObject getLastGroup() {
+        return groupObject;
     }
 
     @Override
-    protected GSize getDefaultHeight() {
-        return getDefaultSize().second;
-    }
-
-    private Pair<GSize, GSize> getDefaultSize() {
-        return groupObject.getSize(lineHeight, lineWidth,  false, getHeaderHeight());
+    protected GSize getExtraWidth() {
+        return GSize.ZERO;
     }
 
     public boolean isBoxed(GTableView table) {

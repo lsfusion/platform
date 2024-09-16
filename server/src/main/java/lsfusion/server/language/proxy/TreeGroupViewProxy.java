@@ -26,8 +26,13 @@ public class TreeGroupViewProxy extends GridPropertyViewProxy<TreeGroupView> {
         target.hierarchicalWidth = hierarchicalWidth;
     }
 
+    @Deprecated
     public void setHeaderHeight(int headerHeight) {
-        target.headerHeight = headerHeight;
+        target.captionHeight = headerHeight;
+    }
+
+    public void setCaptionHeight(int height) {
+        target.captionHeight = height;
     }
 
     public void setResizeOverflow(boolean resizeOverflow) {

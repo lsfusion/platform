@@ -24,6 +24,7 @@ import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.TableContainer;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
+import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGridUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
@@ -389,14 +390,14 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         return groupObject.grid.resizeOverflow;
     }
 
-    public GSize getHeaderHeight() {
+    @Override
+    public GSize getUserHeaderHeight() {
         Integer headerHeight = currentGridPreferences.headerHeight;
         if (headerHeight != null && headerHeight >= 0)
             return GSize.getResizeSize(headerHeight);
-
-        return groupObject.grid.getHeaderHeight();
+        return null;
     }
-    
+
     public GFont getDesignFont() {
         return groupObject.grid.font;
     }
@@ -530,6 +531,10 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     public GGroupObject getGroupObject() {
         return groupObject;
+    }
+
+    public GGridProperty getGrid() {
+        return groupObject.grid;
     }
     
     public GPropertyDraw getCurrentProperty() {

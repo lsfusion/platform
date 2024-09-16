@@ -1,8 +1,6 @@
 package lsfusion.gwt.client.form.object.table.tree;
 
-import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.size.GSize;
-import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.filter.user.GFilterControls;
@@ -29,14 +27,6 @@ public class GTreeGroup extends GGridProperty {
 
     public Boolean resizeOverflow;
 
-    public int headerHeight;
-
-    public GSize getHeaderHeight() {
-        if(headerHeight >= 0)
-            return GSize.getValueSize(headerHeight);
-        return null;
-    }
-
     public GSize getExpandWidth() {
         if(hierarchicalWidth > 0) {
             return GSize.CONST(hierarchicalWidth);
@@ -52,25 +42,13 @@ public class GTreeGroup extends GGridProperty {
         return size;
     }
 
-    private GGroupObject getLastGroup() {
+    protected GGroupObject getLastGroup() {
         return groups.get(groups.size() - 1);
     }
 
-    public int lineWidth;
-    public int lineHeight;
-
     @Override
-    protected GSize getDefaultWidth() {
-        return getDefaultSize().first.add(getExpandWidth());
-    }
-
-    @Override
-    protected GSize getDefaultHeight() {
-        return getDefaultSize().second;
-    }
-
-    protected Pair<GSize, GSize> getDefaultSize() {
-        return getLastGroup().getSize(lineHeight, lineWidth, true, getHeaderHeight());
+    protected GSize getExtraWidth() {
+        return getExpandWidth();
     }
 
     public GGroupObjectValue filterRowKeys(GGroupObject groupObject, GGroupObjectValue fullCurrentKey) {

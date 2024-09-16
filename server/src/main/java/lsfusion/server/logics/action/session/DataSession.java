@@ -1853,7 +1853,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             return true;
         }
 
-        // до чтения persistent свойств в сессию
         if (applyObject == null) {
             try {
                 applyObject = addObject(sessionClass);

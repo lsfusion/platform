@@ -92,7 +92,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         Column column = columnMap.get(caption);
 
         if(column != null) {
-            GGridPropertyTableHeader.renderTD(th, rerender, sortDir, caption, null, null, true, column.property, defaultHeaderHeight ? GGridPropertyTableHeader.DEFAULT_HEADER_HEIGHT : null);
+            GGridPropertyTableHeader.renderTD(th, rerender, sortDir, caption, null, null, true, column.property, null, grid.groupObject.grid);
         }
 
         th.setTitle(caption);

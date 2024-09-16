@@ -26,8 +26,17 @@ public class GridViewProxy extends GridPropertyViewProxy<GridView> {
         target.setQuickSearch(quickSearch);
     }
 
+    @Deprecated
     public void setHeaderHeight(int headerHeight) {
-        target.headerHeight = headerHeight;
+        target.captionHeight = headerHeight;
+    }
+
+    public void setCaptionHeight(int height) {
+        target.captionHeight = height;
+    }
+
+    public void setCaptionCharHeight(int height) {
+        target.captionCharHeight = height;
     }
 
     public void setResizeOverflow(boolean resizeOverflow) {

@@ -6,13 +6,13 @@ public class ImageHtmlOrTextType extends CaptionHtmlOrTextType {
         public boolean isImageVertical() {
             return true;
         }
-        public int getWrap() {
-            return -1;
+        public boolean isWrap() {
+            return true;
         }
     };
     public static final ImageHtmlOrTextType CALENDAR = new ImageHtmlOrTextType() {
-        public int getWrap() {
-            return -1;
+        public boolean isWrap() {
+            return true;
         }
     };
 

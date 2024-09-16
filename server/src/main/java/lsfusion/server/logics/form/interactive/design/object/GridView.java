@@ -1,12 +1,9 @@
 package lsfusion.server.logics.form.interactive.design.object;
 
-import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
-import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
-import lsfusion.server.logics.form.struct.FormEntity;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -68,7 +65,8 @@ public class GridView extends GridPropertyView {
 
         tabVertical = inStream.readBoolean();
         quickSearch = inStream.readBoolean();
-        headerHeight = inStream.readInt();
+        captionHeight = inStream.readInt();
+        captionCharHeight = inStream.readInt();
 
         lineWidth = inStream.readInt();
         lineHeight = inStream.readInt();

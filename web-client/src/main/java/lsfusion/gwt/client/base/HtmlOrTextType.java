@@ -2,11 +2,17 @@ package lsfusion.gwt.client.base;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
+import lsfusion.gwt.client.form.design.GFont;
+import lsfusion.gwt.client.form.design.GFontMetrics;
+import lsfusion.gwt.client.view.MainFrame;
 
 public abstract class HtmlOrTextType {
 
     private static native void setFixedLines(Element element, int lines) /*-{
         element.style.setProperty("--fixed-lines", lines);
+    }-*/;
+    private static native void setFixedLinesHeight(Element element, String height) /*-{
+        element.style.setProperty("--fixed-lines", height);
     }-*/;
 
     private static native void clearFixedLines(Element element) /*-{
@@ -15,8 +21,8 @@ public abstract class HtmlOrTextType {
 
     private void render(Element element, boolean set) {
         boolean collapse = isCollapse();
-        int wrap = getWrap();
-        if(wrap != 1) {
+        boolean wrap = isWrap();
+        if(wrap) {
             if (collapse) {
                 if(set)
                     element.addClassName("html-or-text-wrap-collapse");
@@ -29,12 +35,18 @@ public abstract class HtmlOrTextType {
                     element.removeClassName("html-or-text-wrap");
             }
 
-            if(wrap >= 0) {
+            int wrapLines = getWrapLines();
+            if(wrapLines >= 0) {
                 if(set) {
-                    setFixedLines(element, wrap);
+                    if(MainFrame.firefox)
+                        setFixedLinesHeight(element, GFontMetrics.getStringHeight(getWrapLinesFont(), wrapLines).getString());
+                    else
+                        setFixedLines(element, wrapLines);
+
                     element.addClassName("html-or-text-wrap-fixed");
                 } else {
                     clearFixedLines(element);
+
                     element.removeClassName("html-or-text-wrap-fixed");
                 }
             }
@@ -83,6 +95,18 @@ public abstract class HtmlOrTextType {
 
     public int getWrap() {
         return 1;
+    }
+
+    public boolean isWrap() {
+        return false;
+    }
+
+    public int getWrapLines() {
+        return -1;
+    }
+
+    public GFont getWrapLinesFont() { // need only for firefox hack, when wrapLines > 0
+        throw new UnsupportedOperationException();
     }
 
     protected boolean isWrapWordBreak() {
