@@ -50,6 +50,6 @@
 
 @supports (-moz-appearance: none) {
     .html-or-text-wrap-fixed {
-        max-height: calc(var(--fixed-lines) * 1.5em) !important;
+        max-height: var(--fixed-lines) !important;
     }
 }

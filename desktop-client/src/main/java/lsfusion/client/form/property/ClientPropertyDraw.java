@@ -173,6 +173,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public int captionWidth;
     public int captionHeight;
+    public int captionCharHeight;
 
     public transient EditBindingMap editBindingMap;
     private transient PropertyRenderer renderer;
@@ -188,12 +189,12 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public String columnsName;
     public List<ClientGroupObject> columnGroupObjects = new ArrayList<>();
 
-    public int wrap;
+    public boolean wrap;
     public boolean wrapWordBreak;
     public boolean collapse;
     public boolean ellipsis;
 
-    public int captionWrap;
+    public boolean captionWrap;
     public boolean captionWrapWordBreak;
     public boolean captionCollapse;
     public boolean captionEllipsis;
@@ -304,7 +305,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         FontMetrics fontMetrics = comp.getFontMetrics(design.getFont(comp));
 
         String widthString = null;
-        if(charWidth != 0)
+        if(charWidth != -1)
             return baseType.getFullWidthString(BaseUtils.replicate('0', charWidth), fontMetrics, this);
 
         return baseType.getDefaultWidth(fontMetrics, this);
@@ -321,7 +322,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         
         Insets insets = SwingDefaults.getTableCellMargins(); // suppose buttons have the same padding. to have equal height
         int insetsHeight = insets.top + insets.bottom;
-        int lines = charHeight == 0 ? baseType.getDefaultCharHeight() : charHeight;
+        int lines = charHeight == -1 ? baseType.getDefaultCharHeight() : charHeight;
         int height;
         int fontSize = userFontSize != null && userFontSize > 0 ? userFontSize : (design.font != null ? design.font.fontSize : -1);
         if (fontSize > 0 || lines > 1) {
@@ -618,6 +619,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         captionWidth = inStream.readInt();
         captionHeight = inStream.readInt();
+        captionCharHeight = inStream.readInt();
 
         changeKey = pool.readObject(inStream);
         changeKeyPriority = pool.readInt(inStream);
@@ -710,12 +712,12 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         checkEquals = inStream.readBoolean();
 
-        wrap = inStream.readInt();
+        wrap = inStream.readBoolean();
         wrapWordBreak = inStream.readBoolean();
         collapse = inStream.readBoolean();
         ellipsis = inStream.readBoolean();
 
-        captionWrap = inStream.readInt();
+        captionWrap = inStream.readBoolean();
         captionWrapWordBreak = inStream.readBoolean();
         captionCollapse = inStream.readBoolean();
         captionEllipsis = inStream.readBoolean();

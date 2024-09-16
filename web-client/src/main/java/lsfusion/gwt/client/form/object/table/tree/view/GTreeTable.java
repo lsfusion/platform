@@ -29,6 +29,7 @@ import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.TableContainer;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
+import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.object.table.tree.controller.GTreeGroupController;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
@@ -773,11 +774,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     @Override
-    public GSize getHeaderHeight() {
-        return treeGroup.getHeaderHeight();
-    }
-
-    @Override
     protected double getColumnFlex(int i) {
         if(i == 0)
             return hierarchicalWidth.getValueFlexSize();
@@ -1028,6 +1024,9 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     public GGroupObject getGroupObject() {
         return null;
+    }
+    public GGridProperty getGrid() {
+        return treeGroup;
     }
 
     @Override

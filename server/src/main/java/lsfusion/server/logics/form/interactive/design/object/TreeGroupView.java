@@ -146,7 +146,8 @@ public class TreeGroupView extends GridPropertyView implements ServerIdentitySer
         expandOnClick = inStream.readBoolean();
         hierarchicalWidth = inStream.readInt();
 
-        headerHeight = inStream.readInt();
+        captionHeight = inStream.readInt();
+        captionCharHeight = inStream.readInt();
 
         lineWidth = inStream.readInt();
         lineHeight = inStream.readInt();

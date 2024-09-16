@@ -16,6 +16,7 @@ import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GFont;
+import lsfusion.gwt.client.form.design.GFontMetrics;
 import lsfusion.gwt.client.form.design.view.CaptionWidget;
 import lsfusion.gwt.client.form.event.*;
 import lsfusion.gwt.client.form.filter.user.GCompare;
@@ -61,12 +62,12 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public boolean customNeedPlaceholder;
     public boolean customNeedReadonly;
 
-    public int wrap;
+    public boolean wrap;
     public boolean wrapWordBreak;
     public boolean collapse;
     public boolean ellipsis;
 
-    public int captionWrap;
+    public boolean captionWrap;
     public boolean captionWrapWordBreak;
     public boolean captionCollapse;
     public boolean captionEllipsis;
@@ -414,6 +415,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public int captionWidth;
     public int captionHeight;
+    public int captionCharHeight;
 
     public boolean panelColumnVertical;
     
@@ -822,11 +824,11 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     public boolean hasAutoWidth() {
-        return valueWidth == -1 && charWidth == 0;
+        return valueWidth == -1;
     }
 
     public boolean hasAutoHeight() {
-        return valueHeight == -1 && charHeight == 0;
+        return valueHeight == -1;
     }
 
     // not null
@@ -875,8 +877,21 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             }
 
             @Override
-            public int getWrap() {
+            public boolean isWrap() {
                 return captionWrap;
+            }
+
+            @Override
+            public int getWrapLines() {
+                if(captionHeight == -2 && !captionEllipsis) // we don't need display-box when we already has value set and don't need ellipsis
+                    return -1;
+
+                return captionCharHeight;
+            }
+
+            @Override
+            public GFont getWrapLinesFont() {
+                return captionFont;
             }
 
             @Override
@@ -884,6 +899,16 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
                 return captionWrapWordBreak;
             }
         };
+    }
+
+    private int getWrapLines() {
+        if(valueHeight == -2 && !ellipsis) // we don't need display-box when we already has value set and don't need ellipsis
+            return -1;
+
+        return charHeight;
+    }
+    private GFont getWrapLinesFont() {
+        return font;
     }
 
     // not clear if it is caption, or data (however rendered as caption)
@@ -895,8 +920,18 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             }
 
             @Override
-            public int getWrap() {
+            public boolean isWrap() {
                 return wrap;
+            }
+
+            @Override
+            public int getWrapLines() {
+                return GPropertyDraw.this.getWrapLines();
+            }
+
+            @Override
+            public GFont getWrapLinesFont() {
+                return GPropertyDraw.this.getWrapLinesFont();
             }
 
             @Override
@@ -919,8 +954,18 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public DataHtmlOrTextType getDataHtmlOrTextType() {
         return new DataHtmlOrTextType() {
             @Override
-            public int getWrap() {
+            public boolean isWrap() {
                 return wrap;
+            }
+
+            @Override
+            public int getWrapLines() {
+                return GPropertyDraw.this.getWrapLines();
+            }
+
+            @Override
+            public GFont getWrapLinesFont() {
+                return GPropertyDraw.this.getWrapLinesFont();
             }
 
             @Override
@@ -948,8 +993,15 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     public GSize getCaptionHeight() {
+        return getHeight(captionHeight, captionCharHeight, captionFont);
+    }
+
+    public static GSize getHeight(int captionHeight, int captionCharHeight, GFont font) {
         if(captionHeight >= 0)
             return GSize.getValueSize(captionHeight);
+
+        if(captionHeight != -1 && captionCharHeight >= 0)
+            return GFontMetrics.getStringHeight(font, captionCharHeight);
 
         return null;
     }

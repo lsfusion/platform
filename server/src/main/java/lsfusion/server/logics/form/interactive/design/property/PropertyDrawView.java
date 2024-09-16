@@ -74,8 +74,8 @@ public class PropertyDrawView extends BaseComponentView {
     public boolean noSort;
     public Compare defaultCompare;
 
-    public int charWidth;
-    private int charHeight;
+    public Integer charWidth;
+    public Integer charHeight;
 
     public Dimension valueSize;
     public Integer valueWidth;
@@ -83,6 +83,7 @@ public class PropertyDrawView extends BaseComponentView {
 
     public Integer captionWidth;
     public Integer captionHeight;
+    public Integer captionCharHeight;
 
     private Boolean valueFlex;
 
@@ -132,12 +133,12 @@ public class PropertyDrawView extends BaseComponentView {
     public LocalizedString caption;
     public AppServerImage.Reader image;
 
-    public Integer wrap;
+    public Boolean wrap;
     public Boolean wrapWordBreak;
     public Boolean collapse;
     public Boolean ellipsis;
 
-    public Integer captionWrap;
+    public Boolean captionWrap;
     public Boolean captionWrapWordBreak;
     public Boolean captionCollapse;
     public Boolean captionEllipsis;
@@ -197,10 +198,10 @@ public class PropertyDrawView extends BaseComponentView {
         if(valueWidth != null)
             return valueWidth;
 
-        if(isCustom(context) || !isProperty(context))
-            return -1;
+        if (!isCustom(context) && isProperty(context))
+            return -2;
 
-        return -2;
+        return -1;
     }
 
     public static final boolean moreInfo = false;
@@ -266,10 +267,10 @@ public class PropertyDrawView extends BaseComponentView {
         if(valueHeight != null)
             return valueHeight;
 
-        if(isCustom(context) || (!isProperty(context) && !entity.hasDynamicImage())) // we want vertical size for action to be equal to text fields
-            return -1;
+        if (charHeight != null || (!isCustom(context) && isProperty(context) && getAssertValueType(context) instanceof TextClass))
+            return -2;
 
-        return -2;
+        return -1;
     }
 
     public int getCaptionWidth(FormEntity entity) {
@@ -283,32 +284,39 @@ public class PropertyDrawView extends BaseComponentView {
         if(captionHeight != null)
             return captionHeight;
 
-        return moreInfo && entity.isList(context) ? 54 : -1; // we need fixed height to set wrap -1 to avoid ellipsis
+        if(captionCharHeight != null || (moreInfo && entity.isList(context)))
+            return -2;
+
+        return -1;
     }
 
-    public int getWrap(FormInstanceContext context) {
+    public int getCaptionCharHeight(FormInstanceContext context) {
+        if(captionCharHeight != null)
+            return captionCharHeight;
+
+        return 3;
+    }
+
+    public boolean isWrap(FormInstanceContext context) {
         if (wrap != null)
             return wrap;
 
         if (isProperty(context)) {
             Type type = getAssertCellType(context);
             if (type instanceof TextClass)
-                return -1;
+                return true;
 
-            return context.contentWordWrap ? -1 : 1;
+            return context.contentWordWrap;
         }
 
-        return 1;
+        return false;
     }
 
-    public int getCaptionWrap(FormInstanceContext context) {
+    public boolean isCaptionWrap(FormInstanceContext context) {
         if (captionWrap != null)
             return captionWrap;
 
-        if(entity.isList(context))
-            return moreInfo ? -1 : 3;
-        else
-            return isCaptionVertical(context) ? -1 : 1;
+        return entity.isList(context) || isCaptionVertical(context);
     }
 
     public boolean isCollapse(FormInstanceContext context) {
@@ -565,8 +573,8 @@ public class PropertyDrawView extends BaseComponentView {
             reportField.minimumWidth = type.getReportMinimumWidth() * scale;
             reportField.preferredWidth = type.getReportPreferredWidth() * scale;
         }
-        int reportCharWidth = charWidth;
-        if (reportCharWidth != 0) {
+        Integer reportCharWidth = charWidth;
+        if (reportCharWidth != null) {
             reportField.fixedCharWidth = reportCharWidth * scale;
         }
     }
@@ -596,7 +604,7 @@ public class PropertyDrawView extends BaseComponentView {
     }
 
     private Class getPropertyClass(PropertyObjectEntity<?> property) {
-        ReportDrawField field = new ReportDrawField("", "", charWidth);
+        ReportDrawField field = new ReportDrawField("", "", 0);
         Type type = property.property.getType();
         if (type != null) {
             type.fillReportDrawField(field);
@@ -628,6 +636,7 @@ public class PropertyDrawView extends BaseComponentView {
 
         outStream.writeInt(getCaptionWidth(pool.context.entity));
         outStream.writeInt(getCaptionHeight(pool.context));
+        outStream.writeInt(getCaptionCharHeight(pool.context));
 
         pool.writeObject(outStream, changeKey);
         pool.writeInt(outStream, changeKeyPriority);
@@ -742,12 +751,12 @@ public class PropertyDrawView extends BaseComponentView {
 
         outStream.writeBoolean(isProperty(pool.context));
 
-        outStream.writeInt(getWrap(pool.context));
+        outStream.writeBoolean(isWrap(pool.context));
         outStream.writeBoolean(isWrapWordBreak(pool.context));
         outStream.writeBoolean(isCollapse(pool.context));
         outStream.writeBoolean(isEllipsis(pool.context));
 
-        outStream.writeInt(getCaptionWrap(pool.context));
+        outStream.writeBoolean(isCaptionWrap(pool.context));
         outStream.writeBoolean(isCaptionWrapWordBreak(pool.context));
         outStream.writeBoolean(isCaptionCollapse(pool.context));
         outStream.writeBoolean(isCaptionEllipsis(pool.context));
@@ -929,7 +938,7 @@ public class PropertyDrawView extends BaseComponentView {
     }
 
     public int getCharHeight() {
-        return charHeight;
+        return charHeight != null ? charHeight : -1;
     }
 
     public void setCharHeight(int charHeight) {
@@ -940,16 +949,16 @@ public class PropertyDrawView extends BaseComponentView {
         PropertyDrawEntity.Select select = entity.getSelectProperty(context);
         if(select != null) {
             if(select.elementType.equals("Input") || (select.elementType.equals("Dropdown") && select.type.equals("Multi")))
-                return getScaledCharWidth((charWidth != 0 ? charWidth : select.length / select.count) * 4);
+                return getScaledCharWidth((charWidth != null ? charWidth : select.length / select.count) * 4);
 
             if (!entity.isList(context))
                 return 0;
 
             if (select.elementType.startsWith("Button"))
-                return (charWidth != 0 && !select.actual ? charWidth * select.count : select.length) + select.count * (select.elementType.startsWith("ButtonGroup") ? 4 : 6); // couple of symbols for padding
+                return (charWidth != null && !select.actual ? charWidth * select.count : select.length) + select.count * (select.elementType.startsWith("ButtonGroup") ? 4 : 6); // couple of symbols for padding
         }
 
-        return charWidth;
+        return charWidth != null ? charWidth : -1;
     }
 
     // the same is on the client
@@ -958,8 +967,8 @@ public class PropertyDrawView extends BaseComponentView {
     }
 
 
-    public void setCharWidth(int minimumCharWidth) {
-        this.charWidth = minimumCharWidth;
+    public void setCharWidth(Integer charWidth) {
+        this.charWidth = charWidth;
     }
 
     public Dimension getValueSize() {

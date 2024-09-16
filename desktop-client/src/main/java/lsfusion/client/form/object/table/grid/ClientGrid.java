@@ -2,7 +2,6 @@ package lsfusion.client.form.object.table.grid;
 
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
-import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.object.ClientGroupObject;
 
@@ -31,7 +30,7 @@ public class ClientGrid extends ClientGridProperty {
 
     @Override
     protected Integer getDefaultHeight() {
-        return groupObject.getHeight(lineHeight, headerHeight);
+        return groupObject.getHeight(lineHeight, captionHeight);
     }
 
     @Override
@@ -44,7 +43,7 @@ public class ClientGrid extends ClientGridProperty {
 
         outStream.writeBoolean(tabVertical);
         outStream.writeBoolean(quickSearch);
-        outStream.writeInt(headerHeight);
+        outStream.writeInt(captionHeight);
 
         outStream.writeInt(lineWidth);
         outStream.writeInt(lineHeight);
@@ -87,10 +86,10 @@ public class ClientGrid extends ClientGridProperty {
     }
 
     public int getHeaderHeight() {
-        return headerHeight;
+        return captionHeight;
     }
 
     public void setHeaderHeight(int headerHeight) {
-        this.headerHeight = headerHeight;
+        this.captionHeight = headerHeight;
     }
 }

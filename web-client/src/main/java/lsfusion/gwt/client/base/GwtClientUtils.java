@@ -1749,7 +1749,7 @@ public class GwtClientUtils {
 
 
     public static void initCaptionHtmlOrText(Element element, CaptionHtmlOrTextType type) {
-        initCaptionHtmlOrText(element, type.getRenderer(), MainFrame.hasCapitalHyphensProblem && type.getWrap() != 1);
+        initCaptionHtmlOrText(element, type.getRenderer(), MainFrame.hasCapitalHyphensProblem && type.isWrap());
     }
     public static void initDataHtmlOrText(Element element, DataHtmlOrTextType type) {
         initDataHtmlOrText(element, type.getRenderer());

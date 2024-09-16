@@ -1,7 +1,5 @@
 package lsfusion.gwt.client.classes;
 
-import com.google.gwt.dom.client.Style;
-import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -38,7 +36,7 @@ public abstract class GType implements Serializable {
     }
 
     public GSize getValueWidth(GFont font, GPropertyDraw propertyDraw, boolean needNotNull, boolean globalCaptionIsDrawn) {
-        if(propertyDraw.charWidth != 0)
+        if(propertyDraw.charWidth != -1)
             return getDefaultCharWidth(font, propertyDraw);
 
         return getDefaultWidth(font, propertyDraw, needNotNull, globalCaptionIsDrawn);
@@ -49,13 +47,11 @@ public abstract class GType implements Serializable {
     }
 
     private GSize getDefaultCharWidth(GFont font, GPropertyDraw propertyDraw) {
-        String widthString = propertyDraw.charWidth != 0 ? replicateZero(propertyDraw.charWidth) : getDefaultWidthString(propertyDraw);
-
-        return GFontMetrics.getStringWidth(font, widthString);
+        return GFontMetrics.getStringWidth(font, propertyDraw.charWidth != -1 ? GFontMetrics.getDefaultWidthString(propertyDraw.charWidth) : getDefaultWidthString(propertyDraw));
     }
 
     public GSize getValueHeight(GFont font, GPropertyDraw propertyDraw, boolean needNotNull, boolean globalCaptionIsDrawn) {
-        if(propertyDraw.charHeight != 0)
+        if(propertyDraw.charHeight != -1)
             return getDefaultCharHeight(font, propertyDraw, needNotNull);
 
         return getDefaultHeight(font, propertyDraw, needNotNull, globalCaptionIsDrawn);
@@ -66,25 +62,11 @@ public abstract class GType implements Serializable {
     }
 
     private GSize getDefaultCharHeight(GFont font, GPropertyDraw propertyDraw, boolean needNotNull) {
-        String heightString = getDefaultHeightString(propertyDraw);
-
-        if(!needNotNull && !heightString.contains("\n"))
-            return null;
-
-        return GFontMetrics.getStringHeight(font, heightString);
+        return GFontMetrics.getStringHeight(font, propertyDraw.charHeight != -1 ? propertyDraw.charHeight : getDefaultCharHeight());
     }
 
     protected String getDefaultWidthString(GPropertyDraw propertyDraw) {
-        return replicateZero(getDefaultCharWidth());
-    }
-
-    private String replicateZero(int length) {
-        return GwtSharedUtils.replicate('0', length);
-    }
-
-    protected String getDefaultHeightString(GPropertyDraw propertyDraw) {
-        int defaultCharHeight = propertyDraw.charHeight != 0 ? propertyDraw.charHeight : getDefaultCharHeight();
-        return "0" + GwtSharedUtils.replicate("\n0", defaultCharHeight - 1);
+        return GFontMetrics.getDefaultWidthString(getDefaultCharWidth());
     }
 
     protected int getDefaultCharWidth() {

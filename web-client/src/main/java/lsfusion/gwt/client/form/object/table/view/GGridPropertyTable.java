@@ -22,6 +22,7 @@ import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.TableContainer;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
+import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.property.GEventSource;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -413,6 +414,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     }
 
     public abstract GGroupObject getGroupObject();
+    public abstract GGridProperty getGrid();
 
     public abstract void quickFilter(Event event, GPropertyDraw filterProperty, GGroupObjectValue columnKey);
     public abstract GAbstractTableController getGroupController();
@@ -706,7 +708,9 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     protected abstract Boolean isResizeOverflow();
 
-    public abstract GSize getHeaderHeight();
+    public GSize getUserHeaderHeight() {
+        return null;
+    }
 
     protected String getUserCaption(GPropertyDraw propertyDraw) {
         return null;

@@ -251,7 +251,8 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
 
         grid.resizeOverflow = clientGrid.resizeOverflow;
 
-        grid.headerHeight = clientGrid.headerHeight;
+        grid.captionHeight = clientGrid.captionHeight;
+        grid.captionCharHeight = clientGrid.captionCharHeight;
 
         grid.boxed = clientGrid.boxed;
 
@@ -417,6 +418,7 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
 
         propertyDraw.captionWidth = clientPropertyDraw.captionWidth;
         propertyDraw.captionHeight = clientPropertyDraw.captionHeight;
+        propertyDraw.captionCharHeight = clientPropertyDraw.captionCharHeight;
 
         propertyDraw.panelColumnVertical = clientPropertyDraw.panelColumnVertical;
         
@@ -612,6 +614,8 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
 
         treeGroup.boxed = clientTreeGroup.boxed;
 
+        treeGroup.valueClass = clientTreeGroup.valueClass;
+
         treeGroup.toolbar = convertOrCast(clientTreeGroup.toolbar);
         
         treeGroup.expandOnClick = clientTreeGroup.expandOnClick;
@@ -619,7 +623,8 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
 
         treeGroup.resizeOverflow = clientTreeGroup.resizeOverflow;
 
-        treeGroup.headerHeight = clientTreeGroup.headerHeight;
+        treeGroup.captionHeight = clientTreeGroup.captionHeight;
+        treeGroup.captionCharHeight = clientTreeGroup.captionCharHeight;
 
         treeGroup.lineWidth = clientTreeGroup.lineWidth;
         treeGroup.lineHeight = clientTreeGroup.lineHeight;

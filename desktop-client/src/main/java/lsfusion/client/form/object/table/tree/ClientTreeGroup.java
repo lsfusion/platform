@@ -72,7 +72,7 @@ public class ClientTreeGroup extends ClientGridProperty implements ClientIdentit
         outStream.writeBoolean(expandOnClick);
         outStream.writeInt(hierarchicalWidth);
 
-        outStream.writeInt(headerHeight);
+        outStream.writeInt(captionHeight);
 
         outStream.writeInt(lineWidth);
         outStream.writeInt(lineHeight);
@@ -135,7 +135,7 @@ public class ClientTreeGroup extends ClientGridProperty implements ClientIdentit
     }
 
     public int getHeaderHeight() {
-        return headerHeight;
+        return captionHeight;
     }
 
     @Override
@@ -145,6 +145,6 @@ public class ClientTreeGroup extends ClientGridProperty implements ClientIdentit
 
     @Override
     protected Integer getDefaultHeight() {
-        return getLastGroup().getHeight(lineHeight, headerHeight);
+        return getLastGroup().getHeight(lineHeight, captionHeight);
     }
 }

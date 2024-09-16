@@ -225,8 +225,20 @@ public class GFontMetrics {
         return getCalcMeasure(new GFontWidthString(font, widthString)).first;
     }
 
+    public static GSize getStringHeight(GFont font, int charHeight) {
+        return getStringHeight(font, getDefaultHeightString(charHeight));
+    }
+
     public static GSize getStringHeight(GFont font, String heightString) {
         return getCalcMeasure(new GFontWidthString(font, heightString)).second;
+    }
+
+    public static String getDefaultWidthString(int length) {
+        return GwtSharedUtils.replicate('0', length);
+    }
+
+    public static String getDefaultHeightString(int charHeight) {
+        return "0" + GwtSharedUtils.replicate("\n0", charHeight - 1);
     }
 
     private static class GridParams {
