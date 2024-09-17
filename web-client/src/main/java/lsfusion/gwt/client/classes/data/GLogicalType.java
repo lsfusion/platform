@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.classes.data;
 
-import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.classes.GInputType;
@@ -43,11 +42,8 @@ public class GLogicalType extends GDataType {
     }
 
     @Override
-    public GSize getDefaultWidth(GFont font, GPropertyDraw propertyDraw, boolean needNotNull, boolean globalCaptionIsDrawn) {
-        if(needNotNull)
-            return GSize.CONST(30);
-
-        return null;
+    public GSize getDefaultWidth(GFont font, GPropertyDraw propertyDraw, boolean globalCaptionIsDrawn) {
+        return GSize.CONST(30);
     }
 
     @Override

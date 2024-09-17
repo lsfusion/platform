@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.classes;
 
-import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.size.GSize;
@@ -41,33 +40,25 @@ public class GActionType extends GDataType {
     }
 
     @Override
-    public GSize getDefaultWidth(GFont font, GPropertyDraw propertyDraw, boolean needNotNull, boolean globalCaptionIsDrawn) {
-        if(needNotNull) {
-            GSize result = globalCaptionIsDrawn ? GSize.ZERO : super.getDefaultWidth(font, propertyDraw, needNotNull, globalCaptionIsDrawn);
+    public GSize getDefaultWidth(GFont font, GPropertyDraw propertyDraw, boolean globalCaptionIsDrawn) {
+        GSize result = globalCaptionIsDrawn ? GSize.ZERO : super.getDefaultWidth(font, propertyDraw, globalCaptionIsDrawn);
 
-            GSize imageWidth = propertyDraw.getImageWidth(font);
-            if (imageWidth != null)
-                result = result.add(imageWidth);
+        GSize imageWidth = propertyDraw.getImageWidth(font);
+        if (imageWidth != null)
+            result = result.add(imageWidth);
 
-            return result.add(GSize.CONST(30)); // paddings in btn
-        }
-
-        return null;
+        return result.add(GSize.CONST(30)); // paddings in btn
     }
 
     @Override
-    public GSize getDefaultHeight(GFont font, GPropertyDraw propertyDraw, boolean needNotNull, boolean globalCaptionIsDrawn) {
-        if(needNotNull) {
-            GSize height = globalCaptionIsDrawn ? GSize.ZERO : super.getDefaultHeight(font, propertyDraw, needNotNull, globalCaptionIsDrawn);
+    public GSize getDefaultHeight(GFont font, GPropertyDraw propertyDraw, boolean globalCaptionIsDrawn) {
+        GSize height = globalCaptionIsDrawn ? GSize.ZERO : super.getDefaultHeight(font, propertyDraw, globalCaptionIsDrawn);
 
-            final GSize imageHeight = propertyDraw.getImageHeight(font);
-            if (imageHeight != null)
-                height = height.max(imageHeight);
+        final GSize imageHeight = propertyDraw.getImageHeight(font);
+        if (imageHeight != null)
+            height = height.max(imageHeight);
 
-            return height;
-        }
-
-        return null;
+        return height;
     }
 
     @Override

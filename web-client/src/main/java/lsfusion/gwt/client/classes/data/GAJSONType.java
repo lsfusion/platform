@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.classes.data;
 
-import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -29,7 +28,7 @@ public abstract class GAJSONType extends GDataType {
     }
 
     @Override
-    public GSize getDefaultWidth(GFont font, GPropertyDraw propertyDraw, boolean needNotNull, boolean globalCaptionIsDrawn) {
+    public GSize getDefaultWidth(GFont font, GPropertyDraw propertyDraw, boolean globalCaptionIsDrawn) {
         return GSize.CONST(150);
     }
 

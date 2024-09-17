@@ -157,7 +157,7 @@ public class GGridPropertyTableHeader extends Header<String> {
     public static Element renderTD(Element th, boolean rerender, Boolean sortDir, String caption, String captionElementClass, AppBaseImage image, boolean tableToExcel, GPropertyDraw property, GSize gridUserHeight, GGridProperty grid) {
         GSize height = property != null ? property.getCaptionHeight() : null;
         if(height == null)
-            height = gridUserHeight != null ? gridUserHeight : grid.getCaptionHeight();
+            height = gridUserHeight != null ? gridUserHeight : grid.getCaptionHeight(false);
 
         ImageHtmlOrTextType textType = property != null ? property.getCaptionHtmlOrTextType() : ImageHtmlOrTextType.OTHER;
 

@@ -39,10 +39,10 @@ public abstract class GType implements Serializable {
         if(propertyDraw.charWidth != -1)
             return getDefaultCharWidth(font, propertyDraw);
 
-        return getDefaultWidth(font, propertyDraw, needNotNull, globalCaptionIsDrawn);
+        return getDefaultWidth(font, propertyDraw, globalCaptionIsDrawn);
     }
 
-    public GSize getDefaultWidth(GFont font, GPropertyDraw propertyDraw, boolean needNotNull, boolean globalCaptionIsDrawn) {
+    public GSize getDefaultWidth(GFont font, GPropertyDraw propertyDraw, boolean globalCaptionIsDrawn) {
         return getDefaultCharWidth(font, propertyDraw);
     }
 
@@ -50,18 +50,18 @@ public abstract class GType implements Serializable {
         return GFontMetrics.getStringWidth(font, propertyDraw.charWidth != -1 ? GFontMetrics.getDefaultWidthString(propertyDraw.charWidth) : getDefaultWidthString(propertyDraw));
     }
 
-    public GSize getValueHeight(GFont font, GPropertyDraw propertyDraw, boolean needNotNull, boolean globalCaptionIsDrawn) {
+    public GSize getValueHeight(GFont font, GPropertyDraw propertyDraw, boolean globalCaptionIsDrawn) {
         if(propertyDraw.charHeight != -1)
-            return getDefaultCharHeight(font, propertyDraw, needNotNull);
+            return getDefaultCharHeight(font, propertyDraw);
 
-        return getDefaultHeight(font, propertyDraw, needNotNull, globalCaptionIsDrawn);
+        return getDefaultHeight(font, propertyDraw, globalCaptionIsDrawn);
     }
 
-    public GSize getDefaultHeight(GFont font, GPropertyDraw propertyDraw, boolean needNotNull, boolean globalCaptionIsDrawn) {
-        return getDefaultCharHeight(font, propertyDraw, needNotNull);
+    public GSize getDefaultHeight(GFont font, GPropertyDraw propertyDraw, boolean globalCaptionIsDrawn) {
+        return getDefaultCharHeight(font, propertyDraw);
     }
 
-    private GSize getDefaultCharHeight(GFont font, GPropertyDraw propertyDraw, boolean needNotNull) {
+    private GSize getDefaultCharHeight(GFont font, GPropertyDraw propertyDraw) {
         return GFontMetrics.getStringHeight(font, propertyDraw.charHeight != -1 ? propertyDraw.charHeight : getDefaultCharHeight());
     }
 

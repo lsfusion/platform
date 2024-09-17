@@ -850,7 +850,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         if(!needNotNull && hasAutoHeight())
             return null;
 
-        return getValueType().getValueHeight(getFont(parentFont), this, needNotNull, globalCaptionIsDrawn);
+        return getValueType().getValueHeight(getFont(parentFont), this, globalCaptionIsDrawn);
     }
 
     private GFont getFont(GFont parentFont) {
@@ -993,17 +993,17 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     public GSize getCaptionHeight() {
-        return getHeight(captionHeight, captionCharHeight, captionFont);
+        return getHeight(captionHeight, captionCharHeight, captionFont, false);
     }
 
-    public static GSize getHeight(int captionHeight, int captionCharHeight, GFont font) {
+    public static GSize getHeight(int captionHeight, int captionCharHeight, GFont font, boolean needNotNull) {
         if(captionHeight >= 0)
             return GSize.getValueSize(captionHeight);
 
-        if(captionHeight != -1 && captionCharHeight >= 0)
-            return GFontMetrics.getStringHeight(font, captionCharHeight);
+        if(!needNotNull && captionHeight == -1)
+            return null;
 
-        return null;
+        return GFontMetrics.getStringHeight(font, captionCharHeight != -1 ? captionCharHeight : 3);
     }
 
     public GFormatType getFormatType(RendererType rendererType) {

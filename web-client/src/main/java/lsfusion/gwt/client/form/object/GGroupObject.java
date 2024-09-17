@@ -95,8 +95,7 @@ public class GGroupObject implements Serializable, HasNativeSID {
         Pair<GSize, GSize> gridPaddings = GFontMetrics.getGridPaddings(lines, columns, hasHeaders, hasFooters);
         return new Pair<>(
                 (columnCount > 0 ? columnSumWidth.scale(columns).div(columnCount).add(gridPaddings.first) : GSize.ZERO).add(extraWidth),
-                getRowMaxHeight().scale(lines).add(gridPaddings.second).add(
-                        headerHeight != null ? headerHeight : GGridPropertyTableHeader.DEFAULT_HEADER_HEIGHT)); // actually it is the max header height, so it's not that accurate, however for now it doesn't matter that much
+                getRowMaxHeight().scale(lines).add(gridPaddings.second).add(headerHeight)); // actually it is the max header height, so it's not that accurate, however for now it doesn't matter that much
     }
 
     public String getCaption() {

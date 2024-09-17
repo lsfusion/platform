@@ -5,7 +5,6 @@ import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
-import lsfusion.gwt.client.form.design.GFontMetrics;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -20,8 +19,8 @@ public abstract class GGridProperty extends GComponent {
     public int lineWidth;
     public int lineHeight;
 
-    public GSize getCaptionHeight() {
-        return GPropertyDraw.getHeight(captionHeight, captionCharHeight, font);
+    public GSize getCaptionHeight(boolean needNotNull) {
+        return GPropertyDraw.getHeight(captionHeight, captionCharHeight, font, needNotNull);
     }
 
     protected abstract GGroupObject getLastGroup();
@@ -38,7 +37,7 @@ public abstract class GGridProperty extends GComponent {
     }
 
     protected Pair<GSize, GSize> getDefaultSize() {
-        return getLastGroup().getSize(lineHeight, lineWidth, getExtraWidth(), getCaptionHeight());
+        return getLastGroup().getSize(lineHeight, lineWidth, getExtraWidth(), getCaptionHeight(true));
     }
 
     public String valueClass;

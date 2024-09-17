@@ -18,6 +18,7 @@ import lsfusion.server.data.type.TypeSerializer;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.*;
+import lsfusion.server.logics.classes.data.file.FileClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.classes.data.link.LinkClass;
 import lsfusion.server.logics.classes.data.time.IntervalClass;
@@ -198,7 +199,8 @@ public class PropertyDrawView extends BaseComponentView {
         if(valueWidth != null)
             return valueWidth;
 
-        if (!isCustom(context) && isProperty(context))
+        Type valueType;
+        if (getAdjustedCharWidth(context) != null || (!isCustom(context) && isProperty(context) && !((valueType = getAssertValueType(context)) instanceof LogicalClass || valueType instanceof FileClass)))
             return -2;
 
         return -1;
@@ -945,19 +947,28 @@ public class PropertyDrawView extends BaseComponentView {
         this.charHeight = charHeight;
     }
 
-    public int getCharWidth(FormInstanceContext context) {
+    private Integer getAdjustedCharWidth(FormInstanceContext context) {
         PropertyDrawEntity.Select select = entity.getSelectProperty(context);
         if(select != null) {
             if(select.elementType.equals("Input") || (select.elementType.equals("Dropdown") && select.type.equals("Multi")))
                 return getScaledCharWidth((charWidth != null ? charWidth : select.length / select.count) * 4);
 
-            if (!entity.isList(context))
-                return 0;
+//            if (!entity.isList(context)) // we ignore charWidth in panel buttons and lists
+//                return null;
 
-            if (select.elementType.startsWith("Button"))
-                return (charWidth != null && !select.actual ? charWidth * select.count : select.length) + select.count * (select.elementType.startsWith("ButtonGroup") ? 4 : 6); // couple of symbols for padding
+            if(entity.isList(context) || charWidth != null) {
+                if (select.elementType.startsWith("Button"))
+                    return (charWidth != null && !select.actual ? charWidth * select.count : select.length) + select.count * (select.elementType.startsWith("ButtonGroup") ? 4 : 6); // couple of symbols for padding
+
+                if (select.elementType.equals("List") || select.elementType.equals("Dropdown"))
+                    return (charWidth != null ? charWidth : select.length / select.count) + 4; // couple of symbols for control elements, && !select.actual
+            }
         }
+        return charWidth;
+    }
 
+    public int getCharWidth(FormInstanceContext context) {
+        Integer charWidth = getAdjustedCharWidth(context);
         return charWidth != null ? charWidth : -1;
     }
 
