@@ -2854,7 +2854,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     // Each index declaration can create more than one physical index. Returns a separate record for each such index
     public <P extends PropertyInterface<?>> Map<ImplementTable, List<IndexData<Field>>> getIndexesMap() {
         Map<ImplementTable, List<IndexData<Field>>> res = new HashMap<>();
-        for (ImplementTable table : LM.tableFactory.getImplementTablesMap().valueIt()) {
+        for (ImplementTable table : LM.tableFactory.getImplementTables()) {
             res.put(table, new ArrayList<>());
         }
 
@@ -2935,6 +2935,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             version = newDBStructureVersion;
             this.migrationVersion = migrationVersion;
 
+            checkForDuplicateTableDBNames();
             tables.putAll(getIndexesMap());
 
             for (Property<?> property : businessLogics.getStoredProperties()) {
@@ -2946,7 +2947,40 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 concreteClasses.add(new DBConcreteClass(customClass));
             }
         }
-
+        
+        public class DuplicateTableDBNameException extends RuntimeException {
+            DuplicateTableDBNameException(String message) {
+                super(message);
+            }
+        }
+        
+        private void checkForDuplicateTableDBNames() {
+            final String possibleReasonStr = "This may be caused by the length limitation on database table names, " +
+                    "where two different table names are truncated to the same name.";
+            
+            Map<String, ImplementTable> tables = new HashMap<>();
+            for (ImplementTable table : LM.tableFactory.getImplementTables()) {
+                if (tables.containsKey(table.getName())) {
+                    if (table.getCanonicalName() != null) {
+                        String resolveStr = "In this case, you can either change the table database name or change the naming policy (refer to the documentation for details)";
+                        String tablesStr = String.format("Tables '%s' and '%s' have the same database name '%s'.",
+                                table.getCanonicalName(),
+                                tables.get(table.getName()).getCanonicalName(),
+                                table.getName());
+                        throw new DuplicateTableDBNameException(String.join("\n", "", tablesStr, possibleReasonStr, resolveStr));
+                    } else {
+                        String resolveStr = "In this case, you can either explicitly declare the tables or change the naming policy (refer to the documentation for details)";
+                        String formatStr = String.format("Auto tables with classes\n\t'%s' and\n\t'%s'\nhave the same database name: '%s'",
+                                table.getMapFields(),
+                                tables.get(table.getName()).getMapFields(),
+                                table.getName());
+                        throw new DuplicateTableDBNameException(String.join("\n","", formatStr, possibleReasonStr, resolveStr));
+                    }
+                }
+                tables.put(table.getName(), table);
+            }
+        }
+        
         public void write(DataOutputStream outDB) throws IOException {
             outDB.write('v' + version);  //для поддержки обратной совместимости
             outDB.writeUTF(migrationVersion.toString());
