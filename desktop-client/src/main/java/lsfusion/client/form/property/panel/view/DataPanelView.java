@@ -84,7 +84,6 @@ public class DataPanelView extends FlexPanel implements PanelView {
         transparentResize = true;
         Pair<Integer, Integer> valueSizes;
         if(property.isAutoSize()) {
-            assert captionContainer == null;
             add(table, FlexAlignment.STRETCH, 1.0);
             valueSizes = setDynamic(table, true, property);
             if(property.isAutoDynamicHeight())
