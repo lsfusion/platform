@@ -1,12 +1,10 @@
 package lsfusion.server.physics.admin;
 
-import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.logics.property.classes.infer.AlgType;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 
-import java.nio.charset.Charset;
 import java.util.Map;
 
 @SuppressWarnings("UnusedDeclaration")
@@ -3373,5 +3371,13 @@ public class Settings implements Cloneable {
 
     public void setMaxPixelMiniSize(int maxPixelMiniSize) {
         this.maxPixelMiniSize = maxPixelMiniSize;
+    }
+
+    private boolean createSessionObjects = true;
+    public boolean isCreateSessionObjects() {
+        return createSessionObjects;
+    }
+    public void setCreateSessionObjects(boolean createSessionObjects) {
+        this.createSessionObjects = createSessionObjects;
     }
 }
