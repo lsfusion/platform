@@ -476,6 +476,13 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
 
         @Override
+        public void onEditEvent(EventHandler handler, Cell editCell, Element editRenderElement) {
+            if (getProperty(editCell) != null) { // in tree there can be no property in groups other than last
+                super.onEditEvent(handler, editCell, editRenderElement);
+            }
+        }
+
+        @Override
         protected PValue getValue(GPropertyDraw property, GTreeGridRecord record) {
             return record.getValue(property);
         }
