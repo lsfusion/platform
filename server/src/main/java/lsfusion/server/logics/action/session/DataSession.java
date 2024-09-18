@@ -1853,7 +1853,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             return true;
         }
 
-        if (applyObject == null) {
+        if (applyObject == null && Settings.get().isCreateSessionObjects()) {
             try {
                 applyObject = addObject(sessionClass);
                 logSession(BL, sessionEventFormEnv);
