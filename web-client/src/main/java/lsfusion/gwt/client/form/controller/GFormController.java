@@ -947,8 +947,6 @@ public class GFormController implements EditManager {
     public void executePropertyEventAction(EventHandler handler, boolean isBinding, ExecuteEditContext editContext) {
         Event event = handler.event;
         GPropertyDraw property = editContext.getProperty();
-        if(property == null)  // in tree there can be no property in groups other than last
-            return;
 
         if(BrowserEvents.CONTEXTMENU.equals(event.getType())) {
             handler.consume();

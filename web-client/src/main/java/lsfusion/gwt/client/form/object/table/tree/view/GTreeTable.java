@@ -323,6 +323,13 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public void onEditEvent(EventHandler handler, boolean isBinding, Cell editCell, TableCellElement editCellParent) {
+        if (getProperty(editCell) != null) { // in tree there can be no property in groups other than last
+            super.onEditEvent(handler, isBinding, editCell, editCellParent);
+        }
+    }
+
     private static class RenderedState {
         public GTreeColumnValue value;
 
