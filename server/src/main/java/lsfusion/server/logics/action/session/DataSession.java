@@ -1823,6 +1823,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         applyException(BL, stack, null, null);
     }
 
+    private final boolean createSessionObjects = Settings.get().isCreateSessionObjects();
+
     @AssertSynchronized
     public boolean apply(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ImOrderSet<ActionValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProps, ExecutionEnvironment sessionEventFormEnv, Result<String> applyMessage) throws SQLException, SQLHandledException {
         if(!hasChanges() && applyActions.isEmpty())
@@ -1853,7 +1855,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             return true;
         }
 
-        if (applyObject == null) {
+        if (applyObject == null && createSessionObjects) {
             try {
                 applyObject = addObject(sessionClass);
                 logSession(BL, sessionEventFormEnv);
