@@ -11,6 +11,7 @@ import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.caches.IdentityStartLazy;
 import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.formula.CastFormulaImpl;
 import lsfusion.server.data.expr.formula.FormulaImpl;
 import lsfusion.server.data.expr.formula.StringConcatenateFormulaImpl;
 import lsfusion.server.data.expr.formula.SumFormulaImpl;
@@ -525,6 +526,9 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
             return implement.property.isNameValueUnique();
 
         FormulaImpl formula = getFormula(implement.property);
+        if (formula instanceof CastFormulaImpl)
+            return implement.mapping.singleValue().mapNameValueUnique();
+
         if ((formula instanceof SumFormulaImpl && getValueClass(ClassType.typePolicy) instanceof StringClass) ||
                 formula instanceof StringConcatenateFormulaImpl) {
             // concatenating several not unique properties might produce unique property, so we check this
