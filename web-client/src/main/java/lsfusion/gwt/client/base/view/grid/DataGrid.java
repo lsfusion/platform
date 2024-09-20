@@ -154,11 +154,12 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     private final RecentlyEventClassHandler recentlyScrolledClassHandler;
 
     private static boolean skipScrollEvent;
+    private static boolean keydown;
 
     @Override
     public ScrollHandler getScrollHandler() {
         return event -> {
-            if(skipScrollEvent) {
+            if(skipScrollEvent && !keydown) {
                 skipScrollEvent = false;
             } else {
                 calcLeftNeighbourRightBorder(true);
@@ -167,6 +168,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
                 updateScrolledStateVertical();
                 updateScrolledStateHorizontal();
             }
+            keydown = false;
         };
     }
 
@@ -453,9 +455,13 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
     public final void onBrowserEvent(Element target, EventHandler eventHandler) {
         Event event = eventHandler.event;
+        String type = event.getType();
+        if (BrowserEvents.KEYDOWN.equals(type))
+            keydown = true;
+
         // Ignore spurious events (such as onblur) while we refresh the table.
         if (isResolvingState) {
-            assert DataGrid.FOCUSOUT.equals(event.getType()) || DataGrid.FOCUSCHANGEOUT.equals(event.getType());
+            assert DataGrid.FOCUSOUT.equals(type) || DataGrid.FOCUSCHANGEOUT.equals(type);
             return;
         }
 
@@ -549,7 +555,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
                 try {
                     rowValue = (RowIndexHolder) getRowValue(row);
                 } catch (IndexOutOfBoundsException e) {
-                    throw new RuntimeException("INCORRECT ROW " + row + " " + event.getType() + " " + (this instanceof GTreeTable) + " " + target + " " + (target == getTableDataFocusElement()) + " " + getGridInfo() + " " + (rowIndexHolder == null ? "null" : getRows().indexOf(rowIndexHolder)) + " " + getRows().size() + " " + RootPanel.getBodyElement().isOrHasChild(target));
+                    throw new RuntimeException("INCORRECT ROW " + row + " " + type + " " + (this instanceof GTreeTable) + " " + target + " " + (target == getTableDataFocusElement()) + " " + getGridInfo() + " " + (rowIndexHolder == null ? "null" : getRows().indexOf(rowIndexHolder)) + " " + getRows().size() + " " + RootPanel.getBodyElement().isOrHasChild(target));
                 }
                 onBrowserEvent(new Cell(row, getColumnIndex(column), column, rowValue), eventHandler, column, columnParent);
             }

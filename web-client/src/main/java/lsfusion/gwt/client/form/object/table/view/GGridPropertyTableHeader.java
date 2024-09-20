@@ -151,18 +151,15 @@ public class GGridPropertyTableHeader extends Header<String> {
         return GPropertyTableBuilder.wrapSized(th, Document.get().createDivElement());
     }
 
-    public final static GSize DEFAULT_HEADER_HEIGHT = GSize.CONST(34);
-
     // pretty similar to GGridPropertyTableBuilder.renderSized
     public static Element renderTD(Element th, boolean rerender, Boolean sortDir, String caption, String captionElementClass, AppBaseImage image, boolean tableToExcel, GPropertyDraw property, GSize gridUserHeight, GGridProperty grid) {
         GSize height = property != null ? property.getCaptionHeight() : null;
         if(height == null)
-            height = gridUserHeight != null ? gridUserHeight : grid.getCaptionHeight(false);
+            height = gridUserHeight != null ? gridUserHeight : grid.getCaptionHeight(tableToExcel); // pivot needNotNull captionHeight and tableToExcel is true only in GPivot
 
         ImageHtmlOrTextType textType = property != null ? property.getCaptionHtmlOrTextType() : ImageHtmlOrTextType.OTHER;
 
         boolean hasDynamicImage = property != null && property.hasDynamicImage();
-        boolean hasDynamicCaption = property != null && property.hasDynamicCaption();
 
         GFlexAlignment horzTextAlignment = property != null ? property.getCaptionAlignmentHorz() : GFlexAlignment.START;
         GFlexAlignment vertTextAlignment = property != null ? property.getCaptionAlignmentVert() : GFlexAlignment.CENTER;
