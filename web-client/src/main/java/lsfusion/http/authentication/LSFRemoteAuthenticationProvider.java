@@ -1,7 +1,6 @@
 package lsfusion.http.authentication;
 
 import lsfusion.base.Pair;
-import lsfusion.base.file.FileData;
 import lsfusion.http.controller.LogicsRequestHandler;
 import lsfusion.http.provider.logics.LogicsProvider;
 import lsfusion.http.provider.navigator.NavigatorProviderImpl;
@@ -13,7 +12,6 @@ import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.connection.authentication.PasswordAuthentication;
 import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
-import lsfusion.interop.session.ExternalResponse;
 import lsfusion.interop.session.SessionInfo;
 import org.json.JSONObject;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -27,8 +25,8 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
-import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -61,7 +59,9 @@ public class LSFRemoteAuthenticationProvider extends LogicsRequestHandler implem
 
             return new LSFAuthenticationToken(username, password, authLocale.first, authLocale.second);
         } catch (Throwable e) {
-            request.getSession(true).setAttribute("USER_DATA", Map.of("username", username));
+            Map<String, String> userData = new HashMap<>();
+            userData.put("username", username);
+            request.getSession(true).setAttribute("USER_DATA", userData);
             throw new InternalAuthenticationServiceException(e.getMessage()); //need to throw AuthenticationException for SpringSecurity to redirect to /login
         }
     }
