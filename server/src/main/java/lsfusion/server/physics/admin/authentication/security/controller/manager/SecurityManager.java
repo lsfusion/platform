@@ -1,9 +1,9 @@
 package lsfusion.server.physics.admin.authentication.security.controller.manager;
 
 import com.google.common.base.Throwables;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -190,8 +190,8 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         try(DataSession session = createSession()) {
             LP secretLCP = authenticationLM.secret;
             String secretKey = (String) secretLCP.read(session);
-            if(secretKey == null) {
-                secretKey = BaseUtils.generatePassword(32, false, false);
+            if(secretKey == null || secretKey.length() < 128) { // increased key length for migration to JJWT 0.10.0+
+                secretKey = BaseUtils.generatePassword(128, false, false);
                 secretLCP.change(secretKey, session);
                 apply(session);
             }
@@ -203,17 +203,17 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         if(token.isAnonymous())
             return null;
 
-        Claims body;
         try {
-            body = Jwts.parser()
-                    .setSigningKey(secret)
-                    .parseClaimsJws(token.string)
-                    .getBody();
+            return Jwts.parser()
+                    .verifyWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret)))
+                    .build()
+                    .parseSignedClaims(token.string)
+                    .getPayload()
+                    .getSubject();
         } catch (Exception e) {
             throw new AuthenticationException(e.getMessage());
         }
 
-        return body.getSubject();
 //        u.setId(Long.parseLong((String) body.get("userId")));
     }
 
@@ -222,14 +222,14 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
     }
 
     public AuthenticationToken generateToken(String userLogin, Integer tokenExpiration) { //tokenExpiration in minutes
-        Claims claims = Jwts.claims().setSubject(userLogin);
-
-        claims.setExpiration(new Date(System.currentTimeMillis() +
-                (tokenExpiration != null ? tokenExpiration : Settings.get().getAuthTokenExpiration()) * 1000 * 60));
-
+        Claims claims = Jwts.claims()
+                .subject(userLogin)
+                .expiration(new Date(System.currentTimeMillis() +
+                        (tokenExpiration != null ? tokenExpiration : Settings.get().getAuthTokenExpiration()) * 1000 * 60))
+                .build();
         return new AuthenticationToken(Jwts.builder()
-                .setClaims(claims)
-                .signWith(SignatureAlgorithm.HS512, secret)
+                .claims(claims)
+                .signWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret)))
                 .compact());
     }
 

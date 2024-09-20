@@ -32,6 +32,7 @@
         <com.healthmarketscience.version>3.0.1</com.healthmarketscience.version>
         <netty.version>3.2.1.Final</netty.version>
         <!-- don't forget to merge jasperreports_extension.properties file when updating jasperreports -->
+        <!-- and check for jackson version conflicts -->
         <jasper.version>6.20.6</jasper.version>
         <jasper.htmlcomponent.version>6.20.5</jasper.htmlcomponent.version>
         <castor.core.version>1.4.1</castor.core.version>
@@ -69,6 +70,8 @@
         <jdbf.version>2.2.1</jdbf.version>
         <org.jdbf.version>1.1</org.jdbf.version>
         <org.jfree.version>1.0.23</org.jfree.version>
+        <jjwt.version>0.12.6</jjwt.version>
+        <jackson.version>2.14.1</jackson.version> 
 
         <spring.version>5.2.7.RELEASE</spring.version>
         <spring.security.version>5.3.0.RELEASE</spring.security.version>
@@ -418,6 +421,26 @@
                 <groupId>org.jfree</groupId>
                 <artifactId>jcommon</artifactId>
                 <version>${org.jfree.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-api</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-impl</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-jackson</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId> <!-- added for consistency with dependency in jasperreports. is used in jjwt -->
+                <artifactId>jackson-databind</artifactId>
+                <version>${jackson.version}</version>
             </dependency>
 
             <!-- Spring libraries -->
