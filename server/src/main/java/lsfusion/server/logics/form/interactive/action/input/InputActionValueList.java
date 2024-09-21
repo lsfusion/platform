@@ -11,19 +11,29 @@ import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;
 
-public class InputActionValueList<P extends PropertyInterface> extends InputValueList<P, Action<P>> {
+public class InputActionValueList<P extends PropertyInterface> extends InputValueList<P> {
 
-    public InputActionValueList(Action<P> property, ImMap<P, ObjectValue> mapValues) {
-        super(property, mapValues);
+    protected final Action<P> action;
+
+    public InputActionValueList(Action<P> action, ImMap<P, ObjectValue> mapValues) {
+        super(mapValues);
+
+        this.action = action;
     }
 
     @Override
     public ImSet<Property> getChangeProps() {
-        return property.getUsedProps();
+        return action.getUsedProps();
+    }
+
+    @Override
+    public ActionOrProperty<?> getCacheKey() {
+        return action;
     }
 
     @Override
@@ -32,11 +42,11 @@ public class InputActionValueList<P extends PropertyInterface> extends InputValu
     }
 
     public P singleInterface() {
-        return property.interfaces.removeIncl(mapValues.keys()).single();
+        return action.interfaces.removeIncl(mapValues.keys()).single();
     }
 
     // pretty similar to the InputContextAction.execute
     public void execute(String value, ExecutionContext<?> context) throws SQLException, SQLHandledException {
-        property.execute(context.override(MapFact.addExcl(mapValues, singleInterface(), new DataObject(value)), MapFact.EMPTY()));
+        action.execute(context.override(MapFact.addExcl(mapValues, singleInterface(), new DataObject(value)), MapFact.EMPTY()));
     }
 }

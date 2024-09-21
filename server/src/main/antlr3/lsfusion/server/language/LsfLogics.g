@@ -4263,7 +4263,7 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams ac
 	            listExpr=propertyExpression[newListContext, listDynamic] {
                     listProp = $listExpr.property;
                     if(!listDynamic && listProp != null) {
-                        newActionsContext.set(newActionsContext.size() - 1, self.new TypedParameter($listExpr.property.getLP().property.getType().getSID(), newActionsContext.get(newContext.size() - 1).paramName));
+                        newActionsContext.set(newActionsContext.size() - 1, self.new TypedParameter((DataClass)$listExpr.property.getLP().property.getType(), newActionsContext.get(newContext.size() - 1).paramName));
                     }
                 }
                 |

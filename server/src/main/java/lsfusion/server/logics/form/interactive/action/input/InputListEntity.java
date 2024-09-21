@@ -60,50 +60,8 @@ public abstract class InputListEntity<P extends PropertyInterface, V extends Pro
         return create(mapValues.join(map));
     }
 
-    public <C extends PropertyInterface> InputListEntity<P, C, ?> mapInner(ImRevMap<V, C> map) {
-        // here it's not evident if we should consider the case like FOR f=g(a) DO INPUT ... LIST x(d) IF g(d) = f as a simple input
-        // we won't since we don't do that in FilterEntity, ContextFilterEntity.getInputListEntity
-        ImRevMap<P, C> joinMapValues = mapValues.innerJoin(map);
-        if(joinMapValues.size() != mapValues.size())
-            return null;
-        return create(joinMapValues);
-    }
-
-    public <C extends PropertyInterface> InputListEntity<?, C, ?> mapJoin(ImMap<V, PropertyInterfaceImplement<C>> mapping) {
-        ImMap<P, PropertyInterfaceImplement<C>> mappedValues = mapValues.join(mapping);
-
-        ImRevMap<P, C> identityMap = getIdentityMap(mappedValues);
-        if(identityMap != null) // optimization + fix of not empty orders
-            return create(identityMap);
-
-        return createJoin(mappedValues);
-    }
-
     public abstract InputListEntity<P, V, ?> newSession();
-
     protected abstract <C extends PropertyInterface> InputListEntity<P, C, ?> create(ImRevMap<P, C> joinMapValues);
-
-    protected abstract <C extends PropertyInterface> InputListEntity<?, C, ?> createJoin(ImMap<P, PropertyInterfaceImplement<C>> mappedValues);
-
-    public InputValueList<P, ?> map(ExecutionContext<V> context) {
-        ImMap<V, ? extends ObjectValue> values = context.getKeys();
-        ImMap<V, PropertyObjectInterfaceInstance> objectInstances = context.getObjectInstances();
-        if(objectInstances == null)
-            objectInstances = BaseUtils.immutableCast(values);
-        else
-            objectInstances = MapFact.override(values, objectInstances);
-        return map(values, objectInstances);
-    }
-
-    public InputValueList<P, ?> map(ImMap<V, PropertyObjectInterfaceInstance> outerMapping, Function<PropertyObjectInterfaceInstance, ObjectValue> valuesGetter) {
-        return map(outerMapping.mapValues(valuesGetter), outerMapping);
-    }
-
-    public abstract InputValueList<P, ?> map(ImMap<V, ? extends ObjectValue> map, ImMap<V, PropertyObjectInterfaceInstance> mapObjects);
-
-    public ImMap<V, ValueClass> getInterfaceClasses() {
-        return mapValues.innerCrossJoin(property.getInterfaceClasses(ClassType.wherePolicy));
-    }
 
     public static <X extends PropertyInterface, V extends PropertyInterface> InputContextAction<?, V> getResetAction(BaseLogicsModule baseLM, LP targetProp) {
         assert targetProp.listInterfaces.isEmpty();

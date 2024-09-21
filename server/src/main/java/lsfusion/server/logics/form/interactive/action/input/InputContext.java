@@ -5,12 +5,12 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 public class InputContext<P extends PropertyInterface> {
 
-    public final InputValueList<P, ?> list;
+    public final InputValueList<?> list;
     public final boolean newSession;
     public final ExecutionContext<?> context;
     public final boolean strict;
 
-    public InputContext(InputValueList<P, ?> list, boolean newSession, ExecutionContext<?> context, boolean strict) {
+    public InputContext(InputValueList<?> list, boolean newSession, ExecutionContext<?> context, boolean strict) {
         this.list = list;
         this.newSession = newSession;
         this.context = context;

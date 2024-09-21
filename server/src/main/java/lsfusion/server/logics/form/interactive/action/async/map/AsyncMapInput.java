@@ -12,7 +12,7 @@ import lsfusion.server.logics.form.interactive.action.async.AsyncInput;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.interactive.action.async.InputList;
 import lsfusion.server.logics.form.interactive.action.async.InputListAction;
-import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
+import lsfusion.server.logics.form.interactive.action.input.InputContextListEntity;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.property.AsyncDataConverter;
@@ -29,60 +29,59 @@ import org.apache.commons.lang3.ArrayUtils;
 
 public class AsyncMapInput<T extends PropertyInterface> extends AsyncMapValue<T> {
 
-    public final InputListEntity<?, T, ?> list;
+    public final InputContextListEntity<?, T> list;
 
     public final ImList<AsyncMapInputListAction<T>> actions;
     public final boolean strict;
 
-    public final boolean hasOldValue;
+    public final boolean hasDrawOldValue;
     public final PropertyInterfaceImplement<T> oldValue;
 
     public final String customEditorFunction;
 
-    public AsyncMapInput(DataClass type, InputListEntity<?, T, ?> list, ImList<AsyncMapInputListAction<T>> actions, boolean strict, boolean hasOldValue, PropertyInterfaceImplement<T> oldValue, String customEditorFunction) {
+    public AsyncMapInput(DataClass type, InputContextListEntity<?, T> list, ImList<AsyncMapInputListAction<T>> actions, boolean strict, boolean hasDrawOldValue, PropertyInterfaceImplement<T> oldValue, String customEditorFunction) {
         super(type);
 
         this.list = list;
         this.actions = actions;
         this.strict = strict;
 
-        this.hasOldValue = hasOldValue;
+        this.hasDrawOldValue = hasDrawOldValue;
         this.oldValue = oldValue;
 
         this.customEditorFunction = customEditorFunction;
     }
 
     public AsyncMapInput<T> override(String action, AsyncMapEventExec<T> asyncExec) {
-        return new AsyncMapInput<>(type, list, actions != null ? actions.mapListValues(a -> a.replace(action, asyncExec)) : null, strict, hasOldValue, oldValue, customEditorFunction);
+        return new AsyncMapInput<>(type, list, actions != null ? actions.mapListValues(a -> a.replace(action, asyncExec)) : null, strict, hasDrawOldValue, oldValue, customEditorFunction);
     }
 
-    private <P extends PropertyInterface> AsyncMapInput<P> override(InputListEntity<?, P, ?> list, ImList<AsyncMapInputListAction<P>> actions, boolean hasOldValue, PropertyInterfaceImplement<P> oldValue) {
-        return new AsyncMapInput<>(type, list, actions, strict, hasOldValue, oldValue, customEditorFunction);
+    private <P extends PropertyInterface> AsyncMapInput<P> override(InputContextListEntity<?, P> list, ImList<AsyncMapInputListAction<P>> actions, PropertyInterfaceImplement<P> oldValue) {
+        return new AsyncMapInput<>(type, list, actions, strict, hasDrawOldValue, oldValue, customEditorFunction);
     }
 
     public AsyncMapInput<T> newSession() {
-        return override(list != null ? list.newSession() : null, actions, hasOldValue, oldValue);
+        return override(list != null ? list.newSession() : null, actions, oldValue);
     }
 
     @Override
     public <P extends PropertyInterface> AsyncMapInput<P> map(ImRevMap<T, P> mapping) {
-        return override(list != null ? list.map(mapping) : null, actions != null ? actions.mapListValues(action -> action.map(mapping)) : null, hasOldValue, oldValue != null ? oldValue.map(mapping) : null);
+        return override(list != null ? list.map(mapping) : null, actions != null ? actions.mapListValues(action -> action.map(mapping)) : null, oldValue != null ? oldValue.map(mapping) : null);
     }
 
     @Override
     public <P extends PropertyInterface> AsyncMapFormExec<P> mapInner(ImRevMap<T, P> mapping) {
-        return override(list != null ? list.mapInner(mapping) : null, actions != null ? actions.mapListValues(action -> action.mapInner(mapping)) : null, hasOldValue, oldValue != null ? oldValue.map(mapping) : null);
+        return override(list != null ? list.mapInner(mapping) : null, actions != null ? actions.mapListValues(action -> action.mapInner(mapping)) : null, oldValue != null ? oldValue.map(mapping) : null);
     }
 
     @Override
     public <P extends PropertyInterface> AsyncMapFormExec<P> mapJoin(ImMap<T, PropertyInterfaceImplement<P>> mapping) {
-        InputListEntity<?, P, ?> mappedList = list != null ? list.mapJoin(mapping) : null;
-        return override(mappedList, actions != null ? actions.mapListValues(action -> action.mapJoin(mapping)) : null, hasOldValue, oldValue instanceof PropertyInterface ? mapping.get((T)oldValue) : null);
+        return override(list != null ? list.mapJoin(mapping) : null, actions != null ? actions.mapListValues(action -> action.mapJoin(mapping)) : null, oldValue instanceof PropertyInterface ? mapping.get((T)oldValue) : null);
     }
 
     @Override
     public AsyncEventExec map(ImRevMap<T, ObjectEntity> mapObjects, ConnectionContext context, ActionOrProperty securityProperty, PropertyDrawEntity<?> drawProperty, GroupObjectEntity toDraw) {
-        if (hasOldValue && !(
+        if (hasDrawOldValue && !(
                 oldValue instanceof PropertyMapImplement && drawProperty != null && context instanceof FormInstanceContext && drawProperty.isProperty((FormInstanceContext) context) &&
                 ((PropertyMapImplement<?, T>) oldValue).mapEntityObjects(mapObjects).equalsMap(drawProperty.getAssertCellProperty((FormInstanceContext) context))))
             return null;
@@ -115,14 +114,14 @@ public class AsyncMapInput<T extends PropertyInterface> extends AsyncMapValue<T>
 
         DataClass compatibleType = ((DataClass<?>)type).getCompatible(dataInput.type, true);
         if(compatibleType != null)
-            return new AsyncMapInput<>(compatibleType, null, null, false, hasOldValue || dataInput.hasOldValue,
+            return new AsyncMapInput<>(compatibleType, null, null, false, hasDrawOldValue || dataInput.hasDrawOldValue,
                     oldValue == null || dataInput.oldValue == null || oldValue.equals(dataInput.oldValue) ? BaseUtils.nvl(oldValue, dataInput.oldValue) : null, customEditorFunction);
         return null;
     }
 
     @Override
-    public <X extends PropertyInterface> Pair<InputListEntity<X, T, ?>, AsyncDataConverter<X>> getAsyncValueList(Result<String> value) {
-        return new Pair<>((InputListEntity<X, T, ?>) list, null);
+    public <X extends PropertyInterface> Pair<InputContextListEntity<X, T>, AsyncDataConverter<X>> getAsyncValueList(Result<String> value) {
+        return new Pair<>((InputContextListEntity<X, T>) list, null);
     }
 
     public static AsyncMode getAsyncMode(boolean strict) {

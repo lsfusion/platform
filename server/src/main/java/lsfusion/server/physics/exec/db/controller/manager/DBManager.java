@@ -16,7 +16,6 @@ import lsfusion.base.col.lru.LRUWWEVSMap;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.lambda.DProcessor;
 import lsfusion.base.lambda.E2Runnable;
-import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.ProgressBar;
 import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.form.property.Compare;
@@ -1111,7 +1110,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private final LRUWWEVSMap<ActionOrProperty<?>, Param, ValueRef> asyncValuesValueCache1 = new LRUWWEVSMap<>(LRUUtil.G1);
     private final LRUWWEVSMap<ActionOrProperty<?>, Param, ValueRef> asyncValuesValueCache2 = new LRUWWEVSMap<>(LRUUtil.G2);
 
-    public <P extends PropertyInterface> PropertyAsync<P>[] getAsyncValues(InputValueList<P, ?> list, QueryEnvironment env, ExecutionStack stack, FormEnvironment formEnv, String value, int neededCount, AsyncMode mode) throws SQLException, SQLHandledException {
+    public <P extends PropertyInterface> PropertyAsync<P>[] getAsyncValues(InputValueList<P> list, QueryEnvironment env, ExecutionStack stack, FormEnvironment formEnv, String value, int neededCount, AsyncMode mode) throws SQLException, SQLHandledException {
         if(Settings.get().isIsClustered()) // we don't want to use caches since they can be inconsistent
             return readAsyncValues(list, env, stack, formEnv, value, neededCount, mode);
 
@@ -1147,7 +1146,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         return values;
     }
 
-    private <P extends PropertyInterface> PropertyAsync<P>[] readAsyncValues(InputValueList<P, ?> list, QueryEnvironment env, ExecutionStack stack, FormEnvironment formEnv, String value, int neededCount, AsyncMode asyncMode) throws SQLException, SQLHandledException {
+    private <P extends PropertyInterface> PropertyAsync<P>[] readAsyncValues(InputValueList<P> list, QueryEnvironment env, ExecutionStack stack, FormEnvironment formEnv, String value, int neededCount, AsyncMode asyncMode) throws SQLException, SQLHandledException {
         return FormInstance.getAsyncValues(list, getThreadLocalSql(), env, LM.baseClass, Property.defaultModifier, () -> new ExecutionContext<>(MapFact.EMPTY(), createSession(), stack, formEnv), value, neededCount, asyncMode);
     }
 

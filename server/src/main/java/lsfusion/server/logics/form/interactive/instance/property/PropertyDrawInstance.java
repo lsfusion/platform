@@ -17,7 +17,7 @@ import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInput;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapValue;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
-import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
+import lsfusion.server.logics.form.interactive.action.input.InputContextListEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputPropertyValueList;
 import lsfusion.server.logics.form.interactive.action.input.InputValueList;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
@@ -49,12 +49,12 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     }
 
     public static class AsyncValueList<P extends PropertyInterface> {
-        public final InputValueList<P, ?> list;
+        public final InputValueList<?> list;
         public final AsyncDataConverter<P> converter;
         public final boolean newSession;
         public final AsyncMode asyncMode;
 
-        public AsyncValueList(InputValueList<P, ?> list, AsyncDataConverter<P> converter, boolean newSession, AsyncMode asyncMode) {
+        public AsyncValueList(InputValueList<?> list, AsyncDataConverter<P> converter, boolean newSession, AsyncMode asyncMode) {
             this.list = list;
             this.converter = converter;
             this.newSession = newSession;
@@ -62,7 +62,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         }
     }
 
-    public <P extends PropertyInterface, X extends PropertyInterface> AsyncValueList<?> getAsyncValueList(String actionSID, Result<String> value, FormInstanceContext context, FormInstance formInstance, ImMap<ObjectInstance, ? extends ObjectValue> keys) {
+    public <P extends PropertyInterface, X extends PropertyInterface, Z extends PropertyInterface> AsyncValueList<?> getAsyncValueList(String actionSID, Result<String> value, FormInstanceContext context, FormInstance formInstance, ImMap<ObjectInstance, ? extends ObjectValue> keys) {
 
         Function<PropertyObjectInterfaceInstance, ObjectValue> valuesGetter = (PropertyObjectInterfaceInstance po) -> {
             if(po instanceof ObjectInstance) {
@@ -73,7 +73,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
             return po.getObjectValue();
         };
 
-        InputValueList<X, ?> list;
+        InputValueList<X> list;
         AsyncDataConverter<X> converter;
         boolean newSession;
         AsyncMode asyncMode;
@@ -96,13 +96,13 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
             ActionObjectEntity<P> eventAction = (ActionObjectEntity<P>) this.entity.getCheckedEventAction(actionSID, context);
 
             AsyncMapValue<P> asyncExec = (AsyncMapValue<P>) eventAction.property.getAsyncEventExec(this.entity.optimisticAsync);
-            Pair<InputListEntity<X, P, ?>, AsyncDataConverter<X>> asyncValueList = asyncExec.getAsyncValueList(value);
-            InputListEntity<X, P, ?> listEntity = asyncValueList.first;
-            converter = asyncValueList.second;
-
             ImRevMap<P, PropertyObjectInterfaceInstance> outerMapping = BaseUtils.immutableCast(formInstance.instanceFactory.getInstanceMap(eventAction.mapping));
-            list = listEntity.map(outerMapping, valuesGetter);
-            newSession = listEntity.newSession;
+
+            Pair<InputContextListEntity<Z, P>, AsyncDataConverter<Z>> asyncValueList = asyncExec.getAsyncValueList(value);
+            InputContextListEntity<Z, P> listEntity = asyncValueList.first;
+            list = (InputValueList<X>) listEntity.map(outerMapping, valuesGetter);
+            converter = (AsyncDataConverter<X>) asyncValueList.second; // here we assert that Z = X, because in the not null branch we use InputContextListEntity with no filter / orders constructor
+            newSession = listEntity.isNewSession();
             if(asyncExec instanceof AsyncMapInput)
                 valuesMode = AsyncMapInput.getAsyncMode(((AsyncMapInput<P>) asyncExec).strict);
             else

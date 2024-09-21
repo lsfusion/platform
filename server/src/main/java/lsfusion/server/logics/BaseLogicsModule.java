@@ -1000,7 +1000,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     private LA addObjInputAProp(DataClass dataClass, LP targetProp, ObjectEntity objectEntity) {
-        return addInputAProp(dataClass, targetProp, false, SetFact.EMPTYORDER(), null, null, null, ListFact.EMPTY(), null, false);
+        return addInputAProp(dataClass, targetProp, false, null, SetFact.EMPTYORDER(), null, null, null, ListFact.EMPTY(), null, false);
     }
 
     @Override

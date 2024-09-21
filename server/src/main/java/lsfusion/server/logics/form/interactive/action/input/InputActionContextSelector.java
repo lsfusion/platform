@@ -16,7 +16,7 @@ public class InputActionContextSelector<F extends PropertyInterface, V extends P
 
     @Override
     public Pair<InputFilterEntity<?, V>, ImOrderMap<InputOrderEntity<?, V>, Boolean>> getFilterAndOrders() {
-        return new Pair<>(filter, MapFact.EMPTYORDER());
+        return new Pair<>(filter, filter != null ? MapFact.EMPTYORDER() : null);
     }
 
     @Override

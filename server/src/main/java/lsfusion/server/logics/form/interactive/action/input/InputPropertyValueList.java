@@ -24,29 +24,42 @@ import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectI
 import lsfusion.server.logics.form.interactive.property.AsyncMode;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
 
 import java.sql.SQLException;
 
-public class InputPropertyValueList<P extends PropertyInterface> extends InputValueList<P, Property<P>> {
+public class InputPropertyValueList<P extends PropertyInterface> extends InputValueList<P> {
 
+    protected final ImSet<P> interfaces;
+    protected final PropertyMapImplement<?, P> property;
     protected final ImOrderMap<PropertyInterfaceImplement<P>, Boolean> orders;
     private final ImMap<P, PropertyObjectInterfaceInstance> mapObjects;
 
-    public InputPropertyValueList(Property<P> property, ImOrderMap<PropertyInterfaceImplement<P>, Boolean> orders, ImMap<P, ObjectValue> mapValues, ImMap<P, PropertyObjectInterfaceInstance> mapObjects) {
-        super(property, mapValues);
+    public InputPropertyValueList(ImSet<P> interfaces, PropertyMapImplement<?, P> property, ImOrderMap<PropertyInterfaceImplement<P>, Boolean> orders, ImMap<P, ObjectValue> mapValues, ImMap<P, PropertyObjectInterfaceInstance> mapObjects) {
+        super(mapValues);
 
+        this.interfaces = interfaces;
+        this.property = property;
         this.orders = orders;
         this.mapObjects = mapObjects;
+        assert mapValues.keys().equals(mapObjects.keys());
     }
 
     public InputListExpr<P> getListExpr(Modifier modifier, AsyncMode asyncMode) throws SQLException, SQLHandledException {
-        ImRevMap<P, KeyExpr> innerKeys = KeyExpr.getMapKeys(property.interfaces.removeIncl(mapValues.keys()));
-        return new InputListExpr<>(innerKeys, property.getExpr(MapFact.addExcl(innerKeys, DataObject.getMapExprs(mapValues)), modifier), getOrderExprs(modifier, innerKeys, asyncMode));
+        ImRevMap<P, KeyExpr> innerKeys = KeyExpr.getMapKeys(getInterfaces());
+        ImMap<P, Expr> innerExprs = MapFact.addExcl(innerKeys, DataObject.getMapExprs(mapValues));
+
+        return new InputListExpr<>(innerKeys, property.mapExpr(innerExprs, modifier), getOrderExprs(modifier, innerExprs, asyncMode));
     }
 
-    private ImOrderMap<Expr, Boolean> getOrderExprs(Modifier modifier, ImRevMap<P, KeyExpr> innerKeys, AsyncMode asyncMode) throws SQLException, SQLHandledException {
+    private ImSet<P> getInterfaces() {
+        return interfaces.removeIncl(mapValues.keys());
+    }
+
+    private ImOrderMap<Expr, Boolean> getOrderExprs(Modifier modifier, ImMap<P, Expr> innerExprs, AsyncMode asyncMode) throws SQLException, SQLHandledException {
         if(asyncMode == null)
             return MapFact.EMPTYORDER();
 
@@ -56,10 +69,10 @@ public class InputPropertyValueList<P extends PropertyInterface> extends InputVa
                 return MapFact.EMPTYORDER();
         } else {
             if (asyncMode.isObjects() && !isTooMayRows()) // maybe OBJECTVALUES also can be used
-                return MapFact.singletonOrder(innerKeys.get(singleInterface()), false);
+                return MapFact.singletonOrder(innerExprs.get(singleInterface()), false);
         }
 
-        return orders.mapMergeOrderKeysEx((ThrowingFunction<PropertyInterfaceImplement<P>, Expr, SQLException, SQLHandledException>) value -> value.mapExpr(innerKeys, modifier));
+        return orders.mapMergeOrderKeysEx((ThrowingFunction<PropertyInterfaceImplement<P>, Expr, SQLException, SQLHandledException>) value -> value.mapExpr(innerExprs, modifier));
     }
 
     private boolean isTooMayRows() {
@@ -67,39 +80,39 @@ public class InputPropertyValueList<P extends PropertyInterface> extends InputVa
     }
 
     public P singleInterface() {
-        return property.interfaces.removeIncl(mapValues.keys()).single();
+        return getInterfaces().single();
     }
 
+    // maybe classes from ObjectValue should be used with the proper caching
     public Stat getSelectStat() {
-        return property.getSelectStat(getInterfaceParams());
+        return property.mapSelectStat(mapObjects);
     }
 
-    private ImMap<P, StaticParamNullableExpr> getInterfaceParams() { // maybe classes from ObjectValue should be used with the proper caching
-        return PropertyObjectInstance.getParamExprs(property, mapObjects);
-    }
     public Stat getInterfaceStat() {
-        return property.getInterfaceStat(getInterfaceParams());
+        return property.mapInterfaceStat(mapObjects);
     }
 
     public Cost getInterfaceCost() {
-        return property.getInterfaceCost(getInterfaceParams());
+        return property.mapInterfaceCost(mapObjects);
     }
 
     public boolean isHighlight() {
-        Type type = property.getType();
+        Type type = property.property.getType();
         return !(type instanceof DataClass && ((DataClass<?>) type).markupHtml()); // ts_headline breaks html : https://stackoverflow.com/questions/40263956/why-is-postgresql-stripping-html-entities-in-ts-headline
     }
 
     @Override
     public ImSet<Property> getChangeProps() {
-        if(orders.isEmpty()) // optimization
-            return SetFact.singleton(property);
-
         MSet<Property> mProps = SetFact.mSetMax(orders.size() + 1);
-        mProps.add(property);
+        property.mapFillDepends(mProps);
         for(PropertyInterfaceImplement<P> order : orders.keyIt())
             order.mapFillDepends(mProps);
         return mProps.immutable();
+    }
+
+    @Override
+    public ActionOrProperty<?> getCacheKey() {
+        return property.property;
     }
 
     @Override

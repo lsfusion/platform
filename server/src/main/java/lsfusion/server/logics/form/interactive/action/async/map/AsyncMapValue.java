@@ -3,7 +3,7 @@ package lsfusion.server.logics.form.interactive.action.async.map;
 import lsfusion.base.Pair;
 import lsfusion.base.Result;
 import lsfusion.server.logics.classes.data.DataClass;
-import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
+import lsfusion.server.logics.form.interactive.action.input.InputContextListEntity;
 import lsfusion.server.logics.form.interactive.property.AsyncDataConverter;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
@@ -26,5 +26,5 @@ public abstract class AsyncMapValue<T extends PropertyInterface> extends AsyncMa
         return true; // we have to send input value
     }
 
-    public abstract <X extends PropertyInterface> Pair<InputListEntity<X, T, ?>, AsyncDataConverter<X>> getAsyncValueList(Result<String> value);
+    public abstract <X extends PropertyInterface> Pair<InputContextListEntity<X, T>, AsyncDataConverter<X>> getAsyncValueList(Result<String> value);
 }

@@ -19,15 +19,11 @@ import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 
-public abstract class InputValueList<P extends PropertyInterface, T extends ActionOrProperty<P>> {
-
-    protected final T property;
+public abstract class InputValueList<P extends PropertyInterface> {
 
     protected final ImMap<P, ObjectValue> mapValues; // external context
 
-    public InputValueList(T property, ImMap<P, ObjectValue> mapValues) {
-        this.property = property;
-
+    public InputValueList(ImMap<P, ObjectValue> mapValues) {
         this.mapValues = mapValues;
     }
 
@@ -56,18 +52,19 @@ public abstract class InputValueList<P extends PropertyInterface, T extends Acti
         return Property.depends((Property)property, changedSet);
     }
 
-    public ActionOrProperty<?> getCacheKey() {
-        return property;
-    }
+    public abstract ActionOrProperty<?> getCacheKey();
     public DBManager.Param<?> getCacheParam(String value, int neededCount, AsyncMode mode, QueryEnvironment env) {
+        return new DBManager.Param<>(mapValues, getCacheEnvValues(env), getCacheOrders(), value, neededCount, mode.getCacheMode());
+    }
+
+    private ImMap<CurrentEnvironmentProperty, Object> getCacheEnvValues(QueryEnvironment env) {
         ImMap<CurrentEnvironmentProperty, Object> envValues = MapFact.EMPTY();
         ImSet<CurrentEnvironmentProperty> envDepends = getEnvDepends();
         if(!envDepends.isEmpty()) { // optimization
             ImMap<String, ValueParseInterface> queryPropParams = CompiledQuery.getQueryPropParams(env);
             envValues = envDepends.mapValues((CurrentEnvironmentProperty prop) -> queryPropParams.get(prop.paramString).getValue());
         }
-
-        return new DBManager.Param<P>(mapValues, envValues, getCacheOrders(), value, neededCount, mode.getCacheMode());
+        return envValues;
     }
 
     protected abstract ImOrderMap<PropertyInterfaceImplement<P>, Boolean> getCacheOrders();
