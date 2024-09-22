@@ -29,6 +29,7 @@ import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.async.GInputListAction;
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.GCompletionType;
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.SuggestBox;
+import lsfusion.gwt.client.form.property.cell.classes.view.InputBasedCellRenderer;
 import lsfusion.gwt.client.form.property.cell.classes.view.TextBasedCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
@@ -209,6 +210,8 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
     }
     public static void setTextInputValue(InputElement element, String value) {
         element.setValue(value);
+
+        InputBasedCellRenderer.updateAutosizeTextarea(element);
     }
     private String getTextInputValue() {
         return getTextInputValue(inputElement);
