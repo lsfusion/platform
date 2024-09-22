@@ -709,7 +709,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return null;
     }
 
-    public <T extends PropertyInterface> InputResult inputUserData(DataClass dataClass, Object oldValue, boolean hasOldValue, InputListEntity<T, P, ?> list, String customChangeFunction, InputList inputList, InputListAction[] actions) {
+    public <T extends PropertyInterface> InputResult inputUserData(DataClass dataClass, Object oldValue, boolean hasOldValue, InputContextListEntity<T, P> list, String customChangeFunction, InputList inputList, InputListAction[] actions) {
         assertNotUserInteractionInTransaction();
 
         InputResult pushedInput = getPushedInput(dataClass, true);
@@ -718,7 +718,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 
         InputContext<T> inputContext = null;
         if(list != null)
-            inputContext = new InputContext<>(list.map(this), list.newSession, this, inputList.strict);
+            inputContext = new InputContext<>(list.map(this), list.isNewSession(), this, inputList.strict);
         return ThreadLocalContext.inputUserData(getSecurityProperty(), dataClass, oldValue, hasOldValue, inputContext, customChangeFunction, inputList, actions);
     }
 

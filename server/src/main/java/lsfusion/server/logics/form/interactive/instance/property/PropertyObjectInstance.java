@@ -19,6 +19,7 @@ import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.form.interactive.action.input.InputContextPropertyListEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputPropertyListEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputPropertyValueList;
 import lsfusion.server.logics.form.interactive.changed.ChangedData;
@@ -149,17 +150,17 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends ActionO
         return objectsOuterMapping.mapValues(o -> o.entity.getParamExpr()).addExcl(property.getInterfaceParamExprs(rNotObjectsOuterMapping.result.keys()));
     }
 
-    public InputPropertyValueList<?> getInputValueList(GroupObjectInstance toDraw, Result<ImRevMap<P, ObjectInstance>> innerMapping, Function<PropertyObjectInterfaceInstance, ObjectValue> valuesGetter, boolean useFilters) {
+    public <X extends PropertyInterface> InputPropertyValueList<?> getInputValueList(GroupObjectInstance toDraw, Result<ImRevMap<P, ObjectInstance>> innerMapping, Function<PropertyObjectInterfaceInstance, ObjectValue> valuesGetter, boolean useFilters) {
         // splitting to grid and not grid objects
         SFunctionSet<PropertyObjectInterfaceInstance> gridObjects = value -> (value instanceof ObjectInstance && toDraw.objects.contains((ObjectInstance) value));
         ImMap<P, PropertyObjectInterfaceInstance> outerMapping = mapping.filterFnValues(new NotFunctionSet<>(gridObjects));
 
-        InputPropertyListEntity<?, P> inputList = property.getInputList(getParamExprs(property, outerMapping), innerMapping != null || useFilters);
+        InputPropertyListEntity<X, P> inputList = (InputPropertyListEntity<X, P>) property.getInputList(getParamExprs(property, outerMapping), innerMapping != null || useFilters);
         if(inputList == null)
             return null;
 
         if(innerMapping != null)
             innerMapping.set(BaseUtils.immutableCast(mapping.filterFnValues(gridObjects).toRevExclMap()));
-        return inputList.map(outerMapping, valuesGetter);
+        return new InputContextPropertyListEntity<>(inputList).map(outerMapping, valuesGetter);
     }
 }

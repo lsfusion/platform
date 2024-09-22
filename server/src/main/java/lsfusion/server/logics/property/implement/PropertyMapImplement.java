@@ -7,7 +7,10 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.GroupType;
+import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.data.stat.Cost;
+import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.where.Where;
@@ -385,4 +388,21 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
     public int hashMap() {
         return 31 * property.hashCode() + mapping.hashCode();
     }
+
+    private ImMap<P, StaticParamNullableExpr> getInterfaceParams(ImMap<T, PropertyObjectInterfaceInstance> mapObjects) { // maybe classes from ObjectValue should be used with the proper caching
+        return PropertyObjectInstance.getParamExprs(property, mapping.join(mapObjects));
+    }
+
+    public Stat mapSelectStat(ImMap<T, PropertyObjectInterfaceInstance> mapObjects) {
+        return property.getSelectStat(getInterfaceParams(mapObjects));
+    }
+
+    public Stat mapInterfaceStat(ImMap<T, PropertyObjectInterfaceInstance> mapObjects) {
+        return property.getInterfaceStat(getInterfaceParams(mapObjects));
+    }
+
+    public Cost mapInterfaceCost(ImMap<T, PropertyObjectInterfaceInstance> mapObjects) {
+        return property.getInterfaceCost(getInterfaceParams(mapObjects));
+    }
+
 }

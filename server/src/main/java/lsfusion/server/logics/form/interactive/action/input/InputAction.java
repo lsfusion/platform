@@ -43,6 +43,7 @@ public class InputAction extends SystemExplicitAction {
 //        return getChangeProps(requestCanceledProperty.property, requestedPropertySet.getLCP(dataClass).property);
 //    }
 
+    private final boolean hasDrawOldValue;
     private final ClassPropertyInterface oldValueInterface;
     // CONTEXT
     protected final ImSet<ClassPropertyInterface> contextInterfaces;
@@ -56,9 +57,9 @@ public class InputAction extends SystemExplicitAction {
         return ArrayUtils.addAll(hasOldValue ? new ValueClass[]{valueClass} : new ValueClass[]{}, BaseUtils.genArray(null, contextInterfaces, ValueClass[]::new));
     }
 
-    public <C extends PropertyInterface> InputAction(LocalizedString caption, ValueClass valueClass, LP targetProp, boolean hasOldValue,
+    public <C extends PropertyInterface> InputAction(LocalizedString caption, ValueClass valueClass, LP targetProp, boolean hasDrawOldValue, C objectOldValue,
                                                      ImOrderSet<C> orderContextInterfaces, InputListEntity<?, C, ?> contextList, InputContextSelector<C> contextSelector, ImList<InputContextAction<?, C>> contextActions, String customChangeFunction) {
-        super(caption, getValueClasses(hasOldValue, valueClass, orderContextInterfaces.size()));
+        super(caption, getValueClasses(hasDrawOldValue, valueClass, orderContextInterfaces.size()));
 
         this.valueClass = valueClass;
         this.targetProp = targetProp;
@@ -67,13 +68,18 @@ public class InputAction extends SystemExplicitAction {
 
         ImOrderSet<ClassPropertyInterface> orderInterfaces = getOrderInterfaces();
 
-        if(hasOldValue) {
-            this.oldValueInterface = orderInterfaces.get(0);
+        ClassPropertyInterface oldValueInterface = null;
+        if(hasDrawOldValue) {
+            oldValueInterface = orderInterfaces.get(0);
             orderInterfaces = orderInterfaces.subOrder(1, orderInterfaces.size());
-        } else
-            this.oldValueInterface = null;
-
+        }
         ImRevMap<C, ClassPropertyInterface> mapContextInterfaces = orderContextInterfaces.mapSet(orderInterfaces.subOrder(0, orderContextInterfaces.size()));
+        if(!hasDrawOldValue && objectOldValue != null)
+            oldValueInterface = mapContextInterfaces.get(objectOldValue);
+
+        this.hasDrawOldValue = hasDrawOldValue;
+        this.oldValueInterface = oldValueInterface;
+
         this.contextInterfaces = mapContextInterfaces.valuesSet();
         assert valueClass instanceof DataClass || ((InputPropertyListEntity<?, C>)contextList).singleInterface() != null;
         assert (contextList == null) == (contextSelector == null);
@@ -85,13 +91,13 @@ public class InputAction extends SystemExplicitAction {
     }
 
     @IdentityInstanceLazy
-    private InputListEntity<?, ClassPropertyInterface, ?> mergeFullContextList() {
+    private InputContextListEntity<?, ClassPropertyInterface> mergeFullContextList() {
         if(contextList instanceof InputPropertyListEntity)
             return ((InputPropertyListEntity<?, ClassPropertyInterface>) contextList).merge(contextSelector.getFilterAndOrders());
 
-        return contextList;
+        return (InputActionListEntity<?, ClassPropertyInterface>) contextList;
     }
-    private InputListEntity<?, ClassPropertyInterface, ?> getFullContextList() {
+    private InputContextListEntity<?, ClassPropertyInterface> getFullContextList() {
         if(contextList == null) {
             assert contextSelector == null;
             return null;
@@ -102,7 +108,7 @@ public class InputAction extends SystemExplicitAction {
     }
 
     private DataClass getInputClass() {
-        return valueClass instanceof DataClass ? (DataClass) valueClass : ((InputPropertyListEntity<?, ClassPropertyInterface>)getFullContextList()).getDataClass();
+        return valueClass instanceof DataClass ? (DataClass) valueClass : ((InputContextPropertyListEntity<?, ClassPropertyInterface>)getFullContextList()).getDataClass();
     }
 
     private ImList<AsyncMapInputListAction<ClassPropertyInterface>> getActions() {
@@ -115,7 +121,7 @@ public class InputAction extends SystemExplicitAction {
 
     @Override
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        boolean hasOldValue = oldValueInterface != null;
+        boolean hasOldValue = hasDrawOldValue;
         Object oldValue = hasOldValue ? context.getKeyObject(oldValueInterface) : null;
 
         InputResult userValue = context.inputUserData(getInputClass(), oldValue, hasOldValue, getFullContextList(), customChangeFunction, getInputList(), getInputListActions(context.getRemoteContext()));
@@ -128,7 +134,7 @@ public class InputAction extends SystemExplicitAction {
             if(userValue != null) {
                 ObjectValue value = userValue.value;
                 if (!(valueClass instanceof DataClass))
-                    value = ((InputPropertyListEntity<?, ClassPropertyInterface>) getFullContextList()).readObject(context, value);
+                    value = ((InputContextPropertyListEntity<?, ClassPropertyInterface>) getFullContextList()).readObject(context, value);
                 requestResults = RequestResult.get(value, valueClass.getType(), targetProp);
             }
             context.writeRequested(requestResults);
@@ -147,8 +153,7 @@ public class InputAction extends SystemExplicitAction {
 
     @Override
     public AsyncMapEventExec<ClassPropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
-        boolean hasOldValue = !optimistic && oldValueInterface != null;
-        return new AsyncMapInput<>(getInputClass(), getFullContextList(), getActions(), isStrict(), hasOldValue, hasOldValue ? oldValueInterface : null, customChangeFunction);
+        return new AsyncMapInput<>(getInputClass(), getFullContextList(), getActions(), isStrict(), hasDrawOldValue && !optimistic, oldValueInterface, customChangeFunction);
     }
 
 //    FormInteractiveAction doesn't include contextFilters, so not sure that InputAction should
@@ -177,7 +182,7 @@ public class InputAction extends SystemExplicitAction {
     @Override
     public PropertyMapImplement<?, ClassPropertyInterface> calcWhereProperty() {
         PropertyMapImplement<?, ClassPropertyInterface> result = super.calcWhereProperty();
-        InputListEntity<?, ClassPropertyInterface, ?> fullContextList = getFullContextList(); // should be called after everything is initialized
+        InputContextListEntity<?, ClassPropertyInterface> fullContextList = getFullContextList(); // should be called after everything is initialized
         if(fullContextList != null) { // filters don't stop form from showing, however they can be used for param classes, so we're using the same hack as in SystemAction
             ImList<PropertyMapImplement<?, ClassPropertyInterface>> contextList = getDependContextActions().mapListValues((InputContextAction<?, ClassPropertyInterface> value) -> IsClassProperty.getMapProperty(value.getInterfaceClasses()));
             result = PropertyFact.createAnd(result, PropertyFact.createUnion(interfaces, ListFact.add(contextList, ListFact.toList(IsClassProperty.getMapProperty(fullContextList.getInterfaceClasses()), PropertyFact.createTrue())))); // mix of FormAction and ExtendContextAction (since we need sort of "grouping" in list clause)

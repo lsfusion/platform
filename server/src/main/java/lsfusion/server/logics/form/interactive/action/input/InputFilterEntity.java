@@ -1,13 +1,19 @@
 package lsfusion.server.logics.form.interactive.action.input;
 
+import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.struct.filter.ContextFilterEntity;
 import lsfusion.server.logics.property.JoinProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
+import lsfusion.server.logics.property.classes.infer.ClassType;
+import lsfusion.server.logics.property.implement.PropertyImplement;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
@@ -64,6 +70,15 @@ public class InputFilterEntity<P extends PropertyInterface, V extends PropertyIn
 
     public PropertyMapImplement<P, V> getWhereProperty(V objectInterface) {
         return new PropertyMapImplement<>(property, mapValues.addRevExcl(singleInterface(), objectInterface));
+    }
+
+    public <C extends PropertyInterface> InputFilterEntity<JoinProperty.Interface, C> createJoin(ImMap<V, PropertyInterfaceImplement<C>> mappedValues) {
+        Pair<Property<JoinProperty.Interface>, ImRevMap<JoinProperty.Interface, C>> joinImplement = PropertyFact.createPartJoin(new PropertyImplement<>(property, mapValues.join(mappedValues)));
+        return new InputFilterEntity<>(joinImplement.first, joinImplement.second);
+    }
+
+    public ImMap<V, ValueClass> getInterfaceClasses() {
+        return mapValues.innerCrossJoin(property.getInterfaceClasses(ClassType.wherePolicy));
     }
 
     public ImSet<V> getUsedInterfaces() {

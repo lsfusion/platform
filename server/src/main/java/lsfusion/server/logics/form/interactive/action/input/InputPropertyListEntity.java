@@ -8,20 +8,16 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.file.AppImage;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.server.base.AppServerImage;
-import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.data.expr.value.StaticParamNullableExpr;
-import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
-import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.form.interactive.action.async.QuickAccess;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
-import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.property.JoinProperty;
 import lsfusion.server.logics.property.Property;
@@ -33,25 +29,16 @@ import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.ActionOrPropertyUtils;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
-import java.sql.SQLException;
 import java.util.Collections;
-import java.util.function.Function;
 
 public class InputPropertyListEntity<P extends PropertyInterface, V extends PropertyInterface> extends InputListEntity<P, V, Property<P>> {
 
-    protected final ImOrderMap<InputOrderEntity<?, V>, Boolean> orders;
-
     public InputPropertyListEntity(Property<P> property, ImRevMap<P, V> mapValues) {
-        this(property, MapFact.EMPTYORDER(), mapValues, false);
+        this(property, mapValues, false);
     }
 
-    public InputPropertyListEntity(Property<P> property, ImOrderMap<InputOrderEntity<?, V>, Boolean> orders, ImRevMap<P, V> mapValues, boolean newSession) {
+    public InputPropertyListEntity(Property<P> property, ImRevMap<P, V> mapValues, boolean newSession) {
         super(property, mapValues, newSession);
-
-        // we'll have to patch with params if there are some extra params in order - to keep this structure: Property<P> and map to its params
-        // todo: but for now we'll just ignore such orders
-        // otherwise we'll have to do all map operations more complex
-        this.orders = orders.filterOrder(order -> mapValues.valuesSet().containsAll(order.mapValues.valuesSet()));
     }
 
     public <X extends PropertyInterface> PropertyMapImplement<P, X> getProperty(ImRevMap<V, X> map, X objectInterface) {
@@ -82,32 +69,21 @@ public class InputPropertyListEntity<P extends PropertyInterface, V extends Prop
                 listInterfaces.mapSet(newEdit.listInterfaces).removeRev(singleInterface).crossJoin(mapValues));
     }
 
-    public ObjectValue readObject(ExecutionContext<V> context, ObjectValue userValue) throws SQLException, SQLHandledException {
-        return FormInstance.getAsyncKey(map(context), context.getSession(), context.getModifier(), userValue);
-    }
-
-    public <J extends PropertyInterface, X extends PropertyInterface> InputPropertyListEntity<?, V> merge(Pair<InputFilterEntity<?, V>, ImOrderMap<InputOrderEntity<?, V>, Boolean>> filterAndOrders) {
+    public <J extends PropertyInterface> InputContextPropertyListEntity<?, V> merge(Pair<InputFilterEntity<?, V>, ImOrderMap<InputOrderEntity<?, V>, Boolean>> filterAndOrders) {
         if(filterAndOrders == null)
             return null;
 
         InputFilterEntity<?, V> filter = filterAndOrders.first;
         ImOrderMap<InputOrderEntity<?, V>, Boolean> orders = filterAndOrders.second;
 
-        if(filter == null && orders.isEmpty()) // it's not only the optimization, but also needed for the singleInterface assertion (and all the rest assertions)
-            return this;
+        if(filter == null) { // it's not only the optimization, but also needed for the singleInterface assertion (and all the rest assertions)
+            assert orders == null;
+            return new InputContextPropertyListEntity<>(this);
+        }
 
         assert singleInterface() != null;
 
-        InputFilterEntity<J, V> mergeFilter = (InputFilterEntity<J, V>) InputFilterEntity.and(getInputFilterEntity(), filter);
-
-        return new InputPropertyListEntity<>(mergeFilter.property, orders, mergeFilter.mapValues, newSession);
-    }
-
-    public InputFilterEntity<P, V> getInputFilterEntity() {
-        return new InputFilterEntity<>(property, mapValues);
-    }
-    public ImOrderMap<InputOrderEntity<?, V>, Boolean> getInputOrderEntities() {
-        return orders;
+        return new InputContextPropertyListEntity<>(this, filter, orders);
     }
 
     public DataClass getDataClass() {
@@ -131,45 +107,24 @@ public class InputPropertyListEntity<P extends PropertyInterface, V extends Prop
     }
 
     public InputPropertyListEntity<P, V> newSession() {
-        return new InputPropertyListEntity<>(property, orders, mapValues, true);
+        return new InputPropertyListEntity<>(property, mapValues, true);
     }
 
     protected  <C extends PropertyInterface> InputPropertyListEntity<P, C> create(ImRevMap<P, C> joinMapValues) {
-        ImRevMap<V, C> map = mapValues.crossJoin(joinMapValues);
-        return new InputPropertyListEntity<>(property, orders.mapOrderKeys(order -> order.map(map)), joinMapValues, newSession);
+        return new InputPropertyListEntity<>(property, joinMapValues, newSession);
     }
 
-    protected  <C extends PropertyInterface> InputPropertyListEntity<JoinProperty.Interface, C> createJoin(ImMap<P, PropertyInterfaceImplement<C>> mappedValues) {
-        Pair<Property<JoinProperty.Interface>, ImRevMap<JoinProperty.Interface, C>> joinImplement = PropertyFact.createPartJoin(new PropertyImplement<>(property, mappedValues));
-        return new InputPropertyListEntity<>(joinImplement.first, MapFact.EMPTYORDER(), joinImplement.second, newSession);
+    public <C extends PropertyInterface> InputPropertyListEntity<JoinProperty.Interface, C> createJoin(ImMap<V, PropertyInterfaceImplement<C>> mappedValues) {
+        Pair<Property<JoinProperty.Interface>, ImRevMap<JoinProperty.Interface, C>> joinImplement = PropertyFact.createPartJoin(new PropertyImplement<>(property, mapValues.join(mappedValues)));
+        return new InputPropertyListEntity<>(joinImplement.first, joinImplement.second, newSession);
+    }
+
+    public InputPropertyValueList<?> map(ImMap<V, ? extends ObjectValue> map, ImMap<V, PropertyObjectInterfaceInstance> mapObjects) {
+        return new InputPropertyValueList<>(property.interfaces, property.getImplement(), MapFact.EMPTYORDER(), (ImMap<P, ObjectValue>) mapValues.join(map), mapValues.join(mapObjects));
     }
 
     @Override
     public <C extends PropertyInterface> InputPropertyListEntity<P, C> map(ImRevMap<V, C> map) {
         return (InputPropertyListEntity<P, C>) super.map(map);
-    }
-
-    @Override
-    public InputPropertyValueList<P> map(ExecutionContext<V> context) {
-        return (InputPropertyValueList<P>) super.map(context);
-    }
-
-    @Override
-    public InputPropertyValueList<P> map(ImMap<V, PropertyObjectInterfaceInstance> outerMapping, Function<PropertyObjectInterfaceInstance, ObjectValue> valuesGetter) {
-        return (InputPropertyValueList<P>) super.map(outerMapping, valuesGetter);
-    }
-
-    public InputPropertyValueList<P> map() {
-        return map(MapFact.EMPTY(), MapFact.EMPTY());
-    }
-
-    public InputPropertyValueList<P> map(ImMap<V, ? extends ObjectValue> map, ImMap<V, PropertyObjectInterfaceInstance> mapObjects) {
-        return new InputPropertyValueList<>(property, getOrderImplements(), BaseUtils.immutableCast(mapValues.join(map)), mapObjects != null ? mapValues.join(mapObjects) : null);
-    }
-
-    @IdentityInstanceLazy
-    private <X extends PropertyInterface> ImOrderMap<PropertyInterfaceImplement<P>, Boolean> getOrderImplements() {
-        return BaseUtils.<ImOrderMap<InputOrderEntity<X, V>, Boolean>>immutableCast(orders).mapOrderKeys(
-                order -> new PropertyMapImplement<>(order.property, MapFact.addRevExcl(order.mapValues.innerCrossValues(mapValues), order.singleInterface(), singleInterface())));
     }
 }

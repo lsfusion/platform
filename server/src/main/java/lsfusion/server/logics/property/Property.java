@@ -1846,7 +1846,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         if(!fallbackToFilterSelected && hasAlotValues) // optimization
             return null;
 
-        InputPropertyListEntity readEntity = null;
+        InputContextPropertyListEntity readContextEntity = null;
         if(!hasAlotValues) {
             Property readValuesProperty = null;
             if (mapWhereInterfaces.isEmpty())
@@ -1859,11 +1859,13 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             }
 
             if(readValuesProperty != null) {
-                readEntity = new InputPropertyListEntity(name.property, MapFact.EMPTYREV());
+                InputPropertyListEntity readEntity = new InputPropertyListEntity(name.property, MapFact.EMPTYREV());
                 if(!multi)
-                    readEntity = readEntity.merge(new Pair<>(new InputFilterEntity<>(readValuesProperty, MapFact.EMPTYREV()), MapFact.EMPTYORDER()));
-                else
+                    readContextEntity = readEntity.merge(new Pair<>(new InputFilterEntity<>(readValuesProperty, MapFact.EMPTYREV()), MapFact.EMPTYORDER()));
+                else {
                     assert readValuesProperty == name.property;
+                    readContextEntity = new InputContextPropertyListEntity(readEntity);
+                }
             }
         }
 
@@ -1873,12 +1875,14 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
                 return null;
 
             return getSelectProperty(baseLM, mapPropertyInterfaces, innerInterfaces, name, selected, filterSelected, where, orders);
-        }, new Pair<>(nameType.getAverageCharLength() * whereCount, whereCount), readEntity != null ? ListFact.singleton(readEntity.map()) : null, multi, nameType instanceof HTMLStringClass || nameType instanceof HTMLTextClass, notNull);
+        }, new Pair<>(nameType.getAverageCharLength() * whereCount, whereCount), readContextEntity != null ? ListFact.singleton(readContextEntity.map()) : null, multi, nameType instanceof HTMLStringClass || nameType instanceof HTMLTextClass, notNull);
     }
 
     private static <I extends PropertyInterface, T extends PropertyInterface, W extends PropertyInterface> PropertyMapImplement<?, T> getSelectProperty(BaseLogicsModule baseLM, ImRevMap<T, I> mapPropertyInterfaces, ImSet<I> innerInterfaces, PropertyMapImplement<?, I> name, PropertyInterfaceImplement<I> selected, boolean filterSelected, PropertyMapImplement<W, I> where, ImOrderMap<? extends PropertyInterfaceImplement<I>, Boolean> orders) {
         if(filterSelected)
             where = (PropertyMapImplement<W, I>) PropertyFact.createAnd(where, selected);
+        else
+            where = (PropertyMapImplement<W, I>) PropertyFact.createUnion(innerInterfaces, PropertyFact.createNotNull(where), selected); // assert that selected is boolean (but maybe createUnionNotNull should be used)
 
         ImSet<I> innerMapInterfaces = mapPropertyInterfaces.valuesSet();
         LogicsModule.IntegrationForm<I> integrationForm = getSelectForm(baseLM, innerInterfaces, null, innerMapInterfaces, name, selected, where, orders, true);

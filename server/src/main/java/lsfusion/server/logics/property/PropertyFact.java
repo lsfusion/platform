@@ -403,9 +403,6 @@ public class PropertyFact {
 //        return new PropertyMapImplement<PropertyInterface, T>(NullValueProperty.instance, new HashMap<PropertyInterface, T>());
     }
 
-    public static <T extends PropertyInterface> PropertyMapImplement<?,T> createNotNull(PropertyInterfaceImplement<T> notNull) {
-        return createAnd(getUsedInterfaces(notNull), PropertyFact.createTrue(), notNull);
-    }
     public static Object getValueForProp(Object value, StaticClass objectClass) {
         if(objectClass instanceof StringClass)
             return LocalizedString.create((String)value, false);
@@ -1029,14 +1026,18 @@ public class PropertyFact {
         return createChangeClassAction(cls, forceDialog, innerInterfaces, context, where, changeInterface, baseClass);
     }
 
-    private static <P extends PropertyInterface> PropertyMapImplement<?, P> getFullWhereProperty(ImSet<P> innerInterfaces, PropertyInterfaceImplement<P> where, ImCol<PropertyInterfaceImplement<P>> exprs) {
-        PropertyMapImplement<?, P> result = createUnion(innerInterfaces, exprs.mapColValues((Function<PropertyInterfaceImplement<P>, PropertyInterfaceImplement<P>>) PropertyFact::createNotNull).toList());
+    private static <P extends PropertyInterface> PropertyMapImplement<?, P> getFullWhereProperty(ImSet<P> innerInterfaces, PropertyInterfaceImplement<P> where, ImList<PropertyInterfaceImplement<P>> exprs) {
+        PropertyMapImplement<?, P> result = createUnionNotNull(innerInterfaces, exprs);
         if (where != null)
             result = PropertyFact.createAnd(innerInterfaces, where, result);
         return result;
     }
 
-    public static <P extends PropertyInterface> PropertyInterfaceImplement<P> getFullWhereProperty(ImSet<P> innerInterfaces, ImSet<P> mapInterfaces, PropertyInterfaceImplement<P> where, ImCol<PropertyInterfaceImplement<P>> exprs) {
+    public static <P extends PropertyInterface> PropertyMapImplement<?, P> createUnionNotNull(ImSet<P> innerInterfaces, ImList<PropertyInterfaceImplement<P>> exprs) {
+        return createUnion(innerInterfaces, exprs.mapListValues((Function<PropertyInterfaceImplement<P>, PropertyInterfaceImplement<P>>) PropertyFact::createNotNull));
+    }
+
+    public static <P extends PropertyInterface> PropertyInterfaceImplement<P> getFullWhereProperty(ImSet<P> innerInterfaces, ImSet<P> mapInterfaces, PropertyInterfaceImplement<P> where, ImList<PropertyInterfaceImplement<P>> exprs) {
         ImSet<P> extInterfaces = innerInterfaces.remove(mapInterfaces);
         return (where == null && extInterfaces.isEmpty()) || (where != null && where.mapIsFull(extInterfaces)) ?
                 (where == null ? PropertyFact.createTrue() : where) : getFullWhereProperty(innerInterfaces, where, exprs);
@@ -1248,15 +1249,18 @@ public class PropertyFact {
 
             ConverterToMapImplement<X, T> converter = new ConverterToMapImplement<>();
 
-            ImSet<PropertyMapImplement<?, X>> ors = converter.convert(ops).mapSetValues(value -> {
-                if (!value.property.getType().equals(LogicalClass.instance)) // converting to logical if needed
-                    return PropertyFact.createNotNull(value);
-                return value;
-            });
+            ImSet<PropertyMapImplement<?, X>> ors = converter.convert(ops).mapSetValues(PropertyFact::createNotNull);
             ImMap<X, T> mapping = converter.getMapping();
 
             return createUnion(mapping.keys(), ors.toList()).mapImplement(mapping);
         }
+    }
+
+    public static <X extends PropertyInterface> PropertyMapImplement<?, X> createNotNull(PropertyInterfaceImplement<X> value) {
+        if (value instanceof PropertyMapImplement && ((PropertyMapImplement<?, ?>) value).property.getType().equals(LogicalClass.instance)) // converting to logical if needed
+            return (PropertyMapImplement<?, X>) value;
+
+        return createAnd(getUsedInterfaces(value), PropertyFact.createTrue(), value);
     }
 
     public static class CompareCachedFactory extends CachedFactory {

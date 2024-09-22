@@ -1168,11 +1168,11 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return null;
     }
 
-    public static <P extends PropertyInterface> PropertyAsync<P>[] getAsyncValues(InputValueList<P, ?> list, ExecutionContext<?> context, String value, int neededCount, AsyncMode asyncMode) throws SQLException, SQLHandledException {
+    public static <P extends PropertyInterface> PropertyAsync<P>[] getAsyncValues(InputValueList<P> list, ExecutionContext<?> context, String value, int neededCount, AsyncMode asyncMode) throws SQLException, SQLHandledException {
         DataSession session = context.getSession();
         return getAsyncValues(list, session.sql, session.env, session.baseClass, context.getModifier(), () -> context, value, neededCount, asyncMode);
     }
-    public static <P extends PropertyInterface> PropertyAsync<P>[] getAsyncValues(InputValueList<P, ?> list, SQLSession sql, QueryEnvironment env, BaseClass baseClass, Modifier modifier, E2Callable<ExecutionContext<?>, SQLException, SQLHandledException> contextSupplier, String value, int neededCount, AsyncMode asyncMode) throws SQLException, SQLHandledException {
+    public static <P extends PropertyInterface> PropertyAsync<P>[] getAsyncValues(InputValueList<P> list, SQLSession sql, QueryEnvironment env, BaseClass baseClass, Modifier modifier, E2Callable<ExecutionContext<?>, SQLException, SQLHandledException> contextSupplier, String value, int neededCount, AsyncMode asyncMode) throws SQLException, SQLHandledException {
         Settings settings = Settings.get();
 
         if(list instanceof InputActionValueList) {
@@ -1343,12 +1343,12 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         }
         return result;
     }
-    private static <P extends PropertyInterface> boolean checkAsyncLength(InputValueList<P, ?> list, String value, AsyncMode mode) {
+    private static <P extends PropertyInterface> boolean checkAsyncLength(InputValueList<P> list, String value, AsyncMode mode) {
         Settings settings = Settings.get();
         return list instanceof InputPropertyValueList && value.length() <= settings.getAsyncValuesTooShortThreshold() && !mode.isObjects() && !((InputPropertyValueList<P>)list).getInterfaceCost().rows.less(new Stat(settings.getAsyncValuesTooShortDataCompletionCount()));
     }
     public <P extends PropertyInterface, X extends PropertyInterface> Async[] getAsyncValues(PropertyDrawInstance<P> propertyDraw, ImMap<ObjectInstance, ? extends ObjectValue> keys, String actionSID, String value, int neededCount, boolean optimistic, Supplier<Boolean> optimisticRun, FormInstanceContext context, ExecutionStack stack) throws SQLException, SQLHandledException {
-        InputValueList<X, ?> listProperty;
+        InputValueList<X> listProperty;
         AsyncDataConverter<X> converter;
         AsyncMode asyncMode;
         boolean needRecheck = false;
@@ -1356,12 +1356,12 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         FormEnvironment formEnv = new FormEnvironment(null, propertyDraw, this);
         if (actionSID.equals(INPUT)) {
             assert optimistic;
-            InputContext<X> inputContext = ThreadLocalContext.lockInputContext();
+            InputContext<?> inputContext = ThreadLocalContext.lockInputContext();
             try {
                 if (inputContext == null) // recheck
                     return new Async[] {Async.CANCELED};
 
-                listProperty = inputContext.list;
+                listProperty = (InputValueList<X>) inputContext.list;
                 converter = null;
                 asyncMode = AsyncMapInput.getAsyncMode(inputContext.strict);
 
@@ -1381,7 +1381,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 return new Async[] {Async.CANCELED};
 
             value = rValue.result;
-            listProperty = valueList.list;
+            listProperty = (InputValueList<X>) valueList.list;
             converter = valueList.converter;
             asyncMode = valueList.asyncMode;
 
