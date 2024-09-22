@@ -1196,13 +1196,49 @@ public class GwtClientUtils {
         return element.getOffsetHeight() - element.getClientHeight() - getBorderHeight(element); // in theory borders should be excluded, but for now it doesn't matter
     }
 
-    // without padding, getClient - with paddings, getOffset with paddings and borders (+scrolls), getFull wit paddings, borders and margins
-    public static native int getHeight(Element element) /*-{
-        return parseInt($wnd.getComputedStyle(element, null).height);
+    // "actual" width / height the value that can be set to width / height and we'll get the current element width / height (so either client or without borders / paddings)
+    public static native int getWidth(Element element) /*-{
+        // Get the computed styles of the element
+        var compStyle = $wnd.getComputedStyle(element, null);
+
+        // Extract the width and convert it to a number
+        var width = parseInt(compStyle.width);
+
+        // Check the box-sizing property
+        var boxSizing = compStyle.boxSizing;
+
+        if (boxSizing === 'border-box') {
+            // If box-sizing is border-box, subtract padding and border widths
+            var paddingLeft = parseInt(compStyle.paddingLeft);
+            var paddingRight = parseInt(compStyle.paddingRight);
+            var borderLeft = parseInt(compStyle.borderLeftWidth);
+            var borderRight = parseInt(compStyle.borderRightWidth);
+
+            width = width - paddingLeft - paddingRight - borderLeft - borderRight;
+        }
+        return width;
     }-*/;
 
-    public static native int getWidth(Element element) /*-{
-        return parseInt($wnd.getComputedStyle(element, null).width);
+    public static native int getHeight(Element element) /*-{
+        // Get the computed styles of the element
+        var compStyle = $wnd.getComputedStyle(element, null);
+
+        // Extract the width and convert it to a number
+        var height = parseInt(compStyle.height);
+
+        // Check the box-sizing property
+        var boxSizing = compStyle.boxSizing;
+
+        if (boxSizing === 'border-box') {
+            // If box-sizing is border-box, subtract padding and border widths
+            var paddingTop = parseInt(compStyle.paddingTop);
+            var paddingBottom = parseInt(compStyle.paddingBottom);
+            var borderTop = parseInt(compStyle.borderTopWidth);
+            var borderBottom = parseInt(compStyle.borderBottomWidth);
+
+            height = height - paddingTop - paddingBottom - borderTop - borderBottom;
+        }
+        return height;
     }-*/;
 
     public static native int getMarginTop(Element element) /*-{
