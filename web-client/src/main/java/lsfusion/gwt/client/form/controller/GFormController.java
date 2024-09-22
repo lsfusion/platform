@@ -2303,8 +2303,8 @@ public class GFormController implements EditManager {
             if(property.hasAutoWidth())
                 renderedWidth = GwtClientUtils.getWidth(element);
             Integer renderedHeight = null;
-            if(property.hasAutoHeight())
-                renderedHeight = GwtClientUtils.getHeight(element);
+//            if(property.hasAutoHeight()) // now we don't need to set autosize height, since input works without it, and for textarea special auto size library is used
+//                renderedHeight = GwtClientUtils.getHeight(element);
 
             cellRenderer.clearRender(element, renderContext); // dropping previous render
 

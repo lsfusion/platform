@@ -110,9 +110,8 @@ public abstract class InputBasedCellRenderer extends CellRenderer {
         InputElement inputElement = GwtClientUtils.createInputElement(inputType.getName());
         if(inputType.isNumber() && type.type instanceof GIntegralType)
             inputElement.setAttribute("step", ((GIntegralType) type.type).getStep());
-        if (inputType.isMultilineText() && property.hasAutoHeight()) {
+        if (inputType.isMultilineText() && property.hasAutoHeight())
             autosizeTextarea(inputElement);
-        }
         return inputElement;
     }
     public static GFullInputType getInputType(GPropertyDraw property, RendererType rendererType) {
@@ -126,8 +125,13 @@ public abstract class InputBasedCellRenderer extends CellRenderer {
         return new GFullInputType(inputType, renderType);
     }
 
-    public static native void autosizeTextarea(Element input) /*-{
+    public static native void autosizeTextarea(InputElement input) /*-{
+        input.autoSizeTextArea = true;
         $wnd.autosize(input);
+    }-*/;
+    public static native void updateAutosizeTextarea(InputElement input) /*-{
+        if(input.autoSizeTextArea)
+            $wnd.autosize.update(input);
     }-*/;
 
     private final static String toolbarContainerProp = "toolbarContainer";
