@@ -158,15 +158,16 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     @Override
     public ScrollHandler getScrollHandler() {
         return event -> {
-            if(skipScrollEvent) {
-                skipScrollEvent = false;
-            } else {
+            //skipScrollEvent crashes grid top border(.scrolled-down css class in <table><thead><tr>) when scrolling with up/down keyboard keys
+//            if(skipScrollEvent) {
+//                skipScrollEvent = false;
+//            } else {
                 calcLeftNeighbourRightBorder(true);
                 checkSelectedRowVisible();
 
                 updateScrolledStateVertical();
                 updateScrolledStateHorizontal();
-            }
+//            }
         };
     }
 
