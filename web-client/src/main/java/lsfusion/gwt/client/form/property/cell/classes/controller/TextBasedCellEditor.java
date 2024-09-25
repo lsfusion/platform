@@ -403,8 +403,9 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
                 final SuggestBox.Callback callback = currentCallback;
                 currentCallback = null;
 
-                boolean emptyQuery = request.query == null;
                 String query = nvl(request.query, "");
+                boolean emptyQuery = query.isEmpty();
+
 //                if(prevSucceededEmptyQuery != null && query.startsWith(prevSucceededEmptyQuery))
 //                    return;
 
