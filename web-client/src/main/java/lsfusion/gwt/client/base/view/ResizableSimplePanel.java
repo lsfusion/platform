@@ -37,8 +37,7 @@ public class ResizableSimplePanel extends SimplePanel implements RequiresResize,
 
     public void setPercentMain(Widget widget) {
         setWidget(widget);
-        Element element = widget.getElement();
-        GwtClientUtils.setupPercentParent(element);
+        GwtClientUtils.setupPercentParent(widget.getElement());
     }
 
     @Override

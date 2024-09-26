@@ -77,16 +77,14 @@
     border-spacing: 0;
 }
 
-.pvtTable {
-    width: 100%;
-}
-
 table.pvtTable {
     color: var(--text-color);
     text-align: left;
 
     /* see DataGrid.css, dataGridTableWrapperWidget*/
-    border-spacing: 0
+    border-spacing: 0;
+
+    height: fit-content; /* it's even more odd - without this height : 100% in tds won't work */
 }
 
 table.pvtTable tbody tr td,

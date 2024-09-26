@@ -76,8 +76,8 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
 //        assert GwtClientUtils.isTDorTH(element);
         // the thing is that td ignores min-height (however height in td works just like min-height)
         // and we want height in table div work as min-height (i.e. to stretch)
-        renderElement.addClassName("fill-parent-perc");
         element.appendChild(renderElement);
+        GwtClientUtils.setupPercentParent(renderElement);
         return renderElement;
     }
 
