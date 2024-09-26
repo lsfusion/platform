@@ -233,7 +233,7 @@ callWithJQuery ($) ->
                 td.textContent = aggregator.format(value)
         
         createArrowAndTextDivs = (th, arrowClass, textClass) ->
-            wrapperDiv = createElement "div", "wrapperDiv"
+            wrapperDiv = createElement "div", "wrapperDiv fill-parent-perc"
             th.append wrapperDiv
 
             arrowDiv = createElement "div", arrowClass

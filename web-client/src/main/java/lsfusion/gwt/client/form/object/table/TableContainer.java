@@ -7,6 +7,7 @@ import com.google.gwt.event.dom.client.ScrollEvent;
 import com.google.gwt.event.dom.client.TouchMoveEvent;
 import com.google.gwt.event.shared.EventHandler;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Result;
@@ -17,6 +18,7 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
 import lsfusion.gwt.client.form.object.table.grid.view.GCustom;
+import lsfusion.gwt.client.form.object.table.grid.view.GStateTableView;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
 public class TableContainer extends ResizableSimplePanel implements HasMaxPreferredSize {
@@ -103,7 +105,11 @@ public class TableContainer extends ResizableSimplePanel implements HasMaxPrefer
 
     public void changeTableComponent(TableComponent tableComponent, boolean boxed) {
         this.tableComponent = tableComponent;
-        setPercentMain(tableComponent.getWidget());
+        Widget widget = tableComponent.getWidget();
+        if(tableComponent instanceof GStateTableView)
+            setPercentMain(widget);
+        else
+            setWidget(widget);
 
         addHandler(tableComponent.getScrollHandler(), ScrollEvent.getType(), Event.ONSCROLL);
         addHandler(tableComponent.getMouseWheelScrollHandler(), MouseWheelEvent.getType(), Event.ONMOUSEWHEEL);

@@ -1,9 +1,7 @@
 /* it's better to do not use table to avoid breaking layout in other bootstrap components*/
-.lsf-table {
+.lsf-table.table {
     table-layout: fixed; /* we want predictable (not dependant from the content) manual column sizes  */
     width: 100%; /* it's odd but without this table-layout is switched to auto */
-}
-.lsf-table, .lsf-table.fill-parent-perc {
     height: fit-content; /* it's even more odd - without this height : 100% in tds won't work */
 }
 

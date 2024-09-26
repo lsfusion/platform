@@ -120,6 +120,14 @@
     position: relative;
 }
 
+@supports (-moz-appearance: none) {
+    /* in firefox event the height: fit-content doesn't help to extend div to td, but setting td height to 100% helps somewhy (but table height: fit-content also should be set)*/
+    td:has(> .fill-parent-perc),
+    th:has(> .fill-parent-perc) {
+        height: 100%;
+    }
+}
+
 .fill-parent-perc {
     width: 100%;
     height: 100%;

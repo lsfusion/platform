@@ -257,6 +257,7 @@ onWebClientInit() + {
         onWebClientInit('table-border.css') <- 2;
         onWebClientInit('table-sticky.css') <- 3;
         onWebClientInit('table-container-border.css') <- 4;
+        onWebClientInit('tree.css') <- 4;
         onWebClientInit('caption-panel-border.css') <- 5;
         onWebClientInit('tab-panel.css') <- 6;
         onWebClientInit('navigator.css') <- 7;
