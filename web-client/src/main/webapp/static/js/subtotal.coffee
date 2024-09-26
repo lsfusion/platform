@@ -1057,7 +1057,11 @@ callWithJQuery ($) ->
                     curColumn = first
                     for i in [first...(tr.cells.length - lastShift)]
                         th = tr.cells[i]
-                        columns[curColumn].push th.textContent if th.textContent
+                        if callbacks?
+                            value = callbacks.getHeaderCellValue th
+                        else
+                            value = th.textContent;
+                        columns[curColumn].push value
                         curColumn += th.colSpan
                 
                 for i in [first...(colCnt - lastShift)] 
