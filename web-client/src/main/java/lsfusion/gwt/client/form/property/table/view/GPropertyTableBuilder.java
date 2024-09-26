@@ -242,11 +242,14 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         for (int i = 0; i < stickyColumns.size(); i++) {
             Integer stickyColumn = stickyColumns.get(i);
             TableCellElement cell = tr.getCells().getItem(stickyColumn);
-            if (i <= lastSticked) {
+            if(i == lastSticked)
+                cell.addClassName("last-sticked");
+            else
+                cell.removeClassName("last-sticked");
+            if (i <= lastSticked)
                 cell.addClassName("sticked");
-            } else {
+            else
                 cell.removeClassName("sticked");
-            }
         }
     }
 

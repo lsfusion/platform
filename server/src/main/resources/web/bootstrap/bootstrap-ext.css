@@ -184,8 +184,12 @@
                 inset calc(0px - calc(var(--cell-border-right) + var(--cell-border-right))) 0 0 var(--bs-table-border-color);
 }
 
-.tableContainer:has(> .table-bordered) {
-    border-right: var(--table-outline-width) solid var(--bs-border-color); /* there is no bs-table-border-color here */
+/* adding right border to the regular table when sticked */
+.table:not(.table-bordered):not(.table-borderless).scrolled-left .dataGridStickyHeader.last-sticked,
+.table:not(.table-bordered):not(.table-borderless).scrolled-left .dataGridStickyCell.last-sticked,
+.table:not(.table-bordered):not(.table-borderless).scrolled-left .dataGridStickyFooter.last-sticked {
+    box-shadow: inset 0 0 0 9999px var(--bs-table-bg-state, var(--bs-table-bg-type, var(--bs-table-accent-bg))),
+    inset calc(0px - var(--table-outline-width)) 0 0 var(--bs-table-border-color);
 }
 
 .table.table-bordered .dataGridLastHeaderCell, /* there is arrow-th in the row*/
