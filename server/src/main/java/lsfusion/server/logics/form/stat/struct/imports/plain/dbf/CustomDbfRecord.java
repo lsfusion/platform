@@ -17,6 +17,7 @@ import java.util.*;
 public class CustomDbfRecord {
 
     public static final String NUMERIC_OVERFLOW = "*";
+    public static final String NULL_VALUE = "?";
 
     private byte[] bytes;
     private DbfMetadata metadata;
@@ -221,7 +222,7 @@ public class CustomDbfRecord {
             s = s.trim();
         }
 
-        if (s.contains(NUMERIC_OVERFLOW)) {
+        if (s.contains(NUMERIC_OVERFLOW) || s.equals(NULL_VALUE)) {
             return null;
         }
 
