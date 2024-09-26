@@ -199,14 +199,14 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
 
         defaultLanguage = findProperty("defaultUserLanguage[]");
         defaultCountry = findProperty("defaultUserCountry[]");
-        defaultTimezone = findProperty("defaultUserTimeZone[]");
+        defaultTimezone = findProperty("defaultUserTimezone[]");
         defaultTwoDigitYearStart = findProperty("defaultUserTwoDigitYearStart[]");
         defaultDateFormat = findProperty("defaultUserDateFormat[]");
         defaultTimeFormat = findProperty("defaultUserTimeFormat[]");
 
         serverLanguage = findProperty("serverLanguage[]");
         serverCountry = findProperty("serverCountry[]");
-        serverTimezone = findProperty("serverTimeZone[]");
+        serverTimezone = findProperty("serverTimezone[]");
         serverTwoDigitYearStart = findProperty("serverTwoDigitYearStart[]");
         serverDateFormat = findProperty("serverDateFormat[]");
         serverTimeFormat = findProperty("serverTimeFormat[]");
