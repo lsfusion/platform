@@ -1629,7 +1629,7 @@
         }
       };
       rowHeaderColsData = function(trs, rowAttrsCnt) {
-        var colCnt, colsData, columns, curColumn, first, k, l, lastShift, o, ref3, ref4, ref5, ref6, ref7, ref8, rowIndex, th, tr;
+        var colCnt, colsData, columns, curColumn, first, k, l, lastShift, o, ref3, ref4, ref5, ref6, ref7, ref8, rowIndex, th, tr, value;
         if (trs.length > 0) {
           colCnt = findAxisHeadersColCount(trs[0]);
           columns = (function() {
@@ -1665,9 +1665,12 @@
             curColumn = first;
             for (i = l = ref5 = first, ref6 = tr.cells.length - lastShift; (ref5 <= ref6 ? l < ref6 : l > ref6); i = ref5 <= ref6 ? ++l : --l) {
               th = tr.cells[i];
-              if (th.textContent) {
-                columns[curColumn].push(th.textContent);
+              if (callbacks != null) {
+                value = callbacks.getHeaderCellValue(th);
+              } else {
+                value = th.textContent;
               }
+              columns[curColumn].push(value);
               curColumn += th.colSpan;
             }
           }
