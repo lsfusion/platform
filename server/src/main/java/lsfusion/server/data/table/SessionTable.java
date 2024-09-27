@@ -580,10 +580,9 @@ public class SessionTable extends StoredTable implements ValuesContext<SessionTa
         return this;
     }
 
-    public int deleteRecords(SQLSession session, ImMap<KeyField, DataObject> keys, OperationOwner owner, TableOwner tableOwner) throws SQLException {
-        return session.deleteKeyRecords(this, DataObject.getMapDataValues(keys), owner, tableOwner);
+    public int deleteRecords(SQLSession session, ImMap<KeyField, DataObject> keys, OperationOwner owner, TableOwner tableOwner) throws SQLException, SQLHandledException {
+        return session.deleteKeyRecords(this, keys, owner, tableOwner);
     }
-
 
     public SessionTable addFields(final SQLSession session, final ImOrderSet<KeyField> keys, final ImMap<KeyField, DataObject> addKeys, final ImMap<PropertyField, ObjectValue> addProps, final TableOwner owner, final OperationOwner opOwner) throws SQLException, SQLHandledException {
         if(addKeys.isEmpty() && addProps.isEmpty())
