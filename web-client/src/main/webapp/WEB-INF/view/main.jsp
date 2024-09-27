@@ -175,7 +175,6 @@
                 "static/css/gwt/form/components/table/table-cell.css",
                 "static/css/gwt/form/components/table/table-container.css",
                 "static/css/gwt/form/components/table/table-sticky.css",
-                "static/css/gwt/form/components/table/tree.css",
 
                 "static/css/gwt/form/components/filter.css",
                 "static/css/gwt/form/components/property/panel-renderer.css",
