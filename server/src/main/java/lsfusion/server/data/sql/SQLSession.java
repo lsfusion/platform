@@ -14,7 +14,6 @@ import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSVSMap;
-import lsfusion.base.lambda.E2Runnable;
 import lsfusion.base.lambda.ERunnable;
 import lsfusion.base.lambda.Provider;
 import lsfusion.server.base.MutableClosedObject;
@@ -2041,10 +2040,6 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
 
-    // системные вызовы
-    public <K,V> void executeDML(String update) throws SQLException, SQLHandledException {
-        executeDML(new SQLDML(update, Cost.MIN, MapFact.EMPTY(), StaticExecuteEnvironmentImpl.EMPTY, false), OperationOwner.unknown, TableOwner.global, MapFact.EMPTY(), DynamicExecuteEnvironment.DEFAULT, null, PureTime.VOID, 0, RegisterChange.VOID);
-    }
     public <K,V> void executeSelect(String select, OperationOwner owner, StaticExecuteEnvironment env, ImRevMap<K, String> keyNames, final ImMap<String, ? extends Reader> keyReaders, ImRevMap<V, String> propertyNames, ImMap<String, ? extends Reader> propertyReaders, ResultHandler<K, V> handler) throws SQLException, SQLHandledException {
         executeSelect(select, owner, env, MapFact.EMPTY(), 0, keyNames, keyReaders, propertyNames, propertyReaders, false, handler);
     }
@@ -2433,97 +2428,74 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         statement.executeBatch();
     }
 
-    private void insertParamRecord(StoredTable table, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, OperationOwner owner, TableOwner tableOwner) throws SQLException {
-        checkTableOwner(table, tableOwner);
-        
-        String insertString = "";
-        String valueString = "";
+    public void insertRecord(StoredTable table, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, TableOwner owner, OperationOwner opOwner) throws SQLException, SQLHandledException {
+        modifyRecords(table, MapFact.addExcl(keyFields, propFields), new ModifyRecord() {
+            private StringBuilder insertString;
+            private StringBuilder valueString;
 
-        int paramNum = 0;
-        MExclMap<String, ParseInterface> params = MapFact.mExclMapMax(keyFields.size()+propFields.size());
-
-        // пробежим по KeyFields'ам
-        for (int i=0,size=keyFields.size();i<size;i++) {
-            KeyField key = keyFields.getKey(i);
-            insertString = (insertString.length() == 0 ? "" : insertString + ',') + key.getName(syntax);
-            DataObject keyValue = keyFields.getValue(i);
-            if (keyValue.isSafeString(syntax))
-                valueString = (valueString.length() == 0 ? "" : valueString + ',') + keyValue.getString(syntax);
-            else {
-                String prm = "qxprm" + (paramNum++) + "nx";
-                valueString = (valueString.length() == 0 ? "" : valueString + ',') + prm;
-                params.exclAdd(prm, new TypeObject(keyValue, key, syntax));
+            public void proceed(String fieldName, String valueName) {
+                if(insertString == null) {
+                    insertString = new StringBuilder();
+                    valueString = new StringBuilder();
+                } else {
+                    insertString.append(',');
+                    valueString.append(',');
+                }
+                insertString.append(fieldName);
+                valueString.append(valueName);
             }
-        }
 
-        for (int i=0,size=propFields.size();i<size;i++) {
-            PropertyField property = propFields.getKey(i);
-            insertString = (insertString.length() == 0 ? "" : insertString + ',') + property.getName(syntax);
-            ObjectValue fieldValue = propFields.getValue(i);
-            if (fieldValue.isSafeString(syntax))
-                valueString = (valueString.length() == 0 ? "" : valueString + ',') + fieldValue.getString(syntax);
-            else {
-                String prm = "qxprm" + (paramNum++) + "nx";
-                valueString = (valueString.length() == 0 ? "" : valueString + ',') + prm;
-                params.exclAdd(prm, new TypeObject((DataObject) fieldValue, property, syntax));
+            public String finish(String tableName) {
+                return "INSERT INTO " + tableName + " (" + insertString + ") VALUES (" + valueString + ")";
             }
-        }
-
-        if(insertString.length()==0) {
-            assert valueString.length()==0;
-            insertString = "dumb";
-            valueString = "0";
-        }
-
-        try {
-            executeDML(new SQLDML("INSERT INTO " + table.getName(syntax) + " (" + insertString + ") VALUES (" + valueString + ")", Cost.MIN, MapFact.EMPTY(), StaticExecuteEnvironmentImpl.EMPTY, false), owner, tableOwner, params.immutable(), DynamicExecuteEnvironment.DEFAULT, null, PureTime.VOID, 0, register(table, tableOwner, TableChange.INSERT));
-        } catch (SQLHandledException e) {
-            throw new UnsupportedOperationException(); // по идее ни deadlock'а, ни update conflict'а, ни timeout'а
-        }
+        }, TableChange.INSERT, owner, opOwner);
     }
 
-    public void insertRecord(StoredTable table, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, TableOwner owner, OperationOwner opOwner) throws SQLException {
+    private int modifyRecords(StoredTable table, ImMap<? extends Field, ? extends ObjectValue> fields, ModifyRecord command, TableChange tableChange, TableOwner owner, OperationOwner opOwner) throws SQLException, SQLHandledException {
         checkTableOwner(table, owner);
 
-        boolean needParam = false;
+        MExclMap<String, ParseInterface> mParams = MapFact.mExclMapMax(fields.size());
+        for (int i = 0, size = fields.size(); i<size; i++) {
+            Field field = fields.getKey(i);
+            ObjectValue value = fields.getValue(i);
 
-        for (int i=0,size=keyFields.size();i<size;i++)
-            if (!keyFields.getValue(i).isSafeString(syntax)) {
-                needParam = true;
+            String stringValue;
+            if (value.isSafeString(syntax))
+                stringValue = value.getString(syntax);
+            else {
+                stringValue = "qxprm" + i + "nx";
+                mParams.exclAdd(stringValue, new TypeObject((DataObject) value, field, syntax));
+            }
+            command.proceed(field.getName(syntax), stringValue);
+        }
+        ImMap<String, ParseInterface> params = mParams.immutable();
+        if(fields.isEmpty())
+            command.proceed("dumb", "0");
+
+        String stringCommand = command.finish(table.getName(syntax));
+
+        if(!params.isEmpty())
+            return executeDML(new SQLDML(stringCommand, Cost.MIN, MapFact.EMPTY(), StaticExecuteEnvironmentImpl.EMPTY, false), opOwner, owner, params, DynamicExecuteEnvironment.DEFAULT, null, PureTime.VOID, 0, register(table, owner, tableChange));
+        else
+            return executeDML(stringCommand, opOwner, owner, register(table, owner, TableChange.INSERT));
+    }
+
+    public <X> int deleteKeyRecords(StoredTable table, ImMap<KeyField, DataObject> keys, OperationOwner owner, TableOwner tableOwner) throws SQLException, SQLHandledException {
+        return modifyRecords(table, keys, new ModifyRecord() {
+            private StringBuilder deleteString;
+
+            public void proceed(String fieldName, String valueName) {
+                if(deleteString == null)
+                    deleteString = new StringBuilder();
+                else
+                    deleteString.append(" AND ");
+                deleteString.append(fieldName).append("=").append(valueName);
             }
 
-        for (int i=0,size=propFields.size();i<size;i++)
-            if (!propFields.getValue(i).isSafeString(syntax)) {
-                needParam = true;
+            public String finish(String tableName) {
+                return "DELETE FROM " + tableName + " WHERE " + deleteString;
             }
-
-        if (needParam) {
-            insertParamRecord(table, keyFields, propFields, opOwner, owner);
-            return;
-        }
-
-        String insertString = "";
-        String valueString = "";
-
-        // пробежим по KeyFields'ам
-        for (int i=0,size=keyFields.size();i<size;i++) { // нужно сохранить общий порядок, поэтому без toString
-            insertString = (insertString.length() == 0 ? "" : insertString + ',') + keyFields.getKey(i).getName(syntax);
-            valueString = (valueString.length() == 0 ? "" : valueString + ',') + keyFields.getValue(i).getString(syntax);
-        }
-
-        // пробежим по Fields'ам
-        for (int i=0,size=propFields.size();i<size;i++) { // нужно сохранить общий порядок, поэтому без toString
-            insertString = (insertString.length() == 0 ? "" : insertString + ',') + propFields.getKey(i).getName(syntax);
-            valueString = (valueString.length() == 0 ? "" : valueString + ',') + propFields.getValue(i).getString(syntax);
-        }
-
-        if(insertString.length()==0) {
-            assert valueString.length()==0;
-            insertString = "dumb";
-            valueString = "0";
-        }
-
-        executeDML("INSERT INTO " + table.getName(syntax) + " (" + insertString + ") VALUES (" + valueString + ")", opOwner, owner, register(table, owner, TableChange.INSERT));
+        }, TableChange.DELETE, tableOwner, owner);
     }
 
     public boolean isRecord(StoredTable table, ImMap<KeyField, DataObject> keyFields, OperationOwner owner) throws SQLException, SQLHandledException {
@@ -2614,12 +2586,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
 
-    public <X> int deleteKeyRecords(StoredTable table, ImMap<KeyField, X> keys, OperationOwner owner, TableOwner tableOwner) throws SQLException {
-        checkTableOwner(table, tableOwner);
-        
-        String deleteWhere = keys.toString((key, value) -> key.getName(syntax) + "=" + value, " AND ");
+    private interface ModifyRecord {
+        void proceed(String fieldName, String valueName);
 
-        return executeDML("DELETE FROM " + table.getName(syntax) + (deleteWhere.length() == 0 ? "" : " WHERE " + deleteWhere), owner, tableOwner, register(table, tableOwner, TableChange.DELETE));
+        String finish(String tableName);
     }
 
     private static int readInt(Object value) {
