@@ -56,7 +56,7 @@ public class FormGroupHierarchyCreator {
      * Порядок групп определяется порядком в form.groups
      */
     private void addDependenciesToGraph(ImOrderSet<GroupObjectEntity> groups, Map<GroupObjectEntity, Set<GroupObjectEntity>> graph) {
-        Iterable<PropertyDrawEntity> propertyDraws = form.getPropertyDrawsIt();
+        Iterable<PropertyDrawEntity> propertyDraws = form.getStaticPropertyDrawsList();
         for (PropertyDrawEntity<?> property : propertyDraws) {
             Set<GroupObjectEntity> propObjects = getGroupsByObjects(property.getObjectInstances(), groups);
             if(supportGroupColumns)
