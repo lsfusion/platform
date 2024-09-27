@@ -261,7 +261,6 @@ onWebClientInit() + {
         onWebClientInit('caption-panel-border.css') <- 5;
         onWebClientInit('tab-panel.css') <- 6;
         onWebClientInit('navigator.css') <- 7;
-        onWebClientInit('split-window-border.css') <- 8;
         onWebClientInit('layout.css') <- 9;
         onWebClientInit('panel-renderer-border.css') <- 10;
         onWebClientInit('property-toolbar-border.css') <- 11;
