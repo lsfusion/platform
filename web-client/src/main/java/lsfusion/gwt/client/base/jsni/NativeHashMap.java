@@ -132,7 +132,10 @@ public class NativeHashMap<K, V> {
     }
 
     public int size() {
-        return jsSize();
+        if(hashCodeMap != null)
+            return jsSize();
+        
+        return 0;
     }
 
     /**
