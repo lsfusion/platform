@@ -950,18 +950,22 @@ public class PropertyDrawView extends BaseComponentView {
     private Integer getAdjustedCharWidth(FormInstanceContext context) {
         PropertyDrawEntity.Select select = entity.getSelectProperty(context);
         if(select != null) {
+            Integer charWidth = select.elementType.startsWith("Button") ? null : this.charWidth;
+
+            int elementCharWidth = charWidth != null ? charWidth : select.length / select.count;
+
             if(select.elementType.equals("Input") || (select.elementType.equals("Dropdown") && select.type.equals("Multi")))
-                return getScaledCharWidth((charWidth != null ? charWidth : select.length / select.count) * 4);
+                return getScaledCharWidth(4 * elementCharWidth);
 
 //            if (!entity.isList(context)) // we ignore charWidth in panel buttons and lists
 //                return null;
 
             if(entity.isList(context) || charWidth != null) {
                 if (select.elementType.startsWith("Button"))
-                    return (charWidth != null && !select.actual ? charWidth * select.count : select.length) + select.count * (select.elementType.startsWith("ButtonGroup") ? 4 : 6); // couple of symbols for padding
+                    return select.count * (elementCharWidth + (select.elementType.startsWith("ButtonGroup") ? 4 : 6)); // couple of symbols for padding
 
                 if (select.elementType.equals("List") || select.elementType.equals("Dropdown"))
-                    return (charWidth != null ? charWidth : select.length / select.count) + 4; // couple of symbols for control elements, && !select.actual
+                    return elementCharWidth + 4; // couple of symbols for control elements, && !select.actual
             }
         }
         return charWidth;
