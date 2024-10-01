@@ -952,7 +952,7 @@ public class PropertyDrawView extends BaseComponentView {
         if(select != null) {
             Integer charWidth = this.charWidth; // select.elementType.startsWith("Button") && select.actual ? null :
 
-            int elementCharWidth = charWidth != null ? charWidth : select.length / select.count;
+            int elementCharWidth = charWidth != null ? charWidth : (select.count > 0 ? select.length / select.count : 0);
 
             if(select.elementType.equals("Input") || (select.elementType.equals("Dropdown") && select.type.equals("Multi")))
                 return getScaledCharWidth(4 * elementCharWidth);
