@@ -950,7 +950,7 @@ public class PropertyDrawView extends BaseComponentView {
     private Integer getAdjustedCharWidth(FormInstanceContext context) {
         PropertyDrawEntity.Select select = entity.getSelectProperty(context);
         if(select != null) {
-            Integer charWidth = select.elementType.startsWith("Button") ? null : this.charWidth;
+            Integer charWidth = this.charWidth; // select.elementType.startsWith("Button") && select.actual ? null :
 
             int elementCharWidth = charWidth != null ? charWidth : select.length / select.count;
 
@@ -962,11 +962,13 @@ public class PropertyDrawView extends BaseComponentView {
 
             if(entity.isList(context) || charWidth != null) {
                 if (select.elementType.startsWith("Button"))
-                    return select.count * (elementCharWidth + (select.elementType.startsWith("ButtonGroup") ? 4 : 6)); // couple of symbols for padding
+                    return getScaledCharWidth(select.count * (elementCharWidth + (select.elementType.startsWith("ButtonGroup") ? 4 : 6))); // couple of symbols for padding
 
                 if (select.elementType.equals("List") || select.elementType.equals("Dropdown"))
                     return elementCharWidth + 4; // couple of symbols for control elements, && !select.actual
             }
+
+            return null;
         }
         return charWidth;
     }
