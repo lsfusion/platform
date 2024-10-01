@@ -818,11 +818,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     static String getIndexName(StoredTable table, ImOrderMap<String, Boolean> fields, String dbName, String suffix, boolean suffixInTheEnd, boolean old, SQLSyntax syntax) {
         if(dbName != null)
             return dbName;
-        if (suffixInTheEnd) { //new style
+        if (suffixInTheEnd) {
             return syntax.getIndexName(fields.keyOrderSet().toString("_") + "_idx" + (syntax.isIndexNameLocal() ? "" : "_" + table.getName())) + suffix;
-        } else if (old) { //old style before 2015
+        } else if (old) { // old style before 2015
             return syntax.getIndexName((syntax.isIndexNameLocal() ? "" : table.getName() + "_") + fields.keyOrderSet().toString("_") + "_idx");
-        } else { //old style after 2015
+        } else { // new style
             return syntax.getIndexName(fields.keyOrderSet().toString("_") + nvl(suffix, "") + "_idx" + (syntax.isIndexNameLocal() ? "" : "_" + table.getName()));
         }
     }
