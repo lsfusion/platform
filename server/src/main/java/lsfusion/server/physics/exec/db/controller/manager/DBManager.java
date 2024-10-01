@@ -1322,7 +1322,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         return newTableIndexesNames;
     }
 
-    private void checkUniqueDBName(NewDBStructure struct) {
+    private void checkUniquePropertyDBName(NewDBStructure struct) {
         Map<Pair<String, String>, DBStoredProperty> sids = new HashMap<>();
         for (DBStoredProperty property : struct.storedProperties) {
             Pair<String, String> key = new Pair<>(property.getDBName(), property.getTable().getName());
@@ -1333,6 +1333,33 @@ public class DBManager extends LogicsManager implements InitializingBean {
          }
     }
 
+    public static class UniqueIndexNameException extends RuntimeException {
+        public UniqueIndexNameException(String message) {
+            super(message);
+        }
+    }
+    
+    private void checkUniqueIndexName(NewDBStructure struct, SQLSession sql) {
+        Map<String, Pair<DBTable, IndexData<Field>>> indexNames = new HashMap<>();
+        for (Map.Entry<DBTable, List<IndexData<Field>>> tableInfo : struct.tables.entrySet()) {
+            DBTable table = tableInfo.getKey();
+            for (IndexData<Field> index : tableInfo.getValue()) {
+                String name = sql.getIndexName(table, index);
+                if (indexNames.containsKey(name)) {
+                    final String formatStr = "Two indexes has the same database name: '%s'. " +
+                            "These indexes are:\n%s in table '%s'\n%s in table '%s'\nOne of the indexes will not be created.";
+                    final String msg = String.format(formatStr, name, index, table.getName(), indexNames.get(name).second, indexNames.get(name).first.getName());
+                    if (Settings.get().isStartServerAnyWay()) {
+                        startLogWarn(msg);
+                    } else {
+                        throw new UniqueIndexNameException(msg);
+                    }
+                }
+                indexNames.put(name, new Pair<>(table, index));
+            }
+        }
+    }
+    
     public void uploadToDB(SQLSession sql, boolean isolatedTransactions, final DataAdapter adapter) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, SQLHandledException {
         final OperationOwner owner = OperationOwner.unknown;
         final SQLSession sqlFrom = new SQLSession(adapter, contextProvider);
@@ -1516,7 +1543,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
             MigrationVersion newMigrationVersion = migrationManager.getCurrentMigrationVersion(oldDBStructure.migrationVersion);
             NewDBStructure newDBStructure = new NewDBStructure(newMigrationVersion);
 
-            checkUniqueDBName(newDBStructure);
+            checkUniquePropertyDBName(newDBStructure);
+            checkUniqueIndexName(newDBStructure, sql);
             newDBStructure.write(outDB);
 
             // DROP / RENAME indices
@@ -2847,6 +2875,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
         public IndexData(List<F> fields, IndexOptions options) {
             this.fields = fields;
             this.options = options;
+        }
+        
+        @Override
+        public String toString() {
+            return String.format("%s (%s)", fields, options.type);
         }
     }
     
