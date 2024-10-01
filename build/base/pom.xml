@@ -36,6 +36,8 @@
         <lsfusion.version>6.0-SNAPSHOT</lsfusion.version>
 
         <google.guava.version>19.0</google.guava.version>
+        
+        <!-- When upgrading this version, change the corresponding version number in the equ-clt module. -->
         <postgresql.version>42.7.3</postgresql.version>
     </properties>
 
