@@ -16,7 +16,7 @@ public class ClientExcelClass extends ClientStaticFormatFileClass {
 
     @Override
     public String[] getExtensions() {
-        return new String[] {"xls", "xlsx"};
+        return new String[] {"xls", "xlsx", "xlsm"};
     }
 
     @Override
