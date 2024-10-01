@@ -166,7 +166,12 @@ public class MainController {
             SecurityContextHolder.getContext().setAuthentication(getAuthentication(request, username, password, authenticationProvider));
         } else if (jsonResponse.has("error")) {
             request.getSession(true).setAttribute("REGISTRATION_EXCEPTION", new AuthenticationException(jsonResponse.optString("error")));
-            request.getSession(true).setAttribute("USER_DATA", Map.of("username", username, "firstName", firstName, "lastName", lastName, "email", email));
+            Map<String, String> userData = new HashMap<>();
+            userData.put("username", username);
+            userData.put("firstName", firstName);
+            userData.put("lastName", lastName);
+            userData.put("email", email);
+            request.getSession(true).setAttribute("USER_DATA", userData);
             return getRedirectUrl("/registration", null, request);
         }
         return getRedirectUrl("/login", null, request);
