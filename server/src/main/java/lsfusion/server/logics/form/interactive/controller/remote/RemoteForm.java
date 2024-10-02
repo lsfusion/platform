@@ -54,6 +54,7 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.F
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
+import lsfusion.server.logics.form.interactive.event.UserEventObject;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.InteractiveFormReportManager;
 import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
@@ -486,8 +487,8 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
 
                 PropertyObjectInstance<?> propertyObject = propertyDraw.getOrderProperty().getRemappedPropertyObject(keys, false);
                 propertyDraw.toDraw.changeOrder(propertyObject, propertyDraw, order);
-                
-                form.fireOrderChanged(propertyDraw.toDraw, stack, true);
+
+                form.fireOnUserActivity(stack, propertyDraw.toDraw, UserEventObject.Type.ORDER);
             }
         });
     }
@@ -518,7 +519,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 }
             }
 
-            form.fireOrderChanged(groupObject, stack, true);
+            form.fireOnUserActivity(stack, groupObject, UserEventObject.Type.ORDER);
         });
     }
 
@@ -643,7 +644,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                     }
                 }
 
-                form.fireFilterChanged(goi, stack, true);
+                form.fireOnUserActivity(stack, goi, UserEventObject.Type.FILTER);
             }
         });
     }

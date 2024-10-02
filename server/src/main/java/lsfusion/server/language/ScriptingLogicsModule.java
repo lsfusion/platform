@@ -96,7 +96,7 @@ import lsfusion.server.logics.form.interactive.action.lifecycle.CloseFormAction;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.dialogedit.ClassFormSelector;
-import lsfusion.server.logics.form.interactive.event.FilterEventObject;
+import lsfusion.server.logics.form.interactive.event.UserEventObject;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
 import lsfusion.server.logics.form.open.MappedForm;
 import lsfusion.server.logics.form.open.ObjectSelector;
@@ -2760,10 +2760,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public FilterEventObject createFilterGroupEventObject(String fgName)  throws ScriptingErrorLog.SemanticErrorException {
+    public UserEventObject createFilterGroupEventObject(String fgName)  throws ScriptingErrorLog.SemanticErrorException {
         RegularFilterGroupEntity filterGroup = getSeekFilterGroup(getFormFromSeekObjectName(fgName), fgName);
         if (filterGroup != null) {
-            return new FilterEventObject(filterGroup.getID(), FilterEventObject.Type.GROUP);
+            return new UserEventObject(filterGroup.getID(), UserEventObject.Type.FILTERGROUP);
         } else {
             errLog.emitFilterGroupNotFoundError(parser, getSeekObjectName(fgName));
             return null;
