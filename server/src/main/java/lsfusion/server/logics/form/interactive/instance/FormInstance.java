@@ -101,6 +101,7 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.F
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.object.GridPropertyView;
+import lsfusion.server.logics.form.interactive.event.FilterEventObject;
 import lsfusion.server.logics.form.interactive.event.UserEventObject;
 import lsfusion.server.logics.form.interactive.instance.design.BaseComponentViewInstance;
 import lsfusion.server.logics.form.interactive.instance.design.ComponentViewInstance;
@@ -381,7 +382,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         for (RegularFilterGroupInstance filterGroup : regularFilterGroups) {
             int defaultInd = filterGroup.entity.getDefault();
             if (defaultInd >= 0 && defaultInd < filterGroup.filters.size()) {
-                setRegularFilter(filterGroup, filterGroup.filters.get(defaultInd));
+                setRegularFilter(filterGroup, filterGroup.filters.get(defaultInd), stack);
             }
         }
 
@@ -948,11 +949,11 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     public List<RegularFilterGroupInstance> regularFilterGroups = new ArrayList<>();
     public Map<RegularFilterGroupInstance, RegularFilterInstance> regularFilterValues = new HashMap<>();
 
-    public void setRegularFilter(RegularFilterGroupInstance filterGroup, int filterId) {
-        setRegularFilter(filterGroup, filterGroup.getFilter(filterId));
+    public void setRegularFilter(RegularFilterGroupInstance filterGroup, int filterId, ExecutionStack stack) throws SQLException, SQLHandledException {
+        setRegularFilter(filterGroup, filterGroup.getFilter(filterId), stack);
     }
 
-    private void setRegularFilter(RegularFilterGroupInstance filterGroup, RegularFilterInstance filter) {
+    private void setRegularFilter(RegularFilterGroupInstance filterGroup, RegularFilterInstance filter, ExecutionStack stack) throws SQLException, SQLHandledException {
         RegularFilterInstance prevFilter = regularFilterValues.get(filterGroup);
         if (prevFilter != null)
             prevFilter.filter.getApplyObject().removeRegularFilter(prevFilter.filter);
@@ -963,6 +964,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             regularFilterValues.put(filterGroup, filter);
             filter.filter.getApplyObject().addRegularFilter(filter.filter);
         }
+
+        fireFilterGroupChanged(filterGroup.getID(), stack);
     }
 
     // -------------------------------------- Изменение данных ----------------------------------- //
@@ -2741,6 +2744,14 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         fireOnUserActivity(stack, group, UserEventObject.Type.ORDER, user);
     }
 
+    public void fireFilterGroupChanged(Integer filterGroup, ExecutionStack stack) throws SQLException, SQLHandledException {
+        fireOnUserActivity(stack, filterGroup, FilterEventObject.Type.GROUP);
+    }
+
+    public void fireFilterPropertyChanged(Integer filterProperty, ExecutionStack stack) throws SQLException, SQLHandledException {
+        fireOnUserActivity(stack, filterProperty, FilterEventObject.Type.PROPERTY);
+    }
+
     public void fireOnInit(ExecutionStack stack) throws SQLException, SQLHandledException {
         fireEvent(FormEventType.INIT, stack);
     }
@@ -2789,6 +2800,10 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     public void fireOnUserActivity(ExecutionStack stack, GroupObjectInstance groupObject, UserEventObject.Type type, boolean user) throws SQLException, SQLHandledException {
         fireEvent(new UserEventObject(groupObject.getSID(), type, user), stack);
+    }
+
+    public void fireOnUserActivity(ExecutionStack stack, Integer filter, FilterEventObject.Type type) throws SQLException, SQLHandledException {
+        fireEvent(new FilterEventObject(filter, type), stack);
     }
 
     public void fireEvent(ExecutionStack stack, FormEvent formEvent, PushAsyncResult pushedAsyncResult) throws SQLException, SQLHandledException {

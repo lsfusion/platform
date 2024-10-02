@@ -57,6 +57,7 @@ import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.InteractiveFormReportManager;
 import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
+import lsfusion.server.logics.form.interactive.instance.filter.PropertyFilterInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.RegularFilterGroupInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupColumn;
 import lsfusion.server.logics.form.interactive.instance.object.GroupMode;
@@ -631,7 +632,11 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                     FilterInstance filter = FilterInstance.deserialize(new DataInputStream(new ByteArrayInputStream(state)), form);
 
                     goi.addUserFilter(filter);
-                    
+
+                    if(filter instanceof PropertyFilterInstance) {
+                        form.fireFilterPropertyChanged(((PropertyFilterInstance<?>) filter).propertyDraw.getID(), stack);
+                    }
+
                     if (logger.isDebugEnabled()) {
                         logger.debug(String.format("set user filter: [CLASS: %1$s]", filter.getClass()));
                         logger.debug(String.format("apply object: %s", goi));
@@ -646,7 +651,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     public ServerResponse setRegularFilter(long requestIndex, long lastReceivedRequestIndex, final int groupID, final int filterID) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             RegularFilterGroupInstance filterGroup = form.getRegularFilterGroup(groupID);
-            form.setRegularFilter(filterGroup, filterID);
+            form.setRegularFilter(filterGroup, filterID, getStack());
             if (logger.isDebugEnabled()) {
                 logger.debug(String.format("set regular filter: [GROUP: %1$s]", groupID));
                 logger.debug(String.format("filter ID: %s", filterID));

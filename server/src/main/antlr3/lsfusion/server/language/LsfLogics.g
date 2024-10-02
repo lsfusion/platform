@@ -72,6 +72,7 @@ grammar LsfLogics;
     import lsfusion.server.logics.form.interactive.design.filter.FilterView;
     import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
     import lsfusion.server.logics.form.interactive.event.UserEventObject;
+    import lsfusion.server.logics.form.interactive.event.FilterEventObject;
     import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
     import lsfusion.server.logics.form.open.MappedForm;
     import lsfusion.server.logics.form.stat.SelectTop;
@@ -1237,6 +1238,8 @@ changeEventDeclaration returns [Object type]
         |  'FILTERS' objectId=ID { $type = new UserEventObject($objectId.text, UserEventObject.Type.FILTER, true); }
         |  'ORDERS' objectId=ID { $type = new UserEventObject($objectId.text, UserEventObject.Type.ORDER, true); }
         |  'PROPERTY' ('BEFORE' { before = true; } | 'AFTER' { before = false; })? prop=formPropertyDraw { $type = new FormChangeEvent($prop.property, before); }
+        |  'FILTERGROUP' fg=formFilterGroupID { if (inMainParseState()) { $type = self.createFilterGroupEventObject($fg.sid); } }
+        |  'FILTER' 'PROPERTY' prop=formPropertyDraw { if (inMainParseState()) { $type = new FilterEventObject($prop.property.getID(), FilterEventObject.Type.PROPERTY); } }
         )
      )
     ;
