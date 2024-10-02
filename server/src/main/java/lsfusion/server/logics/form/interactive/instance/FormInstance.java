@@ -101,7 +101,7 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.F
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.object.GridPropertyView;
-import lsfusion.server.logics.form.interactive.event.UpdateKeysEventObject;
+import lsfusion.server.logics.form.interactive.event.GroupObjectEventObject;
 import lsfusion.server.logics.form.interactive.event.UserEventObject;
 import lsfusion.server.logics.form.interactive.instance.design.BaseComponentViewInstance;
 import lsfusion.server.logics.form.interactive.instance.design.ComponentViewInstance;
@@ -2727,11 +2727,11 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     private ChangeEvents getObjectEvents(ExecutionStack stack, GroupObjectInstance group) {
         return new ChangeEvents() {
             public void onFilterChanged() throws SQLException, SQLHandledException {
-                fireOnUpdateKeys(stack, group, UpdateKeysEventObject.Type.FILTER);
+                fireOnUpdateKeys(stack, group, GroupObjectEventObject.Type.FILTER);
             }
 
             public void onOrderChanged() throws SQLException, SQLHandledException {
-                fireOnUpdateKeys(stack, group, UpdateKeysEventObject.Type.ORDER);
+                fireOnUpdateKeys(stack, group, GroupObjectEventObject.Type.ORDER);
             }
         };
     }
@@ -2790,8 +2790,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         fireEvent(FormEventType.DROP, stack);
     }
 
-    public void fireOnUpdateKeys(ExecutionStack stack, GroupObjectInstance groupObject, UpdateKeysEventObject.Type type) throws SQLException, SQLHandledException {
-        fireEvent(new UpdateKeysEventObject(groupObject.getSID(), type), stack);
+    public void fireOnUpdateKeys(ExecutionStack stack, GroupObjectInstance groupObject, GroupObjectEventObject.Type type) throws SQLException, SQLHandledException {
+        fireEvent(new GroupObjectEventObject(groupObject.getSID(), type), stack);
     }
 
     public void fireOnUserActivity(ExecutionStack stack, GroupObjectInstance groupObject, UserEventObject.Type type) throws SQLException, SQLHandledException {

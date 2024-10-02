@@ -1,18 +1,18 @@
 package lsfusion.server.logics.form.interactive.event;
 
-public class UpdateKeysEventObject {
+public class GroupObjectEventObject {
     public final String groupObject;
     public final Type type;
 
-    public UpdateKeysEventObject(String groupObject, Type type) {
+    public GroupObjectEventObject(String groupObject, Type type) {
         this.groupObject = groupObject;
         this.type = type;
     }
 
     @Override
     public boolean equals(Object obj) {
-        return this == obj || obj instanceof UpdateKeysEventObject && groupObject.equals(((UpdateKeysEventObject) obj).groupObject) &&
-                type.equals(((UpdateKeysEventObject) obj).type);
+        return this == obj || obj instanceof GroupObjectEventObject && groupObject.equals(((GroupObjectEventObject) obj).groupObject) &&
+                type.equals(((GroupObjectEventObject) obj).type);
     }
 
     @Override
