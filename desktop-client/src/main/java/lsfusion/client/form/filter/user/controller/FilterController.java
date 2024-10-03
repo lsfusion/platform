@@ -98,7 +98,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
         return new AbstractAction() {
             @Override
             public boolean isEnabled() {
-                return !conditionViews.isEmpty();
+                return hasFilters();
             }
 
             public void actionPerformed(ActionEvent ae) {
@@ -127,7 +127,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
     }
 
     private void hideControlsIfEmpty() {
-        if (conditionViews.isEmpty()) {
+        if (!hasFilters()) {
             setControlsVisible(false);
         }
     }
@@ -135,10 +135,8 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
     public void setControlsVisible(boolean visible) {
         controlsVisible = visible;
 
-        if (!conditionViews.isEmpty()) {
-            for (FilterConditionView view : conditionViews.values()) {
-                view.setControlsVisible(controlsVisible);
-            }
+        for (FilterConditionView view : conditionViews.values()) {
+            view.setControlsVisible(controlsVisible);
         }
 
         controlsView.setVisible(controlsVisible);
@@ -411,5 +409,14 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
     
     public boolean hasFilters() {
         return !conditionViews.isEmpty();
+    }
+
+    public boolean hasFiltersToReset() {
+        for (FilterConditionView conditionView : conditionViews.values()) {
+            if (!conditionView.isFixed() || conditionView.isApplied()) {
+                return true;
+            }
+        }
+        return false;
     }
 }

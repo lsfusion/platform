@@ -73,6 +73,8 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
     
     // may not be applied without "Allow NULL", but we want to keep condition visible
     public boolean confirmed;
+    
+    private boolean applied;
 
     private boolean innerValueChange = false;
     
@@ -376,8 +378,13 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
         compareView.hidePopup();
         uiHandler.removeCondition(condition);
     }
+    
+    public boolean isApplied() {
+        return applied;
+    }
 
     public void setApplied(boolean applied) {
+        this.applied = applied;
         valueView.setApplied(applied);
     }
 
