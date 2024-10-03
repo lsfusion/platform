@@ -54,6 +54,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static lsfusion.base.ApiResourceBundle.getString;
+import static lsfusion.base.BaseUtils.trim;
 
 public class SecurityManager extends LogicsManager implements InitializingBean {
     private static final Logger startLogger = ServerLoggers.startLogger;
@@ -382,7 +383,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             queryResult = query.execute(session);
             for (ImMap<Object, Object> entry : queryResult.values()) {
 
-                String canonicalName = (String) entry.get("canonicalName");
+                String canonicalName = trim((String) entry.get("canonicalName"));
                 try {
                     LAP<?, ?> property = businessLogics.findPropertyElseAction(canonicalName);
 
