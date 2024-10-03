@@ -68,6 +68,8 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
 
     // may not be applied without "Allow NULL", but we want to keep condition visible
     public boolean confirmed;
+    
+    protected boolean applied;
 
     private static int idCounter = 0;
     private final String sID;
@@ -360,8 +362,10 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
     }
 
     public boolean clearValueView() {
-        if(valueView.cell.getValue() == null)
+        if (valueView.cell.getValue() == null) {
+            setApplied(false);
             return false;
+        }
 
         valueView.cell.updateValue(null);
         setApplied(allowNull);
@@ -378,8 +382,13 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
         compareView.hidePopup();
         uiHandler.removeCondition(condition);
     }
+    
+    public boolean isApplied() {
+        return applied;
+    }
 
     public void setApplied(boolean applied) {
+        this.applied = applied;
         valueView.setApplied(applied);
     }
 

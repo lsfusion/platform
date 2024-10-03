@@ -104,7 +104,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
     }
     
     private void hideControlsIfEmpty() {
-        if (conditionViews.isEmpty()) {
+        if (!hasConditions()) {
             setControlsVisible(false);
         }
     }
@@ -112,10 +112,8 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
     public void setControlsVisible(boolean visible) {
         controlsVisible = visible;
 
-        if (!conditionViews.isEmpty()) {
-            for (GFilterConditionView view : conditionViews.values()) {
-                view.setControlsVisible(controlsVisible);
-            }
+        for (GFilterConditionView view : conditionViews.values()) {
+            view.setControlsVisible(controlsVisible);
         }
 
         controlsView.setVisible(controlsVisible);
@@ -418,6 +416,15 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
     
     public boolean hasConditions() {
         return !conditionViews.isEmpty();
+    }
+    
+    public boolean hasConditionsToReset() {
+        for (GFilterConditionView condition : conditionViews.values()) {
+            if (!condition.isFixed() || condition.isApplied()) {
+                return true;
+            }
+        }
+        return false;
     }
     
     public abstract void applyFilters(ArrayList<GPropertyFilter> conditions, ArrayList<GFilterConditionView> changed, boolean focusFirstComponent);

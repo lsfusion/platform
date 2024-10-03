@@ -71,10 +71,12 @@ public abstract class AbstractTableController implements TableController {
     }
     
     public void addFilterBindings(ClientGroupObject groupObject) {
-        addFilterBinding(groupObject, new KeyInputEvent(KeyStrokes.getFilterKeyStroke(0)), this::addFilter);
-        addFilterBinding(groupObject, new KeyInputEvent(KeyStrokes.getFilterKeyStroke(InputEvent.ALT_DOWN_MASK)), this::replaceFilter);
-        addFilterBinding(groupObject, new KeyInputEvent(KeyStrokes.getFilterKeyStroke(InputEvent.SHIFT_DOWN_MASK)), this::resetFilers);
-        addFilterBinding(groupObject, null, new KeyInputEvent(KeyStrokes.getRemoveFiltersKeyStroke()), this::resetFilers);
+        addFilterBinding(groupObject, new KeyInputEvent(KeyStrokes.getFilterKeyStroke(0)), () -> addFilter());
+        addFilterBinding(groupObject, new KeyInputEvent(KeyStrokes.getFilterKeyStroke(InputEvent.ALT_DOWN_MASK)), () -> replaceFilter());
+
+        Callable<Boolean> resetFiltersCallable = () -> filter != null && filter.hasFiltersToReset() ? resetFilers() : false;
+        addFilterBinding(groupObject, new KeyInputEvent(KeyStrokes.getFilterKeyStroke(InputEvent.SHIFT_DOWN_MASK)), resetFiltersCallable);
+        addFilterBinding(groupObject, null, new KeyInputEvent(KeyStrokes.getRemoveFiltersKeyStroke()), resetFiltersCallable);
     }
 
     public void addFilterBinding(ClientGroupObject groupObject, KeyInputEvent inputEvent, Callable<Boolean> pressedCall) {
