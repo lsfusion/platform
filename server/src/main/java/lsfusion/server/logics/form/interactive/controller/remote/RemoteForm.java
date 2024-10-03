@@ -635,7 +635,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                     goi.addUserFilter(filter);
 
                     if(filter instanceof PropertyFilterInstance) {
-                        form.fireFilterPropertyChanged(((PropertyFilterInstance<?>) filter).propertyDraw.getID(), stack);
+                        form.fireFilterPropertyChanged(((PropertyFilterInstance<?>) filter).propertyDraw.getSID(), stack);
                     }
 
                     if (logger.isDebugEnabled()) {

@@ -1,10 +1,10 @@
 package lsfusion.server.logics.form.interactive.event;
 
 public class UserEventObject {
-    public final Object obj;
+    public final String obj;
     public final Type type;
 
-    public UserEventObject(Object obj, Type type) {
+    public UserEventObject(String obj, Type type) {
         this.obj = obj;
         this.type = type;
     }

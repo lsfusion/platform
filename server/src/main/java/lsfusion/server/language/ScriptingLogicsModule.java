@@ -2760,16 +2760,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public UserEventObject createFilterGroupEventObject(String fgName)  throws ScriptingErrorLog.SemanticErrorException {
-        RegularFilterGroupEntity filterGroup = getSeekFilterGroup(getFormFromSeekObjectName(fgName), fgName);
-        if (filterGroup != null) {
-            return new UserEventObject(filterGroup.getID(), UserEventObject.Type.FILTERGROUP);
-        } else {
-            errLog.emitFilterGroupNotFoundError(parser, getSeekObjectName(fgName));
-            return null;
-        }
-    }
-
     public LAWithParams addScriptedFilterPropertyProp(PropertyDrawEntity property, LPWithParams from)  throws ScriptingErrorLog.SemanticErrorException {
         if(from == null) {
             from = new LPWithParams(BL.userEventsLM.filtersProperty);

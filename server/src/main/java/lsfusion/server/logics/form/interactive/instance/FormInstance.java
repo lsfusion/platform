@@ -965,7 +965,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             filter.filter.getApplyObject().addRegularFilter(filter.filter);
         }
 
-        fireFilterGroupChanged(filterGroup.getID(), stack);
+        fireFilterGroupChanged(filterGroup.entity.getSID(), stack);
     }
 
     // -------------------------------------- Изменение данных ----------------------------------- //
@@ -2736,11 +2736,11 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         };
     }
 
-    public void fireFilterGroupChanged(Integer filterGroup, ExecutionStack stack) throws SQLException, SQLHandledException {
+    public void fireFilterGroupChanged(String filterGroup, ExecutionStack stack) throws SQLException, SQLHandledException {
         fireOnUserActivity(stack, filterGroup, UserEventObject.Type.FILTERGROUP);
     }
 
-    public void fireFilterPropertyChanged(Integer filterProperty, ExecutionStack stack) throws SQLException, SQLHandledException {
+    public void fireFilterPropertyChanged(String filterProperty, ExecutionStack stack) throws SQLException, SQLHandledException {
         fireOnUserActivity(stack, filterProperty, UserEventObject.Type.FILTERPROPERTY);
     }
 
@@ -2798,7 +2798,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         fireEvent(new UserEventObject(groupObject.getSID(), type), stack);
     }
 
-    public void fireOnUserActivity(ExecutionStack stack, Integer filter, UserEventObject.Type type) throws SQLException, SQLHandledException {
+    public void fireOnUserActivity(ExecutionStack stack, String filter, UserEventObject.Type type) throws SQLException, SQLHandledException {
         fireEvent(new UserEventObject(filter, type), stack);
     }
 

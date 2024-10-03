@@ -1238,8 +1238,8 @@ changeEventDeclaration returns [Object type]
         |  'FILTERS' objectId=ID { $type = new UserEventObject($objectId.text, UserEventObject.Type.FILTER); }
         |  'ORDERS' objectId=ID { $type = new UserEventObject($objectId.text, UserEventObject.Type.ORDER); }
         |  'PROPERTY' ('BEFORE' { before = true; } | 'AFTER' { before = false; })? prop=formPropertyDraw { $type = new FormChangeEvent($prop.property, before); }
-        |  'FILTERGROUPS' fg=formFilterGroupID { if (inMainParseState()) { $type = self.createFilterGroupEventObject($fg.sid); } }
-        |  'FILTERS' 'PROPERTY' prop=formPropertyDraw { if (inMainParseState()) { $type = new UserEventObject($prop.property.getID(), UserEventObject.Type.FILTERPROPERTY); } }
+        |  'FILTERGROUPS' filterGroupId=ID { $type = new UserEventObject($filterGroupId.text, UserEventObject.Type.FILTERGROUP); }
+        |  'FILTERS' 'PROPERTY' prop=formPropertyDraw { if (inMainParseState()) { $type = new UserEventObject($prop.property.getSID(), UserEventObject.Type.FILTERPROPERTY); } }
         )
      )
     ;
