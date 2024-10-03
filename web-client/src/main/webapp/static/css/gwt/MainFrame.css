@@ -934,3 +934,10 @@ button {
 .linkMode .selectedFileCellHasEdit {
     border: 1px solid var(--link-color);
 }
+
+.no-select {
+    -webkit-user-select: none; /* Chrome, Safari */
+    -moz-user-select: none;    /* Firefox */
+    -ms-user-select: none;     /* IE, Edge */
+    user-select: none;         /* Standard */
+}
