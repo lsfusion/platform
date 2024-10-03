@@ -25,6 +25,7 @@ import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.navigator.ClientInfo;
 import lsfusion.interop.navigator.NavigatorInfo;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
+import lsfusion.interop.session.SessionInfo;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.controller.remote.context.RemoteContextAspect;
 import lsfusion.server.base.controller.stack.StackMessage;
@@ -142,41 +143,34 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         navigatorManager.navigatorCreated(stack, this, navigatorInfo);
     }
 
-    @Override
-    protected void initUserContext(String hostName, String remoteAddress, String clientLanguage, String clientCountry, TimeZone clientTimeZone, String clientDateFormat, String clientTimeFormat,
-                                   String clientColorTheme, ExecutionStack stack, DataSession session) throws SQLException, SQLHandledException {
-        super.initUserContext(hostName, remoteAddress, clientLanguage, clientCountry, clientTimeZone, clientDateFormat, clientTimeFormat, clientColorTheme, stack, session);
-        DataObject designEnv = businessLogics.authenticationLM.storeNavigatorSettingsForComputer.read(session) != null ? computer : user;
-        useBootstrap = businessLogics.systemEventsLM.useBootstrap.read(session, designEnv) != null;
-        contentWordWrap = businessLogics.systemEventsLM.contentWordWrap.read(session, designEnv) != null;
-        localePreferences = readLocalePreferences(session, user, businessLogics, clientTimeZone, clientDateFormat, clientTimeFormat, stack);
-        securityPolicy = logicsInstance.getSecurityManager().getSecurityPolicy(session, user);
-        saveClientColorTheme(session, designEnv, businessLogics, clientColorTheme, stack);
-    }
-
-    private static void saveClientTimeZone(DataSession session, DataObject user, BusinessLogics businessLogics, TimeZone clientTimeZone, String clientDateFormat, String clientTimeFormat, ExecutionStack stack) throws SQLException, SQLHandledException {
-        if (clientTimeZone != null) {
-            businessLogics.authenticationLM.clientTimeZone.change(clientTimeZone.getID(), session, user);
-            businessLogics.authenticationLM.clientDateFormat.change(clientDateFormat, session, user);
-            businessLogics.authenticationLM.clientTimeFormat.change(clientTimeFormat, session, user);
-            session.applyException(businessLogics, stack);
-        }
-    }
-
-    private static void saveClientColorTheme(DataSession session, DataObject designEnv, BusinessLogics businessLogics, String clientColorTheme, ExecutionStack stack) throws SQLException, SQLHandledException {
+    private void saveNavigatorUserContext(String clientColorTheme, ExecutionStack stack, DataSession session) throws SQLException, SQLHandledException {
         if(clientColorTheme != null) {
+            DataObject designEnv = readDesignEnv(session);
             businessLogics.authenticationLM.clientColorTheme.change(businessLogics.authenticationLM.colorTheme.getDataObject(clientColorTheme), session, designEnv);
             session.applyException(businessLogics, stack);
         }
     }
 
-    private LocalePreferences readLocalePreferences(DataSession session, DataObject user, BusinessLogics businessLogics, TimeZone clientTimeZone, String clientDateFormat, String clientTimeFormat, ExecutionStack stack) throws SQLException, SQLHandledException {
-        saveClientTimeZone(session, user, businessLogics, clientTimeZone, clientDateFormat, clientTimeFormat, stack);
-        return new LocalePreferences(locale,
-                (String) businessLogics.authenticationLM.timeZone.read(session, user),
-                (Integer) businessLogics.authenticationLM.twoDigitYearStart.read(session, user),
-                (String) businessLogics.authenticationLM.dateFormat.read(session, user),
-                (String) businessLogics.authenticationLM.timeFormat.read(session, user));
+    private DataObject readDesignEnv(DataSession session) throws SQLException, SQLHandledException {
+        return businessLogics.authenticationLM.storeNavigatorSettingsForComputer.read(session) != null ? computer : user;
+    }
+
+    private void initNavigatorUserContext(DataSession session) throws SQLException, SQLHandledException {
+        DataObject designEnv = readDesignEnv(session);
+        useBootstrap = businessLogics.systemEventsLM.useBootstrap.read(session, designEnv) != null;
+        contentWordWrap = businessLogics.systemEventsLM.contentWordWrap.read(session, designEnv) != null;
+        securityPolicy = securityManager.getSecurityPolicy(session, user);
+    }
+
+    @Override
+    protected void initContext(LogicsInstance logicsInstance, AuthenticationToken token, SessionInfo connectionInfo, ExecutionStack stack) throws SQLException, InstantiationException, IllegalAccessException, ClassNotFoundException, SQLHandledException {
+        super.initContext(logicsInstance, token, connectionInfo, stack);
+
+        try(DataSession session = createSession()) {
+            saveNavigatorUserContext(connectionInfo.clientColorTheme, stack, session);
+
+            initNavigatorUserContext(session);
+        }
     }
 
     public void logClientException(String hostname, Throwable t) {

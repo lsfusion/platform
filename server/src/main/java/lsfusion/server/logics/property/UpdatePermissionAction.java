@@ -41,7 +41,7 @@ public class UpdatePermissionAction extends InternalAction {
         if(userRole != null && actionOrPropertyCN != null) {
             String permission = (String) context.getKeyValue(staticNamePermissionInterface).getValue();
             String type = (String) context.getKeyValue(typeInterface).getValue();
-            SecurityManager securityManager = context.getLogicsInstance().getSecurityManager();
+            SecurityManager securityManager = context.getSecurityManager();
             RoleSecurityPolicy sp = securityManager.cachedSecurityPolicies.get(userRole);
             if (sp != null) {
                 ElementSecurityPolicy esp;

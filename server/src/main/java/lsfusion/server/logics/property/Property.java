@@ -1471,10 +1471,10 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return new Pair<>(result.get(readValue), !result.get(readChanged).isNull());
     }
 
-    public ObjectValue readClasses(SQLSession session, ImMap<T, Expr> keys, BaseClass baseClass, Modifier modifier, QueryEnvironment env) throws SQLException, SQLHandledException {
+    public ObjectValue readClasses(SQLSession session, ImMap<T, ? extends ObjectValue> keys, BaseClass baseClass, Modifier modifier, QueryEnvironment env) throws SQLException, SQLHandledException {
         String readValue = "readvalue";
         QueryBuilder<T, Object> readQuery = new QueryBuilder<>(SetFact.EMPTY());
-        readQuery.addProperty(readValue, getExpr(keys, modifier));
+        readQuery.addProperty(readValue, getExpr(ObjectValue.getMapExprs(keys), modifier));
         return readQuery.executeClasses(session, env, baseClass).singleValue().get(readValue);
     }
 
@@ -1523,7 +1523,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     public ObjectValue readClasses(DataSession session, ImMap<T, ? extends ObjectValue> keys, Modifier modifier, QueryEnvironment env) throws SQLException, SQLHandledException {
-        return readClasses(session.sql, ObjectValue.getMapExprs(keys), session.baseClass, modifier, env);
+        return readClasses(session.sql, keys, session.baseClass, modifier, env);
     }
 
     public ImMap<ImMap<T, Object>, Object> readAll(ExecutionEnvironment env) throws SQLException, SQLHandledException {

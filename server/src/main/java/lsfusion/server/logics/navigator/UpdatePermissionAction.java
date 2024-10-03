@@ -30,7 +30,7 @@ public class UpdatePermissionAction extends InternalAction {
         Long userRole = (Long) context.getKeyValue(userRoleInterface).getValue();
         String navigatorElement = (String) context.getKeyValue(canonicalNameNavigatorElementInterface).getValue();
         if(userRole != null && navigatorElement != null) {
-            SecurityManager securityManager = context.getLogicsInstance().getSecurityManager();
+            SecurityManager securityManager = context.getSecurityManager();
             Boolean permission = securityManager.getPermissionValue(context.getKeyValue(staticNamePermissionInterface).getValue());
             RoleSecurityPolicy securityPolicy = securityManager.cachedSecurityPolicies.get(userRole);
             if (securityPolicy != null) {

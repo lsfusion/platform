@@ -1981,7 +1981,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                         sumMap(exceededMissedMap, userMissedMap);
 
                         Thread thread = threadMap.get(id);
-                        LogInfo logInfo = thread == null ? null : ThreadLocalContext.logInfoMap.get(thread);
+                        LogInfo logInfo = thread == null ? null : ThreadLocalContext.getLogInfo(thread);
                         String computer = logInfo == null ? null : logInfo.hostnameComputer;
                         String user = logInfo == null ? null : logInfo.userName;
                         String userRoles = logInfo == null ? null : logInfo.userRoles;
@@ -2019,7 +2019,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         boolean system = ThreadLocalContext.activeMap.get(threadMap.get(id)) == null || !ThreadLocalContext.activeMap.get(threadMap.get(id));
         if (!system) {
             Thread thread = threadMap.get(id);
-            LogInfo logInfo = thread == null ? null : ThreadLocalContext.logInfoMap.get(thread);
+            LogInfo logInfo = thread == null ? null : ThreadLocalContext.getLogInfo(thread);
             system = logInfo == null || logInfo.allowExcessAllocatedBytes;
         }
         return system;
