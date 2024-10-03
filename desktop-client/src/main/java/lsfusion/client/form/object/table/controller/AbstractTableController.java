@@ -70,8 +70,10 @@ public abstract class AbstractTableController implements TableController {
     public void addFilterBindings(ClientGroupObject groupObject) {
         addFilterBinding(groupObject, new KeyInputEvent(KeyStrokes.getFilterKeyStroke(0)), () -> addFilter());
         addFilterBinding(groupObject, new KeyInputEvent(KeyStrokes.getFilterKeyStroke(InputEvent.ALT_DOWN_MASK)), () -> replaceFilter());
-        addFilterBinding(groupObject, new KeyInputEvent(KeyStrokes.getFilterKeyStroke(InputEvent.SHIFT_DOWN_MASK)), () -> resetFilers());
-        addFilterBinding(groupObject, new KeyInputEvent(KeyStrokes.getRemoveFiltersKeyStroke()), () -> resetFilers());
+        
+        Callable<Boolean> resetFiltersCallable = () -> filter != null && filter.hasFiltersToReset() ? resetFilers() : false;
+        addFilterBinding(groupObject, new KeyInputEvent(KeyStrokes.getFilterKeyStroke(InputEvent.SHIFT_DOWN_MASK)), resetFiltersCallable);
+        addFilterBinding(groupObject, new KeyInputEvent(KeyStrokes.getRemoveFiltersKeyStroke()), resetFiltersCallable);
     }
     
     public void addFilterBinding(ClientGroupObject groupObject, KeyInputEvent inputEvent, Callable<Boolean> pressedCall) {

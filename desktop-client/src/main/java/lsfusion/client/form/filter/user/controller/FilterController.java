@@ -98,7 +98,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
         return new AbstractAction() {
             @Override
             public boolean isEnabled() {
-                return !conditionViews.isEmpty();
+                return hasFilters();
             }
 
             public void actionPerformed(ActionEvent ae) {
@@ -112,7 +112,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
     public void toggleControlsVisible() {
         setControlsVisible(!controlsVisible);
         
-        if (conditionViews.isEmpty() && controlsVisible) {
+        if (!hasFilters() && controlsVisible) {
             addCondition();
         }
     }
@@ -120,10 +120,8 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
     public void setControlsVisible(boolean visible) {
         controlsVisible = visible;
 
-        if (!conditionViews.isEmpty()) {
-            for (FilterConditionView view : conditionViews.values()) {
-                view.setControlsVisible(controlsVisible);
-            }
+        for (FilterConditionView view : conditionViews.values()) {
+            view.setControlsVisible(controlsVisible);
         }
 
         controlsView.setVisible(controlsVisible);
@@ -244,11 +242,9 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
     private FilterConditionView findExistingFilter(ClientPropertyDraw propertyDraw, ClientGroupObjectValue columnKey) {
         Pair<ClientPropertyDraw, ClientGroupObjectValue> column = getActualColumn(propertyDraw, columnKey);
 
-        if (!conditionViews.isEmpty()) {
-            for (ClientPropertyFilter filter : conditionViews.keySet()) {
-                if (filter.property.equals(column.first) && BaseUtils.nullEquals(filter.columnKey, column.second)) {
-                    return conditionViews.get(filter);
-                }
+        for (ClientPropertyFilter filter : conditionViews.keySet()) {
+            if (filter.property.equals(column.first) && BaseUtils.nullEquals(filter.columnKey, column.second)) {
+                return conditionViews.get(filter);
             }
         }
         
@@ -261,7 +257,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
         getFiltersContainer().removeFromChildren(condition.filter);
         conditionViews.remove(condition);
         
-        if (conditionViews.isEmpty()) {
+        if (!hasFilters()) {
             setControlsVisible(false);
         }
     }
@@ -289,7 +285,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
                 conditionViews.remove(filter);
             }
         }
-        if (conditionViews.isEmpty()) {
+        if (!hasFilters()) {
             setControlsVisible(false);
         }
         applyFilters(focusFirstComponent);
@@ -367,5 +363,14 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
     
     public boolean hasFilters() {
         return !conditionViews.isEmpty();
+    }
+
+    public boolean hasFiltersToReset() {
+        for (FilterConditionView conditionView : conditionViews.values()) {
+            if (!conditionView.isFixed() || conditionView.isApplied()) {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -92,7 +92,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
     public void toggleControlsVisible() {
         setControlsVisible(!controlsVisible);
 
-        if (conditionViews.isEmpty() && controlsVisible && hasFiltersContainer()) {
+        if (!hasConditions() && controlsVisible && hasFiltersContainer()) {
             addCondition();
         }
     }
@@ -100,10 +100,8 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
     public void setControlsVisible(boolean visible) {
         controlsVisible = visible;
 
-        if (!conditionViews.isEmpty()) {
-            for (GFilterConditionView view : conditionViews.values()) {
-                view.setControlsVisible(controlsVisible);
-            }
+        for (GFilterConditionView view : conditionViews.values()) {
+            view.setControlsVisible(controlsVisible);
         }
 
         controlsView.setVisible(controlsVisible);
@@ -232,11 +230,9 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
     private GFilterConditionView findExistingFilter(GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
         Pair<GPropertyDraw, GGroupObjectValue> column = getActualColumn(propertyDraw, columnKey);
 
-        if (!conditionViews.isEmpty()) {
-            for (GPropertyFilter filter : conditionViews.keySet()) {
-                if (filter.property.equals(column.first) && GwtSharedUtils.nullEquals(filter.columnKey, column.second)) {
-                    return conditionViews.get(filter);
-                }
+        for (GPropertyFilter filter : conditionViews.keySet()) {
+            if (filter.property.equals(column.first) && GwtSharedUtils.nullEquals(filter.columnKey, column.second)) {
+                return conditionViews.get(filter);
             }
         }
         
@@ -269,7 +265,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
                 removeConditionViewInner(filter);
             }
         }
-        if (conditionViews.isEmpty()) {
+        if (!hasConditions()) {
             setControlsVisible(false);
         }
         return changed;
@@ -296,7 +292,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
         GFilterConditionView filterView = conditionViews.remove(filter);
         filterView.isRemoved = true;
 
-        if (conditionViews.isEmpty()) {
+        if (!hasConditions()) {
             setControlsVisible(false);
         }
     }
@@ -371,6 +367,15 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
     
     public boolean hasConditions() {
         return !conditionViews.isEmpty();
+    }
+    
+    public boolean hasConditionsToReset() {
+        for (GFilterConditionView condition : conditionViews.values()) {
+            if (!condition.isFixed() || condition.isApplied()) {
+                return true;
+            }
+        }
+        return false;
     }
     
     public abstract void applyFilters(ArrayList<GPropertyFilter> conditions, ArrayList<GFilterConditionView> changed, boolean focusFirstComponent);
