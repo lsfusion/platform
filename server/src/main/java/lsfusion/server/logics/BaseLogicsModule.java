@@ -823,7 +823,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     @IdentityStrongLazy
     public LP object(ValueClass valueClass) {
         LP lcp = addJProp(and1, 1, is(valueClass), 1);
-        ((JoinProperty)lcp.property).caption = LocalizedString.concatList(valueClass.getCaption(), " (", LocalizedString.create("{logics.id}"), ")");
+        lcp.property.caption = valueClass.getCaption();
         ((JoinProperty)lcp.property).objectPropertyClass = valueClass;
         return lcp;
     }
