@@ -106,7 +106,7 @@ public abstract class ProcessDumpAction extends InternalAction {
         String lockName = threadInfo == null ? null : threadInfo.getLockName();
         String lockOwnerId = threadInfo == null ? null : String.valueOf(threadInfo.getLockOwnerId());
         String lockOwnerName = threadInfo == null ? null : threadInfo.getLockOwnerName();
-        LogInfo logInfo = thread == null ? null : ThreadLocalContext.logInfoMap.get(thread);
+        LogInfo logInfo = thread == null ? null : ThreadLocalContext.getLogInfo(thread);
         String computer = logInfo == null ? null : logInfo.hostnameComputer;
         String user = logInfo == null ? null : logInfo.userName;
         String lsfStack = ExecutionStackAspect.getLSFStack(thread);

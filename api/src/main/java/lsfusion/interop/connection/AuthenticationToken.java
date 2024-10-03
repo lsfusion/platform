@@ -16,4 +16,12 @@ public class AuthenticationToken implements Serializable {
     public AuthenticationToken(String string) {
         this.string = string;
     }
+
+    public boolean equals(Object o) {
+        return this == o || o instanceof AuthenticationToken && string.equals(((AuthenticationToken) o).string);
+    }
+
+    public int hashCode() {
+        return string.hashCode();
+    }
 }

@@ -14,6 +14,7 @@ import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.connection.RemoteConnectionInterface;
 import lsfusion.interop.session.*;
+import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.controller.remote.RemoteRequestObject;
 import lsfusion.server.base.controller.thread.SyncType;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
@@ -69,18 +70,22 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     public LogicsInstance logicsInstance;
     protected BusinessLogics businessLogics;
     protected DBManager dbManager;
+    public String remoteAddress;
 
     protected DataObject computer;
-
+    protected SecurityManager securityManager;
     protected AuthenticationToken authToken;
     protected DataObject user;
-    protected LogInfo logInfo;
+    protected String userName;
+    protected String computerName;
+    protected boolean allowExcessAllocatedBytes;
     protected Locale locale;
     protected LocalePreferences localePreferences;
     public Long userRole;
     protected Integer transactionTimeout;
 
     public String sessionId;
+    protected String userRoles;
 
     public RemoteConnection(int port, String sID, ExecutionStack upStack) throws RemoteException {
         super(port, upStack, sID, SyncType.NOSYNC);
@@ -92,56 +97,69 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     protected DataSession createSession() throws SQLException {
         return dbManager.createSession(sql, new WeakUserController(this), createFormController(), new WeakTimeoutController(this), createChangesController(), new WeakLocaleController(this), dbManager.getIsServerRestartingController(), null);
     }
+    protected LogInfo logInfo;
 
     protected void initContext(LogicsInstance logicsInstance, AuthenticationToken token, SessionInfo connectionInfo, ExecutionStack stack) throws SQLException, InstantiationException, IllegalAccessException, ClassNotFoundException, SQLHandledException {
         this.businessLogics = logicsInstance.getBusinessLogics();
         this.dbManager = logicsInstance.getDbManager();
+        securityManager = logicsInstance.getSecurityManager();
         this.sql = dbManager.createSQL(new WeakSQLSessionContextProvider(this));
-        
+
         this.logicsInstance = logicsInstance;
 
         sessionId = connectionInfo.externalRequest.sessionId;
+        remoteAddress = connectionInfo.hostAddress;
+
+        authToken = token;
+        computerName = connectionInfo.hostName;
 
         try(DataSession session = createSession()) {
-            SecurityManager securityManager = logicsInstance.getSecurityManager();
-            initUser(securityManager, token, session);
+            // user
+            user = securityManager.getUser(token, session);
 
-            String hostName = connectionInfo.hostName;
-            computer = dbManager.getComputer(hostName, session, stack); // can apply session
+            saveUserContext(connectionInfo.language, connectionInfo.country, connectionInfo.timeZone, connectionInfo.dateFormat, connectionInfo.timeFormat, stack, session);
 
-            initUserContext(hostName, connectionInfo.hostAddress, connectionInfo.language, connectionInfo.country, connectionInfo.timeZone, connectionInfo.dateFormat, connectionInfo.timeFormat, connectionInfo.clientColorTheme, stack, session);
+            initUserContext(session);
+
+            // computer
+            computer = dbManager.getComputer(connectionInfo.hostName, session, stack); // can apply session
         }
     }
 
-    protected void initUser(SecurityManager securityManager, AuthenticationToken token, DataSession session) throws SQLException, SQLHandledException {
-        String login = securityManager.parseToken(token);
-        authToken = token;
-        if(login != null) {
-            user = securityManager.readUser(login, session);
-            if(user == null) {
-                throw new AuthenticationException(String.format("User with login %s not found", login));
-            }
-        } else {
-            user = securityManager.getDefaultLoginUser();
+    protected void saveUserContext(String clientLanguage, String clientCountry, TimeZone clientTimeZone, String clientDateFormat, String clientTimeFormat,
+                                   ExecutionStack stack, DataSession session) throws SQLException, SQLHandledException {
+        if (clientLanguage != null) {
+            businessLogics.authenticationLM.clientLanguage.change(clientLanguage, session, user);
+            businessLogics.authenticationLM.clientCountry.change(clientCountry, session, user);
+            session.applyException(businessLogics, stack);
+        }
+
+        if (clientTimeZone != null) {
+            businessLogics.authenticationLM.clientTimeZone.change(clientTimeZone.getID(), session, user);
+            businessLogics.authenticationLM.clientDateFormat.change(clientDateFormat, session, user);
+            businessLogics.authenticationLM.clientTimeFormat.change(clientTimeFormat, session, user);
+            session.applyException(businessLogics, stack);
         }
     }
 
     // in theory its possible to cache all this
     // locale + log info
-    protected void initUserContext(String hostName, String remoteAddress, String clientLanguage, String clientCountry, TimeZone clientTimeZone, String clientDateFormat, String clientTimeFormat,
-                                   String clientColorTheme, ExecutionStack stack, DataSession session) throws SQLException, SQLHandledException {
-        logInfo = readLogInfo(session, user, businessLogics, hostName, remoteAddress);
-        locale = readLocale(session, user, businessLogics, clientLanguage, clientCountry, stack);
+    protected void initUserContext(DataSession session) throws SQLException, SQLHandledException {
+        userName = (String) businessLogics.authenticationLM.logNameCustomUser.read(session, user);
+        allowExcessAllocatedBytes = businessLogics.serviceLM.allowExcessAllocatedBytes.read(session, user) != null;
+        userRoles = (String) businessLogics.securityLM.userRolesUser.read(session, user);
+
+        locale = LocalePreferences.getLocale(
+                    (String) businessLogics.authenticationLM.language.read(session, user),
+                    (String) businessLogics.authenticationLM.country.read(session, user));
+        localePreferences = new LocalePreferences(locale,
+                (String) businessLogics.authenticationLM.timeZone.read(session, user),
+                (Integer) businessLogics.authenticationLM.twoDigitYearStart.read(session, user),
+                (String) businessLogics.authenticationLM.dateFormat.read(session, user),
+                (String) businessLogics.authenticationLM.timeFormat.read(session, user));
+
         userRole = (Long) businessLogics.securityLM.firstRoleUser.read(session, user);
         transactionTimeout = (Integer) businessLogics.serviceLM.transactTimeoutUser.read(session, user);
-    }
-
-    public boolean changeCurrentUser(DataObject user, ExecutionStack stack) throws SQLException, SQLHandledException {
-        this.user = user;
-        try(DataSession session = createSession()) {
-            initUserContext(logInfo.hostnameComputer, logInfo.remoteAddress, null, null, null, null, null, null, stack, session);
-        }
-        return true;
     }
 
     protected static class WeakUserController implements UserController { // чтобы помочь сборщику мусора и устранить цикл
@@ -246,35 +264,24 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         }
     }
 
+    public boolean changeCurrentUser(DataObject user, ExecutionStack stack) throws SQLException, SQLHandledException {
+        this.user = user;
+        try(DataSession session = createSession()) {
+            initUserContext(session);
+        }
+        logInfo = null;
+        return true;
+    }
+
+    @ManualLazy
     public LogInfo getLogInfo() {
+        if(logInfo == null)
+            logInfo = new LogInfo(allowExcessAllocatedBytes, userName, userRoles, computerName, remoteAddress);
         return logInfo;
     }
 
     public int getTransactionTimeout() {
         return transactionTimeout != null ? transactionTimeout : 0;
-    }
-
-    public static Locale readLocale(DataSession session, DataObject user, BusinessLogics businessLogics, String clientLanguage, String clientCountry, ExecutionStack stack) throws SQLException, SQLHandledException {
-        saveClientLanguage(session, user, businessLogics, clientLanguage, clientCountry, stack);
-
-        String language = (String) businessLogics.authenticationLM.language.read(session, user);
-        String country = (String) businessLogics.authenticationLM.country.read(session, user);
-        return LocalePreferences.getLocale(language, country);
-    }
-
-    public static void saveClientLanguage(DataSession session, DataObject user, BusinessLogics businessLogics, String clientLanguage, String clientCountry, ExecutionStack stack) throws SQLException, SQLHandledException {
-        if (clientLanguage != null) {
-            businessLogics.authenticationLM.clientLanguage.change(clientLanguage, session, user);
-            businessLogics.authenticationLM.clientCountry.change(clientCountry, session, user);
-            session.applyException(businessLogics, stack);
-        }
-    }
-
-    public static LogInfo readLogInfo(DataSession session, DataObject user, BusinessLogics businessLogics, String computerName, String remoteAddress) throws SQLException, SQLHandledException {
-        String userName = (String) businessLogics.authenticationLM.logNameCustomUser.read(session, user);
-        boolean allowExcessAllocatedBytes = businessLogics.serviceLM.allowExcessAllocatedBytes.read(session, user) != null;
-        String userRoles = (String) businessLogics.securityLM.userRolesUser.read(session, user);
-        return new LogInfo(allowExcessAllocatedBytes, userName, userRoles, computerName, remoteAddress);
     }
 
     public Locale getLocale() {
@@ -443,7 +450,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
             forceAPI = annotation.equals("api");
         }
 
-        if(request.signature != null && logicsInstance.getSecurityManager().verifyData(ExternalUtils.generate(actionParam, script, request.getParamValues()), request.signature))
+        if(request.signature != null && securityManager.verifyData(ExternalUtils.generate(actionParam, script, request.getParamValues()), request.signature))
             return;
 
         if(authException != null)

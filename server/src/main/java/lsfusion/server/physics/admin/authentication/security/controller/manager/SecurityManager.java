@@ -1,5 +1,6 @@
 package lsfusion.server.physics.admin.authentication.security.controller.manager;
 
+import com.google.common.base.Supplier;
 import com.google.common.base.Throwables;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
@@ -143,23 +144,40 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         try(DataSession session = createSession()) {
 
             //created in createSystemUserRoles
-            this.adminUserRole = (DataObject) securityLM.userRoleSID.readClasses(session, new DataObject("admin"));
+            String admin = "admin";
+            this.adminUserRole = (DataObject) securityLM.userRoleSID.readClasses(session, new DataObject(admin));
             this.readOnlyUserRole = (DataObject) securityLM.userRoleSID.readClasses(session, new DataObject("readonly"));
 
-            DataObject adminUser = readUser("admin", session);
-            if (adminUser == null) {
-                adminUser = addUser("admin", initialAdminPassword, session);
-                apply(session);
-            }
-            this.adminUser = new DataObject((Long) adminUser.object, authenticationLM.customUser); // to update classes after apply
+            this.adminUser = initUser(admin, session);
 
-            DataObject anonymousUser = readUser("anonymous", session);
-            if (anonymousUser == null) {
-                anonymousUser = addUser("anonymous", initialAdminPassword, session);
-                apply(session);
-            }
-            this.anonymousUser = new DataObject((Long) anonymousUser.object, authenticationLM.customUser); // to update classes after apply
+            this.anonymousUser = initUser("anonymous", session);
         }
+    }
+
+    private DataObject initUser(String admin, DataSession session) throws SQLException, SQLHandledException {
+        DataObject adminUser = readUser(admin, session);
+
+        if (adminUser == null) {
+            adminUser = addUser(admin, initialAdminPassword, session);
+            apply(session);
+
+            // to update classes after apply
+            return new DataObject((Long) adminUser.object, authenticationLM.customUser);
+        }
+
+        return adminUser;
+    }
+
+    private DataObject initAndUpdateUser(DataSession session, ExecutionStack stack, String userName, Supplier<String> password, String firstName, String lastName, String email, List<String> groupNames, Map<String, String> attributes) throws SQLException, SQLHandledException {
+        DataObject userObject = readUser(userName, session);
+
+        if (userObject == null)
+            userObject = addUser(userName, password.get(), session);
+
+        setUserParameters(userObject, firstName, lastName, email, groupNames, attributes, session);
+        apply(session, stack);
+
+        return userObject;
     }
 
     public DataObject getAdminUser() {
@@ -167,7 +185,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
     }
 
     public DataObject getDefaultLoginUser() {
-        return SystemProperties.inDevMode ? getAdminUser() : anonymousUser;
+        return SystemProperties.inDevMode ? adminUser : anonymousUser;
     }
 
     private DataSession createSession() throws SQLException {
@@ -184,6 +202,18 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
     public DataObject readUser(String login, DataSession session) throws SQLException, SQLHandledException {
         ObjectValue userObject = authenticationLM.customUserNormalized.readClasses(session, new DataObject(login));
         return userObject.isNull() ? null : (DataObject) userObject;
+    }
+
+    public DataObject getUser(AuthenticationToken token, DataSession session) throws SQLException, SQLHandledException {
+        String login = parseToken(token);
+        if(login != null) {
+            DataObject user = readUser(login, session);
+            if(user == null) {
+                throw new AuthenticationException(String.format("User with login %s not found", login));
+            }
+            return user;
+        }
+        return getDefaultLoginUser();
     }
 
     private String secret = null;
@@ -260,27 +290,20 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
 
     public AuthenticationToken authenticateUser(Authentication authentication, ExecutionStack stack) {
         try (DataSession session = createSession()) {
-            DataObject userObject;
+            DataObject userObject = null;
             if (authentication instanceof PasswordAuthentication) {
-                userObject = readUser(authentication.getUserName(), session);
-
-                boolean authenticated = false;
                 if (authenticationLM.useLDAP.read(session) != null) {
                     String server = (String) authenticationLM.serverLDAP.read(session);
                     Integer port = (Integer) authenticationLM.portLDAP.read(session);
                     String baseDN = (String) authenticationLM.baseDNLDAP.read(session);
                     String userDNSuffix = (String) authenticationLM.userDNSuffixLDAP.read(session);
                     try {
-                        LDAPParameters ldapParameters = new LDAPAuthenticationService(server, port, baseDN, userDNSuffix)
-                                .authenticate(authentication.getUserName(), ((PasswordAuthentication) authentication).getPassword());
+                        String userName = authentication.getUserName();
+                        String password = ((PasswordAuthentication) authentication).getPassword();
+                        LDAPParameters ldapParameters = new LDAPAuthenticationService(server, port, baseDN, userDNSuffix).authenticate(userName, password);
+
                         if (ldapParameters.isConnected()) {
-                            authenticated = true;
-                            if (userObject == null) {
-                                userObject = addUser(authentication.getUserName(), ((PasswordAuthentication) authentication).getPassword(), session);
-                            }
-                            setUserParameters(userObject, ldapParameters.getFirstName(), ldapParameters.getLastName(),
-                                    ldapParameters.getEmail(), ldapParameters.getGroupNames(), ldapParameters.getAttributes(), session);
-                            apply(session, stack);
+                            userObject = initAndUpdateUser(session, stack, userName, () -> password, ldapParameters.getFirstName(), ldapParameters.getLastName(), ldapParameters.getEmail(), ldapParameters.getGroupNames(), ldapParameters.getAttributes());
                         } else {
                             throw new LoginException();
                         }
@@ -288,24 +311,21 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                         systemLogger.error("LDAP authentication failed", e);
                     }
                 }
-                if (!authenticated && (userObject == null || !authenticationLM.checkPassword(session, userObject, ((PasswordAuthentication) authentication).getPassword())))
-                    throw new LoginException();
+
+                if(userObject == null) {
+                    userObject = readUser(authentication.getUserName(), session);
+
+                    if (userObject == null || !authenticationLM.checkPassword(session, userObject, ((PasswordAuthentication) authentication).getPassword()))
+                        throw new LoginException();
+                }
             } else {
                 OAuth2Authentication oauth2 = (OAuth2Authentication) authentication;
                 String webClientAuthSecret = oauth2.getAuthSecret();
                 if ((webClientAuthSecret == null || !webClientAuthSecret.equals(getWebClientSecret())))
                     throw new AuthenticationException(getString("exceptions.incorrect.web.client.auth.token"));
 
-                List<String> userRoles = null;
-                userObject = readUser(oauth2.getUserName(), session);
-                if (userObject == null) {
-                    userObject = addUser(oauth2.getUserName(), BaseUtils.generatePassword(20, false, true), session);
-                    userRoles = Collections.singletonList("selfRegister");
-                }
-
                 // Because user data can change on the oauth2 provider side - we will update userParameters on each authentication.
-                setUserParameters(userObject, oauth2.getFirstName(), oauth2.getLastName(), oauth2.getEmail(), userRoles, oauth2.getAttributes(),  session);
-                apply(session, stack);
+                userObject = initAndUpdateUser(session, stack, oauth2.getUserName(), () -> BaseUtils.generatePassword(20, false, true), oauth2.getFirstName(), oauth2.getLastName(), oauth2.getEmail(), userObject == null ?  Collections.singletonList("selfRegister") : null, oauth2.getAttributes());
             }
             if (authenticationLM.isLockedCustomUser.read(session, userObject) != null) {
                 throw new LockedException();

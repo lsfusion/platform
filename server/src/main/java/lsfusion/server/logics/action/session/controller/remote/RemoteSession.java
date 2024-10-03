@@ -13,7 +13,6 @@ import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.navigator.controller.env.ChangesController;
 import lsfusion.server.logics.navigator.controller.env.FormController;
 import lsfusion.server.physics.admin.authentication.controller.remote.RemoteConnection;
-import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 
@@ -35,12 +34,12 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
     }
 
     @Override
-    protected void initUser(SecurityManager securityManager, AuthenticationToken token, DataSession session) throws SQLException, SQLHandledException {
+    protected void initContext(LogicsInstance logicsInstance, AuthenticationToken token, SessionInfo connectionInfo, ExecutionStack stack) throws SQLException, InstantiationException, IllegalAccessException, ClassNotFoundException, SQLHandledException {
         try {
-            super.initUser(securityManager, token, session);
+            super.initContext(logicsInstance, token, connectionInfo, stack);
         } catch (AuthenticationException e) { // if we have authentication exception, postpone it maybe only noauth will be used (authenticate with anonymous token)
             authException = e;
-            super.initUser(securityManager, AuthenticationToken.ANONYMOUS, session);
+            super.initContext(logicsInstance, AuthenticationToken.ANONYMOUS, connectionInfo, stack);
         }
     }
 
