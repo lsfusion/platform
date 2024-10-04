@@ -71,6 +71,7 @@ grammar LsfLogics;
     import lsfusion.server.logics.form.interactive.design.ComponentView;
     import lsfusion.server.logics.form.interactive.design.filter.FilterView;
     import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
+    import lsfusion.server.logics.form.interactive.event.GroupObjectEventObject;
     import lsfusion.server.logics.form.interactive.event.UserEventObject;
     import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
     import lsfusion.server.logics.form.open.MappedForm;
@@ -1232,11 +1233,13 @@ changeEventDeclaration returns [Object type]
     |
     'CHANGE'? (
         ('OBJECT' objectId=ID { $type = $objectId.text; }
-        |  'FILTER' objectId=ID { $type = new UserEventObject($objectId.text, UserEventObject.Type.FILTER, false); }
-        |  'ORDER' objectId=ID { $type = new UserEventObject($objectId.text, UserEventObject.Type.ORDER, false); }
-        |  'FILTERS' objectId=ID { $type = new UserEventObject($objectId.text, UserEventObject.Type.FILTER, true); }
-        |  'ORDERS' objectId=ID { $type = new UserEventObject($objectId.text, UserEventObject.Type.ORDER, true); }
+        |  'FILTER' objectId=ID { $type = new GroupObjectEventObject($objectId.text, GroupObjectEventObject.Type.FILTER); }
+        |  'ORDER' objectId=ID { $type = new GroupObjectEventObject($objectId.text, GroupObjectEventObject.Type.ORDER); }
+        |  'FILTERS' objectId=ID { $type = new UserEventObject($objectId.text, UserEventObject.Type.FILTER); }
+        |  'ORDERS' objectId=ID { $type = new UserEventObject($objectId.text, UserEventObject.Type.ORDER); }
         |  'PROPERTY' ('BEFORE' { before = true; } | 'AFTER' { before = false; })? prop=formPropertyDraw { $type = new FormChangeEvent($prop.property, before); }
+        |  'FILTERGROUPS' filterGroupId=ID { $type = new UserEventObject($filterGroupId.text, UserEventObject.Type.FILTERGROUP); }
+        |  'FILTERS' 'PROPERTY' prop=formPropertyDraw { if (inMainParseState()) { $type = new UserEventObject($prop.property.getSID(), UserEventObject.Type.FILTERPROPERTY); } }
         )
      )
     ;

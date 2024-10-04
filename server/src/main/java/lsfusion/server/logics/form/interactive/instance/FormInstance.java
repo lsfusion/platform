@@ -101,6 +101,7 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.F
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.object.GridPropertyView;
+import lsfusion.server.logics.form.interactive.event.GroupObjectEventObject;
 import lsfusion.server.logics.form.interactive.event.UserEventObject;
 import lsfusion.server.logics.form.interactive.instance.design.BaseComponentViewInstance;
 import lsfusion.server.logics.form.interactive.instance.design.ComponentViewInstance;
@@ -381,7 +382,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         for (RegularFilterGroupInstance filterGroup : regularFilterGroups) {
             int defaultInd = filterGroup.entity.getDefault();
             if (defaultInd >= 0 && defaultInd < filterGroup.filters.size()) {
-                setRegularFilter(filterGroup, filterGroup.filters.get(defaultInd));
+                setRegularFilter(filterGroup, filterGroup.filters.get(defaultInd), stack);
             }
         }
 
@@ -948,11 +949,11 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     public List<RegularFilterGroupInstance> regularFilterGroups = new ArrayList<>();
     public Map<RegularFilterGroupInstance, RegularFilterInstance> regularFilterValues = new HashMap<>();
 
-    public void setRegularFilter(RegularFilterGroupInstance filterGroup, int filterId) {
-        setRegularFilter(filterGroup, filterGroup.getFilter(filterId));
+    public void setRegularFilter(RegularFilterGroupInstance filterGroup, int filterId, ExecutionStack stack) throws SQLException, SQLHandledException {
+        setRegularFilter(filterGroup, filterGroup.getFilter(filterId), stack);
     }
 
-    private void setRegularFilter(RegularFilterGroupInstance filterGroup, RegularFilterInstance filter) {
+    private void setRegularFilter(RegularFilterGroupInstance filterGroup, RegularFilterInstance filter, ExecutionStack stack) throws SQLException, SQLHandledException {
         RegularFilterInstance prevFilter = regularFilterValues.get(filterGroup);
         if (prevFilter != null)
             prevFilter.filter.getApplyObject().removeRegularFilter(prevFilter.filter);
@@ -963,6 +964,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             regularFilterValues.put(filterGroup, filter);
             filter.filter.getApplyObject().addRegularFilter(filter.filter);
         }
+
+        fireFilterGroupChanged(filterGroup.entity.getSID(), stack);
     }
 
     // -------------------------------------- Изменение данных ----------------------------------- //
@@ -2724,21 +2727,21 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     private ChangeEvents getObjectEvents(ExecutionStack stack, GroupObjectInstance group) {
         return new ChangeEvents() {
             public void onFilterChanged() throws SQLException, SQLHandledException {
-                fireFilterChanged(group, stack, false);
+                fireOnUpdateKeys(stack, group, GroupObjectEventObject.Type.FILTER);
             }
 
             public void onOrderChanged() throws SQLException, SQLHandledException {
-                fireOrderChanged(group, stack, false);
+                fireOnUpdateKeys(stack, group, GroupObjectEventObject.Type.ORDER);
             }
         };
     }
 
-    public void fireFilterChanged(GroupObjectInstance group, ExecutionStack stack, boolean user) throws SQLException, SQLHandledException {
-        fireOnUserActivity(stack, group, UserEventObject.Type.FILTER, user);
+    public void fireFilterGroupChanged(String filterGroup, ExecutionStack stack) throws SQLException, SQLHandledException {
+        fireOnUserActivity(stack, filterGroup, UserEventObject.Type.FILTERGROUP);
     }
 
-    public void fireOrderChanged(GroupObjectInstance group, ExecutionStack stack, boolean user) throws SQLException, SQLHandledException {
-        fireOnUserActivity(stack, group, UserEventObject.Type.ORDER, user);
+    public void fireFilterPropertyChanged(String filterProperty, ExecutionStack stack) throws SQLException, SQLHandledException {
+        fireOnUserActivity(stack, filterProperty, UserEventObject.Type.FILTERPROPERTY);
     }
 
     public void fireOnInit(ExecutionStack stack) throws SQLException, SQLHandledException {
@@ -2787,8 +2790,16 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         fireEvent(FormEventType.DROP, stack);
     }
 
-    public void fireOnUserActivity(ExecutionStack stack, GroupObjectInstance groupObject, UserEventObject.Type type, boolean user) throws SQLException, SQLHandledException {
-        fireEvent(new UserEventObject(groupObject.getSID(), type, user), stack);
+    public void fireOnUpdateKeys(ExecutionStack stack, GroupObjectInstance groupObject, GroupObjectEventObject.Type type) throws SQLException, SQLHandledException {
+        fireEvent(new GroupObjectEventObject(groupObject.getSID(), type), stack);
+    }
+
+    public void fireOnUserActivity(ExecutionStack stack, GroupObjectInstance groupObject, UserEventObject.Type type) throws SQLException, SQLHandledException {
+        fireEvent(new UserEventObject(groupObject.getSID(), type), stack);
+    }
+
+    public void fireOnUserActivity(ExecutionStack stack, String filter, UserEventObject.Type type) throws SQLException, SQLHandledException {
+        fireEvent(new UserEventObject(filter, type), stack);
     }
 
     public void fireEvent(ExecutionStack stack, FormEvent formEvent, PushAsyncResult pushedAsyncResult) throws SQLException, SQLHandledException {
