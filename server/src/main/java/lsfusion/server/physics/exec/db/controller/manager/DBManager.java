@@ -1333,33 +1333,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
          }
     }
 
-    public static class UniqueIndexNameException extends RuntimeException {
-        public UniqueIndexNameException(String message) {
-            super(message);
-        }
-    }
-    
-    private void checkUniqueIndexName(NewDBStructure struct, SQLSession sql) {
-        Map<String, Pair<DBTable, IndexData<Field>>> indexNames = new HashMap<>();
-        for (Map.Entry<DBTable, List<IndexData<Field>>> tableInfo : struct.tables.entrySet()) {
-            DBTable table = tableInfo.getKey();
-            for (IndexData<Field> index : tableInfo.getValue()) {
-                String name = sql.getIndexName(table, index);
-                if (indexNames.containsKey(name)) {
-                    final String formatStr = "Two indexes has the same database name: '%s'. " +
-                            "These indexes are:\n%s in table '%s'\n%s in table '%s'\nOne of the indexes will not be created.";
-                    final String msg = String.format(formatStr, name, index, table.getName(), indexNames.get(name).second, indexNames.get(name).first.getName());
-                    if (Settings.get().isStartServerAnyWay()) {
-                        startLogWarn(msg);
-                    } else {
-                        throw new UniqueIndexNameException(msg);
-                    }
-                }
-                indexNames.put(name, new Pair<>(table, index));
-            }
-        }
-    }
-    
     public void uploadToDB(SQLSession sql, boolean isolatedTransactions, final DataAdapter adapter) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, SQLHandledException {
         final OperationOwner owner = OperationOwner.unknown;
         final SQLSession sqlFrom = new SQLSession(adapter, contextProvider);
@@ -1541,10 +1514,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
             DataOutputStream outDB = new DataOutputStream(outDBStruct);
 
             MigrationVersion newMigrationVersion = migrationManager.getCurrentMigrationVersion(oldDBStructure.migrationVersion);
-            NewDBStructure newDBStructure = new NewDBStructure(newMigrationVersion);
+            NewDBStructure newDBStructure = new NewDBStructure(newMigrationVersion, sql);
 
             checkUniquePropertyDBName(newDBStructure);
-            checkUniqueIndexName(newDBStructure, sql);
             newDBStructure.write(outDB);
 
             // DROP / RENAME indices
@@ -2963,13 +2935,16 @@ public class DBManager extends LogicsManager implements InitializingBean {
     
     private class NewDBStructure extends DBStructure<Field> {
         
-        public NewDBStructure(MigrationVersion migrationVersion) {
+        public NewDBStructure(MigrationVersion migrationVersion, SQLSession sql) {
             version = newDBStructureVersion;
             this.migrationVersion = migrationVersion;
 
-            checkForDuplicateTableDBNames();
+            checkTableDBNameUniqueness();
             tables.putAll(getIndexesMap());
-
+            
+            checkIndexNameUniqueness(sql);
+            checkTablesAndIndexesNameUniqueness(sql);
+            
             for (Property<?> property : businessLogics.getStoredProperties()) {
                 storedProperties.add(new DBStoredProperty(property));
                 assert property.isNamed();
@@ -2980,36 +2955,78 @@ public class DBManager extends LogicsManager implements InitializingBean {
             }
         }
         
-        public class DuplicateTableDBNameException extends RuntimeException {
-            DuplicateTableDBNameException(String message) {
+        public class DuplicateRelationNameException extends RuntimeException {
+            DuplicateRelationNameException(String message) {
                 super(message);
             }
         }
         
-        private void checkForDuplicateTableDBNames() {
+        private void checkTableDBNameUniqueness() {
             final String possibleReasonStr = "This may be caused by the length limitation on database table names, " +
                     "where two different table names are truncated to the same name.";
             
             Map<String, ImplementTable> tables = new HashMap<>();
             for (ImplementTable table : LM.tableFactory.getImplementTables()) {
                 if (tables.containsKey(table.getName())) {
+                    String resolveStr, tablesStr;
                     if (table.getCanonicalName() != null) {
-                        String resolveStr = "In this case, you can either change the table database name or change the naming policy (refer to the documentation for details)";
-                        String tablesStr = String.format("Tables '%s' and '%s' have the same database name '%s'.",
+                        resolveStr = "In this case, you can either change the table database name or change the naming policy (refer to the documentation for details)";
+                        tablesStr = String.format("Tables '%s' and '%s' have the same database name '%s'.",
                                 table.getCanonicalName(),
                                 tables.get(table.getName()).getCanonicalName(),
                                 table.getName());
-                        throw new DuplicateTableDBNameException(String.join("\n", "", tablesStr, possibleReasonStr, resolveStr));
                     } else {
-                        String resolveStr = "In this case, you can either explicitly declare the tables or change the naming policy (refer to the documentation for details)";
-                        String formatStr = String.format("Auto tables with classes\n\t'%s' and\n\t'%s'\nhave the same database name: '%s'",
+                        resolveStr = "In this case, you can either explicitly declare the tables or change the naming policy (refer to the documentation for details)";
+                        tablesStr = String.format("Auto tables with classes\n\t'%s' and\n\t'%s'\nhave the same database name: '%s'.",
                                 table.getMapFields(),
                                 tables.get(table.getName()).getMapFields(),
                                 table.getName());
-                        throw new DuplicateTableDBNameException(String.join("\n","", formatStr, possibleReasonStr, resolveStr));
                     }
+                    throw new DuplicateRelationNameException(String.join("\n","", tablesStr, possibleReasonStr, resolveStr));
                 }
                 tables.put(table.getName(), table);
+            }
+        }
+        
+        private void checkIndexNameUniqueness(SQLSession sql) {
+            Map<String, Pair<DBTable, IndexData<Field>>> indexNames = new HashMap<>();
+            for (Map.Entry<DBTable, List<IndexData<Field>>> tableInfo : tables.entrySet()) {
+                DBTable table = tableInfo.getKey();
+                for (IndexData<Field> index : tableInfo.getValue()) {
+                    String name = sql.getIndexName(table, index);
+                    if (indexNames.containsKey(name)) {
+                        final String formatStr = "Two indexes has the same database name: '%s'. " +
+                                "These indexes are:\n%s in table '%s'\n%s in table '%s'\nOne of the indexes will not be created.";
+                        final String msg = String.format(formatStr, name, index, table.getName(), indexNames.get(name).second, indexNames.get(name).first.getName());
+                        if (Settings.get().isStartServerAnyWay()) {
+                            startLogWarn(msg);
+                        } else {
+                            throw new DuplicateRelationNameException(msg);
+                        }
+                    }
+                    indexNames.put(name, new Pair<>(table, index));
+                }
+            }
+        }
+        
+        private void checkTablesAndIndexesNameUniqueness(SQLSession sql) {
+            Map<String, DBTable> tableNames = new HashMap<>();
+            for (DBTable table : tables.keySet()) {
+                tableNames.put(table.getName(), table);
+            }
+            
+            for (Map.Entry<DBTable, List<IndexData<Field>>> tableInfo : tables.entrySet()) {
+                DBTable indexTable = tableInfo.getKey();
+                for (IndexData<Field> index : tableInfo.getValue()) {
+                    String indexName = sql.getIndexName(indexTable, index);
+                    if (tableNames.containsKey(indexName)) {
+                        DBTable table = tableNames.get(indexName);
+                        String reason = "Tables and indexes must have unique names. If a table and an index have identical names, the database cannot distinguish between them, leading to conflicts when executing queries";
+                        String formatStr = "\nTable '%s' and index %s have the same database name: '%s'.\n%s";
+                        String message = String.format(formatStr, nvl(table.getCanonicalName(), table.getName()), index, indexName, reason);
+                        throw new DuplicateRelationNameException(message);
+                    }
+                }
             }
         }
         
