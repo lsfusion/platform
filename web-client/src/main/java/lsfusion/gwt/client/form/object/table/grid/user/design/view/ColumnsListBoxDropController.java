@@ -6,10 +6,9 @@ import com.allen_sauer.gwt.dnd.client.util.*;
 import com.google.gwt.user.client.ui.InsertPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.GwtClientUtils;
 
 public class ColumnsListBoxDropController extends AbstractDropController {
-
-    private static final String CSS_LIST_POSITIONER = "listPositioner";
 
     private ColumnsListBox mouseListBox;
 
@@ -97,7 +96,7 @@ public class ColumnsListBoxDropController extends AbstractDropController {
 
     private Widget newPositioner() {
         Widget p = new SimplePanel();
-        p.addStyleName(CSS_LIST_POSITIONER);
+        GwtClientUtils.addClassName(p, "list-positioner", "listPositioner");
         p.setPixelSize(mouseListBox.getParent().getOffsetWidth(), 1);
         return p;
     }

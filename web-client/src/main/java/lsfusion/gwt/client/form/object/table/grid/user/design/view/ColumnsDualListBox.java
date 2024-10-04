@@ -4,6 +4,7 @@ import com.allen_sauer.gwt.dnd.client.DragController;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.CaptionPanel;
 import lsfusion.gwt.client.base.view.FormButton;
 import lsfusion.gwt.client.form.object.table.grid.user.design.PropertyListItem;
@@ -12,7 +13,6 @@ import java.util.ArrayList;
 
 public abstract class ColumnsDualListBox extends AbsolutePanel {
     private static final ClientMessages messages = ClientMessages.Instance.get();
-    private static final String CSS_DUAL_LIST_BUTTONS_CONTAINER = "dualListButtonsContainer";
 
     private ColumnsListBoxDragController dragController;
 
@@ -58,7 +58,7 @@ public abstract class ColumnsDualListBox extends AbsolutePanel {
         FormButton allLeft = new FormButton("&lt;&lt;", event -> moveItems(invisibleList, visibleList, false));
 
         VerticalPanel buttonsPanel = new VerticalPanel();
-        buttonsPanel.addStyleName(CSS_DUAL_LIST_BUTTONS_CONTAINER);
+        GwtClientUtils.addClassName(buttonsPanel, "dual-list-buttons-container", "dualListButtonsContainer");
         buttonsPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
         buttonsPanel.add(oneRight);
         buttonsPanel.add(oneLeft);
@@ -76,7 +76,7 @@ public abstract class ColumnsDualListBox extends AbsolutePanel {
         buttonsAndRightPanel.add(new CaptionPanel(messages.formGridPreferencesHiddenColumns(), rightFocusPanel));
 
         DockLayoutPanel dockContainer = new DockLayoutPanel(Style.Unit.PCT);
-        dockContainer.setStyleName("dualListColumnsDockContainer");
+        GwtClientUtils.addClassName(dockContainer, "dual-list-columns-dock-container", "dualListColumnsDockContainer");
         dockContainer.addWest(new CaptionPanel(messages.formGridPreferencesDisplayedColumns(), leftFocusPanel), 43);
         dockContainer.add(buttonsAndRightPanel);
 

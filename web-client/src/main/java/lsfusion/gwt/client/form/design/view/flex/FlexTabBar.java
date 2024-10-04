@@ -31,10 +31,8 @@ public class FlexTabBar extends Composite implements TabBar {
 
         // need this rules here (not for the panel) to avoid cascade css rules (when tab is in another tab)
         // we can't use for example .tab-bar-horz .nav-tabs rule, because sometimes nav-tabs can be this bar or sometimes can be its child
-        String navTabs = "nav nav-tabs " +
-                (vertical ? "nav-tabs-horz" : "nav-tabs-vert") + " " +
-                (end ? "nav-tabs-end" : "nav-tabs-start");
-        panel.addStyleName(navTabs);
+        String[] navTabs = new String[] {"nav", "nav-tabs", (vertical ? "nav-tabs-horz" : "nav-tabs-vert"), (end ? "nav-tabs-end" : "nav-tabs-start")};
+        GwtClientUtils.addClassNames(panel, navTabs);
 
         //focus for nav-tabs instead of each nav-item
         /*panel.getElement().setTabIndex(0);
@@ -56,7 +54,7 @@ public class FlexTabBar extends Composite implements TabBar {
                 wrappedPanel.addFill(panel);
             else
                 wrappedPanel.addFillShrink(panel);
-            wrappedPanel.addStyleName(vertical ? "nav-tabs-bar-wrap-horz" : "nav-tabs-bar-wrap-vert");
+            GwtClientUtils.addClassName(wrappedPanel, vertical ? "nav-tabs-bar-wrap-horz" : "nav-tabs-bar-wrap-vert");
         } else // if we use wrap and don't have extra widgets we don't wrap tab bar into the panel, to let the tab bar overflow (just like caption panel), and save dom element
             wrappedPanel = panel;
 
@@ -69,17 +67,18 @@ public class FlexTabBar extends Composite implements TabBar {
 
             // to have border underneath
             // we can't set nav-tabs to the whole flex tab bar, because we want overflow:auto, and margin - 1 (to override the border) needs overflow:visible
-            extraTabWidget.addStyleName(navTabs + " nav-extra-toolbar");
+            GwtClientUtils.addClassNames(extraTabWidget, navTabs);
+            GwtClientUtils.addClassName(extraTabWidget, "nav-extra-toolbar");
             tabBarContainer.addStretched(extraTabWidget);
 
             initWidget(tabBarContainer);
         }
 
-        addStyleName("tab-bar");
+       GwtClientUtils.addClassName(this, "tab-bar");
 
         sinkEvents(Event.ONMOUSEDOWN);
 
-//        addStyleName("nav-tabs-" + (vertical ? "vert" : "horz"));
+//       GwtClientUtils.addXStyleName(this, "nav-tabs-" + (vertical ? "vert" : "horz"));
 //        panel.getElement().getStyle().setProperty("flexWrap", "wrap");
 
 //        if(!MainFrame.useBootstrap) {
@@ -92,8 +91,8 @@ public class FlexTabBar extends Composite implements TabBar {
 //            first.setText("\u00A0");
 ////        rest.setText("\u00A0");
 //
-//            first.setStyleName("nav-item-first");
-////        rest.setStyleName("nav-item-rest");
+//            GwtClientUtils.addXStyleName(first, "nav-item-first");
+////        GwtClientUtils.addXStyleName(rest, "nav-item-rest");
 //
 //            panel.add(first, GFlexAlignment.STRETCH);
 //
@@ -132,11 +131,11 @@ public class FlexTabBar extends Composite implements TabBar {
         else {
             delWidget = new Item(widget);
 
-            delWidget.addStyleName("nav-item");
+            GwtClientUtils.addClassName(delWidget, "nav-item");
             delWidget.getElement().setTabIndex(0);
 
-            delWidget.addStyleName("nav-link");
-            delWidget.addStyleName("link-secondary");
+            GwtClientUtils.addClassName(delWidget, "nav-link");
+            GwtClientUtils.addClassName(delWidget, "link-secondary");
         }
 
         if(beforeIndex <= selectedTab)
@@ -232,11 +231,11 @@ public class FlexTabBar extends Composite implements TabBar {
         if(index >= 0) {
             Widget widget = getTabItem(index);
             if (selected) {
-                widget.removeStyleName("link-secondary");
-                widget.addStyleName("active");
+                GwtClientUtils.removeClassName(widget, "link-secondary");
+                GwtClientUtils.addClassName(widget, "active");
             } else {
-                widget.addStyleName("link-secondary");
-                widget.removeStyleName("active");
+                GwtClientUtils.addClassName(widget, "link-secondary");
+                GwtClientUtils.removeClassName(widget, "active");
             }
         }
     }

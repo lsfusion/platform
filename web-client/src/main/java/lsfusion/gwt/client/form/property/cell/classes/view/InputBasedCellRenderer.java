@@ -162,7 +162,7 @@ public abstract class InputBasedCellRenderer extends CellRenderer {
         if(isTagInput()) {
             if(needToRenderToolbarContent()) { // for an input with a toolbar we have to wrap it in a div to draw a toolbar
                 DivElement toolbarContainer = Document.get().createDivElement();
-                toolbarContainer.addClassName("prop-input-w-toolbar");
+                GwtClientUtils.addClassName(toolbarContainer, "prop-input-w-toolbar");
                 setToolbarContainer(toolbarContainer);
                 return toolbarContainer;
             } else

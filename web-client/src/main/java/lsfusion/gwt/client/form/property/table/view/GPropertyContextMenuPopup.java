@@ -1,10 +1,8 @@
 package lsfusion.gwt.client.form.property.table.view;
 
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
-import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
@@ -42,13 +40,13 @@ public class GPropertyContextMenuPopup {
                 @Override
                 protected void setSelectionStyle(boolean selected) {
                     if(selected) {
-                        addStyleName("context-menu-item-selected");
+                       GwtClientUtils.addClassName(this, "context-menu-item-selected");
                     } else {
-                        removeStyleName("context-menu-item-selected");
+                       GwtClientUtils.removeClassName(this, "context-menu-item-selected");
                     }
                 }
             };
-            menuItem.setStyleName("context-menu-item");
+            GwtClientUtils.addClassName(menuItem, "context-menu-item");
 
             menuBar.addItem(menuItem);
         }

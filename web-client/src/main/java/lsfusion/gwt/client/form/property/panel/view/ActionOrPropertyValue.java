@@ -19,7 +19,6 @@ import lsfusion.gwt.client.form.property.cell.classes.view.InputBasedCellRendere
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
-import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
 import lsfusion.gwt.client.view.MainFrame;
@@ -184,7 +183,7 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
         if(focusElement != null)
             focusElement.setTabIndex(isFocusable() ? 0 : -1);
 
-        addStyleName("panelRendererValue");
+       GwtClientUtils.addClassName(this, "panel-renderer-value", "panelRendererValue");
     }
 
     public void focus(FocusUtils.Reason reason) {
@@ -201,7 +200,7 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
 
         Element renderElement = getRenderElement();
         Element sizeElement = InputBasedCellRenderer.getSizeElement(renderElement);
-        sizeElement.addClassName("prop-size-value");
+        GwtClientUtils.addClassName(sizeElement, "prop-size-value");
 
         if(sizeElement != renderElement) {
             FlexPanel.setPanelWidth(sizeElement, valueWidth);
@@ -254,9 +253,9 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
         form.checkFocusElement(isFocused, getRenderElement());
 
         if(isFocused)
-            addStyleName("panelRendererValueFocused");
+           GwtClientUtils.addClassName(this, "panel-renderer-value-focused", "panelRendererValueFocused");
         else
-            removeStyleName("panelRendererValueFocused");
+           GwtClientUtils.removeClassName(this, "panel-renderer-value-focused", "panelRendererValueFocused");
         update();
     }
 
@@ -273,13 +272,13 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
     @Override
     public void startEditing() {
         isEditing = true;
-        addStyleName("panelRendererValueEdited");
+        GwtClientUtils.addClassName(this, "panel-renderer-value-edited", "panelRendererValueEdited");
     }
 
     @Override
     public void stopEditing() {
         isEditing = false;
-        removeStyleName("panelRendererValueEdited");
+        GwtClientUtils.removeClassName(this, "panel-renderer-value-edited", "panelRendererValueEdited");
     }
 
     protected abstract void onEditEvent(EventHandler handler);

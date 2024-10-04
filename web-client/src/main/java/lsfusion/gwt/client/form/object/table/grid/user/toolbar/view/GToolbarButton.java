@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.object.table.grid.user.toolbar.view;
 
 import com.google.gwt.event.dom.client.ClickHandler;
 import lsfusion.gwt.client.base.BaseStaticImage;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.UnFocusableImageButton;
 
 public abstract class GToolbarButton extends UnFocusableImageButton {
@@ -25,8 +26,8 @@ public abstract class GToolbarButton extends UnFocusableImageButton {
 
     public void showBackground(boolean showBackground) {
         if (showBackground)
-            addStyleName("active");
+            GwtClientUtils.addClassName(this, "active");
         else
-            removeStyleName("active");
+            GwtClientUtils.removeClassName(this, "active");
     }
 }

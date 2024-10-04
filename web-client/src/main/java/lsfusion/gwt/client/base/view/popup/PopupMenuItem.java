@@ -57,14 +57,14 @@ public class PopupMenuItem extends SimplePanel {
         // but a) displayString is always html, because it uses bold styling b) it needs some more refactoring, so we'll leave it this way for now
         GwtClientUtils.initCaptionHtmlOrText(element, CaptionHtmlOrTextType.ASYNCVALUES);
         GwtClientUtils.setCaptionHtmlOrText(element, text);
-        element.addClassName(interactive ? "dropdown-item" : "dropdown-item-text");
+        GwtClientUtils.addClassName(element, interactive ? "dropdown-item" : "dropdown-item-text");
         return element;
     }
 
     private static LIElement createLIElement(Widget panel, boolean interactive) {
         LIElement element = Document.get().createLIElement();
         element.appendChild(panel.getElement());
-        element.addClassName(interactive ? "dropdown-item" : "dropdown-item-text");
+        GwtClientUtils.addClassName(element, interactive ? "dropdown-item" : "dropdown-item-text");
         return element;
     }
 
@@ -76,7 +76,7 @@ public class PopupMenuItem extends SimplePanel {
             hrElement = Document.get().createHRElement();
         } else
             hrElement = GwtClientUtils.createHorizontalSeparator().getElement();
-        hrElement.addClassName("dropdown-divider");
+        GwtClientUtils.addClassName(hrElement, "dropdown-divider");
         element.appendChild(hrElement);
 
         return element;

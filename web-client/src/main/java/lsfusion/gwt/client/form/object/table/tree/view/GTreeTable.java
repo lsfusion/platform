@@ -15,7 +15,6 @@ import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.ColorUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
-import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
@@ -219,11 +218,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         } else {
             div.appendChild(img);
 
-            div.addClassName("wrap-text-not-empty");
-            div.addClassName("wrap-img-horz");
-            div.addClassName("wrap-img-start");
+            GwtClientUtils.addClassName(div, "wrap-text-not-empty");
+            GwtClientUtils.addClassName(div, "wrap-img-horz");
+            GwtClientUtils.addClassName(div, "wrap-img-start");
 
-            img.addClassName("wrap-text-img");
+            GwtClientUtils.addClassName(img, "wrap-text-img");
         }
         return div;
     }
@@ -263,17 +262,17 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
 
         if(StaticImage.TREE_CLOSED.equals(indentIcon)) {
-            img.removeClassName("expanded-image");
-            img.addClassName("collapsed-image");
+            GwtClientUtils.removeClassName(img, "expanded-image");
+            GwtClientUtils.addClassName(img, "collapsed-image");
         } else if(StaticImage.TREE_OPEN.equals(indentIcon)) {
-            img.removeClassName("collapsed-image");
-            img.addClassName("expanded-image");
+            GwtClientUtils.removeClassName(img, "collapsed-image");
+            GwtClientUtils.addClassName(img, "expanded-image");
         } else if(StaticImage.TREE_LEAF.equals(indentIcon)) {
-            img.addClassName("leaf-image");
+            GwtClientUtils.addClassName(img, "leaf-image");
         } else if(StaticImage.TREE_BRANCH.equals(indentIcon)) {
-            img.addClassName("branch-image");
+            GwtClientUtils.addClassName(img, "branch-image");
         } else if (StaticImage.LOADING_ASYNC.equals(indentIcon)) {
-            img.addClassName("loading-async-image");
+            GwtClientUtils.addClassName(img, "loading-async-image");
         }
 
         (StaticImage.TREE_PASSBY.equals(indentIcon) ? StaticImage.TREE_EMPTY : indentIcon).updateImageSrc(img);
@@ -306,13 +305,13 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     private static void ensureDotsAndSetBackground(Element element) {
-        element.addClassName("passby-image");
+        GwtClientUtils.addClassName(element, "passby-image");
 
         GwtClientUtils.setThemeImage(StaticImage.TREE_PASSBY.path, str -> element.getStyle().setBackgroundImage("url('" + str + "')"));
     }
 
     private static void clearBackground(Element element) {
-        element.removeClassName("passby-image");
+        GwtClientUtils.removeClassName(element, "passby-image");
         element.getStyle().clearBackgroundImage();
     }
 

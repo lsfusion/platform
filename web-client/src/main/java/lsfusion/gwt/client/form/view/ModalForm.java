@@ -51,7 +51,7 @@ public class ModalForm extends FormContainer {
         contentWidget = window;
 
         // this is form container, that is shrinked and needs padding
-//        contentWidget.getBody().addStyleName("form-shrink-padded-container");
+        //GwtClientUtils.addXStyleName(contentWidget.getBody(), "form-shrink-padded-container");
     }
 
     protected void initPreferredSize() {

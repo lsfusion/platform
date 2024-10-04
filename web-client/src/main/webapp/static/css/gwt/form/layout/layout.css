@@ -1,5 +1,5 @@
 
-.oppositeSizeCssFixPanel {
+.opposite-size-css-fix-panel {
 }
 
 .intr-shrink-width,.prop-value-shrink-horz > *:not(.property-toolbar) { /* toolbar has max-width: 50% and in general it's own layouting */

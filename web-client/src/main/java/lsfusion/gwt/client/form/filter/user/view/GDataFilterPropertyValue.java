@@ -163,9 +163,9 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     public void setApplied(boolean applied) {
         if (!(property.getFilterBaseType() instanceof GColorType)) {
             if (applied) {
-                getElement().addClassName("filter-applied");
+                GwtClientUtils.addClassName(getElement(), "filter-applied");
             } else {
-                getElement().removeClassName("filter-applied");
+                GwtClientUtils.removeClassName(getElement(), "filter-applied");
             }
         }
     }

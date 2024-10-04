@@ -16,6 +16,7 @@
 package lsfusion.gwt.client.base.view.grid;
 
 import com.google.gwt.dom.client.*;
+import lsfusion.gwt.client.base.GwtClientUtils;
 
 import java.util.List;
 
@@ -69,8 +70,8 @@ public abstract class DataGridHeaderBuilder<T> implements HeaderBuilder<T> {
                 headerRow.removeFromParent();
             headerRow = headerElement.insertRow(-1);
             delegate.setRowStyle(headerRow);
-            // see .tableContainerBoxed comment
-            headerRow.addClassName("background-inherit"); // because it's assumed that header and footer are sticky
+            // see .table-container-boxed comment
+            GwtClientUtils.addClassName(headerRow, "background-inherit"); // because it's assumed that header and footer are sticky
             buildHeaderImpl(headerRow);
 
             table.initArrow(headerRow, delegate.isFooter());

@@ -5,6 +5,7 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import lsfusion.gwt.client.base.FocusUtils;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
@@ -52,11 +53,11 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
     }
 
     public void onBinding(Event event) {
-        addStyleName("panelRendererValueBinding");
+        GwtClientUtils.addClassName(this, "panel-renderer-value-binding", "panelRendererValueBinding");
         Timer t = new Timer() {
             @Override
             public void run() {
-                removeStyleName("panelRendererValueBinding");
+                GwtClientUtils.removeClassName(ActionOrPropertyPanelValue.this, "panel-renderer-value-binding", "panelRendererValueBinding");
                 cancel();
             }
         };

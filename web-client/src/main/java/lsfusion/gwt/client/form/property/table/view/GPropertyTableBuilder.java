@@ -11,7 +11,6 @@ import lsfusion.gwt.client.base.view.grid.RowIndexHolder;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
@@ -46,7 +45,7 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         GSize valueHeight = property.getValueHeight(font, false, true);
         FlexPanel.setGridHeight(element, valueHeight);
         if(valueHeight != null) // this way we can avoid prop-size-value fill-parent-perc conflict (see the css file) in most cases
-            element.addClassName("prop-size-value");
+            GwtClientUtils.addClassName(element, "prop-size-value");
 
         return element;
     }
@@ -65,7 +64,7 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
             return true;
         }
 
-        element.removeClassName("prop-class-value");
+        GwtClientUtils.removeClassName(element, "prop-class-value");
 
         FlexPanel.setGridHeight(element, (GSize)null);
 
@@ -117,11 +116,11 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
     public void buildColumnRow(TableRowElement tr) {
         buildRow(-1, null, tr);
 
-        tr.addClassName("dataGridColumnRow");
+        GwtClientUtils.addClassName(tr, "data-grid-column-row", "dataGridColumnRow");
     }
 
     private void buildRow(int rowIndex, RowIndexHolder rowValue, TableRowElement tr) {
-        tr.setClassName("dataGridRow");
+        GwtClientUtils.addClassName(tr, "data-grid-row", "dataGridRow");
 
         // Build the columns.
         int columnCount = cellTable.getColumnCount();
@@ -130,11 +129,11 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
 
             TableCellElement td = tr.insertCell(-1);
 
-            td.setClassName("dataGridCell");
+            GwtClientUtils.addClassName(td, "data-grid-cell", "dataGridCell");
             if (columnIndex == 0)
-                td.addClassName("dataGridFirstCell");
+                GwtClientUtils.addClassName(td, "data-grid-first-cell", "dataGridFirstCell");
             if (columnIndex == columnCount - 1)
-                td.addClassName("dataGridLastCell");
+                GwtClientUtils.addClassName(td, "data-grid-last-cell", "dataGridLastCell");
 
             renderTD(td, false);
 
@@ -147,15 +146,15 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
                     td.setColSpan(2);
                 else {
                     TableCellElement flexTd = tr.insertCell(-1);
-                    flexTd.addClassName("dataGridColumnRowFlexCell");
-                    flexTd.addClassName("remove-all-pmb");
+                    GwtClientUtils.addClassName(flexTd, "data-grid-column-row-flex-cell", "dataGridColumnRowFlexCell");
+                    GwtClientUtils.addClassName(flexTd, "remove-all-pmb");
                 }
             }
 
             if(rowIndex >= 0)
                 updateCell(td, cell, column);
             else
-                td.addClassName("dataGridColumnRowPrefCell");
+                GwtClientUtils.addClassName(td, "data-grid-column-row-pref-cell", "dataGridColumnRowPrefCell");
         }
     }
 
@@ -221,13 +220,13 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
                 cell.getStyle().setProperty("left", left.left + "px");
                 setCellBorderRight(cell, left.borderRight + "px");
                 //if (!header) {
-                    cell.removeClassName("dataGridStickyOverflow");
+                    GwtClientUtils.removeClassName(cell, "data-grid-sticky-overflow");
                 //}
             } else {
                 cell.getStyle().clearProperty("left");
                 clearCellBorderRight(cell);
                 //if (!header) {
-                    cell.addClassName("dataGridStickyOverflow");
+                    GwtClientUtils.addClassName(cell, "data-grid-sticky-overflow", "dataGridStickyOverflow");
                 //}
             }
         }
@@ -243,13 +242,13 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
             Integer stickyColumn = stickyColumns.get(i);
             TableCellElement cell = tr.getCells().getItem(stickyColumn);
             if(i == lastSticked)
-                cell.addClassName("last-sticked");
+                GwtClientUtils.addClassName(cell, "last-sticked");
             else
-                cell.removeClassName("last-sticked");
+                GwtClientUtils.removeClassName(cell, "last-sticked");
             if (i <= lastSticked)
-                cell.addClassName("sticked");
+                GwtClientUtils.addClassName(cell, "sticked");
             else
-                cell.removeClassName("sticked");
+                GwtClientUtils.removeClassName(cell, "sticked");
         }
     }
 

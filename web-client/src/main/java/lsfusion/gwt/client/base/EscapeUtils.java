@@ -34,7 +34,7 @@ public class EscapeUtils {
 
     public static StaticImageWidget getImageWidget(StaticImage image) {
         StaticImageWidget imageWidget = new StaticImageWidget(image);
-        imageWidget.addStyleName("right-padding fs-3");
+        GwtClientUtils.addClassNames(imageWidget, "right-padding", "fs-3");
         return imageWidget;
     }
 }

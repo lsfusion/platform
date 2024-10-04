@@ -23,7 +23,7 @@
     margin-left: var(--border-comp-horz-padding);
 }
 
-/* mimicry of panelRendererValue, CELL_HORIZONTAL_PADDING (textbasedCellRenderer) */
+/* mimicry of panel-renderer-value, CELL_HORIZONTAL_PADDING (textbasedCellRenderer) */
 .filter .filter-selector {
     cursor : default;
     border: 1px solid var(--component-border-color);

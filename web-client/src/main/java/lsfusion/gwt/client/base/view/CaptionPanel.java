@@ -2,6 +2,7 @@ package lsfusion.gwt.client.base.view;
 
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.BaseImage;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.ImageHtmlOrTextType;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
@@ -18,23 +19,23 @@ public class CaptionPanel extends FlexPanel {
         this.border = border;
 
         if(header != null) {
-            header.addStyleName("text-secondary");
-//        header.addStyleName("fw-semibold");
-            header.addStyleName("fw-normal");
+            GwtClientUtils.addClassName(header, "text-secondary");
+            //GwtClientUtils.addXStyleName(header, "fw-semibold");
+            GwtClientUtils.addClassName(header, "fw-normal");
 
-            header.addStyleName("caption-panel-header");
+            GwtClientUtils.addClassName(header, "caption-panel-header");
 
 //        if(!MainFrame.useBootstrap || border) { // ???
             CaptionPanelHeader headerLine = new CaptionPanelHeader();
             headerLine.setWidget(header);
-            headerLine.addStyleName("caption-panel-header-line");
-            headerLine.addStyleName(vertical ? "caption-panel-header-line-vert" : "caption-panel-header-line-horz");
+            GwtClientUtils.addClassName(headerLine, "caption-panel-header-line");
+            GwtClientUtils.addClassName(headerLine, vertical ? "caption-panel-header-line-vert" : "caption-panel-header-line-horz");
             FlexPanelImpl.get().setFlexContentAlignment(headerLine.getElement(), vertical ? alignmentHorz : alignmentVert);
 
 //        }
 
             if(border)
-                headerLine.addStyleName("card-header");
+                GwtClientUtils.addClassName(headerLine, "card-header");
 
             if(last)
                 waitingHeaderLine = headerLine;
@@ -42,11 +43,11 @@ public class CaptionPanel extends FlexPanel {
                 add(headerLine, GFlexAlignment.STRETCH);
         }
 
-        addStyleName("caption-panel");
+       GwtClientUtils.addClassName(this, "caption-panel");
 
         if(border) {
-            addStyleName("card");
-            addStyleName("shadow");
+           GwtClientUtils.addClassName(this, "card");
+           GwtClientUtils.addClassName(this, "shadow");
         }
 
         waitingForElement = true;
@@ -72,10 +73,10 @@ public class CaptionPanel extends FlexPanel {
         super.add(widget, beforeIndex, alignment, flex, shrink, flexBasis);
 
         if(waitingForElement) {
-            widget.addStyleName("caption-panel-body");
+            GwtClientUtils.addClassName(widget, "caption-panel-body");
 
             if (border)
-                widget.addStyleName("card-body");
+                GwtClientUtils.addClassName(widget, "card-body");
 
             waitingForElement = false;
 

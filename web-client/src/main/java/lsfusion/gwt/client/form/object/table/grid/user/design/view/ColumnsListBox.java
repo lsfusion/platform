@@ -7,14 +7,13 @@ import com.google.gwt.event.dom.client.DoubleClickHandler;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.object.table.grid.user.design.PropertyListItem;
 
 import java.util.ArrayList;
 
 
 public abstract class ColumnsListBox extends Composite {
-    private static final String CSS_DRAGGABLE_LIST_BOX_ITEM = "draggableListBoxItem";
-    private static final String CSS_DRAGGABLE_LIST_BOX = "draggableListBox";
 
     private ColumnsListBoxDragController dragController;
 
@@ -43,7 +42,7 @@ public abstract class ColumnsListBox extends Composite {
             }
         });
         setWidth("100%");
-        addStyleName(CSS_DRAGGABLE_LIST_BOX);
+        GwtClientUtils.addClassName(this, "draggable-list-box", "draggableListBox");
     }
 
     public ColumnsListBox(ColumnsListBoxDragController dragController, boolean visible) {
@@ -108,7 +107,7 @@ public abstract class ColumnsListBox extends Composite {
     protected void setWidget(int index, Widget widget) {
         grid.insertRow(index);
 
-        grid.getCellFormatter().addStyleName(index, 0, CSS_DRAGGABLE_LIST_BOX_ITEM);
+        GwtClientUtils.addClassName(grid.getCellFormatter().getElement(index, 0), "draggable-list-box-item", "draggableListBoxItem");
         if (dragController != null) {
             dragController.makeDraggable(widget);
         }

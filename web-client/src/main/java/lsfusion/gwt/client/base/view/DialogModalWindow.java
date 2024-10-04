@@ -1,9 +1,9 @@
 package lsfusion.gwt.client.base.view;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.BaseImage;
 import lsfusion.gwt.client.base.FocusUtils;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.ImageHtmlOrTextType;
 import lsfusion.gwt.client.view.MainFrame;
 
@@ -17,10 +17,10 @@ public class DialogModalWindow extends ModalWindow {
     public DialogModalWindow(String caption, boolean resizable, ModalWindowSize size, String backgroundClass) {
         super(resizable, size);
 
-        getBody().getElement().addClassName("dialog-modal-body");
+        GwtClientUtils.addClassName(getBody().getElement(), "dialog-modal-body");
 
         if(backgroundClass !=null)
-            body.addStyleName(backgroundClass);
+            GwtClientUtils.addClassName(body, backgroundClass);
 
         BaseImage.initImageText(getTitleWidget(), caption, null, ImageHtmlOrTextType.FORM);
     }

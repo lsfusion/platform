@@ -15,9 +15,9 @@
     /*overflow: hidden; !* important for "removing outer grid borders", since they are removed with margin -1 overflow should be hidden *!*/
 }
 
-.dataGridRow {
+.data-grid-row {
 }
-.dataGridCell {
+.data-grid-cell {
     /*padding: 0;*/
 
     /* ??? */

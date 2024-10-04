@@ -139,8 +139,8 @@ public class GGridPropertyTableHeader extends Header<String> {
         renderedImage = image;
 
         if(sticky) {
-            th.addClassName("dataGridStickyHeader");
-            th.addClassName("background-inherit");
+            GwtClientUtils.addClassName(th, "data-grid-sticky-header", "dataGridStickyHeader");
+            GwtClientUtils.addClassName(th, "background-inherit");
         }
 
         PropertyPanelRenderer.setStyles(th, notNull, hasChangeAction);
@@ -174,7 +174,7 @@ public class GGridPropertyTableHeader extends Header<String> {
 
             FlexPanel.setGridHeight(th, null);
 
-            th.removeClassName("caption-grid-header");
+            GwtClientUtils.removeClassName(th, "caption-grid-header");
             GwtClientUtils.clearValueShrinkHorz(th, true, true);
         }
 
@@ -196,7 +196,7 @@ public class GGridPropertyTableHeader extends Header<String> {
         }
 
         FlexPanel.setGridHeight(th, height);
-        th.addClassName("caption-grid-header");
+        GwtClientUtils.addClassName(th, "caption-grid-header");
 
         Element renderElement = th;
 
@@ -241,21 +241,21 @@ public class GGridPropertyTableHeader extends Header<String> {
         assert sortDir != null;
 
         // imaged text classes
-        th.addClassName("wrap-text-not-empty");
-        th.addClassName("wrap-img-horz");
-        th.addClassName("wrap-img-start");
+        GwtClientUtils.addClassName(th, "wrap-text-not-empty");
+        GwtClientUtils.addClassName(th, "wrap-img-horz");
+        GwtClientUtils.addClassName(th, "wrap-img-start");
 
         Element img = (sortDir ? StaticImage.SORTUP : StaticImage.SORTDOWN).createImage();
 
-        img.addClassName("wrap-text-img");
+        GwtClientUtils.addClassName(img, "wrap-text-img");
         th.appendChild(img);
 
         Element wrappedTh = Document.get().createDivElement();
         th.appendChild(wrappedTh);
 
         // extra classes
-        img.addClassName("sort-img"); // needed for pivot hack
-        wrappedTh.addClassName("sort-div"); // need to stretch if stretched
+        GwtClientUtils.addClassName(img, "sort-img"); // needed for pivot hack
+        GwtClientUtils.addClassName(wrappedTh, "sort-div"); // need to stretch if stretched
 
         return wrappedTh;
     }

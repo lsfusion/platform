@@ -16,6 +16,7 @@
 package lsfusion.gwt.client.base.view.grid;
 
 import com.google.gwt.dom.client.*;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 
 import java.util.List;
@@ -219,8 +220,8 @@ public abstract class AbstractDataGridBuilder<T> {
 
         if(column.isSticky()) {
             //class dataGridStickyCell is also used in DataGrid isStickyCell()
-            td.addClassName("dataGridStickyCell");
-            td.addClassName("background-inherit");
+            GwtClientUtils.addClassName(td, "data-grid-sticky-cell", "dataGridStickyCell");
+            GwtClientUtils.addClassName(td, "background-inherit");
 //            td.getStyle().setProperty("position", "sticky"); // we need to add it explicitly since it is used in setupFillParent
         }
     }

@@ -23,7 +23,7 @@ public abstract class GFilterOptionSelector<T> extends FocusWidget {
     public GFilterOptionSelector(GFilterConditionView.UIHandler uiHandler, List<T> values, List<String> popupCaptions) {
         setElement(Document.get().createDivElement());
 
-        addStyleName("form-control filter-selector");
+       GwtClientUtils.addClassNames(this, "form-control", "filter-selector");
         
         addMouseDownHandler(event -> showMenu());
         addKeyPressHandler(event -> {

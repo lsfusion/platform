@@ -27,7 +27,7 @@ public class TableContainer extends ResizableSimplePanel implements HasMaxPrefer
     private TableComponent tableComponent;
 
     public TableContainer(GFormController form) {
-        setStyleName("tableContainer");
+       GwtClientUtils.addClassName(this, "table-container", "tableContainer");
 
         this.form = form;
         getFocusElement().setTabIndex(0);
@@ -116,9 +116,9 @@ public class TableContainer extends ResizableSimplePanel implements HasMaxPrefer
         addHandler(tableComponent.getTouchMoveHandler(), TouchMoveEvent.getType(), Event.ONTOUCHMOVE);
 
         if(boxed)
-            addStyleName("tableContainerBoxed");
+            GwtClientUtils.addClassName(this, "table-container-boxed", "tableContainerBoxed");
         else
-            removeStyleName("tableContainerBoxed");
+            GwtClientUtils.removeClassName(this, "table-container-boxed", "tableContainerBoxed");
 
         tableComponent.onActivate();
     }
@@ -144,7 +144,7 @@ public class TableContainer extends ResizableSimplePanel implements HasMaxPrefer
         if(isFocused)
             return;
         isFocused = true;
-        addStyleName("tableContainerFocused");
+       GwtClientUtils.addClassName(this, "table-container-focused", "tableContainerFocused");
         focusedChanged(target);
     }
 
@@ -168,7 +168,7 @@ public class TableContainer extends ResizableSimplePanel implements HasMaxPrefer
         if(!isFocused)
             return;
         isFocused = false;
-        removeStyleName("tableContainerFocused");
+        GwtClientUtils.removeClassName(this, "table-container-focused", "tableContainerFocused");
         focusedChanged(target);
     }
 

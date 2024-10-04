@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.object.table.view;
 
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.grid.Header;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
@@ -70,8 +71,8 @@ public class GGridPropertyTableFooter extends Header<String> implements RenderCo
     @Override
     public void renderAndUpdateDom(TableCellElement th, boolean rerender) {
         if (sticky) {
-            th.addClassName("dataGridStickyFooter");
-            th.addClassName("background-inherit");
+            GwtClientUtils.addClassName(th, "data-grid-sticky-footer", "dataGridStickyFooter");
+            GwtClientUtils.addClassName(th, "background-inherit");
         }
         
         GPropertyTableBuilder.renderAndUpdate(property, th, this, this);

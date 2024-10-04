@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
@@ -37,7 +38,7 @@ public class RichTextCellEditor extends ARequestValueCellEditor implements Reque
 
         start(parent, value, selectAll && !property.notSelectAll);
 
-        parent.addClassName("property-hide-toolbar");
+        GwtClientUtils.addClassName(parent, "property-hide-toolbar");
     }
 
     protected native void start(Element element, String value, boolean selectAll)/*-{
@@ -84,7 +85,7 @@ public class RichTextCellEditor extends ARequestValueCellEditor implements Reque
 
     @Override
     public void stop(Element parent, boolean cancel, boolean blurred) {
-        parent.removeClassName("property-hide-toolbar");
+        GwtClientUtils.removeClassName(parent, "property-hide-toolbar");
 
         enableEditing(parent, false);
 

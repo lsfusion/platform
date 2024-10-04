@@ -9,6 +9,7 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.BaseStaticImage;
 import lsfusion.gwt.client.base.FocusUtils;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.popup.PopupMenuCallback;
@@ -295,7 +296,7 @@ public abstract class SuggestBox {
     protected abstract static class SuggestPopupButton extends GToolbarButton {
         public SuggestPopupButton(BaseStaticImage image) {
             super(image);
-            getElement().addClassName("suggestPopupButton");
+            GwtClientUtils.addClassName(getElement(), "suggest-popup-button", "suggestPopupButton");
         }
 
         @Override

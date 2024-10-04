@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.design.view;
 
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GContainer;
@@ -17,7 +18,7 @@ public class CustomContainerView extends LayoutContainerView {
         super(container, formController);
         simpleCustom = "".equals(container.getCustomDesign());
         panel = new ResizableComplexPanel();
-        panel.addStyleName("panel-custom");
+        GwtClientUtils.addClassName(panel, "panel-custom");
     }
 
     protected void addImpl(int index) {

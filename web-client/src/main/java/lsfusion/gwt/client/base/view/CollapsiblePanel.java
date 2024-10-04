@@ -2,6 +2,7 @@ package lsfusion.gwt.client.base.view;
 
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.event.dom.client.ClickEvent;
+import lsfusion.gwt.client.base.GwtClientUtils;
 
 import java.util.function.Consumer;
 
@@ -22,7 +23,7 @@ public class CollapsiblePanel extends CaptionPanel {
         this.last = last;
 
 //        headerButton.setEnabled(true);
-        header.addStyleName("collapsible");
+        GwtClientUtils.addClassName(header, "collapsible");
 
         header.addDomHandler(event -> toggleCollapsed(), ClickEvent.getType());
 
@@ -33,9 +34,9 @@ public class CollapsiblePanel extends CaptionPanel {
         this.collapsed = collapsed;
 
         if (collapsed) {
-            header.addStyleName("collapsed");
+            GwtClientUtils.addClassName(header, "collapsed");
         } else {
-            header.removeStyleName("collapsed");
+            GwtClientUtils.removeClassName(header, "collapsed");
         }
 
         getChildren().get(last ? 0 : 1).setVisible(!collapsed);

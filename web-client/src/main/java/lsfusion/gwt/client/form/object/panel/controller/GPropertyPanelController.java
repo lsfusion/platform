@@ -1,9 +1,6 @@
 package lsfusion.gwt.client.form.object.panel.controller;
 
-import lsfusion.gwt.client.base.FocusUtils;
-import lsfusion.gwt.client.base.GwtSharedUtils;
-import lsfusion.gwt.client.base.Pair;
-import lsfusion.gwt.client.base.Result;
+import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.SizedFlexPanel;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -75,7 +72,7 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
             assert !alignCaption;
 
             columnsPanel = new SizedFlexPanel(property.panelColumnVertical);
-            columnsPanel.addStyleName("propertyContainerPanel");
+            GwtClientUtils.addClassName(columnsPanel, "property-container-panel", "propertyContainerPanel");
             return new ComponentWidget(columnsPanel);
         } else {
             Result<CaptionWidget> captionWidget = alignCaption && property.container.isAlignCaptions() ? new Result<>() : null; // or is tabbed ?

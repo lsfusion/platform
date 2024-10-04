@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.form.property.cell.view;
 
 import com.google.gwt.dom.client.*;
-import com.google.gwt.user.client.ui.HasAutoHorizontalAlignment;
 import com.google.gwt.user.client.ui.Label;
 import lsfusion.gwt.client.base.BaseImage;
 import lsfusion.gwt.client.base.GwtClientUtils;
@@ -25,15 +24,15 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
             setBasedEmptyElement(element);
         } else {
             element.getStyle().clearPadding();
-            element.removeClassName("text-based-value-required");
+            GwtClientUtils.removeClassName(element, "text-based-value-required");
             element.setTitle("");
 
             img = (value != null ? getBaseImage(value) : StaticImage.EMPTY).createImage();
 
             if(property.hasEditObjectAction && value != null) {
-                img.addClassName("selectedFileCellHasEdit");
+                GwtClientUtils.addClassName(img, "selected-file-cell-has-edit", "selectedFileCellHasEdit");
             } else {
-                img.removeClassName("selectedFileCellHasEdit");
+                GwtClientUtils.removeClassName(img, "selected-file-cell-has-edit", "selectedFileCellHasEdit");
             }
         }
 
@@ -50,7 +49,7 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
 
     private Element getDragDropLabel(Element img) {
         Label dropFilesLabel = new Label();
-        dropFilesLabel.getElement().addClassName("drag-drop-label");
+        GwtClientUtils.addClassName(dropFilesLabel.getElement(), "drag-drop-label");
         if(img == null) {
             dropFilesLabel.setText(REQUIRED_VALUE);
         }
@@ -62,7 +61,7 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
     @Override
     public boolean clearRenderContent(Element element, RenderContext renderContext) {
         element.getStyle().clearPadding();
-        element.removeClassName("text-based-value-required");
+        GwtClientUtils.removeClassName(element, "text-based-value-required");
         element.setTitle("");
 
         GwtClientUtils.clearFillParentElement(element);
@@ -74,7 +73,7 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
         element.getStyle().setPaddingRight(4, Style.Unit.PX);
         element.getStyle().setPaddingLeft(4, Style.Unit.PX);
         element.setTitle(REQUIRED_VALUE);
-        element.addClassName("text-based-value-required");
+        GwtClientUtils.addClassName(element, "text-based-value-required");
     }
 
     protected abstract BaseImage getBaseImage(PValue value);

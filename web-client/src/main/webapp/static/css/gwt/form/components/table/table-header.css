@@ -14,25 +14,25 @@
  Because these buttons are drawn in the header / footer buttons are not visible when using "visibility: collapse" and "tr" has zero height.
 */
 @supports (not (-moz-appearance: none)) {
-    .dataGridColumnRow {
+    .data-grid-column-row {
         /* does exactly what we need, used in layout, but not visible*/
         visibility: collapse;
     }
 }
-.dataGridColumnRowPrefCell {
+.data-grid-column-row-pref-cell {
     /* we have to drop up and down borders, because otherwise in chrome there will be the problem with the visibility collapse (1px will remain creating a whole)*/
-    /* for dataGridColumnRowFlexCell - remove-all-pmb removes up and down borders */
+    /* for data-grid-column-row-flex-cell - remove-all-pmb removes up and down borders */
     border-top: 0;
     border-bottom: 0;
 }
-.dataGridColumnRowFlexCell {
+.data-grid-column-row-flex-cell {
 }
 
 /* it seems that firefox treats visibility:collapse as visibility hidden,
 to fix this we just collapse all heights in the virtual gridColumnRow
 it's not the perfect solution, but maybe sometime firefox will fix this bug and it will be possible to remove this hack*/
 @supports (-moz-appearance: none) {
-    .dataGridColumnRow, .dataGridColumnRow * {
+    .data-grid-column-row, .data-grid-column-row * {
         height : 0 !important;
         line-height: 0 !important;
         padding-top: 0 !important;
@@ -59,16 +59,16 @@ it's not the perfect solution, but maybe sometime firefox will fix this bug and 
     /*overflow: hidden;*/
 }
 
-.dataGridHeader {
+.data-grid-header {
 }
-.dataGridHeaderCell {
+.data-grid-header-cell {
     /* ??? */
     /*overflow: hidden;*/
 }
 
-.dataGridFooter {
+.data-grid-footer {
 }
-.dataGridFooterCell {
+.data-grid-footer-cell {
     /* ??? */
     /*overflow: hidden;*/
 }

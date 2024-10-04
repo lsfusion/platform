@@ -124,7 +124,7 @@ public class FocusUtils {
 
     public static native Element getNextFocusElement(Element formController, boolean forward) /*-{
         var elements = Array.prototype.filter.call(
-            formController.querySelectorAll('.nav-item,.tableContainer,button,input,.panelRendererValue'), function (item) {
+            formController.querySelectorAll('.nav-item,.tableContainer,button,input,.panel-renderer-value'), function (item) {
                 //if element or one of its ancestors has display:none, offsetParent is null, so it's a sort of visibility check
                 return @FocusUtils::isTabFocusable(*)(item) && item.offsetParent !== null
             });

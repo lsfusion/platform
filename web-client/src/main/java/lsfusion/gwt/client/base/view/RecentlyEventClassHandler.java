@@ -2,6 +2,7 @@ package lsfusion.gwt.client.base.view;
 
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.GwtClientUtils;
 
 public class RecentlyEventClassHandler {
 
@@ -37,7 +38,10 @@ public class RecentlyEventClassHandler {
     private void updateCss(boolean add) {
         Widget widget = this.widget;
         do {
-            widget.setStyleName(cssClass, add);
+            if (add)
+                GwtClientUtils.addClassName(widget, cssClass);
+            else
+                GwtClientUtils.removeClassName(widget, cssClass);
         } while (propagate && (widget = widget.getParent()) != null);
     }
 }

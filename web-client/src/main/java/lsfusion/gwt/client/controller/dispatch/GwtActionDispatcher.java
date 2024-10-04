@@ -3,7 +3,6 @@ package lsfusion.gwt.client.controller.dispatch;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.http.client.URL;
 import com.google.gwt.media.client.Audio;
 import com.google.gwt.typedarrays.client.Uint8ArrayNative;
 import com.google.gwt.typedarrays.shared.ArrayBuffer;
@@ -298,7 +297,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
         if(log || info || error) {
             Widget widget = action.data.isEmpty() ? EscapeUtils.toHTML(message, image) : GLog.toPrintMessage(message, image, action.data, action.titles);
-            widget.addStyleName("alert " + (log || info ? "alert-info" : "alert-danger"));
+            GwtClientUtils.addClassNames(widget, "alert", (log || info ? "alert-info" : "alert-danger"));
             GLog.message(widget, action.caption, error);
         }
     }

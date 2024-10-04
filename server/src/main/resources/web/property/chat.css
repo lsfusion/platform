@@ -99,7 +99,7 @@ a.chat-message-attachment {
     color: darkgray;
 }
 
-div[lsfusion-container="chat"] .dataGridCell {
+div[lsfusion-container="chat"] .data-grid-cell {
     border-bottom: none !important;
 }
 
