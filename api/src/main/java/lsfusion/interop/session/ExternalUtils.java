@@ -11,6 +11,7 @@ import lsfusion.base.file.FileData;
 import lsfusion.base.file.IOUtils;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.connection.AuthenticationToken;
+import lsfusion.interop.connection.ConnectionInfo;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import org.apache.hc.client5.http.entity.mime.*;
 import org.apache.hc.core5.http.ContentType;
@@ -34,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -89,13 +91,13 @@ public class ExternalUtils {
 
     public static final List<String> PARAMS = Arrays.asList(ACTION_CN_PARAM, SCRIPT_PARAM, PARAMS_PARAM, RETURN_PARAM, RETURNMULTITYPE_PARAM, SIGNATURE_PARAM);
 
-    public static ExecInterface getExecInterface(final AuthenticationToken token, final SessionInfo sessionInfo, final RemoteLogicsInterface remoteLogics) {
+    public static ExecInterface getExecInterface(final AuthenticationToken token, final ConnectionInfo connectionInfo, final RemoteLogicsInterface remoteLogics) {
         return new ExecInterface() {
             public lsfusion.interop.session.ExternalResponse exec(String action, ExternalRequest request) throws RemoteException {
-                return remoteLogics.exec(token, sessionInfo, action, request);
+                return remoteLogics.exec(token, connectionInfo, action, request);
             }
             public lsfusion.interop.session.ExternalResponse eval(boolean action, ExternalRequest.Param paramScript, ExternalRequest request) throws RemoteException {
-                return remoteLogics.eval(token, sessionInfo, action, paramScript, request);
+                return remoteLogics.eval(token, connectionInfo, action, paramScript, request);
             }
         };
     }
@@ -122,7 +124,7 @@ public class ExternalUtils {
         return cookie;
     }
 
-    public static ExternalResponse processRequest(ExecInterface remoteExec, ConvertFileValue convertFileValue, InputStream is, ContentType requestContentType,
+    public static ExternalResponse processRequest(ExecInterface remoteExec, Function<ExternalRequest, ConvertFileValue> convertFileValue, InputStream is, ContentType requestContentType,
                                                   String[] headerNames, String[] headerValues, String[] cookieNames, String[] cookieValues, String logicsHost,
                                                   Integer logicsPort, String logicsExportName, String scheme, String method, String webHost, Integer webPort,
                                                   String contextPath, String servletPath, String pathInfo, String query, String sessionId) throws IOException, MessagingException {
@@ -174,7 +176,7 @@ public class ExternalUtils {
             }
         }
 
-        return getExternalResponse(execResult, queryParams, (returns.isEmpty() ? "export" : returns.get(0)), convertFileValue);
+        return getExternalResponse(execResult, queryParams, (returns.isEmpty() ? "export" : returns.get(0)), convertFileValue.apply(request));
     }
 
     public static ExternalResponse getExternalResponse(lsfusion.interop.session.ExternalResponse execResult, List<NameValuePair> queryParams, String singleFileName, ConvertFileValue convertFileValue) {

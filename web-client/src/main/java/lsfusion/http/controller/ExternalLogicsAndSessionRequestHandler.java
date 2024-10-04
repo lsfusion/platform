@@ -8,6 +8,7 @@ import lsfusion.http.provider.logics.LogicsProvider;
 import lsfusion.http.provider.navigator.NavigatorProviderImpl;
 import lsfusion.http.provider.session.SessionProvider;
 import lsfusion.http.provider.session.SessionSessionObject;
+import lsfusion.interop.connection.ConnectionInfo;
 import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.session.*;
 import org.apache.commons.lang.StringUtils;
@@ -28,6 +29,7 @@ import java.nio.charset.Charset;
 import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import static java.util.Collections.list;
 
@@ -51,7 +53,7 @@ public class ExternalLogicsAndSessionRequestHandler extends ExternalRequestHandl
             String query = queryString != null ? queryString : "";
             ContentType requestContentType = ExternalUtils.parseContentType(request.getContentType());
 
-            SessionInfo sessionInfo = NavigatorProviderImpl.getSessionInfo(request);
+            ConnectionInfo connectionInfo = NavigatorProviderImpl.getConnectionInfo(request);
 
             String[] headerNames = list(request.getHeaderNames()).toArray(new String[0]);
             String[] headerValues = getRequestHeaderValues(request, headerNames);
@@ -73,17 +75,17 @@ public class ExternalLogicsAndSessionRequestHandler extends ExternalRequestHandl
                     sessionSessionObject = sessionProvider.createSession(sessionObject.remoteLogics, request, sessionID);
                 remoteExec = sessionSessionObject.remoteSession;
             } else
-                remoteExec = ExternalUtils.getExecInterface(LSFAuthenticationToken.getAppServerToken(), sessionInfo, sessionObject.remoteLogics);
+                remoteExec = ExternalUtils.getExecInterface(LSFAuthenticationToken.getAppServerToken(), connectionInfo, sessionObject.remoteLogics);
 
             String logicsHost = sessionObject.connection.host != null && !sessionObject.connection.host.equals("localhost") && !sessionObject.connection.host.equals("127.0.0.1")
                     ? sessionObject.connection.host : request.getServerName();
 
             InputStream requestInputStream = getRequestInputStream(request, requestContentType, query);
 
-            ConvertFileValue convertFileValue = value -> {
+            Function<ExternalRequest, ConvertFileValue> convertFileValue = externalRequest -> value -> {
                 if(value instanceof StringWithFiles) {
                     StringWithFiles stringWithFiles = (StringWithFiles) value;
-                    return ExternalUtils.convertFileValue(stringWithFiles.prefixes, ClientFormChangesToGwtConverter.convertFileValue(stringWithFiles.files, servletContext, sessionObject, sessionInfo));
+                    return ExternalUtils.convertFileValue(stringWithFiles.prefixes, ClientFormChangesToGwtConverter.convertFileValue(stringWithFiles.files, servletContext, sessionObject, new SessionInfo(connectionInfo, externalRequest)));
                 }
                 return value;
             };

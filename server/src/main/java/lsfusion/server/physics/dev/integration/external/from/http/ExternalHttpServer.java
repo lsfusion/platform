@@ -6,6 +6,9 @@ import lsfusion.base.DaemonThreadFactory;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.file.FileData;
 import lsfusion.interop.connection.AuthenticationToken;
+import lsfusion.interop.connection.ComputerInfo;
+import lsfusion.interop.connection.ConnectionInfo;
+import lsfusion.interop.connection.UserInfo;
 import lsfusion.interop.connection.authentication.PasswordAuthentication;
 import lsfusion.interop.session.ExecInterface;
 import lsfusion.interop.session.ExternalUtils;
@@ -239,13 +242,13 @@ public class ExternalHttpServer extends MonitorServer {
                 String hostNameCookie = cookiesMap.get(HOSTNAME_COOKIE_NAME);
                 String hostName = hostNameCookie != null ? hostNameCookie : getHostName(remoteAddress);
 
-                SessionInfo sessionInfo = new SessionInfo(hostName, address != null ? address.getHostAddress() : null, null, null, null, null, null, null);// client locale does not matter since we use anonymous authentication
+                ConnectionInfo connectionInfo = new ConnectionInfo(new ComputerInfo(hostName, address != null ? address.getHostAddress() : null), UserInfo.NULL);// client locale does not matter since we use anonymous authentication
 
                 String[] host = request.getRequestHeaders().getFirst("Host").split(":");
-                ExecInterface remoteExec = ExternalUtils.getExecInterface(getAuthToken(request), sessionInfo, remoteLogics);
+                ExecInterface remoteExec = ExternalUtils.getExecInterface(getAuthToken(request), connectionInfo, remoteLogics);
                 ContentType requestContentType = ExternalUtils.parseContentType(getContentType(request));
                 ExternalUtils.ExternalResponse response = ExternalUtils.processRequest(remoteExec,
-                        getLogicsInstance().getRmiManager(), request.getRequestBody(), requestContentType, headerNames, headerValues, cookieNames, cookieValues, null, null,null,
+                        externalRequest -> value -> getLogicsInstance().getRmiManager().convertFileValue(externalRequest, value), request.getRequestBody(), requestContentType, headerNames, headerValues, cookieNames, cookieValues, null, null,null,
                         useHTTPS ? "https" : "http", request.getRequestMethod(), host[0], host.length > 1 ? Integer.parseInt(host[1]) : null /*when using redirect from address without specifying a port, for example foo.bar immediately to port 7651, the port is not specified in request, and in this place when accessing host[1] the ArrayIndexOutOfBoundsException is received.*/,
                         "", request.getRequestURI().getPath(), "", request.getRequestURI().getRawQuery(), null);
 

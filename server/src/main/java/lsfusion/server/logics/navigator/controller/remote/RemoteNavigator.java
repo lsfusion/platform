@@ -20,13 +20,13 @@ import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.base.exception.RemoteMessageException;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.ClientType;
-import lsfusion.interop.connection.LocalePreferences;
+import lsfusion.interop.connection.ConnectionInfo;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.navigator.ClientInfo;
 import lsfusion.interop.navigator.NavigatorInfo;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
-import lsfusion.interop.session.SessionInfo;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
+import lsfusion.server.base.controller.context.Context;
 import lsfusion.server.base.controller.remote.context.RemoteContextAspect;
 import lsfusion.server.base.controller.stack.StackMessage;
 import lsfusion.server.base.controller.stack.ThisMessage;
@@ -120,15 +120,14 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
     private static final List<Pair<DataObject, String>> recentlyOpenForms = Collections.synchronizedList(new ArrayList<>());
 
+    public String sessionId;
+
     // в настройку надо будет вынести : по группам, способ релевантности групп, какую релевантность отсекать
     public RemoteNavigator(int port, LogicsInstance logicsInstance, AuthenticationToken token, NavigatorInfo navigatorInfo, ExecutionStack stack) throws RemoteException, ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, SQLHandledException {
-        super(port, "navigator", stack);
-
-        setContext(new RemoteNavigatorContext(this));
-        initContext(logicsInstance, token, navigatorInfo.session, stack);
+        super(port, "navigator", logicsInstance, token, navigatorInfo.session, stack);
 
         changesSync = new ChangesSync(dbManager, this);
-        
+
         ServerLoggers.remoteLifeLog("NAVIGATOR OPEN : " + this);
 
         this.classCache = new ClassCache();
@@ -141,6 +140,12 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
         this.navigatorManager = logicsInstance.getNavigatorsManager();
         navigatorManager.navigatorCreated(stack, this, navigatorInfo);
+
+        sessionId = navigatorInfo.session.externalRequest.sessionId;
+    }
+
+    protected Context createContext() {
+        return new RemoteNavigatorContext(this);
     }
 
     private void saveNavigatorUserContext(String clientColorTheme, ExecutionStack stack, DataSession session) throws SQLException, SQLHandledException {
@@ -163,11 +168,11 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     }
 
     @Override
-    protected void initContext(LogicsInstance logicsInstance, AuthenticationToken token, SessionInfo connectionInfo, ExecutionStack stack) throws SQLException, InstantiationException, IllegalAccessException, ClassNotFoundException, SQLHandledException {
-        super.initContext(logicsInstance, token, connectionInfo, stack);
+    protected void initConnectionContext(AuthenticationToken token, ConnectionInfo connectionInfo, ExecutionStack stack) throws SQLException, SQLHandledException {
+        super.initConnectionContext(token, connectionInfo, stack);
 
         try(DataSession session = createSession()) {
-            saveNavigatorUserContext(connectionInfo.clientColorTheme, stack, session);
+            saveNavigatorUserContext(connectionInfo.userInfo.clientColorTheme, stack, session);
 
             initNavigatorUserContext(session);
         }

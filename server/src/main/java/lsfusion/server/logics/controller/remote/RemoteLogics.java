@@ -7,6 +7,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.lambda.CallableWithParam;
 import lsfusion.interop.base.exception.RemoteMessageException;
 import lsfusion.interop.connection.AuthenticationToken;
+import lsfusion.interop.connection.ConnectionInfo;
 import lsfusion.interop.connection.authentication.Authentication;
 import lsfusion.interop.logics.remote.RemoteClientInterface;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
@@ -143,9 +144,9 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         }
     }
     
-    private ExternalResponse runInNewSession(AuthenticationToken token, SessionInfo sessionInfo, CallableWithParam<RemoteSession, ExternalResponse> callable) throws RemoteException {
+    private ExternalResponse runInNewSession(AuthenticationToken token, ConnectionInfo connectionInfo, ExternalRequest request, CallableWithParam<RemoteSession, ExternalResponse> callable) throws RemoteException {
         // in theory it's better to cache sessions for a token in some pool (clearing them after usage) 
-        RemoteSession session = createSession(-1, token, sessionInfo);
+        RemoteSession session = createSession(-1, token, new SessionInfo(connectionInfo, request));
         try {
             return callable.call(session);
         } finally {
@@ -154,13 +155,13 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
-    public ExternalResponse exec(AuthenticationToken token, SessionInfo sessionInfo, final String action, final ExternalRequest request) throws RemoteException {
-        return runInNewSession(token, sessionInfo, session -> session.exec(action, request));
+    public ExternalResponse exec(AuthenticationToken token, ConnectionInfo connectionInfo, final String action, final ExternalRequest request) throws RemoteException {
+        return runInNewSession(token, connectionInfo, request, session -> session.exec(action, request));
     }
 
     @Override
-    public ExternalResponse eval(AuthenticationToken token, SessionInfo sessionInfo, final boolean action, final ExternalRequest.Param paramScript, final ExternalRequest request) throws RemoteException {
-        return runInNewSession(token, sessionInfo, session -> session.eval(action, paramScript, request));
+    public ExternalResponse eval(AuthenticationToken token, ConnectionInfo connectionInfo, final boolean action, final ExternalRequest.Param paramScript, final ExternalRequest request) throws RemoteException {
+        return runInNewSession(token, connectionInfo, request, session -> session.eval(action, paramScript, request));
     }
 
     public void ping() throws RemoteException {

@@ -28,12 +28,15 @@ import lsfusion.client.view.MainFrame;
 import lsfusion.interop.base.exception.AppServerNotAvailableException;
 import lsfusion.interop.base.view.ColorTheme;
 import lsfusion.interop.connection.AuthenticationToken;
+import lsfusion.interop.connection.ComputerInfo;
+import lsfusion.interop.connection.ConnectionInfo;
 import lsfusion.interop.connection.authentication.PasswordAuthentication;
 import lsfusion.interop.form.object.table.grid.user.design.ColorPreferences;
 import lsfusion.interop.logics.LogicsConnection;
 import lsfusion.interop.logics.LogicsRunnable;
 import lsfusion.interop.logics.ServerSettings;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
+import lsfusion.interop.session.ExternalRequest;
 import lsfusion.interop.session.SessionInfo;
 import org.apache.log4j.Logger;
 
@@ -390,9 +393,13 @@ public class MainController {
     }
 
     public static String computerName;
+
     public static SessionInfo getSessionInfo() {
-        return new SessionInfo(computerName, SystemUtils.getLocalHostIP(), Locale.getDefault().getLanguage(), Locale.getDefault().getCountry(),
-                 TimeZone.getDefault(), BaseUtils.getDatePattern(), BaseUtils.getTimePattern(), DarkModeDetector.isDarkMode() ? "dark" : "light");
+        return new SessionInfo(getConnectionInfo(), ExternalRequest.EMPTY);
+    }
+
+    public static ConnectionInfo getConnectionInfo() {
+        return new ConnectionInfo(new ComputerInfo(computerName, SystemUtils.getLocalHostIP()), new lsfusion.interop.connection.UserInfo(Locale.getDefault().getLanguage(), Locale.getDefault().getCountry(), TimeZone.getDefault(), BaseUtils.getDatePattern(), BaseUtils.getTimePattern(), DarkModeDetector.isDarkMode() ? "dark" : "light"));
     }
 
     public static LogicsConnection serverInfo;

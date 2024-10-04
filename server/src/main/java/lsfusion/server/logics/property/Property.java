@@ -1511,7 +1511,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     public Object read(ExecutionEnvironment env, ImMap<T, ? extends ObjectValue> keys) throws SQLException, SQLHandledException {
-        return read(env.getSession().sql, keys, env.getModifier(), env.getQueryEnv());
+        return read(env.getSession(), keys, env.getModifier(), env.getQueryEnv());
     }
 
     public ObjectValue readClasses(FormInstance form, ImMap<T, ? extends ObjectValue> keys) throws SQLException, SQLHandledException {
@@ -1524,6 +1524,10 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
     public ObjectValue readClasses(DataSession session, ImMap<T, ? extends ObjectValue> keys, Modifier modifier, QueryEnvironment env) throws SQLException, SQLHandledException {
         return readClasses(session.sql, keys, session.baseClass, modifier, env);
+    }
+
+    public Object read(DataSession session, ImMap<T, ? extends ObjectValue> keys, Modifier modifier, QueryEnvironment env) throws SQLException, SQLHandledException {
+        return read(session.sql, keys, modifier, env);
     }
 
     public ImMap<ImMap<T, Object>, Object> readAll(ExecutionEnvironment env) throws SQLException, SQLHandledException {

@@ -87,16 +87,20 @@ public class LP<T extends PropertyInterface> extends LAP<T, Property<T>> {
         return property.readAllClasses(env).mapKeys(value -> listInterfaces.mapList(value));
     }
 
+    public Object read(DataSession session, Modifier modifier, QueryEnvironment env, ObjectValue... objects) throws SQLException, SQLHandledException {
+        return property.read(session, getMapValues(objects), modifier, env);
+    }
+
     public Object read(SQLSession session, Modifier modifier, QueryEnvironment env, ObjectValue... objects) throws SQLException, SQLHandledException {
         return property.read(session, getMapValues(objects), modifier, env);
     }
 
     public Object read(ExecutionContext context, ObjectValue... objects) throws SQLException, SQLHandledException {
-        return read(context.getSession().sql, context.getModifier(), context.getQueryEnv(), objects);
+        return read(context.getSession(), context.getModifier(), context.getQueryEnv(), objects);
     }
 
     public Object read(DataSession session, ObjectValue... objects) throws SQLException, SQLHandledException {
-        return read(session.sql, session.getModifier(), session.env, objects);
+        return read(session, session.getModifier(), session.env, objects);
     }
 
     public ObjectValue readClasses(DataSession session, Modifier modifier, QueryEnvironment env, ObjectValue... objects) throws SQLException, SQLHandledException {

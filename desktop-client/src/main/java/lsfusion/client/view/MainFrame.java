@@ -32,6 +32,8 @@ import lsfusion.interop.navigator.ClientInfo;
 import lsfusion.interop.navigator.ClientSettings;
 import lsfusion.interop.navigator.NavigatorInfo;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
+import lsfusion.interop.session.ExternalRequest;
+import lsfusion.interop.session.SessionInfo;
 import org.apache.log4j.Logger;
 import org.jdesktop.jxlayer.JXLayer;
 import org.jdesktop.jxlayer.plaf.effect.BufferedImageOpEffect;
@@ -451,6 +453,6 @@ public abstract class MainFrame extends JFrame {
     public abstract ClientFormDockable runForm(AsyncFormController asyncFormController, boolean forbidDuplicate, RemoteFormInterface remoteForm, FormClientData clientData, FormCloseListener closeListener, String formId);
 
     public static ClientSettings getClientSettings(RemoteNavigatorInterface remoteNavigator) throws RemoteException {
-        return LogicsSessionObject.getClientSettings(MainController.getSessionInfo(), remoteNavigator);
+        return LogicsSessionObject.getClientSettings(ExternalRequest.EMPTY, remoteNavigator);
     }
 }

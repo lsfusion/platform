@@ -32,6 +32,7 @@ import lsfusion.interop.form.property.PropertyGroupType;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.controller.context.AbstractContext;
+import lsfusion.server.base.controller.context.Context;
 import lsfusion.server.base.controller.remote.RemoteRequestObject;
 import lsfusion.server.base.controller.thread.SyncType;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
@@ -102,10 +103,14 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
 
     private final WeakReference<RemoteFormListener> weakRemoteFormListener;
 
+    @Override
+    protected Context createContext() {
+        return new RemoteFormContext<>(this);
+    }
+
     public RemoteForm(F form, int port, RemoteFormListener remoteFormListener, ExecutionStack upStack) throws RemoteException {
         super(port, upStack, form.entity.getSID(), form.isSync() ? SyncType.SYNC : SyncType.NOSYNC);
 
-        setContext(new RemoteFormContext<>(this));
         this.form = form;
         this.richDesign = form.entity.getRichDesign();
 
