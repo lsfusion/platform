@@ -54,9 +54,11 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.F
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
+import lsfusion.server.logics.form.interactive.event.UserEventObject;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.InteractiveFormReportManager;
 import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
+import lsfusion.server.logics.form.interactive.instance.filter.PropertyFilterInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.RegularFilterGroupInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupColumn;
 import lsfusion.server.logics.form.interactive.instance.object.GroupMode;
@@ -485,8 +487,8 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
 
                 PropertyObjectInstance<?> propertyObject = propertyDraw.getOrderProperty().getRemappedPropertyObject(keys, false);
                 propertyDraw.toDraw.changeOrder(propertyObject, propertyDraw, order);
-                
-                form.fireOrderChanged(propertyDraw.toDraw, stack, true);
+
+                form.fireOnUserActivity(stack, propertyDraw.toDraw, UserEventObject.Type.ORDER);
             }
         });
     }
@@ -517,7 +519,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 }
             }
 
-            form.fireOrderChanged(groupObject, stack, true);
+            form.fireOnUserActivity(stack, groupObject, UserEventObject.Type.ORDER);
         });
     }
 
@@ -631,14 +633,18 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                     FilterInstance filter = FilterInstance.deserialize(new DataInputStream(new ByteArrayInputStream(state)), form);
 
                     goi.addUserFilter(filter);
-                    
+
+                    if(filter instanceof PropertyFilterInstance) {
+                        form.fireFilterPropertyChanged(((PropertyFilterInstance<?>) filter).propertyDraw.getSID(), stack);
+                    }
+
                     if (logger.isDebugEnabled()) {
                         logger.debug(String.format("set user filter: [CLASS: %1$s]", filter.getClass()));
                         logger.debug(String.format("apply object: %s", goi));
                     }
                 }
 
-                form.fireFilterChanged(goi, stack, true);
+                form.fireOnUserActivity(stack, goi, UserEventObject.Type.FILTER);
             }
         });
     }
@@ -646,7 +652,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     public ServerResponse setRegularFilter(long requestIndex, long lastReceivedRequestIndex, final int groupID, final int filterID) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             RegularFilterGroupInstance filterGroup = form.getRegularFilterGroup(groupID);
-            form.setRegularFilter(filterGroup, filterID);
+            form.setRegularFilter(filterGroup, filterID, getStack());
             if (logger.isDebugEnabled()) {
                 logger.debug(String.format("set regular filter: [GROUP: %1$s]", groupID));
                 logger.debug(String.format("filter ID: %s", filterID));
