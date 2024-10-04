@@ -1,5 +1,6 @@
 package lsfusion.http.controller;
 
+import lsfusion.base.Result;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.file.StringWithFiles;
 import lsfusion.gwt.server.convert.ClientFormChangesToGwtConverter;
@@ -7,7 +8,6 @@ import lsfusion.http.authentication.LSFAuthenticationToken;
 import lsfusion.http.provider.logics.LogicsProvider;
 import lsfusion.http.provider.navigator.NavigatorProviderImpl;
 import lsfusion.http.provider.session.SessionProvider;
-import lsfusion.http.provider.session.SessionSessionObject;
 import lsfusion.interop.connection.ConnectionInfo;
 import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.session.*;
@@ -46,50 +46,38 @@ public class ExternalLogicsAndSessionRequestHandler extends ExternalRequestHandl
 
     @Override
     protected void handleRequest(LogicsSessionObject sessionObject, HttpServletRequest request, HttpServletResponse response) throws Exception {
-        String sessionID = null;
-        boolean closeSession = false;
+        String queryString = request.getQueryString();
+        String query = queryString != null ? queryString : "";
+        ContentType requestContentType = ExternalUtils.parseContentType(request.getContentType());
+
+        ConnectionInfo connectionInfo = NavigatorProviderImpl.getConnectionInfo(request);
+
+        String[] headerNames = list(request.getHeaderNames()).toArray(new String[0]);
+        String[] headerValues = getRequestHeaderValues(request, headerNames);
+
+        OrderedMap<String, String> cookiesMap = getRequestCookies(request);
+        String[] cookieNames = cookiesMap.keyList().toArray(new String[0]);
+        String[] cookieValues = cookiesMap.values().toArray(new String[0]);
+
+        String logicsHost = sessionObject.connection.host != null && !sessionObject.connection.host.equals("localhost") && !sessionObject.connection.host.equals("127.0.0.1")
+                ? sessionObject.connection.host : request.getServerName();
+
+        InputStream requestInputStream = getRequestInputStream(request, requestContentType, query);
+
+        Function<ExternalRequest, ConvertFileValue> convertFileValue = externalRequest -> value -> {
+            if(value instanceof StringWithFiles) {
+                StringWithFiles stringWithFiles = (StringWithFiles) value;
+                return ExternalUtils.convertFileValue(stringWithFiles.prefixes, ClientFormChangesToGwtConverter.convertFileValue(stringWithFiles.files, servletContext, sessionObject, new SessionInfo(connectionInfo, externalRequest)));
+            }
+            return value;
+        };
+
+        String paramSessionID = request.getParameter("session");
+        Result<String> sessionID = paramSessionID != null ? new Result<>(paramSessionID) : null;
+        Result<Boolean> closeSession = new Result<>(false);
+        ExecInterface remoteExec = ExternalUtils.getExecInterface(sessionObject.remoteLogics, sessionID, closeSession, sessionProvider.getContainer(), LSFAuthenticationToken.getAppServerToken(), connectionInfo);
+
         try {
-            String queryString = request.getQueryString();
-            String query = queryString != null ? queryString : "";
-            ContentType requestContentType = ExternalUtils.parseContentType(request.getContentType());
-
-            ConnectionInfo connectionInfo = NavigatorProviderImpl.getConnectionInfo(request);
-
-            String[] headerNames = list(request.getHeaderNames()).toArray(new String[0]);
-            String[] headerValues = getRequestHeaderValues(request, headerNames);
-
-            OrderedMap<String, String> cookiesMap = getRequestCookies(request);
-            String[] cookieNames = cookiesMap.keyList().toArray(new String[0]);
-            String[] cookieValues = cookiesMap.values().toArray(new String[0]);
-
-            sessionID = request.getParameter("session");
-            ExecInterface remoteExec;
-            if(sessionID != null) {
-                if(sessionID.endsWith("_close")) {
-                    closeSession = true;
-                    sessionID = sessionID.substring(0, sessionID.length() - "_close".length());
-                }
-
-                SessionSessionObject sessionSessionObject = sessionProvider.getSessionSessionObject(sessionID);
-                if(sessionSessionObject == null)
-                    sessionSessionObject = sessionProvider.createSession(sessionObject.remoteLogics, request, sessionID);
-                remoteExec = sessionSessionObject.remoteSession;
-            } else
-                remoteExec = ExternalUtils.getExecInterface(LSFAuthenticationToken.getAppServerToken(), connectionInfo, sessionObject.remoteLogics);
-
-            String logicsHost = sessionObject.connection.host != null && !sessionObject.connection.host.equals("localhost") && !sessionObject.connection.host.equals("127.0.0.1")
-                    ? sessionObject.connection.host : request.getServerName();
-
-            InputStream requestInputStream = getRequestInputStream(request, requestContentType, query);
-
-            Function<ExternalRequest, ConvertFileValue> convertFileValue = externalRequest -> value -> {
-                if(value instanceof StringWithFiles) {
-                    StringWithFiles stringWithFiles = (StringWithFiles) value;
-                    return ExternalUtils.convertFileValue(stringWithFiles.prefixes, ClientFormChangesToGwtConverter.convertFileValue(stringWithFiles.files, servletContext, sessionObject, new SessionInfo(connectionInfo, externalRequest)));
-                }
-                return value;
-            };
-
             ExternalUtils.ExternalResponse externalResponse = ExternalUtils.processRequest(remoteExec, convertFileValue, requestInputStream, requestContentType,
                     headerNames, headerValues, cookieNames, cookieValues, logicsHost, sessionObject.connection.port, sessionObject.connection.exportName,
                     request.getScheme(), request.getMethod(), request.getServerName(), request.getServerPort(), request.getContextPath(), request.getServletPath(),
@@ -97,16 +85,16 @@ public class ExternalLogicsAndSessionRequestHandler extends ExternalRequestHandl
 
             sendResponse(response, request, externalResponse);
         } catch (RemoteException e) {
-            closeSession = true; // closing session if there is a RemoteException
+            closeSession.set(true); // closing session if there is a RemoteException
             throw e;
         } finally {
-            if(sessionID != null && closeSession) {
-                sessionProvider.removeSessionSessionObject(sessionID);
+            if(sessionID != null && closeSession.result) {
+                sessionProvider.getContainer().removeSession(sessionID.result);
             }
         }
     }
-    
-    // if content type is 'application/x-www-form-urlencoded' the body of the request appears to be already read somewhere else. 
+
+    // if content type is 'application/x-www-form-urlencoded' the body of the request appears to be already read somewhere else.
     // so we have empty InputStream and have to read body parameters from parameter map
     private InputStream getRequestInputStream(HttpServletRequest request, ContentType contentType, String query) throws IOException {
         InputStream inputStream = request.getInputStream();

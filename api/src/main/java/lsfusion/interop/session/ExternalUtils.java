@@ -13,6 +13,7 @@ import lsfusion.base.file.RawFileData;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.ConnectionInfo;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
+import lsfusion.interop.session.remote.RemoteSessionInterface;
 import org.apache.hc.client5.http.entity.mime.*;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpEntity;
@@ -35,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -91,7 +93,30 @@ public class ExternalUtils {
 
     public static final List<String> PARAMS = Arrays.asList(ACTION_CN_PARAM, SCRIPT_PARAM, PARAMS_PARAM, RETURN_PARAM, RETURNMULTITYPE_PARAM, SIGNATURE_PARAM);
 
-    public static ExecInterface getExecInterface(final AuthenticationToken token, final ConnectionInfo connectionInfo, final RemoteLogicsInterface remoteLogics) {
+    public static ExecInterface getExecInterface(RemoteLogicsInterface remoteLogics, Result<String> sessionID, Result<Boolean> closeSession, SessionContainer sessionContainer, AuthenticationToken token, ConnectionInfo connectionInfo) {
+        if(sessionID != null) {
+            if(sessionID.result.endsWith("_close")) {
+                closeSession.set(true);
+                sessionID.set(sessionID.result.substring(0, sessionID.result.length() - "_close".length()));
+            }
+
+            return new ExecInterface() {
+                private RemoteSessionInterface getOrCreateSession(AuthenticationToken token, RemoteLogicsInterface remoteLogics, ConnectionInfo connectionInfo, ExternalRequest request, String fSessionID) throws RemoteException {
+                    return sessionContainer.getOrCreateSession(remoteLogics, token, new SessionInfo(connectionInfo, request), fSessionID);
+                }
+
+                @Override
+                public lsfusion.interop.session.ExternalResponse exec(String action, ExternalRequest request) throws RemoteException {
+                    return getOrCreateSession(token, remoteLogics, connectionInfo, request, sessionID.result).exec(action, request);
+                }
+
+                @Override
+                public lsfusion.interop.session.ExternalResponse eval(boolean action, ExternalRequest.Param paramScript, ExternalRequest request) throws RemoteException {
+                    return getOrCreateSession(token, remoteLogics, connectionInfo, request, sessionID.result).eval(action, paramScript, request);
+                }
+            };
+        }
+
         return new ExecInterface() {
             public lsfusion.interop.session.ExternalResponse exec(String action, ExternalRequest request) throws RemoteException {
                 return remoteLogics.exec(token, connectionInfo, action, request);
@@ -100,6 +125,29 @@ public class ExternalUtils {
                 return remoteLogics.eval(token, connectionInfo, action, paramScript, request);
             }
         };
+    }
+
+    public static class SessionContainer {
+
+        private final Map<String, RemoteSessionInterface> currentSessions = new ConcurrentHashMap<>();
+
+        public RemoteSessionInterface getOrCreateSession(RemoteLogicsInterface remoteLogics, AuthenticationToken token, SessionInfo sessionInfo, String sessionID) throws RemoteException {
+            RemoteSessionInterface remoteSession = currentSessions.get(sessionID);
+            if(remoteSession == null) {
+                remoteSession = remoteLogics.createSession(token, sessionInfo);
+                currentSessions.put(sessionID, remoteSession);
+            }
+            return remoteSession;
+        }
+
+        public void removeSession(String sessionID) throws RemoteException {
+            currentSessions.remove(sessionID).close();
+        }
+
+        public void destroy() throws RemoteException {
+            for(RemoteSessionInterface remoteSession : currentSessions.values())
+                remoteSession.close();
+        }
     }
 
     public static int DEFAULT_COOKIE_VERSION = 0;
