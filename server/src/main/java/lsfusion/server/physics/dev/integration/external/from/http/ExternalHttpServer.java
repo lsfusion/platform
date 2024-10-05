@@ -257,7 +257,7 @@ public class ExternalHttpServer extends MonitorServer {
                 String rawQuery = requestURI.getRawQuery();
 
                 String paramSessionID = null;
-                if(rawQuery.contains("session")) { // optimization
+                if(rawQuery != null && rawQuery.contains("session")) { // optimization
                     List<NameValuePair> queryParams = URLEncodedUtils.parse(rawQuery, ExternalUtils.defaultUrlCharset);
 
                     paramSessionID = ExternalUtils.getParameterValue(queryParams, "session");

@@ -109,7 +109,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         this.sql = dbManager.createSQL(new WeakSQLSessionContextProvider(this));
     }
 
-    protected void initConnectionContext(AuthenticationToken token, ConnectionInfo connectionInfo, ExecutionStack stack) throws SQLException, SQLHandledException {
+    public void initConnectionContext(AuthenticationToken token, ConnectionInfo connectionInfo, ExecutionStack stack) throws SQLException, SQLHandledException {
         try(ExecSession session = getExecSession()) {
             initUser(token, connectionInfo.userInfo, session.dataSession, stack);
 

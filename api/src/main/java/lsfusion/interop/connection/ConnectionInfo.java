@@ -13,4 +13,14 @@ public class ConnectionInfo implements Serializable {
 
         this.userInfo = userInfo;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o || o instanceof ConnectionInfo && computerInfo.equals(((ConnectionInfo) o).computerInfo) && userInfo.equals(((ConnectionInfo) o).userInfo);
+    }
+
+    @Override
+    public int hashCode() {
+        return 31 * computerInfo.hashCode() + userInfo.hashCode();
+    }
 }

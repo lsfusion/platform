@@ -1,5 +1,7 @@
 package lsfusion.server.logics.action.session.controller.remote;
 
+import lsfusion.base.BaseUtils;
+import lsfusion.base.col.SetFact;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.base.exception.AuthenticationException;
@@ -42,9 +44,14 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
         this.dataSession = createSession();
     }
 
+    private ConnectionInfo connectionInfo;
+    public boolean equalsConnectionContext(AuthenticationToken token, ConnectionInfo connectionInfo) {
+        return token.equals(this.token) && BaseUtils.hashEquals(connectionInfo, this.connectionInfo);
+    }
     @Override
-    protected void initConnectionContext(AuthenticationToken token, ConnectionInfo connectionInfo, ExecutionStack stack) throws SQLException, SQLHandledException {
+    public void initConnectionContext(AuthenticationToken token, ConnectionInfo connectionInfo, ExecutionStack stack) throws SQLException, SQLHandledException {
         try {
+            this.connectionInfo = connectionInfo;
             super.initConnectionContext(token, connectionInfo, stack);
         } catch (AuthenticationException e) { // if we have authentication exception, postpone it maybe only noauth will be used (authenticate with anonymous token)
             authException = e;
@@ -111,6 +118,14 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
         }
         
         super.onClose();
+    }
+
+    public void clean() {
+        try {
+            dataSession.cancelSession(SetFact.EMPTY());
+        } catch (Throwable t) {
+            ServerLoggers.sqlSuppLog(t);
+        }
     }
 
     @Override
