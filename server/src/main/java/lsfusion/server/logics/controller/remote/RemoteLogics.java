@@ -134,8 +134,6 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         }
     }
 
-    private final Set<RemoteSession> sessionsPool = ConcurrentHashMap.newKeySet();
-
     @Override
     public RemoteSessionInterface createSession(AuthenticationToken token, SessionInfo sessionInfo) throws RemoteException {
         try {
@@ -149,6 +147,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         return new RemoteSession(port, getContext().getLogicsInstance(), token, sessionInfo, getStack());
     }
 
+    private final Set<RemoteSession> sessionsPool = ConcurrentHashMap.newKeySet();
     private RemoteSession popSession(Predicate<RemoteSession> check) {
         for(RemoteSession poolSession : sessionsPool) {
             if(check.apply(poolSession)) {

@@ -187,6 +187,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
 
         @Override
+        public ChangesController getChanges() {
+            return changes;
+        }
+
+        @Override
         protected ImSet<Property> getChangedProps() {
             return DataSession.this.getChangedProps();
         }
@@ -1486,6 +1491,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         public SQLSession getSQL() {
             return sql;
+        }
+
+        public ChangesController getChanges() {
+            return changes;
         }
 
         public OperationOwner getOpOwner() {

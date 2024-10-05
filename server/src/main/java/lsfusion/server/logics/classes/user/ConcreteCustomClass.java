@@ -27,6 +27,7 @@ import lsfusion.server.logics.classes.ConcreteValueClass;
 import lsfusion.server.logics.classes.StaticClass;
 import lsfusion.server.logics.classes.user.set.*;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
+import lsfusion.server.logics.navigator.controller.env.ChangesController;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.user.ClassDataProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -320,8 +321,8 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
     }
 
     public ClassDataProperty dataProperty;
-    public Long readData(Long data, SQLSession sql, QueryEnvironment env) throws SQLException, SQLHandledException {
-        return (Long) dataProperty.read(sql, MapFact.singleton(dataProperty.interfaces.single(), new DataObject(data, this)), Property.defaultModifier, env);
+    public Long readData(Long data, SQLSession sql, QueryEnvironment env, ChangesController changesController) throws SQLException, SQLHandledException {
+        return (Long) dataProperty.read(sql, MapFact.singleton(dataProperty.interfaces.single(), new DataObject(data, this)), Property.defaultModifier, env, changesController);
     }
 
     public ImRevMap<ObjectClassField, ObjectValueClassSet> getObjectClassFields() {

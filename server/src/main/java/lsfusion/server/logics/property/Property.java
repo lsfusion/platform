@@ -50,6 +50,7 @@ import lsfusion.server.data.table.*;
 import lsfusion.server.data.type.AbstractType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
+import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
@@ -102,6 +103,7 @@ import lsfusion.server.logics.form.struct.filter.ContextFilterEntity;
 import lsfusion.server.logics.form.struct.property.PropertyClassImplement;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyClassImplement;
+import lsfusion.server.logics.navigator.controller.env.ChangesController;
 import lsfusion.server.logics.property.cases.CaseUnionProperty;
 import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.classes.infer.*;
@@ -1077,7 +1079,13 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     public boolean hasChanges(Modifier modifier) throws SQLException, SQLHandledException {
-        return hasChanges(modifier.getPropertyChanges());
+        return hasChanges(modifier, false);
+    }
+    public boolean hasChanges(Modifier modifier, boolean prevChanges) throws SQLException, SQLHandledException {
+        PropertyChanges propertyChanges = modifier.getPropertyChanges();
+        if(prevChanges)
+            propertyChanges = propertyChanges.getPrev();
+        return hasChanges(propertyChanges);
     }
     public boolean hasChanges(PropertyChanges propChanges) {
         return hasChanges(propChanges.getStruct());
@@ -1461,7 +1469,23 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return getClassValueWhere(AlgType.storedType).remap(MapFact.addRevExcl(mapTable.mapKeys, "value", storedField)); //
     }
 
-    public Pair<ObjectValue, Boolean> readClassesChanged(SQLSession session, ImMap<T, ObjectValue> keys, BaseClass baseClass, Modifier modifier, boolean hasChanges, QueryEnvironment env) throws SQLException, SQLHandledException {
+    public ObjectValue readLazyClasses(SQLSession session, ImMap<T, ? extends ObjectValue> keys, Modifier modifier, ChangesController changesController) throws SQLException, SQLHandledException {
+        return readLazyClasses(session, keys, modifier, false, changesController);
+    }
+    public ObjectValue readLazyClasses(SQLSession session, ImMap<T, ? extends ObjectValue> keys, Modifier modifier, boolean prevChanges, ChangesController changesController) throws SQLException, SQLHandledException {
+        String annotation = this.annotation;
+        if(annotation != null && annotation.equals("lazy") && !hasChanges(modifier, prevChanges) && !session.isInTransaction())
+            return changesController.readLazyValue(this, keys);
+        if(this instanceof SessionDataProperty && !hasChanges(modifier, prevChanges))
+            return NullValue.instance;
+        return null;
+    }
+
+    public Pair<ObjectValue, Boolean> readClassesChanged(SQLSession session, ImMap<T, ObjectValue> keys, BaseClass baseClass, Modifier modifier, boolean hasChanges, QueryEnvironment env, ChangesController changesController) throws SQLException, SQLHandledException {
+        ObjectValue lazyValue = readLazyClasses(session, keys, modifier, !hasChanges, changesController);
+        if(lazyValue != null)
+            return new Pair<>(lazyValue, false);
+
         String readValue = "readvalue"; String readChanged = "readChanged";
         QueryBuilder<T, Object> readQuery = new QueryBuilder<>(SetFact.EMPTY());
         WhereBuilder changedWhere = new WhereBuilder();
@@ -1471,6 +1495,14 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return new Pair<>(result.get(readValue), !result.get(readChanged).isNull());
     }
 
+    public ObjectValue readClasses(SQLSession session, ImMap<T, ? extends ObjectValue> keys, BaseClass baseClass, Modifier modifier, QueryEnvironment env, ChangesController changesController) throws SQLException, SQLHandledException {
+        ObjectValue lazyValue = readLazyClasses(session, keys, modifier, changesController);
+        if(lazyValue != null)
+            return lazyValue;
+
+        return readClasses(session, keys, baseClass, modifier, env);
+    }
+
     public ObjectValue readClasses(SQLSession session, ImMap<T, ? extends ObjectValue> keys, BaseClass baseClass, Modifier modifier, QueryEnvironment env) throws SQLException, SQLHandledException {
         String readValue = "readvalue";
         QueryBuilder<T, Object> readQuery = new QueryBuilder<>(SetFact.EMPTY());
@@ -1478,7 +1510,11 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return readQuery.executeClasses(session, env, baseClass).singleValue().get(readValue);
     }
 
-    public Object read(SQLSession session, ImMap<T, ? extends ObjectValue> keys, Modifier modifier, QueryEnvironment env) throws SQLException, SQLHandledException {
+    public Object read(SQLSession session, ImMap<T, ? extends ObjectValue> keys, Modifier modifier, QueryEnvironment env, ChangesController changesController) throws SQLException, SQLHandledException {
+        ObjectValue lazyValue = readLazyClasses(session, keys, modifier, changesController);
+        if(lazyValue != null)
+            return lazyValue.getValue();
+
         String readValue = "readvalue";
         QueryBuilder<T, Object> readQuery = new QueryBuilder<>(SetFact.EMPTY());
         readQuery.addProperty(readValue, getExpr(ObjectValue.getMapExprs(keys), modifier));
@@ -1523,11 +1559,11 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     public ObjectValue readClasses(DataSession session, ImMap<T, ? extends ObjectValue> keys, Modifier modifier, QueryEnvironment env) throws SQLException, SQLHandledException {
-        return readClasses(session.sql, keys, session.baseClass, modifier, env);
+        return readClasses(session.sql, keys, session.baseClass, modifier, env, session.changes);
     }
 
     public Object read(DataSession session, ImMap<T, ? extends ObjectValue> keys, Modifier modifier, QueryEnvironment env) throws SQLException, SQLHandledException {
-        return read(session.sql, keys, modifier, env);
+        return read(session.sql, keys, modifier, env, session.changes);
     }
 
     public ImMap<ImMap<T, Object>, Object> readAll(ExecutionEnvironment env) throws SQLException, SQLHandledException {

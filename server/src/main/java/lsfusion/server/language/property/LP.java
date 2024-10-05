@@ -35,6 +35,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.event.Event;
 import lsfusion.server.logics.event.PrevScope;
+import lsfusion.server.logics.navigator.controller.env.ChangesController;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.UnionProperty;
 import lsfusion.server.logics.property.cases.CaseUnionProperty;
@@ -91,8 +92,8 @@ public class LP<T extends PropertyInterface> extends LAP<T, Property<T>> {
         return property.read(session, getMapValues(objects), modifier, env);
     }
 
-    public Object read(SQLSession session, Modifier modifier, QueryEnvironment env, ObjectValue... objects) throws SQLException, SQLHandledException {
-        return property.read(session, getMapValues(objects), modifier, env);
+    public Object read(SQLSession session, Modifier modifier, ChangesController changesController, QueryEnvironment env, ObjectValue... objects) throws SQLException, SQLHandledException {
+        return property.read(session, getMapValues(objects), modifier, env, changesController);
     }
 
     public Object read(ExecutionContext context, ObjectValue... objects) throws SQLException, SQLHandledException {

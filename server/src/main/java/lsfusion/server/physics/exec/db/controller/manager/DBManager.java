@@ -124,6 +124,7 @@ import java.sql.SQLException;
 import java.sql.Savepoint;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -273,47 +274,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
         return namingPolicy;
     }
 
-    private void setUserLoggableProperties(SQLSession sql) throws SQLException, SQLHandledException {
-        Map<String, String> changes = businessLogics.getDbManager().getPropertyCNChanges(sql);
-        
-        Integer maxStatsProperty = null;
-        try {
-            maxStatsProperty = (Integer) reflectionLM.maxStatsProperty.read(sql, Property.defaultModifier, DataSession.emptyEnv(OperationOwner.unknown));
-        } catch (Exception ignored) {
+    private final ChangesController changesController = new ChangesController() {
+        public DBManager getDbManager() {
+            return DBManager.this;
         }
-
-        LP<PropertyInterface> isProperty = LM.is(reflectionLM.property);
-        ImRevMap<PropertyInterface, KeyExpr> keys = isProperty.getMapKeys();
-        KeyExpr key = keys.singleValue();
-        QueryBuilder<PropertyInterface, Object> query = new QueryBuilder<>(keys);
-        query.addProperty("CNProperty", reflectionLM.canonicalNameProperty.getExpr(key));
-        query.addProperty("overStatsProperty", reflectionLM.overStatsProperty.getExpr(key));
-        query.and(reflectionLM.userLoggableProperty.getExpr(key).getWhere());
-        ImOrderMap<ImMap<PropertyInterface, Object>, ImMap<Object, Object>> result = query.execute(sql, OperationOwner.unknown);
-
-        for (ImMap<Object, Object> values : result.valueIt()) {
-            String canonicalName = values.get("CNProperty").toString().trim();
-            if (changes.containsKey(canonicalName)) {
-                canonicalName = changes.get(canonicalName);
-            }
-            LP<?> lcp = null;
-            try {
-                lcp = businessLogics.findProperty(canonicalName);
-            } catch (Exception ignored) {
-            }
-            if(lcp != null) { // temporary for migration, так как могут на действиях стоять
-                Integer statsProperty = null;
-                if(lcp.property instanceof AggregateProperty) {
-                    statsProperty = (Integer) values.get("overStatsProperty");
-                    if (statsProperty == null)
-                        statsProperty = getPropertyInterfaceStat(lcp.property);
-                }
-                if (statsProperty == null || maxStatsProperty == null || statsProperty < maxStatsProperty) {
-                    lcp.makeUserLoggable(LM, systemEventsLM, getNamingPolicy());
-                }
-            }            
-        }
-    }
+    };
 
     public static Integer getPropertyInterfaceStat(Property property) {
         Integer statsProperty = null;
@@ -947,37 +912,51 @@ public class DBManager extends LogicsManager implements InitializingBean {
     public DataSession createSession(OperationOwner upOwner) throws SQLException {
         return createSession(getThreadLocalSql(), upOwner);
     }
-    
-    public DataSession createSession(SQLSession sql, OperationOwner upOwner) throws SQLException {
-        return createSession(sql,
-                new UserController() {
-                    public boolean changeCurrentUser(DataObject user, ExecutionStack stack) {
-                        throw new RuntimeException("not supported");
-                    }
+    // basically there are 2 strategies:
+    // weak "lazy", like in getAsyncValues
+    // strong "lazy" - with the events in the database
+    private final LRUWVSMap<Property<?>, ConcurrentHashMap<ImMap<?, ? extends ObjectValue>, ObjectValue>> weakLazyValueCache = new LRUWVSMap<>(LRUUtil.G1);
 
-                    @Override
-                    public Long getCurrentUserRole() {
-                        return null;
-                    }
-                },
-                new FormController() {
-                    @Override
-                    public void changeCurrentForm(String form) {
-                        throw new RuntimeException("not supported");
-                    }
+    private void setUserLoggableProperties(SQLSession sql) throws SQLException, SQLHandledException {
+        Map<String, String> changes = businessLogics.getDbManager().getPropertyCNChanges(sql);
 
-                    @Override
-                    public String getCurrentForm() {
-                        return null;
-                    }
-                },
-                () -> 0,
-                new ChangesController() {
-                    public DBManager getDbManager() {
-                        return DBManager.this;
-                    }
-                }, Locale::getDefault, getIsServerRestartingController(), upOwner
-        );
+        Integer maxStatsProperty = null;
+        try {
+            maxStatsProperty = (Integer) reflectionLM.maxStatsProperty.read(sql, Property.defaultModifier, changesController, DataSession.emptyEnv(OperationOwner.unknown));
+        } catch (Exception ignored) {
+        }
+
+        LP<PropertyInterface> isProperty = LM.is(reflectionLM.property);
+        ImRevMap<PropertyInterface, KeyExpr> keys = isProperty.getMapKeys();
+        KeyExpr key = keys.singleValue();
+        QueryBuilder<PropertyInterface, Object> query = new QueryBuilder<>(keys);
+        query.addProperty("CNProperty", reflectionLM.canonicalNameProperty.getExpr(key));
+        query.addProperty("overStatsProperty", reflectionLM.overStatsProperty.getExpr(key));
+        query.and(reflectionLM.userLoggableProperty.getExpr(key).getWhere());
+        ImOrderMap<ImMap<PropertyInterface, Object>, ImMap<Object, Object>> result = query.execute(sql, OperationOwner.unknown);
+
+        for (ImMap<Object, Object> values : result.valueIt()) {
+            String canonicalName = values.get("CNProperty").toString().trim();
+            if (changes.containsKey(canonicalName)) {
+                canonicalName = changes.get(canonicalName);
+            }
+            LP<?> lcp = null;
+            try {
+                lcp = businessLogics.findProperty(canonicalName);
+            } catch (Exception ignored) {
+            }
+            if(lcp != null) { // temporary for migration, так как могут на действиях стоять
+                Integer statsProperty = null;
+                if(lcp.property instanceof AggregateProperty) {
+                    statsProperty = (Integer) values.get("overStatsProperty");
+                    if (statsProperty == null)
+                        statsProperty = getPropertyInterfaceStat(lcp.property);
+                }
+                if (statsProperty == null || maxStatsProperty == null || statsProperty < maxStatsProperty) {
+                    lcp.makeUserLoggable(LM, systemEventsLM, getNamingPolicy());
+                }
+            }
+        }
     }
 
     public DataSession createSession(SQLSession sql, UserController userController, FormController formController,
@@ -1101,6 +1080,53 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
+    public DataSession createSession(SQLSession sql, OperationOwner upOwner) throws SQLException {
+        return createSession(sql,
+                new UserController() {
+                    public boolean changeCurrentUser(DataObject user, ExecutionStack stack) {
+                        throw new RuntimeException("not supported");
+                    }
+
+                    @Override
+                    public Long getCurrentUserRole() {
+                        return null;
+                    }
+                },
+                new FormController() {
+                    @Override
+                    public void changeCurrentForm(String form) {
+                        throw new RuntimeException("not supported");
+                    }
+
+                    @Override
+                    public String getCurrentForm() {
+                        return null;
+                    }
+                },
+                () -> 0, changesController, Locale::getDefault, getIsServerRestartingController(), upOwner
+        );
+    }
+
+    public <T extends PropertyInterface> ObjectValue readLazyValue(Property<T> property, ImMap<T, ? extends ObjectValue> keys) throws SQLException, SQLHandledException {
+        ConcurrentHashMap<ImMap<?, ? extends ObjectValue>, ObjectValue> map = weakLazyValueCache.get(property);
+        if(map == null) {
+            map = new ConcurrentHashMap<>();
+            weakLazyValueCache.put(property, map);
+        }
+
+        ObjectValue lazyValue = map.get(keys);
+        if (lazyValue == null) {
+            lazyValue = property.readClasses(getThreadLocalSql(), keys, LM.baseClass, Property.defaultModifier, DataSession.emptyEnv(OperationOwner.unknown));
+            map.put(keys, lazyValue);
+        }
+
+        return lazyValue;
+    }
+
+//    public <T extends PropertyInterface> void updateLazyValue(Property<T> property, ImMap<T, ? extends ObjectValue> values) {
+//
+//    }
+
     // need this to clean outdated caches
     // could be done easier with timestamps (value and last changed), but this way cache will be cleaned faster
     private final LRUWVSMap<ActionOrProperty<?>, ConcurrentIdentityWeakHashSet<ParamRef>> asyncValuesPropCache1 = new LRUWVSMap<>(LRUUtil.G1);
@@ -1147,7 +1173,18 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     private <P extends PropertyInterface> PropertyAsync<P>[] readAsyncValues(InputValueList<P> list, QueryEnvironment env, ExecutionStack stack, FormEnvironment formEnv, String value, int neededCount, AsyncMode asyncMode) throws SQLException, SQLHandledException {
-        return FormInstance.getAsyncValues(list, getThreadLocalSql(), env, LM.baseClass, Property.defaultModifier, () -> new ExecutionContext<>(MapFact.EMPTY(), createSession(), stack, formEnv), value, neededCount, asyncMode);
+        return FormInstance.getAsyncValues(list, getThreadLocalSql(), env, LM.baseClass, Property.defaultModifier, () -> new FormInstance.ExecContext() {
+            private DataSession session;
+
+            public ExecutionContext<?> getContext() throws SQLException {
+                session = createSession();
+                return new ExecutionContext<>(MapFact.EMPTY(), createSession(), stack, formEnv);
+            }
+
+            public void close() throws SQLException {
+                session.close();
+            }
+        } , value, neededCount, asyncMode);
     }
 
     public void flushChanges() {
@@ -1167,6 +1204,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
         };
         asyncValuesPropCache1.proceedSafeLockLRUEKeyValues(dropCaches);
         asyncValuesPropCache2.proceedSafeLockLRUEKeyValues(dropCaches);
+
+        weakLazyValueCache.proceedSafeLockLRUEKeyValues((property, value) -> {
+            if (property != null && InputValueList.depends(property, flushedChanges))
+                value.clear();
+        });
     }
 
     private final Object changesListLock = new Object();
@@ -1590,7 +1632,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             LM.baseClass.fillIDs(sql, DataSession.emptyEnv(OperationOwner.unknown), this::generateID, LM.staticCaption, LM.staticImage,LM.staticName,
                     migrationManager.getClassSIDChangesAfter(oldDBStructure.migrationVersion),
                     migrationManager.getObjectSIDChangesAfter(oldDBStructure.migrationVersion),
-                    idChanges);
+                    idChanges, changesController);
 
             for (DBConcreteClass newClass : newDBStructure.concreteClasses) {
                 newClass.ID = newClass.customClass.ID;

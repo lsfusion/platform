@@ -1173,24 +1173,27 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     public static <P extends PropertyInterface> PropertyAsync<P>[] getAsyncValues(InputValueList<P> list, ExecutionContext<?> context, String value, int neededCount, AsyncMode asyncMode) throws SQLException, SQLHandledException {
         DataSession session = context.getSession();
-        return getAsyncValues(list, session.sql, session.env, session.baseClass, context.getModifier(), () -> context, value, neededCount, asyncMode);
+        return getAsyncValues(list, session.sql, session.env, session.baseClass, context.getModifier(), () -> () -> context, value, neededCount, asyncMode);
     }
-    public static <P extends PropertyInterface> PropertyAsync<P>[] getAsyncValues(InputValueList<P> list, SQLSession sql, QueryEnvironment env, BaseClass baseClass, Modifier modifier, E2Callable<ExecutionContext<?>, SQLException, SQLHandledException> contextSupplier, String value, int neededCount, AsyncMode asyncMode) throws SQLException, SQLHandledException {
+
+    public static <P extends PropertyInterface> PropertyAsync<P>[] getAsyncValues(InputValueList<P> list, SQLSession sql, QueryEnvironment env, BaseClass baseClass, Modifier modifier, E2Callable<ExecContext, SQLException, SQLHandledException> contextSupplier, String value, int neededCount, AsyncMode asyncMode) throws SQLException, SQLHandledException {
         Settings settings = Settings.get();
 
         if(list instanceof InputActionValueList) {
-            ExecutionContext<?> context = contextSupplier.call();
-            ((InputActionValueList<P>) list).execute(value, context);
+            try(ExecContext execContext = contextSupplier.call()) {
+                ExecutionContext<?> context = execContext.getContext();
+                ((InputActionValueList<P>) list).execute(value, context);
 
-            BaseLogicsModule lm = context.getBL().LM;
-            ImOrderMap<ImMap<Integer, Object>, ImMap<Integer, Object>> asyncs = LP.readAll(new LP[]{lm.inputList, lm.displayInputList}, context.getEnv());
+                BaseLogicsModule lm = context.getBL().LM;
+                ImOrderMap<ImMap<Integer, Object>, ImMap<Integer, Object>> asyncs = LP.readAll(new LP[]{lm.inputList, lm.displayInputList}, context.getEnv());
 
-            assert !asyncMode.isObjects();
-            ImMap<Integer, PropertyAsync<P>> resultList = asyncs.getMap().mapKeyValues(key -> (Integer) key.singleValue(), valueResult -> {
-                String rawString = (String) valueResult.get(0);
-                return new PropertyAsync<>(BaseUtils.nvl((String) valueResult.get(1), rawString), rawString, null);
-            });
-            return resultList.sort().valuesList().toArray(new PropertyAsync[resultList.size()]);
+                assert !asyncMode.isObjects();
+                ImMap<Integer, PropertyAsync<P>> resultList = asyncs.getMap().mapKeyValues(key -> (Integer) key.singleValue(), valueResult -> {
+                    String rawString = (String) valueResult.get(0);
+                    return new PropertyAsync<>(BaseUtils.nvl((String) valueResult.get(1), rawString), rawString, null);
+                });
+                return resultList.sort().valuesList().toArray(new PropertyAsync[resultList.size()]);
+            }
         }
 
         InputPropertyValueList<P> propertyList = (InputPropertyValueList<P>) list;
@@ -1249,6 +1252,12 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         }
 
         return getAsyncValues(sql, env, baseClass, listExpr, listExprKeys.orders, listExprKeys.mapKeys, asyncMode, neededCount, value, highlight).first;
+    }
+    public interface ExecContext extends AutoCloseable {
+        ExecutionContext<?> getContext() throws SQLException;
+
+        default void close() throws SQLException {
+        }
     }
 
     private static <P extends PropertyInterface> int getValueIndex(PropertyAsync<P>[] resultValues, String value) {

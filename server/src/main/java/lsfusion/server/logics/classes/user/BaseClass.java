@@ -28,6 +28,7 @@ import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.classes.user.set.OrObjectClassSet;
+import lsfusion.server.logics.navigator.controller.env.ChangesController;
 import lsfusion.server.logics.property.classes.user.ObjectClassProperty;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -112,7 +113,7 @@ public class BaseClass extends AbstractCustomClass {
         ConcreteCustomClass.fillObjectClass(objectClass, sidClasses, nameClasses, images, version);
     }
 
-    public void fillIDs(SQLSession sql, QueryEnvironment env, SQLCallable<Long> idGen, LP staticCaption, LP staticImage, LP<?> staticName, Map<String, String> sidChanges, Map<String, String> objectSIDChanges, DBManager.IDChanges dbChanges) throws SQLException, SQLHandledException {
+    public void fillIDs(SQLSession sql, QueryEnvironment env, SQLCallable<Long> idGen, LP staticCaption, LP staticImage, LP<?> staticName, Map<String, String> sidChanges, Map<String, String> objectSIDChanges, DBManager.IDChanges dbChanges, ChangesController changesController) throws SQLException, SQLHandledException {
         Map<String, ConcreteCustomClass> usedSIds = new HashMap<>();
         Set<Long> usedIds = new HashSet<>();
 
@@ -121,7 +122,7 @@ public class BaseClass extends AbstractCustomClass {
 
         objectClass.ID = Long.MAX_VALUE - 5; // в явную обрабатываем objectClass
 
-        if(objectClass.readData(objectClass.ID, sql, env) == null)
+        if(objectClass.readData(objectClass.ID, sql, env, changesController) == null)
             dbChanges.added.add(new DBManager.IDAdd(objectClass.ID, objectClass, objectClass.getSID(), ThreadLocalContext.localize(objectClass.caption), "object"));
 
         usedSIds.put(objectClass.getSID(), objectClass);

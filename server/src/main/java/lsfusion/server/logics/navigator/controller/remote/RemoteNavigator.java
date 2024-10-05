@@ -268,6 +268,14 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             return null;
         }
 
+        @Override
+        public <T extends PropertyInterface> ObjectValue readLazyValue(Property<T> property, ImMap<T, ? extends ObjectValue> keys) throws SQLException, SQLHandledException {
+            ChangesSync changesSync = weakThis.get();
+            if(changesSync != null)
+                return changesSync.readLazyValue(property, keys);
+            return null;
+        }
+
         public void regLocalChange(ImSet<Property> changes, DataSession session) {
             ChangesSync changesSync = weakThis.get();
             if(changesSync != null)
