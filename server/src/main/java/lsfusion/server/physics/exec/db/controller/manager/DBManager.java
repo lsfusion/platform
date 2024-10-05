@@ -1117,6 +1117,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         ImSet<Property> flushedChanges;
         synchronized (changesListLock) {
             flushedChanges = mChanges.immutable();
+            mChanges = SetFact.mSet();
         }
         if(flushedChanges.isEmpty())
             return;
