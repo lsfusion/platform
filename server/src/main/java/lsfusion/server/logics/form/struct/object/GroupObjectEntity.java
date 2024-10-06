@@ -4,10 +4,7 @@ import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.form.object.table.grid.ListViewType;
@@ -379,7 +376,10 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
             mList.add(filter.getImplement(mapObjects));
         for(ContextFilterEntity<?, P, ObjectEntity> contextFilter : contextFilters)
             mList.add(contextFilter.getWhereProperty(mapValues, mapObjects));
-        return PropertyFact.createAnd(mList.immutableList().getCol());
+        ImList<PropertyMapImplement<?, T>> list = mList.immutableList();
+        if(list.isEmpty())
+            return null;
+        return PropertyFact.createAnd(list.getCol());
     }
 
     private static ImMap<ObjectEntity, ValueClass> getGridClasses(ImSet<ObjectEntity> objects) {
@@ -402,7 +402,11 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         return InputFilterEntity.and(getFilterInputFilterEntity(filters, mapObjects), getClassInputFilterEntity());
     }
     public <T extends PropertyInterface, P extends PropertyInterface> PropertyMapImplement<?, T> getWhereProperty(ImSet<FilterEntity> filters, ImSet<ContextFilterEntity<?, P, ObjectEntity>> contextFilters, ImRevMap<P, T> mapValues, ImRevMap<ObjectEntity, T> mapObjects) {
-        return PropertyFact.createAnd(getFilterWhereProperty(filters, contextFilters, mapValues, mapObjects), getClassWhereProperty(mapObjects));
+        PropertyMapImplement<?, T> classWhereProperty = getClassWhereProperty(mapObjects);
+        PropertyMapImplement<?, T> filterWhereProperty = getFilterWhereProperty(filters, contextFilters, mapValues, mapObjects);
+        if(filterWhereProperty == null)
+            return classWhereProperty;
+        return PropertyFact.createAnd(filterWhereProperty, classWhereProperty);
     }
 
     // hack where ImMap used (it does not support null keys)

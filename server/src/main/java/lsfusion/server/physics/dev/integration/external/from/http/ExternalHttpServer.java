@@ -375,23 +375,27 @@ public class ExternalHttpServer extends MonitorServer {
 
             boolean hasContentType = false;
             boolean hasContentDisposition = false;
-            for(int i=0;i<headerNames.length;i++) {
-                String headerName = headerNames[i];
-                if(headerName.equals("Content-Type")) {
-                    hasContentType = true;
-                    response.getResponseHeaders().add("Content-Type", headerValues[i]);
-                } else
-                    response.getResponseHeaders().add(headerName, headerValues[i]);
-                hasContentDisposition = hasContentDisposition || headerName.equals("Content-Disposition");
+            if(headerNames != null) {
+                for (int i = 0; i < headerNames.length; i++) {
+                    String headerName = headerNames[i];
+                    if (headerName.equals("Content-Type")) {
+                        hasContentType = true;
+                        response.getResponseHeaders().add("Content-Type", headerValues[i]);
+                    } else
+                        response.getResponseHeaders().add(headerName, headerValues[i]);
+                    hasContentDisposition = hasContentDisposition || headerName.equals("Content-Disposition");
+                }
             }
 
-            String cookie = "";
-            for(int i=0;i<cookieNames.length;i++) {
-                String cookieName = cookieNames[i];
-                String cookieValue = cookieValues[i];
-                cookie += (cookie.isEmpty() ? "" : ";") + cookieName + "=" + ExternalUtils.encodeCookie(cookieValue, COOKIE_VERSION);
+            if(cookieNames != null) {
+                String cookie = "";
+                for (int i = 0; i < cookieNames.length; i++) {
+                    String cookieName = cookieNames[i];
+                    String cookieValue = cookieValues[i];
+                    cookie += (cookie.isEmpty() ? "" : ";") + cookieName + "=" + ExternalUtils.encodeCookie(cookieValue, COOKIE_VERSION);
+                }
+                response.getResponseHeaders().add("Cookie", cookie);
             }
-            response.getResponseHeaders().add("Cookie", cookie);
 
             if (contentType != null && !hasContentType)
                 response.getResponseHeaders().add("Content-Type", contentType);
