@@ -14,7 +14,6 @@ import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWVSMap;
 import lsfusion.base.col.lru.LRUWWEVSMap;
 import lsfusion.base.file.RawFileData;
-import lsfusion.base.lambda.DProcessor;
 import lsfusion.base.lambda.E2Runnable;
 import lsfusion.interop.ProgressBar;
 import lsfusion.interop.connection.LocalePreferences;
@@ -45,6 +44,7 @@ import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.adapter.DataAdapter;
 import lsfusion.server.data.sql.connection.ExConnection;
 import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.data.sql.lambda.SQLCallable;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.table.*;
@@ -912,10 +912,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
     public DataSession createSession(OperationOwner upOwner) throws SQLException {
         return createSession(getThreadLocalSql(), upOwner);
     }
-    // basically there are 2 strategies:
-    // weak "lazy", like in getAsyncValues
-    // strong "lazy" - with the events in the database
-    private final LRUWVSMap<Property<?>, ConcurrentHashMap<ImMap<?, ? extends ObjectValue>, ObjectValue>> weakLazyValueCache = new LRUWVSMap<>(LRUUtil.G1);
 
     private void setUserLoggableProperties(SQLSession sql) throws SQLException, SQLHandledException {
         Map<String, String> changes = businessLogics.getDbManager().getPropertyCNChanges(sql);
@@ -1058,27 +1054,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
             return 31 * (31 * (31 * ( 31 * (31 * mapValues.hashCode() + envValues.hashCode())  + value.hashCode()) + mode.hashCode()) + neededCount) + hashMap(orders);
         }
     }
-    private static class ParamRef {
-        public Param param;
-
-        public ParamRef(Param param) {
-            this.param = param;
-        }
-
-        private void drop() {
-            param = null;
-        }
-    }
-    private static class ValueRef<P extends PropertyInterface> {
-        // it's the only strong value to keep it from garbage collected
-        public final ParamRef ref;
-        public final PropertyAsync<P>[] values;
-
-        public ValueRef(ParamRef ref, PropertyAsync<P>[] values) {
-            this.ref = ref;
-            this.values = values;
-        }
-    }
+    // basically there are 2 strategies:
+    // weak "lazy", like in getAsyncValues
+    // strong "lazy" - with the events in the database
+    // the first is good for really rarely changed props, the second has more overhead
+    private final FlushedCache<ImMap<?, ? extends ObjectValue>, ObjectValue> weakLazyValueCache = new FlushedCache<>(LRUUtil.G1);
+    private final FlushedCache<Param, PropertyAsync[]> asyncValuesCache1 = new FlushedCache<>(LRUUtil.G1);
 
     public DataSession createSession(SQLSession sql, OperationOwner upOwner) throws SQLException {
         return createSession(sql,
@@ -1106,70 +1087,61 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 () -> 0, changesController, Locale::getDefault, getIsServerRestartingController(), upOwner
         );
     }
+    private final FlushedCache<Param, PropertyAsync[]> asyncValuesCache2 = new FlushedCache<>(LRUUtil.G2);
 
     public <T extends PropertyInterface> ObjectValue readLazyValue(Property<T> property, ImMap<T, ? extends ObjectValue> keys) throws SQLException, SQLHandledException {
-        ConcurrentHashMap<ImMap<?, ? extends ObjectValue>, ObjectValue> map = weakLazyValueCache.get(property);
-        if(map == null) {
-            map = new ConcurrentHashMap<>();
-            weakLazyValueCache.put(property, map);
-        }
-
-        ObjectValue lazyValue = map.get(keys);
-        if (lazyValue == null) {
-            lazyValue = property.readClasses(getThreadLocalSql(), keys, LM.baseClass, Property.defaultModifier, DataSession.emptyEnv(OperationOwner.unknown));
-            map.put(keys, lazyValue);
-        }
-
-        return lazyValue;
+        return weakLazyValueCache.proceed(property, keys,
+                () -> property.readClasses(getThreadLocalSql(), keys, LM.baseClass, Property.defaultModifier, DataSession.emptyEnv(OperationOwner.unknown)));
     }
 
 //    public <T extends PropertyInterface> void updateLazyValue(Property<T> property, ImMap<T, ? extends ObjectValue> values) {
 //
 //    }
 
-    // need this to clean outdated caches
-    // could be done easier with timestamps (value and last changed), but this way cache will be cleaned faster
-    private final LRUWVSMap<ActionOrProperty<?>, ConcurrentIdentityWeakHashSet<ParamRef>> asyncValuesPropCache1 = new LRUWVSMap<>(LRUUtil.G1);
-    private final LRUWVSMap<ActionOrProperty<?>, ConcurrentIdentityWeakHashSet<ParamRef>> asyncValuesPropCache2 = new LRUWVSMap<>(LRUUtil.G2);
-
-    // we need weak ref, but regular equals (not identity)
-    private final LRUWWEVSMap<ActionOrProperty<?>, Param, ValueRef> asyncValuesValueCache1 = new LRUWWEVSMap<>(LRUUtil.G1);
-    private final LRUWWEVSMap<ActionOrProperty<?>, Param, ValueRef> asyncValuesValueCache2 = new LRUWWEVSMap<>(LRUUtil.G2);
-
     public <P extends PropertyInterface> PropertyAsync<P>[] getAsyncValues(InputValueList<P> list, QueryEnvironment env, ExecutionStack stack, FormEnvironment formEnv, String value, int neededCount, AsyncMode mode) throws SQLException, SQLHandledException {
         if(Settings.get().isIsClustered()) // we don't want to use caches since they can be inconsistent
             return readAsyncValues(list, env, stack, formEnv, value, neededCount, mode);
 
-        LRUWVSMap<ActionOrProperty<?>, ConcurrentIdentityWeakHashSet<ParamRef>> asyncValuesPropCache;
-        LRUWWEVSMap<ActionOrProperty<?>, Param, ValueRef> asyncValuesValueCache;
-        if(value.length() >= Settings.get().getAsyncValuesLongCacheThreshold() || list.hasValues()) {
-            asyncValuesPropCache = asyncValuesPropCache1;
-            asyncValuesValueCache = asyncValuesValueCache1;
-        } else {
-            asyncValuesPropCache = asyncValuesPropCache2;
-            asyncValuesValueCache = asyncValuesValueCache2;
+        return (value.length() >= Settings.get().getAsyncValuesLongCacheThreshold() || list.hasValues() ? asyncValuesCache1 : asyncValuesCache2).
+                proceed(list.getCacheKey(), list.getCacheParam(value, neededCount, mode, env),
+                () -> readAsyncValues(list, env, stack, formEnv, value, neededCount, mode));
+    }
+
+    public void flushChanges() {
+        ImSet<Property> flushedChanges;
+        synchronized (changesListLock) {
+            flushedChanges = mChanges.immutable();
+            mChanges = SetFact.mSet();
+        }
+        if(flushedChanges.isEmpty())
+            return;
+
+        asyncValuesCache1.flush(flushedChanges);
+        asyncValuesCache2.flush(flushedChanges);
+        weakLazyValueCache.flush(flushedChanges);
+    }
+
+    private static class ParamRef<K> {
+        public K param;
+
+        public ParamRef(K param) {
+            this.param = param;
         }
 
-        ActionOrProperty<?> key = list.getCacheKey();
-        Param param = list.getCacheParam(value, neededCount, mode, env);
-
-        ValueRef<P> valueRef = asyncValuesValueCache.get(key, param);
-        if(valueRef != null && valueRef.ref.param != null)
-            return valueRef.values;
-
-        // has to be before reading to be sure that ref will be dropped when changes are made
-        ParamRef ref = new ParamRef(param);
-        ConcurrentIdentityWeakHashSet<ParamRef> paramRefs = asyncValuesPropCache.get(key);
-        if(paramRefs == null) {
-            paramRefs = new ConcurrentIdentityWeakHashSet<>();
-            asyncValuesPropCache.put(key, paramRefs);
+        private void drop() {
+            param = null;
         }
-        paramRefs.add(ref);
+    }
 
-        PropertyAsync<P>[] values = readAsyncValues(list, env, stack, formEnv, value, neededCount, mode);
-        asyncValuesValueCache.put(key, param, new ValueRef<>(ref, values));
+    private static class ValueRef<K, V> {
+        // it's the only strong value to keep it from garbage collected
+        public final ParamRef<K> ref;
+        public final V values;
 
-        return values;
+        public ValueRef(ParamRef<K> ref, V values) {
+            this.ref = ref;
+            this.values = values;
+        }
     }
 
     private <P extends PropertyInterface> PropertyAsync<P>[] readAsyncValues(InputValueList<P> list, QueryEnvironment env, ExecutionStack stack, FormEnvironment formEnv, String value, int neededCount, AsyncMode asyncMode) throws SQLException, SQLHandledException {
@@ -1187,28 +1159,45 @@ public class DBManager extends LogicsManager implements InitializingBean {
         } , value, neededCount, asyncMode);
     }
 
-    public void flushChanges() {
-        ImSet<Property> flushedChanges;
-        synchronized (changesListLock) {
-            flushedChanges = mChanges.immutable();
-            mChanges = SetFact.mSet();
+    // need this to clean outdated caches
+    // could be done easier with timestamps (value and last changed), but this way cache will be cleaned faster
+    private static class FlushedCache<K, V> {
+        private final LRUWVSMap<ActionOrProperty<?>, ConcurrentIdentityWeakHashSet<ParamRef<K>>> propCache;
+        private final LRUWWEVSMap<ActionOrProperty<?>, K, ValueRef<K, V>> valueCache;
+
+        public FlushedCache(LRUUtil.Strategy expireStrategy) {
+            propCache = new LRUWVSMap<>(expireStrategy);
+            valueCache = new LRUWWEVSMap<>(expireStrategy);
         }
-        if(flushedChanges.isEmpty())
-            return;
 
-        DProcessor<ActionOrProperty<?>, ConcurrentIdentityWeakHashSet<ParamRef>> dropCaches = (property, refs) -> {
-            if (property != null && InputValueList.depends(property, flushedChanges)) {
-                for (ParamRef ref : refs)
-                    ref.drop(); // dropping ref will eventually lead to garbage collection of entries in all lru caches, plus there is a check that cache is dropped
+        public V proceed(ActionOrProperty property, K param, SQLCallable<V> function) throws SQLException, SQLHandledException {
+            ValueRef<K, V> valueRef = valueCache.get(property, param);
+            if(valueRef != null && valueRef.ref.param != null)
+                return valueRef.values;
+
+            // has to be before reading to be sure that ref will be dropped when changes are made
+            ParamRef<K> ref = new ParamRef<>(param);
+            ConcurrentIdentityWeakHashSet<ParamRef<K>> paramRefs = propCache.get(property);
+            if(paramRefs == null) {
+                paramRefs = new ConcurrentIdentityWeakHashSet<>();
+                propCache.put(property, paramRefs);
             }
-        };
-        asyncValuesPropCache1.proceedSafeLockLRUEKeyValues(dropCaches);
-        asyncValuesPropCache2.proceedSafeLockLRUEKeyValues(dropCaches);
+            paramRefs.add(ref);
 
-        weakLazyValueCache.proceedSafeLockLRUEKeyValues((property, value) -> {
-            if (property != null && InputValueList.depends(property, flushedChanges))
-                value.clear();
-        });
+            V values = function.call();
+            valueCache.put(property, param, new ValueRef<>(ref, values));
+
+            return values;
+        }
+
+        public void flush(ImSet<Property> flushedChanges) {
+            propCache.proceedSafeLockLRUEKeyValues((property, refs) -> {
+                if (property != null && InputValueList.depends(property, flushedChanges)) {
+                    for (ParamRef ref : refs)
+                        ref.drop(); // dropping ref will eventually lead to garbage collection of entries in all lru caches, plus there is a check that cache is dropped
+                }
+            });
+        }
     }
 
     private final Object changesListLock = new Object();
