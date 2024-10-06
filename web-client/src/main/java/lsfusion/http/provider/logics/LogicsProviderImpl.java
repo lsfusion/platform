@@ -1,6 +1,5 @@
 package lsfusion.http.provider.logics;
 
-import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.client.controller.remote.proxy.RemoteLogicsLoaderProxy;
 import lsfusion.gwt.client.base.exception.AppServerNotAvailableDispatchException;
@@ -18,7 +17,6 @@ import org.springframework.beans.factory.InitializingBean;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.rmi.NotBoundException;

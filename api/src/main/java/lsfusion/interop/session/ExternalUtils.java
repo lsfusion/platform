@@ -11,7 +11,9 @@ import lsfusion.base.file.FileData;
 import lsfusion.base.file.IOUtils;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.connection.AuthenticationToken;
+import lsfusion.interop.connection.ConnectionInfo;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
+import lsfusion.interop.session.remote.RemoteSessionInterface;
 import org.apache.hc.client5.http.entity.mime.*;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpEntity;
@@ -34,6 +36,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -89,15 +93,61 @@ public class ExternalUtils {
 
     public static final List<String> PARAMS = Arrays.asList(ACTION_CN_PARAM, SCRIPT_PARAM, PARAMS_PARAM, RETURN_PARAM, RETURNMULTITYPE_PARAM, SIGNATURE_PARAM);
 
-    public static ExecInterface getExecInterface(final AuthenticationToken token, final SessionInfo sessionInfo, final RemoteLogicsInterface remoteLogics) {
+    public static ExecInterface getExecInterface(RemoteLogicsInterface remoteLogics, Result<String> sessionID, Result<Boolean> closeSession, SessionContainer sessionContainer, AuthenticationToken token, ConnectionInfo connectionInfo) {
+        if(sessionID != null) {
+            if(sessionID.result.endsWith("_close")) {
+                closeSession.set(true);
+                sessionID.set(sessionID.result.substring(0, sessionID.result.length() - "_close".length()));
+            }
+
+            return new ExecInterface() {
+                private RemoteSessionInterface getOrCreateSession(AuthenticationToken token, RemoteLogicsInterface remoteLogics, ConnectionInfo connectionInfo, ExternalRequest request, String fSessionID) throws RemoteException {
+                    return sessionContainer.getOrCreateSession(remoteLogics, token, new SessionInfo(connectionInfo, request), fSessionID);
+                }
+
+                @Override
+                public lsfusion.interop.session.ExternalResponse exec(String action, ExternalRequest request) throws RemoteException {
+                    return getOrCreateSession(token, remoteLogics, connectionInfo, request, sessionID.result).exec(action, request);
+                }
+
+                @Override
+                public lsfusion.interop.session.ExternalResponse eval(boolean action, ExternalRequest.Param paramScript, ExternalRequest request) throws RemoteException {
+                    return getOrCreateSession(token, remoteLogics, connectionInfo, request, sessionID.result).eval(action, paramScript, request);
+                }
+            };
+        }
+
         return new ExecInterface() {
             public lsfusion.interop.session.ExternalResponse exec(String action, ExternalRequest request) throws RemoteException {
-                return remoteLogics.exec(token, sessionInfo, action, request);
+                return remoteLogics.exec(token, connectionInfo, action, request);
             }
             public lsfusion.interop.session.ExternalResponse eval(boolean action, ExternalRequest.Param paramScript, ExternalRequest request) throws RemoteException {
-                return remoteLogics.eval(token, sessionInfo, action, paramScript, request);
+                return remoteLogics.eval(token, connectionInfo, action, paramScript, request);
             }
         };
+    }
+
+    public static class SessionContainer {
+
+        private final Map<String, RemoteSessionInterface> currentSessions = new ConcurrentHashMap<>();
+
+        public RemoteSessionInterface getOrCreateSession(RemoteLogicsInterface remoteLogics, AuthenticationToken token, SessionInfo sessionInfo, String sessionID) throws RemoteException {
+            RemoteSessionInterface remoteSession = currentSessions.get(sessionID);
+            if(remoteSession == null) {
+                remoteSession = remoteLogics.createSession(token, sessionInfo);
+                currentSessions.put(sessionID, remoteSession);
+            }
+            return remoteSession;
+        }
+
+        public void removeSession(String sessionID) throws RemoteException {
+            currentSessions.remove(sessionID).close();
+        }
+
+        public void destroy() throws RemoteException {
+            for(RemoteSessionInterface remoteSession : currentSessions.values())
+                remoteSession.close();
+        }
     }
 
     public static int DEFAULT_COOKIE_VERSION = 0;
@@ -122,7 +172,7 @@ public class ExternalUtils {
         return cookie;
     }
 
-    public static ExternalResponse processRequest(ExecInterface remoteExec, ConvertFileValue convertFileValue, InputStream is, ContentType requestContentType,
+    public static ExternalResponse processRequest(ExecInterface remoteExec, Function<ExternalRequest, ConvertFileValue> convertFileValue, InputStream is, ContentType requestContentType,
                                                   String[] headerNames, String[] headerValues, String[] cookieNames, String[] cookieValues, String logicsHost,
                                                   Integer logicsPort, String logicsExportName, String scheme, String method, String webHost, Integer webPort,
                                                   String contextPath, String servletPath, String pathInfo, String query, String sessionId) throws IOException, MessagingException {
@@ -174,7 +224,7 @@ public class ExternalUtils {
             }
         }
 
-        return getExternalResponse(execResult, queryParams, (returns.isEmpty() ? "export" : returns.get(0)), convertFileValue);
+        return getExternalResponse(execResult, queryParams, (returns.isEmpty() ? "export" : returns.get(0)), convertFileValue.apply(request));
     }
 
     public static ExternalResponse getExternalResponse(lsfusion.interop.session.ExternalResponse execResult, List<NameValuePair> queryParams, String singleFileName, ConvertFileValue convertFileValue) {

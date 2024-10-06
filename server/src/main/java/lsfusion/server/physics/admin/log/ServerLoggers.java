@@ -129,7 +129,9 @@ public class ServerLoggers {
     }
 
     public static void exinfoLog(String message) {
-        exInfoLogger.info(message + '\n' + ExceptionUtils.getStackTrace());
+        exInfoLogger.info(message);
+        if (exInfoLogger.isTraceEnabled())
+            exInfoLogger.trace(ExceptionUtils.getStackTrace());
     }
 
     public static void remoteLifeLog(String message) {

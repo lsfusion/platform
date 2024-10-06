@@ -13,6 +13,7 @@ import lsfusion.interop.action.MessageClientType;
 import lsfusion.interop.form.ModalityWindowFormType;
 import lsfusion.interop.form.ShowFormType;
 import lsfusion.interop.form.WindowFormType;
+import lsfusion.interop.session.ExternalRequest;
 import lsfusion.server.base.controller.remote.RmiManager;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.QueryEnvironment;
@@ -723,7 +724,8 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
 
     public Object convertFileValue(Object value) {
-        return getRmiManager().convertFileValue(FormChanges.convertFileValue(value, getRemoteContext()));
+        // todo: here ExternalRequest of the Context (used for its creation) should be + maybe "overriden" in exec / eval
+        return getRmiManager().convertFileValue(ExternalRequest.EMPTY, FormChanges.convertFileValue(value, getRemoteContext()));
     }
 
     public FormInstance createFormInstance(FormEntity formEntity, ImSet<ObjectEntity> inputObjects, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, Boolean noCancel, ManageSessionType manageSession, boolean checkOnOk, boolean showDrop, boolean interactive, WindowFormType type, ImSet<ContextFilterInstance> contextFilters, boolean readonly) throws SQLException, SQLHandledException {

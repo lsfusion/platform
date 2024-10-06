@@ -10,9 +10,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.base.exception.AuthenticationException;
-import lsfusion.interop.connection.AuthenticationToken;
-import lsfusion.interop.connection.LocalePreferences;
-import lsfusion.interop.connection.RemoteConnectionInterface;
+import lsfusion.interop.connection.*;
 import lsfusion.interop.session.*;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.controller.remote.RemoteRequestObject;
@@ -74,7 +72,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
 
     protected DataObject computer;
     protected SecurityManager securityManager;
-    protected AuthenticationToken authToken;
+    protected AuthenticationToken token;
     protected DataObject user;
     protected String userName;
     protected String computerName;
@@ -84,11 +82,14 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     public Long userRole;
     protected Integer transactionTimeout;
 
-    public String sessionId;
     protected String userRoles;
 
-    public RemoteConnection(int port, String sID, ExecutionStack upStack) throws RemoteException {
+    public RemoteConnection(int port, String sID, LogicsInstance logicsInstance, AuthenticationToken token, SessionInfo sessionInfo, ExecutionStack upStack) throws RemoteException, SQLException, SQLHandledException, ClassNotFoundException, InstantiationException, IllegalAccessException {
         super(port, upStack, sID, SyncType.NOSYNC);
+
+        initContext(logicsInstance);
+
+        initConnectionContext(token, sessionInfo.connectionInfo, upStack);
     }
     
     protected abstract FormController createFormController();
@@ -99,51 +100,53 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     }
     protected LogInfo logInfo;
 
-    protected void initContext(LogicsInstance logicsInstance, AuthenticationToken token, SessionInfo connectionInfo, ExecutionStack stack) throws SQLException, InstantiationException, IllegalAccessException, ClassNotFoundException, SQLHandledException {
-        this.businessLogics = logicsInstance.getBusinessLogics();
-        this.dbManager = logicsInstance.getDbManager();
+    protected void initContext(LogicsInstance logicsInstance) throws SQLException, InstantiationException, IllegalAccessException, ClassNotFoundException, SQLHandledException {
+        businessLogics = logicsInstance.getBusinessLogics();
+        dbManager = logicsInstance.getDbManager();
         securityManager = logicsInstance.getSecurityManager();
-        this.sql = dbManager.createSQL(new WeakSQLSessionContextProvider(this));
-
         this.logicsInstance = logicsInstance;
 
-        sessionId = connectionInfo.externalRequest.sessionId;
-        remoteAddress = connectionInfo.hostAddress;
+        this.sql = dbManager.createSQL(new WeakSQLSessionContextProvider(this));
+    }
 
-        authToken = token;
-        computerName = connectionInfo.hostName;
+    // it's important to have all props lazy to make RemoteSession be initialized faster
+    public void initConnectionContext(AuthenticationToken token, ConnectionInfo connectionInfo, ExecutionStack stack) throws SQLException, SQLHandledException {
+        try(ExecSession session = getExecSession()) {
+            initUser(token, connectionInfo.userInfo, session.dataSession, stack);
 
-        try(DataSession session = createSession()) {
-            // user
-            user = securityManager.getUser(token, session);
-
-            saveUserContext(connectionInfo.language, connectionInfo.country, connectionInfo.timeZone, connectionInfo.dateFormat, connectionInfo.timeFormat, stack, session);
-
-            initUserContext(session);
-
-            // computer
-            computer = dbManager.getComputer(connectionInfo.hostName, session, stack); // can apply session
+            initComputer(stack, connectionInfo.computerInfo, session.dataSession);
         }
     }
 
-    protected void saveUserContext(String clientLanguage, String clientCountry, TimeZone clientTimeZone, String clientDateFormat, String clientTimeFormat,
-                                   ExecutionStack stack, DataSession session) throws SQLException, SQLHandledException {
-        if (clientLanguage != null) {
-            businessLogics.authenticationLM.clientLanguage.change(clientLanguage, session, user);
-            businessLogics.authenticationLM.clientCountry.change(clientCountry, session, user);
-            session.applyException(businessLogics, stack);
-        }
+    private void initUser(AuthenticationToken token, UserInfo userInfo, DataSession session, ExecutionStack stack) throws SQLException, SQLHandledException {
+        this.token = token;
+        user = securityManager.getUser(token, session);
 
-        if (clientTimeZone != null) {
-            businessLogics.authenticationLM.clientTimeZone.change(clientTimeZone.getID(), session, user);
-            businessLogics.authenticationLM.clientDateFormat.change(clientDateFormat, session, user);
-            businessLogics.authenticationLM.clientTimeFormat.change(clientTimeFormat, session, user);
-            session.applyException(businessLogics, stack);
-        }
+        saveUserContext(userInfo, stack, session);
+
+        initUserContext(session);
     }
 
-    // in theory its possible to cache all this
-    // locale + log info
+    private void initComputer(ExecutionStack stack, ComputerInfo computerInfo, DataSession session) {
+        String hostName = computerInfo.hostName;
+
+        remoteAddress = computerInfo.hostAddress;
+        computerName = hostName;
+        computer = dbManager.getComputer(hostName, session, stack); // can apply session
+
+        logInfo = null;
+    }
+
+    protected void saveUserContext(UserInfo userInfo, ExecutionStack stack, DataSession session) throws SQLException, SQLHandledException {
+        TimeZone timeZone = userInfo.timeZone;
+        businessLogics.authenticationLM.clientTimeZone.change(timeZone != null ? timeZone.getID() : null, session, user);
+        businessLogics.authenticationLM.clientLanguage.change(userInfo.language, session, user);
+        businessLogics.authenticationLM.clientCountry.change(userInfo.country, session, user);
+        businessLogics.authenticationLM.clientDateFormat.change(userInfo.dateFormat, session, user);
+        businessLogics.authenticationLM.clientTimeFormat.change(userInfo.timeFormat, session, user);
+        session.applyException(businessLogics, stack);
+    }
+
     protected void initUserContext(DataSession session) throws SQLException, SQLHandledException {
         userName = (String) businessLogics.authenticationLM.logNameCustomUser.read(session, user);
         allowExcessAllocatedBytes = businessLogics.serviceLM.allowExcessAllocatedBytes.read(session, user) != null;
@@ -160,6 +163,8 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
 
         userRole = (Long) businessLogics.securityLM.firstRoleUser.read(session, user);
         transactionTimeout = (Integer) businessLogics.serviceLM.transactTimeoutUser.read(session, user);
+
+        logInfo = null;
     }
 
     protected static class WeakUserController implements UserController { // чтобы помочь сборщику мусора и устранить цикл
@@ -269,7 +274,6 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         try(DataSession session = createSession()) {
             initUserContext(session);
         }
-        logInfo = null;
         return true;
     }
 
@@ -293,7 +297,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     }
 
     protected String getCurrentAuthToken() {
-        return authToken != null ? authToken.string : null;
+        return token != null ? token.string : null;
     }
 
     public Long getCurrentComputer() {
@@ -407,7 +411,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
                 if (this instanceof RemoteNavigator)
                     ((RemoteNavigator) this).pushNotification(runnable);
                 else
-                    foundNavigator = logicsInstance.getNavigatorsManager().pushNotificationSession(sessionId, runnable, pendNotification);
+                    foundNavigator = logicsInstance.getNavigatorsManager().pushNotificationSession(request.sessionId, runnable, pendNotification);
 
                 if (foundNavigator)
                     return new RedirectExternalResponse("/push-notification", null);
@@ -417,15 +421,12 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
                 return new RedirectExternalResponse("/push-notification", RemoteNavigator.pushGlobalNotification(runnable));
         } else {
             try {
-                ExecSession execSession = getExecSession();
-                try {
+                try (ExecSession execSession = getExecSession()) {
                     DataSession dataSession = execSession.dataSession;
 
                     runnable.run(dataSession, getStack(), null);
 
                     return readResult(request.returnNames, request.queryParams, property.action, dataSession);
-                } finally {
-                    execSession.close();
                 }
             } catch (SQLException | SQLHandledException e) {
                 throw Throwables.propagate(e);
@@ -456,7 +457,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         if(authException != null)
             throw authException;
 
-        checkEnableApi(authToken.isAnonymous(), forceAPI);
+        checkEnableApi(token.isAnonymous(), forceAPI);
     }
 
     private static void checkEnableApi(boolean anonymous, boolean forceAPI) {
@@ -587,18 +588,6 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
 
     protected abstract ExecSession getExecSession() throws SQLException;
 
-    public class ExecSession {
-
-        public DataSession dataSession;
-
-        public ExecSession(DataSession dataSession) {
-           this.dataSession = dataSession;
-        }
-
-        public void close() throws SQLException {
-        }
-    }
-
     private ExternalResponse logFromExternalSystemRequest(Callable<ExternalResponse> responseCallable, boolean exec, String action, ExternalRequest request) {
         String requestLogMessage = Settings.get().isLogFromExternalSystemRequests() ? getExternalSystemRequestsLog(logInfo, request.servletPath, request.method,
                 "\tREQUEST_QUERY: " + request.query + "\n" + "\t" + (exec ? "ACTION" : "SCRIPT") + ":\n\t\t " + action) : null;
@@ -610,7 +599,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
 
             if (requestLogMessage != null && Settings.get().isLogFromExternalSystemRequestsDetail()) {
                 List<NameValuePair> queryParams = request.queryParams;
-                ExternalUtils.ExternalResponse externalResponse = ExternalUtils.getExternalResponse(execResult, queryParams != null ? queryParams : Collections.emptyList(), null, logicsInstance.getRmiManager());
+                ExternalUtils.ExternalResponse externalResponse = ExternalUtils.getExternalResponse(execResult, queryParams != null ? queryParams : Collections.emptyList(), null, value -> logicsInstance.getRmiManager().convertFileValue(request, value));
 
                 if(externalResponse instanceof ExternalUtils.ResultExternalResponse) {
                     ExternalUtils.ResultExternalResponse result = (ExternalUtils.ResultExternalResponse) externalResponse;
@@ -633,6 +622,18 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
             throw Throwables.propagate(t);
         } finally {
             logExternalSystemRequest(ServerLoggers.httpFromExternalSystemRequestsLogger, requestLogMessage, successfulResponse);
+        }
+    }
+
+    public class ExecSession implements AutoCloseable {
+
+        public DataSession dataSession;
+
+        public ExecSession(DataSession dataSession) {
+           this.dataSession = dataSession;
+        }
+
+        public void close() throws SQLException {
         }
     }
 

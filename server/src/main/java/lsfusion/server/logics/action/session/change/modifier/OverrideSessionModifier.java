@@ -21,6 +21,7 @@ import lsfusion.server.logics.action.session.change.ModifyChange;
 import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.change.increment.IncrementProps;
 import lsfusion.server.logics.classes.user.BaseClass;
+import lsfusion.server.logics.navigator.controller.env.ChangesController;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
@@ -254,6 +255,11 @@ public class OverrideSessionModifier extends SessionModifier {
 
     public QueryEnvironment getQueryEnv() {
         return modifier.getQueryEnv();
+    }
+
+    @Override
+    public ChangesController getChanges() {
+        return modifier.getChanges();
     }
 
     @Override

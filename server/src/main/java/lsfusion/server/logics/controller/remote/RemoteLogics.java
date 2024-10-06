@@ -1,5 +1,6 @@
 package lsfusion.server.logics.controller.remote;
 
+import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;
 import com.google.common.io.Resources;
 import lsfusion.base.BaseUtils;
@@ -7,6 +8,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.lambda.CallableWithParam;
 import lsfusion.interop.base.exception.RemoteMessageException;
 import lsfusion.interop.connection.AuthenticationToken;
+import lsfusion.interop.connection.ConnectionInfo;
 import lsfusion.interop.connection.authentication.Authentication;
 import lsfusion.interop.logics.remote.RemoteClientInterface;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
@@ -20,6 +22,7 @@ import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
 import lsfusion.server.base.controller.lifecycle.LifecycleListener;
 import lsfusion.server.base.controller.remote.RmiManager;
 import lsfusion.server.base.controller.remote.context.ContextAwarePendingRemoteObject;
+import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsInstance;
@@ -28,6 +31,7 @@ import lsfusion.server.logics.controller.manager.RestartManager;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.navigator.controller.manager.NavigatorsManager;
 import lsfusion.server.logics.navigator.controller.remote.RemoteNavigator;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
 import lsfusion.server.physics.admin.log.RemoteLoggerAspect;
 import lsfusion.server.physics.admin.log.ServerLoggers;
@@ -38,9 +42,9 @@ import org.springframework.util.Assert;
 
 import java.io.IOException;
 import java.rmi.RemoteException;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 
@@ -132,35 +136,66 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
 
     @Override
     public RemoteSessionInterface createSession(AuthenticationToken token, SessionInfo sessionInfo) throws RemoteException {
-        return createSession(rmiManager.getPort(), token, sessionInfo);
-    }
-
-    public RemoteSession createSession(int port, AuthenticationToken token, SessionInfo sessionInfo) throws RemoteException {
         try {
-            return new RemoteSession(port, getContext().getLogicsInstance(), token, sessionInfo, getStack());
+            return createSession(rmiManager.getPort(), token, sessionInfo);
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
     }
+
+    public RemoteSession createSession(int port, AuthenticationToken token, SessionInfo sessionInfo) throws RemoteException, SQLException, SQLHandledException, ClassNotFoundException, InstantiationException, IllegalAccessException {
+        return new RemoteSession(port, getContext().getLogicsInstance(), token, sessionInfo, getStack());
+    }
+
+    private final Set<RemoteSession> sessionsPool = ConcurrentHashMap.newKeySet();
+    private RemoteSession popSession(Predicate<RemoteSession> check) {
+        for(RemoteSession poolSession : sessionsPool) {
+            if(check.apply(poolSession)) {
+                if(sessionsPool.remove(poolSession)) // remove is consistent and atomic
+                    return poolSession;
+            }
+        }
+        return null;
+    }
     
-    private ExternalResponse runInNewSession(AuthenticationToken token, SessionInfo sessionInfo, CallableWithParam<RemoteSession, ExternalResponse> callable) throws RemoteException {
-        // in theory it's better to cache sessions for a token in some pool (clearing them after usage) 
-        RemoteSession session = createSession(-1, token, sessionInfo);
+    private ExternalResponse runInNewSession(AuthenticationToken token, ConnectionInfo connectionInfo, ExternalRequest request, CallableWithParam<RemoteSession, ExternalResponse> callable) throws RemoteException {
+        RemoteSession session = null;
+        boolean closeSession = false;
         try {
+            if(!Settings.get().isReinitAPISession())
+                session = popSession(poolSession -> poolSession.equalsConnectionContext(token, connectionInfo));
+            if(session == null) {
+                session = popSession(poolSession -> true);
+                if(session != null)
+                    session.initConnectionContext(token, connectionInfo, getStack());
+            }
+            if(session == null)
+                session = createSession(-1, token, new SessionInfo(connectionInfo, request));
+
             return callable.call(session);
+        } catch (Throwable t) {
+            closeSession = true;
+            throw Throwables.propagate(t);
         } finally {
-            session.localClose();
+            if(session != null) {
+                if (closeSession || sessionsPool.size() >= Settings.get().getFreeAPISessions())
+                    session.localClose();
+                else {
+                    session.clean();
+                    sessionsPool.add(session);
+                }
+            }
         }
     }
 
     @Override
-    public ExternalResponse exec(AuthenticationToken token, SessionInfo sessionInfo, final String action, final ExternalRequest request) throws RemoteException {
-        return runInNewSession(token, sessionInfo, session -> session.exec(action, request));
+    public ExternalResponse exec(AuthenticationToken token, ConnectionInfo connectionInfo, final String action, final ExternalRequest request) throws RemoteException {
+        return runInNewSession(token, connectionInfo, request, session -> session.exec(action, request));
     }
 
     @Override
-    public ExternalResponse eval(AuthenticationToken token, SessionInfo sessionInfo, final boolean action, final ExternalRequest.Param paramScript, final ExternalRequest request) throws RemoteException {
-        return runInNewSession(token, sessionInfo, session -> session.eval(action, paramScript, request));
+    public ExternalResponse eval(AuthenticationToken token, ConnectionInfo connectionInfo, final boolean action, final ExternalRequest.Param paramScript, final ExternalRequest request) throws RemoteException {
+        return runInNewSession(token, connectionInfo, request, session -> session.eval(action, paramScript, request));
     }
 
     public void ping() throws RemoteException {

@@ -6,6 +6,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.lambda.EFunction;
 import lsfusion.interop.action.*;
 import lsfusion.interop.base.remote.RemoteRequestInterface;
+import lsfusion.server.base.controller.context.Context;
 import lsfusion.server.base.controller.remote.context.ContextAwarePendingRemoteObject;
 import lsfusion.server.base.controller.remote.ui.RemotePausableInvocation;
 import lsfusion.server.base.controller.stack.ThrowableWithStack;
@@ -62,8 +63,13 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
 
     protected RemoteRequestObject(int port, ExecutionStack upStack, String sID, SyncType type) throws RemoteException {
         super(port, upStack, sID, type);
+
+        setContext(createContext());
+
         this.requestLock = synchronizeRequests() ? new SequentialRequestLock() : null;
     }
+
+    protected abstract Context createContext();
 
     protected boolean synchronizeRequests() { // should be synchronized with the same method / field in RemoteDispatchAsync, RmiQueue
         return true;

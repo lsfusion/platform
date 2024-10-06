@@ -5,8 +5,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 
-public class CountZipServerSocket extends ServerSocket {
-    public CountZipServerSocket(int port) throws IOException {
+public class ZipServerSocket extends ServerSocket {
+    public ZipServerSocket(int port) throws IOException {
         super(port, 500);
     }
 
@@ -16,7 +16,8 @@ public class CountZipServerSocket extends ServerSocket {
         if (!isBound())
             throw new SocketException("Socket is not bound yet");
 
-        Socket socket = new CountZipSocket(null);
+        Socket socket = new ZipSocket(null);
+//        Socket socket = new Socket();
         implAccept(socket);
         return socket;
     }

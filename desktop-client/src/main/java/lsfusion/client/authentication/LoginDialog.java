@@ -252,7 +252,7 @@ public class LoginDialog extends JDialog {
             ExternalRequest.Param computerParam = ExternalRequest.getSystemParam(MainController.computerName);
             ExternalRequest.Param fileParam = ExternalRequest.getSystemParam(users.toString());
             try {
-                ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, MainController.getSessionInfo(), "Authentication.syncUsers[ISTRING[100], JSONFILE]", new ExternalRequest(new ExternalRequest.Param[]{computerParam, fileParam}));
+                ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, MainController.getConnectionInfo(), "Authentication.syncUsers[ISTRING[100], JSONFILE]", new ExternalRequest(new ExternalRequest.Param[]{computerParam, fileParam}));
                 List<Object> currentUsers = LogicsSessionObject.getJSONArrayResult(result).toList();
                 List<UserInfo> newUserInfos = new ArrayList<>();
                 for (UserInfo userInfo : userInfos.result) {

@@ -3,11 +3,11 @@ package lsfusion.base.remote;
 import lsfusion.base.BaseUtils;
 
 import java.io.IOException;
-import java.io.ObjectStreamException;
 import java.io.Serializable;
+import java.net.Socket;
 import java.rmi.server.RMIClientSocketFactory;
 
-public class ZipClientSocketFactory extends ZipSocketFactory implements RMIClientSocketFactory, Serializable, CompressedStreamObserver {
+public class ZipClientSocketFactory extends ZipSocketFactory implements RMIClientSocketFactory, Serializable {
 
     // the problem is that RMI architecture assumes that hostname comes from server (from RMI registry) with remote object in TCPEndpoint
     // but in real life server address is client specific (depending on network architecture)
@@ -28,11 +28,11 @@ public class ZipClientSocketFactory extends ZipSocketFactory implements RMIClien
 
     private String realHostName;
 
-    public CountZipSocket createSocket(String host, int port) throws IOException {
+    public Socket createSocket(String host, int port) throws IOException {
         if(realHostName != null)
             host = realHostName;
-        CountZipSocket socket = new CountZipSocket(host, port);
-        socket.setObserver(this);
+        Socket socket = new ZipSocket(host, port);
+//        Socket socket = new Socket(host, port);
         if(timeout != null)
             socket.setSoTimeout(timeout);
         return socket;
@@ -57,17 +57,7 @@ public class ZipClientSocketFactory extends ZipSocketFactory implements RMIClien
         throw new UnsupportedOperationException();
     }
 
-    public static volatile transient long inSum;
-    public static volatile transient long outSum;
     public static volatile transient Integer timeout;
-
-    public void bytesReaden(long in) {
-        inSum += in;
-    }
-
-    public void bytesWritten(long out) {
-        outSum += out;
-    }
 
     @Override
     public boolean equals(Object o) {

@@ -70,6 +70,8 @@ public class Settings implements Cloneable {
     private Boolean changeActionOnSingleClick = true;
 
     private int freeConnections = 12;
+    private int freeAPISessions = 12;
+    private boolean reinitAPISession = false;
 
     private boolean commonUnique = true; // потому как в таком случае все common connection'ы начинают блокировать друг друга, поэтому схема с private pool'ом правильней
 
@@ -489,6 +491,22 @@ public class Settings implements Cloneable {
 
     public void setFreeConnections(int freeConnections) {
         this.freeConnections = freeConnections;
+    }
+
+    public int getFreeAPISessions() {
+        return freeAPISessions;
+    }
+
+    public void setFreeAPISessions(int freeAPISessions) {
+        this.freeAPISessions = freeAPISessions;
+    }
+
+    public boolean isReinitAPISession() {
+        return reinitAPISession;
+    }
+
+    public void setReinitAPISession(boolean reinitAPISession) {
+        this.reinitAPISession = reinitAPISession;
     }
 
     public boolean isCommonUnique() {

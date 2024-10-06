@@ -15,6 +15,7 @@ import lsfusion.server.logics.action.session.change.modifier.DataSessionModifier
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.CustomClass;
+import lsfusion.server.logics.navigator.controller.env.ChangesController;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
@@ -28,8 +29,8 @@ public class UpdateCurrentClassesSession {
     public final SQLSession sql;
     public final QueryEnvironment env;
     public final BaseClass baseClass;
-    
-    private final DataSession session; // чисто для проверки sameSession
+
+    private final DataSession session;
     
     private final List<SQLRunnable> rollbackInfo;
     public void addRollbackInfo(SQLRunnable run) {
@@ -75,6 +76,11 @@ public class UpdateCurrentClassesSession {
         @Override
         public QueryEnvironment getQueryEnv() {
             return env;
+        }
+
+        @Override
+        public ChangesController getChanges() {
+            return session.changes;
         }
     }
 

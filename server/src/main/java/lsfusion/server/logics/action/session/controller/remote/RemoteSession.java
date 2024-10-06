@@ -1,11 +1,15 @@
 package lsfusion.server.logics.action.session.controller.remote;
 
+import lsfusion.base.BaseUtils;
+import lsfusion.base.col.SetFact;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.connection.AuthenticationToken;
+import lsfusion.interop.connection.ConnectionInfo;
 import lsfusion.interop.session.SessionInfo;
 import lsfusion.interop.session.remote.RemoteSessionInterface;
+import lsfusion.server.base.controller.context.Context;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
@@ -22,24 +26,36 @@ import java.util.List;
 import java.util.Set;
 
 public class RemoteSession extends RemoteConnection implements RemoteSessionInterface {
-    private final DataSession dataSession;
+    private DataSession dataSession;
 
     public RemoteSession(int port, LogicsInstance logicsInstance, AuthenticationToken token, SessionInfo sessionInfo, ExecutionStack stack) throws RemoteException, ClassNotFoundException, SQLException, SQLHandledException, InstantiationException, IllegalAccessException {
-        super(port, "session", stack);
+        super(port, "session", logicsInstance, token, sessionInfo, stack);
+    }
 
-        setContext(new RemoteSessionContext(this));
-        initContext(logicsInstance, token, sessionInfo, stack);
+    @Override
+    protected Context createContext() {
+        return new RemoteSessionContext(this);
+    }
+
+    @Override
+    protected void initContext(LogicsInstance logicsInstance) throws SQLException, InstantiationException, IllegalAccessException, ClassNotFoundException, SQLHandledException {
+        super.initContext(logicsInstance);
 
         this.dataSession = createSession();
     }
 
+    private ConnectionInfo connectionInfo;
+    public boolean equalsConnectionContext(AuthenticationToken token, ConnectionInfo connectionInfo) {
+        return token.equals(this.token) && BaseUtils.hashEquals(connectionInfo, this.connectionInfo);
+    }
     @Override
-    protected void initContext(LogicsInstance logicsInstance, AuthenticationToken token, SessionInfo connectionInfo, ExecutionStack stack) throws SQLException, InstantiationException, IllegalAccessException, ClassNotFoundException, SQLHandledException {
+    public void initConnectionContext(AuthenticationToken token, ConnectionInfo connectionInfo, ExecutionStack stack) throws SQLException, SQLHandledException {
         try {
-            super.initContext(logicsInstance, token, connectionInfo, stack);
+            this.connectionInfo = connectionInfo;
+            super.initConnectionContext(token, connectionInfo, stack);
         } catch (AuthenticationException e) { // if we have authentication exception, postpone it maybe only noauth will be used (authenticate with anonymous token)
             authException = e;
-            super.initContext(logicsInstance, AuthenticationToken.ANONYMOUS, connectionInfo, stack);
+            super.initConnectionContext(AuthenticationToken.ANONYMOUS, connectionInfo, stack);
         }
     }
 
@@ -102,6 +118,14 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
         }
         
         super.onClose();
+    }
+
+    public void clean() {
+        try {
+            dataSession.cancelSession(SetFact.EMPTY());
+        } catch (Throwable t) {
+            ServerLoggers.sqlSuppLog(t);
+        }
     }
 
     @Override

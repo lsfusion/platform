@@ -31,6 +31,7 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 
 import java.sql.SQLException;
 
@@ -43,6 +44,14 @@ public abstract class ExecutionEnvironment extends MutableClosedObject<Object> {
     public <P extends PropertyInterface> void change(Property<P> property, PropertyChange<P> change) throws SQLException, SQLHandledException {
         if(change.isEmpty()) // оптимизация
             return;
+
+        ObjectValue changeValue;
+        if(property.interfaces.size() == change.getMapValues().size() && (changeValue = change.expr.getObjectValue(getQueryEnv())) != null && !DBManager.RECALC_REUPDATE) {
+            DataSession session = getSession();
+            ObjectValue lazyValue = property.readLazyClasses(session.sql, change.getMapValues(), session.getModifier(), session.changes);
+            if(lazyValue != null && lazyValue.equals(changeValue))
+                return;
+        }
         
         DataChanges userDataChanges = null;
         if(property instanceof DataProperty) // оптимизация
