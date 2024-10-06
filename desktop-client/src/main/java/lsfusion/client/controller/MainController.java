@@ -331,14 +331,6 @@ public class MainController {
         new RichEditorPane();
     }
 
-    public static long getBytesSent() {
-        return ZipClientSocketFactory.outSum;
-    }
-
-    public static long getBytesReceived() {
-        return ZipClientSocketFactory.inSum;
-    }
-
     // edit reports
     
     public static void addReportPathList(List<String> reportPathList, String formSID) throws IOException {

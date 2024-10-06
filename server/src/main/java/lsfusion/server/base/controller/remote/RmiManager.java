@@ -205,7 +205,7 @@ public class RmiManager extends LogicsManager implements InitializingBean {
 //        try {
 //            registry.list();
 //        } catch (RemoteException e) {
-        registry = RMIUtils.createRmiRegistry(port, ZipServerSocketFactory.getInstance());
+        registry = RMIUtils.createRmiRegistry(port);
 //        }
     }
 
