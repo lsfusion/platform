@@ -86,7 +86,7 @@ customUserNormalized (ISTRING[100] login) = OVERRIDE customUserLower(lower(login
 logName (CustomUser user) = OVERRIDE name(user), login(user) @@lazy;
 
 // password
-sha256Password '{authentication.password}' = DATA STRING[100] (CustomUser) ECHO;
+sha256Password '{authentication.password}' = DATA STRING[100] (CustomUser) ECHO @@lazy;
 calculatedHash = DATA LOCAL STRING[100] ();
 calculateBase64Hash INTERNAL  'lsfusion.server.physics.admin.authentication.action.CalculateBase64HashAction' (BPSTRING[10], BPSTRING[30]);
 changeSHA256Password(CustomUser customUser)  { 
@@ -118,7 +118,7 @@ generateAuthToken(user) {
 }
 
 // LDAP
-useLDAP '{authentication.use.ldap}' = DATA BOOLEAN ();
+useLDAP '{authentication.use.ldap}' = DATA BOOLEAN () @@lazy;
 serverLDAP '{authentication.server.ldap}' = DATA STRING[100] ();
 portLDAP '{authentication.port.ldap}' = DATA INTEGER ();
 baseDNLDAP '{authentication.base.dn.ldap}' = DATA STRING[100] ();
@@ -319,7 +319,7 @@ clearPassResetToken () + {
 }
 
 // lock
-isLocked '{authentication.is.locked.user}' = DATA BOOLEAN (CustomUser);
+isLocked '{authentication.is.locked.user}' = DATA BOOLEAN (CustomUser) @@lazy;
 isLockedLogin (login) = isLocked(customUserNormalized(lower(login)));
 
 // Current User
