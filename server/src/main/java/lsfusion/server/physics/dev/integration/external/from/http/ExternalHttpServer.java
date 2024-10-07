@@ -51,10 +51,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.sql.SQLException;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.*;
 
 public class ExternalHttpServer extends MonitorServer {
@@ -221,35 +218,57 @@ public class ExternalHttpServer extends MonitorServer {
             // поток создается HttpServer'ом, поэтому ExecutorService'ом как остальные не делается
             ThreadLocalContext.aspectBeforeMonitorHTTP(ExternalHttpServer.this);
             try {
+                Headers requestHeaders = request.getRequestHeaders();
+                int headerIndex = 0;
+                String[] headerNames = new String[requestHeaders.size()];
+                String[] headerValues = new String[requestHeaders.size()];
 
-                String[] headerNames = request.getRequestHeaders().keySet().toArray(new String[0]);
-                String[] headerValues = getRequestHeaderValues(request.getRequestHeaders(), headerNames);
+                List<String> cookieNamesList = new ArrayList<>();
+                List<String> cookieValuesList = new ArrayList<>();
+                String hostNameCookie = null;
 
-                OrderedMap<String, String> cookiesMap = new OrderedMap<>();
-                List<String> cookiesList = request.getRequestHeaders().get("Cookie");
-                if(cookiesList != null) {
-                    for (String cookies : cookiesList) {
-                        for (String cookie : cookies.split(";")) {
-                            String[] splittedCookie = cookie.split("=");
-                            if (splittedCookie.length == 2) {
-                                cookiesMap.put(splittedCookie[0], ExternalUtils.decodeCookie(splittedCookie[1], 0));
+                String host = null;
+                Integer port = null;
+                for(Map.Entry<String, List<String>> requestHeader : requestHeaders.entrySet()) {
+                    String headerName = requestHeader.getKey();
+                    List<String> headerValue = requestHeader.getValue();
+
+                    headerNames[headerIndex] = headerName;
+                    headerValues[headerIndex++] = StringUtils.join(headerValue.iterator(), ",");
+
+                    if(headerName.equals("Cookie")) {
+                        for (String cookies : headerValue) {
+                            for (String cookie : cookies.split(";")) {
+                                String[] splittedCookie = cookie.split("=");
+                                if (splittedCookie.length == 2) {
+                                    String cookieName = splittedCookie[0];
+                                    String cookieValue = ExternalUtils.decodeCookie(splittedCookie[1], 0);
+
+                                    cookieNamesList.add(cookieName);
+                                    cookieValuesList.add(cookieValue);
+
+                                    if(cookieName.equals(HOSTNAME_COOKIE_NAME))
+                                        hostNameCookie = cookieValue;
+                                }
                             }
                         }
                     }
+                    if(headerName.equals("Host") && !headerValue.isEmpty()) {
+                        String[] hostParts = headerValue.getFirst().split(":");
+                        host = hostParts[0];
+                        if(hostParts.length > 1)
+                            port = Integer.parseInt(hostParts[1]); /*when using redirect from address without specifying a port, for example foo.bar immediately to port 7651, the port is not specified in request, and in this place when accessing host[1] the ArrayIndexOutOfBoundsException is received.*/
+                    }
                 }
-
-                String[] cookieNames = cookiesMap.keyList().toArray(new String[0]);
-                String[] cookieValues = cookiesMap.values().toArray(new String[0]);
+                String[] cookieNames = cookieNamesList.toArray(new String[0]);
+                String[] cookieValues = cookieValuesList.toArray(new String[0]);
 
                 InetSocketAddress remoteAddress = request.getRemoteAddress();
                 InetAddress address = remoteAddress.getAddress();
 
-                String hostNameCookie = cookiesMap.get(HOSTNAME_COOKIE_NAME);
                 String hostName = hostNameCookie != null ? hostNameCookie : getHostName(remoteAddress);
 
                 ConnectionInfo connectionInfo = new ConnectionInfo(new ComputerInfo(hostName, address != null ? address.getHostAddress() : null), UserInfo.NULL);// client locale does not matter since we use anonymous authentication
-
-                String[] host = request.getRequestHeaders().getFirst("Host").split(":");
 
                 ContentType requestContentType = ExternalUtils.parseContentType(getContentType(request));
 
@@ -270,8 +289,7 @@ public class ExternalHttpServer extends MonitorServer {
                 try {
                     ExternalUtils.ExternalResponse response = ExternalUtils.processRequest(remoteExec,
                             externalRequest -> value -> getLogicsInstance().getRmiManager().convertFileValue(externalRequest, value), request.getRequestBody(), requestContentType, headerNames, headerValues, cookieNames, cookieValues, null, null, null,
-                            useHTTPS ? "https" : "http", request.getRequestMethod(), host[0], host.length > 1 ? Integer.parseInt(host[1]) : null /*when using redirect from address without specifying a port, for example foo.bar immediately to port 7651, the port is not specified in request, and in this place when accessing host[1] the ArrayIndexOutOfBoundsException is received.*/,
-                            "", requestURI.getPath(), "", rawQuery, null);
+                            useHTTPS ? "https" : "http", request.getRequestMethod(), host, port, "", requestURI.getPath(), "", rawQuery, null);
 
                     sendResponse(request, response);
                 } catch (RemoteException e) {
