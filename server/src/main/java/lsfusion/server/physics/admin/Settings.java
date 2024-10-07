@@ -3382,13 +3382,13 @@ public class Settings implements Cloneable {
     }
 
     //backward compatibility for camelCases css rules refactoring
-    public boolean cssBackwardCompatibility = false;
+    public double cssBackwardCompatibilityLevel = -1;
 
-    public boolean isCssBackwardCompatibility() {
-        return cssBackwardCompatibility;
+    public double getCssBackwardCompatibilityLevel() {
+        return cssBackwardCompatibilityLevel;
     }
 
-    public void setCssBackwardCompatibility(boolean cssBackwardCompatibility) {
-        this.cssBackwardCompatibility = cssBackwardCompatibility;
+    public void setCssBackwardCompatibilityLevel(double cssBackwardCompatibilityLevel) {
+        this.cssBackwardCompatibilityLevel = cssBackwardCompatibilityLevel;
     }
 }

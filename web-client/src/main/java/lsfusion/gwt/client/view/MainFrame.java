@@ -106,7 +106,8 @@ public class MainFrame implements EntryPoint {
 
     public static boolean jasperReportsIgnorePageMargins;
 
-    public static boolean cssBackwardCompatibility;
+    public static double v52 = 5.2;
+    public static double cssBackwardCompatibilityLevel;
 
     // async dispatch
     public <T extends Result> long asyncDispatch(final ExecuteNavigatorAction action, RequestCountingAsyncCallback<ServerResponseResult> callback) {
@@ -667,7 +668,7 @@ public class MainFrame implements EntryPoint {
 
                 jasperReportsIgnorePageMargins = gClientSettings.jasperReportsIgnorePageMargins;
 
-                cssBackwardCompatibility = gClientSettings.cssBackwardCompatibility;
+                cssBackwardCompatibilityLevel = gClientSettings.cssBackwardCompatibilityLevel;
 
                 initializeFrame(result.navigatorInfo, popupOwner);
                 DateRangePickerBasedCellEditor.setPickerTwoDigitYearStart(gClientSettings.twoDigitYearStart);

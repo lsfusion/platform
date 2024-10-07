@@ -27,6 +27,7 @@ import static java.lang.Math.max;
 import static lsfusion.gwt.client.base.GwtSharedUtils.isRedundantString;
 import static lsfusion.gwt.client.base.GwtSharedUtils.replicate;
 import static lsfusion.gwt.client.view.MainFrame.colorTheme;
+import static lsfusion.gwt.client.view.MainFrame.v52;
 
 public class GwtClientUtils {
 
@@ -274,9 +275,13 @@ public class GwtClientUtils {
     }
 
     public static void addClassName(Element element, String className, String backwardCompatibilityClassName) {
+        addClassName(element, className, backwardCompatibilityClassName, v52);
+    }
+
+    public static void addClassName(Element element, String className, String backwardCompatibilityClassName, double backwardLevel) {
         addClassNameNative(element, className);
 
-        if(backwardCompatibilityClassName != null && MainFrame.cssBackwardCompatibility) {
+        if(backwardCompatibilityClassName != null && MainFrame.cssBackwardCompatibilityLevel != -1 && backwardLevel >= MainFrame.cssBackwardCompatibilityLevel) {
             addClassNameNative(element, backwardCompatibilityClassName);
         }
     }
@@ -298,9 +303,13 @@ public class GwtClientUtils {
     }
 
     public static void removeClassName(Element element, String className, String backwardCompatibilityClassName) {
+        removeClassName(element, className, backwardCompatibilityClassName, v52);
+    }
+
+    public static void removeClassName(Element element, String className, String backwardCompatibilityClassName, double backwardLevel) {
         removeClassNameNative(element, className);
 
-        if(backwardCompatibilityClassName != null && MainFrame.cssBackwardCompatibility) {
+        if(backwardCompatibilityClassName != null && MainFrame.cssBackwardCompatibilityLevel != -1 && backwardLevel >= MainFrame.cssBackwardCompatibilityLevel) {
             removeClassNameNative(element, backwardCompatibilityClassName);
         }
     }

@@ -42,7 +42,7 @@ public class GClientSettings implements Serializable, IsSerializable {
 
     public boolean jasperReportsIgnorePageMargins;
 
-    public boolean cssBackwardCompatibility;
+    public double cssBackwardCompatibilityLevel;
 
     @SuppressWarnings("unused")
     public GClientSettings() {
@@ -54,7 +54,7 @@ public class GClientSettings implements Serializable, IsSerializable {
                            GColorPreferences colorPreferences, String language, String dateFormat, String timeFormat, Integer twoDigitYearStart, String staticImagesURL,
                            String[] preDefinedDateRangesNames, boolean useTextAsFilterSeparator, boolean verticalNavbar, boolean userFiltersManualApplyMode,
                            boolean disableActionsIfReadonly, boolean enableShowingRecentlyLogMessages, String pushNotificationPublicKey,
-                           double maxStickyLeft, boolean jasperReportsIgnorePageMargins, boolean cssBackwardCompatibility) {
+                           double maxStickyLeft, boolean jasperReportsIgnorePageMargins, double cssBackwardCompatibilityLevel) {
         this.busyDialogTimeout = busyDialogTimeout;
         this.devMode = devMode;
         this.projectLSFDir = projectLSFDir;
@@ -84,6 +84,6 @@ public class GClientSettings implements Serializable, IsSerializable {
         this.pushNotificationPublicKey = pushNotificationPublicKey;
         this.maxStickyLeft = maxStickyLeft;
         this.jasperReportsIgnorePageMargins = jasperReportsIgnorePageMargins;
-        this.cssBackwardCompatibility = cssBackwardCompatibility;
+        this.cssBackwardCompatibilityLevel = cssBackwardCompatibilityLevel;
     }
 }

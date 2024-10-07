@@ -977,7 +977,7 @@ getClientSettings(User user) + WHEN user IS User THEN {
         jasperReportsIgnorePageMargins = valueSetting('jasperReportsIgnorePageMargins'),
         verticalNavbar = verticalNavbar(),
         navigatorPinMode = navigatorPinMode(),
-        cssBackwardCompatibility = valueSetting('cssBackwardCompatibility');
+        cssBackwardCompatibilityLevel = valueSetting('cssBackwardCompatibilityLevel');
 }
 
 getClientSettings() {
