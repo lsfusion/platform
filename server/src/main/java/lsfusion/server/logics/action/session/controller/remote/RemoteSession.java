@@ -46,7 +46,15 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
 
     private ConnectionInfo connectionInfo;
     public boolean equalsConnectionContext(AuthenticationToken token, ConnectionInfo connectionInfo) {
-        return token.equals(this.token) && BaseUtils.hashEquals(connectionInfo, this.connectionInfo);
+        if(token.equals(this.token) && BaseUtils.hashEquals(connectionInfo, this.connectionInfo)) {
+            try { // we have to recheck token for its expiration
+                securityManager.parseToken(token);
+            } catch (AuthenticationException e) {
+                return false;
+            }
+            return true;
+        }
+        return false;
     }
     @Override
     public void initConnectionContext(AuthenticationToken token, ConnectionInfo connectionInfo, ExecutionStack stack) throws SQLException, SQLHandledException {
