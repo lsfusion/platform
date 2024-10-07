@@ -204,8 +204,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         return userObject.isNull() ? null : (DataObject) userObject;
     }
 
-    public DataObject getUser(AuthenticationToken token, DataSession session) throws SQLException, SQLHandledException {
-        String login = parseToken(token);
+    public DataObject getUser(String login, DataSession session) throws SQLException, SQLHandledException {
         if(login != null) {
             DataObject user = readUser(login, session);
             if(user == null) {

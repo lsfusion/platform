@@ -120,7 +120,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
 
     private void initUser(AuthenticationToken token, UserInfo userInfo, DataSession session, ExecutionStack stack) throws SQLException, SQLHandledException {
         this.token = token;
-        user = securityManager.getUser(token, session);
+        user = securityManager.getUser(securityManager.parseToken(token), session);
 
         saveUserContext(userInfo, stack, session);
 
