@@ -254,7 +254,7 @@ public class ExternalHttpServer extends MonitorServer {
                         }
                     }
                     if(headerName.equals("Host") && !headerValue.isEmpty()) {
-                        String[] hostParts = headerValue.getFirst().split(":");
+                        String[] hostParts = headerValue.get(0).split(":");
                         host = hostParts[0];
                         if(hostParts.length > 1)
                             port = Integer.parseInt(hostParts[1]); /*when using redirect from address without specifying a port, for example foo.bar immediately to port 7651, the port is not specified in request, and in this place when accessing host[1] the ArrayIndexOutOfBoundsException is received.*/
