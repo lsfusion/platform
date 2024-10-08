@@ -12,6 +12,8 @@ import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.util.Iterator;
 
+import static lsfusion.base.BaseUtils.trim;
+
 public class UpdatePermissionAction extends InternalAction {
     private final ClassPropertyInterface userRoleInterface;
     private final ClassPropertyInterface canonicalNameActionOrPropertyInterface;
@@ -33,7 +35,7 @@ public class UpdatePermissionAction extends InternalAction {
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
 
         Long userRole = (Long) context.getKeyValue(userRoleInterface).getValue();
-        String actionOrProperty = (String) context.getKeyValue(canonicalNameActionOrPropertyInterface).getValue();
+        String actionOrProperty = trim((String) context.getKeyValue(canonicalNameActionOrPropertyInterface).getValue());
         if(userRole != null && actionOrProperty != null) {
             String permission = (String) context.getKeyValue(staticNamePermissionInterface).getValue();
             String type = (String) context.getKeyValue(typeInterface).getValue();
