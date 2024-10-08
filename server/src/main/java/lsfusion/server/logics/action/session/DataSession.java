@@ -550,12 +550,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return new DataSession(sql, user, env.form, env.timeout, changes, env.locale, env.isServerRestarting, baseClass, sessionClass, currentSession, idSession, sessionEvents, null, fixedForms);
     }
 
-    public static FunctionSet<SessionDataProperty> keepNested(boolean manageSession) {
-        return (SFunctionSet<SessionDataProperty>) element -> element.nestedType != null && (element.nestedType == LocalNestedType.ALL || (element.nestedType == LocalNestedType.MANAGESESSION) == manageSession);
-    }
-
-    private final static SFunctionSet<SessionDataProperty> NONESTING = element -> element.noNestingInNestedSession;
-
     public void restart(boolean cancel, FunctionSet<SessionDataProperty> keep) throws SQLException, SQLHandledException {
 
         // apply
@@ -1844,7 +1838,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             return true;
         }
 
-        keepProps = BaseUtils.merge(keepNested(true), keepProps);
+        keepProps = BaseUtils.merge(SessionDataProperty.keepNested(true), keepProps);
 
         if (parentSession != null) {
             assert !isInTransaction() && !isInSessionEvent();
@@ -2533,10 +2527,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     // working with parentSession
     private void copyDataTo(DataSession other, FunctionSet<SessionDataProperty> ignore) throws SQLException, SQLHandledException {
-        other.dropAllChanges(NONESTING);
+        other.dropAllChanges(SessionDataProperty.NONESTING);
 
         classChanges.copyDataTo(other);
-        for (Map.Entry<DataProperty, PropertyChangeTableUsage<ClassPropertyInterface>> e : filterNotSessionData(BaseUtils.merge(NONESTING, ignore)).entrySet())
+        for (Map.Entry<DataProperty, PropertyChangeTableUsage<ClassPropertyInterface>> e : filterNotSessionData(BaseUtils.merge(SessionDataProperty.NONESTING, ignore)).entrySet())
             other.change(e.getKey(), PropertyChangeTableUsage.getChange(e.getValue()));
 
         other.dropSessionEventChangedOld(); // так как сессия копируется, два раза события нельзя выполнять
@@ -2546,7 +2540,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         other.dropChanges(other.filterSessionData(filter).keySet());
 
         // not using dataChanges (since there will be a problem with classes, because there are no class changes in new session, and therefore changes will not be copied, and when copying back will delete existing changes) - somwhere similar to noClasses - but noClasses is more general thing
-        for (Map.Entry<SessionDataProperty, PropertyChangeTableUsage<ClassPropertyInterface>> e : filterSessionData(BaseUtils.remove(filter, NONESTING)).entrySet())
+        for (Map.Entry<SessionDataProperty, PropertyChangeTableUsage<ClassPropertyInterface>> e : filterSessionData(BaseUtils.remove(filter, SessionDataProperty.NONESTING)).entrySet())
             other.getSession().changeProperty(e.getKey(), PropertyChangeTableUsage.getChange(e.getValue()));
 
         if (migrateClasses)
@@ -2609,11 +2603,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return isInTransaction;
     }
 
-    @Override
-    public void cancel(ExecutionStack stack, FunctionSet<SessionDataProperty> keep) throws SQLException, SQLHandledException {
-        cancelSession(keep);
-    }
-
     public boolean cancelSession(FunctionSet<SessionDataProperty> keep) throws SQLException, SQLHandledException {
         if(isInSessionEvent()) {
             inSessionEvent = false;
@@ -2628,8 +2617,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             rollbackApply();
             return true;
         }
-
-        keep = BaseUtils.merge(keepNested(true), keep);
 
         restart(true, keep);
 

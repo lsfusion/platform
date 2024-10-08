@@ -1,6 +1,8 @@
 package lsfusion.server.logics.property.data;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.lambda.set.FunctionSet;
+import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.where.cases.CaseExpr;
 import lsfusion.server.data.where.WhereBuilder;
@@ -19,7 +21,7 @@ public class SessionDataProperty extends DataProperty {
     }
 
     public LocalNestedType nestedType;
-    public boolean noNestingInNestedSession; // hack for sessionOwners 
+    public final static SFunctionSet<SessionDataProperty> NONESTING = element -> element.noNestingInNestedSession;
 
     public SessionDataProperty(LocalizedString caption, ValueClass[] classes, ValueClass value) {
         this(caption, classes, value, false);
@@ -32,6 +34,11 @@ public class SessionDataProperty extends DataProperty {
         this.noClasses = noClasses;
         
         finalizeInit();
+    }
+    public boolean noNestingInNestedSession; // hack for sessionOwners
+
+    public static FunctionSet<SessionDataProperty> keepNested(boolean manageSession) {
+        return (SFunctionSet<SessionDataProperty>) element -> element.nestedType != null && (element.nestedType == LocalNestedType.ALL || (element.nestedType == LocalNestedType.MANAGESESSION) == manageSession);
     }
 
     @Override

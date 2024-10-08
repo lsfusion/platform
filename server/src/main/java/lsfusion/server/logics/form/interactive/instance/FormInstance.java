@@ -1691,8 +1691,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     @Override
-    public void cancel(ExecutionStack stack, FunctionSet<SessionDataProperty> keep) throws SQLException, SQLHandledException {
-        if(session.cancelSession(keep)) {
+    public boolean cancel(ExecutionStack stack, FunctionSet<SessionDataProperty> keep) throws SQLException, SQLHandledException {
+        if(super.cancel(stack, keep)) {
             // пробежим по всем объектам
             for (ObjectInstance object : getObjects())
                 if (object instanceof CustomObjectInstance)
@@ -1700,7 +1700,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             fireOnCancel(stack);
 
             dataChanged = true;
+            return true;
         }
+        return false;
     }
 
     // ------------------ Через эти методы сообщает верхним объектам об изменениях ------------------- //
