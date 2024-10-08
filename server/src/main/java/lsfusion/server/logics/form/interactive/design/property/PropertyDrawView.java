@@ -947,6 +947,16 @@ public class PropertyDrawView extends BaseComponentView {
         this.charHeight = charHeight;
     }
 
+    // the same is on the client
+    private static int getScaledCharWidth(int count, int charWidth) {
+        return (int) round((count <= 3.0 ? Math.max(count, 1.0) : 3.0 + pow(count - 3.0, 0.5)) * charWidth);
+    }
+
+    public int getCharWidth(FormInstanceContext context) {
+        Integer charWidth = getAdjustedCharWidth(context);
+        return charWidth != null ? charWidth : -1;
+    }
+
     private Integer getAdjustedCharWidth(FormInstanceContext context) {
         PropertyDrawEntity.Select select = entity.getSelectProperty(context);
         if(select != null) {
@@ -955,14 +965,14 @@ public class PropertyDrawView extends BaseComponentView {
             int elementCharWidth = charWidth != null ? charWidth : (select.count > 0 ? select.length / select.count : 0);
 
             if(select.elementType.equals("Input") || (select.elementType.equals("Dropdown") && select.type.equals("Multi")))
-                return getScaledCharWidth(4 * elementCharWidth);
+                return getScaledCharWidth(4, elementCharWidth);
 
 //            if (!entity.isList(context)) // we ignore charWidth in panel buttons and lists
 //                return null;
 
             if(entity.isList(context) || charWidth != null) {
                 if (select.elementType.startsWith("Button"))
-                    return getScaledCharWidth(select.count * (elementCharWidth + (select.elementType.startsWith("ButtonGroup") ? 4 : 6))); // couple of symbols for padding
+                    return getScaledCharWidth(select.count, (elementCharWidth + (select.elementType.startsWith("ButtonGroup") ? 4 : 6))); // couple of symbols for padding
 
                 if (select.elementType.equals("List") || select.elementType.equals("Dropdown"))
                     return elementCharWidth + 4; // couple of symbols for control elements, && !select.actual
@@ -972,17 +982,6 @@ public class PropertyDrawView extends BaseComponentView {
         }
         return charWidth;
     }
-
-    public int getCharWidth(FormInstanceContext context) {
-        Integer charWidth = getAdjustedCharWidth(context);
-        return charWidth != null ? charWidth : -1;
-    }
-
-    // the same is on the client
-    private static int getScaledCharWidth(int lengthValue) {
-        return lengthValue <= 12 ? Math.max(lengthValue, 1) : (int) round(12 + pow(lengthValue - 12, 0.7));
-    }
-
 
     public void setCharWidth(Integer charWidth) {
         this.charWidth = charWidth;
