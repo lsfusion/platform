@@ -1,5 +1,6 @@
 package lsfusion.server.logics.action.controller.context;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -103,5 +104,7 @@ public abstract class ExecutionEnvironment extends MutableClosedObject<Object> {
         return null;
     }
 
-    public abstract void cancel(ExecutionStack stack, FunctionSet<SessionDataProperty> keep) throws SQLException, SQLHandledException;
+    public boolean cancel(ExecutionStack stack, FunctionSet<SessionDataProperty> keep) throws SQLException, SQLHandledException {
+        return getSession().cancelSession(BaseUtils.merge(SessionDataProperty.keepNested(true), keep));
+    }
 }
