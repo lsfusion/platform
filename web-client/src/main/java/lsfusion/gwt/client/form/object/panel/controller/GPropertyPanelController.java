@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
+import static lsfusion.gwt.client.view.MainFrame.v5;
 
 public class GPropertyPanelController implements ActionOrPropertyValueController {
     private boolean columnsUpdated = true;
@@ -72,7 +73,7 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
             assert !alignCaption;
 
             columnsPanel = new SizedFlexPanel(property.panelColumnVertical);
-            GwtClientUtils.addClassName(columnsPanel, "property-container-panel", "propertyContainerPanel");
+            GwtClientUtils.addClassName(columnsPanel, "property-container-panel", "propertyContainerPanel", v5);
             return new ComponentWidget(columnsPanel);
         } else {
             Result<CaptionWidget> captionWidget = alignCaption && property.container.isAlignCaptions() ? new Result<>() : null; // or is tabbed ?

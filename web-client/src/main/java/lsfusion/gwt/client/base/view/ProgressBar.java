@@ -6,6 +6,8 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 
+import static lsfusion.gwt.client.view.MainFrame.v5;
+
 /**
  * A widget that displays progress on an arbitrary scale.
  *
@@ -283,9 +285,9 @@ public class ProgressBar extends Widget implements ResizableWidget {
 
         // Set the style depending on the size of the bar
         if(percent < 50)
-            GwtClientUtils.addClassName(textElement, "progress-text", "progress-text-firstHalf");
+            GwtClientUtils.addClassName(textElement, "progress-text", "progress-text-firstHalf", v5);
         else
-            GwtClientUtils.addClassName(textElement, "progress-text", "progress-text-secondHalf");
+            GwtClientUtils.addClassName(textElement, "progress-text", "progress-text-secondHalf", v5);
 
         // Realign the text
         redraw();

@@ -23,6 +23,8 @@ import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
 import lsfusion.gwt.client.view.MainFrame;
 
+import static lsfusion.gwt.client.view.MainFrame.v5;
+
 // property value renderer with editing
 public abstract class ActionOrPropertyValue extends Widget implements EditContext, RenderContext, UpdateContext, ColorThemeChangeListener {
 
@@ -183,7 +185,7 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
         if(focusElement != null)
             focusElement.setTabIndex(isFocusable() ? 0 : -1);
 
-       GwtClientUtils.addClassName(this, "panel-renderer-value", "panelRendererValue");
+       GwtClientUtils.addClassName(this, "panel-renderer-value", "panelRendererValue", v5);
     }
 
     public void focus(FocusUtils.Reason reason) {
@@ -253,9 +255,9 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
         form.checkFocusElement(isFocused, getRenderElement());
 
         if(isFocused)
-           GwtClientUtils.addClassName(this, "panel-renderer-value-focused", "panelRendererValueFocused");
+           GwtClientUtils.addClassName(this, "panel-renderer-value-focused", "panelRendererValueFocused", v5);
         else
-           GwtClientUtils.removeClassName(this, "panel-renderer-value-focused", "panelRendererValueFocused");
+           GwtClientUtils.removeClassName(this, "panel-renderer-value-focused", "panelRendererValueFocused", v5);
         update();
     }
 
@@ -272,13 +274,13 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
     @Override
     public void startEditing() {
         isEditing = true;
-        GwtClientUtils.addClassName(this, "panel-renderer-value-edited", "panelRendererValueEdited");
+        GwtClientUtils.addClassName(this, "panel-renderer-value-edited", "panelRendererValueEdited", v5);
     }
 
     @Override
     public void stopEditing() {
         isEditing = false;
-        GwtClientUtils.removeClassName(this, "panel-renderer-value-edited", "panelRendererValueEdited");
+        GwtClientUtils.removeClassName(this, "panel-renderer-value-edited", "panelRendererValueEdited", v5);
     }
 
     protected abstract void onEditEvent(EventHandler handler);

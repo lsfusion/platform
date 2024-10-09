@@ -18,6 +18,8 @@ import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import java.util.List;
 import java.util.function.BiPredicate;
 
+import static lsfusion.gwt.client.view.MainFrame.v5;
+
 /**
  * Based on lsfusion.gwt.client.base.view.grid.DefaultDataGridBuilder
  */
@@ -116,11 +118,11 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
     public void buildColumnRow(TableRowElement tr) {
         buildRow(-1, null, tr);
 
-        GwtClientUtils.addClassName(tr, "data-grid-column-row", "dataGridColumnRow");
+        GwtClientUtils.addClassName(tr, "data-grid-column-row", "dataGridColumnRow", v5);
     }
 
     private void buildRow(int rowIndex, RowIndexHolder rowValue, TableRowElement tr) {
-        GwtClientUtils.addClassName(tr, "data-grid-row", "dataGridRow");
+        GwtClientUtils.addClassName(tr, "data-grid-row", "dataGridRow", v5);
 
         // Build the columns.
         int columnCount = cellTable.getColumnCount();
@@ -129,11 +131,11 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
 
             TableCellElement td = tr.insertCell(-1);
 
-            GwtClientUtils.addClassName(td, "data-grid-cell", "dataGridCell");
+            GwtClientUtils.addClassName(td, "data-grid-cell", "dataGridCell", v5);
             if (columnIndex == 0)
-                GwtClientUtils.addClassName(td, "data-grid-first-cell", "dataGridFirstCell");
+                GwtClientUtils.addClassName(td, "data-grid-first-cell", "dataGridFirstCell", v5);
             if (columnIndex == columnCount - 1)
-                GwtClientUtils.addClassName(td, "data-grid-last-cell", "dataGridLastCell");
+                GwtClientUtils.addClassName(td, "data-grid-last-cell", "dataGridLastCell", v5);
 
             renderTD(td, false);
 
@@ -146,7 +148,7 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
                     td.setColSpan(2);
                 else {
                     TableCellElement flexTd = tr.insertCell(-1);
-                    GwtClientUtils.addClassName(flexTd, "data-grid-column-row-flex-cell", "dataGridColumnRowFlexCell");
+                    GwtClientUtils.addClassName(flexTd, "data-grid-column-row-flex-cell", "dataGridColumnRowFlexCell", v5);
                     GwtClientUtils.addClassName(flexTd, "remove-all-pmb");
                 }
             }
@@ -154,7 +156,7 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
             if(rowIndex >= 0)
                 updateCell(td, cell, column);
             else
-                GwtClientUtils.addClassName(td, "data-grid-column-row-pref-cell", "dataGridColumnRowPrefCell");
+                GwtClientUtils.addClassName(td, "data-grid-column-row-pref-cell", "dataGridColumnRowPrefCell", v5);
         }
     }
 
@@ -226,7 +228,7 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
                 cell.getStyle().clearProperty("left");
                 clearCellBorderRight(cell);
                 //if (!header) {
-                    GwtClientUtils.addClassName(cell, "data-grid-sticky-overflow", "dataGridStickyOverflow");
+                    GwtClientUtils.addClassName(cell, "data-grid-sticky-overflow", "dataGridStickyOverflow", v5);
                 //}
             }
         }

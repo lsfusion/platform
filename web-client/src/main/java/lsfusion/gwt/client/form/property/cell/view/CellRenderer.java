@@ -20,6 +20,7 @@ import lsfusion.gwt.client.view.GColorTheme;
 import lsfusion.gwt.client.view.MainFrame;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
+import static lsfusion.gwt.client.view.MainFrame.v5;
 
 public abstract class CellRenderer {
 
@@ -139,11 +140,11 @@ public abstract class CellRenderer {
 
     public static void renderEditSelected(Element element, GPropertyDraw property) {
         if(property.hasEditObjectAction)
-            GwtClientUtils.addClassName(element, "selected-cell-has-edit", "selectedCellHasEdit");
+            GwtClientUtils.addClassName(element, "selected-cell-has-edit", "selectedCellHasEdit", v5);
     }
     public static void clearEditSelected(Element element, GPropertyDraw property) {
         if(property.hasEditObjectAction)
-            GwtClientUtils.removeClassName(element, "selected-cell-has-edit", "selectedCellHasEdit");
+            GwtClientUtils.removeClassName(element, "selected-cell-has-edit", "selectedCellHasEdit", v5);
     }
 
     public static void renderFlexAlignment(Element element, GFlexAlignment horzTextAlignment, GFlexAlignment vertAlignment) {

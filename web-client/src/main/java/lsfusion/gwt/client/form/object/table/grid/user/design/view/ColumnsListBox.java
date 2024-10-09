@@ -12,6 +12,8 @@ import lsfusion.gwt.client.form.object.table.grid.user.design.PropertyListItem;
 
 import java.util.ArrayList;
 
+import static lsfusion.gwt.client.view.MainFrame.v5;
+
 
 public abstract class ColumnsListBox extends Composite {
 
@@ -42,7 +44,7 @@ public abstract class ColumnsListBox extends Composite {
             }
         });
         setWidth("100%");
-        GwtClientUtils.addClassName(this, "draggable-list-box", "draggableListBox");
+        GwtClientUtils.addClassName(this, "draggable-list-box", "draggableListBox", v5);
     }
 
     public ColumnsListBox(ColumnsListBoxDragController dragController, boolean visible) {
@@ -107,7 +109,7 @@ public abstract class ColumnsListBox extends Composite {
     protected void setWidget(int index, Widget widget) {
         grid.insertRow(index);
 
-        GwtClientUtils.addClassName(grid.getCellFormatter().getElement(index, 0), "draggable-list-box-item", "draggableListBoxItem");
+        GwtClientUtils.addClassName(grid.getCellFormatter().getElement(index, 0), "draggable-list-box-item", "draggableListBoxItem", v5);
         if (dragController != null) {
             dragController.makeDraggable(widget);
         }

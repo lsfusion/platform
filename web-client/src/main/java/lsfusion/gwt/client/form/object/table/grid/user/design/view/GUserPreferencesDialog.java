@@ -23,6 +23,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static lsfusion.gwt.client.view.MainFrame.v5;
+
 public abstract class GUserPreferencesDialog extends DialogModalWindow {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     private static final String CSS_USER_PREFERENCES_DUAL_LIST = "userPreferencesDualList";
@@ -64,7 +66,7 @@ public abstract class GUserPreferencesDialog extends DialogModalWindow {
             }
         };
         columnsDualListBox.getDragController().addDragHandler(new DragHandlerAdapter());
-        GwtClientUtils.addClassName(columnsDualListBox, "user-preferences-dual-list", "userPreferencesDualList");
+        GwtClientUtils.addClassName(columnsDualListBox, "user-preferences-dual-list", "userPreferencesDualList", v5);
 
         // column caption settings        
         columnCaptionBox = createTextBox();
@@ -131,11 +133,11 @@ public abstract class GUserPreferencesDialog extends DialogModalWindow {
             FlexPanel buttonsPanel = new FlexPanel();
 
             FormButton saveButton = new FormButton(messages.formGridPreferencesSave(), FormButton.ButtonStyle.PRIMARY, event -> savePressed());
-            GwtClientUtils.addClassName(saveButton, "panel-renderer-value", "panelRendererValue");
+            GwtClientUtils.addClassName(saveButton, "panel-renderer-value", "panelRendererValue", v5);
             buttonsPanel.add(saveButton);
 
             FormButton resetButton = new FormButton(messages.formGridPreferencesReset(), FormButton.ButtonStyle.SECONDARY,  event -> resetPressed());
-            GwtClientUtils.addClassName(resetButton, "panel-renderer-value", "panelRendererValue");
+            GwtClientUtils.addClassName(resetButton, "panel-renderer-value", "panelRendererValue", v5);
             buttonsPanel.add(resetButton);
 
             preferencesPanel.add(buttonsPanel);
@@ -408,7 +410,7 @@ public abstract class GUserPreferencesDialog extends DialogModalWindow {
         TextBox textBox = new TextBox();
         GwtClientUtils.addClassNames(textBox, "form-control", "prop-size-value");
         if(integral) {
-            GwtClientUtils.addClassName(textBox, "user-preferences-integral-text-box", "userPreferencesIntegralTextBox");
+            GwtClientUtils.addClassName(textBox, "user-preferences-integral-text-box", "userPreferencesIntegralTextBox", v5);
         }
         return textBox;
     }

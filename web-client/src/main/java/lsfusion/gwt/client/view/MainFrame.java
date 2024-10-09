@@ -106,7 +106,7 @@ public class MainFrame implements EntryPoint {
 
     public static boolean jasperReportsIgnorePageMargins;
 
-    public static double v52 = 5.2;
+    public static double v5 = 5.9999;
     public static double cssBackwardCompatibilityLevel;
 
     // async dispatch

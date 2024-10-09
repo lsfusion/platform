@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.function.BiPredicate;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.removeAllChildren;
+import static lsfusion.gwt.client.view.MainFrame.v5;
 
 /**
  * Builder used to construct a CellTable.
@@ -220,7 +221,7 @@ public abstract class AbstractDataGridBuilder<T> {
 
         if(column.isSticky()) {
             //class dataGridStickyCell is also used in DataGrid isStickyCell()
-            GwtClientUtils.addClassName(td, "data-grid-sticky-cell", "dataGridStickyCell");
+            GwtClientUtils.addClassName(td, "data-grid-sticky-cell", "dataGridStickyCell", v5);
             GwtClientUtils.addClassName(td, "background-inherit");
 //            td.getStyle().setProperty("position", "sticky"); // we need to add it explicitly since it is used in setupFillParent
         }

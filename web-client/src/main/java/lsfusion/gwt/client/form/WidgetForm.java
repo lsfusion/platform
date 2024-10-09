@@ -9,6 +9,8 @@ import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.view.FormContainer;
 
+import static lsfusion.gwt.client.view.MainFrame.v5;
+
 public abstract class WidgetForm extends FormContainer {
     protected Widget captionWidget;
 
@@ -78,9 +80,9 @@ public abstract class WidgetForm extends FormContainer {
 
         private void initBlockedMask() {
             Widget mask = new SimpleLayoutPanel();
-            GwtClientUtils.addClassName(mask, "dockable-blocking-mask", "dockableBlockingMask");
+            GwtClientUtils.addClassName(mask, "dockable-blocking-mask", "dockableBlockingMask", v5);
             maskWrapper = new FocusPanel(mask);
-            GwtClientUtils.addClassName(maskWrapper, "dockable-blocking-mask", "dockableBlockingMask");
+            GwtClientUtils.addClassName(maskWrapper, "dockable-blocking-mask", "dockableBlockingMask", v5);
             maskWrapper.setVisible(false);
             addFill(maskWrapper);
             GwtClientUtils.setupFillParent(maskWrapper.getElement());

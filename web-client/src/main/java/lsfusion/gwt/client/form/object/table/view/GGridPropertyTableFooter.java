@@ -14,6 +14,7 @@ import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
 import static lsfusion.gwt.client.base.GwtSharedUtils.nullEquals;
+import static lsfusion.gwt.client.view.MainFrame.v5;
 
 public class GGridPropertyTableFooter extends Header<String> implements RenderContext, UpdateContext {
 
@@ -71,7 +72,7 @@ public class GGridPropertyTableFooter extends Header<String> implements RenderCo
     @Override
     public void renderAndUpdateDom(TableCellElement th, boolean rerender) {
         if (sticky) {
-            GwtClientUtils.addClassName(th, "data-grid-sticky-footer", "dataGridStickyFooter");
+            GwtClientUtils.addClassName(th, "data-grid-sticky-footer", "dataGridStickyFooter", v5);
             GwtClientUtils.addClassName(th, "background-inherit");
         }
         

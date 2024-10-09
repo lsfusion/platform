@@ -11,6 +11,8 @@ import lsfusion.gwt.client.form.object.table.grid.user.design.PropertyListItem;
 
 import java.util.ArrayList;
 
+import static lsfusion.gwt.client.view.MainFrame.v5;
+
 public abstract class ColumnsDualListBox extends AbsolutePanel {
     private static final ClientMessages messages = ClientMessages.Instance.get();
 
@@ -58,7 +60,7 @@ public abstract class ColumnsDualListBox extends AbsolutePanel {
         FormButton allLeft = new FormButton("&lt;&lt;", event -> moveItems(invisibleList, visibleList, false));
 
         VerticalPanel buttonsPanel = new VerticalPanel();
-        GwtClientUtils.addClassName(buttonsPanel, "dual-list-buttons-container", "dualListButtonsContainer");
+        GwtClientUtils.addClassName(buttonsPanel, "dual-list-buttons-container", "dualListButtonsContainer", v5);
         buttonsPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
         buttonsPanel.add(oneRight);
         buttonsPanel.add(oneLeft);
@@ -76,7 +78,7 @@ public abstract class ColumnsDualListBox extends AbsolutePanel {
         buttonsAndRightPanel.add(new CaptionPanel(messages.formGridPreferencesHiddenColumns(), rightFocusPanel));
 
         DockLayoutPanel dockContainer = new DockLayoutPanel(Style.Unit.PCT);
-        GwtClientUtils.addClassName(dockContainer, "dual-list-columns-dock-container", "dualListColumnsDockContainer");
+        GwtClientUtils.addClassName(dockContainer, "dual-list-columns-dock-container", "dualListColumnsDockContainer", v5);
         dockContainer.addWest(new CaptionPanel(messages.formGridPreferencesDisplayedColumns(), leftFocusPanel), 43);
         dockContainer.add(buttonsAndRightPanel);
 

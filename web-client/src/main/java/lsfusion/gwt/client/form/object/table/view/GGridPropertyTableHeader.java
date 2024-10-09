@@ -22,6 +22,7 @@ import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 import static lsfusion.gwt.client.base.GwtSharedUtils.nullEquals;
 import static lsfusion.gwt.client.form.property.cell.view.CellRenderer.renderTextAlignment;
+import static lsfusion.gwt.client.view.MainFrame.v5;
 
 public class GGridPropertyTableHeader extends Header<String> {
 
@@ -139,7 +140,7 @@ public class GGridPropertyTableHeader extends Header<String> {
         renderedImage = image;
 
         if(sticky) {
-            GwtClientUtils.addClassName(th, "data-grid-sticky-header", "dataGridStickyHeader");
+            GwtClientUtils.addClassName(th, "data-grid-sticky-header", "dataGridStickyHeader", v5);
             GwtClientUtils.addClassName(th, "background-inherit");
         }
 

@@ -9,6 +9,8 @@ import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 
+import static lsfusion.gwt.client.view.MainFrame.v5;
+
 public abstract class FileBasedCellRenderer extends CellRenderer {
     @Override
     public boolean renderContent(Element element, RenderContext renderContext) {
@@ -30,9 +32,9 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
             img = (value != null ? getBaseImage(value) : StaticImage.EMPTY).createImage();
 
             if(property.hasEditObjectAction && value != null) {
-                GwtClientUtils.addClassName(img, "selected-file-cell-has-edit", "selectedFileCellHasEdit");
+                GwtClientUtils.addClassName(img, "selected-file-cell-has-edit", "selectedFileCellHasEdit", v5);
             } else {
-                GwtClientUtils.removeClassName(img, "selected-file-cell-has-edit", "selectedFileCellHasEdit");
+                GwtClientUtils.removeClassName(img, "selected-file-cell-has-edit", "selectedFileCellHasEdit", v5);
             }
         }
 

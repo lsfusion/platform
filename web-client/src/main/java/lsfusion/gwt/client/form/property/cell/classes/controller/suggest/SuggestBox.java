@@ -25,6 +25,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.BiConsumer;
 
+import static lsfusion.gwt.client.view.MainFrame.v5;
+
 public abstract class SuggestBox {
 
     private static final ClientMessages messages = ClientMessages.Instance.get();
@@ -296,7 +298,7 @@ public abstract class SuggestBox {
     protected abstract static class SuggestPopupButton extends GToolbarButton {
         public SuggestPopupButton(BaseStaticImage image) {
             super(image);
-            GwtClientUtils.addClassName(getElement(), "suggest-popup-button", "suggestPopupButton");
+            GwtClientUtils.addClassName(getElement(), "suggest-popup-button", "suggestPopupButton", v5);
         }
 
         @Override

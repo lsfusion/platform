@@ -6,6 +6,8 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.view.MainFrame;
 
+import static lsfusion.gwt.client.view.MainFrame.v5;
+
 // extended flex panel with alignShrink, and preferred size support
 public class SizedFlexPanel extends FlexPanel {
 
@@ -69,7 +71,7 @@ public class SizedFlexPanel extends FlexPanel {
             if(!fixed) {
                 FlexPanel wrapPanel = new FlexPanel(!vertical, isStretch ? GFlexAlignment.START : alignment);
                 wrapPanel.transparentResize = true;
-                GwtClientUtils.addClassName(wrapPanel, "opposite-size-css-fix-panel", "oppositeSizeCssFixPanel"); // just to identify this div in dom
+                GwtClientUtils.addClassName(wrapPanel, "opposite-size-css-fix-panel", "oppositeSizeCssFixPanel", v5); // just to identify this div in dom
                 wrapPanel.add(widget, GFlexAlignment.STRETCH, isStretch ? 1 : 0, alignShrink, alignSize);
                 if (size != null) { // we want to use intristic widths, because otherwise (when setting the size to the wrap panel) margin/border/padding will be ignored
                     assert !vertical || supportsIntrinisticHeight;

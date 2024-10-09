@@ -17,6 +17,8 @@ import lsfusion.gwt.client.form.property.cell.controller.ExecuteEditContext;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
 
+import static lsfusion.gwt.client.view.MainFrame.v5;
+
 public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements ExecuteEditContext {
 
     public ActionOrPropertyPanelValue(GPropertyDraw property, GGroupObjectValue columnKey, GFormController form, boolean globalCaptionIsDrawn, ActionOrPropertyValueController controller) {
@@ -53,11 +55,11 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
     }
 
     public void onBinding(Event event) {
-        GwtClientUtils.addClassName(this, "panel-renderer-value-binding", "panelRendererValueBinding");
+        GwtClientUtils.addClassName(this, "panel-renderer-value-binding", "panelRendererValueBinding", v5);
         Timer t = new Timer() {
             @Override
             public void run() {
-                GwtClientUtils.removeClassName(ActionOrPropertyPanelValue.this, "panel-renderer-value-binding", "panelRendererValueBinding");
+                GwtClientUtils.removeClassName(ActionOrPropertyPanelValue.this, "panel-renderer-value-binding", "panelRendererValueBinding", v5);
                 cancel();
             }
         };

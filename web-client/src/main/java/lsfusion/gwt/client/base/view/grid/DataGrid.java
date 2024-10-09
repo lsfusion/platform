@@ -54,6 +54,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static java.lang.Math.min;
+import static lsfusion.gwt.client.view.MainFrame.v5;
 
 public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeListener, HasMaxPreferredSize {
 
@@ -1577,25 +1578,25 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
     private void setFocusedCellBottomBorder(TableCellElement td, boolean focused) {
         if (focused) {
-            GwtClientUtils.addClassName(td, "focused-cell-bottom-border", "focusedCellBottomBorder");
+            GwtClientUtils.addClassName(td, "focused-cell-bottom-border", "focusedCellBottomBorder", v5);
         } else {
-            GwtClientUtils.removeClassName(td, "focused-cell-bottom-border", "focusedCellBottomBorder");
+            GwtClientUtils.removeClassName(td, "focused-cell-bottom-border", "focusedCellBottomBorder", v5);
         }
     }
 
     private void setFocusedCellRightBorder(TableCellElement td, boolean focused) {
         if (focused) {
-            GwtClientUtils.addClassName(td, "focused-cell-right-border", "focusedCellRightBorder");
+            GwtClientUtils.addClassName(td, "focused-cell-right-border", "focusedCellRightBorder", v5);
         } else {
-            GwtClientUtils.removeClassName(td, "focused-cell-right-border", "focusedCellRightBorder");
+            GwtClientUtils.removeClassName(td, "focused-cell-right-border", "focusedCellRightBorder", v5);
         }
     }
 
     private void setLeftNeighbourRightBorder(TableCellElement td, boolean focused) {
         if (focused) {
-            GwtClientUtils.addClassName(td, "left-neighbour-right-border", "leftNeighbourRightBorder");
+            GwtClientUtils.addClassName(td, "left-neighbour-right-border", "leftNeighbourRightBorder", v5);
         } else {
-            GwtClientUtils.removeClassName(td, "left-neighbour-right-border", "leftNeighbourRightBorder");
+            GwtClientUtils.removeClassName(td, "left-neighbour-right-border", "leftNeighbourRightBorder", v5);
         }
     }
 
@@ -1785,15 +1786,15 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
             }
 
             headerElement = tableElement.createTHead();
-            GwtClientUtils.addClassName(headerElement, "data-grid-header", "dataGridHeader");
+            GwtClientUtils.addClassName(headerElement, "data-grid-header", "dataGridHeader", v5);
 
             colRowElement = headerElement.insertRow(-1);
 
             bodyElement = GwtClientUtils.createTBody(tableElement);
-            GwtClientUtils.addClassName(bodyElement, "data-grid-body", "dataGridBody");
+            GwtClientUtils.addClassName(bodyElement, "data-grid-body", "dataGridBody", v5);
 
             footerElement = tableElement.createTFoot();
-            GwtClientUtils.addClassName(footerElement, "data-grid-footer", "dataGridFooter");
+            GwtClientUtils.addClassName(footerElement, "data-grid-footer", "dataGridFooter", v5);
 
             setElement(tableElement);
         }
