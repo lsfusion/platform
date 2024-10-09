@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.controller;
 
+import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.StaticImage;
 
 public enum EditMode {
@@ -46,4 +47,19 @@ public enum EditMode {
                 return 3;
         }
     }
+
+    public String getTitle(ClientMessages messages) {
+        switch (this) {
+            case DEFAULT:
+            default:
+                return messages.editModeDefault();
+            case LINK:
+                return messages.editModeLink();
+            case DIALOG:
+                return messages.editModeDialog();
+            case GROUPCHANGE:
+                return messages.editModeGroupChange();
+        }
+    }
+
 }
