@@ -1059,7 +1059,7 @@ protected Double getUserFlex(int i) {
                     assert reason == null;
                     reason = FocusUtils.getFocusReason(target);
                     if(reason == null)
-                        reason = FocusUtils.Reason.OTHER;
+                        reason = FocusUtils.Reason.FOCUSNAVIGATE;
                 }
                 FocusUtils.focus((Element) focusElement, reason);
                 return true;
