@@ -26,7 +26,7 @@
 table.pvtTable tbody tr td,
 table.pvtTable tbody tr th,
 table.pvtTable thead tr th {
-    /* the same as dataGridCell, dataGridHeaderCell, table.pvtTable thead tr th/td */
+    /* the same as data-grid-cell, data-grid-header-cell, table.pvtTable thead tr th/td */
     border-right: 1px solid var(--grid-separator-border-color);
     border-bottom: 1px solid var(--grid-separator-border-color);
 }

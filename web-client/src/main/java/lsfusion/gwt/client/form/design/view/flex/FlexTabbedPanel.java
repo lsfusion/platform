@@ -2,8 +2,7 @@ package lsfusion.gwt.client.form.design.view.flex;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.ui.*;
-import lsfusion.gwt.client.base.Pair;
-import lsfusion.gwt.client.base.view.FlexPanel;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.SizedFlexPanel;
 
@@ -30,8 +29,8 @@ public class FlexTabbedPanel extends SizedFlexPanel implements IndexedPanel, Req
         tabBar.setSelectionHandler(FlexTabbedPanel.this::onTabSelected);
         this.tabBar = tabBar;
 
-        addStyleName("tab-panel");
-        addStyleName(end ? "tab-panel-end" : "tab-panel-start");
+       GwtClientUtils.addClassName(this, "tab-panel");
+       GwtClientUtils.addClassName(this, end ? "tab-panel-end" : "tab-panel-start");
         tabEnd = end;
     }
 
@@ -103,7 +102,7 @@ public class FlexTabbedPanel extends SizedFlexPanel implements IndexedPanel, Req
     }
 
     public void addTab(Widget w, Integer index, Widget tabWidget) {
-        w.addStyleName("tab-pane");
+        GwtClientUtils.addClassName(w, "tab-pane");
         insertTab(tabWidget, index != null ? index : getTabCount(), (beforeIndex) -> addFillShrink(w, beforeIndex));
     }
 

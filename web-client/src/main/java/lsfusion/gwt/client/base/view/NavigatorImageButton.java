@@ -4,6 +4,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.NativeEvent;
 import lsfusion.gwt.client.base.BaseImage;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
@@ -26,8 +27,7 @@ public class NavigatorImageButton extends ImageButton {
     public NavigatorImageButton(GNavigatorElement element, boolean vertical, boolean span, int level, boolean active) {
         super(element.caption, element.image, vertical, span ? Document.get().createSpanElement() : Document.get().createAnchorElement());
 
-        addStyleName("nav-item nav-link navbar-text");
-        addStyleName(vertical ? "nav-link-vert" : "nav-link-horz");
+        GwtClientUtils.addClassNames(this, "nav-item", "nav-link", "navbar-text", vertical ? "nav-link-vert" : "nav-link-horz");
         this.vertical = vertical;
 
         this.element = element;
@@ -41,9 +41,9 @@ public class NavigatorImageButton extends ImageButton {
     private JavaScriptObject tippy;
 
     private void update() {
-        addStyleName((vertical ? "nav-link-vert" : "nav-link-horz") + "-" + level);
+        GwtClientUtils.addClassName(this, (vertical ? "nav-link-vert" : "nav-link-horz") + "-" + level);
         if(active)
-            addStyleName("active");
+           GwtClientUtils.addClassName(this, "active");
 
         updateElementClass();
 
@@ -75,9 +75,9 @@ public class NavigatorImageButton extends ImageButton {
     private boolean active;
     public void change(GNavigatorElement element, int level, boolean active) {
         if(this.active)
-            removeStyleName("active");
+           GwtClientUtils.removeClassName(this, "active");
         if(this.level >= 0)
-            removeStyleName((vertical ? "nav-link-vert" : "nav-link-horz") + "-" + this.level);
+           GwtClientUtils.removeClassName(this, (vertical ? "nav-link-vert" : "nav-link-horz") + "-" + this.level);
 
         this.element = element;
         this.level = level;

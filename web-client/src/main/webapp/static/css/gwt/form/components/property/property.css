@@ -164,7 +164,7 @@ input.prop-text-vert-center {
 }
 
 /* the problem is that some custom (for example bootstrap) classes can use position:absolute, and we don't want it to go outside the value, because it may lead to some really odd behaviour if somewhere between the element and position:relative element will be overflowed element (the base size of the position:relative element will be really large) */
-.panelRendererValue,
-.dataGridCell {
+.panel-renderer-value,
+.data-grid-cell {
     position: relative;
 }

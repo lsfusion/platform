@@ -1,25 +1,25 @@
 
-/* .dataGridBody */
+/* .data-grid-body */
 /* in theory it would be better to set the background only "under the body", but not "under the header"
    but we want to have the same background for the whole table even if body doesn't fill all the space, and with current dom it's not possible
    so we set the background for the whole container, but reset the background for the header
 */
-.tableContainerBoxed, .tableContainerBoxed .background-inherit {
+.table-container-boxed, .table-container-boxed .background-inherit {
     background: var(--component-background-color);
 }
 
-.tableContainerBoxed {
+.table-container-boxed {
     border: 1px solid var(--component-border-color);
     border-radius: var(--table-border-radius);
 }
 
-.tableContainerFocused {
+.table-container-focused {
 }
 
-.tableContainerBoxed.tableContainerFocused {
+.table-container-boxed.table-container-focused {
     border: 1px solid var(--focus-color);
 }
 
-.tableContainerBoxed:hover:not(.tableContainerFocused) { /* we want focus to have higher priority than hover*/
+.table-container-boxed:hover:not(.table-container-focused) { /* we want focus to have higher priority than hover*/
     border: 1px solid var(--component-hover-border-color);
 }

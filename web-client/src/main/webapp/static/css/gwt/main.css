@@ -16,7 +16,7 @@
 }
 
 /* ------------ Form "dockables"  ------------ */
-.dockableBlockingMask {
+.dockable-blocking-mask {
     background: black;
     opacity: 0.3;
     z-index: 10000;
@@ -36,14 +36,14 @@
     white-space: nowrap;
 }
 
-.verticalStretchSeparator {
+.vertical-stretch-separator {
     border-left: 1px solid var(--panel-border-color);
     margin: 0.1875rem 0;
     padding: 0;
     align-self: stretch;
 }
 
-.horizontalSeparator {
+.horizontal-separator {
     width: 100%;
     border-bottom: 1px solid var(--panel-border-color);
 }

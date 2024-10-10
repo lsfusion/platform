@@ -39,10 +39,10 @@ public class GDataFilterValueView extends SizedFlexPanel {
         cell = new GDataFilterPropertyValue(condition, logicsSupplier.getForm(), this::valueChanged, this::editingCancelled);
 
         sizedView = cell.getSizedWidget(true); // true is needed for correct calculation of input field width in filters
-        sizedView.widget.addStyleName("filter-data-property-value");
+        GwtClientUtils.addClassName(sizedView.widget, "filter-data-property-value");
         // we're drawing the border ourselves (so isInputRemoveAllPMV is true),
         // otherwise there would be a problem, that classes for the property are set assuming that it is a grid, and there can be problems when setting them in the filter (because for example form-control will be missing in this case)
-        sizedView.widget.addStyleName("form-control");
+        GwtClientUtils.addClassName(sizedView.widget, "form-control");
         sizedView.addFill(this);
 
         if (readSelectedValue && !condition.property.differentValue)

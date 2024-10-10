@@ -240,6 +240,6 @@ a.fc-daygrid-day-number, a.fc-daygrid-day-number:hover {
     min-width: 170px;
 }
 
-.fc .panelRendererValue {
+.fc .panel-renderer-value {
     box-sizing: unset;
 }

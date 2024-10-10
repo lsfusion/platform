@@ -94,7 +94,7 @@ public class TooltipManager {
                     if (DOM.eventGetType(event) == Event.ONCLICK)
                         verticalPanel.setVisible(!verticalPanel.isVisible());
                 });
-                preferencesButton.addStyleName("tooltip-path-preferences-button");
+                GwtClientUtils.addClassName(preferencesButton, "tooltip-path-preferences-button");
 
                 String debugPath = Cookies.getCookie("debugPath");
                 setLinks(tooltipHelper, debugPath == null ? "use_default_path" : debugPath, tooltipElement);

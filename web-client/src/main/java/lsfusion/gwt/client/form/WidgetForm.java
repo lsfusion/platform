@@ -9,6 +9,8 @@ import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.view.FormContainer;
 
+import static lsfusion.gwt.client.view.MainFrame.v5;
+
 public abstract class WidgetForm extends FormContainer {
     protected Widget captionWidget;
 
@@ -59,7 +61,7 @@ public abstract class WidgetForm extends FormContainer {
             initBlockedMask();
 
             // this is shrinked container and needs padding
-//            addStyleName("form-shrink-padded-container");
+            //GwtClientUtils.addXStyleName(this, "form-shrink-padded-container");
         }
 
         public Widget getContent() {
@@ -78,9 +80,9 @@ public abstract class WidgetForm extends FormContainer {
 
         private void initBlockedMask() {
             Widget mask = new SimpleLayoutPanel();
-            mask.setStyleName("dockableBlockingMask");
+            GwtClientUtils.addClassName(mask, "dockable-blocking-mask", "dockableBlockingMask", v5);
             maskWrapper = new FocusPanel(mask);
-            maskWrapper.setStyleName("dockableBlockingMask");
+            GwtClientUtils.addClassName(maskWrapper, "dockable-blocking-mask", "dockableBlockingMask", v5);
             maskWrapper.setVisible(false);
             addFill(maskWrapper);
             GwtClientUtils.setupFillParent(maskWrapper.getElement());
@@ -109,8 +111,8 @@ public abstract class WidgetForm extends FormContainer {
         public CloseButton() {
             super(null, null);
 
-            addStyleName("btn-close");
-            addStyleName("tab-close-button");
+           GwtClientUtils.addClassName(this, "btn-close");
+           GwtClientUtils.addClassName(this, "tab-close-button");
 
             addClickHandler(event -> {
 //                event.stopPropagation();

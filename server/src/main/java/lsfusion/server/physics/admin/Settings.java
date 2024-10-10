@@ -3398,4 +3398,15 @@ public class Settings implements Cloneable {
     public void setCreateSessionObjects(boolean createSessionObjects) {
         this.createSessionObjects = createSessionObjects;
     }
+
+    //backward compatibility for camelCases css rules refactoring
+    public double cssBackwardCompatibilityLevel = -1;
+
+    public double getCssBackwardCompatibilityLevel() {
+        return cssBackwardCompatibilityLevel;
+    }
+
+    public void setCssBackwardCompatibilityLevel(double cssBackwardCompatibilityLevel) {
+        this.cssBackwardCompatibilityLevel = cssBackwardCompatibilityLevel;
+    }
 }

@@ -17,56 +17,56 @@
     --focused-cell-border-color: var(--focus-color);
 }
 
-.table:not(.empty-header) .dataGridHeader .dataGridHeaderCell {
-    /* the same as dataGridCell, dataGridHeaderCell, table.pvtTable thead tr th/td */
+.table:not(.empty-header) .data-grid-header .data-grid-header-cell {
+    /* the same as data-grid-cell, data-grid-header-cell, table.pvtTable thead tr th/td */
     border-bottom: var(--border-width) solid var(--grid-separator-border-color);
 }
 
-.table:not(.empty-footer) .dataGridFooter .dataGridFooterCell {
+.table:not(.empty-footer) .data-grid-footer .data-grid-footer-cell {
     border-top: var(--border-width) solid var(--grid-separator-border-color);
 }
 
-.dataGridCell {
-    /* the same as dataGridCell, dataGridHeaderCell, table.pvtTable thead tr th/td */
+.data-grid-cell {
+    /* the same as data-grid-cell, data-grid-header-cell, table.pvtTable thead tr th/td */
     border-bottom: var(--border-width) solid var(--grid-separator-border-color);
 }
 
-.focusedCellBottomBorder,
-:not(.empty-header) .dataGridHeader .dataGridHeaderCell.focusedCellBottomBorder {
+.focused-cell-bottom-border,
+:not(.empty-header) .data-grid-header .data-grid-header-cell.focused-cell-bottom-border {
     border-bottom: var(--border-width) solid var(--focused-cell-border-color);
 }
 
-.dataGridHeaderCell:not(.no-vertical-scroll .dataGridLastHeaderCell) {
+.data-grid-header-cell:not(.no-vertical-scroll .data-grid-last-header-cell) {
     border-right: var(--border-width) solid var(--grid-separator-border-color);
 }
 
-.dataGridFooterCell:not(.no-vertical-scroll .dataGridLastFooterCell) {
+.data-grid-footer-cell:not(.no-vertical-scroll .data-grid-last-footer-cell) {
     border-right: var(--border-width) solid var(--grid-separator-border-color);
 }
 
-.dataGridCell:not(.no-vertical-scroll .dataGridLastCell) {
-    /* the same as dataGridCell, dataGridHeaderCell, table.pvtTable thead tr th/td */
+.data-grid-cell:not(.no-vertical-scroll .data-grid-last-cell) {
+    /* the same as data-grid-cell, data-grid-header-cell, table.pvtTable thead tr th/td */
     border-right: var(--border-width) solid var(--grid-separator-border-color);
 }
 
-.focusedCellRightBorder:not(.no-vertical-scroll .dataGridLastCell) {
+.focused-cell-right-border:not(.no-vertical-scroll .data-grid-last-cell) {
     border-right: var(--border-width) solid var(--focused-cell-border-color);
 }
 
-.leftNeighbourRightBorder:not(.no-vertical-scroll .dataGridLastCell)  { /* second check we need to prioritize this rule over .dataGridCell:not (otherwise two matches against one) */
+.left-neighbour-right-border:not(.no-vertical-scroll .data-grid-last-cell)  { /* second check we need to prioritize this rule over .data-grid-cell:not (otherwise two matches against one) */
     border-right: var(--border-width) solid var(--focused-cell-border-color);
 }
 
-.dataGridFirstHeaderCell {
+.data-grid-first-header-cell {
 }
-.dataGridLastHeaderCell {
+.data-grid-last-header-cell {
 }
-.dataGridFirstFooterCell {
+.data-grid-first-footer-cell {
 }
-.dataGridLastFooterCell {
+.data-grid-last-footer-cell {
 }
-.dataGridFirstCell {
+.data-grid-first-cell {
 }
-.dataGridLastCell {
+.data-grid-last-cell {
 }
 

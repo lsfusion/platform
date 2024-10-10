@@ -1,7 +1,7 @@
 
 /* text */
 
-.text-based-prop-sized, .text-based-prop-sized.dataGridCell, .form-select, .form-control, .dataGridHeaderCell {
+.text-based-prop-sized, .text-based-prop-sized.data-grid-cell, .form-select, .form-control, .data-grid-header-cell {
     padding: 2px 3px;
 }
 
@@ -10,20 +10,20 @@
 
 /* ------------ Colored corner triangles  ------------ */
 
-.property-not-null.dataGridHeaderCell,
-.property-not-null.panelRendererValue.form-control,
+.property-not-null.data-grid-header-cell,
+.property-not-null.panel-renderer-value.form-control,
 .property-not-null.prop-input-w-toolbar,
-.property-has-change.dataGridHeaderCell,
-.property-has-change.panelRendererValue.form-control,
+.property-has-change.data-grid-header-cell,
+.property-has-change.panel-renderer-value.form-control,
 .property-has-change.prop-input-w-toolbar {
     position: relative;
     overflow: hidden; /* to hide inner corners */
 }
-.property-not-null.dataGridHeaderCell::after,
-.property-not-null.panelRendererValue.form-control::after,
+.property-not-null.data-grid-header-cell::after,
+.property-not-null.panel-renderer-value.form-control::after,
 .property-not-null.prop-input-w-toolbar::after,
-.property-has-change.dataGridHeaderCell::after,
-.property-has-change.panelRendererValue.form-control::after,
+.property-has-change.data-grid-header-cell::after,
+.property-has-change.panel-renderer-value.form-control::after,
 .property-has-change.prop-input-w-toolbar::after {
     content: "";
     width: 0;
@@ -35,14 +35,14 @@
     bottom: 0;
 }
 
-.property-has-change.dataGridHeaderCell::after,
-.property-has-change.panelRendererValue.form-control::after,
+.property-has-change.data-grid-header-cell::after,
+.property-has-change.panel-renderer-value.form-control::after,
 .property-has-change.prop-input-w-toolbar::after {
     border-color: transparent transparent var(--focus-color) transparent;
 }
 
-.property-not-null.dataGridHeaderCell::after,
-.property-not-null.panelRendererValue.form-control::after,
+.property-not-null.data-grid-header-cell::after,
+.property-not-null.panel-renderer-value.form-control::after,
 .property-not-null.prop-input-w-toolbar::after {
     border-color: transparent transparent var(--not-null-corner-triangle-color) transparent;
 }

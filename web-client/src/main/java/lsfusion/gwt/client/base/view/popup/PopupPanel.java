@@ -30,6 +30,7 @@ import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.Event.NativePreviewHandler;
 import com.google.gwt.user.client.ui.*;
 import com.google.gwt.user.client.ui.impl.PopupImpl;
+import lsfusion.gwt.client.base.GwtClientUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -444,8 +445,8 @@ public class PopupPanel extends SimplePanel implements SourcesPopupEvents,
     // window. By setting a default position, the popup will not appear in
     // an undefined location if it is shown before its position is set.
     setPopupPosition(0, 0);
-    setStyleName(DEFAULT_STYLENAME);
-    setStyleName(getContainerElement(), "popupContent");
+    GwtClientUtils.addClassName(this, DEFAULT_STYLENAME);
+    GwtClientUtils.addClassName(getContainerElement(), "popupContent");
   }
 
   /**
@@ -812,7 +813,7 @@ public class PopupPanel extends SimplePanel implements SourcesPopupEvents,
     this.isGlassEnabled = enabled;
     if (enabled && glass == null) {
       glass = Document.get().createDivElement();
-      glass.setClassName(glassStyleName);
+      GwtClientUtils.addClassName(glass, glassStyleName);
 
       glass.getStyle().setPosition(Position.ABSOLUTE);
       glass.getStyle().setLeft(0, Unit.PX);
@@ -829,7 +830,7 @@ public class PopupPanel extends SimplePanel implements SourcesPopupEvents,
   public void setGlassStyleName(String glassStyleName) {
     this.glassStyleName = glassStyleName;
     if (glass != null) {
-      glass.setClassName(glassStyleName);
+      GwtClientUtils.addClassName(glass, glassStyleName);
     }
   }
 

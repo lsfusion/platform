@@ -23,19 +23,19 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
     }
 
     private static void renderText(Element element, boolean multiLine) {
-        element.addClassName("text-based-prop-value");
+        GwtClientUtils.addClassName(element, "text-based-prop-value");
     }
 
     private static void clearRenderText(Element element, boolean multiLine) {
-        element.removeClassName("text-based-prop-value");
+        GwtClientUtils.removeClassName(element, "text-based-prop-value");
     }
 
     public static void setTextPadding(Element element) {
-        element.addClassName("text-based-prop-sized");
+        GwtClientUtils.addClassName(element, "text-based-prop-sized");
     }
 
     public static void clearTextPadding(Element element) {
-        element.removeClassName("text-based-prop-sized");
+        GwtClientUtils.removeClassName(element, "text-based-prop-sized");
     }
 
     public static boolean isMultiLineInput(Element parent) {
@@ -79,7 +79,7 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
         setTextPadding(getSizeElement(element));
 
         if(property.isEditableNotNull())
-            element.addClassName("text-based-value-required");
+            GwtClientUtils.addClassName(element, "text-based-value-required");
 
         if(getInputElement(element) == null)
             renderText(element, isMultiLine());
@@ -94,15 +94,15 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
         clearTextPadding(getSizeElement(element));
 
         if (property.isEditableNotNull())
-            element.removeClassName("text-based-value-required");
+            GwtClientUtils.removeClassName(element, "text-based-value-required");
 
-        element.removeClassName("text-based-value-null");
-        element.removeClassName("text-based-value-empty");
+        GwtClientUtils.removeClassName(element, "text-based-value-null");
+        GwtClientUtils.removeClassName(element, "text-based-value-empty");
 
         Element inputElement = getInputElement(element);
         if(property.isEditableNotNull()) {
             if(inputElement != null) {
-                inputElement.removeClassName("is-invalid");
+                GwtClientUtils.removeClassName(inputElement, "is-invalid");
             }
         }
 
@@ -123,14 +123,14 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
         RendererType rendererType = updateContext.getRendererType();
         String innerText = isNull ? "" : format(value, rendererType, pattern);
         if(isNull) {
-            element.addClassName("text-based-value-null");
+            GwtClientUtils.addClassName(element, "text-based-value-null");
         } else {
-            element.removeClassName("text-based-value-null");
+            GwtClientUtils.removeClassName(element, "text-based-value-null");
             if(innerText.isEmpty()) {
                 innerText = EMPTY_VALUE;
-                element.addClassName("text-based-value-empty");
+                GwtClientUtils.addClassName(element, "text-based-value-empty");
             } else
-                element.removeClassName("text-based-value-empty");
+                GwtClientUtils.removeClassName(element, "text-based-value-empty");
         }
         //title is shown as an embedded tooltip on mouseover
         element.setTitle(property.echoSymbols || property.valueTooltip != null ? "" : innerText);
@@ -140,9 +140,9 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
             assert isTagInput();
             if(property.isEditableNotNull()) {
                 if (isNull) {
-                    inputElement.addClassName("is-invalid");
+                    GwtClientUtils.addClassName(inputElement, "is-invalid");
                 } else {
-                    inputElement.removeClassName("is-invalid");
+                    GwtClientUtils.removeClassName(inputElement, "is-invalid");
                 }
             }
             updateInputContent(inputElement.cast(), innerText, value, rendererType);

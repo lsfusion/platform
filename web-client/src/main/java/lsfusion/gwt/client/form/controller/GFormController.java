@@ -295,7 +295,7 @@ public class GFormController implements EditManager {
                 setRemoteRegularFilter(filterGroup, e.getValue() != null && e.getValue() ? filter : null);
             }
         });
-        filterCheck.addStyleName("filter-group-check");
+        GwtClientUtils.addClassName(filterCheck, "filter-group-check");
         addFilterView(filterGroup, filterCheck);
 
         if (filterGroup.defaultFilterIndex >= 0) {
@@ -334,8 +334,8 @@ public class GFormController implements EditManager {
             }
         });
 
-        filterBox.setStyleName("filter-group-select");
-        filterBox.addStyleName("form-select");
+        GwtClientUtils.addClassName(filterBox, "filter-group-select");
+        GwtClientUtils.addClassName(filterBox, "form-select");
 
         addFilterView(filterGroup, filterBox);
         if (filterGroup.defaultFilterIndex >= 0) {
@@ -2489,9 +2489,9 @@ public class GFormController implements EditManager {
         element = getColorElement(element);
 
         if(color != null) {
-            element.addClassName("cell-with-background");
+            GwtClientUtils.addClassName(element, "cell-with-background");
         } else {
-            element.removeClassName("cell-with-background");
+            GwtClientUtils.removeClassName(element, "cell-with-background");
         }
         setCellBackgroundColor(element, color);
     }
@@ -2510,9 +2510,9 @@ public class GFormController implements EditManager {
 
     private static void setForegroundColor(Element element, String color) {
         if(color != null)
-            element.addClassName("cell-with-foreground");
+            GwtClientUtils.addClassName(element, "cell-with-foreground");
         else
-            element.removeClassName("cell-with-foreground");
+            GwtClientUtils.removeClassName(element, "cell-with-foreground");
 
         setCellForegroundColor(element, color);
     }
@@ -2527,10 +2527,10 @@ public class GFormController implements EditManager {
 
     public static void setFont(Element element, GFont font) {
         if(font != null) {
-            element.addClassName("cell-with-custom-font");
+            GwtClientUtils.addClassName(element, "cell-with-custom-font");
             setCellFont(element, font.family, font.size, font.italic, font.bold);
         } else {
-            element.removeClassName("cell-with-custom-font");
+            GwtClientUtils.removeClassName(element, "cell-with-custom-font");
             clearCellFont(element);
         }
     }

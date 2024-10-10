@@ -39,9 +39,9 @@ public class PropertyPanelRenderer extends PanelRenderer {
 
     public static void setStyles(Element panelElement, boolean notNull, boolean hasChangeAction) {
         if (notNull)
-            panelElement.addClassName("property-not-null");
+            GwtClientUtils.addClassName(panelElement, "property-not-null");
         else if(hasChangeAction)
-            panelElement.addClassName("property-has-change");
+            GwtClientUtils.addClassName(panelElement, "property-has-change");
     }
 
     @Override
@@ -73,7 +73,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
         if(property.caption != null) {
             label = GFormLayout.createLabelCaptionWidget();
             BaseImage.initImageText(label, null, property.appImage, property.getCaptionHtmlOrTextType());
-            label.addStyleName("panel-property-label");
+            GwtClientUtils.addClassName(label, "panel-property-label");
 
             label.getElement().setAttribute("for", globalID);
             label.addDomHandler(event -> {
@@ -106,7 +106,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
         if(property.comment != null) {
             comment = GFormLayout.createLabelCaptionWidget();
             GwtClientUtils.initCaptionHtmlOrText(comment.getElement(), property.panelCommentVertical ? CaptionHtmlOrTextType.COMMENT_VERT : CaptionHtmlOrTextType.COMMENT_HORZ);
-            comment.addStyleName("panel-comment");
+            GwtClientUtils.addClassName(comment, "panel-comment");
 
             //            setCommentText(property.comment);
             sizedComment = new SizedWidget(comment, property.getCaptionWidth(), property.getCaptionHeight());
@@ -154,7 +154,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
 
         SizedFlexPanel panel = new SizedFlexPanel(panelVertical);
         panel.transparentResize = true;
-        panel.addStyleName("panel-container");
+        GwtClientUtils.addClassName(panel, "panel-container");
         componentViewWidget.add(panel, 0);
         // mostly it is needed to handle margins / paddings / layouting but we do it ourselves
 //        cellRenderer.renderPanelContainer(panel);
@@ -209,6 +209,6 @@ public class PropertyPanelRenderer extends PanelRenderer {
             return;
         }
 
-        comment.getElement().addClassName(classes);
+        GwtClientUtils.addClassName(comment.getElement(), classes);
     }
 }

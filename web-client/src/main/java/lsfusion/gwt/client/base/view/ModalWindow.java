@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.base.view;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
@@ -31,36 +30,36 @@ public class ModalWindow extends ResizableComplexPanel {
 
         this.resizable = resizable;
 
-        setStyleName("modal-form");
+       GwtClientUtils.addClassName(this, "modal-form");
 
         modalBackDrop = new DivWidget();
-        modalBackDrop.setStyleName("modal-backdrop");
-        modalBackDrop.addStyleName("fade");
-        modalBackDrop.addStyleName("show");
+        GwtClientUtils.addClassName(modalBackDrop, "modal-backdrop");
+        GwtClientUtils.addClassName(modalBackDrop, "fade");
+        GwtClientUtils.addClassName(modalBackDrop, "show");
         add(modalBackDrop);
 
         modal = new SimplePanel();
-        modal.setStyleName("modal");
-        modal.addStyleName("fade");
+        GwtClientUtils.addClassName(modal, "modal");
+        GwtClientUtils.addClassName(modal, "fade");
         add(modal);
 
         dialog = new SimplePanel();
-        dialog.setStyleName("modal-dialog");
+        GwtClientUtils.addClassName(dialog, "modal-dialog");
         if (resizable)
-            dialog.addStyleName("modal-resizable");
+            GwtClientUtils.addClassName(dialog, "modal-resizable");
         else
-            dialog.addStyleName("modal-dialog-centered");
+            GwtClientUtils.addClassName(dialog, "modal-dialog-centered");
 
         if (size != null) {
             switch (size) {
                 case FIT_CONTENT:
-                    dialog.addStyleName("modal-fit-content");
+                    GwtClientUtils.addClassName(dialog, "modal-fit-content");
                     break;
                 case LARGE:
-                    dialog.addStyleName("modal-lg");
+                    GwtClientUtils.addClassName(dialog, "modal-lg");
                     break;
                 case EXTRA_LARGE:
-                    dialog.addStyleName("modal-xl");
+                    GwtClientUtils.addClassName(dialog, "modal-xl");
                     break;
             }
         }
@@ -68,20 +67,20 @@ public class ModalWindow extends ResizableComplexPanel {
         modal.setWidget(dialog);
 
         header = new ResizableComplexPanel();
-        header.setStyleName("modal-header");
+        GwtClientUtils.addClassName(header, "modal-header");
 
         title = GFormLayout.createModalWindowCaptionWidget();
-        title.setStyleName("modal-title");
+        GwtClientUtils.addClassName(title, "modal-title");
         header.add(title);
 
         content = new ResizableComplexPanel();
-        content.setStyleName("modal-content");
-        content.addStyleName("bg-body-tertiary");  // it makes sense to be equal to the class for the forms-container in the BaseLogicsModule.initNavigators
+        GwtClientUtils.addClassName(content, "modal-content");
+        GwtClientUtils.addClassName(content, "bg-body-tertiary");  // it makes sense to be equal to the class for the forms-container in the BaseLogicsModule.initNavigators
         dialog.setWidget(content);
         content.add(header);
 
         body = new SizedFlexPanel(true);
-        body.addStyleName("modal-body");
+        GwtClientUtils.addClassName(body, "modal-body");
         content.add(body);
 
         GwtClientUtils.draggable(dialog.getElement(), ".modal-header");
@@ -111,7 +110,7 @@ public class ModalWindow extends ResizableComplexPanel {
         if(popupOwner != PopupOwner.GLOBAL)
             GwtClientUtils.addPopupPartner(popupOwner, getElement());
 
-        modal.addStyleName("show");
+        GwtClientUtils.addClassName(modal, "show");
 
         onShow(); // need it after attach to have actual sizes calculated
     }
@@ -127,7 +126,7 @@ public class ModalWindow extends ResizableComplexPanel {
     }
 
     public void hide() {
-        modal.removeStyleName("show");
+        GwtClientUtils.removeClassName(modal, "show");
 
         PopupOwner popupOwner = showPopupOwner;
         if(popupOwner != PopupOwner.GLOBAL)
@@ -166,7 +165,7 @@ public class ModalWindow extends ResizableComplexPanel {
     public void addFooterWidget(Widget widget) {
         if (footer == null) {
             footer = new ResizableComplexPanel();
-            footer.setStyleName("modal-footer");
+            GwtClientUtils.addClassName(footer, "modal-footer");
             addContentWidget(footer);
         }
 

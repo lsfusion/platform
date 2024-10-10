@@ -3,6 +3,7 @@ package lsfusion.gwt.client.navigator.view;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.ComplexPanel;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.ImageButton;
 import lsfusion.gwt.client.base.view.NavigatorImageButton;
@@ -23,7 +24,7 @@ public class BSMobileNavigatorView extends MobileNavigatorView {
 
     protected RootPanels initRootPanels() {
         FlexPanel navWindowsPanel = new FlexPanel(true);
-        navWindowsPanel.addStyleName("offcanvas offcanvas-start");
+        GwtClientUtils.addClassNames(navWindowsPanel, "offcanvas", "offcanvas-start");
 
         Element navBarPanelElement = navWindowsPanel.getElement();
         navBarPanelElement.setId(OFFCANVAS_ID);
@@ -72,11 +73,14 @@ public class BSMobileNavigatorView extends MobileNavigatorView {
         FlexPanel subMenuPanel = new FlexPanel(true);
 
         subMenuPanel.setVisible(false);
-        button.addStyleName("nav-bs-mobile-folder collapsed");
+        GwtClientUtils.addClassNames(button, "nav-bs-mobile-folder", "collapsed");
         button.addClickHandler(event -> {
             boolean wasVisible = subMenuPanel.isVisible();
             subMenuPanel.setVisible(!wasVisible);
-            button.setStyleName("collapsed", wasVisible);
+            if(wasVisible)
+                GwtClientUtils.addClassName(button, "collapsed");
+            else
+                GwtClientUtils.removeClassName(button, "collapsed");
         });
 
         return subMenuPanel;

@@ -25,23 +25,23 @@ public class FlexPanelImpl {
 //    }
     protected void setDisplayValue(Element element, boolean grid) {
         if(grid)
-            element.addClassName("display-grid");
+            GwtClientUtils.addClassName(element, "display-grid");
         else
-            element.addClassName("display-flex");
+            GwtClientUtils.addClassName(element, "display-flex");
     }
 
     protected void setDirectionValue(Element parent, boolean vertical) {
         if(vertical)
-            parent.addClassName("flex-dir-vert");
+            GwtClientUtils.addClassName(parent, "flex-dir-vert");
         else
-            parent.addClassName("flex-dir-horz");
+            GwtClientUtils.addClassName(parent, "flex-dir-horz");
     }
 
     protected void setGridDirection(Element parent, boolean vertical) {
         if(vertical)
-            parent.addClassName("grid-dir-vert");
+            GwtClientUtils.addClassName(parent, "grid-dir-vert");
         else
-            parent.addClassName("grid-dir-horz");
+            GwtClientUtils.addClassName(parent, "grid-dir-horz");
     }
 
     //    protected String getAlignmentValue(GFlexAlignment justify, boolean grid) {
@@ -80,11 +80,11 @@ public class FlexPanelImpl {
 
     public void setFlexWrap(Element parent) {
 //        parent.getStyle().setProperty("flexWrap", "wrap");
-        parent.addClassName("flex-wrap");
+        GwtClientUtils.addClassName(parent, "flex-wrap");
     }
 
     public void clearFlexWrap(Element parent) {
-        parent.removeClassName("flex-wrap");
+        GwtClientUtils.removeClassName(parent, "flex-wrap");
 //        parent.getStyle().clearProperty("flexWrap");
     }
 
@@ -92,16 +92,16 @@ public class FlexPanelImpl {
     public void setFlexContentAlignment(Element parent, GFlexAlignment alignment) {
         switch (alignment) {
             case START:
-                parent.addClassName("flex-content-start");
+                GwtClientUtils.addClassName(parent, "flex-content-start");
                 return;
             case CENTER:
-                parent.addClassName("flex-content-center");
+                GwtClientUtils.addClassName(parent, "flex-content-center");
                 return;
             case END:
-                parent.addClassName("flex-content-end");
+                GwtClientUtils.addClassName(parent, "flex-content-end");
                 return;
             case STRETCH:
-                parent.addClassName("flex-content-stretch");
+                GwtClientUtils.addClassName(parent, "flex-content-stretch");
                 return;
         }
         throw new IllegalStateException("Unknown alignment");
@@ -110,27 +110,27 @@ public class FlexPanelImpl {
         switch (alignment) {
             case START:
                 if(vertical)
-                    parent.addClassName("grid-content-vert-start");
+                    GwtClientUtils.addClassName(parent, "grid-content-vert-start");
                 else
-                    parent.addClassName("grid-content-horz-start");
+                    GwtClientUtils.addClassName(parent, "grid-content-horz-start");
                 return;
             case CENTER:
                 if(vertical)
-                    parent.addClassName("grid-content-vert-center");
+                    GwtClientUtils.addClassName(parent, "grid-content-vert-center");
                 else
-                    parent.addClassName("grid-content-horz-center");
+                    GwtClientUtils.addClassName(parent, "grid-content-horz-center");
                 return;
             case END:
                 if(vertical)
-                    parent.addClassName("grid-content-vert-end");
+                    GwtClientUtils.addClassName(parent, "grid-content-vert-end");
                 else
-                    parent.addClassName("grid-content-horz-end");
+                    GwtClientUtils.addClassName(parent, "grid-content-horz-end");
                 return;
             case STRETCH:
                 if(vertical)
-                    parent.addClassName("grid-content-vert-stretch");
+                    GwtClientUtils.addClassName(parent, "grid-content-vert-stretch");
                 else
-                    parent.addClassName("grid-content-horz-stretch");
+                    GwtClientUtils.addClassName(parent, "grid-content-horz-stretch");
                 return;
         }
         throw new IllegalStateException("Unknown alignment");
@@ -143,16 +143,16 @@ public class FlexPanelImpl {
     public void setFlexAlignment(GFlexAlignment alignment, Element child) {
         switch (alignment) {
             case START:
-                child.addClassName("flex-start");
+                GwtClientUtils.addClassName(child, "flex-start");
                 return;
             case CENTER:
-                child.addClassName("flex-center");
+                GwtClientUtils.addClassName(child, "flex-center");
                 return;
             case END:
-                child.addClassName("flex-end");
+                GwtClientUtils.addClassName(child, "flex-end");
                 return;
             case STRETCH:
-                child.addClassName("flex-stretch");
+                GwtClientUtils.addClassName(child, "flex-stretch");
                 return;
         }
         throw new IllegalStateException("Unknown alignment");
@@ -161,27 +161,27 @@ public class FlexPanelImpl {
         switch (alignment) {
             case START:
                 if(vertical)
-                    child.addClassName("grid-horz-start");
+                    GwtClientUtils.addClassName(child, "grid-horz-start");
                 else
-                    child.addClassName("grid-vert-start");
+                    GwtClientUtils.addClassName(child, "grid-vert-start");
                 return;
             case CENTER:
                 if(vertical)
-                    child.addClassName("grid-horz-center");
+                    GwtClientUtils.addClassName(child, "grid-horz-center");
                 else
-                    child.addClassName("grid-vert-center");
+                    GwtClientUtils.addClassName(child, "grid-vert-center");
                 return;
             case END:
                 if(vertical)
-                    child.addClassName("grid-horz-end");
+                    GwtClientUtils.addClassName(child, "grid-horz-end");
                 else
-                    child.addClassName("grid-vert-end");
+                    GwtClientUtils.addClassName(child, "grid-vert-end");
                 return;
             case STRETCH:
                 if(vertical)
-                    child.addClassName("grid-horz-stretch");
+                    GwtClientUtils.addClassName(child, "grid-horz-stretch");
                 else
-                    child.addClassName("grid-vert-stretch");
+                    GwtClientUtils.addClassName(child, "grid-vert-stretch");
                 return;
         }
         throw new IllegalStateException("Unknown alignment");
@@ -189,16 +189,16 @@ public class FlexPanelImpl {
     public void dropFlexAlignment(GFlexAlignment alignment, Element child) {
         switch (alignment) {
             case START:
-                child.removeClassName("flex-start");
+                GwtClientUtils.removeClassName(child, "flex-start");
                 return;
             case CENTER:
-                child.removeClassName("flex-center");
+                GwtClientUtils.removeClassName(child, "flex-center");
                 return;
             case END:
-                child.removeClassName("flex-end");
+                GwtClientUtils.removeClassName(child, "flex-end");
                 return;
             case STRETCH:
-                child.removeClassName("flex-stretch");
+                GwtClientUtils.removeClassName(child, "flex-stretch");
                 return;
         }
         throw new IllegalStateException("Unknown alignment");
@@ -207,27 +207,27 @@ public class FlexPanelImpl {
         switch (alignment) {
             case START:
                 if(vertical)
-                    child.removeClassName("grid-horz-start");
+                    GwtClientUtils.removeClassName(child, "grid-horz-start");
                 else
-                    child.removeClassName("grid-vert-start");
+                    GwtClientUtils.removeClassName(child, "grid-vert-start");
                 return;
             case CENTER:
                 if(vertical)
-                    child.removeClassName("grid-horz-center");
+                    GwtClientUtils.removeClassName(child, "grid-horz-center");
                 else
-                    child.removeClassName("grid-vert-center");
+                    GwtClientUtils.removeClassName(child, "grid-vert-center");
                 return;
             case END:
                 if(vertical)
-                    child.removeClassName("grid-horz-end");
+                    GwtClientUtils.removeClassName(child, "grid-horz-end");
                 else
-                    child.removeClassName("grid-vert-end");
+                    GwtClientUtils.removeClassName(child, "grid-vert-end");
                 return;
             case STRETCH:
                 if(vertical)
-                    child.removeClassName("grid-horz-stretch");
+                    GwtClientUtils.removeClassName(child, "grid-horz-stretch");
                 else
-                    child.removeClassName("grid-vert-stretch");
+                    GwtClientUtils.removeClassName(child, "grid-vert-stretch");
                 return;
         }
         throw new IllegalStateException("Unknown alignment");

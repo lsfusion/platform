@@ -1,8 +1,8 @@
 
-/* see tableContainerBoxed comment */
-.tableContainerBoxed .dataGridHeaderRow, .tableContainerBoxed .dataGridHeaderRow .background-inherit, .tableContainerBoxed .dataGridHeaderRow.background-inherit  {
+/* see table-container-boxed comment */
+.table-container-boxed .data-grid-header-row, .table-container-boxed .data-grid-header-row .background-inherit, .table-container-boxed .data-grid-header-row.background-inherit  {
     background: var(--background-color);
 }
-.tableContainerBoxed .dataGridFooterRow, .tableContainerBoxed .dataGridFooterRow .background-inherit, .tableContainerBoxed .dataGridFooterRow.background-inherit  {
+.table-container-boxed .data-grid-footer-row, .table-container-boxed .data-grid-footer-row .background-inherit, .table-container-boxed .data-grid-footer-row.background-inherit  {
     background: var(--background-color);
 }

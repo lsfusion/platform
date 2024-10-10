@@ -105,57 +105,57 @@
 /* 'border-collapse: collapse' + sticky header/footer make header/footer borders disappear
 
 /* moving upper border to the top to make it sticky (and browsers work really odd with table elements that are sticky, especially when there is a scale in the OS, and the browser gets for example 0.666667px sizes) */
-.tableContainer:has(> .table-bordered),
-.tableContainer:has(> .table.empty-header) { /* when there is no header also we have to move border up */
+.table-container:has(> .table-bordered),
+.table-container:has(> .table.empty-header) { /* when there is no header also we have to move border up */
     border-top: var(--table-outline-width) solid var(--bs-border-color); /* there is no bs-table-border-color here*/
 }
-.table.table-bordered .dataGridHeaderRow,
-.table.table-bordered .dataGridColumnRow,
-.table.empty-header.table-bordered :not(.dataGridHeader) .dataGridRow:first-child { /* when there is no header we should remove border for the next row */
+.table.table-bordered .data-grid-header-row,
+.table.table-bordered .data-grid-column-row,
+.table.empty-header.table-bordered :not(.data-grid-header) .data-grid-row:first-child { /* when there is no header we should remove border for the next row */
     border-top: none;
 }
-.table.table-bordered .dataGridColumnRow,
-.table.empty-header .dataGridHeaderRow,
+.table.table-bordered .data-grid-column-row,
+.table.empty-header .data-grid-header-row,
 /* in not table-bordered styles bootstrap set borders for cell bottoms, not rows */
-.table:not(.table-bordered) .dataGridColumnRow > *,
-.table.empty-header .dataGridHeaderRow > * { /* in not table-bordered styles bootstrap set borders for cells, not rows */
+.table:not(.table-bordered) .data-grid-column-row > *,
+.table.empty-header .data-grid-header-row > * { /* in not table-bordered styles bootstrap set borders for cells, not rows */
     border-bottom: none;
 }
 
 /* collapsed borders are not sticked, so we have to replace them with outline, and remove border bottom, since outline somewhy respects it */
-.scrolled-down.table:not(.table-borderless):not(.empty-header) .dataGridHeaderRow {
+.scrolled-down.table:not(.table-borderless):not(.empty-header) .data-grid-header-row {
     outline: var(--table-outline-width) solid var(--bs-table-border-color);
 }
-.scrolled-down.table-bordered .dataGridHeaderRow,
+.scrolled-down.table-bordered .data-grid-header-row,
 /* in not table-bordered styles bootstrap set borders for cell bottoms, not rows */
-.scrolled-down:not(.table-bordered) .dataGridHeaderRow > * {
+.scrolled-down:not(.table-bordered) .data-grid-header-row > * {
     border-bottom: none;
 }
 
 /* FOOTER STICKY */
 /* a) here the difference is that we need border at the bottom almost all the time (to split grid from toolbar for example) */
-/* b) there is no dataGridColumnRow */
+/* b) there is no data-grid-column-row */
 /* c) we don't much care of the "doubled" bottom border, because it happens really rare */
 /* d) border bottoms are used, so everything is reversed */
 /* here we can't use scrolled-up, because we don't know if the footer "hits" the ground, so we always use outline, removing border bottom */
 
-.tableContainer {
+.table-container {
     border-bottom: var(--table-outline-width) solid var(--bs-border-color); /* there is no bs-table-border-color here*/
 }
 
-.table-bordered .dataGridFooterRow,
-.table.table-bordered:not(.empty-footer) :not(.dataGridFooter) .dataGridRow:last-child, /* we want to remove bottom border, because with outline it gives "doubled" line */
+.table-bordered .data-grid-footer-row,
+.table.table-bordered:not(.empty-footer) :not(.data-grid-footer) .data-grid-row:last-child, /* we want to remove bottom border, because with outline it gives "doubled" line */
 /* in not table-bordered styles bootstrap set borders for cell bottoms, not rows */
-:not(.table-bordered) .dataGridFooterRow > *,
-.table:not(.table-bordered):not(.empty-footer) :not(.dataGridFooter) .dataGridRow:last-child > * { /* we want to remove bottom border, because with outline it gives "doubled" line */
+:not(.table-bordered) .data-grid-footer-row > *,
+.table:not(.table-bordered):not(.empty-footer) :not(.data-grid-footer) .data-grid-row:last-child > * { /* we want to remove bottom border, because with outline it gives "doubled" line */
     border-bottom: none;
 }
 
-.table-bordered .dataGridFooterRow { /* we want to remove bottom border, because with outline it gives "doubled" line */
+.table-bordered .data-grid-footer-row { /* we want to remove bottom border, because with outline it gives "doubled" line */
     border-top: none;
 }
 
-.table:not(.table-borderless):not(.empty-footer) .dataGridFooterRow {
+.table:not(.table-borderless):not(.empty-footer) .data-grid-footer-row {
     outline: var(--table-outline-width) solid var(--bs-table-border-color);
 }
 
@@ -165,19 +165,19 @@
 /* plus we substract border from the left, that way we get pixel perfect behaviour */
 /* it's better to fix border to the left always to avoid blinking */
 
-.tableContainer:has(> .table-bordered) { /* .scrolled-left */
+.table-container:has(> .table-bordered) { /* .scrolled-left */
     border-left: var(--table-outline-width) solid var(--bs-border-color); /* there is no bs-table-border-color here */
     border-right: var(--table-outline-width) solid var(--bs-border-color); /* there is no bs-table-border-color here */
 }
 
-.table.table-bordered .dataGridHeaderCell:first-child,
-.table.table-bordered .dataGridCell:first-child,
-.table.table-bordered .dataGridFooterCell:first-child {
+.table.table-bordered .data-grid-header-cell:first-child,
+.table.table-bordered .data-grid-cell:first-child,
+.table.table-bordered .data-grid-footer-cell:first-child {
     border-left: none;
 }
 
 .table.table-bordered.scrolled-left .dataGridStickyHeader.sticked,
-.table.table-bordered.scrolled-left .dataGridStickyCell.sticked,
+.table.table-bordered.scrolled-left .data-grid-sticky-cell.sticked,
 .table.table-bordered.scrolled-left .dataGridStickyFooter.sticked {
     /* there is no way to add box-shadow, so we "override" it */
     box-shadow: inset 0 0 0 9999px var(--bs-table-bg-state, var(--bs-table-bg-type, var(--bs-table-accent-bg))),
@@ -186,21 +186,21 @@
 
 /* adding right border to the regular table when sticked */
 .table:not(.table-bordered):not(.table-borderless).scrolled-left .dataGridStickyHeader.last-sticked,
-.table:not(.table-bordered):not(.table-borderless).scrolled-left .dataGridStickyCell.last-sticked,
+.table:not(.table-bordered):not(.table-borderless).scrolled-left .data-grid-sticky-cell.last-sticked,
 .table:not(.table-bordered):not(.table-borderless).scrolled-left .dataGridStickyFooter.last-sticked {
     box-shadow: inset 0 0 0 9999px var(--bs-table-bg-state, var(--bs-table-bg-type, var(--bs-table-accent-bg))),
     inset calc(0px - var(--table-outline-width)) 0 0 var(--bs-table-border-color);
 }
 
-.table.table-bordered .dataGridLastHeaderCell, /* there is arrow-th in the row*/
-.table.table-bordered .dataGridCell:last-child,
-.table.table-bordered .dataGridFooterCell:last-child {
+.table.table-bordered .data-grid-last-header-cell, /* there is arrow-th in the row*/
+.table.table-bordered .data-grid-cell:last-child,
+.table.table-bordered .data-grid-footer-cell:last-child {
     border-right: none;
 }
 
-.table.empty-header .dataGridHeaderCell,
-.table.empty-footer .dataGridFooterCell,
-.table.empty-footer .arrow-th {  /* cell with .arrow-th doesn't have .dataGridFooterCell class. adding for them to behave the same way */
+.table.empty-header .data-grid-header-cell,
+.table.empty-footer .data-grid-footer-cell,
+.table.empty-footer .arrow-th {  /* cell with .arrow-th doesn't have .data-grid-footer-cell class. adding for them to behave the same way */
     padding: 0;
     border: none;
 }
@@ -304,14 +304,14 @@
 
 /* checkboxes uses it's own margins / paddings */
 
-.panelRendererValue.form-check-input, /* .form-check .form-check-input sets it's own margin-top */
-.form-switch .panelRendererValue.form-check-input /* .form-switch form-check-input sets it's own margin-left */
+.panel-renderer-value.form-check-input, /* .form-check .form-check-input sets it's own margin-top */
+.form-switch .panel-renderer-value.form-check-input /* .form-switch form-check-input sets it's own margin-left */
 {
     margin: var(--border-comp-vert-padding) var(--border-comp-horz-padding);
 }
 
 /* have no idea, why .form-check .form-check-input margin-top doesn't break the center alignment, so we're changing only left margin in the form-switch */
-.form-switch.dataGridCell .form-check-input {
+.form-switch.data-grid-cell .form-check-input {
     margin-left: unset;
 }
 

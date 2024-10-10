@@ -106,6 +106,9 @@ public class MainFrame implements EntryPoint {
 
     public static boolean jasperReportsIgnorePageMargins;
 
+    public static double v5 = 5.9999;
+    public static double cssBackwardCompatibilityLevel;
+
     // async dispatch
     public <T extends Result> long asyncDispatch(final ExecuteNavigatorAction action, RequestCountingAsyncCallback<ServerResponseResult> callback) {
         return navigatorDispatchAsync.asyncExecute(action, callback);
@@ -143,7 +146,7 @@ public class MainFrame implements EntryPoint {
         hackForGwtDnd();
 
         RootPanel.getBodyElement().setTabIndex(-1); // we need this because activeElement returns body (under the spec) when there is no active element, and we sometimes need to return focus there
-        RootLayoutPanel.get().getElement().addClassName("root-layout-panel");
+        GwtClientUtils.addClassName(RootLayoutPanel.get().getElement(), "root-layout-panel");
 //        GwtClientUtils.setZeroZIndex(element); // ??? move to layout.css
 
         PopupOwner popupOwner = PopupOwner.GLOBAL; // actually now is used for error handling
@@ -664,6 +667,8 @@ public class MainFrame implements EntryPoint {
                 maxStickyLeft = gClientSettings.maxStickyLeft;
 
                 jasperReportsIgnorePageMargins = gClientSettings.jasperReportsIgnorePageMargins;
+
+                cssBackwardCompatibilityLevel = gClientSettings.cssBackwardCompatibilityLevel;
 
                 initializeFrame(result.navigatorInfo, popupOwner);
                 DateRangePickerBasedCellEditor.setPickerTwoDigitYearStart(gClientSettings.twoDigitYearStart);

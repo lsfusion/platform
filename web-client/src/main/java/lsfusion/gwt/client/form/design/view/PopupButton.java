@@ -15,7 +15,7 @@ public class PopupButton extends FormButton {
         super(Document.get().createPushButtonElement());
         this.formController = formController;
 
-        addStyleName("btn popup-panel-button");
+       GwtClientUtils.addClassNames(this, "btn", "popup-panel-button");
     }
 
     public void setContent(GContainer container, Widget widget) {

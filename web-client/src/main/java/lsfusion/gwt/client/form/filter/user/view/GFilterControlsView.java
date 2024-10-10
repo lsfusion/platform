@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.filter.user.view;
 
 import com.google.gwt.event.dom.client.ClickHandler;
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
@@ -15,7 +16,7 @@ public class GFilterControlsView extends FlexPanel {
 
     public GFilterControlsView(GFiltersHandler handler) {
         this.handler = handler;
-        addStyleName("filter-controls btn-group btn-toolbar");
+       GwtClientUtils.addClassNames(this, "filter-controls", "btn-group", "btn-toolbar");
         
         if (handler.hasFiltersContainer()) {
             GToolbarButton addConditionButton = new GToolbarButton(StaticImage.ADD_FILTER, messages.formFilterAddCondition()) {
@@ -24,7 +25,7 @@ public class GFilterControlsView extends FlexPanel {
                     return event -> handler.addCondition();
                 }
             };
-            addConditionButton.addStyleName("filter-button");
+            GwtClientUtils.addClassName(addConditionButton, "filter-button");
             add(addConditionButton, GFlexAlignment.CENTER);
         }
 
@@ -34,7 +35,7 @@ public class GFilterControlsView extends FlexPanel {
                 return event -> handler.applyFilters();
             }
         };
-        applyButton.addStyleName("filter-button");
+        GwtClientUtils.addClassName(applyButton, "filter-button");
         add(applyButton, GFlexAlignment.CENTER);
 
         GToolbarButton resetConditionsButton = new GToolbarButton(StaticImage.RESET_FILTERS, messages.formFilterResetConditions()) {
@@ -45,13 +46,16 @@ public class GFilterControlsView extends FlexPanel {
                 };
             }
         };
-        resetConditionsButton.addStyleName("filter-button");
+        GwtClientUtils.addClassName(resetConditionsButton, "filter-button");
         add(resetConditionsButton, GFlexAlignment.CENTER);
     }
 
     public void setApplyEnabled(boolean enabled) {
         applyButton.setEnabled(enabled);
-        applyButton.setStyleName("active", enabled);
+        if(enabled)
+            GwtClientUtils.addClassName(applyButton, "active");
+        else
+            GwtClientUtils.removeClassName(applyButton, "active");
     }
 
     @Override

@@ -98,12 +98,14 @@ public class LogicsSessionObject {
         int maxRequestQueueSize = json.optInt("maxRequestQueueSize");
         double maxStickyLeft = json.optDouble("maxStickyLeft");
         boolean jasperReportsIgnorePageMargins = json.optBoolean("jasperReportsIgnorePageMargins");
+        double cssBackwardCompatibilityLevel = json.optDouble("cssBackwardCompatibilityLevel");
 
         return new ClientSettings(localePreferences, currentUserName, fontSize, useBusyDialog, busyDialogTimeout, useRequestTimeout, devMode,
                 projectLSFDir, showDetailedInfo, showDetailedInfoDelay, suppressOnFocusChange, autoReconnectOnConnectionLost, forbidDuplicateForms, showNotDefinedStrings, pivotOnlySelectedColumn, matchSearchSeparator,
                 colorTheme, useBootstrap, size, colorPreferences, preDefinedDateRangesNames.toArray(new String[0]), useTextAsFilterSeparator,
                 verticalNavbar, userFiltersManualApplyMode, disableActionsIfReadonly,
-                enableShowingRecentlyLogMessages, pushNotificationPublicKey, maxRequestQueueSize, maxStickyLeft, jasperReportsIgnorePageMargins);
+                enableShowingRecentlyLogMessages, pushNotificationPublicKey, maxRequestQueueSize, maxStickyLeft, jasperReportsIgnorePageMargins,
+                cssBackwardCompatibilityLevel);
     }
 
     // Expect that only JSONObject and JSONArray will be passed as param

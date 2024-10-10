@@ -2,8 +2,11 @@ package lsfusion.gwt.client.base.view;
 
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.view.MainFrame;
+
+import static lsfusion.gwt.client.view.MainFrame.v5;
 
 // extended flex panel with alignShrink, and preferred size support
 public class SizedFlexPanel extends FlexPanel {
@@ -68,7 +71,7 @@ public class SizedFlexPanel extends FlexPanel {
             if(!fixed) {
                 FlexPanel wrapPanel = new FlexPanel(!vertical, isStretch ? GFlexAlignment.START : alignment);
                 wrapPanel.transparentResize = true;
-                wrapPanel.addStyleName("oppositeSizeCssFixPanel"); // just to identify this div in dom
+                GwtClientUtils.addClassName(wrapPanel, "opposite-size-css-fix-panel", "oppositeSizeCssFixPanel", v5); // just to identify this div in dom
                 wrapPanel.add(widget, GFlexAlignment.STRETCH, isStretch ? 1 : 0, alignShrink, alignSize);
                 if (size != null) { // we want to use intristic widths, because otherwise (when setting the size to the wrap panel) margin/border/padding will be ignored
                     assert !vertical || supportsIntrinisticHeight;
@@ -94,16 +97,16 @@ public class SizedFlexPanel extends FlexPanel {
 
         if(isShrink) {
             if (vertical)
-                element.addClassName("intr-shrink-height");
+                GwtClientUtils.addClassName(element, "intr-shrink-height");
             else
-                element.addClassName("intr-shrink-width");
+                GwtClientUtils.addClassName(element, "intr-shrink-width");
         }
 
         if (isStretch) {
             if(vertical)
-                element.addClassName("intr-stretch-height");
+                GwtClientUtils.addClassName(element, "intr-stretch-height");
             else
-                element.addClassName("intr-stretch-width");
+                GwtClientUtils.addClassName(element, "intr-stretch-width");
         }
     }
 
@@ -113,14 +116,14 @@ public class SizedFlexPanel extends FlexPanel {
         if(intrinisticShrinkSize != null) {
             if (set) {
                 if(vertical)
-                    element.removeClassName("intr-shrink-height");
+                    GwtClientUtils.removeClassName(element, "intr-shrink-height");
                 else
-                    element.removeClassName("intr-shrink-width");
+                    GwtClientUtils.removeClassName(element, "intr-shrink-width");
             } else {
                 if(vertical)
-                    element.addClassName("intr-shrink-height");
+                    GwtClientUtils.addClassName(element, "intr-shrink-height");
                 else
-                    element.addClassName("intr-shrink-width");
+                    GwtClientUtils.addClassName(element, "intr-shrink-width");
             }
             FlexPanel.setPanelSize(element, vertical, set ? null : intrinisticShrinkSize);
             FlexPanel.setMinPanelSize(element, vertical, set ? intrinisticShrinkSize : null);

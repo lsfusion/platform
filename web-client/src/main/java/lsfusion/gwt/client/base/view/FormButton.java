@@ -3,14 +3,14 @@ package lsfusion.gwt.client.base.view;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.ButtonBase;
+import lsfusion.gwt.client.base.GwtClientUtils;
 
 public class FormButton extends ButtonBase {
     public FormButton(Element element) {
         super(element == null ? Document.get().createPushButtonElement() : element);
         if (element == null)
-            addStyleName("btn");
+           GwtClientUtils.addClassName(this, "btn");
     }
 
     public FormButton() {
@@ -40,10 +40,10 @@ public class FormButton extends ButtonBase {
         if (style != null) {
             switch (style) {
                 case PRIMARY:
-                    addStyleName("btn-primary");
+                   GwtClientUtils.addClassName(this, "btn-primary");
                     break;
                 case SECONDARY:
-                    addStyleName("btn-secondary");
+                   GwtClientUtils.addClassName(this, "btn-secondary");
                     break;
             }
         }

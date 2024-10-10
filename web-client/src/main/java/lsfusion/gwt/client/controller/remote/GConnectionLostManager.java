@@ -201,19 +201,19 @@ public class GConnectionLostManager {
             this.fatal = fatal;
 
             ResizableComplexPanel content = new ResizableComplexPanel();
-            content.setStyleName("dialog-block-content");
+            GwtClientUtils.addClassName(content, "dialog-block-content");
 
             loading = new DivWidget();
-            loading.setStyleName("dialog-block-loading");
+            GwtClientUtils.addClassName(loading, "dialog-block-loading");
             content.add(loading);
 
             ResizableComplexPanel info = new ResizableComplexPanel();
-            info.setStyleName("dialog-block-info");
+            GwtClientUtils.addClassName(info, "dialog-block-info");
 
             warning = new DivWidget();
-            warning.setStyleName("dialog-block-warning");
+            GwtClientUtils.addClassName(warning, "dialog-block-warning");
             error = new DivWidget();
-            error.setStyleName("dialog-block-error");
+            GwtClientUtils.addClassName(error, "dialog-block-error");
 
             if (fatal)
                 warning.setVisible(false);
@@ -221,7 +221,7 @@ public class GConnectionLostManager {
                 error.setVisible(false);
 
             message = new HTML(fatal ? messages.rmiConnectionLostFatal() : messages.rmiConnectionLostNonfatal());
-            message.setStyleName("dialog-block-message");
+            GwtClientUtils.addClassName(message, "dialog-block-message");
 
             info.add(warning);
             info.add(error);

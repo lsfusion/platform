@@ -27,6 +27,7 @@ import static java.lang.Math.max;
 import static lsfusion.gwt.client.base.GwtSharedUtils.isRedundantString;
 import static lsfusion.gwt.client.base.GwtSharedUtils.replicate;
 import static lsfusion.gwt.client.view.MainFrame.colorTheme;
+import static lsfusion.gwt.client.view.MainFrame.v5;
 
 public class GwtClientUtils {
 
@@ -249,12 +250,65 @@ public class GwtClientUtils {
         return params;
     }
 
-    public static void addClassNames(Element element, String classNames) {
-        element.addClassName(classNames);
+    public static void addClassNames(UIObject element, String... classNames) {
+        for(String className : classNames) {
+            addClassName(element, className);
+        }
     }
-    public static void removeClassNames(Element element, String classNames) {
-        element.removeClassName(classNames);
+
+    public static void addClassName(UIObject element, String className) {
+        addClassName(element, className, null, -1);
     }
+
+    public static void addClassName(UIObject element, String className, String backwardCompatibilityClassName, double backwardCompatibilityLevel) {
+        addClassName(element.getElement(), className, backwardCompatibilityClassName, backwardCompatibilityLevel);
+    }
+
+    public static void addClassNames(Element element, String... classNames) {
+        for(String className : classNames) {
+            addClassName(element, className);
+        }
+    }
+
+    public static void addClassName(Element element, String className) {
+        addClassName(element, className, null, -1);
+    }
+
+    public static void addClassName(Element element, String className, String backwardCompatibilityClassName, double backwardLevel) {
+        addClassNameNative(element, className);
+
+        if(backwardCompatibilityClassName != null && MainFrame.cssBackwardCompatibilityLevel > 0.0 && backwardLevel >= MainFrame.cssBackwardCompatibilityLevel) {
+            addClassNameNative(element, backwardCompatibilityClassName);
+        }
+    }
+
+    private static native void addClassNameNative(Element element, String className)/*-{
+        element.classList.add(className);
+    }-*/;
+
+    public static void removeClassName(UIObject element, String className) {
+        removeClassName(element, className, null, -1);
+    }
+
+    public static void removeClassName(UIObject element, String className, String backwardCompatibilityClassName, double backwardLevel) {
+        removeClassName(element.getElement(), className, backwardCompatibilityClassName, backwardLevel);
+    }
+
+    public static void removeClassName(Element element, String className) {
+        removeClassName(element, className, null, -1);
+    }
+
+    public static void removeClassName(Element element, String className, String backwardCompatibilityClassName, double backwardLevel) {
+        removeClassNameNative(element, className);
+
+        if(backwardCompatibilityClassName != null && MainFrame.cssBackwardCompatibilityLevel != -1 && backwardLevel >= MainFrame.cssBackwardCompatibilityLevel) {
+            removeClassNameNative(element, backwardCompatibilityClassName);
+        }
+    }
+
+    private static native void removeClassNameNative(Element element, String className)/*-{
+        element.classList.remove(className);
+    }-*/;
 
     public static String removeClassName(String classNames, String removeClassName, Result<Boolean> removed) {
         removed.set(false);
@@ -369,13 +423,13 @@ public class GwtClientUtils {
 
     public static Widget createVerticalStretchSeparator() {
         SimplePanel separator = new SimplePanel();
-        separator.addStyleName("verticalStretchSeparator");
+        addClassName(separator, "vertical-stretch-separator", "verticalStretchSeparator", v5);
         return separator;
     }
 
     public static Widget createHorizontalSeparator() {
         SimplePanel separator = new SimplePanel();
-        separator.addStyleName("horizontalSeparator");
+        addClassName(separator, "horizontal-separator", "horizontalSeparator", v5);
         return separator;
     }
 
@@ -474,52 +528,52 @@ public class GwtClientUtils {
     // using absolute positioning, but because in that case it is positioned relative to first not static element, will have to set position to relative (if it's static)
     public static void setupFillParent(Element child) {
         setupFillParentElement(child.getParentElement());
-        child.addClassName("fill-parent-absolute");
+        addClassName(child, "fill-parent-absolute");
     }
 
     private static void setupFillParentElement(Element parentElement) {
         String parentPosition = parentElement.getStyle().getPosition();
         if (parentPosition == null || parentPosition.isEmpty() || parentPosition.equals(Style.Position.STATIC.getCssName()))
-            parentElement.addClassName("fill-parent-position");
+            addClassName(parentElement, "fill-parent-position");
     }
 
     public static void clearFillParent(Element child) {
         clearFillParentElement(child.getParentElement());
-        child.removeClassName("fill-parent-absolute");
+        removeClassName(child, "fill-parent-absolute");
     }
 
     public static void clearFillParentElement(Element parentElement) {
         String parentPosition = parentElement.getStyle().getPosition();
         if (parentPosition != null && parentPosition.equals(Style.Position.RELATIVE.getCssName()))
-            parentElement.removeClassName("fill-parent-position");
+            removeClassName(parentElement, "fill-parent-position");
     }
 
     public static void setupFlexParentElement(Element parentElement) {
         assert !GwtClientUtils.isTDorTH(parentElement);
-        parentElement.addClassName("fill-parent-flex-cont");
+        addClassName(parentElement, "fill-parent-flex-cont");
     }
 
     public static void clearFlexParentElement(Element parentElement) {
         assert !GwtClientUtils.isTDorTH(parentElement);
-        parentElement.removeClassName("fill-parent-flex-cont");
+        removeClassName(parentElement, "fill-parent-flex-cont");
     }
 
     public static void setupFlexParent(Element element) {
         setupFlexParentElement(element.getParentElement());
 
-        element.addClassName("fill-parent-flex");
+        addClassName(element, "fill-parent-flex");
     }
 
     public static void setupPercentParent(Element element) {
-        element.addClassName("fill-parent-perc");
+        addClassName(element, "fill-parent-perc");
 //        element.getStyle().setWidth(100, Style.Unit.PCT);
 //        element.getStyle().setHeight(100, Style.Unit.PCT);
-////        inputElement.addClassName("boxSized");
+////        addXClassName(inputElement, "box-sized", "boxSized");
 //        element.getStyle().setProperty("boxSizing", "border-box");
     }
 
     public static void clearPercentParent(Element element) {
-        element.removeClassName("fill-parent-perc");
+        removeClassName(element, "fill-parent-perc");
 //        element.getStyle().clearWidth();
 //        element.getStyle().clearHeight();
 //        element.getStyle().clearProperty("boxSizing");
@@ -529,13 +583,13 @@ public class GwtClientUtils {
         if (overflowHorz != null) {
             switch (overflowHorz) {
                 case "auto":
-                    element.addClassName("prop-value-overflow-horz-auto");
+                    addClassName(element, "prop-value-overflow-horz-auto");
                     break;
                 case "clip":
-                    element.addClassName("prop-value-overflow-horz-clip");
+                    addClassName(element, "prop-value-overflow-horz-clip");
                     break;
                 case "visible":
-                    element.addClassName("prop-value-overflow-horz-visible");
+                    addClassName(element, "prop-value-overflow-horz-visible");
                     break;
             }
         }
@@ -543,13 +597,13 @@ public class GwtClientUtils {
         if (overflowVert != null) {
             switch (overflowVert) {
                 case "auto":
-                    element.addClassName("prop-value-overflow-vert-auto");
+                    addClassName(element, "prop-value-overflow-vert-auto");
                     break;
                 case "clip":
-                    element.addClassName("prop-value-overflow-vert-clip");
+                    addClassName(element, "prop-value-overflow-vert-clip");
                     break;
                 case "visible":
-                    element.addClassName("prop-value-overflow-vert-visible");
+                    addClassName(element, "prop-value-overflow-vert-visible");
                     break;
             }
         }
@@ -559,13 +613,13 @@ public class GwtClientUtils {
         if (overflowHorz != null) {
             switch (overflowHorz) {
                 case "auto":
-                    element.removeClassName("prop-value-overflow-horz-auto");
+                    GwtClientUtils.removeClassName(element, "prop-value-overflow-horz-auto");
                     break;
                 case "clip":
-                    element.removeClassName("prop-value-overflow-horz-clip");
+                    GwtClientUtils.removeClassName(element, "prop-value-overflow-horz-clip");
                     break;
                 case "visible":
-                    element.removeClassName("prop-value-overflow-horz-visible");
+                    GwtClientUtils.removeClassName(element, "prop-value-overflow-horz-visible");
                     break;
             }
         }
@@ -573,13 +627,13 @@ public class GwtClientUtils {
         if (overflowVert != null) {
             switch (overflowVert) {
                 case "auto":
-                    element.removeClassName("prop-value-overflow-vert-auto");
+                    GwtClientUtils.removeClassName(element, "prop-value-overflow-vert-auto");
                     break;
                 case "clip":
-                    element.removeClassName("prop-value-overflow-vert-clip");
+                    GwtClientUtils.removeClassName(element, "prop-value-overflow-vert-clip");
                     break;
                 case "visible":
-                    element.removeClassName("prop-value-overflow-vert-visible");
+                    GwtClientUtils.removeClassName(element, "prop-value-overflow-vert-visible");
                     break;
             }
         }
@@ -587,19 +641,19 @@ public class GwtClientUtils {
 
     public static void renderValueShrinkHorz(Element element, boolean shrinkHorz, boolean shrinkVert) {
         if (shrinkHorz) {
-            element.addClassName("prop-value-shrink-horz");
+            addClassName(element, "prop-value-shrink-horz");
         }
         if (shrinkVert) {
-            element.addClassName("prop-value-shrink-vert");
+            addClassName(element, "prop-value-shrink-vert");
         }
     }
 
     public static void clearValueShrinkHorz(Element element, boolean shrinkHorz, boolean shrinkVert) {
         if (shrinkHorz) {
-            element.removeClassName("prop-value-shrink-horz");
+            GwtClientUtils.removeClassName(element, "prop-value-shrink-horz");
         }
         if (shrinkVert) {
-            element.removeClassName("prop-value-shrink-vert");
+            GwtClientUtils.removeClassName(element, "prop-value-shrink-vert");
         }
     }
 
@@ -607,10 +661,10 @@ public class GwtClientUtils {
         if(overflowHorz != null) {
             switch (overflowHorz) { //visible is default value
                 case "auto":
-                    element.addClassName("comp-shrink-horz-auto");
+                    addClassName(element, "comp-shrink-horz-auto");
                     break;
                 case "clip":
-                    element.addClassName("comp-shrink-horz-clip");
+                    addClassName(element, "comp-shrink-horz-clip");
                     break;
             }
         }
@@ -620,10 +674,10 @@ public class GwtClientUtils {
         if(overflowVert != null) {
             switch (overflowVert) { //visible is default value
                 case "auto":
-                    element.addClassName("comp-shrink-vert-auto");
+                    addClassName(element, "comp-shrink-vert-auto");
                     break;
                 case "clip":
-                    element.addClassName("comp-shrink-vert-clip");
+                    addClassName(element, "comp-shrink-vert-clip");
                     break;
             }
         }
@@ -663,13 +717,13 @@ public class GwtClientUtils {
 
     // the partner with other inner lsf components ("recursive" partner)
     public static void addPopupPartner(PopupOwner owner, Element popup) {
-        popup.addClassName("popup-partner");
+        addClassName(popup, "popup-partner");
         FocusUtils.addFocusPartner(owner.element, popup);
     }
     //  the "deadend" partner
     // focus problems are handled by edit mechanism or custom elements themselves
     public static void addDropDownPartner(Element owner, Element dropdown) {
-        dropdown.addClassName("dropdown-partner");
+        addClassName(dropdown, "dropdown-partner");
         FocusUtils.addFocusPartner(owner, dropdown);
     }
     public static void removePopupPartner(PopupOwner owner, Element popup, boolean blurred) {

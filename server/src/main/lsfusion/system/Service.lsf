@@ -976,7 +976,8 @@ getClientSettings(User user) + WHEN user IS User THEN {
         maxStickyLeft = valueSetting('maxStickyLeft'),
         jasperReportsIgnorePageMargins = valueSetting('jasperReportsIgnorePageMargins'),
         verticalNavbar = verticalNavbar(),
-        navigatorPinMode = navigatorPinMode();
+        navigatorPinMode = navigatorPinMode(),
+        cssBackwardCompatibilityLevel = valueSetting('cssBackwardCompatibilityLevel');
 }
 
 getClientSettings() {
