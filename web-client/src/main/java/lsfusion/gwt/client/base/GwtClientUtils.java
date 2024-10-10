@@ -15,7 +15,6 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.lambda.EFunction;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.PopupOwner;
-import lsfusion.gwt.client.base.view.popup.PopupPanel;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.view.MainFrame;
@@ -869,28 +868,6 @@ public class GwtClientUtils {
     }-*/;
 
     /*--- end of tippy methods ---*/
-
-    public static void setPopupPosition(PopupPanel popup, int mouseX, int mouseY) {
-        int popupWidth = popup.getOffsetWidth();
-        int popupHeight = popup.getOffsetHeight();
-        int xCorrection = popupWidth - (Window.getClientWidth() - mouseX);
-        int yCorrection = popupHeight - (Window.getClientHeight() - mouseY);
-
-        if (xCorrection > 0 || yCorrection > 0) {
-            if (xCorrection > 0 && yCorrection > 0) {
-                // For the same reason with a lack of space on both sides (right and bottom) we show popup on the opposite side of the cursor.
-                // Otherwise, in Firefox we won't see the popup at all.
-                popup.setPopupPosition(max(mouseX - popupWidth, 0), max(mouseY - popupHeight, 0));
-            } else {
-                popup.setPopupPosition(
-                        xCorrection > 0 ? max(mouseX - xCorrection, 0) : mouseX,
-                        yCorrection > 0 ? max(mouseY - yCorrection, 0) : mouseY
-                );
-            }
-        } else {
-            popup.setPopupPosition(mouseX, mouseY);
-        }
-    }
 
     public static GSize getOffsetWidth(Element element) {
         final int width = element.getOffsetWidth();
