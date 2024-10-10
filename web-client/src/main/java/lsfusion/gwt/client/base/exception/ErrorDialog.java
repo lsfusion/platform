@@ -40,13 +40,13 @@ public class ErrorDialog extends DialogModalWindow {
             stacks = new FlexTabbedPanel();
             if (javaStack != null) {
                 TextArea javaTA = new TextArea();
-                GwtClientUtils.addClassName(javaTA, "dialog-error-stack form-control");
+                GwtClientUtils.addClassNames(javaTA, "dialog-error-stack", "form-control");
                 javaTA.setText(javaStack);
                 stacks.addTab(javaTA, "Java");
             }
             if (lsfStack != null) {
                 TextArea lsfTA = new TextArea();
-                GwtClientUtils.addClassName(lsfTA, "dialog-error-stack form-control");
+                GwtClientUtils.addClassNames(lsfTA, "dialog-error-stack", "form-control");
                 lsfTA.setText(lsfStack);
                 stacks.addTab(lsfTA, "LSF");
             }
