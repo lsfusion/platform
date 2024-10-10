@@ -637,7 +637,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
 
     private void assertNotUserInteractionInTransaction() {
-        ServerLoggers.assertLog(!getSession().isInTransaction() || ThreadLocalContext.canBeProcessed(), "USER INTERACTION IN TRANSACTION");
+        ServerLoggers.assertLog(!getSession().isInTransaction() || ThreadLocalContext.userInteractionCanBeProcessedInTransaction(), "USER INTERACTION IN TRANSACTION");
     }
     public Object requestUserInteraction(ClientAction action) {
         assertNotUserInteractionInTransaction();

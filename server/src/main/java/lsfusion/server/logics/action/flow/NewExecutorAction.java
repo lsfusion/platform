@@ -59,16 +59,17 @@ public class NewExecutorAction extends AroundAspectAction {
 
     @Override
     protected FlowResult aroundAspect(final ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
+        boolean sync = this.sync == null || this.sync;
         try {
             Integer nThreads = (Integer) threadsProp.read(context, context.getKeys());
             if(nThreads == null || nThreads == 0)
                 nThreads = TaskRunner.availableProcessors();
-            executor = ExecutorFactory.createNewThreadService(context, nThreads, true); // because we use awaitTermination, change to WAIT | NOWAIT during its implementation
+            executor = ExecutorFactory.createNewThreadService(context, nThreads, sync);
             return proceed(context.override(executor));
         } finally {
             if(executor != null) {
                 executor.shutdown();
-                if(sync == null || sync) {
+                if(sync) {
                     try {
                         executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
                     } catch (InterruptedException ignored) {

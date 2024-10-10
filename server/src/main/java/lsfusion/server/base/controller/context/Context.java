@@ -58,7 +58,7 @@ public interface Context {
     LogInfo getLogInfo();
     void delayUserInteraction(ClientAction action);
     Object requestUserInteraction(ClientAction action);
-    boolean canBeProcessed();
+    boolean userInteractionCanBeProcessedInTransaction();
     Object[] requestUserInteraction(ClientAction... actions);
 
     // для создания форм
