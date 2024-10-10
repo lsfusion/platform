@@ -1314,7 +1314,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    // old field -> old cn -> new cn -> ne field
+    // old field -> old cn -> new cn -> new field
     private Map<String, String> getOldToNewFieldsMap(ImRevMap<String, String> oldFieldToCN,
                                                        ImRevMap<String, String> newFieldToCN,
                                                        ImMap<String, String> propertyCNChanges) {
