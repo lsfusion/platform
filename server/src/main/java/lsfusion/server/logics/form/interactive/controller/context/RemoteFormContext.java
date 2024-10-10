@@ -47,6 +47,11 @@ public class RemoteFormContext<F extends FormInstance> extends RemoteUIContext {
     }
 
     @Override
+    public boolean userInteractionCanBeProcessedInTransaction() {
+        return false;
+    }
+
+    @Override
     protected int getExportPort() {
         return form.getExportPort();
     }

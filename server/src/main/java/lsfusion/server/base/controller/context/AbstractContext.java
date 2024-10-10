@@ -7,6 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.interop.action.MessageClientType;
+import lsfusion.interop.action.ResetServerSettingsCacheClientAction;
 import lsfusion.interop.form.ShowFormType;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -38,6 +39,7 @@ import java.util.Stack;
 
 import static lsfusion.base.BaseUtils.padLeft;
 import static lsfusion.base.BaseUtils.replicate;
+import static lsfusion.server.physics.admin.log.ServerLoggers.systemLogger;
 
 public abstract class AbstractContext implements Context {
 
@@ -217,13 +219,25 @@ public abstract class AbstractContext implements Context {
         return aspectRequestUserInteraction(actions, processClientActions(actions));
     }
 
-    public abstract void aspectDelayUserInteraction(ClientAction action, String message);
+    public void aspectDelayUserInteraction(ClientAction action, String message) {
+        if(message != null)
+            systemLogger.info("Server message: " + message);
+        else if (!(action instanceof ResetServerSettingsCacheClientAction)) //todo. temporary fix. problem on empty DB is that ResetServerSettingsCacheClientAction is called when there is no client context yet.
+            throw new UnsupportedOperationException("delayUserInteraction is not supported in server context, action : " + action.getClass());
+    }
 
-    public abstract Object[] aspectRequestUserInteraction(ClientAction[] actions, String[] messages);
+    public Object[] aspectRequestUserInteraction(ClientAction[] actions, String[] messages) {
+        for (int i = 0; i < messages.length; i++) {
+            String message = messages[i];
+            if (message == null)
+                throw new UnsupportedOperationException("requestUserInteraction is not supported in server context, action : " + actions[i].getClass());
+        }
+        return new Object[actions.length];
+    }
 
     @Override
-    public boolean canBeProcessed() {
-        return false;
+    public boolean userInteractionCanBeProcessedInTransaction() {
+        return true;
     }
 
     public abstract CustomClassListener getClassListener();

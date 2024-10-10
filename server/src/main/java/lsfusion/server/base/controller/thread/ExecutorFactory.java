@@ -4,6 +4,7 @@ import lsfusion.base.DaemonThreadFactory;
 import lsfusion.base.Pair;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.server.base.controller.context.AbstractContext;
+import lsfusion.server.base.controller.context.AsyncContext;
 import lsfusion.server.base.controller.context.Context;
 import lsfusion.server.base.controller.manager.MonitorServer;
 import lsfusion.server.base.controller.remote.context.ContextAwarePendingRemoteObject;
@@ -506,7 +507,10 @@ public class ExecutorFactory {
         return new TaskInnerAspect<Pair<Context, AbstractContext.MessageLogger>>() {
             @Override
             public Pair<Context, AbstractContext.MessageLogger> aspectSubmit() {
-                return new Pair<>(ThreadLocalContext.assureContext(context), type != SyncType.NOSYNC ? ThreadLocalContext.get().getLogMessage() : null);
+                Context aspectContext = ThreadLocalContext.assureContext(context);
+                if(type != SyncType.SYNC)
+                    aspectContext = new AsyncContext(aspectContext);
+                return new Pair<>(aspectContext, type != SyncType.NOSYNC ? ThreadLocalContext.get().getLogMessage() : null);
             }
 
             @Override
