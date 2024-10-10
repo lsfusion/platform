@@ -160,7 +160,7 @@ public class TableContainer extends ResizableSimplePanel implements HasMaxPrefer
             if (focusElement != null && focusElement != CellRenderer.NULL && focusElement != target) { // last check - optimization
                 FocusUtils.Reason reason = FocusUtils.getFocusReason(target);
                 if (reason == null)
-                    reason = FocusUtils.Reason.OTHER;
+                    reason = FocusUtils.Reason.FOCUSNAVIGATE;
                 FocusUtils.focus((Element) focusElement, reason);
             }
         }

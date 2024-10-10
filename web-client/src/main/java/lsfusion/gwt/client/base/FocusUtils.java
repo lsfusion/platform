@@ -66,6 +66,7 @@ public class FocusUtils {
                 // it's really odd to start editing while scrolling, and other navigating
                 case SCROLLNAVIGATE:
                 case KEYMOVENAVIGATE:
+                case FOCUSNAVIGATE:
                 // CHANGE will be started anyway
                 case BINDING:
                 // really odd behaviour to start editing (dropdown list) when focus is returned
@@ -99,6 +100,7 @@ public class FocusUtils {
         KEYNEXTNAVIGATE, // ENTER
         MOUSENAVIGATE, // MOUSE CLICK
         SCROLLNAVIGATE, // SCROLL
+        FOCUSNAVIGATE,
 
         MOUSECHANGE,
         BINDING,
@@ -113,7 +115,7 @@ public class FocusUtils {
         }
 
         public boolean preventScroll() {
-            return this == RESTOREFOCUS || this == MOUSECHANGE || this == SHOW;
+            return this == RESTOREFOCUS || this == MOUSECHANGE || this == SHOW || this == FOCUSNAVIGATE;
         }
     }
 

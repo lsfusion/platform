@@ -75,7 +75,7 @@ public class LSFClientRegistrationRepository extends LogicsRequestHandler implem
         String authSecret = servletContext.getInitParameter(OAuth2ToLSFTokenFilter.AUTH_SECRET_KEY);
         List<ClientRegistration> clientRegistrations = new ArrayList<>();
 
-        ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, NavigatorProviderImpl.getSessionInfo(request),
+        ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, NavigatorProviderImpl.getConnectionInfo(request),
                 "Authentication.getClientCredentials", MainController.getExternalRequest(new ExternalRequest.Param[]{ExternalRequest.getSystemParam(authSecret)}, request));
         JSONArray jsonArray = LogicsSessionObject.getJSONArrayResult(result);
 

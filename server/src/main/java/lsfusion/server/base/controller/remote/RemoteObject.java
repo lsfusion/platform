@@ -21,7 +21,7 @@ public class RemoteObject implements Remote {
     }
 
     public static void export(Remote object, int port) throws RemoteException {
-        RMIUtils.rmiExport(object, port, ZipServerSocketFactory.getInstance());
+        RMIUtils.rmiExport(object, port);
     }
 
     public RemoteObject(int port, boolean autoExport) throws RemoteException {

@@ -63,7 +63,7 @@ public class NewSessionAction extends AroundAspectAction {
         this.fixedForms = fixedForms;
 
         // (nested || explicitly nested) and used in action
-        migrateProps = BaseUtils.remove(BaseUtils.merge(DataSession.keepNested(false), explicitMigrateProps),
+        migrateProps = BaseUtils.remove(BaseUtils.merge(SessionDataProperty.keepNested(false), explicitMigrateProps),
                                     (SFunctionSet<SessionDataProperty>) element -> !(action.action.uses(element) || action.action.changes(element) || action.action.hasFlow(ChangeFlowType.INTERACTIVEFORM)));
 
         finalizeInit();

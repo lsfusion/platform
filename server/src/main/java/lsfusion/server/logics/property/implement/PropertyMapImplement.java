@@ -170,7 +170,7 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
     }
 
     public Object read(ExecutionContext context, ImMap<T, ? extends ObjectValue> interfaceValues) throws SQLException, SQLHandledException {
-        return property.read(context.getSession().sql, mapping.join(interfaceValues), context.getModifier(), context.getQueryEnv());
+        return property.read(context.getSession(), mapping.join(interfaceValues), context.getModifier(), context.getQueryEnv());
     }
 
     public ObjectValue readClasses(ExecutionContext context, ImMap<T, ? extends ObjectValue> interfaceValues) throws SQLException, SQLHandledException {

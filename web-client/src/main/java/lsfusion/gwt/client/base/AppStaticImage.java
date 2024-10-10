@@ -36,7 +36,7 @@ public class AppStaticImage extends BaseStaticImage implements AppBaseImage {
 
     public GSize getWidth(GFont font) {
         if(images == null)
-            return GFontMetrics.getStringHeight(font, "0"); // we're assuming that the icon is a square
+            return GFontMetrics.getStringHeight(font, GFontMetrics.heightChar); // we're assuming that the icon is a square
 
         return getImage().getWidth();
     }

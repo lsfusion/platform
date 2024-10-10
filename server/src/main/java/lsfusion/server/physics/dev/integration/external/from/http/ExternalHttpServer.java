@@ -3,13 +3,16 @@ package lsfusion.server.physics.dev.integration.external.from.http;
 import com.sun.net.httpserver.*;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.DaemonThreadFactory;
+import lsfusion.base.Result;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.file.FileData;
 import lsfusion.interop.connection.AuthenticationToken;
+import lsfusion.interop.connection.ComputerInfo;
+import lsfusion.interop.connection.ConnectionInfo;
+import lsfusion.interop.connection.UserInfo;
 import lsfusion.interop.connection.authentication.PasswordAuthentication;
 import lsfusion.interop.session.ExecInterface;
 import lsfusion.interop.session.ExternalUtils;
-import lsfusion.interop.session.SessionInfo;
 import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
 import lsfusion.server.base.controller.manager.MonitorServer;
 import lsfusion.server.base.controller.remote.RmiManager;
@@ -24,6 +27,8 @@ import lsfusion.server.physics.admin.service.ServiceLogicsModule;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.net.URLEncodedUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMEncryptedKeyPair;
 import org.bouncycastle.openssl.PEMKeyPair;
@@ -38,6 +43,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.rmi.RemoteException;
 import java.security.*;
@@ -45,10 +51,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.sql.SQLException;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.*;
 
 public class ExternalHttpServer extends MonitorServer {
@@ -206,6 +209,8 @@ public class ExternalHttpServer extends MonitorServer {
     public static final String HOSTNAME_COOKIE_NAME = "LSFUSION_HOSTNAME";
     private static final int COOKIE_VERSION = ExternalUtils.DEFAULT_COOKIE_VERSION;
 
+    private final ExternalUtils.SessionContainer sessionContainer = new ExternalUtils.SessionContainer();
+
     public class HttpRequestHandler implements HttpHandler {
 
         public void handle(HttpExchange request) {
@@ -213,43 +218,88 @@ public class ExternalHttpServer extends MonitorServer {
             // поток создается HttpServer'ом, поэтому ExecutorService'ом как остальные не делается
             ThreadLocalContext.aspectBeforeMonitorHTTP(ExternalHttpServer.this);
             try {
+                Headers requestHeaders = request.getRequestHeaders();
+                int headerIndex = 0;
+                String[] headerNames = new String[requestHeaders.size()];
+                String[] headerValues = new String[requestHeaders.size()];
 
-                String[] headerNames = request.getRequestHeaders().keySet().toArray(new String[0]);
-                String[] headerValues = getRequestHeaderValues(request.getRequestHeaders(), headerNames);
+                List<String> cookieNamesList = new ArrayList<>();
+                List<String> cookieValuesList = new ArrayList<>();
+                String hostNameCookie = null;
 
-                OrderedMap<String, String> cookiesMap = new OrderedMap<>();
-                List<String> cookiesList = request.getRequestHeaders().get("Cookie");
-                if(cookiesList != null) {
-                    for (String cookies : cookiesList) {
-                        for (String cookie : cookies.split(";")) {
-                            String[] splittedCookie = cookie.split("=");
-                            if (splittedCookie.length == 2) {
-                                cookiesMap.put(splittedCookie[0], ExternalUtils.decodeCookie(splittedCookie[1], 0));
+                String host = null;
+                Integer port = null;
+                for(Map.Entry<String, List<String>> requestHeader : requestHeaders.entrySet()) {
+                    String headerName = requestHeader.getKey();
+                    List<String> headerValue = requestHeader.getValue();
+
+                    headerNames[headerIndex] = headerName;
+                    headerValues[headerIndex++] = StringUtils.join(headerValue.iterator(), ",");
+
+                    if(headerName.equals("Cookie")) {
+                        for (String cookies : headerValue) {
+                            for (String cookie : cookies.split(";")) {
+                                String[] splittedCookie = cookie.split("=");
+                                if (splittedCookie.length == 2) {
+                                    String cookieName = splittedCookie[0];
+                                    String cookieValue = ExternalUtils.decodeCookie(splittedCookie[1], 0);
+
+                                    cookieNamesList.add(cookieName);
+                                    cookieValuesList.add(cookieValue);
+
+                                    if(cookieName.equals(HOSTNAME_COOKIE_NAME))
+                                        hostNameCookie = cookieValue;
+                                }
                             }
                         }
                     }
+                    if(headerName.equals("Host") && !headerValue.isEmpty()) {
+                        String[] hostParts = headerValue.get(0).split(":");
+                        host = hostParts[0];
+                        if(hostParts.length > 1)
+                            port = Integer.parseInt(hostParts[1]); /*when using redirect from address without specifying a port, for example foo.bar immediately to port 7651, the port is not specified in request, and in this place when accessing host[1] the ArrayIndexOutOfBoundsException is received.*/
+                    }
                 }
-
-                String[] cookieNames = cookiesMap.keyList().toArray(new String[0]);
-                String[] cookieValues = cookiesMap.values().toArray(new String[0]);
+                String[] cookieNames = cookieNamesList.toArray(new String[0]);
+                String[] cookieValues = cookieValuesList.toArray(new String[0]);
 
                 InetSocketAddress remoteAddress = request.getRemoteAddress();
                 InetAddress address = remoteAddress.getAddress();
 
-                String hostNameCookie = cookiesMap.get(HOSTNAME_COOKIE_NAME);
                 String hostName = hostNameCookie != null ? hostNameCookie : getHostName(remoteAddress);
 
-                SessionInfo sessionInfo = new SessionInfo(hostName, address != null ? address.getHostAddress() : null, null, null, null, null, null, null);// client locale does not matter since we use anonymous authentication
+                ConnectionInfo connectionInfo = new ConnectionInfo(new ComputerInfo(hostName, address != null ? address.getHostAddress() : null), UserInfo.NULL);// client locale does not matter since we use anonymous authentication
 
-                String[] host = request.getRequestHeaders().getFirst("Host").split(":");
-                ExecInterface remoteExec = ExternalUtils.getExecInterface(getAuthToken(request), sessionInfo, remoteLogics);
                 ContentType requestContentType = ExternalUtils.parseContentType(getContentType(request));
-                ExternalUtils.ExternalResponse response = ExternalUtils.processRequest(remoteExec,
-                        getLogicsInstance().getRmiManager(), request.getRequestBody(), requestContentType, headerNames, headerValues, cookieNames, cookieValues, null, null,null,
-                        useHTTPS ? "https" : "http", request.getRequestMethod(), host[0], host.length > 1 ? Integer.parseInt(host[1]) : null /*when using redirect from address without specifying a port, for example foo.bar immediately to port 7651, the port is not specified in request, and in this place when accessing host[1] the ArrayIndexOutOfBoundsException is received.*/,
-                        "", request.getRequestURI().getPath(), "", request.getRequestURI().getRawQuery(), null);
 
-                sendResponse(request, response);
+                URI requestURI = request.getRequestURI();
+                String rawQuery = requestURI.getRawQuery();
+
+                String paramSessionID = null;
+                if(rawQuery != null && rawQuery.contains("session")) { // optimization
+                    List<NameValuePair> queryParams = URLEncodedUtils.parse(rawQuery, ExternalUtils.defaultUrlCharset);
+
+                    paramSessionID = ExternalUtils.getParameterValue(queryParams, "session");
+                }
+                Result<String> sessionID = paramSessionID != null ? new Result<>(paramSessionID) : null;
+                Result<Boolean> closeSession = new Result<>(false);
+
+                ExecInterface remoteExec = ExternalUtils.getExecInterface(remoteLogics, sessionID, closeSession, sessionContainer, getAuthToken(request), connectionInfo);
+
+                try {
+                    ExternalUtils.ExternalResponse response = ExternalUtils.processRequest(remoteExec,
+                            externalRequest -> value -> getLogicsInstance().getRmiManager().convertFileValue(externalRequest, value), request.getRequestBody(), requestContentType, headerNames, headerValues, cookieNames, cookieValues, null, null, null,
+                            useHTTPS ? "https" : "http", request.getRequestMethod(), host, port, "", requestURI.getPath(), "", rawQuery, null);
+
+                    sendResponse(request, response);
+                } catch (RemoteException e) {
+                    closeSession.set(true); // closing session if there is a RemoteException
+                    throw e;
+                } finally {
+                    if(sessionID != null && closeSession.result) {
+                        sessionContainer.removeSession(sessionID.result);
+                    }
+                }
             } catch (Exception e) {
                 ServerLoggers.systemLogger.error("ExternalHttpServer error: ", e);
                 try {
@@ -343,23 +393,27 @@ public class ExternalHttpServer extends MonitorServer {
 
             boolean hasContentType = false;
             boolean hasContentDisposition = false;
-            for(int i=0;i<headerNames.length;i++) {
-                String headerName = headerNames[i];
-                if(headerName.equals("Content-Type")) {
-                    hasContentType = true;
-                    response.getResponseHeaders().add("Content-Type", headerValues[i]);
-                } else
-                    response.getResponseHeaders().add(headerName, headerValues[i]);
-                hasContentDisposition = hasContentDisposition || headerName.equals("Content-Disposition");
+            if(headerNames != null) {
+                for (int i = 0; i < headerNames.length; i++) {
+                    String headerName = headerNames[i];
+                    if (headerName.equals("Content-Type")) {
+                        hasContentType = true;
+                        response.getResponseHeaders().add("Content-Type", headerValues[i]);
+                    } else
+                        response.getResponseHeaders().add(headerName, headerValues[i]);
+                    hasContentDisposition = hasContentDisposition || headerName.equals("Content-Disposition");
+                }
             }
 
-            String cookie = "";
-            for(int i=0;i<cookieNames.length;i++) {
-                String cookieName = cookieNames[i];
-                String cookieValue = cookieValues[i];
-                cookie += (cookie.isEmpty() ? "" : ";") + cookieName + "=" + ExternalUtils.encodeCookie(cookieValue, COOKIE_VERSION);
+            if(cookieNames != null) {
+                String cookie = "";
+                for (int i = 0; i < cookieNames.length; i++) {
+                    String cookieName = cookieNames[i];
+                    String cookieValue = cookieValues[i];
+                    cookie += (cookie.isEmpty() ? "" : ";") + cookieName + "=" + ExternalUtils.encodeCookie(cookieValue, COOKIE_VERSION);
+                }
+                response.getResponseHeaders().add("Cookie", cookie);
             }
-            response.getResponseHeaders().add("Cookie", cookie);
 
             if (contentType != null && !hasContentType)
                 response.getResponseHeaders().add("Content-Type", contentType);

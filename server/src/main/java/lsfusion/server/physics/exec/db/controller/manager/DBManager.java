@@ -14,7 +14,6 @@ import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWVSMap;
 import lsfusion.base.col.lru.LRUWWEVSMap;
 import lsfusion.base.file.RawFileData;
-import lsfusion.base.lambda.DProcessor;
 import lsfusion.base.lambda.E2Runnable;
 import lsfusion.interop.ProgressBar;
 import lsfusion.interop.connection.LocalePreferences;
@@ -45,6 +44,7 @@ import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.adapter.DataAdapter;
 import lsfusion.server.data.sql.connection.ExConnection;
 import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.data.sql.lambda.SQLCallable;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.table.*;
@@ -124,6 +124,7 @@ import java.sql.SQLException;
 import java.sql.Savepoint;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -273,47 +274,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
         return namingPolicy;
     }
 
-    private void setUserLoggableProperties(SQLSession sql) throws SQLException, SQLHandledException {
-        Map<String, String> changes = businessLogics.getDbManager().getPropertyCNChanges(sql);
-        
-        Integer maxStatsProperty = null;
-        try {
-            maxStatsProperty = (Integer) reflectionLM.maxStatsProperty.read(sql, Property.defaultModifier, DataSession.emptyEnv(OperationOwner.unknown));
-        } catch (Exception ignored) {
+    private final ChangesController changesController = new ChangesController() {
+        public DBManager getDbManager() {
+            return DBManager.this;
         }
-
-        LP<PropertyInterface> isProperty = LM.is(reflectionLM.property);
-        ImRevMap<PropertyInterface, KeyExpr> keys = isProperty.getMapKeys();
-        KeyExpr key = keys.singleValue();
-        QueryBuilder<PropertyInterface, Object> query = new QueryBuilder<>(keys);
-        query.addProperty("CNProperty", reflectionLM.canonicalNameProperty.getExpr(key));
-        query.addProperty("overStatsProperty", reflectionLM.overStatsProperty.getExpr(key));
-        query.and(reflectionLM.userLoggableProperty.getExpr(key).getWhere());
-        ImOrderMap<ImMap<PropertyInterface, Object>, ImMap<Object, Object>> result = query.execute(sql, OperationOwner.unknown);
-
-        for (ImMap<Object, Object> values : result.valueIt()) {
-            String canonicalName = values.get("CNProperty").toString().trim();
-            if (changes.containsKey(canonicalName)) {
-                canonicalName = changes.get(canonicalName);
-            }
-            LP<?> lcp = null;
-            try {
-                lcp = businessLogics.findProperty(canonicalName);
-            } catch (Exception ignored) {
-            }
-            if(lcp != null) { // temporary for migration, так как могут на действиях стоять
-                Integer statsProperty = null;
-                if(lcp.property instanceof AggregateProperty) {
-                    statsProperty = (Integer) values.get("overStatsProperty");
-                    if (statsProperty == null)
-                        statsProperty = getPropertyInterfaceStat(lcp.property);
-                }
-                if (statsProperty == null || maxStatsProperty == null || statsProperty < maxStatsProperty) {
-                    lcp.makeUserLoggable(LM, systemEventsLM, getNamingPolicy());
-                }
-            }            
-        }
-    }
+    };
 
     public static Integer getPropertyInterfaceStat(Property property) {
         Integer statsProperty = null;
@@ -947,37 +912,47 @@ public class DBManager extends LogicsManager implements InitializingBean {
     public DataSession createSession(OperationOwner upOwner) throws SQLException {
         return createSession(getThreadLocalSql(), upOwner);
     }
-    
-    public DataSession createSession(SQLSession sql, OperationOwner upOwner) throws SQLException {
-        return createSession(sql,
-                new UserController() {
-                    public boolean changeCurrentUser(DataObject user, ExecutionStack stack) {
-                        throw new RuntimeException("not supported");
-                    }
 
-                    @Override
-                    public Long getCurrentUserRole() {
-                        return null;
-                    }
-                },
-                new FormController() {
-                    @Override
-                    public void changeCurrentForm(String form) {
-                        throw new RuntimeException("not supported");
-                    }
+    private void setUserLoggableProperties(SQLSession sql) throws SQLException, SQLHandledException {
+        Map<String, String> changes = businessLogics.getDbManager().getPropertyCNChanges(sql);
 
-                    @Override
-                    public String getCurrentForm() {
-                        return null;
-                    }
-                },
-                () -> 0,
-                new ChangesController() {
-                    public DBManager getDbManager() {
-                        return DBManager.this;
-                    }
-                }, Locale::getDefault, getIsServerRestartingController(), upOwner
-        );
+        Integer maxStatsProperty = null;
+        try {
+            maxStatsProperty = (Integer) reflectionLM.maxStatsProperty.read(sql, Property.defaultModifier, changesController, DataSession.emptyEnv(OperationOwner.unknown));
+        } catch (Exception ignored) {
+        }
+
+        LP<PropertyInterface> isProperty = LM.is(reflectionLM.property);
+        ImRevMap<PropertyInterface, KeyExpr> keys = isProperty.getMapKeys();
+        KeyExpr key = keys.singleValue();
+        QueryBuilder<PropertyInterface, Object> query = new QueryBuilder<>(keys);
+        query.addProperty("CNProperty", reflectionLM.canonicalNameProperty.getExpr(key));
+        query.addProperty("overStatsProperty", reflectionLM.overStatsProperty.getExpr(key));
+        query.and(reflectionLM.userLoggableProperty.getExpr(key).getWhere());
+        ImOrderMap<ImMap<PropertyInterface, Object>, ImMap<Object, Object>> result = query.execute(sql, OperationOwner.unknown);
+
+        for (ImMap<Object, Object> values : result.valueIt()) {
+            String canonicalName = values.get("CNProperty").toString().trim();
+            if (changes.containsKey(canonicalName)) {
+                canonicalName = changes.get(canonicalName);
+            }
+            LP<?> lcp = null;
+            try {
+                lcp = businessLogics.findProperty(canonicalName);
+            } catch (Exception ignored) {
+            }
+            if(lcp != null) { // temporary for migration, так как могут на действиях стоять
+                Integer statsProperty = null;
+                if(lcp.property instanceof AggregateProperty) {
+                    statsProperty = (Integer) values.get("overStatsProperty");
+                    if (statsProperty == null)
+                        statsProperty = getPropertyInterfaceStat(lcp.property);
+                }
+                if (statsProperty == null || maxStatsProperty == null || statsProperty < maxStatsProperty) {
+                    lcp.makeUserLoggable(LM, systemEventsLM, getNamingPolicy());
+                }
+            }
+        }
     }
 
     public DataSession createSession(SQLSession sql, UserController userController, FormController formController,
@@ -1079,10 +1054,77 @@ public class DBManager extends LogicsManager implements InitializingBean {
             return 31 * (31 * (31 * ( 31 * (31 * mapValues.hashCode() + envValues.hashCode())  + value.hashCode()) + mode.hashCode()) + neededCount) + hashMap(orders);
         }
     }
-    private static class ParamRef {
-        public Param param;
+    // basically there are 2 strategies:
+    // weak "lazy", like in getAsyncValues
+    // strong "lazy" - with the events in the database
+    // the first is good for really rarely changed props, the second has more overhead
+    private final FlushedCache<ImMap<?, ? extends ObjectValue>, ObjectValue> weakLazyValueCache = new FlushedCache<>(LRUUtil.G1);
+    private final FlushedCache<Param, PropertyAsync[]> asyncValuesCache1 = new FlushedCache<>(LRUUtil.G1);
 
-        public ParamRef(Param param) {
+    public DataSession createSession(SQLSession sql, OperationOwner upOwner) throws SQLException {
+        return createSession(sql,
+                new UserController() {
+                    public boolean changeCurrentUser(DataObject user, ExecutionStack stack) {
+                        throw new RuntimeException("not supported");
+                    }
+
+                    @Override
+                    public Long getCurrentUserRole() {
+                        return null;
+                    }
+                },
+                new FormController() {
+                    @Override
+                    public void changeCurrentForm(String form) {
+                        throw new RuntimeException("not supported");
+                    }
+
+                    @Override
+                    public String getCurrentForm() {
+                        return null;
+                    }
+                },
+                () -> 0, changesController, Locale::getDefault, getIsServerRestartingController(), upOwner
+        );
+    }
+    private final FlushedCache<Param, PropertyAsync[]> asyncValuesCache2 = new FlushedCache<>(LRUUtil.G2);
+
+    public <T extends PropertyInterface> ObjectValue readLazyValue(Property<T> property, ImMap<T, ? extends ObjectValue> keys) throws SQLException, SQLHandledException {
+        return weakLazyValueCache.proceed(property, keys,
+                () -> property.readClasses(getThreadLocalSql(), keys, LM.baseClass, Property.defaultModifier, DataSession.emptyEnv(OperationOwner.unknown)));
+    }
+
+//    public <T extends PropertyInterface> void updateLazyValue(Property<T> property, ImMap<T, ? extends ObjectValue> values) {
+//
+//    }
+
+    public <P extends PropertyInterface> PropertyAsync<P>[] getAsyncValues(InputValueList<P> list, QueryEnvironment env, ExecutionStack stack, FormEnvironment formEnv, String value, int neededCount, AsyncMode mode) throws SQLException, SQLHandledException {
+        if(Settings.get().isIsClustered()) // we don't want to use caches since they can be inconsistent
+            return readAsyncValues(list, env, stack, formEnv, value, neededCount, mode);
+
+        return (value.length() >= Settings.get().getAsyncValuesLongCacheThreshold() || list.hasValues() ? asyncValuesCache1 : asyncValuesCache2).
+                proceed(list.getCacheKey(), list.getCacheParam(value, neededCount, mode, env),
+                () -> readAsyncValues(list, env, stack, formEnv, value, neededCount, mode));
+    }
+
+    public void flushChanges() {
+        ImSet<Property> flushedChanges;
+        synchronized (changesListLock) {
+            flushedChanges = mChanges.immutable();
+            mChanges = SetFact.mSet();
+        }
+        if(flushedChanges.isEmpty())
+            return;
+
+        asyncValuesCache1.flush(flushedChanges);
+        asyncValuesCache2.flush(flushedChanges);
+        weakLazyValueCache.flush(flushedChanges);
+    }
+
+    private static class ParamRef<K> {
+        public K param;
+
+        public ParamRef(K param) {
             this.param = param;
         }
 
@@ -1090,82 +1132,72 @@ public class DBManager extends LogicsManager implements InitializingBean {
             param = null;
         }
     }
-    private static class ValueRef<P extends PropertyInterface> {
-        // it's the only strong value to keep it from garbage collected
-        public final ParamRef ref;
-        public final PropertyAsync<P>[] values;
 
-        public ValueRef(ParamRef ref, PropertyAsync<P>[] values) {
+    private static class ValueRef<K, V> {
+        // it's the only strong value to keep it from garbage collected
+        public final ParamRef<K> ref;
+        public final V values;
+
+        public ValueRef(ParamRef<K> ref, V values) {
             this.ref = ref;
             this.values = values;
         }
     }
 
+    private <P extends PropertyInterface> PropertyAsync<P>[] readAsyncValues(InputValueList<P> list, QueryEnvironment env, ExecutionStack stack, FormEnvironment formEnv, String value, int neededCount, AsyncMode asyncMode) throws SQLException, SQLHandledException {
+        return FormInstance.getAsyncValues(list, getThreadLocalSql(), env, LM.baseClass, Property.defaultModifier, () -> new FormInstance.ExecContext() {
+            private DataSession session;
+
+            public ExecutionContext<?> getContext() throws SQLException {
+                session = createSession();
+                return new ExecutionContext<>(MapFact.EMPTY(), createSession(), stack, formEnv);
+            }
+
+            public void close() throws SQLException {
+                session.close();
+            }
+        } , value, neededCount, asyncMode);
+    }
+
     // need this to clean outdated caches
     // could be done easier with timestamps (value and last changed), but this way cache will be cleaned faster
-    private final LRUWVSMap<ActionOrProperty<?>, ConcurrentIdentityWeakHashSet<ParamRef>> asyncValuesPropCache1 = new LRUWVSMap<>(LRUUtil.G1);
-    private final LRUWVSMap<ActionOrProperty<?>, ConcurrentIdentityWeakHashSet<ParamRef>> asyncValuesPropCache2 = new LRUWVSMap<>(LRUUtil.G2);
+    private static class FlushedCache<K, V> {
+        private final LRUWVSMap<ActionOrProperty<?>, ConcurrentIdentityWeakHashSet<ParamRef<K>>> propCache;
+        private final LRUWWEVSMap<ActionOrProperty<?>, K, ValueRef<K, V>> valueCache;
 
-    // we need weak ref, but regular equals (not identity)
-    private final LRUWWEVSMap<ActionOrProperty<?>, Param, ValueRef> asyncValuesValueCache1 = new LRUWWEVSMap<>(LRUUtil.G1);
-    private final LRUWWEVSMap<ActionOrProperty<?>, Param, ValueRef> asyncValuesValueCache2 = new LRUWWEVSMap<>(LRUUtil.G2);
-
-    public <P extends PropertyInterface> PropertyAsync<P>[] getAsyncValues(InputValueList<P> list, QueryEnvironment env, ExecutionStack stack, FormEnvironment formEnv, String value, int neededCount, AsyncMode mode) throws SQLException, SQLHandledException {
-        if(Settings.get().isIsClustered()) // we don't want to use caches since they can be inconsistent
-            return readAsyncValues(list, env, stack, formEnv, value, neededCount, mode);
-
-        LRUWVSMap<ActionOrProperty<?>, ConcurrentIdentityWeakHashSet<ParamRef>> asyncValuesPropCache;
-        LRUWWEVSMap<ActionOrProperty<?>, Param, ValueRef> asyncValuesValueCache;
-        if(value.length() >= Settings.get().getAsyncValuesLongCacheThreshold() || list.hasValues()) {
-            asyncValuesPropCache = asyncValuesPropCache1;
-            asyncValuesValueCache = asyncValuesValueCache1;
-        } else {
-            asyncValuesPropCache = asyncValuesPropCache2;
-            asyncValuesValueCache = asyncValuesValueCache2;
+        public FlushedCache(LRUUtil.Strategy expireStrategy) {
+            propCache = new LRUWVSMap<>(expireStrategy);
+            valueCache = new LRUWWEVSMap<>(expireStrategy);
         }
 
-        ActionOrProperty<?> key = list.getCacheKey();
-        Param param = list.getCacheParam(value, neededCount, mode, env);
+        public V proceed(ActionOrProperty property, K param, SQLCallable<V> function) throws SQLException, SQLHandledException {
+            ValueRef<K, V> valueRef = valueCache.get(property, param);
+            if(valueRef != null && valueRef.ref.param != null)
+                return valueRef.values;
 
-        ValueRef<P> valueRef = asyncValuesValueCache.get(key, param);
-        if(valueRef != null && valueRef.ref.param != null)
-            return valueRef.values;
-
-        // has to be before reading to be sure that ref will be dropped when changes are made
-        ParamRef ref = new ParamRef(param);
-        ConcurrentIdentityWeakHashSet<ParamRef> paramRefs = asyncValuesPropCache.get(key);
-        if(paramRefs == null) {
-            paramRefs = new ConcurrentIdentityWeakHashSet<>();
-            asyncValuesPropCache.put(key, paramRefs);
-        }
-        paramRefs.add(ref);
-
-        PropertyAsync<P>[] values = readAsyncValues(list, env, stack, formEnv, value, neededCount, mode);
-        asyncValuesValueCache.put(key, param, new ValueRef<>(ref, values));
-
-        return values;
-    }
-
-    private <P extends PropertyInterface> PropertyAsync<P>[] readAsyncValues(InputValueList<P> list, QueryEnvironment env, ExecutionStack stack, FormEnvironment formEnv, String value, int neededCount, AsyncMode asyncMode) throws SQLException, SQLHandledException {
-        return FormInstance.getAsyncValues(list, getThreadLocalSql(), env, LM.baseClass, Property.defaultModifier, () -> new ExecutionContext<>(MapFact.EMPTY(), createSession(), stack, formEnv), value, neededCount, asyncMode);
-    }
-
-    public void flushChanges() {
-        ImSet<Property> flushedChanges;
-        synchronized (changesListLock) {
-            flushedChanges = mChanges.immutable();
-        }
-        if(flushedChanges.isEmpty())
-            return;
-
-        DProcessor<ActionOrProperty<?>, ConcurrentIdentityWeakHashSet<ParamRef>> dropCaches = (property, refs) -> {
-            if (property != null && InputValueList.depends(property, flushedChanges)) {
-                for (ParamRef ref : refs)
-                    ref.drop(); // dropping ref will eventually lead to garbage collection of entries in all lru caches, plus there is a check that cache is dropped
+            // has to be before reading to be sure that ref will be dropped when changes are made
+            ParamRef<K> ref = new ParamRef<>(param);
+            ConcurrentIdentityWeakHashSet<ParamRef<K>> paramRefs = propCache.get(property);
+            if(paramRefs == null) {
+                paramRefs = new ConcurrentIdentityWeakHashSet<>();
+                propCache.put(property, paramRefs);
             }
-        };
-        asyncValuesPropCache1.proceedSafeLockLRUEKeyValues(dropCaches);
-        asyncValuesPropCache2.proceedSafeLockLRUEKeyValues(dropCaches);
+            paramRefs.add(ref);
+
+            V values = function.call();
+            valueCache.put(property, param, new ValueRef<>(ref, values));
+
+            return values;
+        }
+
+        public void flush(ImSet<Property> flushedChanges) {
+            propCache.proceedSafeLockLRUEKeyValues((property, refs) -> {
+                if (property != null && InputValueList.depends(property, flushedChanges)) {
+                    for (ParamRef ref : refs)
+                        ref.drop(); // dropping ref will eventually lead to garbage collection of entries in all lru caches, plus there is a check that cache is dropped
+                }
+            });
+        }
     }
 
     private final Object changesListLock = new Object();
@@ -1333,33 +1365,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
          }
     }
 
-    public static class UniqueIndexNameException extends RuntimeException {
-        public UniqueIndexNameException(String message) {
-            super(message);
-        }
-    }
-    
-    private void checkUniqueIndexName(NewDBStructure struct, SQLSession sql) {
-        Map<String, Pair<DBTable, IndexData<Field>>> indexNames = new HashMap<>();
-        for (Map.Entry<DBTable, List<IndexData<Field>>> tableInfo : struct.tables.entrySet()) {
-            DBTable table = tableInfo.getKey();
-            for (IndexData<Field> index : tableInfo.getValue()) {
-                String name = sql.getIndexName(table, index);
-                if (indexNames.containsKey(name)) {
-                    final String formatStr = "Two indexes has the same database name: '%s'. " +
-                            "These indexes are:\n%s in table '%s'\n%s in table '%s'\nOne of the indexes will not be created.";
-                    final String msg = String.format(formatStr, name, index, table.getName(), indexNames.get(name).second, indexNames.get(name).first.getName());
-                    if (Settings.get().isStartServerAnyWay()) {
-                        startLogWarn(msg);
-                    } else {
-                        throw new UniqueIndexNameException(msg);
-                    }
-                }
-                indexNames.put(name, new Pair<>(table, index));
-            }
-        }
-    }
-    
     public void uploadToDB(SQLSession sql, boolean isolatedTransactions, final DataAdapter adapter) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, SQLHandledException {
         final OperationOwner owner = OperationOwner.unknown;
         final SQLSession sqlFrom = new SQLSession(adapter, contextProvider);
@@ -1541,10 +1546,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
             DataOutputStream outDB = new DataOutputStream(outDBStruct);
 
             MigrationVersion newMigrationVersion = migrationManager.getCurrentMigrationVersion(oldDBStructure.migrationVersion);
-            NewDBStructure newDBStructure = new NewDBStructure(newMigrationVersion);
+            NewDBStructure newDBStructure = new NewDBStructure(newMigrationVersion, sql);
 
             checkUniquePropertyDBName(newDBStructure);
-            checkUniqueIndexName(newDBStructure, sql);
             newDBStructure.write(outDB);
 
             // DROP / RENAME indices
@@ -1617,7 +1621,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             LM.baseClass.fillIDs(sql, DataSession.emptyEnv(OperationOwner.unknown), this::generateID, LM.staticCaption, LM.staticImage,LM.staticName,
                     migrationManager.getClassSIDChangesAfter(oldDBStructure.migrationVersion),
                     migrationManager.getObjectSIDChangesAfter(oldDBStructure.migrationVersion),
-                    idChanges);
+                    idChanges, changesController);
 
             for (DBConcreteClass newClass : newDBStructure.concreteClasses) {
                 newClass.ID = newClass.customClass.ID;
@@ -2963,13 +2967,16 @@ public class DBManager extends LogicsManager implements InitializingBean {
     
     private class NewDBStructure extends DBStructure<Field> {
         
-        public NewDBStructure(MigrationVersion migrationVersion) {
+        public NewDBStructure(MigrationVersion migrationVersion, SQLSession sql) {
             version = newDBStructureVersion;
             this.migrationVersion = migrationVersion;
 
-            checkForDuplicateTableDBNames();
+            checkTableDBNameUniqueness();
             tables.putAll(getIndexesMap());
-
+            
+            checkIndexNameUniqueness(sql);
+            checkTablesAndIndexesNameUniqueness(sql);
+            
             for (Property<?> property : businessLogics.getStoredProperties()) {
                 storedProperties.add(new DBStoredProperty(property));
                 assert property.isNamed();
@@ -2980,36 +2987,78 @@ public class DBManager extends LogicsManager implements InitializingBean {
             }
         }
         
-        public class DuplicateTableDBNameException extends RuntimeException {
-            DuplicateTableDBNameException(String message) {
+        public class DuplicateRelationNameException extends RuntimeException {
+            DuplicateRelationNameException(String message) {
                 super(message);
             }
         }
         
-        private void checkForDuplicateTableDBNames() {
+        private void checkTableDBNameUniqueness() {
             final String possibleReasonStr = "This may be caused by the length limitation on database table names, " +
                     "where two different table names are truncated to the same name.";
             
             Map<String, ImplementTable> tables = new HashMap<>();
             for (ImplementTable table : LM.tableFactory.getImplementTables()) {
                 if (tables.containsKey(table.getName())) {
+                    String resolveStr, tablesStr;
                     if (table.getCanonicalName() != null) {
-                        String resolveStr = "In this case, you can either change the table database name or change the naming policy (refer to the documentation for details)";
-                        String tablesStr = String.format("Tables '%s' and '%s' have the same database name '%s'.",
+                        resolveStr = "In this case, you can either change the table database name or change the naming policy (refer to the documentation for details)";
+                        tablesStr = String.format("Tables '%s' and '%s' have the same database name '%s'.",
                                 table.getCanonicalName(),
                                 tables.get(table.getName()).getCanonicalName(),
                                 table.getName());
-                        throw new DuplicateTableDBNameException(String.join("\n", "", tablesStr, possibleReasonStr, resolveStr));
                     } else {
-                        String resolveStr = "In this case, you can either explicitly declare the tables or change the naming policy (refer to the documentation for details)";
-                        String formatStr = String.format("Auto tables with classes\n\t'%s' and\n\t'%s'\nhave the same database name: '%s'",
+                        resolveStr = "In this case, you can either explicitly declare the tables or change the naming policy (refer to the documentation for details)";
+                        tablesStr = String.format("Auto tables with classes\n\t'%s' and\n\t'%s'\nhave the same database name: '%s'.",
                                 table.getMapFields(),
                                 tables.get(table.getName()).getMapFields(),
                                 table.getName());
-                        throw new DuplicateTableDBNameException(String.join("\n","", formatStr, possibleReasonStr, resolveStr));
                     }
+                    throw new DuplicateRelationNameException(String.join("\n","", tablesStr, possibleReasonStr, resolveStr));
                 }
                 tables.put(table.getName(), table);
+            }
+        }
+        
+        private void checkIndexNameUniqueness(SQLSession sql) {
+            Map<String, Pair<DBTable, IndexData<Field>>> indexNames = new HashMap<>();
+            for (Map.Entry<DBTable, List<IndexData<Field>>> tableInfo : tables.entrySet()) {
+                DBTable table = tableInfo.getKey();
+                for (IndexData<Field> index : tableInfo.getValue()) {
+                    String name = sql.getIndexName(table, index);
+                    if (indexNames.containsKey(name)) {
+                        final String formatStr = "Two indexes has the same database name: '%s'. " +
+                                "These indexes are:\n%s in table '%s'\n%s in table '%s'\nOne of the indexes will not be created.";
+                        final String msg = String.format(formatStr, name, index, table.getName(), indexNames.get(name).second, indexNames.get(name).first.getName());
+                        if (Settings.get().isStartServerAnyWay()) {
+                            startLogWarn(msg);
+                        } else {
+                            throw new DuplicateRelationNameException(msg);
+                        }
+                    }
+                    indexNames.put(name, new Pair<>(table, index));
+                }
+            }
+        }
+        
+        private void checkTablesAndIndexesNameUniqueness(SQLSession sql) {
+            Map<String, DBTable> tableNames = new HashMap<>();
+            for (DBTable table : tables.keySet()) {
+                tableNames.put(table.getName(), table);
+            }
+            
+            for (Map.Entry<DBTable, List<IndexData<Field>>> tableInfo : tables.entrySet()) {
+                DBTable indexTable = tableInfo.getKey();
+                for (IndexData<Field> index : tableInfo.getValue()) {
+                    String indexName = sql.getIndexName(indexTable, index);
+                    if (tableNames.containsKey(indexName)) {
+                        DBTable table = tableNames.get(indexName);
+                        String reason = "Tables and indexes must have unique names. If a table and an index have identical names, the database cannot distinguish between them, leading to conflicts when executing queries";
+                        String formatStr = "\nTable '%s' and index %s have the same database name: '%s'.\n%s";
+                        String message = String.format(formatStr, nvl(table.getCanonicalName(), table.getName()), index, indexName, reason);
+                        throw new DuplicateRelationNameException(message);
+                    }
+                }
             }
         }
         

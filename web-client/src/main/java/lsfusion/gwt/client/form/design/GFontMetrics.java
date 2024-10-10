@@ -120,6 +120,9 @@ public class GFontMetrics {
 //
     private static final HashMap<GFont, HashMap<Integer, Integer>> calculatedCharWidth = new HashMap<>();
 
+    public static String widthChar = "0";
+    public static String heightChar = "0";
+
     public static int getCharWidthString(GFont font, int pixelWidth) {
         HashMap<Integer, Integer> widthMap = calculatedCharWidth.getOrDefault(font, new HashMap<>());
         Integer charWidth = widthMap.get(pixelWidth);
@@ -130,7 +133,7 @@ public class GFontMetrics {
             int delta = 1;
 
             while (delta >= 1) {
-                while (getCalcMeasure(new GFontWidthString(font, GwtSharedUtils.replicate('0', charWidth + delta * 2))).first.getPivotSize() < pixelWidth) {
+                while (getCalcMeasure(new GFontWidthString(font, GwtSharedUtils.replicate(widthChar, charWidth + delta * 2))).first.getPivotSize() < pixelWidth) {
                     delta = delta * 2;
                 }
                 charWidth += delta;
@@ -234,11 +237,11 @@ public class GFontMetrics {
     }
 
     public static String getDefaultWidthString(int length) {
-        return GwtSharedUtils.replicate('0', length);
+        return GwtSharedUtils.replicate(GFontMetrics.widthChar, length);
     }
 
     public static String getDefaultHeightString(int charHeight) {
-        return "0" + GwtSharedUtils.replicate("\n0", charHeight - 1);
+        return GFontMetrics.heightChar + GwtSharedUtils.replicate("\n" + GFontMetrics.heightChar, charHeight - 1);
     }
 
     private static class GridParams {

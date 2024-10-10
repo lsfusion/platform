@@ -699,13 +699,13 @@ onStarted() + {
 
 useBusyDialogCustom '{service.use.busy.dialog.user}' = DATA BOOLEAN (CustomUser);
 
-allowExcessAllocatedBytes '{service.allow.excess.allocated.bytes.user}' = DATA BOOLEAN (CustomUser);
+allowExcessAllocatedBytes '{service.allow.excess.allocated.bytes.user}' = DATA BOOLEAN (CustomUser) @@lazy;
 
 useRequestTimeout '{service.use.request.timeout.user}' = DATA BOOLEAN (CustomUser);
 
 devMode '{service.dev.mode.user}' = DATA BOOLEAN (CustomUser); // for debug purposes
 
-transactTimeout '{service.transact.timeout}' (User user) = DATA INTEGER (CustomUser);
+transactTimeout '{service.transact.timeout}' (User user) = DATA INTEGER (CustomUser) @@lazy;
 
 turnCacheStatsOff '{service.turn.cache.stats.off}'  INTERNAL  'lsfusion.server.physics.admin.service.action.TurnCacheStatsOffAction' ();
 

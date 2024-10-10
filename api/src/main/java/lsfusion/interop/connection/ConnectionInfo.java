@@ -1,30 +1,26 @@
 package lsfusion.interop.connection;
 
 import java.io.Serializable;
-import java.util.TimeZone;
 
 public class ConnectionInfo implements Serializable {
 
-    public final String hostName;
-    public final String hostAddress;
+    public final ComputerInfo computerInfo;
 
-    public final String language;
-    public final String country;
-    public final TimeZone timeZone;
+    public final UserInfo userInfo;
 
-    public final String dateFormat;
-    public final String timeFormat;
+    public ConnectionInfo(ComputerInfo computerInfo, UserInfo userInfo) {
+        this.computerInfo = computerInfo;
 
-    public final String clientColorTheme;
+        this.userInfo = userInfo;
+    }
 
-    public ConnectionInfo(String hostName, String hostAddress, String language, String country, TimeZone timeZone, String dateFormat, String timeFormat, String clientColorTheme) {
-        this.hostName = hostName;
-        this.hostAddress = hostAddress;
-        this.language = language;
-        this.country = country;
-        this.timeZone = timeZone;
-        this.dateFormat = dateFormat;
-        this.timeFormat = timeFormat;
-        this.clientColorTheme = clientColorTheme;
+    @Override
+    public boolean equals(Object o) {
+        return this == o || o instanceof ConnectionInfo && computerInfo.equals(((ConnectionInfo) o).computerInfo) && userInfo.equals(((ConnectionInfo) o).userInfo);
+    }
+
+    @Override
+    public int hashCode() {
+        return 31 * computerInfo.hashCode() + userInfo.hashCode();
     }
 }

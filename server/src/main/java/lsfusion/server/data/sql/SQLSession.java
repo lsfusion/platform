@@ -359,6 +359,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         typePool = adapter;
         this.contextProvider = contextProvider;
         sqlSessionMap.put(this, 1);
+
+        ServerLoggers.exinfoLog("SQL SESSION OPEN " + this);
+
         Thread currentThread = Thread.currentThread();
         threadDebugInfo = new ThreadDebugInfo(currentThread.getName(),
                 Settings.get().isStacktraceInSQLSession() ? ThreadUtils.getJavaStack(currentThread.getStackTrace()) : null);

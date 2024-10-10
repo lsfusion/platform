@@ -24,6 +24,7 @@ import lsfusion.server.logics.action.session.change.*;
 import lsfusion.server.logics.action.session.changed.UpdateResult;
 import lsfusion.server.logics.action.session.table.PropertyChangeTableUsage;
 import lsfusion.server.logics.classes.user.BaseClass;
+import lsfusion.server.logics.navigator.controller.env.ChangesController;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
@@ -220,7 +221,8 @@ public abstract class SessionModifier implements Modifier {
     public abstract SQLSession getSQL();
     public abstract BaseClass getBaseClass();
     public abstract QueryEnvironment getQueryEnv();
-    
+    public abstract ChangesController getChanges();
+
     public abstract OperationOwner getOpOwner();
 
     public boolean allowHintIncrement(Property property) {
@@ -353,7 +355,7 @@ public abstract class SessionModifier implements Modifier {
 
             ImMap<Pair<ImMap<P, Expr>, Boolean>, Pair<ObjectValue, Boolean>> readValues;
             if(values.size() == property.interfaces.size())
-                readValues = MapFact.singleton(new Pair<>(values, hasChanges), property.readClassesChanged(getSQL(), values.join(prereadedParamValues.addExcl(readedParamValues)), getBaseClass(), this, hasChanges, getQueryEnv()));
+                readValues = MapFact.singleton(new Pair<>(values, hasChanges), property.readClassesChanged(getSQL(), values.join(prereadedParamValues.addExcl(readedParamValues)), getBaseClass(), this, hasChanges, getQueryEnv(), getChanges()));
             else
                 readValues = MapFact.EMPTY();
 

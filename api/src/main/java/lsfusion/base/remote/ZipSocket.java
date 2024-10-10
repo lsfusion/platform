@@ -6,32 +6,34 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketImpl;
+import java.util.zip.Deflater;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.Inflater;
+import java.util.zip.InflaterInputStream;
 
-public class CountZipSocket extends Socket {
+public class ZipSocket extends Socket {
 
-    private CompressedStreamObserver observer;
+    private static final boolean NOWRAP = true;
+    private static final int BUFFER_SIZE = 8192;
+    private InputStream in;
+    private OutputStream out;
 
-    private CompressedInputStream in;
-    private CompressedOutputStream out;
-
-    private CompressedOutputStream createOut() throws IOException {
-        return new CompressedOutputStream(super.getOutputStream(), 2048, observer);
-    }
-
-    private CompressedInputStream createIn() throws IOException {
-        return new CompressedInputStream(super.getInputStream(), 2048, observer);
-    }
-
-    public CountZipSocket(SocketImpl impl) throws SocketException {
+    public ZipSocket(SocketImpl impl) throws SocketException {
         super(impl);
     }
 
-    public CountZipSocket(String host, int port) throws IOException {
+    public ZipSocket(String host, int port) throws IOException {
         super(host, port);
     }
 
-    public void setObserver(CompressedStreamObserver observer) {
-        this.observer = observer;
+    private OutputStream createOut() throws IOException {
+//        return super.getOutputStream();
+        return new DeflaterOutputStream(super.getOutputStream(), new Deflater(Deflater.NO_COMPRESSION, NOWRAP), BUFFER_SIZE, true);
+    }
+
+    private InputStream createIn() throws IOException {
+//        return super.getInputStream();
+        return new InflaterInputStream(super.getInputStream(), new Inflater(NOWRAP), BUFFER_SIZE);
     }
 
     @Override
@@ -64,12 +66,12 @@ public class CountZipSocket extends Socket {
     public synchronized void close() throws IOException {
         super.close();
         if (in != null) {
-            CompressedInputStream inStream = in;
+            InputStream inStream = in;
             in = null;
             inStream.close();
         }
         if (out != null) {
-            CompressedOutputStream outStream = out;
+            OutputStream outStream = out;
             out = null;
             outStream.close();
         }

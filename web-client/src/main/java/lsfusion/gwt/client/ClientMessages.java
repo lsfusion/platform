@@ -227,6 +227,11 @@ public interface ClientMessages extends Messages {
     String fullScreenModeEnable();
     String fullScreenModeDisable();
 
+    String editModeDefault();
+    String editModeLink();
+    String editModeDialog();
+    String editModeGroupChange();
+
 //    dateRangePicker
     String applyLabel();
     String cancelLabel();

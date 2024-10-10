@@ -309,6 +309,7 @@ public abstract class FormsController {
         updateForceLinkModeStyles(mode, forceMode == EditMode.LINK);
         editMode = mode;
         forceEditMode = forceMode;
+        editModeButton.setTitle(mode.getTitle(messages));
     }
 
     private void updateForceLinkModeStyles(EditMode editMode, boolean forceLinkMode) {

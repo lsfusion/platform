@@ -227,15 +227,9 @@ public class MainController {
         return getRedirectUrl("/login", Collections.singletonList("token"), request);
     }
 
-    private JSONObject sendRequest(JSONArray jsonArray, HttpServletRequest request, String method){
-        ExternalRequest.Param fileParam = ExternalRequest.getSystemParam(jsonArray.toString());
-        try {
-            return logicsProvider.runRequest(request,
-                    (sessionObject, retry) -> LogicsSessionObject.getJSONObjectResult(sessionObject.remoteLogics.exec(AuthenticationToken.ANONYMOUS, NavigatorProviderImpl.getSessionInfo(request),
-                    method + "[JSONFILE]", getExternalRequest(new ExternalRequest.Param[]{fileParam}, request))));
-        } catch (IOException | AppServerNotAvailableDispatchException e) {
-            throw Throwables.propagate(e);
-        }
+    public static ClientSettings getClientSettings(RemoteNavigatorInterface remoteNavigator, HttpServletRequest request, ClientInfo clientInfo) throws RemoteException {
+        remoteNavigator.updateClientInfo(clientInfo);
+        return LogicsSessionObject.getClientSettings(MainController.getExternalRequest(new ExternalRequest.Param[0], request), remoteNavigator);
     }
 
     private void addUserDataAttributes(ModelMap model, HttpServletRequest request) {
@@ -334,9 +328,15 @@ public class MainController {
         return logicsProvider.getServerSettings(request, noCache);
     }
 
-    public static ClientSettings getClientSettings(RemoteNavigatorInterface remoteNavigator, HttpServletRequest request, ClientInfo clientInfo) throws RemoteException {
-        remoteNavigator.updateClientInfo(clientInfo);
-        return LogicsSessionObject.getClientSettings(NavigatorProviderImpl.getSessionInfo(request), remoteNavigator);
+    private JSONObject sendRequest(JSONArray jsonArray, HttpServletRequest request, String method){
+        ExternalRequest.Param fileParam = ExternalRequest.getSystemParam(jsonArray.toString());
+        try {
+            return logicsProvider.runRequest(request,
+                    (sessionObject, retry) -> LogicsSessionObject.getJSONObjectResult(sessionObject.remoteLogics.exec(AuthenticationToken.ANONYMOUS, NavigatorProviderImpl.getConnectionInfo(request),
+                    method + "[JSONFILE]", getExternalRequest(new ExternalRequest.Param[]{fileParam}, request))));
+        } catch (IOException | AppServerNotAvailableDispatchException e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     public static LogicsSessionObject.InitSettings getInitSettings(RemoteNavigatorInterface remoteNavigator, HttpServletRequest request, ClientInfo clientInfo) throws RemoteException {

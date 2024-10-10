@@ -70,6 +70,7 @@ public class ExternalRequest implements Serializable {
 
     public final boolean needNotificationId;
 
+    public static final ExternalRequest EMPTY = new ExternalRequest(new Param[0]);
     public ExternalRequest(Param[] params) {
         this(new String[0], params, null, null, new String[0], new String[0], null,
                                 null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, false);

@@ -1764,57 +1764,70 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return lp;
     }
 
+    @IdentityLazy
     public LAP<?,?> findPropertyElseAction(String canonicalName) {
         LAP<?,?> property = findProperty(canonicalName);
         if(property == null)
             property = findAction(canonicalName);
         return property;
     }
-    
+
+    @IdentityLazy
     public LP<?> findProperty(String canonicalName) {
         return BusinessLogicsResolvingUtils.findPropertyByCanonicalName(this, canonicalName);
     }
-    
+
+    @IdentityLazy
     public LA<?> findAction(String canonicalName) {
         return BusinessLogicsResolvingUtils.findActionByCanonicalName(this, canonicalName);
     }
-    
+
+    @IdentityLazy
     public LA<?> findActionByCompoundName(String compoundName) {
         return BusinessLogicsResolvingUtils.findLAPByCompoundName(this, compoundName, new ModuleLAFinder());
     }
-    
+
+    @IdentityLazy
     public LP<?> findPropertyByCompoundName(String compoundName) {
         return BusinessLogicsResolvingUtils.findLAPByCompoundName(this, compoundName, new ModuleLPFinder());
     }
 
+    @IdentityLazy
     public CustomClass findClassByCompoundName(String compoundName) {
         return findElementByCompoundName(this, compoundName, null, new ModuleClassFinder());
     }
 
+    @IdentityLazy
     public CustomClass findClass(String canonicalName) {
         return findElementByCanonicalName(this, canonicalName, null, new ModuleClassFinder());
     }
 
+    @IdentityLazy
     public Group findGroup(String canonicalName) {
         return findElementByCanonicalName(this, canonicalName, null, new ModuleGroupFinder());
     }
 
+    @IdentityLazy
     public ImplementTable findTable(String canonicalName) {
         return findElementByCanonicalName(this, canonicalName, null, new ModuleTableFinder());
     }
 
+    @IdentityLazy
     public AbstractWindow findWindow(String canonicalName) {
         return findElementByCanonicalName(this, canonicalName, null, new ModuleWindowFinder());
     }
 
+    @IdentityLazy
     public NavigatorElement findNavigatorElement(String canonicalName) {
         return findElementByCanonicalName(this, canonicalName, null, new ModuleNavigatorElementFinder());
     }
 
+    @IdentityLazy
     public FormEntity findForm(String canonicalName) {
         return findElementByCanonicalName(this, canonicalName, null, new ModuleFormFinder());
     }
 
+    @IdentityLazy
     public MetaCodeFragment findMetaCodeFragment(String canonicalName, int paramCnt) {
         return findElementByCanonicalName(this, canonicalName, paramCnt, new ModuleMetaCodeFragmentFinder());
     }

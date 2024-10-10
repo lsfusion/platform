@@ -37,8 +37,8 @@ TABLE userUserRole (User, UserRole);
 has '{security.in}' (User user, UserRole role) = in(user, role) OR overIn(user, role) MATERIALIZED;
 //firstRole need for Settings
 firstRole(User user) = OVERRIDE (GROUP MIN UserRole role IF has(user, role) AND NOT sid(role) = 'default'), 
-                                            userRoleSID('default') ;
-userRoles '{security.user.roles}' (User user) = GROUP CONCAT name(UserRole role) IF has(user, role), ', ' ORDER name(role) CHARWIDTH 15;
+                                            userRoleSID('default') @@lazy;
+userRoles '{security.user.roles}' (User user) = GROUP CONCAT name(UserRole role) IF has(user, role), ', ' ORDER name(role) CHARWIDTH 15 @@lazy;
 
 rolesCount(User user) = GROUP SUM 1 IF has(user, UserRole role) MATERIALIZED;
 
