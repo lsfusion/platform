@@ -7,10 +7,8 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.concurrent.weak.ConcurrentIdentityWeakHashMap;
 import lsfusion.base.col.heavy.concurrent.weak.ConcurrentWeakHashMap;
 import lsfusion.base.col.heavy.weak.WeakLinkedHashSet;
-import lsfusion.base.col.implementations.HMap;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
-import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSVSMap;
@@ -59,7 +57,6 @@ import lsfusion.server.data.type.exec.TypePool;
 import lsfusion.server.data.type.parse.AbstractParseInterface;
 import lsfusion.server.data.type.parse.ParseInterface;
 import lsfusion.server.data.type.parse.StringParseInterface;
-import lsfusion.server.data.type.reader.PGObjectReader;
 import lsfusion.server.data.type.reader.Reader;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
@@ -70,6 +67,7 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.change.modifier.SessionModifier;
 import lsfusion.server.logics.classes.data.ArrayClass;
+import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.TSVectorClass;
 import lsfusion.server.logics.classes.data.file.AJSONClass;
 import lsfusion.server.logics.form.stat.struct.plain.JDBCTable;
@@ -857,10 +855,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
     private void checkLikeIndex(StoredTable table, ImOrderMap<Field, Boolean> fields, IndexOptions indexOptions) throws SQLException, SQLHandledException {
         String newIndexName = getIndexName(table, syntax, indexOptions.dbName, fields, LIKE.suffix(), false, false);
-        if (!checkIndex(newIndexName)) {
+        if (!indexExists(newIndexName)) {
             //deprecated old index name with _like in the end  (can be removed after checkIndices)
             String oldIndexName = getIndexName(table, syntax, indexOptions.dbName, fields, LIKE.suffix(), true, false);
-            if (checkIndex(oldIndexName)) {
+            if (indexExists(oldIndexName)) {
                 renameIndex(oldIndexName, newIndexName);
             } else {
                 createLikeIndex(table, fields, indexOptions.dbName, getColumns(fields, indexOptions), logger, true);
@@ -870,10 +868,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
     private void checkMatchIndex(StoredTable table, ImOrderMap<Field, Boolean> fields, IndexOptions indexOptions) throws SQLException, SQLHandledException {
         String newIndexName = getIndexName(table, syntax, indexOptions.dbName, fields, MATCH.suffix(), false, false);
-        if (!checkIndex(newIndexName)) {
+        if (!indexExists(newIndexName)) {
             //deprecated old index name with _match in the end  (can be removed after checkIndices)
             String oldIndexName = getIndexName(table, syntax, indexOptions.dbName, fields, MATCH.suffix(), true, false);
-            if (checkIndex(oldIndexName)) {
+            if (indexExists(oldIndexName)) {
                 renameIndex(oldIndexName, newIndexName);
             } else {
                 createMatchIndex(table, fields, indexOptions.dbName, getColumns(fields, indexOptions), indexOptions, logger, true);
@@ -883,10 +881,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
     private void checkDefaultIndex(StoredTable table, ImOrderMap<Field, Boolean> fields, IndexOptions indexOptions) throws SQLException, SQLHandledException {
         String newIndexName = getIndexName(table, syntax, indexOptions.dbName, fields, null, false, false);
-        if (!checkIndex(newIndexName)) {
+        if (!indexExists(newIndexName)) {
             //deprecated old index name with idx in the end (before 2015)  (can be removed after checkIndices)
             String veryOldIndexName = getIndexName(table, syntax, indexOptions.dbName, fields, null, false, true);
-            if (checkIndex(veryOldIndexName)) {
+            if (indexExists(veryOldIndexName)) {
                 renameIndex(veryOldIndexName, newIndexName);
             } else {
                 createDefaultIndex(table, fields, indexOptions.dbName, getColumns(fields, indexOptions), logger, true);
@@ -894,28 +892,22 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
 
-    private boolean checkIndex(String indexName) throws SQLException, SQLHandledException {
-        //начиная с Postgres 9.5 можно заменить на 'create index if not exists', но непонятно, что тогда делать с логами, поэтому пока проверяем наличие индекса
-        //https://dba.stackexchange.com/questions/35616/create-index-if-it-does-not-exist
-        String command = "SELECT to_regclass('public." + indexName + "')";
+    private boolean indexExists(String indexName) throws SQLException, SQLHandledException {
+        String queryString = "SELECT indexname FROM pg_indexes WHERE indexname = '" + indexName + "' AND schemaname = 'public'";
 
-        MExclSet<String> propertyNames = SetFact.mExclSet();
-        propertyNames.exclAdd("to_regclass");
-        propertyNames.immutable();
+        ImRevMap<String, String> propertyNames = MapFact.singletonRev("indexname", "indexname");
+        ImMap<String, Reader<?>> propertyReaders = MapFact.singleton("indexname", StringClass.instance);
 
-        MExclMap<String, Reader> propertyReaders = MapFact.mExclMap();
-        propertyReaders.exclAdd("to_regclass", PGObjectReader.instance);
-        propertyReaders.immutable();
+        ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> rs = executeSelect(queryString, OperationOwner.unknown,
+                StaticExecuteEnvironmentImpl.EMPTY, MapFact.<String, ParseInterface>mExclMap().immutable(),0,
+                MapFact.EMPTYREV(), MapFact.EMPTY(), propertyNames, propertyReaders);
 
-        ImOrderMap rs = executeSelect(command, OperationOwner.unknown, StaticExecuteEnvironmentImpl.EMPTY, (ImMap<String, ParseInterface>) MapFact.mExclMap(),
-                0, MapFact.EMPTYREV(), MapFact.EMPTY(), ((ImSet) propertyNames).toRevMap(), (ImMap) propertyReaders);
-
-        boolean exists = false;
-        for (Object rsValue : rs.values()) {
-            if (((HMap) rsValue).get("to_regclass") != null)
-                exists = true;
+        for (ImMap<String, ?> rsValue : rs.values()) {
+            if (indexName.equals(rsValue.get("indexname"))) {
+                return true;
+            }
         }
-        return exists;
+        return false;
     }
 
     public void addConstraint(StoredTable table) {
