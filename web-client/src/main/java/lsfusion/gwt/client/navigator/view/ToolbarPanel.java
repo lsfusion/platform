@@ -12,30 +12,36 @@ public class ToolbarPanel extends NavigatorPanel {
     public ToolbarPanel(boolean vertical, GNavigatorWindow window) {
         super(vertical);
 
-        addStyleName("navbar-expand"); // navbar-expand to set horizontal paddings (vertical are set in navbar-text)
+       GwtClientUtils.addClassName(this, "navbar-expand"); // navbar-expand to set horizontal paddings (vertical are set in navbar-text)
 
         setAlignment(vertical, panel, window);
     }
 
     private static void setAlignment(boolean vertical, ResizableComplexPanel panel, GNavigatorWindow toolbarWindow) {
         if (vertical) {
-            panel.addStyleName(toolbarWindow.alignmentX == GNavigatorWindow.CENTER_ALIGNMENT ? "align-items-center" :
+            GwtClientUtils.addClassName(panel, toolbarWindow.alignmentX == GNavigatorWindow.CENTER_ALIGNMENT ? "align-items-center" :
                     (toolbarWindow.alignmentX == GNavigatorWindow.RIGHT_ALIGNMENT ? "align-items-end" :
                             "align-items-start"));
 
             // adding margin-auto to make all buttons visible when scroll appears
-            panel.addStyleName(toolbarWindow.alignmentY == GNavigatorWindow.CENTER_ALIGNMENT ? "justify-content-center my-auto" :
-                    (toolbarWindow.alignmentY == GNavigatorWindow.RIGHT_ALIGNMENT ? "justify-content-end" :
-                            "justify-content-start"));
+            if(toolbarWindow.alignmentY == GNavigatorWindow.CENTER_ALIGNMENT) {
+                GwtClientUtils.addClassNames(panel, "justify-content-center", "my-auto");
+            } else {
+                GwtClientUtils.addClassName(panel, toolbarWindow.alignmentY == GNavigatorWindow.RIGHT_ALIGNMENT ? "justify-content-end" :
+                                "justify-content-start");
+            }
         } else {
-            panel.addStyleName(toolbarWindow.alignmentY == GNavigatorWindow.CENTER_ALIGNMENT ? "align-items-center" :
+            GwtClientUtils.addClassName(panel, toolbarWindow.alignmentY == GNavigatorWindow.CENTER_ALIGNMENT ? "align-items-center" :
                     (toolbarWindow.alignmentY == GNavigatorWindow.BOTTOM_ALIGNMENT ? "align-items-end" :
                             "align-items-start"));
 
             // adding margin-auto to make all buttons visible when scroll appears
-            panel.addStyleName(toolbarWindow.alignmentX == GNavigatorWindow.CENTER_ALIGNMENT ? "justify-content-center mx-auto" :
-                    (toolbarWindow.alignmentX == GNavigatorWindow.RIGHT_ALIGNMENT ? "justify-content-end" :
-                            "justify-content-start"));
+            if(toolbarWindow.alignmentX == GNavigatorWindow.CENTER_ALIGNMENT) {
+                GwtClientUtils.addClassNames(panel, "justify-content-center", "mx-auto");
+            } else {
+                GwtClientUtils.addClassName(panel, toolbarWindow.alignmentX == GNavigatorWindow.RIGHT_ALIGNMENT ? "justify-content-end" :
+                                "justify-content-start");
+            }
         }
     }
 

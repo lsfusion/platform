@@ -3,7 +3,6 @@ package lsfusion.gwt.client.base;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
-import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
 import lsfusion.gwt.client.base.view.FlexPanel;
@@ -164,9 +163,9 @@ public interface BaseImage extends Serializable {
         if (!GwtSharedUtils.isRedundantString(aclass)) {
             if(value instanceof Boolean) { //class
                 if ((boolean) value)
-                    element.addClassName(aclass);
+                    GwtClientUtils.addClassName(element, aclass);
                 else
-                    element.removeClassName(aclass);
+                    GwtClientUtils.removeClassName(element, aclass);
 
             } else { //attr or style
                 if (value != null)
@@ -203,7 +202,7 @@ public interface BaseImage extends Serializable {
     static void initImageText(Widget widget, String caption, BaseImage appImage, ImageHtmlOrTextType type) {
         Element element = widget.getElement();
         // others image texts handle color themes changes with the explicit colorThemeChanged (rerendering the whole view)
-        element.addClassName("img-text-widget");
+        GwtClientUtils.addClassName(element, "img-text-widget");
         initImageText(element, type);
         updateText(widget, caption);
         updateImage(appImage, widget);
@@ -231,12 +230,12 @@ public interface BaseImage extends Serializable {
 
         element.setPropertyObject(TYPE, null);
 
-        element.removeClassName("wrap-text-not-empty");
+        GwtClientUtils.removeClassName(element, "wrap-text-not-empty");
         if(element.getPropertyBoolean(IMAGE_VERTICAL))
-            element.removeClassName("wrap-img-vert");
+            GwtClientUtils.removeClassName(element, "wrap-img-vert");
         else
-            element.removeClassName("wrap-img-horz");
-        element.removeClassName("wrap-img-start");
+            GwtClientUtils.removeClassName(element, "wrap-img-horz");
+        GwtClientUtils.removeClassName(element, "wrap-img-start");
 
         element.setPropertyObject(IMAGE_VERTICAL, null);
     }
@@ -261,12 +260,12 @@ public interface BaseImage extends Serializable {
                 textElement = Document.get().createDivElement();
                 ImageHtmlOrTextType type = (ImageHtmlOrTextType) element.getPropertyObject(TYPE);
                 GwtClientUtils.initCaptionHtmlOrText(textElement, type);
-                textElement.addClassName("wrap-text-div");
+                GwtClientUtils.addClassName(textElement, "wrap-text-div");
 
                 if(element.getPropertyBoolean(IMAGE_VERTICAL)) {
-                    element.addClassName("wrap-div-vert");
+                    GwtClientUtils.addClassName(element, "wrap-div-vert");
                 } else {
-                    element.addClassName("wrap-div-horz");
+                    GwtClientUtils.addClassName(element, "wrap-div-horz");
                 }
 
                 element.appendChild(textElement);
@@ -278,9 +277,9 @@ public interface BaseImage extends Serializable {
             if(textElement != null) {
                 element.removeChild(textElement);
                 if(element.getPropertyBoolean(IMAGE_VERTICAL))
-                    element.removeClassName("wrap-div-vert");
+                    GwtClientUtils.removeClassName(element, "wrap-div-vert");
                 else
-                    element.removeClassName("wrap-div-horz");
+                    GwtClientUtils.removeClassName(element, "wrap-div-horz");
 
                 element.setPropertyObject(DIV, null);
             }
@@ -288,9 +287,9 @@ public interface BaseImage extends Serializable {
         }
 
         if (!text.isEmpty()) {
-            element.addClassName("wrap-text-not-empty");
+            GwtClientUtils.addClassName(element, "wrap-text-not-empty");
         } else {
-            element.removeClassName("wrap-text-not-empty");
+            GwtClientUtils.removeClassName(element, "wrap-text-not-empty");
         }
     }
 
@@ -306,24 +305,24 @@ public interface BaseImage extends Serializable {
         if(imageElement != null && (image == null || !image.updateImageSrc(imageElement))) {
             element.removeChild(imageElement); // dropping image to create one after
             if(element.getPropertyBoolean(IMAGE_VERTICAL))
-                element.removeClassName("wrap-img-vert");
+                GwtClientUtils.removeClassName(element, "wrap-img-vert");
             else
-                element.removeClassName("wrap-img-horz");
-            element.removeClassName("wrap-img-start");
+                GwtClientUtils.removeClassName(element, "wrap-img-horz");
+            GwtClientUtils.removeClassName(element, "wrap-img-start");
 
             imageElement = null;
         }
         if(imageElement == null) {
             if(image != null) {
                 imageElement = image.createImage();
-                imageElement.addClassName("wrap-text-img");
+                GwtClientUtils.addClassName(imageElement, "wrap-text-img");
 
                 if(element.getPropertyBoolean(IMAGE_VERTICAL)) {
-                    element.addClassName("wrap-img-vert");
+                    GwtClientUtils.addClassName(element, "wrap-img-vert");
                 } else {
-                    element.addClassName("wrap-img-horz");
+                    GwtClientUtils.addClassName(element, "wrap-img-horz");
                 }
-                element.addClassName("wrap-img-start");
+                GwtClientUtils.addClassName(element, "wrap-img-start");
 
                 element.insertFirst(imageElement);
             }

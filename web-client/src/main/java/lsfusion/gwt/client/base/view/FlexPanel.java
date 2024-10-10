@@ -711,37 +711,37 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         if (start) {
             if(border == Border.NEED) {
                 if(vertical)
-                    widget.addStyleName("top-border");
+                    GwtClientUtils.addClassName(widget, "top-border");
                 else
-                    widget.addStyleName("left-border");
+                    GwtClientUtils.addClassName(widget, "left-border");
             }
         } else {
             if(border == Border.NEED) { // i.e doesn't have
                 if (vertical)
-                    widget.addStyleName("bottom-padding");
+                    GwtClientUtils.addClassName(widget, "bottom-padding");
                 else
-                    widget.addStyleName("right-padding");
+                    GwtClientUtils.addClassName(widget, "right-padding");
             } else {
                 if (vertical)
-                    widget.addStyleName("bottom-margin");
+                    GwtClientUtils.addClassName(widget, "bottom-margin");
                 else
-                    widget.addStyleName("right-margin");
+                    GwtClientUtils.addClassName(widget, "right-margin");
             }
         }
     }
     private static void clearBorder(Widget widget, boolean start, boolean vertical) {
         if (start) {
             if(vertical)
-                widget.removeStyleName("top-border");
+                GwtClientUtils.removeClassName(widget, "top-border");
             else
-                widget.removeStyleName("left-border");
+                GwtClientUtils.removeClassName(widget, "left-border");
         } else {
             if(vertical) {
-                widget.removeStyleName("bottom-margin");
-                widget.removeStyleName("bottom-padding");
+                GwtClientUtils.removeClassName(widget, "bottom-margin");
+                GwtClientUtils.removeClassName(widget, "bottom-padding");
             } else {
-                widget.removeStyleName("right-margin");
-                widget.removeStyleName("right-padding");
+                GwtClientUtils.removeClassName(widget, "right-margin");
+                GwtClientUtils.removeClassName(widget, "right-padding");
             }
         }
     }
@@ -750,23 +750,23 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
             return;
 
         if (border == Border.NEED)
-            widget.addStyleName("left-border-wrap");
+            GwtClientUtils.addClassName(widget, "left-border-wrap");
     }
     private static void clearWrapBorder(Widget widget) {
-        widget.removeStyleName("left-border-wrap");
+        GwtClientUtils.removeClassName(widget, "left-border-wrap");
     }
     private static void drawWrapParentBorder(Widget widget, Border border) {
         if(border == Border.NO)
             return;
 
         if (border == Border.NEED)
-            widget.addStyleName("flex-horz-border-wrap");
+            GwtClientUtils.addClassName(widget, "flex-horz-border-wrap");
         else
-            widget.addStyleName("flex-horz-margin-wrap");
+            GwtClientUtils.addClassName(widget, "flex-horz-margin-wrap");
     }
     private static void clearWrapParentBorder(FlexPanel widget) {
-        widget.removeStyleName("flex-horz-border-wrap");
-        widget.removeStyleName("flex-horz-margin-wrap");
+        GwtClientUtils.removeClassName(widget, "flex-horz-border-wrap");
+        GwtClientUtils.removeClassName(widget, "flex-horz-margin-wrap");
     }
 
     public boolean isGrid() {
@@ -1217,9 +1217,9 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
                     top = Border.HAS_MARGIN;
                     rest = Border.HAS_MARGIN;
 
-                    widget.addStyleName("nav-has-bg");
+                    GwtClientUtils.addClassName(widget, "nav-has-bg");
                 } else
-                    widget.removeStyleName("nav-has-bg");
+                    GwtClientUtils.removeClassName(widget, "nav-has-bg");
             }
             if(top == null && flexPanel instanceof CaptionPanel) {
                 if (((CaptionPanel) flexPanel).border) {
@@ -1257,17 +1257,17 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
                 // Forms.Panel has paddings / margins (with form-shrink-padded-container and the same rule for the tabs bar)
                 if(ToolbarPanel.hasBorder(widget)) {
                     top = bottom = left = right = Border.HAS_MARGIN;
-                    widget.addStyleName("nav-has-bg");
+                    GwtClientUtils.addClassName(widget, "nav-has-bg");
                 } else {
                     top = bottom = left = right = Border.NEED; // actually we need something like NEED_MARGIN here. Moreover hasBackgroundClasses should be used for all the widgets and convert NEED to NEED_MARGIN when there is a background (however it will require some refactoring so we'll do it later)
-                    widget.removeStyleName("nav-has-bg");
+                    GwtClientUtils.removeClassName(widget, "nav-has-bg");
                 }
                 if(widget instanceof NavigatorPanel) {
                     ResizableComplexPanel panel = ((NavigatorPanel) widget).panel;
                     if(ToolbarPanel.isPopupOver(widget))
-                        panel.addStyleName("background-inherit");
+                        GwtClientUtils.addClassName(panel, "background-inherit");
                     else
-                        panel.removeStyleName("background-inherit");
+                        GwtClientUtils.removeClassName(panel, "background-inherit");
                 }
             }
 
@@ -1521,24 +1521,24 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
             if(container.getAttribute(SCROLL_SHADOW_CONTAINER).equals("end") ?
                     scrollTop < element.getScrollHeight() - element.getClientHeight() - MainFrame.mobileAdjustment :
                     scrollTop > MainFrame.mobileAdjustment)
-                container.addClassName("scrolled");
+                GwtClientUtils.addClassName(container, "scrolled");
             else
-                container.removeClassName("scrolled");
+                GwtClientUtils.removeClassName(container, "scrolled");
         }
     }
 
     public static void makeShadowOnScroll(Widget container, Widget header, FlexPanel contentWidget, boolean end) {
-        container.addStyleName(end ? "scroll-shadow-container-end" : "scroll-shadow-container-start");
+        GwtClientUtils.addClassName(container, end ? "scroll-shadow-container-end" : "scroll-shadow-container-start");
         container.getElement().setAttribute(SCROLL_SHADOW_CONTAINER, end ? "end" : "start");
-        header.addStyleName("scroll-shadow-header");
+        GwtClientUtils.addClassName(header, "scroll-shadow-header");
 
         /* for example modal-body uses padding which is not what we want since we want it to have the scroll respecting form paddings,
         * so we set paddings in form-shrink-padded-container, and remove here   */
-        contentWidget.addStyleName("remove-all-p");
+        GwtClientUtils.addClassName(contentWidget, "remove-all-p");
     }
 
     public static void registerContentScrolledEvent(Widget widget) {
-        widget.addStyleName("form-shrink-padded-container");
+        GwtClientUtils.addClassName(widget, "form-shrink-padded-container");
 
         widget.sinkEvents(Event.ONSCROLL);
         widget.addHandler(event -> setContentScrolled(widget), ScrollEvent.getType());

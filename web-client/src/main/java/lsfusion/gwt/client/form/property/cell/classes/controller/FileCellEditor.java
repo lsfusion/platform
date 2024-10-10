@@ -185,7 +185,7 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
             this.cancelAction = cancelAction;
 
             progressPane = new SimplePanel();
-            progressPane.setStyleName("dialog-loading-progress");
+            GwtClientUtils.addClassName(progressPane, "dialog-loading-progress");
             setBodyWidget(progressPane);
 
             addFooterWidget(new FormButton(messages.cancel(), FormButton.ButtonStyle.SECONDARY, clickEvent -> hideLoadingBox(true)));

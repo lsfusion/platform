@@ -100,7 +100,7 @@ public abstract class FormsController {
                 return event -> {
                     final Result<JavaScriptObject> popup = new Result<>();
                     FlexPanel panel = new FlexPanel(true);
-                    panel.getElement().addClassName("btn-toolbar");
+                    GwtClientUtils.addClassName(panel.getElement(), "btn-toolbar");
                     EditMode[] buttons = EditMode.values();
                     for(int i = 0; i < buttons.length; i++) {
                         int index = i;
@@ -170,11 +170,11 @@ public abstract class FormsController {
             }
         });
 
-        tabsPanel.addStyleName("forms-container");
+        GwtClientUtils.addClassName(tabsPanel, "forms-container");
 
         container = new ResizableSimplePanel();
         container.setPercentMain(tabsPanel);
-        container.addStyleName("forms-container-window");
+        GwtClientUtils.addClassName(container, "forms-container-window");
 
         initEditModeTimer();
     }

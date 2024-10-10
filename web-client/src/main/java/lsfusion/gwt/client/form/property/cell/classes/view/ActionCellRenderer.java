@@ -34,7 +34,7 @@ public class ActionCellRenderer extends CellRenderer {
     @Override
     public boolean renderContent(Element element, RenderContext renderContext) {
         if(property.hasChangeAction)
-            element.addClassName("btn");
+            GwtClientUtils.addClassName(element, "btn");
 
         BaseImage.initImageText(element, property.getActionHtmlOrTextType());
 
@@ -52,7 +52,7 @@ public class ActionCellRenderer extends CellRenderer {
     @Override
     public boolean clearRenderContent(Element element, RenderContext renderContext) {
         if(property.hasChangeAction)
-            element.removeClassName("btn");
+            GwtClientUtils.removeClassName(element, "btn");
 
         BaseImage.clearImageText(element);
         GFormController.clearFont(element);

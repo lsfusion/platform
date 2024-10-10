@@ -27,50 +27,50 @@ input.cell-with-background[type=checkbox] {
     border-radius: var(--textfield-border-radius);
 }
 
-.panelRendererValueFocused:not(.panelRendererValueEdited).form-control,
-.panelRendererValueFocused:not(.panelRendererValueEdited).form-control .background-inherit,
-.panelRendererValueFocused:not(.panelRendererValueEdited) > .form-control,
-.panelRendererValueFocused:not(.panelRendererValueEdited) > .form-control .background-inherit,
-.panelRendererValueFocused:not(.panelRendererValueEdited).prop-input-w-toolbar .background-inherit {
+.panel-renderer-value-focused:not(.panel-renderer-value-edited).form-control,
+.panel-renderer-value-focused:not(.panel-renderer-value-edited).form-control .background-inherit,
+.panel-renderer-value-focused:not(.panel-renderer-value-edited) > .form-control,
+.panel-renderer-value-focused:not(.panel-renderer-value-edited) > .form-control .background-inherit,
+.panel-renderer-value-focused:not(.panel-renderer-value-edited).prop-input-w-toolbar .background-inherit {
     background-color: var(--selection-color);
 }
 
-.panelRendererValueBinding,
-.panelRendererValueBinding .background-inherit,
-.panelRendererValueBinding.btn,
-.panelRendererValueBinding.btn .background-inherit,
-.panelRendererValueBinding.form-control,
-.panelRendererValueBinding.form-control .background-inherit,
-.panelRendererValueBinding > .form-control,
-.panelRendererValueBinding > .form-control .background-inherit,
-.panelRendererValueBinding.prop-input-w-toolbar .background-inherit {
+.panel-renderer-value-binding,
+.panel-renderer-value-binding .background-inherit,
+.panel-renderer-value-binding.btn,
+.panel-renderer-value-binding.btn .background-inherit,
+.panel-renderer-value-binding.form-control,
+.panel-renderer-value-binding.form-control .background-inherit,
+.panel-renderer-value-binding > .form-control,
+.panel-renderer-value-binding > .form-control .background-inherit,
+.panel-renderer-value-binding.prop-input-w-toolbar .background-inherit {
     background-color: var(--button-active-background-color);
 }
 
-.panelRendererValueFocused.form-control,
-.panelRendererValueFocused > .form-control {
+.panel-renderer-value-focused.form-control,
+.panel-renderer-value-focused > .form-control {
     border: 1px solid var(--focus-color);
 }
 
-.panelRendererValue:not(.panelRendererValueFocused).form-control:hover, /* we want focus to have higher priority than hover*/
-.panelRendererValue:not(.panelRendererValueFocused) > .form-control:hover {
+.panel-renderer-value:not(.panel-renderer-value-focused).form-control:hover, /* we want focus to have higher priority than hover*/
+.panel-renderer-value:not(.panel-renderer-value-focused) > .form-control:hover {
     border: 1px solid var(--component-hover-border-color);
 }
 
 /* border doesn't work for input checkbox */
-input[type=checkbox].form-control.panelRendererValueFocused,
-.panelRendererValueFocused input[type=checkbox].form-control {
+input[type=checkbox].form-control.panel-renderer-value-focused,
+.panel-renderer-value-focused input[type=checkbox].form-control {
     outline: 1px solid var(--focus-color);
 
     /* this is needed because Chrome has the default outline-offset set to 2 for :focus-visible input checkbox  */
     /* https://stackoverflow.com/questions/73049600/should-input-checkbox-outline-include-margins-or-not */
     outline-offset: 0;
 }
-input[type=checkbox].form-control.panelRendererValue:not(.panelRendererValueFocused):hover, /* we want focus to have higher priority than hover*/
-.panelRendererValue:not(.panelRendererValueFocused) input[type=checkbox].form-control:hover {
+input[type=checkbox].form-control.panel-renderer-value:not(.panel-renderer-value-focused):hover, /* we want focus to have higher priority than hover*/
+.panelRendererValue:not(.panel-renderer-value-focused) input[type=checkbox].form-control:hover {
     outline: 1px solid var(--component-hover-border-color);
 }
 
-a.panelRendererValue {
+a.panel-renderer-value {
     text-decoration: underline;
 }

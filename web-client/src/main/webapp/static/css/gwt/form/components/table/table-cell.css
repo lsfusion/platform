@@ -1,19 +1,19 @@
 /* ------------ Link Mode ------------ */
 /* we want to turn cell to hyper link*/
-.linkMode .selectedCellHasEdit {
+.linkMode .selected-cell-has-edit {
     color: var(--link-color) !important;
 }
 
-.linkMode .selectedCellHasEdit,
-.linkMode .selectedCellHasEdit *,
-.linkMode .selectedCellHasEdit .wrap-text-not-empty{
+.linkMode .selected-cell-has-edit,
+.linkMode .selected-cell-has-edit *,
+.linkMode .selected-cell-has-edit .wrap-text-not-empty{
     cursor: pointer;
 }
 
-.linkMode .selectedCellHasEdit:hover {
+.linkMode .selected-cell-has-edit:hover {
     text-decoration: underline;
 }
 
-.linkMode .selectedFileCellHasEdit {
+.linkMode .selected-file-cell-has-edit {
     border: 1px solid var(--link-color);
 }

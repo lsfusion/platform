@@ -25,14 +25,14 @@ public abstract class HtmlOrTextType {
         if(wrap) {
             if (collapse) {
                 if(set)
-                    element.addClassName("html-or-text-wrap-collapse");
+                    GwtClientUtils.addClassName(element, "html-or-text-wrap-collapse");
                 else
-                    element.removeClassName("html-or-text-wrap-collapse");
+                    GwtClientUtils.removeClassName(element, "html-or-text-wrap-collapse");
             } else {
                 if(set)
-                    element.addClassName("html-or-text-wrap");
+                    GwtClientUtils.addClassName(element, "html-or-text-wrap");
                 else
-                    element.removeClassName("html-or-text-wrap");
+                    GwtClientUtils.removeClassName(element, "html-or-text-wrap");
             }
 
             int wrapLines = getWrapLines();
@@ -43,39 +43,39 @@ public abstract class HtmlOrTextType {
                     else
                         setFixedLines(element, wrapLines);
 
-                    element.addClassName("html-or-text-wrap-fixed");
+                    GwtClientUtils.addClassName(element, "html-or-text-wrap-fixed");
                 } else {
                     clearFixedLines(element);
 
-                    element.removeClassName("html-or-text-wrap-fixed");
+                    GwtClientUtils.removeClassName(element, "html-or-text-wrap-fixed");
                 }
             }
 
             if(isWrapWordBreak()) {
                 if(set)
-                    element.addClassName("html-or-text-wrap-wordbreak");
+                    GwtClientUtils.addClassName(element, "html-or-text-wrap-wordbreak");
                 else
-                    element.removeClassName("html-or-text-wrap-wordbreak");
+                    GwtClientUtils.removeClassName(element, "html-or-text-wrap-wordbreak");
             }
         } else {
             if (collapse) {
                 if(set)
-                    element.addClassName("html-or-text-collapse");
+                    GwtClientUtils.addClassName(element, "html-or-text-collapse");
                 else
-                    element.removeClassName("html-or-text-collapse");
+                    GwtClientUtils.removeClassName(element, "html-or-text-collapse");
             } else {
                 if(set)
-                    element.addClassName("html-or-text");
+                    GwtClientUtils.addClassName(element, "html-or-text");
                 else
-                    element.removeClassName("html-or-text");
+                    GwtClientUtils.removeClassName(element, "html-or-text");
             }
         }
 
         if(isEllipsis()) {
             if(set)
-                element.addClassName("html-or-text-ellipsis");
+                GwtClientUtils.addClassName(element, "html-or-text-ellipsis");
             else
-                element.removeClassName("html-or-text-ellipsis");
+                GwtClientUtils.removeClassName(element, "html-or-text-ellipsis");
         }
     }
     public native JavaScriptObject getRenderer() /*-{

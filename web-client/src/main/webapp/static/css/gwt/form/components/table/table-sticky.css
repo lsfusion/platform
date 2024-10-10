@@ -1,13 +1,13 @@
 
 /* we're adding background-inherit to set the background for all that classes */
 
-.dataGridHeaderRow {
+.data-grid-header-row {
     position: sticky;
     top: 0;
     z-index: 1000;
 }
 
-.dataGridFooterRow {
+.data-grid-footer-row {
     position: sticky;
     bottom: 0;
     z-index: 1000;
@@ -15,55 +15,55 @@
 
 /* likely because of rounding in mobile version we see double border under footer */
 /*@media (max-width: 570px) {*/
-/*    .table.empty-footer .dataGridFooterRow {*/
+/*    .table.empty-footer .data-grid-footer-row {*/
 /*        bottom: -1px;*/
 /*    }*/
 /*}*/
 
-.dataGridHeaderCell {
+.data-grid-header-cell {
     /*position: sticky;*/
     /*top: 0;*/
     /*z-index: 1;*/
 }
 
-.dataGridFooterCell {
+.data-grid-footer-cell {
     /*position: sticky;*/
     /*bottom: 0;*/
     /*z-index: 1;*/
 }
 
-.dataGridStickyCell:not(.dataGridStickyOverflow),
-.dataGridStickyFooter:not(.dataGridStickyOverflow) {
+.data-grid-sticky-cell:not(.data-grid-sticky-overflow),
+.data-grid-sticky-footer:not(.data-grid-sticky-overflow) {
     position: sticky !important;
 
     z-index: 2; /* z-index: 2 because in bootstrap "btn-group>.btn-check:checked+.btn" rule z-index: 1, and selected button overlaid on sticky column */
 }
 
-.dataGridStickyHeader:not(.dataGridStickyOverflow),
-.dataGridStickyHeader.dataGridHeaderCell.property-not-null:not(.dataGridStickyOverflow),
-.dataGridStickyHeader.dataGridHeaderCell.property-has-change:not(.dataGridStickyOverflow),
-.dataGridStickyHeader.fill-parent-position:not(.dataGridStickyOverflow) {
+.data-grid-sticky-header:not(.data-grid-sticky-overflow),
+.data-grid-sticky-header.data-grid-header-cell.property-not-null:not(.data-grid-sticky-overflow),
+.data-grid-sticky-header.data-grid-header-cell.property-has-change:not(.data-grid-sticky-overflow),
+.data-grid-sticky-header.fill-parent-position:not(.data-grid-sticky-overflow) {
     position: sticky;
 
     z-index: 1001;
 }
 
-.dataGridStickyFooter:not(.dataGridStickyOverflow),
-/*.dataGridStickyFooter.property-not-null,*/
-/*.dataGridStickyFooter.property-has-change,*/
-.dataGridStickyFooter.fill-parent-position:not(.dataGridStickyOverflow) {
+.data-grid-sticky-footer:not(.data-grid-sticky-overflow),
+/*.data-grid-sticky-footer.property-not-null,*/
+/*.data-grid-sticky-footer.property-has-change,*/
+.data-grid-sticky-footer.fill-parent-position:not(.data-grid-sticky-overflow) {
     position: sticky;
 
     z-index: 1001;
 }
 
-/*.dataGridStickyCell.dataGridStickyOverflow,*/
-/*.dataGridStickyCell.fill-parent-position.dataGridStickyOverflow,*/
-/*.dataGridStickyHeader.dataGridStickyOverflow,*/
-/*.dataGridStickyHeader.dataGridHeaderCell.property-not-null.dataGridStickyOverflow,*/
-/*.dataGridStickyHeader.dataGridHeaderCell.property-has-change.dataGridStickyOverflow,*/
-/*.dataGridStickyHeader.fill-parent-position.dataGridStickyOverflow,*/
-/*.dataGridStickyFooter.dataGridStickyOverflow,*/
-/*.dataGridStickyFooter.fill-parent-position.dataGridStickyOverflow {*/
+/*.data-grid-sticky-cell.data-grid-sticky-overflow,*/
+/*.data-grid-sticky-cell.fill-parent-position.data-grid-sticky-overflow,*/
+/*.data-grid-sticky-header.data-grid-sticky-overflow,*/
+/*.data-grid-sticky-header.data-grid-header-cell.property-not-null.data-grid-sticky-overflow,*/
+/*.data-grid-sticky-header.data-grid-header-cell.property-has-change.data-grid-sticky-overflow,*/
+/*.data-grid-sticky-header.fill-parent-position.data-grid-sticky-overflow,*/
+/*.data-grid-sticky-footer.data-grid-sticky-overflow,*/
+/*.data-grid-sticky-footer.fill-parent-position.data-grid-sticky-overflow {*/
 /*    z-index: 0;*/
 /*}*/

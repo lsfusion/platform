@@ -536,7 +536,7 @@ public abstract class WindowsController {
 
     public void initNavigatorRootView(Widget navRootWidget) {
 //        if(MainFrame.useBootstrap)
-//            navRootWidget.addStyleName("bg-body-secondary");
+//            GwtClientUtils.addXStyleName(navRootWidget, "bg-body-secondary");
     }
 
     private class WindowNode {

@@ -2,6 +2,7 @@ package lsfusion.gwt.client.navigator.window.view;
 
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
@@ -30,7 +31,7 @@ public class FlexWindowElement extends WindowElement {
     public void addElement(WindowElement element) {
         children.add(element);
         element.parent = this;
-        element.getView().addStyleName(vertical ? "split-vert" : "split-horz");
+        GwtClientUtils.addClassName(element.getView(), vertical ? "split-vert" : "split-horz");
     }
 
     @Override

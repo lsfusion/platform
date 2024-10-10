@@ -3,6 +3,7 @@ package lsfusion.gwt.client.base.log;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.EscapeUtils;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.view.ResizableVerticalPanel;
 
@@ -25,7 +26,7 @@ public final class GLog {
 
         if (!data.isEmpty()) {
             FlexTable table = new FlexTable();
-            table.addStyleName("table");
+            GwtClientUtils.addClassName(table, "table");
             table.setCellSpacing(0);
             table.setBorderWidth(1);
             table.setWidth("100%");

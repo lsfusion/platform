@@ -1,16 +1,16 @@
 /*
     fix for displaying focus on BOOLEAN(checkbox) panel properties
-    panelRendererValueFocused sets background and border to element, but it has no effect on the checkbox element
+    panel-renderer-value-focused sets background and border to element, but it has no effect on the checkbox element
  */
-.form-check-input.panelRendererValueFocused {
+.form-check-input.panel-renderer-value-focused {
     outline-offset: 0;
     outline: var(--focus-color) auto 1px;
 }
 /*
     fix for displaying focus on BOOLEAN(checkbox) panel properties
-    panelRendererValueFocused sets background and border to element, but it has no effect on the checkbox element
+    panel-renderer-value-focused sets background and border to element, but it has no effect on the checkbox element
  */
-.form-check-input.panelRendererValueFocused {
+.form-check-input.panel-renderer-value-focused {
     outline-offset: 0;
     outline: var(--focus-color) auto 1px;
 }

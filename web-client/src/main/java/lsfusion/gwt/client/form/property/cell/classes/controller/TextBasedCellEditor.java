@@ -535,7 +535,7 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
 //                FlexPanel bottomPanel = new FlexPanel(true);
 
                 FlexPanel buttonsPanel = new FlexPanel();
-                buttonsPanel.getElement().addClassName("dropdown-menu-button-panel");
+                GwtClientUtils.addClassName(buttonsPanel.getElement(), "dropdown-menu-button-panel");
 
                 // block mouse down events to prevent focus issues
                 buttonsPanel.addDomHandler(GwtClientUtils::stopPropagation, MouseDownEvent.getType());
@@ -578,8 +578,8 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
             protected Widget createInfoPanel(Element parent) {
                 if (isFilterList()) {
                     HTML tip = new HTML(compare == CONTAINS ? messages.suggestBoxContainsTip() : messages.suggestBoxMatchTip(MainFrame.matchSearchSeparator));
-                    tip.getElement().addClassName("dropdown-menu-tip");
-                    tip.getElement().addClassName("text-secondary");
+                    GwtClientUtils.addClassName(tip.getElement(), "dropdown-menu-tip");
+                    GwtClientUtils.addClassName(tip.getElement(), "text-secondary");
                     return tip;
                 }
                 return null;

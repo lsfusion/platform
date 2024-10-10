@@ -43,7 +43,7 @@ public class GBusyDialog extends DialogModalWindow {
         super(messages.busyDialogLoading(), false, inDevMode() ? ModalWindowSize.EXTRA_LARGE : ModalWindowSize.LARGE);
 
         content = new ResizableComplexPanel();
-        content.addStyleName("dialog-busy-content");
+        GwtClientUtils.addClassName(content, "dialog-busy-content");
 
         topProgressBarDynamic = new StaticImageWidget(StaticImage.LOADING_BAR_GIF);
         topProgressBarStatic = new StaticImageWidget(StaticImage.LOADING_BAR);
@@ -63,9 +63,9 @@ public class GBusyDialog extends DialogModalWindow {
         content.add(topProgressBarStatic);
 
         message = new ResizableComplexPanel();
-        message.addStyleName("dialog-busy-message-container");
+        GwtClientUtils.addClassName(message, "dialog-busy-message-container");
         if (inDevMode())
-            message.addStyleName("dialog-busy-message-container-dev-mode");
+            GwtClientUtils.addClassName(message, "dialog-busy-message-container-dev-mode");
 
         content.add(message);
 
@@ -220,14 +220,14 @@ public class GBusyDialog extends DialogModalWindow {
                 messageText += (messageText.isEmpty() ? "" : "<br/>") + stackLine.getKey();
         }
         HTML stack = new HTML(messageText);
-        stack.addStyleName("dialog-busy-message-item");
+        GwtClientUtils.addClassName(stack, "dialog-busy-message-item");
         message.add(stack);
     }
 
     private void createProgressBarPanel(final GProgressBar line) {
 
         FlexPanel panel = new FlexPanel(true);
-        panel.addStyleName("dialog-busy-message-item");
+        GwtClientUtils.addClassName(panel, "dialog-busy-message-item");
         panel.add(new ProgressBar(0, line.total, line.progress, new ProgressBar.TextFormatter() {
             @Override
             protected String getText(ProgressBar bar, double curProgress) {

@@ -1,5 +1,5 @@
 
-.dataGridHeaderCell {
+.data-grid-header-cell {
     padding: 0 0.125rem;
     font-weight: normal;
 }
@@ -7,13 +7,13 @@
 .cell-with-background,
 /*common scheme*/
 .cell-with-background .background-inherit,
-/*hack to increase selectivity (assuming that cell-with-background is always in tableContainerBoxed)*/
-.tableContainerBoxed .cell-with-background.background-inherit,
-.tableContainerBoxed .cell-with-background .background-inherit {
+/*hack to increase selectivity (assuming that cell-with-background is always in table-container-boxed)*/
+.table-container-boxed .cell-with-background.background-inherit,
+.table-container-boxed .cell-with-background .background-inherit {
     background-color: var(--bs-table-bg);
 }
 
-.dataGridFooterCell {
+.data-grid-footer-cell {
     padding: 0 0.125rem;
     font-weight: normal;
 }

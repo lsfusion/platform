@@ -6,6 +6,7 @@ import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.FocusUtils;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.view.StaticImageWidget;
 import lsfusion.gwt.client.form.controller.FormsController;
@@ -168,7 +169,7 @@ public abstract class FormContainer {
         topPanel.setSpacing(5);
 
         StaticImageWidget image = new StaticImageWidget(StaticImage.LOADING_ASYNC);
-        image.addStyleName("loading-async-icon");
+        GwtClientUtils.addClassName(image, "loading-async-icon");
         image.addClickHandler(clickEvent -> {
             if(contextForm != null) {
                 contextForm.executeVoidAction();

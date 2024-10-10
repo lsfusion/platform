@@ -211,10 +211,10 @@ public class ResizeHandler implements Event.NativePreviewHandler {
     }
 
     private static void disableSelection() {
-        Document.get().getBody().addClassName("no-select");
+        GwtClientUtils.addClassName(Document.get().getBody(), "no-select");
     }
 
     private static void enableSelection() {
-        Document.get().getBody().removeClassName("no-select");
+        GwtClientUtils.removeClassName(Document.get().getBody(), "no-select");
     }
 }

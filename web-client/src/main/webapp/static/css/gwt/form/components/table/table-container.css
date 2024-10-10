@@ -1,17 +1,17 @@
 
-.tableContainer {
+.table-container {
     margin: var(--border-comp-vert-padding) var(--border-comp-horz-padding);
     outline-style: none; /*to remove the outline set by the user-agent in :focus-visible rule*/
     overflow: auto;
 }
 
  /*Hide scrollbar for Chrome, Safari and Opera */
-/*.tableContainer::-webkit-scrollbar {*/
+/*.table-container::-webkit-scrollbar {*/
 /*    display: none;*/
 /*}*/
 
 /* Hide scrollbar for IE, Edge and Firefox */
-/*.tableContainer {*/
+/*.table-container {*/
 /*    -ms-overflow-style: none;  !* IE and Edge *!*/
 /*    scrollbar-width: none;  !* Firefox *!*/
 /*}*/

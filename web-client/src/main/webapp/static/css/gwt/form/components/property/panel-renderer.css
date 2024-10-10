@@ -1,5 +1,5 @@
 
-.propertyContainerPanel {
+.property-container-panel {
 }
 
 :not(.panel-custom) > .panel-property-label.wrap-text-not-empty {
@@ -12,12 +12,12 @@
     margin-bottom: var(--border-label-vert-padding);
 }
 
-:not(.panel-custom) >  .panelRendererValue,
+:not(.panel-custom) >  .panel-renderer-value,
     .panel-custom {
     margin: var(--border-comp-vert-padding) var(--border-comp-horz-padding);
 }
 
-.panelRendererValueEdited {
+.panel-renderer-value-edited {
 }
 
 .input-color {

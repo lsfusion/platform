@@ -29,7 +29,7 @@
     max-width: 50%;
 }
 
-:not(.panelRendererValueFocused) > .property-toolbar-on-hover .property-toolbar-start {
+:not(.panel-renderer-value-focused) > .property-toolbar-on-hover .property-toolbar-start {
     justify-content: start;
 }
 
@@ -37,7 +37,7 @@
     max-width: 50%;
 }
 
-:not(.panelRendererValueFocused) > .property-toolbar-on-hover .property-toolbar-end {
+:not(.panel-renderer-value-focused) > .property-toolbar-on-hover .property-toolbar-end {
     justify-content: end;
 }
 

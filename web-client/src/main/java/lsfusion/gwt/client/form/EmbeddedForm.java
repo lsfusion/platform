@@ -9,7 +9,6 @@ import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
-import lsfusion.gwt.client.controller.SmartScheduler;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.PValue;
@@ -75,11 +74,11 @@ public class EmbeddedForm extends EditingForm {
 
         Element element = widget.getElement();
         GwtClientUtils.setupPercentParent(element);
-        //        if(!autoSize) {
-//            element.addClassName("comp-shrink-horz");
-//            element.addClassName("comp-shrink-vert");
-//        }
-        element.addClassName("form-embedded");
+        /*if(!autoSize) {
+            GwtClientUtils.addXClassName(element, "comp-shrink-horz");
+            GwtClientUtils.addXClassName(element, "comp-shrink-vert");
+        }*/
+        GwtClientUtils.addClassName(element, "form-embedded");
         element.setPropertyBoolean(FORM_EMBEDDED, true);
 
         renderElement.appendChild(element);

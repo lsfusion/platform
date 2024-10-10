@@ -1,9 +1,9 @@
 package lsfusion.gwt.client.base.log;
 
 import com.google.gwt.i18n.client.DateTimeFormat;
-import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.RecentlyEventClassHandler;
@@ -22,7 +22,7 @@ public class GLogPanel extends NavigatorPanel {
         super(true);
 
         logPanel = new FlexPanel(true);
-        logPanel.addStyleName("nav-log-panel");
+        GwtClientUtils.addClassName(logPanel, "nav-log-panel");
 
         panel.add(logPanel);
 
@@ -33,9 +33,9 @@ public class GLogPanel extends NavigatorPanel {
         String messageClass = failed ? "errorLogMessage" : "successLogMessage";
 
         HTML messageDate = new HTML(DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_TIME_MEDIUM).format(new Date(System.currentTimeMillis())) + " " + caption);
-        message.addStyleName(messageClass);
+        GwtClientUtils.addClassName(message, messageClass);
         logPanel.add(message,  0, GFlexAlignment.STRETCH);
-        messageDate.addStyleName(messageClass);
+        GwtClientUtils.addClassName(messageDate, messageClass);
         logPanel.add(messageDate, 0, GFlexAlignment.STRETCH);
 
         if (MainFrame.enableShowingRecentlyLogMessages) {

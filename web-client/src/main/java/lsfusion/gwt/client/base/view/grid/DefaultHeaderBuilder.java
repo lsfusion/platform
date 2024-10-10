@@ -19,9 +19,12 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.dom.client.TableSectionElement;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
 import java.util.List;
+
+import static lsfusion.gwt.client.view.MainFrame.v5;
 
 /**
  * Default implementation of {@link HeaderBuilder} that renders columns.
@@ -48,22 +51,22 @@ public class DefaultHeaderBuilder<T> extends DataGridHeaderBuilder<T> {
 
         @Override
         public void setRowStyle(TableRowElement element) {
-            element.setClassName("dataGridHeaderRow");
+            GwtClientUtils.addClassName(element, "data-grid-header-row", "dataGridHeaderRow", v5);
         }
 
         @Override
         public void setCellStyle(TableCellElement element) {
-            element.setClassName("dataGridHeaderCell");
+            GwtClientUtils.addClassName(element, "data-grid-header-cell", "dataGridHeaderCell", v5);
         }
 
         @Override
         public void addFirstCellStyle(TableCellElement element) {
-            element.addClassName("dataGridFirstHeaderCell");
+            GwtClientUtils.addClassName(element, "data-grid-first-header-cell", "dataGridFirstHeaderCell", v5);
         }
 
         @Override
         public void addLastCellStyle(TableCellElement element) {
-            element.addClassName("dataGridLastHeaderCell");
+            GwtClientUtils.addClassName(element, "data-grid-last-header-cell", "dataGridLastHeaderCell", v5);
         }
 
         @Override
@@ -91,22 +94,22 @@ public class DefaultHeaderBuilder<T> extends DataGridHeaderBuilder<T> {
 
         @Override
         public void setRowStyle(TableRowElement element) {
-            element.setClassName("dataGridFooterRow");
+            GwtClientUtils.addClassName(element, "data-grid-footer-row", "dataGridFooterRow", v5);
         }
 
         @Override
         public void setCellStyle(TableCellElement element) {
-            element.setClassName("dataGridFooterCell");
+            GwtClientUtils.addClassName(element, "data-grid-footer-cell", "dataGridFooterCell", v5);
         }
 
         @Override
         public void addFirstCellStyle(TableCellElement element) {
-            element.addClassName("dataGridFirstFooterCell");
+            GwtClientUtils.addClassName(element, "data-grid-first-footer-cell", "dataGridFirstFooterCell", v5);
         }
 
         @Override
         public void addLastCellStyle(TableCellElement element) {
-            element.addClassName("dataGridLastFooterCell");
+            GwtClientUtils.addClassName(element, "data-grid-last-footer-cell", "dataGridLastFooterCell", v5);
         }
 
         @Override

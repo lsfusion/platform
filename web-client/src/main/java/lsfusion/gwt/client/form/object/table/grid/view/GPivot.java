@@ -80,7 +80,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         super(formController, gridController, tableContainer);
         this.selectedProperty = selectedProperty;
 
-        setStyleName(getDrawElement(), "pivotTable");
+        GwtClientUtils.addClassName(getDrawElement(), "pivotTable");
 
         MainFrame.addColorThemeChangeListener(this);
 
@@ -280,7 +280,10 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         config = overrideCallbacks(config, getCallbacks());
         config = overrideRendererOptions(config, getRendererOptions(configFunction, getPropertyCaptionsMap()));
 
-        setStyleName(getDrawElement(), "pivotTable-noSettings", !settings);
+        if (!settings)
+            GwtClientUtils.addClassName(getDrawElement(), "pivotTable-noSettings");
+        else
+            GwtClientUtils.removeClassName(getDrawElement(), "pivotTable-noSettings");
 
         render(getDrawElement(), getPageSizeWidget().getElement(), data, config, GwtClientUtils.toArray(aggrCaptions), GwtClientUtils.getCurrentLanguage()); // we need to updateRendererState after it is painted
     }
@@ -1869,7 +1872,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             Element cell = cells.getItem(i);
             if(i == 0)
                 left = cell.getOffsetLeft();
-            cell.addClassName(header ? "pvtStickyHeader" : "pvtStickyCell");
+            GwtClientUtils.addClassName(cell, header ? "pvtStickyHeader" : "pvtStickyCell");
             cell.getStyle().setProperty("left", left + "px");
             left += cell.getOffsetWidth();
         }

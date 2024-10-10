@@ -4,6 +4,9 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.GwtClientUtils;
+
+import static lsfusion.gwt.client.view.MainFrame.v5;
 
 /**
  * A widget that displays progress on an arbitrary scale.
@@ -131,13 +134,13 @@ public class ProgressBar extends Widget implements ResizableWidget {
         // Create the outer shell
         setElement(Document.get().createDivElement());
         getElement().getStyle().setPosition(Style.Position.RELATIVE);
-        setStyleName("progress");
+       GwtClientUtils.addClassName(this, "progress");
 
         // Create the bar element
         barElement = Document.get().createDivElement();
         getElement().appendChild(barElement);
         barElement.getStyle().setHeight(100, Style.Unit.PCT);
-        barElement.setClassName("progress-bar");
+        GwtClientUtils.addClassName(barElement, "progress-bar");
 
         // Create the text element
         textElement = Document.get().createDivElement();
@@ -145,7 +148,7 @@ public class ProgressBar extends Widget implements ResizableWidget {
         Style textElementStyle = textElement.getStyle();
         textElementStyle.setPosition(Style.Position.ABSOLUTE);
         textElementStyle.setTop(0, Style.Unit.PX);
-        textElement.setClassName("progress-text progress-text-firstHalf");
+        GwtClientUtils.addClassNames(textElement, "progress-text", "progress-text-firstHalf");
 
         // Set the current progress
         setProgress(curProgress);
@@ -281,7 +284,10 @@ public class ProgressBar extends Widget implements ResizableWidget {
         textElement.setTitle(text);
 
         // Set the style depending on the size of the bar
-        textElement.setClassName(percent < 50 ? "progress-text progress-text-firstHalf" : "progress-text progress-text-secondHalf");
+        if(percent < 50)
+            GwtClientUtils.addClassName(textElement, "progress-text", "progress-text-firstHalf", v5);
+        else
+            GwtClientUtils.addClassName(textElement, "progress-text", "progress-text-secondHalf", v5);
 
         // Realign the text
         redraw();

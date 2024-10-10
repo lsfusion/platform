@@ -57,7 +57,7 @@ public class GFormLayout extends ResizableComplexPanel {
 
         add(attachContainer);
 
-        addStyleName("form");
+       GwtClientUtils.addClassName(this, "form");
 
         DataGrid.initSinkMouseEvents(this);
     }

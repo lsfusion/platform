@@ -149,7 +149,7 @@ public class DataPanelView extends FlexPanel implements PanelView {
         setBaseSize(widget, false, valueWidth); // STRETCH in upper call
         setBaseSize(widget, true, valueHeight);
         // it seems that there is one more margin pixel in desktop
-        return new Pair<>(valueWidth + 2 + 2, valueHeight + 2 + 2); // should correspond to margins (now border : 1px which equals to 2px) in panelRendererValue style
+        return new Pair<>(valueWidth + 2 + 2, valueHeight + 2 + 2); // should correspond to margins (now border : 1px which equals to 2px) in panel-renderer-value style
     }
 
     @Override

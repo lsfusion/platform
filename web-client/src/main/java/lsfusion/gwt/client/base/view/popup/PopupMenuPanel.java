@@ -12,7 +12,6 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 
 import java.util.ArrayList;
@@ -498,13 +497,13 @@ public class PopupMenuPanel extends ComplexPanel {
     public void selectItem(PopupMenuItem item) {
         if (item != selectedItem) {
             if (selectedItem != null) {
-                selectedItem.removeStyleName("dropdown-item-selected");
-                selectedItem.removeStyleName("active");
+                GwtClientUtils.removeClassName(selectedItem, "dropdown-item-selected");
+                GwtClientUtils.removeClassName(selectedItem, "active");
             }
 
             if (item != null) {
-                item.addStyleName("dropdown-item-selected");
-                item.addStyleName("active");
+                GwtClientUtils.addClassName(item, "dropdown-item-selected");
+                GwtClientUtils.addClassName(item, "active");
             }
 
             selectedItem = item;
@@ -608,7 +607,7 @@ public class PopupMenuPanel extends ComplexPanel {
 
     private UListElement createULElement() {
         UListElement element = Document.get().createULElement();
-        element.addClassName("dropdown-menu show lsf-dropdown");
+        GwtClientUtils.addClassNames(element, "dropdown-menu", "show", "lsf-dropdown");
         return element;
     }
 }

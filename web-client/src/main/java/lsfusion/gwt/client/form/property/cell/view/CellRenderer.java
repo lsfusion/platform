@@ -20,6 +20,7 @@ import lsfusion.gwt.client.view.GColorTheme;
 import lsfusion.gwt.client.view.MainFrame;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
+import static lsfusion.gwt.client.view.MainFrame.v5;
 
 public abstract class CellRenderer {
 
@@ -81,13 +82,13 @@ public abstract class CellRenderer {
 
 
     public static void removeAllPMB(Element parent, Element element) {
-        element.addClassName("remove-all-pmb");
+        GwtClientUtils.addClassName(element, "remove-all-pmb");
     }
     public static void setIsEditing(Element parent, Element element, boolean set) {
         if(set)
-            element.addClassName("is-editing");
+            GwtClientUtils.addClassName(element, "is-editing");
         else
-            element.removeClassName("is-editing");
+            GwtClientUtils.removeClassName(element, "is-editing");
     }
     public static boolean isEditing(Element parent, Element element) {
         return element.hasClassName("is-editing");
@@ -128,7 +129,7 @@ public abstract class CellRenderer {
         GwtClientUtils.renderValueOverflow(element, property.getValueOverflowHorz(), property.getValueOverflowVert());
         GwtClientUtils.renderValueShrinkHorz(element, property.getValueShrinkHorz(), property.getValueShrinkVert());
 
-//        SimpleTextBasedCellRenderer.getSizeElement(element).addClassName("prop-value-shrink");
+        //GwtClientUtils.addXClassName(SimpleTextBasedCellRenderer.getSizeElement(element), "prop-value-shrink");
 
         if(!renderedAlignment) {
             assert !GwtClientUtils.isTDorTH(element);
@@ -139,43 +140,43 @@ public abstract class CellRenderer {
 
     public static void renderEditSelected(Element element, GPropertyDraw property) {
         if(property.hasEditObjectAction)
-            element.addClassName("selectedCellHasEdit");
+            GwtClientUtils.addClassName(element, "selected-cell-has-edit", "selectedCellHasEdit", v5);
     }
     public static void clearEditSelected(Element element, GPropertyDraw property) {
         if(property.hasEditObjectAction)
-            element.removeClassName("selectedCellHasEdit");
+            GwtClientUtils.removeClassName(element, "selected-cell-has-edit", "selectedCellHasEdit", v5);
     }
 
     public static void renderFlexAlignment(Element element, GFlexAlignment horzTextAlignment, GFlexAlignment vertAlignment) {
-        element.addClassName("prop-display-flex");
+        GwtClientUtils.addClassName(element, "prop-display-flex");
 
         switch(horzTextAlignment) {
             case START:
-                element.addClassName("prop-flex-horz-start");
+                GwtClientUtils.addClassName(element, "prop-flex-horz-start");
                 break;
             case CENTER:
-                element.addClassName("prop-flex-horz-center");
+                GwtClientUtils.addClassName(element, "prop-flex-horz-center");
                 break;
             case STRETCH:
-                element.addClassName("prop-flex-horz-stretch");
+                GwtClientUtils.addClassName(element, "prop-flex-horz-stretch");
                 break;
             case END:
-                element.addClassName("prop-flex-horz-end");
+                GwtClientUtils.addClassName(element, "prop-flex-horz-end");
                 break;
         }
 
         switch (vertAlignment) {
             case START:
-                element.addClassName("prop-flex-vert-start");
+                GwtClientUtils.addClassName(element, "prop-flex-vert-start");
                 break;
             case CENTER:
-                element.addClassName("prop-flex-vert-center");
+                GwtClientUtils.addClassName(element, "prop-flex-vert-center");
                 break;
             case STRETCH:
-                element.addClassName("prop-flex-vert-stretch");
+                GwtClientUtils.addClassName(element, "prop-flex-vert-stretch");
                 break;
             case END:
-                element.addClassName("prop-flex-vert-end");
+                GwtClientUtils.addClassName(element, "prop-flex-vert-end");
                 break;
         }
     }
@@ -189,26 +190,26 @@ public abstract class CellRenderer {
         switch(horzAlignment) {
             case STRETCH:
             case START:
-                element.addClassName("prop-text-horz-start");
+                GwtClientUtils.addClassName(element, "prop-text-horz-start");
                 break;
             case CENTER:
-                element.addClassName("prop-text-horz-center");
+                GwtClientUtils.addClassName(element, "prop-text-horz-center");
                 break;
             case END:
-                element.addClassName("prop-text-horz-end");
+                GwtClientUtils.addClassName(element, "prop-text-horz-end");
                 break;
         }
 
         switch (vertAlignment) {
             case STRETCH:
             case START:
-                element.addClassName("prop-text-vert-start");
+                GwtClientUtils.addClassName(element, "prop-text-vert-start");
                 break;
             case CENTER:
-                element.addClassName("prop-text-vert-center");
+                GwtClientUtils.addClassName(element, "prop-text-vert-center");
                 break;
             case END:
-                element.addClassName("prop-text-vert-end");
+                GwtClientUtils.addClassName(element, "prop-text-vert-end");
                 break;
         }
     }
@@ -226,7 +227,7 @@ public abstract class CellRenderer {
                 assert false;
         }
 
-//        SimpleTextBasedCellRenderer.getSizeElement(element).removeClassName("prop-value-shrink");
+        //GwtClientUtils.removeXClassName(SimpleTextBasedCellRenderer.getSizeElement(element), "prop-value-shrink");
         /* ? getSizeElement */
         GwtClientUtils.clearValueOverflow(element, property.getValueOverflowHorz(), property.getValueOverflowVert());
         GwtClientUtils.clearValueShrinkHorz(element, property.getValueShrinkHorz(), property.getValueShrinkVert());
@@ -252,61 +253,61 @@ public abstract class CellRenderer {
     public static void clearRenderTextAlignment(Element element, GFlexAlignment horzTextAlignment, GFlexAlignment vertAlignment) {
         switch(horzTextAlignment) {
             case START:
-                element.removeClassName("prop-text-horz-start");
+                GwtClientUtils.removeClassName(element, "prop-text-horz-start");
                 break;
             case CENTER:
             case STRETCH:
-                element.removeClassName("prop-text-horz-center");
+                GwtClientUtils.removeClassName(element, "prop-text-horz-center");
                 break;
             case END:
-                element.removeClassName("prop-text-horz-end");
+                GwtClientUtils.removeClassName(element, "prop-text-horz-end");
                 break;
         }
 
         switch (vertAlignment) {
             case START:
-                element.removeClassName("prop-text-vert-start");
+                GwtClientUtils.removeClassName(element, "prop-text-vert-start");
                 break;
             case CENTER:
             case STRETCH:
-                element.removeClassName("prop-text-vert-center");
+                GwtClientUtils.removeClassName(element, "prop-text-vert-center");
                 break;
             case END:
-                element.removeClassName("prop-text-vert-end");
+                GwtClientUtils.removeClassName(element, "prop-text-vert-end");
                 break;
         }
     }
 
     public static void clearRenderFlexAlignment(Element element, GFlexAlignment horzTextAlignment, GFlexAlignment vertAlignment) {
-        element.removeClassName("prop-display-flex");
+        GwtClientUtils.removeClassName(element, "prop-display-flex");
 
         switch(horzTextAlignment) {
             case START:
-                element.removeClassName("prop-flex-horz-start");
+                GwtClientUtils.removeClassName(element, "prop-flex-horz-start");
                 break;
             case CENTER:
-                element.removeClassName("prop-flex-horz-center");
+                GwtClientUtils.removeClassName(element, "prop-flex-horz-center");
                 break;
             case STRETCH:
-                element.removeClassName("prop-flex-horz-stretch");
+                GwtClientUtils.removeClassName(element, "prop-flex-horz-stretch");
                 break;
             case END:
-                element.removeClassName("prop-flex-horz-end");
+                GwtClientUtils.removeClassName(element, "prop-flex-horz-end");
                 break;
         }
 
         switch (vertAlignment) {
             case START:
-                element.removeClassName("prop-flex-vert-start");
+                GwtClientUtils.removeClassName(element, "prop-flex-vert-start");
                 break;
             case CENTER:
-                element.removeClassName("prop-flex-vert-center");
+                GwtClientUtils.removeClassName(element, "prop-flex-vert-center");
                 break;
             case STRETCH:
-                element.removeClassName("prop-flex-vert-stretch");
+                GwtClientUtils.removeClassName(element, "prop-flex-vert-stretch");
                 break;
             case END:
-                element.removeClassName("prop-flex-vert-end");
+                GwtClientUtils.removeClassName(element, "prop-flex-vert-end");
                 break;
         }
     }
@@ -549,11 +550,11 @@ public abstract class CellRenderer {
             boolean start = !property.getHorzTextAlignment().equals(GFlexAlignment.START);
             if(toolbarElement == null) {
                 toolbarElement = Document.get().createDivElement();
-                toolbarElement.addClassName(start ? "property-toolbar-start" : "property-toolbar-end");
-                toolbarElement.addClassName("property-toolbar");
+                GwtClientUtils.addClassName(toolbarElement, start ? "property-toolbar-start" : "property-toolbar-end");
+                GwtClientUtils.addClassName(toolbarElement, "property-toolbar");
                 GToolbarView.styleToolbar(toolbarElement);
                 // we need background-inherit for hover components because of transition (toolbar gets all the width immediately which leads to some annoying blinking)
-//                toolbarElement.addClassName("background-inherit");
+//                GwtClientUtils.addXClassName(toolbarElement, "background-inherit");
                 element.appendChild(toolbarElement);
 
                 GwtClientUtils.setupEdgeStretchParent(toolbarElement, true, start);
@@ -564,10 +565,10 @@ public abstract class CellRenderer {
 
             if(loading) {
                 Element loadingImage = StaticImage.LOADING_IMAGE_PATH.createImage();
-                loadingImage.addClassName("property-toolbar-loading");
+                GwtClientUtils.addClassName(loadingImage, "property-toolbar-loading");
 
                 //We don't need the background-inherit class because when we use it, the loading spinner has a visible square background
-//                loadingImage.addClassName("background-inherit");
+//                GwtClientUtils.addXClassName(loadingImage, "background-inherit");
 
                 addToToolbar(toolbarElement, start, loadingImage);
             }
@@ -575,7 +576,7 @@ public abstract class CellRenderer {
             if (toolbarActions.length > 0) {
                 Element propertyToolbarItemGroup = null;
                 Element verticalSeparator = GwtClientUtils.createVerticalStretchSeparator().getElement();
-                verticalSeparator.addClassName("background-inherit");
+                GwtClientUtils.addClassName(verticalSeparator, "background-inherit");
                 if(allHover(toolbarActions)) {
                     propertyToolbarItemGroup = wrapPropertyToolbarItemGroup(null, toolbarElement, verticalSeparator, start);
                 } else {
@@ -586,14 +587,14 @@ public abstract class CellRenderer {
                 for (ToolbarAction toolbarAction : toolbarActions) {
                     // there is an assertion that the DOM structure will be exactly like that in setOnPressed / for optimization reasons
                     Element actionDivElement = GwtClientUtils.createFocusElement("button");
-                    actionDivElement.addClassName("btn");
+                    GwtClientUtils.addClassName(actionDivElement, "btn");
 
                     Element actionImgElement = toolbarAction.getImage().createImage();
 
                     actionDivElement.appendChild(actionImgElement);
-                    actionDivElement.addClassName("property-toolbar-item"); // setting paddings
+                    GwtClientUtils.addClassName(actionDivElement, "property-toolbar-item"); // setting paddings
                     GToolbarView.styleToolbarItem(actionDivElement);
-                    actionDivElement.addClassName("background-inherit");
+                    GwtClientUtils.addClassName(actionDivElement, "background-inherit");
 
                     toolbarAction.setOnPressed(actionImgElement, updateContext);
 
@@ -610,7 +611,7 @@ public abstract class CellRenderer {
                 }
 
                 if (hoverCount > 0) {
-                    element.addClassName("property-toolbar-on-hover");
+                    GwtClientUtils.addClassName(element, "property-toolbar-on-hover");
                 }
             }
         } else {
@@ -633,8 +634,8 @@ public abstract class CellRenderer {
     private Element wrapPropertyToolbarItemGroup(Element propertyToolbarItemGroup, Element toolbarElement, Element element, boolean start) {
         if(propertyToolbarItemGroup == null)
             propertyToolbarItemGroup = Document.get().createDivElement();
-        propertyToolbarItemGroup.addClassName(start ? "property-toolbar-item-hover-start" : "property-toolbar-item-hover-end");
-        propertyToolbarItemGroup.addClassName("property-toolbar-item-hover");
+        GwtClientUtils.addClassName(propertyToolbarItemGroup, start ? "property-toolbar-item-hover-start" : "property-toolbar-item-hover-end");
+        GwtClientUtils.addClassName(propertyToolbarItemGroup, "property-toolbar-item-hover");
 
         addToToolbar(toolbarElement, start, propertyToolbarItemGroup);
 
@@ -652,7 +653,7 @@ public abstract class CellRenderer {
 
     protected void clearRenderToolbarContent(Element element) {
         GwtClientUtils.clearFillParentElement(element);
-        element.removeClassName("property-toolbar-on-hover");
+        GwtClientUtils.removeClassName(element, "property-toolbar-on-hover");
     }
 
     public abstract boolean renderContent(Element element, RenderContext renderContext);
