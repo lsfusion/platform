@@ -37,12 +37,12 @@ public abstract class HtmlOrTextType {
 
             int wrapLines = getWrapLines();
             if(wrapLines >= 0) {
-                String htmlOrTextWrapFixedClass = MainFrame.firefox || MainFrame.safari ? "html-or-text-wrap-fixed-important" : "html-or-text-wrap-fixed";
+                String htmlOrTextWrapFixedClass = MainFrame.chrome ? "html-or-text-wrap-fixed" : "html-or-text-wrap-fixed-important";
                 if(set) {
-                    if(MainFrame.firefox || MainFrame.safari)
-                        setFixedLinesHeight(element, GFontMetrics.getStringHeight(getWrapLinesFont(), wrapLines).getString());
-                    else
+                    if(MainFrame.chrome)
                         setFixedLines(element, wrapLines);
+                    else
+                        setFixedLinesHeight(element, GFontMetrics.getStringHeight(getWrapLinesFont(), wrapLines).getString());
 
                     GwtClientUtils.addClassName(element, htmlOrTextWrapFixedClass);
                 } else {
