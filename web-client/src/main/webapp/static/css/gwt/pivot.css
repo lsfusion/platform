@@ -122,13 +122,13 @@ table.pvtTable .pvtTotalLabel {
     text-align: right
 }
 
-table.pvtTable .pvtStickyCell {
+table.pvtTable .data-grid-sticky-cell {
     position: sticky;
     z-index: 1000;
     background-color: var(--component-background-color);
 }
 
-table.pvtTable .pvtStickyHeader {
+table.pvtTable .data-grid-sticky-header {
     position: sticky;
     z-index: 1000;
     background-color: var(--background-color);

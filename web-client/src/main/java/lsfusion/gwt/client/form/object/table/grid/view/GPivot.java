@@ -1872,7 +1872,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             Element cell = cells.getItem(i);
             if(i == 0)
                 left = cell.getOffsetLeft();
-            GwtClientUtils.addClassName(cell, header ? "pvtStickyHeader" : "pvtStickyCell");
+            GwtClientUtils.addClassName(cell, header ? "data-grid-sticky-header" : "data-grid-sticky-cell");
             cell.getStyle().setProperty("left", left + "px");
             left += cell.getOffsetWidth();
         }
