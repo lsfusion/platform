@@ -1741,7 +1741,13 @@
         scrollDiv.onscroll = function() {
           var sLeft;
           sLeft = scrollDiv.scrollLeft;
-          return headerDiv.scrollLeft = sLeft;
+          headerDiv.scrollLeft = sLeft;
+          //need for right border for the sticky columns
+          if (sLeft > 0) {
+            return addClass(outerDiv, "scrolled-left");
+          } else {
+            return removeClass(outerDiv, "scrolled-left");
+          }
         };
         bodyTable = createElement("table", "bodytable pvtTable table");
         tbody = createElement("tbody");
