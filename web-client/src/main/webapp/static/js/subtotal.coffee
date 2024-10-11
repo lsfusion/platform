@@ -1119,6 +1119,13 @@ callWithJQuery ($) ->
             scrollDiv.onscroll = () ->
                 sLeft = scrollDiv.scrollLeft
                 headerDiv.scrollLeft = sLeft
+
+                #need for right border for the sticky columns
+                if(sLeft > 0)
+                    addClass outerDiv, "scrolled-left"
+                else
+                    removeClass outerDiv, "scrolled-left"
+
             bodyTable = createElement "table", "bodytable pvtTable table"
             tbody = createElement "tbody"
 
