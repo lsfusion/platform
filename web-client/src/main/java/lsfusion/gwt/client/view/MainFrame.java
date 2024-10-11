@@ -60,6 +60,7 @@ public class MainFrame implements EntryPoint {
     public static int mobileAdjustment;
 
     public static boolean firefox;
+    public static boolean safari;
 
     // settings    
     public static boolean devMode;
@@ -142,6 +143,7 @@ public class MainFrame implements EntryPoint {
         GwtClientUtils.init();
 
         firefox = GwtClientUtils.isFirefoxUserAgent();
+        safari = GwtClientUtils.isSafariUserAgent();
 
         hackForGwtDnd();
 

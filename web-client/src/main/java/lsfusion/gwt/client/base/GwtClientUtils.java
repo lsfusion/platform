@@ -453,6 +453,13 @@ public class GwtClientUtils {
         return userAgent.contains("firefox");
     }
 
+    public static boolean isSafariUserAgent() {
+        String userAgent = getUserAgent();
+        //safari, chrome, opera, edge contains "safari"
+        //chrome, opera, edge contains "chrome"
+        return userAgent.contains("safari") && !userAgent.contains("chrome");
+    }
+
     public static boolean isShowing(Widget widget) {
         if (widget == null) {
             return false;
