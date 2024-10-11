@@ -37,18 +37,17 @@ public abstract class HtmlOrTextType {
 
             int wrapLines = getWrapLines();
             if(wrapLines >= 0) {
-                String htmlOrTextWrapFixedClass = MainFrame.chrome ? "html-or-text-wrap-fixed" : "html-or-text-wrap-fixed-important";
                 if(set) {
                     if(MainFrame.chrome)
                         setFixedLines(element, wrapLines);
                     else
                         setFixedLinesHeight(element, GFontMetrics.getStringHeight(getWrapLinesFont(), wrapLines).getString());
 
-                    GwtClientUtils.addClassName(element, htmlOrTextWrapFixedClass);
+                    GwtClientUtils.addClassName(element, "html-or-text-wrap-fixed");
                 } else {
                     clearFixedLines(element);
 
-                    GwtClientUtils.removeClassName(element, htmlOrTextWrapFixedClass);
+                    GwtClientUtils.removeClassName(element, "html-or-text-wrap-fixed");
                 }
             }
 

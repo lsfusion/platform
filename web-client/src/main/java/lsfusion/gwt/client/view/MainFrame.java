@@ -144,6 +144,8 @@ public class MainFrame implements EntryPoint {
 
         firefox = GwtClientUtils.isFirefoxUserAgent();
         chrome = GwtClientUtils.isChromeUserAgent();
+        if (chrome)
+            GwtClientUtils.setGlobalClassName(true, "is-chrome");
 
         hackForGwtDnd();
 

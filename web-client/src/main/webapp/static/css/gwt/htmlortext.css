@@ -39,13 +39,13 @@
     text-overflow: ellipsis;
 }
 
-.html-or-text-wrap-fixed,
-.html-or-text-wrap-fixed.wrap-text-not-empty.wrap-img-horz {
+.is-chrome .html-or-text-wrap-fixed,
+.is-chrome .html-or-text-wrap-fixed.wrap-text-not-empty.wrap-img-horz {
     display: -webkit-box;
     -webkit-line-clamp: var(--fixed-lines);
     -webkit-box-orient: vertical;
 }
 
-.html-or-text-wrap-fixed-important {
+:not(.is-chrome) .html-or-text-wrap-fixed {
     max-height: var(--fixed-lines) !important;
 }
