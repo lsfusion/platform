@@ -187,9 +187,7 @@
 /* adding right border to the regular table when sticked */
 .table:not(.table-bordered):not(.table-borderless).scrolled-left .data-grid-sticky-header.last-sticked,
 .table:not(.table-bordered):not(.table-borderless).scrolled-left .data-grid-sticky-cell.last-sticked,
-.table:not(.table-bordered):not(.table-borderless).scrolled-left .data-grid-sticky-footer.last-sticked,
-.subtotalouterdiv.scrolled-left .data-grid-sticky-header:nth-last-child(1 of .data-grid-sticky-header),
-.subtotalouterdiv.scrolled-left .data-grid-sticky-cell:nth-last-child(1 of .data-grid-sticky-cell) {
+.table:not(.table-bordered):not(.table-borderless).scrolled-left .data-grid-sticky-footer.last-sticked {
     box-shadow: inset 0 0 0 9999px var(--bs-table-bg-state, var(--bs-table-bg-type, var(--bs-table-accent-bg))),
     inset calc(0px - var(--table-outline-width)) 0 0 var(--bs-table-border-color);
 }
