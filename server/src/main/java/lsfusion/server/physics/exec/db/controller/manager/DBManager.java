@@ -1507,17 +1507,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
         // инициализируем таблицы
         LM.tableFactory.fillDB(sql, LM.baseClass);
 
-        // потом надо сделать соответствующий механизм для Formula
-        ScriptingLogicsModule module = businessLogics.getModule("Country");
-        if(module != null) {
-            LP<?> lp = module.findProperty("isDayOff[Country,DATE]");
-
-            Properties props = new Properties();
-            props.put("dayoff.tablename", lp.property.mapTable.table.getName(sql.syntax));
-            props.put("dayoff.fieldname", lp.property.field.getName(sql.syntax));
-            adapter.ensureScript("jumpWorkdays.tsql", props);
-        }
-
         // "старое" состояние базы
         OldDBStructure oldDBStructure = getOldDBStructure(sql);
         boolean isFirstStart = oldDBStructure.isEmpty();
