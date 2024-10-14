@@ -555,12 +555,13 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
                 footer.onBrowserEvent(footerParent, event);
         } else {
             if (column != null) {
-                assert rowIndexHolder == null || getRows().contains(rowIndexHolder);
+                assert rowIndexHolder == null || getRows().contains((T) rowIndexHolder);
                 RowIndexHolder rowValue;
                 try {
                     rowValue = (RowIndexHolder) getRowValue(row);
                 } catch (IndexOutOfBoundsException e) {
-                    throw new RuntimeException("INCORRECT ROW " + row + " " + event.getType() + " " + (this instanceof GTreeTable) + " " + target + " " + (target == getTableDataFocusElement()) + " " + getGridInfo() + " " + (rowIndexHolder == null ? "null" : getRows().indexOf(rowIndexHolder)) + " " + getRows().size() + " " + RootPanel.getBodyElement().isOrHasChild(target));
+                    Object rowData = (rowIndexHolder == null ? "null" : getRows().indexOf((T) rowIndexHolder));
+                    throw new RuntimeException("INCORRECT ROW " + row + " " + event.getType() + " " + (this instanceof GTreeTable) + " " + target + " " + (target == getTableDataFocusElement()) + " " + getGridInfo() + " " + rowData + " " + getRows().size() + " " + RootPanel.getBodyElement().isOrHasChild(target));
                 }
                 onBrowserEvent(new Cell(row, getColumnIndex(column), column, rowValue), eventHandler, column, columnParent);
             }
