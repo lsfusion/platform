@@ -1122,9 +1122,11 @@ callWithJQuery ($) ->
 
                 #need for right border for the sticky columns
                 if(sLeft > 0)
-                    addClass outerDiv, "scrolled-left"
+                    addClass headerTable, "scrolled-left"
+                    addClass bodyTable, "scrolled-left"
                 else
-                    removeClass outerDiv, "scrolled-left"
+                    removeClass headerTable, "scrolled-left"
+                    removeClass bodyTable, "scrolled-left"
 
             bodyTable = createElement "table", "bodytable pvtTable table"
             tbody = createElement "tbody"
