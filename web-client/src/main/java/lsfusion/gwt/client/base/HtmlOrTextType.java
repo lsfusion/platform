@@ -38,10 +38,10 @@ public abstract class HtmlOrTextType {
             int wrapLines = getWrapLines();
             if(wrapLines >= 0) {
                 if(set) {
-                    if(MainFrame.firefox)
-                        setFixedLinesHeight(element, GFontMetrics.getStringHeight(getWrapLinesFont(), wrapLines).getString());
-                    else
+                    if(MainFrame.chrome)
                         setFixedLines(element, wrapLines);
+                    else
+                        setFixedLinesHeight(element, GFontMetrics.getStringHeight(getWrapLinesFont(), wrapLines).getString());
 
                     GwtClientUtils.addClassName(element, "html-or-text-wrap-fixed");
                 } else {
