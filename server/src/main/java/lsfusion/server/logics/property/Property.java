@@ -1473,10 +1473,9 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return readLazyClasses(session, keys, modifier, false, changesController);
     }
     public ObjectValue readLazyClasses(SQLSession session, ImMap<T, ? extends ObjectValue> keys, Modifier modifier, boolean prevChanges, ChangesController changesController) throws SQLException, SQLHandledException {
-        String annotation = this.annotation;
-        if(annotation != null && annotation.equals("lazy") && !hasChanges(modifier, prevChanges) && !session.isInTransaction())
+        if (lazy != null && !hasChanges(modifier, prevChanges) && !session.isInTransaction())
             return changesController.readLazyValue(this, keys);
-        if(this instanceof SessionDataProperty && !hasChanges(modifier, prevChanges))
+        if (this instanceof SessionDataProperty && !hasChanges(modifier, prevChanges))
             return NullValue.instance;
         return null;
     }

@@ -12,7 +12,7 @@ TABLE computer (Computer);
 
 hostname '{authentication.host.name.computer}' = DATA ISTRING[100] (Computer) CHARWIDTH 10 IN id;
 name(Computer c) += hostname(c);
-computer = GROUP LAST Computer computer ORDER computer BY hostname(computer) @@lazy;
+computer = GROUP LAST Computer computer ORDER computer BY hostname(computer) LAZY;
 
 FORM computer '{authentication.computer}'
     OBJECTS c = Computer PANEL
@@ -82,11 +82,11 @@ name(CustomUser c) += login(c);
 loginShortened(STRING login) = IF wordCount(login, ':') > 1 THEN getWord(login, ':', 2) ELSE login;
 customUserLower (login) = GROUP AGGR CustomUser customUser WHERE customUser IS CustomUser BY ISTRING[100](lower(login(customUser)));
 customUserLowerShort (login) = GROUP LAST CustomUser customUser ORDER customUser BY ISTRING[100](lower(loginShortened(login(customUser))));
-customUserNormalized (ISTRING[100] login) = OVERRIDE customUserLower(lower(login)), customUserLowerShort(lower(login)) @@lazy;
-logName (CustomUser user) = OVERRIDE name(user), login(user) @@lazy;
+customUserNormalized (ISTRING[100] login) = OVERRIDE customUserLower(lower(login)), customUserLowerShort(lower(login)) LAZY;
+logName (CustomUser user) = OVERRIDE name(user), login(user) LAZY;
 
 // password
-sha256Password '{authentication.password}' = DATA STRING[100] (CustomUser) ECHO @@lazy;
+sha256Password '{authentication.password}' = DATA STRING[100] (CustomUser) ECHO LAZY;
 calculatedHash = DATA LOCAL STRING[100] ();
 calculateBase64Hash INTERNAL  'lsfusion.server.physics.admin.authentication.action.CalculateBase64HashAction' (BPSTRING[10], BPSTRING[30]);
 changeSHA256Password(CustomUser customUser)  { 
@@ -118,7 +118,7 @@ generateAuthToken(user) {
 }
 
 // LDAP
-useLDAP '{authentication.use.ldap}' = DATA BOOLEAN () @@lazy;
+useLDAP '{authentication.use.ldap}' = DATA BOOLEAN () LAZY;
 serverLDAP '{authentication.server.ldap}' = DATA STRING[100] ();
 portLDAP '{authentication.port.ldap}' = DATA INTEGER ();
 baseDNLDAP '{authentication.base.dn.ldap}' = DATA STRING[100] ();
@@ -319,7 +319,7 @@ clearPassResetToken () + {
 }
 
 // lock
-isLocked '{authentication.is.locked.user}' = DATA BOOLEAN (CustomUser) @@lazy;
+isLocked '{authentication.is.locked.user}' = DATA BOOLEAN (CustomUser) LAZY;
 isLockedLogin (login) = isLocked(customUserNormalized(lower(login)));
 
 // Current User
@@ -340,14 +340,14 @@ userTwoDigitYearStart '{authentication.user.two.digit.year.start.user}' = DATA I
 userDateFormat '{authentication.user.date.format.user}' = DATA STRING (CustomUser);
 userTimeFormat '{authentication.user.time.format.user}' = DATA STRING (CustomUser);
 
-clientLanguage '{authentication.client.language.user}' = DATA STRING[3] (CustomUser) CHARWIDTH 5 @@lazy;
-clientCountry '{authentication.client.country.user}' = DATA STRING[3] (CustomUser) CHARWIDTH 5 @@lazy;
-clientTimeZone '{authentication.client.time.zone.user}' = DATA STRING[30] (CustomUser) @@lazy;
+clientLanguage '{authentication.client.language.user}' = DATA STRING[3] (CustomUser) CHARWIDTH 5 LAZY;
+clientCountry '{authentication.client.country.user}' = DATA STRING[3] (CustomUser) CHARWIDTH 5 LAZY;
+clientTimeZone '{authentication.client.time.zone.user}' = DATA STRING[30] (CustomUser) LAZY;
 useClientLocale '{authentication.use.client.locale.user}' = DATA BOOLEAN (CustomUser) CHARWIDTH 12;
 useClientTimeZone '{authentication.use.client.time.zone.user}' = DATA BOOLEAN (CustomUser) CHARWIDTH 12;
 
-clientDateFormat '{authentication.client.date.format.user}' = DATA STRING (CustomUser) @@lazy;
-clientTimeFormat '{authentication.client.time.format.user}' = DATA STRING (CustomUser) @@lazy;
+clientDateFormat '{authentication.client.date.format.user}' = DATA STRING (CustomUser) LAZY;
+clientTimeFormat '{authentication.client.time.format.user}' = DATA STRING (CustomUser) LAZY;
 useClientDateTimeFormat '{authentication.use.client.date.time.format.user}' = DATA BOOLEAN (CustomUser);
 
 defaultUserLanguage '{authentication.default.user.language}' = DATA STRING[3] ();
@@ -364,19 +364,19 @@ serverTwoDigitYearStart '{authentication.server.two.digit.year.start}' = DATA IN
 serverDateFormat '{authentication.server.date.format}' = DATA STRING ();
 serverTimeFormat '{authentication.server.time.format}' = DATA STRING ();
 
-language '{authentication.language.user}' (CustomUser user) = OVERRIDE (clientLanguage(user) IF useClientLocale(user)), userLanguage(user), defaultUserLanguage(), serverLanguage() @@lazy;
+language '{authentication.language.user}' (CustomUser user) = OVERRIDE (clientLanguage(user) IF useClientLocale(user)), userLanguage(user), defaultUserLanguage(), serverLanguage() LAZY;
 country '{authentication.country.user}' (CustomUser user) = IF useClientLocale(user) AND clientLanguage(user) 
                                                                 THEN clientCountry(user)
-                                                                ELSE IF userLanguage(user) THEN userCountry(user) ELSE IF defaultUserLanguage() THEN defaultUserCountry() ELSE serverCountry()  @@lazy;
+                                                                ELSE IF userLanguage(user) THEN userCountry(user) ELSE IF defaultUserLanguage() THEN defaultUserCountry() ELSE serverCountry()  LAZY;
 
-dateFormat (CustomUser user) = OVERRIDE (clientDateFormat(user) IF useClientDateTimeFormat(user)), userDateFormat(user), defaultUserDateFormat(), serverDateFormat() @@lazy;
-timeFormat (CustomUser user) = OVERRIDE (clientTimeFormat(user) IF useClientDateTimeFormat(user)), userTimeFormat(user), defaultUserTimeFormat(), serverTimeFormat() @@lazy;
+dateFormat (CustomUser user) = OVERRIDE (clientDateFormat(user) IF useClientDateTimeFormat(user)), userDateFormat(user), defaultUserDateFormat(), serverDateFormat() LAZY;
+timeFormat (CustomUser user) = OVERRIDE (clientTimeFormat(user) IF useClientDateTimeFormat(user)), userTimeFormat(user), defaultUserTimeFormat(), serverTimeFormat() LAZY;
 
 lsfParams(STRING s) += country(currentUser()) IF s = 'googleMapAutocompleteCountry';
 lsfParams(STRING s) += language(currentUser()) IF s = 'googleGeocodingLanguage';
 
-timeZone '{authentication.time.zone.user}' (CustomUser user) = OVERRIDE (clientTimeZone(user) IF useClientTimeZone(user)), userTimeZone(user), defaultUserTimezone(), serverTimezone() @@lazy;
-twoDigitYearStart '{authentication.two.digit.year.start.user}' (CustomUser user) = OVERRIDE userTwoDigitYearStart(user), defaultUserTwoDigitYearStart(), serverTwoDigitYearStart() @@lazy;
+timeZone '{authentication.time.zone.user}' (CustomUser user) = OVERRIDE (clientTimeZone(user) IF useClientTimeZone(user)), userTimeZone(user), defaultUserTimezone(), serverTimezone() LAZY;
+twoDigitYearStart '{authentication.two.digit.year.start.user}' (CustomUser user) = OVERRIDE userTwoDigitYearStart(user), defaultUserTwoDigitYearStart(), serverTwoDigitYearStart() LAZY;
 
 // "duplicate" of loadLocalePreferences, but web-client needs this data just right after authentication
 getCurrentUserLocale() {
