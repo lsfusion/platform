@@ -25,6 +25,10 @@ public class YearCellEditor extends IntegralCellEditor {
 
         if (started) {
             openYearPicker(inputElement, parent, PValue.getIntegerValue(oldValue));
+
+            if(oldValue == null) // if value is null - current date will be set, so we need to select the value, since we want to rewrite data on key input
+                inputElement.select();
+
             GwtClientUtils.addDropDownPartner(parent, getYearPickerContainer(parent));
         }
     }
@@ -49,7 +53,6 @@ public class YearCellEditor extends IntegralCellEditor {
         else { // the air datepicker differs from the "regular" datepicker - it doesn't set the value of start date to the input element, so we have to do it manually
             startDate = new Date();
             inputElement.value = startDate.getFullYear();
-            inputElement.select(); // we need to select all because we changed the value
         }
         parent.picker = new $wnd.AirDatepicker(inputElement, {
             view: 'years', // displaying the years of one decade
