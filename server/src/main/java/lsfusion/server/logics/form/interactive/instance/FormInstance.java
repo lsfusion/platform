@@ -1608,7 +1608,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
     
     // formApply "injected" in every apply
-    public boolean apply(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ImOrderSet<ActionValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties, ExecutionEnvironment sessionEventFormEnv, Result<String> applyMessage) throws SQLException, SQLHandledException {
+    public boolean apply(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ImOrderSet<ActionValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties, ExecutionEnvironment sessionEventFormEnv, Result<String> applyMessage, boolean forceSerializable) throws SQLException, SQLHandledException {
         assert sessionEventFormEnv == null || this == sessionEventFormEnv;
 
         stack = new FormStack(stack);
@@ -1618,7 +1618,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         if(BL.LM.isBeforeCanceled(this))
             return false;
 
-        if (!session.apply(BL, stack, interaction, applyActions.mergeOrder(getEventsOnApply()), keepProperties, this, applyMessage))
+        if (!session.apply(BL, stack, interaction, applyActions.mergeOrder(getEventsOnApply()), keepProperties, this, applyMessage, forceSerializable))
             return false;
 
         environmentIncrement.add(FormEntity.isAdd, PropertyChange.STATIC(false));

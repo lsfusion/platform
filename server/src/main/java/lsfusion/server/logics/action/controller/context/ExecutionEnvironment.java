@@ -72,11 +72,11 @@ public abstract class ExecutionEnvironment extends MutableClosedObject<Object> {
 
     public abstract void changeClass(PropertyObjectInterfaceInstance objectInstance, DataObject dataObject, ConcreteObjectClass cls) throws SQLException, SQLHandledException;
 
-    public abstract boolean apply(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ImOrderSet<ActionValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties, ExecutionEnvironment sessionEventFormEnv, Result<String> applyMessage) throws SQLException, SQLHandledException;
+    public abstract boolean apply(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ImOrderSet<ActionValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties, ExecutionEnvironment sessionEventFormEnv, Result<String> applyMessage, boolean forceSerializable) throws SQLException, SQLHandledException;
     
     // no message needed
     public boolean apply(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ImOrderSet<ActionValueImplement> applyActions, ExecutionEnvironment sessionEventFormEnv) throws SQLException, SQLHandledException {
-        return apply(BL, stack, interaction, applyActions, SetFact.EMPTY(), sessionEventFormEnv, null);
+        return apply(BL, stack, interaction, applyActions, SetFact.EMPTY(), sessionEventFormEnv, null, false);
     }
 
     // if canceled throw exception with message
@@ -89,7 +89,7 @@ public abstract class ExecutionEnvironment extends MutableClosedObject<Object> {
     // if canceled return message
     public String applyMessage(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ExecutionEnvironment sessionEventFormEnv) throws SQLException, SQLHandledException {
         Result<String> message = new Result<>();
-        if (!apply(BL, stack, interaction, SetFact.EMPTYORDER(), SetFact.EMPTY(), sessionEventFormEnv, message))
+        if (!apply(BL, stack, interaction, SetFact.EMPTYORDER(), SetFact.EMPTY(), sessionEventFormEnv, message, false))
             return message.result;
         return null;
     }

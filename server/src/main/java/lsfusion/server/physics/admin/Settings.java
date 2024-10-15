@@ -2905,14 +2905,14 @@ public class Settings implements Cloneable {
         this.filterMatchLanguage = filterMatchLanguage;
     }
     
-    private boolean trueSerializable = false;
+    private int trueSerializableAttempts = 0;
 
-    public boolean isTrueSerializable() {
-        return trueSerializable;
+    public int getTrueSerializableAttempts() {
+        return trueSerializableAttempts;
     }
 
-    public void setTrueSerializable(boolean trueSerializable) {
-        this.trueSerializable = trueSerializable;
+    public void setTrueSerializableAttempts(int trueSerializableAttempts) {
+        this.trueSerializableAttempts = trueSerializableAttempts;
     }
 
     public int minInterfaceStatForValueUnique = 100;

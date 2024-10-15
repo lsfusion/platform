@@ -12,8 +12,10 @@ public class SQLConflictException extends SQLHandledException {
         return updateConflict ? "UPDATE_CONFLICT" : "DEAD_LOCK";
     }
 
+    public static String UPDATECONFLICT = "cn";
+
     @Override
     public String getDescription(boolean wholeTransaction) {
-        return updateConflict ? "cn" : "dd";
+        return updateConflict ? UPDATECONFLICT : "dd";
     }
 }

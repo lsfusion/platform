@@ -15,7 +15,7 @@ public class SetRepeatableReadDisableTILModeAction extends InternalAction {
 
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
         Object value = context.getSingleKeyObject();
-        DBManager.DISABLE_SESSION_TIL = value != null;
+        context.getDbManager().serializable = value == null;
     }
 
     @Override
