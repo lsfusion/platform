@@ -142,21 +142,35 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
         }
 
         boolean allSuggestions = true;
-        if(needReplace(parent)) {
-            boolean selectAll = !GKeyStroke.isChangeAppendKeyEvent(handler.event);
+        boolean selectAll = false;
+        String value = null;
 
-            String value = checkStartEvent(handler.event, parent, this::checkInputValidity);
-            if(value != null) {
-                allSuggestions = false;
-                selectAll = false;
-            } else
-                value = (property.clearText ? "" : tryFormatInputText(oldValue));
+        boolean needReplace = needReplace(parent);
+        if(needReplace) {
+            selectAll = !GKeyStroke.isChangeAppendKeyEvent(handler.event);
 
+            value = checkStartEvent(handler.event, parent, this::checkInputValidity);
+        }
+
+        if(value != null) {
+            allSuggestions = false;
+            selectAll = false;
+        } else {
+            value = (property.clearText ? "" : tryFormatInputText(oldValue));
+
+            if (!needReplace) {
+                if (this.oldValue.equals(value))
+                    value = null; // sort of optimization (usually oldValue == value when hasOldValue in the upper stack is false, but we don't want to pull that parameter here + sometimes old value differs from new value, when renderer has different formatter than editor - for example echo symbols or number formatting)
+                else
+                    selectAll = true; // when value is changed it's better to select entire value to return the caret
+            }
+        }
+
+        if(value != null)
             setTextInputValue(value);
 
-            if (selectAll && !property.notSelectAll)
-                inputElement.select();
-        } // assert !hasOldValue
+        if (selectAll && !property.notSelectAll)
+            inputElement.select();
 
         if (hasList && !isNative()) {
             suggestBox = createSuggestBox(inputElement, parent);

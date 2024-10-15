@@ -10,19 +10,17 @@ import static lsfusion.gwt.client.base.GwtSharedUtils.multiplyString;
 
 public abstract class StringBasedCellRenderer extends TextBasedCellRenderer {
 
-    private boolean echoSymbols;
-    private boolean isVarString;
+    private final boolean isVarString;
 
     protected StringBasedCellRenderer(GPropertyDraw property, boolean isVarString) {
         super(property);
 
         this.isVarString = isVarString;
-        echoSymbols = property.echoSymbols;
     }
 
     @Override
     public String format(PValue value, RendererType rendererType, String pattern) {
-        if (echoSymbols)
+        if (property.echoSymbols)
             return multiplyString(EscapeUtils.UNICODE_BULLET, 6);
 
         String string = PValue.getStringValue(value);
