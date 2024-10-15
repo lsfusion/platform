@@ -3,6 +3,7 @@ package lsfusion.server.logics.classes.data.time;
 import lsfusion.interop.classes.DataType;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.util.Calendar;
@@ -29,5 +30,10 @@ public class YearClass extends IntegerClass {
 
     public String getSID() {
         return "YEAR";
+    }
+
+    @Override
+    public String getInputType(FormInstanceContext context) {
+        return "year";
     }
 }
