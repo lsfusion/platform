@@ -25,6 +25,7 @@ import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.change.AddObjectAction;
 import lsfusion.server.logics.action.change.ChangeClassAction;
 import lsfusion.server.logics.action.change.SetAction;
+import lsfusion.server.logics.action.change.SetAction2;
 import lsfusion.server.logics.action.flow.*;
 import lsfusion.server.logics.action.implement.ActionImplement;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
@@ -884,11 +885,21 @@ public class PropertyFact {
     public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionMapImplement<?, L> createSetAction(ImSet<L> context, PropertyMapImplement<P, L> writeToProp, PropertyInterfaceImplement<L> writeFrom) {
         return createSetAction(context, context, null, writeToProp, writeFrom);
     }
+
+    public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionMapImplement<?, L> createSetAction2(ImSet<L> context, PropertyMapImplement<P, L> writeToProp, PropertyInterfaceImplement<L> writeFrom) {
+        return createSetAction2(context, context, null, writeToProp, writeFrom);
+    }
+
     public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionMapImplement<?, L> createSetAction(ImSet<L> innerInterfaces, ImSet<L> context, PropertyMapImplement<P, L> writeToProp, PropertyInterfaceImplement<L> writeFrom) {
         return createSetAction(innerInterfaces, context, null, writeToProp, writeFrom);
     }
     public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionMapImplement<?, L> createSetAction(ImSet<L> innerInterfaces, ImSet<L> context, PropertyMapImplement<W, L> whereProp, PropertyMapImplement<P, L> writeToProp, PropertyInterfaceImplement<L> writeFrom) {
         SetAction<P, W, L> setAction = new SetAction<>(LocalizedString.NONAME, innerInterfaces, context.toOrderSet(), whereProp, writeToProp, writeFrom);
+        return setAction.getMapImplement();
+    }
+
+    public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionMapImplement<?, L> createSetAction2(ImSet<L> innerInterfaces, ImSet<L> context, PropertyMapImplement<W, L> whereProp, PropertyMapImplement<P, L> writeToProp, PropertyInterfaceImplement<L> writeFrom) {
+        SetAction2<P, W, L> setAction = new SetAction2<>(LocalizedString.NONAME, innerInterfaces, context.toOrderSet(), whereProp, writeToProp, writeFrom);
         return setAction.getMapImplement();
     }
 
@@ -1012,6 +1023,47 @@ public class PropertyFact {
         }
 
         return createSetAction(innerInterfaces, context, where, writeTo, writeFrom);
+    }
+
+    public static <W extends PropertyInterface, I extends PropertyInterface> ActionMapImplement<?, I> createSetAction2(ImSet<I> context, PropertyMapImplement<?, I> writeTo, PropertyInterfaceImplement<I> writeFrom, PropertyMapImplement<W, I> where, ImOrderMap<PropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull) {
+        ImSet<I> innerInterfaces = writeTo.mapping.valuesSet().merge(context);
+        ImSet<I> whereInterfaces = where.mapping.valuesSet();
+        assert innerInterfaces.merge(whereInterfaces).containsAll(getUsedInterfaces(writeFrom));
+
+        if(!innerInterfaces.containsAll(whereInterfaces)) { // оптимизация, если есть допинтерфейсы - надо группировать
+            if(!whereInterfaces.containsAll(getUsedInterfaces(writeFrom))) { // если не все ключи есть, придется докинуть or
+                if(writeFrom instanceof PropertyMapImplement) {
+                    whereInterfaces = whereInterfaces.merge(innerInterfaces);
+                    where = (PropertyMapImplement<W, I>) SetAction.getFullProperty(whereInterfaces, where, writeTo, writeFrom);
+                } else { // по сути оптимизация, чтобы or не тянуть
+                    whereInterfaces = whereInterfaces.merge((I) writeFrom);
+                    where  = (PropertyMapImplement<W, I>) createAnd(whereInterfaces, where, SetAction.getValueClassProperty(writeTo, writeFrom));
+                }
+            }
+
+            ImSet<I> checkContext = whereInterfaces.filter(context);
+            // тут с assertion'ом на filterIncl есть нюанс, может получиться что контекст определяется сверху и он может проталкиваться, но на момент компиляции его нет (или может вообще не проталкиваться, тогда что делать непонятно)
+            // при этом ситуацию усугубляет например если есть FOR t==x(d) NEW z=Z и d из верхнего контекста, условие x(d) скомпилируется в NEW и тип его не вытянется
+            // поэтому будем подставлять те классы которые есть, предполагая что если нет они должны придти сверху
+            if(!where.mapIsFull(checkContext)) // может быть избыточно для 2-го случая сверху, но для where в принципе надо
+                where = (PropertyMapImplement<W, I>) createAnd(whereInterfaces, where, IsClassProperty.getMapProperty(where.mapInterfaceClasses(ClassType.wherePolicy).filter(checkContext))); // filterIncl
+
+            // we can do it before the above check, but since we don't have any classes during where extending it doesn't make any sense
+            for(PropertyInterfaceImplement<I> order : orders.keyIt()) {
+                ImSet<I> usedOrderInterfaces = getUsedInterfaces(order);
+                if (!whereInterfaces.containsAll(usedOrderInterfaces)) {
+                    ImSet<I> extraInterfaces = usedOrderInterfaces.remove(whereInterfaces);
+                    whereInterfaces = whereInterfaces.addExcl(extraInterfaces);
+                    where = (PropertyMapImplement<W, I>) createAnd(whereInterfaces, where, BaseUtils.<ImSet<PropertyInterfaceImplement<I>>>immutableCast(extraInterfaces));
+                }
+            }
+
+            ImRevMap<W, I> mapPushInterfaces = where.mapping.filterValuesRev(innerInterfaces); ImRevMap<I, W> mapWhere = where.mapping.reverse();
+            writeFrom = createLastGProp(where.property, writeFrom.map(mapWhere), mapPushInterfaces.keys(), mapImplements(orders, mapWhere), ordersNotNull).map(mapPushInterfaces);
+            where = (PropertyMapImplement<W, I>) createAnyGProp(where.property, mapPushInterfaces.keys()).map(mapPushInterfaces);
+        }
+
+        return createSetAction2(innerInterfaces, context, where, writeTo, writeFrom);
     }
 
     public static <W extends PropertyInterface, I extends PropertyInterface> ActionMapImplement<?, I> createChangeClassAction(ImSet<I> context, I changeInterface, ObjectClass cls, boolean forceDialog, PropertyMapImplement<W, I> where, BaseClass baseClass, ImOrderMap<PropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull) {

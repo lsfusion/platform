@@ -1057,7 +1057,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
     // weak "lazy", like in getAsyncValues
     // strong "lazy" - with the events in the database
     // the first is good for really rarely changed props, the second has more overhead
-    private final FlushedCache<ImMap<?, ? extends ObjectValue>, ObjectValue> lazyValueCache = new FlushedCache<>(LRUUtil.G1);
+    private final FlushedCache<ImMap<?, ? extends ObjectValue>, ObjectValue> weakLazyValueCache = new FlushedCache<>(LRUUtil.G1);
+    private final StrongFlushedCache<ImMap<?, ? extends ObjectValue>, ObjectValue> strongLazyValueCache = new StrongFlushedCache<>(LRUUtil.G1);
     private final FlushedCache<Param, PropertyAsync[]> asyncValuesCache1 = new FlushedCache<>(LRUUtil.G1);
 
     public DataSession createSession(SQLSession sql, OperationOwner upOwner) throws SQLException {
@@ -1088,8 +1089,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
     private final FlushedCache<Param, PropertyAsync[]> asyncValuesCache2 = new FlushedCache<>(LRUUtil.G2);
 
-    public <T extends PropertyInterface> ObjectValue readLazyValue(Property<T> property, ImMap<T, ? extends ObjectValue> keys) throws SQLException, SQLHandledException {
-        return lazyValueCache.proceed(property, keys,
+    public <T extends PropertyInterface> ObjectValue readLazyValue(Property<T> property, ImMap<T, ? extends ObjectValue> keys, boolean strong) throws SQLException, SQLHandledException {
+        if (strong)
+            return strongLazyValueCache.proceed(property, keys,
+                    () -> property.readClasses(getThreadLocalSql(), keys, LM.baseClass, Property.defaultModifier, DataSession.emptyEnv(OperationOwner.unknown)));
+        else
+            return weakLazyValueCache.proceed(property, keys,
                 () -> property.readClasses(getThreadLocalSql(), keys, LM.baseClass, Property.defaultModifier, DataSession.emptyEnv(OperationOwner.unknown)));
     }
 
@@ -1117,11 +1122,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
         asyncValuesCache1.flush(flushedChanges);
         asyncValuesCache2.flush(flushedChanges);
-        lazyValueCache.flushLazy(prop -> prop.isLazyWeak() && InputValueList.depends(prop, flushedChanges));
+        weakLazyValueCache.flush(flushedChanges);
     }
 
-    public void flushStrong(Property<?> property) {
-        lazyValueCache.flushLazy(prop -> prop.isLazyStrong() && property.equals(prop));
+    public void flushStrong(Property<?> property, ImMap<PropertyInterface, ? extends ObjectValue> keys) {
+        strongLazyValueCache.flush(property, keys);
     }
 
     private static class ParamRef<K> {
@@ -1144,6 +1149,15 @@ public class DBManager extends LogicsManager implements InitializingBean {
         public ValueRef(ParamRef<K> ref, V values) {
             this.ref = ref;
             this.values = values;
+        }
+    }
+
+    private static class StrongValueRef<V> {
+        public V values;
+        public boolean obsolete;
+        public boolean finished;
+
+        public StrongValueRef() {
         }
     }
 
@@ -1201,14 +1215,31 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 }
             });
         }
+    }
 
-        public void flushLazy(Function<ActionOrProperty, Boolean> check) {
-            propCache.proceedSafeLockLRUEKeyValues((property, refs) -> {
-                if (property != null && check.apply(property)) {
-                    for (ParamRef ref : refs)
-                        ref.drop();
-                }
-            });
+    private static class StrongFlushedCache<K, V> {
+        private final LRUWWEVSMap<ActionOrProperty<?>, K, StrongValueRef<V>> valueCache;
+
+        public StrongFlushedCache(LRUUtil.Strategy expireStrategy) {
+            valueCache = new LRUWWEVSMap<>(expireStrategy);
+        }
+
+        public V proceed(ActionOrProperty property, K param, SQLCallable<V> function) throws SQLException, SQLHandledException {
+            StrongValueRef<V> valueRef = valueCache.get(property, param);
+            if(valueRef != null && !valueRef.obsolete && valueRef.finished)
+                return valueRef.values;
+
+            valueRef = new StrongValueRef<>();
+            valueCache.put(property, param, valueRef);
+
+            valueRef.values = function.call();
+            valueRef.finished = true;
+
+            return valueRef.values;
+        }
+
+        public void flush(ActionOrProperty property, K keys) {
+            valueCache.get(property, keys).obsolete = true;
         }
     }
 

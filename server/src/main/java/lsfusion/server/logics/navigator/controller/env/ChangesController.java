@@ -24,8 +24,8 @@ public abstract class ChangesController {
         regLocalChange(changes, session); // local changes (for form synchronization in one connection)
     }
 
-    public <T extends PropertyInterface> ObjectValue readLazyValue(Property<T> property, ImMap<T, ? extends ObjectValue> keys) throws SQLException, SQLHandledException {
-        return getDbManager().readLazyValue(property, keys);
+    public <T extends PropertyInterface> ObjectValue readLazyValue(Property<T> property, ImMap<T, ? extends ObjectValue> keys, boolean strong) throws SQLException, SQLHandledException {
+        return getDbManager().readLazyValue(property, keys, strong);
     }
 
     protected void regLocalChange(ImSet<Property> changes, DataSession session) {}

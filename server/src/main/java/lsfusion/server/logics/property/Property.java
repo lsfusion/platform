@@ -1474,7 +1474,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
     public ObjectValue readLazyClasses(SQLSession session, ImMap<T, ? extends ObjectValue> keys, Modifier modifier, boolean prevChanges, ChangesController changesController) throws SQLException, SQLHandledException {
         if (lazy != null && !hasChanges(modifier, prevChanges) && !session.isInTransaction())
-            return changesController.readLazyValue(this, keys);
+            return changesController.readLazyValue(this, keys, isLazyStrong());
         if (this instanceof SessionDataProperty && !hasChanges(modifier, prevChanges))
             return NullValue.instance;
         return null;
@@ -1699,6 +1699,18 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             return null;
         } else
             return PropertyFact.createSetAction(interfaces, getImplement(), PropertyFact.createNull());
+    }
+
+    public ActionMapImplement<?, T> getSetNotNullAction2(boolean notNull) {
+        if(notNull) {
+            ObjectValue defaultValue = getDefaultDataObject();
+            if(defaultValue != null) {
+                StaticClass objectClass = (StaticClass) ((DataObject) defaultValue).objectClass;
+                return PropertyFact.createSetAction2(interfaces, getImplement(), PropertyFact.createStatic(PropertyFact.getValueForProp(defaultValue.getValue(), objectClass), objectClass));
+            }
+            return null;
+        } else
+            return PropertyFact.createSetAction2(interfaces, getImplement(), PropertyFact.createNull());
     }
 
     protected boolean assertPropClasses(CalcType calcType, PropertyChanges changes, WhereBuilder changedWhere) {
