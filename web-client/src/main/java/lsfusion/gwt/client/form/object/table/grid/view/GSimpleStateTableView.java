@@ -545,13 +545,15 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         changeProperties(properties, objects, gDateDTOs);
     }
 
-    protected void setDateIntervalViewFilter(String property, int pageSize, int startYear, int startMonth, int startDay, int endYear, int endMonth, int endDay, boolean isDateTimeFilter) {
+    protected void setDateIntervalViewFilter(String startProperty, String endProperty, int pageSize, int startYear, int startMonth, int startDay, int endYear, int endMonth, int endDay, boolean isDateTimeFilter) {
         PValue leftBorder = isDateTimeFilter ? PValue.getPValue(new GDateTimeDTO(startYear, startMonth, startDay, 0, 0, 0)) : PValue.getPValue(new GDateDTO(startYear, startMonth, startDay)) ;
         PValue rightBorder = isDateTimeFilter ? PValue.getPValue(new GDateTimeDTO(endYear, endMonth, endDay, 0, 0, 0)) : PValue.getPValue(new GDateDTO(endYear, endMonth, endDay));
 
-        Column column = getColumn(property);
-        setViewFilters(pageSize, new GPropertyFilter(new GFilter(column.property), grid.groupObject, column.columnKey, leftBorder, GCompare.GREATER_EQUALS),
-                new GPropertyFilter(new GFilter(column.property), grid.groupObject, column.columnKey, rightBorder, GCompare.LESS_EQUALS));
+        Column startColumn = getColumn(startProperty);
+        Column endColumn = endProperty != null ? getColumn(endProperty) : startColumn;
+
+        setViewFilters(pageSize, new GPropertyFilter(new GFilter(endColumn.property), grid.groupObject, endColumn.columnKey, leftBorder, GCompare.GREATER_EQUALS),
+                new GPropertyFilter(new GFilter(startColumn.property), grid.groupObject, startColumn.columnKey, rightBorder, GCompare.LESS_EQUALS));
     }
 
     protected void setBooleanViewFilter(String property, int pageSize) {
@@ -850,8 +852,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                     elementClicked = null;
                 return thisObj.@GSimpleStateTableView::changeSimpleGroupObject(*)(object, rendered, elementClicked);
             },
-            setDateIntervalViewFilter: function (property, pageSize, startYear, startMonth, startDay, endYear, endMonth, endDay, isDateTimeFilter) {
-                thisObj.@GSimpleStateTableView::setDateIntervalViewFilter(*)(property, pageSize, startYear, startMonth, startDay, endYear, endMonth, endDay, isDateTimeFilter);
+            setDateIntervalViewFilter: function (startProperty, endProperty, pageSize, startYear, startMonth, startDay, endYear, endMonth, endDay, isDateTimeFilter) {
+                thisObj.@GSimpleStateTableView::setDateIntervalViewFilter(*)(startProperty, endProperty, pageSize, startYear, startMonth, startDay, endYear, endMonth, endDay, isDateTimeFilter);
             },
             setBooleanViewFilter: function (property, pageSize) {
                 thisObj.@GSimpleStateTableView::setBooleanViewFilter(*)(property, pageSize);
