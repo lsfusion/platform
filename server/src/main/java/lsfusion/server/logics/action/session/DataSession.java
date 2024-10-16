@@ -121,12 +121,12 @@ import lsfusion.server.physics.admin.monitor.StatusMessage;
 import lsfusion.server.physics.dev.debug.ActionDebugger;
 import lsfusion.server.physics.dev.debug.ClassDebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import lsfusion.server.physics.exec.db.table.IDTable;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
 
 import javax.swing.*;
 import java.lang.ref.WeakReference;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
@@ -267,12 +267,12 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private Transaction applyTransaction; // restore point
     private boolean isInTransaction;
 
-    private void startTransaction(BusinessLogics BL, Map<String, Integer> attemptCountMap, boolean deadLockPriority, long applyStartTime) throws SQLException, SQLHandledException {
+    private void startTransaction(BusinessLogics BL, int isolationLevel, Map<String, Integer> attemptCountMap, boolean deadLockPriority, long applyStartTime) throws SQLException, SQLHandledException {
         ServerLoggers.assertLog(!isInSessionEvent(), "CANNOT START TRANSACTION IN SESSION EVENT");
         isInTransaction = true;
         if(applyFilter == ApplyFilter.ONLY_DATA)
             onlyDataModifier = new OverrideSessionModifier("onlydata", new IncrementChangeProps(BL.getDataChangeEvents()), applyModifier);
-        sql.startTransaction(DBManager.getCurrentTIL(), getOwner(), attemptCountMap, deadLockPriority, applyStartTime);
+        sql.startTransaction(isolationLevel, getOwner(), attemptCountMap, deadLockPriority, applyStartTime);
     }
     
     private void cleanOnlyDataModifier() throws SQLException {
@@ -1827,7 +1827,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     @AssertSynchronized
-    public boolean apply(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ImOrderSet<ActionValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProps, ExecutionEnvironment sessionEventFormEnv, Result<String> applyMessage) throws SQLException, SQLHandledException {
+    public boolean apply(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ImOrderSet<ActionValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProps, ExecutionEnvironment sessionEventFormEnv, Result<String> applyMessage, boolean forceSerializable) throws SQLException, SQLHandledException {
         if(!hasChanges() && applyActions.isEmpty())
             return true;
 
@@ -1875,7 +1875,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         if(applyMessage != null)
             ThreadLocalContext.pushLogMessage();
         try {
-            return transactApply(BL, stack, interaction, new HashMap<>(), 0, applyActions, keepProps, false, System.currentTimeMillis());
+            return transactApply(BL, stack, forceSerializable || BL.getDbManager().serializable, interaction, new HashMap<>(), 0, applyActions, keepProps, false, Settings.get().getTrueSerializableAttempts() > 0, System.currentTimeMillis());
         } finally {
             if(applyMessage != null)
                 applyMessage.set(getLogMessage(ThreadLocalContext.popLogMessage(), false));
@@ -1968,15 +1968,15 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     long transactionStartTimestamp;
             
-    private boolean transactApply(BusinessLogics BL, ExecutionStack stack,
+    private boolean transactApply(BusinessLogics BL, ExecutionStack stack, boolean serializable,
                                   UserInteraction interaction,
                                   Map<String, Integer> attemptCountMap, int autoAttemptCount,
-                                  ImOrderSet<ActionValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProps, boolean deadLockPriority, long applyStartTime) throws SQLException, SQLHandledException {
+                                  ImOrderSet<ActionValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProps, boolean deadLockPriority, boolean trueSerializable, long applyStartTime) throws SQLException, SQLHandledException {
 //        assert !isInTransaction();
         long startTimeStamp = getTimestamp(); 
         transactionStartTimestamp = startTimeStamp;
 
-        startTransaction(BL, attemptCountMap, deadLockPriority, applyStartTime);
+        startTransaction(BL, serializable ? (trueSerializable ? Connection.TRANSACTION_SERIALIZABLE : Connection.TRANSACTION_READ_COMMITTED) : -1, attemptCountMap, deadLockPriority, applyStartTime);
         this.keepUpProps = keepProps;
         mChangedProps = SetFact.mSet();
         mRemovedClasses = SetFact.mSet();        
@@ -2037,6 +2037,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                                 ThreadUtils.sleep(sleep);
                                 ServerLoggers.sqlConflictLogger.info("Sleep ended after " + conflictName + " : " + attempts);
                             }
+                            if(updateConflict && trueSerializable && attempts >= Settings.get().getTrueSerializableAttempts())
+                                trueSerializable = false;
                         } else { // dead locks
                             if(attempts >= settings.getDeadLockThreshold()) {
                                 deadLockPriority = true;
@@ -2051,7 +2053,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     
                 try {
                     SQLSession.incAttemptCount(attemptCountMap, ((SQLHandledException) t).getDescription(true));
-                    return transactApply(BL, stack, interaction, attemptCountMap, autoAttemptCount, applyActions, keepProps, deadLockPriority, applyStartTime);
+                    return transactApply(BL, stack, serializable, interaction, attemptCountMap, autoAttemptCount, applyActions, keepProps, deadLockPriority, trueSerializable, applyStartTime);
                 } finally {
                     if(noTimeout)
                         sql.popNoTransactTimeout();
