@@ -75,19 +75,10 @@ public class ApplyAction extends KeepContextAction {
 
     @Override
     public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
-        
-        try {
-            if (serializable)
-                DBManager.pushTIL(DBManager.getTIL());
-
-            Result<String> rApplyMessage = new Result<>();
-            boolean applied = context.apply(action == null ? SetFact.EMPTYORDER() : SetFact.singletonOrder(action.getValueImplement(context.getKeys(), context.getObjectInstances(), context.getFormAspectInstance())), keepSessionProperties, rApplyMessage);
-            canceled.change(context, !applied ? true : null);
-            applyMessage.change(context, rApplyMessage.result);
-        } finally {
-            if (serializable)
-                DBManager.popTIL();
-        }
+        Result<String> rApplyMessage = new Result<>();
+        boolean applied = context.apply(action == null ? SetFact.EMPTYORDER() : SetFact.singletonOrder(action.getValueImplement(context.getKeys(), context.getObjectInstances(), context.getFormAspectInstance())), serializable, keepSessionProperties, rApplyMessage);
+        canceled.change(context, !applied ? true : null);
+        applyMessage.change(context, rApplyMessage.result);
         return FlowResult.FINISH;
     }
 
