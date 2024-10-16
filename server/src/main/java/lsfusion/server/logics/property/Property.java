@@ -1701,18 +1701,6 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             return PropertyFact.createSetAction(interfaces, getImplement(), PropertyFact.createNull());
     }
 
-    public ActionMapImplement<?, T> getSetNotNullAction2(boolean notNull) {
-        if(notNull) {
-            ObjectValue defaultValue = getDefaultDataObject();
-            if(defaultValue != null) {
-                StaticClass objectClass = (StaticClass) ((DataObject) defaultValue).objectClass;
-                return PropertyFact.createSetAction2(interfaces, getImplement(), PropertyFact.createStatic(PropertyFact.getValueForProp(defaultValue.getValue(), objectClass), objectClass));
-            }
-            return null;
-        } else
-            return PropertyFact.createSetAction2(interfaces, getImplement(), PropertyFact.createNull());
-    }
-
     protected boolean assertPropClasses(CalcType calcType, PropertyChanges changes, WhereBuilder changedWhere) {
         return calcType.isExpr() || (changes.isEmpty() && changedWhere==null);
     }

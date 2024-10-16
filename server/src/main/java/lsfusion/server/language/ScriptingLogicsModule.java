@@ -1439,56 +1439,18 @@ public class ScriptingLogicsModule extends LogicsModule {
         property.getActionOrProperty().setLazy(lazy);
 
         if (property instanceof LP && property.getActionOrProperty().isLazyStrong()) {
-
-
-
-
-//            LPWithParams whenProp = new LPWithParams(addCHProp((LP<?>) property, IncrementType.CHANGED, PrevScope.EVENT), property.listInterfaces.size());
-//
-//            ImOrderSet<PropertyInterface> orderExclSet = SetFact.toOrderExclSet(1, i -> new PropertyInterface());
-//            SystemAction setAction = new SystemAction(LocalizedString.NONAME, orderExclSet) {
-//                @Override
-//                protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) {
-//                    context.getDbManager().flushStrong(((LP<?>) property).property, context.getKeys());
-//                    return FlowResult.FINISH;
-//                }
-//            };
-//
-//            ActionMapImplement actionMapImplement = new ActionMapImplement(setAction, orderExclSet.getSet().toRevMap());
-//
-//
-//
-//            ImSet innerInterfaces = property.listInterfaces.getSet().mergeCol(orderExclSet.getSet()).toSet();//setAction.interfaces;
-//            ActionMapImplement action = actionMapImplement;//setAction.getImplement();
-//            PropertyMapImplement where = whenProp.getLP().property.getImplement();//condition.map(setAction.mapping.reverse());
-//            PropertyMapImplement resolveWhere = null;//constraint.map(setAction.mapping.reverse());
-//            ImOrderMap orders = MapFact.EMPTYORDER();
-//            Event eventX = Event.APPLY;//option.event != null ? option.event : event.onlyScope();
-//            addWhenAction(innerInterfaces, action, where, resolveWhere, orders, false,
-//                    eventX, SetFact.EMPTY(), false, null, null);
-
-
-            PropertyMapImplement mapClasses = IsClassProperty.getMapProperty(((LP) property).property.getInterfaceClasses(ClassType.logPolicy));
-            PropertyMapImplement implement = new PropertyMapImplement<>(((LP<?>) property).property, mapClasses.mapping.reverse());
-
-            PropertyMapImplement constraint = null;//PropertyFact.createAndNot(((LP<?>) property).property, implement);
-
-            ImOrderMap<PropertyInterfaceImplement<PropertyInterface>, Boolean> orders = MapFact.EMPTYORDER();
-
-            ActionMapImplement setAction = ((LP) property).property.getSetNotNullAction2(false);
-            if (setAction != null) {
-                //PropertyMapImplement condition = PropertyFact.createAndNot(((LP) property).property, implement).mapChanged(IncrementType.SET, PrevScope.EVENT);
-
-                PropertyMapImplement condition = ((LP) property).property.getImplement().mapChanged(IncrementType.CHANGED, PrevScope.EVENT);
-
-                addWhenAction(setAction.action.interfaces, setAction.action.getImplement(), condition.map(setAction.mapping.reverse()), null/*constraint.map(setAction.mapping.reverse())*/, orders, false,
-                        Event.APPLY, SetFact.EMPTY(), false, null, null);
-            }
-
-
-
-            //addScriptedWhen(whenProp,
-            //        new LAWithParams(new LA<>(action1), new ArrayList<>()), new ArrayList<>(), false, Event.APPLY, new ArrayList<>(), false, null, null);
+            Property prop = ((LP) property).property;
+            SystemAction flushAction = new SystemAction(LocalizedString.NONAME, prop.getFriendlyOrderInterfaces()) {
+                @Override
+                protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) {
+                    context.getDbManager().flushStrong(prop, context.getKeys());
+                    return FlowResult.FINISH;
+                }
+            };
+            addWhenAction(flushAction.interfaces, flushAction.getImplement(),
+                    prop.getImplement().mapChanged(IncrementType.CHANGED, PrevScope.EVENT),
+                    null, MapFact.EMPTYORDER(), false,
+                    Event.APPLY, SetFact.EMPTY(), false, null, null);
         }
     }
 
