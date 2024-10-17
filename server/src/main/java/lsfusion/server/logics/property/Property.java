@@ -431,7 +431,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             SystemAction flushAction = new SystemAction(LocalizedString.NONAME, (ImOrderSet<PropertyInterface>) getFriendlyOrderInterfaces()) {
                 @Override
                 protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) {
-                    context.getDbManager().flushStrong(Property.this, context.getKeys());
+                    context.getSession().addFlushedStrongCache(Property.this, context.getKeys());
                     return FlowResult.FINISH;
                 }
             };

@@ -1120,8 +1120,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
         weakLazyValueCache.flush(flushedChanges);
     }
 
-    public void flushStrong(Property<?> property, ImMap<PropertyInterface, ? extends ObjectValue> keys) {
-        strongLazyValueCache.flush(property, keys);
+    public void flushStrong(ImSet<Pair<Property, ImMap<PropertyInterface, ? extends ObjectValue>>> strongCaches) {
+        for (int i = 0, size = strongCaches.size(); i < size; i++) {
+            Pair<Property, ImMap<PropertyInterface, ? extends ObjectValue>> entry = strongCaches.get(i);
+            strongLazyValueCache.flush(entry.first, entry.second);
+        }
     }
 
     private static class ParamRef<K> {
