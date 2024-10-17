@@ -54,7 +54,7 @@ public class FormImportData implements ImportData {
         ImSet<FilterEntity> groupFilters = groupFixedFilters.get(group);
         if(groupFilters != null) {
             for(FilterEntity<?> filter : groupFilters) {
-                PropertyObjectEntity<?> importProperty = filter.getImportProperty();
+                PropertyObjectEntity<?> importProperty = filter.getProperty();
                 addProperty(filter, importProperty, upKeyValues, ((DataClass)importProperty.property.getType()).getDefaultValue(), isExclusive);
             }
         }

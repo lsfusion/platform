@@ -19,8 +19,11 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
 import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
+import lsfusion.server.logics.form.struct.filter.FilterEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
+import lsfusion.server.logics.form.struct.order.OrderEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyReaderEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
@@ -141,6 +144,11 @@ public abstract class FormAction<O extends ObjectSelector> extends SystemExplici
                 for (PropertyReaderEntity reader : this instanceof ExportAction ? SetFact.singleton(propertyDraw) : propertyDraw.getQueryProps())
                     mProps.add((Property) reader.getReaderProperty().property, false); // assert propertyDraw.isProperty
             }
+            for (FilterEntity<?> filterEntity : getForm().getFixedFilters())
+                mProps.add(filterEntity.getProperty().property, false);
+            for (OrderEntity<?> orderEntity : getForm().getFixedOrdersList().keyIt())
+                if(orderEntity instanceof PropertyObjectEntity)
+                    mProps.add(((PropertyObjectEntity<?>) orderEntity).property, false);
         }
         return mProps.immutable();
     }
