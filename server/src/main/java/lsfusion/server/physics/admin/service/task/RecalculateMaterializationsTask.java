@@ -24,7 +24,7 @@ public class RecalculateMaterializationsTask extends GroupGraphTask<AggregatePro
     protected void runInnerTask(final AggregateProperty element, ExecutionStack stack) throws SQLException, SQLHandledException {
         try (final DataSession session = createSession()) {
             serviceLogger.info(String.format("Recalculate materialization started: %s", element.getSID()));
-            DBManager.run(session.sql, true, sql -> element.recalculateMaterialization(getBL(), session, sql, getBL().LM.baseClass));
+            element.recalculateMaterialization(getBL(), session, session.sql, true, getBL().LM.baseClass);
             session.applyException(getBL(), stack);
         }
     }

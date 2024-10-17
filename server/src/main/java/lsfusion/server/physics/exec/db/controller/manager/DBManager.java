@@ -651,35 +651,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }, sql, LM.baseClass));
     }
 
-    public String recalculateClasses(SQLSession session, boolean isolatedTransactions) throws SQLException, SQLHandledException {
-        recalculateExclusiveness(session, isolatedTransactions);
-
-        final List<String> messageList = new ArrayList<>();
-        final long maxRecalculateTime = Settings.get().getMaxRecalculateTime();
-        for (final ImplementTable implementTable : LM.tableFactory.getImplementTables()) {
-            run(session, isolatedTransactions, sql -> {
-                long start = System.currentTimeMillis();
-                DataSession.recalculateTableClasses(implementTable, sql, LM.baseClass);
-                long time = System.currentTimeMillis() - start;
-                String message = String.format("Recalculate Table Classes: %s, %sms", implementTable.toString(), time);
-                BaseUtils.serviceLogger.info(message);
-                if (time > maxRecalculateTime)
-                    messageList.add(message);
-            });
-        }
-
-        try(DataSession dataSession = createRecalculateSession(session)) {
-            for (final Property property : businessLogics.getStoredDataProperties(dataSession))
-                run(session, isolatedTransactions, sql -> {
-                    long start = System.currentTimeMillis();
-                    property.recalculateClasses(sql, LM.baseClass);
-                    long time = System.currentTimeMillis() - start;
-                    String message = String.format("Recalculate Class: %s, %sms", property.getSID(), time);
-                    BaseUtils.serviceLogger.info(message);
-                    if (time > maxRecalculateTime) messageList.add(message);
-                });
-            return businessLogics.formatMessageList(messageList);
-        }
+    public static void run(SQLSession session, boolean runInTransaction, RunService run) throws SQLException, SQLHandledException {
+        run(session, runInTransaction, false, run);
     }
 
     public String getDataBaseName() {
@@ -1918,7 +1891,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             indexList.addAll(additionalIndexes);
         }
     }
-    
+
     public static void moveObjects(DBTable table, SQLSession sql, OldDBStructure oldDBStructure, ImMap<String, ImSet<Long>> copyFrom, DBStoredProperty classProp, BaseClass baseClass) throws Exception {
 //        ImplementTable.ignoreStatProps(() -> {
             QueryBuilder<KeyField, PropertyField> copyObjects = new QueryBuilder<>(table);
@@ -2180,13 +2153,13 @@ public class DBManager extends LogicsManager implements InitializingBean {
         void run(SQLSession sql) throws SQLException, SQLHandledException;
     }
 
-    public static void run(SQLSession session, boolean runInTransaction, RunService run) throws SQLException, SQLHandledException {
-        run(session, runInTransaction, run, 0);
+    public static void run(SQLSession session, boolean runInTransaction, boolean forceSerializable, RunService run) throws SQLException, SQLHandledException {
+        run(session, runInTransaction, forceSerializable, run, 0);
     }
 
-    private static void run(SQLSession session, boolean runInTransaction, RunService run, int attempts) throws SQLException, SQLHandledException {
+    private static void run(SQLSession session, boolean runInTransaction, boolean forceSerializable, RunService run, int attempts) throws SQLException, SQLHandledException {
         if(runInTransaction) {
-            session.startTransaction(RECALC_TIL, OperationOwner.unknown);
+            session.startTransaction(forceSerializable || Settings.get().isServiceOperationsSerializable() ? Connection.TRANSACTION_REPEATABLE_READ : -1, OperationOwner.unknown);
             try {
                 run.run(session);
                 session.commitTransaction();
@@ -2194,15 +2167,44 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 session.rollbackTransaction();
                 if(t instanceof SQLHandledException && ((SQLHandledException)t).repeatApply(session, OperationOwner.unknown, attempts)) { // update conflict или deadlock или timeout - пробуем еще раз
                     //serviceLogger.error("Run error: ", t);
-                    run(session, true, run, attempts + 1);
+                    run(session, true, forceSerializable, run, attempts + 1);
                     return;
                 }
 
                 throw ExceptionUtils.propagate(t, SQLException.class, SQLHandledException.class);
             }
-
         } else
             run.run(session);
+    }
+
+    public String recalculateClasses(SQLSession session, boolean isolatedTransactions) throws SQLException, SQLHandledException {
+        recalculateExclusiveness(session, isolatedTransactions);
+
+        final List<String> messageList = new ArrayList<>();
+        final long maxRecalculateTime = Settings.get().getMaxRecalculateTime();
+        for (final ImplementTable implementTable : LM.tableFactory.getImplementTables()) {
+            run(session, isolatedTransactions, sql -> {
+                long start = System.currentTimeMillis();
+                DataSession.recalculateTableClasses(implementTable, sql, LM.baseClass);
+                long time = System.currentTimeMillis() - start;
+                String message = String.format("Recalculate Table Classes: %s, %sms", implementTable.toString(), time);
+                BaseUtils.serviceLogger.info(message);
+                if (time > maxRecalculateTime)
+                    messageList.add(message);
+            });
+        }
+
+        try(DataSession dataSession = createRecalculateSession(session)) {
+            for (final Property property : businessLogics.getStoredDataProperties(dataSession)) {
+                long start = System.currentTimeMillis();
+                property.recalculateClasses(session, isolatedTransactions, LM.baseClass);
+                long time = System.currentTimeMillis() - start;
+                String message = String.format("Recalculate Class: %s, %sms", property.getSID(), time);
+                BaseUtils.serviceLogger.info(message);
+                if (time > maxRecalculateTime) messageList.add(message);
+            }
+            return businessLogics.formatMessageList(messageList);
+        }
     }
 
     public List<AggregateProperty> getDependentProperties(DataSession dataSession, Property<?> property, Set<Property> calculated, boolean dependencies) throws SQLException, SQLHandledException {
@@ -2247,17 +2249,15 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     @StackProgress
     private void recalculateMaterialization(final DataSession dataSession, SQLSession session, boolean isolatedTransaction, @StackProgress final ProgressBar progressBar, final List<String> messageList, final long maxRecalculateTime, @ParamMessage final AggregateProperty property, final Logger logger) throws SQLException, SQLHandledException {
-        run(session, isolatedTransaction, sql -> {
-            long start = System.currentTimeMillis();
-            logger.info(String.format("Recalculating materialization %s of %s started: %s", progressBar.progress, progressBar.total, property.getSID()));
-            property.recalculateMaterialization(businessLogics, dataSession, sql, LM.baseClass);
+        long start = System.currentTimeMillis();
+        logger.info(String.format("Recalculating materialization %s of %s started: %s", progressBar.progress, progressBar.total, property.getSID()));
+        property.recalculateMaterialization(businessLogics, dataSession, session, isolatedTransaction, LM.baseClass);
 
-            long time = System.currentTimeMillis() - start;
-            String message = String.format("Recalculating materialization: %s, %sms", property.getSID(), time);
-            logger.info(message);
-            if (time > maxRecalculateTime)
-                messageList.add(message);
-        });
+        long time = System.currentTimeMillis() - start;
+        String message = String.format("Recalculating materialization: %s, %sms", property.getSID(), time);
+        logger.info(message);
+        if (time > maxRecalculateTime)
+            messageList.add(message);
     }
 
     public void recalculateTableClasses(SQLSession session, String tableName, boolean isolatedTransaction) throws SQLException, SQLHandledException {
@@ -2291,7 +2291,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     public <P extends PropertyInterface> void runMaterializationRecalculation(final DataSession dataSession, SQLSession session, final AggregateProperty<P> aggregateProperty, PropertyChange<P> where, boolean isolatedTransaction, boolean recalculateClasses) throws SQLException, SQLHandledException {
-        run(session, isolatedTransaction, sql -> aggregateProperty.recalculateMaterialization(businessLogics, dataSession, sql, LM.baseClass, where, recalculateClasses));
+        aggregateProperty.recalculateMaterialization(businessLogics, dataSession, session, LM.baseClass, where, recalculateClasses, isolatedTransaction);
     }
 
     public void recalculateMaterializationWithDependenciesTableColumn(SQLSession session, ExecutionStack stack, String propertyCanonicalName, boolean isolatedTransaction, boolean dependencies) throws SQLException, SQLHandledException {
@@ -2364,9 +2364,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     parser.self = migrationManager;
 
                     parser.script();
-                    
+
                     checkMigrationScriptParsingErrors(lexer, parser);
-                    
+
                     migrationScriptWasRead = true;
                 }
             } catch (Exception e) {
@@ -2374,14 +2374,14 @@ public class DBManager extends LogicsManager implements InitializingBean {
             }
         }
     }
-    
+
     private void checkMigrationScriptParsingErrors(MigrationScriptLexer lexer, MigrationScriptParser parser) {
         if (!lexer.getErrors().isEmpty() || !parser.getErrors().isEmpty()) {
             String errorsText = Stream.concat(lexer.getErrors().stream(), parser.getErrors().stream()).collect(Collectors.joining("\n"));
             throw new RuntimeException("Migration script parsing completed with the following errors:\n" + errorsText);
         }
     }
-    
+
     private void renameColumn(SQLSession sql, OldDBStructure oldData, DBStoredProperty oldProperty, String newName) throws SQLException {
         String oldName = oldProperty.getDBName();
         if (!oldName.equals(newName)) {
@@ -2445,7 +2445,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         if (oldData.version < 38) {
             return getTableSIDChanges(tableCNChanges);
         }
-        
+
         Map<String, String> tableRenames = new HashMap<>();
         Map<String, DBTable> newTablesMap = createNewTablesMap(newData);
         for (DBTable table : oldData.tables.keySet()) {
@@ -2463,13 +2463,13 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
         return tableRenames;
     }
-    
+
     private Map<String, DBTable> createNewTablesMap(NewDBStructure newData) {
         return newData.tables.keySet().stream()
                 .filter(table -> table.getCanonicalName() != null)
                 .collect(Collectors.toMap(DBTable::getCanonicalName, table -> table));
     }
-    
+
     private Map<String, String> getTableSIDChanges(Map<String, String> tableCNChanges) {
         return tableCNChanges.entrySet().stream()
                     .collect(Collectors.toMap(
@@ -2477,7 +2477,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                         entry -> getNamingPolicy().transformTableCNToDBName(entry.getValue()))
                     );
     }
-    
+
     private void renameMigratingClasses(OldDBStructure oldData) {
         Map<String, String> classChanges = migrationManager.getClassSIDChangesAfter(oldData.migrationVersion);
         for (DBConcreteClass oldClass : oldData.concreteClasses) {
@@ -2844,18 +2844,18 @@ public class DBManager extends LogicsManager implements InitializingBean {
     public static class IndexData<F> {
         public List<F> fields;
         public IndexOptions options;
-        
+
         public IndexData(List<F> fields, IndexOptions options) {
             this.fields = fields;
             this.options = options;
         }
-        
+
         @Override
         public String toString() {
             return String.format("%s (%s)", fields, options.type);
         }
     }
-    
+
     // Each index declaration can create more than one physical index. Returns a separate record for each such index
     public <P extends PropertyInterface<?>> Map<ImplementTable, List<IndexData<Field>>> getIndexesMap() {
         Map<ImplementTable, List<IndexData<Field>>> res = new HashMap<>();
@@ -2905,7 +2905,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 }
                 tableIndexFields.add(field);
             }
-    
+
             IndexOptions options = index.getValue();
             res.get(baseIndexTable).addAll(getAllCreatedIndexes(tableIndexFields, options));
         }
@@ -2916,7 +2916,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private List<IndexData<Field>> getAllCreatedIndexes(List<Field> fields, IndexOptions options) {
         List<IndexData<Field>> res = new ArrayList<>();
         res.add(new IndexData<>(fields, options));
-        
+
         if (options.type == IndexType.MATCH) {
             if (fields.size() == 1 && fields.get(0).type instanceof TSVectorClass) {
                 return res;
@@ -2928,12 +2928,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
         return res;
     }
-    
+
     private IndexOptions changeIndexOptions(IndexOptions oldOptions, IndexType newType) {
         String newDBName = (oldOptions.dbName == null ? null : oldOptions.dbName + newType.suffix());
         return new IndexOptions(oldOptions.order, newType, oldOptions.language, newDBName);
     }
-    
+
     private class NewDBStructure extends DBStructure<Field> {
         
         public NewDBStructure(MigrationVersion migrationVersion, SQLSession sql) {
@@ -2942,10 +2942,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
             checkTableDBNameUniqueness();
             tables.putAll(getIndexesMap());
-            
+
             checkIndexNameUniqueness(sql);
             checkTablesAndIndexesNameUniqueness(sql);
-            
+
             for (Property<?> property : businessLogics.getStoredProperties()) {
                 storedProperties.add(new DBStoredProperty(property));
                 assert property.isNamed();
@@ -2955,17 +2955,17 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 concreteClasses.add(new DBConcreteClass(customClass));
             }
         }
-        
+
         public class DuplicateRelationNameException extends RuntimeException {
             DuplicateRelationNameException(String message) {
                 super(message);
             }
         }
-        
+
         private void checkTableDBNameUniqueness() {
             final String possibleReasonStr = "This may be caused by the length limitation on database table names, " +
                     "where two different table names are truncated to the same name.";
-            
+
             Map<String, ImplementTable> tables = new HashMap<>();
             for (ImplementTable table : LM.tableFactory.getImplementTables()) {
                 if (tables.containsKey(table.getName())) {
@@ -2988,7 +2988,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 tables.put(table.getName(), table);
             }
         }
-        
+
         private void checkIndexNameUniqueness(SQLSession sql) {
             Map<String, Pair<DBTable, IndexData<Field>>> indexNames = new HashMap<>();
             for (Map.Entry<DBTable, List<IndexData<Field>>> tableInfo : tables.entrySet()) {
@@ -3009,13 +3009,13 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 }
             }
         }
-        
+
         private void checkTablesAndIndexesNameUniqueness(SQLSession sql) {
             Map<String, DBTable> tableNames = new HashMap<>();
             for (DBTable table : tables.keySet()) {
                 tableNames.put(table.getName(), table);
             }
-            
+
             for (Map.Entry<DBTable, List<IndexData<Field>>> tableInfo : tables.entrySet()) {
                 DBTable indexTable = tableInfo.getKey();
                 for (IndexData<Field> index : tableInfo.getValue()) {
@@ -3030,7 +3030,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 }
             }
         }
-        
+
         public void write(DataOutputStream outDB) throws IOException {
             outDB.write('v' + version);  //для поддержки обратной совместимости
             outDB.writeUTF(migrationVersion.toString());

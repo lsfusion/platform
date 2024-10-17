@@ -47,14 +47,10 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask<Object> { 
         } else if (element instanceof ImplementTable) {
             DBManager.run(sql, true, sql13 -> DataSession.recalculateTableClasses((ImplementTable) element, sql13, getBL().LM.baseClass));
 
-            run(sql, sql12 -> sql12.packTable((ImplementTable) element, OperationOwner.unknown, TableOwner.global));
+            DBManager.run(sql, true, sql12 -> sql12.packTable((ImplementTable) element, OperationOwner.unknown, TableOwner.global));
         } else if (element instanceof Property) {
-            DBManager.run(sql, true, sql1 -> ((Property) element).recalculateClasses(sql1, getBL().LM.baseClass));
+            ((Property) element).recalculateClasses(sql, true, getBL().LM.baseClass);
         }
-    }
-
-    public static void run(SQLSession session, DBManager.RunService run) throws SQLException, SQLHandledException {
-        DBManager.run(session, true, run);
     }
 
     @Override
