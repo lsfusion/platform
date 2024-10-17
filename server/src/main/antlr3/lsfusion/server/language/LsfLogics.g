@@ -85,7 +85,7 @@ grammar LsfLogics;
     import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
     import lsfusion.server.logics.navigator.NavigatorElement;
     import lsfusion.server.logics.property.cases.CaseUnionProperty;
-    import lsfusion.server.logics.property.oraction.ActionOrProperty.Lazy;
+    import lsfusion.server.logics.property.Property.Lazy;
     import lsfusion.server.logics.property.set.Cycle;
 	import lsfusion.server.base.version.ComplexLocation;
     import lsfusion.server.physics.admin.reflection.ReflectionPropertyType;
@@ -3185,7 +3185,7 @@ eventIdSetting [LAP property]
 	:	'EVENTID' id=stringLiteral
 	;
 
-lazySetting [LAP property]
+lazySetting [LP property]
 @init {
 	Lazy lazy = Lazy.WEAK;
 	DebugInfo.DebugPoint debugPoint = getEventDebugPoint();

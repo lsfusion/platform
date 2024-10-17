@@ -1241,7 +1241,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
 
         public void flush(ActionOrProperty property, K keys) {
-            valueCache.get(property, keys).obsolete = true;
+            StrongValueRef<V> strongValueRef = valueCache.get(property, keys);
+            if (strongValueRef != null) {
+                strongValueRef.obsolete = true;
+            }
         }
     }
 

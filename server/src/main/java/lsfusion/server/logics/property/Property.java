@@ -424,14 +424,21 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
     }
 
-    @Override
+    public enum Lazy {WEAK, STRONG}
+
+    protected Lazy lazy;
+
+    public boolean isLazyStrong() {
+        return lazy == Lazy.STRONG;
+    }
+
     public void setLazy(Lazy lazy, DebugInfo.DebugPoint debugPoint) {
-        super.setLazy(lazy, debugPoint);
+        this.lazy = lazy;
         if (isLazyStrong()) {
             SystemAction flushAction = new SystemAction(LocalizedString.NONAME, (ImOrderSet<PropertyInterface>) getFriendlyOrderInterfaces()) {
                 @Override
                 protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) {
-                    context.getSession().addFlushedStrongCache(Property.this, context.getKeys());
+                    context.getSession().addChangePropKeys(Property.this, context.getKeys());
                     return FlowResult.FINISH;
                 }
             };

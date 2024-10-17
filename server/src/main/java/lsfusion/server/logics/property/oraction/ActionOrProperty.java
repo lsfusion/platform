@@ -88,17 +88,6 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         this.image = AppServerImage.createPropertyImage(imagePath, AppServerImage.getAutoName(() -> caption, this::getName));
     }
 
-    public enum Lazy {WEAK, STRONG}
-    protected Lazy lazy;
-
-    public void setLazy(Lazy lazy, DebugInfo.DebugPoint debugPoint) {
-        this.lazy = lazy;
-    }
-
-    public boolean isLazyStrong() {
-        return lazy == Lazy.STRONG;
-    }
-
     private String customRenderFunction;
 
     public String getCustomRenderFunction() {

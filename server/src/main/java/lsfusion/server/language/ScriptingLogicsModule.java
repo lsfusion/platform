@@ -1435,8 +1435,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         property.getActionOrProperty().setImage(path);
     }
 
-    public void setLazy(LAP property, ActionOrProperty.Lazy lazy, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
-        property.getActionOrProperty().setLazy(lazy, debugPoint);
+    public void setLazy(LP property, Property.Lazy lazy, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
+        property.property.setLazy(lazy, debugPoint);
     }
 
     public void setDefaultCompare(LAP property, String defaultCompare) {
