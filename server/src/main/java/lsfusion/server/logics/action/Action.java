@@ -181,11 +181,15 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         if(compile!=null)
             return compile.action.getUsedExtProps();
 
-        return aspectUsedExtProps();
+        return calculateUsedExtProps();
     }
 
-    @IdentityStartLazy // только компиляция, построение лексикографики и несколько мелких использований
+    @IdentityStartLazy
     protected ImMap<Property, Boolean> aspectUsedExtProps() {
+        return calculateUsedExtProps();
+    }
+
+    protected ImMap<Property, Boolean> calculateUsedExtProps() {
         MMap<Property, Boolean> result = MapFact.mMap(addValue);
         for(Action<?> dependAction : getDependActions())
             result.addAll(dependAction.getUsedExtProps());

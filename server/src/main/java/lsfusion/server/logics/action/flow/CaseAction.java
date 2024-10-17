@@ -142,13 +142,13 @@ public class CaseAction extends ListCaseAction {
     }
 
     @Override
-    public ImMap<Property, Boolean> aspectUsedExtProps() {
+    public ImMap<Property, Boolean> calculateUsedExtProps() {
         ImList<ActionCase<PropertyInterface>> cases = getCases();
         MSet<Property> mWhereProps = SetFact.mSetMax(cases.size());
         for(ActionCase<PropertyInterface> aCase : cases)
             if(aCase.where instanceof PropertyMapImplement)
                 mWhereProps.add(((PropertyMapImplement) aCase.where).property);
-        return mWhereProps.immutable().toMap(false).merge(super.aspectUsedExtProps(), addValue);
+        return mWhereProps.immutable().toMap(false).merge(super.calculateUsedExtProps(), addValue);
     }
 
     @IdentityLazy

@@ -88,7 +88,7 @@ public class ChangeClassAction<T extends PropertyInterface, I extends PropertyIn
      }
 
     @Override
-    public ImMap<Property, Boolean> aspectUsedExtProps() {
+    public ImMap<Property, Boolean> calculateUsedExtProps() {
         if(where==null)
             return MapFact.EMPTY();
         return getUsedProps(where);

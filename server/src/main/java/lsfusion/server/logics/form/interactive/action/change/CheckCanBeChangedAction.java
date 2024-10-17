@@ -40,7 +40,7 @@ public class CheckCanBeChangedAction extends KeepContextAction {
     }
 
     @Override
-    public ImMap<Property, Boolean> aspectUsedExtProps() {
+    public ImMap<Property, Boolean> calculateUsedExtProps() {
         return MapFact.singleton(changeProp.property, false);
     }
 
