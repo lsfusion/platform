@@ -79,7 +79,7 @@ public class SetAction<P extends PropertyInterface, W extends PropertyInterface,
     }
 
     @Override
-    public ImMap<Property, Boolean> aspectUsedExtProps() {
+    public ImMap<Property, Boolean> calculateUsedExtProps() {
         if(where!=null)
             return getUsedProps(writeFrom, where);
         return getUsedProps(writeFrom);

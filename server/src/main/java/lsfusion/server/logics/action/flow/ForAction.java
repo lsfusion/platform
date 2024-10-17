@@ -104,13 +104,13 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
     }
 
     @Override
-    public ImMap<Property, Boolean> aspectUsedExtProps() {
+    public ImMap<Property, Boolean> calculateUsedExtProps() {
        MSet<Property> mUsed = SetFact.mSet();
        if(ifProp!=null)
            ifProp.mapFillDepends(mUsed);
        for(PropertyInterfaceImplement<I> order : orders.keyIt())
            order.mapFillDepends(mUsed);
-       return mUsed.immutable().toMap(false).merge(super.aspectUsedExtProps(), addValue);
+       return mUsed.immutable().toMap(false).merge(super.calculateUsedExtProps(), addValue);
     }
     
     private static class RowUpdateIterate<I extends PropertyInterface> implements Iterable<ImMap<I, DataObject>>, Iterator<ImMap<I, DataObject>>, UpdateCurrentClasses {

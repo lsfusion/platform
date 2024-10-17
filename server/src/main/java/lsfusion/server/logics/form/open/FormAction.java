@@ -134,7 +134,7 @@ public abstract class FormAction<O extends ObjectSelector> extends SystemExplici
     }
 
     @Override
-    protected ImMap<Property, Boolean> aspectUsedExtProps() {
+    protected ImMap<Property, Boolean> calculateUsedExtProps() {
 
         MMap<Property, Boolean> mProps = MapFact.mMap(addValue);
 //       getForm().getPropertyDrawsList() // we can't use actions, since there might be recursions + some hasFlow rely on that + for clean solution we need to use getEventAction instead of action itself

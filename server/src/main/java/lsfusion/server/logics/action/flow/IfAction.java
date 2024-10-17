@@ -56,10 +56,10 @@ public class IfAction extends KeepContextAction {
     }
 
     @Override
-    public ImMap<Property, Boolean> aspectUsedExtProps() {
+    public ImMap<Property, Boolean> calculateUsedExtProps() {
         MSet<Property> used = SetFact.mSet();
         ifProp.mapFillDepends(used);
-        return used.immutable().toMap(false).merge(super.aspectUsedExtProps(), addValue);
+        return used.immutable().toMap(false).merge(super.calculateUsedExtProps(), addValue);
     }
 
     @Override

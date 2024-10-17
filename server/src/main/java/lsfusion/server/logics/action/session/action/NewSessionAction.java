@@ -77,8 +77,8 @@ public class NewSessionAction extends AroundAspectAction {
     }
 
     @Override
-    public ImMap<Property, Boolean> aspectUsedExtProps() {
-        return super.aspectUsedExtProps().replaceValues(true);
+    public ImMap<Property, Boolean> calculateUsedExtProps() {
+        return super.calculateUsedExtProps().replaceValues(true);
     }
 
     @Override

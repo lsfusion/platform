@@ -81,13 +81,13 @@ public class JoinAction<T extends PropertyInterface> extends KeepContextAction {
     }
 
     @Override
-    public ImMap<Property, Boolean> aspectUsedExtProps() {
+    public ImMap<Property, Boolean> calculateUsedExtProps() {
         MSet<Property> used = SetFact.mSet();
         for(PropertyInterfaceImplement<PropertyInterface> value : action.mapping.valueIt())
             value.mapFillDepends(used);
         ImMap<Property, Boolean> result = used.immutable().toMap(false);
         if(!isRecursive)
-            result = result.merge(super.aspectUsedExtProps(), addValue);
+            result = result.merge(super.calculateUsedExtProps(), addValue);
         return result;
     }
 
