@@ -44,7 +44,7 @@ public class FilterEntity<P extends PropertyInterface> implements Instantiable<F
         return new NotNullFilterInstance<>(instanceFactory.getInstance(property), resolveAdd);
     }
 
-    public PropertyObjectEntity<P> getImportProperty() {
+    public PropertyObjectEntity<P> getProperty() {
         return property;
     }
 
