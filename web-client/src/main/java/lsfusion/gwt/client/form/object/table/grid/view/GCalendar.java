@@ -459,7 +459,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
         if (allDay) {
             var endDate = new Date(end);
             endDate.setDate(endDate.getDate() + 1);
-            end = endDate.toISOString().split('T')[0];
+            end = endDate.toISOString().split('T')[0]; //adding time to Date causes that it will be impossible to change event on calendar-view even if "allDay" option is "true"
         }
         return end;
     }-*/;
