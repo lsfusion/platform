@@ -2187,18 +2187,19 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return getComplexity(false);
     }
 
-    public void recalculateClasses(SQLSession sql, BaseClass baseClass) throws SQLException, SQLHandledException {
-        recalculateClasses(sql, null, baseClass);
+    public void recalculateClasses(SQLSession sql, boolean runInTransaction, BaseClass baseClass) throws SQLException, SQLHandledException {
+        recalculateClasses(sql, runInTransaction, DataSession.emptyEnv(OperationOwner.unknown), baseClass);
     }
 
     @StackMessage("{logics.recalculating.data.classes}")
-    public void recalculateClasses(SQLSession sql, QueryEnvironment env, BaseClass baseClass) throws SQLException, SQLHandledException {
+    public void recalculateClasses(SQLSession sql, boolean runInTransaction, QueryEnvironment env, BaseClass baseClass) throws SQLException, SQLHandledException {
         assert isStored();
         
         ImRevMap<KeyField, KeyExpr> mapKeys = mapTable.table.getMapKeys();
         Where where = DataSession.getIncorrectWhere(this, baseClass, mapTable.mapKeys.join(mapKeys));
         Query<KeyField, PropertyField> query = new Query<>(mapKeys, Expr.NULL(), field, where);
-        sql.updateRecords(env == null ? new ModifyQuery(mapTable.table, query, OperationOwner.unknown, TableOwner.global) : new ModifyQuery(mapTable.table, query, env, TableOwner.global));
+        ModifyQuery modifyQuery = new ModifyQuery(mapTable.table, query, env, TableOwner.global);
+        DBManager.run(sql, runInTransaction, sql1 -> sql1.updateRecords(modifyQuery));
     }
 
     public void setDebugInfo(PropertyDebugInfo debugInfo) {
