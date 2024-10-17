@@ -115,7 +115,7 @@
                 "static/css/gMap.css",
 
                 //calendar
-                "static/js/external/fullcalendar.index.global.min.js", //https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js
+                "static/js/external/fullcalendar.index.global.min.js", //https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js
                 "static/css/gCalendar.css",
                 "static/js/external/fullcalendar-locales-all.js", //https://cdn.jsdelivr.net/npm/fullcalendar@5.7.2/locales-all.js
                 "static/js/fullcalendar-locale-be.js",
