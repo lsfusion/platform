@@ -91,12 +91,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     public enum Lazy {WEAK, STRONG}
     protected Lazy lazy;
 
-    public void setLazy(Lazy lazy) {
+    public void setLazy(Lazy lazy, DebugInfo.DebugPoint debugPoint) {
         this.lazy = lazy;
-    }
-
-    public boolean isLazyWeak() {
-        return lazy == Lazy.WEAK;
     }
 
     public boolean isLazyStrong() {

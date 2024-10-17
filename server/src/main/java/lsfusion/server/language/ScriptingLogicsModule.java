@@ -1435,23 +1435,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         property.getActionOrProperty().setImage(path);
     }
 
-    public void setLazy(LAP property, ActionOrProperty.Lazy lazy) throws ScriptingErrorLog.SemanticErrorException {
-        property.getActionOrProperty().setLazy(lazy);
-
-        if (property instanceof LP && property.getActionOrProperty().isLazyStrong()) {
-            Property prop = ((LP) property).property;
-            SystemAction flushAction = new SystemAction(LocalizedString.NONAME, prop.getFriendlyOrderInterfaces()) {
-                @Override
-                protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) {
-                    context.getDbManager().flushStrong(prop, context.getKeys());
-                    return FlowResult.FINISH;
-                }
-            };
-            addWhenAction(flushAction.interfaces, flushAction.getImplement(),
-                    prop.getImplement().mapChanged(IncrementType.CHANGED, PrevScope.EVENT),
-                    null, MapFact.EMPTYORDER(), false,
-                    Event.APPLY, SetFact.EMPTY(), false, null, null);
-        }
+    public void setLazy(LAP property, ActionOrProperty.Lazy lazy, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
+        property.getActionOrProperty().setLazy(lazy, debugPoint);
     }
 
     public void setDefaultCompare(LAP property, String defaultCompare) {

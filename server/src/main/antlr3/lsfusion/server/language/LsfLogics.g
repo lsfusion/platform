@@ -3188,10 +3188,11 @@ eventIdSetting [LAP property]
 lazySetting [LAP property]
 @init {
 	Lazy lazy = Lazy.WEAK;
+	DebugInfo.DebugPoint debugPoint = getEventDebugPoint();
 }
 @after {
 	if (inMainParseState()) {
-		self.setLazy(property, lazy);
+		self.setLazy(property, lazy, debugPoint);
 	}
 }
 	:   'LAZY' ('WEAK' {lazy = Lazy.WEAK; } | 'STRONG' { lazy = Lazy.STRONG; })?

@@ -123,7 +123,6 @@ import java.sql.SQLException;
 import java.sql.Savepoint;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -1057,9 +1056,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
     // weak "lazy", like in getAsyncValues
     // strong "lazy" - with the events in the database
     // the first is good for really rarely changed props, the second has more overhead
-    private final FlushedCache<ImMap<?, ? extends ObjectValue>, ObjectValue> weakLazyValueCache = new FlushedCache<>(LRUUtil.G1);
+    private final WeakFlushedCache<ImMap<?, ? extends ObjectValue>, ObjectValue> weakLazyValueCache = new WeakFlushedCache<>(LRUUtil.G1);
     private final StrongFlushedCache<ImMap<?, ? extends ObjectValue>, ObjectValue> strongLazyValueCache = new StrongFlushedCache<>(LRUUtil.G1);
-    private final FlushedCache<Param, PropertyAsync[]> asyncValuesCache1 = new FlushedCache<>(LRUUtil.G1);
+    private final WeakFlushedCache<Param, PropertyAsync[]> asyncValuesCache1 = new WeakFlushedCache<>(LRUUtil.G1);
 
     public DataSession createSession(SQLSession sql, OperationOwner upOwner) throws SQLException {
         return createSession(sql,
@@ -1087,14 +1086,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 () -> 0, changesController, Locale::getDefault, getIsServerRestartingController(), upOwner
         );
     }
-    private final FlushedCache<Param, PropertyAsync[]> asyncValuesCache2 = new FlushedCache<>(LRUUtil.G2);
+    private final WeakFlushedCache<Param, PropertyAsync[]> asyncValuesCache2 = new WeakFlushedCache<>(LRUUtil.G2);
 
-    public <T extends PropertyInterface> ObjectValue readLazyValue(Property<T> property, ImMap<T, ? extends ObjectValue> keys, boolean strong) throws SQLException, SQLHandledException {
-        if (strong)
-            return strongLazyValueCache.proceed(property, keys,
-                    () -> property.readClasses(getThreadLocalSql(), keys, LM.baseClass, Property.defaultModifier, DataSession.emptyEnv(OperationOwner.unknown)));
-        else
-            return weakLazyValueCache.proceed(property, keys,
+    public <T extends PropertyInterface> ObjectValue readLazyValue(Property<T> property, ImMap<T, ? extends ObjectValue> keys) throws SQLException, SQLHandledException {
+        return (property.isLazyStrong() ? strongLazyValueCache : weakLazyValueCache).proceed(property, keys,
                 () -> property.readClasses(getThreadLocalSql(), keys, LM.baseClass, Property.defaultModifier, DataSession.emptyEnv(OperationOwner.unknown)));
     }
 
@@ -1176,13 +1171,17 @@ public class DBManager extends LogicsManager implements InitializingBean {
         } , value, neededCount, asyncMode);
     }
 
+    private interface FlushedCache<K,V> {
+        V proceed(ActionOrProperty property, K param, SQLCallable<V> function) throws SQLException, SQLHandledException;
+    }
+
     // need this to clean outdated caches
     // could be done easier with timestamps (value and last changed), but this way cache will be cleaned faster
-    private static class FlushedCache<K, V> {
+    private static class WeakFlushedCache<K, V> implements FlushedCache<K, V> {
         private final LRUWVSMap<ActionOrProperty<?>, ConcurrentIdentityWeakHashSet<ParamRef<K>>> propCache;
         private final LRUWWEVSMap<ActionOrProperty<?>, K, ValueRef<K, V>> valueCache;
 
-        public FlushedCache(LRUUtil.Strategy expireStrategy) {
+        public WeakFlushedCache(LRUUtil.Strategy expireStrategy) {
             propCache = new LRUWVSMap<>(expireStrategy);
             valueCache = new LRUWWEVSMap<>(expireStrategy);
         }
@@ -1217,7 +1216,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    private static class StrongFlushedCache<K, V> {
+    private static class StrongFlushedCache<K, V> implements FlushedCache<K, V> {
         private final LRUWWEVSMap<ActionOrProperty<?>, K, StrongValueRef<V>> valueCache;
 
         public StrongFlushedCache(LRUUtil.Strategy expireStrategy) {

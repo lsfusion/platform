@@ -63,9 +63,11 @@ import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.Action;
+import lsfusion.server.logics.action.SystemAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
+import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.change.*;
@@ -118,6 +120,7 @@ import lsfusion.server.logics.property.value.ValueProperty;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.physics.admin.drilldown.form.DrillDownFormEntity;
+import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.debug.PropertyDebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
@@ -419,6 +422,24 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             }
         });
 
+    }
+
+    @Override
+    public void setLazy(Lazy lazy, DebugInfo.DebugPoint debugPoint) {
+        super.setLazy(lazy, debugPoint);
+        if (isLazyStrong()) {
+            SystemAction flushAction = new SystemAction(LocalizedString.NONAME, (ImOrderSet<PropertyInterface>) getFriendlyOrderInterfaces()) {
+                @Override
+                protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) {
+                    context.getDbManager().flushStrong(Property.this, context.getKeys());
+                    return FlowResult.FINISH;
+                }
+            };
+            PropertyMapImplement where = getImplement().mapChanged(IncrementType.CHANGED, PrevScope.EVENT);
+            getBaseLM().addWhenAction(flushAction.interfaces, flushAction.getImplement(),
+                    where, null, MapFact.EMPTYORDER(), false,
+                    Event.APPLY, SetFact.EMPTY(), false, debugPoint, null);
+        }
     }
 
     public void change(ExecutionContext context, Boolean value) throws SQLException, SQLHandledException {
@@ -1474,7 +1495,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
     public ObjectValue readLazyClasses(SQLSession session, ImMap<T, ? extends ObjectValue> keys, Modifier modifier, boolean prevChanges, ChangesController changesController) throws SQLException, SQLHandledException {
         if (lazy != null && !hasChanges(modifier, prevChanges) && !session.isInTransaction())
-            return changesController.readLazyValue(this, keys, isLazyStrong());
+            return changesController.readLazyValue(this, keys);
         if (this instanceof SessionDataProperty && !hasChanges(modifier, prevChanges))
             return NullValue.instance;
         return null;
