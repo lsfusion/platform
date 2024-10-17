@@ -1978,7 +1978,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         long startTimeStamp = getTimestamp(); 
         transactionStartTimestamp = startTimeStamp;
 
-        startTransaction(BL, serializable ? (trueSerializable ? Connection.TRANSACTION_SERIALIZABLE : Connection.TRANSACTION_READ_COMMITTED) : -1, attemptCountMap, deadLockPriority, applyStartTime);
+        startTransaction(BL, serializable ? (trueSerializable ? Connection.TRANSACTION_SERIALIZABLE : Connection.TRANSACTION_REPEATABLE_READ) : -1, attemptCountMap, deadLockPriority, applyStartTime);
         this.keepUpProps = keepProps;
         mChangedProps = SetFact.mSet();
         mRemovedClasses = SetFact.mSet();        
