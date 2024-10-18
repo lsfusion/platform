@@ -1,5 +1,7 @@
 package lsfusion.gwt.client.classes.data;
 
+import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsDate;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
@@ -59,4 +61,8 @@ public abstract class GADateType extends GFormatType {
     public abstract PValue fromDate(Date date);
 
     public abstract Date toDate(PValue value);
+
+    public abstract JsDate toJsDate(PValue value);
+
+    public abstract PValue fromJsDate(JavaScriptObject date);
 }

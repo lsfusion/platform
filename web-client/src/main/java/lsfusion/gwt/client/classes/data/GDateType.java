@@ -1,5 +1,7 @@
 package lsfusion.gwt.client.classes.data;
 
+import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsDate;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
@@ -49,6 +51,16 @@ public class GDateType extends GADateType {
     @Override
     public Date toDate(PValue value) {
         return PValue.getDateValue(value).toDate();
+    }
+
+    @Override
+    public JsDate toJsDate(PValue value) {
+        return GwtClientUtils.toJsDate(PValue.getDateValue(value).toDate());
+    }
+
+    @Override
+    public PValue fromJsDate(JavaScriptObject date) {
+        return PValue.getPValue(GDateDTO.fromDate(GwtClientUtils.fromJsDate((JsDate)date)));
     }
 
     @Override
