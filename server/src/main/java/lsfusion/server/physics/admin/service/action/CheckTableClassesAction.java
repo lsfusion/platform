@@ -10,6 +10,7 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.reflection.ReflectionLogicsModule;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
+import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 
 import java.sql.SQLException;
 import java.util.Iterator;
@@ -34,7 +35,7 @@ public class CheckTableClassesAction extends InternalAction {
         if (!disableClasses) {
             final String tableName = (String) context.getBL().reflectionLM.sidTable.read(context, tableObject);
             final Result<String> message = new Result<>();
-            ServiceDBAction.run(context, (session, isolatedTransaction) -> message.set(context.getDbManager().checkTableClasses(session, tableName.trim(), isolatedTransaction)));
+            ServiceDBAction.run(context, DBManager.CHECK_CLASSES_TIL, (session, isolatedTransaction) -> message.set(context.getDbManager().checkTableClasses(session, tableName.trim(), isolatedTransaction)));
 
             boolean noErrors = isEmpty(message.result);
 

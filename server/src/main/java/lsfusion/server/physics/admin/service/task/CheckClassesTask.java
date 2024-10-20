@@ -10,6 +10,7 @@ import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.controller.init.GroupPropertiesSingleTask;
+import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
 
 import java.sql.SQLException;
@@ -34,11 +35,11 @@ public class CheckClassesTask extends GroupPropertiesSingleTask<Object> { // int
         SQLSession sql = getDbManager().getThreadLocalSql();
         String result = null;
         if(property instanceof Integer) {
-            result = DataSession.checkClasses(sql, getBL().LM.baseClass);
+            result = DBManager.checkClasses(sql, true, getBL().LM.baseClass);
         } else if (property instanceof ImplementTable) {
-            result = DataSession.checkTableClasses((ImplementTable) property, sql, getBL().LM.baseClass, false); // так как снизу есть проверка классов
+            result = DBManager.checkTableClasses((ImplementTable) property, sql, true, getBL().LM.baseClass, false); // так как снизу есть проверка классов
         } else if(property instanceof Property) {
-            result = DataSession.checkClasses((Property) property, sql, getBL().LM.baseClass);
+            result = ((Property) property).checkClasses(sql, true, getBL().LM.baseClass);
         }
         if (result != null && !result.isEmpty())
             addMessage(result);

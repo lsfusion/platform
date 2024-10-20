@@ -36,8 +36,7 @@ public class CheckTableColumnAction extends InternalAction {
         boolean disableMaterializations = context.getBL().reflectionLM.disableMaterializationsTableColumn.read(context, tableColumnObject) != null;
         if (!disableMaterializations) {
             final Result<String> message = new Result<>();
-            ServiceDBAction.run(context, (session, isolatedTransaction) ->
-                    message.set(context.getDbManager().checkMaterializationTableColumn(session, propertyCanonicalName.trim())));
+            message.set(context.getDbManager().checkMaterializationTableColumn(context.getSession().sql, propertyCanonicalName.trim(), true));
 
             boolean noErrors = isEmpty(message.result);
 

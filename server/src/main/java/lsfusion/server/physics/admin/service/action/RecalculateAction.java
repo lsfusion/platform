@@ -6,6 +6,7 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.service.ServiceLogicsModule;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
+import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 
 import java.sql.SQLException;
 
@@ -19,7 +20,7 @@ public class RecalculateAction extends InternalAction {
     @Override
     public void executeInternal(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
-        ServiceDBAction.run(context, (session, isolatedTransaction) -> {
+        ServiceDBAction.run(context, DBManager.RECALC_MAT_TIL, (session, isolatedTransaction) -> {
             String result = context.getDbManager().recalculateMaterializations(context.stack, session, isolatedTransaction);
             if(result != null)
                 context.message(result, localize("{logics.recalculation.materializations}"));
