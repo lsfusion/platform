@@ -34,11 +34,8 @@ public class RecalculateTableColumnAction extends InternalAction {
         final String propertyCanonicalName = (String) context.getBL().reflectionLM.canonicalNameProperty.read(context, propertyObject);
         boolean disableMaterializations = context.getBL().reflectionLM.disableMaterializationsTableColumn.read(context, tableColumnObject) != null;
         if(!disableMaterializations) {
-            try(ExecutionContext.NewSession<ClassPropertyInterface> newContext = context.newSession()) {
-                final DataSession dataSession = newContext.getSession();
-                ServiceDBAction.run(context, (session, isolatedTransaction) -> context.getDbManager().recalculateMaterializationTableColumn(dataSession, session, propertyCanonicalName.trim(), isolatedTransaction));
-                newContext.apply();
-            }
+            context.getDbManager().recalculateMaterializationTableColumn(context.getSession(), context.getSession().sql, propertyCanonicalName.trim(), true);
+            context.apply();
 
             context.messageSuccess(localize(LocalizedString.createFormatted("{logics.recalculation.completed}",
                     localize("{logics.recalculation.materializations}"))), localize("{logics.recalculation.materializations}"));

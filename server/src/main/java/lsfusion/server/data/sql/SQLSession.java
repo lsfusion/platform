@@ -570,11 +570,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
 
-    public void startTransaction(int isolationLevel, OperationOwner owner) throws SQLException, SQLHandledException {
-        startTransaction(isolationLevel, owner, new HashMap<>(), false, 0);
+    public void startTransaction(boolean serializable, OperationOwner owner) throws SQLException, SQLHandledException {
+        startTransaction(serializable, owner, new HashMap<>(), false, 0, false);
     }
 
-    public void startTransaction(int isolationLevel, OperationOwner owner, Map<String, Integer> attemptCountMap, boolean useDeadLockPriority, long applyStartTime) throws SQLException, SQLHandledException {
+    public void startTransaction(boolean serializable, OperationOwner owner, Map<String, Integer> attemptCountMap, boolean useDeadLockPriority, long applyStartTime, boolean trueSerializable) throws SQLException, SQLHandledException {
         lockWrite(owner);
         startTransaction = System.currentTimeMillis();
         this.attemptCountMap = attemptCountMap;
@@ -588,9 +588,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 transStartTime = System.currentTimeMillis();
 
                 needPrivate();
-                if(isolationLevel > 0) {
+                if(serializable) {
                     prevIsolation = privateConnection.sql.getTransactionIsolation();
-                    privateConnection.sql.setTransactionIsolation(isolationLevel);
+                    privateConnection.sql.setTransactionIsolation(trueSerializable ? Connection.TRANSACTION_SERIALIZABLE : Connection.TRANSACTION_REPEATABLE_READ);
                 }
                 setACID(privateConnection.sql, true, syntax);
 

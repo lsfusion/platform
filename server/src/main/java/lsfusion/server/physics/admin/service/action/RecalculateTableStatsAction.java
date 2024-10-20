@@ -35,13 +35,9 @@ public class RecalculateTableStatsAction extends InternalAction {
         final Set<String> disableStatsTableColumnSet = context.getDbManager().getDisableStatsTableColumnSet();
         boolean disableStats = context.getBL().reflectionLM.disableStatsTable.read(context, tableObject) != null;
         if (!disableStats) {
-            ServiceDBAction.run(context, (session, isolatedTransaction) -> {
-                try (ExecutionContext.NewSession<ClassPropertyInterface> newContext = context.newSession()) {
-                    context.getBL().LM.tableFactory.getImplementTablesMap().get(tableName).recalculateStat(context.getBL().reflectionLM,
-                            disableStatsTableColumnSet, newContext.getSession());
-                    newContext.apply();
-                }
-            });
+            context.getBL().LM.tableFactory.getImplementTablesMap().get(tableName).recalculateStat(context.getBL().reflectionLM,
+                    disableStatsTableColumnSet, context.getSession());
+            context.apply();
             context.messageSuccess(localize(LocalizedString.createFormatted("{logics.recalculation.completed}", localize("{logics.recalculation.stats}"))), localize("{logics.recalculation.stats}"));
         }
     }

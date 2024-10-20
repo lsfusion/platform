@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.Pair;
+import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -16,6 +17,7 @@ import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.caches.*;
+import lsfusion.server.base.controller.stack.ParamMessage;
 import lsfusion.server.base.controller.stack.StackMessage;
 import lsfusion.server.base.controller.stack.ThisMessage;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
@@ -105,6 +107,7 @@ import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyClassImplement;
 import lsfusion.server.logics.navigator.controller.env.ChangesController;
 import lsfusion.server.logics.property.cases.CaseUnionProperty;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.classes.infer.*;
 import lsfusion.server.logics.property.classes.user.ClassDataProperty;
@@ -2500,11 +2503,47 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         assert isStored();
         
         ImRevMap<KeyField, KeyExpr> mapKeys = mapTable.table.getMapKeys();
-        Where where = DataSession.getIncorrectWhere(this, baseClass, mapTable.mapKeys.join(mapKeys));
+        Where where = getIncorrectWhere(baseClass, mapTable.mapKeys.join(mapKeys));
         Query<KeyField, PropertyField> query = new Query<>(mapKeys, Expr.NULL(), field, where);
         ModifyQuery modifyQuery = new ModifyQuery(mapTable.table, query, env, TableOwner.global);
-        DBManager.run(sql, runInTransaction, sql1 -> sql1.updateRecords(modifyQuery));
+        DBManager.run(sql, runInTransaction, DBManager.RECALC_CLASSES_TIL, sql1 -> sql1.updateRecords(modifyQuery));
     }
+
+    public String checkClasses(SQLSession sql, boolean runInTransaction, BaseClass baseClass) throws SQLException, SQLHandledException {
+        return checkClasses(sql, runInTransaction, DataSession.emptyEnv(OperationOwner.unknown), baseClass);
+    }
+
+    @StackMessage("{logics.checking.data.classes}")
+    @ThisMessage
+    public String checkClasses(SQLSession sql, boolean runInTransaction, QueryEnvironment env, BaseClass baseClass) throws SQLException, SQLHandledException {
+        assert isStored();
+
+        ImRevMap<T, KeyExpr> mapKeys = getMapKeys();
+        Where where = getIncorrectWhere(baseClass, mapKeys);
+        Query<T, String> query = new Query<>(mapKeys, where);
+
+        Result<String> incorrect = new Result<>();
+        DBManager.run(sql, runInTransaction, DBManager.CHECK_CLASSES_TIL, sql1 -> incorrect.set(query.readSelect(sql1, env)));
+        if(!incorrect.result.isEmpty())
+            return "---- Checking Classes for " + (this instanceof DataProperty ? "data" : "aggregate") + " property : " + this + "-----" + '\n' + incorrect.result;
+        return "";
+    }
+
+    private Where getIncorrectWhere(BaseClass baseClass, final ImRevMap<T, KeyExpr> mapKeys) {
+        assert isStored();
+
+        final Expr dataExpr = getInconsistentExpr(mapKeys, baseClass);
+
+        Where correctClasses = getClassValueWhere(AlgType.storedType).getWhere(value -> {
+            if(value instanceof PropertyInterface) {
+                return mapKeys.get((T)value);
+            }
+            assert value.equals("value");
+            return dataExpr;
+        }, true, IsClassType.INCONSISTENT);
+        return dataExpr.getWhere().and(correctClasses.not());
+    }
+
 
     public void setDebugInfo(PropertyDebugInfo debugInfo) {
         this.debugInfo = debugInfo;
