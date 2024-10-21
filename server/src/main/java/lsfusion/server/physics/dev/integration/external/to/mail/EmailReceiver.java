@@ -262,7 +262,7 @@ public class EmailReceiver {
                     boolean skip = emailData != null && emailData.skip;
 
                     if (!skip && !(minDateTime != null && dateTimeSentEmail != null && minDateTime.isAfter(dateTimeSentEmail)))  {
-                        ServerLoggers.mailLogger.info(String.format("Reading email %s of %s, date %s (%s of %s)", dataEmails.size() + 1, maxMessagesAccount, dateTimeSentEmail, count, messageCount));
+                        ServerLoggers.mailLogger.info(String.format("Reading email %s of %s, date %s (%s of %s)", dataEmails.size() + 1, maxMessages, dateTimeSentEmail, count, messageCount));
                         String fromAddressEmail = ((InternetAddress) message.getFrom()[0]).getAddress();
                         String subjectEmail = message.getSubject();
 
