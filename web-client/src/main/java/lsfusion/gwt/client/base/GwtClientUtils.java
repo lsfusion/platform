@@ -1615,10 +1615,13 @@ public class GwtClientUtils {
     }-*/;
 
     public static JsDate toJsDate(Date date) {
-        if(date == null)
-            return null;
-        return JsDate.create(date.getTime());
+        return date != null ? toJsDate(date.getTime()) : null;
     }
+
+    public static native JsDate toJsDate(double milliseconds)/*-{
+        return $wnd.getPlainDate(milliseconds)
+    }-*/;
+
     public static Date fromJsDate(JsDate date) {
         if(date == null)
             return null;

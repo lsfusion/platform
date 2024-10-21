@@ -70,7 +70,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
             height: 'parent',
             locale: locale,
             firstDay: 1,
-            initialDate: $wnd.getPlainDate(controller.getValue(calendarDateType)), // controller.getValue(calendarDateType) is a Date object, but the calendar doesn't accept it because it is created in different context. that's why utils.js getPlainDate() is used;
+            initialDate: controller.getValue(calendarDateType),
             headerToolbar: {
                 left: 'prev,next today',
                 center: 'title',
@@ -378,8 +378,8 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
             title: title,
             caption: caption,
             image: image,
-            start: $wnd.getPlainDate(start), // see createCalendar initialDate comment about getPlainDate()
-            end: $wnd.getPlainDate(end), // see createCalendar initialDate comment about getPlainDate()
+            start: start,
+            end: end,
             editable: editable,
             durationEditable: durationEditable,
             allDay: allDay,

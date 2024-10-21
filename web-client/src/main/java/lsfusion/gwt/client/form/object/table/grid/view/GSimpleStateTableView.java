@@ -29,8 +29,6 @@ import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.async.GPushAsyncInput;
 import lsfusion.gwt.client.form.property.async.GPushAsyncResult;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
-import lsfusion.gwt.client.form.property.cell.classes.GDateDTO;
-import lsfusion.gwt.client.form.property.cell.classes.GDateTimeDTO;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.view.Column;
@@ -524,10 +522,6 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return objectsFieldName;
     }
 
-    protected void changeDateProperty(String property, JavaScriptObject object, int year, int month, int day) {
-        changeProperty(property, object, PValue.getPValue(new GDateDTO(year, month, day)));
-    }
-
     protected void setDateIntervalViewFilter(String startProperty, String endProperty, int pageSize, JavaScriptObject start, JavaScriptObject end, boolean isDateTimeFilter) {
 
         PValue leftBorder = isDateTimeFilter ? GDateTimeType.instance.fromJsDate(start) : GDateType.instance.fromJsDate(start);
@@ -766,9 +760,9 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
                 thisObj.@GSimpleStateTableView::changeJSProperty(*)(property, object, newValue);
             },
-            //todo there are uses for it in mycompany and in mhp.
+            //todo deprecated. use changeProperty instead
             changeDateProperty: function (property, object, year, month, day) {
-                return thisObj.@GSimpleStateTableView::changeDateProperty(*)(property, object, year, month, day);
+                return changeProperty(property, object, new Date(year, month - 1, day))
             },
             changeProperties: function (properties, objects, newValues) {
                 return thisObj.@GSimpleStateTableView::changeJSProperties(*)(properties, objects, newValues);
