@@ -132,7 +132,6 @@ public class EmailReceiver {
         }
         return skipEmails;
     }
-
     private static void importEmails(ExecutionContext context, EmailLogicsModule LM, DataObject accountObject, List<List<Object>> data) throws ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
 
         List<ImportProperty<?>> props = new ArrayList<>();
@@ -255,7 +254,6 @@ public class EmailReceiver {
             int folderClosedCount = 0;
             while (count <= messageCount && (maxMessages == null || dataEmails.size() < maxMessages)) {
                 try {
-                    ServerLoggers.mailLogger.debug(String.format("Reading email %s of %s (max %s)", count, messageCount, maxMessages));
                     Message message = messages[messageCount - count];
 
                     String uid = getMessageUID(emailFolder, message);
@@ -263,7 +261,8 @@ public class EmailReceiver {
                     LocalDateTime dateTimeSentEmail = emailData != null ? emailData.dateTimeSent : getSentDate(message);
                     boolean skip = emailData != null && emailData.skip;
 
-                    if (!skip && (minDateTime == null || dateTimeSentEmail == null || minDateTime.isBefore(dateTimeSentEmail))) {
+                    if (!skip && !(minDateTime != null && dateTimeSentEmail != null && minDateTime.isAfter(dateTimeSentEmail)))  {
+                        ServerLoggers.mailLogger.info(String.format("Reading email %s of %s, date %s (%s of %s)", dataEmails.size() + 1, maxMessagesAccount, dateTimeSentEmail, count, messageCount));
                         String fromAddressEmail = ((InternetAddress) message.getFrom()[0]).getAddress();
                         String subjectEmail = message.getSubject();
 
@@ -288,6 +287,11 @@ public class EmailReceiver {
                             }
                         }
                     } else {
+                        ServerLoggers.mailLogger.info(String.format("Skipping email %s of %s, date %s", count, messageCount, dateTimeSentEmail));
+                        if(minDateTime != null && dateTimeSentEmail != null && minDateTime.minusDays(1).isAfter(dateTimeSentEmail)) {
+                            ServerLoggers.mailLogger.info("Breaking reading, all next emails will be older then minimum date");
+                            break;
+                        }
                         if (emailData == null) {
                             dataEmails.add(Arrays.asList(uid, dateTimeSentEmail, null, null, user, null, null, null));
                         }
