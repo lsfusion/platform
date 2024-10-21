@@ -68,10 +68,9 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
         var calendar = new $wnd.FullCalendar.Calendar(element, {
             initialView: 'dayGridMonth',
             height: 'parent',
-//            timeZone: 'UTC', // since using .getTime() the dates become invalid because of 'UTC'
             locale: locale,
             firstDay: 1,
-            initialDate: controller.getValue(calendarDateType).getTime(), //todo controller.getValue(calendarDateType) is a Date object, but the calendar doesn't accept it. that's why getTime() is used;
+            initialDate: $wnd.getPlainDate(controller.getValue(calendarDateType)), // controller.getValue(calendarDateType) is a Date object, but the calendar doesn't accept it because it is created in different context. that's why utils.js getPlainDate() is used;
             headerToolbar: {
                 left: 'prev,next today',
                 center: 'title',
@@ -379,8 +378,8 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
             title: title,
             caption: caption,
             image: image,
-            start: start.getTime(), // see createCalendar initialDate comment about getTime()
-            end: end != null ? end.getTime() : null, // see createCalendar initialDate comment about getTime()
+            start: $wnd.getPlainDate(start), // see createCalendar initialDate comment about getPlainDate()
+            end: $wnd.getPlainDate(end), // see createCalendar initialDate comment about getPlainDate()
             editable: editable,
             durationEditable: durationEditable,
             allDay: allDay,

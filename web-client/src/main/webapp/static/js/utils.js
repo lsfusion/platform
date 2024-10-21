@@ -459,3 +459,7 @@ function setGlobalClassName(set, className) {
     else
         root.classList.remove(className);
 }
+
+function getPlainDate(date) {
+    return new Date(date);
+}
