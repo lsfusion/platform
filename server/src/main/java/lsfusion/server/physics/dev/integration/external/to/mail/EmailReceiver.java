@@ -129,6 +129,10 @@ public class EmailReceiver {
         mailProps.put("mail." + protocol + ".partialfetch", "true");
         mailProps.put("mail." + protocol + ".fetchsize", "819200");
 
+        if (Settings.get().isIgnoreBodyStructureSizeFix()) {
+            mailProps.put("mail." + protocol + ".ignorebodystructuresize", "true");
+        }
+
         return Session.getInstance(mailProps).getStore(protocol);
     }
 
@@ -467,14 +471,21 @@ public class EmailReceiver {
                 File f = File.createTempFile("attachment", "");
                 try {
                     copyInputStreamToFile(bp.getInputStream(), f);
-                    if(bp.getContentType() != null && bp.getContentType().contains("application/ms-tnef")) {
+                    RawFileData file = new RawFileData(f);
+
+                    byte[] bytes = file.getBytes();
+                    if(Settings.get().ignoreBodyStructureSizeFix && fileName.endsWith(".dbf") && bytes[bytes.length - 1] == 0x0d && bytes[bytes.length - 1] == 0x0a) {
+                        file = new RawFileData(Arrays.copyOfRange(bytes, 0, bytes.length - 2));
+                    }
+
+                    if (bp.getContentType() != null && bp.getContentType().contains("application/ms-tnef")) {
                         attachments.putAll(extractWinMail(f).attachments);
                     } else {
-                        attachments.putAll(unpack(new RawFileData(f), fileName, unpack));
+                        attachments.putAll(unpack(file, fileName, unpack));
                     }
-                } catch (IOException ioe) {
+                } catch (IOException e) {
                     ServerLoggers.mailLogger.error(prefix + "Error reading attachment '" + fileName + "' from email '" + subjectEmail + "'");
-                    throw ioe;
+                    throw e;
                 } finally {
                     if(!f.delete())
                         f.deleteOnExit();
