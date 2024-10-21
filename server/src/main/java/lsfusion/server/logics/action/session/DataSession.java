@@ -309,6 +309,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         rollbackInfo.clear();
         keepUpProps = null;
         mChangedProps = null;
+        mChangedPropKeys = null;
         mRemovedClasses = null;
 
         cleanOnlyDataModifier();
@@ -1631,6 +1632,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private FunctionSet<SessionDataProperty> keepUpProps;
     private MSet<CustomClass> mRemovedClasses;
     private MSet<Property> mChangedProps;
+    private MSet<Pair<Property, ImMap<PropertyInterface, ? extends ObjectValue>>> mChangedPropKeys;
 
     public FunctionSet<SessionDataProperty> getKeepProps() {
         return BaseUtils.merge(recursiveUsed, keepUpProps);
@@ -1814,6 +1816,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         startTransaction(BL, serializable, attemptCountMap, deadLockPriority, applyStartTime, trueSerializable);
         this.keepUpProps = keepProps;
         mChangedProps = SetFact.mSet();
+        mChangedPropKeys = SetFact.mSet();
         mRemovedClasses = SetFact.mSet();        
 
         try {
@@ -2123,6 +2126,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
 
         ImSet<Property> changedProps = mChangedProps.immutable();
+        ImSet<Pair<Property, ImMap<PropertyInterface, ? extends ObjectValue>>> changedPropKeys = mChangedPropKeys.immutable();
         FunctionSet<SessionDataProperty> keepProps = keepUpProps; // because it is set to empty in endTransaction
 
         long checkedTimestamp;
@@ -2144,9 +2148,15 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         changes.regChange(changedProps, this);
 
+        changes.flushStrong(changedPropKeys);
+
         restartFinal(false, changedProps, keepProps);
 
         return true;
+    }
+
+    public void addChangePropKeys(Property property, ImMap<PropertyInterface, ? extends ObjectValue> keys) {
+        mChangedPropKeys.add(Pair.create(property, keys));
     }
 
     private void restartFinal(boolean cancel, ImSet<Property> changedProps, FunctionSet<SessionDataProperty> keepProps) throws SQLException, SQLHandledException {
