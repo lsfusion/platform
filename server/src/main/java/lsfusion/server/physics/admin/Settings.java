@@ -3427,4 +3427,16 @@ public class Settings implements Cloneable {
     public void setCssBackwardCompatibilityLevel(double cssBackwardCompatibilityLevel) {
         this.cssBackwardCompatibilityLevel = cssBackwardCompatibilityLevel;
     }
+
+    //set ignoreBodyStructureSize true and cut last two bytes 0d0a if received
+    //https://javaee.github.io/javamail/docs/api/com/sun/mail/imap/package-summary.html
+    public boolean ignoreBodyStructureSizeFix = false;
+
+    public boolean isIgnoreBodyStructureSizeFix() {
+        return ignoreBodyStructureSizeFix;
+    }
+
+    public void setIgnoreBodyStructureSizeFix(boolean ignoreBodyStructureSizeFix) {
+        this.ignoreBodyStructureSizeFix = ignoreBodyStructureSizeFix;
+    }
 }
