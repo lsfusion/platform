@@ -1040,8 +1040,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
     // weak "lazy", like in getAsyncValues
     // strong "lazy" - with the events in the database
     // the first is good for really rarely changed props, the second has more overhead
-    private final FlushedCache<ImMap<?, ? extends ObjectValue>, ObjectValue> weakLazyValueCache = new FlushedCache<>(LRUUtil.G1);
-    private final FlushedCache<Param, PropertyAsync[]> asyncValuesCache1 = new FlushedCache<>(LRUUtil.G1);
+    private final WeakFlushedCache<ImMap<?, ? extends ObjectValue>, ObjectValue> weakLazyValueCache = new WeakFlushedCache<>(LRUUtil.G1);
+    private final StrongFlushedCache<ImMap<?, ? extends ObjectValue>, ObjectValue> strongLazyValueCache = new StrongFlushedCache<>(LRUUtil.G1);
+    private final WeakFlushedCache<Param, PropertyAsync[]> asyncValuesCache1 = new WeakFlushedCache<>(LRUUtil.G1);
 
     public DataSession createSession(SQLSession sql, OperationOwner upOwner) throws SQLException {
         return createSession(sql,
@@ -1069,10 +1070,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 () -> 0, changesController, Locale::getDefault, getIsServerRestartingController(), upOwner
         );
     }
-    private final FlushedCache<Param, PropertyAsync[]> asyncValuesCache2 = new FlushedCache<>(LRUUtil.G2);
+    private final WeakFlushedCache<Param, PropertyAsync[]> asyncValuesCache2 = new WeakFlushedCache<>(LRUUtil.G2);
 
     public <T extends PropertyInterface> ObjectValue readLazyValue(Property<T> property, ImMap<T, ? extends ObjectValue> keys) throws SQLException, SQLHandledException {
-        return weakLazyValueCache.proceed(property, keys,
+        return (property.isLazyStrong() ? strongLazyValueCache : weakLazyValueCache).proceed(property, keys,
                 () -> property.readClasses(getThreadLocalSql(), keys, LM.baseClass, Property.defaultModifier, DataSession.emptyEnv(OperationOwner.unknown)));
     }
 
@@ -1103,6 +1104,13 @@ public class DBManager extends LogicsManager implements InitializingBean {
         weakLazyValueCache.flush(flushedChanges);
     }
 
+    public void flushStrong(ImSet<Pair<Property, ImMap<PropertyInterface, ? extends ObjectValue>>> strongCaches) {
+        for (int i = 0, size = strongCaches.size(); i < size; i++) {
+            Pair<Property, ImMap<PropertyInterface, ? extends ObjectValue>> entry = strongCaches.get(i);
+            strongLazyValueCache.flush(entry.first, entry.second);
+        }
+    }
+
     private static class ParamRef<K> {
         public K param;
 
@@ -1126,6 +1134,15 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
+    private static class StrongValueRef<V> {
+        public V values;
+        public boolean obsolete;
+        public boolean finished;
+
+        public StrongValueRef() {
+        }
+    }
+
     private <P extends PropertyInterface> PropertyAsync<P>[] readAsyncValues(InputValueList<P> list, QueryEnvironment env, ExecutionStack stack, FormEnvironment formEnv, String value, int neededCount, AsyncMode asyncMode) throws SQLException, SQLHandledException {
         return FormInstance.getAsyncValues(list, getThreadLocalSql(), env, LM.baseClass, Property.defaultModifier, () -> new FormInstance.ExecContext() {
             private DataSession session;
@@ -1141,13 +1158,17 @@ public class DBManager extends LogicsManager implements InitializingBean {
         } , value, neededCount, asyncMode);
     }
 
+    private interface FlushedCache<K,V> {
+        V proceed(ActionOrProperty property, K param, SQLCallable<V> function) throws SQLException, SQLHandledException;
+    }
+
     // need this to clean outdated caches
     // could be done easier with timestamps (value and last changed), but this way cache will be cleaned faster
-    private static class FlushedCache<K, V> {
+    private static class WeakFlushedCache<K, V> implements FlushedCache<K, V> {
         private final LRUWVSMap<ActionOrProperty<?>, ConcurrentIdentityWeakHashSet<ParamRef<K>>> propCache;
         private final LRUWWEVSMap<ActionOrProperty<?>, K, ValueRef<K, V>> valueCache;
 
-        public FlushedCache(LRUUtil.Strategy expireStrategy) {
+        public WeakFlushedCache(LRUUtil.Strategy expireStrategy) {
             propCache = new LRUWVSMap<>(expireStrategy);
             valueCache = new LRUWWEVSMap<>(expireStrategy);
         }
@@ -1179,6 +1200,35 @@ public class DBManager extends LogicsManager implements InitializingBean {
                         ref.drop(); // dropping ref will eventually lead to garbage collection of entries in all lru caches, plus there is a check that cache is dropped
                 }
             });
+        }
+    }
+
+    private static class StrongFlushedCache<K, V> implements FlushedCache<K, V> {
+        private final LRUWWEVSMap<ActionOrProperty<?>, K, StrongValueRef<V>> valueCache;
+
+        public StrongFlushedCache(LRUUtil.Strategy expireStrategy) {
+            valueCache = new LRUWWEVSMap<>(expireStrategy);
+        }
+
+        public V proceed(ActionOrProperty property, K param, SQLCallable<V> function) throws SQLException, SQLHandledException {
+            StrongValueRef<V> valueRef = valueCache.get(property, param);
+            if(valueRef != null && !valueRef.obsolete && valueRef.finished)
+                return valueRef.values;
+
+            valueRef = new StrongValueRef<>();
+            valueCache.put(property, param, valueRef);
+
+            valueRef.values = function.call();
+            valueRef.finished = true;
+
+            return valueRef.values;
+        }
+
+        public void flush(ActionOrProperty property, K keys) {
+            StrongValueRef<V> strongValueRef = valueCache.get(property, keys);
+            if (strongValueRef != null) {
+                strongValueRef.obsolete = true;
+            }
         }
     }
 

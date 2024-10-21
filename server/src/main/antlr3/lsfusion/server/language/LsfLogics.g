@@ -85,6 +85,7 @@ grammar LsfLogics;
     import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
     import lsfusion.server.logics.navigator.NavigatorElement;
     import lsfusion.server.logics.property.cases.CaseUnionProperty;
+    import lsfusion.server.logics.property.Property.Lazy;
     import lsfusion.server.logics.property.set.Cycle;
 	import lsfusion.server.base.version.ComplexLocation;
     import lsfusion.server.physics.admin.reflection.ReflectionPropertyType;
@@ -2884,6 +2885,7 @@ semiPropertyOption[LP property, String propertyName, LocalizedString caption, Pr
 	|	setNotNullSetting [ps]
 	|	aggrSetting [property]
 	|	eventIdSetting [property]
+	|   lazySetting [property]
     ;
 
 semiActionOption[LA action, String actionName, LocalizedString caption, ActionSettings ps, List<TypedParameter> context]
@@ -3182,6 +3184,20 @@ eventIdSetting [LAP property]
 }
 	:	'EVENTID' id=stringLiteral
 	;
+
+lazySetting [LP property]
+@init {
+	Lazy lazy = Lazy.WEAK;
+	DebugInfo.DebugPoint debugPoint = getEventDebugPoint();
+}
+@after {
+	if (inMainParseState()) {
+		self.setLazy(property, lazy, debugPoint);
+	}
+}
+	:   'LAZY' ('WEAK' {lazy = Lazy.WEAK; } | 'STRONG' { lazy = Lazy.STRONG; })?
+	;
+
 
 stickySetting [LAP property]
 @init {
