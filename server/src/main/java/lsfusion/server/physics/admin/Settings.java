@@ -2973,7 +2973,6 @@ public class Settings implements Cloneable {
     }
     
     private int trueSerializableAttempts = 0;
-    private boolean serviceOperationsSerializable = false;
     private boolean recalculateMaterializationsMixedSerializable = false; // when running not in transaction - first read in READ_COMMITED mismatched materialization, and then read + update in REPEATABLE_READ only mismatched
 
     public int getTrueSerializableAttempts() {
@@ -2982,14 +2981,6 @@ public class Settings implements Cloneable {
 
     public void setTrueSerializableAttempts(int trueSerializableAttempts) {
         this.trueSerializableAttempts = trueSerializableAttempts;
-    }
-
-    public boolean isServiceOperationsSerializable() {
-        return serviceOperationsSerializable;
-    }
-
-    public void setServiceOperationsSerializable(boolean serviceOperationsSerializable) {
-        this.serviceOperationsSerializable = serviceOperationsSerializable;
     }
 
     public boolean isRecalculateMaterializationsMixedSerializable() {

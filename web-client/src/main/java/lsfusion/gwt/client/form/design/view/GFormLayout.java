@@ -6,7 +6,6 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.focus.DefaultFocusReceiver;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
-import lsfusion.gwt.client.base.size.GFixedSize;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
@@ -345,71 +344,42 @@ public class GFormLayout extends ResizableComplexPanel {
         return hasVisible;
     }
 
-    public Dimension getPreferredSize(GSize maxWidth, GSize maxHeight, Element element) {
-        GSize width = mainContainer.getWidth();
-        GSize height = mainContainer.getHeight();
+    public void initPreferredSize(GSize maxWidth, GSize maxHeight) {
+        Widget main = getMainView();
+        Element element = main.getElement();
 
-        GSize customWidth = mainContainer.width >= 0 ? new GFixedSize(mainContainer.width, GFixedSize.Type.PX) : null;
-        GSize customHeight = mainContainer.height >= 0 ? new GFixedSize(mainContainer.height, GFixedSize.Type.PX) : null;
+        FlexPanel.setPrefHeight(element, mainContainer.getHeight());
+        FlexPanel.setPrefWidth(element, mainContainer.getWidth());
 
         boolean fixWidthOnInit = mainContainer.width == -3;
         boolean fixHeightOnInit = mainContainer.height == -3;
-        if(!fixWidthOnInit && !fixHeightOnInit) {
-            return new Dimension(customWidth, customHeight); //optimisation
-        }
-        Pair<Integer, Integer> extraOffset = setPreferredSize(true, width, height, maxWidth, maxHeight);
-        try {
-            DataGrid.flushUpdateDOM(); // there can be some pending grid changes, and we need actual sizes
+        if(!fixWidthOnInit && !fixHeightOnInit) //optimisation
+            return;
 
-            GSize offsetWidth = null;
-            if (fixWidthOnInit) {
-                offsetWidth = GwtClientUtils.getOffsetWidth(element);
-                if (width == null)
-                    offsetWidth = offsetWidth.add(extraOffset.first);
-            } else {
-                offsetWidth = customWidth;
-            }
-
-            GSize offsetHeight = null;
-            if (fixHeightOnInit) {
-                offsetHeight = GwtClientUtils.getOffsetHeight(element);
-                if (height == null)
-                    offsetHeight = offsetHeight.add(extraOffset.second);
-            } else {
-                offsetHeight = customHeight;
-            }
-
-            return new Dimension(offsetWidth, offsetHeight);
-        } finally {
-            setPreferredSize(false, null, null, GSize.ZERO, GSize.ZERO);
-        }
-    }
-
-    public Pair<Integer, Integer> setPreferredSize(boolean set, GSize width, GSize height, GSize maxWidth, GSize maxHeight) {
-        Widget main = getMainView();
-        Element element = main.getElement();
-        FlexPanel.setPrefHeight(element, height);
-        FlexPanel.setPrefWidth(element, width);
+        FlexPanel.setMaxPrefWidth(element, maxWidth);
+        FlexPanel.setMaxPrefHeight(element, maxHeight);
 
         Result<Integer> grids = new Result<>(0);
         if(main instanceof HasMaxPreferredSize)
-            ((HasMaxPreferredSize) main).setPreferredSize(set, grids);
+            ((HasMaxPreferredSize) main).setPreferredSize(true, grids);
 
-        element = getElement();
-        if(set) {
+        try {
+            DataGrid.flushUpdateDOM(); // there can be some pending grid changes, and we need actual sizes
+
             // there are 2 problems : rounding (we need to round up), however it coukd be fixed differently
             // since we are changing for example grid basises (by changing fill to percent), we can get extra scrollbars in grids (which is not what we want), so we just add some extraOffset
-            int extraHorzOffset = DataGrid.nativeScrollbarWidth * grids.result + 1; // 1 is for rounding
-            int extraVertOffset = DataGrid.nativeScrollbarHeight * grids.result + 1; // 1 is for rounding
+            // 1 is for rounding
+            if (fixWidthOnInit)
+                FlexPanel.setPrefWidth(element, GwtClientUtils.getOffsetWidth(element).add(DataGrid.nativeScrollbarWidth * grids.result + 1));
 
-            FlexPanel.setMaxPrefWidth(element, maxWidth);
-            FlexPanel.setMaxPrefHeight(element, maxHeight);
-
-            return new Pair<>(extraHorzOffset, extraVertOffset);
-        } else {
+            if (fixHeightOnInit)
+                FlexPanel.setPrefHeight(element, GwtClientUtils.getOffsetHeight(element).add(DataGrid.nativeScrollbarHeight * grids.result + 1));
+        } finally {
             FlexPanel.setMaxPrefWidth(element, (GSize) null);
             FlexPanel.setMaxPrefHeight(element, (GSize) null);
-            return null;
+
+            if(main instanceof HasMaxPreferredSize)
+                ((HasMaxPreferredSize) main).setPreferredSize(false, grids);
         }
     }
 
