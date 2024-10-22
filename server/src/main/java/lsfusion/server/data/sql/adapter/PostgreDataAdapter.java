@@ -3,12 +3,9 @@ package lsfusion.server.data.sql.adapter;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.lru.LRUSVSMap;
 import lsfusion.base.col.lru.LRUUtil;
-import lsfusion.base.file.IOUtils;
-import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.syntax.PostgreSQLSyntax;
 import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.data.ArrayClass;
 import lsfusion.server.physics.admin.log.ServerLoggers;
@@ -27,6 +24,7 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 
 import static lsfusion.base.BaseUtils.isRedundantString;
+import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 import static lsfusion.server.physics.admin.log.ServerLoggers.startLogError;
 
 
@@ -161,17 +159,26 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     @Override
-    public String getBackupFilePath(String dumpFileName) {
-        return isRedundantString(dumpDir) ? null : new File(dumpDir, dumpFileName + ".backup").getPath();
+    public boolean checkBackupParams(ExecutionContext context) {
+        if (!dirExists(dumpDir, true)) {
+            context.messageError(localize("{backup.dump.directory.path.not.specified}"), localize("{logics.error}"));
+            return false;
+        }
+        return true;
     }
 
     @Override
-    public String backupDB(ExecutionContext context, String dumpFileName, int threadCount, List<String> excludeTables) throws IOException {
-        if (isRedundantString(dumpDir) || isRedundantString(binPath)) {
-            context.messageWarning(ThreadLocalContext.localize("{logics.backup.path.not.specified}"), ThreadLocalContext.localize("{logics.backup.error}"));
-            return null;
-        }
+    public String getBackupFilePath(String dumpFileName) {
+        return new File(dumpDir, dumpFileName + ".backup").getPath();
+    }
 
+    @Override
+    public String getBackupFileLogPath(String dumpFileName) {
+        return getBackupFilePath(dumpFileName) + ".log";
+    }
+
+    @Override
+    public void backupDB(ExecutionContext context, String dumpFileName, int threadCount, List<String> excludeTables) throws IOException {
         String host, port;
         if (server.contains(":")) {
             host = server.substring(0, server.lastIndexOf(':'));
@@ -181,12 +188,10 @@ public class PostgreDataAdapter extends DataAdapter {
             port = "5432";
         }
 
-        new File(dumpDir).mkdirs();
+        String backupFilePath = getBackupFilePath(dumpFileName);
+        String backupLogFilePath = getBackupFileLogPath(dumpFileName);
 
-        String backupFilePath = new File(dumpDir, dumpFileName + ".backup").getPath();
-        String backupLogFilePath = backupFilePath + ".log";
-
-        CommandLine commandLine = new CommandLine(new File(binPath, "pg_dump"));
+        CommandLine commandLine = getBinPathCommandLine("pg_dump");
         commandLine.addArgument("-h");
         commandLine.addArgument(host);
         commandLine.addArgument("-p");
@@ -235,8 +240,13 @@ public class PostgreDataAdapter extends DataAdapter {
                 throw new IOException("Error executing pg_dump - process returned code: " + result);
             }
         }
+    }
 
-        return backupFilePath;
+    private boolean dirExists(String dir, boolean mkdirs) {
+        if (isRedundantString(dir))
+            return false;
+        File f = new File(dir);
+        return f.exists() || (mkdirs && f.mkdirs());
     }
 
     @Override
@@ -255,7 +265,7 @@ public class PostgreDataAdapter extends DataAdapter {
         if(createDB(host, port, tempDB)) {
             CommandLine commandLine = null;
             try {
-                commandLine = new CommandLine(new File(binPath, "pg_restore"));
+                commandLine = getBinPathCommandLine("pg_restore");
                 commandLine.addArgument("--verbose");
                 commandLine.addArgument("--host");
                 commandLine.addArgument(host);
@@ -290,7 +300,7 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     public boolean createDB(String host, String port, String dbName) throws IOException {
-        CommandLine commandLine = new CommandLine(new File(binPath, "createdb"));
+        CommandLine commandLine = getBinPathCommandLine("createdb");
         commandLine.addArgument("--host");
         commandLine.addArgument(host);
         commandLine.addArgument("--port");
@@ -322,7 +332,7 @@ public class PostgreDataAdapter extends DataAdapter {
             port = "5432";
         }
 
-        CommandLine commandLine = new CommandLine(new File(binPath, "dropdb"));
+        CommandLine commandLine = getBinPathCommandLine("dropdb");
         commandLine.addArgument("--host");
         commandLine.addArgument(host);
         commandLine.addArgument("--port");
@@ -371,12 +381,7 @@ public class PostgreDataAdapter extends DataAdapter {
 
     @Override
     public void killProcess(Integer processId) {
-        if (isRedundantString(binPath)) {
-            logger.error("Error while killing process : no bin path");
-            return;
-        }
-
-        CommandLine commandLine = new CommandLine(new File(binPath, "pg_ctl"));
+        CommandLine commandLine = getBinPathCommandLine("pg_ctl");
         commandLine.addArgument("kill");
         commandLine.addArgument("TERM");
         commandLine.addArgument(String.valueOf(processId));
@@ -392,6 +397,10 @@ public class PostgreDataAdapter extends DataAdapter {
         } catch (IOException e) {
             logger.error("Error while killing process : " + commandLine);
         }
+    }
+
+    private CommandLine getBinPathCommandLine(String command) {
+       return dirExists(binPath, false) ? new CommandLine(new File(binPath, command)) : new CommandLine(command);
     }
 
     @Override
