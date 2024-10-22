@@ -59,7 +59,7 @@ public class ModalForm extends FormContainer {
             GSize maxWidth = GwtClientUtils.getOffsetWidth(Document.get().getBody()).subtract(GSize.CONST(20));
             GSize maxHeight = GwtClientUtils.getOffsetHeight(Document.get().getBody()).subtract(GSize.CONST(100));
 
-            contentWidget.setContentSize(form.getPreferredSize(maxWidth, maxHeight, contentWidget.getContentWidget().getElement()));
+            form.initPreferredSize(maxWidth, maxHeight);
         }
     }
 

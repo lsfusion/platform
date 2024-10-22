@@ -69,7 +69,7 @@ public abstract class InputBasedCellEditor extends RequestReplaceValueCellEditor
             this.oldValue = getInputValue();
 
             if(notFocusable) // binding or mouse change on not focusable property
-                FocusUtils.focus(inputElement, FocusUtils.Reason.NOTFOCUSABLE);
+                FocusUtils.focus(inputElement, FocusUtils.Reason.NOTFOCUSABLE, handler.event);
         }
 
         CellRenderer.setIsEditing(parent, inputElement, true);

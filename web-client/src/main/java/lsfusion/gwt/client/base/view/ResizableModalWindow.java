@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.base.view;
 
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.form.view.ModalForm;
@@ -39,9 +38,4 @@ public class ResizableModalWindow extends ModalWindow {
         formRequestData = null;
     }
 
-    public void setContentSize(Dimension size) {
-        Element element = getContentWidget().getElement();
-        FlexPanel.setPrefWidth(element, size.width);
-        FlexPanel.setPrefHeight(element, size.height);
-    }
 }

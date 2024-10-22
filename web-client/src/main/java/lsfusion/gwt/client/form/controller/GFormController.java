@@ -1695,8 +1695,8 @@ public class GFormController implements EditManager {
         }
     }
 
-    public Dimension getPreferredSize(GSize maxWidth, GSize maxHeight, Element element) {
-        return formLayout.getPreferredSize(maxWidth, maxHeight, element);
+    public void initPreferredSize(GSize maxWidth, GSize maxHeight) {
+        formLayout.initPreferredSize(maxWidth, maxHeight);
     }
 
     public boolean isWindow() {
