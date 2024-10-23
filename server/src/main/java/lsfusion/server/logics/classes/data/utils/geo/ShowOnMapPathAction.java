@@ -23,6 +23,8 @@ import java.net.URISyntaxException;
 import java.sql.SQLException;
 import java.util.Iterator;
 
+import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
+
 public class ShowOnMapPathAction extends GeoAction {
     private final ClassPropertyInterface mapProviderInterface;
 
@@ -67,7 +69,7 @@ public class ShowOnMapPathAction extends GeoAction {
             }
 
             if (index <= result.values().size())
-                context.messageError("Не все координаты проставлены", "Ошибка");
+                context.messageError(localize("{geo.not.all.coordinates.set}"));
             else
                 OpenLinkAction.execute(isYandex ?
                         ("https://maps.yandex.ru/?rtt=auto&rtm=atm&rtext=" + uri + firstLatLong) :

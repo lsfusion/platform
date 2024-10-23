@@ -17,7 +17,7 @@ public class GetAvailablePrintersAction extends InternalAction {
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
         String printerNames = (String) context.requestUserInteraction(new GetAvailablePrintersClientAction());
         boolean error = printerNames.isEmpty();
-        context.message(error ? "Не найдено доступных принтеров" : printerNames, "Список доступных принтеров", error ? MessageClientType.ERROR : MessageClientType.SUCCESS);
+        context.message(error ? "No available printers found" : printerNames, "List of available printers", error ? MessageClientType.ERROR : MessageClientType.SUCCESS);
     }
 
 }

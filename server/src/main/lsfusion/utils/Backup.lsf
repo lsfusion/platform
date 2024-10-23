@@ -57,7 +57,7 @@ file '{backup.file.backup}' = DATA STRING[200] (Backup);
 name '{backup.name.backup}' = DATA STRING[100] (Backup);
 fileLog '{backup.file.log.backup}' = DATA STRING[200] (Backup);
 isMultithread '{backup.file.is.multithread}' = DATA BOOLEAN (Backup);
-fileDeleted '{backup.file.deleted.backup}' = DATA BOOLEAN (Backup);
+fileDeleted '{backup.file.deleted}' = DATA BOOLEAN (Backup);
 log '{backup.log.backup}' = DATA TEXT (Backup);
 notSucceeded '{backup.not.succeeded.backup}' (Backup b) = NOT log(b);
 
