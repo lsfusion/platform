@@ -9,10 +9,6 @@ import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 
-import java.util.Date;
-
-import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
-
 public class YearCellEditor extends IntegralCellEditor {
 
     public YearCellEditor(EditManager editManager, GPropertyDraw property) {
@@ -36,7 +32,7 @@ public class YearCellEditor extends IntegralCellEditor {
     @Override
     public void stop(Element parent, boolean cancel, boolean blurred) {
         if (started)
-            destroyYearPicker(parent);
+            hideYearPicker(parent);
         super.stop(parent, cancel, blurred);
     }
 
@@ -54,6 +50,14 @@ public class YearCellEditor extends IntegralCellEditor {
             startDate = new Date();
             inputElement.value = startDate.getFullYear();
         }
+
+        inputElement.addEventListener('keydown', function (e) {
+            // stop Escape propagation because there is some magic inside the AirDatepicker when it is pressed, which prevents our logic from working properly (as if esc triggers 2 times).
+            // stop Enter propagation because when you press it, the wrong date is written to the inputElement because ActionOrPropertyValue.setValue is called before the library writes the new date to inputElement.
+            if (parent.picker.visible && ('Escape' === e.key || 'Enter' === e.key))
+                e.stopPropagation();
+        });
+
         parent.picker = new $wnd.AirDatepicker(inputElement, {
             view: 'years', // displaying the years of one decade
             minView: 'years', // The minimum possible representation of the calendar. It is used, for example, when you need to provide only a choice of the year.
@@ -62,14 +66,20 @@ public class YearCellEditor extends IntegralCellEditor {
             dateFormat: function (date) {
                 return date.getFullYear(); // to return a number, not a Date object
             },
-            onSelect: function(event) {
+            onSelect: function() {
                 thisObj.@YearCellEditor::pickerApply(*)(parent);
+                parent.picker.hide(); // to hide popup on Enter pressed
+            },
+            onHide: function (isFinished) {
+                if (isFinished)
+                    parent.picker.destroy();
             }
         });
     }-*/;
 
-    protected native void destroyYearPicker(Element parent)/*-{
-        parent.picker.destroy();
+    protected native void hideYearPicker(Element parent)/*-{
+        //If call destroy() here, we get an error, because destroy() can be called after the picker is completely closed. destroy() is called inside onHide
+        parent.picker.hide();
     }-*/;
 
     protected native Element getYearPickerContainer(Element parent)/*-{
