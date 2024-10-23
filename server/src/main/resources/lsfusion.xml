@@ -869,7 +869,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="firstRecalculateStatsTask" class="lsfusion.server.physics.exec.db.controller.init.FirstRecalculateStatsTask">
+    <bean id="firstRecalculateStatsAndMaterializationsTask" class="lsfusion.server.physics.exec.db.controller.init.FirstRecalculateStatsAndMaterializationsTask">
         <property name="dependencies">
             <set>
                 <ref bean="syncReflectionTask"/>
@@ -915,7 +915,7 @@
     <bean id="writeModulesHashTask" class="lsfusion.server.physics.admin.reflection.controller.init.WriteModulesHashTask">
         <property name="dependencies">
             <set>
-                <ref bean="firstRecalculateStatsTask"/>
+                <ref bean="firstRecalculateStatsAndMaterializationsTask"/>
             </set>
         </property>
         <property name="reflectionManager" ref="reflectionManager"/>
