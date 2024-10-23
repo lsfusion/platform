@@ -161,7 +161,7 @@ public class PostgreDataAdapter extends DataAdapter {
     @Override
     public boolean checkBackupParams(ExecutionContext context) {
         if (!dirExists(dumpDir, true)) {
-            context.messageError(localize("{backup.dump.directory.path.not.specified}"), localize("{logics.error}"));
+            context.messageError(localize("{backup.dump.directory.path.not.specified}"));
             return false;
         }
         return true;

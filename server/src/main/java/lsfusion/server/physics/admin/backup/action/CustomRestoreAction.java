@@ -66,6 +66,7 @@ import java.util.function.Function;
 import static lsfusion.base.BaseUtils.trimToNull;
 import static lsfusion.base.DateConverter.*;
 import static lsfusion.base.TimeConverter.sqlTimeToLocalTime;
+import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 
 public class CustomRestoreAction extends InternalAction {
     private final ClassPropertyInterface backupInterface;
@@ -89,7 +90,7 @@ public class CustomRestoreAction extends InternalAction {
                 dbName = context.getDbManager().customRestoreDB(fileBackup, tables.keySet(), isMultithread);
                 importColumns(context, dbName, tables);
             } else {
-                context.messageError("Backup File not found or no selected tables", "Error");
+                context.messageError(localize("{backup.file.not.found.or.no.selected.tables}"));
             }
         } catch (Exception e) {
             throw Throwables.propagate(e);

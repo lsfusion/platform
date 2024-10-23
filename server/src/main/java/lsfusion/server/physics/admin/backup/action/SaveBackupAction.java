@@ -19,6 +19,8 @@ import java.util.Iterator;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
+
 public class SaveBackupAction extends InternalAction {
     private final ClassPropertyInterface backupInterface;
 
@@ -71,10 +73,10 @@ public class SaveBackupAction extends InternalAction {
                         context.delayUserInterfaction(new WriteClientAction(new RawFileData(file), fileBackupName, null, false, true));
                     }
                 } else {
-                    context.messageError("Файл не найден", "Ошибка");
+                    context.messageError(localize("{backup.file.not.found}"));
                 }
             } else {
-                context.messageError("Файл был удалён", "Ошибка");
+                context.messageError(localize("{backup.file.deleted}"));
             }
         } catch (Exception e) {
             Throwables.propagate(e);
