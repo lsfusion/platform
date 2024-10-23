@@ -9,17 +9,17 @@ import org.apache.log4j.Logger;
 
 import java.sql.SQLException;
 
-public class FirstRecalculateStatsTask extends SimpleBLTask {
+public class FirstRecalculateStatsAndMaterializationsTask extends SimpleBLTask {
 
     public String getCaption() {
-        return "Recalculating Stats at first start";
+        return "Recalculating Stats and Materializations at first start";
     }
 
     @Override
     public void run(Logger logger) {
         if(!SystemProperties.lightStart)
             try(DataSession session = createSession()) {
-                getDbManager().firstRecalculateStats(session);
+                getDbManager().firstRecalculateStatsAndMaterializations(session);
             } catch (SQLException | SQLHandledException e) {
                 throw Throwables.propagate(e);
             }

@@ -72,6 +72,7 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
+import lsfusion.server.logics.action.controller.stack.NewThreadExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.controller.init.SessionCreator;
@@ -403,45 +404,13 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    public void firstRecalculateStats(DataSession session) throws SQLException, SQLHandledException {
+    public void firstRecalculateStatsAndMaterializations(DataSession session) throws SQLException, SQLHandledException {
         if(reflectionLM.hasNotNullQuantity.read(session) == null) {
             recalculateStats(session);
-            session.applyException(businessLogics, ThreadLocalContext.getStack());
+            NewThreadExecutionStack stack = ThreadLocalContext.getStack();
+            recalculateMaterializations(stack, session.sql, businessLogics.serviceLM.singleTransaction.read(session) == null);
+            session.applyException(businessLogics, stack);
         }
-    }
-
-    private void recalculateClassStats(DataSession session, boolean log) throws SQLException, SQLHandledException {
-        for (ObjectValueClassSet tableClasses : LM.baseClass.getUpObjectClassFields().valueIt()) {
-            recalculateClassStat(LM, tableClasses, session, log);
-        }
-    }
-
-    private ImMap<Long, Integer> recalculateClassStat(BaseLogicsModule LM, ObjectValueClassSet tableClasses, DataSession session, boolean log) throws SQLException, SQLHandledException {
-        long start = System.currentTimeMillis();
-        if(log)
-            BaseUtils.serviceLogger.info(String.format("Recalculate Class Stats: %s", String.valueOf(tableClasses)));
-
-        QueryBuilder<Integer, Integer> classes = new QueryBuilder<>(SetFact.singleton(0));
-        KeyExpr countKeyExpr = new KeyExpr("count");
-        Expr countExpr = GroupExpr.create(MapFact.singleton(0, countKeyExpr.classExpr(LM.baseClass)),
-                ValueExpr.COUNT, countKeyExpr.isClass(tableClasses), GroupType.SUM, classes.getMapExprs());
-        classes.addProperty(0, countExpr);
-        classes.and(countExpr.getWhere());
-        ImOrderMap<ImMap<Integer, Object>, ImMap<Integer, Object>> classStats = classes.execute(session);
-
-        ImSet<ConcreteCustomClass> concreteChilds = tableClasses.getSetConcreteChildren();
-        MExclMap<Long, Integer> mResult = MapFact.mExclMap(concreteChilds.size());
-        for (int i = 0, size = concreteChilds.size(); i < size; i++) {
-            ConcreteCustomClass customClass = concreteChilds.get(i);
-            ImMap<Integer, Object> classStat = classStats.get(MapFact.singleton(0, customClass.ID));
-            int statValue = classStat == null ? 1 : (Integer) classStat.singleValue();
-            mResult.exclAdd(customClass.ID, statValue);
-            LM.statCustomObjectClass.change(statValue, session, customClass.getClassObject());
-        }
-        long time = System.currentTimeMillis() - start;
-        if(log)
-            BaseUtils.serviceLogger.info(String.format("Recalculate Class Stats: %s, %sms", String.valueOf(tableClasses), time));
-        return mResult.immutable();
     }
 
     private void updateClassStats(SQLSession session, boolean useSIDs) throws SQLException, SQLHandledException {
@@ -600,12 +569,38 @@ public class DBManager extends LogicsManager implements InitializingBean {
         for (ImplementTable dataTable : tables) {
             count++;
             long start = System.currentTimeMillis();
-            BaseUtils.serviceLogger.info(String.format("Recalculate Stats %s of %s: %s", count, tables.size(), String.valueOf(dataTable)));
+            BaseUtils.serviceLogger.info(String.format("Recalculate Stats %s of %s: %s", count, tables.size(), dataTable));
             dataTable.recalculateStat(reflectionLM, getDisableStatsTableColumnSet(), session);
             long time = System.currentTimeMillis() - start;
-            BaseUtils.serviceLogger.info(String.format("Recalculate Stats: %s, %sms", String.valueOf(dataTable), time));
+            BaseUtils.serviceLogger.info(String.format("Recalculate Stats: %s, %sms", dataTable, time));
         }
-        recalculateClassStats(session, true);
+
+        count = 0;
+        ImCol<ObjectValueClassSet> tableClassesCol = LM.baseClass.getUpObjectClassFields().values();
+        for (ObjectValueClassSet tableClasses : tableClassesCol) {
+            count++;
+            long start = System.currentTimeMillis();
+            BaseUtils.serviceLogger.info(String.format("Recalculate Class Stats %s of %s: %s", count, tableClassesCol.size(), tableClasses));
+
+            QueryBuilder<Integer, Integer> classes = new QueryBuilder<>(SetFact.singleton(0));
+            KeyExpr countKeyExpr = new KeyExpr("count");
+            Expr countExpr = GroupExpr.create(MapFact.singleton(0, countKeyExpr.classExpr(LM.baseClass)),
+                    ValueExpr.COUNT, countKeyExpr.isClass(tableClasses), GroupType.SUM, classes.getMapExprs());
+            classes.addProperty(0, countExpr);
+            classes.and(countExpr.getWhere());
+            ImOrderMap<ImMap<Integer, Object>, ImMap<Integer, Object>> classStats = classes.execute(session);
+
+            ImSet<ConcreteCustomClass> concreteChilds = tableClasses.getSetConcreteChildren();
+            MExclMap<Long, Integer> mResult = MapFact.mExclMap(concreteChilds.size());
+            for (int j = 0, size = concreteChilds.size(); j < size; j++) {
+                ConcreteCustomClass customClass = concreteChilds.get(j);
+                ImMap<Integer, Object> classStat = classStats.get(MapFact.singleton(0, customClass.ID));
+                int statValue = classStat == null ? 1 : (Integer) classStat.singleValue();
+                mResult.exclAdd(customClass.ID, statValue);
+                LM.statCustomObjectClass.change(statValue, session, customClass.getClassObject());
+            }
+            BaseUtils.serviceLogger.info(String.format("Recalculate Class Stats: %s, %sms", tableClasses, System.currentTimeMillis() - start));
+        }
     }
 
     public void overCalculateStats(DataSession session, Integer maxQuantityOverCalculate) throws SQLException, SQLHandledException {
